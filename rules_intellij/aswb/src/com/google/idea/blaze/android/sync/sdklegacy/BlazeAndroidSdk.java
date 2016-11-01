@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.idea.blaze.android.sync;
+package com.google.idea.blaze.android.sync.sdklegacy;
 
 import com.android.SdkConstants;
 import com.android.sdklib.AndroidTargetHash;
@@ -28,7 +28,8 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 /** Utility methods for handling the android sdk. */
-public final class BlazeAndroidSdk {
+@Deprecated
+final class BlazeAndroidSdk {
   private static final Logger LOG = Logger.getInstance(BlazeAndroidSdk.class);
 
   private BlazeAndroidSdk() {}

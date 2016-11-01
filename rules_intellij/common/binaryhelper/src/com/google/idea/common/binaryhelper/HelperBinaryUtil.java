@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.idea.blaze.base.util;
+package com.google.idea.common.binaryhelper;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.io.URLUtil;
@@ -25,34 +25,35 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
-/** Extracts binaries from the resource section of the jar for execution */
-public final class BlazeHelperBinaryUtil {
+/** Binaries provided to IntelliJ at runtime */
+public final class HelperBinaryUtil {
 
-  private static final Logger LOG = Logger.getInstance(BlazeHelperBinaryUtil.class);
+  private static final Logger LOG = Logger.getInstance(HelperBinaryUtil.class);
 
-  private static final File tempDirectory = com.google.common.io.Files.createTempDir();
+  private static File tempDirectory;
   private static final Map<String, File> cachedFiles = new HashMap<>();
 
   @Nullable
-  public static synchronized File getBlazeHelperBinary(@NotNull String binaryName) {
+  public static synchronized File getHelperBinary(String binaryFilePath) {
+    // Assume the binaries have unique names. This saves having
+    // to recursively clean up directories
+    String binaryName = new File(binaryFilePath).getName();
+
     File file = cachedFiles.get(binaryName);
     if (file != null) {
       return file;
     }
-    file = new File(tempDirectory, binaryName);
-    File directory = file.getParentFile();
-
-    if (!directory.mkdirs()) {
-      LOG.error("Could not create temporary dir: " + directory);
-      return null;
+    if (tempDirectory == null) {
+      tempDirectory = com.google.common.io.Files.createTempDir();
+      tempDirectory.deleteOnExit();
     }
+    file = new File(tempDirectory, binaryName);
 
-    URL url = BlazeHelperBinaryUtil.class.getResource(binaryName);
+    URL url = HelperBinaryUtil.class.getResource(binaryFilePath);
     if (url == null) {
-      LOG.error(String.format("Blaze binary '%s' was not found", binaryName));
+      LOG.error(String.format("Helper binary '%s' was not found", binaryFilePath));
       return null;
     }
     try (InputStream inputStream = URLUtil.openResourceStream(url)) {
@@ -62,7 +63,7 @@ public final class BlazeHelperBinaryUtil {
       cachedFiles.put(binaryName, file);
       return file;
     } catch (IOException e) {
-      LOG.error(String.format("Error loading blaze binary '%s'", binaryName));
+      LOG.error(String.format("Error loading helper binary '%s'", binaryFilePath));
       return null;
     }
   }
