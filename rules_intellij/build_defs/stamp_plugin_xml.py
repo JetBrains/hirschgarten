@@ -35,6 +35,9 @@ parser.add_argument(
     help="plugin name to stamp into the plugin.xml",
 )
 parser.add_argument(
+    "--version",
+    help="Version to stamp into the plugin.xml",)
+parser.add_argument(
     "--version_file",
     help="Version file to stamp into the plugin.xml",
 )
@@ -100,23 +103,24 @@ def main():
 
   idea_plugin = dom.documentElement
 
-  version_element = None
-  version_elements = idea_plugin.getElementsByTagName("version")
-  if len(version_elements) > 1:
-    raise ValueError("Ambigious version element")
+  if args.version and args.version_file:
+    raise ValueError("Cannot supply both version and version_file")
 
-  if len(version_elements) == 1:
-    version_element = version_elements[0].firstChild
-
-  if args.version_file:
-    if version_element:
-      raise ValueError("version element already in plugin.xml")
+  if args.version or args.version_file:
+    version_elements = idea_plugin.getElementsByTagName("version")
+    for element in version_elements:
+      idea_plugin.removeChild(element)
     version_element = dom.createElement("version")
     new_elements.append(version_element)
-    with open(args.version_file) as f:
-      value = f.read().strip()
-      version_text = dom.createTextNode(value)
-      version_element.appendChild(version_text)
+
+    version_value = None
+    if args.version:
+      version_value = args.version
+    else:
+      with open(args.version_file) as f:
+        version_value = f.read().strip()
+    version_text = dom.createTextNode(version_value)
+    version_element.appendChild(version_text)
 
   if args.stamp_since_build or args.stamp_until_build:
     if idea_plugin.getElementsByTagName("idea-version"):

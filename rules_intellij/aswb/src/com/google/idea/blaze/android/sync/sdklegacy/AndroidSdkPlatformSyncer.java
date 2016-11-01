@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.idea.blaze.android.sync;
+package com.google.idea.blaze.android.sync.sdklegacy;
 
 import com.android.tools.idea.startup.AndroidStudioInitializer;
 import com.google.common.base.Joiner;
@@ -23,8 +23,6 @@ import com.google.common.collect.Lists;
 import com.google.idea.blaze.android.projectview.AndroidSdkPlatformSection;
 import com.google.idea.blaze.android.settings.AswbGlobalSettings;
 import com.google.idea.blaze.android.sync.model.AndroidSdkPlatform;
-import com.google.idea.blaze.android.sync.model.BlazeAndroidSyncData;
-import com.google.idea.blaze.base.model.BlazeProjectData;
 import com.google.idea.blaze.base.projectview.ProjectViewManager;
 import com.google.idea.blaze.base.projectview.ProjectViewSet;
 import com.google.idea.blaze.base.scope.BlazeContext;
@@ -41,9 +39,10 @@ import org.jetbrains.android.sdk.AndroidSdkAdditionalData;
 import org.jetbrains.android.sdk.AndroidSdkUtils;
 
 /** Calculates AndroidSdkPlatform. */
+@Deprecated
 public class AndroidSdkPlatformSyncer {
   @Nullable
-  static AndroidSdkPlatform getAndroidSdkPlatform(Project project, BlazeContext context) {
+  public static AndroidSdkPlatform getAndroidSdkPlatform(Project project, BlazeContext context) {
 
     final String localSdkLocation;
     if (AndroidStudioInitializer.isAndroidSdkManagerEnabled()) {
@@ -141,12 +140,6 @@ public class AndroidSdkPlatformSyncer {
       }
     }
     return "<No platforms found>";
-  }
-
-  @Nullable
-  public static AndroidSdkPlatform getAndroidSdkPlatform(BlazeProjectData blazeProjectData) {
-    BlazeAndroidSyncData syncData = blazeProjectData.syncState.get(BlazeAndroidSyncData.class);
-    return syncData != null ? syncData.androidSdkPlatform : null;
   }
 
   private static int getAndroidSdkApiLevel(String androidSdk) {
