@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.idea.blaze.android.sdk;
+package com.google.idea.blaze.android.sync.sdk;
 
-import com.google.idea.blaze.android.sync.AndroidSdkPlatformSyncer;
+import com.android.tools.idea.updater.configure.SdkUpdaterConfigurableProvider;
 import com.google.idea.blaze.android.sync.model.AndroidSdkPlatform;
+import com.google.idea.blaze.android.sync.model.BlazeAndroidSyncData;
 import com.google.idea.blaze.base.model.BlazeProjectData;
 import com.google.idea.blaze.base.sync.data.BlazeProjectDataManager;
+import com.intellij.openapi.options.Configurable;
+import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.options.ex.ConfigurableExtensionPointUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import org.jetbrains.android.sdk.AndroidPlatform;
@@ -29,14 +33,19 @@ import org.jetbrains.annotations.Nullable;
 /** SDK utilities. */
 public class SdkUtil {
   @Nullable
+  public static AndroidSdkPlatform getAndroidSdkPlatform(BlazeProjectData blazeProjectData) {
+    BlazeAndroidSyncData syncData = blazeProjectData.syncState.get(BlazeAndroidSyncData.class);
+    return syncData != null ? syncData.androidSdkPlatform : null;
+  }
+
+  @Nullable
   public static AndroidPlatform getAndroidPlatform(@NotNull Project project) {
     BlazeProjectData blazeProjectData =
         BlazeProjectDataManager.getInstance(project).getBlazeProjectData();
     if (blazeProjectData == null) {
       return null;
     }
-    AndroidSdkPlatform androidSdkPlatform =
-        AndroidSdkPlatformSyncer.getAndroidSdkPlatform(blazeProjectData);
+    AndroidSdkPlatform androidSdkPlatform = getAndroidSdkPlatform(blazeProjectData);
     if (androidSdkPlatform == null) {
       return null;
     }
@@ -45,5 +54,13 @@ public class SdkUtil {
       return null;
     }
     return AndroidPlatform.getInstance(sdk);
+  }
+
+  /** Opens the SDK manager settings page */
+  public static void openSdkManager() {
+    Configurable configurable =
+        ConfigurableExtensionPointUtil.createApplicationConfigurableForProvider(
+            SdkUpdaterConfigurableProvider.class);
+    ShowSettingsUtil.getInstance().showSettingsDialog(null, configurable.getClass());
   }
 }
