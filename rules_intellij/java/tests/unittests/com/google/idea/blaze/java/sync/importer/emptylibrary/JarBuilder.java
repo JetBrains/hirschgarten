@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.google.idea.blaze.java.sync.importer;
+package com.google.idea.blaze.java.sync.importer.emptylibrary;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

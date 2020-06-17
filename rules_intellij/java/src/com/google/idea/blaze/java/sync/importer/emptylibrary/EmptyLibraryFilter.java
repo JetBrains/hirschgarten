@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package com.google.idea.blaze.java.sync.importer;
+package com.google.idea.blaze.java.sync.importer.emptylibrary;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.idea.blaze.base.command.buildresult.BlazeArtifact;
-import com.google.idea.blaze.base.command.buildresult.SourceArtifact;
-import com.google.idea.blaze.base.ideinfo.ArtifactLocation;
-import com.google.idea.blaze.base.model.BlazeLibrary;
-import com.google.idea.blaze.base.sync.workspace.ArtifactLocationDecoder;
-import com.google.idea.blaze.java.libraries.JarCache;
-import com.google.idea.blaze.java.sync.model.BlazeJarLibrary;
 import com.google.idea.common.experiments.FeatureRolloutExperiment;
 import com.google.idea.common.experiments.IntExperiment;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.Project;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Predicate;
@@ -36,15 +28,15 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 /**
- * Filters out any {@link BlazeJarLibrary} whose corresponding IntelliJ library would reference only
- * an effectively empty JAR (i.e. it has nothing other than a manifest and directories).
+ * Assumes that the passed {@link BlazeArtifact} is a JAR and checks whether the JAR is effectively
+ * empty (i.e. it has nothing other than a manifest and directories)
  *
  * <p>Since this filter is used, in part, to determine which remote output JARs should be copied to
  * a local cache, checking the contents of those JARs can involve expensive network operations. We
  * try to minimize this cost by checking the JAR's size first and applying heuristics to avoid doing
  * extra work in the more obvious cases.
  */
-public class EmptyLibraryFilter implements Predicate<BlazeLibrary> {
+public class EmptyLibraryFilter implements Predicate<BlazeArtifact> {
   private static final String FN_MANIFEST = "MANIFEST.MF";
 
   @VisibleForTesting
@@ -73,44 +65,23 @@ public class EmptyLibraryFilter implements Predicate<BlazeLibrary> {
 
   private static final Logger logger = Logger.getInstance(EmptyLibraryFilter.class);
 
-  private final ArtifactLocationDecoder locationDecoder;
-  private final Project project;
+  EmptyLibraryFilter() {}
 
-  EmptyLibraryFilter(Project project, ArtifactLocationDecoder locationDecoder) {
-    this.project = project;
-    this.locationDecoder = locationDecoder;
-  }
-
-  public static boolean isEnabled() {
+  static boolean isEnabled() {
     return filterExperiment.isEnabled();
   }
 
   @Override
-  public boolean test(BlazeLibrary blazeLibrary) {
-    if (!isEnabled() || !(blazeLibrary instanceof BlazeJarLibrary)) {
-      return true;
-    }
-    // Try to find jars from {@link JarCache} first since it saves fetching time for {@link
-    // RemoteOutputArtifact}
-    File cachedFile =
-        JarCache.getInstance(project).getCachedJar(locationDecoder, (BlazeJarLibrary) blazeLibrary);
-    if (cachedFile != null) {
-      try {
-        return !isEmpty(new SourceArtifact(cachedFile));
-      } catch (IOException e) {
-        logger.warn(e);
-        return true;
-      }
+  public boolean test(BlazeArtifact blazeLibrary) {
+    if (!isEnabled()) {
+      return false;
     }
 
-    ArtifactLocation location =
-        ((BlazeJarLibrary) blazeLibrary).libraryArtifact.jarForIntellijLibrary();
-    BlazeArtifact artifact = locationDecoder.resolveOutput(location);
     try {
-      return !isEmpty(artifact);
+      return isEmpty(blazeLibrary);
     } catch (IOException e) {
       logger.warn(e);
-      return true;
+      return false; // If something went wrong reading the file, consider it non-empty
     }
   }
   
