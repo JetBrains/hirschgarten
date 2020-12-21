@@ -63,6 +63,9 @@ lazy val sbtSonatype =
       libraryDependencies ++= Seq(
         "org.sonatype.spice.zapper" % "spice-zapper"   % "1.3",
         "org.wvlet.airframe"        %% "airframe-http" % AIRFRAME_VERSION,
-        "org.wvlet.airframe"        %% "airspec"       % AIRFRAME_VERSION % "test"
+        "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1",
+        "org.wvlet.airframe"        %% "airspec"       % AIRFRAME_VERSION % "test",
+        "org.backuity.clist" %% "clist-core"   % "3.5.1",
+        "org.backuity.clist" %% "clist-macros" % "3.5.1" % "provided"
       )
     )

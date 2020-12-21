@@ -1,57 +1,34 @@
-package xerial.sbt.sonatype
-
-import java.io.{File, IOException}
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-import java.util.concurrent.TimeUnit
+package org.jetbrains.bazel.sonatype
 
 import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
 import org.apache.http.impl.client.BasicCredentialsProvider
+import org.jetbrains.bazel.sonatype.SonatypeClient.{ActivityMonitor, CreateStageResponse, StageTransitionRequest, StagingActivity, StagingProfile, StagingProfileResponse, StagingRepositoryProfile}
+import org.jetbrains.bazel.sonatype.SonatypeException._
 import org.sonatype.spice.zapper.ParametersBuilder
 import org.sonatype.spice.zapper.client.hc4.Hc4ClientBuilder
-import sbt.librarymanagement.ivy.{Credentials, DirectCredentials}
+import org.sonatype.spice.zapper.fs.DirectoryIOSource
 import wvlet.airframe.control.{Control, ResultClass, Retry}
 import wvlet.airframe.http.HttpHeader.MediaType
 import wvlet.airframe.http.HttpMessage.{Request, Response}
 import wvlet.airframe.http.client.{URLConnectionClient, URLConnectionClientConfig}
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
-import xerial.sbt.sonatype.SonatypeException.{
-  BUNDLE_UPLOAD_FAILURE,
-  MISSING_CREDENTIAL,
-  STAGE_FAILURE,
-  STAGE_IN_PROGRESS
-}
 
+import java.io.{File, IOException}
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration
 
-/** REST API Client for Sonatype API (nexus-staigng)
-  * https://repository.sonatype.org/nexus-staging-plugin/default/docs/rest.html
-  */
 class SonatypeClient(
     repositoryUrl: String,
-    cred: Seq[Credentials],
-    credentialHost: String,
+    username: String,
+    password: String,
     timeoutMillis: Int = 60 * 60 * 1000
 ) extends AutoCloseable
     with LogSupport {
-
-  private lazy val directCredentials = {
-    val credt: DirectCredentials = Credentials
-      .forHost(cred, credentialHost)
-      .getOrElse {
-        throw SonatypeException(
-          MISSING_CREDENTIAL,
-          s"No credential is found for ${credentialHost}. Prepare ~/.sbt/(sbt_version)/sonatype.sbt file."
-        )
-      }
-    credt
-  }
-
-  private val base64Credentials = {
-    val credt = directCredentials
-    Base64.getEncoder.encodeToString(s"${credt.userName}:${credt.passwd}".getBytes(StandardCharsets.UTF_8))
-  }
+  private val base64Credentials =
+    Base64.getEncoder.encodeToString(s"${username}:${password}".getBytes(StandardCharsets.UTF_8))
 
   lazy val repoUri = {
     def repoBase(url: String) = if (url.endsWith("/")) url.dropRight(1) else url
@@ -101,9 +78,6 @@ class SonatypeClient(
   override def close(): Unit = {
     Control.closeResources(httpClient, httpClientForCreateStage)
   }
-
-  import xerial.sbt.sonatype.SonatypeClient._
-
   def stagingRepositoryProfiles: Seq[StagingRepositoryProfile] = {
     info("Reading staging repository profiles...")
     val result =
@@ -255,7 +229,7 @@ class SonatypeClient(
     httpClient.get[Seq[StagingActivity]](s"${pathPrefix}/staging/repository/${r.repositoryId}/activity")
   }
 
-  def uploadBundle(localBundlePath: File, remoteUrl: String): Unit = {
+  def uploadBundle(localBundlePath: File, remoteUrl: String, getDeployables: () => DirectoryIOSource): Unit = {
     retryer
       .retryOn {
         case e: IOException if e.getMessage.contains("400 Bad Request") =>
@@ -274,14 +248,12 @@ class SonatypeClient(
 
         val credentialProvider = new BasicCredentialsProvider()
         val usernamePasswordCredentials =
-          new UsernamePasswordCredentials(directCredentials.userName, directCredentials.passwd)
+          new UsernamePasswordCredentials(username, password)
 
         credentialProvider.setCredentials(AuthScope.ANY, usernamePasswordCredentials)
 
         clientBuilder.withPreemptiveRealm(credentialProvider)
-
-        import org.sonatype.spice.zapper.fs.DirectoryIOSource
-        val deployables = new DirectoryIOSource(localBundlePath)
+        val deployables = getDeployables()
 
         val client = clientBuilder.build()
         try {
@@ -293,7 +265,6 @@ class SonatypeClient(
         }
       }
   }
-
 }
 
 object SonatypeClient extends LogSupport {

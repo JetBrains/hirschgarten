@@ -1,12 +1,14 @@
-package xerial.sbt.sonatype
+package org.jetbrains.bazel.sonatype
+
+import org.sonatype.spice.zapper.Path
+import org.sonatype.spice.zapper.fs.DirectoryIOSource
 
 import java.io.File
-
 import sbt.io.IO
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.log.LogSupport
-import xerial.sbt.sonatype.SonatypeClient._
-import xerial.sbt.sonatype.SonatypeException.{MISSING_PROFILE, MISSING_STAGING_PROFILE, MULTIPLE_TARGETS, UNKNOWN_STAGE}
+import org.jetbrains.bazel.sonatype.SonatypeClient._
+import org.jetbrains.bazel.sonatype.SonatypeException.{MISSING_PROFILE, MISSING_STAGING_PROFILE, MULTIPLE_TARGETS, UNKNOWN_STAGE}
 
 import scala.util.Try
 
@@ -14,17 +16,17 @@ import scala.util.Try
   * @param profileName
   */
 class SonatypeService(
-    sonatypClient: SonatypeClient,
+    sonatypeClient: SonatypeClient,
     val profileName: String
 ) extends LogSupport
     with AutoCloseable {
   import SonatypeService._
 
-  info(s"sonatypeRepository  : ${sonatypClient.repoUri}")
+  info(s"sonatypeRepository  : ${sonatypeClient.repoUri}")
   info(s"sonatypeProfileName : ${profileName}")
 
   override def close(): Unit = {
-    sonatypClient.close()
+    sonatypeClient.close()
   }
 
   def findTargetRepository(command: CommandType, arg: Option[String]): StagingRepositoryProfile = {
@@ -66,8 +68,12 @@ class SonatypeService(
   def openRepositories   = stagingRepositoryProfiles().filter(_.isOpen).sortBy(_.repositoryId)
   def closedRepositories = stagingRepositoryProfiles().filter(_.isClosed).sortBy(_.repositoryId)
 
-  def uploadBundle(localBundlePath: File, remoteUrl: String): Unit = {
-    sonatypClient.uploadBundle(localBundlePath, remoteUrl)
+  def uploadBundle(localBundlePath: File, remoteUrl: String, filesPaths: List[Path]): Unit = {
+    sonatypeClient.uploadBundle(
+      localBundlePath,
+      remoteUrl,
+      () => new DirectoryIOSourceMaven(localBundlePath, filesPaths)
+    )
   }
 
   def openOrCreateByKey(descriptionKey: String): StagingRepositoryProfile = {
@@ -110,7 +116,7 @@ class SonatypeService(
   def stagingRepositoryProfiles(warnIfMissing: Boolean = true): Seq[StagingRepositoryProfile] = {
     // Note: using /staging/profile_repositories/(profile id) is preferred to reduce the response size,
     // but Sonatype API is quite slow (as of Sep 2019) so using a single request was much better.
-    val response   = sonatypClient.stagingRepositoryProfiles
+    val response   = sonatypeClient.stagingRepositoryProfiles
     val myProfiles = response.filter(_.profileName == profileName)
     if (myProfiles.isEmpty && warnIfMissing) {
       warn(s"No staging repository is found. Do publishSigned first.")
@@ -135,7 +141,7 @@ class SonatypeService(
   }
 
   def stagingProfiles: Seq[StagingProfile] = {
-    val profiles = withCache(s"target/sonatype-profile-${profileName}.json", sonatypClient.stagingProfiles)
+    val profiles = withCache(s"target/sonatype-profile-${profileName}.json", sonatypeClient.stagingProfiles)
     profiles.filter(_.name == profileName)
   }
 
@@ -151,7 +157,7 @@ class SonatypeService(
   }
 
   def createStage(description: String = "Requested by sbt-sonatype plugin"): StagingRepositoryProfile = {
-    sonatypClient.createStage(currentProfile, description)
+    sonatypeClient.createStage(currentProfile, description)
   }
 
   def closeStage(repo: StagingRepositoryProfile): StagingRepositoryProfile = {
@@ -159,12 +165,12 @@ class SonatypeService(
       info(s"Repository ${repo.repositoryId} is already closed")
       repo
     } else {
-      sonatypClient.closeStage(currentProfile, repo)
+      sonatypeClient.closeStage(currentProfile, repo)
     }
   }
 
   def dropStage(repo: StagingRepositoryProfile): StagingRepositoryProfile = {
-    sonatypClient.dropStage(currentProfile, repo)
+    sonatypeClient.dropStage(currentProfile, repo)
     info(s"Dropped successfully: ${repo.repositoryId}")
     repo.toDropped
   }
@@ -174,13 +180,13 @@ class SonatypeService(
       info(s"Repository ${repo.repositoryId} is already released")
     } else {
       // Post promote(release) request
-      sonatypClient.promoteStage(currentProfile, repo)
+      sonatypeClient.promoteStage(currentProfile, repo)
     }
     dropStage(repo.toReleased)
   }
 
   def stagingRepositoryInfo(repositoryId: String) = {
-    sonatypClient.stagingRepository(repositoryId)
+    sonatypeClient.stagingRepository(repositoryId)
   }
 
   def closeAndPromote(repo: StagingRepositoryProfile): StagingRepositoryProfile = {
@@ -193,7 +199,7 @@ class SonatypeService(
   }
 
   def activities: Seq[(StagingRepositoryProfile, Seq[StagingActivity])] = {
-    for (r <- stagingRepositoryProfiles()) yield r -> sonatypClient.activitiesOf(r)
+    for (r <- stagingRepositoryProfiles()) yield r -> sonatypeClient.activitiesOf(r)
   }
 
 }
