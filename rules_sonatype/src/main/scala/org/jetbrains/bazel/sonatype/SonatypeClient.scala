@@ -296,7 +296,7 @@ object SonatypeClient extends LogSupport {
     def toDropped  = copy(`type` = "dropped")
     def toReleased = copy(`type` = "released")
 
-    def deployUrl: String = s"https://oss.sonatype.org/service/local/staging/deployByRepositoryId/${repositoryId}"
+    def deployUrl(repositoryUrl: String): String = s"${repositoryUrl}/staging/deployByRepositoryId/${repositoryId}"
   }
 
   case class CreateStageResponse(

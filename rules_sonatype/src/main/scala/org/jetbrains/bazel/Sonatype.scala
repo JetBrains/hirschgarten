@@ -103,7 +103,7 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
   def bundleRelease(): Unit = {
     withSonatypeService() { rest =>
       val repo = prepare(rest)
-      rest.uploadBundle(Paths.get(sonatypeKeys.sonatypeProjectJar).getParent.toFile, repo.deployUrl, filesPaths)
+      rest.uploadBundle(Paths.get(sonatypeKeys.sonatypeProjectJar).getParent.toFile, repo.deployUrl(sonatypeKeys.sonatypeRepository), filesPaths)
       rest.closeAndPromote(repo)
     }
   }
