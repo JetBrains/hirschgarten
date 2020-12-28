@@ -2,13 +2,13 @@ package org.jetbrains.bazel
 
 import org.backuity.clist.{Command, arg, opt}
 import org.jetbrains.bazel.sonatype.SonatypeClient.StagingRepositoryProfile
-import org.jetbrains.bazel.sonatype.{SonatypeClient, SonatypeException, SonatypeService}
+import org.jetbrains.bazel.sonatype.{SonatypeClient, SonatypeCoordinates, SonatypeException, SonatypeService}
 import org.sonatype.spice.zapper.Path
 import wvlet.log.{LogLevel, LogSupport}
 
 import java.nio.file.Paths
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 class SonatypeKeys extends Command {
   var sonatypeRepository: String =
@@ -18,24 +18,37 @@ class SonatypeKeys extends Command {
     )
   var sonatypeSessionName: Option[String] =
     arg[Option[String]](required = false, description = "Used for identifying a sonatype staging repository")
-  var sonatypeProfileName: String = arg[String](description = "Profile name at Sonatype: e.g. org.xerial")
+  var sonatypeUsername: Option[String] =
+    arg[Option[String]](required = false, description = "Username for the sonatype repository")
+  var sonatypePassword: Option[String] =
+    arg[Option[String]](required = false, description = "Password for the sonatype repository")
+  var sonatypeCoordinates: String = arg[String](description = "Profile name at Sonatype: e.g. org.xerial")
   var sonatypeTimeoutMillis: Int =
     opt[Int](default = 60 * 60 * 1000, description = "milliseconds before giving up Sonatype API requests")
   var sonatypeLogLevel: String =
     opt[String](default = "info", description = "log level: trace, debug, info warn, error")
   var sonatypeProjectJar: String        = arg[String](description = "Path to project jar")
   var sonatypeProjectSourcesJar: String = arg[String](description = "Path to project sources jar")
+  var sonatypeProjectDocsJar: String = arg[String](description = "Path to project docs jar")
 }
 
 class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
-  val username: String = sys.env.getOrElse(
-    "SONATYPE_USERNAME",
-    throw new IllegalArgumentException("SONATYPE_USERNAME variable is not defined")
+
+  val username: String = sonatypeKeys.sonatypeUsername.getOrElse(
+    sys.env.getOrElse(
+      "SONATYPE_USERNAME",
+      throw new IllegalArgumentException("SONATYPE_USERNAME variable is not defined")
+    )
   )
-  val password: String = sys.env.getOrElse(
-    "SONATYPE_PASSWORD",
-    throw new IllegalArgumentException("SONATYPE_PASSWORD variable is not defined")
+  val password: String = sonatypeKeys.sonatypePassword.getOrElse(
+    sys.env.getOrElse(
+      "SONATYPE_PASSWORD",
+      throw new IllegalArgumentException("SONATYPE_PASSWORD variable is not defined")
+    )
   )
+
+  lazy val sonatypeSplitCoordinates: SonatypeCoordinates =
+    SonatypeCoordinates(sonatypeKeys.sonatypeCoordinates)
 
   private implicit val ec = ExecutionContext.global
 
@@ -51,21 +64,22 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
 
     new SonatypeService(
       sonatypeClient,
-      sonatypeKeys.sonatypeProfileName
+      sonatypeSplitCoordinates.sonatypeGroupId
     )
   }
 
   lazy val sonatypeSessionName: String = {
-    sonatypeKeys.sonatypeSessionName.getOrElse(sonatypeKeys.sonatypeProfileName)
+    sonatypeKeys.sonatypeSessionName.getOrElse(sonatypeSplitCoordinates.sonatypeArtifactId)
   }
 
   lazy val filesPaths: List[Path] = List(
     new Path(sonatypeKeys.sonatypeProjectJar),
     new Path(sonatypeKeys.sonatypeProjectSourcesJar),
+    new Path(sonatypeKeys.sonatypeProjectDocsJar                                        ),
   )
 
   private def withSonatypeService()(
-    body: SonatypeService => Unit
+      body: SonatypeService => Unit
   ): Boolean = {
     try {
       body(rest)
@@ -103,7 +117,11 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
   def bundleRelease(): Unit = {
     withSonatypeService() { rest =>
       val repo = prepare(rest)
-      rest.uploadBundle(Paths.get(sonatypeKeys.sonatypeProjectJar).getParent.toFile, repo.deployUrl(sonatypeKeys.sonatypeRepository), filesPaths)
+      rest.uploadBundle(
+        Paths.get(sonatypeKeys.sonatypeProjectJar).getParent.toFile,
+        repo.deployUrl(sonatypeKeys.sonatypeRepository),
+        filesPaths
+      )
       rest.closeAndPromote(repo)
     }
   }
