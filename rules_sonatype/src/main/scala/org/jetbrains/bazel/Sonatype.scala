@@ -29,7 +29,7 @@ class SonatypeKeys extends Command {
     opt[String](default = "info", description = "log level: trace, debug, info warn, error")
   var sonatypeProjectJar: String        = arg[String](description = "Path to project jar")
   var sonatypeProjectSourcesJar: String = arg[String](description = "Path to project sources jar")
-  var sonatypeProjectDocsJar: String = arg[String](description = "Path to project docs jar")
+  var sonatypeProjectDocsJar: String    = arg[String](description = "Path to project docs jar")
 }
 
 class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
@@ -75,7 +75,7 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
   lazy val filesPaths: List[Path] = List(
     new Path(sonatypeKeys.sonatypeProjectJar),
     new Path(sonatypeKeys.sonatypeProjectSourcesJar),
-    new Path(sonatypeKeys.sonatypeProjectDocsJar                                        ),
+    new Path(sonatypeKeys.sonatypeProjectDocsJar)
   )
 
   private def withSonatypeService()(

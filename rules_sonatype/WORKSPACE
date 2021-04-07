@@ -15,12 +15,13 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 maven_install(
     artifacts = [
         "org.sonatype.spice.zapper:spice-zapper:1.3",
-        "org.wvlet.airframe:airframe-http:20.12.1,
-        "org.scala-lang.modules:scala-java8-compat:0.9.1",
-        "org.wvlet.airframe:airspec:20.12.1:test",
-        "org.backuity.clist:clist-core:3.5.1",
-        "org.backuity.clist:clist-macros:3.5.1:provided",
+        "org.wvlet.airframe:airframe-http_2.12:20.12.1",
+        "org.scala-lang.modules:scala-java8-compat_2.12:0.9.1",
+        "org.wvlet.airframe:airspec_2.12:20.12.1",
+        "org.backuity.clist:clist-core_2.12:3.5.1",
+        "org.backuity.clist:clist-macros_2.12:3.5.1",
     ],
+    generate_compat_repositories = True,
     repositories = [
         "https://jcenter.bintray.com/",
         "https://maven.google.com",
@@ -50,7 +51,7 @@ http_archive(
 # 2.12 is a default version, other versions can be use by passing them explicitly:
 # scala_config(scala_version = "2.11.12")
 load("@io_bazel_rules_scala//:scala_config.bzl", "scala_config")
-scala_config()
+scala_config("2.12.6")
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
 scala_repositories()

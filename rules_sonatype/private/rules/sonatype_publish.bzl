@@ -1,4 +1,4 @@
-MavenPublishInfo = provider (
+SonatypePublishInfo = provider (
     fields = {
         "coordinates": "Maven coordinates for the project, which may be None",
         "pom": "Pom.xml file for metadata",
@@ -14,7 +14,7 @@ echo "Uploading {coordinates} to {maven_repo}"
 ./uploader {user} {password} {coordinates} artifact.jar source.jar doc.jar --sonatype-repository {maven_repo}
 """
 
-def _maven_publish_impl(ctx):
+def _sonatype_publish_impl(ctx):
     executable = ctx.actions.declare_file("%s-publisher" % ctx.attr.name)
 
     maven_repo = ctx.var.get("maven_repo", "''")
@@ -46,7 +46,7 @@ def _maven_publish_impl(ctx):
                 collect_data = True,
             ).merge(ctx.attr._uploader[DefaultInfo].data_runfiles),
         ),
-        MavenPublishInfo(
+        SonatypePublishInfo(
             coordinates = ctx.attr.coordinates,
             artifact_jar = ctx.file.artifact_jar,
             javadocs = ctx.file.javadocs,
@@ -55,8 +55,8 @@ def _maven_publish_impl(ctx):
         )
     ]
 
-maven_publish = rule(
-    _maven_publish_impl,
+sonatype_publish = rule(
+    _sonatype_publish_impl,
     doc = """Publish artifacts to a maven repository.
 
 The maven repository may accessed locally using a `file://` URL, or

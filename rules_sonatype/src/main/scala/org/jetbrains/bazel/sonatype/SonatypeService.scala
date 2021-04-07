@@ -1,15 +1,14 @@
 package org.jetbrains.bazel.sonatype
 
-import org.sonatype.spice.zapper.Path
-import org.sonatype.spice.zapper.fs.DirectoryIOSource
-
-import java.io.File
-import sbt.io.IO
-import wvlet.airframe.codec.MessageCodecFactory
-import wvlet.log.LogSupport
 import org.jetbrains.bazel.sonatype.SonatypeClient._
 import org.jetbrains.bazel.sonatype.SonatypeException.{MISSING_PROFILE, MISSING_STAGING_PROFILE, MULTIPLE_TARGETS, UNKNOWN_STAGE}
+import org.sonatype.spice.zapper.Path
+import wvlet.airframe.codec.MessageCodecFactory
+import wvlet.log.LogSupport
 
+import java.io.File
+import java.nio.file.Files
+import scala.io.Source
 import scala.util.Try
 
 /** Interface to access the REST API of Nexus
@@ -124,19 +123,31 @@ class SonatypeService(
     myProfiles
   }
 
+  private def read(file: File): String = {
+    val sourceFile = Source.fromFile(file)
+    val content =
+      try sourceFile.mkString
+      finally sourceFile.close()
+    content
+  }
+
+  private def write(file: File, content: String): Unit = {
+    Files.write(file.toPath, content.getBytes())
+  }
+
   private def withCache[A: scala.reflect.runtime.universe.TypeTag](fileName: String, a: => A): A = {
     val codec     = MessageCodecFactory.defaultFactoryForJSON.of[A]
     val cacheFile = new File(fileName)
     val value: A = if (cacheFile.exists() && cacheFile.length() > 0) {
       Try {
-        val json = IO.read(cacheFile)
+        val json = read(cacheFile)
         codec.fromJson(json)
       }.getOrElse(a)
     } else {
       a
     }
     cacheFile.getParentFile.mkdirs()
-    IO.write(cacheFile, codec.toJson(value))
+    write(cacheFile, codec.toJson(value))
     value
   }
 
