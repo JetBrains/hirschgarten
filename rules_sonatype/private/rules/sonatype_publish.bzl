@@ -59,10 +59,8 @@ sonatype_publish = rule(
     _sonatype_publish_impl,
     doc = """Publish artifacts to a maven repository.
 
-The maven repository may accessed locally using a `file://` URL, or
-remotely using an `https://` URL. The following flags may be set
-using `--define`:
-
+The maven repository may accessed locally remotely using an `https://` URL.
+The following flags may be set using `--define`:
   gpg_sign: Whether to sign artifacts using GPG
   maven_repo: A URL for the repo to use. May be "https" or "file".
   maven_user: The user name to use when uploading to the maven repository.
@@ -94,7 +92,7 @@ When signing with GPG, the current default key is used.
         "_uploader": attr.label(
             executable = True,
             cfg = "host",
-            default = "//src/main/scala/org/jetbrains/bazel/sonatype:SonatypePublisher",
+            default = "//src/main/scala/org/jetbrains/bazel/sonatype:SonatypeOpenAndPublish",
             allow_files = True,
         ),
     }

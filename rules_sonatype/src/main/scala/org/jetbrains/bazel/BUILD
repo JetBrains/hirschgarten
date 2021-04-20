@@ -49,3 +49,28 @@ scala_binary(
         "@maven//:org_backuity_clist_clist_macros_2_12",
     ],
 )
+
+scala_binary(
+    name = "SonatypeOpenAndPublish",
+    srcs = glob(["*.scala", "sonatype/*.scala"]),
+    scalacopts = [
+        "-encoding",
+        "UTF-8",
+        "-deprecation",
+        "-unchecked",
+    ],
+    main_class = "org.jetbrains.bazel.SonatypeOpen",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@maven//:org_sonatype_spice_zapper_spice_zapper",
+        "@maven//:org_wvlet_airframe_airframe_http_2_12",
+        "@maven//:org_wvlet_airframe_airframe_control_2_12",
+        "@maven//:org_wvlet_airframe_airframe_codec_2_12",
+        "@maven//:org_scala_lang_modules_scala_collection_compat_2_12",
+        "@maven//:org_apache_httpcomponents_httpclient",
+        "@maven//:org_scala_lang_modules_scala_java8_compat_2_12",
+        "@maven//:org_wvlet_airframe_airspec_2_12",
+        "@maven//:org_backuity_clist_clist_core_2_12",
+        "@maven//:org_backuity_clist_clist_macros_2_12",
+    ],
+)
