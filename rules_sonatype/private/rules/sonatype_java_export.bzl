@@ -1,5 +1,5 @@
-load("@rules_jvm_external//defs.bzl", "javadoc")
-load("@rules_jvm_external//defs.bzl", "pom_file")
+load("@rules_java//java:defs.bzl", "java_library")
+load("@rules_jvm_external//:defs.bzl", "javadoc", "pom_file")
 load("@rules_jvm_external//private/rules:maven_project_jar.bzl", "maven_project_jar")
 load("//private/rules:sonatype_publish.bzl", "sonatype_publish")
 
@@ -61,7 +61,7 @@ def sonatype_java_export(
     lib_name = "%s-lib" % name
 
     # Construct the java_library we'll export from here.
-    native.java_library(
+    java_library(
         name = lib_name,
         tags = tags,
         **kwargs

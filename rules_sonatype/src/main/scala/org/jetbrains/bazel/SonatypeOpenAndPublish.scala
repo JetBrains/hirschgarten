@@ -2,7 +2,7 @@ package org.jetbrains.bazel
 
 import org.backuity.clist.Cli
 
-object SonatypeOpen {
+object SonatypeOpenAndPublish {
   def main(args: Array[String]): Unit = {
     Cli.parse(args).withCommand(new SonatypeKeys) {
       keys: SonatypeKeys =>
