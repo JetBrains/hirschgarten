@@ -62,7 +62,7 @@ scala_binary(
         "*.scala",
         "sonatype/*.scala",
     ]),
-    main_class = "org.jetbrains.bazel.SonatypeOpen",
+    main_class = "org.jetbrains.bazel.SonatypeOpenAndPublish",
     scalacopts = [
         "-encoding",
         "UTF-8",
