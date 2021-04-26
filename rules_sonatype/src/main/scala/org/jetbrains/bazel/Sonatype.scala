@@ -20,9 +20,11 @@ class SonatypeKeys extends Command {
   arg[Option[String]](required = false, description = "Username for the sonatype repository")
   var sonatypePassword: Option[String] =
   arg[Option[String]](required = false, description = "Password for the sonatype repository")
+  var sonatypeProfileName: String =
+    arg[String](description = "Profile name at Sonatype: e.g. org.xerial")
   var sonatypeSessionName: Option[String] =
-    opt[Option[String]](description = "Used for identifying a sonatype staging repository")
-  var sonatypeCoordinates: String = arg[String](description = "Profile name at Sonatype: e.g. org.xerial")
+  opt[Option[String]](description = "Used for identifying a sonatype staging repository")
+  var sonatypeCoordinates: String = arg[String](description = "Coordinates at Sonatype: e.g. org.xerial.sbt-sonatype")
   var sonatypeTimeoutMillis: Int =
     opt[Int](default = 60 * 60 * 1000, description = "milliseconds before giving up Sonatype API requests")
   var sonatypeLogLevel: String =
@@ -64,7 +66,7 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
 
     new SonatypeService(
       sonatypeClient,
-      sonatypeSplitCoordinates.sonatypeGroupId
+      sonatypeKeys.sonatypeProfileName
     )
   }
 
