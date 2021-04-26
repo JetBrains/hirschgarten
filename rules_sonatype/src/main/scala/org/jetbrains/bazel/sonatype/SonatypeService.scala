@@ -67,11 +67,11 @@ class SonatypeService(
   def openRepositories   = stagingRepositoryProfiles().filter(_.isOpen).sortBy(_.repositoryId)
   def closedRepositories = stagingRepositoryProfiles().filter(_.isClosed).sortBy(_.repositoryId)
 
-  def uploadBundle(localBundlePath: File, remoteUrl: String, filesPaths: List[Path]): Unit = {
+  def uploadBundle(coordinatesGroupId: String, remoteUrl: String, filesPaths: List[Path]): Unit = {
     sonatypeClient.uploadBundle(
-      localBundlePath,
+      coordinatesGroupId,
       remoteUrl,
-      () => new DirectoryIOSourceMaven(localBundlePath, filesPaths)
+      () => new DirectoryIOSourceMaven(filesPaths)
     )
   }
 

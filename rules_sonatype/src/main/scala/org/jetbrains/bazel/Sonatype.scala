@@ -120,7 +120,7 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
     withSonatypeService() { rest =>
       val repo = prepare(rest)
       rest.uploadBundle(
-        Paths.get(sonatypeKeys.sonatypeProjectJar).getParent.toFile,
+        sonatypeSplitCoordinates.sonatypeGroupId,
         repo.deployUrl(sonatypeKeys.sonatypeRepository),
         filesPaths
       )
