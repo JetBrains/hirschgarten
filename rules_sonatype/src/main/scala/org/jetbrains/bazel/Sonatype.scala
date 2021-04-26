@@ -16,12 +16,12 @@ class SonatypeKeys extends Command {
       description = "Sonatype repository URL: e.g. https://oss.sonatype.org/service/local",
       default = "https://oss.sonatype.org/service/local"
     )
-  var sonatypeSessionName: Option[String] =
-    arg[Option[String]](required = false, description = "Used for identifying a sonatype staging repository")
   var sonatypeUsername: Option[String] =
-    arg[Option[String]](required = false, description = "Username for the sonatype repository")
+  arg[Option[String]](required = false, description = "Username for the sonatype repository")
   var sonatypePassword: Option[String] =
-    arg[Option[String]](required = false, description = "Password for the sonatype repository")
+  arg[Option[String]](required = false, description = "Password for the sonatype repository")
+  var sonatypeSessionName: Option[String] =
+    opt[Option[String]](description = "Used for identifying a sonatype staging repository")
   var sonatypeCoordinates: String = arg[String](description = "Profile name at Sonatype: e.g. org.xerial")
   var sonatypeTimeoutMillis: Int =
     opt[Int](default = 60 * 60 * 1000, description = "milliseconds before giving up Sonatype API requests")
