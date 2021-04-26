@@ -7,11 +7,13 @@ import java.io.File
 import java.util
 import scala.jdk.CollectionConverters._
 
-class DirectoryIOSourceMaven(root: File, filesPaths: List[Path]) extends DirectoryIOSource(root){
+class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(new File("").getCanonicalFile) {
   override def scanDirectory(dir: File, zfiles: util.List[ZFile]): Int = {
-    val files = filesPaths.map{path => {
-      createZFile(path)
-    }}.asJava
+    val files = filesPaths.map { path =>
+      {
+        createZFile(path)
+      }
+    }.asJava
 
     zfiles.addAll(files)
     0

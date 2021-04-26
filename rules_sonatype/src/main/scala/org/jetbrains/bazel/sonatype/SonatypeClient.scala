@@ -229,7 +229,7 @@ class SonatypeClient(
     httpClient.get[Seq[StagingActivity]](s"${pathPrefix}/staging/repository/${r.repositoryId}/activity")
   }
 
-  def uploadBundle(localBundlePath: File, remoteUrl: String, getDeployables: () => DirectoryIOSource): Unit = {
+  def uploadBundle(coordinateGroupId: String, remoteUrl: String, getDeployables: () => DirectoryIOSource): Unit = {
     retryer
       .retryOn {
         case e: IOException if e.getMessage.contains("400 Bad Request") =>
@@ -257,9 +257,9 @@ class SonatypeClient(
 
         val client = clientBuilder.build()
         try {
-          info(s"Uploading bundle ${localBundlePath} to ${endpoint}")
+          info(s"Uploading bundle ${coordinateGroupId} to ${endpoint}")
           client.upload(deployables)
-          info(s"Finished bundle upload: ${localBundlePath}")
+          info(s"Finished bundle upload: ${coordinateGroupId}")
         } finally {
           client.close()
         }
