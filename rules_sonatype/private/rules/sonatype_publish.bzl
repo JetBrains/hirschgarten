@@ -11,7 +11,7 @@ SonatypePublishInfo = provider(
 _TEMPLATE = """#!/usr/bin/env bash
 
 echo "Uploading {coordinates} to {maven_repo}"
-./uploader --sonatype-repository={maven_repo} {user} {password} {profile} {coordinates} artifact.jar source.jar doc.jar 
+./uploader --sonatype-repository={maven_repo} {user} {password} {profile} {coordinates} {artifact} {source} {doc} 
 """
 
 def _sonatype_publish_impl(ctx):
@@ -21,6 +21,14 @@ def _sonatype_publish_impl(ctx):
     user = ctx.var.get("maven_user", "''")
     password = ctx.var.get("maven_password", "''")
     profile = ctx.var.get("maven_profile", "''")
+    coordinates_split = ctx.attr.coordinates.split(":")
+    artifact = coordinates_split[1]
+    version = coordinates_split[2]
+    filename = "{}-{}".format(artifact, version)
+    artifact_jar = "%s.jar" % filename
+    docs_jar = "%s-javadoc.jar" % filename
+    sources_jar = "%s-sources.jar" % filename
+
 
     ctx.actions.write(
         output = executable,
@@ -31,6 +39,9 @@ def _sonatype_publish_impl(ctx):
             password = password,
             user = user,
             profile = profile,
+            artifact = artifact_jar,
+            source = sources_jar,
+            doc = docs_jar,
         ),
     )
 
@@ -40,9 +51,9 @@ def _sonatype_publish_impl(ctx):
             executable = executable,
             runfiles = ctx.runfiles(
                 symlinks = {
-                    "artifact.jar": ctx.file.artifact_jar,
-                    "doc.jar": ctx.file.javadocs,
-                    "source.jar": ctx.file.source_jar,
+                    artifact_jar: ctx.file.artifact_jar,
+                    docs_jar: ctx.file.javadocs,
+                    sources_jar: ctx.file.source_jar,
                     "uploader": ctx.executable._uploader,
                 },
                 collect_data = True,

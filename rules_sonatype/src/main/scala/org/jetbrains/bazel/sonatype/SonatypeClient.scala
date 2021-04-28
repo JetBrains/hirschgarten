@@ -2,7 +2,15 @@ package org.jetbrains.bazel.sonatype
 
 import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
 import org.apache.http.impl.client.BasicCredentialsProvider
-import org.jetbrains.bazel.sonatype.SonatypeClient.{ActivityMonitor, CreateStageResponse, StageTransitionRequest, StagingActivity, StagingProfile, StagingProfileResponse, StagingRepositoryProfile}
+import org.jetbrains.bazel.sonatype.SonatypeClient.{
+  ActivityMonitor,
+  CreateStageResponse,
+  StageTransitionRequest,
+  StagingActivity,
+  StagingProfile,
+  StagingProfileResponse,
+  StagingRepositoryProfile
+}
 import org.jetbrains.bazel.sonatype.SonatypeException._
 import org.sonatype.spice.zapper.ParametersBuilder
 import org.sonatype.spice.zapper.client.hc4.Hc4ClientBuilder
