@@ -12,6 +12,8 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import scala.jdk.CollectionConverters._
 import java.io.IOException
+import java.io.BufferedWriter
+import java.io.OutputStreamWriter
 
 class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(new File("").getCanonicalFile) {
 
@@ -70,11 +72,18 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
       "--armor",
       "--detach-sign",
       "--batch",
+      "--passphrase-fd",
+      "0",
       "--no-tty",
       "-o",
       signed.toAbsolutePath.toString,
       toSign.toAbsolutePath.toString
-    ).inheritIO.start
+    ).start
+
+    val writer = new BufferedWriter(new OutputStreamWriter(gpg.getOutputStream))
+    writer.write(sys.env.getOrElse("PGP_PASSPHRASE", "''"))
+    writer.flush()
+    writer.close()
     gpg.waitFor
     if (gpg.exitValue != 0) throw new IllegalStateException("Unable to sign: " + toSign)
 
