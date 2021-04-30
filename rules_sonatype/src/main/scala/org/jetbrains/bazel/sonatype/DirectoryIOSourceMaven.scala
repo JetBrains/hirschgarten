@@ -13,7 +13,7 @@ import java.security.NoSuchAlgorithmException
 import scala.jdk.CollectionConverters._
 import java.io.IOException
 
-class DirectoryIOSourceMaven(filesPaths: List[Path], passphrase: String) extends DirectoryIOSource(new File("").getCanonicalFile) {
+class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(new File("").getCanonicalFile) {
 
   def processFiles(filesPaths: List[Path]): List[Path] =
     filesPaths
@@ -71,8 +71,6 @@ class DirectoryIOSourceMaven(filesPaths: List[Path], passphrase: String) extends
       "--detach-sign",
       "--batch",
       "--no-tty",
-      "--passphrase",
-      passphrase,
       "-o",
       signed.toAbsolutePath.toString,
       toSign.toAbsolutePath.toString
