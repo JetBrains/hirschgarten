@@ -11,7 +11,7 @@ SonatypePublishInfo = provider(
 _TEMPLATE = """#!/usr/bin/env bash
 
 echo "Uploading {coordinates} to {maven_repo}"
-./uploader --sonatype-repository={maven_repo} {pgp_passphrase} {user} {password} {profile} {coordinates} {artifact} {source} {doc} 
+./uploader --sonatype-repository={maven_repo} {user} {password} {profile} {coordinates} {artifact} {source} {doc} 
 """
 
 def _sonatype_publish_impl(ctx):
@@ -21,7 +21,6 @@ def _sonatype_publish_impl(ctx):
     user = ctx.var.get("maven_user", "''")
     password = ctx.var.get("maven_password", "''")
     profile = ctx.var.get("maven_profile", "''")
-    pgp_passphrase = ctx.var.get("pgp_passphrase", "''")
     coordinates_split = ctx.attr.coordinates.split(":")
     artifact = coordinates_split[1]
     version = coordinates_split[2]
@@ -36,7 +35,6 @@ def _sonatype_publish_impl(ctx):
         is_executable = True,
         content = _TEMPLATE.format(
             coordinates = ctx.attr.coordinates,
-            pgp_passphrase = pgp_passphrase,
             maven_repo = maven_repo,
             password = password,
             user = user,
