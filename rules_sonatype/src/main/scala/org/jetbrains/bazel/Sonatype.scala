@@ -16,6 +16,8 @@ class SonatypeKeys extends Command {
       description = "Sonatype repository URL: e.g. https://oss.sonatype.org/service/local",
       default = "https://oss.sonatype.org/service/local"
     )
+  var pgpPassphrase: Option[String] =
+  arg[Option[String]](required = false, description = "Username for the sonatype repository")
   var sonatypeUsername: Option[String] =
   arg[Option[String]](required = false, description = "Username for the sonatype repository")
   var sonatypePassword: Option[String] =
@@ -122,7 +124,8 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
       rest.uploadBundle(
         sonatypeSplitCoordinates.sonatypeGroupId,
         repo.deployUrl(sonatypeKeys.sonatypeRepository),
-        filesPaths
+        filesPaths,
+        sonatypeKeys.pgpPassphrase.getOrElse("")
       )
       rest.closeAndPromote(repo)
     }
