@@ -21,17 +21,17 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
     filesPaths
       .map(file => Paths.get(file.stringValue()))
       .flatMap(file => {
+        val signed = Paths.get(s"${file.getFileName.toString}.asc")
+        sign(file, signed)
+        List(file, signed)
+      })
+      .flatMap(file => {
         val toHash = Files.readAllBytes(file)
         val md5    = Files.createFile(Paths.get(s"${file.getFileName.toString}.md5"))
         val sha1   = Files.createFile(Paths.get(s"${file.getFileName.toString}.sha1"))
         Files.write(md5, toMd5(toHash).getBytes(StandardCharsets.UTF_8))
         Files.write(sha1, toSha1(toHash).getBytes(StandardCharsets.UTF_8))
         List(file, md5, sha1)
-      })
-      .flatMap(file => {
-        val signed = Paths.get(s"${file.getFileName.toString}.asc")
-        sign(file, signed)
-        List(file, signed)
       })
       .map(file => new Path(file.getFileName.toString))
 
