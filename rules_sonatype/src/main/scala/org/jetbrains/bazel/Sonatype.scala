@@ -6,7 +6,6 @@ import org.jetbrains.bazel.sonatype.{SonatypeClient, SonatypeCoordinates, Sonaty
 import org.sonatype.spice.zapper.Path
 import wvlet.log.{LogLevel, LogSupport}
 
-import java.nio.file.Paths
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
@@ -17,13 +16,13 @@ class SonatypeKeys extends Command {
       default = "https://oss.sonatype.org/service/local"
     )
   var sonatypeUsername: Option[String] =
-  arg[Option[String]](required = false, description = "Username for the sonatype repository")
+    arg[Option[String]](required = false, description = "Username for the sonatype repository")
   var sonatypePassword: Option[String] =
-  arg[Option[String]](required = false, description = "Password for the sonatype repository")
+    arg[Option[String]](required = false, description = "Password for the sonatype repository")
   var sonatypeProfileName: String =
     arg[String](description = "Profile name at Sonatype: e.g. org.xerial")
   var sonatypeSessionName: Option[String] =
-  opt[Option[String]](description = "Used for identifying a sonatype staging repository")
+    opt[Option[String]](description = "Used for identifying a sonatype staging repository")
   var sonatypeCoordinates: String = arg[String](description = "Coordinates at Sonatype: e.g. org.xerial.sbt-sonatype")
   var sonatypeTimeoutMillis: Int =
     opt[Int](default = 60 * 60 * 1000, description = "milliseconds before giving up Sonatype API requests")
@@ -32,6 +31,7 @@ class SonatypeKeys extends Command {
   var sonatypeProjectJar: String        = arg[String](description = "Path to project jar")
   var sonatypeProjectSourcesJar: String = arg[String](description = "Path to project sources jar")
   var sonatypeProjectDocsJar: String    = arg[String](description = "Path to project docs jar")
+  var sonatypeProjectPom: String        = arg[String](description = "Path to project pom file")
 }
 
 class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
@@ -77,7 +77,8 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
   lazy val filesPaths: List[Path] = List(
     new Path(sonatypeKeys.sonatypeProjectJar),
     new Path(sonatypeKeys.sonatypeProjectSourcesJar),
-    new Path(sonatypeKeys.sonatypeProjectDocsJar)
+    new Path(sonatypeKeys.sonatypeProjectDocsJar),
+    new Path(sonatypeKeys.sonatypeProjectPom)
   )
 
   private def withSonatypeService()(
@@ -122,7 +123,7 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
       rest.uploadBundle(
         sonatypeSplitCoordinates.sonatypeGroupId,
         repo.deployUrl(sonatypeKeys.sonatypeRepository),
-        filesPaths,
+        filesPaths
       )
       rest.closeAndPromote(repo)
     }
