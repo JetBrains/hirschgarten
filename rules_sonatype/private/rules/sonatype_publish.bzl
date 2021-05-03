@@ -11,7 +11,7 @@ SonatypePublishInfo = provider(
 _TEMPLATE = """#!/usr/bin/env bash
 
 echo "Uploading {coordinates} to {maven_repo}"
-./uploader --sonatype-repository={maven_repo} {user} {password} {profile} {coordinates} {artifact} {source} {doc} 
+./uploader --sonatype-repository={maven_repo} {user} {password} {profile} {coordinates} {artifact} {source} {doc} {pom}
 """
 
 def _sonatype_publish_impl(ctx):
@@ -28,6 +28,7 @@ def _sonatype_publish_impl(ctx):
     artifact_jar = "%s.jar" % filename
     docs_jar = "%s-javadoc.jar" % filename
     sources_jar = "%s-sources.jar" % filename
+    pom_file = "%s.pom" % filename
 
 
     ctx.actions.write(
@@ -42,6 +43,7 @@ def _sonatype_publish_impl(ctx):
             artifact = artifact_jar,
             source = sources_jar,
             doc = docs_jar,
+            pom = pom_file,
         ),
     )
 
@@ -54,6 +56,7 @@ def _sonatype_publish_impl(ctx):
                     artifact_jar: ctx.file.artifact_jar,
                     docs_jar: ctx.file.javadocs,
                     sources_jar: ctx.file.source_jar,
+                    pom_file: ctx.file.pom,
                     "uploader": ctx.executable._uploader,
                 },
                 collect_data = True,

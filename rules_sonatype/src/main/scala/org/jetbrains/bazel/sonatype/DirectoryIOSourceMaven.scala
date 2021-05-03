@@ -3,17 +3,13 @@ package org.jetbrains.bazel.sonatype
 import org.sonatype.spice.zapper.fs.DirectoryIOSource
 import org.sonatype.spice.zapper.{Path, ZFile}
 
-import java.io.File
-import java.nio.file.{Files, Paths}
-import java.util
+import java.io.{BufferedWriter, File, IOException, OutputStreamWriter}
 import java.math.BigInteger
-import java.nio.charset.{Charset, StandardCharsets}
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
+import java.security.{MessageDigest, NoSuchAlgorithmException}
+import java.util
 import scala.jdk.CollectionConverters._
-import java.io.IOException
-import java.io.BufferedWriter
-import java.io.OutputStreamWriter
 
 class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(new File("").getCanonicalFile) {
 
