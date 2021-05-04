@@ -25,6 +25,7 @@ scala_binary(
         "@maven//:org_wvlet_airframe_airframe_control_2_12",
         "@maven//:org_wvlet_airframe_airframe_http_2_12",
         "@maven//:org_wvlet_airframe_airspec_2_12",
+        "@maven//:commons_codec_commons_codec",
     ],
 )
 
@@ -53,6 +54,7 @@ scala_binary(
         "@maven//:org_wvlet_airframe_airframe_control_2_12",
         "@maven//:org_wvlet_airframe_airframe_http_2_12",
         "@maven//:org_wvlet_airframe_airspec_2_12",
+        "@maven//:commons_codec_commons_codec",
     ],
 )
 
@@ -81,5 +83,6 @@ scala_binary(
         "@maven//:org_wvlet_airframe_airframe_control_2_12",
         "@maven//:org_wvlet_airframe_airframe_http_2_12",
         "@maven//:org_wvlet_airframe_airspec_2_12",
+        "@maven//:commons_codec_commons_codec",
     ],
 )
