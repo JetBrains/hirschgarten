@@ -19,14 +19,14 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
         sign(file, signed)
         List(file, signed)
       })
-//      .flatMap(file => {
-//        val toHash = Files.readAllBytes(file)
-//        val md5    = Files.createFile(Paths.get(s"${file.getFileName.toString}.md5"))
-//        val sha1   = Files.createFile(Paths.get(s"${file.getFileName.toString}.sha1"))
-//        Files.write(md5, toMd5(toHash))
-//        Files.write(sha1, toSha1(toHash))
-//        List(file, md5, sha1)
-//      })
+      .flatMap(file => {
+        val toHash = Files.readAllBytes(file)
+        val md5    = Files.createFile(Paths.get(s"${file.getFileName.toString}.md5"))
+        val sha1   = Files.createFile(Paths.get(s"${file.getFileName.toString}.sha1"))
+        Files.write(md5, toMd5(toHash))
+        Files.write(sha1, toSha1(toHash))
+        List(file, md5, sha1)
+      })
       .map(file => new Path(file.getFileName.toString))
 
   override def scanDirectory(dir: File, zfiles: util.List[ZFile]): Int = {
