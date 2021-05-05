@@ -22,9 +22,10 @@ def _sonatype_publish_impl(ctx):
     password = ctx.var.get("maven_password", "''")
     profile = ctx.var.get("maven_profile", "''")
     coordinates_split = ctx.attr.coordinates.split(":")
+    group_id = coordinates_split[0].replace(".", "/")
     artifact = coordinates_split[1]
     version = coordinates_split[2]
-    filename = "{}-{}".format(artifact, version)
+    filename = "{}/{}/{}/{}-{}".format(group_id, artifact, version, artifact, version)
     artifact_jar = "%s.jar" % filename
     docs_jar = "%s-javadoc.jar" % filename
     sources_jar = "%s-sources.jar" % filename
