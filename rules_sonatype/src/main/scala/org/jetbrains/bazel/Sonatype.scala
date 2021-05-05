@@ -71,7 +71,9 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
   }
 
   lazy val sonatypeSessionName: String = {
-    sonatypeKeys.sonatypeSessionName.getOrElse(s"[bazel-sonatype] ${sonatypeSplitCoordinates.sonatypeArtifactId} ${sonatypeSplitCoordinates.sonatypeVersion}")
+    sonatypeKeys.sonatypeSessionName.getOrElse(
+      s"[bazel-sonatype] ${sonatypeSplitCoordinates.sonatypeArtifactId} ${sonatypeSplitCoordinates.sonatypeVersion}"
+    )
   }
 
   lazy val filesPaths: List[Path] = List(
