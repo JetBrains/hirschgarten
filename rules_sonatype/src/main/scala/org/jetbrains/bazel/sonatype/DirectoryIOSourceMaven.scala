@@ -1,11 +1,13 @@
 package org.jetbrains.bazel.sonatype
 
-import org.apache.commons.codec.digest.DigestUtils
 import org.sonatype.spice.zapper.fs.DirectoryIOSource
 import org.sonatype.spice.zapper.{Path, ZFile}
 
 import java.io.{BufferedWriter, File, IOException, OutputStreamWriter}
+import java.math.BigInteger
+import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
+import java.security.{MessageDigest, NoSuchAlgorithmException}
 import java.util
 import scala.jdk.CollectionConverters._
 
@@ -27,8 +29,8 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
         Files.deleteIfExists(sha1Path)
         val md5  = Files.createFile(md5Path)
         val sha1 = Files.createFile(sha1Path)
-        Files.write(md5, toMd5(toHash))
-        Files.write(sha1, toSha1(toHash))
+        Files.write(md5, toMd5(toHash).getBytes(StandardCharsets.UTF_8))
+        Files.write(sha1, toSha1(toHash).getBytes(StandardCharsets.UTF_8))
         List(file, md5, sha1)
       })
       .map(file => new Path(file.toString))
@@ -45,9 +47,18 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
     0
   }
 
-  private def toSha1(toHash: Array[Byte]): Array[Byte] = DigestUtils.sha(toHash)
+  private def toSha1(toHash: Array[Byte]) = toHexS("%040x", "SHA-1", toHash)
 
-  private def toMd5(toHash: Array[Byte]): Array[Byte] = DigestUtils.md5(toHash)
+  private def toMd5(toHash: Array[Byte]) = toHexS("%032x", "MD5", toHash)
+
+  private def toHexS(fmt: String, algorithm: String, toHash: Array[Byte]) = try {
+    val digest = MessageDigest.getInstance(algorithm)
+    digest.update(toHash)
+    String.format(fmt, new BigInteger(1, digest.digest))
+  } catch {
+    case e: NoSuchAlgorithmException =>
+      throw new RuntimeException(e)
+  }
 
   @throws[IOException]
   @throws[InterruptedException]
