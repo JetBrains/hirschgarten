@@ -10,15 +10,14 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 class SonatypeKeys extends Command {
-  var sonatypeRepository: String =
-    opt[String](
-      description = "Sonatype repository URL: e.g. https://oss.sonatype.org/service/local",
-      default = "https://oss.sonatype.org/service/local"
-    )
   var sonatypeUsername: Option[String] =
-    arg[Option[String]](required = false, description = "Username for the sonatype repository")
+  arg[Option[String]](required = false, description = "Username for the sonatype repository")
   var sonatypePassword: Option[String] =
-    arg[Option[String]](required = false, description = "Password for the sonatype repository")
+  arg[Option[String]](required = false, description = "Password for the sonatype repository")
+  var sonatypeRepository: String =
+    arg[String](
+      description = "Sonatype repository URL: e.g. https://oss.sonatype.org/service/local",
+    )
   var sonatypeProfileName: String =
     arg[String](description = "Profile name at Sonatype: e.g. org.xerial")
   var sonatypeSessionName: Option[String] =
