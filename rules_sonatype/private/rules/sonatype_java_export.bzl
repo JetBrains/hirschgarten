@@ -6,6 +6,7 @@ load("//private/rules:sonatype_publish.bzl", "sonatype_publish")
 def sonatype_java_export(
         name,
         maven_coordinates,
+        maven_profile,
         pom_template = None,
         visibility = None,
         tags = [],
@@ -106,6 +107,7 @@ def sonatype_java_export(
     sonatype_publish(
         name = "%s.publish" % name,
         coordinates = maven_coordinates,
+        maven_profile = maven_profile,
         pom = "%s-pom" % name,
         javadocs = "%s-docs" % name,
         artifact_jar = ":%s-maven-artifact" % name,

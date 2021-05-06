@@ -11,16 +11,16 @@ SonatypePublishInfo = provider(
 _TEMPLATE = """#!/usr/bin/env bash
 
 echo "Uploading {coordinates} to {maven_repo}"
-./uploader --sonatype-repository={maven_repo} {user} {password} {profile} {coordinates} {artifact} {source} {doc} {pom}
+./uploader {user} {password} {maven_repo} {profile} {coordinates} {artifact} {source} {doc} {pom}
 """
 
 def _sonatype_publish_impl(ctx):
     executable = ctx.actions.declare_file("%s-publisher" % ctx.attr.name)
 
-    maven_repo = ctx.var.get("maven_repo", "''")
+    maven_repo = ctx.var.get("maven_repo", "https://oss.sonatype.org/service/local")
     user = ctx.var.get("maven_user", "''")
     password = ctx.var.get("maven_password", "''")
-    profile = ctx.var.get("maven_profile", "''")
+    profile = ctx.attr.maven_profile
     coordinates_split = ctx.attr.coordinates.split(":")
     group_id = coordinates_split[0].replace(".", "/")
     artifact = coordinates_split[1]
@@ -90,6 +90,9 @@ When signing with GPG, the current default key is used.
         "coordinates": attr.string(
             mandatory = True,
         ),
+        "maven_profile": attr.string(
+            mandatory = True,
+        ),
         "pom": attr.label(
             mandatory = True,
             allow_single_file = True,
@@ -109,7 +112,7 @@ When signing with GPG, the current default key is used.
         "_uploader": attr.label(
             executable = True,
             cfg = "host",
-            default = "//src/main/scala/org/jetbrains/bazel:SonatypeOpenAndPublish",
+            default = "//src/main/scala/org/jetbrains/bazel:SonatypePublisher",
             allow_files = True,
         ),
     },
