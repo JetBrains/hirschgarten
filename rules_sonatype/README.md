@@ -10,238 +10,93 @@ A set of rules for publishing your project to the Maven Central repository throu
      * Create a Sonatype account
      * Create a GPG key
      * Open a JIRA ticket to get a permission for synchronizing your project to the Central Repository (aka Maven Central).
+   * GPG key must be available as the default key on the machine
     
 ## Configurations
+In the Workspace file, the following must be added in order install:
+- [rules_scala](https://github.com/bazelbuild/rules_scala)
+- [rules_jvm_external](https://github.com/bazelbuild/rules_jvm_external)
 
-### project/plugins.sbt
 
-Import ***sbt-sonatype*** plugin and [sbt-pgp plugin](http://www.scala-sbt.org/sbt-pgp/) to use `sonatypeBundleRelease` and `publishSigned`
-commands:
-```scala
-// For sbt 1.x (sbt-sonatype 2.3 or higher)
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "(version)")
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "2.0.1")
+```python
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-// For sbt 0.13.x (upto sbt-sonatype 2.3)
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "(version)")
-addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
-```
+skylib_version = "1.0.3"
 
- * If downloading the sbt-sonatype plugin fails, check the repository in the Maven central: <https://repo1.maven.org/maven2/org/xerial/sbt/sbt-sonatype_2.12_1.0>. It will be usually synced within 10 minutes.
-
-### build.sbt
-
-To use sbt-sonatype, you need to create a bundle of your project artifacts (e.g., .jar, .javadoc, .asc files, etc.) into a local folder specified by `sonatypeBundleDirectory`. By default the folder is `(project root)/target/sonatype-staging/(version)`. Add the following `publishTo` setting to create a local bundle of your project:
-```scala
-publishTo := sonatypePublishToBundle.value
-```
-With this setting, `publishSigned` will create a bundle of your project to the local staging folder. If the project has multiple modules, all of the artifacts will be assembled into the same folder to create a single bundle.
-
-If `isSnapshot.value` is true (e.g., if the version name contains -SNAPSHOT), publishSigned task will upload files to the Sonatype Snapshots repository without using the local bundle folder.
-
-If necessary, you can tweak several configurations:
-```scala
-// [Optional] The local staging folder name:
-sonatypeBundleDirectory := (ThisBuild / baseDirectory).value / target.value.getName / "sonatype-staging" / (ThisBuild / version).value
-
-// [Optional] If you need to manage unique session names by yourself, change this default setting:
-sonatypeSessionName := s"[sbt-sonatype] ${name.value} ${version.value}"
-
-// [Optional] Timeout until giving up sonatype close/promote stages. Default is 60 min.
-sonatypeTimeoutMillis := 60 * 60 * 1000 
-
-// [If you cannot use bundle upload] Use this setting when you need to uploads artifacts directly to Sonatype
-// With this setting, you cannot use sonatypeBundleXXX commands
-publishTo := sonatypePublishTo.value
-```
-
-### $HOME/.sbt/(sbt-version 0.13 or 1.0)/sonatype.sbt
-
-For the authentication to Sonatype API, you need to set your Sonatype account information (user name and password) in the global sbt settings. To protect your password, never include this file within your project.
-
-```scala
-credentials += Credentials("Sonatype Nexus Repository Manager",
-        "oss.sonatype.org",
-        "(Sonatype user name)",
-        "(Sonatype password)")
-```
-
-### (project root)/sonatype.sbt
-
-sbt-sonatype is an auto-plugin, which will automatically configure your build. There are a few settings though that you need to define by yourself:
-
-  * `sonatypeProfileName`
-     * This is your Sonatype acount profile name, e.g. `org.xerial`. If you do not set this value, it will be the same with the `organization` value.
-  * `pomExtra`
-     * A fragment of Maven's pom.xml. You must define url, licenses, scm and developers tags in this XML to satisfy [Central Repository sync requirements](http://central.sonatype.org/pages/requirements.html).
-
-Example settings:
-```scala
-// Your profile name of the sonatype account. The default is the same with the organization value
-sonatypeProfileName := "(your organization. e.g., org.xerial)"
-
-// To sync with Maven central, you need to supply the following information:
-publishMavenStyle := true
-
-// Open-source license of your choice
-licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
-
-// Where is the source code hosted: GitHub or GitLab?
-import xerial.sbt.Sonatype._
-sonatypeProjectHosting := Some(GitHubHosting("username", "projectName", "user@example.com"))
-// or
-sonatypeProjectHosting := Some(GitLabHosting("username", "projectName", "user@example.com"))
-
-// or if you want to set these fields manually
-homepage := Some(url("https://(your project url)"))
-scmInfo := Some(
-  ScmInfo(
-    url("https://github.com/(account)/(project)"),
-    "scm:git@github.com:(account)/(project).git"
-  )
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "1c531376ac7e5a180e0237938a2536de0c54d93f5c278634818e0efc952dd56c",
+    type = "tar.gz",
+    url = "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/{}/bazel-skylib-{}.tar.gz".format(skylib_version, skylib_version),
 )
-developers := List(
-  Developer(id="(your id)", name="(your name)", email="(your e-mail)", url=url("(your home page)"))
+
+rules_scala_version = "9bd9ffd3e52ab9e92b4f7b43051d83231743f231"
+
+http_archive(
+    name = "io_bazel_rules_scala",
+    sha256 = "438bc03bbb971c45385fde5762ab368a3321e9db5aa78b96252736d86396a9da",
+    strip_prefix = "rules_scala-%s" % rules_scala_version,
+    type = "zip",
+    url = "https://github.com/bazelbuild/rules_scala/archive/%s.zip" % rules_scala_version,
+)
+
+scala_config()
+
+load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
+
+scala_repositories()
+
+load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
+
+scala_register_toolchains()
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+RULES_JVM_EXTERNAL_TAG = "4.0"
+RULES_JVM_EXTERNAL_SHA = "31701ad93dbfe544d597dbe62c9a1fdd76d81d8a9150c2bf1ecf928ecdf97169"
+
+http_archive(
+    name = "rules_jvm_external",
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
+)
+
+#TODO: Change this to the proper version
+BAZEL_SONATYPE_TAG = "42619afdae25eeabf642f66e41f9e1dfbfaa50e2"
+http_archive(
+    name = "bazel_sonatype",
+    strip_prefix = "sbt-sonatype-%s" % BAZEL_SONATYPE_TAG,
+    url = "https://github.com/andrefmrocha/sbt-sonatype/archive/%s.zip" % BAZEL_SONATYPE_TAG,
+)
+
+load("@bazel_sonatype//:defs.bzl", "sonatype_dependencies")
+
+sonatype_dependencies()
+```
+A `sonatype_java_export` must be defined in order to publish. This is similar to a java_library but with some new parameters:
+
+```python
+# /src/BUILD
+load("@bazel_sonatype//:defs.bzl", "sonatype_java_export")
+
+sonatype_java_export(
+    name = "project_name",
+    maven_coordinates = "com.example:project:0.0.1",
+    maven_profile = "com.example",
+    pom_template = "//:pom.xml", # Omittable
+    srcs = glob(["*.java"]),
+    deps = [
+        "//src",
+    ],
 )
 ```
 
-## Publishing Your Artifact
-
-The basic steps for publishing your artifact to the Central Repository are as follows:
-
-  * `publishSigned` to deploy your artifact to a local staging repository.
-  * `sonatypeBundleRelease` (since sbt-sonatype 3.4)
-    * This command is equivalent to running `; sonatypePrepare; sonatypeBundleUpload; sonatypeRelease`.
-    * Internally `sonatypeRelease` will do `sonatypeClose` and `sonatypePromote` in one step.
-      * `sonatypeClose` closes your staging repository at Sonatype. This step verifies Maven central sync requirement, GPG-signature, javadoc
-   and source code presence, pom.xml settings, etc.
-      * `sonatypePromote` command verifies the closed repository so that it can be synchronized with Maven central.
-
-Note: If your project version has "SNAPSHOT" suffix, your project will be published to the [snapshot repository](http://oss.sonatype.org/content/repositories/snapshots) of Sonatype, and you cannot use `sonatypeBundleUpload` or `sonatypeRelease` command.
-
-## Commands
-
-Usually, we only need to run `sonatypeBundleRelease` command in sbt-sonatype:
-* __sonatypeBundleRelease__
-  * This will run a sequence of commands `; sonatypePrepare; sonatypeBundleUpload; sonatypeRelease` in one step.
-  * You must run `publishSigned` before this command to create a local staging bundle.
-
-### Individual Step Commands
-* __sonatypePrepare__
-  * Drop the exising staging repositories (if exist) and create a new staging repository using `sonatypeSessionName` as a unique key.
-  * This will update `sonatypePublishTo` setting.
-  * For cross-build projects, make sure running this command only once at the beginning of the release process.
-    * Usually using sonatypeBundleUpload should be sufficient, but if you need to parallelize artifact uploads, run `sonatypeOpen` before each upload to reuse the already created stging repository.
-* __sonatypeBundleUpload__
-  * Upload your local staging folder contents to a remote Sonatype repository.
-* __sonatypeOpen__
-  * This command is necessary only when you need to parallelize `publishSigned` task. For small/medium-size projects, using only `sonatypePrepare` would work.
-  * This opens the existing staging repository using `sonatypeSessionName` as a unique key. If it doesn't exist, create a new one. It will update`sonatypePublishTo`
-* __sonatypeRelease__ (repositoryId)?
-  * Close (if needed) and promote a staging repository. After this command, the uploaded artifacts will be synchronized to Maven central.
-
-### Batch Operations
-* __sonatypeDropAll__ (sonatypeProfileName)?
-   * Drop all staging repositories.
-* __sonatypeReleaseAll__ (sonatypeProfileName)?
-  * Close and promote all staging repositories (Useful for cross-building projects)
-
-## Other Commmands
-* __sonatypeBundleClean__
-  * Clean a local bundle folder
-* __sonatypeClean__
-  * Clean a remote staging repository which has `sonatypeSessionName` key.
-* __sonatypeStagingProfiles__
-  * Show the list of staging profiles, which include profileName information.
-* __sonatypeLog__
-  * Show the staging activity logs
-* __sonatypeClose__
-  * Close the open staging repository (= requirement verification)
-* __sonatypePromote__
-  * Promote the closed staging repository (= sync to Maven central)
-* __sonatypeDrop__
-  * Drop an open or closed staging repository
-
-## Advanced Build Settings
-
-### Sequential Upload Release (Use this for small projects)
-
-```scala
-> ; publishSigned; sonatypeBundleRelease
+Publishing can now be done using `bazel run`:
 ```
-
-For cross-building projects, use `+ publishSigned`:
-```scala
-> ; + publishSigned; sonatypeBundleRelease
+bazel run --stamp \
+  --define "maven_repo=https://oss.sonatype.org/service/local" \
+  --define "maven_user=user" \
+  --define "maven_password=password" \
+  //:dummy-sonatype.publish
 ```
-### Parallelizing Builds When Sharing A Working Folder
-
-When you are sharing a working folder, you can parallelize publishSigned step for each module or for each Scala binary version:
-
-- Run multiple publishSigned tasks in parallel
-- Finally, run `sonatypeBundleRelease`
-
-### Parallelizing Builds When Not Sharing Any Working Folder
-
-If you are not sharing any working directory (e.g., Travis CI), to parallelize the release process, you need to publish a bundle for each build because Sonatype API only supports uploading one bundle per a staging repository.
-
-Here is an example to parallelize your build for each Scala binary version:
-  - Set `sonatypeSessionName := "[sbt-sonatype] ${name.value}-${scalaBinaryVersion.value}-${version.value}"` to use unique session keys for individual Scala binary versions.
-  - For each Scala version, run: `sbt ++(Scala version) "; publishSigned; sonatypeBundleRelease"`
-
-For sbt-sonatype 2.x:
-* [Example workflow for creating & publishing to a staging repository](workflow.md)
-
-## Using with sbt-release plugin
-
-To perform publishSigned and sonatypeBundleRelease with [sbt-release](https://github.com/sbt/sbt-release) plugin, define your custom release process as follows:
-
-```scala
-import ReleaseTransformations._
-
-releaseCrossBuild := true // true if you cross-build the project for multiple Scala versions
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  runTest,
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  // For non cross-build projects, use releaseStepCommand("publishSigned")
-  releaseStepCommandAndRemaining("+publishSigned"),
-  releaseStepCommand("sonatypeBundleRelease"),
-  setNextVersion,
-  commitNextVersion,
-  pushChanges
-)
-```
-
-## Publishing Maven Projects
-
-If your Maven project (including Gradle, etc.) is already deployed to the staging repository of Sonatype, you can use `sbt sonatypeReleaseAll (sonatypeProfileName)` command
-for the synchronization to the Maven central (Since version 0.5.1).
-
-Prepare the following two files:
-
-### $HOME/.sbt/(sbt-version 0.13 or 1.0)/plugins/plugins.sbt
-
-```scala
-addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "(version)")
-```
-
-### $HOME/.sbt/(sbt-version 0.13 or 1.0)/sonatype.sbt
-```scala
-credentials += Credentials("Sonatype Nexus Repository Manager",
-        "oss.sonatype.org",
-        "(Sonatype user name)",
-        "(Sonatype password)")
-```
-
-Alternatively, the credentials can also be set with the environment variables `SONATYPE_USERNAME` and `SONATYPE_PASSWORD`.
-
-Then, run `sonatypeReleaseAll` command by specifying your `sonatypeProfileName`. If this is `org.xerial`, run:
-```
-$ sbt "sonatypeReleaseAll org.xerial"
-```
-
