@@ -2,35 +2,19 @@ workspace(name = "bazel_sonatype")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-RULES_JVM_EXTERNAL_TAG = "3.3"
-
-RULES_JVM_EXTERNAL_SHA = "d85951a92c0908c80bd8551002d66cb23c3434409c814179c0ff026b53544dab"
+RULES_JVM_EXTERNAL_TAG = "4.0"
+RULES_JVM_EXTERNAL_SHA = "31701ad93dbfe544d597dbe62c9a1fdd76d81d8a9150c2bf1ecf928ecdf97169"
 
 http_archive(
     name = "rules_jvm_external",
-    sha256 = RULES_JVM_EXTERNAL_SHA,
     strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    sha256 = RULES_JVM_EXTERNAL_SHA,
     url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
 )
 
-load("@rules_jvm_external//:defs.bzl", "maven_install")
+load("@bazel_sonatype//:defs.bzl", "sonatype_dependencies")
 
-maven_install(
-    artifacts = [
-        "org.sonatype.spice.zapper:spice-zapper:1.3",
-        "org.wvlet.airframe:airframe-http_2.12:20.12.1",
-        "org.scala-lang.modules:scala-java8-compat_2.12:0.9.1",
-        "org.wvlet.airframe:airspec_2.12:20.12.1",
-        "org.backuity.clist:clist-core_2.12:3.5.1",
-        "org.backuity.clist:clist-macros_2.12:3.5.1",
-    ],
-    generate_compat_repositories = True,
-    repositories = [
-        "https://jcenter.bintray.com/",
-        "https://maven.google.com",
-        "https://repo1.maven.org/maven2",
-    ],
-)
+sonatype_dependencies()
 
 skylib_version = "1.0.3"
 
@@ -41,11 +25,11 @@ http_archive(
     url = "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/{}/bazel-skylib-{}.tar.gz".format(skylib_version, skylib_version),
 )
 
-rules_scala_version = "9bd9ffd3e52ab9e92b4f7b43051d83231743f231"
+rules_scala_version = "5df8033f752be64fbe2cedfd1bdbad56e2033b15"
 
 http_archive(
     name = "io_bazel_rules_scala",
-    sha256 = "438bc03bbb971c45385fde5762ab368a3321e9db5aa78b96252736d86396a9da",
+    sha256 = "b7fa29db72408a972e6b6685d1bc17465b3108b620cb56d9b1700cf6f70f624a",
     strip_prefix = "rules_scala-%s" % rules_scala_version,
     type = "zip",
     url = "https://github.com/bazelbuild/rules_scala/archive/%s.zip" % rules_scala_version,
@@ -55,13 +39,10 @@ http_archive(
 # 2.12 is a default version, other versions can be use by passing them explicitly:
 # scala_config(scala_version = "2.11.12")
 load("@io_bazel_rules_scala//:scala_config.bzl", "scala_config")
-
-scala_config("2.12.6")
+scala_config()
 
 load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
-
 scala_repositories()
 
 load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
-
 scala_register_toolchains()
