@@ -1,24 +1,7 @@
-sbt-sonatype plugin
+bazel-sonatype 
 ======
 
-A sbt plugin for publishing your project to the Maven central repository through the REST API of Sonatype Nexus. Deploying artifacts to Sonatype repository is a requirement for synchronizing your projects to the [Maven central repository](https://repo1.maven.org/maven2/). __sbt-sonatype__ plugin enables two-step release of your Scala/Java projects.
-
- * `publishSigned` (with [sbt-pgp plugin](http://www.scala-sbt.org/sbt-pgp/))
-    * Create GPG signed artifacts to a local staging repository.
-    * Make sure adding `publishTo := sonatypePublishToBundle.value` to your build.sbt
- * `sonatypeBundleRelease` (New in sbt-sonatype 3.4)
-    * This command will prepare a new remote staging repository at Sonatype. If there are exisiting staging repositories that have the same description with `sonatypeSessionName` key, sbt-sonatype will discard them properly.
-    * Then, it will upload the artifacts in the local staging folder to the remote staging repository. Uploading artifacts as a bundle is much faster than uploading each artifact to Sonatype. For example, thousands of files can be uploaded in several minutes with bundle upload.
-    * Finally, this command will perform the close and release steps at the Sonatype Nexus repository to verify the Maven central requirements.
-
- After these steps, your project will be synchronized to the Maven central within ten minutes. No longer need to enter the web interface of
- [Sonatype Nexus repository](http://oss.sonatype.org/) to performe these release steps.
-
-
-- [Release notes](ReleaseNotes.md)
-- sbt-sonatype is available for sbt 1.x series.
-- You can also use sbt-sonatype for [publishing non-sbt projects](README.md#publishing-maven-projects) (e.g., Maven, Gradle, etc.)
-- [Blazingly Fast Release to Sonatype](https://medium.com/@taroleo/sbt-sonatype-f02bdafd78f1)
+A set of rules for publishing your project to the Maven Central repository through the REST API of Sonatype Nexus. Allows releasing Java projects to the [Maven central repository](https://repo1.maven.org/maven2/).
 
 ## Prerequisites
 
@@ -27,14 +10,8 @@ A sbt plugin for publishing your project to the Maven central repository through
      * Create a Sonatype account
      * Create a GPG key
      * Open a JIRA ticket to get a permission for synchronizing your project to the Central Repository (aka Maven Central).
-
- * Related articles:
-    * [Deploying to Sonatype - sbt Documentation](http://www.scala-sbt.org/release/docs/Community/Using-Sonatype.html)
-    * [Uploading to a Staging Repository via REST API](https://support.sonatype.com/hc/en-us/articles/213465868-Uploading-to-a-Staging-Repository-via-REST-API)
-
+    
 ## Configurations
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sonatype/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.xerial.sbt/sbt-sonatype)
 
 ### project/plugins.sbt
 
