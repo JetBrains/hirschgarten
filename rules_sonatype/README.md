@@ -95,7 +95,7 @@ sonatype_java_export(
 Publishing can now be done using `bazel run`:
 ```
 bazel run --stamp \
-  --define "maven_repo=https://oss.sonatype.org/service/local" \
+  --define "maven_repo=https://oss.sonatype.org/service/local" \ # Defaults to the legacy Sonatype repository
   --define "maven_user=user" \
   --define "maven_password=password" \
   //:dummy-sonatype.publish
