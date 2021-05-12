@@ -49,6 +49,7 @@ def _rules_jvm_publish(ctx, executable, maven_repo, gpg_sign, user, password, up
         ).merge(uploader_attr[DefaultInfo].data_runfiles),
     )
 
+
 def _sonatype_publish(ctx, executable, maven_repo, user, password, profile, group_id, artifact, version, uploader_attr,
                       uploader_exec):
     filename = "{}/{}/{}/{}-{}".format(group_id, artifact, version, artifact, version)
@@ -102,11 +103,12 @@ def _publish(ctx):
     password = ctx.var.get("maven_password", "''")
 
     if maven_repo.startswith("file://"):
-        return _rules_jvm_publish(ctx, executable, maven_repo, 'false', user, password,
+        return _rules_jvm_publish(ctx, executable, maven_repo, ctx.var.get("gpg_sign", "false"), user, password,
                                   ctx.attr._rules_jvm_external_uploader,
                                   ctx.executable._rules_jvm_external_uploader)
     elif version.endswith("-SNAPSHOT"):
-        return _rules_jvm_publish(ctx, executable, "{}/local/staging/deploy/maven2".format(maven_repo), 'true', user,
+        return _rules_jvm_publish(ctx, executable, "{}/local/staging/deploy/maven2".format(maven_repo),
+                                  ctx.var.get("gpg_sign", "true"), user,
                                   password, ctx.attr._rules_jvm_external_uploader,
                                   ctx.executable._rules_jvm_external_uploader)
     else:
@@ -179,7 +181,7 @@ When signing with GPG, the current default key is used.
         "_rules_jvm_external_uploader": attr.label(
             executable=True,
             cfg="host",
-            default="@rules_jvm_external//private/tools/java/rules/jvm/external/maven:MavenPublisher",
+            default="//src/main/java/org/jetbrains/bazel:MavenPublisher",
             allow_files=True,
         )
     },
