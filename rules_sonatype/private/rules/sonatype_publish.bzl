@@ -107,7 +107,7 @@ def _publish(ctx):
                                   ctx.attr._rules_jvm_external_uploader,
                                   ctx.executable._rules_jvm_external_uploader)
     elif version.endswith("-SNAPSHOT"):
-        return _rules_jvm_publish(ctx, executable, "{}/local/staging/deploy/maven2".format(maven_repo),
+        return _rules_jvm_publish(ctx, executable, "{}/staging/deploy/maven2/".format(maven_repo),
                                   ctx.var.get("gpg_sign", "true"), user,
                                   password, ctx.attr._rules_jvm_external_uploader,
                                   ctx.executable._rules_jvm_external_uploader)
