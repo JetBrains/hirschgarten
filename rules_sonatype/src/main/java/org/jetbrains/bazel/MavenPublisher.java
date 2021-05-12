@@ -189,10 +189,7 @@ public class MavenPublisher {
                 }
 
                 if (code < 200 || code > 299) {
-                    try (InputStream in = connection.getErrorStream()) {
-                        String message = new String(ByteStreams.toByteArray(in));
-                        throw new IOException(String.format("Unable to upload %s (%s) %s", targetUrl, code, message));
-                    }
+                    throw new IOException(String.format("Unable to upload %s (%s)", targetUrl, code));
                 }
             }
             LOG.info(String.format("Upload to %s complete.", targetUrl));
@@ -226,14 +223,17 @@ public class MavenPublisher {
                 "--use-agent",
                 "--armor",
                 "--detach-sign",
+                "--no-tty",
                 "--batch",
                 "--passphrase-fd",
                 "0",
-                "--no-tty",
                 "-o",
                 file.toAbsolutePath().toString(),
                 toSign.toAbsolutePath().toString()
-        ).start();
+        )
+                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                .redirectError(ProcessBuilder.Redirect.INHERIT)
+                .start();
 
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(gpg.getOutputStream()));
         writer.write(System.getenv().getOrDefault("PGP_PASSPHRASE", "''"));
