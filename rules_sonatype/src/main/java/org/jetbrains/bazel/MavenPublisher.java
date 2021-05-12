@@ -96,7 +96,7 @@ public class MavenPublisher {
 
         String base = String.format(
                 "%s/%s/%s/%s/%s-%s",
-                repo.replaceAll("/$", ""),
+                repo,
                 coords.groupId.replace('.', '/'),
                 coords.artifactId,
                 coords.version,
@@ -189,7 +189,10 @@ public class MavenPublisher {
                 }
 
                 if (code < 200 || code > 299) {
-                    throw new IOException(String.format("Unable to upload %s (%s)", targetUrl, code));
+                    try (InputStream in = connection.getInputStream()) {
+                        String message = new String(ByteStreams.toByteArray(in));
+                        throw new IOException(String.format("Unable to upload %s (%s) %s", targetUrl, code, message));
+                    }
                 }
             }
             LOG.info(String.format("Upload to %s complete.", targetUrl));
