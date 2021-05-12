@@ -26,7 +26,7 @@ def _rules_jvm_publish(ctx, executable, maven_repo, gpg_sign, user, password, up
         output=executable,
         is_executable=True,
         content=_RULES_JVM_TEMPLATE.format(
-            coordinates=ctx.attr.coordinates,
+            coordinates=ctx.attr.coordinates.replace("-SNAPSHOT", ""),
             gpg_sign=gpg_sign,
             maven_repo=maven_repo,
             password=password,

@@ -96,7 +96,7 @@ public class MavenPublisher {
 
         String base = String.format(
                 "%s/%s/%s/%s/%s-%s",
-                repo,
+                repo.replaceAll("/$", ""),
                 coords.groupId.replace('.', '/'),
                 coords.artifactId,
                 coords.version,
