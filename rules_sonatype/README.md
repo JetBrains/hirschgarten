@@ -100,3 +100,39 @@ bazel run --stamp \
   --define "maven_password=password" \
   //:dummy-sonatype.publish
 ```
+
+It is also possible to publish a snapshot of a build. This can be done by guaranteeing that the version in the `sonatype_java_export`'s coordinates ends with -SNAPSHOT
+
+```python
+# /src/BUILD
+load("@bazel_sonatype//:defs.bzl", "sonatype_java_export")
+
+sonatype_java_export(
+    name = "project_name",
+    maven_coordinates = "com.example:project:0.0.1-SNAPSHOT",
+    maven_profile = "com.example",
+    pom_template = "//:pom.xml", # Omittable
+    srcs = glob(["*.java"]),
+    deps = [
+        "//src",
+    ],
+)
+```
+
+And then running `bazel run`:
+```
+bazel run --stamp \
+  --define "maven_repo=https://oss.sonatype.org/service/local" \ # Defaults to the legacy Sonatype repository
+  --define "maven_user=user" \
+  --define "maven_password=password" \
+  --define "gpg_sign=true" \ # Defaults to true
+  //:dummy-sonatype.publish
+```
+
+Publishing locally all the artifacts is also possible, if a file based url is provided for `bazel run`:
+```
+bazel run --stamp \
+  --define "maven_repo=file://$HOME/.m2/repository" \ # Defaults to the legacy Sonatype repository
+  --define "gpg_sign=false" \ # Defaults to false
+  //:dummy-sonatype.publish
+```
