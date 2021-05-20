@@ -3,6 +3,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 def sonatype_dependencies():
     maven_install(
+        name = "bazel_sonatype_deps",
         artifacts = [
             "org.sonatype.spice.zapper:spice-zapper:1.3",
             "org.wvlet.airframe:airframe-http_2.12:20.12.1",
