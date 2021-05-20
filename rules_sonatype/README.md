@@ -98,7 +98,7 @@ bazel run --stamp \
   --define "maven_repo=https://oss.sonatype.org/service/local" \ # Defaults to the legacy Sonatype repository
   --define "maven_user=user" \
   --define "maven_password=password" \
-  //:dummy-sonatype.publish
+  //src:project_name.publish
 ```
 
 It is also possible to publish a snapshot of a build. This can be done by guaranteeing that the version in the `sonatype_java_export`'s coordinates ends with -SNAPSHOT
@@ -126,7 +126,7 @@ bazel run --stamp \
   --define "maven_user=user" \
   --define "maven_password=password" \
   --define "gpg_sign=true" \ # Defaults to true
-  //:dummy-sonatype.publish
+  //src:project_name.publish
 ```
 
 Publishing locally all the artifacts is also possible, if a file based url is provided for `bazel run`:
@@ -134,5 +134,5 @@ Publishing locally all the artifacts is also possible, if a file based url is pr
 bazel run --stamp \
   --define "maven_repo=file://$HOME/.m2/repository" \ # Defaults to the legacy Sonatype repository
   --define "gpg_sign=false" \ # Defaults to false
-  //:dummy-sonatype.publish
+  //src:project_name.publish
 ```
