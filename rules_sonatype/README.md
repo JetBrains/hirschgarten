@@ -84,13 +84,63 @@ sonatype_java_export(
     name = "project_name",
     maven_coordinates = "com.example:project:0.0.1",
     maven_profile = "com.example",
-    pom_template = "//:pom.xml", # Omittable
+    pom_template = "//:pom.xml", # Omittable but sonatype will reject reject publishing without more information than the template has
     srcs = glob(["*.java"]),
     deps = [
         "//src",
     ],
 )
 ```
+
+The pom file must be defined for publishing to Sonatype's Release, with the following format:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>{groupId}</groupId>
+    <artifactId>{artifactId}</artifactId>
+    <version>{version}</version>
+
+    <name>Bazel BSP</name>
+    <description>
+        An implementation of the Build Server Protocol for Bazel. Allows clients such as IntelliJ to obtain build specific
+        information in order to improve the experience of users in the IDE.
+    </description>
+    <url>https://www.jetbrains.com/</url>
+
+    <dependencies>
+        {dependencies}
+    </dependencies>
+    <developers>
+        <developer> 
+            <id>andrefmrocha</id>
+            <name>Andre Rocha</name>
+            <email>andrefmrocha@live.com.pt</email>
+            <url>https://github.com/andrefmrocha</url>
+        </developer>
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:github.com/JetBrains/bazel-bsp.git</connection>
+        <developerConnection>scm:git:git@github.com:JetBrains/bazel-bsp.git</developerConnection>
+        <url>https://github.com/JetBrains/bazel-bsp</url>
+    </scm>
+</project>
+```
+
+You must leave all variables in brackets like that, since that will be filled internally. Make sure to add the following fields:
+- Project Name
+- Project Description
+- Developer Information
+- License Information
+- SCM URL
 
 Publishing can now be done using `bazel run`:
 ```
