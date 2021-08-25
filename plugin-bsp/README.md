@@ -1,2 +1,5 @@
 # Build Server Protocol for IntelliJ IDEA
- !! WORK IN PROGRESS !!
+
+<!-- Plugin description -->
+!! WORK IN PROGRESS !!
+<!-- Plugin description end -->
