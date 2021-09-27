@@ -4,4 +4,4 @@
 
 ## [Unreleased]
 ### Added
-- Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
+- [Magic Meta Model](https://github.com/Abrams27/intellij-bsp/pull/1)
