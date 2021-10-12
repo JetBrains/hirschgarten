@@ -8,6 +8,7 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+      <projectOpenProcessor implementation="org.jetbrains.plugins.bsp.startup.TestStartupActivity"/>
     </extensions>
 
     <applicationListeners>

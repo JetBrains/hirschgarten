@@ -6,6 +6,7 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
+import org.jetbrains.magicmetamodel.extensions.allSubdirectoriesSequence
 import org.jetbrains.magicmetamodel.extensions.toAbsolutePath
 import java.net.URI
 import java.nio.file.Path
@@ -41,7 +42,7 @@ internal class TargetsDetailsForDocumentProvider(sources: List<SourcesItem>) {
 
     val documentAbsolutePath = mapDocumentIdToAbsolutePath(documentId)
 
-    return generateSequence(documentAbsolutePath) { it.parent }
+    return documentAbsolutePath.allSubdirectoriesSequence()
       .also { LOGGER.trace { "Generating all $documentId subdirectories done! Subdirectories: $it." } }
   }
 

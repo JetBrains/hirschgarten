@@ -27,7 +27,7 @@ class OverlappingTargetsGraphTest {
   }
 
   @Test
-  fun `should return graph without edges for non-overlapping targets`() {
+  fun `should return graph without edges for non-overlapping targets and without target without sources `() {
     // given
     val target1Id = BuildTargetIdentifier("//target1")
     val source1InTarget1 = SourceItem("file:///file1/in/target1", SourceItemKind.FILE, false)
@@ -43,7 +43,10 @@ class OverlappingTargetsGraphTest {
     val source2InTarget3 = SourceItem("file:///dir2/in/target3", SourceItemKind.DIRECTORY, false)
     val target3Sources = SourcesItem(target3Id, listOf(source1InTarget3, source2InTarget3))
 
-    val sources = listOf(target1Sources, target2Sources, target3Sources)
+    val target4Id = BuildTargetIdentifier("//target4")
+    val target4Sources = SourcesItem(target4Id, emptyList())
+
+    val sources = listOf(target1Sources, target2Sources, target3Sources, target4Sources)
 
     val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
 
