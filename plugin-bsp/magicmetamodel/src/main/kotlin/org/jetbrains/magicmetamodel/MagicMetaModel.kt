@@ -2,12 +2,30 @@ package org.jetbrains.magicmetamodel
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.workspaceModel.ide.WorkspaceModel
+import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
+import java.nio.file.Path
+
+public data class MagicMetaModelProjectConfig(
+  val workspaceModel: WorkspaceModel,
+  val virtualFileUrlManager: VirtualFileUrlManager,
+  val projectBaseDir: Path,
+)
+
+public data class ProjectDetails(
+  val targetsId: List<BuildTargetIdentifier>,
+  val targets: List<BuildTarget>,
+  val sources: List<SourcesItem>,
+  val resources: List<ResourcesItem>,
+  val dependenciesSources: List<DependencySourcesItem>,
+)
 
 /**
  * Contains information about loaded target and not loaded targets for given document.
@@ -75,12 +93,11 @@ public interface MagicMetaModel {
      * provided by the BSP and works on top of [WorkspaceModel].
      */
     public fun create(
-      workspaceModel: WorkspaceModel,
-      targets: List<BuildTarget>,
-      sources: List<SourcesItem>,
+      magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
+      projectDetails: ProjectDetails,
     ): MagicMetaModel {
-      LOGGER.debug { "Creating MagicMetaModelImpl for $workspaceModel, $targets. $sources..." }
-      return MagicMetaModelImpl(workspaceModel, targets, sources)
+      LOGGER.debug { "Creating MagicMetaModelImpl for $magicMetaModelProjectConfig, $projectDetails..." }
+      return MagicMetaModelImpl(magicMetaModelProjectConfig, projectDetails)
     }
   }
 }

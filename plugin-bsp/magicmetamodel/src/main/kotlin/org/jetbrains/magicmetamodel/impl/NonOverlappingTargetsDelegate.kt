@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.trace
 import kotlin.reflect.KProperty
 
 internal class NonOverlappingTargetsDelegate(
+  private val allTargets: List<BuildTargetIdentifier>,
   private val overlappingTargetsGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
 ) {
 
@@ -13,8 +14,6 @@ internal class NonOverlappingTargetsDelegate(
     thisRef: Any?,
     property: KProperty<*>,
   ): Set<BuildTargetIdentifier> {
-    val allTargets = overlappingTargetsGraph.keys
-
     LOGGER.trace { "Calculating non overlapping targets for $allTargets..." }
 
     return allTargets
