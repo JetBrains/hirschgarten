@@ -18,6 +18,10 @@ internal data class ModuleDetails(
   val dependenciesSources: List<DependencySourcesItem>,
 )
 
+internal data class ModuleName(
+  val name: String,
+)
+
 internal interface WorkspaceModelUpdater {
 
 //  fun loadRootModule()
@@ -27,9 +31,12 @@ internal interface WorkspaceModelUpdater {
 
   fun loadModule(moduleDetails: ModuleDetails)
 
-//  fun removeModule(module: Any)
+  fun removeModules(modules: List<ModuleName>) =
+    modules.forEach(this::removeModule)
 
-//  fun clear()
+  fun removeModule(module: ModuleName)
+
+  fun clear()
 
   companion object {
     fun create(

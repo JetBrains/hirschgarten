@@ -7,6 +7,7 @@ import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
 import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 
 internal data class ModuleDependency(
   val moduleName: String,
@@ -72,4 +73,28 @@ internal class ModuleEntityUpdater(
       exported = false,
       scope = ModuleDependencyItem.DependencyScope.COMPILE,
     )
+}
+
+// TODO TEST TEST TEST TEST TEST !!11!1!
+internal class WorkspaceModuleRemover(
+  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+) : WorkspaceModuleEntityRemover<ModuleName> {
+
+  override fun removeEntity(entityToRemove: ModuleName) {
+    workspaceModelEntityUpdaterConfig.workspaceModel.updateProjectModel {
+      // TODO null
+      val moduleToRemove = it.resolve(ModuleId(entityToRemove.name))!!
+
+      it.removeEntity(moduleToRemove)
+    }
+  }
+
+  override fun clear() {
+    val allModules =
+      workspaceModelEntityUpdaterConfig.workspaceModel.entityStorage.current.entities(ModuleEntity::class.java)
+
+    workspaceModelEntityUpdaterConfig.workspaceModel.updateProjectModel { builder ->
+      allModules.forEach(builder::removeEntity)
+    }
+  }
 }
