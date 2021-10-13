@@ -441,26 +441,25 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // and, finally user decides to load the default configuration
       // ------
 
-//       TODO needs to be commented until we will be able to remove modules
-//      WriteCommandAction.runWriteCommandAction(project) {
-//        magicMetaModel.loadDefaultTargets()
-//      }
+      WriteCommandAction.runWriteCommandAction(project) {
+        magicMetaModel.loadDefaultTargets()
+      }
 
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
-//      magicMetaModel `should return given loaded and not loaded targets` Pair(
-//        listOf(libA212, loadedLibBByDefault, loadedLibCByDefault, loadedAppByDefault),
-//        listOf(notLoadedLibBByDefault, notLoadedLibCByDefault, notLoadedAppByDefault),
-//      )
+      magicMetaModel `should return given loaded and not loaded targets` Pair(
+        listOf(libA212, loadedLibBByDefault, loadedLibCByDefault, loadedAppByDefault),
+        listOf(notLoadedLibBByDefault, notLoadedLibCByDefault, notLoadedAppByDefault),
+      )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
-//      magicMetaModel `should return valid targets details for document`
-//        Triple(sourceInLibAUri, libA212Id, emptyList())
-//      magicMetaModel `should return valid targets details for document`
-//        Triple(sourceInLibBUri, loadedLibBByDefault.id, listOf(notLoadedLibBByDefault.id))
-//      magicMetaModel `should return valid targets details for document`
-//        Triple(sourceInLibCUri, loadedLibCByDefault.id, listOf(notLoadedLibCByDefault.id))
-//      magicMetaModel `should return valid targets details for document`
-//        Triple(sourceInAppUri, loadedAppByDefault.id, listOf(notLoadedAppByDefault.id))
+      magicMetaModel `should return valid targets details for document`
+        Triple(sourceInLibAUri, libA212Id, emptyList())
+      magicMetaModel `should return valid targets details for document`
+        Triple(sourceInLibBUri, loadedLibBByDefault.id, listOf(notLoadedLibBByDefault.id))
+      magicMetaModel `should return valid targets details for document`
+        Triple(sourceInLibCUri, loadedLibCByDefault.id, listOf(notLoadedLibCByDefault.id))
+      magicMetaModel `should return valid targets details for document`
+        Triple(sourceInAppUri, loadedAppByDefault.id, listOf(notLoadedAppByDefault.id))
     }
 
     private fun getLoadedAndNotLoadedTargetsOrThrow(
@@ -790,8 +789,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       loadedTargets shouldNotContainAnyOf notLoadedTargets
     }
 
-    // TODO needs to be removed because we dont remove entries yet
-    // @Test
+    @Test
     fun `should load all default targets after loading different targets (with loadTarget())`() {
       // given
       val target1Id = BuildTargetIdentifier("//target1")

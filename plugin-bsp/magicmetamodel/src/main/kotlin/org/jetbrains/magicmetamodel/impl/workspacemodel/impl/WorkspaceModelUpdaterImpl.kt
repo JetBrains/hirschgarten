@@ -6,9 +6,11 @@ import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import java.nio.file.Path
 
@@ -26,14 +28,8 @@ internal class WorkspaceModelUpdaterImpl(
       projectBaseDir
     )
   )
-
-  override fun loadModule(moduleDetails: ModuleDetails) {
-    // TODO for now we are supporting only java modules
-    val javaModule = ModuleDetailsToJavaModuleTransformer.transform(moduleDetails)
-
-    val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
-    javaModuleUpdater.addEntity(javaModule)
-  }
+  private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
+  private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
 
   // TODO move?
   private fun calculateProjectConfigSource(
@@ -47,5 +43,20 @@ internal class WorkspaceModelUpdaterImpl(
     val projectLocation = JpsProjectConfigLocation.DirectoryBased(virtualProjectBaseDirPath, virtualProjectIdeaDirPath)
 
     return JpsFileEntitySource.FileInDirectory(virtualProjectModulesDirPath, projectLocation)
+  }
+
+  override fun loadModule(moduleDetails: ModuleDetails) {
+    // TODO for now we are supporting only java modules
+    val javaModule = ModuleDetailsToJavaModuleTransformer.transform(moduleDetails)
+
+    javaModuleUpdater.addEntity(javaModule)
+  }
+
+  override fun removeModule(module: ModuleName) {
+    workspaceModuleRemover.removeEntity(module)
+  }
+
+  override fun clear() {
+    workspaceModuleRemover.clear()
   }
 }
