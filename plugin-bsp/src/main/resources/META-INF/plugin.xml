@@ -8,7 +8,12 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+      <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
+
       <projectOpenProcessor implementation="org.jetbrains.plugins.bsp.startup.TestStartupActivity"/>
+
+
+      <statusBarWidgetFactory implementation="org.jetbrains.plugins.bsp.widgets.document.targets.BSPStatusBarWidgetFactory"/>
     </extensions>
 
     <applicationListeners>
