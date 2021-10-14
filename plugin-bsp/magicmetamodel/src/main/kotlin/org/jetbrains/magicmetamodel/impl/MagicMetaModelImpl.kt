@@ -57,7 +57,6 @@ internal class MagicMetaModelImpl internal constructor(
     val modulesToLoad = getModulesDetailsForTargetsToLoad(nonOverlappingTargetsToLoad)
 
     // TODO TEST TESTS TEESTS RTEST11
-    println(modulesToLoad)
     workspaceModelUpdater.loadModules(modulesToLoad)
     loadedTargetsStorage.addTargets(nonOverlappingTargetsToLoad)
   }

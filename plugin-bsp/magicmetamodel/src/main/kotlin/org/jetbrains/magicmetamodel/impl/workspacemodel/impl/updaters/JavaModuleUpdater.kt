@@ -16,8 +16,6 @@ internal class JavaModuleWithSourcesUpdater(
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
-    println("with")
-    println(entityToAdd)
     val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies)
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
@@ -46,8 +44,6 @@ internal class JavaModuleWithoutSourcesUpdater(
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
-    println("without")
-    println(entityToAdd)
     val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig)
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 

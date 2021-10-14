@@ -37,8 +37,8 @@ internal class WorkspaceModelUpdaterImpl(
     projectBaseDir: Path
   ): JpsFileEntitySource {
     val virtualProjectBaseDirPath = projectBaseDir.toVirtualFileUrl(virtualFileUrlManager)
-    val virtualProjectIdeaDirPath = virtualProjectBaseDirPath.append(".idea/")
-    val virtualProjectModulesDirPath = virtualProjectIdeaDirPath.append("modules/")
+    val virtualProjectIdeaDirPath = virtualProjectBaseDirPath.append(".idea")
+    val virtualProjectModulesDirPath = virtualProjectIdeaDirPath.append("modules")
 
     val projectLocation = JpsProjectConfigLocation.DirectoryBased(virtualProjectBaseDirPath, virtualProjectIdeaDirPath)
 
