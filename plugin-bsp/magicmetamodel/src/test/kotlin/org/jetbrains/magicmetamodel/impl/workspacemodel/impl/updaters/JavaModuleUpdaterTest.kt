@@ -22,6 +22,7 @@ import kotlin.io.path.toPath
 import kotlin.reflect.KClass
 import kotlin.reflect.full.primaryConstructor
 
+// TODO add libraries tests
 internal class JavaModuleUpdaterTest : WorkspaceModelEntityWithoutParentModuleUpdaterBaseTest() {
 
   private data class ExpectedJavaSourceRootEntityDetails(
@@ -107,11 +108,13 @@ internal class JavaModuleUpdaterTest : WorkspaceModelEntityWithoutParentModuleUp
         val libraries = listOf(
           Library(
             displayName = "lib1",
-            jar = "jar:file:///lib1/1.0.0/lib1-sources.jar!/"
+            sourcesJar = "jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/",
+            classesJar = "jar:///lib1/1.0.0/lib1.jar!/",
           ),
           Library(
             displayName = "lib2",
-            jar = "jar:file:///lib2/1.0.0/lib2-sources.jar!/"
+            sourcesJar = "jar:///lib2/1.0.0/lib2-2.0.0-sources.jar!/",
+            classesJar = "jar:///lib2/1.0.0/lib2-2.0.0.jar!/",
           ),
         )
 
@@ -276,11 +279,13 @@ internal class JavaModuleUpdaterTest : WorkspaceModelEntityWithoutParentModuleUp
         val libraries1 = listOf(
           Library(
             displayName = "lib1",
-            jar = "jar:file:///lib1/1.0.0/lib1-sources.jar!/"
+            sourcesJar = "jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/",
+            classesJar = "jar:///lib1/1.0.0/lib1-1.0.0.jar!/",
           ),
           Library(
             displayName = "lib2",
-            jar = "jar:file:///lib2/1.0.0/lib2-sources.jar!/"
+            sourcesJar = "jar:///lib2/2.0.0/lib2-2.0.0-sources.jar!/",
+            classesJar = "jar:///lib2/1.0.0/lib2-2.0.0.jar!/",
           ),
         )
 
@@ -331,7 +336,8 @@ internal class JavaModuleUpdaterTest : WorkspaceModelEntityWithoutParentModuleUp
         val libraries2 = listOf(
           Library(
             displayName = "lib1",
-            jar = "jar:file:///lib1/1.0.0/lib1-sources.jar!/"
+            sourcesJar = "jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/",
+            classesJar = "jar:///lib1/1.0.0/lib1-1.0.0.jar!/",
           ),
         )
 

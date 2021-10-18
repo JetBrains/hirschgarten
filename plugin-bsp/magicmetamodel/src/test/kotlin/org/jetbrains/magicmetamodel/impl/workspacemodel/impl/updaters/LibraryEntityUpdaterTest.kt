@@ -21,11 +21,10 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
   @Test
   fun `should add one library to the workspace model`() {
     // given
-    val libraryUri = "file:///dependency/test/1.0.0/test-1.0.0-sources.jar"
-    val libraryJar = "jar:$libraryUri!/"
     val library = Library(
-      displayName = libraryUri,
-      jar = libraryJar,
+      displayName = "file:///dependency/test/1.0.0/test-1.0.0-sources.jar",
+      sourcesJar = "jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/",
+      classesJar = "jar:///dependency/test/1.0.0/test-1.0.0.jar!/",
     )
 
     // when
@@ -38,15 +37,19 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
     }
 
     // then
-    val expectedLibraryRoot = LibraryRoot(
-      url = virtualFileUrlManager.fromUrl(libraryJar),
+    val expectedLibrarySourcesRoot = LibraryRoot(
+      url = virtualFileUrlManager.fromUrl("jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/"),
       type = LibraryRootTypeId.SOURCES,
+    )
+    val expectedLibraryClassesRoot = LibraryRoot(
+      url = virtualFileUrlManager.fromUrl("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
+      type = LibraryRootTypeId.COMPILED,
     )
     val expectedLibraryEntityDetails = ExpectedLibraryEntityDetails(
       libraryEntity = LibraryEntity(
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
-        name = libraryUri,
-        roots = listOf(expectedLibraryRoot),
+        name = "file:///dependency/test/1.0.0/test-1.0.0-sources.jar",
+        roots = listOf(expectedLibrarySourcesRoot, expectedLibraryClassesRoot),
         excludedRoots = emptyList()
       )
     )
@@ -61,18 +64,16 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
   @Test
   fun `should add multiple libraries to the workspace model`() {
     // given
-    val libraryUri1 = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar"
-    val libraryJar1 = "jar:$libraryUri1!/"
     val library1 = Library(
-      displayName = libraryUri1,
-      jar = libraryJar1,
+      displayName = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar",
+      sourcesJar = "jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/",
+      classesJar = "jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/",
     )
 
-    val libraryUri2 = "file:///dependency/test2/1.0.0/test2-1.0.0-sources.jar"
-    val libraryJar2 = "jar:$libraryUri2!/"
     val library2 = Library(
-      displayName = libraryUri2,
-      jar = libraryJar2,
+      displayName = "file:///dependency/test2/2.0.0/test2-2.0.0-sources.jar",
+      sourcesJar = "jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/",
+      classesJar = "jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/",
     )
 
     val libraries = listOf(library1, library2)
@@ -87,28 +88,36 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
     }
 
     // then
-    val expectedLibraryRoot1 = LibraryRoot(
-      url = virtualFileUrlManager.fromUrl(libraryJar1),
+    val expectedLibrarySourcesRoot1 = LibraryRoot(
+      url = virtualFileUrlManager.fromUrl("jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/"),
       type = LibraryRootTypeId.SOURCES,
+    )
+    val expectedLibraryClassesRoot1 = LibraryRoot(
+      url = virtualFileUrlManager.fromUrl("jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/"),
+      type = LibraryRootTypeId.COMPILED,
     )
     val expectedLibraryEntityDetails1 = ExpectedLibraryEntityDetails(
       libraryEntity = LibraryEntity(
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
-        name = libraryUri1,
-        roots = listOf(expectedLibraryRoot1),
+        name = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar",
+        roots = listOf(expectedLibrarySourcesRoot1, expectedLibraryClassesRoot1),
         excludedRoots = emptyList()
       )
     )
 
-    val expectedLibraryRoot2 = LibraryRoot(
-      url = virtualFileUrlManager.fromUrl(libraryJar2),
+    val expectedLibrarySourcesRoot2 = LibraryRoot(
+      url = virtualFileUrlManager.fromUrl("jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/"),
       type = LibraryRootTypeId.SOURCES,
+    )
+    val expectedLibraryClassesRoot2 = LibraryRoot(
+      url = virtualFileUrlManager.fromUrl("jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/"),
+      type = LibraryRootTypeId.COMPILED,
     )
     val expectedLibraryEntityDetails2 = ExpectedLibraryEntityDetails(
       libraryEntity = LibraryEntity(
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
-        name = libraryUri2,
-        roots = listOf(expectedLibraryRoot2),
+        name = "file:///dependency/test2/2.0.0/test2-2.0.0-sources.jar",
+        roots = listOf(expectedLibrarySourcesRoot2, expectedLibraryClassesRoot2),
         excludedRoots = emptyList()
       )
     )
