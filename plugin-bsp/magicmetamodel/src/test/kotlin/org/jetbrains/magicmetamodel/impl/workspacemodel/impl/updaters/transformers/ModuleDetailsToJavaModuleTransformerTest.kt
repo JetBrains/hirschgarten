@@ -79,7 +79,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val dependencySourcesItem = DependencySourcesItem(
       buildTargetId,
-      listOf("file:///library/test1/1.0.0/test1-sources.jar", "file:///library/test2/1.0.0/test2-sources.jar")
+      listOf(
+        "file:///library/test1/1.0.0/test1-1.0.0-sources.jar",
+        "file:///library/test2/2.0.0/test2-2.0.0-sources.jar",
+      )
     )
 
     val moduleDetails = ModuleDetails(
@@ -103,8 +106,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
       type = "JAVA_MODULE",
       modulesDependencies = listOf(ModuleDependency("module2"), ModuleDependency("module3")),
       librariesDependencies = listOf(
-        LibraryDependency("file:///library/test1/1.0.0/test1-sources.jar"),
-        LibraryDependency("file:///library/test2/1.0.0/test2-sources.jar"),
+        LibraryDependency("file:///library/test1/1.0.0/test1-1.0.0-sources.jar"),
+        LibraryDependency("file:///library/test2/2.0.0/test2-2.0.0-sources.jar"),
       )
     )
 
@@ -126,12 +129,14 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val expectedLibrary1 = Library(
-      displayName = "file:///library/test1/1.0.0/test1-sources.jar",
-      jar = "jar:file:///library/test1/1.0.0/test1-sources.jar!/"
+      displayName = "file:///library/test1/1.0.0/test1-1.0.0-sources.jar",
+      sourcesJar = "jar:///library/test1/1.0.0/test1-1.0.0-sources.jar!/",
+      classesJar = "jar:///library/test1/1.0.0/test1-1.0.0.jar!/",
     )
     val expectedLibrary2 = Library(
-      displayName = "file:///library/test2/1.0.0/test2-sources.jar",
-      jar = "jar:file:///library/test2/1.0.0/test2-sources.jar!/"
+      displayName = "file:///library/test2/2.0.0/test2-2.0.0-sources.jar",
+      sourcesJar = "jar:///library/test2/2.0.0/test2-2.0.0-sources.jar!/",
+      classesJar = "jar:///library/test2/2.0.0/test2-2.0.0.jar!/",
     )
 
     val expectedJavaModule = JavaModule(
@@ -184,7 +189,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val dependencySourcesItem1 = DependencySourcesItem(
       buildTargetId1,
-      listOf("file:///library/test1/1.0.0/test1-sources.jar", "file:///library/test2/1.0.0/test2-sources.jar")
+      listOf(
+        "file:///library/test1/1.0.0/test1-1.0.0-sources.jar",
+        "file:///library/test2/2.0.0/test2-2.0.0-sources.jar",
+      )
     )
 
     val moduleDetails1 = ModuleDetails(
@@ -228,7 +236,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val dependencySourcesItem2 = DependencySourcesItem(
       buildTargetId2,
-      listOf("file:///library/test1/1.0.0/test1-sources.jar")
+      listOf("file:///library/test1/1.0.0/test1-1.0.0-sources.jar")
     )
 
     val moduleDetails2 = ModuleDetails(
@@ -254,8 +262,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
       type = "JAVA_MODULE",
       modulesDependencies = listOf(ModuleDependency("module2"), ModuleDependency("module3")),
       librariesDependencies = listOf(
-        LibraryDependency("file:///library/test1/1.0.0/test1-sources.jar"),
-        LibraryDependency("file:///library/test2/1.0.0/test2-sources.jar"),
+        LibraryDependency("file:///library/test1/1.0.0/test1-1.0.0-sources.jar"),
+        LibraryDependency("file:///library/test2/2.0.0/test2-2.0.0-sources.jar"),
       )
     )
 
@@ -277,12 +285,14 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val expectedLibrary11 = Library(
-      displayName = "file:///library/test1/1.0.0/test1-sources.jar",
-      jar = "jar:file:///library/test1/1.0.0/test1-sources.jar!/"
+      displayName = "file:///library/test1/1.0.0/test1-1.0.0-sources.jar",
+      sourcesJar = "jar:///library/test1/1.0.0/test1-1.0.0-sources.jar!/",
+      classesJar = "jar:///library/test1/1.0.0/test1-1.0.0.jar!/",
     )
     val expectedLibrary12 = Library(
-      displayName = "file:///library/test2/1.0.0/test2-sources.jar",
-      jar = "jar:file:///library/test2/1.0.0/test2-sources.jar!/"
+      displayName = "file:///library/test2/2.0.0/test2-2.0.0-sources.jar",
+      sourcesJar = "jar:///library/test2/2.0.0/test2-2.0.0-sources.jar!/",
+      classesJar = "jar:///library/test2/2.0.0/test2-2.0.0.jar!/",
     )
 
     val expectedJavaModule1 = JavaModule(
@@ -297,7 +307,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       name = "module2",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(ModuleDependency("module3")),
-      librariesDependencies = listOf(LibraryDependency("file:///library/test1/1.0.0/test1-sources.jar")),
+      librariesDependencies = listOf(LibraryDependency("file:///library/test1/1.0.0/test1-1.0.0-sources.jar")),
     )
 
     val expectedBaseDirContentRoot2 = ContentRoot(URI.create("file:///another/root/dir/").toPath())
@@ -313,8 +323,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val expectedLibrary21 = Library(
-      displayName = "file:///library/test1/1.0.0/test1-sources.jar",
-      jar = "jar:file:///library/test1/1.0.0/test1-sources.jar!/"
+      displayName = "file:///library/test1/1.0.0/test1-1.0.0-sources.jar",
+      sourcesJar = "jar:///library/test1/1.0.0/test1-1.0.0-sources.jar!/",
+      classesJar = "jar:///library/test1/1.0.0/test1-1.0.0.jar!/",
     )
 
     val expectedJavaModule2 = JavaModule(

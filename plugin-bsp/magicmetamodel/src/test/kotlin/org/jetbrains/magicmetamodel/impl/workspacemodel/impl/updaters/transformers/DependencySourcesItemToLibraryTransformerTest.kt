@@ -26,20 +26,20 @@ class DependencySourcesItemToLibraryTransformerTest {
   @Test
   fun `should return single library for dependency sources item with one dependency`() {
     // given
-    val dependencySource = "file:///dependency/test/1.0.0/test-1.0.0-sources.jar"
-
     val dependencySourceItem = DependencySourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(dependencySource)
+      listOf("file:///dependency/test/1.0.0/test-1.0.0-sources.jar")
     )
 
     // when
     val libraries = DependencySourcesItemToLibraryTransformer.transform(dependencySourceItem)
 
+    print(libraries)
     // then
     val expectedLibrary = Library(
-      displayName = dependencySource,
-      jar = "jar:$dependencySource!/"
+      displayName = "file:///dependency/test/1.0.0/test-1.0.0-sources.jar",
+      sourcesJar = "jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/",
+      classesJar = "jar:///dependency/test/1.0.0/test-1.0.0.jar!/",
     )
 
     libraries shouldContainExactlyInAnyOrder listOf(expectedLibrary)
@@ -48,13 +48,13 @@ class DependencySourcesItemToLibraryTransformerTest {
   @Test
   fun `should return multiple libraries for dependency sources item with multiple dependencies`() {
     // given
-    val dependencySource1 = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar"
-    val dependencySource2 = "file:///dependency/test2/1.0.0/test2-1.0.0-sources.jar"
-    val dependencySource3 = "file:///dependency/test3/1.0.0/test3-1.0.0-sources.jar"
-
     val dependencySourceItem = DependencySourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(dependencySource1, dependencySource2, dependencySource3)
+      listOf(
+        "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar",
+        "file:///dependency/test2/2.0.0/test2-2.0.0-sources.jar",
+        "file:///dependency/test3/3.0.0/test3-3.0.0-sources.jar",
+      )
     )
 
     // when
@@ -62,16 +62,19 @@ class DependencySourcesItemToLibraryTransformerTest {
 
     // then
     val expectedLibrary1 = Library(
-      displayName = dependencySource1,
-      jar = "jar:$dependencySource1!/"
+      displayName = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar",
+      sourcesJar = "jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/",
+      classesJar = "jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/",
     )
     val expectedLibrary2 = Library(
-      displayName = dependencySource2,
-      jar = "jar:$dependencySource2!/"
+      displayName = "file:///dependency/test2/2.0.0/test2-2.0.0-sources.jar",
+      sourcesJar = "jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/",
+      classesJar = "jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/",
     )
     val expectedLibrary3 = Library(
-      displayName = dependencySource3,
-      jar = "jar:$dependencySource3!/"
+      displayName = "file:///dependency/test3/3.0.0/test3-3.0.0-sources.jar",
+      sourcesJar = "jar:///dependency/test3/3.0.0/test3-3.0.0-sources.jar!/",
+      classesJar = "jar:///dependency/test3/3.0.0/test3-3.0.0.jar!/",
     )
 
     libraries shouldContainExactlyInAnyOrder listOf(expectedLibrary1, expectedLibrary2, expectedLibrary3)
@@ -80,17 +83,19 @@ class DependencySourcesItemToLibraryTransformerTest {
   @Test
   fun `should return multiple libraries for multiple dependency sources items`() {
     // given
-    val dependencySource1 = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar"
-    val dependencySource2 = "file:///dependency/test2/1.0.0/test2-1.0.0-sources.jar"
-    val dependencySource3 = "file:///dependency/test3/1.0.0/test3-1.0.0-sources.jar"
-
     val dependencySourceItem1 = DependencySourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(dependencySource1, dependencySource2)
+      listOf(
+        "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar",
+        "file:///dependency/test2/2.0.0/test2-2.0.0-sources.jar",
+      )
     )
     val dependencySourceItem2 = DependencySourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(dependencySource2, dependencySource3)
+      listOf(
+        "file:///dependency/test2/2.0.0/test2-2.0.0-sources.jar",
+        "file:///dependency/test3/3.0.0/test3-3.0.0-sources.jar",
+      )
     )
 
     val dependencySourceItems = listOf(dependencySourceItem1, dependencySourceItem2)
@@ -100,16 +105,19 @@ class DependencySourcesItemToLibraryTransformerTest {
 
     // then
     val expectedLibrary1 = Library(
-      displayName = dependencySource1,
-      jar = "jar:$dependencySource1!/"
+      displayName = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar",
+      sourcesJar = "jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/",
+      classesJar = "jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/",
     )
     val expectedLibrary2 = Library(
-      displayName = dependencySource2,
-      jar = "jar:$dependencySource2!/"
+      displayName = "file:///dependency/test2/2.0.0/test2-2.0.0-sources.jar",
+      sourcesJar = "jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/",
+      classesJar = "jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/",
     )
     val expectedLibrary3 = Library(
-      displayName = dependencySource3,
-      jar = "jar:$dependencySource3!/"
+      displayName = "file:///dependency/test3/3.0.0/test3-3.0.0-sources.jar",
+      sourcesJar = "jar:///dependency/test3/3.0.0/test3-3.0.0-sources.jar!/",
+      classesJar = "jar:///dependency/test3/3.0.0/test3-3.0.0.jar!/",
     )
 
     libraries shouldContainExactlyInAnyOrder listOf(expectedLibrary1, expectedLibrary2, expectedLibrary3)
