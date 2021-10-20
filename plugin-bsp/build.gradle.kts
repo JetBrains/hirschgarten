@@ -30,6 +30,7 @@ dependencies {
   detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.17.1")
   implementation("ch.epfl.scala:bsp4j:2.0.0-M15")
   implementation(project(":magicmetamodel"))
+  implementation("com.google.code.gson:gson:2.8.2")
 }
 
 // Configure gradle-intellij-plugin plugin.

@@ -10,7 +10,7 @@
     <extensions defaultExtensionNs="com.intellij">
       <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
 
-      <projectOpenProcessor implementation="org.jetbrains.plugins.bsp.startup.TestStartupActivity"/>
+      <projectOpenProcessor implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
 
 
       <statusBarWidgetFactory implementation="org.jetbrains.plugins.bsp.widgets.document.targets.BSPStatusBarWidgetFactory"/>
