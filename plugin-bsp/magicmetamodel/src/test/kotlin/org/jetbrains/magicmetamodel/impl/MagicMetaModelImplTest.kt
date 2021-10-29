@@ -19,7 +19,7 @@ import io.kotest.matchers.collections.shouldNotContainAnyOf
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelBaseTest
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import java.nio.file.Files
 
-// TODO base test
 // TODO add checking workspacemodel
 // TODO extract 'given' to separate objects
 @DisplayName("MagicMetaModelImpl tests")

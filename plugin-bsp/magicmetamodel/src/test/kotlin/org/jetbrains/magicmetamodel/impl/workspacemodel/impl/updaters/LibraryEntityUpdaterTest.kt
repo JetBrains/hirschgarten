@@ -1,22 +1,32 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.workspaceModel.storage.bridgeEntities.LibraryEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.LibraryRoot
 import com.intellij.workspaceModel.storage.bridgeEntities.LibraryRootTypeId
 import com.intellij.workspaceModel.storage.bridgeEntities.LibraryTableId
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotest.matchers.shouldBe
+import org.jetbrains.workspace.model.matchers.entries.ExpectedLibraryEntity
+import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
+import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelWithParentJavaModuleBaseTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-private data class ExpectedLibraryEntityDetails(
-  val libraryEntity: LibraryEntity,
-)
-
 @DisplayName("LibraryEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
-internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUpdaterBaseTest() {
+internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest() {
+
+  private lateinit var libraryEntityUpdater: LibraryEntityUpdater
+
+  @BeforeEach
+  override fun beforeEach() {
+    // given
+    super.beforeEach()
+
+    val workspaceModelEntityUpdaterConfig =
+      WorkspaceModelEntityUpdaterConfig(workspaceModel, virtualFileUrlManager, projectConfigSource)
+    libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
+  }
 
   @Test
   fun `should add one library to the workspace model`() {
@@ -28,12 +38,8 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
     )
 
     // when
-    val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
-
-    lateinit var returnedLibraryEntity: LibraryEntity
-
-    WriteCommandAction.runWriteCommandAction(project) {
-      returnedLibraryEntity = libraryEntityUpdater.addEntity(library, parentModuleEntity)
+    val returnedLibraryEntity = runTestWriteAction {
+      libraryEntityUpdater.addEntity(library, parentModuleEntity)
     }
 
     // then
@@ -45,7 +51,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
       url = virtualFileUrlManager.fromUrl("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
       type = LibraryRootTypeId.COMPILED,
     )
-    val expectedLibraryEntityDetails = ExpectedLibraryEntityDetails(
+    val expectedLibraryEntity = ExpectedLibraryEntity(
       libraryEntity = LibraryEntity(
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         name = "file:///dependency/test/1.0.0/test-1.0.0-sources.jar",
@@ -54,11 +60,8 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
       )
     )
 
-    validateJavaResourceRootEntity(returnedLibraryEntity, expectedLibraryEntityDetails)
-
-    workspaceModelLoadedEntries(LibraryEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedLibraryEntityDetails), this::validateJavaResourceRootEntity
-    )
+    returnedLibraryEntity shouldBeEqual expectedLibraryEntity
+    loadedEntries(LibraryEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedLibraryEntity)
   }
 
   @Test
@@ -79,12 +82,8 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
     val libraries = listOf(library1, library2)
 
     // when
-    val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
-
-    lateinit var returnedLibraryEntries: Collection<LibraryEntity>
-
-    WriteCommandAction.runWriteCommandAction(project) {
-      returnedLibraryEntries = libraryEntityUpdater.addEntries(libraries, parentModuleEntity)
+    val returnedLibraryEntries = runTestWriteAction {
+      libraryEntityUpdater.addEntries(libraries, parentModuleEntity)
     }
 
     // then
@@ -96,7 +95,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
       url = virtualFileUrlManager.fromUrl("jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/"),
       type = LibraryRootTypeId.COMPILED,
     )
-    val expectedLibraryEntityDetails1 = ExpectedLibraryEntityDetails(
+    val expectedLibraryEntity1 = ExpectedLibraryEntity(
       libraryEntity = LibraryEntity(
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         name = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar",
@@ -113,7 +112,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
       url = virtualFileUrlManager.fromUrl("jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/"),
       type = LibraryRootTypeId.COMPILED,
     )
-    val expectedLibraryEntityDetails2 = ExpectedLibraryEntityDetails(
+    val expectedLibraryEntity2 = ExpectedLibraryEntity(
       libraryEntity = LibraryEntity(
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         name = "file:///dependency/test2/2.0.0/test2-2.0.0-sources.jar",
@@ -122,24 +121,9 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUp
       )
     )
 
-    returnedLibraryEntries shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedLibraryEntityDetails1, expectedLibraryEntityDetails2),
-      this::validateJavaResourceRootEntity
-    )
+    val expectedLibraryEntries = listOf(expectedLibraryEntity1, expectedLibraryEntity2)
 
-    workspaceModelLoadedEntries(LibraryEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedLibraryEntityDetails1, expectedLibraryEntityDetails2),
-      this::validateJavaResourceRootEntity
-    )
-  }
-
-  private fun validateJavaResourceRootEntity(
-    actual: LibraryEntity,
-    expected: ExpectedLibraryEntityDetails
-  ) {
-    actual.tableId shouldBe expected.libraryEntity.tableId
-    actual.name shouldBe expected.libraryEntity.name
-    actual.roots shouldContainExactlyInAnyOrder expected.libraryEntity.roots
-    actual.excludedRoots shouldContainExactlyInAnyOrder expected.libraryEntity.excludedRoots
+    returnedLibraryEntries shouldContainExactlyInAnyOrder expectedLibraryEntries
+    loadedEntries(LibraryEntity::class.java) shouldContainExactlyInAnyOrder expectedLibraryEntries
   }
 }

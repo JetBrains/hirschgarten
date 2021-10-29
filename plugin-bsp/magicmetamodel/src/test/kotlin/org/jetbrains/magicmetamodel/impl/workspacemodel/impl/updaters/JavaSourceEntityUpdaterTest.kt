@@ -1,24 +1,33 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
-import io.kotest.matchers.shouldBe
+import org.jetbrains.workspace.model.matchers.entries.ExpectedJavaSourceRootEntity
+import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
+import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelWithParentJavaModuleBaseTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
 import kotlin.io.path.toPath
 
-private data class ExpectedJavaSourceRootEntityDetails(
-  val contentRootEntity: ContentRootEntity,
-  val sourceRootEntity: SourceRootEntity,
-  val javaSourceRootEntity: JavaSourceRootEntity,
-)
-
 @DisplayName("javaSourceEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
-internal class JavaSourceEntityUpdaterTest : WorkspaceModelEntityWithParentModuleUpdaterBaseTest() {
+class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest() {
+
+  private lateinit var javaSourceEntityUpdater: JavaSourceEntityUpdater
+
+  @BeforeEach
+  override fun beforeEach() {
+    // given
+    super.beforeEach()
+
+    val workspaceModelEntityUpdaterConfig =
+      WorkspaceModelEntityUpdaterConfig(workspaceModel, virtualFileUrlManager, projectConfigSource)
+    javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+  }
 
   @Test
   fun `should add one java source root to the workspace model`() {
@@ -30,27 +39,21 @@ internal class JavaSourceEntityUpdaterTest : WorkspaceModelEntityWithParentModul
     val javaSourceRoot = JavaSourceRoot(sourceDir, generated, packagePrefix)
 
     // when
-    val javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
-
-    lateinit var returnedJavaSourceRootEntity: JavaSourceRootEntity
-
-    WriteCommandAction.runWriteCommandAction(project) {
-      returnedJavaSourceRootEntity = javaSourceEntityUpdater.addEntity(javaSourceRoot, parentModuleEntity)
+    val returnedJavaSourceRootEntity = runTestWriteAction {
+      javaSourceEntityUpdater.addEntity(javaSourceRoot, parentModuleEntity)
     }
 
     // then
     val virtualSourceDir = sourceDir.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedJavaSourceRootEntityDetails = ExpectedJavaSourceRootEntityDetails(
+    val expectedJavaSourceRootEntity = ExpectedJavaSourceRootEntity(
       contentRootEntity = ContentRootEntity(virtualSourceDir, emptyList(), emptyList()),
       sourceRootEntity = SourceRootEntity(virtualSourceDir, "java-source"),
       javaSourceRootEntity = JavaSourceRootEntity(generated, packagePrefix),
+      parentModuleEntity = parentModuleEntity,
     )
 
-    validateJavaSourceRootEntity(returnedJavaSourceRootEntity, expectedJavaSourceRootEntityDetails)
-
-    workspaceModelLoadedEntries(JavaSourceRootEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedJavaSourceRootEntityDetails), this::validateJavaSourceRootEntity
-    )
+    returnedJavaSourceRootEntity shouldBeEqual expectedJavaSourceRootEntity
+    loadedEntries(JavaSourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRootEntity)
   }
 
   @Test
@@ -71,57 +74,30 @@ internal class JavaSourceEntityUpdaterTest : WorkspaceModelEntityWithParentModul
     val javaSourceRoots = listOf(javaSourceRoot1, javaSourceRoot2)
 
     // when
-    val javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
-
-    lateinit var returnedJavaSourceRootEntries: Collection<JavaSourceRootEntity>
-
-    WriteCommandAction.runWriteCommandAction(project) {
-      returnedJavaSourceRootEntries = javaSourceEntityUpdater.addEntries(javaSourceRoots, parentModuleEntity)
+    val returnedJavaSourceRootEntries = runTestWriteAction {
+      javaSourceEntityUpdater.addEntries(javaSourceRoots, parentModuleEntity)
     }
 
     // then
     val virtualSourceDir1 = sourceDir1.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedJavaSourceRootEntityDetails1 = ExpectedJavaSourceRootEntityDetails(
+    val expectedJavaSourceRootEntity1 = ExpectedJavaSourceRootEntity(
       contentRootEntity = ContentRootEntity(virtualSourceDir1, emptyList(), emptyList()),
       sourceRootEntity = SourceRootEntity(virtualSourceDir1, "java-source"),
       javaSourceRootEntity = JavaSourceRootEntity(generated1, packagePrefix1),
+      parentModuleEntity = parentModuleEntity,
     )
 
     val virtualSourceDir2 = sourceDir2.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedJavaSourceRootEntityDetails2 = ExpectedJavaSourceRootEntityDetails(
+    val expectedJavaSourceRootEntity2 = ExpectedJavaSourceRootEntity(
       contentRootEntity = ContentRootEntity(virtualSourceDir2, emptyList(), emptyList()),
       sourceRootEntity = SourceRootEntity(virtualSourceDir2, "java-source"),
       javaSourceRootEntity = JavaSourceRootEntity(generated2, packagePrefix2),
+      parentModuleEntity = parentModuleEntity,
     )
 
-    returnedJavaSourceRootEntries shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedJavaSourceRootEntityDetails1, expectedJavaSourceRootEntityDetails2),
-      this::validateJavaSourceRootEntity
-    )
+    val expectedJavaSourceRootEntries = listOf(expectedJavaSourceRootEntity1, expectedJavaSourceRootEntity2)
 
-    workspaceModelLoadedEntries(JavaSourceRootEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedJavaSourceRootEntityDetails1, expectedJavaSourceRootEntityDetails2),
-      this::validateJavaSourceRootEntity
-    )
-  }
-
-  private fun validateJavaSourceRootEntity(
-    actual: JavaSourceRootEntity,
-    expected: ExpectedJavaSourceRootEntityDetails
-  ) {
-    actual.generated shouldBe expected.javaSourceRootEntity.generated
-    actual.packagePrefix shouldBe expected.javaSourceRootEntity.packagePrefix
-
-    val actualSourceRoot = actual.sourceRoot
-    actualSourceRoot.url shouldBe expected.sourceRootEntity.url
-    actualSourceRoot.rootType shouldBe expected.sourceRootEntity.rootType
-
-    val actualContentRoot = actualSourceRoot.contentRoot
-    actualContentRoot.url shouldBe expected.contentRootEntity.url
-    actualContentRoot.excludedUrls shouldBe expected.contentRootEntity.excludedUrls
-    actualContentRoot.excludedPatterns shouldBe expected.contentRootEntity.excludedPatterns
-
-    val actualModuleEntity = actualContentRoot.module
-    actualModuleEntity shouldBe parentModuleEntity
+    returnedJavaSourceRootEntries shouldContainExactlyInAnyOrder expectedJavaSourceRootEntries
+    loadedEntries(JavaSourceRootEntity::class.java) shouldContainExactlyInAnyOrder expectedJavaSourceRootEntries
   }
 }
