@@ -1,5 +1,6 @@
-package org.jetbrains.magicmetamodel.impl.workspacemodel
+package org.jetbrains.workspace.model.test.framework
 
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.project.stateStore
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
@@ -8,20 +9,20 @@ import com.intellij.workspaceModel.ide.JpsProjectConfigLocation
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.getInstance
 import com.intellij.workspaceModel.storage.WorkspaceEntity
+import com.intellij.workspaceModel.storage.WorkspaceEntityStorageBuilder
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
-import io.kotest.inspectors.forAll
-import io.kotest.inspectors.forAny
-import io.kotest.matchers.collections.shouldHaveSize
 import org.junit.jupiter.api.BeforeEach
 import java.nio.file.Path
 
-// TODO refactor
-open class WorkspaceModelBaseTest {
+public open class WorkspaceModelBaseTest {
 
   protected lateinit var project: Project
   protected lateinit var workspaceModel: WorkspaceModel
   protected lateinit var virtualFileUrlManager: VirtualFileUrlManager
+
   protected lateinit var projectBaseDirPath: Path
   protected lateinit var projectConfigSource: JpsFileEntitySource
 
@@ -30,6 +31,7 @@ open class WorkspaceModelBaseTest {
     project = emptyProjectTestMock()
     workspaceModel = WorkspaceModel.getInstance(project)
     virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
+
     projectBaseDirPath = project.stateStore.projectBasePath
     projectConfigSource = calculateProjectConfigSource(projectBaseDirPath, virtualFileUrlManager)
   }
@@ -56,17 +58,44 @@ open class WorkspaceModelBaseTest {
     return JpsFileEntitySource.FileInDirectory(virtualProjectModulesDirPath, projectLocation)
   }
 
-  protected infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(
-    expectedWithAssertion: Pair<Collection<E>, (T, E) -> Unit>
-  ) {
-    val expectedValues = expectedWithAssertion.first
-    val assertion = expectedWithAssertion.second
+  protected fun <T : Any> runTestWriteAction(action: () -> T): T {
+    lateinit var result: T
+    WriteCommandAction.runWriteCommandAction(project) { result = action() }
 
-    this shouldHaveSize expectedValues.size
-
-    this.forAll { actual -> expectedValues.forAny { assertion(actual, it) } }
+    return result
   }
 
-  protected fun <E : WorkspaceEntity> workspaceModelLoadedEntries(entityClass: Class<E>): List<E> =
+  protected fun <E : WorkspaceEntity> loadedEntries(entityClass: Class<E>): List<E> =
     workspaceModel.entityStorage.current.entities(entityClass).toList()
+}
+
+public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceModelBaseTest() {
+
+  protected lateinit var parentModuleEntity: ModuleEntity
+
+  private val parentModuleName = "test-module-root"
+  private val parentModuleType = "JAVA_MODULE"
+
+  @BeforeEach
+  override fun beforeEach() {
+    super.beforeEach()
+
+    addParentModuleEntity()
+  }
+
+  private fun addParentModuleEntity() {
+    WriteCommandAction.runWriteCommandAction(project) {
+      workspaceModel.updateProjectModel {
+        parentModuleEntity = addParentModuleEntity(it)
+      }
+    }
+  }
+
+  private fun addParentModuleEntity(builder: WorkspaceEntityStorageBuilder): ModuleEntity =
+    builder.addModuleEntity(
+      name = parentModuleName,
+      dependencies = emptyList(),
+      source = projectConfigSource,
+      type = parentModuleType
+    )
 }

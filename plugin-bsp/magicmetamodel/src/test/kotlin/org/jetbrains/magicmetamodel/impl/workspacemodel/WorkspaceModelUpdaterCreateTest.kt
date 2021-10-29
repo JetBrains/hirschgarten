@@ -2,6 +2,7 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel
 
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 

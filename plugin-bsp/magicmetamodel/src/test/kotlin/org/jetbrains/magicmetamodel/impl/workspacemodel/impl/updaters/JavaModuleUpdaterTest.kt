@@ -1,7 +1,7 @@
 @file:Suppress("LongMethod")
+
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.JavaResourceRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootEntity
@@ -12,37 +12,24 @@ import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
 import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotest.matchers.shouldBe
+import org.jetbrains.workspace.model.matchers.entries.ExpectedContentRootEntity
+import org.jetbrains.workspace.model.matchers.entries.ExpectedJavaResourceRootEntity
+import org.jetbrains.workspace.model.matchers.entries.ExpectedJavaSourceRootEntity
+import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
+import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
+import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.net.URI
 import kotlin.io.path.toPath
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
 import kotlin.reflect.full.primaryConstructor
 
 // TODO add libraries tests
-internal class JavaModuleUpdaterTest : WorkspaceModelEntityWithoutParentModuleUpdaterBaseTest() {
-
-  private data class ExpectedJavaSourceRootEntityDetails(
-    val contentRootEntity: ContentRootEntity,
-    val sourceRootEntity: SourceRootEntity,
-    val javaSourceRootEntity: JavaSourceRootEntity,
-    val module: ModuleEntity,
-  )
-
-  private data class ExpectedJavaResourceRootEntityDetails(
-    val contentRootEntity: ContentRootEntity,
-    val sourceRootEntity: SourceRootEntity,
-    val javaResourceRootEntity: JavaResourceRootEntity,
-    val module: ModuleEntity,
-  )
-
-  private data class ExpectedContentRootEntityDetails(
-    val contentRootEntity: ContentRootEntity,
-    val module: ModuleEntity,
-  )
+internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
   @Nested
   @DisplayName("javaModuleWithSourcesUpdater.addEntity(entityToAdd) tests")
@@ -127,94 +114,91 @@ internal class JavaModuleUpdaterTest : WorkspaceModelEntityWithoutParentModuleUp
         )
 
         // when
-        lateinit var returnedModuleEntity: ModuleEntity
-
-        WriteCommandAction.runWriteCommandAction(project) {
-          returnedModuleEntity = updater.addEntity(javaModule)
+        val returnedModuleEntity = runTestWriteAction {
+          updater.addEntity(javaModule)
         }
 
         // then
-        val expectedModuleEntity = ModuleEntity(
-          name = "module1",
-          type = "JAVA_MODULE",
-          dependencies = listOf(
-            ModuleDependencyItem.Exportable.ModuleDependency(
-              module = ModuleId("module2"),
-              exported = true,
-              scope = ModuleDependencyItem.DependencyScope.COMPILE,
-              productionOnTest = true,
-            ),
-            ModuleDependencyItem.Exportable.ModuleDependency(
-              module = ModuleId("module3"),
-              exported = true,
-              scope = ModuleDependencyItem.DependencyScope.COMPILE,
-              productionOnTest = true,
-            ),
-            ModuleDependencyItem.Exportable.LibraryDependency(
-              library = LibraryId(
-                name = "lib1",
-                tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+        val expectedModuleEntity = ExpectedModuleEntity(
+          moduleEntity = ModuleEntity(
+            name = "module1",
+            type = "JAVA_MODULE",
+            dependencies = listOf(
+              ModuleDependencyItem.Exportable.ModuleDependency(
+                module = ModuleId("module2"),
+                exported = true,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                productionOnTest = true,
               ),
-              exported = false,
-              scope = ModuleDependencyItem.DependencyScope.COMPILE,
-            ),
-            ModuleDependencyItem.Exportable.LibraryDependency(
-              library = LibraryId(
-                name = "lib2",
-                tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+              ModuleDependencyItem.Exportable.ModuleDependency(
+                module = ModuleId("module3"),
+                exported = true,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                productionOnTest = true,
               ),
-              exported = false,
-              scope = ModuleDependencyItem.DependencyScope.COMPILE,
-            ),
-            ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
-            ModuleDependencyItem.ModuleSourceDependency,
+              ModuleDependencyItem.Exportable.LibraryDependency(
+                library = LibraryId(
+                  name = "lib1",
+                  tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+                ),
+                exported = false,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+              ),
+              ModuleDependencyItem.Exportable.LibraryDependency(
+                library = LibraryId(
+                  name = "lib2",
+                  tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+                ),
+                exported = false,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+              ),
+              ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
+              ModuleDependencyItem.ModuleSourceDependency,
+            )
           )
         )
 
-        validateModuleEntity(returnedModuleEntity, expectedModuleEntity)
-
-        workspaceModelLoadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-          listOf(expectedModuleEntity), this@JavaModuleUpdaterTest::validateModuleEntity
-        )
+        returnedModuleEntity shouldBeEqual expectedModuleEntity
+        loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedModuleEntity)
 
         val virtualSourceDir1 = sourceDir1.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedJavaSourceRootEntityDetails1 = ExpectedJavaSourceRootEntityDetails(
+        val expectedJavaSourceRootEntity1 = ExpectedJavaSourceRootEntity(
           contentRootEntity = ContentRootEntity(virtualSourceDir1, emptyList(), emptyList()),
           sourceRootEntity = SourceRootEntity(virtualSourceDir1, "java-source"),
           javaSourceRootEntity = JavaSourceRootEntity(false, sourcePackagePrefix1),
-          module = expectedModuleEntity,
+          parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
         val virtualSourceDir2 = sourceDir2.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedJavaSourceRootEntityDetails2 = ExpectedJavaSourceRootEntityDetails(
+        val expectedJavaSourceRootEntity2 = ExpectedJavaSourceRootEntity(
           contentRootEntity = ContentRootEntity(virtualSourceDir2, emptyList(), emptyList()),
           sourceRootEntity = SourceRootEntity(virtualSourceDir2, "java-source"),
           javaSourceRootEntity = JavaSourceRootEntity(false, sourcePackagePrefix2),
-          module = expectedModuleEntity,
+          parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
 
-        workspaceModelLoadedEntries(JavaSourceRootEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-          listOf(expectedJavaSourceRootEntityDetails1, expectedJavaSourceRootEntityDetails2),
-          this@JavaModuleUpdaterTest::validateJavaSourceRootEntity
+        loadedEntries(JavaSourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
+          expectedJavaSourceRootEntity1,
+          expectedJavaSourceRootEntity2
         )
 
         val virtualResourceUrl1 = resourcePath1.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedJavaResourceRootEntityDetails1 = ExpectedJavaResourceRootEntityDetails(
+        val expectedJavaResourceRootEntity1 = ExpectedJavaResourceRootEntity(
           contentRootEntity = ContentRootEntity(virtualResourceUrl1, emptyList(), emptyList()),
           sourceRootEntity = SourceRootEntity(virtualResourceUrl1, "java-resource"),
           javaResourceRootEntity = JavaResourceRootEntity(false, ""),
-          module = expectedModuleEntity,
+          parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
         val virtualResourceUrl2 = resourcePath2.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedJavaResourceRootEntityDetails2 = ExpectedJavaResourceRootEntityDetails(
+        val expectedJavaResourceRootEntity2 = ExpectedJavaResourceRootEntity(
           contentRootEntity = ContentRootEntity(virtualResourceUrl2, emptyList(), emptyList()),
           sourceRootEntity = SourceRootEntity(virtualResourceUrl2, "java-resource"),
           javaResourceRootEntity = JavaResourceRootEntity(false, ""),
-          module = expectedModuleEntity,
+          parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
 
-        workspaceModelLoadedEntries(JavaResourceRootEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-          listOf(expectedJavaResourceRootEntityDetails1, expectedJavaResourceRootEntityDetails2),
-          this@JavaModuleUpdaterTest::validateJavaResourceRootEntity
+        loadedEntries(JavaResourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
+          expectedJavaResourceRootEntity1,
+          expectedJavaResourceRootEntity2
         )
       }
     }
@@ -352,141 +336,134 @@ internal class JavaModuleUpdaterTest : WorkspaceModelEntityWithoutParentModuleUp
         val javaModules = listOf(javaModule1, javaModule2)
 
         // when
-        lateinit var returnedModuleEntries: List<ModuleEntity>
-
-        WriteCommandAction.runWriteCommandAction(project) {
-          returnedModuleEntries = updater.addEntries(javaModules)
+        val returnedModuleEntries = runTestWriteAction {
+          updater.addEntries(javaModules)
         }
 
         // then
-        val expectedModuleEntity1 = ModuleEntity(
-          name = "module1",
-          type = "JAVA_MODULE",
-          dependencies = listOf(
-            ModuleDependencyItem.Exportable.ModuleDependency(
-              module = ModuleId("module2"),
-              exported = true,
-              scope = ModuleDependencyItem.DependencyScope.COMPILE,
-              productionOnTest = true,
-            ),
-            ModuleDependencyItem.Exportable.ModuleDependency(
-              module = ModuleId("module3"),
-              exported = true,
-              scope = ModuleDependencyItem.DependencyScope.COMPILE,
-              productionOnTest = true,
-            ),
-            ModuleDependencyItem.Exportable.LibraryDependency(
-              library = LibraryId(
-                name = "lib1",
-                tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+        val expectedModuleEntity1 = ExpectedModuleEntity(
+          moduleEntity = ModuleEntity(
+            name = "module1",
+            type = "JAVA_MODULE",
+            dependencies = listOf(
+              ModuleDependencyItem.Exportable.ModuleDependency(
+                module = ModuleId("module2"),
+                exported = true,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                productionOnTest = true,
               ),
-              exported = false,
-              scope = ModuleDependencyItem.DependencyScope.COMPILE,
-            ),
-            ModuleDependencyItem.Exportable.LibraryDependency(
-              library = LibraryId(
-                name = "lib2",
-                tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+              ModuleDependencyItem.Exportable.ModuleDependency(
+                module = ModuleId("module3"),
+                exported = true,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                productionOnTest = true,
               ),
-              exported = false,
-              scope = ModuleDependencyItem.DependencyScope.COMPILE,
-            ),
-            ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
-            ModuleDependencyItem.ModuleSourceDependency,
+              ModuleDependencyItem.Exportable.LibraryDependency(
+                library = LibraryId(
+                  name = "lib1",
+                  tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+                ),
+                exported = false,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+              ),
+              ModuleDependencyItem.Exportable.LibraryDependency(
+                library = LibraryId(
+                  name = "lib2",
+                  tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+                ),
+                exported = false,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+              ),
+              ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
+              ModuleDependencyItem.ModuleSourceDependency,
+            )
           )
         )
 
-        val expectedModuleEntity2 = ModuleEntity(
-          name = "module2",
-          type = "JAVA_MODULE",
-          dependencies = listOf(
-            ModuleDependencyItem.Exportable.ModuleDependency(
-              module = ModuleId("module3"),
-              exported = true,
-              scope = ModuleDependencyItem.DependencyScope.COMPILE,
-              productionOnTest = true,
-            ),
-            ModuleDependencyItem.Exportable.LibraryDependency(
-              library = LibraryId(
-                name = "lib1",
-                tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module2")),
+        val expectedModuleEntity2 = ExpectedModuleEntity(
+          moduleEntity = ModuleEntity(
+            name = "module2",
+            type = "JAVA_MODULE",
+            dependencies = listOf(
+              ModuleDependencyItem.Exportable.ModuleDependency(
+                module = ModuleId("module3"),
+                exported = true,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                productionOnTest = true,
               ),
-              exported = false,
-              scope = ModuleDependencyItem.DependencyScope.COMPILE,
-            ),
-            ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
-            ModuleDependencyItem.ModuleSourceDependency,
+              ModuleDependencyItem.Exportable.LibraryDependency(
+                library = LibraryId(
+                  name = "lib1",
+                  tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module2")),
+                ),
+                exported = false,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+              ),
+              ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
+              ModuleDependencyItem.ModuleSourceDependency,
+            )
           )
         )
 
-        returnedModuleEntries shouldContainExactlyInAnyOrder Pair(
-          listOf(expectedModuleEntity1, expectedModuleEntity2), this@JavaModuleUpdaterTest::validateModuleEntity
-        )
+        val expectedModuleEntries = listOf(expectedModuleEntity1, expectedModuleEntity2)
 
-        workspaceModelLoadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-          listOf(expectedModuleEntity1, expectedModuleEntity2), this@JavaModuleUpdaterTest::validateModuleEntity
-        )
+        returnedModuleEntries shouldContainExactlyInAnyOrder expectedModuleEntries
+        loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder expectedModuleEntries
 
         val virtualSourceDir11 = sourceDir11.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedJavaSourceRootEntityDetails11 = ExpectedJavaSourceRootEntityDetails(
+        val expectedJavaSourceRootEntity11 = ExpectedJavaSourceRootEntity(
           contentRootEntity = ContentRootEntity(virtualSourceDir11, emptyList(), emptyList()),
           sourceRootEntity = SourceRootEntity(virtualSourceDir11, "java-source"),
           javaSourceRootEntity = JavaSourceRootEntity(false, sourcePackagePrefix11),
-          module = expectedModuleEntity1,
+          parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
         val virtualSourceDir12 = sourceDir12.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedJavaSourceRootEntityDetails12 = ExpectedJavaSourceRootEntityDetails(
+        val expectedJavaSourceRootEntity12 = ExpectedJavaSourceRootEntity(
           contentRootEntity = ContentRootEntity(virtualSourceDir12, emptyList(), emptyList()),
           sourceRootEntity = SourceRootEntity(virtualSourceDir12, "java-source"),
           javaSourceRootEntity = JavaSourceRootEntity(false, sourcePackagePrefix12),
-          module = expectedModuleEntity1,
+          parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
         val virtualSourceDir21 = sourceDir21.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedJavaSourceRootEntityDetails21 = ExpectedJavaSourceRootEntityDetails(
+        val expectedJavaSourceRootEntity21 = ExpectedJavaSourceRootEntity(
           contentRootEntity = ContentRootEntity(virtualSourceDir21, emptyList(), emptyList()),
           sourceRootEntity = SourceRootEntity(virtualSourceDir21, "java-source"),
           javaSourceRootEntity = JavaSourceRootEntity(false, sourcePackagePrefix21),
-          module = expectedModuleEntity2,
+          parentModuleEntity = expectedModuleEntity2.moduleEntity,
         )
 
-        workspaceModelLoadedEntries(JavaSourceRootEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-          listOf(
-            expectedJavaSourceRootEntityDetails11,
-            expectedJavaSourceRootEntityDetails12,
-            expectedJavaSourceRootEntityDetails21
-          ),
-          this@JavaModuleUpdaterTest::validateJavaSourceRootEntity
+        loadedEntries(JavaSourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
+          expectedJavaSourceRootEntity11,
+          expectedJavaSourceRootEntity12,
+          expectedJavaSourceRootEntity21
         )
 
         val virtualResourceUrl11 = resourcePath11.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedJavaResourceRootEntityDetails11 = ExpectedJavaResourceRootEntityDetails(
+        val expectedJavaResourceRootEntity11 = ExpectedJavaResourceRootEntity(
           contentRootEntity = ContentRootEntity(virtualResourceUrl11, emptyList(), emptyList()),
           sourceRootEntity = SourceRootEntity(virtualResourceUrl11, "java-resource"),
           javaResourceRootEntity = JavaResourceRootEntity(false, ""),
-          module = expectedModuleEntity1,
+          parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
         val virtualResourceUrl12 = resourcePath12.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedJavaResourceRootEntityDetails12 = ExpectedJavaResourceRootEntityDetails(
+        val expectedJavaResourceRootEntity12 = ExpectedJavaResourceRootEntity(
           contentRootEntity = ContentRootEntity(virtualResourceUrl12, emptyList(), emptyList()),
           sourceRootEntity = SourceRootEntity(virtualResourceUrl12, "java-resource"),
           javaResourceRootEntity = JavaResourceRootEntity(false, ""),
-          module = expectedModuleEntity1,
+          parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
         val virtualResourceUrl21 = resourcePath21.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedJavaResourceRootEntityDetails21 = ExpectedJavaResourceRootEntityDetails(
+        val expectedJavaResourceRootEntity21 = ExpectedJavaResourceRootEntity(
           contentRootEntity = ContentRootEntity(virtualResourceUrl21, emptyList(), emptyList()),
           sourceRootEntity = SourceRootEntity(virtualResourceUrl21, "java-resource"),
           javaResourceRootEntity = JavaResourceRootEntity(false, ""),
-          module = expectedModuleEntity2,
+          parentModuleEntity = expectedModuleEntity2.moduleEntity,
         )
 
-        workspaceModelLoadedEntries(JavaResourceRootEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-          listOf(
-            expectedJavaResourceRootEntityDetails11,
-            expectedJavaResourceRootEntityDetails12,
-            expectedJavaResourceRootEntityDetails21
-          ),
-          this@JavaModuleUpdaterTest::validateJavaResourceRootEntity
+        loadedEntries(JavaResourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
+          expectedJavaResourceRootEntity11,
+          expectedJavaResourceRootEntity12,
+          expectedJavaResourceRootEntity21
         )
       }
     }
@@ -521,34 +498,29 @@ internal class JavaModuleUpdaterTest : WorkspaceModelEntityWithoutParentModuleUp
         )
 
         // when
-        lateinit var returnedModuleEntity: ModuleEntity
-
-        WriteCommandAction.runWriteCommandAction(project) {
-          returnedModuleEntity = updater.addEntity(javaModule)
+        val returnedModuleEntity = runTestWriteAction {
+          updater.addEntity(javaModule)
         }
 
         // then
-        val expectedModuleEntity = ModuleEntity(
-          name = "module1",
-          type = "JAVA_MODULE",
-          dependencies = emptyList(),
+        val expectedModuleEntity = ExpectedModuleEntity(
+          moduleEntity = ModuleEntity(
+            name = "module1",
+            type = "JAVA_MODULE",
+            dependencies = emptyList(),
+          )
         )
 
-        validateModuleEntity(returnedModuleEntity, expectedModuleEntity)
-
-        workspaceModelLoadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-          listOf(expectedModuleEntity), this@JavaModuleUpdaterTest::validateModuleEntity
-        )
+        returnedModuleEntity shouldBeEqual expectedModuleEntity
+        loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedModuleEntity)
 
         val virtualBaseDirContentRootPath = baseDirContentRootPath.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedContentRootEntityDetails = ExpectedContentRootEntityDetails(
+        val expectedContentRootEntity = ExpectedContentRootEntity(
           contentRootEntity = ContentRootEntity(virtualBaseDirContentRootPath, emptyList(), emptyList()),
-          module = expectedModuleEntity,
+          parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
 
-        workspaceModelLoadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-          listOf(expectedContentRootEntityDetails), this@JavaModuleUpdaterTest::validateContentRootEntity
-        )
+        loadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedContentRootEntity)
       }
     }
 
@@ -599,47 +571,46 @@ internal class JavaModuleUpdaterTest : WorkspaceModelEntityWithoutParentModuleUp
         val javaModules = listOf(javaModule1, javaModule2)
 
         // when
-        lateinit var returnedModuleEntries: List<ModuleEntity>
-
-        WriteCommandAction.runWriteCommandAction(project) {
-          returnedModuleEntries = updater.addEntries(javaModules)
+        val returnedModuleEntries = runTestWriteAction {
+          updater.addEntries(javaModules)
         }
 
         // then
-        val expectedModuleEntity1 = ModuleEntity(
-          name = "module1",
-          type = "JAVA_MODULE",
-          dependencies = emptyList(),
+        val expectedModuleEntity1 = ExpectedModuleEntity(
+          moduleEntity = ModuleEntity(
+            name = "module1",
+            type = "JAVA_MODULE",
+            dependencies = emptyList(),
+          )
         )
-        val expectedModuleEntity2 = ModuleEntity(
-          name = "module2",
-          type = "JAVA_MODULE",
-          dependencies = emptyList(),
+        val expectedModuleEntity2 = ExpectedModuleEntity(
+          moduleEntity = ModuleEntity(
+            name = "module2",
+            type = "JAVA_MODULE",
+            dependencies = emptyList(),
+          )
         )
 
-        returnedModuleEntries shouldContainExactlyInAnyOrder Pair(
-          listOf(expectedModuleEntity1, expectedModuleEntity2), this@JavaModuleUpdaterTest::validateModuleEntity
-        )
+        val expectedModuleEntries = listOf(expectedModuleEntity1, expectedModuleEntity2)
 
-        workspaceModelLoadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-          listOf(expectedModuleEntity1, expectedModuleEntity2), this@JavaModuleUpdaterTest::validateModuleEntity
-        )
+        returnedModuleEntries shouldContainExactlyInAnyOrder expectedModuleEntries
+        loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder expectedModuleEntries
 
         val virtualBaseDirContentRootPath1 = baseDirContentRootPath1.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedContentRootEntityDetails1 = ExpectedContentRootEntityDetails(
+        val expectedContentRootEntity1 = ExpectedContentRootEntity(
           contentRootEntity = ContentRootEntity(virtualBaseDirContentRootPath1, emptyList(), emptyList()),
-          module = expectedModuleEntity1,
+          parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
 
         val virtualBaseDirContentRootPath2 = baseDirContentRootPath2.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedContentRootEntityDetails2 = ExpectedContentRootEntityDetails(
+        val expectedContentRootEntity2 = ExpectedContentRootEntity(
           contentRootEntity = ContentRootEntity(virtualBaseDirContentRootPath2, emptyList(), emptyList()),
-          module = expectedModuleEntity2,
+          parentModuleEntity = expectedModuleEntity2.moduleEntity,
         )
 
-        workspaceModelLoadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-          listOf(expectedContentRootEntityDetails1, expectedContentRootEntityDetails2),
-          this@JavaModuleUpdaterTest::validateContentRootEntity
+        loadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
+          expectedContentRootEntity1,
+          expectedContentRootEntity2
         )
       }
     }
@@ -648,67 +619,20 @@ internal class JavaModuleUpdaterTest : WorkspaceModelEntityWithoutParentModuleUp
   private fun runTestForUpdaters(
     updaters: List<KClass<out WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity>>>,
     test: (WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity>) -> Unit,
-  ) = updaters
-    .map { it.primaryConstructor!! }
-    .forEach {
-      beforeEach()
-      test(it.call(workspaceModelEntityUpdaterConfig))
-    }
+  ) =
+    updaters
+      .map { it.primaryConstructor!! }
+      .forEach { runTest(it, test) }
 
-  private fun validateJavaSourceRootEntity(
-    actual: JavaSourceRootEntity,
-    expected: ExpectedJavaSourceRootEntityDetails
+  private fun runTest(
+    updaterConstructor: KFunction<WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity>>,
+    test: (WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity>) -> Unit,
   ) {
-    actual.generated shouldBe expected.javaSourceRootEntity.generated
-    actual.packagePrefix shouldBe expected.javaSourceRootEntity.packagePrefix
+    beforeEach()
 
-    val actualSourceRoot = actual.sourceRoot
-    actualSourceRoot.url shouldBe expected.sourceRootEntity.url
-    actualSourceRoot.rootType shouldBe expected.sourceRootEntity.rootType
+    val workspaceModelEntityUpdaterConfig =
+      WorkspaceModelEntityUpdaterConfig(workspaceModel, virtualFileUrlManager, projectConfigSource)
 
-    val actualContentRoot = actualSourceRoot.contentRoot
-    actualContentRoot.url shouldBe expected.contentRootEntity.url
-    actualContentRoot.excludedUrls shouldBe expected.contentRootEntity.excludedUrls
-    actualContentRoot.excludedPatterns shouldBe expected.contentRootEntity.excludedPatterns
-
-    val actualModuleEntity = actualContentRoot.module
-    validateModuleEntity(actualModuleEntity, expected.module)
-  }
-
-  private fun validateJavaResourceRootEntity(
-    actual: JavaResourceRootEntity,
-    expected: ExpectedJavaResourceRootEntityDetails
-  ) {
-    actual.generated shouldBe expected.javaResourceRootEntity.generated
-    actual.relativeOutputPath shouldBe expected.javaResourceRootEntity.relativeOutputPath
-
-    val actualSourceRoot = actual.sourceRoot
-    actualSourceRoot.url shouldBe expected.sourceRootEntity.url
-    actualSourceRoot.rootType shouldBe expected.sourceRootEntity.rootType
-
-    val actualContentRoot = actualSourceRoot.contentRoot
-    actualContentRoot.url shouldBe expected.contentRootEntity.url
-    actualContentRoot.excludedUrls shouldBe expected.contentRootEntity.excludedUrls
-    actualContentRoot.excludedPatterns shouldBe expected.contentRootEntity.excludedPatterns
-
-    val actualModuleEntity = actualContentRoot.module
-    validateModuleEntity(actualModuleEntity, expected.module)
-  }
-
-  private fun validateContentRootEntity(
-    actual: ContentRootEntity,
-    expected: ExpectedContentRootEntityDetails,
-  ) {
-    actual.url shouldBe expected.contentRootEntity.url
-    actual.excludedUrls shouldContainExactlyInAnyOrder expected.contentRootEntity.excludedUrls
-    actual.excludedPatterns shouldContainExactlyInAnyOrder expected.contentRootEntity.excludedPatterns
-
-    validateModuleEntity(actual.module, expected.module)
-  }
-
-  private fun validateModuleEntity(actual: ModuleEntity, expected: ModuleEntity) {
-    actual.name shouldBe expected.name
-    actual.type shouldBe expected.type
-    actual.dependencies shouldContainExactlyInAnyOrder expected.dependencies
+    test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))
   }
 }

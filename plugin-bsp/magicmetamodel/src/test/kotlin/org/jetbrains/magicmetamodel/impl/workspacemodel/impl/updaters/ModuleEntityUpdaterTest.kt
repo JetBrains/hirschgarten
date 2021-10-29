@@ -1,23 +1,39 @@
 @file:Suppress("LongMethod")
+
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.workspaceModel.storage.bridgeEntities.LibraryId
 import com.intellij.workspaceModel.storage.bridgeEntities.LibraryTableId
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotest.matchers.shouldBe
+import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
+import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
+import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-private data class ExpectedModuleEntityDetails(
-  val moduleEntity: ModuleEntity,
-)
-
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
-internal class ModuleEntityUpdaterTest : WorkspaceModelEntityWithoutParentModuleUpdaterBaseTest() {
+internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
+
+  private val defaultDependencies = listOf(
+    ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
+    ModuleDependencyItem.ModuleSourceDependency,
+  )
+
+  private lateinit var moduleEntityUpdater: ModuleEntityUpdater
+
+  @BeforeEach
+  override fun beforeEach() {
+    // given
+    super.beforeEach()
+
+    val workspaceModelEntityUpdaterConfig =
+      WorkspaceModelEntityUpdaterConfig(workspaceModel, virtualFileUrlManager, projectConfigSource)
+    moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies)
+  }
 
   @Test
   fun `should add one module to the workspace model`() {
@@ -43,22 +59,13 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelEntityWithoutParentModule
       )
     )
 
-    val defaultDependencies = listOf(
-      ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
-      ModuleDependencyItem.ModuleSourceDependency,
-    )
-
     // when
-    val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies)
-
-    lateinit var returnedModuleEntity: ModuleEntity
-
-    WriteCommandAction.runWriteCommandAction(project) {
-      returnedModuleEntity = moduleEntityUpdater.addEntity(module)
+    val returnedModuleEntity = runTestWriteAction {
+      moduleEntityUpdater.addEntity(module)
     }
 
     // then
-    val expectedModuleDetails = ExpectedModuleEntityDetails(
+    val expectedModule = ExpectedModuleEntity(
       moduleEntity = ModuleEntity(
         name = "module1",
         type = "JAVA_MODULE",
@@ -97,11 +104,8 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelEntityWithoutParentModule
       )
     )
 
-    validateModuleEntity(returnedModuleEntity, expectedModuleDetails)
-
-    workspaceModelLoadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedModuleDetails), this::validateModuleEntity
-    )
+    returnedModuleEntity shouldBeEqual expectedModule
+    loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedModule)
   }
 
   @Test
@@ -143,24 +147,15 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelEntityWithoutParentModule
       )
     )
 
-    val defaultDependencies = listOf(
-      ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
-      ModuleDependencyItem.ModuleSourceDependency,
-    )
-
     val modules = listOf(module1, module2)
 
     // when
-    val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies)
-
-    lateinit var returnedModuleEntries: List<ModuleEntity>
-
-    WriteCommandAction.runWriteCommandAction(project) {
-      returnedModuleEntries = moduleEntityUpdater.addEntries(modules)
+    val returnedModuleEntries = runTestWriteAction {
+      moduleEntityUpdater.addEntries(modules)
     }
 
     // then
-    val expectedModule1Details = ExpectedModuleEntityDetails(
+    val expectedModule1 = ExpectedModuleEntity(
       moduleEntity = ModuleEntity(
         name = "module1",
         type = "JAVA_MODULE",
@@ -198,7 +193,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelEntityWithoutParentModule
         )
       )
     )
-    val expectedModule2Details = ExpectedModuleEntityDetails(
+    val expectedModule2 = ExpectedModuleEntity(
       moduleEntity = ModuleEntity(
         name = "module2",
         type = "JAVA_MODULE",
@@ -223,17 +218,9 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelEntityWithoutParentModule
       )
     )
 
-    returnedModuleEntries shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedModule1Details, expectedModule2Details), this::validateModuleEntity
-    )
-    workspaceModelLoadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedModule1Details, expectedModule2Details), this::validateModuleEntity
-    )
-  }
+    val expectedModuleEntries = listOf(expectedModule1, expectedModule2)
 
-  private fun validateModuleEntity(actual: ModuleEntity, expected: ExpectedModuleEntityDetails) {
-    actual.name shouldBe expected.moduleEntity.name
-    actual.type shouldBe expected.moduleEntity.type
-    actual.dependencies shouldContainExactlyInAnyOrder expected.moduleEntity.dependencies
+    returnedModuleEntries shouldContainExactlyInAnyOrder expectedModuleEntries
+    loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder expectedModuleEntries
   }
 }
