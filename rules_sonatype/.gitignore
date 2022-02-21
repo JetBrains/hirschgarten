@@ -1,23 +1,13 @@
-.lib
-*~
-*.class
-*.log
-\#*
+# idea.
+.idea/
+*.iml
 
-# sbt specific
-dist/*
-target/
-lib_managed/
-src_managed/
-project/boot/
-project/plugins/project/
+# macOS
+.DS_Store
 
-# Scala-IDE specific
-.scala_dependencies
-.idea*
+# bazel
+bazel-*
 
-src/sbt-test/*/*/bin/.lib
-
-bazel-*/
-.bazelbsp
-.bsp
+# bsp
+.bazelbsp/
+.bsp/

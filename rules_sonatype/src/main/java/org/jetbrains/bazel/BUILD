@@ -1,6 +1,9 @@
 java_binary(
     name = "MavenPublisher",
-    srcs = ["MavenPublisher.java", "ByteStreams.java"],
+    srcs = [
+        "ByteStreams.java",
+        "MavenPublisher.java",
+    ],
     javacopts = [
         "-source",
         "8",
