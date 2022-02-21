@@ -14,8 +14,12 @@ A set of rules for publishing your project to the Maven Central repository throu
     
 ## Configurations
 In the Workspace file, the following must be added in order install:
-- [rules_scala](https://github.com/bazelbuild/rules_scala)
 - [rules_jvm_external](https://github.com/bazelbuild/rules_jvm_external)
+- [bazel_skylib](https://github.com/bazelbuild/bazel-skylib)
+- [rules_python](https://github.com/bazelbuild/rules_python)
+- [zlib](https://zlib.net)
+- [com_google_protobuf](https://github.com/protocolbuffers/protobuf)
+- [rules_scala](https://github.com/bazelbuild/rules_scala)
 
 
 ```python
@@ -129,12 +133,11 @@ scala_repositories()
 
 # ======================================================================================================================
 
-#TODO: Change this to the proper version
-BAZEL_SONATYPE_TAG = "28894f9ad6373a657ab4a395c8e7342277722347"
+BAZEL_SONATYPE_TAG = "0.0.1"
 http_archive(
     name = "bazel_sonatype",
-    strip_prefix = "bazel-sonatype-%s" % BAZEL_SONATYPE_TAG,
-    url = "https://github.com/JetBrains/bazel-sonatype/archive/%s.zip" % BAZEL_SONATYPE_TAG,
+    strip_prefix = "bazel-sonatype-{}".format(BAZEL_SONATYPE_TAG),
+    url = "https://github.com/JetBrains/bazel-sonatype/archive/{}.zip".format(BAZEL_SONATYPE_TAG),
 )
 
 load("@bazel_sonatype//:defs.bzl", "sonatype_dependencies")
