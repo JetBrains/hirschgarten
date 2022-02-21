@@ -1,6 +1,5 @@
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
-
 def sonatype_dependencies():
     maven_install(
         name = "bazel_sonatype_deps",
