@@ -1,16 +1,15 @@
 package org.jetbrains.bsp.testkit.client
 
 import ch.epfl.scala.bsp4j._
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import org.jetbrains.bsp.testkit.client.TestClient.{withLifetime, withSession}
 import org.junit.jupiter.api.Assertions.assertEquals
 
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.ExecutionException
-import scala.collection.JavaConverters.seqAsJavaListConverter
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.jdk.CollectionConverters.CollectionHasAsScala
+import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
 import scala.jdk.DurationConverters._
 import scala.jdk.FutureConverters.CompletionStageOps
 import scala.util.{Failure, Success}
@@ -57,7 +56,7 @@ object TestClient {
 }
 
 class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
-  private val gson = new Gson()
+  private val gson = new GsonBuilder().setPrettyPrinting().create()
 
   private def test(timeout: Duration, ignoreEarlyExit: Boolean = false)(
     test: Session => Future[Unit]
