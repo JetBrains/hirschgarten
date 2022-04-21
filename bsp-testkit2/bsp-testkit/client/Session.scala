@@ -18,7 +18,7 @@ import scala.jdk.FutureConverters.CompletionStageOps
  * @param workspacePath
  * the path to the workspace
  */
-class Session(workspacePath: Path) extends AutoCloseable {
+class Session(val workspacePath: Path) extends AutoCloseable {
   private val workspaceFile = workspacePath.toFile
   private val connectionDetails = readBspConnectionDetails(workspaceFile)
 

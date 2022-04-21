@@ -15,6 +15,7 @@ def _dependency(coordinates, exclusions = None):
 
 _deps = [
     _dependency("com.google.code.gson:gson:2.8.9"),
+    _dependency("com.google.guava:guava:31.1-jre"),
     _dependency("ch.epfl.scala:bsp4j:2.0.0"),
     _dependency("org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.12.0"),
     _dependency("org.junit.jupiter:junit-jupiter:5.8.2"),
