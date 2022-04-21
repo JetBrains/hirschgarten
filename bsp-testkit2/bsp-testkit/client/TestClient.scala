@@ -1,9 +1,8 @@
 package org.jetbrains.bsp.testkit.client
 
 import ch.epfl.scala.bsp4j._
-import com.google.gson.GsonBuilder
 import org.jetbrains.bsp.testkit.client.TestClient.{withLifetime, withSession}
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.jetbrains.bsp.testkit.utils.JsonComparator
 
 import java.nio.file.Path
 import java.time.Duration
@@ -56,7 +55,6 @@ object TestClient {
 }
 
 class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
-  private val gson = new GsonBuilder().setPrettyPrinting().create()
 
   private def test(timeout: Duration, ignoreEarlyExit: Boolean = false)(
     test: Session => Future[Unit]
@@ -70,7 +68,14 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
   }
 
   private def assertJsonEquals[T](expected: T, actual: T): Unit = {
-    assertEquals(gson.toJson(expected), gson.toJson(actual))
+    // TODO: That's a terrible hack - we're following the symlink here
+    val bazelCachePath = workspacePath.resolve("bazel-out").toRealPath().getParent
+
+    val transform = (s: String) =>
+      s.replace("$WORKSPACE", workspacePath.toString)
+        .replace("$BAZEL_CACHE", bazelCachePath.toString)
+
+    JsonComparator.assertJsonEquals(expected, actual, transform, identity)
   }
 
   def testJavacOptions(timeout: Duration)(params: JavacOptionsParams, expectedResult: JavacOptionsResult): Unit = {
