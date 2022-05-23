@@ -7,3 +7,11 @@ scala_library(
         "//bsp-testkit/client",
     ],
 )
+
+scala_library(
+    name = "bazel-testkit-client",
+    visibility = ["//visibility:public"],
+    exports = [
+        "//bsp-testkit/client/bazel",
+    ],
+)
