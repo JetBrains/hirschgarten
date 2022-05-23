@@ -1,9 +1,12 @@
 package org.jetbrains.bsp.testkit.client
 
 import ch.epfl.scala.bsp4j._
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import org.jetbrains.bsp.testkit.client.TestClient.{withLifetime, withSession}
-import org.jetbrains.bsp.testkit.utils.JsonComparator
+import org.jetbrains.bsp.testkit.JsonComparator
 
+import java.lang.reflect.Type
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.ExecutionException
@@ -54,7 +57,9 @@ object TestClient {
   }
 }
 
-class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
+class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildParams, val transformJson: String => String) {
+
+  val gson = new Gson()
 
   private def test(timeout: Duration, ignoreEarlyExit: Boolean = false)(
     test: Session => Future[Unit]
@@ -67,21 +72,25 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
     }
   }
 
+  private def applyJsonTransform[T](element: T, typeOfT: Type): T = {
+    val json = gson.toJson(element, typeOfT)
+    val transformed = transformJson(json)
+    gson.fromJson[T](transformed, typeOfT)
+  }
+
   private def assertJsonEquals[T](expected: T, actual: T): Unit = {
-    // TODO: That's a terrible hack - we're following the symlink here
-    val bazelCachePath = workspacePath.resolve("bazel-out").toRealPath().getParent
-
-    val transform = (s: String) =>
-      s.replace("$WORKSPACE", workspacePath.toString)
-        .replace("$BAZEL_CACHE", bazelCachePath.toString)
-
-    JsonComparator.assertJsonEquals(expected, actual, transform, identity)
+    val typeOfT = new TypeToken[T] {}.getType
+    val transformedExpected = applyJsonTransform(expected, typeOfT)
+    val transformedActual = applyJsonTransform(actual, typeOfT)
+    JsonComparator.assertJsonEquals(transformedExpected, transformedActual, typeOfT)
   }
 
   def testJavacOptions(timeout: Duration)(params: JavacOptionsParams, expectedResult: JavacOptionsResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[JavacOptionsParams] {}.getType
+    val transformedParams = applyJsonTransform[JavacOptionsParams](params, typeOfT)
     test(timeout) { session =>
-      session.server.buildTargetJavacOptions(params).asScala.map { result =>
+      session.server.buildTargetJavacOptions(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -89,8 +98,10 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
 
   def testScalacOptions(timeout: Duration)(params: ScalacOptionsParams, expectedResult: ScalacOptionsResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[ScalacOptionsParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.buildTargetScalacOptions(params).asScala.map { result =>
+      session.server.buildTargetScalacOptions(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -107,8 +118,10 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
 
   def testCppOptions(timeout: Duration)(params: CppOptionsParams, expectedResult: CppOptionsResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[CppOptionsParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.buildTargetCppOptions(params).asScala.map { result =>
+      session.server.buildTargetCppOptions(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -116,8 +129,10 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
 
   def testSources(timeout: Duration)(params: SourcesParams, expectedResult: SourcesResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[SourcesParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.buildTargetSources(params).asScala.map { result =>
+      session.server.buildTargetSources(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -125,8 +140,10 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
 
   def testResources(timeout: Duration)(params: ResourcesParams, expectedResult: ResourcesResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[ResourcesParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.buildTargetResources(params).asScala.map { result =>
+      session.server.buildTargetResources(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -134,8 +151,10 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
 
   def testInverseSources(timeout: Duration)(params: InverseSourcesParams, expectedResult: InverseSourcesResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[InverseSourcesParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.buildTargetInverseSources(params).asScala.map { result =>
+      session.server.buildTargetInverseSources(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -143,8 +162,10 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
 
   def testScalaMainClasses(timeout: Duration)(params: ScalaMainClassesParams, expectedResult: ScalaMainClassesResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[ScalaMainClassesParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.buildTargetScalaMainClasses(params).asScala.map { result =>
+      session.server.buildTargetScalaMainClasses(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -152,8 +173,10 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
 
   def testScalaTestClasses(timeout: Duration)(params: ScalaTestClassesParams, expectedResult: ScalaTestClassesResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[ScalaTestClassesParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.buildTargetScalaTestClasses(params).asScala.map { result =>
+      session.server.buildTargetScalaTestClasses(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -161,8 +184,10 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
 
   def testDependencySources(timeout: Duration)(params: DependencySourcesParams, expectedResult: DependencySourcesResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[DependencySourcesParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.buildTargetDependencySources(params).asScala.map { result =>
+      session.server.buildTargetDependencySources(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -170,8 +195,10 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
 
   def testJvmRunEnvironment(timeout: Duration)(params: JvmRunEnvironmentParams, expectedResult: JvmRunEnvironmentResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[JvmRunEnvironmentParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.jvmRunEnvironment(params).asScala.map { result =>
+      session.server.jvmRunEnvironment(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -179,13 +206,14 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
 
   def testJvmTestEnvironment(timeout: Duration)(params: JvmTestEnvironmentParams, expectedResult: JvmTestEnvironmentResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[JvmTestEnvironmentParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.jvmTestEnvironment(params).asScala.map { result =>
+      session.server.jvmTestEnvironment(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
   }
-
 
   /**
    * Simulates a typical workflow
@@ -206,7 +234,6 @@ class TestClient(workspacePath: Path, initializeParams: InitializeBuildParams) {
       val getJavacOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetJavacOptions(new JavacOptionsParams(targetIds)).asScala
       val getScalacOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetScalacOptions(new ScalacOptionsParams(targetIds)).asScala
       val getCppOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetCppOptions(new CppOptionsParams(targetIds)).asScala
-
 
       for {
         targets <- getWorkspaceTargets

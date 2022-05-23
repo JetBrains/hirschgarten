@@ -1,9 +1,8 @@
 package org.jetbrains.bsp.testkit
-package utils
 
 import com.google.common.collect.Maps
-import com.google.gson.{Gson, GsonBuilder, JsonArray, JsonElement, JsonObject}
 import com.google.gson.reflect.TypeToken
+import com.google.gson.{GsonBuilder, JsonArray, JsonElement, JsonObject}
 import org.junit.jupiter.api.Assertions.assertTrue
 
 import java.lang.reflect.Type
@@ -14,15 +13,9 @@ object JsonComparator {
   private val gson = new GsonBuilder().create()
   private val mapType: Type = new TypeToken[java.util.Map[String, Object]]() {}.getType
 
-  private val jsonElementType: Type = new TypeToken[JsonElement]() {}.getType
-
-  def assertJsonEquals[T](expected: T, actual: T, transformExpected: String => String, transformActual: String => String): Unit = {
-    val t = new TypeToken[T]() {}.getType
-    val expectedJson = transformExpected(gson.toJson(expected, t))
-    val actualJson = transformActual(gson.toJson(actual, t))
-
-    val expectedObject = gson.fromJson[JsonElement](expectedJson, jsonElementType)
-    val actualObject = gson.fromJson[JsonElement](actualJson, jsonElementType)
+  def assertJsonEquals[T](expected: T, actual: T, typeOfT: Type): Unit = {
+    val expectedObject = gson.toJsonTree(expected, typeOfT)
+    val actualObject = gson.toJsonTree(actual, typeOfT)
 
     val sortedExpected = deepSort(expectedObject)
     val sortedActual = deepSort(actualObject)
