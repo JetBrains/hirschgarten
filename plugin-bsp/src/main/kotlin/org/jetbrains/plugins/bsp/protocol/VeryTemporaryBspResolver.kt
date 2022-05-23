@@ -39,7 +39,7 @@ class VeryTemporaryBspResolver(private val projectBaseDir: Path) {
 
     return ProjectDetails(
       targetsId = allTargetsIds,
-      targets = workspaceBuildTargetsResult.targets,
+      targets = workspaceBuildTargetsResult.targets.toSet(),
       sources = sourcesResult.items,
       resources = resourcesResult.items,
       dependenciesSources = dependencySourcesResult.items,

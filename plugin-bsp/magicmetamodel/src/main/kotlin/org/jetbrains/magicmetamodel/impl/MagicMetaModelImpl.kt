@@ -47,7 +47,7 @@ internal class MagicMetaModelImpl internal constructor(
   override fun loadDefaultTargets() {
     LOGGER.debug { "Calculating default targets to load..." }
 
-    val nonOverlappingTargetsToLoad by NonOverlappingTargetsDelegate(projectDetails.targetsId, overlappingTargetsGraph)
+    val nonOverlappingTargetsToLoad by NonOverlappingTargetsDelegate(projectDetails.targets, overlappingTargetsGraph)
 
     LOGGER.debug { "Calculating default targets to load done! Targets to load: $nonOverlappingTargetsToLoad" }
 

@@ -23,7 +23,7 @@ class TargetIdToModuleDetailsDelegateTest {
     // given
     val emptyProjectDetails = ProjectDetails(
       targetsId = emptyList(),
-      targets = emptyList(),
+      targets = setOf(),
       sources = emptyList(),
       resources = emptyList(),
       dependenciesSources = emptyList(),
@@ -49,7 +49,7 @@ class TargetIdToModuleDetailsDelegateTest {
     )
     val projectDetails = ProjectDetails(
       targetsId = listOf(targetId),
-      targets = listOf(target),
+      targets = setOf(target),
       sources = emptyList(),
       resources = emptyList(),
       dependenciesSources = emptyList(),
@@ -97,7 +97,7 @@ class TargetIdToModuleDetailsDelegateTest {
     )
     val projectDetails = ProjectDetails(
       targetsId = listOf(targetId),
-      targets = listOf(target),
+      targets = setOf(target),
       sources = listOf(targetSources),
       resources = listOf(targetResources),
       dependenciesSources = listOf(targetDependencySources),
@@ -188,7 +188,7 @@ class TargetIdToModuleDetailsDelegateTest {
 
     val projectDetails = ProjectDetails(
       targetsId = listOf(target1Id, target3Id, target2Id),
-      targets = listOf(target2, target1, target3),
+      targets = setOf(target2, target1, target3),
       sources = listOf(target3Sources, target2Sources1, target1Sources, target2Sources2),
       resources = listOf(target1Resources, target2Resources),
       dependenciesSources = listOf(target2DependencySources, target1DependencySources),

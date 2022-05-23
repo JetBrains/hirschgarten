@@ -34,6 +34,6 @@ internal object ModuleDetailsToJavaModuleTransformer : WorkspaceModelEntityTrans
   private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
     ContentRoot(
       // TODO what if null?
-      url = URI.create(inputEntity.target.baseDirectory ?: "file:///").toPath()
+      url = URI.create(inputEntity.target.baseDirectory ?: "file:///todo").toPath()
     )
 }

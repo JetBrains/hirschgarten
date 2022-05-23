@@ -21,7 +21,7 @@ public data class MagicMetaModelProjectConfig(
 
 public data class ProjectDetails(
   val targetsId: List<BuildTargetIdentifier>,
-  val targets: List<BuildTarget>,
+  val targets: Set<BuildTarget>,
   val sources: List<SourcesItem>,
   val resources: List<ResourcesItem>,
   val dependenciesSources: List<DependencySourcesItem>,
