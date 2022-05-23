@@ -22,7 +22,7 @@ class MagicMetaModelTest : WorkspaceModelBaseTest() {
 
       val projectDetails = ProjectDetails(
         targetsId = emptyList(),
-        targets = emptyList(),
+        targets = emptySet(),
         sources = emptyList(),
         resources = emptyList(),
         dependenciesSources = emptyList(),

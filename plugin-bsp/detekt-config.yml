@@ -4,3 +4,7 @@
 formatting:
   ParameterListWrapping:
     indentSize: 2
+
+complexity:
+  LongParameterList:
+    active: false
