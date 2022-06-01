@@ -15,6 +15,7 @@ internal object SourceItemToSourceRootTransformer :
   override fun transform(inputEntity: SourceItem): SourceRoot = when (inputEntity.kind) {
     SourceItemKind.FILE -> mapSourceItemFileToModuleSource(inputEntity)
     SourceItemKind.DIRECTORY -> mapSourceItemDirToModuleSource(inputEntity)
+    else -> throw TypeCastException("something is really wrong")
   }
 
   private fun mapSourceItemFileToModuleSource(sourceItem: SourceItem): SourceRoot {

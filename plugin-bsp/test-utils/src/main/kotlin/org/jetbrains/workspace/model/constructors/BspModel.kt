@@ -38,7 +38,13 @@ public class SourceItem(
 public class SourcesItem(
   target: BuildTargetIdentifier,
   sources: List<SourceItem>,
-) : ch.epfl.scala.bsp4j.SourcesItem(target, sources)
+  roots: List<String> = emptyList(),
+) : ch.epfl.scala.bsp4j.SourcesItem(target, sources) {
+
+  init {
+    super.setRoots(roots)
+  }
+}
 
 public class TextDocumentId(
   uri: String,
