@@ -132,6 +132,64 @@ class SourcesItemToJavaSourceRootTransformerTest {
   }
 
   @Test
+  fun `should return parent sources root for multiple sources items in the same directory`() {
+    // given
+    val sourceItem1 = SourceItem(
+      "file:///root/dir/example/package/a/",
+      SourceItemKind.DIRECTORY,
+      false
+    )
+    val sourceItem2 = SourceItem(
+      "file:///root/dir/example/package/a/b/",
+      SourceItemKind.DIRECTORY,
+      false
+    )
+    val sourceItem3 = SourceItem(
+      "file:///root/dir/example/package/a/b/c",
+      SourceItemKind.DIRECTORY,
+      false
+    )
+    val sourceItem4 = SourceItem(
+      "file:///another/root/dir/another/example/package/",
+      SourceItemKind.DIRECTORY,
+      false
+    )
+    val sourceRoots = listOf(
+      "file:///root/dir/",
+      "file:///another/root/dir/",
+    )
+
+    val sourcesItem1 = SourcesItem(
+      BuildTargetIdentifier("//target"),
+      listOf(sourceItem1)
+    )
+    sourcesItem1.roots = sourceRoots
+    val sourcesItem2 = SourcesItem(
+      BuildTargetIdentifier("//target"),
+      listOf(sourceItem2, sourceItem3, sourceItem4)
+    )
+    sourcesItem2.roots = sourceRoots
+
+    val sourcesItems = listOf(sourcesItem1, sourcesItem2)
+
+    // when
+    val javaSources = SourcesItemToJavaSourceRootTransformer.transform(sourcesItems)
+
+    // then
+    val expectedJavaSourceRoot1 = JavaSourceRoot(
+      sourceDir = URI.create("file:///root/dir/example/package/a/").toPath(),
+      generated = false,
+      packagePrefix = "example.package.a"
+    )
+    val expectedJavaSourceRoot2 = JavaSourceRoot(
+      sourceDir = URI.create("file:///another/root/dir/another/example/package/").toPath(),
+      generated = false,
+      packagePrefix = "another.example.package"
+    )
+    javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2)
+  }
+
+  @Test
   fun `should return sources roots for multiple sources items`() {
     // given
     val sourceItem1 = SourceItem(

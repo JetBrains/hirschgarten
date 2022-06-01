@@ -19,6 +19,7 @@ internal data class JavaSourceRoot(
   val sourceDir: Path,
   val generated: Boolean,
   val packagePrefix: String,
+  val excludedFiles: List<Path> = emptyList(),
 ) : WorkspaceModelEntity()
 
 internal class JavaSourceEntityUpdater(
@@ -41,7 +42,8 @@ internal class JavaSourceEntityUpdater(
     parentModuleEntity: ModuleEntity
   ): ContentRootEntity {
     val contentRoot = ContentRoot(
-      url = entityToAdd.sourceDir
+      url = entityToAdd.sourceDir,
+      excludedUrls = entityToAdd.excludedFiles,
     )
 
     return contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)

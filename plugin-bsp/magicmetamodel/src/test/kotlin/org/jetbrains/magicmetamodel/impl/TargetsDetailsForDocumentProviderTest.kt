@@ -40,8 +40,8 @@ class TargetsDetailsForDocumentProviderTest {
 
       val target1 = BuildTargetIdentifier("//target1")
 
-      val file1InTarget1Source = SourceItem(file1InTarget1Uri, SourceItemKind.FILE, false)
-      val file2InTarget1Source = SourceItem(file2InTarget1Uri, SourceItemKind.FILE, false)
+      val file1InTarget1Source = SourceItem(file1InTarget1Uri, SourceItemKind.DIRECTORY, false)
+      val file2InTarget1Source = SourceItem(file2InTarget1Uri, SourceItemKind.DIRECTORY, false)
       val target1Sources = SourcesItem(target1, listOf(file1InTarget1Source, file2InTarget1Source))
 
       val sources = listOf(target1Sources)
@@ -67,7 +67,7 @@ class TargetsDetailsForDocumentProviderTest {
       val target1 = BuildTargetIdentifier("//target1")
       val target2 = BuildTargetIdentifier("//target2")
 
-      val fileInTarget1Target2Source = SourceItem(fileInTarget1Target2Uri, SourceItemKind.FILE, false)
+      val fileInTarget1Target2Source = SourceItem(fileInTarget1Target2Uri, SourceItemKind.DIRECTORY, false)
 
       val target1Sources = SourcesItem(target1, listOf(fileInTarget1Target2Source))
       val target2Sources = SourcesItem(target2, listOf(fileInTarget1Target2Source))
@@ -163,8 +163,8 @@ class TargetsDetailsForDocumentProviderTest {
         val target2 = BuildTargetIdentifier("//target2")
         val target3 = BuildTargetIdentifier("//target3")
 
-        val fileInTarget1Target2Source = SourceItem(fileInTarget1Target2Uri, SourceItemKind.FILE, false)
-        val fileInTarget1Target3Source = SourceItem(fileInTarget1Target3Uri, SourceItemKind.FILE, false)
+        val fileInTarget1Target2Source = SourceItem(fileInTarget1Target2Uri, SourceItemKind.DIRECTORY, false)
+        val fileInTarget1Target3Source = SourceItem(fileInTarget1Target3Uri, SourceItemKind.DIRECTORY, false)
 
         val target1Sources = SourcesItem(target1, listOf(fileInTarget1Target2Source, fileInTarget1Target3Source))
         val target2Sources = SourcesItem(target2, listOf(fileInTarget1Target2Source))

@@ -5,11 +5,11 @@ import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.addContentRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
-import com.intellij.workspaceModel.storage.url.VirtualFileUrl
 import java.nio.file.Path
 
 internal data class ContentRoot(
-  val url: Path
+  val url: Path,
+  val excludedUrls: List<Path> = emptyList(),
 ) : WorkspaceModelEntity()
 
 internal class ContentRootEntityUpdater(
@@ -28,13 +28,13 @@ internal class ContentRootEntityUpdater(
     entityToAdd: ContentRoot,
   ): ContentRootEntity = builder.addContentRootEntity(
     url = entityToAdd.url.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-    excludedUrls = DEFAULT_EXCLUDED_URLS,
-    excludedPatterns = DEFAULT_EXCLUDED_PATTERNS,
+    excludedUrls = entityToAdd.excludedUrls
+      .map { it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager) },
+    excludedPatterns = DEFAULT_PATTERNS_URLS,
     module = moduleEntity,
   )
 
   private companion object {
-    private val DEFAULT_EXCLUDED_URLS = emptyList<VirtualFileUrl>()
-    private val DEFAULT_EXCLUDED_PATTERNS = emptyList<String>()
+    private val DEFAULT_PATTERNS_URLS = emptyList<String>()
   }
 }

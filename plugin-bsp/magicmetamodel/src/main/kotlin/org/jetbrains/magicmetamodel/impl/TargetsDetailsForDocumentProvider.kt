@@ -2,6 +2,7 @@ package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.SourceItem
+import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.logger
@@ -34,7 +35,7 @@ internal class TargetsDetailsForDocumentProvider(sources: List<SourcesItem>) {
 
   fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): List<BuildTargetIdentifier> =
     generateAllDocumentSubdirectoriesIncludingDocument(documentId)
-      .flatMap { documentIdToTargetsIdsMap[it] ?: emptyList() }
+      .flatMap { documentIdToTargetsIdsMap[it].orEmpty() }
       .toList()
 
   private fun generateAllDocumentSubdirectoriesIncludingDocument(documentId: TextDocumentIdentifier): Sequence<Path> {
@@ -59,12 +60,13 @@ private class DocumentIdToTargetsIdsMapDelegate(private val sources: List<Source
   operator fun getValue(
     thisRef: Any?,
     property: KProperty<*>,
-  ): Map<Path, List<BuildTargetIdentifier>> {
+  ): Map<Path, Set<BuildTargetIdentifier>> {
     LOGGER.trace { "Calculating document to target id map..." }
 
     return sources
       .flatMap(this::mapSourcesItemToPairsOfDocumentIdAndTargetId)
       .groupBy({ it.first }, { it.second })
+      .mapValues { it.value.toSet() }
       .also { LOGGER.trace { "Calculating document to target id map done! Map: $it." } }
   }
 
@@ -76,7 +78,11 @@ private class DocumentIdToTargetsIdsMapDelegate(private val sources: List<Source
       .map { Pair(it, sourceItem.target) }
 
   private fun mapSourceItemToPath(sourceItem: SourceItem): Path =
-    URI.create(sourceItem.uri).toAbsolutePath()
+    when (sourceItem.kind) {
+      SourceItemKind.FILE -> URI.create(sourceItem.uri).toAbsolutePath().parent
+      SourceItemKind.DIRECTORY -> URI.create(sourceItem.uri).toAbsolutePath()
+      else -> throw TypeCastException("something is really wrong")
+    }
 
   companion object {
     private val LOGGER = logger<DocumentIdToTargetsIdsMapDelegate>()
