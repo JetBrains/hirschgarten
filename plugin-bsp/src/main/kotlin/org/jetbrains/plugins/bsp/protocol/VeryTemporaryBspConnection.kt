@@ -16,7 +16,7 @@ import org.eclipse.lsp4j.jsonrpc.Launcher
 import java.io.File
 import java.nio.file.Path
 
-interface BspServer : BuildServer
+public interface BspServer : BuildServer
 
 internal class VeryTemporaryBspConnection(projectBaseDir: Path) {
 

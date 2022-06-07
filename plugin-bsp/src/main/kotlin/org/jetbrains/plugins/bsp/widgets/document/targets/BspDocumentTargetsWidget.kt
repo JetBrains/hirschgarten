@@ -90,7 +90,7 @@ private class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarP
   }
 }
 
-class BSPStatusBarWidgetFactory : StatusBarWidgetFactory {
+public class BSPStatusBarWidgetFactory : StatusBarWidgetFactory {
 
   override fun getId(): String = ID
 
@@ -104,7 +104,7 @@ class BSPStatusBarWidgetFactory : StatusBarWidgetFactory {
   override fun createWidget(project: Project): StatusBarWidget =
     BspDocumentTargetsWidget(project)
 
-  override fun disposeWidget(widget: StatusBarWidget) =
+  override fun disposeWidget(widget: StatusBarWidget): Unit =
     Disposer.dispose(widget)
 
   // TODO

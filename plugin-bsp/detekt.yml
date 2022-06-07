@@ -1,0 +1,24 @@
+console-reports:
+  active: true
+  exclude:
+    - '' # Exclude nothing -> Enable all workaround
+
+formatting:
+  active: true
+  Indentation:
+    indentSize: 2
+  MaximumLineLength:
+    active: false
+  ParameterListWrapping:
+    indentSize: 2
+
+style:
+  active: true
+  UnnecessaryAbstractClass:
+    active: false
+  MaxLineLength:
+    active: false
+
+complexity:
+  LongParameterList:
+    active: false
