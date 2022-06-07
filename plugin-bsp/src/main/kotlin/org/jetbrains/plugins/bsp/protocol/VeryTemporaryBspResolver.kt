@@ -11,11 +11,11 @@ import com.google.gson.JsonObject
 import org.jetbrains.magicmetamodel.ProjectDetails
 import java.nio.file.Path
 
-class VeryTemporaryBspResolver(private val projectBaseDir: Path) {
+public class VeryTemporaryBspResolver(private val projectBaseDir: Path) {
 
   private val server = VeryTemporaryBspConnection(projectBaseDir).bspServer
 
-  fun collectModel(): ProjectDetails {
+  public fun collectModel(): ProjectDetails {
     println("buildInitialize")
     server.buildInitialize(createInitializeBuildParams()).get()
 

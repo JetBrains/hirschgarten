@@ -12,7 +12,7 @@ import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.nio.file.Paths
 import javax.swing.Icon
 
-class BspProjectOpenProcessor : ProjectOpenProcessor() {
+public class BspProjectOpenProcessor : ProjectOpenProcessor() {
 
   override fun getName(): String = BspPluginBundle.message("plugin.name")
 

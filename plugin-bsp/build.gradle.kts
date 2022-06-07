@@ -1,36 +1,27 @@
-import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.intellij.tasks.BuildSearchableOptionsTask
+import org.jetbrains.intellij.tasks.PublishPluginTask
+import org.jetbrains.intellij.tasks.RunIdeTask
+import org.jetbrains.intellij.tasks.VerifyPluginTask
 
 fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
-  // Java support
-  id("java")
-  // Kotlin support
-  id("org.jetbrains.kotlin.jvm") version "1.6.21"
   // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-  id("org.jetbrains.intellij") version "1.0"
+  id("org.jetbrains.intellij") version "1.6.0"
   // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
-  id("org.jetbrains.changelog") version "1.1.2"
-  // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
-  id("io.gitlab.arturbosch.detekt") version "1.18.1"
-  // ktlint linter - read more: https://github.com/JLLeitschuh/ktlint-gradle
-  id("org.jlleitschuh.gradle.ktlint") version "10.2.0"
+  id("org.jetbrains.changelog") version "1.3.1"
+
+  id("intellijbsp.kotlin-conventions")
 }
 
 group = properties("pluginGroup")
 version = properties("pluginVersion")
 
-// Configure project's dependencies
-repositories {
-  mavenCentral()
-}
 dependencies {
-  detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.17.1")
-  implementation("ch.epfl.scala:bsp4j:2.0.0-M15")
   implementation(project(":magicmetamodel"))
-  implementation("com.google.code.gson:gson:2.8.2")
+  implementation("ch.epfl.scala:bsp4j:2.0.0-M15")
+  implementation("com.google.code.gson:gson:2.9.0")
 }
 
 // Configure gradle-intellij-plugin plugin.
@@ -49,37 +40,35 @@ intellij {
 // Configure gradle-changelog-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-changelog-plugin
 changelog {
-  version = properties("pluginVersion")
-  groups = emptyList()
+  version.set(properties("pluginVersion"))
+  groups.set(emptyList())
 }
 
-// Configure detekt plugin.
-// Read more: https://detekt.github.io/detekt/kotlindsl.html
-detekt {
-  config = files("./detekt-config.yml")
-  buildUponDefaultConfig = true
+subprojects {
+  apply(plugin = "org.jetbrains.intellij")
 
-  reports {
-    html.enabled = false
-    xml.enabled = false
-    txt.enabled = false
+  intellij {
+    version.set(properties("platformVersion"))
+  }
+
+  tasks.withType(PublishPluginTask::class.java) {
+    enabled = false
+  }
+
+  tasks.withType(VerifyPluginTask::class.java) {
+    enabled = false
+  }
+
+  tasks.withType(BuildSearchableOptionsTask::class.java) {
+    enabled = false
+  }
+
+  tasks.withType(RunIdeTask::class.java) {
+    enabled = false
   }
 }
 
 tasks {
-  properties("javaVersion").let {
-    withType<JavaCompile> {
-      sourceCompatibility = it
-      targetCompatibility = it
-    }
-    withType<KotlinCompile> {
-      kotlinOptions.jvmTarget = it
-    }
-    withType<Detekt> {
-      jvmTarget = it
-    }
-  }
-
   patchPluginXml {
     version.set(properties("pluginVersion"))
     sinceBuild.set(properties("pluginSinceBuild"))
@@ -113,63 +102,5 @@ tasks {
     // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
     // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
     channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
-  }
-}
-
-val projectRoot = projectDir
-
-subprojects {
-
-  apply(plugin = "java")
-  apply(plugin = "org.jetbrains.intellij")
-  apply(plugin = "org.jetbrains.kotlin.jvm")
-  apply(plugin = "io.gitlab.arturbosch.detekt")
-  apply(plugin = "org.jlleitschuh.gradle.ktlint")
-
-  group = properties("pluginGroup")
-  version = properties("pluginVersion")
-
-  repositories {
-    mavenCentral()
-  }
-
-  tasks.test {
-    useJUnitPlatform()
-    testLogging {
-      events("PASSED", "SKIPPED", "FAILED")
-    }
-  }
-
-  // Set the JVM compatibility versions
-  properties("javaVersion").let {
-    tasks.withType<JavaCompile> {
-      sourceCompatibility = it
-      targetCompatibility = it
-    }
-    tasks.withType<KotlinCompile> {
-      kotlinOptions.jvmTarget = it
-    }
-    tasks.withType<Detekt> {
-      jvmTarget = it
-    }
-  }
-
-  detekt {
-    config = files("$projectRoot/detekt-config.yml")
-    buildUponDefaultConfig = true
-
-    reports {
-      html.enabled = false
-      xml.enabled = false
-      txt.enabled = false
-    }
-  }
-
-  dependencies {
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.17.1")
-    implementation("ch.epfl.scala:bsp4j:2.0.0-M15")
-
-    testImplementation(kotlin("test"))
-    testImplementation("io.kotest:kotest-assertions-core:4.6.2")
   }
 }

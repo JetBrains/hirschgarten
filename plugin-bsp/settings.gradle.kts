@@ -1,3 +1,2 @@
 rootProject.name = "intellij-bsp"
-include("magicmetamodel")
-include("test-utils")
+include("test-utils", "magicmetamodel")
