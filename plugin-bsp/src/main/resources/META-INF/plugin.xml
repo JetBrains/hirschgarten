@@ -1,21 +1,28 @@
 <idea-plugin>
-    <id>org.jetbrains.bsp</id>
-    <name>Build Server Protocol</name>
-    <vendor>JetBrains</vendor>
+  <id>org.jetbrains.bsp</id>
+  <name>Build Server Protocol</name>
+  <vendor>JetBrains</vendor>
 
-    <!-- Product and plugin compatibility requirements -->
-    <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
-    <depends>com.intellij.modules.platform</depends>
+  <!-- Product and plugin compatibility requirements -->
+  <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+  <depends>com.intellij.modules.platform</depends>
 
-    <extensions defaultExtensionNs="com.intellij">
-      <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
+  <extensions defaultExtensionNs="com.intellij">
+    <projectService
+      serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
 
-      <projectOpenProcessor implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
+    <projectOpenProcessor
+      implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
 
+    <statusBarWidgetFactory
+      implementation="org.jetbrains.plugins.bsp.widgets.document.targets.BspDocumentTargetsWidgetFactory"/>
+    <toolWindow
+      id="BSP"
+      icon="/icons/bsp.svg"
+      anchor="right"
+      factoryClass="org.jetbrains.plugins.bsp.widgets.all.targets.BspAllTargetsWidgetFactory"/>
+  </extensions>
 
-      <statusBarWidgetFactory implementation="org.jetbrains.plugins.bsp.widgets.document.targets.BSPStatusBarWidgetFactory"/>
-    </extensions>
-
-    <applicationListeners>
-    </applicationListeners>
+  <applicationListeners>
+  </applicationListeners>
 </idea-plugin>
