@@ -132,7 +132,7 @@ class SonatypeClient(
     // init * (multiplier ^ n) = max
     // n = log(max / init) / log(multiplier)
     val retryCountUntilMaxInterval = (math.log(maxInterval.toDouble / initInterval) / math.log(1.5)).toInt.max(1)
-    val numRetry                   = (timeoutMillis / maxInterval).ceil.toInt
+    val numRetry                   = (timeoutMillis.toFloat / maxInterval).ceil.toInt
     Retry.withBackOff(
       maxRetry = retryCountUntilMaxInterval + numRetry,
       initialIntervalMillis = initInterval,
@@ -387,7 +387,7 @@ object SonatypeClient extends LogSupport {
       b += activityLog
       for (e <- events)
         b += s" ${e.toString}"
-      b.result.mkString("\n")
+      b.result().mkString("\n")
     }
 
     def activityLog = {
@@ -424,7 +424,7 @@ object SonatypeClient extends LogSupport {
         }
         cursor += 1
       }
-      b.result
+      b.result()
     }
 
     def containsError = events.exists(_.severity != 0)
