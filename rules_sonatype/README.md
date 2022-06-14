@@ -46,9 +46,9 @@ sonatype_dependencies()
 # ======================================================================================================================
 # bazel_skylib
 
-BAZEL_SKYLIB_TAG = "1.2.0"
+BAZEL_SKYLIB_TAG = "1.2.1"
 
-BAZEL_SKYLIB_SHA = "af87959afe497dc8dfd4c6cb66e1279cb98ccc84284619ebfec27d9c09a903de"
+BAZEL_SKYLIB_SHA = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728"
 
 http_archive(
     name = "bazel_skylib",
@@ -101,7 +101,8 @@ scalatest_toolchain()
 
 # ======================================================================================================================
 
-BAZEL_SONATYPE_TAG = "0.0.1"
+BAZEL_SONATYPE_TAG = "1.0.0"
+
 http_archive(
     name = "bazel_sonatype",
     strip_prefix = "bazel-sonatype-{}".format(BAZEL_SONATYPE_TAG),
