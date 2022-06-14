@@ -26,9 +26,9 @@ sonatype_dependencies()
 # ======================================================================================================================
 # bazel_skylib
 
-BAZEL_SKYLIB_TAG = "1.2.0"
+BAZEL_SKYLIB_TAG = "1.2.1"
 
-BAZEL_SKYLIB_SHA = "af87959afe497dc8dfd4c6cb66e1279cb98ccc84284619ebfec27d9c09a903de"
+BAZEL_SKYLIB_SHA = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728"
 
 http_archive(
     name = "bazel_skylib",
@@ -37,66 +37,35 @@ http_archive(
 )
 
 # ======================================================================================================================
-# rules_python - required by com_google_protobuf
-
-RULES_PYTHON_TAG = "0.6.0"
-
-RULES_PYTHON_SHA = "a30abdfc7126d497a7698c29c46ea9901c6392d6ed315171a6df5ce433aa4502"
-
-http_archive(
-    name = "rules_python",
-    sha256 = RULES_PYTHON_SHA,
-    strip_prefix = "rules_python-{}".format(RULES_PYTHON_TAG),
-    url = "https://github.com/bazelbuild/rules_python/archive/{}.tar.gz".format(RULES_PYTHON_TAG),
-)
-
-# ======================================================================================================================
-# zlib - required by com_google_protobuf
-
-ZLIB_TAG = "1.2.11"
-
-ZLIB_SHA = "c3e5e9fdd5004dcb542feda5ee4f0ff0744628baf8ed2dd5d66f8ca1197cb1a1"
-
-http_archive(
-    name = "zlib",
-    build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
-    sha256 = ZLIB_SHA,
-    strip_prefix = "zlib-{}".format(ZLIB_TAG),
-    url = "https://zlib.net/zlib-{}.tar.gz".format(ZLIB_TAG),
-)
-
-# ======================================================================================================================
-# com_google_protobuf -  required by io_bazel_rules_scala
-
-COM_GOOGLE_PROTOBUF_TAG = "3.19.4"
-
-COM_GOOGLE_PROTOBUF_SHA = "3bd7828aa5af4b13b99c191e8b1e884ebfa9ad371b0ce264605d347f135d2568"
-
-http_archive(
-    name = "com_google_protobuf",
-    sha256 = COM_GOOGLE_PROTOBUF_SHA,
-    strip_prefix = "protobuf-{}".format(COM_GOOGLE_PROTOBUF_TAG),
-    url = "https://github.com/protocolbuffers/protobuf/archive/v{}.tar.gz".format(COM_GOOGLE_PROTOBUF_TAG),
-)
-
-# ======================================================================================================================
 # io_bazel_rules_scala
 
-IO_BAZEL_RULES_SCALA_TAG = "20220201"
+IO_BAZEL_RULES_SCALA_TAG = "9b85affa2e08a350a4315882b602eda55b262356"
 
-IO_BAZEL_RULES_SCALA_SHA = "77a3b9308a8780fff3f10cdbbe36d55164b85a48123033f5e970fdae262e8eb2"
+IO_BAZEL_RULES_SCALA_SHA = "b9eaf9bd026b5b1702d6705b4e953a5b73c49705552a6f2da83edd995b2dbe1f"
 
 http_archive(
     name = "io_bazel_rules_scala",
     sha256 = IO_BAZEL_RULES_SCALA_SHA,
     strip_prefix = "rules_scala-{}".format(IO_BAZEL_RULES_SCALA_TAG),
-    url = "https://github.com/bazelbuild/rules_scala/releases/download/{}/rules_scala-{}.zip".format(IO_BAZEL_RULES_SCALA_TAG, IO_BAZEL_RULES_SCALA_TAG),
+    url = "https://github.com/bazelbuild/rules_scala/archive/{}.zip".format(IO_BAZEL_RULES_SCALA_TAG),
 )
 
 # ----------------------------------------------------------------------------------------------------------------------
 load("@io_bazel_rules_scala//:scala_config.bzl", "scala_config")
 
-scala_config()
+scala_config(scala_version = "2.13.8")
+
+# ----------------------------------------------------------------------------------------------------------------------
+load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
+
+scala_repositories()
+
+# ----------------------------------------------------------------------------------------------------------------------
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+
+rules_proto_dependencies()
+
+rules_proto_toolchains()
 
 # ----------------------------------------------------------------------------------------------------------------------
 load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
@@ -104,6 +73,8 @@ load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
 scala_register_toolchains()
 
 # ----------------------------------------------------------------------------------------------------------------------
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
+load("@io_bazel_rules_scala//testing:scalatest.bzl", "scalatest_repositories", "scalatest_toolchain")
 
-scala_repositories()
+scalatest_repositories()
+
+scalatest_toolchain()
