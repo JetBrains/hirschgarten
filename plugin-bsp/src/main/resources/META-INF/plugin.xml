@@ -3,13 +3,27 @@
   <name>Build Server Protocol</name>
   <vendor>JetBrains</vendor>
 
-  <!-- Product and plugin compatibility requirements -->
-  <!-- https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
   <depends>com.intellij.modules.platform</depends>
 
+  <extensionPoints>
+    <extensionPoint qualifiedName="com.intellij.bspConnectionDetailsGeneratorExtension"
+                    interface="org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension"
+                    dynamic="true"/>
+  </extensionPoints>
+
   <extensions defaultExtensionNs="com.intellij">
+    <bspConnectionDetailsGeneratorExtension
+      implementation="org.jetbrains.plugins.bsp.extension.points.TemporaryBazelBspConnectionDetailsGenerator"
+    />
+
+
+<!--    <postStartupActivity implementation="org.jetbrains.plugins.bsp.import.ProjectOpenActivity"/>-->
+    <postStartupActivity implementation="org.jetbrains.plugins.bsp.import.BspInitializer"/>
+
     <projectService
       serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
+    <projectService
+      serviceImplementation="org.jetbrains.plugins.bsp.services.BspConnectionService"/>
 
     <projectOpenProcessor
       implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
