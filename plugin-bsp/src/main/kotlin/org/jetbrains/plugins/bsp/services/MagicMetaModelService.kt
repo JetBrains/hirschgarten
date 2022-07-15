@@ -7,18 +7,18 @@ import com.intellij.workspaceModel.ide.getInstance
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
-import org.jetbrains.plugins.bsp.protocol.VeryTemporaryBspResolver
 
-public class MagicMetaModelService(project: Project) {
+public class MagicMetaModelService(private val project: Project) {
 
-  public val magicMetaModel: MagicMetaModel = initializeMagicModel(project)
+  public lateinit var magicMetaModel: MagicMetaModel
 
-  private fun initializeMagicModel(project: Project): MagicMetaModel {
+  private val bspConnectionService = BspConnectionService.getInstance(project)
+
+  public fun initializeMagicModel() {
     val magicMetaModelProjectConfig = calculateProjectConfig(project)
-    val bspResolver = VeryTemporaryBspResolver(magicMetaModelProjectConfig.projectBaseDir)
-    val projectDetails = bspResolver.collectModel()
+    val projectDetails = bspConnectionService.bspResolver!!.collectModel()
 
-    return MagicMetaModel.create(magicMetaModelProjectConfig, projectDetails)
+    magicMetaModel = MagicMetaModel.create(magicMetaModelProjectConfig, projectDetails)
   }
 
   private fun calculateProjectConfig(project: Project): MagicMetaModelProjectConfig {
