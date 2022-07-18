@@ -19,7 +19,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
  * provided by the BSP and build on top of [WorkspaceModel].
  */
 internal class MagicMetaModelImpl internal constructor(
-  magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
+  private val magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
   private val projectDetails: ProjectDetails,
 ) : MagicMetaModel {
 
@@ -34,14 +34,21 @@ internal class MagicMetaModelImpl internal constructor(
 
   private val loadedTargetsStorage = LoadedTargetsStorage()
 
+  private val workspaceModelSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
+
   private val workspaceModelUpdater = WorkspaceModelUpdater.create(
-    magicMetaModelProjectConfig.workspaceModel,
+    workspaceModelSnapshot.builder,
     magicMetaModelProjectConfig.virtualFileUrlManager,
     magicMetaModelProjectConfig.projectBaseDir
   )
 
   init {
     LOGGER.debug { "Initializing MagicMetaModelImpl model done!" }
+  }
+
+  override fun save() {
+    val toSave = workspaceModelSnapshot.getStorageReplacement()
+    magicMetaModelProjectConfig.workspaceModel.replaceProjectModel(toSave)
   }
 
   override fun loadDefaultTargets() {

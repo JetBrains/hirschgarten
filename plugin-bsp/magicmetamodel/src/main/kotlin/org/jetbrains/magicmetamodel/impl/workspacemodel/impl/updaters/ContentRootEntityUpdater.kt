@@ -16,11 +16,12 @@ internal class ContentRootEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithParentModuleUpdater<ContentRoot, ContentRootEntity> {
 
-  override fun addEntity(entityToAdd: ContentRoot, parentModuleEntity: ModuleEntity): ContentRootEntity {
-    return workspaceModelEntityUpdaterConfig.workspaceModel.updateProjectModel {
-      addContentRootEntity(it, parentModuleEntity, entityToAdd)
-    }
-  }
+  override fun addEntity(entityToAdd: ContentRoot, parentModuleEntity: ModuleEntity): ContentRootEntity =
+    addContentRootEntity(
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
+      parentModuleEntity,
+      entityToAdd
+    )
 
   private fun addContentRootEntity(
     builder: WorkspaceEntityStorageBuilder,

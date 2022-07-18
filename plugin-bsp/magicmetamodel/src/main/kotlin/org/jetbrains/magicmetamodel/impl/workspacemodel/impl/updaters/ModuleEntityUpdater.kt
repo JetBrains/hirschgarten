@@ -29,11 +29,8 @@ internal class ModuleEntityUpdater(
   private val defaultDependencies: List<ModuleDependencyItem> = emptyList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<Module, ModuleEntity> {
 
-  override fun addEntity(entityToAdd: Module): ModuleEntity {
-    return workspaceModelEntityUpdaterConfig.workspaceModel.updateProjectModel {
-      addModuleEntity(it, entityToAdd)
-    }
-  }
+  override fun addEntity(entityToAdd: Module): ModuleEntity =
+    addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
   private fun addModuleEntity(
     builder: WorkspaceEntityStorageBuilder,
@@ -81,20 +78,17 @@ internal class WorkspaceModuleRemover(
 ) : WorkspaceModuleEntityRemover<ModuleName> {
 
   override fun removeEntity(entityToRemove: ModuleName) {
-    workspaceModelEntityUpdaterConfig.workspaceModel.updateProjectModel {
-      // TODO null
-      val moduleToRemove = it.resolve(ModuleId(entityToRemove.name))!!
+    // TODO null
+    val moduleToRemove =
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.resolve(ModuleId(entityToRemove.name))!!
 
-      it.removeEntity(moduleToRemove)
-    }
+    workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(moduleToRemove)
   }
 
   override fun clear() {
     val allModules =
-      workspaceModelEntityUpdaterConfig.workspaceModel.entityStorage.current.entities(ModuleEntity::class.java)
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(ModuleEntity::class.java)
 
-    workspaceModelEntityUpdaterConfig.workspaceModel.updateProjectModel { builder ->
-      allModules.forEach(builder::removeEntity)
-    }
+      allModules.forEach(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder::removeEntity)
   }
 }

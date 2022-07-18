@@ -31,10 +31,16 @@ internal class JavaSourceEntityUpdater(
   override fun addEntity(entityToAdd: JavaSourceRoot, parentModuleEntity: ModuleEntity): JavaSourceRootEntity {
     val contentRootEntity = addContentRootEntity(entityToAdd, parentModuleEntity)
 
-    return workspaceModelEntityUpdaterConfig.workspaceModel.updateProjectModel {
-      val sourceRootEntity = addSourceRootEntity(it, contentRootEntity, entityToAdd)
-      addJavaSourceRootEntity(it, sourceRootEntity, entityToAdd)
-    }
+    val sourceRootEntity = addSourceRootEntity(
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
+      contentRootEntity,
+      entityToAdd
+    )
+    return addJavaSourceRootEntity(
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
+      sourceRootEntity,
+      entityToAdd
+    )
   }
 
   private fun addContentRootEntity(

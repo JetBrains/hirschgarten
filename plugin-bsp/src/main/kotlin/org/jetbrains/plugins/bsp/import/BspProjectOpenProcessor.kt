@@ -1,10 +1,6 @@
 package org.jetbrains.plugins.bsp.import
 
-import com.intellij.ide.impl.OpenProjectTask
-import com.intellij.openapi.application.runWriteAction
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.PlatformProjectOpenProcessor
@@ -19,11 +15,9 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.protocol.connection.BspConnectionFilesProvider
 import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
-import java.nio.file.Paths
 import javax.swing.Icon
 import javax.swing.JComponent
 
@@ -54,14 +48,9 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
     val dialog = TemporaryBspImportDialog(bspConnectionFilesProvider, bspConnectionDetailsGeneratorProvider)
 
     return if (dialog.showAndGet()) {
-      // TODO better options
-      val options = OpenProjectTask(isNewProject = true)
-//      val project = ProjectManagerEx.getInstanceEx().openProject(Paths.get(virtualFile.path), options)!!
-
       val project = PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
 
       if (project != null) {
-
         val connectionService = BspConnectionService.getInstance(project)
 
         if (dialog.buildToolUsed.selected()) {
@@ -74,21 +63,9 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
           connectionService.connect(xd)
         }
 
-//      val magicMetaModelService = MagicMetaModelService.getInstance(project)
-//      magicMetaModelService.initializeMagicModel()
-//      val magicMetaModel = magicMetaModelService.magicMetaModel
-
-//      runWriteAction { magicMetaModel.loadDefaultTargets() }
-
         project
       } else null
     } else null
-
-//    {
-//      val bspDir = getBspDir(virtualFile) ?: return null
-//      val baseDir = bspDir.parent ?: return null
-//
-//    }
   }
 
   private inner class TemporaryBspImportDialog(

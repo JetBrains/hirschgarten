@@ -2,6 +2,7 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.storage.EntitySource
+import com.intellij.workspaceModel.storage.WorkspaceEntityStorageBuilder
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import com.intellij.workspaceModel.storage.impl.WorkspaceEntityBase
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
@@ -9,7 +10,7 @@ import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 internal abstract class WorkspaceModelEntity
 
 internal data class WorkspaceModelEntityUpdaterConfig(
-  val workspaceModel: WorkspaceModel,
+  val workspaceEntityStorageBuilder: WorkspaceEntityStorageBuilder,
   val virtualFileUrlManager: VirtualFileUrlManager,
   val projectConfigSource: EntitySource,
 )

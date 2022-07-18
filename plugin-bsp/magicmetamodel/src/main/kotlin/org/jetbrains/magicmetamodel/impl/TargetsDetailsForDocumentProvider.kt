@@ -46,14 +46,9 @@ internal class TargetsDetailsForDocumentProvider(sources: List<SourcesItem>) {
       .flatMap { documentIdToTargetsIdsMap[it].orEmpty() }
       .toList()
 
-    println("Xd")
-    println(URI(documentId.uri).toPath().isFile())
-    println(URI(documentId.uri).toPath().parent)
-    println(documentIdInTheSameDirectoryToTargetsIdsMapForHACK)
     val targetsInTheSameDirectoryIfFile = getTargetsInTheSameDirectoryIfFileHACK(documentId)
 
-    println(targetsInTheSameDirectoryIfFile)
-    return targets + targetsInTheSameDirectoryIfFile
+    return (targets + targetsInTheSameDirectoryIfFile).distinct()
   }
 
   private fun getTargetsInTheSameDirectoryIfFileHACK(documentId: TextDocumentIdentifier): List<BuildTargetIdentifier> =
