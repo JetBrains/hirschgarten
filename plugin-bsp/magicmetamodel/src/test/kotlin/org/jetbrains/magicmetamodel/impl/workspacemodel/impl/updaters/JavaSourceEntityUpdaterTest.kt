@@ -25,7 +25,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceModel, virtualFileUrlManager, projectConfigSource)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectConfigSource)
     javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
   }
 

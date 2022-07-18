@@ -21,6 +21,7 @@ public open class WorkspaceModelBaseTest {
 
   protected lateinit var project: Project
   protected lateinit var workspaceModel: WorkspaceModel
+  protected lateinit var workspaceEntityStorageBuilder: WorkspaceEntityStorageBuilder
   protected lateinit var virtualFileUrlManager: VirtualFileUrlManager
 
   protected lateinit var projectBaseDirPath: Path
@@ -30,6 +31,7 @@ public open class WorkspaceModelBaseTest {
   protected open fun beforeEach() {
     project = emptyProjectTestMock()
     workspaceModel = WorkspaceModel.getInstance(project)
+    workspaceEntityStorageBuilder = workspaceModel.getBuilderSnapshot().builder
     virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
 
     projectBaseDirPath = project.stateStore.projectBasePath
@@ -66,7 +68,7 @@ public open class WorkspaceModelBaseTest {
   }
 
   protected fun <E : WorkspaceEntity> loadedEntries(entityClass: Class<E>): List<E> =
-    workspaceModel.entityStorage.current.entities(entityClass).toList()
+    workspaceEntityStorageBuilder.entities(entityClass).toList()
 }
 
 public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceModelBaseTest() {

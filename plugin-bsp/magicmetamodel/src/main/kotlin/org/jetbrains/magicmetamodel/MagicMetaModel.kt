@@ -46,6 +46,11 @@ public data class DocumentTargetsDetails(
 public interface MagicMetaModel {
 
   /**
+   * TODO
+   */
+  public fun save()
+
+  /**
    * Loads default targets to the model - can be all targets, can be subset of them.
    *
    * If the project contains shared sources, the loaded targets should not share sources.

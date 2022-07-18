@@ -79,7 +79,7 @@ class WorkspaceModelUpdaterImplLoadModuleTest : WorkspaceModelBaseTest() {
     )
 
     // when
-    val workspaceModelUpdater = WorkspaceModelUpdaterImpl(workspaceModel, virtualFileUrlManager, projectBaseDirPath)
+    val workspaceModelUpdater = WorkspaceModelUpdaterImpl(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBaseDirPath)
 
     WriteCommandAction.runWriteCommandAction(project) {
       workspaceModelUpdater.loadModule(moduleDetails)

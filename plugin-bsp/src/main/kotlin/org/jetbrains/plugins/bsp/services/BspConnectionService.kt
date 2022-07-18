@@ -46,7 +46,7 @@ public class BspConnectionService(private val project: Project) {
 
   public var server: BspServer? = null
 
-  public var bspResolver: VeryTemporaryBspResolver? = null
+//  public var bspResolver: VeryTemporaryBspResolver? = null
 
   public fun connect(connectionFile: LocatedBspConnectionDetails) {
     val process = createAndStartProcess(connectionFile.bspConnectionDetails)
@@ -61,7 +61,7 @@ public class BspConnectionService(private val project: Project) {
     server = launcher.remoteProxy
     client.onConnectWithServer(server)
 
-    bspResolver = VeryTemporaryBspResolver(project.stateStore.projectBasePath, server!!, project, buildView)
+//    bspResolver = VeryTemporaryBspResolver(project.stateStore.projectBasePath, server!!, project, buildView)
   }
 
   private fun createAndStartProcess(bspConnectionDetails: BspConnectionDetails): Process =

@@ -17,16 +17,16 @@
     />
 
 
-<!--    <postStartupActivity implementation="org.jetbrains.plugins.bsp.import.ProjectOpenActivity"/>-->
-    <postStartupActivity implementation="org.jetbrains.plugins.bsp.import.BspInitializer"/>
+    <projectOpenProcessor
+      implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
+
+    <postStartupActivity
+      implementation="org.jetbrains.plugins.bsp.import.BspInitializer"/>
 
     <projectService
       serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
     <projectService
       serviceImplementation="org.jetbrains.plugins.bsp.services.BspConnectionService"/>
-
-    <projectOpenProcessor
-      implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
 
     <statusBarWidgetFactory
       implementation="org.jetbrains.plugins.bsp.widgets.document.targets.BspDocumentTargetsWidgetFactory"/>
