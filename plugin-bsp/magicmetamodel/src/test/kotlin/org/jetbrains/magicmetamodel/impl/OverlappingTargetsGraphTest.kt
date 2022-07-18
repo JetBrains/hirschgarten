@@ -168,6 +168,42 @@ class OverlappingTargetsGraphTest {
   }
 
   @Test
+  fun `should return graph with no edges for 2 files in the directory and subdirectory (INTELLIJ HACK)`() {
+    // given
+    val targetA1Source1 = SourceItem(
+      uri = "file:///project/src/main/kotlin/File1.kt",
+      kind = SourceItemKind.FILE,
+    )
+    val targetA1Sources = SourcesItem(
+      target = BuildTargetId("targetA1"),
+      sources = listOf(targetA1Source1)
+    )
+
+    val targetB1Source1 = SourceItem(
+      uri = "file:///project/src/main/kotlin/subdirectory/File1.kt",
+      kind = SourceItemKind.FILE,
+    )
+    val targetB1Sources = SourcesItem(
+      target = BuildTargetId("targetB1"),
+      sources = listOf(targetB1Source1),
+    )
+
+    val sources = listOf(targetA1Sources, targetB1Sources)
+
+    val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
+
+    // when
+    val overlappingTargetsGraph by OverlappingTargetsGraphDelegate(targetsDetailsForDocumentProvider)
+
+    // then
+    val expectedGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
+      BuildTargetId("targetA1") to emptySet(),
+      BuildTargetId("targetB1") to emptySet()
+    )
+    overlappingTargetsGraph shouldContainExactly expectedGraph
+  }
+
+  @Test
   fun `should return graph for overlapping targets in a complex way`() {
     // given
     val targetA1A2A3Source1 = SourceItem(
