@@ -1,24 +1,23 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.storage.EntitySource
-import com.intellij.workspaceModel.storage.WorkspaceEntityStorageBuilder
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.impl.WorkspaceEntityBase
+import com.intellij.workspaceModel.storage.MutableEntityStorage
+import com.intellij.workspaceModel.storage.WorkspaceEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 
 internal abstract class WorkspaceModelEntity
 
 internal data class WorkspaceModelEntityUpdaterConfig(
-  val workspaceEntityStorageBuilder: WorkspaceEntityStorageBuilder,
+  val workspaceEntityStorageBuilder: MutableEntityStorage,
   val virtualFileUrlManager: VirtualFileUrlManager,
   val projectConfigSource: EntitySource,
 )
 
-internal sealed interface WorkspaceModelEntityUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntityBase>
+internal sealed interface WorkspaceModelEntityUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity>
 
 internal interface WorkspaceModelEntityWithParentModuleUpdater
-<in E : WorkspaceModelEntity, out R : WorkspaceEntityBase> :
+<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
   WorkspaceModelEntityUpdater<E, R> {
 
   fun addEntries(entriesToAdd: List<E>, parentModuleEntity: ModuleEntity): List<R> =
@@ -28,7 +27,7 @@ internal interface WorkspaceModelEntityWithParentModuleUpdater
 }
 
 internal interface WorkspaceModelEntityWithoutParentModuleUpdater
-<in E : WorkspaceModelEntity, out R : WorkspaceEntityBase> :
+<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
   WorkspaceModelEntityUpdater<E, R> {
 
   fun addEntries(entriesToAdd: List<E>): List<R> =

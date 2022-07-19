@@ -7,7 +7,6 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
-import com.intellij.util.io.isFile
 import org.jetbrains.magicmetamodel.extensions.allSubdirectoriesSequence
 import org.jetbrains.magicmetamodel.extensions.toAbsolutePath
 import java.net.URI

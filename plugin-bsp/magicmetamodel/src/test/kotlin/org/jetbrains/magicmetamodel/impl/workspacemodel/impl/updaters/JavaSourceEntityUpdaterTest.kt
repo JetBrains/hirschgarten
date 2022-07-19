@@ -1,8 +1,8 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.ContentRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.JavaSourceRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.SourceRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.workspace.model.matchers.entries.ExpectedJavaSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -46,9 +46,22 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     // then
     val virtualSourceDir = sourceDir.toVirtualFileUrl(virtualFileUrlManager)
     val expectedJavaSourceRootEntity = ExpectedJavaSourceRootEntity(
-      contentRootEntity = ContentRootEntity(virtualSourceDir, emptyList(), emptyList()),
-      sourceRootEntity = SourceRootEntity(virtualSourceDir, "java-source"),
-      javaSourceRootEntity = JavaSourceRootEntity(generated, packagePrefix),
+      contentRootEntity = ContentRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        url = virtualSourceDir,
+        excludedUrls = emptyList(),
+        excludedPatterns = emptyList()
+      ),
+      sourceRootEntity = SourceRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        url = virtualSourceDir,
+        rootType = "java-source"
+      ),
+      javaSourceRootEntity = JavaSourceRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        generated = generated,
+        packagePrefix = packagePrefix
+      ),
       parentModuleEntity = parentModuleEntity,
     )
 
@@ -81,17 +94,43 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     // then
     val virtualSourceDir1 = sourceDir1.toVirtualFileUrl(virtualFileUrlManager)
     val expectedJavaSourceRootEntity1 = ExpectedJavaSourceRootEntity(
-      contentRootEntity = ContentRootEntity(virtualSourceDir1, emptyList(), emptyList()),
-      sourceRootEntity = SourceRootEntity(virtualSourceDir1, "java-source"),
-      javaSourceRootEntity = JavaSourceRootEntity(generated1, packagePrefix1),
+      contentRootEntity = ContentRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        url = virtualSourceDir1,
+        excludedUrls = emptyList(),
+        excludedPatterns = emptyList()
+      ),
+      sourceRootEntity = SourceRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        url = virtualSourceDir1,
+        rootType = "java-source"
+      ),
+      javaSourceRootEntity = JavaSourceRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        generated = generated1,
+        packagePrefix = packagePrefix1
+      ),
       parentModuleEntity = parentModuleEntity,
     )
 
     val virtualSourceDir2 = sourceDir2.toVirtualFileUrl(virtualFileUrlManager)
     val expectedJavaSourceRootEntity2 = ExpectedJavaSourceRootEntity(
-      contentRootEntity = ContentRootEntity(virtualSourceDir2, emptyList(), emptyList()),
-      sourceRootEntity = SourceRootEntity(virtualSourceDir2, "java-source"),
-      javaSourceRootEntity = JavaSourceRootEntity(generated2, packagePrefix2),
+      contentRootEntity = ContentRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        url = virtualSourceDir2,
+        excludedUrls = emptyList(),
+        excludedPatterns = emptyList()
+      ),
+      sourceRootEntity = SourceRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        url = virtualSourceDir2,
+        rootType = "java-source"
+      ),
+      javaSourceRootEntity = JavaSourceRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        generated = generated2,
+        packagePrefix = packagePrefix2
+      ),
       parentModuleEntity = parentModuleEntity,
     )
 

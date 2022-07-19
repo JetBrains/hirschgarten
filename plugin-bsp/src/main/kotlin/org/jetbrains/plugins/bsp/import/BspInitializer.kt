@@ -40,7 +40,6 @@ public class BspInitializer : StartupActivity {
       }
 
       override fun onSuccess() {
-        println("LOLOLO")
         val magicMetaModel = magicMetaModelService.magicMetaModel
         runWriteAction {
           magicMetaModel.save()

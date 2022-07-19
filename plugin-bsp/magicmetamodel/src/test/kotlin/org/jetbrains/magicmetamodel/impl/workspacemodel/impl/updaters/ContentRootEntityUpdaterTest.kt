@@ -2,7 +2,7 @@
 
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.ContentRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.workspace.model.matchers.entries.ExpectedContentRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -45,6 +45,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     // then
     val expectedContentRootEntity = ExpectedContentRootEntity(
       contentRootEntity = ContentRootEntity(
+        entitySource = parentModuleEntity.entitySource,
         url = contentPath.toVirtualFileUrl(virtualFileUrlManager),
         excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager)),
         excludedPatterns = emptyList(),
@@ -85,6 +86,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     // then
     val expectedContentRootEntity1 = ExpectedContentRootEntity(
       contentRootEntity = ContentRootEntity(
+        entitySource = parentModuleEntity.entitySource,
         url = contentPath1.toVirtualFileUrl(virtualFileUrlManager),
         excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager)),
         excludedPatterns = emptyList(),
@@ -94,6 +96,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
 
     val expectedContentRootEntity2 = ExpectedContentRootEntity(
       contentRootEntity = ContentRootEntity(
+        entitySource = parentModuleEntity.entitySource,
         url = contentPath2.toVirtualFileUrl(virtualFileUrlManager),
         excludedUrls = emptyList(),
         excludedPatterns = emptyList(),
@@ -103,6 +106,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
 
     val expectedContentRootEntity3 = ExpectedContentRootEntity(
       contentRootEntity = ContentRootEntity(
+        entitySource = parentModuleEntity.entitySource,
         url = contentPath3.toVirtualFileUrl(virtualFileUrlManager),
         excludedUrls = emptyList(),
         excludedPatterns = emptyList(),

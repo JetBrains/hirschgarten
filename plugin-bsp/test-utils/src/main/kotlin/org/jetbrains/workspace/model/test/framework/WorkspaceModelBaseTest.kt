@@ -8,9 +8,9 @@ import com.intellij.workspaceModel.ide.JpsFileEntitySource
 import com.intellij.workspaceModel.ide.JpsProjectConfigLocation
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.getInstance
+import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.WorkspaceEntity
-import com.intellij.workspaceModel.storage.WorkspaceEntityStorageBuilder
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
@@ -21,7 +21,7 @@ public open class WorkspaceModelBaseTest {
 
   protected lateinit var project: Project
   protected lateinit var workspaceModel: WorkspaceModel
-  protected lateinit var workspaceEntityStorageBuilder: WorkspaceEntityStorageBuilder
+  protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
   protected lateinit var virtualFileUrlManager: VirtualFileUrlManager
 
   protected lateinit var projectBaseDirPath: Path
@@ -86,14 +86,10 @@ public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceMode
   }
 
   private fun addParentModuleEntity() {
-    WriteCommandAction.runWriteCommandAction(project) {
-      workspaceModel.updateProjectModel {
-        parentModuleEntity = addParentModuleEntity(it)
-      }
-    }
+    parentModuleEntity = addParentModuleEntity(workspaceEntityStorageBuilder)
   }
 
-  private fun addParentModuleEntity(builder: WorkspaceEntityStorageBuilder): ModuleEntity =
+  private fun addParentModuleEntity(builder: MutableEntityStorage): ModuleEntity =
     builder.addModuleEntity(
       name = parentModuleName,
       dependencies = emptyList(),
