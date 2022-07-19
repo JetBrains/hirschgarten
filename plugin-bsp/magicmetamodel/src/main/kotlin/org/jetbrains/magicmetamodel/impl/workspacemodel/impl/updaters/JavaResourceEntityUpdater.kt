@@ -1,12 +1,12 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.WorkspaceEntityStorageBuilder
-import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaResourceRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
+import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.bridgeEntities.addJavaResourceRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.addSourceRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.ContentRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.JavaResourceRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.SourceRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path
 
@@ -43,7 +43,7 @@ internal class JavaResourceEntityUpdater(
   }
 
   private fun addSourceRootEntity(
-    builder: WorkspaceEntityStorageBuilder,
+    builder: MutableEntityStorage,
     contentRootEntity: ContentRootEntity,
     entityToAdd: JavaResourceRoot,
   ): SourceRootEntity = builder.addSourceRootEntity(
@@ -54,7 +54,7 @@ internal class JavaResourceEntityUpdater(
   )
 
   private fun addJavaResourceRootEntity(
-    builder: WorkspaceEntityStorageBuilder,
+    builder: MutableEntityStorage,
     sourceRoot: SourceRootEntity,
   ): JavaResourceRootEntity = builder.addJavaResourceRootEntity(
     sourceRoot = sourceRoot,

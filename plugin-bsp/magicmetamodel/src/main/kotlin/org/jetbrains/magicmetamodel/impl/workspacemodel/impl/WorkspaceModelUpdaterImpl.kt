@@ -2,8 +2,7 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl
 
 import com.intellij.workspaceModel.ide.JpsFileEntitySource
 import com.intellij.workspaceModel.ide.JpsProjectConfigLocation
-import com.intellij.workspaceModel.ide.WorkspaceModel
-import com.intellij.workspaceModel.storage.WorkspaceEntityStorageBuilder
+import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -16,7 +15,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transforme
 import java.nio.file.Path
 
 internal class WorkspaceModelUpdaterImpl(
-  workspaceEntityStorageBuilder: WorkspaceEntityStorageBuilder,
+  workspaceEntityStorageBuilder: MutableEntityStorage,
   val virtualFileUrlManager: VirtualFileUrlManager,
   projectBaseDir: Path,
 ) : WorkspaceModelUpdater {

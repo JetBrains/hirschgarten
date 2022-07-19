@@ -1,10 +1,10 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryRoot
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryRootTypeId
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryTableId
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
+import com.intellij.workspaceModel.storage.bridgeEntities.api.LibraryEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.LibraryRoot
+import com.intellij.workspaceModel.storage.bridgeEntities.api.LibraryRootTypeId
+import com.intellij.workspaceModel.storage.bridgeEntities.api.LibraryTableId
+import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleId
 import org.jetbrains.workspace.model.matchers.entries.ExpectedLibraryEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -56,7 +56,8 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         name = "file:///dependency/test/1.0.0/test-1.0.0-sources.jar",
         roots = listOf(expectedLibrarySourcesRoot, expectedLibraryClassesRoot),
-        excludedRoots = emptyList()
+        excludedRoots = emptyList(),
+        entitySource = parentModuleEntity.entitySource,
       )
     )
 
@@ -100,7 +101,8 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         name = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar",
         roots = listOf(expectedLibrarySourcesRoot1, expectedLibraryClassesRoot1),
-        excludedRoots = emptyList()
+        excludedRoots = emptyList(),
+        entitySource = parentModuleEntity.entitySource,
       )
     )
 
@@ -117,7 +119,8 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         name = "file:///dependency/test2/2.0.0/test2-2.0.0-sources.jar",
         roots = listOf(expectedLibrarySourcesRoot2, expectedLibraryClassesRoot2),
-        excludedRoots = emptyList()
+        excludedRoots = emptyList(),
+        entitySource = parentModuleEntity.entitySource,
       )
     )
 
