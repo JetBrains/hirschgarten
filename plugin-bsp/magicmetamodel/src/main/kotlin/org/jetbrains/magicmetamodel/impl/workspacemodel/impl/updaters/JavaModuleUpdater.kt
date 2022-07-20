@@ -9,6 +9,7 @@ internal data class JavaModule(
   val sourceRoots: List<JavaSourceRoot>,
   val resourceRoots: List<JavaResourceRoot>,
   val libraries: List<Library>,
+//  val sdk: ModuleDependencyItem.SdkDependency,
 ) : WorkspaceModelEntity()
 
 internal class JavaModuleWithSourcesUpdater(

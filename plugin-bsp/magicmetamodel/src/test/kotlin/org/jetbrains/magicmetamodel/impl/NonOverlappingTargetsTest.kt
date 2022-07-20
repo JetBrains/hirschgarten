@@ -10,7 +10,7 @@ import org.jetbrains.workspace.model.constructors.BuildTargetId
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-@DisplayName("NonOverlappingTargetsDelegate(overlappingTargetsGraph) tests")
+@DisplayName("NonOverlappingTargets(overlappingTargetsGraph) tests")
 class NonOverlappingTargetsTest {
 
   @Test
@@ -20,7 +20,7 @@ class NonOverlappingTargetsTest {
     val overlappingTargetsGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>()
 
     // when
-    val nonOverlappingTargets by NonOverlappingTargetsDelegate(allTargets, overlappingTargetsGraph)
+    val nonOverlappingTargets = NonOverlappingTargets(allTargets, overlappingTargetsGraph)
 
     // then
     nonOverlappingTargets shouldBe emptySet()
@@ -52,7 +52,7 @@ class NonOverlappingTargetsTest {
     )
 
     // when
-    val nonOverlappingTargets by NonOverlappingTargetsDelegate(allTargets, overlappingTargetsGraph)
+    val nonOverlappingTargets = NonOverlappingTargets(allTargets, overlappingTargetsGraph)
 
     // then
     val expectedTargets = setOf(
@@ -104,7 +104,7 @@ class NonOverlappingTargetsTest {
     )
 
     // when
-    val nonOverlappingTargets by NonOverlappingTargetsDelegate(allTargets, overlappingTargetsGraph)
+    val nonOverlappingTargets = NonOverlappingTargets(allTargets, overlappingTargetsGraph)
 
     // then
     val expectedTargets = setOf(
@@ -153,7 +153,7 @@ class NonOverlappingTargetsTest {
     )
 
     // when
-    val nonOverlappingTargets by NonOverlappingTargetsDelegate(allTargets, overlappingTargetsGraph)
+    val nonOverlappingTargets = NonOverlappingTargets(allTargets, overlappingTargetsGraph)
 
     // then
     val expectedTargets = setOf(
@@ -219,7 +219,7 @@ class NonOverlappingTargetsTest {
     )
 
     // when
-    val nonOverlappingTargets by NonOverlappingTargetsDelegate(allTargets, overlappingTargetsGraph)
+    val nonOverlappingTargets = NonOverlappingTargets(allTargets, overlappingTargetsGraph)
 
     // then
     val expectedTargets = setOf(

@@ -4,21 +4,26 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
-import kotlin.reflect.KProperty
 
-internal class NonOverlappingTargetsDelegate(
-  private val allTargets: Set<BuildTarget>,
-  private val overlappingTargetsGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
-) {
+internal object NonOverlappingTargets {
 
-  operator fun getValue(
-    thisRef: Any?,
-    property: KProperty<*>,
+  private val log = logger<NonOverlappingTargets>()
+
+  operator fun invoke(
+    allTargets: Set<BuildTarget>,
+    overlappingTargetsGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
   ): Set<BuildTargetIdentifier> {
     log.trace { "Calculating non overlapping targets for $allTargets..." }
 
     return allTargets
-      .fold(emptySet(), this::addTargetToSetIfNoneOfItsNeighborsIsAddedAndDoTheSameForDependencies)
+      .fold<BuildTarget, Set<BuildTargetIdentifier>>(emptySet()) { acc, targetToAdd ->
+        addTargetToSetIfNoneOfItsNeighborsIsAddedAndDoTheSameForDependencies(
+          acc,
+          targetToAdd,
+          allTargets,
+          overlappingTargetsGraph
+        )
+      }
       .also {
         log.trace {
           "Calculating non overlapping targets for $allTargets done! Calculated non overlapping targets: $it."
@@ -30,19 +35,31 @@ internal class NonOverlappingTargetsDelegate(
   private fun addTargetToSetIfNoneOfItsNeighborsIsAddedAndDoTheSameForDependencies(
     nonOverlappingTargetsAcc: Set<BuildTargetIdentifier>,
     target: BuildTarget,
+    allTargets: Set<BuildTarget>,
+    overlappingTargetsGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
   ): Set<BuildTargetIdentifier> {
-    val nonOverlappingTargetsAccWithTarget = addTargetToSetIfNoneOfItsNeighborsIsAdded(nonOverlappingTargetsAcc, target)
+    val nonOverlappingTargetsAccWithTarget =
+      addTargetToSetIfNoneOfItsNeighborsIsAdded(nonOverlappingTargetsAcc, target, overlappingTargetsGraph)
 
     return target.dependencies
-      .mapNotNull { mapTargetIdToTarget(it) }
-      .fold(nonOverlappingTargetsAccWithTarget, ::addTargetToSetIfNoneOfItsNeighborsIsAddedAndDoTheSameForDependencies)
+      .mapNotNull { mapTargetIdToTarget(allTargets, it) }
+      .fold(nonOverlappingTargetsAccWithTarget) { acc, targetToAdd ->
+        addTargetToSetIfNoneOfItsNeighborsIsAddedAndDoTheSameForDependencies(
+          acc,
+          targetToAdd,
+          allTargets,
+          overlappingTargetsGraph
+        )
+      }
   }
 
   private fun addTargetToSetIfNoneOfItsNeighborsIsAdded(
     nonOverlappingTargetsAcc: Set<BuildTargetIdentifier>,
     target: BuildTarget,
+    overlappingTargetsGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
   ): Set<BuildTargetIdentifier> {
-    val shouldNotTargetBeAddedToSet = isAnyOfNeighborsAddedToSet(nonOverlappingTargetsAcc, target.id)
+    val shouldNotTargetBeAddedToSet =
+      isAnyOfNeighborsAddedToSet(nonOverlappingTargetsAcc, target.id, overlappingTargetsGraph)
 
     return if (shouldNotTargetBeAddedToSet) nonOverlappingTargetsAcc
     else (nonOverlappingTargetsAcc + target.id).also { log.trace { "Adding $target to non overlapping targets." } }
@@ -51,6 +68,7 @@ internal class NonOverlappingTargetsDelegate(
   private fun isAnyOfNeighborsAddedToSet(
     nonOverlappingTargetsAcc: Set<BuildTargetIdentifier>,
     target: BuildTargetIdentifier,
+    overlappingTargetsGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
   ): Boolean {
     val neighbors = overlappingTargetsGraph[target] ?: emptySet()
 
@@ -66,12 +84,9 @@ internal class NonOverlappingTargetsDelegate(
   private fun isAnyTargetAddedToSet(
     nonOverlappingTargetsAcc: Set<BuildTargetIdentifier>,
     targets: Collection<BuildTargetIdentifier>,
-  ): Boolean = targets.any { it in nonOverlappingTargetsAcc }
+  ): Boolean =
+    targets.any { it in nonOverlappingTargetsAcc }
 
-  private fun mapTargetIdToTarget(targetId: BuildTargetIdentifier): BuildTarget? =
+  private fun mapTargetIdToTarget(allTargets: Set<BuildTarget>, targetId: BuildTargetIdentifier): BuildTarget? =
     allTargets.find { it.id == targetId }
-
-  companion object {
-    private val log = logger<NonOverlappingTargetsDelegate>()
-  }
 }

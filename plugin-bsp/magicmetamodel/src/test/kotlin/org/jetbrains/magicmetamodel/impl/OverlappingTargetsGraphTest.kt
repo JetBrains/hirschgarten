@@ -12,7 +12,7 @@ import org.jetbrains.workspace.model.constructors.SourcesItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-@DisplayName("OverlappingTargetsGraphDelegate(targetsDetailsForDocumentProvider) tests")
+@DisplayName("OverlappingTargetsGraph(targetsDetailsForDocumentProvider) tests")
 class OverlappingTargetsGraphTest {
 
   @Test
@@ -21,7 +21,7 @@ class OverlappingTargetsGraphTest {
     val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(emptyList())
 
     // when
-    val overlappingTargetsGraph by OverlappingTargetsGraphDelegate(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
     overlappingTargetsGraph shouldBe mapOf()
@@ -75,7 +75,7 @@ class OverlappingTargetsGraphTest {
     val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
 
     // when
-    val overlappingTargetsGraph by OverlappingTargetsGraphDelegate(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
     val expectedGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
@@ -119,7 +119,7 @@ class OverlappingTargetsGraphTest {
     val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
 
     // when
-    val overlappingTargetsGraph by OverlappingTargetsGraphDelegate(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
     val expectedGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
@@ -156,7 +156,7 @@ class OverlappingTargetsGraphTest {
     val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
 
     // when
-    val overlappingTargetsGraph by OverlappingTargetsGraphDelegate(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
     val expectedGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
@@ -193,7 +193,7 @@ class OverlappingTargetsGraphTest {
     val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
 
     // when
-    val overlappingTargetsGraph by OverlappingTargetsGraphDelegate(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
     val expectedGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
@@ -328,7 +328,7 @@ class OverlappingTargetsGraphTest {
     val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
 
     // when
-    val overlappingTargetsGraph by OverlappingTargetsGraphDelegate(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
     val expectedGraph = mapOf(
