@@ -28,9 +28,9 @@ internal class MagicMetaModelImpl internal constructor(
   }
 
   private val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
-  private val overlappingTargetsGraph by OverlappingTargetsGraphDelegate(targetsDetailsForDocumentProvider)
+  private val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
-  private val targetIdToModuleDetails by TargetIdToModuleDetailsDelegate(projectDetails)
+  private val targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
 
   private val loadedTargetsStorage = LoadedTargetsStorage()
 
@@ -54,7 +54,7 @@ internal class MagicMetaModelImpl internal constructor(
   override fun loadDefaultTargets() {
     LOGGER.debug { "Calculating default targets to load..." }
 
-    val nonOverlappingTargetsToLoad by NonOverlappingTargetsDelegate(projectDetails.targets, overlappingTargetsGraph)
+    val nonOverlappingTargetsToLoad = NonOverlappingTargets(projectDetails.targets, overlappingTargetsGraph)
 
     LOGGER.debug { "Calculating default targets to load done! Targets to load: $nonOverlappingTargetsToLoad" }
 

@@ -3,8 +3,10 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetDataKind
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -60,6 +62,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
       BuildTargetCapabilities()
     )
     buildTarget.baseDirectory = "file:///root/dir/"
+    buildTarget.dataKind = BuildTargetDataKind.JVM
+    buildTarget.data = JvmBuildTarget("file:///java/home", "11")
 
     val sourcesItem = SourcesItem(
       buildTargetId,
@@ -145,6 +149,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2),
       resourceRoots = listOf(expectedJavaResourceRoot1),
       libraries = listOf(expectedLibrary1, expectedLibrary2),
+//      sdk =
     )
 
     validateJavaModule(javaModule, expectedJavaModule)

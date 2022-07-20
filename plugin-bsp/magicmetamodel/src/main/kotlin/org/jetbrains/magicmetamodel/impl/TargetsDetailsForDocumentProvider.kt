@@ -12,7 +12,6 @@ import org.jetbrains.magicmetamodel.extensions.toAbsolutePath
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.toPath
-import kotlin.reflect.KProperty
 
 internal class TargetsDetailsForDocumentProvider(sources: List<SourcesItem>) {
 
@@ -20,10 +19,8 @@ internal class TargetsDetailsForDocumentProvider(sources: List<SourcesItem>) {
     LOGGER.trace { "Initializing TargetsDetailsForDocumentProvider..." }
   }
 
-  private val documentIdToTargetsIdsMap by DocumentIdToTargetsIdsMapDelegate(sources)
-  private val documentIdInTheSameDirectoryToTargetsIdsMapForHACK by DocumentIdToTargetsIdsMapDelegateInTheSameDirHACK(
-    sources
-  )
+  private val documentIdToTargetsIdsMap = DocumentIdToTargetsIdsMap(sources)
+  private val documentIdInTheSameDirectoryToTargetsIdsMapForHACK = DocumentIdToTargetsIdsMapInTheSameDirHACK(sources)
   private val isFileMap4HACK = sources
     .flatMap { it.sources }
     .associateBy({ it.uri }, { it.kind == SourceItemKind.FILE })
@@ -76,19 +73,20 @@ internal class TargetsDetailsForDocumentProvider(sources: List<SourcesItem>) {
   }
 }
 
-private class DocumentIdToTargetsIdsMapDelegate(private val sources: List<SourcesItem>) {
+private object DocumentIdToTargetsIdsMap {
 
-  operator fun getValue(
-    thisRef: Any?,
-    property: KProperty<*>,
+  private val log = logger<DocumentIdToTargetsIdsMap>()
+
+  operator fun invoke(
+    sources: List<SourcesItem>
   ): Map<Path, Set<BuildTargetIdentifier>> {
-    LOGGER.trace { "Calculating document to target id map..." }
+    log.trace { "Calculating document to target id map..." }
 
     return sources
       .flatMap(this::mapSourcesItemToPairsOfDocumentIdAndTargetId)
       .groupBy({ it.first }, { it.second })
       .mapValues { it.value.toSet() }
-      .also { LOGGER.trace { "Calculating document to target id map done! Map: $it." } }
+      .also { log.trace { "Calculating document to target id map done! Map: $it." } }
   }
 
   private fun mapSourcesItemToPairsOfDocumentIdAndTargetId(
@@ -100,23 +98,17 @@ private class DocumentIdToTargetsIdsMapDelegate(private val sources: List<Source
 
   private fun mapSourceItemToPath(sourceItem: SourceItem): Path =
     URI.create(sourceItem.uri).toAbsolutePath()
-
-  companion object {
-    private val LOGGER = logger<DocumentIdToTargetsIdsMapDelegate>()
-  }
 }
 
-private class DocumentIdToTargetsIdsMapDelegateInTheSameDirHACK(private val sources: List<SourcesItem>) {
+private object DocumentIdToTargetsIdsMapInTheSameDirHACK {
 
-  operator fun getValue(
-    thisRef: Any?,
-    property: KProperty<*>,
-  ): Map<Path, Set<BuildTargetIdentifier>> {
-    return sources
+  operator fun invoke(
+    sources: List<SourcesItem>
+  ): Map<Path, Set<BuildTargetIdentifier>> =
+    sources
       .flatMap(this::mapSourcesItemToPairsOfDocumentIdAndTargetId)
       .groupBy({ it.first }, { it.second })
       .mapValues { it.value.toSet() }
-  }
 
   private fun mapSourcesItemToPairsOfDocumentIdAndTargetId(
     sourceItem: SourcesItem,

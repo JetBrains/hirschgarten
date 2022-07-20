@@ -15,8 +15,8 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
-@DisplayName("TargetIdToModuleDetailsDelegate(projectDetails) tests")
-class TargetIdToModuleDetailsDelegateTest {
+@DisplayName("TargetIdToModuleDetails(projectDetails) tests")
+class TargetIdToModuleDetailsTest {
 
   @Test
   fun `should return empty map for empty project details`() {
@@ -30,7 +30,7 @@ class TargetIdToModuleDetailsDelegateTest {
     )
 
     // when
-    val targetIdToModuleDetails by TargetIdToModuleDetailsDelegate(emptyProjectDetails)
+    val targetIdToModuleDetails = TargetIdToModuleDetails(emptyProjectDetails)
 
     // then
     targetIdToModuleDetails shouldBe emptyMap()
@@ -56,7 +56,7 @@ class TargetIdToModuleDetailsDelegateTest {
     )
 
     // when
-    val targetIdToModuleDetails by TargetIdToModuleDetailsDelegate(projectDetails)
+    val targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
 
     // then
     val expectedModuleDetails = ModuleDetails(
@@ -104,7 +104,7 @@ class TargetIdToModuleDetailsDelegateTest {
     )
 
     // when
-    val targetIdToModuleDetails by TargetIdToModuleDetailsDelegate(projectDetails)
+    val targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
 
     // then
     val expectedModuleDetails = ModuleDetails(
@@ -195,7 +195,7 @@ class TargetIdToModuleDetailsDelegateTest {
     )
 
     // when
-    val targetIdToModuleDetails by TargetIdToModuleDetailsDelegate(projectDetails)
+    val targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
 
     // then
     val expectedModuleDetails1 = ModuleDetails(

@@ -4,24 +4,22 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
 import org.jetbrains.magicmetamodel.extensions.reduceSets
-import kotlin.reflect.KProperty
 
-internal class OverlappingTargetsGraphDelegate(
-  private val targetsDetailsForDocumentProvider: TargetsDetailsForDocumentProvider,
-) {
+internal object OverlappingTargetsGraph {
 
-  operator fun getValue(
-    thisRef: Any?,
-    property: KProperty<*>,
+  private val log = logger<OverlappingTargetsGraph>()
+
+  operator fun invoke(
+    targetsDetailsForDocumentProvider: TargetsDetailsForDocumentProvider,
   ): Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> {
-    LOGGER.trace { "Calculating overlapping targets graph..." }
+    log.trace { "Calculating overlapping targets graph..." }
 
     return targetsDetailsForDocumentProvider.getAllDocuments()
       .map(targetsDetailsForDocumentProvider::getTargetsDetailsForDocument)
       .flatMap(this::generateEdgesForOverlappingTargetsForAllTargets)
       .groupBy({ it.first }, { it.second })
       .mapValues { it.value.reduceSets() }
-      .also { LOGGER.trace { "Calculating overlapping targets graph done! Graph: $it." } }
+      .also { log.trace { "Calculating overlapping targets graph done! Graph: $it." } }
   }
 
   private fun generateEdgesForOverlappingTargetsForAllTargets(
@@ -33,11 +31,11 @@ internal class OverlappingTargetsGraphDelegate(
     target: BuildTargetIdentifier,
     overlappingTargets: List<BuildTargetIdentifier>,
   ): Pair<BuildTargetIdentifier, Set<BuildTargetIdentifier>> {
-    LOGGER.trace { "Calculating overlapping targets for $target..." }
+    log.trace { "Calculating overlapping targets for $target..." }
 
     val targetEdges = filterGivenTargetFromOverlappingTargetsAndMapToSet(target, overlappingTargets)
 
-    LOGGER.trace { "Calculating overlapping targets for $target done. Overlapping targets: $targetEdges." }
+    log.trace { "Calculating overlapping targets for $target done. Overlapping targets: $targetEdges." }
 
     return Pair(target, targetEdges)
   }
@@ -49,8 +47,4 @@ internal class OverlappingTargetsGraphDelegate(
     overlappingTargets
       .filter { it != target }
       .toSet()
-
-  companion object {
-    private val LOGGER = logger<OverlappingTargetsGraphDelegate>()
-  }
 }
