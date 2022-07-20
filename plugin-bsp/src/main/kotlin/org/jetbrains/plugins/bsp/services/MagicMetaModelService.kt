@@ -13,7 +13,6 @@ public class MagicMetaModelService(private val project: Project) {
 
   public lateinit var magicMetaModel: MagicMetaModel
 
-
   public fun initializeMagicModel(projectDetails: ProjectDetails) {
     val magicMetaModelProjectConfig = calculateProjectConfig(project)
 
