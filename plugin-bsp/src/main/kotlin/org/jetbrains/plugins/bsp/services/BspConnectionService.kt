@@ -5,22 +5,17 @@ import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.BuildClientCapabilities
 import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.LogMessageParams
 import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.ShowMessageParams
 import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.intellij.build.AbstractViewManager
@@ -46,11 +41,8 @@ public class BspConnectionService(private val project: Project) {
 
   public var server: BspServer? = null
 
-//  public var bspResolver: VeryTemporaryBspResolver? = null
-
   public fun connect(connectionFile: LocatedBspConnectionDetails) {
     val process = createAndStartProcess(connectionFile.bspConnectionDetails)
-    // TODO
     val buildView = project.getService(SyncViewManager::class.java)
 
     val client = BspClient(buildView, "xd2", "xd")
@@ -60,8 +52,6 @@ public class BspConnectionService(private val project: Project) {
     launcher.startListening()
     server = launcher.remoteProxy
     client.onConnectWithServer(server)
-
-//    bspResolver = VeryTemporaryBspResolver(project.stateStore.projectBasePath, server!!, project, buildView)
   }
 
   private fun createAndStartProcess(bspConnectionDetails: BspConnectionDetails): Process =
@@ -88,7 +78,12 @@ public class BspConnectionService(private val project: Project) {
 }
 
 
-public class VeryTemporaryBspResolver(private val projectBaseDir: Path, private val server: BspServer, private val project: Project, private val buildViewManager: AbstractViewManager) {
+public class VeryTemporaryBspResolver(
+  private val projectBaseDir: Path,
+  private val server: BspServer,
+  private val project: Project,
+  private val buildViewManager: AbstractViewManager
+) {
 
   public fun collectModel(): ProjectDetails {
     val buildId = "xd"
@@ -96,64 +91,44 @@ public class VeryTemporaryBspResolver(private val projectBaseDir: Path, private 
     val basePath = project.basePath!!
     val buildDescriptor = DefaultBuildDescriptor(buildId, title, basePath, System.currentTimeMillis())
 
+    val startEvent = StartBuildEventImpl(buildDescriptor, "message")
+    buildViewManager.onEvent(buildId, startEvent)
 
-    var workspaceBuildTargetsResult: WorkspaceBuildTargetsResult? = null
-    var allTargetsIds: List<BuildTargetIdentifier>? = null
-    var sourcesResult: SourcesResult? = null
-    var resourcesResult: ResourcesResult? = null
-    var dependencySourcesResult: DependencySourcesResult? = null
+    val progressEvent = ProgressBuildEventImpl(
+      "xd2", buildId, System.currentTimeMillis(), "Tmport", -1,
+      -1, "kłykcie"
+    )
+    buildViewManager.onEvent(buildId, progressEvent)
 
-//    val task = object : Task.Backgroundable(project, "Loading changes 1 ", true) {
-//
-//      override fun run(indicator: ProgressIndicator) {
+    println("buildInitialize")
+    server.buildInitialize(createInitializeBuildParams()).get()
 
-        val startEvent = StartBuildEventImpl(buildDescriptor, "message")
-        buildViewManager.onEvent(buildId, startEvent)
+    println("onBuildInitialized")
+    server.onBuildInitialized()
 
-//        indicator.text = "Loading changes 2"
-//        indicator.isIndeterminate = true
-//        indicator.fraction = 0.0
-        val progressEvent = ProgressBuildEventImpl(
-          "xd2", buildId, System.currentTimeMillis(), "Tmport", -1,
-          -1, "kłykcie"
-        )
-        buildViewManager.onEvent(buildId, progressEvent)
+    println("workspaceBuildTargets")
+    val workspaceBuildTargetsResult = server.workspaceBuildTargets().get()
+    val allTargetsIds = workspaceBuildTargetsResult!!.targets.map(BuildTarget::getId)
 
-        println("buildInitialize")
-        server.buildInitialize(createInitializeBuildParams()).get()
+    println("buildTargetSources")
+    val sourcesResult = server.buildTargetSources(SourcesParams(allTargetsIds)).get()
 
-        println("onBuildInitialized")
-        server.onBuildInitialized()
+    println("buildTargetResources")
+    val resourcesResult = server.buildTargetResources(ResourcesParams(allTargetsIds)).get()
 
-        println("workspaceBuildTargets")
-        workspaceBuildTargetsResult = server.workspaceBuildTargets().get()
-        allTargetsIds = workspaceBuildTargetsResult!!.targets.map(BuildTarget::getId)
+    println("buildTargetDependencySources")
+    val dependencySourcesResult = server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds)).get()
 
-        println("buildTargetSources")
-        sourcesResult = server.buildTargetSources(SourcesParams(allTargetsIds)).get()
-
-        println("buildTargetResources")
-        resourcesResult = server.buildTargetResources(ResourcesParams(allTargetsIds)).get()
-
-        println("buildTargetDependencySources")
-        dependencySourcesResult = server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds)).get()
-
-        println("done!")
-        val xd = FinishBuildEventImpl(
-          "xd2", null, System.currentTimeMillis(), "Tmport 2", SuccessResultImpl()
-        )
-        buildViewManager.onEvent(buildId, xd)
-        println("done!")
-        val xd2 = FinishBuildEventImpl(
-          buildId, null, System.currentTimeMillis(), "Tmport 233", SuccessResultImpl()
-        )
-        buildViewManager.onEvent(buildId, xd2)
-//        buildViewManager.dispose()
-//      }
-//    }
-//    task.queue()
-//    ProgressManager.getInstance().run(task)
-
+    println("done!")
+    val xd = FinishBuildEventImpl(
+      "xd2", null, System.currentTimeMillis(), "Tmport 2", SuccessResultImpl()
+    )
+    buildViewManager.onEvent(buildId, xd)
+    println("done!")
+    val xd2 = FinishBuildEventImpl(
+      buildId, null, System.currentTimeMillis(), "Tmport 233", SuccessResultImpl()
+    )
+    buildViewManager.onEvent(buildId, xd2)
 
     println("done done!")
     return ProjectDetails(
@@ -182,7 +157,11 @@ public class VeryTemporaryBspResolver(private val projectBaseDir: Path, private 
   }
 }
 
-private class BspClient(private val buildViewManager: AbstractViewManager, private val randomId: String, private val buildId: String) : BuildClient {
+private class BspClient(
+  private val buildViewManager: AbstractViewManager,
+  private val randomId: String,
+  private val buildId: String
+) : BuildClient {
   override fun onBuildShowMessage(params: ShowMessageParams?) {
     println("onBuildShowMessage")
     println(params)
