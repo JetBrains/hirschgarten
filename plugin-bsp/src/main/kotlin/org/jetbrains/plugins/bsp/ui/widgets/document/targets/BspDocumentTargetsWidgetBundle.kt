@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.widgets.document.targets
+package org.jetbrains.plugins.bsp.ui.widgets.document.targets
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls
