@@ -27,14 +27,16 @@
       serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
     <projectService
       serviceImplementation="org.jetbrains.plugins.bsp.services.BspConnectionService"/>
+    <projectService
+      serviceImplementation="org.jetbrains.plugins.bsp.services.BspSyncConsoleService"/>
 
     <statusBarWidgetFactory
-      implementation="org.jetbrains.plugins.bsp.widgets.document.targets.BspDocumentTargetsWidgetFactory"/>
+      implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory"/>
     <toolWindow
       id="BSP"
       icon="/icons/bsp.svg"
       anchor="right"
-      factoryClass="org.jetbrains.plugins.bsp.widgets.all.targets.BspAllTargetsWidgetFactory"/>
+      factoryClass="org.jetbrains.plugins.bsp.ui.widgets.all.targets.BspAllTargetsWidgetFactory"/>
   </extensions>
 
   <applicationListeners>

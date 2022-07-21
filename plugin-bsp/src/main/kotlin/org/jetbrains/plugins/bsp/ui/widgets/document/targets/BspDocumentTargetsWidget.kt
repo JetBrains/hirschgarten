@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.widgets.document.targets
+package org.jetbrains.plugins.bsp.ui.widgets.document.targets
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier

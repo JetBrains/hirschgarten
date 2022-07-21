@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.widgets.all.targets
+package org.jetbrains.plugins.bsp.ui.widgets.all.targets
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
