@@ -21,6 +21,8 @@ import com.google.gson.JsonObject
 import com.intellij.openapi.project.Project
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
+import java.io.InputStream
+import java.io.OutputStream
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
@@ -29,9 +31,13 @@ import java.nio.file.Path
 
 public interface BspServer : BuildServer
 
+public fun interface Cancelable {
+  public fun cancel()
+}
 public class BspConnectionService(private val project: Project) {
 
   public var server: BspServer? = null
+  private var cancelActions: List<Cancelable> ? = null
 
   public fun connect(connectionFile: LocatedBspConnectionDetails) {
     val process = createAndStartProcess(connectionFile.bspConnectionDetails)
@@ -39,12 +45,19 @@ public class BspConnectionService(private val project: Project) {
 
     val client = BspClient(bspSyncConsoleService.bspSyncConsole)
 
-    val launcher = createLauncher(process, client)
+    val bspIn = process.inputStream
+    val bspOut = process.outputStream
+    val launcher = createLauncher(bspIn, bspOut, client)
 
-    launcher.startListening()
+    val listening = launcher.startListening()
     server = launcher.remoteProxy
     client.onConnectWithServer(server)
-
+    cancelActions = listOf(
+      Cancelable { bspIn.close() },
+      Cancelable { bspOut.close() },
+      Cancelable { listening.cancel(true) },
+      Cancelable { process.destroy() }
+    )
   }
 
   private fun createAndStartProcess(bspConnectionDetails: BspConnectionDetails): Process =
@@ -52,16 +65,29 @@ public class BspConnectionService(private val project: Project) {
       .directory(project.stateStore.projectBasePath.toFile())
       .start()
 
-  private fun createLauncher(process: Process, client: BuildClient): Launcher<BspServer> =
+  private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<BspServer> =
     Launcher.Builder<BspServer>()
       .setRemoteInterface(BspServer::class.java)
       .setExecutorService(AppExecutorUtil.getAppExecutorService())
-      .setInput(process.inputStream)
-      .setOutput(process.outputStream)
+      .setInput(bspIn)
+      .setOutput(bspOut)
       .setLocalService(client)
       .create()
 
   public fun disconnect() {
+    val errors = mutableListOf<Throwable>()
+    cancelActions?.forEach{
+      try {
+        it.cancel()
+      } catch (e: Exception) {
+          errors.add(e)
+      }
+    }
+    val head = errors.firstOrNull()
+    head?.let {
+      errors.drop(1).forEach{ head.addSuppressed(it) }
+      throw head
+    }
   }
 
   public companion object {
@@ -69,7 +95,6 @@ public class BspConnectionService(private val project: Project) {
       project.getService(BspConnectionService::class.java)
   }
 }
-
 
 public class VeryTemporaryBspResolver(
   private val projectBaseDir: Path,
