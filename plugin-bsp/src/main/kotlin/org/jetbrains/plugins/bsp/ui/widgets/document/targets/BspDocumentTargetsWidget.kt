@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
@@ -30,6 +31,9 @@ private class LoadTargetAction(
 
   override fun actionPerformed(e: AnActionEvent) {
     magicMetaModel.loadTarget(target)
+    runWriteAction {
+      magicMetaModel.save()
+    }
   }
 }
 
