@@ -20,6 +20,9 @@
     <projectOpenProcessor
       implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
 
+    <projectCloseHandler
+      implementation="org.jetbrains.plugins.bsp.import.BspProjectCloseHandler"/>
+
     <postStartupActivity
       implementation="org.jetbrains.plugins.bsp.import.BspInitializer"/>
 
