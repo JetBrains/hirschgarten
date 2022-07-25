@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.wm.ToolWindow
@@ -74,6 +75,9 @@ private class LoadTargetAction(
 
   override fun actionPerformed(e: AnActionEvent) {
     listsUpdater.magicMetaModel.loadTarget(target)
+    runWriteAction {
+      listsUpdater.magicMetaModel.save()
+    }
     listsUpdater.updateModels()
   }
 }
@@ -133,7 +137,7 @@ private class NotLoadedTargetsListMouseListener(
   }
 
   override fun mouseEntered(e: MouseEvent?) {
-    // nothing
+    listsUpdater.updateModels()
   }
 
   override fun mouseExited(e: MouseEvent?) {
@@ -143,7 +147,6 @@ private class NotLoadedTargetsListMouseListener(
 
 public class BspAllTargetsWidgetFactory : ToolWindowFactory {
 
-  // TODO true if BSP project
   override fun shouldBeAvailable(project: Project): Boolean =
     true
 

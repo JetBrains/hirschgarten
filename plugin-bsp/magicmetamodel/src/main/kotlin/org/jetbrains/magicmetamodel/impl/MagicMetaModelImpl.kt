@@ -34,9 +34,9 @@ internal class MagicMetaModelImpl internal constructor(
 
   private val loadedTargetsStorage = LoadedTargetsStorage()
 
-  private val workspaceModelSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
+  private var workspaceModelSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
 
-  private val workspaceModelUpdater = WorkspaceModelUpdater.create(
+  private var workspaceModelUpdater = WorkspaceModelUpdater.create(
     workspaceModelSnapshot.builder,
     magicMetaModelProjectConfig.virtualFileUrlManager,
     magicMetaModelProjectConfig.projectBaseDir
@@ -49,6 +49,13 @@ internal class MagicMetaModelImpl internal constructor(
   override fun save() {
     val toSave = workspaceModelSnapshot.getStorageReplacement()
     magicMetaModelProjectConfig.workspaceModel.replaceProjectModel(toSave)
+
+    workspaceModelSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
+    workspaceModelUpdater = WorkspaceModelUpdater.create(
+      workspaceModelSnapshot.builder,
+      magicMetaModelProjectConfig.virtualFileUrlManager,
+      magicMetaModelProjectConfig.projectBaseDir
+    )
   }
 
   override fun loadDefaultTargets() {
