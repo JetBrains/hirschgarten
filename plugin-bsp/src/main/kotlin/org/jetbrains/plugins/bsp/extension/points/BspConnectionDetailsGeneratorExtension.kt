@@ -30,6 +30,7 @@ public class TemporaryBazelBspConnectionDetailsGenerator : BspConnectionDetailsG
       projectPath.toNioPath().toFile()
     ).waitFor()
 
+    projectPath.refresh(false, false)
     return projectPath.findChild(".bsp")?.findChild("bazelbsp.json")!!
   }
 }
