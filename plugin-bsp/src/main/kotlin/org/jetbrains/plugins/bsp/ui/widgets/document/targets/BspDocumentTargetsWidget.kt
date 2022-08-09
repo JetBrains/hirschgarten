@@ -37,7 +37,7 @@ private class LoadTargetAction(
   }
 }
 
-private class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
+public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
 
   private val magicMetaModelService = MagicMetaModelService.getInstance(project)
 

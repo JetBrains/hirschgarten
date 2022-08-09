@@ -62,7 +62,8 @@ public class BspConnectionService(private val project: Project) {
       },
       Cancelable { bspIn.close() },
       Cancelable { bspOut.close() },
-      Cancelable { listening?.cancel(true) }
+      Cancelable { listening.cancel(true) },
+      Cancelable { process.destroy() }
     )
   }
 
@@ -73,7 +74,7 @@ public class BspConnectionService(private val project: Project) {
     }
   }
 
-  public fun isRunning(): Boolean? = bspProcess?.isAlive
+  public fun isRunning(): Boolean = bspProcess?.isAlive == true
 
   private fun createAndStartProcess(bspConnectionDetails: BspConnectionDetails): Process =
     ProcessBuilder(bspConnectionDetails.argv)
