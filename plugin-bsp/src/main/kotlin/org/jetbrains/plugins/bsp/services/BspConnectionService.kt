@@ -21,13 +21,14 @@ import com.google.gson.JsonObject
 import com.intellij.openapi.project.Project
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
-import java.io.InputStream
-import java.io.OutputStream
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
 import org.jetbrains.protocol.connection.LocatedBspConnectionDetails
+import java.io.InputStream
+import java.io.OutputStream
 import java.nio.file.Path
+import java.util.concurrent.TimeUnit
 
 public interface BspServer : BuildServer
 
@@ -37,6 +38,7 @@ public fun interface Cancelable {
 public class BspConnectionService(private val project: Project) {
 
   public var server: BspServer? = null
+  private var bspProcess: Process? = null
   private var cancelActions: List<Cancelable> ? = null
 
   public fun connect(connectionFile: LocatedBspConnectionDetails) {
@@ -50,15 +52,28 @@ public class BspConnectionService(private val project: Project) {
     val launcher = createLauncher(bspIn, bspOut, client)
 
     val listening = launcher.startListening()
+    bspProcess = process
     server = launcher.remoteProxy
     client.onConnectWithServer(server)
     cancelActions = listOf(
+      Cancelable {
+        process.destroy()
+        process.waitFor(15, TimeUnit.SECONDS)
+      },
       Cancelable { bspIn.close() },
       Cancelable { bspOut.close() },
-      Cancelable { listening.cancel(true) },
-      Cancelable { process.destroy() }
+      Cancelable { listening?.cancel(true) }
     )
   }
+
+  public fun reconnect(locationHash: String) {
+    val bspService = BspUtilService.getInstance()
+    bspService.connectionFile[locationHash]?.let {
+      connect(it)
+    }
+  }
+
+  public fun isRunning(): Boolean? = bspProcess?.isAlive
 
   private fun createAndStartProcess(bspConnectionDetails: BspConnectionDetails): Process =
     ProcessBuilder(bspConnectionDetails.argv)
@@ -76,16 +91,16 @@ public class BspConnectionService(private val project: Project) {
 
   public fun disconnect() {
     val errors = mutableListOf<Throwable>()
-    cancelActions?.forEach{
+    cancelActions?.forEach {
       try {
         it.cancel()
       } catch (e: Exception) {
-          errors.add(e)
+        errors.add(e)
       }
     }
     val head = errors.firstOrNull()
     head?.let {
-      errors.drop(1).forEach{ head.addSuppressed(it) }
+      errors.drop(1).forEach { head.addSuppressed(it) }
       throw head
     }
   }

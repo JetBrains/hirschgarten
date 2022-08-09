@@ -15,6 +15,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.services.BspConnectionService
+import org.jetbrains.plugins.bsp.services.BspUtilService
 import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.protocol.connection.BspConnectionFilesProvider
 import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
@@ -49,6 +50,7 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
 
     return if (dialog.showAndGet()) {
       val project = PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
+      val bspUtilService = BspUtilService.getInstance()
 
       if (project != null) {
         val connectionService = BspConnectionService.getInstance(project)
@@ -57,9 +59,11 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
           val xd = dialog.buildTool
           val xd1 = bspConnectionDetailsGeneratorProvider.generateBspConnectionDetailFileForGeneratorWithName(xd)
           val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
-          connectionService.connect(xd2!!)
+          bspUtilService.connectionFile[project.locationHash] = xd2!!
+          connectionService.connect(xd2)
         } else {
           val xd = bspConnectionFilesProvider.connectionFiles[dialog.connectionFileId]
+          bspUtilService.connectionFile[project.locationHash] = xd
           connectionService.connect(xd)
         }
 

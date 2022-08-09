@@ -4,8 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectCloseHandler
 import org.jetbrains.plugins.bsp.services.BspConnectionService
 
-public class BspProjectCloseHandler: ProjectCloseHandler
-{
+public class BspProjectCloseHandler : ProjectCloseHandler {
   override fun canClose(project: Project): Boolean {
     val bspConnectionService = BspConnectionService.getInstance(project)
     try {

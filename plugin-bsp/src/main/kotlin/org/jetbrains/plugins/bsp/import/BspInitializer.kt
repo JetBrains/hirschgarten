@@ -5,11 +5,15 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
+import com.intellij.openapi.wm.ToolWindowAnchor
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.project.stateStore
+import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.BspConnectionService
 import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargetsWidgetFactory
 
 /**
  * Runs actions after the project has started up and the index is up-to-date.
@@ -45,8 +49,12 @@ public class BspInitializer : StartupActivity {
         runWriteAction {
           magicMetaModel.save()
         }
+        ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
+          icon = BspPluginIcons.bsp
+          anchor = ToolWindowAnchor.RIGHT
+          contentFactory = BspAllTargetsWidgetFactory()
+        }
       }
-
     }
     task.queue()
   }

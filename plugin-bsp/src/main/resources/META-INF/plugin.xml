@@ -26,21 +26,36 @@
     <postStartupActivity
       implementation="org.jetbrains.plugins.bsp.import.BspInitializer"/>
 
-    <projectService
-      serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
-    <projectService
-      serviceImplementation="org.jetbrains.plugins.bsp.services.BspConnectionService"/>
-    <projectService
-      serviceImplementation="org.jetbrains.plugins.bsp.services.BspSyncConsoleService"/>
+    <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
+    <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.BspConnectionService"/>
+    <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.BspSyncConsoleService"/>
+
+    <applicationService serviceImplementation="org.jetbrains.plugins.bsp.services.BspUtilService"/>
 
     <statusBarWidgetFactory
       implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory"/>
-    <toolWindow
-      id="BSP"
-      icon="/icons/bsp.svg"
-      anchor="right"
-      factoryClass="org.jetbrains.plugins.bsp.ui.widgets.all.targets.BspAllTargetsWidgetFactory"/>
+
   </extensions>
+
+  <actions>
+
+    <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.DisconnectAction"
+            icon="/icons/disconnect.svg"/>
+    <action id="Bsp.ReloadAction" class="org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.ReloadAction"
+            icon="/icons/reload.svg"/>
+    <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.ConnectAction"
+            icon="/icons/connect.svg"/>
+    <action id="Bsp.RestartAction" class="org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.RestartAction"
+            icon="/icons/restart.svg"/>
+
+    <group id="Bsp.ActionsToolbar">
+      <reference id="Bsp.DisconnectAction"/>
+      <reference id="Bsp.ConnectAction"/>
+      <reference id="Bsp.ReloadAction"/>
+      <reference id="Bsp.RestartAction"/>
+    </group>
+
+  </actions>
 
   <applicationListeners>
   </applicationListeners>
