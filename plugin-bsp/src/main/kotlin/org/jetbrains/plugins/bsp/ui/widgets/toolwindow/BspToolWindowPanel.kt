@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.widgets.all.targets
+package org.jetbrains.plugins.bsp.ui.widgets.toolwindow
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
@@ -6,25 +6,27 @@ import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.wm.ToolWindow
-import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
-import com.intellij.ui.content.impl.ContentImpl
-import org.jetbrains.magicmetamodel.MagicMetaModel
-import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import com.intellij.ui.components.JBScrollPane
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.DefaultListModel
+import javax.swing.JComponent
 import javax.swing.ListSelectionModel
 import javax.swing.SwingConstants
+import org.jetbrains.magicmetamodel.MagicMetaModel
+import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargetsWidgetBundle
 
 private class ListsUpdater(
   val magicMetaModel: MagicMetaModel,
@@ -50,7 +52,7 @@ private class ListsUpdater(
     notLoadedTargetsJbList.installCellRenderer {
       JBLabel(
         it.displayName ?: it.id.uri,
-        BspPluginIcons.bsp,
+        BspPluginIcons.notLoadedTarget,
         SwingConstants.LEFT
       )
     }
@@ -95,7 +97,8 @@ private class NotLoadedTargetsListMouseListener(
   }
 
   private fun updateSelectedIndex(mouseEvent: MouseEvent) {
-    listsUpdater.notLoadedTargetsJbList.selectedIndex = listsUpdater.notLoadedTargetsJbList.locationToIndex(mouseEvent.point)
+    listsUpdater.notLoadedTargetsJbList.selectedIndex =
+      listsUpdater.notLoadedTargetsJbList.locationToIndex(mouseEvent.point)
   }
 
   private fun showPopupIfRightButtonClicked(mouseEvent: MouseEvent) {
@@ -137,7 +140,7 @@ private class NotLoadedTargetsListMouseListener(
   }
 
   override fun mouseEntered(e: MouseEvent?) {
-    listsUpdater.updateModels()
+    // listsUpdater.updateModels()
   }
 
   override fun mouseExited(e: MouseEvent?) {
@@ -145,31 +148,48 @@ private class NotLoadedTargetsListMouseListener(
   }
 }
 
-public class BspAllTargetsWidgetFactory : ToolWindowFactory {
+public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
-  override fun shouldBeAvailable(project: Project): Boolean =
-    true
+  public constructor(project: Project) : this() {
 
-  override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
     val magicMetaModel = MagicMetaModelService.getInstance(project).magicMetaModel
-
-    toolWindow.title = BspAllTargetsWidgetBundle.message("widget.title")
-
+    val actionManager = ActionManager.getInstance()
     val listsUpdater = ListsUpdater(magicMetaModel)
 
-    val loadedTargetsTab = ContentImpl(
-      listsUpdater.loadedTargetsJbList,
-      BspAllTargetsWidgetBundle.message("widget.loaded.targets.tab.name"),
-      true
-    )
-    toolWindow.contentManager.addContent(loadedTargetsTab)
-
-    val notLoadedTargetsTab = ContentImpl(
-      listsUpdater.notLoadedTargetsJbList,
-      BspAllTargetsWidgetBundle.message("widget.not.loaded.targets.tab.name"),
-      true
-    )
     listsUpdater.notLoadedTargetsJbList.addMouseListener(NotLoadedTargetsListMouseListener(listsUpdater))
-    toolWindow.contentManager.addContent(notLoadedTargetsTab)
+
+    val actionGroup = actionManager
+      .getAction("Bsp.ActionsToolbar") as DefaultActionGroup
+
+    val notLoadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.not.loaded.targets.tab.name")
+    val loadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.loaded.targets.tab.name")
+
+    actionGroup.childActionsOrStubs.iterator().forEach {
+      if ((it.templateText == notLoadedTargetsActionName) || (it.templateText == loadedTargetsActionName)) {
+        actionGroup.remove(it)
+      }
+    }
+
+    actionGroup.addSeparator()
+
+    actionGroup.add(object : AnAction({ notLoadedTargetsActionName }, BspPluginIcons.notLoadedTarget) {
+      override fun actionPerformed(e: AnActionEvent) {
+        setToolWindowContent(JBScrollPane(listsUpdater.notLoadedTargetsJbList))
+      }
+    })
+    actionGroup.add(object : AnAction({ loadedTargetsActionName }, BspPluginIcons.loadedTarget) {
+      override fun actionPerformed(e: AnActionEvent) {
+        setToolWindowContent(JBScrollPane(listsUpdater.loadedTargetsJbList))
+      }
+    })
+
+    val actionToolbar = actionManager.createActionToolbar("Bsp Toolbar", actionGroup, true)
+    actionToolbar.targetComponent = this.component
+    actionToolbar.setOrientation(SwingConstants.HORIZONTAL)
+    this.toolbar = actionToolbar.component
+  }
+
+  public fun setToolWindowContent(component: JComponent) {
+    this.setContent(component)
   }
 }
