@@ -7,12 +7,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.openapi.wm.WindowManager
+import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.BspConnectionService
 import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargetsWidgetFactory
 
 /**
@@ -23,39 +26,48 @@ import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargets
  */
 public class BspInitializer : StartupActivity {
   override fun runActivity(project: Project) {
-    println("BspInitializer.runActivity")
-
     val connectionService = project.getService(BspConnectionService::class.java)
-    val magicMetaModelService = MagicMetaModelService.getInstance(project)
 
-    val task = object : Task.Backgroundable(project, "Loading changes...", true) {
+    if (connectionService.isRunning()) {
+      println("BspInitializer.runActivity")
 
-      override fun run(indicator: ProgressIndicator) {
-        val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
+      val magicMetaModelService = MagicMetaModelService.getInstance(project)
 
-        val bspResolver =
-          VeryTemporaryBspResolver(project.stateStore.projectBasePath, connectionService.server!!, bspSyncConsoleService.bspSyncConsole)
+      val task = object : Task.Backgroundable(project, "Loading changes...", true) {
 
-        val projectDetails = bspResolver.collectModel()
+        override fun run(indicator: ProgressIndicator) {
+          val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
 
-        magicMetaModelService.initializeMagicModel(projectDetails)
-        val magicMetaModel = magicMetaModelService.magicMetaModel
+          val bspResolver =
+            VeryTemporaryBspResolver(
+              project.stateStore.projectBasePath,
+              connectionService.server!!,
+              bspSyncConsoleService.bspSyncConsole
+            )
 
-        magicMetaModel.loadDefaultTargets()
-      }
+          val projectDetails = bspResolver.collectModel()
 
-      override fun onSuccess() {
-        val magicMetaModel = magicMetaModelService.magicMetaModel
-        runWriteAction {
-          magicMetaModel.save()
+          magicMetaModelService.initializeMagicModel(projectDetails)
+          val magicMetaModel = magicMetaModelService.magicMetaModel
+
+          magicMetaModel.loadDefaultTargets()
         }
-        ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
-          icon = BspPluginIcons.bsp
-          anchor = ToolWindowAnchor.RIGHT
-          contentFactory = BspAllTargetsWidgetFactory()
+
+        override fun onSuccess() {
+          val magicMetaModel = magicMetaModelService.magicMetaModel
+          runWriteAction {
+            magicMetaModel.save()
+          }
+          val statusBar = WindowManager.getInstance().getStatusBar(project)
+          statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
+          ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
+            icon = BspPluginIcons.bsp
+            anchor = ToolWindowAnchor.RIGHT
+            contentFactory = BspAllTargetsWidgetFactory()
+          }
         }
       }
+      task.queue()
     }
-    task.queue()
   }
 }

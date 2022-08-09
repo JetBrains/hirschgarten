@@ -16,7 +16,6 @@
       implementation="org.jetbrains.plugins.bsp.extension.points.TemporaryBazelBspConnectionDetailsGenerator"
     />
 
-
     <projectOpenProcessor
       implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
 
@@ -32,8 +31,6 @@
 
     <applicationService serviceImplementation="org.jetbrains.plugins.bsp.services.BspUtilService"/>
 
-    <statusBarWidgetFactory
-      implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory"/>
 
   </extensions>
 

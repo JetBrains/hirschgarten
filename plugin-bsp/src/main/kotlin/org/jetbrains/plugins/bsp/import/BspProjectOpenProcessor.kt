@@ -28,7 +28,7 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
 
   override fun getIcon(): Icon = BspPluginIcons.bsp
 
-  override fun canOpenProject(file: VirtualFile): Boolean {
+  override fun canOpenProject(file: VirtualFile): Boolean  {
     val bspConnectionFilesProvider = BspConnectionFilesProvider(file)
     val bspConnectionDetailsGeneratorProvider =
       BspConnectionDetailsGeneratorProvider(file, BspConnectionDetailsGeneratorExtension.extensions())
@@ -36,6 +36,7 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
     return bspConnectionFilesProvider.isAnyBspConnectionFileDefined() or
       bspConnectionDetailsGeneratorProvider.canGenerateAnyBspConnectionDetailsFile()
   }
+
 
   override fun doOpenProject(
     virtualFile: VirtualFile,
