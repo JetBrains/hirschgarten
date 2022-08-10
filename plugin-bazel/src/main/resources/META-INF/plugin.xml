@@ -1,0 +1,11 @@
+<idea-plugin>
+    <id>org.jetbrains.bsp.bazel</id>
+    <name>Bazel</name>
+    <vendor>JetBrains</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+
+</idea-plugin>
