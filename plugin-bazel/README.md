@@ -1,31 +1,12 @@
-# bazel/intellij-bsp-bazel
+# intellij-bsp-bazel
 
+<!-- Plugin description -->
+WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS
 
+WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS WORK IN PROGRESS
+<!-- Plugin description end -->
 
-## Getting Started
+---
+Plugin based on the [IntelliJ Platform Plugin Template][template].
 
-Download links:
-
-SSH clone URL: ssh://git@git.jetbrains.team/bazel/intellij-bsp-bazel.git
-
-HTTPS clone URL: https://git.jetbrains.team/bazel/intellij-bsp-bazel.git
-
-
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
-## Prerequisites
-
-What things you need to install the software and how to install them.
-
-```
-Examples
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a production system.
-
-## Resources
-
-Add links to external resources for this project, such as CI server, bug tracker, etc.
+[template]: https://github.com/JetBrains/intellij-platform-plugin-template
