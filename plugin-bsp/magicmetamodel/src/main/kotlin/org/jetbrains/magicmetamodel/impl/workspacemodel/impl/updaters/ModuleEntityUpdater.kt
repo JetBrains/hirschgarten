@@ -1,12 +1,12 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.workspaceModel.storage.MutableEntityStorage
+import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.api.LibraryId
 import com.intellij.workspaceModel.storage.bridgeEntities.api.LibraryTableId
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleId
-import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 
 internal data class ModuleDependency(
@@ -26,7 +26,7 @@ internal data class Module(
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-  private val defaultDependencies: List<ModuleDependencyItem> = emptyList(),
+  private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<Module, ModuleEntity> {
 
   override fun addEntity(entityToAdd: Module): ModuleEntity =
@@ -43,7 +43,7 @@ internal class ModuleEntityUpdater(
     return builder.addModuleEntity(
       name = entityToAdd.name,
       dependencies = modulesDependencies + librariesDependencies + defaultDependencies,
-      source = workspaceModelEntityUpdaterConfig.projectConfigSource,
+      source = DoNotSaveInDotIdeaDirEntitySource,
       type = entityToAdd.type
     )
   }
@@ -89,6 +89,6 @@ internal class WorkspaceModuleRemover(
     val allModules =
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(ModuleEntity::class.java)
 
-      allModules.forEach(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder::removeEntity)
+    allModules.forEach(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder::removeEntity)
   }
 }

@@ -30,7 +30,7 @@ internal object SourcesItemToJavaSourceRootTransformer :
 
   private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> =
     // TODO?
-    (sourcesItem.roots ?: emptyList()).map(URI::create)
+    (sourcesItem.roots ?: ArrayList()).map(URI::create)
 
   private fun toJavaSourceRoot(sourceRoot: SourceRoot, sourceRoots: List<URI>): JavaSourceRoot {
     val packagePrefix = calculatePackagePrefix(sourceRoot, sourceRoots)

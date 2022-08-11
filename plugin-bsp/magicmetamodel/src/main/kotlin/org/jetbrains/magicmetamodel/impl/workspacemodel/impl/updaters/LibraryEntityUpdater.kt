@@ -30,9 +30,9 @@ internal class LibraryEntityUpdater(
     builder.addLibraryEntity(
       name = entityToAdd.displayName,
       tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
-      listOf(toLibrarySourcesRoot(entityToAdd), toLibraryClassesRoot(entityToAdd)),
-      emptyList(),
-      workspaceModelEntityUpdaterConfig.projectConfigSource
+      roots = listOf(toLibrarySourcesRoot(entityToAdd), toLibraryClassesRoot(entityToAdd)),
+      excludedRoots = ArrayList(),
+      source = DoNotSaveInDotIdeaDirEntitySource
     )
 
   private fun toLibrarySourcesRoot(entityToAdd: Library): LibraryRoot =

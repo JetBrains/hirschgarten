@@ -31,7 +31,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectConfigSource)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager)
     moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies)
   }
 
@@ -100,7 +100,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
           ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
-        entitySource = projectConfigSource,
+        entitySource = DoNotSaveInDotIdeaDirEntitySource,
       ) {
         type = "JAVA_MODULE"
       }
@@ -192,7 +192,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
           ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
-        entitySource = projectConfigSource
+        entitySource = DoNotSaveInDotIdeaDirEntitySource
       ) {
         type = "JAVA_MODULE"
       }
@@ -218,7 +218,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
           ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
-        entitySource = projectConfigSource,
+        entitySource = DoNotSaveInDotIdeaDirEntitySource,
       ) {
         type = "JAVA_MODULE"
       }
