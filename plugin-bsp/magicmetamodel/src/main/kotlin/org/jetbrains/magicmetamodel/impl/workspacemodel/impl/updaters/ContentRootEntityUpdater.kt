@@ -9,7 +9,7 @@ import java.nio.file.Path
 
 internal data class ContentRoot(
   val url: Path,
-  val excludedUrls: List<Path> = emptyList(),
+  val excludedUrls: List<Path> = ArrayList(),
 ) : WorkspaceModelEntity()
 
 internal class ContentRootEntityUpdater(
@@ -36,6 +36,6 @@ internal class ContentRootEntityUpdater(
   )
 
   private companion object {
-    private val DEFAULT_PATTERNS_URLS = emptyList<String>()
+    private val DEFAULT_PATTERNS_URLS = ArrayList<String>()
   }
 }

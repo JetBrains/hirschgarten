@@ -6,12 +6,13 @@ import com.intellij.workspaceModel.storage.WorkspaceEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 
+internal object DoNotSaveInDotIdeaDirEntitySource : EntitySource
+
 internal abstract class WorkspaceModelEntity
 
 internal data class WorkspaceModelEntityUpdaterConfig(
   val workspaceEntityStorageBuilder: MutableEntityStorage,
   val virtualFileUrlManager: VirtualFileUrlManager,
-  val projectConfigSource: EntitySource,
 )
 
 internal sealed interface WorkspaceModelEntityUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity>

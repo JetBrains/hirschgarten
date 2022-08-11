@@ -122,7 +122,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = projectConfigSource,
+            entitySource = DoNotSaveInDotIdeaDirEntitySource,
             dependencies = listOf(
               ModuleDependencyItem.Exportable.ModuleDependency(
                 module = ModuleId("module2"),
@@ -398,7 +398,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity1 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = projectConfigSource,
+            entitySource = DoNotSaveInDotIdeaDirEntitySource,
             dependencies = listOf(
               ModuleDependencyItem.Exportable.ModuleDependency(
                 module = ModuleId("module2"),
@@ -439,7 +439,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity2 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module2",
-            entitySource = projectConfigSource,
+            entitySource = DoNotSaveInDotIdeaDirEntitySource,
             dependencies = listOf(
               ModuleDependencyItem.Exportable.ModuleDependency(
                 module = ModuleId("module3"),
@@ -642,7 +642,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = projectConfigSource,
+            entitySource = DoNotSaveInDotIdeaDirEntitySource,
             dependencies = emptyList(),
           ) {
             type = "JAVA_MODULE"
@@ -722,7 +722,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity1 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = projectConfigSource,
+            entitySource = DoNotSaveInDotIdeaDirEntitySource,
             dependencies = emptyList(),
           ) {
             type = "JAVA_MODULE"
@@ -731,7 +731,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity2 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module2",
-            entitySource = projectConfigSource,
+            entitySource = DoNotSaveInDotIdeaDirEntitySource,
             dependencies = emptyList(),
           ) {
             type = "JAVA_MODULE"
@@ -788,7 +788,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectConfigSource)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager)
 
     test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))
   }

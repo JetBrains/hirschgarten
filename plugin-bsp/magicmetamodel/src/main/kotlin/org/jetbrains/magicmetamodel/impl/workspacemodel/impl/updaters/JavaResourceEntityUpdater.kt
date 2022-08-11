@@ -50,7 +50,7 @@ internal class JavaResourceEntityUpdater(
     contentRoot = contentRootEntity,
     url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
     rootType = ROOT_TYPE,
-    source = workspaceModelEntityUpdaterConfig.projectConfigSource,
+    source = DoNotSaveInDotIdeaDirEntitySource,
   )
 
   private fun addJavaResourceRootEntity(

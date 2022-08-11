@@ -39,7 +39,6 @@ internal class MagicMetaModelImpl internal constructor(
   private var workspaceModelUpdater = WorkspaceModelUpdater.create(
     workspaceModelSnapshot.builder,
     magicMetaModelProjectConfig.virtualFileUrlManager,
-    magicMetaModelProjectConfig.projectBaseDir
   )
 
   init {
@@ -54,7 +53,6 @@ internal class MagicMetaModelImpl internal constructor(
     workspaceModelUpdater = WorkspaceModelUpdater.create(
       workspaceModelSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
-      magicMetaModelProjectConfig.projectBaseDir
     )
   }
 

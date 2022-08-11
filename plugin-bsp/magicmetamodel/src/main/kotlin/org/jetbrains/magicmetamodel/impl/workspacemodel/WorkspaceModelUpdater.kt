@@ -8,7 +8,6 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
-import java.nio.file.Path
 
 internal data class ModuleDetails(
   val target: BuildTarget,
@@ -42,8 +41,7 @@ internal interface WorkspaceModelUpdater {
     fun create(
       workspaceEntityStorageBuilder: MutableEntityStorage,
       virtualFileUrlManager: VirtualFileUrlManager,
-      projectBaseDir: Path,
     ): WorkspaceModelUpdater =
-      WorkspaceModelUpdaterImpl(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBaseDir)
+      WorkspaceModelUpdaterImpl(workspaceEntityStorageBuilder, virtualFileUrlManager)
   }
 }

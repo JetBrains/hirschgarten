@@ -52,7 +52,7 @@ internal class TargetsDetailsForDocumentProvider(sources: List<SourcesItem>) {
       isFileMap4HACK[documentId.uri] ?: false ->
         documentIdInTheSameDirectoryToTargetsIdsMapForHACK[URI(documentId.uri).toPath().parent].orEmpty().toList()
 
-      else -> emptyList()
+      else -> ArrayList()
     }
 
   private fun generateAllDocumentSubdirectoriesIncludingDocument(documentId: TextDocumentIdentifier): Sequence<Path> {
