@@ -10,7 +10,7 @@ public class DisconnectAction : AnAction(BspAllTargetsWidgetBundle.message("dis-
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project!!
     val bspConnectionService = project.getService(BspConnectionService::class.java)
-    bspConnectionService?.disconnect()
+    bspConnectionService.disconnect()
   }
 
   public override fun update(e: AnActionEvent) {

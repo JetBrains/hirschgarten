@@ -15,8 +15,10 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.services.BspConnectionService
+import org.jetbrains.plugins.bsp.services.BspUtilService
 import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.protocol.connection.BspConnectionFilesProvider
+import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import javax.swing.Icon
 import javax.swing.JComponent
 
@@ -48,6 +50,9 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
 
     return if (dialog.showAndGet()) {
       val project = PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
+      project?.putUserData(BspUtilService.key, virtualFile)
+
+      val bspUtilService = BspUtilService.getInstance()
 
       if (project != null) {
         val connectionService = BspConnectionService.getInstance(project)
@@ -56,7 +61,13 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
         if (dialog.buildToolUsed.selected()) {
           connectionService.dialogBuildToolUsed = true
           connectionService.dialogBuildToolName = dialog.buildTool
+
+          bspUtilService.selectedBuildTool[project.locationHash] = dialog.buildTool
+          bspUtilService.loadedViaBspFile.remove(project.locationHash)
         } else {
+          bspUtilService.selectedBuildTool.remove(project.locationHash)
+          bspUtilService.loadedViaBspFile.add(project.locationHash)
+
           connectionService.dialogBuildToolUsed = false
           connectionService.dialogConnectionFile = bspConnectionFilesProvider.connectionFiles[dialog.connectionFileId]
         }

@@ -10,7 +10,6 @@
                     interface="org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension"
                     dynamic="true"/>
   </extensionPoints>
-
   <extensions defaultExtensionNs="com.intellij">
     <bspConnectionDetailsGeneratorExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.TemporarySbtBspConnectionDetailsGenerator"
@@ -42,14 +41,11 @@
             icon="/icons/reload.svg"/>
     <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.ConnectAction"
             icon="/icons/connect.svg"/>
-    <action id="Bsp.RestartAction" class="org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.RestartAction"
-            icon="/icons/restart.svg"/>
 
     <group id="Bsp.ActionsToolbar">
       <reference id="Bsp.DisconnectAction"/>
       <reference id="Bsp.ConnectAction"/>
       <reference id="Bsp.ReloadAction"/>
-      <reference id="Bsp.RestartAction"/>
     </group>
 
   </actions>

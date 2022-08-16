@@ -25,10 +25,10 @@ import org.jetbrains.protocol.connection.LocatedBspConnectionDetails
 public class BspInitializer : StartupActivity {
   override fun runActivity(project: Project) {
     val connectionService = project.getService(BspConnectionService::class.java)
-    val utilService = BspUtilService.getInstance()
+    val bspUtilService = BspUtilService.getInstance()
 
     val locatedBspConnectionDetails: LocatedBspConnectionDetails? =
-      utilService.connectionFile[project.locationHash]
+      bspUtilService.bspConnectionDetails[project.locationHash]
 
     if (project.isNewProject() || locatedBspConnectionDetails == null) {
       println("BspInitializer.runActivity")
@@ -66,6 +66,7 @@ public class BspInitializer : StartupActivity {
           statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
           ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
             icon = BspPluginIcons.bsp
+            canCloseContent = false
             anchor = ToolWindowAnchor.RIGHT
             contentFactory = BspAllTargetsWidgetFactory()
           }
