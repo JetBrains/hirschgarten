@@ -48,6 +48,14 @@ changelog {
   groups.set(emptyList())
 }
 
+tasks.register<Jar>("pluginJar") {
+  archiveClassifier.set("plugin")
+  from(sourceSets.main.get().output)
+  from({
+    zipTree(project(":protocol").buildDir.absolutePath + "/libs/protocol.jar")
+  })
+}
+
 subprojects {
   apply(plugin = "org.jetbrains.intellij")
 
