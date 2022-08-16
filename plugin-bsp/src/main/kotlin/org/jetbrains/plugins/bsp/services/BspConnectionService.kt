@@ -86,10 +86,10 @@ public class BspConnectionService(private val project: Project) {
         ConsoleOutputStream("bsp-obtain-config", bspSyncConsole)
       )
       val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
-      bspUtilService.connectionFile[project.locationHash] = xd2!!
+      bspUtilService.bspConnectionDetails[project.locationHash] = xd2!!
       connect(xd2)
     } else {
-      bspUtilService.connectionFile[project.locationHash] = dialogConnectionFile!!
+      bspUtilService.bspConnectionDetails[project.locationHash] = dialogConnectionFile!!
       connect(dialogConnectionFile!!)
     }
     bspSyncConsole.finishImport("Config obtained!")
@@ -97,7 +97,7 @@ public class BspConnectionService(private val project: Project) {
 
   public fun reconnect(locationHash: String) {
     val bspService = BspUtilService.getInstance()
-    bspService.connectionFile[locationHash]?.let {
+    bspService.bspConnectionDetails[locationHash]?.let {
       connect(it)
     }
   }

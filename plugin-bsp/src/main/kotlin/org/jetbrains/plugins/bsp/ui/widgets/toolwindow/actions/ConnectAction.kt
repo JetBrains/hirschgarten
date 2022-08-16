@@ -10,7 +10,7 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project!!
     val bspConnectionService = project.getService(BspConnectionService::class.java)
-    bspConnectionService?.reconnect(project.locationHash)
+    bspConnectionService.reconnect(project.locationHash)
   }
 
   public override fun update(e: AnActionEvent) {

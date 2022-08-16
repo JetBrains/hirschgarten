@@ -9,6 +9,8 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.Anchor
+import com.intellij.openapi.actionSystem.Constraints
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
@@ -20,13 +22,15 @@ import com.intellij.ui.components.JBScrollPane
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargetsWidgetBundle
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.DefaultListModel
 import javax.swing.JComponent
 import javax.swing.ListSelectionModel
 import javax.swing.SwingConstants
+import org.jetbrains.plugins.bsp.services.BspUtilService
+import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.RestartAction
+import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargetsWidgetBundle
 
 private class ListsUpdater(
   val magicMetaModel: MagicMetaModel,
@@ -152,6 +156,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
   public constructor(project: Project) : this() {
 
+    val bspUtilService = BspUtilService.getInstance()
     val magicMetaModel = MagicMetaModelService.getInstance(project).magicMetaModel
     val actionManager = ActionManager.getInstance()
     val listsUpdater = ListsUpdater(magicMetaModel)
@@ -163,11 +168,16 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
     val notLoadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.not.loaded.targets.tab.name")
     val loadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.loaded.targets.tab.name")
+    val restartActionName = BspAllTargetsWidgetBundle.message("restart.action.text")
 
     actionGroup.childActionsOrStubs.iterator().forEach {
-      if ((it.templateText == notLoadedTargetsActionName) || (it.templateText == loadedTargetsActionName)) {
+      if ((it.templateText == notLoadedTargetsActionName) || (it.templateText == loadedTargetsActionName) || (it.templateText == restartActionName)) {
         actionGroup.remove(it)
       }
+    }
+
+    if (!bspUtilService.loadedViaBspFile.contains(project.locationHash)) {
+      actionGroup.add(RestartAction(restartActionName, BspPluginIcons.restart), Constraints(Anchor.AFTER, "Bsp.ReloadAction"))
     }
 
     actionGroup.addSeparator()
