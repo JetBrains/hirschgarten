@@ -11,12 +11,10 @@ import com.intellij.openapi.wm.WindowManager
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.services.*
 import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargetsWidgetFactory
+import org.jetbrains.protocol.connection.LocatedBspConnectionDetails
 
 /**
  * Runs actions after the project has started up and the index is up-to-date.
@@ -27,8 +25,12 @@ import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargets
 public class BspInitializer : StartupActivity {
   override fun runActivity(project: Project) {
     val connectionService = project.getService(BspConnectionService::class.java)
+    val utilService = BspUtilService.getInstance()
 
-    if (connectionService.isRunning()) {
+    val locatedBspConnectionDetails: LocatedBspConnectionDetails? =
+      utilService.connectionFile[project.locationHash]
+
+    if (project.isNewProject() || locatedBspConnectionDetails == null) {
       println("BspInitializer.runActivity")
 
       val magicMetaModelService = MagicMetaModelService.getInstance(project)
@@ -37,6 +39,8 @@ public class BspInitializer : StartupActivity {
 
         override fun run(indicator: ProgressIndicator) {
           val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
+
+          connectionService.connectFromDialog(project)
 
           val bspResolver =
             VeryTemporaryBspResolver(

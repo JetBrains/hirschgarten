@@ -15,10 +15,8 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.services.BspUtilService
 import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.protocol.connection.BspConnectionFilesProvider
-import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import javax.swing.Icon
 import javax.swing.JComponent
 
@@ -51,21 +49,17 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
 
     return if (dialog.showAndGet()) {
       val project = PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
-      val bspUtilService = BspUtilService.getInstance()
 
       if (project != null) {
         val connectionService = BspConnectionService.getInstance(project)
 
+        connectionService.bspConnectionDetailsGeneratorProvider = bspConnectionDetailsGeneratorProvider
         if (dialog.buildToolUsed.selected()) {
-          val xd = dialog.buildTool
-          val xd1 = bspConnectionDetailsGeneratorProvider.generateBspConnectionDetailFileForGeneratorWithName(xd)
-          val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
-          bspUtilService.connectionFile[project.locationHash] = xd2!!
-          connectionService.connect(xd2)
+          connectionService.dialogBuildToolUsed = true
+          connectionService.dialogBuildToolName = dialog.buildTool
         } else {
-          val xd = bspConnectionFilesProvider.connectionFiles[dialog.connectionFileId]
-          bspUtilService.connectionFile[project.locationHash] = xd
-          connectionService.connect(xd)
+          connectionService.dialogBuildToolUsed = false
+          connectionService.dialogConnectionFile = bspConnectionFilesProvider.connectionFiles[dialog.connectionFileId]
         }
 
         project

@@ -15,6 +15,9 @@
     <bspConnectionDetailsGeneratorExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.TemporaryBazelBspConnectionDetailsGenerator"
     />
+    <bspConnectionDetailsGeneratorExtension
+      implementation="org.jetbrains.plugins.bsp.extension.points.TemporarySbtBspConnectionDetailsGenerator"
+    />
 
     <projectOpenProcessor
       implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
