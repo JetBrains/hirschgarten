@@ -5,6 +5,8 @@ import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.BuildClientCapabilities
 import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.CompileParams
 import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.InitializeBuildParams
@@ -13,6 +15,7 @@ import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ShowMessageParams
 import ch.epfl.scala.bsp4j.SourcesParams
+import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
@@ -31,7 +34,9 @@ import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path
+import java.util.UUID
 import java.util.concurrent.TimeUnit
+import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
 
 public interface BspServer : BuildServer
 
@@ -53,8 +58,9 @@ public class BspConnectionService(private val project: Project) {
   public fun connect(connectionFile: LocatedBspConnectionDetails) {
     val process = createAndStartProcess(connectionFile.bspConnectionDetails)
     val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
+    val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
 
-    val client = BspClient(bspSyncConsoleService.bspSyncConsole)
+    val client = BspClient(bspSyncConsoleService.bspSyncConsole, bspBuildConsoleService.bspBuildConsole)
 
     val bspIn = process.inputStream
     val bspOut = process.outputStream
@@ -143,8 +149,25 @@ public class BspConnectionService(private val project: Project) {
 public class VeryTemporaryBspResolver(
   private val projectBaseDir: Path,
   private val server: BspServer,
-  private val bspSyncConsole: BspSyncConsole
+  private val bspSyncConsole: BspSyncConsole,
+  private val bspBuildConsole: BspBuildConsole
 ) {
+
+  public fun buildTarget(targetId: BuildTargetIdentifier) {
+    val uuid = "build-" + UUID.randomUUID().toString()
+    bspBuildConsole.startBuild(uuid, "BSP: Build", "Building " + targetId.uri)
+
+    println("buildTargetCompile")
+    val compileParams = CompileParams(listOf(targetId)).apply { originId = uuid }
+    val compileResult = server.buildTargetCompile(compileParams).get()
+
+    when (compileResult.statusCode) {
+      StatusCode.OK -> bspBuildConsole.finishBuild("Build is successfully done!", uuid)
+      StatusCode.CANCELLED -> bspBuildConsole.finishBuild("Build is cancelled!", uuid)
+      StatusCode.ERROR -> bspBuildConsole.finishBuild("Build ended with an error!", uuid)
+      else -> bspBuildConsole.finishBuild("Build is finished!", uuid)
+    }
+  }
 
   public fun collectModel(): ProjectDetails {
     bspSyncConsole.startImport("bsp-import", "BSP: Import", "Importing...")
@@ -197,20 +220,18 @@ public class VeryTemporaryBspResolver(
   }
 }
 
-private class BspClient(private val bspSyncConsole: BspSyncConsole) : BuildClient {
+private class BspClient(private val bspSyncConsole: BspSyncConsole, private val bspBuildConsole: BspBuildConsole) : BuildClient {
 
   override fun onBuildShowMessage(params: ShowMessageParams) {
     println("onBuildShowMessage")
     println(params)
-
-    bspSyncConsole.addMessage(params.task?.id, params.message)
+    addMessageToConsole(params.task?.id, params.message, params.originId)
   }
 
   override fun onBuildLogMessage(params: LogMessageParams) {
     println("onBuildLogMessage")
     println(params)
-
-    bspSyncConsole.addMessage(params.task?.id, params.message)
+    addMessageToConsole(params.task?.id, params.message, params.originId)
   }
 
   override fun onBuildTaskStart(params: TaskStartParams?) {
@@ -236,5 +257,13 @@ private class BspClient(private val bspSyncConsole: BspSyncConsole) : BuildClien
   override fun onBuildTargetDidChange(params: DidChangeBuildTarget?) {
     println("onBuildTargetDidChange")
     println(params)
+  }
+
+  private fun addMessageToConsole(id: Any?, message: String, originId: String?){
+    if(originId?.startsWith("build") == true) {
+      bspBuildConsole.addMessage(id, message, originId)
+    } else {
+      bspSyncConsole.addMessage(id, message)
+    }
   }
 }

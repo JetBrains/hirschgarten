@@ -13,7 +13,7 @@ import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.*
 import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
-import org.jetbrains.plugins.bsp.ui.widgets.toolwindow.all.targets.BspAllTargetsWidgetFactory
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
 import org.jetbrains.protocol.connection.LocatedBspConnectionDetails
 
 /**
@@ -39,6 +39,7 @@ public class BspInitializer : StartupActivity {
 
         override fun run(indicator: ProgressIndicator) {
           val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
+          val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
 
           connectionService.connectFromDialog(project)
 
@@ -46,7 +47,8 @@ public class BspInitializer : StartupActivity {
             VeryTemporaryBspResolver(
               project.stateStore.projectBasePath,
               connectionService.server!!,
-              bspSyncConsoleService.bspSyncConsole
+              bspSyncConsoleService.bspSyncConsole,
+              bspBuildConsoleService.bspBuildConsole
             )
 
           val projectDetails = bspResolver.collectModel()
