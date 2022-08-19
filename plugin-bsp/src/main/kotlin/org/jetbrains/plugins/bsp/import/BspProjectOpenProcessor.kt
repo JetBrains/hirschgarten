@@ -18,7 +18,6 @@ import org.jetbrains.plugins.bsp.services.BspConnectionService
 import org.jetbrains.plugins.bsp.services.BspUtilService
 import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.protocol.connection.BspConnectionFilesProvider
-import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import javax.swing.Icon
 import javax.swing.JComponent
 

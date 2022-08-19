@@ -27,6 +27,7 @@
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.BspConnectionService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.BspSyncConsoleService"/>
+    <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.BspBuildConsoleService"/>
 
     <applicationService serviceImplementation="org.jetbrains.plugins.bsp.services.BspUtilService"/>
 
@@ -35,11 +36,11 @@
 
   <actions>
 
-    <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.DisconnectAction"
+    <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DisconnectAction"
             icon="/icons/disconnect.svg"/>
-    <action id="Bsp.ReloadAction" class="org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.ReloadAction"
+    <action id="Bsp.ReloadAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ReloadAction"
             icon="/icons/reload.svg"/>
-    <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.toolwindow.actions.ConnectAction"
+    <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ConnectAction"
             icon="/icons/connect.svg"/>
 
     <group id="Bsp.ActionsToolbar">
