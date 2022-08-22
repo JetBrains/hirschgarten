@@ -1,0 +1,228 @@
+{
+  parserClass="org.jetbrains.bsp.bazel.languages.starlark.parser.StarlarkParser"
+  parserUtilClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkParserUtils"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Starlark"
+  psiImplClassSuffix="Impl"
+  psiPackage="org.jetbrains.bsp.bazel.languages.starlark.psi"
+  psiImplPackage="org.jetbrains.bsp.bazel.languages.starlark.psi.impl"
+
+  elementTypeHolderClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkTypes"
+  elementTypeClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkElementType"
+  tokenTypeClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkTokenType"
+
+  tokens = [
+    // keywords
+    DEF="def"
+    LAMBDA="lambda"
+
+    IF="if"
+    ELIF="elif"
+    ELSE="else"
+
+    FOR="for"
+    IN="in"
+
+    RETURN="return"
+    BREAK="break"
+    CONTINUE="continue"
+    PASS="pass"
+
+    LOAD="load"
+
+    // assign operators
+    EQ="="
+    PLUS_EQ="+="
+    MINUS_EQ="-="
+    ASTERISK_EQ="*="
+    DIV_EQ="/="
+    DIV_INT_EQ="//="
+    MODULO_EQ="%="
+    AND_EQ="&="
+    OR_EQ="|="
+    XOR_EQ="^="
+    SHIFT_LEFT_EQ="<<="
+    SHIFT_RIGHT_EQ=">>="
+
+    // math operators
+    PLUS="+"
+    MINUS="-"
+    ASTERISK="*"
+    MODULO="%"
+    DIV="/"
+    DIV_INT="//"
+
+    // boolean operators
+    OR="or"
+    AND="and"
+    NOT="not"
+    IS_EQUAL="=="
+    IS_NOT_EQUAL="!="
+    LESS_THAN="<"
+    GREATER_THAN=">"
+    LESS_OR_EQUAL="<="
+    GREATER_OR_EQUAL=">="
+
+    // bit operators
+    BIT_OR="|"
+    BIT_XOR="^"
+    BIT_AND="&"
+    BIT_SHIFT_LEFT="<<"
+    BIT_SHIFT_RIGHT=">>"
+
+    // code organization
+    SEMICOLON=";"
+    COMMA=","
+    COLON=":"
+    DOT="."
+
+    LEFT_BRACKET="["
+    RIGHT_BRACKET="]"
+
+    LEFT_PAREN="("
+    RIGHT_PAREN=")"
+
+    LEFT_CURLY="{"
+    RIGHT_CURLY="}"
+
+    // random
+    DOUBLE_ASTERISK="**"
+    TYLDA="~"
+
+    // complex
+    INT="regexp:([1-9][0-9]*)|(0(o|O)[0-7]+)|(0(x|X)[a-fA-F0-9]+)|0"
+    FLOAT="regexp:([0-9]+\.[0-9]*((e|E)(\+|\-)?[0-9]+)?)|([0-9]+(e|E)(\+|\-)?[0-9]+)|(\.[0-9]*((e|E)(\+|\-)?[0-9]+)?)"
+
+    IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
+
+    // it should be done using some advanced things in the lexer (Starlark.flex), but i dont want to do it now
+    STRING="regexp:r?(('''((([^']|\n)*)|(([^']|\n)*'([^']|\n)+)|(([^']|\n)*''([^']|\n)+))*''')|(\"\"\"((([^\"]|\n)*)|(([^\"]|\n)*\"([^\"]|\n)+)|(([^\"]|\n)*\"\"([^\"]|\n)+))*\"\"\")|('([^']|(\\\n))*')|(\"([^\"]|(\\\n))*\"))"
+    BYTES="regexp:(b|rb|br)(('''((([^']|\n)*)|(([^']|\n)*'([^']|\n)+)|(([^']|\n)*''([^']|\n)+))*''')|(\"\"\"((([^\"]|\n)*)|(([^\"]|\n)*\"([^\"]|\n)+)|(([^\"]|\n)*\"\"([^\"]|\n)+))*\"\"\")|('([^']|(\\\n))*')|(\"([^\"]|(\\\n))*\"))"
+
+    COMMENT="regexp:#.*"
+
+    WHITE_SPACE="regexp:(\s|\\\n)+"
+  ]
+}
+
+// og syntax: https://github.com/bazelbuild/starlark/blob/master/spec.md#lexical-elements
+
+File ::= Statement*
+Statement ::= DefStmt
+            | IfStmt
+            | ForStmt
+            | SimpleStmt
+
+DefStmt ::= def IDENTIFIER '(' (Parameters ','?)? ')' ':' Suite
+
+Parameters ::= Parameter (',' Parameter)*
+
+Parameter ::= IDENTIFIER
+            | IDENTIFIER '=' Test
+            | '*' IDENTIFIER
+            | '**' IDENTIFIER
+
+IfStmt ::= if Test ':' Suite (elif Test ':' Suite)* (else ':' Suite)?
+
+ForStmt ::= for LoopVariables in Expression ':' Suite
+
+
+Suite ::= <<checkIfIndentIncreasesAndSaveIt>> (<<checkIndent>> Statement)+ <<finishBlock>>
+        | <<noNewLineOrLineBreak>> SimpleStmt
+
+SimpleStmt ::= SmallStmt (';' SmallStmt)* ';'? (<<newLine>> | <<eof>>)
+
+SmallStmt ::= ReturnStmt
+            | BreakStmt | ContinueStmt | PassStmt
+            | AssignStmt
+            | ExprStmt
+            | LoadStmt
+
+ReturnStmt   ::= return (<<newLine>> | <<eof>> | Expression)? (<<newLine>> | <<eof>>)
+BreakStmt    ::= break
+ContinueStmt ::= continue
+PassStmt     ::= pass
+AssignStmt   ::= Expression <<noNewLineOrLineBreak>> ('=' | '+=' | '-=' | '*=' | '/=' | '//=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>=') <<noNewLineOrLineBreak>> Expression
+ExprStmt     ::= Expression
+
+LoadStmt ::= load '(' STRING (',' (IDENTIFIER '=')? STRING)* ','? ')'
+
+Test ::=  IfExpr
+        | BinaryExpr
+       | UnaryExpr
+       | PrimaryExpr
+       | LambdaExpr
+
+IfExpr ::= BinaryExpr2 if Test else Test IfExpr1?
+IfExpr1 ::= IfExpr2 if Test else Test IfExpr1?
+IfExpr2 ::= PrimaryExpr if Test else Test
+          | UnaryExpr if Test else Test
+          | LambdaExpr if Test else Test
+          | BinaryExpr if Test else Test
+
+PrimaryExpr ::= Operand PrimaryExpr1*
+PrimaryExpr1 ::= DotSuffix
+               | CallSuffix
+               | SliceSuffix
+
+Operand ::= IDENTIFIER
+          | INT | FLOAT | STRING | BYTES
+          | ListExpr | ListComp
+          | DictExpr | DictComp
+          | '(' (Expression ','?)? ')'
+
+DotSuffix   ::= '.' IDENTIFIER
+SliceSuffix ::= '[' Expression? ':' Test? (':' Test?)? ']'
+              | '[' Expression ']'
+CallSuffix  ::= '(' (Arguments ','?)? ')'
+
+Arguments ::= Argument (',' Argument)*
+Argument  ::=
+            IDENTIFIER '=' Test
+            | '*' Test
+            | '**' Test
+            | Test
+
+ListExpr ::= '[' (Expression ','?)? ']'
+ListComp ::= '[' Test CompClause* ']'
+
+DictExpr ::= '{' (Entries ','?)? '}'
+DictComp ::= '{' Entry CompClause* '}'
+Entries  ::= Entry (',' Entry)*
+Entry    ::= Test ':' Test
+
+CompClause ::= for LoopVariables in Test
+             | if Test
+
+UnaryExpr ::= '+' Test
+            | '-' Test
+            | '~' Test
+            | not Test
+
+BinaryExpr ::= BinaryExpr1 (<<noNewLineOrLineBreak>> Binop <<noNewLineOrLineBreak>> BinaryExpr)?
+BinaryExpr1 ::= PrimaryExpr
+              | UnaryExpr
+              | LambdaExpr
+              | IfExpr
+
+BinaryExpr2 ::= BinaryExpr21 (<<noNewLineOrLineBreak>> Binop <<noNewLineOrLineBreak>> BinaryExpr2)?
+BinaryExpr21 ::= PrimaryExpr
+               | UnaryExpr
+               | LambdaExpr
+
+Binop ::= or | and
+      | '==' | '!=' | '<' | '>' | '<=' | '>=' | in | not in
+      | '|'
+      | '^'
+      | '&'
+      | '<<' | '>>'
+      | '-' | '+'
+      | '*' | '%' | '/' | '//'
+
+LambdaExpr ::= lambda Parameters? ':' Test
+
+Expression ::= Test (',' Test)*
+
+LoopVariables ::= PrimaryExpr (',' PrimaryExpr)*
