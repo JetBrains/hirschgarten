@@ -6,6 +6,21 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <fileType
+                name="Starlark"
+                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkLanguageFileType"
+                fieldName="INSTANCE"
+                language="Starlark"
+                fileNames="BUILD;WORKSPACE"
+                extensions="bzl;bazel"/>
+
+        <lang.parserDefinition
+                language="Starlark"
+                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkParserDefinition"/>
+
+        <lang.syntaxHighlighterFactory
+                language="Starlark"
+                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkSyntaxHighlighterFactory"/>
     </extensions>
 
 </idea-plugin>

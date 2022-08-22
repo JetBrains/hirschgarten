@@ -55,10 +55,6 @@ qodana {
 }
 
 tasks {
-    wrapper {
-        gradleVersion = properties("gradleVersion")
-    }
-
     patchPluginXml {
         version.set(properties("pluginVersion"))
         sinceBuild.set(properties("pluginSinceBuild"))
@@ -109,3 +105,5 @@ tasks {
         channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
     }
 }
+
+sourceSets["main"].java.srcDirs("src/main/gen")

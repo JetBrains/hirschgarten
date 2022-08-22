@@ -7,4 +7,8 @@
 
 # gradle
 .gradle/
-build/
+/build/
+
+# flex
+idea-flex.skeleton
+jflex-*.jar
