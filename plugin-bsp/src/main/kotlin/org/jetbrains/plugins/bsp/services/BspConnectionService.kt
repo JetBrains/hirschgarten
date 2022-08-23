@@ -21,6 +21,8 @@ import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.project.Project
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
@@ -35,6 +37,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path
 import java.util.UUID
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
 
@@ -98,7 +101,7 @@ public class BspConnectionService(private val project: Project) {
       bspUtilService.bspConnectionDetails[project.locationHash] = dialogConnectionFile!!
       connect(dialogConnectionFile!!)
     }
-    bspSyncConsole.finishImport("Config obtained!")
+    bspSyncConsole.finishImport("Config obtained!", SuccessResultImpl())
   }
 
   public fun reconnect(locationHash: String) {
@@ -159,12 +162,12 @@ public class VeryTemporaryBspResolver(
 
     println("buildTargetCompile")
     val compileParams = CompileParams(listOf(targetId)).apply { originId = uuid }
-    val compileResult = server.buildTargetCompile(compileParams).get()
+    val compileResult = server.buildTargetCompile(compileParams).catchBuildErrors(uuid).get()
 
     when (compileResult.statusCode) {
       StatusCode.OK -> bspBuildConsole.finishBuild("Build is successfully done!", uuid)
       StatusCode.CANCELLED -> bspBuildConsole.finishBuild("Build is cancelled!", uuid)
-      StatusCode.ERROR -> bspBuildConsole.finishBuild("Build ended with an error!", uuid)
+      StatusCode.ERROR -> bspBuildConsole.finishBuild("Build ended with an error!", uuid, FailureResultImpl())
       else -> bspBuildConsole.finishBuild("Build is finished!", uuid)
     }
   }
@@ -173,25 +176,25 @@ public class VeryTemporaryBspResolver(
     bspSyncConsole.startImport("bsp-import", "BSP: Import", "Importing...")
 
     println("buildInitialize")
-    server.buildInitialize(createInitializeBuildParams()).get()
+    server.buildInitialize(createInitializeBuildParams()).catchSyncErrors().get()
 
     println("onBuildInitialized")
     server.onBuildInitialized()
 
     println("workspaceBuildTargets")
-    val workspaceBuildTargetsResult = server.workspaceBuildTargets().get()
+    val workspaceBuildTargetsResult = server.workspaceBuildTargets().catchSyncErrors().get()
     val allTargetsIds = workspaceBuildTargetsResult!!.targets.map(BuildTarget::getId)
 
     println("buildTargetSources")
-    val sourcesResult = server.buildTargetSources(SourcesParams(allTargetsIds)).get()
+    val sourcesResult = server.buildTargetSources(SourcesParams(allTargetsIds)).catchSyncErrors().get()
 
     println("buildTargetResources")
-    val resourcesResult = server.buildTargetResources(ResourcesParams(allTargetsIds)).get()
+    val resourcesResult = server.buildTargetResources(ResourcesParams(allTargetsIds)).catchSyncErrors().get()
 
     println("buildTargetDependencySources")
-    val dependencySourcesResult = server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds)).get()
+    val dependencySourcesResult = server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds)).catchSyncErrors().get()
 
-    bspSyncConsole.finishImport("Import done!")
+    bspSyncConsole.finishImport("Import done!", SuccessResultImpl())
 
     println("done done!")
     return ProjectDetails(
@@ -217,6 +220,26 @@ public class VeryTemporaryBspResolver(
     params.data = dataJson
 
     return params
+  }
+
+  private fun <T> CompletableFuture<T>.catchSyncErrors(): CompletableFuture<T> {
+    return this
+      .whenComplete { _, exception ->
+        exception?.let {
+          bspSyncConsole.addMessage("bsp-import", "Sync failed")
+          bspSyncConsole.finishImport( "Failed", FailureResultImpl(exception))
+        }
+      }
+  }
+
+  private fun <T> CompletableFuture<T>.catchBuildErrors(buildId: String): CompletableFuture<T> {
+    return this
+      .whenComplete { _, exception ->
+        exception?.let {
+          bspBuildConsole.addMessage("bsp-build", "Build failed", buildId)
+          bspBuildConsole.finishBuild( "Failed", buildId, FailureResultImpl(exception))
+        }
+      }
   }
 }
 

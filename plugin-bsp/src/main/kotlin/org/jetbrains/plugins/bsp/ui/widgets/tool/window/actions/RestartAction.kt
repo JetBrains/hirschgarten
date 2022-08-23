@@ -25,7 +25,7 @@ public class RestartAction(actionName: String, icon: Icon) : AnAction({ actionNa
     val projectPath = project.getUserData(BspUtilService.key)
     val selectedBuildTool = bspUtilService.selectedBuildTool[project.locationHash]
     if ((projectPath != null) && (selectedBuildTool != null)) {
-      runBackgroundableTask("Restart  action", project) {
+      runBackgroundableTask("Restart action", project) {
         bspConnectionService.disconnect()
 
         val bspSyncConsole: BspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
