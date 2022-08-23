@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.ui.console
 
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.DefaultBuildDescriptor
+import com.intellij.build.events.EventResult
 import com.intellij.build.events.impl.FinishBuildEventImpl
 import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
@@ -28,13 +29,13 @@ public class BspBuildConsole(private val buildView: BuildProgressListener, priva
   }
 
   @Synchronized
-  public fun finishBuild(message: String, buildId: String): Unit = doIfBuildInProcess(buildId) {
+  public fun finishBuild(message: String, buildId: String, result: EventResult = SuccessResultImpl()): Unit = doIfBuildInProcess(buildId) {
     buildsInProgress.remove(buildId)
-    doFinishBuild(message, buildId)
+    doFinishBuild(message, buildId, result)
   }
 
-  private fun doFinishBuild(message: String, buildId: String) {
-    val event = FinishBuildEventImpl(buildId, null, System.currentTimeMillis(), message, SuccessResultImpl())
+  private fun doFinishBuild(message: String, buildId: String, result: EventResult) {
+    val event = FinishBuildEventImpl(buildId, null, System.currentTimeMillis(), message, result)
     buildView.onEvent(buildId, event)
   }
 
