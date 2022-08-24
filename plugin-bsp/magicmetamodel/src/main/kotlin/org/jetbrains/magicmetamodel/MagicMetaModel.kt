@@ -11,12 +11,10 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
-import java.nio.file.Path
 
 public data class MagicMetaModelProjectConfig(
   val workspaceModel: WorkspaceModel,
   val virtualFileUrlManager: VirtualFileUrlManager,
-  val projectBaseDir: Path,
 )
 
 public data class ProjectDetails(
@@ -37,6 +35,11 @@ public data class DocumentTargetsDetails(
   public val notLoadedTargetsIds: List<BuildTargetIdentifier>,
 )
 
+public interface MagicMetaModelDiff {
+
+  public fun applyOnWorkspaceModel(): Boolean
+}
+
 /**
  * Provides operations on model entries.
  *
@@ -46,11 +49,6 @@ public data class DocumentTargetsDetails(
 public interface MagicMetaModel {
 
   /**
-   * TODO
-   */
-  public fun save()
-
-  /**
    * Loads default targets to the model - can be all targets, can be subset of them.
    *
    * If the project contains shared sources, the loaded targets should not share sources.
@@ -58,7 +56,7 @@ public interface MagicMetaModel {
    *
    * Requires write action if used with [WorkspaceModel].
    */
-  public fun loadDefaultTargets()
+  public fun loadDefaultTargets() : MagicMetaModelDiff
 
   /**
    * Loads given target.
@@ -69,7 +67,7 @@ public interface MagicMetaModel {
    *
    * Requires write action if used with [WorkspaceModel].
    */
-  public fun loadTarget(targetId: BuildTargetIdentifier)
+  public fun loadTarget(targetId: BuildTargetIdentifier) : MagicMetaModelDiff
 
   /**
    * Get targets details for given document.
@@ -91,7 +89,7 @@ public interface MagicMetaModel {
   public fun getAllNotLoadedTargets(): List<BuildTarget>
 
   public companion object {
-    private val LOGGER = logger<MagicMetaModel>()
+    private val log = logger<MagicMetaModel>()
 
     /**
      * Create instance of [MagicMetaModelImpl] which supports shared sources
@@ -101,7 +99,7 @@ public interface MagicMetaModel {
       magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
       projectDetails: ProjectDetails,
     ): MagicMetaModel {
-      LOGGER.debug { "Creating MagicMetaModelImpl for $magicMetaModelProjectConfig, $projectDetails..." }
+      log.debug { "Creating MagicMetaModelImpl for $magicMetaModelProjectConfig, $projectDetails..." }
       return MagicMetaModelImpl(magicMetaModelProjectConfig, projectDetails)
     }
   }

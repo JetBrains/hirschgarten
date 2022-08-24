@@ -2,7 +2,6 @@ package org.jetbrains.workspace.model.test.framework
 
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.getInstance
@@ -13,7 +12,6 @@ import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import org.junit.jupiter.api.BeforeEach
-import java.nio.file.Path
 
 public open class WorkspaceModelBaseTest {
 
@@ -22,16 +20,12 @@ public open class WorkspaceModelBaseTest {
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
   protected lateinit var virtualFileUrlManager: VirtualFileUrlManager
 
-  protected lateinit var projectBaseDirPath: Path
-
   @BeforeEach
   protected open fun beforeEach() {
     project = emptyProjectTestMock()
     workspaceModel = WorkspaceModel.getInstance(project)
     workspaceEntityStorageBuilder = workspaceModel.getBuilderSnapshot().builder
     virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
-
-    projectBaseDirPath = project.stateStore.projectBasePath
   }
 
   private fun emptyProjectTestMock(): Project {

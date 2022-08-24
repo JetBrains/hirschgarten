@@ -10,6 +10,7 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import com.intellij.project.stateStore
+import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.*
 import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
@@ -37,6 +38,8 @@ public class BspInitializer : StartupActivity {
 
       val task = object : Task.Backgroundable(project, "Loading changes...", true) {
 
+        private var magicMetaModelDiff: MagicMetaModelDiff? = null
+
         override fun run(indicator: ProgressIndicator) {
           val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
           val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
@@ -56,14 +59,12 @@ public class BspInitializer : StartupActivity {
           magicMetaModelService.initializeMagicModel(projectDetails)
           val magicMetaModel = magicMetaModelService.magicMetaModel
 
-          magicMetaModel.loadDefaultTargets()
+          magicMetaModelDiff = magicMetaModel.loadDefaultTargets()
         }
 
         override fun onSuccess() {
-          val magicMetaModel = magicMetaModelService.magicMetaModel
-          runWriteAction {
-            magicMetaModel.save()
-          }
+          runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
+
           val statusBar = WindowManager.getInstance().getStatusBar(project)
           statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
           ToolWindowManager.getInstance(project).registerToolWindow("BSP") {

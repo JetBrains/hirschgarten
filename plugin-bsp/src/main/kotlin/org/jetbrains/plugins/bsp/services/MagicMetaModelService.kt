@@ -22,9 +22,8 @@ public class MagicMetaModelService(private val project: Project) {
   private fun calculateProjectConfig(project: Project): MagicMetaModelProjectConfig {
     val workspaceModel = WorkspaceModel.getInstance(project)
     val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
-    val projectBaseDir = project.stateStore.projectBasePath
 
-    return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, projectBaseDir)
+    return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager)
   }
 
   public companion object {
