@@ -22,10 +22,8 @@ private class LoadTargetAction(
 ) : AnAction(text) {
 
   override fun actionPerformed(e: AnActionEvent) {
-    listsUpdater.magicMetaModel.loadTarget(target)
-    runWriteAction {
-      listsUpdater.magicMetaModel.save()
-    }
+    val diff = listsUpdater.magicMetaModel.loadTarget(target)
+    runWriteAction { diff.applyOnWorkspaceModel() }
     listsUpdater.updateModels()
   }
 }

@@ -17,8 +17,7 @@ class MagicMetaModelTest : WorkspaceModelBaseTest() {
     @Test
     fun `should return MagicMetaModelImpl`() {
       // given
-      val testMagicMetaModelProjectConfig =
-        MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, projectBaseDirPath)
+      val testMagicMetaModelProjectConfig = MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager)
 
       val projectDetails = ProjectDetails(
         targetsId = emptyList(),

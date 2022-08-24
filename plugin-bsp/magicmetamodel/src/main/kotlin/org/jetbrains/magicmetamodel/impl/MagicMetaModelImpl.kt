@@ -5,14 +5,32 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.workspaceModel.ide.BuilderSnapshot
+import com.intellij.workspaceModel.ide.StorageReplacement
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModel
+import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
+
+internal class DefaultMagicMetaModelDiff(
+  private val workspaceModel: WorkspaceModel,
+  private val storageReplacement: StorageReplacement,
+) : MagicMetaModelDiff {
+
+  override fun applyOnWorkspaceModel(): Boolean =
+    workspaceModel.replaceProjectModel(storageReplacement)
+}
+
+internal class EmptyMagicMetaModelDiff : MagicMetaModelDiff {
+
+  override fun applyOnWorkspaceModel(): Boolean =
+    true
+}
 
 /**
  * Basic implementation of [MagicMetaModel] supporting shared sources
@@ -24,7 +42,7 @@ internal class MagicMetaModelImpl internal constructor(
 ) : MagicMetaModel {
 
   init {
-    LOGGER.debug { "Initializing MagicMetaModelImpl model..." }
+    log.debug { "Initializing MagicMetaModelImpl model..." }
   }
 
   private val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
@@ -34,34 +52,22 @@ internal class MagicMetaModelImpl internal constructor(
 
   private val loadedTargetsStorage = LoadedTargetsStorage()
 
-  private var workspaceModelSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
-
-  private var workspaceModelUpdater = WorkspaceModelUpdater.create(
-    workspaceModelSnapshot.builder,
-    magicMetaModelProjectConfig.virtualFileUrlManager,
-  )
-
   init {
-    LOGGER.debug { "Initializing MagicMetaModelImpl model done!" }
+    log.debug { "Initializing MagicMetaModelImpl model done!" }
   }
 
-  override fun save() {
-    val toSave = workspaceModelSnapshot.getStorageReplacement()
-    magicMetaModelProjectConfig.workspaceModel.replaceProjectModel(toSave)
-
-    workspaceModelSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
-    workspaceModelUpdater = WorkspaceModelUpdater.create(
-      workspaceModelSnapshot.builder,
-      magicMetaModelProjectConfig.virtualFileUrlManager,
-    )
-  }
-
-  override fun loadDefaultTargets() {
-    LOGGER.debug { "Calculating default targets to load..." }
+  override fun loadDefaultTargets(): MagicMetaModelDiff {
+    log.debug { "Calculating default targets to load..." }
 
     val nonOverlappingTargetsToLoad = NonOverlappingTargets(projectDetails.targets, overlappingTargetsGraph)
 
-    LOGGER.debug { "Calculating default targets to load done! Targets to load: $nonOverlappingTargetsToLoad" }
+    log.debug { "Calculating default targets to load done! Targets to load: $nonOverlappingTargetsToLoad" }
+
+    val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
+    val workspaceModelUpdater = WorkspaceModelUpdater.create(
+      builderSnapshot.builder,
+      magicMetaModelProjectConfig.virtualFileUrlManager,
+    )
 
     workspaceModelUpdater.clear()
     loadedTargetsStorage.clear()
@@ -71,17 +77,30 @@ internal class MagicMetaModelImpl internal constructor(
     // TODO TEST TESTS TEESTS RTEST11
     workspaceModelUpdater.loadModules(modulesToLoad)
     loadedTargetsStorage.addTargets(nonOverlappingTargetsToLoad)
+
+
+    return DefaultMagicMetaModelDiff(
+      magicMetaModelProjectConfig.workspaceModel,
+      builderSnapshot.getStorageReplacement()
+    )
   }
 
   // TODO what if null?
   private fun getModulesDetailsForTargetsToLoad(targetsToLoad: Collection<BuildTargetIdentifier>): List<ModuleDetails> =
     targetsToLoad.map { targetIdToModuleDetails[it]!! }
 
-  override fun loadTarget(targetId: BuildTargetIdentifier) {
+  override fun loadTarget(targetId: BuildTargetIdentifier): MagicMetaModelDiff {
     throwIllegalArgumentExceptionIfTargetIsNotIncludedInTheModel(targetId)
 
-    if (loadedTargetsStorage.isTargetNotLoaded(targetId)) {
-      loadTargetAndRemoveOverlappingLoadedTargets(targetId)
+    return if (loadedTargetsStorage.isTargetNotLoaded(targetId)) {
+      val builderSnapshot = loadTargetAndRemoveOverlappingLoadedTargets(targetId)
+
+      DefaultMagicMetaModelDiff(
+        magicMetaModelProjectConfig.workspaceModel,
+        builderSnapshot.getStorageReplacement()
+      )
+    } else {
+      EmptyMagicMetaModelDiff()
     }
   }
 
@@ -94,12 +113,17 @@ internal class MagicMetaModelImpl internal constructor(
   private fun isTargetNotIncludedInTheModel(targetId: BuildTargetIdentifier): Boolean =
     !projectDetails.targetsId.contains(targetId)
 
-  private fun loadTargetAndRemoveOverlappingLoadedTargets(targetIdToLoad: BuildTargetIdentifier) {
+  private fun loadTargetAndRemoveOverlappingLoadedTargets(targetIdToLoad: BuildTargetIdentifier): BuilderSnapshot {
     val targetsToRemove = overlappingTargetsGraph[targetIdToLoad] ?: emptySet()
     // TODO test it!
     val loadedTargetsToRemove = targetsToRemove.filter(loadedTargetsStorage::isTargetLoaded)
 
     val modulesToRemove = loadedTargetsToRemove.map { ModuleName(it.uri) }
+    val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
+    val workspaceModelUpdater = WorkspaceModelUpdater.create(
+      builderSnapshot.builder,
+      magicMetaModelProjectConfig.virtualFileUrlManager,
+    )
     workspaceModelUpdater.removeModules(modulesToRemove)
     loadedTargetsStorage.removeTargets(loadedTargetsToRemove)
 
@@ -107,6 +131,8 @@ internal class MagicMetaModelImpl internal constructor(
     val moduleToAdd = targetIdToModuleDetails[targetIdToLoad]!!
     workspaceModelUpdater.loadModule(moduleToAdd)
     loadedTargetsStorage.addTarget(targetIdToLoad)
+
+    return builderSnapshot
   }
 
   override fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): DocumentTargetsDetails {
@@ -128,7 +154,7 @@ internal class MagicMetaModelImpl internal constructor(
     projectDetails.targets.filterNot(loadedTargetsStorage::isTargetLoaded)
 
   companion object {
-    private val LOGGER = logger<MagicMetaModelImpl>()
+    private val log = logger<MagicMetaModelImpl>()
   }
 }
 
@@ -146,7 +172,7 @@ private class LoadedTargetsStorage {
     loadedTargets.add(target)
 
   fun removeTargets(targets: Collection<BuildTargetIdentifier>) =
-    loadedTargets.removeAll(targets)
+    loadedTargets.removeAll(targets.toSet())
 
   fun getLoadedTargetOrNull(allTargets: List<BuildTargetIdentifier>): BuildTargetIdentifier? =
     allTargets.firstOrNull(this::isTargetLoaded)

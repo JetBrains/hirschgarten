@@ -30,10 +30,8 @@ private class LoadTargetAction(
 ) : AnAction(target.uri) {
 
   override fun actionPerformed(e: AnActionEvent) {
-    magicMetaModel.loadTarget(target)
-    runWriteAction {
-      magicMetaModel.save()
-    }
+    val diff = magicMetaModel.loadTarget(target)
+    runWriteAction { diff.applyOnWorkspaceModel() }
   }
 }
 

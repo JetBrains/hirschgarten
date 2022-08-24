@@ -29,10 +29,8 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
 
       magicMetaModelService.initializeMagicModel(projectDetails)
       val magicMetaModel = magicMetaModelService.magicMetaModel
-      magicMetaModel.loadDefaultTargets()
-      runWriteAction {
-        magicMetaModel.save()
-      }
+      val diff = magicMetaModel.loadDefaultTargets()
+      runWriteAction { diff.applyOnWorkspaceModel() }
     }
   }
 
