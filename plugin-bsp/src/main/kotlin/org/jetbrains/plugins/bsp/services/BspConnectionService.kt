@@ -1,24 +1,6 @@
 package org.jetbrains.plugins.bsp.services
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.BuildServer
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.CompileParams
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DidChangeBuildTarget
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.LogMessageParams
-import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ShowMessageParams
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.StatusCode
-import ch.epfl.scala.bsp4j.TaskFinishParams
-import ch.epfl.scala.bsp4j.TaskProgressParams
-import ch.epfl.scala.bsp4j.TaskStartParams
+import ch.epfl.scala.bsp4j.*
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
@@ -155,14 +137,18 @@ public class VeryTemporaryBspResolver(
   private val bspSyncConsole: BspSyncConsole,
   private val bspBuildConsole: BspBuildConsole
 ) {
+  public fun buildTargets(targetIds: List<BuildTargetIdentifier>): CompileResult {
 
-  public fun buildTarget(targetId: BuildTargetIdentifier) {
     val uuid = "build-" + UUID.randomUUID().toString()
-    bspBuildConsole.startBuild(uuid, "BSP: Build", "Building " + targetId.uri)
+    val startBuildMessage: String =
+      if (targetIds.size == 1) "Building ${targetIds.first().uri}"
+//      else if (targetIds.isEmpty()) "?"  // consider implementing
+      else "Building ${targetIds.size} target(s)"
+    bspBuildConsole.startBuild(uuid, "BSP: Build", startBuildMessage)
 
     println("buildTargetCompile")
-    val compileParams = CompileParams(listOf(targetId)).apply { originId = uuid }
-    val compileResult = server.buildTargetCompile(compileParams).catchBuildErrors(uuid).get()
+    val compileParams = CompileParams(targetIds).apply { originId = uuid }
+    val compileResult = server.buildTargetCompile(compileParams).get()
 
     when (compileResult.statusCode) {
       StatusCode.OK -> bspBuildConsole.finishBuild("Build is successfully done!", uuid)
@@ -170,6 +156,12 @@ public class VeryTemporaryBspResolver(
       StatusCode.ERROR -> bspBuildConsole.finishBuild("Build ended with an error!", uuid, FailureResultImpl())
       else -> bspBuildConsole.finishBuild("Build is finished!", uuid)
     }
+
+    return compileResult
+  }
+
+  public fun buildTarget(targetId: BuildTargetIdentifier): CompileResult {
+    return buildTargets(listOf(targetId))
   }
 
   public fun collectModel(): ProjectDetails {
