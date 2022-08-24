@@ -24,6 +24,9 @@
     <postStartupActivity
       implementation="org.jetbrains.plugins.bsp.import.BspInitializer"/>
 
+    <projectTaskRunner
+      implementation="org.jetbrains.plugins.bsp.import.BspHackProjectTaskRunner"/>
+
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.BspConnectionService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.BspSyncConsoleService"/>
