@@ -37,7 +37,10 @@ intellij {
     type.set(properties("platformType"))
 
     // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
-    plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+
+    // change for location where your intellij-bsp-0.0.1-plugin.jar is created (as a result of the  pluginJar task)
+    val bsp = file("/Users/azdrojowa/IdeaProjects/intellij-bsp/build/libs/intellij-bsp-0.0.1-plugin.jar")
+    plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty) + bsp)
 }
 
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
@@ -55,6 +58,7 @@ qodana {
 }
 
 tasks {
+
     patchPluginXml {
         version.set(properties("pluginVersion"))
         sinceBuild.set(properties("pluginSinceBuild"))
