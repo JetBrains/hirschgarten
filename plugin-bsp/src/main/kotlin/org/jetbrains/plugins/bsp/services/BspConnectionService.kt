@@ -151,10 +151,10 @@ public class VeryTemporaryBspResolver(
     val compileResult = server.buildTargetCompile(compileParams).get()
 
     when (compileResult.statusCode) {
-      StatusCode.OK -> bspBuildConsole.finishBuild("Build is successfully done!", uuid)
-      StatusCode.CANCELLED -> bspBuildConsole.finishBuild("Build is cancelled!", uuid)
-      StatusCode.ERROR -> bspBuildConsole.finishBuild("Build ended with an error!", uuid, FailureResultImpl())
-      else -> bspBuildConsole.finishBuild("Build is finished!", uuid)
+      StatusCode.OK -> bspBuildConsole.finishBuild("Successfully completed!", uuid)
+      StatusCode.CANCELLED -> bspBuildConsole.finishBuild("Cancelled!", uuid)
+      StatusCode.ERROR -> bspBuildConsole.finishBuild("Ended with an error!", uuid, FailureResultImpl())
+      else -> bspBuildConsole.finishBuild("Finished!", uuid)
     }
 
     return compileResult
@@ -264,9 +264,10 @@ private class BspClient(private val bspSyncConsole: BspSyncConsole, private val 
     println(params)
   }
 
-  override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams?) {
+  override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
     println("onBuildPublishDiagnostics")
     println(params)
+    addDiagnosticToConsole(params)
   }
 
   override fun onBuildTargetDidChange(params: DidChangeBuildTarget?) {
@@ -279,6 +280,14 @@ private class BspClient(private val bspSyncConsole: BspSyncConsole, private val 
       bspBuildConsole.addMessage(id, message, originId)
     } else {
       bspSyncConsole.addMessage(id, message)
+    }
+  }
+
+  private fun addDiagnosticToConsole(params: PublishDiagnosticsParams){
+    if(params.originId?.startsWith("build") == true) {
+      bspBuildConsole.addDiagnosticMessage(params)
+    } else {
+      bspSyncConsole.addDiagnosticMessage(params)
     }
   }
 }
