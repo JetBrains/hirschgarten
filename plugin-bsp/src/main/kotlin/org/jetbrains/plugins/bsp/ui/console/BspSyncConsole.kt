@@ -1,13 +1,19 @@
 package org.jetbrains.plugins.bsp.ui.console
 
+import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.DefaultBuildDescriptor
+import com.intellij.build.FilePosition
 import com.intellij.build.events.EventResult
+import com.intellij.build.events.MessageEvent
+import com.intellij.build.events.impl.FileMessageEventImpl
 import com.intellij.build.events.impl.FinishBuildEventImpl
 import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
 import com.intellij.build.events.impl.StartBuildEventImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import java.io.File
+import java.net.URI
 
 public class BspSyncConsole(private val syncView: BuildProgressListener, private val basePath: String) {
 
@@ -53,6 +59,19 @@ public class BspSyncConsole(private val syncView: BuildProgressListener, private
   public fun finishSubtask(id: Any, message: String): Unit = doIfImportInProcess {
     val event = FinishBuildEventImpl(id, null, System.currentTimeMillis(), message, SuccessResultImpl())
     syncView.onEvent(syncId, event)
+  }
+
+  @Synchronized
+  public fun addDiagnosticMessage(params: PublishDiagnosticsParams) {
+    params.diagnostics.forEach {
+      if (it.message.isNotBlank()) {
+        val messageToSend = prepareTextToPrint(it.message)
+        val event = FileMessageEventImpl(syncId, MessageEvent.Kind.ERROR, null, messageToSend, null, FilePosition(File(
+          URI(params.textDocument.uri)
+        ), it.range.start.line, it.range.start.character))
+        syncView.onEvent(syncId, event)
+      }
+    }
   }
 
   @Synchronized

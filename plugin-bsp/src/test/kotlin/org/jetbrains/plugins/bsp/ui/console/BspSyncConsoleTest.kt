@@ -6,6 +6,7 @@ import com.intellij.build.events.impl.FinishBuildEventImpl
 import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
 import com.intellij.build.events.impl.StartBuildEventImpl
+import com.intellij.build.events.impl.SuccessResultImpl
 import io.kotest.matchers.maps.shouldContainExactly
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
@@ -81,7 +82,7 @@ class BspSyncConsoleTest {
     bspSyncConsole.finishSubtask("subtask 2", "Subtask 2 finished")
     bspSyncConsole.finishSubtask("subtask 3", "Subtask 3 finished")
 
-    bspSyncConsole.finishImport("finitio!")
+    bspSyncConsole.finishImport("finitio!", SuccessResultImpl())
 
     bspSyncConsole.addMessage("task after finish", "message after finish - should be omitted")
 
