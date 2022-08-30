@@ -32,28 +32,55 @@ internal class EmptyMagicMetaModelDiff : MagicMetaModelDiff {
     true
 }
 
+// TODO - get rid of *Impl - we should name it 'DefaultMagicMetaModel' or something like that
 /**
  * Basic implementation of [MagicMetaModel] supporting shared sources
  * provided by the BSP and build on top of [WorkspaceModel].
  */
-internal class MagicMetaModelImpl internal constructor(
-  private val magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
-  private val projectDetails: ProjectDetails,
-) : MagicMetaModel {
+public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagicMetaModelState> {
 
-  init {
-    log.debug { "Initializing MagicMetaModelImpl model..." }
+  private val magicMetaModelProjectConfig: MagicMetaModelProjectConfig
+  private val projectDetails: ProjectDetails
+
+  private val targetsDetailsForDocumentProvider: TargetsDetailsForDocumentProvider
+  private val overlappingTargetsGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>
+
+  private val targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>
+
+  private val loadedTargetsStorage: LoadedTargetsStorage
+
+  internal constructor(
+    magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
+    projectDetails: ProjectDetails,
+  ) {
+    log.debug { "Initializing MagicMetaModelImpl with: $magicMetaModelProjectConfig and $projectDetails..." }
+
+    this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
+    this.projectDetails = projectDetails
+
+    this.targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
+    this.overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+
+    this.targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
+
+    this.loadedTargetsStorage = LoadedTargetsStorage(projectDetails.targetsId)
+
+    log.debug { "Initializing MagicMetaModelImpl done!" }
   }
 
-  private val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
-  private val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+  internal constructor(state: DefaultMagicMetaModelState, magicMetaModelProjectConfig: MagicMetaModelProjectConfig) {
+    this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
+    this.projectDetails = state.projectDetailsState.fromState()
 
-  private val targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
+    this.targetsDetailsForDocumentProvider =
+      TargetsDetailsForDocumentProvider(state.targetsDetailsForDocumentProviderState)
+    this.overlappingTargetsGraph =
+      state.overlappingTargetsGraph.mapKeys { it.key.fromState() }.mapValues { it.value.map { it.fromState() }.toSet() }
 
-  private val loadedTargetsStorage = LoadedTargetsStorage()
-
-  init {
-    log.debug { "Initializing MagicMetaModelImpl model done!" }
+    this.targetIdToModuleDetails =
+      state.targetIdToModuleDetails.mapKeys { it.key.fromState() }.mapValues { it.value.fromState() }
+    this.loadedTargetsStorage =
+      LoadedTargetsStorage(state.loadedTargetsStorageState)
   }
 
   override fun loadDefaultTargets(): MagicMetaModelDiff {
@@ -136,10 +163,11 @@ internal class MagicMetaModelImpl internal constructor(
   }
 
   override fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): DocumentTargetsDetails {
-    val allTargetsIds = targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(documentId)
+    val documentTargets = targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(documentId)
 
-    val loadedTarget = loadedTargetsStorage.getLoadedTargetOrNull(allTargetsIds)
-    val notLoadedTargets = loadedTargetsStorage.getNotLoadedTargets(allTargetsIds)
+    // TODO maybe wo should check is there only 1 loaded? what if 2 are loaded - it means that we have a bug
+    val loadedTarget = loadedTargetsStorage.getLoadedTargets().firstOrNull { documentTargets.contains(it) }
+    val notLoadedTargets = loadedTargetsStorage.getNotLoadedTargets().filter { documentTargets.contains(it) }
 
     return DocumentTargetsDetails(
       loadedTargetId = loadedTarget,
@@ -148,44 +176,89 @@ internal class MagicMetaModelImpl internal constructor(
   }
 
   override fun getAllLoadedTargets(): List<BuildTarget> =
-    projectDetails.targets.filter(loadedTargetsStorage::isTargetLoaded)
+    projectDetails.targets.filter { loadedTargetsStorage.isTargetLoaded(it.id) }
 
   override fun getAllNotLoadedTargets(): List<BuildTarget> =
-    projectDetails.targets.filterNot(loadedTargetsStorage::isTargetLoaded)
+    projectDetails.targets.filter { loadedTargetsStorage.isTargetNotLoaded(it.id) }
 
-  companion object {
+  // TODO - test
+  override fun toState(): DefaultMagicMetaModelState =
+    DefaultMagicMetaModelState(
+      projectDetailsState = projectDetails.toState(),
+      targetsDetailsForDocumentProviderState = targetsDetailsForDocumentProvider.toState(),
+      overlappingTargetsGraph = overlappingTargetsGraph.mapKeys { it.key.toState() }
+        .mapValues { it.value.map { it.toState() } },
+      targetIdToModuleDetails = targetIdToModuleDetails.mapKeys { it.key.toState() }
+        .mapValues { it.value.toState() },
+      loadedTargetsStorageState = loadedTargetsStorage.toState()
+    )
+
+  private companion object {
     private val log = logger<MagicMetaModelImpl>()
   }
 }
 
+public data class LoadedTargetsStorageState(
+  public var allTargets: Collection<BuildTargetIdentifierState> = emptyList(),
+  public var loadedTargets: List<BuildTargetIdentifierState> = emptyList(),
+  public var notLoadedTargets: List<BuildTargetIdentifierState> = emptyList(),
+)
+
 private class LoadedTargetsStorage {
 
-  private val loadedTargets = mutableSetOf<BuildTargetIdentifier>()
+  private val allTargets: Collection<BuildTargetIdentifier>
 
-  fun clear() =
+  private val loadedTargets: MutableSet<BuildTargetIdentifier>
+  private val notLoadedTargets: MutableSet<BuildTargetIdentifier>
+
+  constructor(allTargets: Collection<BuildTargetIdentifier>) {
+    this.allTargets = allTargets
+
+    this.loadedTargets = mutableSetOf()
+    this.notLoadedTargets = allTargets.toMutableSet()
+  }
+
+  constructor(state: LoadedTargetsStorageState) {
+    this.allTargets = state.allTargets.map { it.fromState() }
+    this.loadedTargets = state.loadedTargets.map { it.fromState() }.toMutableSet()
+    this.notLoadedTargets = state.notLoadedTargets.map { it.fromState() }.toMutableSet()
+  }
+
+  fun clear() {
     loadedTargets.clear()
+    notLoadedTargets.addAll(allTargets)
+  }
 
-  fun addTargets(targets: Collection<BuildTargetIdentifier>) =
+  fun addTargets(targets: Collection<BuildTargetIdentifier>) {
     loadedTargets.addAll(targets)
+    notLoadedTargets.removeAll(targets.toSet())
+  }
 
-  fun addTarget(target: BuildTargetIdentifier) =
+  fun addTarget(target: BuildTargetIdentifier) {
     loadedTargets.add(target)
+    notLoadedTargets.remove(target)
+  }
 
-  fun removeTargets(targets: Collection<BuildTargetIdentifier>) =
+  fun removeTargets(targets: Collection<BuildTargetIdentifier>) {
     loadedTargets.removeAll(targets.toSet())
-
-  fun getLoadedTargetOrNull(allTargets: List<BuildTargetIdentifier>): BuildTargetIdentifier? =
-    allTargets.firstOrNull(this::isTargetLoaded)
-
-  fun getNotLoadedTargets(allTargets: List<BuildTargetIdentifier>): List<BuildTargetIdentifier> =
-    allTargets.filterNot(this::isTargetLoaded)
+    notLoadedTargets.addAll(targets)
+  }
 
   fun isTargetNotLoaded(targetId: BuildTargetIdentifier): Boolean =
-    !isTargetLoaded(targetId)
+    notLoadedTargets.contains(targetId)
 
   fun isTargetLoaded(targetId: BuildTargetIdentifier): Boolean =
     loadedTargets.contains(targetId)
 
-  fun isTargetLoaded(target: BuildTarget): Boolean =
-    loadedTargets.contains(target.id)
+  fun getLoadedTargets(): List<BuildTargetIdentifier> =
+    loadedTargets.toList()
+
+  fun getNotLoadedTargets(): List<BuildTargetIdentifier> =
+    notLoadedTargets.toList()
+
+  fun toState(): LoadedTargetsStorageState =
+    LoadedTargetsStorageState(
+      allTargets.map { it.toState() },
+      loadedTargets.map { it.toState() },
+      notLoadedTargets.map { it.toState() })
 }

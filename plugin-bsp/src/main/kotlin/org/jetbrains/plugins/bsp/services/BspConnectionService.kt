@@ -71,19 +71,21 @@ public class BspConnectionService(private val project: Project) {
     val bspUtilService = BspUtilService.getInstance()
     val bspSyncConsole: BspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
     bspSyncConsole.startImport("bsp-obtain-config", "BSP: Obtain config", "Obtaining...")
-    if (dialogBuildToolUsed!!) {
-      val xd1 = bspConnectionDetailsGeneratorProvider!!.generateBspConnectionDetailFileForGeneratorWithName(
-        dialogBuildToolName!!,
-        ConsoleOutputStream("bsp-obtain-config", bspSyncConsole)
-      )
-      val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
-      bspUtilService.bspConnectionDetails[project.locationHash] = xd2!!
-      connect(xd2)
-    } else {
-      bspUtilService.bspConnectionDetails[project.locationHash] = dialogConnectionFile!!
-      connect(dialogConnectionFile!!)
+    if (dialogBuildToolUsed != null) {
+      if (dialogBuildToolUsed!!) {
+        val xd1 = bspConnectionDetailsGeneratorProvider!!.generateBspConnectionDetailFileForGeneratorWithName(
+          dialogBuildToolName!!,
+          ConsoleOutputStream("bsp-obtain-config", bspSyncConsole)
+        )
+        val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
+        bspUtilService.bspConnectionDetails[project.locationHash] = xd2!!
+        connect(xd2)
+      } else {
+        bspUtilService.bspConnectionDetails[project.locationHash] = dialogConnectionFile!!
+        connect(dialogConnectionFile!!)
+      }
+      bspSyncConsole.finishImport("Config obtained!", SuccessResultImpl())
     }
-    bspSyncConsole.finishImport("Config obtained!", SuccessResultImpl())
   }
 
   public fun reconnect(locationHash: String) {

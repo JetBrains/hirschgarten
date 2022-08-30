@@ -11,22 +11,40 @@ import org.jetbrains.magicmetamodel.extensions.allSubdirectoriesSequence
 import org.jetbrains.magicmetamodel.extensions.toAbsolutePath
 import java.net.URI
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.toPath
 
-internal class TargetsDetailsForDocumentProvider(sources: List<SourcesItem>) {
+public data class TargetsDetailsForDocumentProviderState(
+  public var documentIdToTargetsIdsMap: Map<String, Set<BuildTargetIdentifierState>> = emptyMap(),
+  public var documentIdInTheSameDirectoryToTargetsIdsMapForHACK: Map<String, Set<BuildTargetIdentifierState>> = emptyMap(),
+  public var isFileMap4HACK: Map<String, Boolean> = emptyMap(),
+)
 
-  init {
-    LOGGER.trace { "Initializing TargetsDetailsForDocumentProvider..." }
+internal class TargetsDetailsForDocumentProvider {
+
+  private val documentIdToTargetsIdsMap: Map<Path, Set<BuildTargetIdentifier>>
+  private val documentIdInTheSameDirectoryToTargetsIdsMapForHACK: Map<Path, Set<BuildTargetIdentifier>>
+  private val isFileMap4HACK: Map<String, Boolean>
+
+  constructor(sources: List<SourcesItem>) {
+    log.trace { "Initializing TargetsDetailsForDocumentProvider with $sources..." }
+
+    this.documentIdToTargetsIdsMap = DocumentIdToTargetsIdsMap(sources)
+    this.documentIdInTheSameDirectoryToTargetsIdsMapForHACK = DocumentIdToTargetsIdsMapInTheSameDirHACK(sources)
+    this.isFileMap4HACK = sources
+      .flatMap { it.sources }
+      .associateBy({ it.uri }, { it.kind == SourceItemKind.FILE })
+
+    log.trace { "Initializing TargetsDetailsForDocumentProvider done!" }
   }
 
-  private val documentIdToTargetsIdsMap = DocumentIdToTargetsIdsMap(sources)
-  private val documentIdInTheSameDirectoryToTargetsIdsMapForHACK = DocumentIdToTargetsIdsMapInTheSameDirHACK(sources)
-  private val isFileMap4HACK = sources
-    .flatMap { it.sources }
-    .associateBy({ it.uri }, { it.kind == SourceItemKind.FILE })
-
-  init {
-    LOGGER.trace { "Initializing TargetsDetailsForDocumentProvider done!" }
+  constructor(state: TargetsDetailsForDocumentProviderState) {
+    this.documentIdToTargetsIdsMap =
+      state.documentIdToTargetsIdsMap.mapKeys { Path(it.key) }.mapValues { it.value.map { it.fromState() }.toSet() }
+    this.documentIdInTheSameDirectoryToTargetsIdsMapForHACK =
+      state.documentIdInTheSameDirectoryToTargetsIdsMapForHACK.mapKeys { Path(it.key) }
+        .mapValues { it.value.map { it.fromState() }.toSet() }
+    this.isFileMap4HACK = state.isFileMap4HACK
   }
 
   fun getAllDocuments(): List<TextDocumentIdentifier> =
@@ -56,23 +74,32 @@ internal class TargetsDetailsForDocumentProvider(sources: List<SourcesItem>) {
     }
 
   private fun generateAllDocumentSubdirectoriesIncludingDocument(documentId: TextDocumentIdentifier): Sequence<Path> {
-    LOGGER.trace { "Generating all $documentId subdirectories..." }
+    log.trace { "Generating all $documentId subdirectories..." }
 
     val documentAbsolutePath = mapDocumentIdToAbsolutePath(documentId)
 
     return documentAbsolutePath.allSubdirectoriesSequence()
-      .also { LOGGER.trace { "Generating all $documentId subdirectories done! Subdirectories: $it." } }
+      .also { log.trace { "Generating all $documentId subdirectories done! Subdirectories: $it." } }
   }
 
   private fun mapDocumentIdToAbsolutePath(documentId: TextDocumentIdentifier): Path =
     URI.create(documentId.uri).toAbsolutePath()
 
-  private
+  fun toState(): TargetsDetailsForDocumentProviderState =
+    TargetsDetailsForDocumentProviderState(
+      documentIdToTargetsIdsMap.mapKeys { it.key.toString() }
+        .mapValues { it.value.map { it.toState() }.toSet() },
+      documentIdInTheSameDirectoryToTargetsIdsMapForHACK.mapKeys { it.key.toString() }
+        .mapValues { it.value.map { it.toState() }.toSet() },
+      isFileMap4HACK
+    )
+
   companion object {
-    private val LOGGER = logger<TargetsDetailsForDocumentProvider>()
+    private val log = logger<TargetsDetailsForDocumentProvider>()
   }
 }
 
+// TODO reverse sources
 private object DocumentIdToTargetsIdsMap {
 
   private val log = logger<DocumentIdToTargetsIdsMap>()
@@ -93,7 +120,7 @@ private object DocumentIdToTargetsIdsMap {
     sourceItem: SourcesItem,
   ): List<Pair<Path, BuildTargetIdentifier>> =
     sourceItem.sources
-      .map(this::mapSourceItemToPath)
+      .map { mapSourceItemToPath(it) }
       .map { Pair(it, sourceItem.target) }
 
   private fun mapSourceItemToPath(sourceItem: SourceItem): Path =
@@ -106,7 +133,7 @@ private object DocumentIdToTargetsIdsMapInTheSameDirHACK {
     sources: List<SourcesItem>
   ): Map<Path, Set<BuildTargetIdentifier>> =
     sources
-      .flatMap(this::mapSourcesItemToPairsOfDocumentIdAndTargetId)
+      .flatMap { mapSourcesItemToPairsOfDocumentIdAndTargetId(it) }
       .groupBy({ it.first }, { it.second })
       .mapValues { it.value.toSet() }
 

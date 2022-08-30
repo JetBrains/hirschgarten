@@ -9,7 +9,8 @@ import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
 
-internal data class ModuleDetails(
+// TODO vis
+public data class ModuleDetails(
   val target: BuildTarget,
   val allTargetsIds: List<BuildTargetIdentifier>,
   val sources: List<SourcesItem>,
