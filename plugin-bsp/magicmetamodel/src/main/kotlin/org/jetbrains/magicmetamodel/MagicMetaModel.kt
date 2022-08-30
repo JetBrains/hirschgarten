@@ -10,6 +10,7 @@ import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
+import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 
 public data class MagicMetaModelProjectConfig(
@@ -56,7 +57,7 @@ public interface MagicMetaModel {
    *
    * Requires write action if used with [WorkspaceModel].
    */
-  public fun loadDefaultTargets() : MagicMetaModelDiff
+  public fun loadDefaultTargets(): MagicMetaModelDiff
 
   /**
    * Loads given target.
@@ -67,7 +68,7 @@ public interface MagicMetaModel {
    *
    * Requires write action if used with [WorkspaceModel].
    */
-  public fun loadTarget(targetId: BuildTargetIdentifier) : MagicMetaModelDiff
+  public fun loadTarget(targetId: BuildTargetIdentifier): MagicMetaModelDiff
 
   /**
    * Get targets details for given document.
@@ -98,9 +99,15 @@ public interface MagicMetaModel {
     public fun create(
       magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
       projectDetails: ProjectDetails,
-    ): MagicMetaModel {
+    ): MagicMetaModelImpl {
       log.debug { "Creating MagicMetaModelImpl for $magicMetaModelProjectConfig, $projectDetails..." }
       return MagicMetaModelImpl(magicMetaModelProjectConfig, projectDetails)
     }
+
+    public fun fromState(
+      state: DefaultMagicMetaModelState,
+      magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
+    ): MagicMetaModelImpl =
+      MagicMetaModelImpl(state, magicMetaModelProjectConfig)
   }
 }

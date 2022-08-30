@@ -31,6 +31,9 @@ public class BspInitializer : StartupActivity {
     val locatedBspConnectionDetails: LocatedBspConnectionDetails? =
       bspUtilService.bspConnectionDetails[project.locationHash]
 
+    val statusBar = WindowManager.getInstance().getStatusBar(project)
+    statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
+
     if (project.isNewProject() || locatedBspConnectionDetails == null) {
       println("BspInitializer.runActivity")
 
@@ -65,8 +68,7 @@ public class BspInitializer : StartupActivity {
         override fun onSuccess() {
           runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
 
-          val statusBar = WindowManager.getInstance().getStatusBar(project)
-          statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
+
           ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
             icon = BspPluginIcons.bsp
             canCloseContent = false
