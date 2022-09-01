@@ -14,37 +14,23 @@ internal object OverlappingTargetsGraph {
   ): Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> {
     log.trace { "Calculating overlapping targets graph..." }
 
-    return targetsDetailsForDocumentProvider.getAllDocuments()
-      .map(targetsDetailsForDocumentProvider::getTargetsDetailsForDocument)
-      .flatMap(this::generateEdgesForOverlappingTargetsForAllTargets)
+    return targetsDetailsForDocumentProvider.getAllDocuments().asSequence()
+      .map { targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(it) }
+      .flatMap { generateEdgesForOverlappingTargetsForAllTargets(it) }
       .groupBy({ it.first }, { it.second })
       .mapValues { it.value.reduceSets() }
+      .mapValues { filterGivenTargetFromOverlappingTargetsAndMapToSet(it.key, it.value) }
       .also { log.trace { "Calculating overlapping targets graph done! Graph: $it." } }
   }
 
   private fun generateEdgesForOverlappingTargetsForAllTargets(
-    overlappingTargets: List<BuildTargetIdentifier>,
+    overlappingTargets: Set<BuildTargetIdentifier>,
   ): List<Pair<BuildTargetIdentifier, Set<BuildTargetIdentifier>>> =
-    overlappingTargets.map { generateEdgesForOverlappingTargetsForOneTarget(it, overlappingTargets) }
-
-  private fun generateEdgesForOverlappingTargetsForOneTarget(
-    target: BuildTargetIdentifier,
-    overlappingTargets: List<BuildTargetIdentifier>,
-  ): Pair<BuildTargetIdentifier, Set<BuildTargetIdentifier>> {
-    log.trace { "Calculating overlapping targets for $target..." }
-
-    val targetEdges = filterGivenTargetFromOverlappingTargetsAndMapToSet(target, overlappingTargets)
-
-    log.trace { "Calculating overlapping targets for $target done. Overlapping targets: $targetEdges." }
-
-    return Pair(target, targetEdges)
-  }
+    overlappingTargets.map { Pair(it, overlappingTargets) }
 
   private fun filterGivenTargetFromOverlappingTargetsAndMapToSet(
     target: BuildTargetIdentifier,
-    overlappingTargets: List<BuildTargetIdentifier>,
+    overlappingTargets: Set<BuildTargetIdentifier>,
   ): Set<BuildTargetIdentifier> =
-    overlappingTargets
-      .filter { it != target }
-      .toSet()
+    overlappingTargets.minus(target)
 }

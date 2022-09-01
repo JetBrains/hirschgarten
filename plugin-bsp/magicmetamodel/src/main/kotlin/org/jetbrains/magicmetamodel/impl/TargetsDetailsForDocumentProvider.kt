@@ -55,22 +55,21 @@ internal class TargetsDetailsForDocumentProvider {
   private fun mapPathToTextDocumentIdentifier(path: Path): TextDocumentIdentifier =
     TextDocumentIdentifier(path.toUri().toString())
 
-  fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): List<BuildTargetIdentifier> {
+  fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): Set<BuildTargetIdentifier> {
     val targets = generateAllDocumentSubdirectoriesIncludingDocument(documentId)
-      .flatMap { documentIdToTargetsIdsMap[it].orEmpty() }
-      .toList()
+      .flatMap { documentIdToTargetsIdsMap[it].orEmpty() }.toSet()
 
     val targetsInTheSameDirectoryIfFile = getTargetsInTheSameDirectoryIfFileHACK(documentId)
 
-    return (targets + targetsInTheSameDirectoryIfFile).distinct()
+    return (targets + targetsInTheSameDirectoryIfFile)
   }
 
-  private fun getTargetsInTheSameDirectoryIfFileHACK(documentId: TextDocumentIdentifier): List<BuildTargetIdentifier> =
+  private fun getTargetsInTheSameDirectoryIfFileHACK(documentId: TextDocumentIdentifier): Set<BuildTargetIdentifier> =
     when {
       isFileMap4HACK[documentId.uri] ?: false ->
-        documentIdInTheSameDirectoryToTargetsIdsMapForHACK[URI(documentId.uri).toPath().parent].orEmpty().toList()
+        documentIdInTheSameDirectoryToTargetsIdsMapForHACK[URI(documentId.uri).toPath().parent].orEmpty()
 
-      else -> ArrayList()
+      else -> emptySet()
     }
 
   private fun generateAllDocumentSubdirectoriesIncludingDocument(documentId: TextDocumentIdentifier): Sequence<Path> {
