@@ -10,7 +10,10 @@ import org.jetbrains.workspace.model.constructors.BuildTargetId
 import org.jetbrains.workspace.model.constructors.SourceItem
 import org.jetbrains.workspace.model.constructors.SourcesItem
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import java.util.concurrent.TimeUnit
 
 @DisplayName("OverlappingTargetsGraph(targetsDetailsForDocumentProvider) tests")
 class OverlappingTargetsGraphTest {
@@ -344,5 +347,181 @@ class OverlappingTargetsGraphTest {
     )
 
     overlappingTargetsGraph shouldContainExactly expectedGraph
+  }
+
+  @Nested
+  @DisplayName("performance tests")
+  inner class PerformanceTests {
+
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    fun `should finish before timeout for project without shared sources (each target has 1 source file)`() {
+      // given
+      val numberOfTargets = 100_000
+
+      val sources = (0..numberOfTargets).toList().map {
+        SourcesItem(
+          target = BuildTargetIdentifier("target$it"),
+          sources = listOf(
+            SourceItem(
+              uri = "file:///project/target$it/src/main/kotlin/File.kt",
+              kind = SourceItemKind.FILE,
+            )
+          ),
+        )
+      }
+
+      val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
+
+      // when
+      val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+
+      // then
+      val expectedOverlappingTargetsGraph =
+        sources
+          .map { it.target }
+          .associateWith { emptySet<BuildTargetIdentifier>() }
+      overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
+    }
+
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    fun `should finish before timeout for project with all targets sharing 1 source`() {
+      // given
+      val numberOfTargets = 1_000
+
+      val sources = (0..numberOfTargets).map {
+        SourcesItem(
+          target = BuildTargetIdentifier("target$it"),
+          sources = listOf(
+            SourceItem(
+              uri = "file:///project/target$it/src/main/kotlin/File.kt",
+              kind = SourceItemKind.FILE,
+            ),
+            SourceItem(
+              uri = "file:///project/target/src/main/kotlin/File.kt",
+              kind = SourceItemKind.FILE,
+            )
+          ),
+        )
+      }
+
+      val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
+
+      // when
+      val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+
+      // then
+      val expectedOverlappingTargetsGraph =
+        sources
+          .map { it.target }
+          .associateWith { sources.map { it.target }.filter { t -> t != it } }
+      overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
+    }
+
+    @Test
+    @Timeout(value = 1, unit = TimeUnit.MINUTES)
+    fun `should finish before timeout for project where each 2 targets share source`() {
+      // given
+      val numberOfTargets = 100_000
+
+      val sources = (0..numberOfTargets).toList().zipWithNext().map {
+        SourcesItem(
+          target = BuildTargetIdentifier("target${it.first}"),
+          sources = listOf(
+            SourceItem(
+              uri = "file:///project/target${it.first}/src/main/kotlin/File.kt",
+              kind = SourceItemKind.FILE,
+            ),
+            SourceItem(
+              uri = "file:///project/target${it.second}/src/main/kotlin/File.kt",
+              kind = SourceItemKind.FILE,
+            )
+          ),
+        )
+      }
+
+      val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
+
+      // when
+      val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+
+      // then
+      val expectedOverlappingTargetsGraph =
+        sources.zipWithNext().zipWithNext()
+          .associateBy({ it.first.second.target }, { setOf(it.first.first.target, it.second.second.target) }) +
+          setOf(
+            sources[0].target to setOf(sources[1].target),
+            sources[sources.lastIndex].target to setOf(sources[sources.lastIndex - 1].target)
+          )
+      overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
+    }
+
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    fun `should finish before timeout for project where all targets share 1 source and each target has lots of sources`() {
+      // given
+      val numberOfTargets = 100
+      val numberOfSourcesPerTarget = 1_000
+
+      val sources = (0..numberOfTargets).map {
+        SourcesItem(
+          target = BuildTargetIdentifier("target$it"),
+          sources = (0..numberOfSourcesPerTarget).map { rand ->
+            SourceItem(
+              uri = "file:///project/target$it$rand/src/main/kotlin/File.kt",
+              kind = SourceItemKind.FILE,
+            )
+          } + SourceItem(
+            uri = "file:///project/target/src/main/kotlin/File.kt",
+            kind = SourceItemKind.FILE,
+          )
+        )
+      }
+
+      val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
+
+      // when
+      val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+
+      // then
+      val expectedOverlappingTargetsGraph =
+        sources
+          .map { it.target }
+          .associateWith { sources.map { it.target }.filter { t -> t != it } }
+      overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
+    }
+
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    fun `should finish before timeout for project where all targets share all sources`() {
+      // given
+      val numberOfTargets = 1_000
+      val numberOfSharedSources = 1_000
+
+      val sources = (0..numberOfTargets).map {
+        SourcesItem(
+          target = BuildTargetIdentifier("target$it"),
+          sources = (0..numberOfSharedSources).map { rand ->
+            SourceItem(
+              uri = "file:///project/target$rand/src/main/kotlin/File.kt",
+              kind = SourceItemKind.FILE,
+            )
+          }
+        )
+      }
+
+      val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
+
+      // when
+      val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+
+      // then
+      val expectedOverlappingTargetsGraph =
+        sources
+          .map { it.target }
+          .associateWith { sources.map { it.target }.filter { t -> t != it } }
+      overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
+    }
   }
 }
