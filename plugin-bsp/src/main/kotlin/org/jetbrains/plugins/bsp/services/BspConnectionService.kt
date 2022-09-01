@@ -40,6 +40,9 @@ public class BspConnectionService(private val project: Project) {
   public var dialogConnectionFile: LocatedBspConnectionDetails? = null
   public var bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider? = null
 
+  public var toolName: String? = null
+    private set
+
   public fun connect(connectionFile: LocatedBspConnectionDetails) {
     val process = createAndStartProcess(connectionFile.bspConnectionDetails)
     val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
@@ -78,9 +81,11 @@ public class BspConnectionService(private val project: Project) {
           ConsoleOutputStream("bsp-obtain-config", bspSyncConsole)
         )
         val xd2 = LocatedBspConnectionDetailsParser.parseFromFile(xd1!!)
+        this.toolName = xd2?.bspConnectionDetails?.name
         bspUtilService.bspConnectionDetails[project.locationHash] = xd2!!
         connect(xd2)
       } else {
+        this.toolName = dialogConnectionFile?.bspConnectionDetails?.name
         bspUtilService.bspConnectionDetails[project.locationHash] = dialogConnectionFile!!
         connect(dialogConnectionFile!!)
       }

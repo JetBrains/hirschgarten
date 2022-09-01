@@ -50,39 +50,37 @@ public class LoadedTargetsMouseListener(
   override fun mouseClicked(e: MouseEvent?): Unit = mouseClickedNotNull(e!!)
 
   private fun mouseClickedNotNull(mouseEvent: MouseEvent) {
-    updateSelectedIndex(mouseEvent)
-
     if (mouseEvent.mouseButton == MouseButton.Right) {
       showPopup(mouseEvent)
     }
   }
 
-  private fun updateSelectedIndex(mouseEvent: MouseEvent) {
-    listsUpdater.loadedTargetsJbList.selectedIndex =
-      listsUpdater.loadedTargetsJbList.locationToIndex(mouseEvent.point)
-  }
-
   private fun showPopup(mouseEvent: MouseEvent) {
     val actionGroup = calculatePopupGroup()
-    val context = DataManager.getInstance().getDataContext(mouseEvent.component)
-    val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
+    if (actionGroup != null) {
+      val context = DataManager.getInstance().getDataContext(mouseEvent.component)
+      val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
 
-    JBPopupFactory.getInstance()
-      .createActionGroupPopup(null, actionGroup, context, mnemonics, true)
-      .showInBestPositionFor(context)
+      JBPopupFactory.getInstance()
+        .createActionGroupPopup(null, actionGroup, context, mnemonics, true)
+        .showInBestPositionFor(context)
+    }
   }
 
-  private fun calculatePopupGroup(): ActionGroup {
-    val group = DefaultActionGroup()
+  private fun calculatePopupGroup(): ActionGroup? {
+    val target: BuildTargetIdentifier? = BspTargetTree.getSelectedBspTarget(listsUpdater.loadedTargetsTreeComponent)?.id
 
-    val target = listsUpdater.loadedTargetsJbList.selectedValue.id
-    val action = BuildTargetAction(
-      BspAllTargetsWidgetBundle.message("widget.build.target.popup.message"),
-      target
-    )
-    group.addAction(action)
+    if (target != null) {
+      val group = DefaultActionGroup()
+      val action = BuildTargetAction(
+        BspAllTargetsWidgetBundle.message("widget.build.target.popup.message"),
+        target
+      )
+      group.addAction(action)
+      return group
+    }
 
-    return group
+    return null
   }
 
   override fun mousePressed(e: MouseEvent?) { }
