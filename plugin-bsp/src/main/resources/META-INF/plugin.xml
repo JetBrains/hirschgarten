@@ -9,10 +9,17 @@
     <extensionPoint qualifiedName="com.intellij.bspConnectionDetailsGeneratorExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bspBuildTargetClassifierExtension"
+                    interface="org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension"
+                    dynamic="true"/>
   </extensionPoints>
   <extensions defaultExtensionNs="com.intellij">
     <bspConnectionDetailsGeneratorExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.TemporarySbtBspConnectionDetailsGenerator"
+    />
+
+    <bspBuildTargetClassifierExtension
+      implementation="org.jetbrains.plugins.bsp.extension.points.TemporaryTestTargetClassifier"
     />
 
     <projectOpenProcessor

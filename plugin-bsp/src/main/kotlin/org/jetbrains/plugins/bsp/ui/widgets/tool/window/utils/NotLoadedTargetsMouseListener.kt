@@ -28,24 +28,13 @@ private class LoadTargetAction(
   }
 }
 
-public class NotLoadedTargetsListMouseListener(
+public class NotLoadedTargetsMouseListener(
   private val listsUpdater: ListsUpdater,
 ) : MouseListener {
 
   override fun mouseClicked(e: MouseEvent?): Unit = mouseClickedNotNull(e!!)
 
   private fun mouseClickedNotNull(mouseEvent: MouseEvent) {
-    updateSelectedIndex(mouseEvent)
-
-    showPopupIfRightButtonClicked(mouseEvent)
-  }
-
-  private fun updateSelectedIndex(mouseEvent: MouseEvent) {
-    listsUpdater.notLoadedTargetsJbList.selectedIndex =
-      listsUpdater.notLoadedTargetsJbList.locationToIndex(mouseEvent.point)
-  }
-
-  private fun showPopupIfRightButtonClicked(mouseEvent: MouseEvent) {
     if (mouseEvent.mouseButton == MouseButton.Right) {
       showPopup(mouseEvent)
     }
@@ -53,33 +42,38 @@ public class NotLoadedTargetsListMouseListener(
 
   private fun showPopup(mouseEvent: MouseEvent) {
     val actionGroup = calculatePopupGroup()
-    val context = DataManager.getInstance().getDataContext(mouseEvent.component)
-    val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
+    if (actionGroup != null) {
+      val context = DataManager.getInstance().getDataContext(mouseEvent.component)
+      val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
 
-    JBPopupFactory.getInstance()
-      .createActionGroupPopup(null, actionGroup, context, mnemonics, true)
-      .showInBestPositionFor(context)
+      JBPopupFactory.getInstance()
+        .createActionGroupPopup(null, actionGroup, context, mnemonics, true)
+        .showInBestPositionFor(context)
+    }
   }
 
-  private fun calculatePopupGroup(): ActionGroup {
-    val group = DefaultActionGroup()
+  private fun calculatePopupGroup(): ActionGroup? {
+    val target: BuildTargetIdentifier? =
+      BspTargetTree.getSelectedBspTarget(listsUpdater.notLoadedTargetsTreeComponent)?.id
 
-    val target = listsUpdater.notLoadedTargetsJbList.selectedValue.id
-    val action = LoadTargetAction(
-      BspAllTargetsWidgetBundle.message("widget.load.target.popup.message"),
-      target,
-      listsUpdater
-    )
-    group.addAction(action)
-
-    return group
+    if (target != null) {
+      val group = DefaultActionGroup()
+      val action = LoadTargetAction(
+        BspAllTargetsWidgetBundle.message("widget.load.target.popup.message"),
+        target,
+        listsUpdater
+      )
+      group.addAction(action)
+      return group
+    }
+    return null
   }
 
-  override fun mousePressed(e: MouseEvent?) { }
+  override fun mousePressed(e: MouseEvent?) {}
 
-  override fun mouseReleased(e: MouseEvent?) { }
+  override fun mouseReleased(e: MouseEvent?) {}
 
-  override fun mouseEntered(e: MouseEvent?) { }
+  override fun mouseEntered(e: MouseEvent?) {}
 
-  override fun mouseExited(e: MouseEvent?) { }
+  override fun mouseExited(e: MouseEvent?) {}
 }

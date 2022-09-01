@@ -1,68 +1,40 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.Anchor
-import com.intellij.openapi.actionSystem.Constraints
-import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.treeStructure.Tree
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.services.BspConnectionService
 import org.jetbrains.plugins.bsp.services.BspUtilService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RestartAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspTargetTree
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.NotLoadedTargetsListMouseListener
-import javax.swing.DefaultListModel
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.NotLoadedTargetsMouseListener
 import javax.swing.JComponent
-import javax.swing.ListSelectionModel
 import javax.swing.SwingConstants
 
 public class ListsUpdater(
   public val magicMetaModel: MagicMetaModel,
+  private val toolName: String?
 ) {
+  private val loadedBspTargetTree: BspTargetTree = BspTargetTree(BspPluginIcons.bsp)
+  public val loadedTargetsTreeComponent: Tree = loadedBspTargetTree.treeComponent
 
-  private val loadedTargetsListModel = DefaultListModel<BuildTarget>()
-  public val loadedTargetsJbList: JBList<BuildTarget> = JBList(loadedTargetsListModel)
-
-  private val notLoadedTargetsListModel = DefaultListModel<BuildTarget>()
-  public val notLoadedTargetsJbList: JBList<BuildTarget> = JBList(notLoadedTargetsListModel)
+  private val notLoadedBspTargetTree: BspTargetTree = BspTargetTree(BspPluginIcons.notLoadedTarget)
+  public val notLoadedTargetsTreeComponent: Tree = notLoadedBspTargetTree.treeComponent
 
   init {
-    loadedTargetsJbList.selectionMode = ListSelectionModel.SINGLE_SELECTION
-    loadedTargetsJbList.installCellRenderer {
-      JBLabel(
-        it.displayName ?: it.id.uri,
-        BspPluginIcons.bsp,
-        SwingConstants.LEFT
-      )
-    }
-
-    notLoadedTargetsJbList.selectionMode = ListSelectionModel.SINGLE_SELECTION
-    notLoadedTargetsJbList.installCellRenderer {
-      JBLabel(
-        it.displayName ?: it.id.uri,
-        BspPluginIcons.notLoadedTarget,
-        SwingConstants.LEFT
-      )
-    }
-
     updateModels()
   }
 
   public fun updateModels() {
-    loadedTargetsListModel.removeAllElements()
-    loadedTargetsListModel.addAll(magicMetaModel.getAllLoadedTargets())
-
-    notLoadedTargetsListModel.removeAllElements()
-    notLoadedTargetsListModel.addAll(magicMetaModel.getAllNotLoadedTargets())
+    loadedBspTargetTree.generateTree(toolName, magicMetaModel.getAllLoadedTargets())
+    notLoadedBspTargetTree.generateTree(toolName, magicMetaModel.getAllNotLoadedTargets())
   }
 }
 
@@ -72,11 +44,12 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
     val bspUtilService = BspUtilService.getInstance()
     val magicMetaModel = MagicMetaModelService.getInstance(project).magicMetaModel
+    val bspConnectionService = BspConnectionService.getInstance(project)
     val actionManager = ActionManager.getInstance()
-    val listsUpdater = ListsUpdater(magicMetaModel)
+    val listsUpdater = ListsUpdater(magicMetaModel, bspConnectionService.toolName)
 
-    listsUpdater.notLoadedTargetsJbList.addMouseListener(NotLoadedTargetsListMouseListener(listsUpdater))
-    listsUpdater.loadedTargetsJbList.addMouseListener(LoadedTargetsMouseListener(listsUpdater))
+    listsUpdater.loadedTargetsTreeComponent.addMouseListener(LoadedTargetsMouseListener(listsUpdater))
+    listsUpdater.notLoadedTargetsTreeComponent.addMouseListener(NotLoadedTargetsMouseListener(listsUpdater))
 
     val actionGroup = actionManager
       .getAction("Bsp.ActionsToolbar") as DefaultActionGroup
@@ -99,12 +72,12 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
     actionGroup.add(object : AnAction({ notLoadedTargetsActionName }, BspPluginIcons.notLoadedTarget) {
       override fun actionPerformed(e: AnActionEvent) {
-        setToolWindowContent(JBScrollPane(listsUpdater.notLoadedTargetsJbList))
+        setToolWindowContent(JBScrollPane(listsUpdater.notLoadedTargetsTreeComponent))
       }
     })
     actionGroup.add(object : AnAction({ loadedTargetsActionName }, BspPluginIcons.loadedTarget) {
       override fun actionPerformed(e: AnActionEvent) {
-        setToolWindowContent(JBScrollPane(listsUpdater.loadedTargetsJbList))
+        setToolWindowContent(JBScrollPane(listsUpdater.loadedTargetsTreeComponent))
       }
     })
 
