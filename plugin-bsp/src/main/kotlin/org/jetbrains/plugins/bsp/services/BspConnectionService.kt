@@ -175,11 +175,20 @@ public class VeryTemporaryBspResolver(
     bspSyncConsole.startImport("bsp-import", "BSP: Import", "Importing...")
 
     println("buildInitialize")
-    server.buildInitialize(createInitializeBuildParams()).catchSyncErrors().get()
+    val initializeBuildResult = server.buildInitialize(createInitializeBuildParams()).catchSyncErrors().get()
 
     println("onBuildInitialized")
     server.onBuildInitialized()
 
+    val projectDetails = collectModelWithCapabilities(initializeBuildResult.capabilities)
+
+    bspSyncConsole.finishImport("Import done!", SuccessResultImpl())
+
+    println("done done!")
+    return projectDetails
+  }
+
+  private fun collectModelWithCapabilities(buildServerCapabilities: BuildServerCapabilities): ProjectDetails {
     println("workspaceBuildTargets")
     val workspaceBuildTargetsResult = server.workspaceBuildTargets().catchSyncErrors().get()
     val allTargetsIds = workspaceBuildTargetsResult!!.targets.map(BuildTarget::getId)
@@ -188,10 +197,10 @@ public class VeryTemporaryBspResolver(
     val sourcesResult = server.buildTargetSources(SourcesParams(allTargetsIds)).catchSyncErrors().get()
 
     println("buildTargetResources")
-    val resourcesResult = server.buildTargetResources(ResourcesParams(allTargetsIds)).catchSyncErrors().get()
+    val resourcesResult = if (buildServerCapabilities.resourcesProvider) server.buildTargetResources(ResourcesParams(allTargetsIds)).catchSyncErrors().get() else null
 
     println("buildTargetDependencySources")
-    val dependencySourcesResult = server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds)).catchSyncErrors().get()
+    val dependencySourcesResult = if (buildServerCapabilities.dependencySourcesProvider) server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds)).catchSyncErrors().get() else null
 
     bspSyncConsole.finishImport("Import done!", SuccessResultImpl())
 
@@ -200,8 +209,8 @@ public class VeryTemporaryBspResolver(
       targetsId = allTargetsIds,
       targets = workspaceBuildTargetsResult.targets.toSet(),
       sources = sourcesResult.items,
-      resources = resourcesResult.items,
-      dependenciesSources = dependencySourcesResult.items,
+      resources = resourcesResult?.items ?: emptyList(),
+      dependenciesSources = dependencySourcesResult?.items ?: emptyList(),
     )
   }
 
