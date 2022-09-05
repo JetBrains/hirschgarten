@@ -14,6 +14,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.ListsUpdater
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
+import javax.swing.JComponent
 
 private class LoadTargetAction(
   text: String,
@@ -30,6 +31,7 @@ private class LoadTargetAction(
 
 public class NotLoadedTargetsMouseListener(
   private val listsUpdater: ListsUpdater,
+  private val component: JComponent
 ) : MouseListener {
 
   override fun mouseClicked(e: MouseEvent?): Unit = mouseClickedNotNull(e!!)
@@ -54,7 +56,7 @@ public class NotLoadedTargetsMouseListener(
 
   private fun calculatePopupGroup(): ActionGroup? {
     val target: BuildTargetIdentifier? =
-      BspTargetTree.getSelectedBspTarget(listsUpdater.notLoadedTargetsTreeComponent)?.id
+      BspTargetTree.getSelectedBspTarget(component)?.id
 
     if (target != null) {
       val group = DefaultActionGroup()

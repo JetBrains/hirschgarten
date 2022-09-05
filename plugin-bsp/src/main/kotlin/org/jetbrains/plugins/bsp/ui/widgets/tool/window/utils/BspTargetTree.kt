@@ -2,13 +2,14 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBList
+import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
 import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
 import java.awt.Component
-import javax.swing.Icon
-import javax.swing.JTree
-import javax.swing.SwingConstants
+import java.awt.event.MouseListener
+import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeCellRenderer
@@ -63,9 +64,12 @@ private class TargetTreeCellRenderer(val targetIcon: Icon) : TreeCellRenderer {
  * @param targetIcon an icon for all build targets in the generated tree
  */
 public class BspTargetTree(targetIcon: Icon) {
-  private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
+  public val panelComponent: JPanel = JPanel(VerticalLayout(0))
 
-  public val treeComponent: Tree = Tree(rootNode)
+  private val targetSearch = TargetSearch(targetIcon, this::updateSearch)
+
+  private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
+  private val treeComponent: Tree = Tree(rootNode)
 
   private val cellRenderer = TargetTreeCellRenderer(targetIcon)
 
@@ -73,6 +77,9 @@ public class BspTargetTree(targetIcon: Icon) {
     treeComponent.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
     treeComponent.cellRenderer = cellRenderer
     treeComponent.isRootVisible = false
+
+    panelComponent.add(targetSearch.searchBarComponent, 0)
+    panelComponent.add(treeComponent, 1)
   }
 
   /**
@@ -103,6 +110,7 @@ public class BspTargetTree(targetIcon: Icon) {
    * @see BspBuildTargetClassifier.separator
    */
   private fun generateTreeFromIdentifiers(targets: List<BuildTargetTreeIdentifier>, separator: String?) {
+    this.targetSearch.targets = targets.map { it.target }
     val grouped: Map<String?, List<BuildTargetTreeIdentifier>> = targets.groupBy { it.path.firstOrNull() }
     val sortedDirs: List<String> = grouped
       .keys
@@ -181,11 +189,64 @@ public class BspTargetTree(targetIcon: Icon) {
     return DefaultMutableTreeNode(TargetNodeData(identifier.target, identifier.displayName))
   }
 
+  /**
+   * Shows build targets list/tree, depending on current search query. This method is executed each time
+   * the search query is modified
+   */
+  private fun updateSearch() {
+    try {
+      panelComponent.remove(1)
+    } finally {
+      panelComponent.add(
+        if (targetSearch.searchActive) targetSearch.searchListComponent else treeComponent
+      )
+      panelComponent.revalidate()
+      panelComponent.repaint()
+    }
+  }
+
+  /**
+   * Adds mouse listeners to those components which display build targets
+   * @param listenerBuilder a function which takes a component the listener will be put onto,
+   * and returns a listener
+   */
+  public fun addMouseListeners(listenerBuilder: (JComponent) -> MouseListener) {
+    this.treeComponent.addMouseListener(
+      listenerBuilder(this.treeComponent)
+    )
+    this.targetSearch.searchListComponent.addMouseListener(
+      listenerBuilder(this.targetSearch.searchListComponent)
+    )
+  }
+
   public companion object {
     /**
-     * @return build target represented by the node selected in the tree. Is null when nothing is selected
+     * @return build target represented by the selection in a list or a tree.
+     * Is null when nothing is selected, or the component is nether a `JBList` nor a `Tree`
+     * @param component the component to be checked
      */
-    public fun getSelectedBspTarget(tree: Tree): BuildTarget? {
+    public fun getSelectedBspTarget(component: JComponent): BuildTarget? {
+      return when (component) {
+        is Tree -> getSelectedBspTarget(component)
+        is JBList<*> -> getSelectedBspTarget(component)
+        else -> null
+      }
+    }
+
+    /**
+     * @return build target represented by the selection in a list. Is null when nothing is selected
+     * @param list the list to be checked
+     */
+    private fun <T> getSelectedBspTarget(list: JBList<T>): BuildTarget? {
+      val sel: T = list.selectedValue
+      return if (sel is BuildTarget?) sel else null
+    }
+
+    /**
+     * @return build target represented by the node selected in a tree. Is null when nothing is selected
+     * @param tree the tree to be checked
+     */
+    private fun getSelectedBspTarget(tree: Tree): BuildTarget? {
       val selected: DefaultMutableTreeNode? = tree.lastSelectedPathComponent as? DefaultMutableTreeNode
       val userObject: Any? = selected?.userObject
       if (userObject is TargetNodeData) {
