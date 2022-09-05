@@ -12,13 +12,13 @@ import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.ListsUpdater
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
 import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
+import javax.swing.JComponent
 
 private class BuildTargetAction(
   text: String,
@@ -44,7 +44,8 @@ private class BuildTargetAction(
 }
 
 public class LoadedTargetsMouseListener(
-  private val listsUpdater: ListsUpdater,
+//  private val listsUpdater: ListsUpdater,
+  private val component: JComponent
 ) : MouseListener {
 
   override fun mouseClicked(e: MouseEvent?): Unit = mouseClickedNotNull(e!!)
@@ -68,7 +69,7 @@ public class LoadedTargetsMouseListener(
   }
 
   private fun calculatePopupGroup(): ActionGroup? {
-    val target: BuildTargetIdentifier? = BspTargetTree.getSelectedBspTarget(listsUpdater.loadedTargetsTreeComponent)?.id
+    val target: BuildTargetIdentifier? = BspTargetTree.getSelectedBspTarget(component)?.id
 
     if (target != null) {
       val group = DefaultActionGroup()
