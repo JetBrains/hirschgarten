@@ -11,8 +11,8 @@ import com.intellij.workspaceModel.storage.bridgeEntities.addLibraryEntity
 
 internal data class Library(
   val displayName: String,
-  val sourcesJar: String,
-  val classesJar: String,
+  val sourcesJar: String?,
+  val classesJar: String?,
 ) : WorkspaceModelEntity()
 
 internal class LibraryEntityUpdater(
@@ -30,20 +30,24 @@ internal class LibraryEntityUpdater(
     builder.addLibraryEntity(
       name = entityToAdd.displayName,
       tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
-      roots = listOf(toLibrarySourcesRoot(entityToAdd), toLibraryClassesRoot(entityToAdd)),
+      roots = listOfNotNull(toLibrarySourcesRoot(entityToAdd), toLibraryClassesRoot(entityToAdd)),
       excludedRoots = ArrayList(),
       source = DoNotSaveInDotIdeaDirEntitySource
     )
 
-  private fun toLibrarySourcesRoot(entityToAdd: Library): LibraryRoot =
-    LibraryRoot(
-      url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(entityToAdd.sourcesJar),
-      type = LibraryRootTypeId.SOURCES,
-    )
+  private fun toLibrarySourcesRoot(entityToAdd: Library): LibraryRoot? =
+    entityToAdd.sourcesJar?.let {
+      LibraryRoot(
+        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(it),
+        type = LibraryRootTypeId.SOURCES,
+      )
+    }
 
-  private fun toLibraryClassesRoot(entityToAdd: Library): LibraryRoot =
-    LibraryRoot(
-      url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(entityToAdd.classesJar),
-      type = LibraryRootTypeId.COMPILED,
-    )
+  private fun toLibraryClassesRoot(entityToAdd: Library): LibraryRoot? =
+    entityToAdd.classesJar?.let {
+      LibraryRoot(
+        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(it),
+        type = LibraryRootTypeId.COMPILED,
+      )
+    }
 }

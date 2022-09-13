@@ -10,6 +10,7 @@ import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
 import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
 import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
 import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
@@ -18,12 +19,12 @@ import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
 
-public interface BspServer : BuildServer
+
+public interface BspServer : BuildServer, JavaBuildServer
 
 public fun interface Cancelable {
   public fun cancel()
@@ -57,6 +58,7 @@ public class BspConnectionService(private val project: Project) {
     val listening = launcher.startListening()
     bspProcess = process
     server = launcher.remoteProxy
+
     client.onConnectWithServer(server)
     cancelActions = listOf(
       Cancelable {
@@ -180,6 +182,7 @@ public class VeryTemporaryBspResolver(
     println("onBuildInitialized")
     server.onBuildInitialized()
 
+    server.onBuildInitialized()
     val projectDetails = collectModelWithCapabilities(initializeBuildResult.capabilities)
 
     bspSyncConsole.finishImport("Import done!", SuccessResultImpl())
@@ -202,6 +205,9 @@ public class VeryTemporaryBspResolver(
     println("buildTargetDependencySources")
     val dependencySourcesResult = if (buildServerCapabilities.dependencySourcesProvider) server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds)).catchSyncErrors().get() else null
 
+    println("buildTargetJavacOptions")
+    val buildTargetJavacOptionsResult = server.buildTargetJavacOptions(JavacOptionsParams(allTargetsIds)).catchSyncErrors().get()
+
     bspSyncConsole.finishImport("Import done!", SuccessResultImpl())
 
     println("done done!")
@@ -211,6 +217,7 @@ public class VeryTemporaryBspResolver(
       sources = sourcesResult.items,
       resources = resourcesResult?.items ?: emptyList(),
       dependenciesSources = dependencySourcesResult?.items ?: emptyList(),
+      javacOptions = buildTargetJavacOptionsResult.items
     )
   }
 

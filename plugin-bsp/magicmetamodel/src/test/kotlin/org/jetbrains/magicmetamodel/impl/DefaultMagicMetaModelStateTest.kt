@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -155,6 +156,28 @@ class DependencySourcesItemStateTest {
 }
 
 
+@DisplayName("JavacOptionsItemState tests")
+class JavacOptionsItemStateTest {
+
+  @Test
+  fun `should do toState and fromState`() {
+    // given
+    val javacOptionsItem = JavacOptionsItem(
+      BuildTargetIdentifier("target"),
+      listOf("opt1", "opt2", "opt3"),
+      listOf("classpath1", "classpath2"),
+      "dir/"
+    )
+
+    // when
+    val state = javacOptionsItem.toState()
+
+    // then
+    state.fromState() shouldBe javacOptionsItem
+  }
+}
+
+
 @DisplayName("ModuleDetailsState tests")
 class ModuleDetailsStateTest {
 
@@ -183,8 +206,24 @@ class ModuleDetailsStateTest {
           )
         )
       ),
-      resources = listOf(ResourcesItem(BuildTargetIdentifier("target1"), listOf("resource1", "resource2"))),
-      dependenciesSources = listOf(DependencySourcesItem(BuildTargetIdentifier("target1"), listOf("/dep/source1", "/dep/source2")))
+      resources = listOf(
+        ResourcesItem(
+          BuildTargetIdentifier("target1"),
+          listOf("resource1", "resource2")
+        )
+      ),
+      dependenciesSources = listOf(
+        DependencySourcesItem(
+          BuildTargetIdentifier("target1"),
+          listOf("/dep/source1", "/dep/source2")
+        )
+      ),
+      javacOptions = JavacOptionsItem(
+          BuildTargetIdentifier("target1"),
+          listOf("opt1", "opt2", "opt3"),
+          listOf("classpath1", "classpath2"),
+          "class/dir"
+        )
     )
 
     // when
