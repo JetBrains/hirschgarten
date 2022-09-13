@@ -48,6 +48,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = emptyList(),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when 1
@@ -149,6 +150,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetB1Sources, targetC1Sources, targetD1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when 1
@@ -335,6 +337,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         ),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when 1
@@ -526,6 +529,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = emptyList(),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when
@@ -581,6 +585,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetB1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when
@@ -662,6 +667,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetB1Sources, targetC1Sources, targetD1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when
@@ -731,6 +737,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetB1Sources, targetB2Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when
@@ -800,6 +807,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetB1Sources, targetB2Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when 1
@@ -863,6 +871,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when
@@ -917,6 +926,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetB1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when
@@ -973,6 +983,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetB1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when 1
@@ -1035,6 +1046,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetB1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when
@@ -1093,6 +1105,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetB1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when 1
@@ -1175,6 +1188,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetA2Sources, targetA3Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when 1
@@ -1235,6 +1249,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when
@@ -1277,6 +1292,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when
@@ -1332,6 +1348,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetB1Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when
@@ -1392,6 +1409,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Sources, targetA2Sources),
         resources = emptyList(),
         dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
       )
 
       // when

@@ -3,6 +3,7 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
@@ -12,6 +13,7 @@ internal data class BspModuleDetails(
   val target: BuildTarget,
   val allTargetsIds: List<BuildTargetIdentifier>,
   val dependencySources: List<DependencySourcesItem>,
+  val javacOptions: JavacOptionsItem?,
   val type: String,
 )
 
@@ -26,15 +28,17 @@ internal object BspModuleDetailsToModuleTransformer :
       type = inputEntity.type,
       modulesDependencies = buildTargetToModuleDependencyTransformer.transform(inputEntity.target),
       librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer
-        .transform(inputEntity.dependencySources),
+        .transform(inputEntity.dependencySources.map {
+          DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
+        }),
     )
   }
 }
 
 internal object DependencySourcesItemToLibraryDependencyTransformer :
-  WorkspaceModelEntityPartitionTransformer<DependencySourcesItem, LibraryDependency> {
+  WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJavacOptions, LibraryDependency> {
 
-  override fun transform(inputEntity: DependencySourcesItem): List<LibraryDependency> =
+  override fun transform(inputEntity: DependencySourcesAndJavacOptions): List<LibraryDependency> =
     DependencySourcesItemToLibraryTransformer.transform(inputEntity)
       .map(this::toLibraryDependency)
 

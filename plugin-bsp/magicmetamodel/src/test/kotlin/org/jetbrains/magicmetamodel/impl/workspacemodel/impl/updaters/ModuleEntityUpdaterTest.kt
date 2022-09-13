@@ -56,7 +56,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
         LibraryDependency(
           libraryName = "lib2",
         ),
-      )
+      ),
     )
 
     // when
@@ -131,7 +131,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
         LibraryDependency(
           libraryName = "lib2",
         ),
-      )
+      ),
     )
 
     val module2 = Module(
@@ -146,7 +146,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
         LibraryDependency(
           libraryName = "lib1",
         ),
-      )
+      ),
     )
 
     val modules = listOf(module1, module2)

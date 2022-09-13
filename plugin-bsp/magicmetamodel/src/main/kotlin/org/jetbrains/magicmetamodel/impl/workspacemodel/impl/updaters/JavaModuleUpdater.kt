@@ -1,7 +1,11 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
+import com.intellij.workspaceModel.storage.MutableEntityStorage
+import com.intellij.workspaceModel.storage.bridgeEntities.addJavaModuleSettingsEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
+import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
+import java.nio.file.Path
 
 internal data class JavaModule(
   val module: Module,
@@ -9,6 +13,7 @@ internal data class JavaModule(
   val sourceRoots: List<JavaSourceRoot>,
   val resourceRoots: List<JavaResourceRoot>,
   val libraries: List<Library>,
+  val compilerOutput: Path?,
 //  val sdk: ModuleDependencyItem.SdkDependency,
 ) : WorkspaceModelEntity()
 
@@ -20,6 +25,8 @@ internal class JavaModuleWithSourcesUpdater(
     val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies)
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
+    addJavaModuleSettingsEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd, moduleEntity)
+
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
     libraryEntityUpdater.addEntries(entityToAdd.libraries, moduleEntity)
 
@@ -30,6 +37,20 @@ internal class JavaModuleWithSourcesUpdater(
     javaResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
 
     return moduleEntity
+  }
+
+  private fun addJavaModuleSettingsEntity(builder: MutableEntityStorage, entityToAdd: JavaModule, moduleEntity: ModuleEntity) {
+    if (entityToAdd.compilerOutput != null) {
+      builder.addJavaModuleSettingsEntity(
+        inheritedCompilerOutput = false,
+        excludeOutput = true,
+        compilerOutput = entityToAdd.compilerOutput.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+        compilerOutputForTests = null,
+        languageLevelId = null,
+        module = moduleEntity,
+        source = DoNotSaveInDotIdeaDirEntitySource,
+      )
+    }
   }
 
   private companion object {

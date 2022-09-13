@@ -1,10 +1,12 @@
 @file:Suppress("LongMethod")
+
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -56,6 +58,15 @@ class BspModuleDetailsToModuleTransformerTest {
       targetId,
       listOf(dependencySource1, dependencySource2)
     )
+    val javacOptions = JavacOptionsItem(
+      targetId,
+      emptyList(),
+      listOf(
+        "file:///dependency/test1/1.0.0/test1-1.0.0.jar",
+        "file:///dependency/test2/1.0.0/test2-1.0.0.jar",
+      ),
+      "file:///compiler/output.jar",
+    )
 
     val bspModuleDetails = BspModuleDetails(
       target = target,
@@ -67,6 +78,7 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       dependencySources = listOf(dependencySourceItem1),
       type = "JAVA_MODULE",
+      javacOptions = javacOptions,
     )
 
     // when
@@ -86,10 +98,10 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       librariesDependencies = listOf(
         LibraryDependency(
-          libraryName = dependencySource1,
+          libraryName = "BSP: test1-1.0.0",
         ),
         LibraryDependency(
-          libraryName = dependencySource2,
+          libraryName = "BSP: test2-1.0.0",
         ),
       )
     )
@@ -122,6 +134,15 @@ class BspModuleDetailsToModuleTransformerTest {
       target1Id,
       listOf(dependencySource1, dependencySource2)
     )
+    val javacOptionsItem1 = JavacOptionsItem(
+      target1Id,
+      emptyList(),
+      listOf(
+        "file:///dependency/test1/1.0.0/test1-1.0.0.jar",
+        "file:///dependency/test2/1.0.0/test2-1.0.0.jar"
+      ),
+      "file:///compiler/output1.jar",
+    )
 
     val bspModuleDetails1 = BspModuleDetails(
       target = target1,
@@ -133,6 +154,7 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       dependencySources = listOf(dependencySourceItem1),
       type = "JAVA_MODULE",
+      javacOptions = javacOptionsItem1,
     )
 
     val target2Name = "//target2"
@@ -153,7 +175,14 @@ class BspModuleDetailsToModuleTransformerTest {
       target2Id,
       listOf(dependencySource1)
     )
-
+    val javacOptionsItem2 = JavacOptionsItem(
+      target2Id,
+      emptyList(),
+      listOf(
+        "file:///dependency/test1/1.0.0/test1-1.0.0.jar",
+      ),
+      "file:///compiler/output2.jar",
+    )
     val bspModuleDetails2 = BspModuleDetails(
       target = target2,
       allTargetsIds = listOf(
@@ -164,6 +193,7 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       dependencySources = listOf(dependencySourceItem2),
       type = "JAVA_MODULE",
+      javacOptions = javacOptionsItem2,
     )
 
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
@@ -185,10 +215,10 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       librariesDependencies = listOf(
         LibraryDependency(
-          libraryName = dependencySource1,
+          libraryName = "BSP: test1-1.0.0",
         ),
         LibraryDependency(
-          libraryName = dependencySource2,
+          libraryName = "BSP: test2-1.0.0",
         ),
       )
     )
@@ -203,7 +233,7 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       librariesDependencies = listOf(
         LibraryDependency(
-          libraryName = dependencySource1,
+          libraryName = "BSP: test1-1.0.0",
         ),
       )
     )

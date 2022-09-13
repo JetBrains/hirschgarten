@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -174,12 +175,33 @@ public fun DependencySourcesItem.toState(): DependencySourcesItemState =
     )
 
 
+public class JavacOptionsItemState(
+  public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
+  public var options: List<String> = emptyList(),
+  public var classpath: List<String> = emptyList(),
+  public var classDirectory: String = ""
+) : ConvertableFromState<JavacOptionsItem> {
+
+  public override fun fromState(): JavacOptionsItem =
+    JavacOptionsItem(target.fromState(), options, classpath, classDirectory)
+}
+
+public fun JavacOptionsItem.toState(): JavacOptionsItemState =
+  JavacOptionsItemState(
+      target = target.toState(),
+      options= options,
+      classpath = classpath,
+    classDirectory = classDirectory,
+    )
+
+
 public data class ProjectDetailsState(
   public var targetsId: List<BuildTargetIdentifierState> = emptyList(),
   public var targets: List<BuildTargetState> = emptyList(),
   public var sources: List<SourcesItemState> = emptyList(),
   public var resources: List<ResourcesItemState> = emptyList(),
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
+  public var javacOptions: List<JavacOptionsItemState> = emptyList(),
 ) : ConvertableFromState<ProjectDetails> {
 
   public override fun fromState(): ProjectDetails =
@@ -189,6 +211,7 @@ public data class ProjectDetailsState(
       sources = sources.map { it.fromState() },
       resources = resources.map { it.fromState() },
       dependenciesSources = dependenciesSources.map { it.fromState() },
+      javacOptions = javacOptions.map { it.fromState() },
     )
 }
 
@@ -199,6 +222,7 @@ public fun ProjectDetails.toState(): ProjectDetailsState =
     sources = sources.map { it.toState() },
     resources = resources.map { it.toState() },
     dependenciesSources = dependenciesSources.map { it.toState() },
+    javacOptions = javacOptions.map { it.toState() }
   )
 
 
@@ -208,6 +232,7 @@ public data class ModuleDetailsState(
   public var sources: List<SourcesItemState> = emptyList(),
   public var resources: List<ResourcesItemState> = emptyList(),
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
+  public var javacOptions: JavacOptionsItemState? = null,
 ) : ConvertableFromState<ModuleDetails> {
 
   public override fun fromState(): ModuleDetails =
@@ -217,6 +242,7 @@ public data class ModuleDetailsState(
       sources = sources.map { it.fromState() },
       resources = resources.map { it.fromState() },
       dependenciesSources = dependenciesSources.map { it.fromState() },
+      javacOptions = javacOptions?.fromState(),
     )
 }
 
@@ -226,7 +252,8 @@ public fun ModuleDetails.toState(): ModuleDetailsState =
     allTargetsIds = allTargetsIds.map { it.toState() },
     sources = sources.map { it.toState() },
     resources = resources.map { it.toState() },
-    dependenciesSources = dependenciesSources.map { it.toState() }
+    dependenciesSources = dependenciesSources.map { it.toState() },
+    javacOptions = javacOptions?.toState(),
   )
 
 

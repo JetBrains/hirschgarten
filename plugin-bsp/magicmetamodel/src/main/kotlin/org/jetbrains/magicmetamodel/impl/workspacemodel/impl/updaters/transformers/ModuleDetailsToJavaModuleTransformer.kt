@@ -5,6 +5,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
 import java.net.URI
+import java.nio.file.Path
 import kotlin.io.path.toPath
 
 internal object ModuleDetailsToJavaModuleTransformer : WorkspaceModelEntityTransformer<ModuleDetails, JavaModule> {
@@ -17,7 +18,8 @@ internal object ModuleDetailsToJavaModuleTransformer : WorkspaceModelEntityTrans
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
       sourceRoots = SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK.transform(inputEntity.sources),
       resourceRoots = ResourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources),
-      libraries = DependencySourcesItemToLibraryTransformer.transform(inputEntity.dependenciesSources),
+      libraries = DependencySourcesItemToLibraryTransformer.transform(inputEntity.dependenciesSources.map { DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)}),
+      compilerOutput = toCompilerOutput(inputEntity),
     )
 
   private fun toModule(inputEntity: ModuleDetails): Module {
@@ -26,6 +28,7 @@ internal object ModuleDetailsToJavaModuleTransformer : WorkspaceModelEntityTrans
       allTargetsIds = inputEntity.allTargetsIds,
       dependencySources = inputEntity.dependenciesSources,
       type = type,
+      javacOptions = inputEntity.javacOptions,
     )
 
     return BspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
@@ -36,4 +39,7 @@ internal object ModuleDetailsToJavaModuleTransformer : WorkspaceModelEntityTrans
       // TODO what if null?
       url = URI.create(inputEntity.target.baseDirectory ?: "file:///todo").toPath()
     )
+
+  private fun toCompilerOutput(inputEntity: ModuleDetails): Path? =
+    inputEntity.javacOptions?.classDirectory?.let { URI(it).toPath() }
 }

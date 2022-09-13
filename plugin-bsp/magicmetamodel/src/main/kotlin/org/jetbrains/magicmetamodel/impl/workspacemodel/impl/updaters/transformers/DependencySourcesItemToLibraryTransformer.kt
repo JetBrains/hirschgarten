@@ -1,36 +1,84 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import java.net.URI
+import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.toPath
 
-internal object DependencySourcesItemToLibraryTransformer :
-  WorkspaceModelEntityPartitionTransformer<DependencySourcesItem, Library> {
+internal data class DependencySourcesAndJavacOptions(
+  val dependencySources: DependencySourcesItem,
+  val javacOptions: JavacOptionsItem?,
+)
 
-  override fun transform(inputEntity: DependencySourcesItem): List<Library> {
-    return inputEntity.sources.map(this::toLibrary)
+internal object DependencySourcesItemToLibraryTransformer :
+  WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJavacOptions, Library> {
+
+  override fun transform(inputEntity: DependencySourcesAndJavacOptions): List<Library> {
+    val librariesWithUnused = toLibraryFromClassesAndSourcesAndReturnUnusedClassesAndSources(inputEntity)
+    val unusedClassJars = librariesWithUnused.second
+    val unusedSourceJars = librariesWithUnused.third
+
+    return librariesWithUnused.first + toLibraryFromClassJars(unusedClassJars) + toLibraryFromSourceJars(
+      unusedSourceJars
+    )
   }
 
-  @Suppress("ForbiddenComment")
-  // TODO: name and version should be extracted, maybe BSP prefix as well?
-  private fun toLibrary(dependencyUri: String): Library =
-    Library(
-      displayName = dependencyUri,
-      sourcesJar = toSourcesJar(dependencyUri),
-      classesJar = toClassesJar(dependencyUri),
-    )
+  private fun toLibraryFromClassesAndSourcesAndReturnUnusedClassesAndSources(inputEntity: DependencySourcesAndJavacOptions): Triple<List<Library>, List<String>, List<String>> {
+    val unusedDependencySources = inputEntity.dependencySources.sources.toMutableSet()
+    val unusedClasses = inputEntity.javacOptions?.classpath.orEmpty().toMutableSet()
 
-  private fun toSourcesJar(dependencyUri: String): String =
+    val result = inputEntity.javacOptions?.classpath.orEmpty()
+      .mapNotNull { classJar ->
+        findSourceJarForClassJar(classJar, unusedDependencySources)?.let { sourceJar ->
+          unusedDependencySources.remove(sourceJar)
+          unusedClasses.remove(classJar)
+
+          Library(
+            displayName = calculateDisplayName(classJar),
+            classesJar = toJarString(classJar),
+            sourcesJar = toJarString(sourceJar),
+          )
+        }
+      }
+
+    return Triple(result, unusedClasses.toList(), unusedDependencySources.toList())
+  }
+
+  private fun toLibraryFromClassJars(classJars: List<String>) =
+    classJars.map {
+      Library(
+        displayName = calculateDisplayName(it),
+        classesJar = toJarString(it),
+        sourcesJar = null,
+      )
+    }
+
+  private fun toLibraryFromSourceJars(classJars: List<String>) =
+    classJars.map {
+      Library(
+        displayName = calculateDisplayName(it),
+        classesJar = null,
+        sourcesJar = toJarString(it),
+      )
+    }
+
+  private fun findSourceJarForClassJar(classJar: String, sourceJars: Set<String>): String? =
+    sourceJars.find { removeSourcesSuffix(it).startsWith(classJar) }
+
+  private fun calculateDisplayName(uri: String): String {
+    val depName = removeSourcesSuffix(URI.create(uri).toPath().nameWithoutExtension)
+
+    return "BSP: $depName"
+  }
+
+  private fun removeSourcesSuffix(path: String): String =
+    path.replace("-sources", "")
+
+  private fun toJarString(dependencyUri: String): String =
     "jar://${removeUriFilePrefix(dependencyUri)}!/"
 
-  private fun toClassesJar(dependencyUri: String): String {
-    val dependencyPath = removeUriFilePrefix(dependencyUri)
-    val dependencyClassesPath = dependencyPath.replace("-sources\\.jar\$".toRegex(), ".jar")
-
-    return "jar://$dependencyClassesPath!/"
-  }
-
-  private fun removeUriFilePrefix(dependencyUri: String): String =
-    URI.create(dependencyUri).toPath().toString()
+  private fun removeUriFilePrefix(uri: String): String =
+    URI.create(uri).toPath().toString()
 }

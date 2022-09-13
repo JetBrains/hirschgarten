@@ -3,6 +3,7 @@ package org.jetbrains.magicmetamodel.impl
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -20,6 +21,7 @@ internal object TargetIdToModuleDetails {
       sources = calculateSources(projectDetails, targetId),
       resources = calculateResources(projectDetails, targetId),
       dependenciesSources = calculateDependenciesSources(projectDetails, targetId),
+      javacOptions = calculateJavacOptions(projectDetails, targetId)
     )
 
   private fun calculateTarget(projectDetails: ProjectDetails, targetId: BuildTargetIdentifier): BuildTarget =
@@ -33,4 +35,7 @@ internal object TargetIdToModuleDetails {
 
   private fun calculateDependenciesSources(projectDetails: ProjectDetails, targetId: BuildTargetIdentifier): List<DependencySourcesItem> =
     projectDetails.dependenciesSources.filter { it.target == targetId }
+
+  private fun calculateJavacOptions(projectDetails: ProjectDetails, targetId: BuildTargetIdentifier): JavacOptionsItem? =
+    projectDetails.javacOptions.firstOrNull { it.target == targetId }
 }

@@ -1,10 +1,12 @@
 @file:Suppress("LongMethod")
+
 package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -27,6 +29,7 @@ class TargetIdToModuleDetailsTest {
       sources = emptyList(),
       resources = emptyList(),
       dependenciesSources = emptyList(),
+      javacOptions = emptyList(),
     )
 
     // when
@@ -53,6 +56,7 @@ class TargetIdToModuleDetailsTest {
       sources = emptyList(),
       resources = emptyList(),
       dependenciesSources = emptyList(),
+      javacOptions = emptyList(),
     )
 
     // when
@@ -65,6 +69,7 @@ class TargetIdToModuleDetailsTest {
       sources = emptyList(),
       resources = emptyList(),
       dependenciesSources = emptyList(),
+      javacOptions = null,
     )
 
     targetIdToModuleDetails shouldBe mapOf(
@@ -95,12 +100,19 @@ class TargetIdToModuleDetailsTest {
       targetId,
       listOf("file:///lib/test/1.0.0/test-sources.jar"),
     )
+    val javacOptions = JavacOptionsItem(
+      targetId,
+      listOf("opt1", "opt2", "opt3"),
+      listOf("classpath1", "classpath2", "classpath3"),
+      "class/dir"
+    )
     val projectDetails = ProjectDetails(
       targetsId = listOf(targetId),
       targets = setOf(target),
       sources = listOf(targetSources),
       resources = listOf(targetResources),
       dependenciesSources = listOf(targetDependencySources),
+      javacOptions = listOf(javacOptions),
     )
 
     // when
@@ -113,6 +125,7 @@ class TargetIdToModuleDetailsTest {
       sources = listOf(targetSources),
       resources = listOf(targetResources),
       dependenciesSources = listOf(targetDependencySources),
+      javacOptions = javacOptions,
     )
 
     targetIdToModuleDetails shouldBe mapOf(
@@ -142,6 +155,12 @@ class TargetIdToModuleDetailsTest {
     val target1DependencySources = DependencySourcesItem(
       target1Id,
       listOf("file:///lib/test/1.0.0/test-sources.jar"),
+    )
+    val target1JavacOptionsItem = JavacOptionsItem(
+      target1Id,
+      listOf("opt1", "opt2", "opt3"),
+      listOf("classpath1", "classpath2"),
+      "class/dir1"
     )
 
     val target2Id = BuildTargetIdentifier("target2")
@@ -185,6 +204,12 @@ class TargetIdToModuleDetailsTest {
       target3Id,
       emptyList(),
     )
+    val target3JavacOptionsItem = JavacOptionsItem(
+      target3Id,
+      listOf("opt1"),
+      listOf("classpath1", "classpath2", "classpath3"),
+      "class/dir3"
+    )
 
     val projectDetails = ProjectDetails(
       targetsId = listOf(target1Id, target3Id, target2Id),
@@ -192,6 +217,7 @@ class TargetIdToModuleDetailsTest {
       sources = listOf(target3Sources, target2Sources1, target1Sources, target2Sources2),
       resources = listOf(target1Resources, target2Resources),
       dependenciesSources = listOf(target2DependencySources, target1DependencySources),
+      javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
     )
 
     // when
@@ -204,6 +230,7 @@ class TargetIdToModuleDetailsTest {
       sources = listOf(target1Sources),
       resources = listOf(target1Resources),
       dependenciesSources = listOf(target1DependencySources),
+      javacOptions = target1JavacOptionsItem,
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
@@ -211,6 +238,7 @@ class TargetIdToModuleDetailsTest {
       sources = listOf(target2Sources1, target2Sources2),
       resources = listOf(target2Resources),
       dependenciesSources = listOf(target2DependencySources),
+      javacOptions = null,
     )
     val expectedModuleDetails3 = ModuleDetails(
       target = target3,
@@ -218,6 +246,7 @@ class TargetIdToModuleDetailsTest {
       sources = listOf(target3Sources),
       resources = emptyList(),
       dependenciesSources = emptyList(),
+      javacOptions = target3JavacOptionsItem,
     )
 
     targetIdToModuleDetails shouldBe mapOf(
