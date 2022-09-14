@@ -8,7 +8,7 @@ fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
   // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-  id("org.jetbrains.intellij") version "1.7.0"
+  id("org.jetbrains.intellij") version "1.9.0"
   // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
   id("org.jetbrains.changelog") version "1.3.1"
 
@@ -22,10 +22,10 @@ dependencies {
   implementation(project(":magicmetamodel"))
   implementation(project(":protocol"))
   implementation("ch.epfl.scala:bsp4j:2.0.0-M15")
-  implementation("com.google.code.gson:gson:2.9.0")
+  implementation("com.google.code.gson:gson:2.9.1")
 
-  testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-  testImplementation("io.kotest:kotest-assertions-core:5.3.0")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
+  testImplementation("io.kotest:kotest-assertions-core:5.4.2")
 }
 
 // Configure gradle-intellij-plugin plugin.
@@ -78,6 +78,9 @@ subprojects {
   tasks.withType(RunIdeTask::class.java) {
     enabled = false
   }
+}
+repositories {
+  mavenCentral()
 }
 
 tasks {

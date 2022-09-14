@@ -33,7 +33,7 @@ detekt {
 
 dependencies {
   // unfortunately I have not found a way to reuse the version from the build.gradle.kts in buildSrc
-  detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.20.0")
+  detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 }
