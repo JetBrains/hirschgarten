@@ -1,17 +1,13 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.addJavaModuleSettingsEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.api.LibraryId
 import com.intellij.workspaceModel.storage.bridgeEntities.api.LibraryTableId
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleId
-import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
-import java.net.URI
-import kotlin.io.path.toPath
 
 internal data class ModuleDependency(
   val moduleName: String,
@@ -44,24 +40,12 @@ internal class ModuleEntityUpdater(
     val librariesDependencies =
       entityToAdd.librariesDependencies.map { toModuleDependencyItemLibraryDependency(it, entityToAdd.name) }
 
-
     return builder.addModuleEntity(
       name = entityToAdd.name,
       dependencies = modulesDependencies + librariesDependencies + defaultDependencies,
       source = DoNotSaveInDotIdeaDirEntitySource,
       type = entityToAdd.type
-    ).also {
-      builder.addJavaModuleSettingsEntity(
-        inheritedCompilerOutput = false,
-        excludeOutput = true,
-        compilerOutput = URI("file:///private/var/tmp/_bazel_marcin.abramowicz/c736a3a8b7ef9068ff3ca29ae864a2cb/execroot/bazel_bsp/external/maven/v1/https/repo.maven.apache.org/maven2/com/google/guava/failureaccess/1.0.1/failureaccess-1.0.1.jar").toPath()
-          .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-        compilerOutputForTests = null,
-        languageLevelId = null,
-        module = it,
-        source = DoNotSaveInDotIdeaDirEntitySource,
-      )
-    }
+    )
   }
 
   private fun toModuleDependencyItemModuleDependency(

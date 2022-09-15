@@ -75,11 +75,13 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             sourceDir = sourceDir1,
             generated = false,
             packagePrefix = sourcePackagePrefix1,
+            rootType = "java-source",
           ),
           JavaSourceRoot(
             sourceDir = sourceDir2,
             generated = false,
             packagePrefix = sourcePackagePrefix2,
+            rootType = "java-source",
           ),
         )
 
@@ -306,11 +308,13 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             sourceDir = sourceDir11,
             generated = false,
             packagePrefix = sourcePackagePrefix11,
+            rootType = "java-source",
           ),
           JavaSourceRoot(
             sourceDir = sourceDir12,
             generated = false,
             packagePrefix = sourcePackagePrefix12,
+            rootType = "java-source",
           ),
         )
 
@@ -374,6 +378,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             sourceDir = sourceDir21,
             generated = false,
             packagePrefix = sourcePackagePrefix21,
+            rootType = "java-test",
           ),
         )
 
@@ -548,7 +553,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualSourceDir21,
-            rootType = "java-source"
+            rootType = "java-test"
           ),
           javaSourceRootEntity = JavaSourceRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
