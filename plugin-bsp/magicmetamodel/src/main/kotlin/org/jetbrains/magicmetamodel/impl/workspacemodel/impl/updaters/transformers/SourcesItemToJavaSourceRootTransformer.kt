@@ -1,5 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
+import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.util.io.isAncestor
@@ -8,10 +9,18 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.SourceRoot
 import java.net.URI
 import java.nio.file.Path
 
-internal object SourcesItemToJavaSourceRootTransformer :
-  WorkspaceModelEntityPartitionTransformer<SourcesItem, JavaSourceRoot> {
+internal data class BuildTargetAndSourceItem(
+  val buildTarget: BuildTarget,
+  val sourcesItem: SourcesItem,
+)
 
-  override fun transform(inputEntities: List<SourcesItem>): List<JavaSourceRoot> {
+internal object SourcesItemToJavaSourceRootTransformer :
+  WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
+
+  private const val sourceRootType = "java-source"
+  private const val testSourceRootType = "java-test"
+
+  override fun transform(inputEntities: List<BuildTargetAndSourceItem>): List<JavaSourceRoot> {
     val allSourceRoots = super.transform(inputEntities)
 
     return allSourceRoots.filter { isNotAChildOfAnySourceDir(it, allSourceRoots) }
@@ -20,25 +29,32 @@ internal object SourcesItemToJavaSourceRootTransformer :
   private fun isNotAChildOfAnySourceDir(sourceRoot: JavaSourceRoot, allSourceRoots: List<JavaSourceRoot>): Boolean =
     allSourceRoots.none { it.sourceDir.isAncestor(sourceRoot.sourceDir.parent) }
 
-  override fun transform(inputEntity: SourcesItem): List<JavaSourceRoot> {
-    val sourceRoots = getSourceRootsAsURIs(inputEntity)
+  override fun transform(inputEntity: BuildTargetAndSourceItem): List<JavaSourceRoot> {
+    val sourceRoots = getSourceRootsAsURIs(inputEntity.sourcesItem)
+    val rootType = inferRootType(inputEntity.buildTarget)
 
+    println(inputEntity)
+    println(rootType)
     return SourceItemToSourceRootTransformer
-      .transform(inputEntity.sources)
-      .map { toJavaSourceRoot(it, sourceRoots) }
+      .transform(inputEntity.sourcesItem.sources)
+      .map { toJavaSourceRoot(it, sourceRoots, rootType) }
   }
 
   private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> =
     // TODO?
     (sourcesItem.roots ?: ArrayList()).map(URI::create)
 
-  private fun toJavaSourceRoot(sourceRoot: SourceRoot, sourceRoots: List<URI>): JavaSourceRoot {
+  private fun inferRootType(buildTarget: BuildTarget): String =
+    if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
+
+  private fun toJavaSourceRoot(sourceRoot: SourceRoot, sourceRoots: List<URI>, rootType: String): JavaSourceRoot {
     val packagePrefix = calculatePackagePrefix(sourceRoot, sourceRoots)
 
     return JavaSourceRoot(
       sourceDir = sourceRoot.sourceDir,
       generated = sourceRoot.generated,
-      packagePrefix = packagePrefix.packagePrefix
+      packagePrefix = packagePrefix.packagePrefix,
+      rootType = rootType
     )
   }
 
@@ -53,9 +69,9 @@ internal object SourcesItemToJavaSourceRootTransformer :
 }
 
 internal object SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK :
-  WorkspaceModelEntityPartitionTransformer<SourcesItem, JavaSourceRoot> {
+  WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
 
-  override fun transform(inputEntities: List<SourcesItem>): List<JavaSourceRoot> {
+  override fun transform(inputEntities: List<BuildTargetAndSourceItem>): List<JavaSourceRoot> {
     val allSourceRoots = super.transform(inputEntities)
     val realRoots = allSourceRoots.filter { isNotAChildOfAnySourceDir(it, allSourceRoots) }
 
@@ -78,11 +94,11 @@ internal object SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHA
     return sourceRoot.copy(excludedFiles = excludedFromSubDirs)
   }
 
-  override fun transform(inputEntity: SourcesItem): List<JavaSourceRoot> {
+  override fun transform(inputEntity: BuildTargetAndSourceItem): List<JavaSourceRoot> {
     val notHackyTransformationResult = SourcesItemToJavaSourceRootTransformer.transform(inputEntity)
 
-    val directoriesInSourcesItem = filterKindAndMapToUri(inputEntity, SourceItemKind.DIRECTORY)
-    val filesInSourceItem = filterKindAndMapToUri(inputEntity, SourceItemKind.FILE)
+    val directoriesInSourcesItem = filterKindAndMapToUri(inputEntity.sourcesItem, SourceItemKind.DIRECTORY)
+    val filesInSourceItem = filterKindAndMapToUri(inputEntity.sourcesItem, SourceItemKind.FILE)
 
     val hackyFilesWithExcludedFiles = notHackyTransformationResult
       .filterNot { directoriesInSourcesItem.contains(it.sourceDir.toUri()) }

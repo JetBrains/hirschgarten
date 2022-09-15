@@ -36,7 +36,12 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     val generated = false
     val packagePrefix = "example.package"
 
-    val javaSourceRoot = JavaSourceRoot(sourceDir, generated, packagePrefix)
+    val javaSourceRoot = JavaSourceRoot(
+      sourceDir = sourceDir,
+      generated = generated,
+      rootType = "java-source",
+      packagePrefix = packagePrefix,
+    )
 
     // when
     val returnedJavaSourceRootEntity = runTestWriteAction {
@@ -76,13 +81,23 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     val generated1 = false
     val packagePrefix1 = "example.package"
 
-    val javaSourceRoot1 = JavaSourceRoot(sourceDir1, generated1, packagePrefix1)
+    val javaSourceRoot1 = JavaSourceRoot(
+      sourceDir = sourceDir1,
+      generated = generated1,
+      rootType = "java-source",
+      packagePrefix = packagePrefix1,
+    )
 
     val sourceDir2 = URI.create("file:///another/root/dir/another/example/package/").toPath()
     val generated2 = true
     val packagePrefix2 = "another.example.package"
 
-    val javaSourceRoot2 = JavaSourceRoot(sourceDir2, generated2, packagePrefix2)
+    val javaSourceRoot2 = JavaSourceRoot(
+      sourceDir = sourceDir2,
+      generated = generated2,
+      rootType = "java-test",
+      packagePrefix = packagePrefix2,
+    )
 
     val javaSourceRoots = listOf(javaSourceRoot1, javaSourceRoot2)
 
@@ -124,7 +139,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir2,
-        rootType = "java-source"
+        rootType = "java-test"
       ),
       javaSourceRootEntity = JavaSourceRootEntity(
         entitySource = parentModuleEntity.entitySource,

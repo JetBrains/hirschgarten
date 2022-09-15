@@ -1,5 +1,8 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.SourceItemKind
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -40,10 +43,19 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
         uri = filePath.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
-      val sourcesItem = SourcesItem(
-        target = BuildTargetId("target"),
-        sources = listOf(sourceItem),
-        roots = listOf(projectRoot.toUri().toString()),
+      val buildTargetAndSourceItem = BuildTargetAndSourceItem(
+        buildTarget = BuildTarget(
+          BuildTargetIdentifier("target"),
+          listOf("library"),
+          listOf("java"),
+          listOf(),
+          BuildTargetCapabilities(),
+        ),
+        sourcesItem = SourcesItem(
+          target = BuildTargetId("target"),
+          sources = listOf(sourceItem),
+          roots = listOf(projectRoot.toUri().toString()),
+        )
       )
 
       // another java file in the dir
@@ -55,14 +67,16 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
       notExcludedFilePath.toFile().deleteOnExit()
 
       // when
-      val javaSources = SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK.transform(sourcesItem)
+      val javaSources =
+        SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK.transform(buildTargetAndSourceItem)
 
       // then
       val expectedJavaSourceRoot = JavaSourceRoot(
         sourceDir = package2Root,
         generated = false,
         packagePrefix = "${package1Root.name}.${package2Root.name}",
-        excludedFiles = listOf(excludedFilePath)
+        excludedFiles = listOf(excludedFilePath),
+        rootType = "java-source"
       )
       javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot)
     }
@@ -75,7 +89,7 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
     @Test
     fun `should return no sources roots for no sources items`() {
       // given
-      val emptySources = listOf<SourcesItem>()
+      val emptySources = listOf<BuildTargetAndSourceItem>()
 
       // when
       val javaSources = SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK.transform(emptySources)
@@ -114,10 +128,19 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
         uri = fileA2Path.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
-      val sourcesItem1 = SourcesItem(
-        target = BuildTargetId("target"),
-        sources = listOf(sourceItemA2),
-        roots = listOf(projectRoot.toUri().toString()),
+      val buildTargetAndSourceItem1 = BuildTargetAndSourceItem(
+        buildTarget = BuildTarget(
+          BuildTargetIdentifier("target"),
+          listOf("library"),
+          listOf("java"),
+          emptyList(),
+          BuildTargetCapabilities(),
+        ),
+        sourcesItem = SourcesItem(
+          target = BuildTargetId("target"),
+          sources = listOf(sourceItemA2),
+          roots = listOf(projectRoot.toUri().toString()),
+        )
       )
 
       val sourceItemA1 = SourceItem(
@@ -128,28 +151,39 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
         uri = packageB1Root.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
-      val sourcesItem2 = SourcesItem(
-        target = BuildTargetId("target"),
-        sources = listOf(sourceItemA1, sourceItemB1),
-        roots = listOf(projectRoot.toUri().toString()),
+      val buildTargetAndSourceItem2 = BuildTargetAndSourceItem(
+        buildTarget = BuildTarget(
+          BuildTargetIdentifier("target"),
+          listOf("library"),
+          listOf("java"),
+          emptyList(),
+          BuildTargetCapabilities()
+        ),
+        sourcesItem = SourcesItem(
+          target = BuildTargetId("target"),
+          sources = listOf(sourceItemA1, sourceItemB1),
+          roots = listOf(projectRoot.toUri().toString()),
+        )
       )
-
-      val sourcesItems = listOf(sourcesItem1, sourcesItem2)
+      val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
 
       // when
-      val javaSources = SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK.transform(sourcesItems)
+      val javaSources =
+        SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK.transform(buildTargetAndSourceItems)
 
       // then
       val expectedJavaSourceRoot1 = JavaSourceRoot(
         sourceDir = packageA1Root,
         generated = false,
         packagePrefix = packageA1Root.name,
-        excludedFiles = listOf(excludedFilePath)
+        excludedFiles = listOf(excludedFilePath),
+        rootType = "java-source",
       )
       val expectedJavaSourceRoot2 = JavaSourceRoot(
         sourceDir = packageB1Root,
         generated = false,
-        packagePrefix = packageB1Root.name
+        packagePrefix = packageB1Root.name,
+        rootType = "java-source",
       )
       javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2)
     }

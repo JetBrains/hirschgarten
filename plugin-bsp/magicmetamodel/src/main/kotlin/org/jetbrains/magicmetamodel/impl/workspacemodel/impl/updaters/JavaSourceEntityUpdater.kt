@@ -19,6 +19,7 @@ internal data class JavaSourceRoot(
   val sourceDir: Path,
   val generated: Boolean,
   val packagePrefix: String,
+  val rootType: String,
   val excludedFiles: List<Path> = ArrayList(),
 ) : WorkspaceModelEntity()
 
@@ -62,7 +63,7 @@ internal class JavaSourceEntityUpdater(
   ): SourceRootEntity = builder.addSourceRootEntity(
     contentRoot = contentRootEntity,
     url = entityToAdd.sourceDir.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-    rootType = ROOT_TYPE,
+    rootType = entityToAdd.rootType,
     source = DoNotSaveInDotIdeaDirEntitySource,
   )
 
@@ -75,8 +76,4 @@ internal class JavaSourceEntityUpdater(
     generated = entityToAdd.generated,
     packagePrefix = entityToAdd.packagePrefix,
   )
-
-  private companion object {
-    private const val ROOT_TYPE = "java-source"
-  }
 }

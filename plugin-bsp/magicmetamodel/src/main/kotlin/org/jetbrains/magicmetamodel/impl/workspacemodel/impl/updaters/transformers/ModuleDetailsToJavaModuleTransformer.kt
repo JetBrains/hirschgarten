@@ -16,9 +16,19 @@ internal object ModuleDetailsToJavaModuleTransformer : WorkspaceModelEntityTrans
     JavaModule(
       module = toModule(inputEntity),
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
-      sourceRoots = SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK.transform(inputEntity.sources),
+      sourceRoots = SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK.transform(inputEntity.sources.map {
+        BuildTargetAndSourceItem(
+          inputEntity.target,
+          it,
+        )
+      }),
       resourceRoots = ResourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources),
-      libraries = DependencySourcesItemToLibraryTransformer.transform(inputEntity.dependenciesSources.map { DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)}),
+      libraries = DependencySourcesItemToLibraryTransformer.transform(inputEntity.dependenciesSources.map {
+        DependencySourcesAndJavacOptions(
+          it,
+          inputEntity.javacOptions
+        )
+      }),
       compilerOutput = toCompilerOutput(inputEntity),
     )
 

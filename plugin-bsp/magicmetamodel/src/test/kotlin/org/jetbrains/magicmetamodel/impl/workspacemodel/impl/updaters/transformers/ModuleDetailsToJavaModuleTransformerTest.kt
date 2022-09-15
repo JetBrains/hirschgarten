@@ -54,7 +54,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget = BuildTarget(
       buildTargetId,
-      emptyList(),
+      listOf("library"),
       emptyList(),
       listOf(
         BuildTargetIdentifier("module2"),
@@ -133,11 +133,13 @@ class ModuleDetailsToJavaModuleTransformerTest {
       sourceDir = URI.create("file:///root/dir/example/package/one/").toPath(),
       generated = false,
       packagePrefix = "example.package.one",
+      rootType = "java-source",
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
       sourceDir = URI.create("file:///root/dir/another/example/package/").toPath(),
       generated = false,
       packagePrefix = "another.example.package",
+      rootType = "java-source",
     )
 
     val expectedJavaResourceRoot1 = JavaResourceRoot(
@@ -173,7 +175,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTargetId1 = BuildTargetIdentifier("module1")
     val buildTarget1 = BuildTarget(
       buildTargetId1,
-      emptyList(),
+      listOf("library"),
       emptyList(),
       listOf(
         BuildTargetIdentifier("module2"),
@@ -237,7 +239,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTargetId2 = BuildTargetIdentifier("module2")
     val buildTarget2 = BuildTarget(
       buildTargetId2,
-      emptyList(),
+      listOf("test"),
       emptyList(),
       listOf(
         BuildTargetIdentifier("module3"),
@@ -307,11 +309,13 @@ class ModuleDetailsToJavaModuleTransformerTest {
       sourceDir = URI.create("file:///root/dir/example/package/one/").toPath(),
       generated = false,
       packagePrefix = "example.package.one",
+      rootType = "java-source",
     )
     val expectedJavaSourceRoot12 = JavaSourceRoot(
       sourceDir = URI.create("file:///root/dir/another/example/package/").toPath(),
       generated = false,
       packagePrefix = "another.example.package",
+      rootType = "java-source",
     )
 
     val expectedJavaResourceRoot11 = JavaResourceRoot(
@@ -351,6 +355,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       sourceDir = URI.create("file:///another/root/dir/example/package/").toPath(),
       generated = false,
       packagePrefix = "example.package",
+      rootType = "java-test",
     )
 
     val expectedJavaResourceRoot21 = JavaResourceRoot(
