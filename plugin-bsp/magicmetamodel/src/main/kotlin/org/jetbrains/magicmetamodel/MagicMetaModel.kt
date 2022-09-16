@@ -38,8 +38,18 @@ public data class DocumentTargetsDetails(
   public val notLoadedTargetsIds: List<BuildTargetIdentifier>,
 )
 
+/**
+ * Each operation that changes the state of the MagicMetaModel should
+ * return the diff in order to apply the changes on the WorkspaceModel.
+ * It's super useful for heavy operations - heavy calculations should be done in the background
+ * task and the diff should be the outcome, and then the diff (it should be just a StorageReplacement)
+ * can be applied on the WorkspaceModel quickly on the UI thread.
+ */
 public interface MagicMetaModelDiff {
 
+  /**
+   * Applies changes, should do it quickly - e.g. by using StorageReplacement
+   */
   public fun applyOnWorkspaceModel(): Boolean
 }
 
@@ -106,6 +116,9 @@ public interface MagicMetaModel {
       return MagicMetaModelImpl(magicMetaModelProjectConfig, projectDetails)
     }
 
+    /**
+     * Creates a new instance of MagicMetaModel from state.
+     */
     public fun fromState(
       state: DefaultMagicMetaModelState,
       magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
