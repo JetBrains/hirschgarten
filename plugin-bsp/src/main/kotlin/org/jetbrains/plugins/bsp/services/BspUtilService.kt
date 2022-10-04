@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.services
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
@@ -13,7 +14,8 @@ public class BspUtilService {
 
   public companion object {
 
-    public var key: Key<VirtualFile> = Key<VirtualFile>("projectPath")
+    public var projectPathKey: Key<VirtualFile> = Key<VirtualFile>("projectPath")
+    public var targetIdKey: Key<BuildTargetIdentifier> = Key<BuildTargetIdentifier>("targetId")
     public fun getInstance(): BspUtilService =
       ApplicationManager.getApplication().getService(BspUtilService::class.java)
   }

@@ -22,7 +22,7 @@ public class RestartAction(actionName: String, icon: Icon) : AnAction({ actionNa
     val bspUtilService = BspUtilService.getInstance()
     val bspConnectionService = project.getService(BspConnectionService::class.java)
 
-    val projectPath = project.getUserData(BspUtilService.key)
+    val projectPath = project.getUserData(BspUtilService.projectPathKey)
     val selectedBuildTool = bspUtilService.selectedBuildTool[project.locationHash]
     if ((projectPath != null) && (selectedBuildTool != null)) {
       runBackgroundableTask("Restart action", project) {

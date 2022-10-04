@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.services
 
 import ch.epfl.scala.bsp4j.*
+import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
@@ -22,6 +23,7 @@ import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import org.jetbrains.plugins.bsp.ui.test.configuration.BspTestConsole
 
 
 public interface BspServer : BuildServer, JavaBuildServer
@@ -48,8 +50,13 @@ public class BspConnectionService(private val project: Project) {
     val process = createAndStartProcess(connectionFile.bspConnectionDetails)
     val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
     val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+    val bspTestConsoleService = BspTestConsoleService.getInstance(project)
 
-    val client = BspClient(bspSyncConsoleService.bspSyncConsole, bspBuildConsoleService.bspBuildConsole)
+    val client = BspClient(
+      bspSyncConsoleService.bspSyncConsole,
+      bspBuildConsoleService.bspBuildConsole,
+      bspTestConsoleService.bspTestConsole
+    )
 
     val bspIn = process.inputStream
     val bspOut = process.outputStream
@@ -146,6 +153,15 @@ public class VeryTemporaryBspResolver(
   private val bspSyncConsole: BspSyncConsole,
   private val bspBuildConsole: BspBuildConsole
 ) {
+
+  //TODO need to implement
+  public fun runTarget(targetId: BuildTargetIdentifier) {
+
+    println("buildTargetRun")
+    server.buildTargetRun(RunParams(targetId)).get()
+
+  }
+
   public fun buildTargets(targetIds: List<BuildTargetIdentifier>): CompileResult {
 
     val uuid = "build-" + UUID.randomUUID().toString()
@@ -157,7 +173,7 @@ public class VeryTemporaryBspResolver(
 
     println("buildTargetCompile")
     val compileParams = CompileParams(targetIds).apply { originId = uuid }
-    val compileResult = server.buildTargetCompile(compileParams).get()
+    val compileResult = server.buildTargetCompile(compileParams).catchBuildErrors(uuid).get()
 
     when (compileResult.statusCode) {
       StatusCode.OK -> bspBuildConsole.finishBuild("Successfully completed!", uuid)
@@ -169,6 +185,12 @@ public class VeryTemporaryBspResolver(
     return compileResult
   }
 
+  public fun testTarget(targetId: BuildTargetIdentifier): TestResult {
+    val params = TestParams(listOf(targetId))
+    params.arguments = emptyList()
+    params.originId = "test-" + UUID.randomUUID().toString()
+    return server.buildTargetTest(params).get()
+  }
   public fun buildTarget(targetId: BuildTargetIdentifier): CompileResult {
     return buildTargets(listOf(targetId))
   }
@@ -258,7 +280,11 @@ public class VeryTemporaryBspResolver(
   }
 }
 
-private class BspClient(private val bspSyncConsole: BspSyncConsole, private val bspBuildConsole: BspBuildConsole) : BuildClient {
+private class BspClient(
+  private val bspSyncConsole: BspSyncConsole,
+  private val bspBuildConsole: BspBuildConsole,
+  private val bspTestConsole: BspTestConsole
+  ) : BuildClient {
 
   override fun onBuildShowMessage(params: ShowMessageParams) {
     println("onBuildShowMessage")
@@ -273,6 +299,18 @@ private class BspClient(private val bspSyncConsole: BspSyncConsole, private val 
   }
 
   override fun onBuildTaskStart(params: TaskStartParams?) {
+    when (params?.dataKind) {
+      TaskDataKind.TEST_START -> {
+        val gson = Gson()
+        val testStart = gson.fromJson(params.data as JsonObject, TestStart::class.java)
+        val isSuite = params.message.take(3) == "<S>"
+        println("TEST START: ${testStart?.displayName}")
+        bspTestConsole.startTest(isSuite, testStart.displayName)
+      }
+      TaskDataKind.TEST_TASK -> {
+        // ignore
+      }
+    }
     println("onBuildTaskStart")
     println(params)
   }
@@ -283,6 +321,22 @@ private class BspClient(private val bspSyncConsole: BspSyncConsole, private val 
   }
 
   override fun onBuildTaskFinish(params: TaskFinishParams?) {
+    when (params?.dataKind) {
+      TaskDataKind.TEST_FINISH -> {
+        val gson = Gson()
+        val testFinish = gson.fromJson(params.data as JsonObject, TestFinish::class.java)
+        val isSuite = params.message.take(3) == "<S>"
+        println("TEST FINISH: ${testFinish?.displayName}")
+        when (testFinish.status) {
+          TestStatus.FAILED -> bspTestConsole.failTest(testFinish.displayName, testFinish.message)
+          TestStatus.PASSED -> bspTestConsole.passTest(isSuite, testFinish.displayName)
+          else              -> bspTestConsole.ignoreTest(testFinish.displayName)
+        }
+      }
+      TaskDataKind.TEST_REPORT -> {
+        bspTestConsole.endTesting()
+      }
+    }
     println("onBuildTaskFinish")
     println(params)
   }
@@ -301,6 +355,8 @@ private class BspClient(private val bspSyncConsole: BspSyncConsole, private val 
   private fun addMessageToConsole(id: Any?, message: String, originId: String?){
     if(originId?.startsWith("build") == true) {
       bspBuildConsole.addMessage(id, message, originId)
+    } else if (originId?.startsWith("test") == true) {
+      bspTestConsole.sendConsoleText(message)
     } else {
       bspSyncConsole.addMessage(id, message)
     }
