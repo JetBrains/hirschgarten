@@ -1,50 +1,21 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.project.stateStore
-import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
-import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
-import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
 import javax.swing.JComponent
 
-private class BuildTargetAction(
-  text: String,
-  private val target: BuildTargetIdentifier
-) : AnAction(text) {
-
-  override fun actionPerformed(e: AnActionEvent) {
-    val project = e.project!!
-    val bspConnectionService = project.getService(BspConnectionService::class.java)
-    val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-    val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
-
-    val bspResolver = VeryTemporaryBspResolver(
-      project.stateStore.projectBasePath,
-      bspConnectionService.server!!,
-      bspSyncConsoleService.bspSyncConsole,
-      bspBuildConsoleService.bspBuildConsole
-    )
-    runBackgroundableTask("Build single target", project) {
-      bspResolver.buildTarget(target)
-    }
-  }
-}
-
 public class LoadedTargetsMouseListener(
-//  private val listsUpdater: ListsUpdater,
   private val component: JComponent
 ) : MouseListener {
 
@@ -69,15 +40,21 @@ public class LoadedTargetsMouseListener(
   }
 
   private fun calculatePopupGroup(): ActionGroup? {
-    val target: BuildTargetIdentifier? = BspTargetTree.getSelectedBspTarget(component)?.id
+    val target: BuildTarget? = BspTargetTree.getSelectedBspTarget(component)
 
     if (target != null) {
       val group = DefaultActionGroup()
-      val action = BuildTargetAction(
-        BspAllTargetsWidgetBundle.message("widget.build.target.popup.message"),
-        target
-      )
-      group.addAction(action)
+      val actions = mutableListOf<AnAction>()
+      if(target.capabilities.canCompile) {
+        actions.add(BuildTargetAction(target.id))
+      }
+      if(target.capabilities.canRun) {
+        actions.add(RunTargetAction(target.id))
+      }
+      if(target.capabilities.canTest) {
+        actions.add(TestTargetAction(target.id))
+      }
+      group.addAll(actions)
       return group
     }
 

@@ -49,7 +49,7 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
 
     return if (dialog.showAndGet()) {
       val project = PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
-      project?.putUserData(BspUtilService.key, virtualFile)
+      project?.putUserData(BspUtilService.projectPathKey, virtualFile)
 
       val bspUtilService = BspUtilService.getInstance()
 
