@@ -34,7 +34,7 @@ public class ListsUpdater(
       LoadedTargetsMouseListener(component)
     }
     notLoadedBspTargetTree.addMouseListeners { component ->
-      NotLoadedTargetsMouseListener(this, component)
+      NotLoadedTargetsMouseListener(this@ListsUpdater, component)
     }
   }
 
