@@ -23,19 +23,18 @@ import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-import org.jetbrains.plugins.bsp.ui.test.configuration.BspTestConsole
-
 
 public interface BspServer : BuildServer, JavaBuildServer
 
 public fun interface Cancelable {
   public fun cancel()
 }
+
 public class BspConnectionService(private val project: Project) {
 
   public var server: BspServer? = null
   private var bspProcess: Process? = null
-  private var cancelActions: List<Cancelable> ? = null
+  private var cancelActions: List<Cancelable>? = null
 
   // consider enclosing nicely in an object
   public var dialogBuildToolUsed: Boolean? = null
@@ -50,12 +49,14 @@ public class BspConnectionService(private val project: Project) {
     val process = createAndStartProcess(connectionFile.bspConnectionDetails)
     val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
     val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+    val bspRunConsoleService = BspRunConsoleService.getInstance(project)
     val bspTestConsoleService = BspTestConsoleService.getInstance(project)
 
     val client = BspClient(
       bspSyncConsoleService.bspSyncConsole,
       bspBuildConsoleService.bspBuildConsole,
-      bspTestConsoleService.bspTestConsole
+      bspRunConsoleService,
+      bspTestConsoleService,
     )
 
     val bspIn = process.inputStream
@@ -154,12 +155,15 @@ public class VeryTemporaryBspResolver(
   private val bspBuildConsole: BspBuildConsole
 ) {
 
-  //TODO need to implement
-  public fun runTarget(targetId: BuildTargetIdentifier) {
+  public fun runTarget(targetId: BuildTargetIdentifier): RunResult {
 
-    println("buildTargetRun")
-    server.buildTargetRun(RunParams(targetId)).get()
+    val uuid = "run-" + UUID.randomUUID().toString()
 
+    val runParams = RunParams(targetId).apply {
+      originId = uuid
+      arguments = listOf()
+    }
+    return server.buildTargetRun(runParams).get()
   }
 
   public fun buildTargets(targetIds: List<BuildTargetIdentifier>): CompileResult {
@@ -191,6 +195,7 @@ public class VeryTemporaryBspResolver(
     params.originId = "test-" + UUID.randomUUID().toString()
     return server.buildTargetTest(params).get()
   }
+
   public fun buildTarget(targetId: BuildTargetIdentifier): CompileResult {
     return buildTargets(listOf(targetId))
   }
@@ -222,13 +227,19 @@ public class VeryTemporaryBspResolver(
     val sourcesResult = server.buildTargetSources(SourcesParams(allTargetsIds)).catchSyncErrors().get()
 
     println("buildTargetResources")
-    val resourcesResult = if (buildServerCapabilities.resourcesProvider) server.buildTargetResources(ResourcesParams(allTargetsIds)).catchSyncErrors().get() else null
+    val resourcesResult =
+      if (buildServerCapabilities.resourcesProvider) server.buildTargetResources(ResourcesParams(allTargetsIds))
+        .catchSyncErrors().get() else null
 
     println("buildTargetDependencySources")
-    val dependencySourcesResult = if (buildServerCapabilities.dependencySourcesProvider) server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds)).catchSyncErrors().get() else null
+    val dependencySourcesResult =
+      if (buildServerCapabilities.dependencySourcesProvider) server.buildTargetDependencySources(
+        DependencySourcesParams(allTargetsIds)
+      ).catchSyncErrors().get() else null
 
     println("buildTargetJavacOptions")
-    val buildTargetJavacOptionsResult = server.buildTargetJavacOptions(JavacOptionsParams(allTargetsIds)).catchSyncErrors().get()
+    val buildTargetJavacOptionsResult =
+      server.buildTargetJavacOptions(JavacOptionsParams(allTargetsIds)).catchSyncErrors().get()
 
     bspSyncConsole.finishImport("Import done!", SuccessResultImpl())
 
@@ -264,7 +275,7 @@ public class VeryTemporaryBspResolver(
       .whenComplete { _, exception ->
         exception?.let {
           bspSyncConsole.addMessage("bsp-import", "Sync failed")
-          bspSyncConsole.finishImport( "Failed", FailureResultImpl(exception))
+          bspSyncConsole.finishImport("Failed", FailureResultImpl(exception))
         }
       }
   }
@@ -274,7 +285,7 @@ public class VeryTemporaryBspResolver(
       .whenComplete { _, exception ->
         exception?.let {
           bspBuildConsole.addMessage("bsp-build", "Build failed", buildId)
-          bspBuildConsole.finishBuild( "Failed", buildId, FailureResultImpl(exception))
+          bspBuildConsole.finishBuild("Failed", buildId, FailureResultImpl(exception))
         }
       }
   }
@@ -283,7 +294,8 @@ public class VeryTemporaryBspResolver(
 private class BspClient(
   private val bspSyncConsole: BspSyncConsole,
   private val bspBuildConsole: BspBuildConsole,
-  private val bspTestConsole: BspTestConsole
+  private val bspRunConsole: BspRunConsoleService,
+  private val bspTestConsole: BspTestConsoleService,
   ) : BuildClient {
 
   override fun onBuildShowMessage(params: ShowMessageParams) {
@@ -333,9 +345,7 @@ private class BspClient(
           else              -> bspTestConsole.ignoreTest(testFinish.displayName)
         }
       }
-      TaskDataKind.TEST_REPORT -> {
-        bspTestConsole.endTesting()
-      }
+      TaskDataKind.TEST_REPORT -> {}
     }
     println("onBuildTaskFinish")
     println(params)
@@ -352,18 +362,20 @@ private class BspClient(
     println(params)
   }
 
-  private fun addMessageToConsole(id: Any?, message: String, originId: String?){
-    if(originId?.startsWith("build") == true) {
+  private fun addMessageToConsole(id: Any?, message: String, originId: String?) {
+    if (originId?.startsWith("build") == true) {
       bspBuildConsole.addMessage(id, message, originId)
     } else if (originId?.startsWith("test") == true) {
-      bspTestConsole.sendConsoleText(message)
+      bspTestConsole.print(message)
+    } else if (originId?.startsWith("run") == true) {
+      bspRunConsole.print(message)
     } else {
       bspSyncConsole.addMessage(id, message)
     }
   }
 
-  private fun addDiagnosticToConsole(params: PublishDiagnosticsParams){
-    if(params.originId?.startsWith("build") == true) {
+  private fun addDiagnosticToConsole(params: PublishDiagnosticsParams) {
+    if (params.originId?.startsWith("build") == true) {
       bspBuildConsole.addDiagnosticMessage(params)
     } else {
       bspSyncConsole.addDiagnosticMessage(params)
