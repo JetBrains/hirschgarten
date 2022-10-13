@@ -1,4 +1,4 @@
-package org.jetbrains.protocol.connection
+package org.jetbrains.plugins.bsp.protocol.connection
 
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.createFile

@@ -4,7 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.protocol.connection.LocatedBspConnectionDetails
+import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 
 public class BspUtilService {
 

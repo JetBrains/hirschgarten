@@ -17,6 +17,9 @@
     <bspConnectionDetailsGeneratorExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.TemporarySbtBspConnectionDetailsGenerator"
     />
+    <bspConnectionDetailsGeneratorExtension
+      implementation="org.jetbrains.plugins.bsp.extension.points.TemporaryBazelBspDetailsConnectionGenerator"
+    />
 
     <bspBuildTargetClassifierExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.TemporaryTestTargetClassifier"

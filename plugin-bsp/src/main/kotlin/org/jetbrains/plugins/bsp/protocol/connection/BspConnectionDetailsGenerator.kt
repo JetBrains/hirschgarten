@@ -1,7 +1,11 @@
-package org.jetbrains.protocol.connection
+package org.jetbrains.plugins.bsp.protocol.connection
 
+import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFileOrNewConnection
+import org.jetbrains.plugins.bsp.import.wizzard.ImportProjectWizzardStep
 import java.io.OutputStream
+import java.nio.file.Path
 
 public interface BspConnectionDetailsGenerator {
   public fun executeAndWait(command: String, projectPath: VirtualFile, outputStream: OutputStream) {
@@ -16,8 +20,7 @@ public interface BspConnectionDetailsGenerator {
   }
 
   public fun getChild(root: VirtualFile?, path: List<String>): VirtualFile? {
-    val found: VirtualFile? = path.fold(root) {
-      vf: VirtualFile?, child: String ->
+    val found: VirtualFile? = path.fold(root) { vf: VirtualFile?, child: String ->
       vf?.refresh(false, false)
       vf?.findChild(child)
     }
@@ -28,6 +31,11 @@ public interface BspConnectionDetailsGenerator {
   public fun name(): String
 
   public fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean
+
+  public fun calculateImportWizzardSteps(
+    projectBasePath: Path,
+    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+  ): List<ImportProjectWizzardStep> = emptyList()
 
   public fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream): VirtualFile
 }
@@ -47,7 +55,21 @@ public class BspConnectionDetailsGeneratorProvider(
   public fun availableGeneratorsNames(): List<String> =
     availableBspConnectionDetailsGenerators.map { it.name() }
 
-  public fun generateBspConnectionDetailFileForGeneratorWithName(generatorName: String, outputStream: OutputStream): VirtualFile? =
+  public fun firstGeneratorTEMPORARY(): String? =
+    availableGeneratorsNames().firstOrNull()
+
+  public fun calulateWizzardSteps(
+    generatorName: String,
+    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+  ): List<ImportProjectWizzardStep> =
+    availableBspConnectionDetailsGenerators
+      .find { it.name() == generatorName }
+      ?.calculateImportWizzardSteps(projectPath.toNioPath(), connectionFileOrNewConnectionProperty).orEmpty()
+
+  public fun generateBspConnectionDetailFileForGeneratorWithName(
+    generatorName: String,
+    outputStream: OutputStream
+  ): VirtualFile? =
     availableBspConnectionDetailsGenerators
       .find { it.name() == generatorName }
       ?.generateBspConnectionDetailsFile(projectPath, outputStream)

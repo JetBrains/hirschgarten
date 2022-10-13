@@ -2,7 +2,7 @@ package org.jetbrains.plugins.bsp.extension.points
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.protocol.connection.BspConnectionDetailsGenerator
+import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
 import java.io.OutputStream
 
 public interface BspConnectionDetailsGeneratorExtension : BspConnectionDetailsGenerator {

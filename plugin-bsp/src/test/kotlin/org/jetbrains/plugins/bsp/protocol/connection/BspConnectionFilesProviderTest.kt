@@ -1,4 +1,4 @@
-package org.jetbrains.protocol.connection
+package org.jetbrains.plugins.bsp.protocol.connection
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
