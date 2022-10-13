@@ -11,12 +11,12 @@ import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
+import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
+import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
 import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
 import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
-import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
-import org.jetbrains.protocol.connection.LocatedBspConnectionDetails
-import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Path

@@ -12,10 +12,20 @@ import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import com.intellij.project.stateStore
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.services.*
+import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
+import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFile
+import org.jetbrains.plugins.bsp.import.wizzard.ImportProjectWizzard
+import org.jetbrains.plugins.bsp.import.wizzard.NewConnection
+import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
+import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
+import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
+import org.jetbrains.plugins.bsp.services.BspConnectionService
+import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
+import org.jetbrains.plugins.bsp.services.BspUtilService
+import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
 import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
-import org.jetbrains.protocol.connection.LocatedBspConnectionDetails
 
 /**
  * Runs actions after the project has started up and the index is up-to-date.
@@ -28,6 +38,10 @@ public class BspInitializer : StartupActivity {
     val connectionService = project.getService(BspConnectionService::class.java)
     val bspUtilService = BspUtilService.getInstance()
 
+    val projectPath = project.getUserData(BspUtilService.projectPathKey)!!
+    val bspConnectionDetailsGeneratorProvider =
+      BspConnectionDetailsGeneratorProvider(projectPath, BspConnectionDetailsGeneratorExtension.extensions())
+
     val locatedBspConnectionDetails: LocatedBspConnectionDetails? =
       bspUtilService.bspConnectionDetails[project.locationHash]
 
@@ -36,6 +50,25 @@ public class BspInitializer : StartupActivity {
 
     if (project.isNewProject() || locatedBspConnectionDetails == null) {
       println("BspInitializer.runActivity")
+
+      val wizzard = ImportProjectWizzard(project, bspConnectionDetailsGeneratorProvider)
+      if (wizzard.showAndGet()) {
+
+        connectionService.bspConnectionDetailsGeneratorProvider = bspConnectionDetailsGeneratorProvider
+        if (wizzard.connectionFileOrNewConnectionProperty.get() is NewConnection) {
+          connectionService.dialogBuildToolUsed = true
+          connectionService.dialogBuildToolName = bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY()
+
+          bspUtilService.selectedBuildTool[project.locationHash] = bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY() ?: ""
+          bspUtilService.loadedViaBspFile.remove(project.locationHash)
+        } else {
+          bspUtilService.selectedBuildTool.remove(project.locationHash)
+          bspUtilService.loadedViaBspFile.add(project.locationHash)
+
+          connectionService.dialogBuildToolUsed = false
+          connectionService.dialogConnectionFile = (wizzard.connectionFileOrNewConnectionProperty.get() as ConnectionFile).locatedBspConnectionDetails
+        }
+      }
 
       val magicMetaModelService = MagicMetaModelService.getInstance(project)
 

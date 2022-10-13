@@ -20,7 +20,7 @@ version = properties("pluginVersion")
 
 dependencies {
   implementation(project(":magicmetamodel"))
-  implementation(project(":protocol"))
+  testImplementation(project(":test-utils"))
   implementation("ch.epfl.scala:bsp4j:2.0.0-M15")
   implementation("com.google.code.gson:gson:2.9.1")
 

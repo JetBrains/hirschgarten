@@ -1,4 +1,4 @@
-package org.jetbrains.protocol.connection
+package org.jetbrains.plugins.bsp.protocol.connection
 
 import org.junit.jupiter.api.Test
 

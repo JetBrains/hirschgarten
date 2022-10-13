@@ -5,14 +5,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
+import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
+import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.services.BspConnectionService
 import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.BspUtilService
 import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
 import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
 import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
-import org.jetbrains.protocol.connection.BspConnectionDetailsGeneratorProvider
-import org.jetbrains.protocol.connection.LocatedBspConnectionDetailsParser
 import javax.swing.Icon
 import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
 
