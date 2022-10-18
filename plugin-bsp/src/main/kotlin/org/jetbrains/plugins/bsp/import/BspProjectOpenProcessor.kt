@@ -14,9 +14,9 @@ import javax.swing.Icon
 
 public class BspProjectOpenProcessor : ProjectOpenProcessor() {
 
-  override fun getName(): String = BspPluginBundle.message("plugin.name")
+  override val name: String = BspPluginBundle.message("plugin.name")
 
-  override fun getIcon(): Icon = BspPluginIcons.bsp
+  override val icon: Icon = BspPluginIcons.bsp
 
   override fun canOpenProject(file: VirtualFile): Boolean {
     val bspConnectionFilesProvider = BspConnectionFilesProvider(file)
