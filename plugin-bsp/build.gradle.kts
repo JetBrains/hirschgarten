@@ -8,7 +8,7 @@ fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
   // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-  id("org.jetbrains.intellij") version "1.9.0"
+  id("org.jetbrains.intellij") version "1.10.0-SNAPSHOT"
   // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
   id("org.jetbrains.changelog") version "1.3.1"
 
@@ -21,7 +21,7 @@ version = properties("pluginVersion")
 dependencies {
   implementation(project(":magicmetamodel"))
   testImplementation(project(":test-utils"))
-  implementation("ch.epfl.scala:bsp4j:2.0.0-M15")
+  implementation("ch.epfl.scala:bsp4j:2.1.0-M3")
   implementation("com.google.code.gson:gson:2.9.1")
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
@@ -46,14 +46,6 @@ intellij {
 changelog {
   version.set(properties("pluginVersion"))
   groups.set(emptyList())
-}
-
-tasks.register<Jar>("pluginJar") {
-  archiveClassifier.set("plugin")
-  from(sourceSets.main.get().output)
-  from({
-    zipTree(project(":protocol").buildDir.absolutePath + "/libs/protocol.jar")
-  })
 }
 
 subprojects {
