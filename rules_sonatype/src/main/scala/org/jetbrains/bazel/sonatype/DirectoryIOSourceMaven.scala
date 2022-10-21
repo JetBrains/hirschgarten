@@ -81,6 +81,8 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
 
     val gpgSign = Seq(
       "gpg",
+      "--verbose",
+      "--verbose",
       "--use-agent",
       "--armor",
       "--detach-sign",
