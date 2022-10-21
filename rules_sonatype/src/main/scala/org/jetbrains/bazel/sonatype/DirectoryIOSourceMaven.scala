@@ -69,13 +69,12 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
   private def sign(toSign: java.nio.file.Path, signed: java.nio.file.Path): Unit = {
     // Ideally, we'd use BouncyCastle for this, but for now brute force by assuming
     // the gpg binary is on the path
-
     import scala.sys.process._
 
     val proclog = ProcessLogger.apply(LOG.info, LOG.warning)
     val io = BasicIO(withIn = false, proclog).withInput { out =>
       val writer = new BufferedWriter(new OutputStreamWriter(out))
-      writer.write(sys.env.getOrElse("PGP_PASSPHRASE", "''"))
+      writer.write(sys.env.getOrElse("GPG_PASSPHRASE", "''"))
       writer.flush()
       writer.close()
     }
@@ -93,7 +92,7 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
       signed.toAbsolutePath.toString,
       toSign.toAbsolutePath.toString
     ).run(io)
-    if (gpgSign.exitValue != 0) throw new IllegalStateException("Unable to sign: " + toSign)
+    if (gpgSign.exitValue() != 0) throw new IllegalStateException("Unable to sign: " + toSign)
 
     // Verify the signature
     val gpgVerify = Seq(
@@ -104,6 +103,6 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
       signed.toAbsolutePath.toString,
       toSign.toAbsolutePath.toString
     ).run(proclog)
-    if (gpgVerify.exitValue != 0) throw new IllegalStateException("Unable to verify signature of " + toSign)
+    if (gpgVerify.exitValue() != 0) throw new IllegalStateException("Unable to verify signature of " + toSign)
   }
 }
