@@ -2,7 +2,6 @@ package org.jetbrains.bazel.sonatype
 
 import org.apache.http.auth.{AuthScope, UsernamePasswordCredentials}
 import org.apache.http.impl.client.BasicCredentialsProvider
-import org.jetbrains.bazel.sonatype.DirectoryIOSourceMaven.SigningException
 import org.jetbrains.bazel.sonatype.SonatypeClient.{ActivityMonitor, CreateStageResponse, StageTransitionRequest, StagingActivity, StagingProfile, StagingProfileResponse, StagingRepositoryProfile}
 import org.jetbrains.bazel.sonatype.SonatypeException._
 import org.sonatype.spice.zapper.ParametersBuilder
@@ -11,15 +10,16 @@ import org.sonatype.spice.zapper.fs.DirectoryIOSource
 import wvlet.airframe.control.{Control, ResultClass, Retry}
 import wvlet.airframe.http.HttpHeader.MediaType
 import wvlet.airframe.http.HttpMessage.{Request, Response}
-import wvlet.airframe.http.client.{URLConnectionClient, URLConnectionClientConfig}
 import wvlet.airframe.http._
+import wvlet.airframe.http.client.{URLConnectionClient, URLConnectionClientConfig}
 import wvlet.log.LogSupport
 
-import java.io.{File, IOException}
+import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration
+import scala.util.{Failure, Success, Try}
 
 class SonatypeClient(
     repositoryUrl: String,
@@ -29,9 +29,9 @@ class SonatypeClient(
 ) extends AutoCloseable
     with LogSupport {
   private val base64Credentials =
-    Base64.getEncoder.encodeToString(s"${username}:${password}".getBytes(StandardCharsets.UTF_8))
+    Base64.getEncoder.encodeToString(s"$username:$password".getBytes(StandardCharsets.UTF_8))
 
-  lazy val repoUri = {
+  lazy val repoUri: String = {
     def repoBase(url: String) = if (url.endsWith("/")) url.dropRight(1) else url
     val url                   = repoBase(repositoryUrl)
     url
@@ -40,7 +40,7 @@ class SonatypeClient(
     new java.net.URL(repoUri).getPath
   }
 
-  object SonatypeClientBackend extends HttpClientBackend {
+  private object SonatypeClientBackend extends HttpClientBackend {
     def newSyncClient(serverAddress: String, clientConfig: HttpClientConfig): HttpSyncClient[Request, Response] = {
       new URLConnectionClient(
         ServerAddress(serverAddress),
@@ -65,7 +65,7 @@ class SonatypeClient(
     .withRequestFilter { request =>
       request.withContentTypeJson
         .withAccept(MediaType.ApplicationJson)
-        .withHeader(HttpHeader.Authorization, s"Basic ${base64Credentials}")
+        .withHeader(HttpHeader.Authorization, s"Basic $base64Credentials")
     }
 
   private val httpClient = clientConfig.newSyncClient(repoUri)
@@ -82,25 +82,25 @@ class SonatypeClient(
   def stagingRepositoryProfiles: Seq[StagingRepositoryProfile] = {
     info("Reading staging repository profiles...")
     val result =
-      httpClient.get[Map[String, Seq[StagingRepositoryProfile]]](s"${pathPrefix}/staging/profile_repositories")
+      httpClient.get[Map[String, Seq[StagingRepositoryProfile]]](s"$pathPrefix/staging/profile_repositories")
     result.getOrElse("data", Seq.empty)
   }
 
-  def stagingRepository(repositoryId: String) = {
-    info(s"Searching for repository ${repositoryId} ...")
-    httpClient.get[String](s"${pathPrefix}/staging/repository/${repositoryId}")
+  def stagingRepository(repositoryId: String): String = {
+    info(s"Searching for repository $repositoryId ...")
+    httpClient.get[String](s"$pathPrefix/staging/repository/$repositoryId")
   }
 
   def stagingProfiles: Seq[StagingProfile] = {
     info("Reading staging profiles...")
-    val result = httpClient.get[StagingProfileResponse](s"${pathPrefix}/staging/profiles")
+    val result = httpClient.get[StagingProfileResponse](s"$pathPrefix/staging/profiles")
     result.data
   }
 
   def createStage(profile: StagingProfile, description: String): StagingRepositoryProfile = {
-    info(s"Creating a staging repository in profile ${profile.name} with a description key: ${description}")
+    info(s"Creating a staging repository in profile ${profile.name} with a description key: $description")
     val ret = httpClientForCreateStage.postOps[Map[String, Map[String, String]], CreateStageResponse](
-      s"${pathPrefix}/staging/profiles/${profile.id}/start",
+      s"$pathPrefix/staging/profiles/${profile.id}/start",
       Map("data" -> Map("description" -> description))
     )
     // Extract created staging repository ids
@@ -142,7 +142,7 @@ class SonatypeClient(
       .beforeRetry { ctx =>
         ctx.lastError match {
           case SonatypeException(STAGE_IN_PROGRESS, msg) =>
-            info(f"${msg} Waiting for ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
+            info(f"$msg Waiting for ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
           case _ =>
             warn(
               f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed: ${ctx.lastError.getMessage}. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec."
@@ -151,14 +151,14 @@ class SonatypeClient(
       }
       .withResultClassifier[Option[StagingActivity]] {
         case Some(activity) if terminationCond(activity) =>
-          info(s"[${taskName}] Finished successfully")
+          info(s"[$taskName] Finished successfully")
           ResultClass.Succeeded
-        case Some(activity) if (activity.containsError) =>
-          error(s"[${taskName}] Failed")
-          activity.reportFailure
-          ResultClass.nonRetryableFailure(SonatypeException(STAGE_FAILURE, s"Failed to ${taskName} the repository."))
+        case Some(activity) if activity.containsError =>
+          error(s"[$taskName] Failed")
+          activity.reportFailure()
+          ResultClass.nonRetryableFailure(SonatypeException(STAGE_FAILURE, s"Failed to $taskName the repository."))
         case _ =>
-          ResultClass.retryableFailure(SonatypeException(STAGE_IN_PROGRESS, s"The ${taskName} stage is in progress."))
+          ResultClass.retryableFailure(SonatypeException(STAGE_IN_PROGRESS, s"The $taskName stage is in progress."))
       }
       .run {
         val activities = activitiesOf(repo)
@@ -172,7 +172,7 @@ class SonatypeClient(
   def closeStage(currentProfile: StagingProfile, repo: StagingRepositoryProfile): StagingRepositoryProfile = {
     info(s"Closing staging repository $repo")
     val ret = httpClient.postOps[Map[String, StageTransitionRequest], Response](
-      s"${pathPrefix}/staging/profiles/${repo.profileId}/finish",
+      s"$pathPrefix/staging/profiles/${repo.profileId}/finish",
       newStageTransitionRequest(currentProfile, repo)
     )
     if (ret.statusCode != HttpStatus.Created_201.code) {
@@ -190,7 +190,7 @@ class SonatypeClient(
   def promoteStage(currentProfile: StagingProfile, repo: StagingRepositoryProfile): StagingRepositoryProfile = {
     info(s"Promoting staging repository $repo")
     val ret = httpClient.postOps[Map[String, StageTransitionRequest], Response](
-      s"${pathPrefix}/staging/profiles/${repo.profileId}/promote",
+      s"$pathPrefix/staging/profiles/${repo.profileId}/promote",
       newStageTransitionRequest(currentProfile, repo)
     )
     if (ret.statusCode != HttpStatus.Created_201.code) {
@@ -203,7 +203,7 @@ class SonatypeClient(
   def dropStage(currentProfile: StagingProfile, repo: StagingRepositoryProfile): Response = {
     info(s"Dropping staging repository $repo")
     val ret = httpClient.postOps[Map[String, StageTransitionRequest], Response](
-      s"${pathPrefix}/staging/profiles/${repo.profileId}/drop",
+      s"$pathPrefix/staging/profiles/${repo.profileId}/drop",
       newStageTransitionRequest(currentProfile, repo)
     )
     if (ret.statusCode != HttpStatus.Created_201.code) {
@@ -227,7 +227,7 @@ class SonatypeClient(
 
   def activitiesOf(r: StagingRepositoryProfile): Seq[StagingActivity] = {
     debug(s"Checking activity logs of ${r.repositoryId} ...")
-    httpClient.get[Seq[StagingActivity]](s"${pathPrefix}/staging/repository/${r.repositoryId}/activity")
+    httpClient.get[Seq[StagingActivity]](s"$pathPrefix/staging/repository/${r.repositoryId}/activity")
   }
 
   def uploadBundle(coordinateGroupId: String, remoteUrl: String, getDeployables: () => DirectoryIOSource): Unit = {
@@ -243,10 +243,14 @@ class SonatypeClient(
         case e: SigningException =>
           Retry.nonRetryableFailure(e)
       }
+      .withResultClassifier[Try[_]] {
+        case Success(_) => ResultClass.Succeeded
+        case Failure(x) => ResultClass.Failed(isRetryable = false, x)
+      }
       .run {
         val parameters = ParametersBuilder.defaults().build()
         // Adding a trailing slash is necessary upload a bundle file to a proper location:
-        val endpoint      = s"${remoteUrl}/"
+        val endpoint      = s"$remoteUrl/"
         val clientBuilder = new Hc4ClientBuilder(parameters, endpoint)
 
         val credentialProvider = new BasicCredentialsProvider()
@@ -259,13 +263,13 @@ class SonatypeClient(
         val deployables = getDeployables()
 
         val client = clientBuilder.build()
-        try {
-          info(s"Uploading bundle ${coordinateGroupId} to ${endpoint}")
+        val tried = Try {
+          info(s"Uploading bundle $coordinateGroupId to $endpoint")
           client.upload(deployables)
-          info(s"Finished bundle upload: ${coordinateGroupId}")
-        } finally {
-          client.close()
+          info(s"Finished bundle upload: $coordinateGroupId")
         }
+        client.close()
+        tried
       }
   }
 }
@@ -291,20 +295,21 @@ object SonatypeClient extends LogSupport {
 
     override def toString =
       s"[$repositoryId] status:$stagingType, profile:$profileName($profileId) description: $description"
-    def isOpen     = stagingType == "open"
-    def isClosed   = stagingType == "closed"
-    def isReleased = stagingType == "released"
+    def isOpen: Boolean = stagingType == "open"
+    def isClosed: Boolean = stagingType == "closed"
+    def isReleased: Boolean = stagingType == "released"
 
-    def toClosed   = copy(`type` = "closed")
-    def toDropped  = copy(`type` = "dropped")
-    def toReleased = copy(`type` = "released")
+    def toClosed: StagingRepositoryProfile = copy(`type` = "closed")
+    def toDropped: StagingRepositoryProfile = copy(`type` = "dropped")
+    def toReleased: StagingRepositoryProfile = copy(`type` = "released")
 
-    def deployUrl(repositoryUrl: String): String = s"${repositoryUrl}/staging/deployByRepositoryId/${repositoryId}"
+    def deployUrl(repositoryUrl: String): String = s"$repositoryUrl/staging/deployByRepositoryId/$repositoryId"
   }
 
   case class CreateStageResponse(
       data: StagingRepositoryRef
   )
+  //noinspection ScalaWeakerAccess
   case class StagingRepositoryRef(
       stagedRepositoryId: String,
       description: String
@@ -316,20 +321,18 @@ object SonatypeClient extends LogSupport {
       description: String
   )
 
+  //noinspection ScalaWeakerAccess
   case class Prop(name: String, value: String)
 
-  /** ActivityEvent is an evaluation result (e.g., checksum, signature check, etc.) of a rule defined in a StagingActivity ruleset
-    * @param timestamp
-    * @param name
-    * @param severity
-    * @param properties
+  /** ActivityEvent is an evaluation result (e.g., checksum, signature check, etc.)
+    * of a rule defined in a StagingActivity ruleset
     */
   case class ActivityEvent(timestamp: String, name: String, severity: Int, properties: Seq[Prop]) {
-    lazy val map         = properties.map(x => x.name -> x.value).toMap
+    lazy val map: Map[String, String] = properties.map(x => x.name -> x.value).toMap
     def ruleType: String = map.getOrElse("typeId", "other")
-    def isFailure        = name == "ruleFailed"
+    def isFailure: Boolean = name == "ruleFailed"
 
-    override def toString = {
+    override def toString: String = {
       s"-event -- timestamp:$timestamp, name:$name, severity:$severity, ${properties.map(p => s"${p.name}:${p.value}").mkString(", ")}"
     }
 
@@ -353,10 +356,10 @@ object SonatypeClient extends LogSupport {
   }
 
   class ActivityMonitor {
-    var reportedActivities = Set.empty[String]
-    var reportedEvents     = Set.empty[ActivityEvent]
+    private var reportedActivities = Set.empty[String]
+    private var reportedEvents     = Set.empty[ActivityEvent]
 
-    def report(stagingActivities: Seq[StagingActivity]) = {
+    def report(stagingActivities: Seq[StagingActivity]): Unit = {
       for (sa <- stagingActivities) {
         if (!reportedActivities.contains(sa.started)) {
           logger.info(sa.activityLog)
@@ -372,12 +375,9 @@ object SonatypeClient extends LogSupport {
 
   /** Staging activity is an action to the staged repository
     * @param name activity name, e.g. open, close, promote, etc.
-    * @param started
-    * @param stopped
-    * @param events
     */
   case class StagingActivity(name: String, started: String, stopped: String, events: Seq[ActivityEvent]) {
-    override def toString = {
+    override def toString: String = {
       val b = Seq.newBuilder[String]
       b += activityLog
       for (e <- events)
@@ -385,17 +385,17 @@ object SonatypeClient extends LogSupport {
       b.result().mkString("\n")
     }
 
-    def activityLog = {
+    def activityLog: String = {
       val b = Seq.newBuilder[String]
-      b += s"Activity name:${name}"
-      b += s"started:${started}"
+      b += s"Activity name:$name"
+      b += s"started:$started"
       if (stopped.nonEmpty) {
-        b += s"stopped:${stopped}"
+        b += s"stopped:$stopped"
       }
       b.result().mkString(", ")
     }
 
-    def showProgress: Unit = {
+    def showProgress(): Unit = {
       logger.info(activityLog)
       val hasError = containsError
       for (e <- suppressEvaluateLog) {
@@ -403,7 +403,7 @@ object SonatypeClient extends LogSupport {
       }
     }
 
-    def suppressEvaluateLog = {
+    private def suppressEvaluateLog: Seq[ActivityEvent] = {
       val in     = events.toIndexedSeq
       var cursor = 0
       val b      = Seq.newBuilder[ActivityEvent]
@@ -422,11 +422,11 @@ object SonatypeClient extends LogSupport {
       b.result()
     }
 
-    def containsError = events.exists(_.severity != 0)
+    def containsError: Boolean = events.exists(_.severity != 0)
 
-    def failureReport = suppressEvaluateLog.filter(_.isFailure)
+    def failureReport: Seq[ActivityEvent] = suppressEvaluateLog.filter(_.isFailure)
 
-    def reportFailure: Unit = {
+    def reportFailure(): Unit = {
       logger.error(activityLog)
       for (e <- failureReport) {
         e.showProgress(useErrorLog = true)
