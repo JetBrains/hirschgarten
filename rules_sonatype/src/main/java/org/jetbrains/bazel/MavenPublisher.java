@@ -223,6 +223,8 @@ public class MavenPublisher {
 
         Process gpg = new ProcessBuilder(
                 "gpg",
+                "--verbose",
+                "--verbose",
                 "--use-agent",
                 "--armor",
                 "--detach-sign",
@@ -244,7 +246,7 @@ public class MavenPublisher {
         writer.close();
         gpg.waitFor();
         if (gpg.exitValue() != 0) {
-            throw new IllegalStateException("Unable to sign: " + toSign);
+            throw new IOException("Unable to sign: " + toSign);
         }
 
         // Verify the signature
@@ -255,7 +257,7 @@ public class MavenPublisher {
                 .start();
         verify.waitFor();
         if (verify.exitValue() != 0) {
-            throw new IllegalStateException("Unable to verify signature of " + toSign);
+            throw new IOException("Unable to verify signature of " + toSign);
         }
 
         return file;

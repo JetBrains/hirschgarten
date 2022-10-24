@@ -1,13 +1,15 @@
 package org.jetbrains.bazel
 
+import sonatype.SonatypeClient.StagingRepositoryProfile
+import sonatype.{SonatypeClient, SonatypeCoordinates, SonatypeService}
+
 import org.backuity.clist.{Command, arg, opt}
-import org.jetbrains.bazel.sonatype.SonatypeClient.StagingRepositoryProfile
-import org.jetbrains.bazel.sonatype.{SonatypeClient, SonatypeCoordinates, SonatypeException, SonatypeService}
 import org.sonatype.spice.zapper.Path
 import wvlet.log.{LogLevel, LogSupport}
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future}
+import scala.util.Try
 
 class SonatypeKeys extends Command {
   var sonatypeUsername: Option[String] =
@@ -48,12 +50,12 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
     )
   )
 
-  lazy val sonatypeSplitCoordinates: SonatypeCoordinates =
+  private lazy val sonatypeSplitCoordinates: SonatypeCoordinates =
     SonatypeCoordinates(sonatypeKeys.sonatypeCoordinates)
 
-  private implicit val ec = ExecutionContext.global
+  private implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
-  lazy val rest: SonatypeService = {
+  private lazy val rest: SonatypeService = {
     val logLevel = LogLevel(sonatypeKeys.sonatypeLogLevel)
     wvlet.log.Logger.setDefaultLogLevel(logLevel)
     val sonatypeClient = new SonatypeClient(
@@ -82,22 +84,12 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
     new Path(sonatypeKeys.sonatypeProjectPom)
   )
 
-  private def withSonatypeService()(
-      body: SonatypeService => Unit
-  ): Boolean = {
-    try {
-      body(rest)
-      true
-    } catch {
-      case e: SonatypeException =>
-        error(e.toString)
-        false
-      case e: Throwable =>
-        error(e)
-        false
-    } finally {
-      rest.close()
-    }
+  private def withSonatypeService[R]()(
+      body: SonatypeService => R
+  ): Try[R] = {
+    val result = Try(body(rest))
+    rest.close()
+    result
   }
 
   private def prepare(rest: SonatypeService): StagingRepositoryProfile = {
@@ -107,18 +99,18 @@ class Sonatype(sonatypeKeys: SonatypeKeys) extends LogSupport {
     // Create a new one
     val createTask = Future.apply(rest.createStage(descriptionKey))
     // Run two tasks in parallel
-    val merged                     = dropTask.zip(createTask)
-    val (droppedRepo, createdRepo) = Await.result(merged, Duration.Inf)
+    val merged = dropTask.zip(createTask)
+    val (_, createdRepo) = Await.result(merged, Duration.Inf)
     createdRepo
   }
 
-  def openRepo(): Unit = {
+  def openRepo(): Try[StagingRepositoryProfile] = {
     withSonatypeService() { rest =>
       rest.openOrCreateByKey(sonatypeSessionName)
     }
   }
 
-  def bundleRelease(): Unit = {
+  def bundleRelease(): Try[StagingRepositoryProfile] = {
     withSonatypeService() { rest =>
       val repo = prepare(rest)
       rest.uploadBundle(

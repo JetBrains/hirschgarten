@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.sonatype
 
-import org.jetbrains.bazel.sonatype.DirectoryIOSourceMaven.SigningException
 import org.sonatype.spice.zapper.fs.DirectoryIOSource
 import org.sonatype.spice.zapper.{Path, ZFile}
 
@@ -12,7 +11,6 @@ import java.security.{MessageDigest, NoSuchAlgorithmException}
 import java.util
 import java.util.logging.Logger
 import scala.jdk.CollectionConverters._
-import scala.sys.process.ProcessLogger
 
 class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(new File("").getCanonicalFile) {
 
@@ -42,11 +40,7 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
 
   override def scanDirectory(dir: File, zfiles: util.List[ZFile]): Int = {
     val processedFiles = processFiles(filesPaths)
-    val files = processedFiles.map { path =>
-      {
-        createZFile(path)
-      }
-    }.asJava
+    val files = processedFiles.map(createZFile).asJava
 
     zfiles.addAll(files)
     0
@@ -95,7 +89,7 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
       signed.toAbsolutePath.toString,
       toSign.toAbsolutePath.toString
     ).run(io)
-    if (gpgSign.exitValue() != 0) throw new SigningException("Unable to sign: " + toSign)
+    if (gpgSign.exitValue() != 0) throw SigningException("Unable to sign: " + toSign)
 
     // Verify the signature
     val gpgVerify = Seq(
@@ -106,10 +100,6 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
       signed.toAbsolutePath.toString,
       toSign.toAbsolutePath.toString
     ).run(proclog)
-    if (gpgVerify.exitValue() != 0) throw new SigningException("Unable to verify signature of " + toSign)
+    if (gpgVerify.exitValue() != 0) throw SigningException("Unable to verify signature of " + toSign)
   }
-}
-
-object DirectoryIOSourceMaven {
-  final case class SigningException(message: String) extends IOException(message)
 }
