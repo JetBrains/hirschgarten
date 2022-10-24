@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.sonatype
 
+import org.jetbrains.bazel.sonatype.DirectoryIOSourceMaven.SigningException
 import org.sonatype.spice.zapper.fs.DirectoryIOSource
 import org.sonatype.spice.zapper.{Path, ZFile}
 
@@ -94,7 +95,7 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
       signed.toAbsolutePath.toString,
       toSign.toAbsolutePath.toString
     ).run(io)
-    if (gpgSign.exitValue() != 0) throw new IllegalStateException("Unable to sign: " + toSign)
+    if (gpgSign.exitValue() != 0) throw new SigningException("Unable to sign: " + toSign)
 
     // Verify the signature
     val gpgVerify = Seq(
@@ -105,6 +106,10 @@ class DirectoryIOSourceMaven(filesPaths: List[Path]) extends DirectoryIOSource(n
       signed.toAbsolutePath.toString,
       toSign.toAbsolutePath.toString
     ).run(proclog)
-    if (gpgVerify.exitValue() != 0) throw new IllegalStateException("Unable to verify signature of " + toSign)
+    if (gpgVerify.exitValue() != 0) throw new SigningException("Unable to verify signature of " + toSign)
   }
+}
+
+object DirectoryIOSourceMaven {
+  final case class SigningException(message: String) extends IOException(message)
 }
