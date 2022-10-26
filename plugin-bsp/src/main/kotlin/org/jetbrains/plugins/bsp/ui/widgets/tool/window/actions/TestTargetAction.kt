@@ -4,7 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.plugins.bsp.ui.configuration.test.BspConfigurationType
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
-internal class TestTargetAction (
+internal class TestTargetAction(
   target: BuildTargetIdentifier
 ) : SideMenuTargetAction(target, BspAllTargetsWidgetBundle.message("widget.test.target.popup.message")) {
   override fun getConfigurationType() = BspConfigurationType()

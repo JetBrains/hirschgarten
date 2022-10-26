@@ -26,7 +26,7 @@ public class MagicMetaModelService(private val project: Project) :
 
   public fun initializeMagicModel(projectDetails: ProjectDetails) {
     val magicMetaModelProjectConfig = calculateProjectConfig(project)
-
+    
     magicMetaModel = MagicMetaModel.create(magicMetaModelProjectConfig, projectDetails)
   }
 

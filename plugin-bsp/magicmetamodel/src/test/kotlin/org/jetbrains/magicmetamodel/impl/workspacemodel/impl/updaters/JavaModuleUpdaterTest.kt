@@ -181,7 +181,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualSourceDir1,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
@@ -201,7 +200,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualSourceDir2,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           sourceRootEntity = SourceRootEntity(
@@ -227,7 +225,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl1,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           sourceRootEntity = SourceRootEntity(
@@ -247,7 +244,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl2,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           sourceRootEntity = SourceRootEntity(
@@ -507,7 +503,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir11,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           sourceRootEntity = SourceRootEntity(
@@ -527,7 +522,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir12,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           sourceRootEntity = SourceRootEntity(
@@ -547,7 +541,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualSourceDir21,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           sourceRootEntity = SourceRootEntity(
@@ -574,7 +567,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl11,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           sourceRootEntity = SourceRootEntity(
@@ -594,7 +586,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl12,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           sourceRootEntity = SourceRootEntity(
@@ -614,7 +605,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualResourceUrl21,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           sourceRootEntity = SourceRootEntity(
@@ -692,7 +682,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualBaseDirContentRootPath,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           parentModuleEntity = expectedModuleEntity.moduleEntity,
@@ -785,7 +774,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualBaseDirContentRootPath1,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
@@ -796,7 +784,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualBaseDirContentRootPath2,
-            excludedUrls = emptyList(),
             excludedPatterns = emptyList()
           ),
           parentModuleEntity = expectedModuleEntity2.moduleEntity,

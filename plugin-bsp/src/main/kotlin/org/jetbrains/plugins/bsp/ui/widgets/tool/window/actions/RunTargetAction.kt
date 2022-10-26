@@ -11,5 +11,4 @@ internal class RunTargetAction(
   override fun getConfigurationType(): ConfigurationType = BspRunConfigurationType()
 
   override fun getName(target: BuildTargetIdentifier): String = "run ${target.uri}"
-
 }

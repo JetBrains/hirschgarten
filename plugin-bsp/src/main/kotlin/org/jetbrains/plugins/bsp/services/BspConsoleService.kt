@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.ui.configuration.BspConsolePrinter
 import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestConsole
 
-
 public open class BspConsoleService<T : BspConsolePrinter> {
 
   protected val consoleListeners: MutableSet<T> = mutableSetOf()
@@ -33,19 +32,19 @@ public class BspRunConsoleService : BspConsoleService<BspConsolePrinter>() {
 public class BspTestConsoleService : BspConsoleService<BspTestConsole>() {
 
   public fun startTest(suite: Boolean, displayName: String) {
-    consoleListeners.forEach{ it.startTest(suite, displayName) }
+    consoleListeners.forEach { it.startTest(suite, displayName) }
   }
 
   public fun failTest(displayName: String, message: String) {
-    consoleListeners.forEach{ it.failTest(displayName, displayName) }
+    consoleListeners.forEach { it.failTest(displayName, displayName) }
   }
 
   public fun passTest(suite: Boolean, displayName: String) {
-    consoleListeners.forEach{ it.passTest(suite, displayName) }
+    consoleListeners.forEach { it.passTest(suite, displayName) }
   }
 
   public fun ignoreTest(displayName: String) {
-    consoleListeners.forEach{ it.ignoreTest(displayName) }
+    consoleListeners.forEach { it.ignoreTest(displayName) }
   }
 
   public companion object {

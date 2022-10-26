@@ -9,10 +9,12 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import com.intellij.project.stateStore
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
 import org.jetbrains.plugins.bsp.services.*
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
 import javax.swing.Icon
-
 
 public class BspConfigurationType : ConfigurationType {
 
@@ -42,27 +44,27 @@ public class TestRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
   }
 }
 
-public class TestRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String)
-  : RunConfigurationBase<String>(project, configurationFactory, name) {
+public class TestRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :
+  RunConfigurationBase<String>(project, configurationFactory, name) {
 
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return RunProfileState { executor2, _ ->
 
-      val bspConnectionService = project.getService(BspConnectionService::class.java)
+      val bspConnectionService = BspConnectionService.getInstance(project)
       val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
       val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
       val bspTestConsoleService = BspTestConsoleService.getInstance(project)
 
       val bspResolver = VeryTemporaryBspResolver(
         project.stateStore.projectBasePath,
-        bspConnectionService.server!!,
+        bspConnectionService.connection!!.server!!,
         bspSyncConsoleService.bspSyncConsole,
         bspBuildConsoleService.bspBuildConsole
       )
 
       val processHandler = BspProcessHandler()
       val testConsole = BspTestConsole(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))
-      environment.getUserData(BspUtilService.targetIdKey)?.let {
+      environment.getUserData(targetIdTOREMOVE)?.let {
         bspTestConsoleService.registerPrinter(testConsole)
         processHandler.execute {
           try {
@@ -80,5 +82,4 @@ public class TestRunConfiguration(project: Project, configurationFactory: Config
   override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
     TODO("Not yet implemented")
   }
-
 }

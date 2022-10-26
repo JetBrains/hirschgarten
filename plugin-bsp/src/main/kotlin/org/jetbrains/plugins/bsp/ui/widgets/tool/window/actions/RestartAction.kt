@@ -1,52 +1,94 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.progress.runBackgroundableTask
+import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.Task
+import com.intellij.openapi.project.Project
 import com.intellij.project.stateStore
-import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
-import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
-import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
-import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
-import org.jetbrains.plugins.bsp.services.BspUtilService
-import org.jetbrains.plugins.bsp.services.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
-import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
-import javax.swing.Icon
+import org.jetbrains.magicmetamodel.MagicMetaModelDiff
+import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.connection.BspGeneratorConnection
+import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
 import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
+import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
+import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
-public class RestartAction(actionName: String, icon: Icon) : AnAction({ actionName }, icon) {
+public class RestartAction :
+  AnAction({ BspAllTargetsWidgetBundle.message("restart.action.text") }, BspPluginIcons.restart) {
+
   override fun actionPerformed(e: AnActionEvent) {
-    val project = e.project!!
-    val bspUtilService = BspUtilService.getInstance()
-    val bspConnectionService = project.getService(BspConnectionService::class.java)
+    val project = e.project
 
-    val projectPath = project.getUserData(BspUtilService.projectPathKey)
-    val selectedBuildTool = bspUtilService.selectedBuildTool[project.locationHash]
-    if ((projectPath != null) && (selectedBuildTool != null)) {
-      runBackgroundableTask("Restart action", project) {
-        bspConnectionService.disconnect()
+    if (project != null) {
+      doAction(project)
+    } else {
+      log.warn("RestartAction cannot be performed! Project not available.")
+    }
+  }
 
-        val bspSyncConsole: BspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
-        bspSyncConsole.startImport("bsp-obtain-config", "BSP: Obtain config", "Obtaining...")
-        val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(projectPath, BspConnectionDetailsGeneratorExtension.extensions())
-        val generatedConnectionDetailsFile = bspConnectionDetailsGeneratorProvider.generateBspConnectionDetailFileForGeneratorWithName(selectedBuildTool, ConsoleOutputStream("bsp-obtain-config", bspSyncConsole))
-        generatedConnectionDetailsFile?.let {
-          bspConnectionService.connect(LocatedBspConnectionDetailsParser.parseFromFile(it)!!)
+  private fun doAction(project: Project) {
+    val bspConnectionService = BspConnectionService.getInstance(project)
 
-          val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-          val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
-          val bspResolver = VeryTemporaryBspResolver(project.stateStore.projectBasePath, bspConnectionService.server!!, bspSyncConsoleService.bspSyncConsole, bspBuildConsoleService.bspBuildConsole)
-          bspResolver.collectModel()
+    if (bspConnectionService.connection != null && bspConnectionService.connection is BspGeneratorConnection) {
+      val connection = bspConnectionService.connection as BspGeneratorConnection
+      val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
+      val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
+      val magicMetaModelService = MagicMetaModelService.getInstance(project)
+      val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
+      bspSyncConsole.startImport("bsp-restart", "BSP: Restart", "Restarting...")
+      object : Task.Backgroundable(project, "Restarting...", true) {
+        private var magicMetaModelDiff: MagicMetaModelDiff? = null
+
+        override fun run(indicator: ProgressIndicator) {
+          connection.restart()
+          val bspResolver =
+            VeryTemporaryBspResolver(
+              project.stateStore.projectBasePath,
+              bspConnectionService.connection!!.server!!,
+              bspSyncConsoleService.bspSyncConsole,
+              bspBuildConsoleService.bspBuildConsole
+            )
+          val projectDetails = bspResolver.collectModel()
+
+          magicMetaModelService.magicMetaModel.clear()
+          magicMetaModelService.initializeMagicModel(projectDetails)
+          val magicMetaModel = magicMetaModelService.magicMetaModel
+          magicMetaModelDiff = magicMetaModel.loadDefaultTargets()
         }
-      }
+
+        override fun onSuccess() {
+          runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
+        }
+      }.queue()
     }
   }
 
   public override fun update(e: AnActionEvent) {
     val project = e.project
-    val connectionService = project?.getService(BspConnectionService::class.java)
-    e.presentation.isEnabled = connectionService?.isRunning() == true
+
+    if (project != null) {
+      doUpdate(project, e)
+    } else {
+      log.warn("RestartAction cannot be updated! Project not available.")
+    }
+  }
+
+  private fun doUpdate(project: Project, e: AnActionEvent) {
+    val bspConnectionService = BspConnectionService.getInstance(project)
+    e.presentation.isEnabled = bspConnectionService.connection?.isConnected() == true
+    e.presentation.isVisible = bspConnectionService.connection is BspGeneratorConnection
+  }
+
+  override fun getActionUpdateThread(): ActionUpdateThread =
+    ActionUpdateThread.BGT
+
+  private companion object {
+    private val log = logger<RestartAction>()
   }
 }

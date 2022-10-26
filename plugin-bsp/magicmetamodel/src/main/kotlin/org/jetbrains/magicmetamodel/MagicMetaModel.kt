@@ -101,6 +101,8 @@ public interface MagicMetaModel {
    */
   public fun getAllNotLoadedTargets(): List<BuildTarget>
 
+  public fun clear()
+
   public companion object {
     private val log = logger<MagicMetaModel>()
 
