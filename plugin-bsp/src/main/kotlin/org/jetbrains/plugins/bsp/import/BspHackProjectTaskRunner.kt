@@ -9,6 +9,7 @@ import com.intellij.task.*
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.MagicMetaModel
+import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.*
 import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
 
@@ -21,9 +22,11 @@ public class BspHackProjectTaskRunner : ProjectTaskRunner() {
     return true
   }
 
-  override fun run(project: Project,
-                   projectTaskContext: ProjectTaskContext,
-                   vararg tasks: ProjectTask): Promise<Result> {
+  override fun run(
+    project: Project,
+    projectTaskContext: ProjectTaskContext,
+    vararg tasks: ProjectTask
+  ): Promise<Result> {
     return buildAllBspTargets(project)
   }
 
@@ -41,12 +44,13 @@ public class BspHackProjectTaskRunner : ProjectTaskRunner() {
 
     val bspResolver = VeryTemporaryBspResolver(
       project.stateStore.projectBasePath,
-      bspConnectionService.server!!,
+      bspConnectionService.connection!!.server!!,
       BspSyncConsoleService.getInstance(project).bspSyncConsole,
       bspBuildConsole
     )
 
-    val tempConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole  // TODO - temporary (remove once BspBuildConsole works correctly)
+    val tempConsole =
+      BspSyncConsoleService.getInstance(project).bspSyncConsole // TODO - temporary (remove once BspBuildConsole works correctly)
     tempConsole.startImport("bsp-build", "BSP: Build", "Building...")
     val buildCompileResult: CompileResult = bspResolver.buildTargets(
       targets

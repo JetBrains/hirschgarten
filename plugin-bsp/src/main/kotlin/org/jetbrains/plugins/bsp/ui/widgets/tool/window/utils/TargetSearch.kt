@@ -11,7 +11,7 @@ import javax.swing.SwingConstants
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-private class TextChangeListener(val onUpdate: () -> Unit): DocumentListener {
+private class TextChangeListener(val onUpdate: () -> Unit) : DocumentListener {
   override fun insertUpdate(e: DocumentEvent?) {
     onUpdate()
   }

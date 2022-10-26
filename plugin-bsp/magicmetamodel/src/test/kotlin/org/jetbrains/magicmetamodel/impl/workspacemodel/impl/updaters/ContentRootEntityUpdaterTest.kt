@@ -3,6 +3,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.workspaceModel.storage.bridgeEntities.api.ContentRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.api.ExcludeUrlEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.workspace.model.matchers.entries.ExpectedContentRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -47,9 +48,15 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = contentPath.toVirtualFileUrl(virtualFileUrlManager),
-        excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager)),
         excludedPatterns = emptyList(),
-      ),
+      ) {
+        excludedUrls = listOf(
+          ExcludeUrlEntity(
+            Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager),
+            parentModuleEntity.entitySource
+          )
+        )
+      },
       parentModuleEntity = parentModuleEntity,
     )
 
@@ -88,9 +95,15 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = contentPath1.toVirtualFileUrl(virtualFileUrlManager),
-        excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager)),
         excludedPatterns = emptyList(),
-      ),
+      ) {
+        excludedUrls = listOf(
+          ExcludeUrlEntity(
+            Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager),
+            parentModuleEntity.entitySource
+          )
+        )
+      },
       parentModuleEntity = parentModuleEntity,
     )
 
@@ -98,7 +111,6 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = contentPath2.toVirtualFileUrl(virtualFileUrlManager),
-        excludedUrls = emptyList(),
         excludedPatterns = emptyList(),
       ),
       parentModuleEntity = parentModuleEntity,
@@ -108,7 +120,6 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = contentPath3.toVirtualFileUrl(virtualFileUrlManager),
-        excludedUrls = emptyList(),
         excludedPatterns = emptyList(),
       ),
       parentModuleEntity = parentModuleEntity,

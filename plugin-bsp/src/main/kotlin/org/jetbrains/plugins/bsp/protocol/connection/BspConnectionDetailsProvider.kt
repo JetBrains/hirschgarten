@@ -16,7 +16,6 @@ public class BspConnectionDetailsProvider(
     return bspConnectionFilesProvider.isAnyBspConnectionFileDefined()
   }
 
-
   private fun initProvidersIfNeeded(projectPath: VirtualFile) {
     if (!::bspConnectionFilesProvider.isInitialized) {
       bspConnectionFilesProvider = BspConnectionFilesProvider(projectPath)

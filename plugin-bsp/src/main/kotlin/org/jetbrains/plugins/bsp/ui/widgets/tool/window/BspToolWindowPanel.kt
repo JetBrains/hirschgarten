@@ -1,13 +1,19 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window
 
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.Anchor
+import com.intellij.openapi.actionSystem.Constraints
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.ui.components.JBScrollPane
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.services.BspConnectionService
-import org.jetbrains.plugins.bsp.services.BspUtilService
+import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
+import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RestartAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
@@ -47,12 +53,13 @@ public class ListsUpdater(
 public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
   public constructor(project: Project) : this() {
-
-    val bspUtilService = BspUtilService.getInstance()
     val magicMetaModel = MagicMetaModelService.getInstance(project).magicMetaModel
-    val bspConnectionService = BspConnectionService.getInstance(project)
     val actionManager = ActionManager.getInstance()
-    val listsUpdater = ListsUpdater(magicMetaModel, bspConnectionService.toolName)
+    val g = BspConnectionDetailsGeneratorProvider(
+      project.guessProjectDir()!!,
+      BspConnectionDetailsGeneratorExtension.extensions()
+    )
+    val listsUpdater = ListsUpdater(magicMetaModel, g.firstGeneratorTEMPORARY())
 
     val actionGroup = actionManager
       .getAction("Bsp.ActionsToolbar") as DefaultActionGroup
@@ -67,12 +74,10 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
       }
     }
 
-    if (!bspUtilService.loadedViaBspFile.contains(project.locationHash)) {
-      actionGroup.add(
-        RestartAction(restartActionName, BspPluginIcons.restart),
-        Constraints(Anchor.AFTER, "Bsp.ReloadAction")
-      )
-    }
+    actionGroup.add(
+      RestartAction(),
+      Constraints(Anchor.AFTER, "Bsp.ReloadAction")
+    )
 
     actionGroup.addSeparator()
 

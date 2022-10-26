@@ -46,7 +46,6 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl,
-        excludedUrls = emptyList(),
         excludedPatterns = emptyList()
       ),
       sourceRootEntity = SourceRootEntity(
@@ -93,7 +92,6 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl1,
-        excludedUrls = emptyList(),
         excludedPatterns = emptyList()
       ),
       sourceRootEntity = SourceRootEntity(
@@ -114,7 +112,6 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl2,
-        excludedUrls = emptyList(),
         excludedPatterns = emptyList()
       ),
       sourceRootEntity = SourceRootEntity(
@@ -135,7 +132,6 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl3,
-        excludedUrls = emptyList(),
         excludedPatterns = emptyList()
       ),
       sourceRootEntity = SourceRootEntity(

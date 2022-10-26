@@ -181,6 +181,17 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   override fun getAllNotLoadedTargets(): List<BuildTarget> =
     projectDetails.targets.filter { loadedTargetsStorage.isTargetNotLoaded(it.id) }
 
+  override fun clear() {
+    val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
+    val workspaceModelUpdater = WorkspaceModelUpdater.create(
+      builderSnapshot.builder,
+      magicMetaModelProjectConfig.virtualFileUrlManager,
+    )
+
+    workspaceModelUpdater.clear()
+    loadedTargetsStorage.clear()
+  }
+
   // TODO - test
   override fun toState(): DefaultMagicMetaModelState =
     DefaultMagicMetaModelState(

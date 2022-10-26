@@ -8,11 +8,11 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
 import javax.swing.JComponent
 
 public class LoadedTargetsMouseListener(
@@ -44,13 +44,13 @@ public class LoadedTargetsMouseListener(
     if (target != null) {
       val group = DefaultActionGroup()
       val actions = mutableListOf<AnAction>()
-      if(target.capabilities.canCompile) {
+      if (target.capabilities.canCompile) {
         actions.add(BuildTargetAction(target.id))
       }
-      if(target.capabilities.canRun) {
+      if (target.capabilities.canRun) {
         actions.add(RunTargetAction(target.id))
       }
-      if(target.capabilities.canTest) {
+      if (target.capabilities.canTest) {
         actions.add(TestTargetAction(target.id))
       }
       group.addAll(actions)

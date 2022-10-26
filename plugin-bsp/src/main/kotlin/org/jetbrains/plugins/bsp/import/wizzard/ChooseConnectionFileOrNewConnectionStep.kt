@@ -46,7 +46,6 @@ public open class ChooseConnectionFileOrNewConnectionStep(
           row {
             radioButton(newConnectionPrompt, NewConnection)
           }.visible(isGeneratorAvailable)
-
         }.bind({ connectionFileOrNewConnectionProperty.get() }, { connectionFileOrNewConnectionProperty.set(it) })
       }
     }

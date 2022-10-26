@@ -63,7 +63,6 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
     ).joinToString(" ")
 }
 
-
 public class BazelEditProjectViewStep(
   private val projectBasePath: Path,
   private val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
@@ -80,7 +79,9 @@ public class BazelEditProjectViewStep(
         }
       }
 
-  private fun calculateProjectViewFilePath(connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>): Path? =
+  private fun calculateProjectViewFilePath(
+    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+  ): Path? =
     when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
       is ConnectionFile ->
         calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails)
@@ -118,7 +119,9 @@ public class BazelEditProjectViewStep(
         }
       }
 
-  private fun calculateIsProjectViewFileNameEditable(connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>): Boolean =
+  private fun calculateIsProjectViewFileNameEditable(
+    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+  ): Boolean =
     when (connectionFileOrNewConnectionProperty.get()) {
       is ConnectionFile -> false
       else -> true
@@ -133,7 +136,9 @@ public class BazelEditProjectViewStep(
         }
       }
 
-  private fun calculateIsProjectViewFileNameSpecified(connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>): Boolean =
+  private fun calculateIsProjectViewFileNameSpecified(
+    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+  ): Boolean =
     when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
       is ConnectionFile -> calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails) != null
       else -> true

@@ -56,7 +56,6 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         name = "BSP: test-1.0.0",
         roots = listOf(expectedLibrarySourcesRoot, expectedLibraryClassesRoot),
-        excludedRoots = emptyList(),
         entitySource = DoNotSaveInDotIdeaDirEntitySource,
       )
     )
@@ -101,7 +100,6 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         name = "BSP: test1-1.0.0",
         roots = listOf(expectedLibrarySourcesRoot1, expectedLibraryClassesRoot1),
-        excludedRoots = emptyList(),
         entitySource = parentModuleEntity.entitySource,
       )
     )
@@ -119,7 +117,6 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         name = "BSP: test2-2.0.0",
         roots = listOf(expectedLibrarySourcesRoot2, expectedLibraryClassesRoot2),
-        excludedRoots = emptyList(),
         entitySource = parentModuleEntity.entitySource,
       )
     )

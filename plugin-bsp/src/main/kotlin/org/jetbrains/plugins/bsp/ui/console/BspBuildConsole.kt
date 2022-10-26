@@ -62,9 +62,15 @@ public class BspBuildConsole(private val buildView: BuildProgressListener, priva
     params.diagnostics.forEach {
       if (it.message.isNotBlank()) {
         val messageToSend = prepareTextToPrint(it.message)
-        val event = FileMessageEventImpl(params.originId, MessageEvent.Kind.ERROR, null, messageToSend, null, FilePosition(File(
-          URI(params.textDocument.uri)
-        ), it.range.start.line, it.range.start.character))
+        val event = FileMessageEventImpl(
+          params.originId, MessageEvent.Kind.ERROR, null, messageToSend, null,
+          FilePosition(
+            File(
+              URI(params.textDocument.uri)
+            ),
+            it.range.start.line, it.range.start.character
+          )
+        )
         buildView.onEvent(params.originId, event)
       }
     }

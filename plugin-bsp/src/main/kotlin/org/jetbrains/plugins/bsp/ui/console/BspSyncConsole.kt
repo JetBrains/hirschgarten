@@ -66,9 +66,15 @@ public class BspSyncConsole(private val syncView: BuildProgressListener, private
     params.diagnostics.forEach {
       if (it.message.isNotBlank()) {
         val messageToSend = prepareTextToPrint(it.message)
-        val event = FileMessageEventImpl(syncId, MessageEvent.Kind.ERROR, null, messageToSend, null, FilePosition(File(
-          URI(params.textDocument.uri)
-        ), it.range.start.line, it.range.start.character))
+        val event = FileMessageEventImpl(
+          syncId, MessageEvent.Kind.ERROR, null, messageToSend, null,
+          FilePosition(
+            File(
+              URI(params.textDocument.uri)
+            ),
+            it.range.start.line, it.range.start.character
+          )
+        )
         syncView.onEvent(syncId, event)
       }
     }

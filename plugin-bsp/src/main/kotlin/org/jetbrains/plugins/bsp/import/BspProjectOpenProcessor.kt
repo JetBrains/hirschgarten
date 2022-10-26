@@ -9,7 +9,6 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
-import org.jetbrains.plugins.bsp.services.BspUtilService
 import javax.swing.Icon
 
 public class BspProjectOpenProcessor : ProjectOpenProcessor() {
@@ -31,11 +30,6 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
     virtualFile: VirtualFile,
     projectToClose: Project?,
     forceOpenInNewFrame: Boolean
-  ): Project? {
-    val project =
-      PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
-    project?.putUserData(BspUtilService.projectPathKey, virtualFile)
-
-    return project
-  }
+  ): Project? =
+    PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
 }

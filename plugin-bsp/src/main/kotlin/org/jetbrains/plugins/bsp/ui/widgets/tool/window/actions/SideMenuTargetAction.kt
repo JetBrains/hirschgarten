@@ -10,7 +10,9 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.Messages
-import org.jetbrains.plugins.bsp.services.BspUtilService
+import com.intellij.openapi.util.Key
+
+public val targetIdTOREMOVE: Key<BuildTargetIdentifier> = Key<BuildTargetIdentifier>("targetId")
 
 internal abstract class SideMenuTargetAction(
   private val target: BuildTargetIdentifier,
@@ -32,11 +34,11 @@ internal abstract class SideMenuTargetAction(
           val executionEnvironment = ExecutionEnvironmentBuilder(project, runExecutor)
             .runnerAndSettings(it, setting)
             .build()
-          executionEnvironment.putUserData(BspUtilService.targetIdKey, target)
+          // TODO shouldnt we use 'target' for that?
+          executionEnvironment.putUserData(targetIdTOREMOVE, target)
           it.execute(executionEnvironment)
-        }
-        catch (e: Exception) {
-          Messages.showErrorDialog(project, e.message, "error")
+        } catch (e: Exception) {
+          Messages.showErrorDialog(project, e.message, "Error")
         }
       }
     }

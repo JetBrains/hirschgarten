@@ -54,7 +54,7 @@ private class TargetTreeCellRenderer(val targetIcon: Icon) : TreeCellRenderer {
         "[not renderable]",
         PlatformIcons.ERROR_INTRODUCTION_ICON,
         SwingConstants.LEFT
-      )  // TODO - temporary
+      ) // TODO - temporary
     }
   }
 }
