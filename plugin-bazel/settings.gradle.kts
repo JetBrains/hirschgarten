@@ -1,9 +1,8 @@
+rootProject.name = "intellij-bsp-bazel"
+
 pluginManagement {
-    dependencyResolutionManagement {
-        repositories {
-            mavenCentral()
-        }
+    repositories {
+        maven("https://oss.sonatype.org/content/repositories/snapshots/")
+        gradlePluginPortal()
     }
 }
-
-rootProject.name = "intellij-bsp-bazel"
