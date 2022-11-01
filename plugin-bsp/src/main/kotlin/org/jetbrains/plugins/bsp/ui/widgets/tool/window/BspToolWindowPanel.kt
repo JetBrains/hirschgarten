@@ -7,12 +7,12 @@ import com.intellij.openapi.actionSystem.Anchor
 import com.intellij.openapi.actionSystem.Constraints
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.ui.components.JBScrollPane
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
+import org.jetbrains.plugins.bsp.import.getProjectDirOrThrow
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RestartAction
@@ -56,7 +56,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     val magicMetaModel = MagicMetaModelService.getInstance(project).magicMetaModel
     val actionManager = ActionManager.getInstance()
     val g = BspConnectionDetailsGeneratorProvider(
-      project.guessProjectDir()!!,
+      project.getProjectDirOrThrow(),
       BspConnectionDetailsGeneratorExtension.extensions()
     )
     val listsUpdater = ListsUpdater(magicMetaModel, g.firstGeneratorTEMPORARY())

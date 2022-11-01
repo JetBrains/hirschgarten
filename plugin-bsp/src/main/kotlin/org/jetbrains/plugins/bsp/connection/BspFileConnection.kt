@@ -58,7 +58,11 @@ public class BspFileConnection(
 
   private fun createAndStartProcessAndAddDisconnectActions(bspConnectionDetails: BspConnectionDetails): Process {
     val process = createAndStartProcess(bspConnectionDetails)
-    disconnectActions.add { process.waitFor(15, TimeUnit.SECONDS) }
+
+    disconnectActions.add { server?.buildShutdown() }
+    disconnectActions.add { server?.onBuildExit() }
+
+    disconnectActions.add { process.waitFor(3, TimeUnit.SECONDS) }
     disconnectActions.add { process.destroy() }
 
     return process
@@ -109,8 +113,9 @@ public class BspFileConnection(
   public override fun disconnect() {
     val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
     disconnectActions.clear()
-
     throwExceptionWithSuppressedIfOccurred(exceptions)
+
+    server = null
   }
 
   private fun executeDisconnectActionsAndCollectExceptions(disconnectActions: List<() -> Unit>): List<Throwable> =

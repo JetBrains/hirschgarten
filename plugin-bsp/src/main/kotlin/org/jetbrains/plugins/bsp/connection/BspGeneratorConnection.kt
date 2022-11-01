@@ -1,9 +1,9 @@
 package org.jetbrains.plugins.bsp.connection
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
+import org.jetbrains.plugins.bsp.import.getProjectDirOrThrow
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
@@ -76,8 +76,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
 
     bspSyncConsole.startSubtask(generateConnectionFileSubtaskId, "BSP: Generating BSP connection details...")
     val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
-      // TODO
-      project.guessProjectDir()!!,
+      project.getProjectDirOrThrow(),
       consoleOutputStream
     )
     // TODO

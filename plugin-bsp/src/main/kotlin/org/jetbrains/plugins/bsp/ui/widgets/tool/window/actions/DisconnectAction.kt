@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.runBackgroundableTask
+import com.intellij.openapi.progress.runModalTask
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
@@ -24,7 +24,7 @@ public class DisconnectAction : AnAction(BspAllTargetsWidgetBundle.message("dis-
   private fun doAction(project: Project) {
     val bspConnectionService = BspConnectionService.getInstance(project)
 
-    runBackgroundableTask("Disconnecting...", project) {
+    runModalTask("Disconnecting...", project = project, cancellable = false) {
       bspConnectionService.connection?.disconnect()
     }
   }

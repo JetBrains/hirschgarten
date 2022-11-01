@@ -61,7 +61,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
 
   private fun calculateInstallerCommand(): String =
     listOfNotNull(
-      "cs launch org.jetbrains.bsp:bazel-bsp:2.2.1 -M org.jetbrains.bsp.bazel.install.Install",
+      "cs launch org.jetbrains.bsp:bazel-bsp:2.3.0 -M org.jetbrains.bsp.bazel.install.Install",
       projectViewFilePathProperty.get()?.let { "-- -p $it" }
     ).joinToString(" ")
 }

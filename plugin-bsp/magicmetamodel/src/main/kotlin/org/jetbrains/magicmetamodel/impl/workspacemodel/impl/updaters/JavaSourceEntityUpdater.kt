@@ -3,10 +3,10 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.bridgeEntities.addJavaSourceRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.addSourceRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.api.ContentRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.api.JavaSourceRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.api.SourceRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootPropertiesEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path
 
@@ -25,11 +25,11 @@ internal data class JavaSourceRoot(
 
 internal class JavaSourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithParentModuleUpdater<JavaSourceRoot, JavaSourceRootEntity> {
+) : WorkspaceModelEntityWithParentModuleUpdater<JavaSourceRoot, JavaSourceRootPropertiesEntity> {
 
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntity(entityToAdd: JavaSourceRoot, parentModuleEntity: ModuleEntity): JavaSourceRootEntity {
+  override fun addEntity(entityToAdd: JavaSourceRoot, parentModuleEntity: ModuleEntity): JavaSourceRootPropertiesEntity {
     val contentRootEntity = addContentRootEntity(entityToAdd, parentModuleEntity)
 
     val sourceRootEntity = addSourceRootEntity(
@@ -71,7 +71,7 @@ internal class JavaSourceEntityUpdater(
     builder: MutableEntityStorage,
     sourceRoot: SourceRootEntity,
     entityToAdd: JavaSourceRoot,
-  ): JavaSourceRootEntity = builder.addJavaSourceRootEntity(
+  ): JavaSourceRootPropertiesEntity = builder.addJavaSourceRootEntity(
     sourceRoot = sourceRoot,
     generated = entityToAdd.generated,
     packagePrefix = entityToAdd.packagePrefix,

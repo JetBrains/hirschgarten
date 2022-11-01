@@ -33,24 +33,30 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.plugins.bsp.connection.BspServer
+import org.jetbrains.plugins.bsp.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
 import org.jetbrains.plugins.bsp.services.BspRunConsoleService
+import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.BspTestConsoleService
 import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
 import org.jetbrains.plugins.bsp.ui.console.BspSyncConsole
-import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-private val importSubtaskId = "import-subtask-id"
+private const val importSubtaskId = "import-subtask-id"
 
 public class VeryTemporaryBspResolver(
-  private val projectBaseDir: Path,
-  private val server: BspServer,
-  private val bspSyncConsole: BspSyncConsole,
-  private val bspBuildConsole: BspBuildConsole
+  project: Project
 ) {
+
+  private val projectBaseDir = project.getProjectDirOrThrow()
+
+  // TODO
+  private val server = BspConnectionService.getConnectionOrThrow(project).server!!
+  private val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
+  private val bspBuildConsole = BspBuildConsoleService.getInstance(project).bspBuildConsole
 
   public fun runTarget(targetId: BuildTargetIdentifier): RunResult {
 
@@ -98,14 +104,11 @@ public class VeryTemporaryBspResolver(
   }
 
   public fun collectModel(): ProjectDetails {
-
     bspSyncConsole.startSubtask(importSubtaskId, "Collecting model...")
     println("buildInitialize")
     val initializeBuildResult = server.buildInitialize(createInitializeBuildParams()).catchSyncErrors().get()
 
     println("onBuildInitialized")
-    server.onBuildInitialized()
-
     server.onBuildInitialized()
     val projectDetails = collectModelWithCapabilities(initializeBuildResult.capabilities)
 

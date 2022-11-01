@@ -25,7 +25,7 @@ dependencies {
   implementation("com.google.code.gson:gson:2.9.1")
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
-  testImplementation("io.kotest:kotest-assertions-core:5.4.2")
+  testImplementation("io.kotest:kotest-assertions-core:5.5.2")
 }
 
 // Configure gradle-intellij-plugin plugin.
