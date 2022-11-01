@@ -8,11 +8,9 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
 import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
@@ -30,9 +28,6 @@ public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.a
   }
 
   private fun doAction(project: Project) {
-    val bspConnectionService = BspConnectionService.getInstance(project)
-    val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
-    val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
 
     object : Task.Backgroundable(project, "Reloading...", true) {
@@ -41,13 +36,7 @@ public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.a
       override fun run(indicator: ProgressIndicator) {
         val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
         bspSyncConsole.startImport("bsp-reload", "BSP: Reload", "Reloading...")
-        val bspResolver =
-          VeryTemporaryBspResolver(
-            project.stateStore.projectBasePath,
-            bspConnectionService.connection!!.server!!,
-            bspSyncConsoleService.bspSyncConsole,
-            bspBuildConsoleService.bspBuildConsole
-          )
+        val bspResolver = VeryTemporaryBspResolver(project)
         val projectDetails = bspResolver.collectModel()
 
         magicMetaModelService.magicMetaModel.clear()

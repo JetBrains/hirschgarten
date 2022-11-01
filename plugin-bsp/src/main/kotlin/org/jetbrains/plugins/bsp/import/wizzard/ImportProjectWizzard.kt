@@ -4,8 +4,8 @@ import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.ide.wizard.StepAdapter
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.ui.DialogPanel
+import org.jetbrains.plugins.bsp.import.getProjectDirOrThrow
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import javax.swing.JComponent
 
@@ -31,7 +31,11 @@ public class ImportProjectWizzard(
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
 
   init {
-    val firstStep = ChooseConnectionFileOrNewConnectionStep(project.guessProjectDir()!!, true)
+    val firstStep = ChooseConnectionFileOrNewConnectionStep(
+      project.getProjectDirOrThrow(),
+      // TODO it will be changed
+      bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY() != null
+    )
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty
     addStep(firstStep)
 

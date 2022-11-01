@@ -20,19 +20,14 @@
     <bspConnectionDetailsGeneratorExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.TemporaryBazelBspDetailsConnectionGenerator"
     />
-
     <bspBuildTargetClassifierExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.TemporaryTestTargetClassifier"
     />
 
     <projectOpenProcessor
       implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
-
-    <projectCloseHandler
-      implementation="org.jetbrains.plugins.bsp.import.BspProjectCloseHandler"/>
-
     <postStartupActivity
-      implementation="org.jetbrains.plugins.bsp.import.BspInitializer"/>
+      implementation="org.jetbrains.plugins.bsp.import.BspStartupActivity"/>
 
     <projectTaskRunner
       implementation="org.jetbrains.plugins.bsp.import.BspHackProjectTaskRunner"/>
@@ -63,5 +58,7 @@
   </actions>
 
   <applicationListeners>
+    <listener class="org.jetbrains.plugins.bsp.import.ProjectClosingListener"
+              topic="com.intellij.openapi.project.ProjectManagerListener"/>
   </applicationListeners>
 </idea-plugin>

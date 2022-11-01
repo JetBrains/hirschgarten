@@ -1,17 +1,19 @@
 package org.jetbrains.plugins.bsp.import
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.CompileResult
+import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
-import com.intellij.task.*
+import com.intellij.task.ProjectTask
+import com.intellij.task.ProjectTaskContext
+import com.intellij.task.ProjectTaskRunner
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.MagicMetaModel
-import org.jetbrains.plugins.bsp.connection.BspConnectionService
-import org.jetbrains.plugins.bsp.services.*
-import org.jetbrains.plugins.bsp.ui.console.BspBuildConsole
+import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
+import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 
 /**
  * WARNING: temporary solution, might change
@@ -32,22 +34,13 @@ public class BspHackProjectTaskRunner : ProjectTaskRunner() {
 
   private fun buildAllBspTargets(project: Project): Promise<Result> {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
-    val bspConnectionService = BspConnectionService.getInstance(project)
-    val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
 
     val magicMetaModel: MagicMetaModel = magicMetaModelService.magicMetaModel
     val targets: List<BuildTarget> = magicMetaModel.getAllLoadedTargets() + magicMetaModel.getAllNotLoadedTargets()
 
-    val bspBuildConsole: BspBuildConsole = bspBuildConsoleService.bspBuildConsole
-
     val promiseResult = AsyncPromise<Result>()
 
-    val bspResolver = VeryTemporaryBspResolver(
-      project.stateStore.projectBasePath,
-      bspConnectionService.connection!!.server!!,
-      BspSyncConsoleService.getInstance(project).bspSyncConsole,
-      bspBuildConsole
-    )
+    val bspResolver = VeryTemporaryBspResolver(project)
 
     val tempConsole =
       BspSyncConsoleService.getInstance(project).bspSyncConsole // TODO - temporary (remove once BspBuildConsole works correctly)

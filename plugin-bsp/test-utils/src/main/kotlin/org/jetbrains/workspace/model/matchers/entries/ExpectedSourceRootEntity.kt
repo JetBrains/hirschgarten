@@ -1,8 +1,10 @@
 package org.jetbrains.workspace.model.matchers.entries
 
-import com.intellij.workspaceModel.storage.bridgeEntities.api.ContentRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.api.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.api.SourceRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.JavaResourceRootPropertiesEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootPropertiesEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
 import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
@@ -27,7 +29,32 @@ private fun validateSourceRootEntity(
   actual.url shouldBe expected.sourceRootEntity.url
   actual.rootType shouldBe expected.sourceRootEntity.rootType
 
+  actual.javaSourceRoots.shouldContainExactlyInAnyOrder(
+    ::validateJavaSourceRootEntity,
+    expected.sourceRootEntity.javaSourceRoots
+  )
+  actual.javaResourceRoots.shouldContainExactlyInAnyOrder(
+    ::validateJavaResourceRootEntity,
+    expected.sourceRootEntity.javaResourceRoots
+  )
+
   actual.contentRoot shouldBeEqual toExpectedContentRootEntity(expected)
+}
+
+private fun validateJavaSourceRootEntity(
+  actual: JavaSourceRootPropertiesEntity,
+  expected: JavaSourceRootPropertiesEntity
+) {
+  actual.generated shouldBe expected.generated
+  actual.packagePrefix shouldBe expected.packagePrefix
+}
+
+private fun validateJavaResourceRootEntity(
+  actual: JavaResourceRootPropertiesEntity,
+  expected: JavaResourceRootPropertiesEntity
+) {
+  actual.generated shouldBe expected.generated
+  actual.relativeOutputPath shouldBe expected.relativeOutputPath
 }
 
 private fun toExpectedContentRootEntity(expected: ExpectedSourceRootEntity): ExpectedContentRootEntity =
@@ -35,3 +62,4 @@ private fun toExpectedContentRootEntity(expected: ExpectedSourceRootEntity): Exp
     contentRootEntity = expected.contentRootEntity,
     parentModuleEntity = expected.parentModuleEntity,
   )
+

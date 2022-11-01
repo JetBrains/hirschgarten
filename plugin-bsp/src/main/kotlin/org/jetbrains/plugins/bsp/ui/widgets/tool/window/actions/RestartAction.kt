@@ -8,13 +8,11 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.project.stateStore
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
 import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
@@ -37,8 +35,6 @@ public class RestartAction :
 
     if (bspConnectionService.connection != null && bspConnectionService.connection is BspGeneratorConnection) {
       val connection = bspConnectionService.connection as BspGeneratorConnection
-      val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-      val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
       val magicMetaModelService = MagicMetaModelService.getInstance(project)
       val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
       bspSyncConsole.startImport("bsp-restart", "BSP: Restart", "Restarting...")
@@ -47,13 +43,7 @@ public class RestartAction :
 
         override fun run(indicator: ProgressIndicator) {
           connection.restart()
-          val bspResolver =
-            VeryTemporaryBspResolver(
-              project.stateStore.projectBasePath,
-              bspConnectionService.connection!!.server!!,
-              bspSyncConsoleService.bspSyncConsole,
-              bspBuildConsoleService.bspBuildConsole
-            )
+          val bspResolver = VeryTemporaryBspResolver(project)
           val projectDetails = bspResolver.collectModel()
 
           magicMetaModelService.magicMetaModel.clear()
