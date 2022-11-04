@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.import.wizzard
+package org.jetbrains.plugins.bsp.flow.open.wizzard
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.google.gson.Gson

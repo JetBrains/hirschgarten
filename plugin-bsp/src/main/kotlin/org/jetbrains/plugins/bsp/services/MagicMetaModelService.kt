@@ -22,16 +22,30 @@ import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 public class MagicMetaModelService(private val project: Project) :
   PersistentStateComponent<DefaultMagicMetaModelState> {
 
-  public lateinit var magicMetaModel: MagicMetaModelImpl
+  public var magicMetaModel: MagicMetaModelImpl = initEmptyMagicMetaModelTEMPORARY()
+
+  private fun initEmptyMagicMetaModelTEMPORARY(): MagicMetaModelImpl {
+    val magicMetaModelProjectConfig = calculateProjectConfig(project)
+    val emptyProjectDetails = ProjectDetails(
+      targetsId = emptyList(),
+      targets = emptySet(),
+      sources = emptyList(),
+      resources = emptyList(),
+      dependenciesSources = emptyList(),
+      javacOptions = emptyList(),
+    )
+
+    return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)
+  }
 
   public fun initializeMagicModel(projectDetails: ProjectDetails) {
     val magicMetaModelProjectConfig = calculateProjectConfig(project)
-    
+
     magicMetaModel = MagicMetaModel.create(magicMetaModelProjectConfig, projectDetails)
   }
 
   override fun getState(): DefaultMagicMetaModelState =
-    if (this::magicMetaModel.isInitialized) magicMetaModel.toState() else DefaultMagicMetaModelState()
+    magicMetaModel.toState()
 
   override fun loadState(state: DefaultMagicMetaModelState) {
     magicMetaModel = MagicMetaModel.fromState(state, calculateProjectConfig(project))

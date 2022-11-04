@@ -33,8 +33,6 @@ internal object SourcesItemToJavaSourceRootTransformer :
     val sourceRoots = getSourceRootsAsURIs(inputEntity.sourcesItem)
     val rootType = inferRootType(inputEntity.buildTarget)
 
-    println(inputEntity)
-    println(rootType)
     return SourceItemToSourceRootTransformer
       .transform(inputEntity.sourcesItem.sources)
       .map { toJavaSourceRoot(it, sourceRoots, rootType) }

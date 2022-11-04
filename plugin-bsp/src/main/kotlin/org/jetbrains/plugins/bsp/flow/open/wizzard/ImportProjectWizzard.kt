@@ -1,11 +1,11 @@
-package org.jetbrains.plugins.bsp.import.wizzard
+package org.jetbrains.plugins.bsp.flow.open.wizzard
 
 import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.ide.wizard.StepAdapter
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import org.jetbrains.plugins.bsp.import.getProjectDirOrThrow
+import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import javax.swing.JComponent
 
@@ -31,8 +31,10 @@ public class ImportProjectWizzard(
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
 
   init {
+    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
+    val projectProperties = projectPropertiesService.projectProperties
     val firstStep = ChooseConnectionFileOrNewConnectionStep(
-      project.getProjectDirOrThrow(),
+      projectProperties.projectRootDir,
       // TODO it will be changed
       bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY() != null
     )

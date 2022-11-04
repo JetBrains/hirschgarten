@@ -25,15 +25,16 @@
     />
 
     <projectOpenProcessor
-      implementation="org.jetbrains.plugins.bsp.import.BspProjectOpenProcessor"/>
+      implementation="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor"/>
     <postStartupActivity
-      implementation="org.jetbrains.plugins.bsp.import.BspStartupActivity"/>
+      implementation="org.jetbrains.plugins.bsp.flow.open.BspStartupActivity"/>
 
     <projectTaskRunner
-      implementation="org.jetbrains.plugins.bsp.import.BspHackProjectTaskRunner"/>
+      implementation="org.jetbrains.plugins.bsp.actions.building.BspHackProjectTaskRunner"/>
 
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.connection.BspConnectionService"/>
+    <projectService serviceImplementation="org.jetbrains.plugins.bsp.server.connection.BspConnectionService"/>
+    <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.ProjectPropertiesService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.console.BspConsoleService"/>
 
   </extensions>
@@ -56,7 +57,7 @@
   </actions>
 
   <applicationListeners>
-    <listener class="org.jetbrains.plugins.bsp.import.ProjectClosingListener"
+    <listener class="org.jetbrains.plugins.bsp.flow.close.ProjectClosingListener"
               topic="com.intellij.openapi.project.ProjectManagerListener"/>
   </applicationListeners>
 </idea-plugin>

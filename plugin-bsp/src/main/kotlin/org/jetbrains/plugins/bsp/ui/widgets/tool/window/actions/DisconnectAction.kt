@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.runModalTask
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class DisconnectAction : AnAction(BspAllTargetsWidgetBundle.message("dis-connect.action.text")) {

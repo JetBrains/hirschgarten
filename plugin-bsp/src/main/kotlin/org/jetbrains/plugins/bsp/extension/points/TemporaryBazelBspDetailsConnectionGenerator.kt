@@ -17,9 +17,9 @@ import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.io.exists
 import com.intellij.util.io.isFile
 import com.intellij.util.io.readText
-import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFile
-import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFileOrNewConnection
-import org.jetbrains.plugins.bsp.import.wizzard.ImportProjectWizzardStep
+import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFile
+import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFileOrNewConnection
+import org.jetbrains.plugins.bsp.flow.open.wizzard.ImportProjectWizzardStep
 import java.io.OutputStream
 import java.nio.file.InvalidPathException
 import java.nio.file.Path

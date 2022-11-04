@@ -1,9 +1,9 @@
-package org.jetbrains.plugins.bsp.connection
+package org.jetbrains.plugins.bsp.server.connection
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
+import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
-import org.jetbrains.plugins.bsp.import.getProjectDirOrThrow
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -71,18 +71,21 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
   }
 
   private fun generateNewConnectionFile(taskId: Any) {
+    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
+    val projectProperties = projectPropertiesService.projectProperties
+
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val consoleOutputStream = ConsoleOutputStream(generateConnectionFileSubtaskId, bspSyncConsole)
 
-    bspSyncConsole.startSubtask(taskId, generateConnectionFileSubtaskId, "BSP: Generating BSP connection details...")
+    bspSyncConsole.startSubtask(taskId, generateConnectionFileSubtaskId, "Generating BSP connection details...")
     val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
-      project.getProjectDirOrThrow(),
+      projectProperties.projectRootDir,
       consoleOutputStream
     )
     // TODO
     val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)!!
     fileConnection = BspFileConnection(project, locatedBspConnectionDetails)
-    bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId, "BSP: Generating BSP connection details done!")
+    bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId, "Generating BSP connection details done!")
   }
 
   public companion object {

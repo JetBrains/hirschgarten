@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.server.tasks.BuildTargetTask
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class BuildTargetAction(
@@ -24,9 +24,8 @@ public class BuildTargetAction(
   }
 
   private fun doAction(project: Project) {
-    val bspResolver = VeryTemporaryBspResolver(project)
-    runBackgroundableTask("Build single target", project) {
-      bspResolver.buildTarget(target)
+    runBackgroundableTask("Building...", project) {
+      BuildTargetTask(project).execute(target)
     }
   }
 
