@@ -1,25 +1,22 @@
-package org.jetbrains.plugins.bsp.import
+package org.jetbrains.plugins.bsp.flow.open
 
-import com.intellij.openapi.application.runWriteAction
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
-import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.connection.BspConnectionService
-import org.jetbrains.plugins.bsp.connection.BspFileConnection
-import org.jetbrains.plugins.bsp.connection.BspGeneratorConnection
+import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
-import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFile
-import org.jetbrains.plugins.bsp.import.wizzard.ImportProjectWizzard
-import org.jetbrains.plugins.bsp.import.wizzard.NewConnection
+import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFile
+import org.jetbrains.plugins.bsp.flow.open.wizzard.ImportProjectWizzard
+import org.jetbrains.plugins.bsp.flow.open.wizzard.NewConnection
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
+import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
+import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
@@ -33,62 +30,38 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTarget
 public class BspStartupActivity : StartupActivity {
 
   override fun runActivity(project: Project) {
-    if (project.isBspProject()) {
+    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
+    val projectProperties = projectPropertiesService.projectProperties
+
+    if (projectProperties.isBspProject) {
       doRunActivity(project)
     }
   }
 
   private fun doRunActivity(project: Project) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.startTask("bsp-import", "BSP: Import", "Importing...")
+    bspSyncConsole.startTask("bsp-import", "Import", "Importing...")
 
     if (project.isNewProject()) {
       showWizzardAndInitializeConnection(project)
     }
 
-    val magicMetaModelService = MagicMetaModelService.getInstance(project)
-
-    // TODO it's ugly
-    val task = object : Task.Backgroundable(project, "Loading changes...", true) {
-
-      private var magicMetaModelDiff: MagicMetaModelDiff? = null
-
-      override fun run(indicator: ProgressIndicator) {
-        val connection = BspConnectionService.getConnectionOrThrow(project)
-        connection.connect("bsp-import")
-
-        val bspResolver = VeryTemporaryBspResolver(project)
-        val projectDetails = bspResolver.collectModel("bsp-import")
-
-        magicMetaModelService.initializeMagicModel(projectDetails)
-        val magicMetaModel = magicMetaModelService.magicMetaModel
-
-        magicMetaModelDiff = magicMetaModel.loadDefaultTargets()
-      }
-
-      override fun onSuccess() {
-        runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
-
-        ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
-          icon = BspPluginIcons.bsp
-          canCloseContent = false
-          anchor = ToolWindowAnchor.RIGHT
-          contentFactory = BspAllTargetsWidgetFactory()
-        }
-
-        val statusBar = WindowManager.getInstance().getStatusBar(project)
-        // TODO it's internal - we shouldnt use it
-        statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
-      }
-    }
-    task.queue()
+    val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-import").prepareBackgroundTask()
+    collectProjectDetailsTask.executeInTheBackground(
+      "Syncing...",
+      true,
+      beforeRun = { BspConnectionService.getConnectionOrThrow(project).connect("bsp-import") },
+      afterOnSuccess = { addBspWidgets(project); bspSyncConsole.finishTask("bsp-import", "Done!") }
+    )
   }
 
   private fun showWizzardAndInitializeConnection(
     project: Project,
   ) {
+    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
+    val projectProperties = projectPropertiesService.projectProperties
     val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(
-      project.getProjectDirOrThrow(),
+      projectProperties.projectRootDir,
       BspConnectionDetailsGeneratorExtension.extensions()
     )
 
@@ -119,5 +92,18 @@ public class BspStartupActivity : StartupActivity {
 
     val bspConnectionService = BspConnectionService.getInstance(project)
     bspConnectionService.init(bspFileConnection)
+  }
+
+  private fun addBspWidgets(project: Project) {
+    ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
+      icon = BspPluginIcons.bsp
+      canCloseContent = false
+      anchor = ToolWindowAnchor.RIGHT
+      contentFactory = BspAllTargetsWidgetFactory()
+    }
+
+    val statusBar = WindowManager.getInstance().getStatusBar(project)
+    // TODO it's internal - we shouldnt use it
+    statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
   }
 }

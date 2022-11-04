@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.connection
+package org.jetbrains.plugins.bsp.server.connection
 
 import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.JavaBuildServer
@@ -8,7 +8,6 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.services.UninitializedServiceVariableException
-
 
 public interface BspServer : BuildServer, JavaBuildServer
 

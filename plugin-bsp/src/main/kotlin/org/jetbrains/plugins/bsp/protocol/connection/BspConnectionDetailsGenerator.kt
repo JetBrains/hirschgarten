@@ -2,8 +2,8 @@ package org.jetbrains.plugins.bsp.protocol.connection
 
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFileOrNewConnection
-import org.jetbrains.plugins.bsp.import.wizzard.ImportProjectWizzardStep
+import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFileOrNewConnection
+import org.jetbrains.plugins.bsp.flow.open.wizzard.ImportProjectWizzardStep
 import java.io.OutputStream
 import java.nio.file.Path
 

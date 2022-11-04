@@ -3,15 +3,10 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import org.jetbrains.magicmetamodel.MagicMetaModelDiff
-import org.jetbrains.plugins.bsp.connection.BspConnectionService
-import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
@@ -28,31 +23,16 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
   }
 
   private fun doAction(project: Project) {
-    val bspConnectionService = BspConnectionService.getInstance(project)
-    val magicMetaModelService = MagicMetaModelService.getInstance(project)
+    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    bspSyncConsole.startTask("bsp-connect", "Connect", "Connecting...")
 
-    object : Task.Backgroundable(project, "Connecting...", true) {
-
-      private var magicMetaModelDiff: MagicMetaModelDiff? = null
-
-      override fun run(indicator: ProgressIndicator) {
-        val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-        bspSyncConsole.startTask("bsp-connect", "BSP: Connect", "Connecting...")
-        bspConnectionService.connection?.connect("bsp-connect")
-        val bspResolver = VeryTemporaryBspResolver(project)
-        // TODO add consoile
-        val projectDetails = bspResolver.collectModel("bsp-connect")
-
-        magicMetaModelService.magicMetaModel.clear()
-        magicMetaModelService.initializeMagicModel(projectDetails)
-        val magicMetaModel = magicMetaModelService.magicMetaModel
-        magicMetaModelDiff = magicMetaModel.loadDefaultTargets()
-      }
-
-      override fun onSuccess() {
-        runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
-      }
-    }.queue()
+    val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-connect").prepareBackgroundTask()
+    collectProjectDetailsTask.executeInTheBackground(
+      name = "Connecting...",
+      cancelable = true,
+      beforeRun = { BspConnectionService.getConnectionOrThrow(project).connect("bsp-connect") },
+      afterOnSuccess = { bspSyncConsole.finishTask("bsp-connect", "Done!") }
+    )
   }
 
   public override fun update(e: AnActionEvent) {

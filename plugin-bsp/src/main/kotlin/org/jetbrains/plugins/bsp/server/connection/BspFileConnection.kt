@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.connection
+package org.jetbrains.plugins.bsp.server.connection
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import ch.epfl.scala.bsp4j.BuildClient
@@ -9,7 +9,7 @@ import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
-import org.jetbrains.plugins.bsp.import.BspClient
+import org.jetbrains.plugins.bsp.server.client.BspClient
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -36,7 +36,7 @@ public class BspFileConnection(
   public override fun connect(taskId: Any) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
-    bspSyncConsole.startSubtask(taskId, connectSubtaskId, "BSP: Connecting to the server...")
+    bspSyncConsole.startSubtask(taskId, connectSubtaskId, "Connecting to the server...")
 
     bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection...")
     val client = createBspClient()
@@ -50,7 +50,7 @@ public class BspFileConnection(
     client.onConnectWithServer(server)
     bspSyncConsole.addMessage(connectSubtaskId, "Server initialized! Server is ready to use.")
 
-    bspSyncConsole.finishSubtask(connectSubtaskId, "BSP: Connecting to the server done!")
+    bspSyncConsole.finishSubtask(connectSubtaskId, "Connecting to the server done!")
   }
 
   private fun createAndStartProcessAndAddDisconnectActions(bspConnectionDetails: BspConnectionDetails): Process {

@@ -8,7 +8,7 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
+import org.jetbrains.plugins.bsp.server.tasks.TestTargetTask
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
@@ -50,7 +50,6 @@ public class TestRunConfiguration(project: Project, configurationFactory: Config
     return RunProfileState { executor2, _ ->
 
       val bspTestConsole = BspConsoleService.getInstance(project).bspTestConsole
-      val bspResolver = VeryTemporaryBspResolver(project)
 
       val processHandler = BspProcessHandler()
       val testConsole = BspTestConsolePrinter(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))
@@ -58,7 +57,8 @@ public class TestRunConfiguration(project: Project, configurationFactory: Config
         bspTestConsole.registerPrinter(testConsole)
         processHandler.execute {
           try {
-            bspResolver.testTarget(it)
+            // TODO error handling?
+            TestTargetTask(project).execute(it)
           } finally {
             testConsole.endTesting()
             bspTestConsole.deregisterPrinter(testConsole)

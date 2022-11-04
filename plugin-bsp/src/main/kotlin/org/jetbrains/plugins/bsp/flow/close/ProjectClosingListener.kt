@@ -1,10 +1,10 @@
-package org.jetbrains.plugins.bsp.import
+package org.jetbrains.plugins.bsp.flow.close
 
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.runModalTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManagerListener
-import org.jetbrains.plugins.bsp.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 
 public class ProjectClosingListener : ProjectManagerListener {
 
