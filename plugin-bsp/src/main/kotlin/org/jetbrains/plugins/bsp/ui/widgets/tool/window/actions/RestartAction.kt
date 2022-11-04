@@ -13,8 +13,8 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class RestartAction :
@@ -36,15 +36,15 @@ public class RestartAction :
     if (bspConnectionService.connection != null && bspConnectionService.connection is BspGeneratorConnection) {
       val connection = bspConnectionService.connection as BspGeneratorConnection
       val magicMetaModelService = MagicMetaModelService.getInstance(project)
-      val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
-      bspSyncConsole.startImport("bsp-restart", "BSP: Restart", "Restarting...")
+      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+      bspSyncConsole.startTask("bsp-restart", "BSP: Restart", "Restarting...")
       object : Task.Backgroundable(project, "Restarting...", true) {
         private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
         override fun run(indicator: ProgressIndicator) {
-          connection.restart()
+          connection.restart("bsp-restart")
           val bspResolver = VeryTemporaryBspResolver(project)
-          val projectDetails = bspResolver.collectModel()
+          val projectDetails = bspResolver.collectModel("bsp-restart")
 
           magicMetaModelService.magicMetaModel.clear()
           magicMetaModelService.initializeMagicModel(projectDetails)

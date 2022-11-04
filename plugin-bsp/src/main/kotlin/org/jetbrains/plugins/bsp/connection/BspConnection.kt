@@ -29,7 +29,7 @@ public interface BspConnection {
   /**
    * Establish a connection with the server, and initialize [server].
    */
-  public fun connect()
+  public fun connect(taskId: Any)
 
   /**
    * Disconnect from the server,

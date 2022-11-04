@@ -6,7 +6,7 @@ import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorE
 import org.jetbrains.plugins.bsp.import.getProjectDirOrThrow
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
 
 public data class BspGeneratorConnectionState(
@@ -43,12 +43,12 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
       BspConnectionDetailsGeneratorExtension.extensions().first { it.name() == state.generatorName }
   }
 
-  public override fun connect() {
+  public override fun connect(taskId: Any) {
     if (fileConnection == null) {
-      generateNewConnectionFile()
+      generateNewConnectionFile(taskId)
     }
 
-    fileConnection?.connect()
+    fileConnection?.connect(taskId)
   }
 
   public override fun disconnect() {
@@ -64,17 +64,17 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
       generatorName = bspConnectionDetailsGenerator.name(),
     )
 
-  public fun restart() {
+  public fun restart(taskId: Any) {
     disconnect()
-    generateNewConnectionFile()
-    connect()
+    generateNewConnectionFile(taskId)
+    connect(taskId)
   }
 
-  private fun generateNewConnectionFile() {
-    val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
+  private fun generateNewConnectionFile(taskId: Any) {
+    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val consoleOutputStream = ConsoleOutputStream(generateConnectionFileSubtaskId, bspSyncConsole)
 
-    bspSyncConsole.startSubtask(generateConnectionFileSubtaskId, "BSP: Generating BSP connection details...")
+    bspSyncConsole.startSubtask(taskId, generateConnectionFileSubtaskId, "BSP: Generating BSP connection details...")
     val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
       project.getProjectDirOrThrow(),
       consoleOutputStream

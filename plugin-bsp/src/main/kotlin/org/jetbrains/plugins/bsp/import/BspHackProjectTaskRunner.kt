@@ -1,10 +1,6 @@
 package org.jetbrains.plugins.bsp.import
 
 import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.CompileResult
-import ch.epfl.scala.bsp4j.StatusCode
-import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.project.Project
 import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
@@ -12,7 +8,6 @@ import com.intellij.task.ProjectTaskRunner
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.MagicMetaModel
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 
 /**
@@ -42,19 +37,11 @@ public class BspHackProjectTaskRunner : ProjectTaskRunner() {
 
     val bspResolver = VeryTemporaryBspResolver(project)
 
-    val tempConsole =
-      BspSyncConsoleService.getInstance(project).bspSyncConsole // TODO - temporary (remove once BspBuildConsole works correctly)
-    tempConsole.startImport("bsp-build", "BSP: Build", "Building...")
-    val buildCompileResult: CompileResult = bspResolver.buildTargets(
+    bspResolver.buildTargets(
       targets
         .filter { it.capabilities.canCompile }
         .map { it.id }
     )
-    if (buildCompileResult.statusCode == StatusCode.OK) {
-      tempConsole.finishImport("Build done!", SuccessResultImpl())
-    } else {
-      tempConsole.finishImport("Build failed!", FailureResultImpl())
-    }
 
     return promiseResult
   }

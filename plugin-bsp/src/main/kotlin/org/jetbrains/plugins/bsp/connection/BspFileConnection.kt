@@ -12,10 +12,7 @@ import org.jetbrains.magicmetamodel.impl.ConvertableToState
 import org.jetbrains.plugins.bsp.import.BspClient
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
-import org.jetbrains.plugins.bsp.services.BspBuildConsoleService
-import org.jetbrains.plugins.bsp.services.BspRunConsoleService
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
-import org.jetbrains.plugins.bsp.services.BspTestConsoleService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.TimeUnit
@@ -36,10 +33,10 @@ public class BspFileConnection(
   private var bspProcess: Process? = null
   private var disconnectActions: MutableList<() -> Unit> = mutableListOf()
 
-  public override fun connect() {
-    val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
+  public override fun connect(taskId: Any) {
+    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
-    bspSyncConsole.startSubtask(connectSubtaskId, "BSP: Connecting to the server...")
+    bspSyncConsole.startSubtask(taskId, connectSubtaskId, "BSP: Connecting to the server...")
 
     bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection...")
     val client = createBspClient()
@@ -74,16 +71,13 @@ public class BspFileConnection(
       .start()
 
   private fun createBspClient(): BspClient {
-    val bspSyncConsoleService = BspSyncConsoleService.getInstance(project)
-    val bspBuildConsoleService = BspBuildConsoleService.getInstance(project)
-    val bspRunConsoleService = BspRunConsoleService.getInstance(project)
-    val bspTestConsoleService = BspTestConsoleService.getInstance(project)
+    val bspConsoleService = BspConsoleService.getInstance(project)
 
     return BspClient(
-      bspSyncConsoleService.bspSyncConsole,
-      bspBuildConsoleService.bspBuildConsole,
-      bspRunConsoleService,
-      bspTestConsoleService,
+      bspConsoleService.bspSyncConsole,
+      bspConsoleService.bspBuildConsole,
+      bspConsoleService.bspRunConsole,
+      bspConsoleService.bspTestConsole,
     )
   }
 

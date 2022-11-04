@@ -15,7 +15,7 @@ import com.intellij.ui.dsl.builder.rows
 import com.intellij.ui.dsl.builder.visibleIf
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
 import com.intellij.util.io.exists
-import com.intellij.util.io.isDirectory
+import com.intellij.util.io.isFile
 import com.intellij.util.io.readText
 import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFile
 import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFileOrNewConnection
@@ -23,7 +23,6 @@ import org.jetbrains.plugins.bsp.import.wizzard.ImportProjectWizzardStep
 import java.io.OutputStream
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.name
 import kotlin.io.path.writeText
@@ -150,11 +149,11 @@ public class BazelEditProjectViewStep(
   private fun calculateProjectViewFileNameFromConnectionDetails(bspConnectionDetails: BspConnectionDetails): String? =
     bspConnectionDetails.argv.last().takeIf {
       try {
-        !Paths.get(it).isDirectory()
+        Path(it).isFile()
       } catch (e: InvalidPathException) {
         false
       }
-    }.orEmpty()
+    }
 
   private val projectViewTextProperty =
     propertyGraph

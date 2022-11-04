@@ -3,14 +3,14 @@ package org.jetbrains.plugins.bsp.ui.console
 
 import java.io.OutputStream
 
-public class ConsoleOutputStream(private val id: Any?, private val bspSyncConsole: BspSyncConsole) : OutputStream() {
+public class ConsoleOutputStream(private val taskId: String, private val bspSyncConsole: TaskConsole) : OutputStream() {
   private var line: StringBuffer = StringBuffer()
 
   override fun write(b: Int) {
     val c: Char = (b and 255).toChar()
     line.append(c)
     if (c == '\n') {
-      bspSyncConsole.addMessage(id, line.toString())
+      bspSyncConsole.addMessage(taskId, line.toString())
       line = StringBuffer()
     }
   }

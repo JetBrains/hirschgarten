@@ -19,8 +19,8 @@ import org.jetbrains.plugins.bsp.import.wizzard.ConnectionFile
 import org.jetbrains.plugins.bsp.import.wizzard.ImportProjectWizzard
 import org.jetbrains.plugins.bsp.import.wizzard.NewConnection
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
 
@@ -39,8 +39,8 @@ public class BspStartupActivity : StartupActivity {
   }
 
   private fun doRunActivity(project: Project) {
-    val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.startImport("bsp-import", "BSP: Import", "Importing...")
+    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    bspSyncConsole.startTask("bsp-import", "BSP: Import", "Importing...")
 
     if (project.isNewProject()) {
       showWizzardAndInitializeConnection(project)
@@ -55,10 +55,10 @@ public class BspStartupActivity : StartupActivity {
 
       override fun run(indicator: ProgressIndicator) {
         val connection = BspConnectionService.getConnectionOrThrow(project)
-        connection.connect()
+        connection.connect("bsp-import")
 
         val bspResolver = VeryTemporaryBspResolver(project)
-        val projectDetails = bspResolver.collectModel()
+        val projectDetails = bspResolver.collectModel("bsp-import")
 
         magicMetaModelService.initializeMagicModel(projectDetails)
         val magicMetaModel = magicMetaModelService.magicMetaModel
