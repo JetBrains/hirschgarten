@@ -2,19 +2,15 @@ package org.jetbrains.plugins.bsp.ui.configuration.test
 
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RunConfigurationBase
-import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.services.BspTestConsoleService
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
 import javax.swing.Icon
 
@@ -53,19 +49,19 @@ public class TestRunConfiguration(project: Project, configurationFactory: Config
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return RunProfileState { executor2, _ ->
 
-      val bspTestConsoleService = BspTestConsoleService.getInstance(project)
+      val bspTestConsole = BspConsoleService.getInstance(project).bspTestConsole
       val bspResolver = VeryTemporaryBspResolver(project)
 
       val processHandler = BspProcessHandler()
-      val testConsole = BspTestConsole(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))
+      val testConsole = BspTestConsolePrinter(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))
       environment.getUserData(targetIdTOREMOVE)?.let {
-        bspTestConsoleService.registerPrinter(testConsole)
+        bspTestConsole.registerPrinter(testConsole)
         processHandler.execute {
           try {
             bspResolver.testTarget(it)
           } finally {
             testConsole.endTesting()
-            bspTestConsoleService.deregisterPrinter(testConsole)
+            bspTestConsole.deregisterPrinter(testConsole)
           }
         }
       } ?: processHandler.shutdown()

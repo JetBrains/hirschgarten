@@ -5,21 +5,16 @@ import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.CommandLineState
-import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RunConfigurationBase
-import com.intellij.execution.configurations.RunProfileState
+import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.services.BspRunConsoleService
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.configuration.test.BspConfigurationType
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
 import javax.swing.Icon
 
@@ -62,14 +57,14 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
     }
 
     override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
-      val bspConsoleService = BspRunConsoleService.getInstance(project)
+      val bspConsoleService = BspConsoleService.getInstance(project)
       val bspResolver = VeryTemporaryBspResolver(project)
       val processHandler = startProcess()
       val console = createConsole(executor)?.apply {
         attachToProcess(processHandler)
       }
       environment.getUserData(targetIdTOREMOVE)?.uri?.let { uri ->
-        bspConsoleService.registerPrinter(processHandler)
+        bspConsoleService.bspRunConsole.registerPrinter(processHandler)
         processHandler.execute {
           val startRunMessage = "Running target $uri"
           processHandler.printOutput(startRunMessage)
@@ -83,7 +78,7 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
               }
             }
           } finally {
-            bspConsoleService.deregisterPrinter(processHandler)
+            bspConsoleService.bspRunConsole.deregisterPrinter(processHandler)
             processHandler.shutdown()
           }
         }

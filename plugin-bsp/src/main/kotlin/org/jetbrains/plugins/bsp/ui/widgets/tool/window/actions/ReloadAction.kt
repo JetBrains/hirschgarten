@@ -11,8 +11,8 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.plugins.bsp.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.import.VeryTemporaryBspResolver
-import org.jetbrains.plugins.bsp.services.BspSyncConsoleService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.action.text")) {
@@ -34,10 +34,10 @@ public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.a
       private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
       override fun run(indicator: ProgressIndicator) {
-        val bspSyncConsole = BspSyncConsoleService.getInstance(project).bspSyncConsole
-        bspSyncConsole.startImport("bsp-reload", "BSP: Reload", "Reloading...")
+        val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+        bspSyncConsole.startTask("bsp-reload", "BSP: Reload", "Reloading...")
         val bspResolver = VeryTemporaryBspResolver(project)
-        val projectDetails = bspResolver.collectModel()
+        val projectDetails = bspResolver.collectModel("bsp-reload")
 
         magicMetaModelService.magicMetaModel.clear()
         magicMetaModelService.initializeMagicModel(projectDetails)
