@@ -1,9 +1,9 @@
 # Build Server Protocol for IntelliJ IDEA
 
 <!-- Plugin description -->
-Build Server Protocol
+## Build Server Protocol client
 
-!! WORK IN PROGRESS !!
+Allows importing projects into IntelliJ IDEA using Build Server Protocol.
 
-!! WORK IN PROGRESS !!
+Includes Bazel BSP extension - Bazel projects can be imported directly without explicitly installing a BSP server.
 <!-- Plugin description end -->

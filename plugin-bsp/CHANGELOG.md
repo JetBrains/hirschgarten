@@ -2,6 +2,8 @@
 
 # intellij-bsp Changelog
 
-## [Unreleased]
+## 0.0.1-alpha.1
+
 ### Added
-- [Magic Meta Model](https://github.com/Abrams27/intellij-bsp/pull/1)
+
+- everything!
