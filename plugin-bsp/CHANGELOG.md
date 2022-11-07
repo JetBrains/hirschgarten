@@ -2,6 +2,12 @@
 
 # intellij-bsp Changelog
 
+## 0.0.1-alpha.2
+
+### Added
+
+- everything!
+
 ## 0.0.1-alpha.1
 
 ### Added
