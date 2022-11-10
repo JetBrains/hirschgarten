@@ -13,6 +13,7 @@ import org.jetbrains.plugins.bsp.server.client.BspClient
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.TimeUnit
@@ -68,6 +69,7 @@ public class BspFileConnection(
   private fun createAndStartProcess(bspConnectionDetails: BspConnectionDetails): Process =
     ProcessBuilder(bspConnectionDetails.argv)
       .directory(project.stateStore.projectBasePath.toFile())
+      .withRealEnvs()
       .start()
 
   private fun createBspClient(): BspClient {
