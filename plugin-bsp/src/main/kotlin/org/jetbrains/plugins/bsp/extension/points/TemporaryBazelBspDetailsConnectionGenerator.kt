@@ -14,13 +14,17 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.rows
 import com.intellij.ui.dsl.builder.visibleIf
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
+import com.intellij.util.EnvironmentUtil
 import com.intellij.util.io.exists
 import com.intellij.util.io.isFile
 import com.intellij.util.io.readText
 import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFile
 import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizzard.ImportProjectWizzardStep
+import java.io.File
 import java.io.OutputStream
+import java.net.URL
+import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -51,18 +55,56 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
     outputStream: OutputStream
   ): VirtualFile {
     executeAndWait(
-      calculateInstallerCommand(),
+      calculateInstallerCommand(projectPath),
       projectPath,
       outputStream
     )
     return getChild(projectPath, listOf(".bsp", "bazelbsp.json"))!!
   }
 
-  private fun calculateInstallerCommand(): String =
-    listOfNotNull(
-      "cs launch org.jetbrains.bsp:bazel-bsp:2.3.0 -M org.jetbrains.bsp.bazel.install.Install",
-      projectViewFilePathProperty.get()?.let { "-- -p $it" }
-    ).joinToString(" ")
+  private fun calculateInstallerCommand(projectPath: VirtualFile): List<String> {
+    val coursierExecutable = findCoursierExecutableOrDownload(projectPath)
+
+    return listOf(
+      coursierExecutable.toString(),
+      "launch",
+      "org.jetbrains.bsp:bazel-bsp:2.3.0",
+      "-M",
+      "org.jetbrains.bsp.bazel.install.Install",
+    ) + calculateProjectViewFileInstallerOption()
+  }
+
+  private fun findCoursierExecutableOrDownload(projectPath: VirtualFile): Path =
+    findCoursierExecutable() ?: downloadCoursier(projectPath)
+
+  private fun findCoursierExecutable(): Path? =
+    EnvironmentUtil.getEnvironmentMap()["PATH"]
+      ?.split(File.pathSeparator)
+      ?.map { File(it, "cs") }
+      ?.firstOrNull { it.canExecute() }
+      ?.toPath()
+
+  private fun downloadCoursier(projectPath: VirtualFile): Path {
+    // TODO we should pass it to syncConsole - it might take some time if the connection is really bad
+    val coursierUrl = "https://git.io/coursier-cli"
+    val coursierDestination = calculateCoursierDownloadDestination(projectPath)
+
+    Files.copy(URL(coursierUrl).openStream(), coursierDestination)
+    coursierDestination.toFile().setExecutable(true)
+
+    return coursierDestination
+  }
+
+  private fun calculateCoursierDownloadDestination(projectPath: VirtualFile): Path {
+    val dotBazelBsp = projectPath.toNioPath().resolve(".bazelbsp")
+    Files.createDirectories(dotBazelBsp)
+
+    return dotBazelBsp.resolve("cs")
+  }
+
+  private fun calculateProjectViewFileInstallerOption(): List<String> =
+    projectViewFilePathProperty.get()
+      ?.let { listOf("--", "-p", "$it") } ?: emptyList()
 }
 
 public class BazelEditProjectViewStep(

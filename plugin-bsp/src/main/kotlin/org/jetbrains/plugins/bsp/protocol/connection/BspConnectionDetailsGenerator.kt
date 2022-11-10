@@ -4,17 +4,19 @@ import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizzard.ImportProjectWizzardStep
+import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.OutputStream
 import java.nio.file.Path
 
 public interface BspConnectionDetailsGenerator {
-  public fun executeAndWait(command: String, projectPath: VirtualFile, outputStream: OutputStream) {
+  public fun executeAndWait(command: List<String>, projectPath: VirtualFile, outputStream: OutputStream) {
     // TODO - consider verbosing what command is being executed
-    val consoleProcess = Runtime.getRuntime().exec(
-      command,
-      emptyArray(),
-      projectPath.toNioPath().toFile()
-    )
+    val builder = ProcessBuilder(command)
+      .directory(projectPath.toNioPath().toFile())
+      .withRealEnvs()
+
+    val consoleProcess = builder.start()
+
     consoleProcess.inputStream.transferTo(outputStream)
     consoleProcess.waitFor()
   }
