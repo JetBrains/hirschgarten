@@ -9,13 +9,17 @@ import com.intellij.build.events.impl.*
 import java.io.File
 import java.net.URI
 
+private data class SubtaskParents(
+  val rootTask: Any,
+  val parentTask: Any
+)
+
 public class TaskConsole(
   private val taskView: BuildProgressListener,
   private val basePath: String
 ) {
-
   private val tasksInProgress: MutableList<Any> = mutableListOf()
-  private val subtaskParentMap: MutableMap<Any, Any> = mutableMapOf()
+  private val subtaskParentMap: MutableMap<Any, SubtaskParents> = mutableMapOf()
 
   /**
    * Displays start of a task in this console.
@@ -39,7 +43,7 @@ public class TaskConsole(
   }
 
   /**
-   * Displays finish of a task in this console.
+   * Displays finish of a task (and all its children) in this console.
    * Will not display anything if a task with given `taskId` is not running
    *
    * @param message message informing about the start of the task
@@ -58,7 +62,7 @@ public class TaskConsole(
 
   private fun doFinishTask(taskId: Any, message: String, result: EventResult) {
     tasksInProgress.remove(taskId)
-    subtaskParentMap.entries.removeAll { it.value == taskId }
+    subtaskParentMap.entries.removeAll { it.value.rootTask == taskId }
     val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, result)
     taskView.onEvent(taskId, event)
   }
@@ -66,21 +70,26 @@ public class TaskConsole(
   /**
    * Displays start of a subtask in this console
    *
-   * @param parentTaskId id of the task being this subtask's parent
+   * @param parentTaskId id of the task (or another subtask) being this subtask's direct parent
    * @param subtaskId id of the newly created subtask. **Has to be unique among all running subtasks in
    * this console - otherwise, unexpected behavior might occur**
    * @param message will be displayed as this subtask's title until it's finished
    */
   @Synchronized
-  public fun startSubtask(parentTaskId: Any, subtaskId: Any, message: String): Unit =
-    doIfTaskInProgress(parentTaskId) {
-      doStartSubtask(parentTaskId, subtaskId, message)
+  public fun startSubtask(parentTaskId: Any, subtaskId: Any, message: String) {
+    val rootTaskId = subtaskParentMap[parentTaskId]?.rootTask ?: parentTaskId
+    doIfTaskInProgress(rootTaskId) {
+      doStartSubtask(rootTaskId, parentTaskId, subtaskId, message)
     }
+  }
 
-  private fun doStartSubtask(parentTaskId: Any, subtaskId: Any, message: String) {
-    subtaskParentMap[subtaskId] = parentTaskId
+  private fun doStartSubtask(rootTaskId: Any, parentTaskId: Any, subtaskId: Any, message: String) {
+    subtaskParentMap[subtaskId] = SubtaskParents(
+      rootTask = rootTaskId,
+      parentTask = parentTaskId
+    )
     val event = ProgressBuildEventImpl(subtaskId, parentTaskId, System.currentTimeMillis(), message, -1, -1, "")
-    taskView.onEvent(parentTaskId, event)
+    taskView.onEvent(rootTaskId, event)
   }
 
   /**
@@ -92,19 +101,28 @@ public class TaskConsole(
    */
   @Synchronized
   public fun finishSubtask(subtaskId: Any, message: String, result: EventResult = SuccessResultImpl()) {
-    if (subtaskParentMap.containsKey(subtaskId)) {
-      subtaskParentMap[subtaskId]?.let {
-        doIfTaskInProgress(it) {
-          doFinishSubtask(it, subtaskId, message, result)
-        }
+    subtaskParentMap[subtaskId]?.let {
+      doIfTaskInProgress(it.rootTask) {
+        doFinishSubtask(it.rootTask, subtaskId, message, result)
       }
     }
   }
 
-  private fun doFinishSubtask(taskId: Any, subtaskId: Any, message: String, result: EventResult) {
+  private fun doFinishSubtask(rootTask: Any, subtaskId: Any, message: String, result: EventResult) {
     subtaskParentMap.remove(subtaskId)
+    finishAllDescendants(subtaskId)
     val event = FinishBuildEventImpl(subtaskId, null, System.currentTimeMillis(), message, result)
-    taskView.onEvent(taskId, event)
+    taskView.onEvent(rootTask, event)
+  }
+
+  private fun finishAllDescendants(parentId: Any) {
+    subtaskParentMap
+      .filterValues { it.parentTask == parentId }
+      .keys
+      .forEach {
+        subtaskParentMap.remove(it)
+        finishAllDescendants(it)
+      }
   }
 
   /**
@@ -126,7 +144,7 @@ public class TaskConsole(
     message: String,
     severity: MessageEvent.Kind
   ) {
-    getSubtaskParent(taskId)?.let {
+    maybeGetRootTask(taskId)?.let {
       doIfTaskInProgress(it) {
         if (message.isNotBlank()) {
           val fullFileURI = if (fileURI.startsWith("file://")) fileURI else "file://$fileURI"
@@ -166,30 +184,36 @@ public class TaskConsole(
    */
   @Synchronized
   public fun addMessage(taskId: Any, message: String) {
-    getSubtaskParent(taskId)?.let {
+    maybeGetRootTask(taskId)?.let {
       doIfTaskInProgress(it) {
         if (message.isNotBlank()) {
-          doAddMessage(it, taskId, message)
+          doAddMessage(taskId, message)
         }
       }
     }
   }
 
-  private fun doAddMessage(parentTaskId: Any, taskId: Any, message: String) {
+  private fun doAddMessage(taskId: Any, message: String) {
+    val messageToSend = prepareTextToPrint(message)
+    sendMessageEvent(taskId, messageToSend)
+    sendMessageToAncestors(taskId, messageToSend)
+  }
+
+  private fun sendMessageToAncestors(taskId: Any, message: String): Unit =
+    doUnlessTaskInProgress(taskId) {  // if taskID is a root task, it has no parents
+      maybeGetParentTask(taskId)?.let {
+        if (it != taskId) {
+          sendMessageEvent(it, message)
+          sendMessageToAncestors(it, message)
+        }
+      }
+    }
+
+  private fun sendMessageEvent(taskId: Any, message: String) {
     val subtaskId =
       if (tasksInProgress.contains(taskId)) null else taskId
-    val messageToSend = prepareTextToPrint(message)
-    sendMessageEvent(parentTaskId, subtaskId, messageToSend)
-    if (subtaskId != null) sendMessageToParent(parentTaskId, messageToSend)
-  }
-
-  private fun sendMessageToParent(parentTaskId: Any, message: String) {
-    sendMessageEvent(parentTaskId, null, message)
-  }
-
-  private fun sendMessageEvent(parentTaskId: Any, subtaskId: Any?, message: String) {
     val event = OutputBuildEventImpl(subtaskId, message, true)
-    taskView.onEvent(parentTaskId, event)
+    maybeGetRootTask(taskId)?.let { taskView.onEvent(it, event) }
   }
 
   private inline fun doIfTaskInProgress(taskId: Any, action: () -> Unit) {
@@ -207,6 +231,9 @@ public class TaskConsole(
   private fun prepareTextToPrint(text: String): String =
     if (text.endsWith("\n")) text else text + "\n"
 
-  private fun getSubtaskParent(taskId: Any): Any? =
-    if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]
+  private fun maybeGetParentTask(taskId: Any): Any? =
+    if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.parentTask
+
+  private fun maybeGetRootTask(taskId: Any): Any? =
+    if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.rootTask
 }

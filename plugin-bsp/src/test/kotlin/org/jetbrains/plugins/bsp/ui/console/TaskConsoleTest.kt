@@ -277,39 +277,175 @@ class TaskConsoleTest {
   }
 
   @Test
-  fun `should finish subtask when its parent is finished`() {
+  fun `should finish subtasks when their root task is finished`() {
     val buildProcessListener = MockProgressEventListener()
     val basePath = "/project/"
 
     // when
     val taskConsole = TaskConsole(buildProcessListener, basePath)
 
-    taskConsole.startTask("parent", "Parent task", "Parent started")
-    taskConsole.startSubtask("parent", "child", "Child started")
+    taskConsole.startTask("root", "Root task", "Root started")
+    taskConsole.startSubtask("root", "child", "Child started")
+    taskConsole.startSubtask("child", "grandchild", "Grandchild started")
     taskConsole.addMessage("child", "Message 1")
-    taskConsole.finishTask("parent", "Parent finished")
+    taskConsole.addMessage("grandchild", "Message 2")
+    taskConsole.finishTask("root", "Root finished")
 
-    // starting a different parent task, under similar ID
-    taskConsole.startTask("parent", "Parent task", "Parent started")
+    // starting a different root task, under similar ID
+    taskConsole.startTask("root", "Root task", "Root started")
 
-    // message should not be sent - the child's parent has been finished
-    taskConsole.addMessage("child", "Message 2")
+    // messages should not be sent - the children's root task has been finished
+    taskConsole.addMessage("child", "Message 3")
+    taskConsole.addMessage("grandchild", "Message 4")
 
-    taskConsole.finishTask("parent", "Parent finished")
+    taskConsole.finishTask("root", "Root finished")
 
     // then
     buildProcessListener.events shouldContainExactly mapOf(
-      "parent" to listOf(
-        TestableBuildEvent(StartBuildEventImpl::class, "parent", null, "Parent started"),
-        TestableBuildEvent(ProgressBuildEventImpl::class, "child", "parent", "Child started"),
+      "root" to listOf(
+        TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "child", "root", "Child started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "grandchild", "child", "Grandchild started"),
 
         TestableBuildEvent(OutputBuildEventImpl::class, null, "child", "Message 1\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 1\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "grandchild", "Message 2\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "child", "Message 2\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 2\n"),
 
-        TestableBuildEvent(FinishBuildEventImpl::class, "parent", null, "Parent finished"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
 
-        TestableBuildEvent(StartBuildEventImpl::class, "parent", null, "Parent started"),
-        TestableBuildEvent(FinishBuildEventImpl::class, "parent", null, "Parent finished"),
+        TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
+      )
+    )
+  }
+
+  @Test
+  fun `should start and finish nested subtasks`() {
+    val buildProcessListener = MockProgressEventListener()
+    val basePath = "/project/"
+
+    // when
+    val taskConsole = TaskConsole(buildProcessListener, basePath)
+
+    taskConsole.startTask("root", "Root task", "Root started")
+    taskConsole.startSubtask("root", "subtask1", "Subtask 1 started")
+    taskConsole.startSubtask("subtask1", "subtask2", "Subtask 2 started")
+    taskConsole.startSubtask("subtask2", "subtask3", "Subtask 3 started")
+    taskConsole.finishSubtask("subtask3", "Subtask 3 finished")
+    taskConsole.finishSubtask("subtask2", "Subtask 2 finished")
+    taskConsole.finishSubtask("subtask1", "Subtask 1 finished")
+    taskConsole.finishTask("root", "Root finished")
+
+    //then
+    buildProcessListener.events shouldContainExactly mapOf(
+      "root" to listOf(
+        TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask1", "root", "Subtask 1 started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask2", "subtask1", "Subtask 2 started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask3", "subtask2", "Subtask 3 started"),
+
+        TestableBuildEvent(FinishBuildEventImpl::class, "subtask3", null, "Subtask 3 finished"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "subtask2", null, "Subtask 2 finished"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "subtask1", null, "Subtask 1 finished"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
+      )
+    )
+  }
+
+  @Test
+  fun `should send nested subtask's messages to all its ancestors`() {
+    val buildProcessListener = MockProgressEventListener()
+    val basePath = "/project/"
+
+    // when
+    val taskConsole = TaskConsole(buildProcessListener, basePath)
+    taskConsole.startTask("root", "Root task", "Root started")
+    taskConsole.startSubtask("root", "subtask1", "Subtask 1 started")
+    taskConsole.startSubtask("subtask1", "subtask2", "Subtask 2 started")
+    taskConsole.startSubtask("subtask2", "subtask3", "Subtask 3 started")
+
+    taskConsole.addMessage("subtask3", "Message 1")
+    taskConsole.addMessage("subtask1", "Message 2")
+    taskConsole.addMessage("root", "Message 3")
+
+    taskConsole.finishSubtask("subtask3", "Subtask 3 finished")
+    taskConsole.finishSubtask("subtask2", "Subtask 2 finished")
+    taskConsole.finishSubtask("subtask1", "Subtask 1 finished")
+    taskConsole.finishTask("root", "Root finished")
+
+    //then
+    buildProcessListener.events shouldContainExactly mapOf(
+      "root" to listOf(
+        TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask1", "root", "Subtask 1 started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask2", "subtask1", "Subtask 2 started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask3", "subtask2", "Subtask 3 started"),
+
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask3", "Message 1\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask2", "Message 1\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask1", "Message 1\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 1\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask1", "Message 2\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 2\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 3\n"),
+
+        TestableBuildEvent(FinishBuildEventImpl::class, "subtask3", null, "Subtask 3 finished"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "subtask2", null, "Subtask 2 finished"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "subtask1", null, "Subtask 1 finished"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
+      )
+    )
+  }
+
+  @Test
+  fun `should finish subtasks when any of their ancestor subtasks is finished`() {
+    val buildProcessListener = MockProgressEventListener()
+    val basePath = "/project/"
+
+    // when
+    val taskConsole = TaskConsole(buildProcessListener, basePath)
+
+    taskConsole.startTask("root", "Root task", "Root started")
+    taskConsole.startSubtask("root", "subtask1", "Subtask 1 started")
+    taskConsole.startSubtask("subtask1", "subtask2", "Subtask 2 started")
+    taskConsole.startSubtask("subtask2", "subtask3", "Subtask 3 started")
+    taskConsole.addMessage("subtask2", "Message 1")
+    taskConsole.addMessage("subtask3", "Message 2")
+    taskConsole.finishSubtask("subtask1", "Subtask 1 finished")
+
+    // starting a different ancestor subtask, under similar ID
+    taskConsole.startSubtask("root", "subtask1", "Subtask 1 started")
+
+    // messages should not be sent - the children's ancestor subtask has been finished
+    taskConsole.addMessage("subtask2", "Message 3")
+    taskConsole.addMessage("subtask3", "Message 4")
+
+    taskConsole.finishSubtask("subtask1", "Subtask 1 finished")
+    taskConsole.finishTask("root", "Root finished")
+
+    // then
+    buildProcessListener.events shouldContainExactly mapOf(
+      "root" to listOf(
+        TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask1", "root", "Subtask 1 started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask2", "subtask1", "Subtask 2 started"),
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask3", "subtask2", "Subtask 3 started"),
+
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask2", "Message 1\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask1", "Message 1\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 1\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask3", "Message 2\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask2", "Message 2\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask1", "Message 2\n"),
+        TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 2\n"),
+
+        TestableBuildEvent(FinishBuildEventImpl::class, "subtask1", null, "Subtask 1 finished"),
+
+        TestableBuildEvent(ProgressBuildEventImpl::class, "subtask1", "root", "Subtask 1 started"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "subtask1", null, "Subtask 1 finished"),
+        TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
       )
     )
   }
