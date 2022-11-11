@@ -11,6 +11,8 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Key
+import org.jetbrains.plugins.bsp.run.BspRunConfiguration
+import org.jetbrains.plugins.bsp.run.BspRunType
 
 public val targetIdTOREMOVE: Key<BuildTargetIdentifier> = Key<BuildTargetIdentifier>("targetId")
 
@@ -26,7 +28,12 @@ internal abstract class SideMenuTargetAction(
   override fun actionPerformed(e: AnActionEvent) {
     e.project?.let { project ->
       val factory = getConfigurationType().configurationFactories.first()
-      val setting = RunManager.getInstance(project).createConfiguration(getName(target), factory)
+      val setting = RunManager.getInstance(project).createConfiguration(getName(target), factory).also {
+        val c = it.configuration as BspRunConfiguration
+        c.target = target.uri
+        c.runType = BspRunType.RUN
+        // TODO: remove this
+      }
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(setting)
       val runExecutor = DefaultRunExecutor.getRunExecutorInstance()
       ProgramRunner.getRunner(runExecutor.id, setting.configuration)?.let {
@@ -34,8 +41,6 @@ internal abstract class SideMenuTargetAction(
           val executionEnvironment = ExecutionEnvironmentBuilder(project, runExecutor)
             .runnerAndSettings(it, setting)
             .build()
-          // TODO shouldnt we use 'target' for that?
-          executionEnvironment.putUserData(targetIdTOREMOVE, target)
           it.execute(executionEnvironment)
         } catch (e: Exception) {
           Messages.showErrorDialog(project, e.message, "Error")

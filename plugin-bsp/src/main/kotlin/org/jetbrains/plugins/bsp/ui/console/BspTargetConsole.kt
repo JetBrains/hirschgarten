@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.console
 
-import org.jetbrains.plugins.bsp.ui.configuration.BspConsolePrinter
-import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestConsolePrinter
+import org.jetbrains.plugins.bsp.run.BspConsolePrinter
+import org.jetbrains.plugins.bsp.run.BspTestConsolePrinter
 
 public open class BspTargetConsole<T : BspConsolePrinter> {
   protected val consoleListeners: MutableSet<T> = mutableSetOf()
