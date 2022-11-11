@@ -17,6 +17,7 @@ import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
@@ -29,6 +30,7 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 public class UpdateMagicMetaModelInTheBackgroundTask(
   private val project: Project,
@@ -89,6 +91,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
 }
 
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) : BspServerTask(project) {
+  private val logger = logger<UpdateMagicMetaModelInTheBackgroundTask>();
 
   private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
@@ -151,8 +154,19 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       sources = sourcesFuture.get().items,
       resources = resourcesFuture?.get()?.items ?: emptyList(),
       dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
-      javacOptions = javacOptionsFuture.get().items
+      // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
+      // so it's just safer to add timeout here. This should not be called at all for SBT.
+      javacOptions = javacOptionsFuture.awaitOrNull(60L, TimeUnit.SECONDS)?.items ?: emptyList()
     )
+  }
+
+  private fun <T> CompletableFuture<T>.awaitOrNull(timeout: Long, timeUnit: TimeUnit) : T? {
+    return try {
+      get(timeout, timeUnit)
+    } catch (e: Throwable) {
+      logger.error(e)
+      null
+    }
   }
 
   private fun queryForBuildTargets(server: BspServer): CompletableFuture<WorkspaceBuildTargetsResult> =

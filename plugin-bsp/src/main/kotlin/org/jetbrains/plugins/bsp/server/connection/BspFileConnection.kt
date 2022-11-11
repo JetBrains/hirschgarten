@@ -70,6 +70,7 @@ public class BspFileConnection(
     ProcessBuilder(bspConnectionDetails.argv)
       .directory(project.stateStore.projectBasePath.toFile())
       .withRealEnvs()
+      .redirectError(ProcessBuilder.Redirect.INHERIT)
       .start()
 
   private fun createBspClient(): BspClient {

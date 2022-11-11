@@ -231,4 +231,23 @@ class NonOverlappingTargetsTest {
     )
     nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
   }
+
+  @Test
+  fun cycleInGraph() {
+    val targetA = BuildTarget(
+      id = BuildTargetId("targetA"),
+      dependencies = listOf(BuildTargetId("targetB"))
+    )
+
+    val targetB = BuildTarget(
+      id = BuildTargetId("targetB"),
+      dependencies = listOf(BuildTargetId("targetA"))
+    )
+
+    val allTargets = setOf(targetA, targetB)
+
+    val nonOverlappingTargets = NonOverlappingTargets(allTargets, overlappingTargetsGraph = mapOf())
+    val expectedTargets = setOf(BuildTargetId("targetA"), BuildTargetId("targetB"))
+    nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
+  }
 }
