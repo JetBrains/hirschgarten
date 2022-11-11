@@ -30,7 +30,7 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
     collectProjectDetailsTask.executeInTheBackground(
       name = "Connecting...",
       cancelable = true,
-      beforeRun = { BspConnectionService.getConnectionOrThrow(project).connect("bsp-connect") },
+      beforeRun = { BspConnectionService.getInstance(project).value.connect("bsp-connect") },
       afterOnSuccess = { bspSyncConsole.finishTask("bsp-connect", "Done!") }
     )
   }
@@ -46,7 +46,7 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
   }
 
   private fun doUpdate(project: Project, e: AnActionEvent) {
-    val bspConnection = BspConnectionService.getConnectionOrThrow(project)
+    val bspConnection = BspConnectionService.getInstance(project).value
     e.presentation.isEnabled = bspConnection.isConnected() == false
   }
 

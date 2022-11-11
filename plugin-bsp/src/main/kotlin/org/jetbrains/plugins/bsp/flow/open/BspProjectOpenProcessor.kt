@@ -6,6 +6,8 @@ import com.intellij.platform.PlatformProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenProcessor
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.config.BspProjectProperties
+import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
 import org.jetbrains.plugins.bsp.config.ProjectProperties
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
@@ -34,14 +36,28 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
     forceOpenInNewFrame: Boolean
   ): Project? =
     PlatformProjectOpenProcessor.getInstance().doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame)
-      ?.also { updateProjectProperties(it, virtualFile) }
+      ?.also { initServices(it, virtualFile) }
 
-  private fun updateProjectProperties(project: Project, projectRootDir: VirtualFile) {
+  private fun initServices(project: Project, projectRootDir: VirtualFile) {
+    initBspProjectPropertiesService(project)
+    initProjectPropertiesService(project, projectRootDir)
+  }
+
+  private fun initBspProjectPropertiesService(project: Project) {
+    val bspProjectPropertiesService = BspProjectPropertiesService.getInstance(project)
+
+    val bspProjectProperties = BspProjectProperties(
+      isBspProject = true,
+    )
+    bspProjectPropertiesService.init(bspProjectProperties)
+  }
+
+  private fun initProjectPropertiesService(project: Project, projectRootDir: VirtualFile) {
     val projectPropertiesService = ProjectPropertiesService.getInstance(project)
 
-    projectPropertiesService.projectProperties = ProjectProperties(
-      isBspProject = true,
+    val projectProperties = ProjectProperties(
       projectRootDir = projectRootDir,
     )
+    projectPropertiesService.init(projectProperties)
   }
 }

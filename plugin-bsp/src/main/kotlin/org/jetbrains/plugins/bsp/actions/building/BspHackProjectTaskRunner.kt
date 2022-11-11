@@ -12,7 +12,6 @@ import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
-import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.server.tasks.BuildTargetTask
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -34,9 +33,8 @@ public class BspHackProjectTaskRunner : ProjectTaskRunner() {
     val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
     bspBuildConsole.startTask("bsp-build", "Build", "Building...")
 
-    val magicMetaModelService = MagicMetaModelService.getInstance(project)
+    val magicMetaModel = MagicMetaModelService.getInstance(project).value
 
-    val magicMetaModel: MagicMetaModel = magicMetaModelService.magicMetaModel
     val targets: List<BuildTarget> = magicMetaModel.getAllLoadedTargets() + magicMetaModel.getAllNotLoadedTargets()
 
     val buildCompileResult: CompileResult = BuildTargetTask(project).execute(

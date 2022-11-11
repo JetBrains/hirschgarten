@@ -13,7 +13,7 @@ public abstract class BspServerTask(protected val project: Project) {
 
   // TODO im not sure about it - how we should handle case when the connection is not initialized / we are disconnected
   private fun getServerOrThrow(): BspServer {
-    val connection = BspConnectionService.getConnectionOrThrow(project)
+    val connection = BspConnectionService.getInstance(project).value
     val server = connection.server
 
     if (server == null) {

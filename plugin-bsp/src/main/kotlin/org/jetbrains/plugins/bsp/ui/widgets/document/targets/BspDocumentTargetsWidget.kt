@@ -17,21 +17,36 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
+import com.intellij.openapi.wm.ToolWindowAnchor
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
-import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
 
 private const val ID = "BspDocumentTargetsWidget"
 
 private class LoadTargetAction(
   private val target: BuildTargetIdentifier,
-  private val magicMetaModel: MagicMetaModel
 ) : AnAction(target.uri) {
 
   override fun actionPerformed(e: AnActionEvent) {
-    val diff = magicMetaModel.loadTarget(target)
-    runWriteAction { diff.applyOnWorkspaceModel() }
+    val project = e.project
+
+    if (project != null) {
+      val magicMetaModel = MagicMetaModelService.getInstance(project).value
+      val diff = magicMetaModel.loadTarget(target)
+      runWriteAction { diff.applyOnWorkspaceModel() }
+
+      // TODO BAZEL-217: an ugly fix only to make a release
+      ToolWindowManager.getInstance(project).unregisterToolWindow("BSP")
+      ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
+        icon = BspPluginIcons.bsp
+        canCloseContent = false
+        anchor = ToolWindowAnchor.RIGHT
+        contentFactory = BspAllTargetsWidgetFactory()
+      }
+    }
   }
 }
 
@@ -72,18 +87,18 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
 
     val file = CommonDataKeys.VIRTUAL_FILE.getData(context)!!
     val documentDetails =
-      magicMetaModelService.magicMetaModel.getTargetsDetailsForDocument(TextDocumentIdentifier(file.url))
+      magicMetaModelService.value.getTargetsDetailsForDocument(TextDocumentIdentifier(file.url))
 
     val loadedTarget = documentDetails.loadedTargetId
     if (loadedTarget != null) {
-      group.addAction(LoadTargetAction(loadedTarget, magicMetaModelService.magicMetaModel))
+      group.addAction(LoadTargetAction(loadedTarget))
     }
 
     group.addSeparator(BspDocumentTargetsWidgetBundle.message("widget.available.targets.to.load"))
     val availableTargets = documentDetails.notLoadedTargetsIds
 
     availableTargets
-      .map { LoadTargetAction(it, magicMetaModelService.magicMetaModel) }
+      .map { LoadTargetAction(it) }
       .forEach(group::add)
 
     return group

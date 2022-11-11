@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.ui.components.JBScrollPane
-import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
@@ -25,7 +24,7 @@ import javax.swing.JPanel
 import javax.swing.SwingConstants
 
 public class ListsUpdater(
-  public val magicMetaModel: MagicMetaModel,
+  private val project: Project,
   private val toolName: String?
 ) {
   private val loadedBspTargetTree: BspTargetTree = BspTargetTree(BspPluginIcons.bsp)
@@ -45,6 +44,7 @@ public class ListsUpdater(
   }
 
   public fun updateModels() {
+    val magicMetaModel = MagicMetaModelService.getInstance(project).value
     loadedBspTargetTree.generateTree(toolName, magicMetaModel.getAllLoadedTargets())
     notLoadedBspTargetTree.generateTree(toolName, magicMetaModel.getAllNotLoadedTargets())
   }
@@ -53,15 +53,13 @@ public class ListsUpdater(
 public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
   public constructor(project: Project) : this() {
-    val magicMetaModel = MagicMetaModelService.getInstance(project).magicMetaModel
     val actionManager = ActionManager.getInstance()
-    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
-    val projectProperties = projectPropertiesService.projectProperties
+    val projectProperties = ProjectPropertiesService.getInstance(project).value
     val g = BspConnectionDetailsGeneratorProvider(
       projectProperties.projectRootDir,
       BspConnectionDetailsGeneratorExtension.extensions()
     )
-    val listsUpdater = ListsUpdater(magicMetaModel, g.firstGeneratorTEMPORARY())
+    val listsUpdater = ListsUpdater(project, g.firstGeneratorTEMPORARY())
 
     val actionGroup = actionManager
       .getAction("Bsp.ActionsToolbar") as DefaultActionGroup

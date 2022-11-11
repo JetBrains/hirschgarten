@@ -7,7 +7,7 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.services.UninitializedServiceVariableException
+import org.jetbrains.plugins.bsp.services.ValueServiceWhichNeedsToBeInitialized
 
 public interface BspServer : BuildServer, JavaBuildServer
 
@@ -53,49 +53,34 @@ public data class BspConnectionState(
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
   reportStatistic = true
 )
-public class BspConnectionService(private val project: Project) : PersistentStateComponent<BspConnectionState> {
-
-  public var connection: BspConnection? = null
-    private set
-
-  public fun init(connection: BspConnection) {
-    this.connection = connection
-  }
+public class BspConnectionService(private val project: Project) :
+  ValueServiceWhichNeedsToBeInitialized<BspConnection>(),
+  PersistentStateComponent<BspConnectionState> {
 
   override fun getState(): BspConnectionState? =
-    when (val safeConnection = connection) {
+    when (val safeConnection = value) {
       is BspFileConnection -> BspConnectionState(bspFileConnectionState = safeConnection.toState())
       is BspGeneratorConnection -> BspConnectionState(bspGeneratorConnectionState = safeConnection.toState())
       else -> null
     }
 
   override fun loadState(state: BspConnectionState) {
-    connection = getConnection(project, state)
+    value = getConnection(project, state)
   }
 
   // TODO the !!
-  private fun getConnection(project: Project, state: BspConnectionState): BspConnection? =
+  private fun getConnection(project: Project, state: BspConnectionState): BspConnection =
     when {
-      state.bspFileConnectionState != null -> BspFileConnection.fromState(project, state.bspFileConnectionState!!)
+      state.bspFileConnectionState != null -> BspFileConnection.fromState(project, state.bspFileConnectionState!!)!!
       state.bspGeneratorConnectionState != null -> BspGeneratorConnection.fromState(
         project,
         state.bspGeneratorConnectionState!!
-      )
+      )!!
 
-      else -> null
+      else -> throw IllegalStateException("Something is really wrong!")
     }
 
   public companion object {
-
-    public fun getConnectionOrThrow(project: Project): BspConnection =
-      when (val connection = getInstance(project).connection) {
-        null -> throw UninitializedServiceVariableException(
-          BspConnectionService::connection.name,
-          BspConnectionService::class.simpleName
-        )
-
-        else -> connection
-      }
 
     public fun getInstance(project: Project): BspConnectionService =
       project.getService(BspConnectionService::class.java)

@@ -20,9 +20,13 @@ import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
   reportStatistic = true
 )
 public class MagicMetaModelService(private val project: Project) :
+  ValueServiceWhichNeedsToBeInitialized<MagicMetaModelImpl>(),
   PersistentStateComponent<DefaultMagicMetaModelState> {
 
-  public var magicMetaModel: MagicMetaModelImpl = initEmptyMagicMetaModelTEMPORARY()
+  // TODO ugh again
+  init {
+    init(initEmptyMagicMetaModelTEMPORARY())
+  }
 
   private fun initEmptyMagicMetaModelTEMPORARY(): MagicMetaModelImpl {
     val magicMetaModelProjectConfig = calculateProjectConfig(project)
@@ -41,14 +45,16 @@ public class MagicMetaModelService(private val project: Project) :
   public fun initializeMagicModel(projectDetails: ProjectDetails) {
     val magicMetaModelProjectConfig = calculateProjectConfig(project)
 
-    magicMetaModel = MagicMetaModel.create(magicMetaModelProjectConfig, projectDetails)
+    // TODO it should be init!
+    value.clear()
+    value = MagicMetaModel.create(magicMetaModelProjectConfig, projectDetails)
   }
 
   override fun getState(): DefaultMagicMetaModelState =
-    magicMetaModel.toState()
+    value.toState()
 
   override fun loadState(state: DefaultMagicMetaModelState) {
-    magicMetaModel = MagicMetaModel.fromState(state, calculateProjectConfig(project))
+    value = MagicMetaModel.fromState(state, calculateProjectConfig(project))
   }
 
   private fun calculateProjectConfig(project: Project): MagicMetaModelProjectConfig {

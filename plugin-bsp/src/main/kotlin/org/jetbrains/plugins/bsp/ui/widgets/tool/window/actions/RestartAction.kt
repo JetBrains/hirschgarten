@@ -26,10 +26,9 @@ public class RestartAction :
   }
 
   private fun doAction(project: Project) {
-    val bspConnectionService = BspConnectionService.getInstance(project)
+    val connection = BspConnectionService.getInstance(project).value
 
-    if (bspConnectionService.connection != null && bspConnectionService.connection is BspGeneratorConnection) {
-      val connection = bspConnectionService.connection as BspGeneratorConnection
+    if (connection is BspGeneratorConnection) {
       val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
       bspSyncConsole.startTask("bsp-restart", "Restart", "Restarting...")
 
@@ -54,9 +53,9 @@ public class RestartAction :
   }
 
   private fun doUpdate(project: Project, e: AnActionEvent) {
-    val bspConnectionService = BspConnectionService.getInstance(project)
-    e.presentation.isEnabled = bspConnectionService.connection?.isConnected() == true
-    e.presentation.isVisible = bspConnectionService.connection is BspGeneratorConnection
+    val connection = BspConnectionService.getInstance(project).value
+    e.presentation.isEnabled = connection.isConnected() == true
+    e.presentation.isVisible = connection is BspGeneratorConnection
   }
 
   override fun getActionUpdateThread(): ActionUpdateThread =
