@@ -66,14 +66,13 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
       magicMetaModelDiff = magicMetaModel.loadDefaultTargets()
     }
 
+    // TODO ugh, it should be nicer
     private fun initializeMagicMetaModel(): MagicMetaModel {
       val magicMetaModelService = MagicMetaModelService.getInstance(project)
-
       val projectDetails = collect()
 
-      magicMetaModelService.magicMetaModel.clear()
       magicMetaModelService.initializeMagicModel(projectDetails)
-      return magicMetaModelService.magicMetaModel
+      return magicMetaModelService.value
     }
 
     override fun onSuccess() {
@@ -91,7 +90,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
 }
 
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) : BspServerTask(project) {
-  private val logger = logger<UpdateMagicMetaModelInTheBackgroundTask>();
+  private val logger = logger<UpdateMagicMetaModelInTheBackgroundTask>()
 
   private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
@@ -118,8 +117,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun createInitializeBuildParams(): InitializeBuildParams {
-    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
-    val projectProperties = projectPropertiesService.projectProperties
+    val projectProperties = ProjectPropertiesService.getInstance(project).value
     val projectBaseDir = projectProperties.projectRootDir
     val params = InitializeBuildParams(
       "IntelliJ-BSP",

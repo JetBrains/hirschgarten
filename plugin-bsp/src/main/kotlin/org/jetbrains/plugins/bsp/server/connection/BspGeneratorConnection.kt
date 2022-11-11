@@ -71,8 +71,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
   }
 
   private fun generateNewConnectionFile(taskId: Any) {
-    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
-    val projectProperties = projectPropertiesService.projectProperties
+    val projectProperties = ProjectPropertiesService.getInstance(project).value
 
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val consoleOutputStream = ConsoleOutputStream(generateConnectionFileSubtaskId, bspSyncConsole)

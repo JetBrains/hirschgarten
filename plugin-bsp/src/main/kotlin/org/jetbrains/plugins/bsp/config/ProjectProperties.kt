@@ -8,47 +8,44 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
+import org.jetbrains.plugins.bsp.services.ValueServiceWhichNeedsToBeInitialized
+
+public data class ProjectPropertiesState(
+  var projectRootDir: String? = null
+)
 
 public data class ProjectProperties(
-  public val isBspProject: Boolean,
-  public val projectRootDir: VirtualFile
+  val projectRootDir: VirtualFile
 ) : ConvertableToState<ProjectPropertiesState> {
 
   override fun toState(): ProjectPropertiesState =
     ProjectPropertiesState(
-      isBspProject = isBspProject,
-      projectRootDir = projectRootDir.url
+      projectRootDir = projectRootDir.url,
     )
 
   public companion object {
     public fun fromState(state: ProjectPropertiesState): ProjectProperties =
       ProjectProperties(
-        isBspProject = state.isBspProject,
         projectRootDir = state.projectRootDir?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
-          ?: throw IllegalStateException("projectRootDir should be set! Probably state has been corrupted")
+          ?: throw IllegalStateException("Can't parse the state! `projectRootDir` can't be null."),
       )
   }
 }
-
-public data class ProjectPropertiesState(
-  public var isBspProject: Boolean = false,
-  public var projectRootDir: String? = null,
-)
 
 @State(
   name = "ProjectPropertiesService",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
   reportStatistic = true
 )
-public class ProjectPropertiesService : PersistentStateComponent<ProjectPropertiesState> {
-
-  public lateinit var projectProperties: ProjectProperties
+public class ProjectPropertiesService :
+  ValueServiceWhichNeedsToBeInitialized<ProjectProperties>(),
+  PersistentStateComponent<ProjectPropertiesState> {
 
   override fun getState(): ProjectPropertiesState =
-    projectProperties.toState()
+    value.toState()
 
   override fun loadState(state: ProjectPropertiesState) {
-    projectProperties = ProjectProperties.fromState(state)
+    value = ProjectProperties.fromState(state)
   }
 
   public companion object {

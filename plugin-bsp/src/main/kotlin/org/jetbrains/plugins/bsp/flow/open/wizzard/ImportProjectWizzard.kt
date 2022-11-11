@@ -31,8 +31,7 @@ public class ImportProjectWizzard(
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
 
   init {
-    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
-    val projectProperties = projectPropertiesService.projectProperties
+    val projectProperties = ProjectPropertiesService.getInstance(project).value
     val firstStep = ChooseConnectionFileOrNewConnectionStep(
       projectProperties.projectRootDir,
       // TODO it will be changed

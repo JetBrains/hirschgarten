@@ -7,6 +7,7 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFile
@@ -30,8 +31,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTarget
 public class BspStartupActivity : StartupActivity {
 
   override fun runActivity(project: Project) {
-    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
-    val projectProperties = projectPropertiesService.projectProperties
+    val projectProperties = BspProjectPropertiesService.getInstance(project).value
 
     if (projectProperties.isBspProject) {
       doRunActivity(project)
@@ -39,7 +39,10 @@ public class BspStartupActivity : StartupActivity {
   }
 
   private fun doRunActivity(project: Project) {
-    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    val bspSyncConsoleService = BspConsoleService.getInstance(project)
+    bspSyncConsoleService.init()
+
+    val bspSyncConsole = bspSyncConsoleService.bspSyncConsole
     bspSyncConsole.startTask("bsp-import", "Import", "Importing...")
 
     if (project.isNewProject()) {
@@ -50,7 +53,7 @@ public class BspStartupActivity : StartupActivity {
     collectProjectDetailsTask.executeInTheBackground(
       "Syncing...",
       true,
-      beforeRun = { BspConnectionService.getConnectionOrThrow(project).connect("bsp-import") },
+      beforeRun = { BspConnectionService.getInstance(project).value.connect("bsp-import") },
       afterOnSuccess = { addBspWidgets(project); bspSyncConsole.finishTask("bsp-import", "Done!") }
     )
   }
@@ -58,8 +61,7 @@ public class BspStartupActivity : StartupActivity {
   private fun showWizzardAndInitializeConnection(
     project: Project,
   ) {
-    val projectPropertiesService = ProjectPropertiesService.getInstance(project)
-    val projectProperties = projectPropertiesService.projectProperties
+    val projectProperties = ProjectPropertiesService.getInstance(project).value
     val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(
       projectProperties.projectRootDir,
       BspConnectionDetailsGeneratorExtension.extensions()
