@@ -28,6 +28,10 @@ dependencies {
   testImplementation("io.kotest:kotest-assertions-core:5.5.2")
 }
 
+tasks.runIde{
+  jvmArgs("-Xmx8000m")
+}
+
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellij {

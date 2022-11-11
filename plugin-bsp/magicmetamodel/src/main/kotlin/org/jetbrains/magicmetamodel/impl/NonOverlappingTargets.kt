@@ -40,8 +40,7 @@ internal object NonOverlappingTargets {
   ): Set<BuildTargetIdentifier> {
     val nonOverlappingTargetsAccWithTarget =
       addTargetToSetIfNoneOfItsNeighborsIsAdded(nonOverlappingTargetsAcc, target, overlappingTargetsGraph)
-
-    return target.dependencies
+    return (target.dependencies - nonOverlappingTargetsAccWithTarget)
       .mapNotNull { mapTargetIdToTarget(allTargets, it) }
       .fold(nonOverlappingTargetsAccWithTarget) { acc, targetToAdd ->
         addTargetToSetIfNoneOfItsNeighborsIsAddedAndDoTheSameForDependencies(
