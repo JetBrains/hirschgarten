@@ -2,21 +2,28 @@ package org.jetbrains.plugins.bsp.server.connection
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import ch.epfl.scala.bsp4j.BuildClient
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
-import org.jetbrains.plugins.bsp.server.client.BspClient
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
+import org.jetbrains.plugins.bsp.server.client.BspClient
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.InputStream
 import java.io.OutputStream
+import java.lang.System.currentTimeMillis
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Proxy
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlin.io.path.Path
 
 public data class BspFileConnectionState(
@@ -33,6 +40,7 @@ public class BspFileConnection(
 
   private var bspProcess: Process? = null
   private var disconnectActions: MutableList<() -> Unit> = mutableListOf()
+  private var log = logger<BspFileConnection>()
 
   public override fun connect(taskId: Any) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
@@ -95,7 +103,37 @@ public class BspFileConnection(
     val listening = launcher.startListening()
     disconnectActions.add { listening.cancel(true) }
 
-    return launcher.remoteProxy
+    val remoteProxy = launcher.remoteProxy
+    val invocationHandler = InvocationHandler { _, method, params ->
+      val result = method.invoke(remoteProxy, *(params ?: emptyArray()))
+      log.debug("Running BSP request '${method.name}'")
+      val startTime = currentTimeMillis()
+      val timeout = Registry.intValue("bsp.request.timeout.seconds").toLong()
+      if (result is CompletableFuture<*>) {
+        result
+          .orTimeout(timeout, TimeUnit.SECONDS)
+          .handle { value, error ->
+            val elapsedTime = currentTimeMillis() - startTime
+            log.debug("BSP method '${method.name}' call took ${elapsedTime}ms. Result: ${if(error == null) "SUCCESS" else "FAILURE"}")
+            if(error is TimeoutException) {
+              log.error("BSP request '${method.name}' timed out after ${elapsedTime}ms", error)
+              null
+            } else if (error != null)  {
+              throw error
+            } else {
+              value
+            }
+          }
+      } else {
+        result
+      }
+    }
+
+    return Proxy.newProxyInstance(
+      javaClass.classLoader,
+      arrayOf(BspServer::class.java),
+      invocationHandler
+    ) as BspServer
   }
 
   private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<BspServer> =
