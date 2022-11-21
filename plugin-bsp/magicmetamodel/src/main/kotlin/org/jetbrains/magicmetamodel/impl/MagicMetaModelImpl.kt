@@ -8,14 +8,12 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.workspaceModel.ide.BuilderSnapshot
 import com.intellij.workspaceModel.ide.StorageReplacement
 import com.intellij.workspaceModel.ide.WorkspaceModel
-import org.jetbrains.magicmetamodel.DocumentTargetsDetails
-import org.jetbrains.magicmetamodel.MagicMetaModel
-import org.jetbrains.magicmetamodel.MagicMetaModelDiff
-import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
-import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.magicmetamodel.*
+import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
+
 
 internal class DefaultMagicMetaModelDiff(
   private val workspaceModel: WorkspaceModel,
@@ -83,10 +81,14 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       LoadedTargetsStorage(state.loadedTargetsStorageState)
   }
 
+
+
   override fun loadDefaultTargets(): MagicMetaModelDiff {
     log.debug { "Calculating default targets to load..." }
 
-    val nonOverlappingTargetsToLoad = NonOverlappingTargets(projectDetails.targets, overlappingTargetsGraph)
+    val nonOverlappingTargetsToLoad = logPerformance("compute-non-overlapping-targets") {
+      NonOverlappingTargets(projectDetails.targets, overlappingTargetsGraph)
+    }
 
     log.debug { "Calculating default targets to load done! Targets to load: $nonOverlappingTargetsToLoad" }
 
@@ -102,7 +104,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val modulesToLoad = getModulesDetailsForTargetsToLoad(nonOverlappingTargetsToLoad)
 
     // TODO TEST TESTS TEESTS RTEST11
-    workspaceModelUpdater.loadModules(modulesToLoad)
+    logPerformance("load-modules") { workspaceModelUpdater.loadModules(modulesToLoad) }
     loadedTargetsStorage.addTargets(nonOverlappingTargetsToLoad)
 
 
