@@ -2,6 +2,7 @@ import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.tasks.BuildSearchableOptionsTask
 import org.jetbrains.intellij.tasks.PublishPluginTask
 import org.jetbrains.intellij.tasks.RunIdeTask
+import org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel
 import org.jetbrains.intellij.tasks.VerifyPluginTask
 
 fun properties(key: String) = project.findProperty(key).toString()
@@ -104,6 +105,10 @@ tasks {
 
   runPluginVerifier {
     ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
+    failureLevel.set(setOf(
+      FailureLevel.COMPATIBILITY_PROBLEMS,
+      FailureLevel.NOT_DYNAMIC
+    ))
   }
 
   publishPlugin {
