@@ -114,11 +114,11 @@ public class BspFileConnection(
           .orTimeout(timeout, TimeUnit.SECONDS)
           .handle { value, error ->
             val elapsedTime = currentTimeMillis() - startTime
-            log.debug("BSP method '${method.name}' call took ${elapsedTime}ms. Result: ${if(error == null) "SUCCESS" else "FAILURE"}")
-            if(error is TimeoutException) {
+            log.debug("BSP method '${method.name}' call took ${elapsedTime}ms. Result: ${if (error == null) "SUCCESS" else "FAILURE"}")
+            if (error is TimeoutException) {
               log.error("BSP request '${method.name}' timed out after ${elapsedTime}ms", error)
               null
-            } else if (error != null)  {
+            } else if (error != null) {
               throw error
             } else {
               value

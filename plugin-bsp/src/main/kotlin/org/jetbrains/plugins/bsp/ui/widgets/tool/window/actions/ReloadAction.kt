@@ -29,7 +29,8 @@ public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.a
     collectProjectDetailsTask.executeInTheBackground(
       "Reloading...",
       true,
-      afterOnSuccess = { bspSyncConsole.finishTask("bsp-reload", "Done!") })
+      afterOnSuccess = { bspSyncConsole.finishTask("bsp-reload", "Done!") }
+    )
   }
 
   public override fun update(e: AnActionEvent) {

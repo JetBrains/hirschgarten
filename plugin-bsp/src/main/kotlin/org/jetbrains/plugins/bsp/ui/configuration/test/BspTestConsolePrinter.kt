@@ -8,8 +8,10 @@ import jetbrains.buildServer.messages.serviceMessages.ServiceMessageTypes
 import org.jetbrains.plugins.bsp.ui.configuration.BspConsolePrinter
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 
-public class BspTestConsolePrinter(private val processHandler: BspProcessHandler, properties: SMTRunnerConsoleProperties) :
-  BspConsolePrinter by processHandler {
+public class BspTestConsolePrinter(
+  private val processHandler: BspProcessHandler,
+  properties: SMTRunnerConsoleProperties
+) : BspConsolePrinter by processHandler {
 
   public var console: BaseTestsOutputConsoleView =
     SMTestRunnerConnectionUtil.createAndAttachConsole("BSP", processHandler, properties)

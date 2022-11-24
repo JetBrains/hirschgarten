@@ -9,7 +9,11 @@ import com.intellij.util.PlatformIcons
 import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
 import java.awt.Component
 import java.awt.event.MouseListener
-import javax.swing.*
+import javax.swing.Icon
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.JTree
+import javax.swing.SwingConstants
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.MutableTreeNode
 import javax.swing.tree.TreeCellRenderer

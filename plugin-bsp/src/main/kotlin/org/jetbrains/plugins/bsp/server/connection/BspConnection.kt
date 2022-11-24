@@ -77,7 +77,7 @@ public class BspConnectionService(private val project: Project) :
         state.bspGeneratorConnectionState!!
       )!!
 
-      else -> throw IllegalStateException("Something is really wrong!")
+      else -> error("Something is really wrong!")
     }
 
   public companion object {

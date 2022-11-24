@@ -5,7 +5,12 @@ import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.FilePosition
 import com.intellij.build.events.EventResult
 import com.intellij.build.events.MessageEvent
-import com.intellij.build.events.impl.*
+import com.intellij.build.events.impl.FileMessageEventImpl
+import com.intellij.build.events.impl.FinishBuildEventImpl
+import com.intellij.build.events.impl.OutputBuildEventImpl
+import com.intellij.build.events.impl.ProgressBuildEventImpl
+import com.intellij.build.events.impl.StartBuildEventImpl
+import com.intellij.build.events.impl.SuccessResultImpl
 import java.io.File
 import java.net.URI
 
@@ -200,7 +205,7 @@ public class TaskConsole(
   }
 
   private fun sendMessageToAncestors(taskId: Any, message: String): Unit =
-    doUnlessTaskInProgress(taskId) {  // if taskID is a root task, it has no parents
+    doUnlessTaskInProgress(taskId) { // if taskID is a root task, it has no parents
       maybeGetParentTask(taskId)?.let {
         if (it != taskId) {
           sendMessageEvent(it, message)
