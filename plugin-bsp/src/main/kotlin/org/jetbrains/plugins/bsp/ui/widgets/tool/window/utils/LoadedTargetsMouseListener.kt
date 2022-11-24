@@ -60,11 +60,11 @@ public class LoadedTargetsMouseListener(
     return null
   }
 
-  override fun mousePressed(e: MouseEvent?) { }
+  override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
 
-  override fun mouseReleased(e: MouseEvent?) { }
+  override fun mouseReleased(e: MouseEvent?) { /* nothing to do */ }
 
-  override fun mouseEntered(e: MouseEvent?) { }
+  override fun mouseEntered(e: MouseEvent?) { /* nothing to do */ }
 
-  override fun mouseExited(e: MouseEvent?) { }
+  override fun mouseExited(e: MouseEvent?) { /* nothing to do */ }
 }

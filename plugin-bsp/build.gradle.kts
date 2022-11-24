@@ -9,7 +9,7 @@ fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
   // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
-  id("org.jetbrains.intellij") version "1.10.0-SNAPSHOT"
+  id("org.jetbrains.intellij") version "1.10.0"
   // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
   id("org.jetbrains.changelog") version "1.3.1"
 
@@ -23,10 +23,10 @@ dependencies {
   implementation(project(":magicmetamodel"))
   testImplementation(project(":test-utils"))
   implementation("ch.epfl.scala:bsp4j:2.1.0-M3")
-  implementation("com.google.code.gson:gson:2.9.1")
+  implementation("com.google.code.gson:gson:2.10")
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
-  testImplementation("io.kotest:kotest-assertions-core:5.5.2")
+  testImplementation("io.kotest:kotest-assertions-core:5.5.4")
 }
 
 tasks.runIde{

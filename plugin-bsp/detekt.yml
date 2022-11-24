@@ -22,3 +22,5 @@ style:
 complexity:
   LongParameterList:
     active: false
+  TooManyFunctions:
+    active: false

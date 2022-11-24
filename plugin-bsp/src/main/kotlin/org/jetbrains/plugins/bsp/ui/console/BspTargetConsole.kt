@@ -27,7 +27,7 @@ public class BspTargetTestConsole : BspTargetConsole<BspTestConsolePrinter>() {
   }
 
   public fun failTest(displayName: String, message: String) {
-    consoleListeners.forEach { it.failTest(displayName, displayName) }
+    consoleListeners.forEach { it.failTest(displayName, message) }
   }
 
   public fun passTest(suite: Boolean, displayName: String) {

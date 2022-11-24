@@ -52,7 +52,7 @@ public class BspClient(
     }
   }
 
-  override fun onBuildTaskProgress(params: TaskProgressParams?) {}
+  override fun onBuildTaskProgress(params: TaskProgressParams?) { /* nothing to do */ }
 
   override fun onBuildTaskFinish(params: TaskFinishParams?) {
     when (params?.dataKind) {
@@ -75,7 +75,7 @@ public class BspClient(
     addDiagnosticToConsole(params)
   }
 
-  override fun onBuildTargetDidChange(params: DidChangeBuildTarget?) {}
+  override fun onBuildTargetDidChange(params: DidChangeBuildTarget?) { /* nothing to do */ }
 
   private fun addMessageToConsole(originId: String?, message: String) {
     if (originId?.startsWith("build") == true) {

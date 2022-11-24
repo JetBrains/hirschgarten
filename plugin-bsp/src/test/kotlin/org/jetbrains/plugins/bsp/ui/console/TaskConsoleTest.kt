@@ -3,7 +3,12 @@ package org.jetbrains.plugins.bsp.ui.console
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.events.BuildEvent
 import com.intellij.build.events.MessageEvent.Kind
-import com.intellij.build.events.impl.*
+import com.intellij.build.events.impl.FileMessageEventImpl
+import com.intellij.build.events.impl.FinishBuildEventImpl
+import com.intellij.build.events.impl.OutputBuildEventImpl
+import com.intellij.build.events.impl.ProgressBuildEventImpl
+import com.intellij.build.events.impl.StartBuildEventImpl
+import com.intellij.build.events.impl.SuccessResultImpl
 import io.kotest.matchers.maps.shouldContainExactly
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
@@ -190,7 +195,7 @@ class TaskConsoleTest {
       )
     )
   }
-  
+
   @Test
   fun `should display messages correctly`() {
     val buildProcessListener = MockProgressEventListener()
@@ -199,22 +204,22 @@ class TaskConsoleTest {
     // when
     val taskConsole = TaskConsole(buildProcessListener, basePath)
 
-    taskConsole.addMessage("task", "Message 0")  // should be omitted - task not yet started
-    
+    taskConsole.addMessage("task", "Message 0") // should be omitted - task not yet started
+
     taskConsole.startTask("task", "Task 1", "Task started")
     taskConsole.startSubtask("task", "subtask", "Subtask started")
 
     taskConsole.addMessage("task", "Message 1\n")
-    taskConsole.addMessage("task", "Message 2")  // should add new line at the end
-    taskConsole.addMessage("subtask", "Message 3")  // should send a copy the message to the subtask's parent
-    taskConsole.addMessage("nonexistent-task", "Message 4")  // should be omitted - no such task
-    taskConsole.addMessage("task", "")  // should be omitted - empty message
-    taskConsole.addMessage("task", "   \n  \t  ")  // should be omitted - blank message
+    taskConsole.addMessage("task", "Message 2") // should add new line at the end
+    taskConsole.addMessage("subtask", "Message 3") // should send a copy the message to the subtask's parent
+    taskConsole.addMessage("nonexistent-task", "Message 4") // should be omitted - no such task
+    taskConsole.addMessage("task", "") // should be omitted - empty message
+    taskConsole.addMessage("task", "   \n  \t  ") // should be omitted - blank message
 
     taskConsole.finishSubtask("subtask", "Subtask finished")
     taskConsole.finishTask("task", "Task finished")
 
-    taskConsole.addMessage("task", "Message 7")  // should be omitted - task already finished
+    taskConsole.addMessage("task", "Message 7") // should be omitted - task already finished
 
     // then
     buildProcessListener.events shouldContainExactly mapOf(
@@ -266,11 +271,11 @@ class TaskConsoleTest {
     diagnosticListener.events shouldContainExactly mapOf(
       "origin" to listOf(
         TestableBuildEvent(StartBuildEventImpl::class, "origin", null, "started"),
-        TestableDiagnosticEvent(id="origin", message="Diagnostic 1\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        TestableDiagnosticEvent(id="origin", message="Diagnostic 2\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        TestableDiagnosticEvent(id="origin", message="Diagnostic 3\n", severity=Kind.INFO, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
-        TestableDiagnosticEvent(id="origin", message="Diagnostic 6\n", severity=Kind.ERROR, filePositionPath="/home/directory/project/src/test/Start.kt", -4, -8),
-        TestableDiagnosticEvent(id="origin", message="Diagnostic 7\n", severity=Kind.WARNING, filePositionPath="/home/directory/project/src/test/Start.kt", 10, 20),
+        TestableDiagnosticEvent(id = "origin", message = "Diagnostic 1\n", severity = Kind.ERROR, filePositionPath = "/home/directory/project/src/test/Start.kt", 10, 20),
+        TestableDiagnosticEvent(id = "origin", message = "Diagnostic 2\n", severity = Kind.WARNING, filePositionPath = "/home/directory/project/src/test/Start.kt", 10, 20),
+        TestableDiagnosticEvent(id = "origin", message = "Diagnostic 3\n", severity = Kind.INFO, filePositionPath = "/home/directory/project/src/test/Start.kt", 10, 20),
+        TestableDiagnosticEvent(id = "origin", message = "Diagnostic 6\n", severity = Kind.ERROR, filePositionPath = "/home/directory/project/src/test/Start.kt", -4, -8),
+        TestableDiagnosticEvent(id = "origin", message = "Diagnostic 7\n", severity = Kind.WARNING, filePositionPath = "/home/directory/project/src/test/Start.kt", 10, 20),
         TestableBuildEvent(FinishBuildEventImpl::class, "origin", null, "finished"),
       )
     )
@@ -338,7 +343,7 @@ class TaskConsoleTest {
     taskConsole.finishSubtask("subtask1", "Subtask 1 finished")
     taskConsole.finishTask("root", "Root finished")
 
-    //then
+    // then
     buildProcessListener.events shouldContainExactly mapOf(
       "root" to listOf(
         TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
@@ -375,7 +380,7 @@ class TaskConsoleTest {
     taskConsole.finishSubtask("subtask1", "Subtask 1 finished")
     taskConsole.finishTask("root", "Root finished")
 
-    //then
+    // then
     buildProcessListener.events shouldContainExactly mapOf(
       "root" to listOf(
         TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),

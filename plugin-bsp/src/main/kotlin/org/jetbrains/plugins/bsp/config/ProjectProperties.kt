@@ -27,7 +27,7 @@ public data class ProjectProperties(
     public fun fromState(state: ProjectPropertiesState): ProjectProperties =
       ProjectProperties(
         projectRootDir = state.projectRootDir?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
-          ?: throw IllegalStateException("Can't parse the state! `projectRootDir` can't be null."),
+          ?: error("Can't parse the state! `projectRootDir` can't be null."),
       )
   }
 }
