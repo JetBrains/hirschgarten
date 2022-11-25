@@ -1,33 +1,28 @@
 package org.jetbrains.plugins.bsp.run
 
 import com.intellij.execution.configurations.ConfigurationFactory
-import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.ConfigurationTypeBase
+import com.intellij.execution.configurations.ConfigurationTypeUtil
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import javax.swing.Icon
 
-public class BspRunConfigurationType : ConfigurationType {
+public class BspRunConfigurationType : ConfigurationTypeBase(
+  ID,
+  "BSP",
+  "BSP run configuration",
+  BspPluginIcons.bsp
+) {
+
+  init {
+    addFactory(BspRunConfigurationFactory(this))
+  }
+
+  public val factory: ConfigurationFactory
+    get() = configurationFactories.single()
 
   public companion object {
     public const val ID: String = "BspRunConfiguration"
-  }
 
-  override fun getDisplayName(): String {
-    return "BSP"
-  }
-
-  override fun getConfigurationTypeDescription(): String {
-    return "BSP run configuration"
-  }
-
-  override fun getIcon(): Icon {
-    return BspPluginIcons.bsp
-  }
-
-  override fun getId(): String {
-    return ID
-  }
-
-  override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-    return arrayOf(BspRunConfigurationFactory(this))
+    public fun getInstance(): BspRunConfigurationType =
+      ConfigurationTypeUtil.findConfigurationType(BspRunConfigurationType::class.java)
   }
 }

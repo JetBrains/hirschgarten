@@ -9,5 +9,5 @@ internal class TestTargetAction(
 ) : SideMenuTargetAction(target, BspAllTargetsWidgetBundle.message("widget.test.target.popup.message")) {
   override fun getConfigurationType() = BspRunConfigurationType()
 
-  override fun getName(target: BuildTargetIdentifier): String = target.uri.toString().substringAfter(':')
+  override fun getName(target: BuildTargetIdentifier): String = "Test ${target.uri}"
 }

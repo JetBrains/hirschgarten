@@ -10,5 +10,5 @@ internal class RunTargetAction(
 ) : SideMenuTargetAction(target, BspAllTargetsWidgetBundle.message("widget.run.target.popup.message")) {
   override fun getConfigurationType(): ConfigurationType = BspRunConfigurationType()
 
-  override fun getName(target: BuildTargetIdentifier): String = "run ${target.uri}"
+  override fun getName(target: BuildTargetIdentifier): String = "Run ${target.uri}"
 }

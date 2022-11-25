@@ -20,6 +20,6 @@ public class BspRunConfigurationProducer : LazyRunConfigurationProducer<BspRunCo
   }
 
   override fun getConfigurationFactory(): ConfigurationFactory {
-    return BspRunConfigurationFactory(BspRunConfigurationType())
+    return BspRunConfigurationType.getInstance().factory
   }
 }
