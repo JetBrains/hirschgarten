@@ -40,7 +40,7 @@
     <registryKey defaultValue="300" description="Timeout for BSP requests" key="bsp.request.timeout.seconds"/>
 
     <configurationType
-      implementation="org.jetbrains.plugins.bsp.run.BspRunConfigurationType"/>
+      implementation="org.jetbrains.plugins.bsp.runConfig.BspRunConfigurationType"/>
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
   </extensions>

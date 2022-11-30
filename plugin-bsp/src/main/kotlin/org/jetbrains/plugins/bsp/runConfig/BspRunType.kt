@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.run
+package org.jetbrains.plugins.bsp.runConfig
 
 public enum class BspRunType {
   BUILD,

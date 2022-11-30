@@ -11,8 +11,8 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Key
-import org.jetbrains.plugins.bsp.run.BspRunConfiguration
-import org.jetbrains.plugins.bsp.run.BspRunType
+import org.jetbrains.plugins.bsp.runConfig.BspRunConfiguration
+import org.jetbrains.plugins.bsp.runConfig.BspRunType
 
 public val targetIdTOREMOVE: Key<BuildTargetIdentifier> = Key<BuildTargetIdentifier>("targetId")
 

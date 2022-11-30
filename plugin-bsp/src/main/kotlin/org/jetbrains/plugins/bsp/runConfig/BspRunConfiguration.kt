@@ -1,10 +1,11 @@
-package org.jetbrains.plugins.bsp.run
+package org.jetbrains.plugins.bsp.runConfig
 
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.*
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.runConfig.run.BspRunState
 
 public class BspRunConfiguration(
   project: Project,
@@ -14,19 +15,6 @@ public class BspRunConfiguration(
   override fun getOptions(): BspRunConfigurationOptions {
     return super.getOptions() as BspRunConfigurationOptions
   }
-
-  public var target: String?
-    get() = options.target
-    set(value) {
-      options.target = value
-    }
-
-  public var runType: BspRunType
-    get() = options.runType
-    set(value) {
-      options.runType = value
-    }
-
   override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
     return BspRunConfigurationEditor(project)
   }
@@ -36,5 +24,5 @@ public class BspRunConfiguration(
   }
 
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
-    BspRunState(project, environment, options)
+    BspRunState(project, environment, this)
 }

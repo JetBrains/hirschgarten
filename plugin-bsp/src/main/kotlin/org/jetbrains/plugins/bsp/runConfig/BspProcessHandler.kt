@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.run
+package org.jetbrains.plugins.bsp.runConfig
 
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessIOExecutorService

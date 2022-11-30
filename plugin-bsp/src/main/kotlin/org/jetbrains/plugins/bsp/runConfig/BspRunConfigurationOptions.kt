@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.run
+package org.jetbrains.plugins.bsp.runConfig
 
 import com.intellij.execution.configurations.LocatableRunConfigurationOptions
 import com.intellij.openapi.components.StoredProperty

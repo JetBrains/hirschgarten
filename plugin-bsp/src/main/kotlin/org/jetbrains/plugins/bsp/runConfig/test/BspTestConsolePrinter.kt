@@ -1,10 +1,12 @@
-package org.jetbrains.plugins.bsp.run
+package org.jetbrains.plugins.bsp.runConfig.test
 
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessageTypes
+import org.jetbrains.plugins.bsp.runConfig.BspConsolePrinter
+import org.jetbrains.plugins.bsp.runConfig.BspProcessHandler
 
 public class BspTestConsolePrinter(
   private val processHandler: BspProcessHandler,

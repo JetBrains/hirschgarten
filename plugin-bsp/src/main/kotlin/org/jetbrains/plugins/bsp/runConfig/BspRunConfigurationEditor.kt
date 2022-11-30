@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.run
+package org.jetbrains.plugins.bsp.runConfig
 
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
@@ -18,13 +18,13 @@ public class BspRunConfigurationEditor(project: Project) : SettingsEditor<BspRun
     LabeledComponent.create(ComboBox(BspRunType.values()), "Run type")
 
   override fun resetEditorFrom(demoRunConfiguration: BspRunConfiguration) {
-    targetName.component?.setText(demoRunConfiguration.target)
-    runType.component?.selectedItem = demoRunConfiguration.runType
+    targetName.component?.setText(demoRunConfiguration.state?.target)
+    runType.component?.selectedItem = demoRunConfiguration.state?.runType
   }
 
   override fun applyEditorTo(demoRunConfiguration: BspRunConfiguration) {
-    targetName.component?.let { demoRunConfiguration.target = it.text }
-    runType.component?.let { demoRunConfiguration.runType = it.selectedItem as BspRunType }
+    targetName.component?.let { demoRunConfiguration.state?.target = it.text }
+    runType.component?.let { demoRunConfiguration.state?.runType = it.selectedItem as BspRunType }
   }
 
   override fun createEditor(): JComponent = panel {
