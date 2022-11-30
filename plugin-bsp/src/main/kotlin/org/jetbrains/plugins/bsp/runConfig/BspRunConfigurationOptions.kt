@@ -5,12 +5,7 @@ import com.intellij.openapi.components.StoredProperty
 
 public class BspRunConfigurationOptions : LocatableRunConfigurationOptions() {
   private val targetProperty: StoredProperty<String?> = string("").provideDelegate(this, "target")
-  private val runTypeProperty: StoredProperty<BspRunType> = enum(BspRunType.BUILD).provideDelegate(this, "runType")
-  public var target: String?
+  public var target: String? // TODO: Will this always be a URI?
     get() = targetProperty.getValue(this)
     set(value) = targetProperty.setValue(this, value)
-
-  public var runType: BspRunType
-    get() = runTypeProperty.getValue(this)
-    set(value) = runTypeProperty.setValue(this, value)
 }

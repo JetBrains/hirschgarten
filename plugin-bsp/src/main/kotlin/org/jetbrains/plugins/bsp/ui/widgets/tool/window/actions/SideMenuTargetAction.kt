@@ -12,7 +12,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.bsp.runConfig.BspRunConfiguration
-import org.jetbrains.plugins.bsp.runConfig.BspRunType
 
 public val targetIdTOREMOVE: Key<BuildTargetIdentifier> = Key<BuildTargetIdentifier>("targetId")
 
@@ -31,7 +30,6 @@ internal abstract class SideMenuTargetAction(
       val setting = RunManager.getInstance(project).createConfiguration(getName(target), factory).also {
         val c = it.configuration as BspRunConfiguration
         c.target = target.uri
-        c.runType = BspRunType.RUN
         // TODO: remove this
       }
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(setting)

@@ -1,15 +1,21 @@
 package org.jetbrains.plugins.bsp.runConfig
 
-import com.intellij.execution.process.ProcessHandler
-import com.intellij.execution.process.ProcessIOExecutorService
-import com.intellij.execution.process.ProcessOutputType
+import com.intellij.execution.process.*
+import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.ui.ConsoleViewContentType
+import com.intellij.openapi.util.Key
 import java.io.OutputStream
 
-public interface BspConsolePrinter {
-  public fun printOutput(text: String)
-}
 
-public class BspProcessHandler : ProcessHandler(), BspConsolePrinter {
+public class BspProcessHandler(private val console: ConsoleView) : ProcessHandler() {
+
+  init {
+    addProcessListener(object : ProcessAdapter() {
+      override fun onTextAvailable(event: ProcessEvent, outputType: Key<*>) {
+        console.print(event.text, ConsoleViewContentType.getConsoleViewType(outputType))
+      }
+    })
+  }
 
   override fun destroyProcessImpl() {
     super.notifyProcessTerminated(0)
@@ -23,19 +29,7 @@ public class BspProcessHandler : ProcessHandler(), BspConsolePrinter {
 
   override fun getProcessInput(): OutputStream? = null
 
-  override fun printOutput(text: String) {
-    val output = prepareTextToPrint(text)
-    notifyTextAvailable(output, ProcessOutputType.STDOUT)
-  }
-
-  private fun prepareTextToPrint(text: String): String =
-    if (text.endsWith("\n")) text else text + "\n"
-
   public fun shutdown() {
     super.notifyProcessTerminated(0)
-  }
-
-  public fun execute(task: Runnable) {
-    ProcessIOExecutorService.INSTANCE.submit(task)
   }
 }

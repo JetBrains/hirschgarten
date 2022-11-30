@@ -14,22 +14,17 @@ public class BspRunConfigurationEditor(project: Project) : SettingsEditor<BspRun
   private lateinit var myPanel: JPanel
   private var targetName: LabeledComponent<TextFieldWithBrowseButton> =
     LabeledComponent.create(TextFieldWithBrowseButton(), "Target")
-  private var runType: LabeledComponent<ComboBox<BspRunType>> =
-    LabeledComponent.create(ComboBox(BspRunType.values()), "Run type")
 
   override fun resetEditorFrom(demoRunConfiguration: BspRunConfiguration) {
     targetName.component?.setText(demoRunConfiguration.state?.target)
-    runType.component?.selectedItem = demoRunConfiguration.state?.runType
   }
 
   override fun applyEditorTo(demoRunConfiguration: BspRunConfiguration) {
     targetName.component?.let { demoRunConfiguration.state?.target = it.text }
-    runType.component?.let { demoRunConfiguration.state?.runType = it.selectedItem as BspRunType }
   }
 
   override fun createEditor(): JComponent = panel {
     row {
-      cell(runType)
       cell(targetName)
     }
   }.also { myPanel = it }
