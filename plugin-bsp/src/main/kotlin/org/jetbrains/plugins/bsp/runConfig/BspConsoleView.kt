@@ -9,8 +9,13 @@ import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
 
-public class BspConsoleView(project: Project, searchScope: GlobalSearchScope, viewer: Boolean, usePredefinedMessageFilter: Boolean) :
-ConsoleViewImpl(project, searchScope, viewer, usePredefinedMessageFilter) {
+public class BspConsoleView(
+  project: Project,
+  searchScope: GlobalSearchScope,
+  viewer: Boolean,
+  usePredefinedMessageFilter: Boolean
+) :
+  ConsoleViewImpl(project, searchScope, viewer, usePredefinedMessageFilter) {
   private var hasErrors = false
 
   // TODO: Taken from intellij-rust, figure out what it does and if it's needed

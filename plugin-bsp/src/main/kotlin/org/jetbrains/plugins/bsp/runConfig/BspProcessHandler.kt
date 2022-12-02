@@ -6,7 +6,6 @@ import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.util.Key
 import java.io.OutputStream
 
-
 public class BspProcessHandler(private val console: ConsoleView) : ProcessHandler() {
 
   init {

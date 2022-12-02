@@ -1,24 +1,14 @@
 package org.jetbrains.plugins.bsp.runConfig.test
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.StatusCode
-import com.intellij.execution.DefaultExecutionResult
-import com.intellij.execution.ExecutionResult
-import com.intellij.execution.Executor
-import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.runConfig.BspProcessHandler
 import org.jetbrains.plugins.bsp.runConfig.BspRunConfiguration
-import org.jetbrains.plugins.bsp.runConfig.BspRunConfigurationOptions
 import org.jetbrains.plugins.bsp.runConfig.BspRunStateBase
-import org.jetbrains.plugins.bsp.server.tasks.RunTargetTask
-import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 
-public class BspTestRunState(project: Project,
-                      environment: ExecutionEnvironment,
-                      configuration: BspRunConfiguration,
+public class BspTestRunState(
+  project: Project,
+  environment: ExecutionEnvironment,
+  configuration: BspRunConfiguration,
 ) : BspRunStateBase(project, environment, configuration) {
 
   init {
@@ -49,5 +39,4 @@ public class BspTestRunState(project: Project,
 //        processHandler.shutdown()
 //      }
 //    }
-
 }

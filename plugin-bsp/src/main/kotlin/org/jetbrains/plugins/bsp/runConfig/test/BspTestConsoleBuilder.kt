@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.search.ExecutionSearchScopes
 import org.jetbrains.plugins.bsp.runConfig.BspRunConfiguration
 
-public class BspTestConsoleBuilder (
+public class BspTestConsoleBuilder(
   project: Project,
   private val config: BspRunConfiguration,
   private val executor: Executor,

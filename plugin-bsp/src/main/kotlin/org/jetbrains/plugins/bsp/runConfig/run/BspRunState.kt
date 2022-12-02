@@ -5,13 +5,10 @@ import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
-import com.intellij.execution.process.ProcessAdapter
-import com.intellij.execution.process.ProcessEvent
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.bsp.runConfig.*
 import org.jetbrains.plugins.bsp.server.tasks.RunTargetTask
 

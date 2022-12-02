@@ -19,7 +19,6 @@ public class BspRunRunner : ProgramRunner<RunnerSettings> {
   override fun execute(environment: ExecutionEnvironment) {
     val state = environment.state ?: return
     state.execute(environment.executor, this)
-
   }
 
   public companion object {
