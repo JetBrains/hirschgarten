@@ -10,9 +10,9 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
-import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFile
-import org.jetbrains.plugins.bsp.flow.open.wizzard.ImportProjectWizzard
-import org.jetbrains.plugins.bsp.flow.open.wizzard.NewConnection
+import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
+import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizard
+import org.jetbrains.plugins.bsp.flow.open.wizard.NewConnection
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
@@ -46,7 +46,7 @@ public class BspStartupActivity : StartupActivity {
     bspSyncConsole.startTask("bsp-import", "Import", "Importing...")
 
     if (project.isNewProject()) {
-      showWizzardAndInitializeConnection(project)
+      showWizardAndInitializeConnection(project)
     }
 
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-import").prepareBackgroundTask()
@@ -58,7 +58,7 @@ public class BspStartupActivity : StartupActivity {
     )
   }
 
-  private fun showWizzardAndInitializeConnection(
+  private fun showWizardAndInitializeConnection(
     project: Project,
   ) {
     val projectProperties = ProjectPropertiesService.getInstance(project).value
@@ -67,9 +67,9 @@ public class BspStartupActivity : StartupActivity {
       BspConnectionDetailsGeneratorExtension.extensions()
     )
 
-    val wizzard = ImportProjectWizzard(project, bspConnectionDetailsGeneratorProvider)
-    if (wizzard.showAndGet()) {
-      when (val connectionFileOrNewConnection = wizzard.connectionFileOrNewConnectionProperty.get()) {
+    val wizard = ImportProjectWizard(project, bspConnectionDetailsGeneratorProvider)
+    if (wizard.showAndGet()) {
+      when (val connectionFileOrNewConnection = wizard.connectionFileOrNewConnectionProperty.get()) {
         is NewConnection -> initializeNewConnection(project, bspConnectionDetailsGeneratorProvider)
         is ConnectionFile -> initializeConnectionFromFile(project, connectionFileOrNewConnection)
       }

@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.flow.open.wizzard
+package org.jetbrains.plugins.bsp.flow.open.wizard
 
 import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.ide.wizard.StepAdapter
@@ -9,7 +9,7 @@ import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import javax.swing.JComponent
 
-public abstract class ImportProjectWizzardStep : StepAdapter() {
+public abstract class ImportProjectWizardStep : StepAdapter() {
 
   protected abstract val panel: DialogPanel
 
@@ -23,10 +23,10 @@ public abstract class ImportProjectWizzardStep : StepAdapter() {
   protected open fun commit(finishChosen: Boolean) {}
 }
 
-public class ImportProjectWizzard(
+public class ImportProjectWizard(
   project: Project,
   bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider
-) : AbstractWizard<ImportProjectWizzardStep>("Import Project via BSP", project) {
+) : AbstractWizard<ImportProjectWizardStep>("Import Project via BSP", project) {
 
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
 
@@ -40,7 +40,7 @@ public class ImportProjectWizzard(
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty
     addStep(firstStep)
 
-    val externalSteps = bspConnectionDetailsGeneratorProvider.calulateWizzardSteps(
+    val externalSteps = bspConnectionDetailsGeneratorProvider.calculateWizardSteps(
       bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY()!!,
       connectionFileOrNewConnectionProperty
     )
