@@ -18,9 +18,9 @@ import com.intellij.util.EnvironmentUtil
 import com.intellij.util.io.exists
 import com.intellij.util.io.isFile
 import com.intellij.util.io.readText
-import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFile
-import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFileOrNewConnection
-import org.jetbrains.plugins.bsp.flow.open.wizzard.ImportProjectWizzardStep
+import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
+import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
+import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizardStep
 import java.io.File
 import java.io.OutputStream
 import java.net.URL
@@ -40,10 +40,10 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
   public override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean =
     projectPath.children.any { it.name == "WORKSPACE" }
 
-  override fun calculateImportWizzardSteps(
+  override fun calculateImportWizardSteps(
     projectBasePath: Path,
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
-  ): List<ImportProjectWizzardStep> {
+  ): List<ImportProjectWizardStep> {
     val step = BazelEditProjectViewStep(projectBasePath, connectionFileOrNewConnectionProperty)
     projectViewFilePathProperty = step.projectViewFilePathProperty
 
@@ -110,7 +110,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
 public class BazelEditProjectViewStep(
   private val projectBasePath: Path,
   private val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
-) : ImportProjectWizzardStep() {
+) : ImportProjectWizardStep() {
 
   private val propertyGraph = PropertyGraph(isBlockPropagation = false)
 

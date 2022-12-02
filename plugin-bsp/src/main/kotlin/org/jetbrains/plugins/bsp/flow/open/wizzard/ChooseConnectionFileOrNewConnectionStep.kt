@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.flow.open.wizzard
+package org.jetbrains.plugins.bsp.flow.open.wizard
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.google.gson.Gson
@@ -21,7 +21,7 @@ public object NewConnection : ConnectionFileOrNewConnection
 public open class ChooseConnectionFileOrNewConnectionStep(
   private val projectPath: VirtualFile,
   private val isGeneratorAvailable: Boolean
-) : ImportProjectWizzardStep() {
+) : ImportProjectWizardStep() {
 
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection> =
     AtomicLazyProperty { calculateDefaultConnectionFileOrNewConnectionProperty(projectPath) }

@@ -2,8 +2,8 @@ package org.jetbrains.plugins.bsp.protocol.connection
 
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.plugins.bsp.flow.open.wizzard.ConnectionFileOrNewConnection
-import org.jetbrains.plugins.bsp.flow.open.wizzard.ImportProjectWizzardStep
+import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
+import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizardStep
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.OutputStream
 import java.nio.file.Path
@@ -34,10 +34,10 @@ public interface BspConnectionDetailsGenerator {
 
   public fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean
 
-  public fun calculateImportWizzardSteps(
+  public fun calculateImportWizardSteps(
     projectBasePath: Path,
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
-  ): List<ImportProjectWizzardStep> = emptyList()
+  ): List<ImportProjectWizardStep> = emptyList()
 
   public fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream): VirtualFile
 }
@@ -60,13 +60,13 @@ public class BspConnectionDetailsGeneratorProvider(
   public fun firstGeneratorTEMPORARY(): String? =
     availableGeneratorsNames().firstOrNull()
 
-  public fun calulateWizzardSteps(
+  public fun calculateWizardSteps(
     generatorName: String,
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
-  ): List<ImportProjectWizzardStep> =
+  ): List<ImportProjectWizardStep> =
     availableBspConnectionDetailsGenerators
       .find { it.name() == generatorName }
-      ?.calculateImportWizzardSteps(projectPath.toNioPath(), connectionFileOrNewConnectionProperty).orEmpty()
+      ?.calculateImportWizardSteps(projectPath.toNioPath(), connectionFileOrNewConnectionProperty).orEmpty()
 
   public fun generateBspConnectionDetailFileForGeneratorWithName(
     generatorName: String,
