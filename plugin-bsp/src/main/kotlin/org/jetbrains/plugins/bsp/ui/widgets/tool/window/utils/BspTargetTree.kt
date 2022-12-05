@@ -7,6 +7,7 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
 import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import java.awt.Component
 import java.awt.event.MouseListener
 import javax.swing.Icon
@@ -68,14 +69,21 @@ private class TargetTreeCellRenderer(val targetIcon: Icon) : TreeCellRenderer {
  * @param targetIcon an icon for all build targets in the generated tree
  */
 public class BspTargetTree(targetIcon: Icon) {
-  public val panelComponent: JPanel = JPanel(VerticalLayout(0))
+  public var panelComponent: JPanel = JPanel(VerticalLayout(0))
+    private set
 
   private val targetSearch = TargetSearch(targetIcon, this::updateSearch)
 
   private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
-  private val treeComponent: Tree = Tree(rootNode)
+  private var treeComponent: Tree = Tree(rootNode)
+  private val emptyTreeMessage = JBLabel(
+    BspAllTargetsWidgetBundle.message("widget.no.targets.message"),
+    SwingConstants.CENTER
+  )
 
   private val cellRenderer = TargetTreeCellRenderer(targetIcon)
+
+  private val mouseListenerBuilders = mutableSetOf<(JComponent) -> MouseListener>()
 
   init {
     treeComponent.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
@@ -122,7 +130,9 @@ public class BspTargetTree(targetIcon: Icon) {
       .sorted()
     rootNode.removeAllChildren()
     for (dir in sortedDirs) {
-      rootNode.add(generateDirectoryNode(grouped[dir]!!, dir, separator, 0))
+      grouped[dir]?.let {
+        rootNode.add(generateDirectoryNode(it, dir, separator, 0))
+      }
     }
     if (grouped.containsKey(null)) {
       for (identifier in grouped[null]!!) {
@@ -160,7 +170,9 @@ public class BspTargetTree(targetIcon: Icon) {
       .sorted()
     var index = 0
     for (dir in sortedDirs) {
-      childrenList.add(generateDirectoryNode(grouped[dir]!!, dir, separator, depth + 1))
+      grouped[dir]?.let {
+        childrenList.add(generateDirectoryNode(it, dir, separator, depth + 1))
+      }
     }
     if (grouped.containsKey(null)) {
       for (identifier in grouped[null]!!) {
@@ -194,18 +206,65 @@ public class BspTargetTree(targetIcon: Icon) {
   }
 
   /**
+   * Replaces currently used `panelComponent` and `treeComponent` with new ones.
+   * All mouse listeners added before are also added to the new tree.
+   *
+   * The newly created tree will have exact same structure as the previous one, unless this method is called
+   * after `generateTree(...)`
+   *
+   * Previous panel will not be re-rendered automatically in its usage places - it has to be replaced with
+   * its new instance, acquired from `panelComponent` after calling this method
+   */
+  public fun regenerateComponents() {
+    val newPanel = JPanel(VerticalLayout(0))
+    val newTree = Tree(rootNode)
+
+    newTree.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
+    newTree.cellRenderer = cellRenderer
+    newTree.isRootVisible = false
+
+    newTree.expandPath(TreePath(rootNode.path))
+
+    treeComponent.getExpandedDescendants(TreePath(rootNode.path))?.let { expandedDescendants ->
+      for (treePath in expandedDescendants) {
+        newTree.expandPath(treePath)
+      }
+    }
+    for (listenerBuilder in mouseListenerBuilders) {
+      newTree.addMouseListener(
+        listenerBuilder(newTree)
+      )
+    }
+
+    treeComponent = newTree
+
+    val treeIsEmpty = rootNode.isLeaf
+    newPanel.add(targetSearch.searchBarComponent.also { it.isEnabled = !treeIsEmpty })
+    newPanel.add(
+      if (treeIsEmpty) emptyTreeMessage
+      else treeComponent
+    )
+
+    panelComponent = newPanel
+  }
+
+  /**
    * Shows build targets list/tree, depending on current search query. This method is executed each time
-   * the search query is modified
+   * the search query is modified. If there are no targets in the tree, nothing happens.
    */
   private fun updateSearch() {
-    try {
-      panelComponent.remove(1)
-    } finally {
-      panelComponent.add(
-        if (targetSearch.searchActive) targetSearch.searchListComponent else treeComponent
-      )
-      panelComponent.revalidate()
-      panelComponent.repaint()
+    if (!rootNode.isLeaf) {
+      try {
+        panelComponent.remove(1)
+      } finally {
+        panelComponent.add(
+          if (rootNode.isLeaf) emptyTreeMessage
+          else if (targetSearch.searchActive) targetSearch.searchListComponent
+          else treeComponent
+        )
+        panelComponent.revalidate()
+        panelComponent.repaint()
+      }
     }
   }
 
@@ -215,6 +274,7 @@ public class BspTargetTree(targetIcon: Icon) {
    * and returns a listener
    */
   public fun addMouseListeners(listenerBuilder: (JComponent) -> MouseListener) {
+    this.mouseListenerBuilders.add(listenerBuilder)
     this.treeComponent.addMouseListener(
       listenerBuilder(this.treeComponent)
     )

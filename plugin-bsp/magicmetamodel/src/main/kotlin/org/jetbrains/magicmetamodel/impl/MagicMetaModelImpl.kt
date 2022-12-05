@@ -47,6 +47,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   private val loadedTargetsStorage: LoadedTargetsStorage
 
+  private val targetLoadListeners = mutableSetOf<() -> Unit>()
+
   internal constructor(
     magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
     projectDetails: ProjectDetails,
@@ -123,6 +125,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
     return if (loadedTargetsStorage.isTargetNotLoaded(targetId)) {
       val builderSnapshot = loadTargetAndRemoveOverlappingLoadedTargets(targetId)
+      triggerTargetLoadListeners()
 
       DefaultMagicMetaModelDiff(
         magicMetaModelProjectConfig.workspaceModel,
@@ -131,6 +134,17 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     } else {
       EmptyMagicMetaModelDiff()
     }
+  }
+
+  private fun triggerTargetLoadListeners(): Unit =
+    targetLoadListeners.forEach { listener -> listener() }
+
+  override fun registerTargetLoadListener(function: () -> Unit) {
+    targetLoadListeners.add(function)
+  }
+
+  public fun copyAllTargetLoadListenersTo(other: MagicMetaModelImpl) {
+    targetLoadListeners.forEach { other.registerTargetLoadListener(it) }
   }
 
   private fun throwIllegalArgumentExceptionIfTargetIsNotIncludedInTheModel(targetId: BuildTargetIdentifier) {

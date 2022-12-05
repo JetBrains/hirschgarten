@@ -83,6 +83,11 @@ public interface MagicMetaModel {
   public fun loadTarget(targetId: BuildTargetIdentifier): MagicMetaModelDiff
 
   /**
+   * Register a function to be executed when a target has been loaded
+   */
+  public fun registerTargetLoadListener(function: () -> Unit)
+
+  /**
    * Get targets details for given document.
    *
    * The response contains a loaded target that contains the document,

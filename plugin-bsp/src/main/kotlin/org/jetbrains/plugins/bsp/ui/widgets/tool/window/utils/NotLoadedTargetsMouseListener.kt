@@ -10,13 +10,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.wm.ToolWindowAnchor
-import com.intellij.openapi.wm.ToolWindowManager
-import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.ListsUpdater
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import javax.swing.JComponent
@@ -24,30 +19,20 @@ import javax.swing.JComponent
 private class LoadTargetAction(
   text: String,
   private val target: BuildTargetIdentifier,
-  private val listsUpdater: ListsUpdater,
 ) : AnAction(text) {
 
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
 
     if (project != null) {
-      val diff = MagicMetaModelService.getInstance(project).value.loadTarget(target)
+      val magicMetaModel = MagicMetaModelService.getInstance(project).value
+      val diff = magicMetaModel.loadTarget(target)
       runWriteAction { diff.applyOnWorkspaceModel() }
-
-      // TODO BAZEL-217: an ugly fix only to make a release
-      ToolWindowManager.getInstance(project).unregisterToolWindow("BSP")
-      ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
-        icon = BspPluginIcons.bsp
-        canCloseContent = false
-        anchor = ToolWindowAnchor.RIGHT
-        contentFactory = BspAllTargetsWidgetFactory()
-      }
     }
   }
 }
 
 public class NotLoadedTargetsMouseListener(
-  private val listsUpdater: ListsUpdater,
   private val component: JComponent
 ) : MouseListener {
 
@@ -79,8 +64,7 @@ public class NotLoadedTargetsMouseListener(
       val group = DefaultActionGroup()
       val action = LoadTargetAction(
         BspAllTargetsWidgetBundle.message("widget.load.target.popup.message"),
-        target,
-        listsUpdater
+        target
       )
       group.addAction(action)
       return group
