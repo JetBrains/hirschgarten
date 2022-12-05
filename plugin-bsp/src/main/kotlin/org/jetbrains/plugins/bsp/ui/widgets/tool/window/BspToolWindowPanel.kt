@@ -23,34 +23,48 @@ import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
-public class ListsUpdater(
+private enum class PanelShown {
+  LOADED,
+  NOTLOADED,
+  NONE
+}
+
+private class ListsUpdater(
   private val project: Project,
-  private val toolName: String?
+  private val toolName: String?,
+  private val targetPanelUpdater: (ListsUpdater) -> Unit
 ) {
   private val loadedBspTargetTree: BspTargetTree = BspTargetTree(BspPluginIcons.bsp)
-  public val loadedTargetsPanelComponent: JPanel = loadedBspTargetTree.panelComponent
+  fun getLoadedTargetsPanelComponent(): JPanel = loadedBspTargetTree.panelComponent
 
   private val notLoadedBspTargetTree: BspTargetTree = BspTargetTree(BspPluginIcons.notLoadedTarget)
-  public val notLoadedTargetsPanelComponent: JPanel = notLoadedBspTargetTree.panelComponent
+  fun getNotLoadedTargetsPanelComponent(): JPanel = notLoadedBspTargetTree.panelComponent
 
   init {
-    updateModels()
     loadedBspTargetTree.addMouseListeners { component ->
       LoadedTargetsMouseListener(component)
     }
     notLoadedBspTargetTree.addMouseListeners { component ->
-      NotLoadedTargetsMouseListener(this@ListsUpdater, component)
+      NotLoadedTargetsMouseListener(component)
     }
+    val magicMetaModel = MagicMetaModelService.getInstance(project).value
+    magicMetaModel.registerTargetLoadListener { rerenderComponents() }
+    rerenderComponents()
   }
 
-  public fun updateModels() {
+  fun rerenderComponents() {
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
     loadedBspTargetTree.generateTree(toolName, magicMetaModel.getAllLoadedTargets())
     notLoadedBspTargetTree.generateTree(toolName, magicMetaModel.getAllNotLoadedTargets())
+    loadedBspTargetTree.regenerateComponents()
+    notLoadedBspTargetTree.regenerateComponents()
+    targetPanelUpdater(this@ListsUpdater)
   }
 }
 
 public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
+  private var panelShown = PanelShown.NONE
+  private var isUpToDate = true
 
   public constructor(project: Project) : this() {
     val actionManager = ActionManager.getInstance()
@@ -59,7 +73,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
       projectProperties.projectRootDir,
       BspConnectionDetailsGeneratorExtension.extensions()
     )
-    val listsUpdater = ListsUpdater(project, g.firstGeneratorTEMPORARY())
+    val listsUpdater = ListsUpdater(project, g.firstGeneratorTEMPORARY(), this::showCurrentPanel)
 
     val actionGroup = actionManager
       .getAction("Bsp.ActionsToolbar") as DefaultActionGroup
@@ -83,12 +97,14 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
     actionGroup.add(object : AnAction({ notLoadedTargetsActionName }, BspPluginIcons.notLoadedTarget) {
       override fun actionPerformed(e: AnActionEvent) {
-        setToolWindowContent(JBScrollPane(listsUpdater.notLoadedTargetsPanelComponent))
+        rerenderTargetsIfOutdated(listsUpdater)
+        showNotLoadedTargets(listsUpdater)
       }
     })
     actionGroup.add(object : AnAction({ loadedTargetsActionName }, BspPluginIcons.loadedTarget) {
       override fun actionPerformed(e: AnActionEvent) {
-        setToolWindowContent(JBScrollPane(listsUpdater.loadedTargetsPanelComponent))
+        rerenderTargetsIfOutdated(listsUpdater)
+        showLoadedTargets(listsUpdater)
       }
     })
 
@@ -98,7 +114,37 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     this.toolbar = actionToolbar.component
   }
 
-  public fun setToolWindowContent(component: JComponent) {
+  private fun rerenderTargetsIfOutdated(listsUpdater: ListsUpdater) {
+    if (!isUpToDate) {
+      listsUpdater.rerenderComponents()
+      isUpToDate = true
+    }
+  }
+
+  public fun invalidateLoadedTargets() {
+    isUpToDate = false
+    setToolWindowContent(JBScrollPane(null))
+  }
+
+  private fun showLoadedTargets(listsUpdater: ListsUpdater) {
+    panelShown = PanelShown.LOADED
+    showCurrentPanel(listsUpdater)
+  }
+
+  private fun showNotLoadedTargets(listsUpdater: ListsUpdater) {
+    panelShown = PanelShown.NOTLOADED
+    showCurrentPanel(listsUpdater)
+  }
+
+  private fun showCurrentPanel(listsUpdater: ListsUpdater) {
+    when (panelShown) {
+      PanelShown.LOADED -> listsUpdater.getLoadedTargetsPanelComponent()
+      PanelShown.NOTLOADED -> listsUpdater.getNotLoadedTargetsPanelComponent()
+      else -> null
+    }?.let { setToolWindowContent(JBScrollPane(it)) }
+  }
+
+  private fun setToolWindowContent(component: JComponent) {
     this.setContent(component)
   }
 }

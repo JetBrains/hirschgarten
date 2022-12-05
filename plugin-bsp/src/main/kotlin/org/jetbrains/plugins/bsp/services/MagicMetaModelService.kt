@@ -45,9 +45,12 @@ public class MagicMetaModelService(private val project: Project) :
   public fun initializeMagicModel(projectDetails: ProjectDetails) {
     val magicMetaModelProjectConfig = calculateProjectConfig(project)
 
+    val newMMM = MagicMetaModel.create(magicMetaModelProjectConfig, projectDetails)
+    value.copyAllTargetLoadListenersTo(newMMM)
+
     // TODO it should be init!
     value.clear()
-    value = MagicMetaModel.create(magicMetaModelProjectConfig, projectDetails)
+    value = newMMM
   }
 
   override fun getState(): DefaultMagicMetaModelState =
