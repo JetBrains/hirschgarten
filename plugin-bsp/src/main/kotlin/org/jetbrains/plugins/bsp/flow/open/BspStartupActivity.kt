@@ -1,5 +1,7 @@
 package org.jetbrains.plugins.bsp.flow.open
 
+import com.intellij.openapi.application.AppUIExecutor
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.wm.ToolWindowAnchor
@@ -28,7 +30,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTarget
  * @see BspProjectOpenProcessor for additional actions that
  * may run when a project is being imported for the first time.
  */
-public class BspStartupActivity : StartupActivity {
+public class BspStartupActivity : StartupActivity.DumbAware {
 
   override fun runActivity(project: Project) {
     val projectProperties = BspProjectPropertiesService.getInstance(project).value
@@ -46,7 +48,7 @@ public class BspStartupActivity : StartupActivity {
     bspSyncConsole.startTask("bsp-import", "Import", "Importing...")
 
     if (project.isNewProject()) {
-      showWizardAndInitializeConnection(project)
+      suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project)
     }
 
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-import").prepareBackgroundTask()
@@ -56,6 +58,14 @@ public class BspStartupActivity : StartupActivity {
       beforeRun = { BspConnectionService.getInstance(project).value.connect("bsp-import") },
       afterOnSuccess = { addBspWidgets(project); bspSyncConsole.finishTask("bsp-import", "Done!") }
     )
+  }
+
+  private fun suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project: Project) {
+    DumbService.getInstance(project).suspendIndexingAndRun("BSP sync") {
+      AppUIExecutor.onUiThread().execute {
+        showWizardAndInitializeConnection(project)
+      }
+    }
   }
 
   private fun showWizardAndInitializeConnection(
