@@ -11,6 +11,6 @@ public interface StarlarkDictComp extends PsiElement {
   List<StarlarkCompClause> getCompClauseList();
 
   @NotNull
-  StarlarkEntry getEntry();
+  StarlarkIfLastEntry getIfLastEntry();
 
 }

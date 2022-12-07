@@ -8,9 +8,9 @@ import com.intellij.psi.PsiElement;
 public interface StarlarkSliceSuffix extends PsiElement {
 
   @Nullable
-  StarlarkExpression getExpression();
+  StarlarkExprStmt getExprStmt();
 
   @NotNull
-  List<StarlarkTest> getTestList();
+  List<StarlarkExpression> getExpressionList();
 
 }

@@ -41,8 +41,8 @@ public class StarlarkOperandImpl extends ASTWrapperPsiElement implements Starlar
 
   @Override
   @Nullable
-  public StarlarkExpression getExpression() {
-    return findChildByClass(StarlarkExpression.class);
+  public StarlarkExprStmt getExprStmt() {
+    return findChildByClass(StarlarkExprStmt.class);
   }
 
   @Override

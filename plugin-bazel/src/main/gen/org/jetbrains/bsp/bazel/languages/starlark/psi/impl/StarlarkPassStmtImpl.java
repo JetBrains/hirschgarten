@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.jetbrains.bsp.bazel.languages.starlark.StarlarkTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.jetbrains.bsp.bazel.languages.starlark.psi.*;
 
-public class StarlarkPassStmtImpl extends ASTWrapperPsiElement implements StarlarkPassStmt {
+public class StarlarkPassStmtImpl extends StarlarkStmtImpl implements StarlarkPassStmt {
 
   public StarlarkPassStmtImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull StarlarkVisitor visitor) {
     visitor.visitPassStmt(this);
   }

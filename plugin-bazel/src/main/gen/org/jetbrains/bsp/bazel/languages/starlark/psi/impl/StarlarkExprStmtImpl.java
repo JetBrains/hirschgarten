@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.jetbrains.bsp.bazel.languages.starlark.StarlarkTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.jetbrains.bsp.bazel.languages.starlark.psi.*;
 
-public class StarlarkExprStmtImpl extends ASTWrapperPsiElement implements StarlarkExprStmt {
+public class StarlarkExprStmtImpl extends StarlarkStmtImpl implements StarlarkExprStmt {
 
   public StarlarkExprStmtImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull StarlarkVisitor visitor) {
     visitor.visitExprStmt(this);
   }
@@ -29,8 +29,8 @@ public class StarlarkExprStmtImpl extends ASTWrapperPsiElement implements Starla
 
   @Override
   @NotNull
-  public StarlarkExpression getExpression() {
-    return findNotNullChildByClass(StarlarkExpression.class);
+  public List<StarlarkExpression> getExpressionList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, StarlarkExpression.class);
   }
 
 }

@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement;
 public interface StarlarkParameter extends PsiElement {
 
   @Nullable
-  StarlarkTest getTest();
+  StarlarkExpression getExpression();
 
   @NotNull
   PsiElement getIdentifier();

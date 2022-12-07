@@ -8,6 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface StarlarkEntry extends PsiElement {
 
   @NotNull
-  List<StarlarkTest> getTestList();
+  List<StarlarkExpression> getExpressionList();
 
 }

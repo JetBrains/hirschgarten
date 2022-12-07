@@ -5,9 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface StarlarkExprStmt extends PsiElement {
+public interface StarlarkExprStmt extends StarlarkStmt {
 
   @NotNull
-  StarlarkExpression getExpression();
+  List<StarlarkExpression> getExpressionList();
 
 }

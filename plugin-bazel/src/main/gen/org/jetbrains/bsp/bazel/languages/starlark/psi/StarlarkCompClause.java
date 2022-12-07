@@ -7,10 +7,10 @@ import com.intellij.psi.PsiElement;
 
 public interface StarlarkCompClause extends PsiElement {
 
+  @NotNull
+  StarlarkIfLastExpr getIfLastExpr();
+
   @Nullable
   StarlarkLoopVariables getLoopVariables();
-
-  @NotNull
-  StarlarkTest getTest();
 
 }

@@ -7,16 +7,4 @@ import com.intellij.psi.PsiElement;
 
 public interface StarlarkStatement extends PsiElement {
 
-  @Nullable
-  StarlarkDefStmt getDefStmt();
-
-  @Nullable
-  StarlarkForStmt getForStmt();
-
-  @Nullable
-  StarlarkIfStmt getIfStmt();
-
-  @Nullable
-  StarlarkSimpleStmt getSimpleStmt();
-
 }

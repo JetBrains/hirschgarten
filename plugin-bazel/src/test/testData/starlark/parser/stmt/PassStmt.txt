@@ -1,0 +1,4 @@
+FILE
+  StarlarkSimpleStatementImpl(SIMPLE_STATEMENT)
+    StarlarkPassStmtImpl(PASS_STMT)
+      PsiElement(pass)('pass')

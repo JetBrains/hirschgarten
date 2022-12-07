@@ -28,15 +28,15 @@ public class StarlarkCompClauseImpl extends ASTWrapperPsiElement implements Star
   }
 
   @Override
-  @Nullable
-  public StarlarkLoopVariables getLoopVariables() {
-    return findChildByClass(StarlarkLoopVariables.class);
+  @NotNull
+  public StarlarkIfLastExpr getIfLastExpr() {
+    return findNotNullChildByClass(StarlarkIfLastExpr.class);
   }
 
   @Override
-  @NotNull
-  public StarlarkTest getTest() {
-    return findNotNullChildByClass(StarlarkTest.class);
+  @Nullable
+  public StarlarkLoopVariables getLoopVariables() {
+    return findChildByClass(StarlarkLoopVariables.class);
   }
 
 }

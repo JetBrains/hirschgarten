@@ -5,9 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface StarlarkReturnStmt extends PsiElement {
+public interface StarlarkReturnStmt extends StarlarkStmt {
 
   @Nullable
-  StarlarkExpression getExpression();
+  StarlarkExprStmt getExprStmt();
 
 }

@@ -29,8 +29,8 @@ public class StarlarkListExprImpl extends ASTWrapperPsiElement implements Starla
 
   @Override
   @Nullable
-  public StarlarkExpression getExpression() {
-    return findChildByClass(StarlarkExpression.class);
+  public StarlarkExprStmt getExprStmt() {
+    return findChildByClass(StarlarkExprStmt.class);
   }
 
 }

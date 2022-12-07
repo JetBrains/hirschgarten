@@ -29,8 +29,8 @@ public class StarlarkEntryImpl extends ASTWrapperPsiElement implements StarlarkE
 
   @Override
   @NotNull
-  public List<StarlarkTest> getTestList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, StarlarkTest.class);
+  public List<StarlarkExpression> getExpressionList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, StarlarkExpression.class);
   }
 
 }
