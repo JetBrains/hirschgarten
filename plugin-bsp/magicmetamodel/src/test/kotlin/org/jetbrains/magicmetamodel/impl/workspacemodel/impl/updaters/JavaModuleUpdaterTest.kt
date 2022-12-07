@@ -2,6 +2,7 @@
 
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.JavaModuleSettingsEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.JavaResourceRootPropertiesEntity
@@ -75,12 +76,14 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             generated = false,
             packagePrefix = sourcePackagePrefix1,
             rootType = "java-source",
+            targetId = BuildTargetIdentifier("target"),
           ),
           JavaSourceRoot(
             sourceDir = sourceDir2,
             generated = false,
             packagePrefix = sourcePackagePrefix2,
             rootType = "java-source",
+            targetId = BuildTargetIdentifier("target"),
           ),
         )
 
@@ -316,12 +319,14 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             generated = false,
             packagePrefix = sourcePackagePrefix11,
             rootType = "java-source",
+            targetId = BuildTargetIdentifier("target"),
           ),
           JavaSourceRoot(
             sourceDir = sourceDir12,
             generated = false,
             packagePrefix = sourcePackagePrefix12,
             rootType = "java-source",
+            targetId = BuildTargetIdentifier("target"),
           ),
         )
 
@@ -386,6 +391,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             generated = false,
             packagePrefix = sourcePackagePrefix21,
             rootType = "java-test",
+            targetId = BuildTargetIdentifier("target"),
           ),
         )
 

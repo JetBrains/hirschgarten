@@ -1,5 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootPropertiesEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
@@ -41,6 +42,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       generated = generated,
       rootType = "java-source",
       packagePrefix = packagePrefix,
+      targetId = BuildTargetIdentifier("target"),
     )
 
     // when
@@ -89,6 +91,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       generated = generated1,
       rootType = "java-source",
       packagePrefix = packagePrefix1,
+      targetId = BuildTargetIdentifier("target1"),
     )
 
     val sourceDir2 = URI.create("file:///another/root/dir/another/example/package/").toPath()
@@ -100,6 +103,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       generated = generated2,
       rootType = "java-test",
       packagePrefix = packagePrefix2,
+      targetId = BuildTargetIdentifier("target2"),
     )
 
     val javaSourceRoots = listOf(javaSourceRoot1, javaSourceRoot2)

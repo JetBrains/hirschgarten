@@ -76,7 +76,8 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
         generated = false,
         packagePrefix = "${package1Root.name}.${package2Root.name}",
         excludedFiles = listOf(excludedFilePath),
-        rootType = "java-source"
+        rootType = "java-source",
+        targetId = BuildTargetIdentifier("target1")
       )
       javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot)
     }
@@ -178,12 +179,94 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
         packagePrefix = packageA1Root.name,
         excludedFiles = listOf(excludedFilePath),
         rootType = "java-source",
+        targetId = BuildTargetIdentifier("target1")
       )
       val expectedJavaSourceRoot2 = JavaSourceRoot(
         sourceDir = packageB1Root,
         generated = false,
         packagePrefix = packageB1Root.name,
         rootType = "java-source",
+        targetId = BuildTargetIdentifier("target1")
+      )
+      javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2)
+    }
+
+    @Test
+    fun `should return parent sources root for multiple sources items in the same directory but shouldn't exclude files from subdirectories if they are included in other modules`() {
+      // given
+      val projectRoot = createTempDirectory("project")
+      projectRoot.toFile().deleteOnExit()
+
+      val package1Root = createTempDirectory(projectRoot, "package1")
+      package1Root.toFile().deleteOnExit()
+
+      val file1Path = createTempFile(package1Root, "File", ".java")
+      file1Path.toFile().deleteOnExit()
+
+      val sourceItem1 = SourceItem(
+        uri = file1Path.toUri().toString(),
+        kind = SourceItemKind.FILE,
+      )
+      val buildTargetAndSourceItem1 = BuildTargetAndSourceItem(
+        buildTarget = BuildTarget(
+          BuildTargetIdentifier("target1"),
+          listOf("library"),
+          listOf("java"),
+          emptyList(),
+          BuildTargetCapabilities(),
+        ),
+        sourcesItem = SourcesItem(
+          target = BuildTargetId("target"),
+          sources = listOf(sourceItem1),
+          roots = listOf(projectRoot.toUri().toString()),
+        )
+      )
+
+      val package2Root = createTempDirectory(package1Root, "package2")
+      package2Root.toFile().deleteOnExit()
+
+      val file2Path = createTempFile(package2Root, "File", ".java")
+      file2Path.toFile().deleteOnExit()
+
+      val sourceItem2 = SourceItem(
+        uri = file2Path.toUri().toString(),
+        kind = SourceItemKind.FILE,
+      )
+      val buildTargetAndSourceItem2 = BuildTargetAndSourceItem(
+        buildTarget = BuildTarget(
+          BuildTargetIdentifier("target2"),
+          listOf("library"),
+          listOf("java"),
+          emptyList(),
+          BuildTargetCapabilities(),
+        ),
+        sourcesItem = SourcesItem(
+          target = BuildTargetId("target"),
+          sources = listOf(sourceItem2),
+          roots = listOf(projectRoot.toUri().toString()),
+        )
+      )
+
+      val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
+
+      // when
+      val javaSources =
+        SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK.transform(buildTargetAndSourceItems)
+
+      // then
+      val expectedJavaSourceRoot1 = JavaSourceRoot(
+        sourceDir = package1Root,
+        generated = false,
+        packagePrefix = package1Root.name,
+        rootType = "java-source",
+        targetId = BuildTargetIdentifier("target1")
+      )
+      val expectedJavaSourceRoot2 = JavaSourceRoot(
+        sourceDir = package2Root,
+        generated = false,
+        packagePrefix = "${package1Root.name}.${package2Root.name}",
+        rootType = "java-source",
+        targetId = BuildTargetIdentifier("target2")
       )
       javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2)
     }

@@ -1,6 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.util.io.isAncestor
@@ -35,7 +36,7 @@ internal object SourcesItemToJavaSourceRootTransformer :
 
     return SourceItemToSourceRootTransformer
       .transform(inputEntity.sourcesItem.sources)
-      .map { toJavaSourceRoot(it, sourceRoots, rootType) }
+      .map { toJavaSourceRoot(it, sourceRoots, rootType, inputEntity.buildTarget.id) }
   }
 
   private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> =
@@ -45,14 +46,15 @@ internal object SourcesItemToJavaSourceRootTransformer :
   private fun inferRootType(buildTarget: BuildTarget): String =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
 
-  private fun toJavaSourceRoot(sourceRoot: SourceRoot, sourceRoots: List<URI>, rootType: String): JavaSourceRoot {
+  private fun toJavaSourceRoot(sourceRoot: SourceRoot, sourceRoots: List<URI>, rootType: String, targetId: BuildTargetIdentifier): JavaSourceRoot {
     val packagePrefix = calculatePackagePrefix(sourceRoot, sourceRoots)
 
     return JavaSourceRoot(
       sourceDir = sourceRoot.sourceDir,
       generated = sourceRoot.generated,
       packagePrefix = packagePrefix.packagePrefix,
-      rootType = rootType
+      rootType = rootType,
+      targetId = targetId,
     )
   }
 
@@ -71,15 +73,16 @@ internal object SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHA
 
   override fun transform(inputEntities: List<BuildTargetAndSourceItem>): List<JavaSourceRoot> {
     val allSourceRoots = super.transform(inputEntities)
-    val realRoots = allSourceRoots.filter { isNotAChildOfAnySourceDir(it, allSourceRoots) }
+    val realRoots = allSourceRoots.filter { isNotAChildOfAnySourceDirFromTheSameTarget(it, allSourceRoots) }
 
-    return realRoots.map {
-      addExcludedPathsFromSubDirectoriesToSourceRoot(it, allSourceRoots)
-    }
+    return realRoots.map { addExcludedPathsFromSubDirectoriesToSourceRoot(it, allSourceRoots) }
   }
 
-  private fun isNotAChildOfAnySourceDir(sourceRoot: JavaSourceRoot, allSourceRoots: List<JavaSourceRoot>): Boolean =
-    allSourceRoots.none { it.sourceDir.isAncestor(sourceRoot.sourceDir.parent) }
+  private fun isNotAChildOfAnySourceDirFromTheSameTarget(sourceRoot: JavaSourceRoot, allSourceRoots: List<JavaSourceRoot>): Boolean =
+    allSourceRoots.none { isNotAChildOfSourceDirFromTheSameTarget(it, sourceRoot) }
+
+  private fun isNotAChildOfSourceDirFromTheSameTarget(it: JavaSourceRoot, sourceRoot: JavaSourceRoot) =
+    it.sourceDir.isAncestor(sourceRoot.sourceDir.parent) && it.targetId == sourceRoot.targetId
 
   private fun addExcludedPathsFromSubDirectoriesToSourceRoot(
     sourceRoot: JavaSourceRoot,
@@ -125,7 +128,7 @@ internal object SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHA
 
   private fun calculateExcludedFiles(path: Path, filesInSourcesItem: Set<URI>): List<Path> =
     path.toFile()
-      .walk()
+      .listFiles()
       .filter { it.isFile }
       .filterNot { filesInSourcesItem.contains(it.toURI()) }
       .filter { it.extension == "java" }
