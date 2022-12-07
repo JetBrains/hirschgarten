@@ -4,10 +4,12 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.panels.VerticalLayout
 import javax.swing.DefaultListModel
 import javax.swing.Icon
 import javax.swing.ListSelectionModel
 import javax.swing.SwingConstants
+import javax.swing.JPanel
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
@@ -26,23 +28,31 @@ private class TextChangeListener(val onUpdate: () -> Unit) : DocumentListener {
 }
 
 public class TargetSearch(private val targetIcon: Icon, private val onUpdate: () -> Unit) {
+  public data class PrintableBuildTarget(val buildTarget: BuildTarget) {
+    override fun toString(): String = buildTarget.displayName ?: buildTarget.id.uri
+  }
+
   public var targets: Collection<BuildTarget> = emptyList()
   public var searchActive: Boolean = false
     private set
 
   public val searchBarComponent: JBTextField = JBTextField()
-  private val searchListModel = DefaultListModel<BuildTarget>()
-  public val searchListComponent: JBList<BuildTarget> = JBList(searchListModel)
+  private val searchListModel = DefaultListModel<PrintableBuildTarget>()
+  public val searchListComponent: JBList<PrintableBuildTarget> = JBList(searchListModel)
 
   init {
     searchBarComponent.document.addDocumentListener(TextChangeListener(this::updateSearch))
     searchListComponent.selectionMode = ListSelectionModel.SINGLE_SELECTION
-    searchListComponent.installCellRenderer {
-      JBLabel(
-        emphasizeQuery(it.displayName ?: it.id.uri),
-        targetIcon,
-        SwingConstants.LEFT
-      )
+    searchListComponent.installCellRenderer {targetWithString ->
+      JPanel(VerticalLayout(0))
+        .also {it.add(
+          JBLabel(
+            emphasizeQuery(targetWithString.toString()),
+            targetIcon,
+            SwingConstants.LEFT
+          )
+        )
+      }
     }
   }
 
@@ -56,7 +66,11 @@ public class TargetSearch(private val targetIcon: Icon, private val onUpdate: ()
     searchListModel.removeAllElements()
     onUpdate()
     if (searchActive) {
-      searchListModel.addAll(targets.filter { (it.displayName ?: it.id.uri).contains(query, true) })
+      searchListModel.addAll(
+        targets
+          .filter { (it.displayName ?: it.id.uri).contains(query, true) }
+          .map { PrintableBuildTarget(it) }
+      )
       searchListComponent.revalidate()
     }
   }
