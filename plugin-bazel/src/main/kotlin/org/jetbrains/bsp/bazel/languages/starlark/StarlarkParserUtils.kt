@@ -14,15 +14,12 @@ object StarlarkParserUtils : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun noNewLineOrLineBreak(builder: PsiBuilder, level: Int): Boolean {
+    fun newLine(builder: PsiBuilder, level: Int): Boolean {
         val previousWhitespace = getPreviousRawTokenText(builder)
 
-        return !previousWhitespace.contains("\n") || previousWhitespace.contains("\\\n")
+        return previousWhitespace.contains("\n") && !previousWhitespace.contains("\\\n")
     }
 
-    @JvmStatic
-    fun newLine(builder: PsiBuilder, level: Int): Boolean =
-        getPreviousRawTokenText(builder).contains("\n")
 
     @JvmStatic
     fun checkIfIndentIncreasesAndSaveIt(builder: PsiBuilder, level: Int): Boolean {

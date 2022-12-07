@@ -8,6 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface StarlarkListExpr extends PsiElement {
 
   @Nullable
-  StarlarkExpression getExpression();
+  StarlarkExprStmt getExprStmt();
 
 }

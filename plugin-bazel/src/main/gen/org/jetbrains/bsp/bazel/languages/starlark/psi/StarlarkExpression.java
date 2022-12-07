@@ -7,7 +7,4 @@ import com.intellij.psi.PsiElement;
 
 public interface StarlarkExpression extends PsiElement {
 
-  @NotNull
-  List<StarlarkTest> getTestList();
-
 }

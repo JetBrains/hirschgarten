@@ -29,14 +29,14 @@ public class StarlarkSliceSuffixImpl extends ASTWrapperPsiElement implements Sta
 
   @Override
   @Nullable
-  public StarlarkExpression getExpression() {
-    return findChildByClass(StarlarkExpression.class);
+  public StarlarkExprStmt getExprStmt() {
+    return findChildByClass(StarlarkExprStmt.class);
   }
 
   @Override
   @NotNull
-  public List<StarlarkTest> getTestList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, StarlarkTest.class);
+  public List<StarlarkExpression> getExpressionList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, StarlarkExpression.class);
   }
 
 }

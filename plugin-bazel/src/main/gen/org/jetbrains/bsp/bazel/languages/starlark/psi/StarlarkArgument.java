@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement;
 public interface StarlarkArgument extends PsiElement {
 
   @NotNull
-  StarlarkTest getTest();
+  StarlarkExpression getExpression();
 
   @Nullable
   PsiElement getIdentifier();

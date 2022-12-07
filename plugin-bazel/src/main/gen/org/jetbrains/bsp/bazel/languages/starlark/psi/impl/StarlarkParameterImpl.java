@@ -29,8 +29,8 @@ public class StarlarkParameterImpl extends ASTWrapperPsiElement implements Starl
 
   @Override
   @Nullable
-  public StarlarkTest getTest() {
-    return findChildByClass(StarlarkTest.class);
+  public StarlarkExpression getExpression() {
+    return findChildByClass(StarlarkExpression.class);
   }
 
   @Override

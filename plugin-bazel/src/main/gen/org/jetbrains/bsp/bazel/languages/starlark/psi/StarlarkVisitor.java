@@ -15,32 +15,24 @@ public class StarlarkVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitAssignOperator(@NotNull StarlarkAssignOperator o) {
+    visitPsiElement(o);
+  }
+
   public void visitAssignStmt(@NotNull StarlarkAssignStmt o) {
-    visitPsiElement(o);
+    visitStmt(o);
   }
 
-  public void visitBinaryExpr(@NotNull StarlarkBinaryExpr o) {
-    visitPsiElement(o);
+  public void visitBinaryExpression(@NotNull StarlarkBinaryExpression o) {
+    visitExpression(o);
   }
 
-  public void visitBinaryExpr1(@NotNull StarlarkBinaryExpr1 o) {
-    visitPsiElement(o);
-  }
-
-  public void visitBinaryExpr2(@NotNull StarlarkBinaryExpr2 o) {
-    visitPsiElement(o);
-  }
-
-  public void visitBinaryExpr21(@NotNull StarlarkBinaryExpr21 o) {
-    visitPsiElement(o);
-  }
-
-  public void visitBinop(@NotNull StarlarkBinop o) {
+  public void visitBinaryOperator(@NotNull StarlarkBinaryOperator o) {
     visitPsiElement(o);
   }
 
   public void visitBreakStmt(@NotNull StarlarkBreakStmt o) {
-    visitPsiElement(o);
+    visitStmt(o);
   }
 
   public void visitCallSuffix(@NotNull StarlarkCallSuffix o) {
@@ -52,11 +44,11 @@ public class StarlarkVisitor extends PsiElementVisitor {
   }
 
   public void visitContinueStmt(@NotNull StarlarkContinueStmt o) {
-    visitPsiElement(o);
+    visitStmt(o);
   }
 
-  public void visitDefStmt(@NotNull StarlarkDefStmt o) {
-    visitPsiElement(o);
+  public void visitDefStatement(@NotNull StarlarkDefStatement o) {
+    visitStatement(o);
   }
 
   public void visitDictComp(@NotNull StarlarkDictComp o) {
@@ -80,35 +72,35 @@ public class StarlarkVisitor extends PsiElementVisitor {
   }
 
   public void visitExprStmt(@NotNull StarlarkExprStmt o) {
-    visitPsiElement(o);
+    visitStmt(o);
   }
 
   public void visitExpression(@NotNull StarlarkExpression o) {
     visitPsiElement(o);
   }
 
-  public void visitForStmt(@NotNull StarlarkForStmt o) {
+  public void visitForStatement(@NotNull StarlarkForStatement o) {
+    visitStatement(o);
+  }
+
+  public void visitIfExpression(@NotNull StarlarkIfExpression o) {
+    visitExpression(o);
+  }
+
+  public void visitIfLastEntry(@NotNull StarlarkIfLastEntry o) {
     visitPsiElement(o);
   }
 
-  public void visitIfExpr(@NotNull StarlarkIfExpr o) {
+  public void visitIfLastExpr(@NotNull StarlarkIfLastExpr o) {
     visitPsiElement(o);
   }
 
-  public void visitIfExpr1(@NotNull StarlarkIfExpr1 o) {
-    visitPsiElement(o);
+  public void visitIfStatement(@NotNull StarlarkIfStatement o) {
+    visitStatement(o);
   }
 
-  public void visitIfExpr2(@NotNull StarlarkIfExpr2 o) {
-    visitPsiElement(o);
-  }
-
-  public void visitIfStmt(@NotNull StarlarkIfStmt o) {
-    visitPsiElement(o);
-  }
-
-  public void visitLambdaExpr(@NotNull StarlarkLambdaExpr o) {
-    visitPsiElement(o);
+  public void visitLambdaExpression(@NotNull StarlarkLambdaExpression o) {
+    visitExpression(o);
   }
 
   public void visitListComp(@NotNull StarlarkListComp o) {
@@ -120,7 +112,7 @@ public class StarlarkVisitor extends PsiElementVisitor {
   }
 
   public void visitLoadStmt(@NotNull StarlarkLoadStmt o) {
-    visitPsiElement(o);
+    visitStmt(o);
   }
 
   public void visitLoopVariables(@NotNull StarlarkLoopVariables o) {
@@ -140,30 +132,22 @@ public class StarlarkVisitor extends PsiElementVisitor {
   }
 
   public void visitPassStmt(@NotNull StarlarkPassStmt o) {
-    visitPsiElement(o);
+    visitStmt(o);
   }
 
-  public void visitPrimaryExpr(@NotNull StarlarkPrimaryExpr o) {
-    visitPsiElement(o);
-  }
-
-  public void visitPrimaryExpr1(@NotNull StarlarkPrimaryExpr1 o) {
-    visitPsiElement(o);
+  public void visitPrimaryExpression(@NotNull StarlarkPrimaryExpression o) {
+    visitExpression(o);
   }
 
   public void visitReturnStmt(@NotNull StarlarkReturnStmt o) {
-    visitPsiElement(o);
+    visitStmt(o);
   }
 
-  public void visitSimpleStmt(@NotNull StarlarkSimpleStmt o) {
-    visitPsiElement(o);
+  public void visitSimpleStatement(@NotNull StarlarkSimpleStatement o) {
+    visitStatement(o);
   }
 
   public void visitSliceSuffix(@NotNull StarlarkSliceSuffix o) {
-    visitPsiElement(o);
-  }
-
-  public void visitSmallStmt(@NotNull StarlarkSmallStmt o) {
     visitPsiElement(o);
   }
 
@@ -171,15 +155,15 @@ public class StarlarkVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitSuite(@NotNull StarlarkSuite o) {
+  public void visitStmt(@NotNull StarlarkStmt o) {
     visitPsiElement(o);
   }
 
-  public void visitTest(@NotNull StarlarkTest o) {
-    visitPsiElement(o);
+  public void visitUnaryExpression(@NotNull StarlarkUnaryExpression o) {
+    visitExpression(o);
   }
 
-  public void visitUnaryExpr(@NotNull StarlarkUnaryExpr o) {
+  public void visitUnaryOperator(@NotNull StarlarkUnaryOperator o) {
     visitPsiElement(o);
   }
 

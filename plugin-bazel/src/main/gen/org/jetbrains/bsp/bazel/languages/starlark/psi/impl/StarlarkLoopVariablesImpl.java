@@ -29,8 +29,8 @@ public class StarlarkLoopVariablesImpl extends ASTWrapperPsiElement implements S
 
   @Override
   @NotNull
-  public List<StarlarkPrimaryExpr> getPrimaryExprList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, StarlarkPrimaryExpr.class);
+  public List<StarlarkPrimaryExpression> getPrimaryExpressionList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, StarlarkPrimaryExpression.class);
   }
 
 }

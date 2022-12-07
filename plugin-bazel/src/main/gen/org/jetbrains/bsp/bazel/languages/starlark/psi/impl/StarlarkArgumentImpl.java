@@ -29,8 +29,8 @@ public class StarlarkArgumentImpl extends ASTWrapperPsiElement implements Starla
 
   @Override
   @NotNull
-  public StarlarkTest getTest() {
-    return findNotNullChildByClass(StarlarkTest.class);
+  public StarlarkExpression getExpression() {
+    return findNotNullChildByClass(StarlarkExpression.class);
   }
 
   @Override

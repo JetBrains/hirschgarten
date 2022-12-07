@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.jetbrains.bsp.bazel.languages.starlark.StarlarkTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.jetbrains.bsp.bazel.languages.starlark.psi.*;
 
-public class StarlarkContinueStmtImpl extends ASTWrapperPsiElement implements StarlarkContinueStmt {
+public class StarlarkContinueStmtImpl extends StarlarkStmtImpl implements StarlarkContinueStmt {
 
   public StarlarkContinueStmtImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull StarlarkVisitor visitor) {
     visitor.visitContinueStmt(this);
   }

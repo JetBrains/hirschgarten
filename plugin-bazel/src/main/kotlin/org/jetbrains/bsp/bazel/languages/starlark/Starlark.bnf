@@ -105,124 +105,84 @@
 
     WHITE_SPACE="regexp:(\s|\\\n)+"
   ]
+
+
+  extends(".+Statement") = Statement
+  extends(".+Stmt") = Stmt
+  extends(".+Expression") = Expression
 }
 
 // og syntax: https://github.com/bazelbuild/starlark/blob/master/spec.md#lexical-elements
 
 File ::= Statement*
-Statement ::= DefStmt
-            | IfStmt
-            | ForStmt
-            | SimpleStmt
 
-DefStmt ::= def IDENTIFIER '(' (Parameters ','?)? ')' ':' Suite
+Statement ::= DefStatement | IfStatement | ForStatement | SimpleStatement
 
-Parameters ::= Parameter (',' Parameter)*
+DefStatement    ::= def NNL IDENTIFIER NNL '(' [Parameters [',']] ')' NNL ':' Suite
+IfStatement     ::= if NNL Expression NNL ':' Suite (elif NNL Expression  NNL ':' Suite)* [else NNL ':' Suite]
+ForStatement    ::= for NNL LoopVariables NNL in NNL ExprStmt NNL ':' Suite
+SimpleStatement ::= Stmt (NNL ';' NNL Stmt)* [NNL ';'] (<<newLine>> | <<eof>>)
 
-Parameter ::= IDENTIFIER
-            | IDENTIFIER '=' Test
-            | '*' IDENTIFIER
-            | '**' IDENTIFIER
+Stmt ::= ReturnStmt | BreakStmt | ContinueStmt | PassStmt | AssignStmt | ExprStmt | LoadStmt
 
-IfStmt ::= if Test ':' Suite (elif Test ':' Suite)* (else ':' Suite)?
-
-ForStmt ::= for LoopVariables in Expression ':' Suite
-
-
-Suite ::= <<checkIfIndentIncreasesAndSaveIt>> (<<checkIndent>> Statement)+ <<finishBlock>>
-        | <<noNewLineOrLineBreak>> SimpleStmt
-
-SimpleStmt ::= SmallStmt (';' SmallStmt)* ';'? (<<newLine>> | <<eof>>)
-
-SmallStmt ::= ReturnStmt
-            | BreakStmt | ContinueStmt | PassStmt
-            | AssignStmt
-            | ExprStmt
-            | LoadStmt
-
-ReturnStmt   ::= return (<<newLine>> | <<eof>> | Expression)? (<<newLine>> | <<eof>>)
+ReturnStmt   ::= return [NNL ExprStmt] (<<newLine>> | <<eof>>)
 BreakStmt    ::= break
 ContinueStmt ::= continue
 PassStmt     ::= pass
-AssignStmt   ::= Expression <<noNewLineOrLineBreak>> ('=' | '+=' | '-=' | '*=' | '/=' | '//=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>=') <<noNewLineOrLineBreak>> Expression
-ExprStmt     ::= Expression
+AssignStmt   ::= ExprStmt NNL AssignOperator NNL ExprStmt
+ExprStmt     ::= Expression (NNL ',' Expression)*
+LoadStmt     ::= load NNL '(' STRING (',' [IDENTIFIER '='] STRING)* [','] ')'
 
-LoadStmt ::= load '(' STRING (',' (IDENTIFIER '=')? STRING)* ','? ')'
+Expression ::= IfExpression | BinaryExpression | UnaryExpression | PrimaryExpression | LambdaExpression
+IfLastExpr ::= BinaryExpression | UnaryExpression | PrimaryExpression | LambdaExpression | IfExpression
 
-Test ::=  IfExpr
-        | BinaryExpr
-       | UnaryExpr
-       | PrimaryExpr
-       | LambdaExpr
+IfExpression      ::= Expression NNL if NNL Expression NNL else NNL Expression
+UnaryExpression   ::= UnaryOperator NNL Expression
+BinaryExpression  ::= Expression (NNL BinaryOperator NNL Expression)+
+PrimaryExpression ::= Operand Suffix*
+LambdaExpression  ::= lambda NNL [Parameters] NNL ':' NNL Expression
 
-IfExpr ::= BinaryExpr2 if Test else Test IfExpr1?
-IfExpr1 ::= IfExpr2 if Test else Test IfExpr1?
-IfExpr2 ::= PrimaryExpr if Test else Test
-          | UnaryExpr if Test else Test
-          | LambdaExpr if Test else Test
-          | BinaryExpr if Test else Test
 
-PrimaryExpr ::= Operand PrimaryExpr1*
-PrimaryExpr1 ::= DotSuffix
-               | CallSuffix
-               | SliceSuffix
+private Suite ::= <<checkIfIndentIncreasesAndSaveIt>> (<<checkIndent>> Statement)+ <<finishBlock>>
+                | NNL SimpleStatement
 
-Operand ::= IDENTIFIER
-          | INT | FLOAT | STRING | BYTES
-          | ListExpr | ListComp
-          | DictExpr | DictComp
-          | '(' (Expression ','?)? ')'
+LoopVariables ::= PrimaryExpression (NNL ',' PrimaryExpression)*
 
-DotSuffix   ::= '.' IDENTIFIER
-SliceSuffix ::= '[' Expression? ':' Test? (':' Test?)? ']'
-              | '[' Expression ']'
-CallSuffix  ::= '(' (Arguments ','?)? ')'
+Operand ::= IDENTIFIER | INT | FLOAT | STRING | BYTES
+          | ListComp | ListExpr | DictComp | DictExpr
+          | '(' [ExprStmt [',']] ')'
 
-Arguments ::= Argument (',' Argument)*
-Argument  ::=
-            IDENTIFIER '=' Test
-            | '*' Test
-            | '**' Test
-            | Test
+private Suffix ::= NNL (DotSuffix | CallSuffix | SliceSuffix)
+DotSuffix      ::= '.' NNL IDENTIFIER
+SliceSuffix    ::= '[' [ExprStmt] ':' [Expression] [':' [Expression]] ']' | '[' ExprStmt ']'
+CallSuffix     ::= '(' [Arguments [',']] ')'
 
-ListExpr ::= '[' (Expression ','?)? ']'
-ListComp ::= '[' Test CompClause* ']'
+Parameters  ::= Parameter (',' Parameter)*
+Parameter   ::= IDENTIFIER '=' Expression | IDENTIFIER | '*' IDENTIFIER | '**' IDENTIFIER
 
-DictExpr ::= '{' (Entries ','?)? '}'
-DictComp ::= '{' Entry CompClause* '}'
-Entries  ::= Entry (',' Entry)*
-Entry    ::= Test ':' Test
+Arguments   ::= Argument (',' Argument)*
+Argument    ::= IDENTIFIER '=' Expression | '*' Expression | '**' Expression | Expression
 
-CompClause ::= for LoopVariables in Test
-             | if Test
+ListExpr    ::= '[' [ExprStmt [',']] ']'
+ListComp    ::= '[' IfLastExpr CompClause* ']'
 
-UnaryExpr ::= '+' Test
-            | '-' Test
-            | '~' Test
-            | not Test
+DictExpr    ::= '{' [Entries [',']] '}'
+DictComp    ::= '{' IfLastEntry CompClause* '}'
 
-BinaryExpr ::= BinaryExpr1 (<<noNewLineOrLineBreak>> Binop <<noNewLineOrLineBreak>> BinaryExpr)?
-BinaryExpr1 ::= PrimaryExpr
-              | UnaryExpr
-              | LambdaExpr
-              | IfExpr
+Entries     ::= Entry (',' Entry)*
+Entry       ::= Expression NNL ':' NNL Expression
+IfLastEntry   ::= Expression NNL ':' NNL IfLastExpr
 
-BinaryExpr2 ::= BinaryExpr21 (<<noNewLineOrLineBreak>> Binop <<noNewLineOrLineBreak>> BinaryExpr2)?
-BinaryExpr21 ::= PrimaryExpr
-               | UnaryExpr
-               | LambdaExpr
+CompClause  ::= (for NNL LoopVariables NNL in | if) NNL IfLastExpr
 
-Binop ::= or | and
-      | '==' | '!=' | '<' | '>' | '<=' | '>=' | in | not in
-      | '|'
-      | '^'
-      | '&'
-      | '<<' | '>>'
-      | '-' | '+'
-      | '*' | '%' | '/' | '//'
+UnaryOperator ::= '+' | '-' | '~' | 'not'
 
-LambdaExpr ::= lambda Parameters? ':' Test
+AssignOperator ::= '=' | '+=' | '-=' | '*=' | '/=' | '//=' | '%=' | '&=' | '|=' | '^=' | '<<=' | '>>='
 
-Expression ::= Test (',' Test)*
-
-LoopVariables ::= PrimaryExpr (',' PrimaryExpr)*
+BinaryOperator ::= '==' | '!=' | '<' | '>' | '<=' | '>='
+                 | '*' | '%' | '/' | '//' | '+' | '-'
+                 | '|' | '^' | '&' | '<<' | '>>'
+                 | in | not in
+                 | or | and
+                 
+private NNL ::= !<<newLine>>

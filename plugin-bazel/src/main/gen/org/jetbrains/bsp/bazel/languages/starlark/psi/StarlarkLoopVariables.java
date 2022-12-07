@@ -8,6 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface StarlarkLoopVariables extends PsiElement {
 
   @NotNull
-  List<StarlarkPrimaryExpr> getPrimaryExprList();
+  List<StarlarkPrimaryExpression> getPrimaryExpressionList();
 
 }

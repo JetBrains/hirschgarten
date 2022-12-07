@@ -35,8 +35,8 @@ public class StarlarkDictCompImpl extends ASTWrapperPsiElement implements Starla
 
   @Override
   @NotNull
-  public StarlarkEntry getEntry() {
-    return findNotNullChildByClass(StarlarkEntry.class);
+  public StarlarkIfLastEntry getIfLastEntry() {
+    return findNotNullChildByClass(StarlarkIfLastEntry.class);
   }
 
 }

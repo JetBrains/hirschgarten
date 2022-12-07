@@ -5,9 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface StarlarkAssignStmt extends PsiElement {
+public interface StarlarkAssignStmt extends StarlarkStmt {
 
   @NotNull
-  List<StarlarkExpression> getExpressionList();
+  StarlarkAssignOperator getAssignOperator();
+
+  @NotNull
+  List<StarlarkExprStmt> getExprStmtList();
 
 }

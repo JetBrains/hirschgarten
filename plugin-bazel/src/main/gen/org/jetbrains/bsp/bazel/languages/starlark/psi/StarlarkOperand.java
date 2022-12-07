@@ -14,7 +14,7 @@ public interface StarlarkOperand extends PsiElement {
   StarlarkDictExpr getDictExpr();
 
   @Nullable
-  StarlarkExpression getExpression();
+  StarlarkExprStmt getExprStmt();
 
   @Nullable
   StarlarkListComp getListComp();
