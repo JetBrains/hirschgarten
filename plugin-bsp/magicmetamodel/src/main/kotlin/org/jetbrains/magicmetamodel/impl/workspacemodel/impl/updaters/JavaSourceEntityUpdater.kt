@@ -1,5 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.bridgeEntities.addJavaSourceRootEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.addSourceRootEntity
@@ -21,6 +22,7 @@ internal data class JavaSourceRoot(
   val packagePrefix: String,
   val rootType: String,
   val excludedFiles: List<Path> = ArrayList(),
+  val targetId: BuildTargetIdentifier
 ) : WorkspaceModelEntity()
 
 internal class JavaSourceEntityUpdater(
