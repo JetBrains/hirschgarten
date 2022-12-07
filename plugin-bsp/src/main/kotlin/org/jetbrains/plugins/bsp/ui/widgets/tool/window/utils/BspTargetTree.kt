@@ -23,8 +23,12 @@ import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
 private interface NodeData
-private data class DirectoryNodeData(val name: String) : NodeData
-private data class TargetNodeData(val target: BuildTarget, val displayName: String) : NodeData
+private data class DirectoryNodeData(val name: String) : NodeData {
+  override fun toString(): String = name
+}
+private data class TargetNodeData(val target: BuildTarget, val displayName: String) : NodeData {
+  override fun toString(): String = target.displayName ?: target.id.uri
+}
 
 private data class BuildTargetTreeIdentifier(
   val target: BuildTarget,
@@ -291,8 +295,8 @@ public class BspTargetTree(targetIcon: Icon) {
      */
     public fun getSelectedBspTarget(component: JComponent): BuildTarget? {
       return when (component) {
-        is Tree -> getSelectedBspTarget(component)
-        is JBList<*> -> getSelectedBspTarget(component)
+        is Tree -> getSelectedBspTargetFrom(component)
+        is JBList<*> -> getSelectedBspTargetFrom(component)
         else -> null
       }
     }
@@ -301,16 +305,19 @@ public class BspTargetTree(targetIcon: Icon) {
      * @return build target represented by the selection in a list. Is null when nothing is selected
      * @param list the list to be checked
      */
-    private fun <T> getSelectedBspTarget(list: JBList<T>): BuildTarget? {
-      val sel: T = list.selectedValue
-      return if (sel is BuildTarget?) sel else null
+    private fun <T> getSelectedBspTargetFrom(list: JBList<T>): BuildTarget? {
+      return when (val sel: T = list.selectedValue) {
+        is BuildTarget? -> sel
+        is TargetSearch.PrintableBuildTarget -> sel.buildTarget
+        else -> null
+      }
     }
 
     /**
      * @return build target represented by the node selected in a tree. Is null when nothing is selected
      * @param tree the tree to be checked
      */
-    private fun getSelectedBspTarget(tree: Tree): BuildTarget? {
+    private fun getSelectedBspTargetFrom(tree: Tree): BuildTarget? {
       val selected: DefaultMutableTreeNode? = tree.lastSelectedPathComponent as? DefaultMutableTreeNode
       val userObject: Any? = selected?.userObject
       if (userObject is TargetNodeData) {
