@@ -30,7 +30,10 @@ dependencies {
 }
 
 tasks.runIde{
-  jvmArgs("-Xmx8000m")
+  jvmArgs("-Xmx16000m",
+    "-Didea.log.trace.categories=" +
+    "#org.jetbrains.plugins.bsp," +
+    "#org.jetbrains.magicmetamodel.impl.PerformanceLogger")
 }
 
 // Configure gradle-intellij-plugin plugin.

@@ -108,8 +108,8 @@ class NonOverlappingTargetsTest {
 
     // then
     val expectedTargets = setOf(
-      BuildTargetId("targetA1"),
-      BuildTargetId("targetB1"),
+      BuildTargetId("targetA2"),
+      BuildTargetId("targetB3"),
       BuildTargetId("targetC1")
     )
     nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
@@ -223,10 +223,10 @@ class NonOverlappingTargetsTest {
 
     // then
     val expectedTargets = setOf(
-      BuildTargetId("targetA1"),
-      BuildTargetId("targetB1"),
-      BuildTargetId("targetC1"),
-      BuildTargetId("targetD1"),
+      BuildTargetId("targetA2"),
+      BuildTargetId("targetB2"),
+      BuildTargetId("targetC2"),
+      BuildTargetId("targetD2"),
       BuildTargetId("targetE1"),
     )
     nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
@@ -246,7 +246,7 @@ class NonOverlappingTargetsTest {
 
     val allTargets = setOf(targetA, targetB)
 
-    val nonOverlappingTargets = NonOverlappingTargets(allTargets, overlappingTargetsGraph = mapOf())
+    val nonOverlappingTargets = NonOverlappingTargets(allTargets, conflictGraph = mapOf())
     val expectedTargets = setOf(BuildTargetId("targetA"), BuildTargetId("targetB"))
     nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
   }
