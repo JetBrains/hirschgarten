@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.runModalTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManagerListener
+import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 
@@ -12,7 +13,7 @@ public class ProjectClosingListener : ProjectManagerListener {
   override fun projectClosing(project: Project) {
     val projectProperties = BspProjectPropertiesService.getInstance(project).value
 
-    if (projectProperties.isBspProject) {
+    if (projectProperties.isBspProject && !project.isNewProject()) {
       doProjectClosing(project)
     }
   }
