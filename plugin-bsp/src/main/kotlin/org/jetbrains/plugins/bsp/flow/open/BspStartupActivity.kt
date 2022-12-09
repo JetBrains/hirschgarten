@@ -21,6 +21,7 @@ import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
 
@@ -49,15 +50,9 @@ public class BspStartupActivity : StartupActivity.DumbAware {
 
     if (project.isNewProject()) {
       suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project)
+    } else {
+      collectProject(project)
     }
-
-    val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-import").prepareBackgroundTask()
-    collectProjectDetailsTask.executeInTheBackground(
-      "Syncing...",
-      true,
-      beforeRun = { BspConnectionService.getInstance(project).value.connect("bsp-import") },
-      afterOnSuccess = { addBspWidgets(project); bspSyncConsole.finishTask("bsp-import", "Done!") }
-    )
   }
 
   private fun suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project: Project) {
@@ -83,6 +78,8 @@ public class BspStartupActivity : StartupActivity.DumbAware {
         is NewConnection -> initializeNewConnection(project, bspConnectionDetailsGeneratorProvider)
         is ConnectionFile -> initializeConnectionFromFile(project, connectionFileOrNewConnection)
       }
+
+      collectProject(project)
     }
   }
 
@@ -104,6 +101,18 @@ public class BspStartupActivity : StartupActivity.DumbAware {
 
     val bspConnectionService = BspConnectionService.getInstance(project)
     bspConnectionService.init(bspFileConnection)
+  }
+
+  private fun collectProject(project: Project) {
+    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+
+    val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-import").prepareBackgroundTask()
+    collectProjectDetailsTask.executeInTheBackground(
+      "Syncing...",
+      true,
+      beforeRun = { BspConnectionService.getInstance(project).value.connect("bsp-import") },
+      afterOnSuccess = { addBspWidgets(project); bspSyncConsole.finishTask("bsp-import", "Done!") }
+    )
   }
 
   private fun addBspWidgets(project: Project) {
