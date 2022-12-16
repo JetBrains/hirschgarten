@@ -96,12 +96,17 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     UpdateMagicMetaModelInTheBackgroundTask(project, taskId) { collectModel() }
 
   private fun collectModel(): ProjectDetails {
+    fun errorCallback(e: Throwable) {
+      bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
+    }
+
     bspSyncConsole.startSubtask(taskId, importSubtaskId, "Collecting model...")
 
-    val initializeBuildResult = queryForInitialize(server).get()
+    val initializeBuildResult = queryForInitialize(server).catchSyncErrors { errorCallback(it) }.get()
     server.onBuildInitialized()
 
-    val projectDetails = calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities)
+
+    val projectDetails = calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities) { errorCallback(it) }
 
     bspSyncConsole.finishSubtask(importSubtaskId, "Collection model done!")
 
@@ -111,7 +116,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private fun queryForInitialize(server: BspServer): CompletableFuture<InitializeBuildResult> {
     val buildParams = createInitializeBuildParams()
 
-    return server.buildInitialize(buildParams).catchSyncErrors()
+    return server.buildInitialize(buildParams)
   }
 
   private fun createInitializeBuildParams(): InitializeBuildParams {
@@ -130,83 +135,82 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     return params
   }
-
-  private fun calculateProjectDetailsWithCapabilities(
-    server: BspServer,
-    buildServerCapabilities: BuildServerCapabilities,
-  ): ProjectDetails {
-    val workspaceBuildTargetsResult = queryForBuildTargets(server).get()
-
-    val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
-
-    val sourcesFuture = queryForSourcesResult(server, allTargetsIds)
-    val resourcesFuture = queryForTargetResources(server, buildServerCapabilities, allTargetsIds)
-    val dependencySourcesFuture = queryForDependencySources(server, buildServerCapabilities, allTargetsIds)
-    val javacOptionsFuture = queryForJavacOptions(server, allTargetsIds)
-
-    return ProjectDetails(
-      targetsId = allTargetsIds,
-      targets = workspaceBuildTargetsResult.targets.toSet(),
-      sources = sourcesFuture.get().items,
-      resources = resourcesFuture?.get()?.items ?: emptyList(),
-      dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
-      // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
-      // so it's just safer to add timeout here. This should not be called at all for SBT.
-      javacOptions = javacOptionsFuture.get()?.items ?: emptyList()
-    )
-  }
-
-  private fun queryForBuildTargets(server: BspServer): CompletableFuture<WorkspaceBuildTargetsResult> =
-    server.workspaceBuildTargets().catchSyncErrors()
-
-  private fun calculateAllTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
-    workspaceBuildTargetsResult.targets.map { it.id }
-
-  private fun queryForSourcesResult(
-    server: BspServer,
-    allTargetsIds: List<BuildTargetIdentifier>
-  ): CompletableFuture<SourcesResult> {
-    val sourcesParams = SourcesParams(allTargetsIds)
-
-    return server.buildTargetSources(sourcesParams).catchSyncErrors()
-  }
-
-  private fun queryForTargetResources(
-    server: BspServer,
-    capabilities: BuildServerCapabilities,
-    allTargetsIds: List<BuildTargetIdentifier>
-  ): CompletableFuture<ResourcesResult>? {
-    val resourcesParams = ResourcesParams(allTargetsIds)
-
-    return if (capabilities.resourcesProvider) server.buildTargetResources(resourcesParams).catchSyncErrors()
-    else null
-  }
-
-  private fun queryForDependencySources(
-    server: BspServer,
-    capabilities: BuildServerCapabilities,
-    allTargetsIds: List<BuildTargetIdentifier>
-  ): CompletableFuture<DependencySourcesResult>? {
-    val dependencySourcesParams = DependencySourcesParams(allTargetsIds)
-
-    return if (capabilities.dependencySourcesProvider) server.buildTargetDependencySources(dependencySourcesParams)
-      .catchSyncErrors()
-    else null
-  }
-
-  private fun queryForJavacOptions(
-    server: BspServer,
-    allTargetsIds: List<BuildTargetIdentifier>
-  ): CompletableFuture<JavacOptionsResult> {
-    val javacOptionsParams = JavacOptionsParams(allTargetsIds)
-
-    return server.buildTargetJavacOptions(javacOptionsParams).catchSyncErrors()
-  }
-
-  private fun <T> CompletableFuture<T>.catchSyncErrors(): CompletableFuture<T> =
-    this.whenComplete { _, exception ->
-      exception?.let {
-        bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(exception))
-      }
-    }
 }
+
+public fun calculateProjectDetailsWithCapabilities(
+  server: BspServer,
+  buildServerCapabilities: BuildServerCapabilities,
+  errorCallback: (Throwable) -> Unit
+): ProjectDetails {
+  val workspaceBuildTargetsResult = queryForBuildTargets(server).get()
+
+  val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
+
+  val sourcesFuture = queryForSourcesResult(server, allTargetsIds).catchSyncErrors(errorCallback)
+  val resourcesFuture = queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
+  val dependencySourcesFuture = queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
+  val javacOptionsFuture = queryForJavacOptions(server, allTargetsIds).catchSyncErrors(errorCallback)
+
+  return ProjectDetails(
+    targetsId = allTargetsIds,
+    targets = workspaceBuildTargetsResult.targets.toSet(),
+    sources = sourcesFuture.get().items,
+    resources = resourcesFuture?.get()?.items ?: emptyList(),
+    dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
+    // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
+    // so it's just safer to add timeout here. This should not be called at all for SBT.
+    javacOptions = javacOptionsFuture.get()?.items ?: emptyList()
+  )
+}
+
+
+private fun queryForBuildTargets(server: BspServer): CompletableFuture<WorkspaceBuildTargetsResult> =
+  server.workspaceBuildTargets()
+
+private fun calculateAllTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult.targets.map { it.id }
+
+private fun queryForSourcesResult(
+  server: BspServer,
+  allTargetsIds: List<BuildTargetIdentifier>
+): CompletableFuture<SourcesResult> {
+  val sourcesParams = SourcesParams(allTargetsIds)
+
+  return server.buildTargetSources(sourcesParams)
+}
+
+private fun queryForTargetResources(
+  server: BspServer,
+  capabilities: BuildServerCapabilities,
+  allTargetsIds: List<BuildTargetIdentifier>
+): CompletableFuture<ResourcesResult>? {
+  val resourcesParams = ResourcesParams(allTargetsIds)
+
+  return if (capabilities.resourcesProvider) server.buildTargetResources(resourcesParams)
+  else null
+}
+
+private fun queryForDependencySources(
+  server: BspServer,
+  capabilities: BuildServerCapabilities,
+  allTargetsIds: List<BuildTargetIdentifier>
+): CompletableFuture<DependencySourcesResult>? {
+  val dependencySourcesParams = DependencySourcesParams(allTargetsIds)
+
+  return if (capabilities.dependencySourcesProvider) server.buildTargetDependencySources(dependencySourcesParams)
+  else null
+}
+
+private fun queryForJavacOptions(
+  server: BspServer,
+  allTargetsIds: List<BuildTargetIdentifier>
+): CompletableFuture<JavacOptionsResult> {
+  val javacOptionsParams = JavacOptionsParams(allTargetsIds)
+  return server.buildTargetJavacOptions(javacOptionsParams)
+}
+
+
+private fun <T> CompletableFuture<T>.catchSyncErrors(errorCallback: (Throwable) -> Unit): CompletableFuture<T> =
+  this.whenComplete { _, exception ->
+    exception?.let { errorCallback(it) }
+  }

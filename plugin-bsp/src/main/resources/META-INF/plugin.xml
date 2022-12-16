@@ -37,7 +37,7 @@
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.BspProjectPropertiesService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.ProjectPropertiesService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.console.BspConsoleService"/>
-    <registryKey defaultValue="180" description="Timeout for BSP requests" key="bsp.request.timeout.seconds"/>
+    <registryKey defaultValue="300" description="Timeout for BSP requests" key="bsp.request.timeout.seconds"/>
   </extensions>
 
   <actions>

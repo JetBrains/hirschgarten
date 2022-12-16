@@ -5,11 +5,11 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
 import org.jetbrains.magicmetamodel.extensions.reduceSets
 
-internal object OverlappingTargetsGraph {
+public object OverlappingTargetsGraph {
 
   private val log = logger<OverlappingTargetsGraph>()
 
-  operator fun invoke(
+  public operator fun invoke(
     targetsDetailsForDocumentProvider: TargetsDetailsForDocumentProvider,
   ): Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> {
     log.trace { "Calculating overlapping targets graph..." }

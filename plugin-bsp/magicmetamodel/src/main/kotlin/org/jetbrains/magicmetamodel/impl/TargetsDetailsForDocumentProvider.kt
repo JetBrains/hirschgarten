@@ -20,13 +20,13 @@ public data class TargetsDetailsForDocumentProviderState(
   public var isFileMap4HACK: Map<String, Boolean> = emptyMap(),
 )
 
-internal class TargetsDetailsForDocumentProvider {
+public class TargetsDetailsForDocumentProvider {
 
   private val documentIdToTargetsIdsMap: Map<Path, Set<BuildTargetIdentifier>>
   private val documentIdInTheSameDirectoryToTargetsIdsMapForHACK: Map<Path, Set<BuildTargetIdentifier>>
   private val isFileMap4HACK: Map<String, Boolean>
 
-  constructor(sources: List<SourcesItem>) {
+  public constructor(sources: List<SourcesItem>) {
     log.trace { "Initializing TargetsDetailsForDocumentProvider with $sources..." }
 
     this.documentIdToTargetsIdsMap = DocumentIdToTargetsIdsMap(sources)
@@ -38,7 +38,7 @@ internal class TargetsDetailsForDocumentProvider {
     log.trace { "Initializing TargetsDetailsForDocumentProvider done!" }
   }
 
-  constructor(state: TargetsDetailsForDocumentProviderState) {
+  public constructor(state: TargetsDetailsForDocumentProviderState) {
     this.documentIdToTargetsIdsMap =
       state.documentIdToTargetsIdsMap.mapKeys { Path(it.key) }.mapValues { it.value.map { it.fromState() }.toSet() }
     this.documentIdInTheSameDirectoryToTargetsIdsMapForHACK =
@@ -47,7 +47,7 @@ internal class TargetsDetailsForDocumentProvider {
     this.isFileMap4HACK = state.isFileMap4HACK
   }
 
-  fun getAllDocuments(): List<TextDocumentIdentifier> =
+  public fun getAllDocuments(): List<TextDocumentIdentifier> =
     documentIdToTargetsIdsMap.keys
       .map(this::mapPathToTextDocumentIdentifier)
       .toList()
@@ -55,7 +55,7 @@ internal class TargetsDetailsForDocumentProvider {
   private fun mapPathToTextDocumentIdentifier(path: Path): TextDocumentIdentifier =
     TextDocumentIdentifier(path.toUri().toString())
 
-  fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): Set<BuildTargetIdentifier> {
+  public fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): Set<BuildTargetIdentifier> {
     val targets = generateAllDocumentSubdirectoriesIncludingDocument(documentId)
       .flatMap { documentIdToTargetsIdsMap[it].orEmpty() }.toSet()
 
@@ -84,7 +84,7 @@ internal class TargetsDetailsForDocumentProvider {
   private fun mapDocumentIdToAbsolutePath(documentId: TextDocumentIdentifier): Path =
     URI.create(documentId.uri).toAbsolutePath()
 
-  fun toState(): TargetsDetailsForDocumentProviderState =
+  public fun toState(): TargetsDetailsForDocumentProviderState =
     TargetsDetailsForDocumentProviderState(
       documentIdToTargetsIdsMap.mapKeys { it.key.toString() }
         .mapValues { it.value.map { it.toState() }.toSet() },
@@ -93,7 +93,7 @@ internal class TargetsDetailsForDocumentProvider {
       isFileMap4HACK
     )
 
-  companion object {
+  private companion object {
     private val log = logger<TargetsDetailsForDocumentProvider>()
   }
 }
