@@ -4,8 +4,6 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
-import java.util.TreeMap
-import kotlin.Comparator
 
 /**
  * ## Conflicting Targets Problem
@@ -46,10 +44,10 @@ import kotlin.Comparator
  * 2. If step one did not provide any result, we just take a target that has the biggest number of conflicts
  *
  */
-internal object NonOverlappingTargets {
+public object NonOverlappingTargets {
   private val log = logger<NonOverlappingTargets>()
 
-  operator fun invoke(
+  public operator fun invoke(
     allTargets: Set<BuildTarget>,
     conflictGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
   ): Set<BuildTargetIdentifier> {
