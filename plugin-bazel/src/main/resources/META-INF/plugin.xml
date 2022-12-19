@@ -25,6 +25,8 @@
         <lang.syntaxHighlighterFactory
                 language="Starlark"
                 implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkSyntaxHighlighterFactory"/>
+        <colorSettingsPage
+                implementation="org.jetbrains.bsp.bazel.languages.starlark.StarlarkColorSettingsPage"/>
     </extensions>
 
 
