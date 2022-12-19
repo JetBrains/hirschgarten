@@ -1,9 +1,7 @@
 package org.jetbrains.bsp.bazel.languages.starlark
 
 import com.intellij.lexer.Lexer
-import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
-import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.fileTypes.SyntaxHighlighterBase
 import com.intellij.openapi.fileTypes.SyntaxHighlighterFactory
@@ -13,71 +11,55 @@ import com.intellij.psi.tree.IElementType
 
 object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
 
-    private val keyword = createTextAttributesKey("STARLARK_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD)
-    private val string = createTextAttributesKey("STARLARK_STRING", DefaultLanguageHighlighterColors.STRING)
-    private val number = createTextAttributesKey("STARLARK_NUMBER", DefaultLanguageHighlighterColors.NUMBER)
-    private val lineComment = createTextAttributesKey("STARLARK_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
-    private val semicolon = createTextAttributesKey("STARLARK_SEMICOLON", DefaultLanguageHighlighterColors.SEMICOLON)
-    private val comma = createTextAttributesKey("STARLARK_COMMA", DefaultLanguageHighlighterColors.COMMA)
-    private val dot = createTextAttributesKey("STARLARK_DOT", DefaultLanguageHighlighterColors.DOT)
-    private val parentheses =
-        createTextAttributesKey("STARLARK_PARENTHESES", DefaultLanguageHighlighterColors.PARENTHESES)
-    private val brackets = createTextAttributesKey("STARLARK_BRACKETS", DefaultLanguageHighlighterColors.BRACKETS)
-    private val identifier = createTextAttributesKey("STARLARK_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER)
+    private val keys: Map<IElementType, TextAttributesKey> = mapOf(
+        StarlarkTypes.DEF to StarlarkHighlightingColors.KEYWORD,
+        StarlarkTypes.LAMBDA to StarlarkHighlightingColors.KEYWORD,
 
-    private val emptyKeys = emptyArray<TextAttributesKey>()
+        StarlarkTypes.IF to StarlarkHighlightingColors.KEYWORD,
+        StarlarkTypes.ELIF to StarlarkHighlightingColors.KEYWORD,
+        StarlarkTypes.ELSE to StarlarkHighlightingColors.KEYWORD,
 
-    override fun getHighlightingLexer(): Lexer =
-        StarlarkLexerAdapter
+        StarlarkTypes.FOR to StarlarkHighlightingColors.KEYWORD,
+        StarlarkTypes.IN to StarlarkHighlightingColors.KEYWORD,
 
-    override fun getTokenHighlights(tokenType: IElementType?): Array<TextAttributesKey> =
-        when (tokenType) {
-            StarlarkTypes.DEF -> arrayOf(keyword)
-            StarlarkTypes.LAMBDA -> arrayOf(keyword)
+        StarlarkTypes.RETURN to StarlarkHighlightingColors.KEYWORD,
+        StarlarkTypes.BREAK to StarlarkHighlightingColors.KEYWORD,
+        StarlarkTypes.CONTINUE to StarlarkHighlightingColors.KEYWORD,
+        StarlarkTypes.PASS to StarlarkHighlightingColors.KEYWORD,
 
-            StarlarkTypes.IF -> arrayOf(keyword)
-            StarlarkTypes.ELIF -> arrayOf(keyword)
-            StarlarkTypes.ELSE -> arrayOf(keyword)
+        StarlarkTypes.LOAD to StarlarkHighlightingColors.KEYWORD,
 
-            StarlarkTypes.FOR -> arrayOf(keyword)
-            StarlarkTypes.IN -> arrayOf(keyword)
+        // boolean operators
+        StarlarkTypes.OR to StarlarkHighlightingColors.KEYWORD,
+        StarlarkTypes.AND to StarlarkHighlightingColors.KEYWORD,
+        StarlarkTypes.NOT to StarlarkHighlightingColors.KEYWORD,
 
-            StarlarkTypes.RETURN -> arrayOf(keyword)
-            StarlarkTypes.BREAK -> arrayOf(keyword)
-            StarlarkTypes.CONTINUE -> arrayOf(keyword)
-            StarlarkTypes.PASS -> arrayOf(keyword)
+        // code organization
+        StarlarkTypes.SEMICOLON to StarlarkHighlightingColors.SEMICOLON,
+        StarlarkTypes.COMMA to StarlarkHighlightingColors.COMMA,
+        StarlarkTypes.DOT to StarlarkHighlightingColors.DOT,
 
-            StarlarkTypes.LOAD -> arrayOf(keyword)
+        StarlarkTypes.LEFT_PAREN to StarlarkHighlightingColors.PARENTHESES,
+        StarlarkTypes.RIGHT_PAREN to StarlarkHighlightingColors.PARENTHESES,
 
-            // boolean operators
-            StarlarkTypes.OR -> arrayOf(keyword)
-            StarlarkTypes.AND -> arrayOf(keyword)
-            StarlarkTypes.NOT -> arrayOf(keyword)
+        StarlarkTypes.LEFT_CURLY to StarlarkHighlightingColors.BRACKETS,
+        StarlarkTypes.RIGHT_CURLY to StarlarkHighlightingColors.BRACKETS,
 
-            // code organization
-            StarlarkTypes.SEMICOLON -> arrayOf(semicolon)
-            StarlarkTypes.COMMA -> arrayOf(comma)
-            StarlarkTypes.DOT -> arrayOf(dot)
+        // random
+        StarlarkTypes.INT to StarlarkHighlightingColors.NUMBER,
+        StarlarkTypes.FLOAT to StarlarkHighlightingColors.NUMBER,
 
-            StarlarkTypes.LEFT_PAREN -> arrayOf(parentheses)
-            StarlarkTypes.RIGHT_PAREN -> arrayOf(parentheses)
+        StarlarkTypes.IDENTIFIER to StarlarkHighlightingColors.IDENTIFIER,
 
-            StarlarkTypes.LEFT_CURLY -> arrayOf(brackets)
-            StarlarkTypes.RIGHT_CURLY -> arrayOf(brackets)
+        StarlarkTypes.STRING to StarlarkHighlightingColors.STRING,
+        StarlarkTypes.BYTES to StarlarkHighlightingColors.STRING,
 
-            // random
-            StarlarkTypes.INT -> arrayOf(number)
-            StarlarkTypes.FLOAT -> arrayOf(number)
+        StarlarkTypes.COMMENT to StarlarkHighlightingColors.LINE_COMMENT,
+    )
 
-            StarlarkTypes.IDENTIFIER -> arrayOf(identifier)
+    override fun getHighlightingLexer(): Lexer = StarlarkLexerAdapter
 
-            StarlarkTypes.STRING -> arrayOf(string)
-            StarlarkTypes.BYTES -> arrayOf(string)
-
-            StarlarkTypes.COMMENT -> arrayOf(lineComment)
-
-            else -> emptyKeys
-        }
+    override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
 }
 
 class StarlarkSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
