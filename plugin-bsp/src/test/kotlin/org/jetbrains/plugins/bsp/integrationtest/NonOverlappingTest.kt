@@ -16,16 +16,23 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.readText
+import kotlin.io.path.writeText
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
 
 // TODO make sure these values are updated by dependabot or similar tool
-private const val bazelRepositoryTag = "5.4.0"
-private const val bazelBspVersion = "2.3.0"
+private const val bazelRepositoryTag = "6.0.0"
+private const val bazelExecutableVersion = "5.4.0"
+private const val bazelBspVersion = "2.3.1"
+
+@OptIn(ExperimentalTime::class)
 class NonOverlappingTest {
   @Test
   fun `Compute non overlapping targets for bazelbuild_bazel project`() {
-    val bazelDir = createTempDirectory("bazel-bsp-")
-    cloneRepository(bazelDir)
-    installBsp(bazelDir, "//src/test/java/...")
+    val bazelDir =  createTempDirectory("bazel-bsp-")
+    cloneRepository(bazelDir, bazelRepositoryTag)
+    setBazelVersion(bazelDir, bazelExecutableVersion)
+    installBsp(bazelDir, "//...")
     val connectionDetails = Gson().fromJson(bazelDir.resolve(".bsp/bazelbsp.json").readText(), BspConnectionDetails::class.java)
     val bspServerProcess = bspProcess(connectionDetails, bazelDir)
     try {
@@ -38,16 +45,21 @@ class NonOverlappingTest {
       val projectDetails = calculateProjectDetailsWithCapabilities(server, initializationResult.capabilities) { println(it) }
       val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
       val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
-      val nonOverlapping = NonOverlappingTargets(projectDetails.targets, overlappingTargetsGraph)
-      nonOverlapping.size shouldBe 258
+      val nonOverlapping = measureTimedValue { NonOverlappingTargets(projectDetails.targets, overlappingTargetsGraph) }
+      nonOverlapping.value.size shouldBe 680
+      println("Computing non-overlapping targets took ${nonOverlapping.duration}")
     } finally {
         bspServerProcess.destroyForcibly()
     }
   }
 
-  private fun cloneRepository(bazelDir: Path) {
+  private fun setBazelVersion(bazelDir: Path, bazelVersion: String) {
+    bazelDir.resolve(".bazelversion").writeText(bazelVersion)
+  }
+
+  private fun cloneRepository(bazelDir: Path, gitRevision: String) {
     ProcessBuilder("git", "clone",
-      "--branch", bazelRepositoryTag,
+      "--branch", gitRevision,
       "--depth", "1",
       "https://github.com/bazelbuild/bazel",
       bazelDir.toAbsolutePath().toString())
@@ -65,6 +77,7 @@ class NonOverlappingTest {
       "--",
       "-t", target
     ).run {
+      inheritIO()
       directory(bazelDir.toFile())
       start()
     }.run {
