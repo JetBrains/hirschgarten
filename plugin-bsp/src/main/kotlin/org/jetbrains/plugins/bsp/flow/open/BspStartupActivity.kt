@@ -21,7 +21,6 @@ import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
 
@@ -42,6 +41,8 @@ public class BspStartupActivity : StartupActivity.DumbAware {
   }
 
   private fun doRunActivity(project: Project) {
+    addBspWidgetsOnUiThread(project)
+
     val bspSyncConsoleService = BspConsoleService.getInstance(project)
     bspSyncConsoleService.init()
 
@@ -52,6 +53,21 @@ public class BspStartupActivity : StartupActivity.DumbAware {
       suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project)
     } else {
       collectProject(project)
+    }
+  }
+
+  private fun addBspWidgetsOnUiThread(project: Project) {
+    AppUIExecutor.onUiThread().execute {
+      ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
+        icon = BspPluginIcons.bsp
+        canCloseContent = false
+        anchor = ToolWindowAnchor.RIGHT
+        contentFactory = BspAllTargetsWidgetFactory()
+      }
+
+      val statusBar = WindowManager.getInstance().getStatusBar(project)
+      // TODO it's internal - we shouldnt use it
+      statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
     }
   }
 
@@ -111,20 +127,7 @@ public class BspStartupActivity : StartupActivity.DumbAware {
       "Syncing...",
       true,
       beforeRun = { BspConnectionService.getInstance(project).value.connect("bsp-import") },
-      afterOnSuccess = { addBspWidgets(project); bspSyncConsole.finishTask("bsp-import", "Done!") }
+      afterOnSuccess = { bspSyncConsole.finishTask("bsp-import", "Done!") }
     )
-  }
-
-  private fun addBspWidgets(project: Project) {
-    ToolWindowManager.getInstance(project).registerToolWindow("BSP") {
-      icon = BspPluginIcons.bsp
-      canCloseContent = false
-      anchor = ToolWindowAnchor.RIGHT
-      contentFactory = BspAllTargetsWidgetFactory()
-    }
-
-    val statusBar = WindowManager.getInstance().getStatusBar(project)
-    // TODO it's internal - we shouldnt use it
-    statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
   }
 }
