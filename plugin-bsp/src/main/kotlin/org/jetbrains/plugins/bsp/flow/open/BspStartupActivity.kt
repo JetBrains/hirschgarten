@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.openapi.wm.WindowManager
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
@@ -21,7 +20,6 @@ import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory
 
 /**
@@ -64,10 +62,6 @@ public class BspStartupActivity : StartupActivity.DumbAware {
         anchor = ToolWindowAnchor.RIGHT
         contentFactory = BspAllTargetsWidgetFactory()
       }
-
-      val statusBar = WindowManager.getInstance().getStatusBar(project)
-      // TODO it's internal - we shouldnt use it
-      statusBar.addWidget(BspDocumentTargetsWidget(project), "before git", BspDocumentTargetsWidget(project))
     }
   }
 
