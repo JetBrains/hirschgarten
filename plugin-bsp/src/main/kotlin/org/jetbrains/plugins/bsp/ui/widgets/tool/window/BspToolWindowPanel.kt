@@ -64,7 +64,6 @@ private class ListsUpdater(
 
 public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
   private var panelShown = PanelShown.NONE
-  private var isUpToDate = true
 
   public constructor(project: Project) : this() {
     val actionManager = ActionManager.getInstance()
@@ -97,13 +96,11 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
     actionGroup.add(object : AnAction({ notLoadedTargetsActionName }, BspPluginIcons.notLoadedTarget) {
       override fun actionPerformed(e: AnActionEvent) {
-        rerenderTargetsIfOutdated(listsUpdater)
         showNotLoadedTargets(listsUpdater)
       }
     })
     actionGroup.add(object : AnAction({ loadedTargetsActionName }, BspPluginIcons.loadedTarget) {
       override fun actionPerformed(e: AnActionEvent) {
-        rerenderTargetsIfOutdated(listsUpdater)
         showLoadedTargets(listsUpdater)
       }
     })
@@ -112,18 +109,6 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     actionToolbar.targetComponent = this.component
     actionToolbar.setOrientation(SwingConstants.HORIZONTAL)
     this.toolbar = actionToolbar.component
-  }
-
-  private fun rerenderTargetsIfOutdated(listsUpdater: ListsUpdater) {
-    if (!isUpToDate) {
-      listsUpdater.rerenderComponents()
-      isUpToDate = true
-    }
-  }
-
-  public fun invalidateLoadedTargets() {
-    isUpToDate = false
-    setToolWindowContent(JBScrollPane(null))
   }
 
   private fun showLoadedTargets(listsUpdater: ListsUpdater) {

@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.BspToolWindowPanel
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.action.text")) {
@@ -17,23 +16,20 @@ public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.a
     val project = e.project
 
     if (project != null) {
-      doAction(project, e.inputEvent.component.parent.parent as? BspToolWindowPanel)
+      doAction(project)
     } else {
       log.warn("ReloadAction cannot be performed! Project not available.")
     }
   }
 
-  private fun doAction(project: Project, panel: BspToolWindowPanel?) {
+  private fun doAction(project: Project) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     bspSyncConsole.startTask("bsp-reload", "Reload", "Reloading...")
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-reload").prepareBackgroundTask()
     collectProjectDetailsTask.executeInTheBackground(
       "Reloading...",
       true,
-      afterOnSuccess = {
-        bspSyncConsole.finishTask("bsp-reload", "Done!")
-        panel?.invalidateLoadedTargets()
-      }
+      afterOnSuccess = { bspSyncConsole.finishTask("bsp-reload", "Done!") }
     )
   }
 

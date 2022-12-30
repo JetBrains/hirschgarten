@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.BspToolWindowPanel
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect.action.text")) {
@@ -17,13 +16,13 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
     val project = e.project
 
     if (project != null) {
-      doAction(project, e.inputEvent.component.parent.parent as? BspToolWindowPanel)
+      doAction(project)
     } else {
       log.warn("ConnectAction cannot be performed! Project not available.")
     }
   }
 
-  private fun doAction(project: Project, panel: BspToolWindowPanel?) {
+  private fun doAction(project: Project) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     bspSyncConsole.startTask("bsp-connect", "Connect", "Connecting...")
 
@@ -32,10 +31,7 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
       name = "Connecting...",
       cancelable = true,
       beforeRun = { BspConnectionService.getInstance(project).value.connect("bsp-connect") },
-      afterOnSuccess = {
-        bspSyncConsole.finishTask("bsp-connect", "Done!")
-        panel?.invalidateLoadedTargets()
-      }
+      afterOnSuccess = { bspSyncConsole.finishTask("bsp-connect", "Done!") }
     )
   }
 

@@ -109,6 +109,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     logPerformance("load-modules") { workspaceModelUpdater.loadModules(modulesToLoad) }
     loadedTargetsStorage.addTargets(nonOverlappingTargetsToLoad)
 
+    triggerTargetLoadListeners()
 
     return DefaultMagicMetaModelDiff(
       magicMetaModelProjectConfig.workspaceModel,
