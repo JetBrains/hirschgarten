@@ -63,7 +63,7 @@ private class TargetTreeCellRenderer(val targetIcon: Icon) : TreeCellRenderer {
         "[not renderable]",
         PlatformIcons.ERROR_INTRODUCTION_ICON,
         SwingConstants.LEFT
-      ) // TODO - temporary
+      )
     }
   }
 }
@@ -126,7 +126,9 @@ public class BspTargetTree(targetIcon: Icon) {
    * @see BspBuildTargetClassifier.separator
    */
   private fun generateTreeFromIdentifiers(targets: List<BuildTargetTreeIdentifier>, separator: String?) {
-    this.targetSearch.targets = targets.map { it.target }
+    this.targetSearch.targets = targets
+      .map { it.target }
+      .sortedBy { it.displayName ?: it.id.uri }
     val grouped: Map<String?, List<BuildTargetTreeIdentifier>> = targets.groupBy { it.path.firstOrNull() }
     val sortedDirs: List<String> = grouped
       .keys
@@ -254,23 +256,33 @@ public class BspTargetTree(targetIcon: Icon) {
 
   /**
    * Shows build targets list/tree, depending on current search query. This method is executed each time
-   * the search query is modified. If there are no targets in the tree, nothing happens.
+   * the search query is modified.
    */
   private fun updateSearch() {
-    if (!rootNode.isLeaf) {
-      try {
-        panelComponent.remove(1)
-      } finally {
-        panelComponent.add(
-          if (rootNode.isLeaf) emptyTreeMessage
-          else if (targetSearch.searchActive) targetSearch.searchListComponent
-          else treeComponent
-        )
-        panelComponent.revalidate()
-        panelComponent.repaint()
-      }
+    val newPanelContent = chooseNewPanelContent()
+    val oldPanelContent = getCurrentPanelContent()
+
+    if (newPanelContent != oldPanelContent) {
+      oldPanelContent?.let { panelComponent.remove(it) }
+      panelComponent.add(newPanelContent)
+      panelComponent.revalidate()
+      panelComponent.repaint()
     }
   }
+
+  private fun chooseNewPanelContent(): JComponent =
+    when {
+      rootNode.isLeaf -> emptyTreeMessage
+      targetSearch.isSearchActive -> targetSearch.targetSearchPanel
+      else -> treeComponent
+    }
+
+  private fun getCurrentPanelContent(): Component? =
+    try {
+      panelComponent.getComponent(1)
+    } catch (_: ArrayIndexOutOfBoundsException) {
+      null
+    }
 
   /**
    * Adds mouse listeners to those components which display build targets
