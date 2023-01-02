@@ -43,6 +43,8 @@ public class TaskConsole(
 
   private fun doStartTask(taskId: Any, title: String, message: String) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
+    taskDescriptor.isActivateToolWindowWhenAdded = true
+
     val startEvent = StartBuildEventImpl(taskDescriptor, message)
     taskView.onEvent(taskId, startEvent)
   }
