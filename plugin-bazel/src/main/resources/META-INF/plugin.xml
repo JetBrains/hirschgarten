@@ -4,12 +4,12 @@
     <vendor>JetBrains</vendor>
 
     <depends>com.intellij.modules.platform</depends>
-<!--    <depends>org.jetbrains.bsp</depends>-->
+    <!--    <depends>org.jetbrains.bsp</depends>-->
 
     <extensions defaultExtensionNs="com.intellij">
-<!--        <bspConnectionDetailsGeneratorExtension-->
-<!--                implementation="org.jetbrains.bsp.bazel.extension.BazelBspConnectionDetailsGenerator"-->
-<!--        />-->
+        <!--        <bspConnectionDetailsGeneratorExtension-->
+        <!--                implementation="org.jetbrains.bsp.bazel.extension.BazelBspConnectionDetailsGenerator"-->
+        <!--        />-->
         <fileType
                 name="Starlark"
                 implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkLanguageFileType"
@@ -27,6 +27,16 @@
                 implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkSyntaxHighlighterFactory"/>
         <colorSettingsPage
                 implementation="org.jetbrains.bsp.bazel.languages.starlark.StarlarkColorSettingsPage"/>
+        <additionalTextAttributes
+                scheme="Default"
+                file="colorSchemes/StarlarkDefault.xml"/>
+        <additionalTextAttributes
+                scheme="Darcula"
+                file="colorSchemes/StarlarkDarcula.xml"/>
+
+        <annotator
+                language="Starlark"
+                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkAnnotator"/>
     </extensions>
 
 
