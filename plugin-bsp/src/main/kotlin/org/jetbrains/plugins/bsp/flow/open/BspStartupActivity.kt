@@ -44,9 +44,6 @@ public class BspStartupActivity : StartupActivity.DumbAware {
     val bspSyncConsoleService = BspConsoleService.getInstance(project)
     bspSyncConsoleService.init()
 
-    val bspSyncConsole = bspSyncConsoleService.bspSyncConsole
-    bspSyncConsole.startTask("bsp-import", "Import", "Importing...")
-
     if (project.isNewProject()) {
       suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project)
     } else {
@@ -115,6 +112,7 @@ public class BspStartupActivity : StartupActivity.DumbAware {
 
   private fun collectProject(project: Project) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    bspSyncConsole.startTask("bsp-import", "Import", "Importing...")
 
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-import").prepareBackgroundTask()
     collectProjectDetailsTask.executeInTheBackground(
