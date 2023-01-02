@@ -3,9 +3,9 @@ plugins {
 }
 
 dependencies {
-  implementation("org.scala-lang:scala-library:2.13.10")
-  implementation("org.virtuslab.ideprobe:driver_2.13:0.50.0")
-  implementation("org.virtuslab.ideprobe:robot-driver_2.13:0.50.0")
+  implementation(libs.scala)
+  implementation(libs.ideProbeDriver)
+  implementation(libs.ideProbeRobot)
 }
 
 repositories {

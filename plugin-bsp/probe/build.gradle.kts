@@ -3,12 +3,12 @@ plugins {
 }
 
 dependencies {
-  testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-  testImplementation("org.virtuslab.ideprobe:driver_2.13:0.50.0")
-  testImplementation("org.virtuslab.ideprobe:robot-driver_2.13:0.50.0")
+  testImplementation(libs.junitJupiter)
+  testImplementation(libs.ideProbeDriver)
+  testImplementation(libs.ideProbeRobot)
   testImplementation(project(":probe-setup"))
   testRuntimeOnly(
-    files(layout.buildDirectory.file("distributions/intellij-bsp-0.0.1-alpha.3.zip")) {
+    files(layout.buildDirectory.file("distributions/${Plugin.name}-${Plugin.version}.zip")) {
       builtBy(":buildPlugin")
     }
   )
