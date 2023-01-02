@@ -1,7 +1,7 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-fun properties(key: String) = project.findProperty(key).toString()
+val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 plugins {
   // Kotlin
@@ -32,16 +32,16 @@ detekt {
 }
 
 dependencies {
-  // unfortunately I have not found a way to reuse the version from the build.gradle.kts in buildSrc
-  implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10")
-  detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.21.0")
+
+  implementation(libs.findLibrary("kotlinGradle").get())
+  detektPlugins(libs.findLibrary("detektFormatting").get())
   implementation(kotlin("stdlib-jdk8"))
   implementation(kotlin("reflect"))
 }
 
 tasks {
   // Set the JVM compatibility versions
-  properties("javaVersion").let {
+  javaVersion.let {
     withType<JavaCompile> {
       sourceCompatibility = it
       targetCompatibility = it
@@ -54,7 +54,7 @@ tasks {
     }
   }
 
-  properties("kotlinVersion").let {
+  kotlinVersion.let {
     withType<KotlinCompile> {
       kotlinOptions.languageVersion = it
       kotlinOptions.apiVersion = it

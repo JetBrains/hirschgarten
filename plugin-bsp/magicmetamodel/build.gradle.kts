@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-  implementation("ch.epfl.scala:bsp4j:2.0.0-M15")
-  testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
-  testImplementation("io.kotest:kotest-assertions-core:5.3.0")
+  implementation(libs.bsp4j)
+  testImplementation(libs.junitJupiter)
+  testImplementation(libs.kotest)
   testImplementation(project(":test-utils"))
 }
