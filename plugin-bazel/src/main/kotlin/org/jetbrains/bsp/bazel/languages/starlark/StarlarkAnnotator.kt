@@ -6,9 +6,7 @@ import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
-import org.jetbrains.bsp.bazel.languages.starlark.psi.impl.StarlarkArgumentImpl
-import org.jetbrains.bsp.bazel.languages.starlark.psi.impl.StarlarkDefStatementImpl
-import kotlin.reflect.KClass
+import com.intellij.psi.util.elementType
 
 class StarlarkAnnotator : Annotator {
 
@@ -20,22 +18,24 @@ class StarlarkAnnotator : Annotator {
         }
     }
 
-    private fun isFunctionDeclaration(element: PsiElement): Boolean =
-        checkElementAndParentType(element, listOf(StarlarkTypes.IDENTIFIER), StarlarkDefStatementImpl::class)
+    private fun isFunctionDeclaration(element: PsiElement): Boolean = checkElementAndParentType(
+        element = element,
+        expectedElementTypes = listOf(StarlarkTypes.IDENTIFIER),
+        expectedParentTypes = listOf(StarlarkTypes.DEF_STATEMENT)
+    )
 
-    private fun isNamedArgument(element: PsiElement): Boolean =
-        checkElementAndParentType(
-            element = element,
-            expectedElementTypes = listOf(StarlarkTypes.IDENTIFIER, StarlarkTypes.EQ),
-            expectedParentType = StarlarkArgumentImpl::class
-        )
+    private fun isNamedArgument(element: PsiElement): Boolean = checkElementAndParentType(
+        element = element,
+        expectedElementTypes = listOf(StarlarkTypes.IDENTIFIER, StarlarkTypes.EQ),
+        expectedParentTypes = listOf(StarlarkTypes.ARGUMENT)
+    )
 
     private fun checkElementAndParentType(
         element: PsiElement,
         expectedElementTypes: List<IElementType>,
-        expectedParentType: KClass<*>
+        expectedParentTypes: List<IElementType>
     ): Boolean =
-        expectedElementTypes.contains(element.node.elementType) && element.parent::class == expectedParentType
+        expectedElementTypes.contains(element.elementType) && expectedParentTypes.contains(element.parent.elementType)
 }
 
 private fun AnnotationHolder.mark(element: PsiElement, attr: TextAttributesKey) {
