@@ -1,7 +1,5 @@
 package org.jetbrains.plugins.bsp.actions.building
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
@@ -35,14 +33,14 @@ public class BspHackProjectTaskRunner : ProjectTaskRunner() {
 
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
 
-    val targets: List<BuildTarget> = magicMetaModel.getAllLoadedTargets() + magicMetaModel.getAllNotLoadedTargets()
+    val targets = magicMetaModel.getAllLoadedTargets() + magicMetaModel.getAllNotLoadedTargets()
+    val targetsToBuild = targets
+      .filter { it.capabilities.canCompile }
+      .map { it.id }
 
-    val buildCompileResult: CompileResult = BuildTargetTask(project).execute(
-      targets
-        .filter { it.capabilities.canCompile }
-        .map { it.id }
-    )
-    return if (buildCompileResult.statusCode == StatusCode.OK) {
+    val result= BuildTargetTask(project).executeIfConnected(targetsToBuild)
+
+    return if (result?.statusCode == StatusCode.OK) {
       bspBuildConsole.finishTask("bsp-build", "Build done!", SuccessResultImpl())
       AsyncPromise<Result>().also { it.setResult(TaskRunnerResults.SUCCESS) }
     } else {

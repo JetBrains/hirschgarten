@@ -34,7 +34,7 @@ import java.util.concurrent.CompletableFuture
 public class UpdateMagicMetaModelInTheBackgroundTask(
   private val project: Project,
   private val taskId: Any,
-  private val collect: () -> ProjectDetails,
+  private val collect: () -> ProjectDetails?,
 ) {
 
   public fun executeInTheBackground(
@@ -70,7 +70,10 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
       val magicMetaModelService = MagicMetaModelService.getInstance(project)
       val projectDetails = logPerformance("collect-project-details") { collect() }
 
-      logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
+      if (projectDetails != null) {
+        logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
+      }
+
       return magicMetaModelService.value
     }
 
@@ -88,14 +91,17 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
   }
 }
 
-public class CollectProjectDetailsTask(project: Project, private val taskId: Any) : BspServerTask(project) {
+public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
+  BspServerTask<ProjectDetails>("collect project details", project) {
 
   private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
   public fun prepareBackgroundTask(): UpdateMagicMetaModelInTheBackgroundTask =
-    UpdateMagicMetaModelInTheBackgroundTask(project, taskId) { collectModel() }
+    UpdateMagicMetaModelInTheBackgroundTask(project, taskId) {
+      executeWithServerIfConnected { collectModel(it) }
+    }
 
-  private fun collectModel(): ProjectDetails {
+  private fun collectModel(server: BspServer): ProjectDetails {
     fun errorCallback(e: Throwable) {
       bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
     }
@@ -106,7 +112,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     server.onBuildInitialized()
 
 
-    val projectDetails = calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities) { errorCallback(it) }
+    val projectDetails =
+      calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities) { errorCallback(it) }
 
     bspSyncConsole.finishSubtask(importSubtaskId, "Collection model done!")
 
@@ -147,8 +154,10 @@ public fun calculateProjectDetailsWithCapabilities(
   val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
 
   val sourcesFuture = queryForSourcesResult(server, allTargetsIds).catchSyncErrors(errorCallback)
-  val resourcesFuture = queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
-  val dependencySourcesFuture = queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
+  val resourcesFuture =
+    queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
+  val dependencySourcesFuture =
+    queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
   val javacOptionsFuture = queryForJavacOptions(server, allTargetsIds).catchSyncErrors(errorCallback)
 
   return ProjectDetails(

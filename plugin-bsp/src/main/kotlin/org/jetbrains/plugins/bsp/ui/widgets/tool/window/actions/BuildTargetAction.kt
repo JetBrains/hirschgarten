@@ -25,7 +25,7 @@ public class BuildTargetAction(
 
   private fun doAction(project: Project) {
     runBackgroundableTask("Building...", project) {
-      BuildTargetTask(project).execute(target)
+      BuildTargetTask(project).executeIfConnected(target)
     }
   }
 
