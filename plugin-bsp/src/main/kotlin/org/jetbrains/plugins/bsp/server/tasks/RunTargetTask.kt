@@ -4,11 +4,12 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RunParams
 import ch.epfl.scala.bsp4j.RunResult
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.server.connection.BspServer
 import java.util.*
 
-public class RunTargetTask(project: Project) : BspServerSingleTargetTask<RunResult>(project) {
+public class RunTargetTask(project: Project) : BspServerSingleTargetTask<RunResult>("run target", project) {
 
-  public override fun execute(targetId: BuildTargetIdentifier): RunResult {
+  protected override fun executeWithServer(server: BspServer, targetId: BuildTargetIdentifier): RunResult {
     val runParams = createRunParams(targetId)
 
     return server.buildTargetRun(runParams).get()

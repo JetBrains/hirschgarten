@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.server.connection
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import ch.epfl.scala.bsp4j.BuildClient
+import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
@@ -15,7 +16,9 @@ import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.server.client.BspClient
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.System.currentTimeMillis
@@ -46,25 +49,33 @@ public class BspFileConnection(
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
     bspSyncConsole.startSubtask(taskId, connectSubtaskId, "Connecting to the server...")
-
     bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection...")
+
     val client = createBspClient()
-    val process = createAndStartProcessAndAddDisconnectActions(locatedConnectionFile.bspConnectionDetails)
+    val process = createAndStartProcessAndAddDisconnectActionsOrNullIfFailed(taskId, locatedConnectionFile.bspConnectionDetails)
 
-    bspProcess = process
-    server = startServerAndAddDisconnectActions(process, client)
-    bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection done!")
+    if (process != null) {
+      bspProcess = process
+      bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection done!")
 
-    bspSyncConsole.addMessage(connectSubtaskId, "Initializing server...")
-    client.onConnectWithServer(server)
-    bspSyncConsole.addMessage(connectSubtaskId, "Server initialized! Server is ready to use.")
-
-    bspSyncConsole.finishSubtask(connectSubtaskId, "Connecting to the server done!")
+      initializeServer(process, client, bspSyncConsole)
+    }
   }
+
+  private fun createAndStartProcessAndAddDisconnectActionsOrNullIfFailed(taskId: Any, bspConnectionDetails: BspConnectionDetails): Process? =
+    try {
+      createAndStartProcessAndAddDisconnectActions(bspConnectionDetails)
+    } catch (e: IOException) {
+      disconnectActions.clear()
+
+      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+      bspSyncConsole.finishTask(taskId, "Establishing connection has failed!", FailureResultImpl(e))
+
+      null
+    }
 
   private fun createAndStartProcessAndAddDisconnectActions(bspConnectionDetails: BspConnectionDetails): Process {
     val process = createAndStartProcess(bspConnectionDetails)
-
     disconnectActions.add { server?.buildShutdown() }
     disconnectActions.add { server?.onBuildExit() }
 
@@ -90,6 +101,20 @@ public class BspFileConnection(
       bspConsoleService.bspRunConsole,
       bspConsoleService.bspTestConsole,
     )
+  }
+
+  private fun initializeServer(
+    process: Process,
+    client: BspClient,
+    bspSyncConsole: TaskConsole
+  ) {
+    bspSyncConsole.addMessage(connectSubtaskId, "Initializing server...")
+
+    server = startServerAndAddDisconnectActions(process, client)
+    client.onConnectWithServer(server)
+
+    bspSyncConsole.addMessage(connectSubtaskId, "Server initialized! Server is ready to use.")
+    bspSyncConsole.finishSubtask(connectSubtaskId, "Connecting to the server done!")
   }
 
   private fun startServerAndAddDisconnectActions(process: Process, client: BuildClient): BspServer {

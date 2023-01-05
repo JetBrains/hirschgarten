@@ -6,14 +6,15 @@ import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>(project) {
+public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
 
-  public override fun execute(targetsIds: List<BuildTargetIdentifier>): CompileResult {
+  protected override fun executeWithServer(server: BspServer, targetsIds: List<BuildTargetIdentifier>): CompileResult {
     val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
     val originId = "build-" + UUID.randomUUID().toString()
 

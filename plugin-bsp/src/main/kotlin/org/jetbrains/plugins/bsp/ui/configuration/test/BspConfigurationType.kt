@@ -62,7 +62,7 @@ public class TestRunConfiguration(project: Project, configurationFactory: Config
         processHandler.execute {
           try {
             // TODO error handling?
-            TestTargetTask(project).execute(it)
+            TestTargetTask(project).executeIfConnected(it)
           } finally {
             testConsole.endTesting()
             bspTestConsole.deregisterPrinter(testConsole)

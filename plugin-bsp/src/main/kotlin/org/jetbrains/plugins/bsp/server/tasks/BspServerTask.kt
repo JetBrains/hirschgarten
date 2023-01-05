@@ -6,39 +6,44 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 
-public abstract class BspServerTask(protected val project: Project) {
+public abstract class BspServerTask<T>(private val taskName: String, protected val project: Project) {
 
-  protected val server: BspServer
-    get() = getServerOrThrow()
+  protected fun executeWithServerIfConnected(task: (BspServer) -> T): T? {
+    val server = getServer()
 
-  // TODO im not sure about it - how we should handle case when the connection is not initialized / we are disconnected
-  private fun getServerOrThrow(): BspServer {
-    val connection = BspConnectionService.getInstance(project).value
-    val server = connection.server
-
-    if (server == null) {
-      val exception = IllegalStateException("Server is null! You need to connect to the server before using it.")
-      log.warn(exception)
-      throw exception
+    return if (server != null) {
+      task(server)
+    } else {
+      log.warn("Client is not connected to the server! Task '$taskName' can't be executed - skipping the task.")
+      null
     }
-
-    return server
   }
+
+  private fun getServer(): BspServer? =
+    BspConnectionService.getInstance(project).value.server
 
   private companion object {
-    private val log = logger<BspServerTask>()
+    private val log = logger<BspServerTask<*>>()
   }
 }
 
-public abstract class BspServerSingleTargetTask<T>(project: Project) : BspServerTask(project) {
+public abstract class BspServerSingleTargetTask<T>(taskName: String, project: Project) :
+  BspServerTask<T>(taskName, project) {
 
-  public abstract fun execute(targetId: BuildTargetIdentifier): T
+  public fun executeIfConnected(targetId: BuildTargetIdentifier): T? =
+    executeWithServerIfConnected { executeWithServer(it, targetId) }
+
+  protected abstract fun executeWithServer(server: BspServer, targetId: BuildTargetIdentifier): T
 }
 
-public abstract class BspServerMultipleTargetsTask<T>(project: Project) : BspServerSingleTargetTask<T>(project) {
+public abstract class BspServerMultipleTargetsTask<T>(taskName: String, project: Project) :
+  BspServerSingleTargetTask<T>(taskName, project) {
 
-  public override fun execute(targetId: BuildTargetIdentifier): T =
-    execute(listOf(targetId))
+  protected override fun executeWithServer(server: BspServer, targetId: BuildTargetIdentifier): T =
+    executeWithServer(server, listOf(targetId))
 
-  public abstract fun execute(targetsIds: List<BuildTargetIdentifier>): T
+  public fun executeIfConnected(targetsIds: List<BuildTargetIdentifier>): T? =
+    executeWithServerIfConnected { executeWithServer(it, targetsIds) }
+
+  protected abstract fun executeWithServer(server: BspServer, targetsIds: List<BuildTargetIdentifier>): T
 }

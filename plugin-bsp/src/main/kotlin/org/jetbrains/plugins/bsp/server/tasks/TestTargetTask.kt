@@ -4,11 +4,12 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestResult
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.server.connection.BspServer
 import java.util.*
 
-public class TestTargetTask(project: Project) : BspServerSingleTargetTask<TestResult>(project) {
+public class TestTargetTask(project: Project) : BspServerSingleTargetTask<TestResult>("test target", project) {
 
-  public override fun execute(targetId: BuildTargetIdentifier): TestResult {
+  protected override fun executeWithServer(server: BspServer, targetId: BuildTargetIdentifier): TestResult {
     val params = createTestParams(targetId)
 
     return server.buildTargetTest(params).get()
