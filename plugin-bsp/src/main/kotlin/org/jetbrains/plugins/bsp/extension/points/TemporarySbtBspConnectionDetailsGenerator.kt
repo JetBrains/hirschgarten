@@ -21,7 +21,7 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
 
   // TODO copied from bazel extension, can we somehow move it to the ep?
   private fun findCoursierExecutableOrDownload(projectPath: VirtualFile): Path =
-    findCoursierExecutable() ?: downloadCoursier(projectPath)
+    findCoursierExecutable() ?: downloadCoursierIfNotDownloaded(projectPath)
 
   private fun findCoursierExecutable(): Path? =
     EnvironmentUtil.getEnvironmentMap()["PATH"]
@@ -30,12 +30,12 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
       ?.firstOrNull { it.canExecute() }
       ?.toPath()
 
-  private fun downloadCoursier(projectPath: VirtualFile): Path {
+  private fun downloadCoursierIfNotDownloaded(projectPath: VirtualFile): Path {
+    // TODO we should pass it to syncConsole - it might take some time if the connection is really bad
     val coursierUrl = "https://git.io/coursier-cli"
     val coursierDestination = calculateCoursierDownloadDestination(projectPath)
 
-    Files.copy(URL(coursierUrl).openStream(), coursierDestination)
-    coursierDestination.toFile().setExecutable(true)
+    downloadCoursierIfDoesntExistInTheDestination(coursierDestination, coursierUrl)
 
     return coursierDestination
   }
@@ -45,5 +45,16 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
     Files.createDirectories(dotBazelBsp)
 
     return dotBazelBsp.resolve("cs")
+  }
+
+  private fun downloadCoursierIfDoesntExistInTheDestination(coursierDestination: Path, coursierUrl: String) {
+    if (!coursierDestination.toFile().exists()) {
+      downloadCoursier(coursierUrl, coursierDestination)
+    }
+  }
+
+  private fun downloadCoursier(coursierUrl: String, coursierDestination: Path) {
+    Files.copy(URL(coursierUrl).openStream(), coursierDestination)
+    coursierDestination.toFile().setExecutable(true)
   }
 }
