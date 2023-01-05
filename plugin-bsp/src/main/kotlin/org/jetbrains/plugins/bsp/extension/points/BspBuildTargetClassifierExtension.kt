@@ -19,22 +19,24 @@ public class TemporaryTestTargetClassifier : BspBuildTargetClassifierExtension {
 
   override fun separator(): String = "/"
 
+  private val bazelLabelRegex = """@?(?<repository>.*)//(?<package>.*):(?<target>.*)""".toRegex()
+
   override fun getBuildTargetPath(buildTarget: BuildTarget): List<String> {
     val uri = buildTarget.id.uri
-    return if (uri.startsWith("//") && uri.contains(':')) {
-      uri
-        .dropWhile { it == '/' }
-        .takeWhile { it != ':' }
-        .split('/')
-        .filter { it.isNotEmpty() }
-    } else emptyList()
+    return bazelLabelRegex.find(uri)?.groups
+      ?.get("package")
+      ?.value
+      ?.split("/")
+      ?.filter { it.isNotEmpty() }
+      .orEmpty()
   }
 
   override fun getBuildTargetName(buildTarget: BuildTarget): String {
     val uri = buildTarget.id.uri
-    return if (uri.startsWith("//") && uri.contains(':')) {
-      ":" + uri
-        .takeLastWhile { it != ':' }
-    } else buildTarget.displayName
+    return bazelLabelRegex.find(uri)?.groups?.get("target")?.value ?: uri
   }
+
+  private fun isBazelMainRepositoryTarget(uri: String) =
+    uri.run { startsWith("//") || startsWith("@//") } // "//" should be removed once we drop support for Bazel 5
+      && uri.contains(':')
 }
