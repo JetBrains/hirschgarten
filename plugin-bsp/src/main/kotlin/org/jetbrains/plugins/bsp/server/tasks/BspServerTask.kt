@@ -8,7 +8,7 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 
 public abstract class BspServerTask<T>(private val taskName: String, protected val project: Project) {
 
-  protected fun executeWithServerIfConnected(task: (BspServer) -> T): T? {
+  protected fun executeWithServerIfConnected(task: (BspServer) -> T?): T? {
     val server = getServer()
 
     return if (server != null) {

@@ -17,6 +17,7 @@ import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
@@ -27,15 +28,24 @@ import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
+import org.jetbrains.plugins.bsp.server.connection.cancelOn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
+import java.util.concurrent.ExecutionException
 
 public class UpdateMagicMetaModelInTheBackgroundTask(
   private val project: Project,
   private val taskId: Any,
-  private val collect: () -> ProjectDetails?,
+  private val collect: (cancelOn: CompletableFuture<Void>) -> ProjectDetails?,
 ) {
+
+  private var progressIndicator: ProgressIndicator? = null
+
+  private val cancelOnFuture = CompletableFuture<Void>()
+
 
   public fun executeInTheBackground(
     name: String,
@@ -56,6 +66,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
     override fun run(indicator: ProgressIndicator) {
+      progressIndicator = indicator
       beforeRun()
       updateMagicMetaModelDiff()
     }
@@ -68,7 +79,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     // TODO ugh, it should be nicer
     private fun initializeMagicMetaModel(): MagicMetaModel {
       val magicMetaModelService = MagicMetaModelService.getInstance(project)
-      val projectDetails = logPerformance("collect-project-details") { collect() }
+      val projectDetails = logPerformance("collect-project-details") { collect(cancelOnFuture) }
 
       if (projectDetails != null) {
         logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
@@ -89,6 +100,11 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
       bspSyncConsole.finishSubtask("apply-on-workspace-model", "Updating model done!")
     }
   }
+
+  public fun cancelExecution() {
+    cancelOnFuture.cancel(true)
+//    progressIndicator?.cancel()
+  }
 }
 
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
@@ -97,14 +113,18 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
   public fun prepareBackgroundTask(): UpdateMagicMetaModelInTheBackgroundTask =
-    UpdateMagicMetaModelInTheBackgroundTask(project, taskId) {
-      executeWithServerIfConnected { collectModel(it) }
+    UpdateMagicMetaModelInTheBackgroundTask(project, taskId) { cancelOn ->
+      executeWithServerIfConnected { collectModel(it, cancelOn) }
     }
 
-  private fun collectModel(server: BspServer): ProjectDetails {
-    fun errorCallback(e: Throwable) {
-      bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
-    }
+  private fun collectModel(server: BspServer, cancelOn: CompletableFuture<Void>): ProjectDetails? {
+    fun isCancellationException(e: Throwable): Boolean =
+      e is CompletionException && e.cause is CancellationException
+
+    fun errorCallback(e: Throwable) = when {
+        isCancellationException(e) -> bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
+        else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
+      }
 
     bspSyncConsole.startSubtask(taskId, importSubtaskId, "Collecting model...")
 
@@ -113,7 +133,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
 
     val projectDetails =
-      calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities) { errorCallback(it) }
+      calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities, { errorCallback(it) }, cancelOn)
 
     bspSyncConsole.finishSubtask(importSubtaskId, "Collection model done!")
 
@@ -147,31 +167,45 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 public fun calculateProjectDetailsWithCapabilities(
   server: BspServer,
   buildServerCapabilities: BuildServerCapabilities,
-  errorCallback: (Throwable) -> Unit
-): ProjectDetails {
-  val workspaceBuildTargetsResult = queryForBuildTargets(server).get()
+  errorCallback: (Throwable) -> Unit,
+  cancelOn: CompletableFuture<Void> = CompletableFuture(),
+): ProjectDetails? {
+  try {
+    val workspaceBuildTargetsResult = queryForBuildTargets(server).cancelOn(cancelOn).catchSyncErrors(errorCallback).get()
 
-  val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
+    val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
 
-  val sourcesFuture = queryForSourcesResult(server, allTargetsIds).catchSyncErrors(errorCallback)
-  val resourcesFuture =
-    queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
-  val dependencySourcesFuture =
-    queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.catchSyncErrors(errorCallback)
-  val javacOptionsFuture = queryForJavacOptions(server, allTargetsIds).catchSyncErrors(errorCallback)
+    val sourcesFuture = queryForSourcesResult(server, allTargetsIds).cancelOn(cancelOn).catchSyncErrors(errorCallback)
 
-  return ProjectDetails(
-    targetsId = allTargetsIds,
-    targets = workspaceBuildTargetsResult.targets.toSet(),
-    sources = sourcesFuture.get().items,
-    resources = resourcesFuture?.get()?.items ?: emptyList(),
-    dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
-    // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
-    // so it's just safer to add timeout here. This should not be called at all for SBT.
-    javacOptions = javacOptionsFuture.get()?.items ?: emptyList()
-  )
+    val resourcesFuture =
+      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val dependencySourcesFuture =
+      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val javacOptionsFuture = queryForJavacOptions(server, allTargetsIds).cancelOn(cancelOn).catchSyncErrors(errorCallback)
+
+    return ProjectDetails(
+      targetsId = allTargetsIds,
+      targets = workspaceBuildTargetsResult.targets.toSet(),
+      sources = sourcesFuture.get().items,
+      resources = resourcesFuture?.get()?.items ?: emptyList(),
+      dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
+      // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
+      // so it's just safer to add timeout here. This should not be called at all for SBT.
+      javacOptions = javacOptionsFuture.get()?.items ?: emptyList()
+    )
+  } catch (e: Exception) {
+    // TODO the type xd
+    val log = logger<Any>()
+
+    if (e is ExecutionException && e.cause is CancellationException) {
+      log.debug("calculateProjectDetailsWithCapabilities has been cancelled!", e)
+    } else {
+      log.error("calculateProjectDetailsWithCapabilities has failed!", e)
+    }
+
+    return null
+  }
 }
-
 
 private fun queryForBuildTargets(server: BspServer): CompletableFuture<WorkspaceBuildTargetsResult> =
   server.workspaceBuildTargets()
@@ -217,7 +251,6 @@ private fun queryForJavacOptions(
   val javacOptionsParams = JavacOptionsParams(allTargetsIds)
   return server.buildTargetJavacOptions(javacOptionsParams)
 }
-
 
 private fun <T> CompletableFuture<T>.catchSyncErrors(errorCallback: (Throwable) -> Unit): CompletableFuture<T> =
   this.whenComplete { _, exception ->
