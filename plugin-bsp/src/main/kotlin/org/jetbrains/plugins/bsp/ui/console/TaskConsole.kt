@@ -11,6 +11,10 @@ import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
 import com.intellij.build.events.impl.StartBuildEventImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.DumbAwareAction
+import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import java.io.File
 import java.net.URI
 
@@ -35,18 +39,28 @@ public class TaskConsole(
    * @param taskId ID of the newly started task
    */
   @Synchronized
-  public fun startTask(taskId: Any, title: String, message: String): Unit =
+  public fun startTask(taskId: Any, title: String, message: String, cancelAction: () -> Unit = {}): Unit =
     doUnlessTaskInProgress(taskId) {
       tasksInProgress.add(taskId)
-      doStartTask(taskId, "BSP: $title", message)
+      doStartTask(taskId, "BSP: $title", message, cancelAction)
     }
 
-  private fun doStartTask(taskId: Any, title: String, message: String) {
+  private fun doStartTask(taskId: Any, title: String, message: String, cancelAction: () -> Unit) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
     taskDescriptor.isActivateToolWindowWhenAdded = true
+    addCancelActionToTheDescriptor(taskId, taskDescriptor, cancelAction)
 
     val startEvent = StartBuildEventImpl(taskDescriptor, message)
     taskView.onEvent(taskId, startEvent)
+  }
+
+  private fun addCancelActionToTheDescriptor(
+    taskId: Any,
+    taskDescriptor: DefaultBuildDescriptor,
+    doCancelAction: () -> Unit
+  ) {
+    val cancelAction = CancelSyncAction(doCancelAction, taskId)
+    taskDescriptor.withAction(cancelAction)
   }
 
   /**
@@ -243,4 +257,20 @@ public class TaskConsole(
 
   private fun maybeGetRootTask(taskId: Any): Any? =
     if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.rootTask
+
+  private inner class CancelSyncAction(
+    private val doCancelAction: () -> Unit,
+    private val taskId: Any,
+  ) : DumbAwareAction({ "Stop Sync" }, BspPluginIcons.disconnect) {
+    override fun actionPerformed(e: AnActionEvent) {
+      doCancelAction()
+    }
+
+    override fun update(e: AnActionEvent) {
+      e.presentation.isEnabled = tasksInProgress.contains(taskId)
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread =
+      ActionUpdateThread.BGT
+  }
 }

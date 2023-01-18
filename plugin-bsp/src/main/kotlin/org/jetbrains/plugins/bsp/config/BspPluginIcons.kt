@@ -8,4 +8,5 @@ internal object BspPluginIcons {
   val notLoadedTarget = IconLoader.getIcon("/icons/notLoaded.svg", BspPluginIcons::class.java)
   val loadedTarget = IconLoader.getIcon("/icons/loaded.svg", BspPluginIcons::class.java)
   val restart = IconLoader.getIcon("/icons/restart.svg", BspPluginIcons::class.java)
+  val disconnect = IconLoader.getIcon("/icons/disconnect.svg", BspPluginIcons::class.java)
 }

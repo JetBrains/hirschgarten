@@ -112,13 +112,20 @@ public class BspStartupActivity : StartupActivity.DumbAware {
 
   private fun collectProject(project: Project) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.startTask("bsp-import", "Import", "Importing...")
 
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-import").prepareBackgroundTask()
     collectProjectDetailsTask.executeInTheBackground(
       "Syncing...",
       true,
-      beforeRun = { BspConnectionService.getInstance(project).value.connect("bsp-import") },
+      beforeRun = {
+        bspSyncConsole.startTask(
+          taskId = "bsp-import",
+          title = "Import",
+          message = "Importing...",
+          cancelAction = { collectProjectDetailsTask.cancelExecution() }
+        )
+        BspConnectionService.getInstance(project).value.connect("bsp-import")
+      },
       afterOnSuccess = { bspSyncConsole.finishTask("bsp-import", "Done!") }
     )
   }
