@@ -7,6 +7,7 @@ import com.intellij.build.events.EventResult
 import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FileMessageEventImpl
 import com.intellij.build.events.impl.FinishBuildEventImpl
+import com.intellij.build.events.impl.FinishEventImpl
 import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
 import com.intellij.build.events.impl.StartBuildEventImpl
@@ -132,7 +133,7 @@ public class TaskConsole(
   private fun doFinishSubtask(rootTask: Any, subtaskId: Any, message: String, result: EventResult) {
     subtaskParentMap.remove(subtaskId)
     finishAllDescendants(subtaskId)
-    val event = FinishBuildEventImpl(subtaskId, null, System.currentTimeMillis(), message, result)
+    val event = FinishEventImpl(subtaskId, null, System.currentTimeMillis(), message, result)
     taskView.onEvent(rootTask, event)
   }
 
