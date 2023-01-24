@@ -398,7 +398,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // ------
       // user decides to load not loaded `targetD2` by default
       // ------
-      val diff3 = magicMetaModel.loadTarget(targetD2.id)
+      val diff3 = magicMetaModel.loadTarget(targetD2.id)!!
 
       // then 3
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
@@ -438,7 +438,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // ------
       // well, now user decides to load not loaded `targetB2` by default
       // ------
-      val diff4 = magicMetaModel.loadTarget(targetB2.id)
+      val diff4 = magicMetaModel.loadTarget(targetB2.id)!!
 
       // then 4
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
@@ -821,7 +821,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB2)
 
       // when 2
-      val diff2 = magicMetaModel.loadTarget(targetB2.id)
+      val diff2 = magicMetaModel.loadTarget(targetB2.id)!!
 
       // then 2
       runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe true
@@ -932,7 +932,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // when
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
-      val diff = magicMetaModel.loadTarget(targetA1.id)
+      val diff = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then
       runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
@@ -989,13 +989,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // when 1
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
-      val diff1 = magicMetaModel.loadTarget(targetA1.id)
+      val diff1 = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then 1
       runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
 
       // when 2
-      val diff2 = magicMetaModel.loadTarget(targetA1.id)
+      val diff2 = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then 2
       runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe true
@@ -1052,8 +1052,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // when
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
-      val diff1 = magicMetaModel.loadTarget(targetA1.id)
-      val diff2 = magicMetaModel.loadTarget(targetB1.id)
+      val diff1 = magicMetaModel.loadTarget(targetA1.id)!!
+      val diff2 = magicMetaModel.loadTarget(targetB1.id)!!
 
       // then
       runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
@@ -1111,13 +1111,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // when 1
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
-      val diff1 = magicMetaModel.loadTarget(targetA1.id)
+      val diff1 = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then 1
       runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
 
       // when 2
-      val diff2 = magicMetaModel.loadTarget(targetB1.id)
+      val diff2 = magicMetaModel.loadTarget(targetB1.id)!!
 
       // then 2
       runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe true
@@ -1193,13 +1193,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       // when 1
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
-      val diff1 = magicMetaModel.loadTarget(targetA2.id)
+      val diff1 = magicMetaModel.loadTarget(targetA2.id)!!
 
       // then 1
       runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
 
       // when 2
-      val diff2 = magicMetaModel.loadTarget(targetA3.id)
+      val diff2 = magicMetaModel.loadTarget(targetA3.id)!!
 
       // then 2
       runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe true
@@ -1208,7 +1208,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
 
       // when 3
-      val diff3 = magicMetaModel.loadTarget(targetA1.id)
+      val diff3 = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then 3
       runTestWriteAction { diff3.applyOnWorkspaceModel() } shouldBe true
@@ -1414,7 +1414,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       // when
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
-      val diff = magicMetaModel.loadTarget(targetA1.id)
+      val diff = magicMetaModel.loadTarget(targetA1.id)!!
 
       // then
       runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
