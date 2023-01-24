@@ -3,6 +3,7 @@ package org.jetbrains.magicmetamodel.impl
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
+import com.intellij.openapi.progress.ProgressManager
 import org.jetbrains.magicmetamodel.extensions.reduceSets
 
 public object OverlappingTargetsGraph {
@@ -25,8 +26,11 @@ public object OverlappingTargetsGraph {
 
   private fun generateEdgesForOverlappingTargetsForAllTargets(
     overlappingTargets: Set<BuildTargetIdentifier>,
-  ): List<Pair<BuildTargetIdentifier, Set<BuildTargetIdentifier>>> =
-    overlappingTargets.map { Pair(it, overlappingTargets) }
+  ): List<Pair<BuildTargetIdentifier, Set<BuildTargetIdentifier>>> {
+    ProgressManager.checkCanceled()
+
+    return overlappingTargets.map { Pair(it, overlappingTargets) }
+  }
 
   private fun filterGivenTargetFromOverlappingTargetsAndMapToSet(
     target: BuildTargetIdentifier,

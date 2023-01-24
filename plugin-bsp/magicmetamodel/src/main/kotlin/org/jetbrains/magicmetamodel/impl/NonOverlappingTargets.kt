@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
+import com.intellij.openapi.progress.ProgressManager
 
 /**
  * ## Conflicting Targets Problem
@@ -51,6 +52,8 @@ public object NonOverlappingTargets {
     allTargets: Set<BuildTarget>,
     conflictGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
   ): Set<BuildTargetIdentifier> {
+    ProgressManager.checkCanceled()
+
     log.trace { "Calculating non overlapping targets for $allTargets..." }
     val invertedDependencyMap = getInvertedDependencyMap(allTargets)
     val fullConflictGraph = allTargets.associate { it.id to emptySet<BuildTargetIdentifier>() } + conflictGraph
@@ -65,7 +68,9 @@ public object NonOverlappingTargets {
     val availableDependers = mutableSetOf<BuildTargetIdentifier>()
 
     while (conflictGraph.isNotEmpty()) {
+      ProgressManager.checkCanceled()
       log.trace("Removing elements from conflict graph. Elements left: ${conflictGraph.connectedNodes.size}")
+
       elementsToTake.addAll(conflictGraph.isolatedNodes)
       availableDependers.addAll(conflictGraph.isolatedNodes.flatMap { invertedDependencyMap[it].orEmpty() })
 
@@ -95,6 +100,8 @@ public object NonOverlappingTargets {
 
   private fun getInvertedDependencyMap(allTargets: Set<BuildTarget>): Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> =
     allTargets.fold(emptyMap()) { acc, target ->
+      ProgressManager.checkCanceled()
+
       val newEntries = target.dependencies.map { it to target.id }
       newEntries.fold(acc) { smallAcc, entry ->
         smallAcc + (entry.first to (smallAcc[entry.first].orEmpty() + entry.second))

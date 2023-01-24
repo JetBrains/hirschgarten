@@ -63,6 +63,8 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     afterOnSuccess: () -> Unit = {}
   ) = object : Task.Backgroundable(project, name, cancelable) {
 
+    private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+
     private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
     override fun run(indicator: ProgressIndicator) {
@@ -74,6 +76,8 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     private fun updateMagicMetaModelDiff() {
       val magicMetaModel = logPerformance("update-magic-meta-model-diff") { initializeMagicMetaModel() }
       magicMetaModelDiff = logPerformance("load-default-targets") { magicMetaModel.loadDefaultTargets() }
+
+      bspSyncConsole.finishSubtask("calculate-project-structure", "Calculating project structure done!")
     }
 
     // TODO ugh, it should be nicer
@@ -82,6 +86,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
       val projectDetails = logPerformance("collect-project-details") { collect(cancelOnFuture) }
 
       if (projectDetails != null) {
+        bspSyncConsole.startSubtask(taskId, "calculate-project-structure", "Calculating project structure...")
         logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
       }
 
@@ -94,16 +99,19 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     }
 
     private fun applyChangesOnWorkspaceModel() {
-      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-      bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Updating model...")
+      bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Applying changes...")
       runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
-      bspSyncConsole.finishSubtask("apply-on-workspace-model", "Updating model done!")
+      bspSyncConsole.finishSubtask("apply-on-workspace-model", "Applying changes done!")
+    }
+
+    override fun onCancel() {
+      bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
     }
   }
 
   public fun cancelExecution() {
     cancelOnFuture.cancel(true)
-//    progressIndicator?.cancel()
+    progressIndicator?.cancel()
   }
 }
 

@@ -42,7 +42,7 @@ class NonOverlappingTest {
       val server = launcher.remoteProxy
       val initializationResult = server.buildInitialize(params).get()
       server.onBuildInitialized()
-      val projectDetails = calculateProjectDetailsWithCapabilities(server, initializationResult.capabilities) { println(it) }
+      val projectDetails = calculateProjectDetailsWithCapabilities(server, initializationResult.capabilities, { println(it) })!!
       val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
       val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
       val nonOverlapping = measureTimedValue { NonOverlappingTargets(projectDetails.targets, overlappingTargetsGraph) }

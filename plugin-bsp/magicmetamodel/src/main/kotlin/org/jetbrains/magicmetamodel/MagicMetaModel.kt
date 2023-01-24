@@ -80,7 +80,7 @@ public interface MagicMetaModel {
    *
    * Requires write action if used with [WorkspaceModel].
    */
-  public fun loadTarget(targetId: BuildTargetIdentifier): MagicMetaModelDiff
+  public fun loadTarget(targetId: BuildTargetIdentifier): MagicMetaModelDiff?
 
   /**
    * Register a function to be executed when a target has been loaded

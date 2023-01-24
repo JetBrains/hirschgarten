@@ -44,7 +44,7 @@ private class LoadTargetAction(
   private fun doAction(project: Project) {
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
     val diff = magicMetaModel.loadTarget(target)
-    runWriteAction { diff.applyOnWorkspaceModel() }
+    runWriteAction { diff?.applyOnWorkspaceModel() }
 
     updateWidget()
   }
