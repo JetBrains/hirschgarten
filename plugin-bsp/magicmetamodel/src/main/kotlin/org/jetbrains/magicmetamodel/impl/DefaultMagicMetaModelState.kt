@@ -261,6 +261,5 @@ public data class DefaultMagicMetaModelState(
   public var projectDetailsState: ProjectDetailsState = ProjectDetailsState(),
   public var targetsDetailsForDocumentProviderState: TargetsDetailsForDocumentProviderState = TargetsDetailsForDocumentProviderState(),
   public var overlappingTargetsGraph: Map<BuildTargetIdentifierState, List<BuildTargetIdentifierState>> = emptyMap(),
-  public var targetIdToModuleDetails: Map<BuildTargetIdentifierState, ModuleDetailsState> = emptyMap(),
   public var loadedTargetsStorageState: LoadedTargetsStorageState = LoadedTargetsStorageState(),
 )

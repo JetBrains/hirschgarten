@@ -46,8 +46,6 @@ public class BspStartupActivity : StartupActivity.DumbAware {
 
     if (project.isNewProject()) {
       suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project)
-    } else {
-      collectProject(project)
     }
   }
 
