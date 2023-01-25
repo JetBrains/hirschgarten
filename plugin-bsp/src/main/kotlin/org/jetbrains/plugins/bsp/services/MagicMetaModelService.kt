@@ -3,7 +3,6 @@ package org.jetbrains.plugins.bsp.services
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
-import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.getInstance
@@ -16,7 +15,7 @@ import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 
 @State(
   name = "MagicMetaModelService",
-  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
+  storages = [Storage("magicmetamodel.xml")],
   reportStatistic = true
 )
 public class MagicMetaModelService(private val project: Project) :
