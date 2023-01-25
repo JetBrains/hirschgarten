@@ -27,13 +27,16 @@ internal class ContentRootEntityUpdater(
     builder: MutableEntityStorage,
     moduleEntity: ModuleEntity,
     entityToAdd: ContentRoot,
-  ): ContentRootEntity = builder.addContentRootEntity(
-    url = entityToAdd.url.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-    excludedUrls = entityToAdd.excludedUrls
-      .map { it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager) },
-    excludedPatterns = DEFAULT_PATTERNS_URLS,
-    module = moduleEntity,
-  )
+  ): ContentRootEntity {
+    val toExclude = if (moduleEntity.name == "bsp-workspace-root") listOf("bazel-*") else DEFAULT_PATTERNS_URLS // todo this should be done only for bazelbsp projects
+    return builder.addContentRootEntity(
+      url = entityToAdd.url.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+      excludedUrls = entityToAdd.excludedUrls
+        .map { it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager) },
+      excludedPatterns = toExclude,
+      module = moduleEntity,
+    )
+  }
 
   private companion object {
     private val DEFAULT_PATTERNS_URLS = ArrayList<String>()
