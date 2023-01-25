@@ -3,19 +3,18 @@ package org.jetbrains.plugins.bsp.flow.open
 import com.intellij.ide.impl.OpenProjectTask
 import com.intellij.ide.impl.ProjectUtilCore
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
-import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.config.BspProjectProperties
-import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
-import org.jetbrains.plugins.bsp.config.ProjectProperties
-import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
+import com.intellij.projectImport.ProjectOpenedCallback
+import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.plugins.bsp.config.*
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
+import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.nio.file.Path
 import javax.swing.Icon
 
@@ -59,6 +58,26 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
     this.projectToClose = projectToClose
 
     beforeOpen = { initServices(it, virtualFile); true }
+    callback = ProjectOpenedCallback { project, _ -> initializeEmptyMagicMetaModel(project) }
+  }
+
+  private fun initializeEmptyMagicMetaModel(project: Project) {
+    val magicMetaModelService = MagicMetaModelService.getInstance(project)
+    magicMetaModelService.initializeMagicModel(
+      ProjectDetails(
+        targetsId = emptyList(),
+        targets = emptySet(),
+        sources = emptyList(),
+        resources = emptyList(),
+        dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
+      )
+    )
+    ApplicationManager.getApplication().invokeLater {
+      runWriteAction {
+        magicMetaModelService.value.loadDefaultTargets().applyOnWorkspaceModel()
+      }
+    }
   }
 
   private fun initServices(project: Project, projectRootDir: VirtualFile) {
