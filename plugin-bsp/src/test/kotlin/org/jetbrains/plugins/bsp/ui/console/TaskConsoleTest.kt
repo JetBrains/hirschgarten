@@ -5,6 +5,7 @@ import com.intellij.build.events.BuildEvent
 import com.intellij.build.events.MessageEvent.Kind
 import com.intellij.build.events.impl.FileMessageEventImpl
 import com.intellij.build.events.impl.FinishBuildEventImpl
+import com.intellij.build.events.impl.FinishEventImpl
 import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
 import com.intellij.build.events.impl.StartBuildEventImpl
@@ -79,6 +80,7 @@ private class MockProgressEventListener : BuildProgressListener {
 }
 
 class TaskConsoleTest {
+
   @Test
   fun `should start the task, start 3 subtasks, put 2 messages and for each subtask and finish the task (the happy path)`() {
     // given
@@ -119,7 +121,7 @@ class TaskConsoleTest {
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "message 1\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask 1", "message 2\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "message 2\n"),
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask 1", null, "Subtask 1 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask 1", null, "Subtask 1 finished"),
 
         TestableBuildEvent(ProgressBuildEventImpl::class, "subtask 2", "task", "Starting subtask 2"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask 2", "message 3\n"),
@@ -133,8 +135,8 @@ class TaskConsoleTest {
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask 3", "message 6\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "message 6\n"),
 
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask 2", null, "Subtask 2 finished"),
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask 3", null, "Subtask 3 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask 2", null, "Subtask 2 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask 3", null, "Subtask 3 finished"),
 
         TestableBuildEvent(FinishBuildEventImpl::class, "task", null, "Finished!"),
       )
@@ -232,7 +234,7 @@ class TaskConsoleTest {
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask", "Message 3\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 3\n"),
 
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask", null, "Subtask finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask", null, "Subtask finished"),
         TestableBuildEvent(FinishBuildEventImpl::class, "task", null, "Task finished"),
       )
     )
@@ -351,9 +353,9 @@ class TaskConsoleTest {
         TestableBuildEvent(ProgressBuildEventImpl::class, "subtask2", "subtask1", "Subtask 2 started"),
         TestableBuildEvent(ProgressBuildEventImpl::class, "subtask3", "subtask2", "Subtask 3 started"),
 
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask3", null, "Subtask 3 finished"),
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask2", null, "Subtask 2 finished"),
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask1", null, "Subtask 1 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask3", null, "Subtask 3 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask2", null, "Subtask 2 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1 finished"),
         TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
       )
     )
@@ -396,9 +398,9 @@ class TaskConsoleTest {
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 2\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 3\n"),
 
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask3", null, "Subtask 3 finished"),
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask2", null, "Subtask 2 finished"),
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask1", null, "Subtask 1 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask3", null, "Subtask 3 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask2", null, "Subtask 2 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1 finished"),
         TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
       )
     )
@@ -446,10 +448,10 @@ class TaskConsoleTest {
         TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask1", "Message 2\n"),
         TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 2\n"),
 
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask1", null, "Subtask 1 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1 finished"),
 
         TestableBuildEvent(ProgressBuildEventImpl::class, "subtask1", "root", "Subtask 1 started"),
-        TestableBuildEvent(FinishBuildEventImpl::class, "subtask1", null, "Subtask 1 finished"),
+        TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1 finished"),
         TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
       )
     )

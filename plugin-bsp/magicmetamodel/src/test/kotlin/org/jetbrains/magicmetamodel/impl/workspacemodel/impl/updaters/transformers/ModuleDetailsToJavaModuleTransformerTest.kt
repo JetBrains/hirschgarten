@@ -1,4 +1,5 @@
 @file:Suppress("LongMethod")
+
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
@@ -28,10 +29,11 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.URI
 import java.nio.file.Files
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.createTempFile
+import kotlin.io.path.name
 
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToJavaModuleTransformerTest {
@@ -51,6 +53,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
   @Test
   fun `should return single java module for single module details`() {
     // given
+    val projectRoot = createTempDirectory("project")
+    projectRoot.toFile().deleteOnExit()
+
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget = BuildTarget(
       buildTargetId,
@@ -63,21 +68,37 @@ class ModuleDetailsToJavaModuleTransformerTest {
       ),
       BuildTargetCapabilities()
     )
-    buildTarget.baseDirectory = "file:///root/dir/"
+    buildTarget.baseDirectory = projectRoot.toUri().toString()
     buildTarget.dataKind = BuildTargetDataKind.JVM
     buildTarget.data = JvmBuildTarget("file:///java/home", "11")
+
+    val packageA1Path = createTempDirectory(projectRoot, "packageA1")
+    packageA1Path.toFile().deleteOnExit()
+    val packageA2Path = createTempDirectory(packageA1Path, "packageA2")
+    packageA2Path.toFile().deleteOnExit()
+    val file1APath = createTempFile(packageA2Path, "File1", ".java")
+    file1APath.toFile().deleteOnExit()
+    val file2APath = createTempFile(packageA2Path, "File2", ".java")
+    file2APath.toFile().deleteOnExit()
+
+    val packageB1Path = createTempDirectory(projectRoot, "packageB1")
+    packageB1Path.toFile().deleteOnExit()
+    val packageB2Path = createTempDirectory(packageB1Path, "packageB2")
+    packageB2Path.toFile().deleteOnExit()
+    val dir1BPath = createTempDirectory(packageB2Path, "dir1")
+    dir1BPath.toFile().deleteOnExit()
 
     val sourcesItem = SourcesItem(
       buildTargetId,
       listOf(
-        SourceItem("file:///root/dir/example/package/one/File1.java", SourceItemKind.FILE, false),
-        SourceItem("file:///root/dir/example/package/one/File2.java", SourceItemKind.FILE, false),
-        SourceItem("file:///root/dir/another/example/package/", SourceItemKind.DIRECTORY, false),
+        SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
+        SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
+        SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
       )
     )
-    sourcesItem.roots = listOf("file:///root/dir/")
+    sourcesItem.roots = listOf(projectRoot.toUri().toString())
 
-    val resourceFilePath = Files.createTempFile("resource", "File.txt")
+    val resourceFilePath = createTempFile("resource", "File.txt")
     val resourcesItem = ResourcesItem(
       buildTargetId,
       listOf(resourceFilePath.toUri().toString())
@@ -127,21 +148,21 @@ class ModuleDetailsToJavaModuleTransformerTest {
       )
     )
 
-    val expectedBaseDirContentRoot = ContentRoot(URI.create("file:///root/dir/").toPath())
+    val expectedBaseDirContentRoot = ContentRoot(projectRoot)
 
     val expectedJavaSourceRoot1 = JavaSourceRoot(
-      sourceDir = URI.create("file:///root/dir/example/package/one/").toPath(),
+      sourceDir = packageA2Path,
       generated = false,
-      packagePrefix = "example.package.one",
+      packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
+      targetId = BuildTargetIdentifier("module1"),
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
-      sourceDir = URI.create("file:///root/dir/another/example/package/").toPath(),
+      sourceDir = dir1BPath,
       generated = false,
-      packagePrefix = "another.example.package",
+      packagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
+      targetId = BuildTargetIdentifier("module1"),
     )
 
     val expectedJavaResourceRoot1 = JavaResourceRoot(
@@ -174,6 +195,12 @@ class ModuleDetailsToJavaModuleTransformerTest {
   @Test
   fun `should return multiple java module for multiple module details`() {
     // given
+    val projectRoot = createTempDirectory("project")
+    projectRoot.toFile().deleteOnExit()
+
+    val module1Root = createTempDirectory("module1")
+    module1Root.toFile().deleteOnExit()
+
     val buildTargetId1 = BuildTargetIdentifier("module1")
     val buildTarget1 = BuildTarget(
       buildTargetId1,
@@ -186,20 +213,36 @@ class ModuleDetailsToJavaModuleTransformerTest {
       ),
       BuildTargetCapabilities()
     )
-    buildTarget1.baseDirectory = "file:///root/dir/"
+    buildTarget1.baseDirectory = module1Root.toUri().toString()
+
+    val packageA1Path = createTempDirectory(module1Root, "packageA1")
+    packageA1Path.toFile().deleteOnExit()
+    val packageA2Path = createTempDirectory(packageA1Path, "packageA2")
+    packageA2Path.toFile().deleteOnExit()
+    val file1APath = createTempFile(packageA2Path, "File1", ".java")
+    file1APath.toFile().deleteOnExit()
+    val file2APath = createTempFile(packageA2Path, "File2", ".java")
+    file2APath.toFile().deleteOnExit()
+
+    val packageB1Path = createTempDirectory(module1Root, "packageB1")
+    packageB1Path.toFile().deleteOnExit()
+    val packageB2Path = createTempDirectory(packageB1Path, "packageB2")
+    packageB2Path.toFile().deleteOnExit()
+    val dir1BPath = createTempDirectory(packageB2Path, "dir1")
+    dir1BPath.toFile().deleteOnExit()
 
     val sourcesItem1 = SourcesItem(
       buildTargetId1,
       listOf(
-        SourceItem("file:///root/dir/example/package/one/File1.java", SourceItemKind.FILE, false),
-        SourceItem("file:///root/dir/example/package/one/File2.java", SourceItemKind.FILE, false),
-        SourceItem("file:///root/dir/another/example/package/", SourceItemKind.DIRECTORY, false),
+        SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
+        SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
+        SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
       )
     )
-    sourcesItem1.roots = listOf("file:///root/dir/")
+    sourcesItem1.roots = listOf(module1Root.toUri().toString())
 
-    val resourceFilePath11 = Files.createTempFile("resource", "File1.txt")
-    val resourceFilePath12 = Files.createTempFile("resource", "File2.txt")
+    val resourceFilePath11 = createTempFile("resource", "File1.txt")
+    val resourceFilePath12 = createTempFile("resource", "File2.txt")
     val resourcesItem1 = ResourcesItem(
       buildTargetId1,
       listOf(
@@ -238,6 +281,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
       javacOptions = target1JavacOptionsItem,
     )
 
+    val module2Root = createTempDirectory("module2")
+    module2Root.toFile().deleteOnExit()
+
     val buildTargetId2 = BuildTargetIdentifier("module2")
     val buildTarget2 = BuildTarget(
       buildTargetId2,
@@ -249,15 +295,22 @@ class ModuleDetailsToJavaModuleTransformerTest {
       ),
       BuildTargetCapabilities()
     )
-    buildTarget2.baseDirectory = "file:///another/root/dir/"
+    buildTarget2.baseDirectory = module2Root.toUri().toString()
+
+    val packageC1Path = createTempDirectory(module2Root, "packageC1")
+    packageC1Path.toFile().deleteOnExit()
+    val packageC2Path = createTempDirectory(packageC1Path, "packageC2")
+    packageC2Path.toFile().deleteOnExit()
+    val dir1CPath = createTempDirectory(packageC2Path, "dir1")
+    dir1CPath.toFile().deleteOnExit()
 
     val sourcesItem2 = SourcesItem(
       buildTargetId2,
       listOf(
-        SourceItem("file:///another/root/dir/example/package/", SourceItemKind.DIRECTORY, false),
+        SourceItem(dir1CPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
       )
     )
-    sourcesItem2.roots = listOf("file:///another/root/dir/")
+    sourcesItem2.roots = listOf(module2Root.toUri().toString())
 
     val resourceDirPath21 = Files.createTempDirectory("resource")
     val resourcesItem2 = ResourcesItem(
@@ -305,21 +358,21 @@ class ModuleDetailsToJavaModuleTransformerTest {
       )
     )
 
-    val expectedBaseDirContentRoot1 = ContentRoot(URI.create("file:///root/dir/").toPath())
+    val expectedBaseDirContentRoot1 = ContentRoot(module1Root)
 
     val expectedJavaSourceRoot11 = JavaSourceRoot(
-      sourceDir = URI.create("file:///root/dir/example/package/one/").toPath(),
+      sourceDir = packageA2Path,
       generated = false,
-      packagePrefix = "example.package.one",
+      packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
+      targetId = BuildTargetIdentifier("module1"),
     )
     val expectedJavaSourceRoot12 = JavaSourceRoot(
-      sourceDir = URI.create("file:///root/dir/another/example/package/").toPath(),
+      sourceDir = dir1BPath,
       generated = false,
-      packagePrefix = "another.example.package",
+      packagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
+      targetId = BuildTargetIdentifier("module1"),
     )
 
     val expectedJavaResourceRoot11 = JavaResourceRoot(
@@ -353,14 +406,14 @@ class ModuleDetailsToJavaModuleTransformerTest {
       librariesDependencies = listOf(LibraryDependency("BSP: test1-1.0.0")),
     )
 
-    val expectedBaseDirContentRoot2 = ContentRoot(URI.create("file:///another/root/dir/").toPath())
+    val expectedBaseDirContentRoot2 = ContentRoot(module2Root)
 
     val expectedJavaSourceRoot21 = JavaSourceRoot(
-      sourceDir = URI.create("file:///another/root/dir/example/package/").toPath(),
+      sourceDir = dir1CPath,
       generated = false,
-      packagePrefix = "example.package",
+      packagePrefix = "${packageC1Path.name}.${packageC2Path.name}.${dir1CPath.name}",
       rootType = "java-test",
-      targetId = BuildTargetIdentifier("target"),
+      targetId = BuildTargetIdentifier("module2"),
     )
 
     val expectedJavaResourceRoot21 = JavaResourceRoot(

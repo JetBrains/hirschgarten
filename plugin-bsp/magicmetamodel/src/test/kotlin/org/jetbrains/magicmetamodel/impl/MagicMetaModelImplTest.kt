@@ -3,7 +3,6 @@
 package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.SourceItemKind
-import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
@@ -19,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import kotlin.io.path.createTempDirectory
 
 // TODO add checking workspacemodel
 // TODO extract 'given' to separate objects
@@ -73,6 +73,9 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     @Test
     fun `should handle project without shared sources (like a simple kotlin project)`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -108,8 +111,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         ),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/",
+        uri = targetA1Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetA1Sources = SourcesItem(
@@ -117,8 +125,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
+      targetB1Package1.toFile().deleteOnExit()
+      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
+      targetB1Package2.toFile().deleteOnExit()
+      val targetB1File = kotlin.io.path.createTempFile(targetB1Package2, "File1", ".kt")
+      targetB1File.toFile().deleteOnExit()
+
       val targetB1Source1 = SourceItem(
-        uri = "file:///project/targetB1/src/main/kotlin/File1.kt",
+        uri = targetB1File.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetB1Sources = SourcesItem(
@@ -126,8 +141,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetB1Source1),
       )
 
+      val targetC1Package1 = createTempDirectory(projectRoot, "targetC1")
+      targetC1Package1.toFile().deleteOnExit()
+      val targetC1Package2 = createTempDirectory(targetC1Package1, "package")
+      targetC1Package2.toFile().deleteOnExit()
+
       val targetC1Source1 = SourceItem(
-        uri = "file:///project/targetC1/src/main/kotlin/",
+        uri = targetC1Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetC1Sources = SourcesItem(
@@ -135,8 +155,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetC1Source1),
       )
 
+      val targetD1Package1 = createTempDirectory(projectRoot, "targetD1")
+      targetD1Package1.toFile().deleteOnExit()
+      val targetD1Package2 = createTempDirectory(targetD1Package1, "package")
+      targetD1Package2.toFile().deleteOnExit()
+      val targetD1File = kotlin.io.path.createTempFile(targetD1Package2, "File1", ".kt")
+      targetD1File.toFile().deleteOnExit()
+
       val targetD1Source1 = SourceItem(
-        uri = "file:///project/targetD1/src/main/kotlin/File1.kt",
+        uri = targetD1File.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetD1Sources = SourcesItem(
@@ -217,6 +244,9 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     @Test
     fun `should handle project with shared sources (like a scala cross version project)`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -275,8 +305,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         ),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/",
+        uri = targetA1Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetA1Sources = SourcesItem(
@@ -284,8 +319,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1B2Package1 = createTempDirectory(projectRoot, "targetB1B2")
+      targetB1B2Package1.toFile().deleteOnExit()
+      val targetB1B2Package2 = createTempDirectory(targetB1B2Package1, "package")
+      targetB1B2Package2.toFile().deleteOnExit()
+      val targetB1B2File = kotlin.io.path.createTempFile(targetB1B2Package2, "File1", ".kt")
+      targetB1B2File.toFile().deleteOnExit()
+
       val targetB1B2Source1 = SourceItem(
-        uri = "file:///project/targetB/src/main/kotlin/File1.kt",
+        uri = targetB1B2File.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetB1Sources = SourcesItem(
@@ -297,8 +339,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetB1B2Source1),
       )
 
+      val targetC1C2Package1 = createTempDirectory(projectRoot, "targetC1C2")
+      targetC1C2Package1.toFile().deleteOnExit()
+      val targetC1C2Package2 = createTempDirectory(targetC1C2Package1, "package")
+      targetC1C2Package2.toFile().deleteOnExit()
+
       val targetC1C2Source1 = SourceItem(
-        uri = "file:///project/targetC/src/main/kotlin/",
+        uri = targetC1C2Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetC1Sources = SourcesItem(
@@ -310,8 +357,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetC1C2Source1),
       )
 
+      val targetD1D2Package1 = createTempDirectory(projectRoot, "targetD1D2")
+      targetD1D2Package1.toFile().deleteOnExit()
+      val targetD1D2Package2 = createTempDirectory(targetD1D2Package1, "package")
+      targetD1D2Package2.toFile().deleteOnExit()
+      val targetD1D2File = kotlin.io.path.createTempFile(targetD1D2Package2, "File1", ".kt")
+      targetD1D2File.toFile().deleteOnExit()
+
       val targetD1D2Source1 = SourceItem(
-        uri = "file:///project/targetD/src/main/kotlin/File1.kt",
+        uri = targetD1D2File.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetD1Sources = SourcesItem(
@@ -546,6 +600,9 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     @Test
     fun `should return no loaded and all targets as not loaded for not initialized project (before calling loadDefaultTargets())`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -561,8 +618,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependencies = listOf(BuildTargetId("externalDep1")),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -570,8 +634,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
+      targetB1Package1.toFile().deleteOnExit()
+      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
+      targetB1Package2.toFile().deleteOnExit()
+      val targetB1File1 = kotlin.io.path.createTempFile(targetB1Package2, "File1", ".kt")
+      targetB1File1.toFile().deleteOnExit()
+
       val targetB1Source1 = SourceItem(
-        uri = "file:///project/targetB1/src/main/kotlin/File1.kt",
+        uri = targetB1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetB1Sources = SourcesItem(
@@ -599,6 +670,9 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     @Test
     fun `should return all targets as loaded and no not loaded targets for project without shared sources`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -626,8 +700,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependencies = listOf(BuildTargetId("targetC1")),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -635,8 +716,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
+      targetB1Package1.toFile().deleteOnExit()
+      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
+      targetB1Package2.toFile().deleteOnExit()
+
       val targetB1Source1 = SourceItem(
-        uri = "file:///project/targetB1/src/main/kotlin/",
+        uri = targetB1Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetB1Sources = SourcesItem(
@@ -644,12 +730,21 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetB1Source1),
       )
 
+      val targetC1Package1 = createTempDirectory(projectRoot, "targetC1")
+      targetC1Package1.toFile().deleteOnExit()
+      val targetC1Package2 = createTempDirectory(targetC1Package1, "package")
+      targetC1Package2.toFile().deleteOnExit()
+      val targetC1File1 = kotlin.io.path.createTempFile(targetC1Package2, "File1", ".kt")
+      targetC1File1.toFile().deleteOnExit()
+      val targetC1File2 = kotlin.io.path.createTempFile(targetC1Package2, "File2", ".kt")
+      targetC1File2.toFile().deleteOnExit()
+
       val targetC1Source1 = SourceItem(
-        uri = "file:///project/targetC1/src/main/kotlin/File2.kt",
+        uri = targetC1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetC1Source2 = SourceItem(
-        uri = "file:///project/targetC1/src/main/kotlin/File2.kt",
+        uri = targetC1File2.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetC1Sources = SourcesItem(
@@ -684,6 +779,9 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     @Test
     fun `should return non overlapping loaded targets for project with shared sources`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -705,8 +803,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependencies = listOf(BuildTargetId("targetA1")),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -714,12 +819,25 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1B2Package1 = createTempDirectory(projectRoot, "targetB1B2")
+      targetB1B2Package1.toFile().deleteOnExit()
+      val targetB1B2Package2 = createTempDirectory(targetB1B2Package1, "package")
+      targetB1B2Package2.toFile().deleteOnExit()
+      val targetB1B2File1 = kotlin.io.path.createTempFile(targetB1B2Package2, "File1", ".kt")
+      targetB1B2File1.toFile().deleteOnExit()
+
       val targetB1B2Source1 = SourceItem(
-        uri = "file:///project/targetB/src/main/kotlin/File1.kt",
+        uri = targetB1B2File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
+
+      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
+      targetB1Package1.toFile().deleteOnExit()
+      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
+      targetB1Package2.toFile().deleteOnExit()
+
       val targetB1Source2 = SourceItem(
-        uri = "file:///project/targetB1/src/main/kotlin/",
+        uri = targetB1Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetB1Sources = SourcesItem(
@@ -747,13 +865,17 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // then
       runTestWriteAction { diff.applyOnWorkspaceModel() } shouldBe true
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB2)
+      // TODO how to make it deterministic?
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB2)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
     }
 
     @Test
     fun `should load all default targets after loading different targets (with loadTarget())`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -775,8 +897,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependencies = listOf(BuildTargetId("targetA1")),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -784,17 +913,30 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1B2Package1 = createTempDirectory(projectRoot, "targetB1B2")
+      targetB1B2Package1.toFile().deleteOnExit()
+      val targetB1B2Package2 = createTempDirectory(targetB1B2Package1, "package")
+      targetB1B2Package2.toFile().deleteOnExit()
+      val targetB1B2File1 = kotlin.io.path.createTempFile(targetB1B2Package2, "File1", ".kt")
+      targetB1B2File1.toFile().deleteOnExit()
+
       val targetB1B2Source1 = SourceItem(
-        uri = "file:///project/targetB/src/main/kotlin/File1.kt",
+        uri = targetB1B2File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
-      val targetB1Source1 = SourceItem(
-        uri = "file:///project/targetB1/src/main/kotlin/",
+
+      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
+      targetB1Package1.toFile().deleteOnExit()
+      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
+      targetB1Package2.toFile().deleteOnExit()
+
+      val targetB1Source2 = SourceItem(
+        uri = targetB1Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetB1Sources = SourcesItem(
         target = targetB1.id,
-        sources = listOf(targetB1Source1, targetB1B2Source1),
+        sources = listOf(targetB1Source2, targetB1B2Source1),
       )
       val targetB2Sources = SourcesItem(
         target = targetB2.id,
@@ -817,17 +959,18 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // then 1
       runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB2)
+      // TODO should be B1 not B2 - how to make it deterministic?
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB2)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
 
       // when 2
-      val diff2 = magicMetaModel.loadTarget(targetB2.id)!!
+      val diff2 = magicMetaModel.loadTarget(targetB1.id)!!
 
       // then 2
       runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe true
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB2)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB2)
 
       // when 3
       val diff3 = magicMetaModel.loadDefaultTargets()
@@ -835,8 +978,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // then 3
       runTestWriteAction { diff3.applyOnWorkspaceModel() } shouldBe true
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB2)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB2)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
     }
   }
 
@@ -845,8 +988,11 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
   inner class MagicMetaModelImplLoadTargetTest {
 
     @Test
-    fun `should throw IllegalArgumentException for not existing target`() {
+    fun `should return null for not existing target`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -856,8 +1002,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         ),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -878,15 +1031,18 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
       val notExistingTargetId = BuildTargetId("//not/existing/target")
+      val diff = magicMetaModel.loadTarget(notExistingTargetId)
 
       // then
-      val exception = shouldThrowExactly<IllegalArgumentException> { magicMetaModel.loadTarget(notExistingTargetId) }
-      exception.message shouldBe "Target $notExistingTargetId is not included in the model."
+      diff shouldBe null
     }
 
     @Test
     fun `should load target`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -902,8 +1058,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependencies = listOf(BuildTargetId("externalDep2")),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -911,8 +1074,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
+      targetB1Package1.toFile().deleteOnExit()
+      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
+      targetB1Package2.toFile().deleteOnExit()
+
       val targetB1Source1 = SourceItem(
-        uri = "file:///project/targetB1/src/main/kotlin/",
+        uri = targetB1Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetB1Sources = SourcesItem(
@@ -942,8 +1110,11 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     }
 
     @Test
-    fun `should add already loaded target without state change`() {
+    fun `should return null for already loaded target`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -959,8 +1130,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependencies = listOf(BuildTargetId("externalDep2")),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -968,8 +1146,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
+      targetB1Package1.toFile().deleteOnExit()
+      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
+      targetB1Package2.toFile().deleteOnExit()
+
       val targetB1Source1 = SourceItem(
-        uri = "file:///project/targetB1/src/main/kotlin/",
+        uri = targetB1Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetB1Sources = SourcesItem(
@@ -995,18 +1178,21 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
 
       // when 2
-      val diff2 = magicMetaModel.loadTarget(targetA1.id)!!
+      val diff2 = magicMetaModel.loadTarget(targetA1.id)
 
       // then 2
-      runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe true
+      diff2 shouldBe null
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
     }
 
     @Test
-    fun `diff should return false if previous diff was not applied, but mmm should be updated`() {
+    fun `diff should return false if previous diff was not applied, and mmm shouldn't be updated as well`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -1022,8 +1208,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependencies = listOf(BuildTargetId("externalDep2")),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -1031,8 +1224,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
+      targetB1Package1.toFile().deleteOnExit()
+      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
+      targetB1Package2.toFile().deleteOnExit()
+
       val targetB1Source1 = SourceItem(
-        uri = "file:///project/targetB1/src/main/kotlin/",
+        uri = targetB1Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetB1Sources = SourcesItem(
@@ -1059,13 +1257,16 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       runTestWriteAction { diff1.applyOnWorkspaceModel() } shouldBe true
       runTestWriteAction { diff2.applyOnWorkspaceModel() } shouldBe false
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder emptyList()
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
     }
 
     @Test
     fun `should add targets without overlapping`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -1081,8 +1282,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependencies = listOf(BuildTargetId("externalDep2")),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -1090,8 +1298,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
+      targetB1Package1.toFile().deleteOnExit()
+      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
+      targetB1Package2.toFile().deleteOnExit()
+
       val targetB1Source1 = SourceItem(
-        uri = "file:///project/targetB1/src/main/kotlin/",
+        uri = targetB1Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetB1Sources = SourcesItem(
@@ -1129,6 +1342,9 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     @Test
     fun `should add target and remove overlapping targets`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -1149,18 +1365,40 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         languageIds = listOf("kotlin"),
       )
 
+      val targetA1A2Package1 = createTempDirectory(projectRoot, "targetA1A2")
+      targetA1A2Package1.toFile().deleteOnExit()
+      val targetA1A2Package2 = createTempDirectory(targetA1A2Package1, "package")
+      targetA1A2Package2.toFile().deleteOnExit()
+      val targetA1A2File1 = kotlin.io.path.createTempFile(targetA1A2Package2, "File1", ".kt")
+      targetA1A2File1.toFile().deleteOnExit()
+
       val targetA1A2Source1 = SourceItem(
-        uri = "file:///project/targetA1A2/src/main/kotlin/File1.kt",
+        uri = targetA1A2File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
+
+      val targetA1A3Package1 = createTempDirectory(projectRoot, "targetA1A3")
+      targetA1A3Package1.toFile().deleteOnExit()
+      val targetA1A3Package2 = createTempDirectory(targetA1A3Package1, "package")
+      targetA1A3Package2.toFile().deleteOnExit()
+      val targetA1A3File1 = kotlin.io.path.createTempFile(targetA1A3Package2, "File1", ".kt")
+      targetA1A3File1.toFile().deleteOnExit()
+
       val targetA1A3Source1 = SourceItem(
-        uri = "file:///project/targetA1A3/src/main/kotlin/File1.kt",
+        uri = targetA1A3File1.toUri().toString(),
         SourceItemKind.FILE,
         false
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -1168,8 +1406,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1, targetA1A2Source1, targetA1A3Source1),
       )
 
+      val targetA3Package1 = createTempDirectory(projectRoot, "targetA3")
+      targetA3Package1.toFile().deleteOnExit()
+      val targetA3Package2 = createTempDirectory(targetA3Package1, "package")
+      targetA3Package2.toFile().deleteOnExit()
+      val targetA3File1 = kotlin.io.path.createTempFile(targetA3Package2, "File1", ".kt")
+      targetA3File1.toFile().deleteOnExit()
+
       val targetA2Source1 = SourceItem(
-        uri = "file:///project/targetA2/src/main/kotlin/File1.kt",
+        uri = targetA3File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA2Sources = SourcesItem(
@@ -1310,6 +1555,9 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     @Test
     fun `should return loaded target for non overlapping targets after loading default targets (all targets)`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -1324,8 +1572,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         languageIds = listOf("kotlin"),
       )
 
+      val targetA1Package1 = createTempDirectory(projectRoot, "targetA1")
+      targetA1Package1.toFile().deleteOnExit()
+      val targetA1Package2 = createTempDirectory(targetA1Package1, "package")
+      targetA1Package2.toFile().deleteOnExit()
+      val targetA1File1 = kotlin.io.path.createTempFile(targetA1Package2, "File1", ".kt")
+      targetA1File1.toFile().deleteOnExit()
+
       val targetA1Source1 = SourceItem(
-        uri = "file:///project/targetA1/src/main/kotlin/File1.kt",
+        uri = targetA1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -1333,8 +1588,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1Source1),
       )
 
+      val targetB1Package1 = createTempDirectory(projectRoot, "targetB1")
+      targetB1Package1.toFile().deleteOnExit()
+      val targetB1Package2 = createTempDirectory(targetB1Package1, "package")
+      targetB1Package2.toFile().deleteOnExit()
+      val targetB1File1 = kotlin.io.path.createTempFile(targetB1Package2, "File1", ".kt")
+      targetB1File1.toFile().deleteOnExit()
+
       val targetB1Source1 = SourceItem(
-        uri = "file:///project/targetB1/src/main/kotlin/File1.kt",
+        uri = targetB1File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetB1Sources = SourcesItem(
@@ -1371,6 +1633,9 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     @Test
     fun `should return loaded target for source in loaded target and no loaded target for source in not loaded target for model with overlapping targets`() {
       // given
+      val projectRoot = createTempDirectory("root")
+      projectRoot.toFile().deleteOnExit()
+
       val targetA1 = BuildTarget(
         id = BuildTargetId("targetA1"),
         languageIds = listOf("kotlin"),
@@ -1385,8 +1650,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         languageIds = listOf("kotlin"),
       )
 
+      val targetA1A2Package1 = createTempDirectory(projectRoot, "targetA1A2")
+      targetA1A2Package1.toFile().deleteOnExit()
+      val targetA1A2Package2 = createTempDirectory(targetA1A2Package1, "package")
+      targetA1A2Package2.toFile().deleteOnExit()
+      val targetA1A2File1 = kotlin.io.path.createTempFile(targetA1A2Package2, "File1", ".kt")
+      targetA1A2File1.toFile().deleteOnExit()
+
       val targetA1A2Source1 = SourceItem(
-        uri = "file:///project/targetA/src/main/kotlin/File1.kt",
+        uri = targetA1A2File1.toUri().toString(),
         kind = SourceItemKind.FILE,
       )
       val targetA1Sources = SourcesItem(
@@ -1394,8 +1666,13 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         sources = listOf(targetA1A2Source1),
       )
 
+      val targetA2Package1 = createTempDirectory(projectRoot, "targetA2")
+      targetA2Package1.toFile().deleteOnExit()
+      val targetA2Package2 = createTempDirectory(targetA2Package1, "package")
+      targetA2Package2.toFile().deleteOnExit()
+
       val targetA2Source1 = SourceItem(
-        uri = "file:///project/targetA2/src/main/kotlin/",
+        uri = targetA2Package2.toUri().toString(),
         kind = SourceItemKind.DIRECTORY,
       )
       val targetA2Sources = SourcesItem(

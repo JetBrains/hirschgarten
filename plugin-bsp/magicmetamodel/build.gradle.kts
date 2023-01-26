@@ -8,3 +8,9 @@ dependencies {
   testImplementation(libs.kotest)
   testImplementation(project(":test-utils"))
 }
+
+tasks {
+  test {
+    classpath -= classpath.filter { it.name.contains("kotlin-compiler-embeddable") }
+  }
+}
