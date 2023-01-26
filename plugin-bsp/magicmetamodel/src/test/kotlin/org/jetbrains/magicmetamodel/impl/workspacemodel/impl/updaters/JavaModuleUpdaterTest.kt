@@ -223,11 +223,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
 
-        loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
-          expectedJavaSourceRootEntity1,
-          expectedJavaSourceRootEntity2
-        )
-
         val virtualResourceUrl1 = resourcePath1.toVirtualFileUrl(virtualFileUrlManager)
         val expectedJavaResourceRootEntity1 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
@@ -274,8 +269,10 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         )
 
         loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
+          expectedJavaSourceRootEntity1,
+          expectedJavaSourceRootEntity2,
           expectedJavaResourceRootEntity1,
-          expectedJavaResourceRootEntity2
+          expectedJavaResourceRootEntity2,
         )
       }
     }
@@ -582,12 +579,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           parentModuleEntity = expectedModuleEntity2.moduleEntity,
         )
 
-        loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
-          expectedJavaSourceRootEntity11,
-          expectedJavaSourceRootEntity12,
-          expectedJavaSourceRootEntity21
-        )
-
         val virtualResourceUrl11 = resourcePath11.toVirtualFileUrl(virtualFileUrlManager)
         val expectedJavaResourceRootEntity11 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
@@ -656,9 +647,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         )
 
         loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
+          expectedJavaSourceRootEntity11,
+          expectedJavaSourceRootEntity12,
+          expectedJavaSourceRootEntity21,
           expectedJavaResourceRootEntity11,
           expectedJavaResourceRootEntity12,
-          expectedJavaResourceRootEntity21
+          expectedJavaResourceRootEntity21,
         )
       }
     }
@@ -714,11 +708,9 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val virtualBaseDirContentRootPath = baseDirContentRootPath.toVirtualFileUrl(virtualFileUrlManager)
         val expectedContentRootEntity = ExpectedContentRootEntity(
-          contentRootEntity = ContentRootEntity(
-            entitySource = expectedModuleEntity.moduleEntity.entitySource,
-            url = virtualBaseDirContentRootPath,
-            excludedPatterns = emptyList()
-          ),
+          url = virtualBaseDirContentRootPath,
+          excludedPatterns = emptyList(),
+          excludedUrls = emptyList(),
           parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
 
@@ -806,21 +798,17 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val virtualBaseDirContentRootPath1 = baseDirContentRootPath1.toVirtualFileUrl(virtualFileUrlManager)
         val expectedContentRootEntity1 = ExpectedContentRootEntity(
-          contentRootEntity = ContentRootEntity(
-            entitySource = expectedModuleEntity1.moduleEntity.entitySource,
-            url = virtualBaseDirContentRootPath1,
-            excludedPatterns = emptyList()
-          ),
+          url = virtualBaseDirContentRootPath1,
+          excludedPatterns = emptyList(),
+          excludedUrls = emptyList(),
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
 
         val virtualBaseDirContentRootPath2 = baseDirContentRootPath2.toVirtualFileUrl(virtualFileUrlManager)
         val expectedContentRootEntity2 = ExpectedContentRootEntity(
-          contentRootEntity = ContentRootEntity(
-            entitySource = expectedModuleEntity2.moduleEntity.entitySource,
-            url = virtualBaseDirContentRootPath2,
-            excludedPatterns = emptyList()
-          ),
+          url = virtualBaseDirContentRootPath2,
+          excludedPatterns = emptyList(),
+          excludedUrls = emptyList(),
           parentModuleEntity = expectedModuleEntity2.moduleEntity,
         )
 

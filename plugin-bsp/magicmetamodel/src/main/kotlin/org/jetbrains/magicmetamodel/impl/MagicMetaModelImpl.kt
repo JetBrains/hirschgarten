@@ -23,11 +23,14 @@ internal class DefaultMagicMetaModelDiff(
 ) : MagicMetaModelDiff {
 
   // TODO maybe it doesnt have to return boolean? are we actually using it? (no)
-  override fun applyOnWorkspaceModel(): Boolean {
-    mmmInstance.loadStorage(mmmStorageReplacement)
-    targetLoadListeners.forEach { it() }
-    return workspaceModel.replaceProjectModel(storageReplacement)
-  }
+  override fun applyOnWorkspaceModel(): Boolean =
+    if (workspaceModel.replaceProjectModel(storageReplacement)) {
+      mmmInstance.loadStorage(mmmStorageReplacement)
+      targetLoadListeners.forEach { it() }
+      true
+    } else {
+      false
+    }
 }
 
 // TODO - get rid of *Impl - we should name it 'DefaultMagicMetaModel' or something like that
@@ -135,9 +138,9 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   }
 
   override fun loadTarget(targetId: BuildTargetIdentifier): MagicMetaModelDiff? = when {
-      loadedTargetsStorage.isTargetNotLoaded(targetId) -> doLoadTarget(targetId)
-      else -> null
-    }
+    loadedTargetsStorage.isTargetNotLoaded(targetId) -> doLoadTarget(targetId)
+    else -> null
+  }
 
   // TODO ughh so ugly
   private fun doLoadTarget(targetId: BuildTargetIdentifier): DefaultMagicMetaModelDiff {
@@ -231,28 +234,27 @@ public data class LoadedTargetsStorageState(
   public var notLoadedTargets: List<BuildTargetIdentifierState> = emptyList(),
 )
 
-internal class LoadedTargetsStorage {
+internal class LoadedTargetsStorage private constructor(
+  private val allTargets: Collection<BuildTargetIdentifier>,
+  private val loadedTargets: MutableSet<BuildTargetIdentifier>,
+  private val notLoadedTargets: MutableSet<BuildTargetIdentifier>,
+) {
 
-  private val allTargets: Collection<BuildTargetIdentifier>
+  constructor(allTargets: Collection<BuildTargetIdentifier>) : this(
+    allTargets = allTargets,
+    loadedTargets = mutableSetOf(),
+    notLoadedTargets = allTargets.toMutableSet()
+  )
 
-  private val loadedTargets: MutableSet<BuildTargetIdentifier>
-  private val notLoadedTargets: MutableSet<BuildTargetIdentifier>
-
-  constructor(allTargets: Collection<BuildTargetIdentifier>) {
-    this.allTargets = allTargets
-
-    this.loadedTargets = mutableSetOf()
-    this.notLoadedTargets = allTargets.toMutableSet()
-  }
-
-  constructor(state: LoadedTargetsStorageState) {
-    this.allTargets = state.allTargets.map { it.fromState() }
-    this.loadedTargets = state.loadedTargets.map { it.fromState() }.toMutableSet()
-    this.notLoadedTargets = state.notLoadedTargets.map { it.fromState() }.toMutableSet()
-  }
+  constructor(state: LoadedTargetsStorageState) : this(
+    allTargets = state.allTargets.map { it.fromState() },
+    loadedTargets = state.loadedTargets.map { it.fromState() }.toMutableSet(),
+    notLoadedTargets = state.notLoadedTargets.map { it.fromState() }.toMutableSet(),
+  )
 
   fun clear() {
     loadedTargets.clear()
+    notLoadedTargets.clear()
     notLoadedTargets.addAll(allTargets)
   }
 
@@ -290,5 +292,9 @@ internal class LoadedTargetsStorage {
       notLoadedTargets.map { it.toState() })
 
   fun copy(): LoadedTargetsStorage =
-    LoadedTargetsStorage(toState())
+    LoadedTargetsStorage(
+      allTargets = allTargets.toList(),
+      loadedTargets = loadedTargets.toMutableSet(),
+      notLoadedTargets = notLoadedTargets.toMutableSet(),
+    )
 }

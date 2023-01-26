@@ -77,7 +77,7 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
         packagePrefix = "${package1Root.name}.${package2Root.name}",
         excludedFiles = listOf(excludedFilePath),
         rootType = "java-source",
-        targetId = BuildTargetIdentifier("target1")
+        targetId = BuildTargetIdentifier("target")
       )
       javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot)
     }
@@ -179,14 +179,14 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
         packagePrefix = packageA1Root.name,
         excludedFiles = listOf(excludedFilePath),
         rootType = "java-source",
-        targetId = BuildTargetIdentifier("target1")
+        targetId = BuildTargetIdentifier("target")
       )
       val expectedJavaSourceRoot2 = JavaSourceRoot(
         sourceDir = packageB1Root,
         generated = false,
         packagePrefix = packageB1Root.name,
         rootType = "java-source",
-        targetId = BuildTargetIdentifier("target1")
+        targetId = BuildTargetIdentifier("target")
       )
       javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2)
     }
@@ -216,7 +216,7 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
           BuildTargetCapabilities(),
         ),
         sourcesItem = SourcesItem(
-          target = BuildTargetId("target"),
+          target = BuildTargetId("target1"),
           sources = listOf(sourceItem1),
           roots = listOf(projectRoot.toUri().toString()),
         )
@@ -241,7 +241,7 @@ class SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACKTest {
           BuildTargetCapabilities(),
         ),
         sourcesItem = SourcesItem(
-          target = BuildTargetId("target"),
+          target = BuildTargetId("target2"),
           sources = listOf(sourceItem2),
           roots = listOf(projectRoot.toUri().toString()),
         )

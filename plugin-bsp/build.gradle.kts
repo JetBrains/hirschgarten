@@ -119,3 +119,9 @@ tasks {
     channels.set(listOf(Plugin.version.split('-').getOrElse(1) { "default" }.split('.').first()))
   }
 }
+
+tasks {
+  test {
+    classpath -= classpath.filter { it.name.contains("kotlin-compiler-embeddable") }
+  }
+}
