@@ -1,23 +1,23 @@
 [versions]
-ideProbe = "0.50.0"
+ideProbe = "0.51.0"
 detekt = "1.21.0"
 ktlint = "10.3.0"
-kotlin-gradle-version = "1.7.21"
+kotlin-gradle-version = "1.8.0"
 
 [libraries]
 ideProbeDriver = { module = "org.virtuslab.ideprobe:driver_2.13", version.ref = "ideProbe" }
 ideProbeRobot = { module = "org.virtuslab.ideprobe:robot-driver_2.13", version.ref = "ideProbe" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.9.0" }
-bsp4j = { module = "ch.epfl.scala:bsp4j", version = "2.1.0-M3" }
+bsp4j = { module = "ch.epfl.scala:bsp4j", version = "2.1.0-M4" }
 kotest = { module = "io.kotest:kotest-assertions-core", version = "5.5.4" }
 scala = { module = "org.scala-lang:scala-library", version = "2.13.10" }
-gson = { module = "com.google.code.gson:gson", version = "2.10" }
+gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
 detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
 ktlintGradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
 
 [plugins]
-intellij = { id = "org.jetbrains.intellij", version = "1.11.0" }
+intellij = { id = "org.jetbrains.intellij", version = "1.12.0" }
 changelog = { id = "org.jetbrains.changelog", version = "1.3.1" }
 
