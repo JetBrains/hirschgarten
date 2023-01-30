@@ -15,7 +15,7 @@ object Plugin {
 
 // Plugin Verifier integration -> https://github.com/JetBrains/gradle-intellij-plugin//plugin-verifier-dsl
 // See https://jb.gg/intellij-platform-builds-list for available build versions.
-const val pluginVerifierIdeVersions = "2022.3"
+const val pluginVerifierIdeVersions = "2023.1"
 
 object Platform {
   const val type = "IC"
