@@ -189,7 +189,9 @@ public fun calculateProjectDetailsWithCapabilities(
       queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
     val dependencySourcesFuture =
       queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
-    val javacOptionsFuture = queryForJavacOptions(server, allTargetsIds).cancelOn(cancelOn).catchSyncErrors(errorCallback)
+
+    val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
+    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
 
     return ProjectDetails(
       targetsId = allTargetsIds,
@@ -199,7 +201,7 @@ public fun calculateProjectDetailsWithCapabilities(
       dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
       // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
       // so it's just safer to add timeout here. This should not be called at all for SBT.
-      javacOptions = javacOptionsFuture.get()?.items ?: emptyList()
+      javacOptions = javacOptionsFuture?.get()?.items ?: emptyList()
     )
   } catch (e: Exception) {
     // TODO the type xd
@@ -252,12 +254,17 @@ private fun queryForDependencySources(
   else null
 }
 
+private fun calculateJavaTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("java") }.map { it.id }
+
 private fun queryForJavacOptions(
   server: BspServer,
-  allTargetsIds: List<BuildTargetIdentifier>
-): CompletableFuture<JavacOptionsResult> {
-  val javacOptionsParams = JavacOptionsParams(allTargetsIds)
-  return server.buildTargetJavacOptions(javacOptionsParams)
+  javaTargetsIds: List<BuildTargetIdentifier>
+): CompletableFuture<JavacOptionsResult>? {
+  return if (javaTargetsIds.isNotEmpty()) {
+    val javacOptionsParams = JavacOptionsParams(javaTargetsIds)
+    server.buildTargetJavacOptions(javacOptionsParams)
+  } else null
 }
 
 private fun <T> CompletableFuture<T>.catchSyncErrors(errorCallback: (Throwable) -> Unit): CompletableFuture<T> =
