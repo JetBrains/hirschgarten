@@ -17,6 +17,13 @@ plugins {
 group = Plugin.group
 version = Plugin.version
 
+configurations {
+  all {
+    exclude(group = "junit", module = "junit")
+    exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
+  }
+}
+
 dependencies {
   implementation(project(":magicmetamodel"))
   testImplementation(project(":test-utils"))
