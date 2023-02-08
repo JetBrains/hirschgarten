@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.BspToolWindowPanel
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowPanel
 
 public class BspAllTargetsWidgetFactory : ToolWindowFactory {
 
