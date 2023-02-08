@@ -20,10 +20,10 @@ import ch.epfl.scala.bsp4j.CompileTask as BspCompileTask
 import ch.epfl.scala.bsp4j.TaskId as BspTaskId
 
 public data class OriginId(val id: String) {
-  public fun toTaskId(): TaskId = TaskId(id)
+  public fun toTaskId(): ClientTaskId = ClientTaskId(id)
 }
 
-public data class TaskId(val id: String) {
+public data class ClientTaskId(val id: String) {
   public fun toOriginId(): OriginId = OriginId(id)
 }
 
@@ -33,7 +33,7 @@ public data class TaskId(val id: String) {
 
 public interface Task {
   public val observer: TaskObserver
-  public val subtasks: MutableSet<TaskId> // / Remember the subtasks of this task and remove them when the task is finished
+  public val subtasks: MutableSet<ClientTaskId> // / Remember the subtasks of this task and remove them when the task is finished
   public fun cancel()
 }
 
@@ -42,7 +42,7 @@ public fun BspCompileResult.toClient(): ClientTopLevelCompileTaskFinishedParams 
     statusCode = statusCode,
   )
 
-public class CompileTask(
+private class CompileTask(
   private val resultFuture: CompletableFuture<BspCompileResult>,
   public override val observer: CompileTaskObserver
 ) : Task {
@@ -56,13 +56,13 @@ public class CompileTask(
     }
   }
 
-  public override val subtasks: MutableSet<TaskId> = mutableSetOf()
+  public override val subtasks: MutableSet<ClientTaskId> = mutableSetOf()
   override fun cancel() {
     resultFuture.cancel(true)
   }
 }
 
-public class SubTask(public val originId: OriginId, public val subtasks: MutableSet<TaskId>)
+public class SubTask(public val originId: OriginId, public val subtasks: MutableSet<ClientTaskId>)
 
 public data class ClientCompileTaskParams(val targets: List<BuildTargetIdentifier>, val arguments: List<String>) {
   public fun toProtocol(originId: OriginId): BspCompileParams =
@@ -73,29 +73,29 @@ public data class ClientCompileTaskParams(val targets: List<BuildTargetIdentifie
 }
 
 public sealed interface ClientTaskStartedParams {
-  public val taskId: TaskId
-  public val parentTaskId: TaskId
+  public val taskId: ClientTaskId
+  public val parentTaskId: ClientTaskId
   public val eventTime: Instant?
   public val message: String?
 }
 
 public data class ClientGenericTaskStartedParams(
-  override val taskId: TaskId,
-  override val parentTaskId: TaskId,
+  override val taskId: ClientTaskId,
+  override val parentTaskId: ClientTaskId,
   override val eventTime: Instant?,
   override val message: String?
 ) : ClientTaskStartedParams {
-  public constructor(taskId: TaskId, parentTaskId: TaskId, params: TaskStartParams) : this(
+  public constructor(taskId: ClientTaskId, parentTaskId: ClientTaskId, params: TaskStartParams) : this(
     taskId = taskId,
     parentTaskId = parentTaskId,
-    eventTime = Instant.ofEpochMilli(params.eventTime),
+    eventTime = params.eventTime?.let { Instant.ofEpochMilli(it) },
     message = params.message
   )
 }
 
 public data class ClientCompileTaskStartedParams(
-  override val taskId: TaskId,
-  override val parentTaskId: TaskId,
+  override val taskId: ClientTaskId,
+  override val parentTaskId: ClientTaskId,
   override val eventTime: Instant?,
   override val message: String?,
   val target: BuildTargetIdentifier
@@ -110,8 +110,8 @@ public data class ClientCompileTaskStartedParams(
 }
 
 public sealed interface ClientTaskProgressParams {
-  public val taskId: TaskId
-  public val parentTaskId: TaskId
+  public val taskId: ClientTaskId
+  public val parentTaskId: ClientTaskId
   public val eventTime: Instant?
   public val message: String?
   public val total: Long?
@@ -120,18 +120,18 @@ public sealed interface ClientTaskProgressParams {
 }
 
 public data class ClientGenericTaskProgressParams(
-  override val taskId: TaskId,
-  override val parentTaskId: TaskId,
+  override val taskId: ClientTaskId,
+  override val parentTaskId: ClientTaskId,
   override val eventTime: Instant?,
   override val message: String?,
   override val total: Long?,
   override val progress: Long?,
   override val unit: String?
 ) : ClientTaskProgressParams {
-  public constructor(taskId: TaskId, parentTaskId: TaskId, params: TaskProgressParams) : this(
+  public constructor(taskId: ClientTaskId, parentTaskId: ClientTaskId, params: TaskProgressParams) : this(
     taskId = taskId,
     parentTaskId = parentTaskId,
-    eventTime = Instant.ofEpochMilli(params.eventTime),
+    eventTime = params.eventTime?.let { Instant.ofEpochMilli(it) },
     message = params.message,
     total = params.total,
     progress = params.progress,
@@ -140,16 +140,16 @@ public data class ClientGenericTaskProgressParams(
 }
 
 public sealed interface ClientTaskFinishedParams {
-  public val taskId: TaskId
-  public val parentTaskId: TaskId
+  public val taskId: ClientTaskId
+  public val parentTaskId: ClientTaskId
   public val eventTime: Instant?
   public val message: String?
   public val statusCode: StatusCode
 }
 
 public data class ClientCompileTaskFinishedParams(
-  override val taskId: TaskId,
-  override val parentTaskId: TaskId,
+  override val taskId: ClientTaskId,
+  override val parentTaskId: ClientTaskId,
   override val eventTime: Instant?,
   override val message: String?,
   override val statusCode: StatusCode,
@@ -174,16 +174,16 @@ public data class ClientCompileTaskFinishedParams(
 }
 
 public data class ClientGenericTaskFinishedParams(
-  override val taskId: TaskId,
-  override val parentTaskId: TaskId,
+  override val taskId: ClientTaskId,
+  override val parentTaskId: ClientTaskId,
   override val eventTime: Instant?,
   override val message: String?,
   override val statusCode: StatusCode,
 ) : ClientTaskFinishedParams {
-  public constructor(taskId: TaskId, parentTaskId: TaskId, params: TaskFinishParams) : this(
+  public constructor(taskId: ClientTaskId, parentTaskId: ClientTaskId, params: TaskFinishParams) : this(
     taskId = taskId,
     parentTaskId = parentTaskId,
-    eventTime = Instant.ofEpochMilli(params.eventTime),
+    eventTime = params.eventTime?.let { Instant.ofEpochMilli(it) },
     message = params.message,
     statusCode = params.status
   )
@@ -212,25 +212,25 @@ public interface TaskHandle {
 
 public sealed class TaskError : Throwable()
 
-public data class NoParent(val taskId: TaskId) : TaskError()
-public data class OriginNotFound(val taskId: TaskId, val originId: OriginId) : TaskError()
+public data class NoParent(val taskId: ClientTaskId) : TaskError()
+public data class OriginNotFound(val taskId: ClientTaskId, val originId: OriginId) : TaskError()
 
 // / Task already finished or never started
-public data class IncorrectSubtask(val taskId: TaskId, val originId: OriginId) : TaskError()
-public data class DeserializationError(val taskId: TaskId, val error: Throwable) : TaskError()
+public data class IncorrectSubtask(val taskId: ClientTaskId, val originId: OriginId) : TaskError()
+public data class DeserializationError(val taskId: ClientTaskId, val error: Throwable) : TaskError()
 
-public data class WrongTaskType(val taskId: TaskId, val taskType: String) : TaskError()
-public data class UnsupportedDataKind(val taskId: TaskId, val kind: String) : TaskError()
+public data class WrongTaskType(val taskId: ClientTaskId, val taskType: String) : TaskError()
+public data class UnsupportedDataKind(val taskId: ClientTaskId, val kind: String) : TaskError()
 
 // TODO: Need to check for server-side cancellation.
 public class TaskClient(private val server: BuildServer) {
   private val tasks: MutableMap<OriginId, Task> = mutableMapOf()
-  private val subtasks: MutableMap<TaskId, SubTask> = mutableMapOf()
+  private val subtasks: MutableMap<ClientTaskId, SubTask> = mutableMapOf()
 
   private fun nextOriginId(): OriginId = OriginId(UUID.randomUUID().toString())
 
   @Synchronized
-  private fun removeSubtasksRecursively(taskId: TaskId) {
+  private fun removeSubtasksRecursively(taskId: ClientTaskId) {
     subtasks[taskId]?.subtasks?.forEach { removeSubtasksRecursively(it) }
     subtasks.remove(taskId)
   }
@@ -267,21 +267,21 @@ public class TaskClient(private val server: BuildServer) {
   }
 
   private data class InternalTaskData(
-    val taskId: TaskId,
-    val parentTaskId: TaskId,
+    val taskId: ClientTaskId,
+    val parentTaskId: ClientTaskId,
     val parentSubTask: SubTask?,
     val originId: OriginId,
     val originTask: Task
   )
 
-  private data class TaskData(val taskId: TaskId, val parentTaskId: TaskId, val originTask: Task)
+  private data class TaskData(val taskId: ClientTaskId, val parentTaskId: ClientTaskId, val originTask: Task)
 
   @Synchronized
   private fun getTaskDataForId(bspTaskId: BspTaskId): InternalTaskData {
-    val taskId = TaskId(bspTaskId.id)
+    val taskId = ClientTaskId(bspTaskId.id)
 
     // TODO: Support multiple parents
-    val parentTaskId = bspTaskId.parents?.firstOrNull()?.let { TaskId(it) } ?: run {
+    val parentTaskId = bspTaskId.parents?.firstOrNull()?.let { ClientTaskId(it) } ?: run {
       throw NoParent(taskId)
     }
 
