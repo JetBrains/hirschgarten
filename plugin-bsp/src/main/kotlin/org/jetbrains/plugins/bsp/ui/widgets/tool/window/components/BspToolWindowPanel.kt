@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.widgets.tool.window
+package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -8,7 +8,6 @@ import com.intellij.openapi.actionSystem.Constraints
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
-import com.intellij.ui.components.JBScrollPane
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
@@ -16,11 +15,8 @@ import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerat
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RestartAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspTargetTree
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.NotLoadedTargetsMouseListener
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.*
 import javax.swing.JComponent
-import javax.swing.JPanel
 import javax.swing.SwingConstants
 
 private enum class PanelShown {
@@ -31,33 +27,30 @@ private enum class PanelShown {
 
 private class ListsUpdater(
   private val project: Project,
-  private val toolName: String?,
+  toolName: String?,
   private val targetPanelUpdater: (ListsUpdater) -> Unit
 ) {
-  private val loadedBspTargetTree: BspTargetTree = BspTargetTree(BspPluginIcons.bsp)
-  fun getLoadedTargetsPanelComponent(): JPanel = loadedBspTargetTree.panelComponent
-
-  private val notLoadedBspTargetTree: BspTargetTree = BspTargetTree(BspPluginIcons.notLoadedTarget)
-  fun getNotLoadedTargetsPanelComponent(): JPanel = notLoadedBspTargetTree.panelComponent
+  var loadedTargetsPanel: BspPanelComponent
+    private set
+  var notLoadedTargetsPanel: BspPanelComponent
+    private set
 
   init {
-    loadedBspTargetTree.addMouseListeners { component ->
-      LoadedTargetsMouseListener(component)
-    }
-    notLoadedBspTargetTree.addMouseListeners { component ->
-      NotLoadedTargetsMouseListener(component)
-    }
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
+    loadedTargetsPanel =
+      BspPanelComponent(BspPluginIcons.bsp, toolName ?: "", magicMetaModel.getAllLoadedTargets())
+    loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it) }
+
+    notLoadedTargetsPanel =
+      BspPanelComponent(BspPluginIcons.bsp, toolName ?: "", magicMetaModel.getAllNotLoadedTargets())
+    notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it) }
     magicMetaModel.registerTargetLoadListener { rerenderComponents() }
-    rerenderComponents()
   }
 
   fun rerenderComponents() {
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
-    loadedBspTargetTree.generateTree(toolName, magicMetaModel.getAllLoadedTargets())
-    notLoadedBspTargetTree.generateTree(toolName, magicMetaModel.getAllNotLoadedTargets())
-    loadedBspTargetTree.regenerateComponents()
-    notLoadedBspTargetTree.regenerateComponents()
+    loadedTargetsPanel = loadedTargetsPanel.createNewWithTargets(magicMetaModel.getAllLoadedTargets())
+    notLoadedTargetsPanel = notLoadedTargetsPanel.createNewWithTargets(magicMetaModel.getAllNotLoadedTargets())
     targetPanelUpdater(this@ListsUpdater)
   }
 }
@@ -123,10 +116,10 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
   private fun showCurrentPanel(listsUpdater: ListsUpdater) {
     when (panelShown) {
-      PanelShown.LOADED -> listsUpdater.getLoadedTargetsPanelComponent()
-      PanelShown.NOTLOADED -> listsUpdater.getNotLoadedTargetsPanelComponent()
+      PanelShown.LOADED -> listsUpdater.loadedTargetsPanel
+      PanelShown.NOTLOADED -> listsUpdater.notLoadedTargetsPanel
       else -> null
-    }?.let { setToolWindowContent(JBScrollPane(it)) }
+    }?.let { setToolWindowContent(it.wrappedInScrollPane) }
   }
 
   private fun setToolWindowContent(component: JComponent) {

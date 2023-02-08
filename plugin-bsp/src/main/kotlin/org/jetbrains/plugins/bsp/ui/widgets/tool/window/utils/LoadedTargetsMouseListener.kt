@@ -11,15 +11,17 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
-import javax.swing.JComponent
 
 public class LoadedTargetsMouseListener(
-  private val component: JComponent
+  private val container: BuildTargetContainer
 ) : MouseListener {
 
-  override fun mouseClicked(e: MouseEvent?): Unit = mouseClickedNotNull(e!!)
+  override fun mouseClicked(e: MouseEvent?) {
+    e?.let { mouseClickedNotNull(it) }
+  }
 
   private fun mouseClickedNotNull(mouseEvent: MouseEvent) {
     if (mouseEvent.mouseButton == MouseButton.Right) {
@@ -29,20 +31,18 @@ public class LoadedTargetsMouseListener(
 
   private fun showPopup(mouseEvent: MouseEvent) {
     val actionGroup = calculatePopupGroup()
-    val context = DataManager.getInstance().getDataContext(mouseEvent.component)
-    val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
-    actionGroup?.let {
+    if (actionGroup != null) {
+      val context = DataManager.getInstance().getDataContext(mouseEvent.component)
+      val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
       JBPopupFactory.getInstance()
-        .createActionGroupPopup(null, it, context, mnemonics, true)
+        .createActionGroupPopup(null, actionGroup, context, mnemonics, true)
         .showInBestPositionFor(context)
     }
   }
 
   private fun calculatePopupGroup(): ActionGroup? {
-    val target: BuildTarget? = BspTargetTree.getSelectedBspTarget(component)
-
-    if (target != null) {
-      val group = DefaultActionGroup()
+    val target: BuildTarget? = container.getSelectedBuildTarget()
+    return if (target != null) {
       val actions = mutableListOf<AnAction>()
       if (target.capabilities.canCompile) {
         actions.add(BuildTargetAction(target.id))
@@ -53,11 +53,8 @@ public class LoadedTargetsMouseListener(
       if (target.capabilities.canTest) {
         actions.add(TestTargetAction(target.id))
       }
-      group.addAll(actions)
-      return group
-    }
-
-    return null
+      DefaultActionGroup().also { it.addAll(actions) }
+    } else null
   }
 
   override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
