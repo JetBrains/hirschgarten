@@ -31,27 +31,14 @@ public data class ClientTaskId(val id: String) {
 // / Actions can fail or be cancelled, but they cannot be nested.
 // / They can have, however, any number of subtasks.
 
-private sealed class Task<StartedData, ProgressData, FinishedData, TopLevelResult, ClientTopLevelResult>(
-  val resultFuture: CompletableFuture<TopLevelResult>,
+private data class ResultFuture(val future: CompletableFuture<Unit>)
+
+private sealed class Task<StartedData, ProgressData, FinishedData, ClientTopLevelResult>(
+  val resultFuture: ResultFuture,
   val observer: TaskObserver<StartedData, ProgressData, FinishedData, ClientTopLevelResult>,
-  val resultConverter: (TopLevelResult) -> ClientTopLevelResult,
 ) {
   val subtasks: MutableSet<ClientTaskId> =
     mutableSetOf() // / Remember the subtasks of this task and remove them when the task is finished
-
-  init {
-    resultFuture.whenComplete { result, error ->
-      if (error != null) {
-        observer.onTopLevelTaskFailed(error)
-      } else {
-        observer.onTopLevelTaskFinished(resultConverter(result))
-      }
-    }
-  }
-
-  fun cancel() {
-    resultFuture.cancel(true)
-  }
 }
 
 public fun BspCompileResult.toClient(): ClientCompileResult =
@@ -206,11 +193,10 @@ public data class ClientCompileFinishedData(
 
 public data class ClientCompileResult(val statusCode: StatusCode) // can have additional data
 
-private class CompileTask(resultFuture: CompletableFuture<BspCompileResult>, observer: CompileTaskObserver) :
-  Task<ClientCompileStartedData, Nothing, ClientCompileFinishedData, BspCompileResult, ClientCompileResult>(
+private class CompileTask(resultFuture: ResultFuture, observer: CompileTaskObserver) :
+  Task<ClientCompileStartedData, Nothing, ClientCompileFinishedData, ClientCompileResult>(
     resultFuture = resultFuture,
     observer = observer,
-    resultConverter = BspCompileResult::toClient
   )
 
 public interface TaskObserver<StartedData, ProgressData, FinishedData, TopLevelResult> {
@@ -254,7 +240,7 @@ public data class DeserializationError(val taskId: ClientTaskId, val error: Thro
 public data class WrongTaskType(val taskId: ClientTaskId, val taskType: String) : TaskError()
 public data class UnsupportedDataKind(val taskId: ClientTaskId, val kind: String) : TaskError()
 
-private typealias ErasedTask = Task<*, *, *, *, *>
+private typealias ErasedTask = Task<*, *, *, *>
 
 // TODO: Need to check for server-side cancellation.
 public class TaskClient(private val server: BuildServer) {
@@ -278,23 +264,35 @@ public class TaskClient(private val server: BuildServer) {
     }
   }
 
-  @Synchronized
-  private fun cancelTask(originId: OriginId) {
-    tasks[originId]?.cancel()
-    finishTask(originId)
-  }
+
+  private fun <Result, ClientResult> handleResultFuture(
+    originId: OriginId,
+    future: CompletableFuture<Result>,
+    observer: TaskObserver<*, *, *, ClientResult>,
+    resultTransformer: (Result) -> ClientResult
+  ): ResultFuture =
+    ResultFuture(future.handle { result, error ->
+      if (error != null) {
+        observer.onTopLevelTaskFailed(error)
+      } else {
+        observer.onTopLevelTaskFinished(resultTransformer(result))
+      }
+      finishTask(originId)
+    })
+
 
   public fun startCompileTask(params: ClientCompileTaskParams, observer: CompileTaskObserver): TaskHandle {
     val originId = nextOriginId()
     val serverCompileTaskParams = params.toProtocol(originId)
-    val resultFuture = server.buildTargetCompile(serverCompileTaskParams)
+    val future = server.buildTargetCompile(serverCompileTaskParams)
+    val resultFuture = handleResultFuture(originId, future, observer) { it.toClient() }
     val task = CompileTask(resultFuture, observer)
     tasks[originId] = task
     val handle = object : TaskHandle {
       override val originId: OriginId = originId
 
       override fun cancel() {
-        cancelTask(originId)
+        future.cancel(true)
       }
     }
     return handle

@@ -165,7 +165,7 @@ class TaskClientTest {
   private val server = MockServer()
   private val client = TaskClient(server)
   private val listener = client.BspClientListener()
-  val gson = Gson()
+  private val gson = Gson()
 
   @Test
   fun `compile task correctly starts and finishes`() {
@@ -443,6 +443,42 @@ class TaskClientTest {
     val compileTask = client.startCompileTask(params, observer)
     server.abortCompileTask(compileTask.originId, RuntimeException("Exception thrown on server"))
     observer.topLevelTaskFailedNotifications[0] shouldBe RuntimeException("Exception thrown on server")
+  }
+
+  @Test
+  fun `finishing a subtask removes its children`() {
+    val observer = MockCompileTaskObserver()
+    val params = ClientCompileTaskParams(listOf(), listOf())
+    val compileTask = client.startCompileTask(params, observer)
+
+    val subtask = TaskId("subtask")
+    subtask.parents = listOf(compileTask.originId.id)
+    val subtaskStart = TaskStartParams(subtask)
+
+    listener.onBuildTaskStart(subtaskStart)
+
+    val child = TaskId("child")
+    child.parents = listOf(subtask.id)
+    val childStarted = TaskStartParams(child)
+    // start the child
+    listener.onBuildTaskStart(childStarted)
+
+    // change child's parent to compileTask
+    child.parents = listOf(compileTask.originId.id)
+    // try to start the child again
+    val subtaskAlreadyStarted = shouldThrowExactly<SubtaskAlreadyStarted> { listener.onBuildTaskStart(childStarted) }
+
+    val subtaskFinish = TaskFinishParams(subtask, StatusCode.OK)
+    // finish the parent
+    listener.onBuildTaskFinish(subtaskFinish)
+
+    // start the child again (if this succeeds, the child was removed)
+    listener.onBuildTaskStart(childStarted)
+
+    server.finishCompileTask(compileTask.originId, CompileResult(StatusCode.OK))
+
+    subtaskAlreadyStarted.originId shouldBe OriginId(compileTask.originId.id)
+    subtaskAlreadyStarted.taskId shouldBe ClientTaskId(child.id)
   }
 
 }
