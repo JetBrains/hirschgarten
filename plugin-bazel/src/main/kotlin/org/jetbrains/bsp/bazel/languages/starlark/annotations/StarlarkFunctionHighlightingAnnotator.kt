@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.languages.starlark
+package org.jetbrains.bsp.bazel.languages.starlark.annotations
 
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -7,14 +7,15 @@ import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.psi.PsiElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.elementType
+import org.jetbrains.bsp.bazel.languages.starlark.StarlarkHighlightingColors
+import org.jetbrains.bsp.bazel.languages.starlark.StarlarkTypes
 
-class StarlarkAnnotator : Annotator {
+class StarlarkFunctionHighlightingAnnotator : Annotator {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         when {
             isFunctionDeclaration(element) -> holder.mark(element, StarlarkHighlightingColors.FUNCTION_DECLARATION)
             isNamedArgument(element) -> holder.mark(element, StarlarkHighlightingColors.NAMED_ARGUMENT)
-            else -> {}
         }
     }
 

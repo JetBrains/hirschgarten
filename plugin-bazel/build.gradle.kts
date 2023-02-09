@@ -12,7 +12,17 @@ plugins {
     id("org.jetbrains.intellij") version "1.12.0"
     // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "1.3.1"
+    // Gradle Qodana Plugin
+    id("org.jetbrains.qodana") version "0.1.13"
+    // Gradle Protobuf Plugin
+    id("com.google.protobuf") version "0.9.1"
 }
+
+
+dependencies {
+    implementation("com.google.protobuf:protobuf-java:3.21.7")
+}
+
 
 group = properties("pluginGroup")
 version = properties("pluginVersion")
