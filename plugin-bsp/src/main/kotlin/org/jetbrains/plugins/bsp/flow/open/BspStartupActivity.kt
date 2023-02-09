@@ -80,7 +80,7 @@ public class BspStartupActivity : StartupActivity.DumbAware {
     val wizard = ImportProjectWizard(project, bspConnectionDetailsGeneratorProvider)
     if (wizard.showAndGet()) {
       when (val connectionFileOrNewConnection = wizard.connectionFileOrNewConnectionProperty.get()) {
-        is NewConnection -> initializeNewConnection(project, bspConnectionDetailsGeneratorProvider)
+        is NewConnection -> initializeNewConnectionFromGenerator(project, connectionFileOrNewConnection)
         is ConnectionFile -> initializeConnectionFromFile(project, connectionFileOrNewConnection)
       }
 
@@ -88,13 +88,11 @@ public class BspStartupActivity : StartupActivity.DumbAware {
     }
   }
 
-  private fun initializeNewConnection(
+  private fun initializeNewConnectionFromGenerator(
     project: Project,
-    bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider,
+    newConnection: NewConnection
   ) {
-    val name = bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY()
-    // TODO
-    val generator = BspConnectionDetailsGeneratorExtension.extensions().find { it.name() == name }!!
+    val generator = newConnection.generator
     val bspGeneratorConnection = BspGeneratorConnection(project, generator)
 
     val bspConnectionService = BspConnectionService.getInstance(project)

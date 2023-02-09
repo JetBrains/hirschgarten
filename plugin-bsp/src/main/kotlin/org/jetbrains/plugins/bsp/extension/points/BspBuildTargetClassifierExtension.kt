@@ -15,7 +15,7 @@ public interface BspBuildTargetClassifierExtension : BspBuildTargetClassifier {
 }
 
 public class TemporaryTestTargetClassifier : BspBuildTargetClassifierExtension {
-  override fun name(): String = "bazel"
+  override fun name(): String = "bazelbsp"
 
   override fun separator(): String = "/"
 
