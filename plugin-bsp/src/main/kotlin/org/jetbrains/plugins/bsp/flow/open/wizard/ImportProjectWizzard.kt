@@ -2,7 +2,6 @@ package org.jetbrains.plugins.bsp.flow.open.wizard
 
 import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.ide.wizard.StepAdapter
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
@@ -27,7 +26,7 @@ public abstract class ImportProjectWizardStep : StepAdapter() {
 
 public class ImportProjectWizard(
   private val project: Project,
-  bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider
+  private val bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider
 ) : AbstractWizard<ImportProjectWizardStep>("Import Project via BSP", project) {
 
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
@@ -36,19 +35,35 @@ public class ImportProjectWizard(
     val projectProperties = ProjectPropertiesService.getInstance(project).value
     val firstStep = ChooseConnectionFileOrNewConnectionStep(
       projectProperties.projectRootDir,
-      // TODO it will be changed
-      bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY() != null
+      bspConnectionDetailsGeneratorProvider.availableBspConnectionDetailsGenerators,
+      this::updateWizardButtonsToGeneratorSelection
     )
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty
+
     addStep(firstStep)
 
-    val externalSteps = bspConnectionDetailsGeneratorProvider.calculateWizardSteps(
-      bspConnectionDetailsGeneratorProvider.firstGeneratorTEMPORARY()!!,
+    init()
+    updateWizardButtonsToGeneratorSelection()
+  }
+
+  private fun updateWizardButtonsToGeneratorSelection() {
+    doIfOnConnectionChoiceStep {
+      val generatorSteps = calculateGeneratorSteps()
+      val noFurtherSteps = generatorSteps.isEmpty()
+      updateButtons(noFurtherSteps, canGoNext(), isFirstStep)
+    }
+  }
+
+  private inline fun doIfOnConnectionChoiceStep(function: () -> Unit) {
+    if (currentStepObject is ChooseConnectionFileOrNewConnectionStep) function()
+  }
+
+  private fun calculateGeneratorSteps(): List<ImportProjectWizardStep> {
+    val connectionName = connectionFileOrNewConnectionProperty.get().connectionName
+    return bspConnectionDetailsGeneratorProvider.calculateWizardSteps(
+      connectionName,
       connectionFileOrNewConnectionProperty
     )
-    externalSteps.forEach { addStep(it) }
-
-    init()
   }
 
   override fun doCancelAction() {
@@ -59,4 +74,11 @@ public class ImportProjectWizard(
 
   override fun getHelpID(): String =
     "TODO"
+
+  override fun proceedToNextStep() {
+    doIfOnConnectionChoiceStep(::addGeneratorSteps)
+    super.proceedToNextStep()
+  }
+
+  private fun addGeneratorSteps(): Unit = calculateGeneratorSteps().forEach(::addStep)
 }

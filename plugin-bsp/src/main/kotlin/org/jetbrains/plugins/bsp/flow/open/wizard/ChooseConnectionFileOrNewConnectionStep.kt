@@ -6,47 +6,41 @@ import com.intellij.openapi.observable.properties.AtomicLazyProperty
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.dsl.builder.bind
-import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.components.JBRadioButton
+import com.intellij.ui.dsl.builder.*
 import com.intellij.util.io.readText
+import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 
-public sealed interface ConnectionFileOrNewConnection
-
-public data class ConnectionFile(val locatedBspConnectionDetails: LocatedBspConnectionDetails) :
-  ConnectionFileOrNewConnection
-
-public object NewConnection : ConnectionFileOrNewConnection
+private data class ConnectionChoiceContainer(var connection: ConnectionFileOrNewConnection)
 
 public open class ChooseConnectionFileOrNewConnectionStep(
   private val projectPath: VirtualFile,
-  private val isGeneratorAvailable: Boolean
+  private val availableGenerators: List<BspConnectionDetailsGenerator>,
+  private val onChoiceChange: () -> Unit
 ) : ImportProjectWizardStep() {
 
-  public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection> =
-    AtomicLazyProperty { calculateDefaultConnectionFileOrNewConnectionProperty(projectPath) }
+  private val allAvailableConnectionList by lazy { calculateAllAvailableConnections().entries.toList() }
 
-  private fun calculateDefaultConnectionFileOrNewConnectionProperty(projectPath: VirtualFile): ConnectionFileOrNewConnection {
-    val firstConnectionFileOrNull = calculateAvailableConnectionFiles(projectPath).firstOrNull()
-
-    return firstConnectionFileOrNull?.let { ConnectionFile(it) } ?: NewConnection
+  private fun calculateAllAvailableConnections(): Map<String, List<ConnectionFileOrNewConnection>> {
+    val connectionFiles = calculateAvailableConnectionFiles(projectPath)
+    val connectionsFromFiles = connectionFiles.map { ConnectionFile(it) }
+    val connectionsFromGenerators = availableGenerators.map { NewConnection(it) }
+    return (connectionsFromFiles + connectionsFromGenerators).groupBy { it.connectionName }
   }
+
+  public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection> =
+    AtomicLazyProperty { allAvailableConnectionList.first().value.first() }
 
   protected override val panel: DialogPanel = panel {
     row {
       panel {
         buttonsGroup {
-          calculateAvailableConnectionFiles(projectPath).map {
-            row {
-              radioButton(calculateConnectionFileDisplayName(it), ConnectionFile(it))
-                .comment(calculateConnectionFileComment(it))
-            }
-          }
-
-          row {
-            radioButton(newConnectionPrompt, NewConnection)
-          }.visible(isGeneratorAvailable)
-        }.bind({ connectionFileOrNewConnectionProperty.get() }, { connectionFileOrNewConnectionProperty.set(it) })
+          allAvailableConnectionList.map { generateButtonsGroupRow(it) }
+        }.bind(
+          { ConnectionChoiceContainer(connectionFileOrNewConnectionProperty.get()) },
+          { connectionFileOrNewConnectionProperty.set(it.connection) }
+        )
       }
     }
   }
@@ -67,29 +61,44 @@ public open class ChooseConnectionFileOrNewConnectionStep(
     )
   }
 
-  private fun calculateConnectionFileDisplayName(locatedBspConnectionDetails: LocatedBspConnectionDetails): String {
-    val parentDirName = locatedBspConnectionDetails.connectionFileLocation.parent.name
-    val fileName = locatedBspConnectionDetails.connectionFileLocation.name
-
-    return "Connection file: $parentDirName/$fileName"
+  private fun Panel.generateButtonsGroupRow(
+    connectionEntry: Map.Entry<String, List<ConnectionFileOrNewConnection>>
+  ) {
+    val connections = connectionEntry.value
+    if (connections.isNotEmpty()) {
+      val choiceContainer = ConnectionChoiceContainer(connections.first())
+      row {
+        val radioButton = radioButton(connectionEntry.key, choiceContainer)
+        radioButton.component.addActionListener {
+          panel.apply()
+          onChoiceChange()
+        }
+        generateRadioButtonLabel(connections, choiceContainer, radioButton)
+      }
+    }
   }
 
-  private fun calculateConnectionFileComment(locatedBspConnectionDetails: LocatedBspConnectionDetails): String {
-    val serverName = locatedBspConnectionDetails.bspConnectionDetails.name
-    val serverVersion = locatedBspConnectionDetails.bspConnectionDetails.version
-    val bspVersion = locatedBspConnectionDetails.bspConnectionDetails.bspVersion
-    val supportedLanguages = locatedBspConnectionDetails.bspConnectionDetails.languages.joinToString(", ")
-
-    return """
-      |Server name: $serverName$htmlBreakLine
-      |Server version: $serverVersion$htmlBreakLine
-      |BSP version: $bspVersion$htmlBreakLine
-      |Supported languages: $supportedLanguages$htmlBreakLine
-    """.trimMargin()
-  }
-
-  private companion object {
-    private const val newConnectionPrompt = "New Connection"
-    private const val htmlBreakLine = "<br>"
+  private fun Row.generateRadioButtonLabel(
+    connections: List<ConnectionFileOrNewConnection>,
+    choiceContainer: ConnectionChoiceContainer,
+    radioButton: Cell<JBRadioButton>
+  ) {
+    when {
+      connections.size == 1 && connections.first() is NewConnection -> {
+        label("No connection files. New file will be created.")
+      }
+      connections.size == 1 && connections.first() is ConnectionFile -> {
+        val connectionFile = connections.first() as ConnectionFile
+        label("Connection file: $connectionFile")
+      }
+      else -> {
+        label("Connection file: ")
+        val dropDown = dropDownLink(connections.first(), connections)
+        dropDown.onChanged {
+          choiceContainer.connection = it.selectedItem
+          radioButton.component.doClick()
+        }
+      }
+    }
   }
 }

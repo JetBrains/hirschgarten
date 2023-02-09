@@ -33,7 +33,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
 
   private lateinit var projectViewFilePathProperty: ObservableProperty<Path?>
 
-  public override fun name(): String = "bazel"
+  public override fun name(): String = "bazelbsp"
 
   public override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean =
     projectPath.children.any { it.name == "WORKSPACE" }

@@ -47,7 +47,7 @@ public class BspConnectionDetailsGeneratorProvider(
   bspConnectionDetailsGenerators: List<BspConnectionDetailsGenerator>,
 ) {
 
-  private val availableBspConnectionDetailsGenerators by lazy {
+  public val availableBspConnectionDetailsGenerators: List<BspConnectionDetailsGenerator> by lazy {
     bspConnectionDetailsGenerators.filter { it.canGenerateBspConnectionDetailsFile(projectPath) }
   }
 
