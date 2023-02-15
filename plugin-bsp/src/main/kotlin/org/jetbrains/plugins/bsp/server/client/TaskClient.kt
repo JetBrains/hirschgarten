@@ -14,6 +14,8 @@ import java.time.Instant
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import ch.epfl.scala.bsp4j.CompileParams as BspCompileParams
+import ch.epfl.scala.bsp4j.TestParams as BspTestParams
+import ch.epfl.scala.bsp4j.RunParams as BspRunParams
 import ch.epfl.scala.bsp4j.CompileReport as BspCompileReport
 import ch.epfl.scala.bsp4j.CompileResult as BspCompileResult
 import ch.epfl.scala.bsp4j.CompileTask as BspCompileTask
@@ -52,6 +54,30 @@ public class Subtask(public val originId: OriginId, public val subtasks: Mutable
 public data class ClientCompileTaskParams(val targets: List<BuildTargetIdentifier>, val arguments: List<String>) {
   public fun toProtocol(originId: OriginId): BspCompileParams =
     BspCompileParams(targets).apply {
+      this.originId = originId.id
+      this.arguments = arguments
+    }
+}
+
+public data class ClientTestTaskParams(
+  val targets: List<BuildTargetIdentifier>,
+  val arguments: List<String>,
+  // TODO: data
+) {
+  public fun toProtocol(originId: OriginId): BspTestParams =
+    BspTestParams(targets).apply {
+      this.originId = originId.id
+      this.arguments = arguments
+    }
+}
+
+public data class ClientRunTaskParams(
+  val target: BuildTargetIdentifier,
+  val arguments: List<String>,
+  // TODO: data
+) {
+  public fun toProtocol(originId: OriginId): BspRunParams =
+    BspRunParams(target).apply {
       this.originId = originId.id
       this.arguments = arguments
     }
@@ -97,6 +123,8 @@ public data class ClientCompileStartedData(
     target = data.target
   )
 }
+
+public data class 
 
 public data class ClientTaskProgressParams<Data>(
   public val taskId: ClientTaskId,
@@ -191,7 +219,12 @@ public data class ClientCompileFinishedData(
   )
 }
 
-public data class ClientCompileResult(val statusCode: StatusCode) // can have additional data
+
+public data class ClientCompileResult(val statusCode: StatusCode) // TODO can have additional data
+
+public data class ClientTestResult(val statusCode: StatusCode) // TODO can have additional data
+
+public data class ClientRunResult(val statusCode: StatusCode) // TODO can have additional data
 
 private class CompileTask(resultFuture: ResultFuture, observer: CompileTaskObserver) :
   Task<ClientCompileStartedData, Nothing, ClientCompileFinishedData, ClientCompileResult>(
