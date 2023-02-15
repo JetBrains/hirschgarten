@@ -73,7 +73,8 @@ internal object DependencySourcesItemToLibraryTransformer :
    * */
   private fun calculateDisplayName(uri: String): String {
     val depName = URI.create(uri).toPath().nameWithoutExtension
-    return if (isUriMaven(uri)) "BSP: $depName" else "BSP: $uri"
+    val depNameWithoutSourcesSuffix = removeSourcesSuffix(depName)
+    return if (isUriMaven(uri)) "BSP: $depNameWithoutSourcesSuffix" else "BSP: $uri"
   }
 
   /**

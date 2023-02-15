@@ -107,16 +107,16 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val dependencySourcesItem = DependencySourcesItem(
       buildTargetId,
       listOf(
-        "file:///library/test1/1.0.0/test1-1.0.0-sources.jar",
-        "file:///library/test2/2.0.0/test2-2.0.0-sources.jar",
+        "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar",
+        "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar",
       )
     )
     val javacOptionsItem = JavacOptionsItem(
       buildTargetId,
       listOf("opt1", "opt2", "opt3"),
       listOf(
-        "file:///library/test1/1.0.0/test1-1.0.0.jar",
-        "file:///library/test2/2.0.0/test2-2.0.0.jar"
+        "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+        "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"
       ),
       "file:///compiler/output.jar",
     )
@@ -171,13 +171,13 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val expectedLibrary1 = Library(
       displayName = "BSP: test1-1.0.0",
-      sourcesJar = "jar:///library/test1/1.0.0/test1-1.0.0-sources.jar!/",
-      classesJar = "jar:///library/test1/1.0.0/test1-1.0.0.jar!/",
+      sourcesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/",
+      classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
     )
     val expectedLibrary2 = Library(
       displayName = "BSP: test2-2.0.0",
-      sourcesJar = "jar:///library/test2/2.0.0/test2-2.0.0-sources.jar!/",
-      classesJar = "jar:///library/test2/2.0.0/test2-2.0.0.jar!/",
+      sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
+      classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
     )
 
     val expectedJavaModule = JavaModule(
@@ -254,16 +254,16 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val dependencySourcesItem1 = DependencySourcesItem(
       buildTargetId1,
       listOf(
-        "file:///library/test1/1.0.0/test1-1.0.0-sources.jar",
-        "file:///library/test2/2.0.0/test2-2.0.0-sources.jar",
+        "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar",
+        "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar",
       )
     )
     val target1JavacOptionsItem = JavacOptionsItem(
       buildTargetId1,
       listOf("opt1.1", "opt1.2", "opt1.3"),
       listOf(
-        "file:///library/test1/1.0.0/test1-1.0.0.jar",
-        "file:///library/test2/2.0.0/test2-2.0.0.jar",
+        "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+        "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
       ),
       "file:///compiler/output1.jar",
     )
@@ -320,12 +320,12 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val dependencySourcesItem2 = DependencySourcesItem(
       buildTargetId2,
-      listOf("file:///library/test1/1.0.0/test1-1.0.0-sources.jar")
+      listOf("file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar")
     )
     val target2JavacOptionsItem = JavacOptionsItem(
       buildTargetId2,
       listOf("opt2.1", "opt2.2"),
-      listOf("file:///library/test1/1.0.0/test1-1.0.0.jar"),
+      listOf("file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
       "file:///compiler/output2.jar",
     )
 
@@ -381,13 +381,13 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val expectedLibrary11 = Library(
       displayName = "BSP: test1-1.0.0",
-      sourcesJar = "jar:///library/test1/1.0.0/test1-1.0.0-sources.jar!/",
-      classesJar = "jar:///library/test1/1.0.0/test1-1.0.0.jar!/",
+      sourcesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/",
+      classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
     )
     val expectedLibrary12 = Library(
       displayName = "BSP: test2-2.0.0",
-      sourcesJar = "jar:///library/test2/2.0.0/test2-2.0.0-sources.jar!/",
-      classesJar = "jar:///library/test2/2.0.0/test2-2.0.0.jar!/",
+      sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
+      classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
     )
 
     val expectedJavaModule1 = JavaModule(
@@ -422,8 +422,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val expectedLibrary21 = Library(
       displayName = "BSP: test1-1.0.0",
-      sourcesJar = "jar:///library/test1/1.0.0/test1-1.0.0-sources.jar!/",
-      classesJar = "jar:///library/test1/1.0.0/test1-1.0.0.jar!/",
+      sourcesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/",
+      classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
     )
 
     val expectedJavaModule2 = JavaModule(
