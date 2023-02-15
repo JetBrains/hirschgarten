@@ -36,8 +36,8 @@ class BspModuleDetailsToModuleTransformerTest {
   @Test
   fun `should return module with dependencies to other targets and libraries`() {
     // given
-    val dependencySource1 = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar"
-    val dependencySource2 = "file:///dependency/test2/1.0.0/test2-1.0.0-sources.jar"
+    val dependencySource1 = "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar"
+    val dependencySource2 = "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0-sources.jar"
 
     val targetName = "//target1"
     val targetId = BuildTargetIdentifier(targetName)
@@ -62,8 +62,8 @@ class BspModuleDetailsToModuleTransformerTest {
       targetId,
       emptyList(),
       listOf(
-        "file:///dependency/test1/1.0.0/test1-1.0.0.jar",
-        "file:///dependency/test2/1.0.0/test2-1.0.0.jar",
+        "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+        "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
       ),
       "file:///compiler/output.jar",
     )
@@ -112,8 +112,8 @@ class BspModuleDetailsToModuleTransformerTest {
   @Test
   fun `should return multiple modules with dependencies to other targets and libraries`() {
     // given
-    val dependencySource1 = "file:///dependency/test1/1.0.0/test1-1.0.0-sources.jar"
-    val dependencySource2 = "file:///dependency/test2/1.0.0/test2-1.0.0-sources.jar"
+    val dependencySource1 = "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar"
+    val dependencySource2 = "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0-sources.jar"
 
     val target1Name = "//target1"
     val target1Id = BuildTargetIdentifier(target1Name)
@@ -138,8 +138,8 @@ class BspModuleDetailsToModuleTransformerTest {
       target1Id,
       emptyList(),
       listOf(
-        "file:///dependency/test1/1.0.0/test1-1.0.0.jar",
-        "file:///dependency/test2/1.0.0/test2-1.0.0.jar"
+        "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+        "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar"
       ),
       "file:///compiler/output1.jar",
     )
@@ -179,7 +179,7 @@ class BspModuleDetailsToModuleTransformerTest {
       target2Id,
       emptyList(),
       listOf(
-        "file:///dependency/test1/1.0.0/test1-1.0.0.jar",
+        "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
       ),
       "file:///compiler/output2.jar",
     )
