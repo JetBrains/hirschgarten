@@ -2,24 +2,32 @@ package org.jetbrains.plugins.bsp.server.client
 
 import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.Location
 import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TaskDataKind
 import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
+import ch.epfl.scala.bsp4j.TestStatus
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import ch.epfl.scala.bsp4j.CompileParams as BspCompileParams
-import ch.epfl.scala.bsp4j.TestParams as BspTestParams
-import ch.epfl.scala.bsp4j.RunParams as BspRunParams
 import ch.epfl.scala.bsp4j.CompileReport as BspCompileReport
 import ch.epfl.scala.bsp4j.CompileResult as BspCompileResult
 import ch.epfl.scala.bsp4j.CompileTask as BspCompileTask
+import ch.epfl.scala.bsp4j.RunParams as BspRunParams
 import ch.epfl.scala.bsp4j.TaskId as BspTaskId
+import ch.epfl.scala.bsp4j.TestFinish as BspTestFinish
+import ch.epfl.scala.bsp4j.TestParams as BspTestParams
+import ch.epfl.scala.bsp4j.TestReport as BspTestReport
+import ch.epfl.scala.bsp4j.TestStart as BspTestStart
+import ch.epfl.scala.bsp4j.TestTask as BspTestTask
+import ch.epfl.scala.bsp4j.TestResult as BspTestResult
+import ch.epfl.scala.bsp4j.RunResult as BspRunResult
 
 public data class OriginId(val id: String) {
   public fun toTaskId(): ClientTaskId = ClientTaskId(id)
@@ -28,10 +36,6 @@ public data class OriginId(val id: String) {
 public data class ClientTaskId(val id: String) {
   public fun toOriginId(): OriginId = OriginId(id)
 }
-
-// / An action is a top-level task started by the user, such as a build or a test run.
-// / Actions can fail or be cancelled, but they cannot be nested.
-// / They can have, however, any number of subtasks.
 
 private data class ResultFuture(val future: CompletableFuture<Unit>)
 
@@ -45,6 +49,16 @@ private sealed class Task<StartedData, ProgressData, FinishedData, ClientTopLeve
 
 public fun BspCompileResult.toClient(): ClientCompileResult =
   ClientCompileResult(
+    statusCode = statusCode,
+  )
+
+public fun BspTestResult.toClient(): ClientTestResult =
+  ClientTestResult(
+    statusCode = statusCode,
+  )
+
+public fun BspRunResult.toClient(): ClientRunResult =
+  ClientRunResult(
     statusCode = statusCode,
   )
 
@@ -116,7 +130,7 @@ public data class ClientTaskStartedParams<Data>(
     )
 }
 
-public data class ClientCompileStartedData(
+public data class ClientCompileTaskData(
   val target: BuildTargetIdentifier
 ) {
   public constructor(data: BspCompileTask) : this(
@@ -124,7 +138,62 @@ public data class ClientCompileStartedData(
   )
 }
 
-public data class 
+public sealed interface ClientTestTaskStartedData
+
+public sealed interface ClientTestTaskFinishedData
+
+public data class ClientTestTaskData(
+  val target: BuildTargetIdentifier
+) : ClientTestTaskStartedData {
+  public constructor(data: BspTestTask) : this(
+    target = data.target
+  )
+}
+
+public data class ClientTestReportData(
+  val target: BuildTargetIdentifier,
+  val passed: Int,
+  val failed: Int,
+  val ignored: Int,
+  val cancelled: Int,
+  val skipped: Int,
+  val time: Duration?
+) : ClientTestTaskFinishedData {
+  public constructor(data: BspTestReport) : this(
+    target = data.target,
+    passed = data.passed,
+    failed = data.failed,
+    ignored = data.ignored,
+    cancelled = data.cancelled,
+    skipped = data.skipped,
+    time = data.time?.let { Duration.ofMillis(it) }
+  )
+}
+
+public data class ClientTestStartData(
+  val displayName: String,
+  val location: Location?,
+) : ClientTestTaskStartedData {
+  public constructor(data: BspTestStart) : this(
+    displayName = data.displayName,
+    location = data.location
+  )
+}
+
+public data class ClientTestFinishData(
+  val displayName: String,
+  val message: String?,
+  val status: TestStatus,
+  val location: Location?,
+  // TODO: additional data
+) : ClientTestTaskFinishedData {
+  public constructor(data: BspTestFinish) : this(
+    displayName = data.displayName,
+    message = data.message,
+    status = data.status,
+    location = data.location
+  )
+}
 
 public data class ClientTaskProgressParams<Data>(
   public val taskId: ClientTaskId,
@@ -203,7 +272,7 @@ public data class ClientTaskFinishedParams<Data>(
     )
 }
 
-public data class ClientCompileFinishedData(
+public data class ClientCompileReportData(
   val target: BuildTargetIdentifier,
   val errors: Int,
   val warnings: Int,
@@ -227,15 +296,27 @@ public data class ClientTestResult(val statusCode: StatusCode) // TODO can have 
 public data class ClientRunResult(val statusCode: StatusCode) // TODO can have additional data
 
 private class CompileTask(resultFuture: ResultFuture, observer: CompileTaskObserver) :
-  Task<ClientCompileStartedData, Nothing, ClientCompileFinishedData, ClientCompileResult>(
+  Task<ClientCompileTaskData, Nothing, ClientCompileReportData, ClientCompileResult>(
+    resultFuture = resultFuture,
+    observer = observer,
+  )
+
+private class TestTask(resultFuture: ResultFuture, observer: TestTaskObserver) :
+  Task<ClientTestTaskStartedData, Nothing, ClientTestTaskFinishedData, ClientTestResult>(
+    resultFuture = resultFuture,
+    observer = observer,
+  )
+
+private class RunTask(resultFuture: ResultFuture, observer: RunTaskObserver) :
+  Task<Nothing, Nothing, Nothing, ClientRunResult>(
     resultFuture = resultFuture,
     observer = observer,
   )
 
 public interface TaskObserver<StartedData, ProgressData, FinishedData, TopLevelResult> {
-  public fun onTaskStarted(params: ClientTaskStartedParams<StartedData>)
-  public fun onTaskProgress(params: ClientTaskProgressParams<ProgressData>)
-  public fun onTaskFinished(params: ClientTaskFinishedParams<FinishedData>)
+  public fun onTaskStarted(params: ClientTaskStartedParams<out StartedData>)
+  public fun onTaskProgress(params: ClientTaskProgressParams<out ProgressData>)
+  public fun onTaskFinished(params: ClientTaskFinishedParams<out FinishedData>)
   public fun onTopLevelTaskFinished(params: TopLevelResult)
   public fun onTopLevelTaskFailed(throwable: Throwable)
 
@@ -275,7 +356,6 @@ public data class UnsupportedDataKind(val taskId: ClientTaskId, val kind: String
 
 private typealias ErasedTask = Task<*, *, *, *>
 
-// TODO: Need to check for server-side cancellation.
 public class TaskClient(private val server: BuildServer) {
   private val tasks: MutableMap<OriginId, ErasedTask> = mutableMapOf()
   private val subtasks: MutableMap<ClientTaskId, Subtask> = mutableMapOf()
@@ -313,13 +393,19 @@ public class TaskClient(private val server: BuildServer) {
       finishTask(originId)
     })
 
-
-  public fun startCompileTask(params: ClientCompileTaskParams, observer: CompileTaskObserver): TaskHandle {
+  private fun <ClientParams, Params, StartedData, ProgressData, FinishedData, Result, ClientResult> startTask(
+    params: ClientParams,
+    paramsTransformer: (ClientParams, OriginId) -> Params,
+    observer: TaskObserver<StartedData, ProgressData, FinishedData, ClientResult>,
+    taskStarter: BuildServer.(Params) -> CompletableFuture<Result>,
+    resultTransformer: (Result) -> ClientResult,
+    taskConstructor: (ResultFuture, TaskObserver<StartedData, ProgressData, FinishedData, ClientResult>) -> ErasedTask
+  ): TaskHandle {
     val originId = nextOriginId()
-    val serverCompileTaskParams = params.toProtocol(originId)
-    val future = server.buildTargetCompile(serverCompileTaskParams)
-    val resultFuture = handleResultFuture(originId, future, observer) { it.toClient() }
-    val task = CompileTask(resultFuture, observer)
+    val bspParams = paramsTransformer(params, originId)
+    val future = taskStarter(server, bspParams)
+    val resultFuture = handleResultFuture(originId, future, observer, resultTransformer)
+    val task = taskConstructor(resultFuture, observer)
     tasks[originId] = task
     val handle = object : TaskHandle {
       override val originId: OriginId = originId
@@ -329,6 +415,39 @@ public class TaskClient(private val server: BuildServer) {
       }
     }
     return handle
+  }
+
+  public fun startCompileTask(clientParams: ClientCompileTaskParams, observer: CompileTaskObserver): TaskHandle {
+    return startTask(
+      params = clientParams,
+      paramsTransformer = { params, originId -> params.toProtocol(originId) },
+      observer = observer,
+      taskStarter = BuildServer::buildTargetCompile,
+      resultTransformer = { it.toClient() },
+      taskConstructor = ::CompileTask
+    )
+  }
+
+  public fun startTestTask(clientParams: ClientTestTaskParams, observer: TestTaskObserver): TaskHandle {
+    return startTask(
+      params = clientParams,
+      paramsTransformer = { params, originId -> params.toProtocol(originId) },
+      observer = observer,
+      taskStarter = BuildServer::buildTargetTest,
+      resultTransformer = { it.toClient() },
+      taskConstructor = ::TestTask
+    )
+  }
+
+  public fun startRunTask(clientParams: ClientRunTaskParams, observer: RunTaskObserver): TaskHandle {
+    return startTask(
+      params = clientParams,
+      paramsTransformer = { params, originId -> params.toProtocol(originId) },
+      observer = observer,
+      taskStarter = BuildServer::buildTargetRun,
+      resultTransformer = { it.toClient() },
+      taskConstructor = ::RunTask
+    )
   }
 
   private data class InternalTaskData(
@@ -428,7 +547,7 @@ public class TaskClient(private val server: BuildServer) {
 
         TaskDataKind.COMPILE_TASK
         -> {
-          // TODO: Extract
+          // TODO: Extract?
           val compileTask = try {
             gson.fromJson(params.data as JsonObject, BspCompileTask::class.java)
           } catch (e: Exception) {
@@ -436,13 +555,49 @@ public class TaskClient(private val server: BuildServer) {
           }
 
           val clientCompileTaskStartedParams =
-            clientGenericTaskStartedParams.withData(ClientCompileStartedData(compileTask))
+            clientGenericTaskStartedParams.withData(ClientCompileTaskData(compileTask))
 
           val compileTaskObserver = (originTask as? CompileTask)?.observer ?: run {
             throw WrongTaskType(taskId, TaskDataKind.COMPILE_TASK)
           }
 
           compileTaskObserver.onTaskStarted(clientCompileTaskStartedParams)
+        }
+
+        TaskDataKind.TEST_TASK
+        -> {
+          val testTask = try {
+            gson.fromJson(params.data as JsonObject, BspTestTask::class.java)
+          } catch (e: Exception) {
+            throw DeserializationError(taskId, e)
+          }
+
+          val clientTestTaskStartedParams =
+            clientGenericTaskStartedParams.withData(ClientTestTaskData(testTask))
+
+          val testTaskObserver = (originTask as? TestTask)?.observer ?: run {
+            throw WrongTaskType(taskId, TaskDataKind.TEST_TASK)
+          }
+
+          testTaskObserver.onTaskStarted(clientTestTaskStartedParams)
+        }
+
+        TaskDataKind.TEST_START
+        -> {
+          val testStart = try {
+            gson.fromJson(params.data as JsonObject, BspTestStart::class.java)
+          } catch (e: Exception) {
+            throw DeserializationError(taskId, e)
+          }
+
+          val clientTestStartParams =
+            clientGenericTaskStartedParams.withData(ClientTestStartData(testStart))
+
+          val testTaskObserver = (originTask as? TestTask)?.observer ?: run {
+            throw WrongTaskType(taskId, TaskDataKind.TEST_START)
+          }
+
+          testTaskObserver.onTaskStarted(clientTestStartParams)
         }
 
         else -> {
@@ -493,7 +648,7 @@ public class TaskClient(private val server: BuildServer) {
           }
 
           val clientCompileTaskFinishedParams = clientGenericTaskFinishedParams.withData(
-            ClientCompileFinishedData(compileReport)
+            ClientCompileReportData(compileReport)
           )
 
           val compileTaskObserver = (originTask as? CompileTask)?.observer ?: run {
@@ -501,6 +656,42 @@ public class TaskClient(private val server: BuildServer) {
           }
 
           compileTaskObserver.onTaskFinished(clientCompileTaskFinishedParams)
+        }
+
+        TaskDataKind.TEST_REPORT -> {
+          val testReport = try {
+            gson.fromJson(params.data as JsonObject, BspTestReport::class.java)
+          } catch (e: Exception) {
+            throw DeserializationError(taskId, e)
+          }
+
+          val clientTestTaskFinishedParams = clientGenericTaskFinishedParams.withData(
+            ClientTestReportData(testReport)
+          )
+
+          val testTaskObserver = (originTask as? TestTask)?.observer ?: run {
+            throw WrongTaskType(taskId, TaskDataKind.TEST_REPORT)
+          }
+
+          testTaskObserver.onTaskFinished(clientTestTaskFinishedParams)
+        }
+
+        TaskDataKind.TEST_FINISH -> {
+          val testFinish = try {
+            gson.fromJson(params.data as JsonObject, BspTestFinish::class.java)
+          } catch (e: Exception) {
+            throw DeserializationError(taskId, e)
+          }
+
+          val clientTestFinishParams = clientGenericTaskFinishedParams.withData(
+            ClientTestFinishData(testFinish)
+          )
+
+          val testTaskObserver = (originTask as? TestTask)?.observer ?: run {
+            throw WrongTaskType(taskId, TaskDataKind.TEST_FINISH)
+          }
+
+          testTaskObserver.onTaskFinished(clientTestFinishParams)
         }
 
         else -> {
@@ -511,4 +702,8 @@ public class TaskClient(private val server: BuildServer) {
   }
 }
 
-public typealias CompileTaskObserver = TaskObserver<ClientCompileStartedData, Nothing, ClientCompileFinishedData, ClientCompileResult>
+public typealias CompileTaskObserver = TaskObserver<ClientCompileTaskData, Nothing, ClientCompileReportData, ClientCompileResult>
+
+public typealias TestTaskObserver = TaskObserver<ClientTestTaskStartedData, Nothing, ClientTestTaskFinishedData, ClientTestResult>
+
+public typealias RunTaskObserver = TaskObserver<Nothing, Nothing, Nothing, ClientRunResult>

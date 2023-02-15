@@ -134,13 +134,13 @@ private class MockServer : BuildServer {
 }
 
 class MockCompileTaskObserver : CompileTaskObserver {
-  val taskStartedNotifications = mutableListOf<ClientTaskStartedParams<ClientCompileStartedData>>()
+  val taskStartedNotifications = mutableListOf<ClientTaskStartedParams<out ClientCompileTaskData>>()
   val taskProgressNotifications = mutableListOf<ClientTaskProgressParams<Nothing>>()
-  val taskFinishedNotifications = mutableListOf<ClientTaskFinishedParams<ClientCompileFinishedData>>()
+  val taskFinishedNotifications = mutableListOf<ClientTaskFinishedParams<out ClientCompileReportData>>()
   val topLevelCompileTaskFinishedNotifications = mutableListOf<ClientCompileResult>()
   val topLevelTaskFailedNotifications = mutableListOf<Throwable>()
 
-  override fun onTaskStarted(params: ClientTaskStartedParams<ClientCompileStartedData>) {
+  override fun onTaskStarted(params: ClientTaskStartedParams<out ClientCompileTaskData>) {
     taskStartedNotifications.add(params)
   }
 
@@ -148,7 +148,7 @@ class MockCompileTaskObserver : CompileTaskObserver {
     taskProgressNotifications.add(params)
   }
 
-  override fun onTaskFinished(params: ClientTaskFinishedParams<ClientCompileFinishedData>) {
+  override fun onTaskFinished(params: ClientTaskFinishedParams<out ClientCompileReportData>) {
     taskFinishedNotifications.add(params)
   }
 
@@ -223,7 +223,7 @@ class TaskClientTest {
       ClientTaskStartedParams(ClientTaskId(subtaskId.id), ClientTaskId(compileTask.originId.id), null, null, null),
       ClientTaskStartedParams(
         ClientTaskId(compileSubtaskId.id), ClientTaskId(compileTask.originId.id),
-        null, null, ClientCompileStartedData(compileSubtaskData)
+        null, null, ClientCompileTaskData(compileSubtaskData)
       )
     )
 
@@ -235,7 +235,7 @@ class TaskClientTest {
       ClientTaskFinishedParams(ClientTaskId(subtaskId.id), ClientTaskId(compileTask.originId.id), now, null, StatusCode.OK, null),
       ClientTaskFinishedParams(
         ClientTaskId(compileSubtaskId.id), ClientTaskId(compileTask.originId.id),
-        null, null, StatusCode.OK, ClientCompileFinishedData(compileSubtaskReport),
+        null, null, StatusCode.OK, ClientCompileReportData(compileSubtaskReport),
       )
     )
   }
