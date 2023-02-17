@@ -44,7 +44,7 @@ private sealed class Task<StartedData, ProgressData, FinishedData, ClientTopLeve
   val observer: TaskObserver<StartedData, ProgressData, FinishedData, ClientTopLevelResult>,
 ) {
   val subtasks: MutableSet<ClientTaskId> =
-    mutableSetOf() // / Remember the subtasks of this task and remove them when the task is finished
+    mutableSetOf() // Remember the subtasks of this task and remove them when the task is finished
 }
 
 public fun BspCompileResult.toClient(): ClientCompileResult =

@@ -32,9 +32,13 @@ import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskId
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
+import ch.epfl.scala.bsp4j.TestFinish
 import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestResult
+import ch.epfl.scala.bsp4j.TestStart
+import ch.epfl.scala.bsp4j.TestStatus
+import ch.epfl.scala.bsp4j.TestTask
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.Gson
 import io.kotest.assertions.throwables.shouldThrowExactly
@@ -579,6 +583,84 @@ class TaskClientTest {
     server.finishCompileTask(compileTask.originId, CompileResult(StatusCode.OK))
 
     throwable.taskId shouldBe ClientTaskId(subtask.id)
+  }
+
+  @Test
+  fun `happy path for test task is supported`() {
+    val observer = MockTestTaskObserver()
+    val params = ClientTestTaskParams(listOf(), listOf())
+    val testTask = client.startTestTask(params, observer)
+
+    val subtask = TaskId("subtask1")
+    subtask.parents = listOf(testTask.originId.id)
+    val subtaskStart = TaskStartParams(subtask)
+    subtaskStart.dataKind = TaskDataKind.TEST_TASK
+    subtaskStart.data = gson.toJsonTree(TestTask(BuildTargetIdentifier("target")))
+    listener.onBuildTaskStart(subtaskStart)
+
+    val subsubtask = TaskId("subsubtask1")
+    subsubtask.parents = listOf(subtask.id)
+    val subsubtaskStart = TaskStartParams(subsubtask)
+    subsubtaskStart.dataKind = TaskDataKind.TEST_START
+    subsubtaskStart.data = gson.toJsonTree(TestStart("test"))
+    listener.onBuildTaskStart(subsubtaskStart)
+
+    val subsubtaskFinish = TaskFinishParams(subsubtask, StatusCode.OK)
+    subsubtaskFinish.dataKind = TaskDataKind.TEST_FINISH
+    subsubtaskFinish.data = gson.toJsonTree(TestFinish("test", TestStatus.PASSED))
+    listener.onBuildTaskFinish(subsubtaskFinish)
+
+    val subtaskFinish = TaskFinishParams(subtask, StatusCode.OK)
+    subtaskFinish.dataKind = TaskDataKind.TEST_REPORT
+    subtaskFinish.data = gson.toJsonTree(TestReport(BuildTargetIdentifier("target"), 0, 0, 0, 0, 0))
+    listener.onBuildTaskFinish(subtaskFinish)
+
+    server.finishTestTask(testTask.originId, TestResult(StatusCode.OK))
+
+    observer.topLevelTestTaskFinishedNotifications[0] shouldBe ClientTestResult(StatusCode.OK)
+    observer.topLevelTestTaskFinishedNotifications.size shouldBe 1
+    observer.taskStartedNotifications[0] shouldBe ClientTaskStartedParams(ClientTaskId(subtask.id), testTask.originId.toTaskId(), null, null, ClientTestTaskData(BuildTargetIdentifier("target")))
+    observer.taskStartedNotifications[1] shouldBe ClientTaskStartedParams(ClientTaskId(subsubtask.id), ClientTaskId(subtask.id), null, null, ClientTestStartData("test", null))
+    observer.taskStartedNotifications.size shouldBe 2
+    observer.taskFinishedNotifications[0] shouldBe ClientTaskFinishedParams(ClientTaskId(subsubtask.id), ClientTaskId(subtask.id), null, null, StatusCode.OK, ClientTestFinishData("test", null, TestStatus.PASSED, null))
+    observer.taskFinishedNotifications[1] shouldBe ClientTaskFinishedParams(ClientTaskId(subtask.id), testTask.originId.toTaskId(), null, null, StatusCode.OK, ClientTestReportData(BuildTargetIdentifier("target"), 0, 0, 0, 0, 0, null))
+    observer.taskFinishedNotifications.size shouldBe 2
+    observer.taskProgressNotifications shouldBe emptyList()
+  }
+
+  @Test
+  fun `happy path for run task is supported`() {
+    val observer = MockRunTaskObserver()
+    val target = BuildTargetIdentifier("target")
+    val params = ClientRunTaskParams(target, listOf())
+    val runTask = client.startRunTask(params, observer)
+
+    val subtask = TaskId("subtask1")
+    subtask.parents = listOf(runTask.originId.id)
+    val subtaskStart = TaskStartParams(subtask)
+    listener.onBuildTaskStart(subtaskStart)
+
+    val subsubtask = TaskId("subsubtask1")
+    subsubtask.parents = listOf(subtask.id)
+    val subsubtaskStart = TaskStartParams(subsubtask)
+    listener.onBuildTaskStart(subsubtaskStart)
+
+    val subsubtaskFinish = TaskFinishParams(subsubtask, StatusCode.OK)
+    listener.onBuildTaskFinish(subsubtaskFinish)
+
+    val subtaskFinish = TaskFinishParams(subtask, StatusCode.OK)
+    listener.onBuildTaskFinish(subtaskFinish)
+
+    server.finishRunTask(runTask.originId, RunResult(StatusCode.OK))
+
+    observer.topLevelRunTaskFinishedNotifications[0] shouldBe ClientRunResult(StatusCode.OK)
+    observer.topLevelRunTaskFinishedNotifications.size shouldBe 1
+    observer.taskStartedNotifications[0] shouldBe ClientTaskStartedParams(ClientTaskId(subtask.id), runTask.originId.toTaskId(), null, null, null)
+    observer.taskStartedNotifications[1] shouldBe ClientTaskStartedParams(ClientTaskId(subsubtask.id), ClientTaskId(subtask.id), null, null, null)
+    observer.taskStartedNotifications.size shouldBe 2
+    observer.taskFinishedNotifications[0] shouldBe ClientTaskFinishedParams(ClientTaskId(subsubtask.id), ClientTaskId(subtask.id), null, null, StatusCode.OK, null)
+    observer.taskFinishedNotifications[1] shouldBe ClientTaskFinishedParams(ClientTaskId(subtask.id), runTask.originId.toTaskId(), null, null, StatusCode.OK, null)
+    observer.taskFinishedNotifications.size shouldBe 2
   }
 
 }
