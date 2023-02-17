@@ -33,6 +33,7 @@ import ch.epfl.scala.bsp4j.TaskId
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 import ch.epfl.scala.bsp4j.TestParams
+import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.Gson
@@ -46,6 +47,8 @@ import java.util.concurrent.CompletableFuture
 private class MockServer : BuildServer {
 
   val compileTasks = mutableMapOf<OriginId, CompletableFuture<CompileResult>>()
+  val testTasks = mutableMapOf<OriginId, CompletableFuture<TestResult>>()
+  val runTasks = mutableMapOf<OriginId, CompletableFuture<RunResult>>()
 
   override fun buildTargetCompile(params: CompileParams): CompletableFuture<CompileResult> {
     val originId = OriginId(params.originId)
@@ -58,20 +61,38 @@ private class MockServer : BuildServer {
     compileTasks[originId]?.complete(result)
   }
 
-  fun cancelCompileTask(originId: OriginId) {
+  override fun buildTargetTest(params: TestParams): CompletableFuture<TestResult> {
+    val originId = OriginId(params.originId)
+    val testTask = CompletableFuture<TestResult>()
+    testTasks[originId] = testTask
+    return testTask
+  }
+
+  fun finishTestTask(originId: OriginId, result: TestResult) {
+    testTasks[originId]?.complete(result)
+  }
+
+  override fun buildTargetRun(params: RunParams): CompletableFuture<RunResult> {
+    val originId = OriginId(params.originId)
+    val runTask = CompletableFuture<RunResult>()
+    runTasks[originId] = runTask
+    return runTask
+  }
+
+  fun finishRunTask(originId: OriginId, result: RunResult) {
+    runTasks[originId]?.complete(result)
+  }
+
+  fun cancelTask(originId: OriginId) {
     compileTasks[originId]?.cancel(true)
+    testTasks[originId]?.cancel(true)
+    runTasks[originId]?.cancel(true)
   }
 
-  fun abortCompileTask(originId: OriginId, throwable: Throwable) {
+  fun abortTask(originId: OriginId, throwable: Throwable) {
     compileTasks[originId]?.completeExceptionally(throwable)
-  }
-
-  override fun buildTargetTest(params: TestParams?): CompletableFuture<TestResult> {
-    TODO("Not yet implemented")
-  }
-
-  override fun buildTargetRun(params: RunParams?): CompletableFuture<RunResult> {
-    TODO("Not yet implemented")
+    testTasks[originId]?.completeExceptionally(throwable)
+    runTasks[originId]?.completeExceptionally(throwable)
   }
 
   // Not needed for tasks
@@ -154,6 +175,62 @@ class MockCompileTaskObserver : CompileTaskObserver {
 
   override fun onTopLevelTaskFinished(params: ClientCompileResult) {
     topLevelCompileTaskFinishedNotifications.add(params)
+  }
+
+  override fun onTopLevelTaskFailed(throwable: Throwable) {
+    topLevelTaskFailedNotifications.add(throwable)
+  }
+}
+
+class MockTestTaskObserver : TestTaskObserver {
+  val taskStartedNotifications = mutableListOf<ClientTaskStartedParams<out ClientTestTaskStartedData>>()
+  val taskProgressNotifications = mutableListOf<ClientTaskProgressParams<Nothing>>()
+  val taskFinishedNotifications = mutableListOf<ClientTaskFinishedParams<out ClientTestTaskFinishedData>>()
+  val topLevelTestTaskFinishedNotifications = mutableListOf<ClientTestResult>()
+  val topLevelTaskFailedNotifications = mutableListOf<Throwable>()
+
+  override fun onTaskStarted(params: ClientTaskStartedParams<out ClientTestTaskStartedData>) {
+    taskStartedNotifications.add(params)
+  }
+
+  override fun onTaskProgress(params: ClientTaskProgressParams<Nothing>) {
+    taskProgressNotifications.add(params)
+  }
+
+  override fun onTaskFinished(params: ClientTaskFinishedParams<out ClientTestTaskFinishedData>) {
+    taskFinishedNotifications.add(params)
+  }
+
+  override fun onTopLevelTaskFinished(params: ClientTestResult) {
+    topLevelTestTaskFinishedNotifications.add(params)
+  }
+
+  override fun onTopLevelTaskFailed(throwable: Throwable) {
+    topLevelTaskFailedNotifications.add(throwable)
+  }
+}
+
+class MockRunTaskObserver : RunTaskObserver {
+  val taskStartedNotifications = mutableListOf<ClientTaskStartedParams<Nothing>>()
+  val taskProgressNotifications = mutableListOf<ClientTaskProgressParams<Nothing>>()
+  val taskFinishedNotifications = mutableListOf<ClientTaskFinishedParams<Nothing>>()
+  val topLevelRunTaskFinishedNotifications = mutableListOf<ClientRunResult>()
+  val topLevelTaskFailedNotifications = mutableListOf<Throwable>()
+
+  override fun onTaskStarted(params: ClientTaskStartedParams<Nothing>) {
+    taskStartedNotifications.add(params)
+  }
+
+  override fun onTaskProgress(params: ClientTaskProgressParams<Nothing>) {
+    taskProgressNotifications.add(params)
+  }
+
+  override fun onTaskFinished(params: ClientTaskFinishedParams<Nothing>) {
+    taskFinishedNotifications.add(params)
+  }
+
+  override fun onTopLevelTaskFinished(params: ClientRunResult) {
+    topLevelRunTaskFinishedNotifications.add(params)
   }
 
   override fun onTopLevelTaskFailed(throwable: Throwable) {
@@ -432,7 +509,7 @@ class TaskClientTest {
     val observer = MockCompileTaskObserver()
     val params = ClientCompileTaskParams(listOf(), listOf())
     val compileTask = client.startCompileTask(params, observer)
-    server.cancelCompileTask(compileTask.originId)
+    server.cancelTask(compileTask.originId)
     observer.topLevelTaskFailedNotifications[0] shouldBe CancellationException()
   }
 
@@ -441,7 +518,7 @@ class TaskClientTest {
     val observer = MockCompileTaskObserver()
     val params = ClientCompileTaskParams(listOf(), listOf())
     val compileTask = client.startCompileTask(params, observer)
-    server.abortCompileTask(compileTask.originId, RuntimeException("Exception thrown on server"))
+    server.abortTask(compileTask.originId, RuntimeException("Exception thrown on server"))
     observer.topLevelTaskFailedNotifications[0] shouldBe RuntimeException("Exception thrown on server")
   }
 
@@ -479,6 +556,29 @@ class TaskClientTest {
 
     subtaskAlreadyStarted.originId shouldBe OriginId(compileTask.originId.id)
     subtaskAlreadyStarted.taskId shouldBe ClientTaskId(child.id)
+  }
+
+  @Test
+  fun `listener throws exception when a task finished with data of a different kind`() {
+    val observer = MockCompileTaskObserver()
+    val params = ClientCompileTaskParams(listOf(), listOf())
+    val compileTask = client.startCompileTask(params, observer)
+
+    val subtask = TaskId("subtask")
+    subtask.parents = listOf(compileTask.originId.id)
+    val subtaskStart = TaskStartParams(subtask)
+
+    listener.onBuildTaskStart(subtaskStart)
+
+    val subtaskFinish = TaskFinishParams(subtask, StatusCode.OK)
+    subtaskFinish.dataKind = TaskDataKind.TEST_REPORT
+    subtaskFinish.data = gson.toJsonTree(TestReport(BuildTargetIdentifier("target"), 0, 0, 0, 0, 0))
+
+    val throwable = shouldThrowExactly<WrongTaskType> { listener.onBuildTaskFinish(subtaskFinish) }
+
+    server.finishCompileTask(compileTask.originId, CompileResult(StatusCode.OK))
+
+    throwable.taskId shouldBe ClientTaskId(subtask.id)
   }
 
 }
