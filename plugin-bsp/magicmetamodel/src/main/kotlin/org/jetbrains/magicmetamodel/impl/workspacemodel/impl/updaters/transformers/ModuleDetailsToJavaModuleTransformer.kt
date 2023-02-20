@@ -16,7 +16,7 @@ internal object ModuleDetailsToJavaModuleTransformer : WorkspaceModelEntityTrans
     JavaModule(
       module = toModule(inputEntity),
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
-      sourceRoots = SourcesItemToJavaSourceRootTransformerIntellijHackPleaseRemoveHACK.transform(inputEntity.sources.map {
+      sourceRoots = SourcesItemToJavaSourceRootTransformer.transform(inputEntity.sources.map {
         BuildTargetAndSourceItem(
           inputEntity.target,
           it,

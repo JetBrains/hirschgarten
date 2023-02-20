@@ -46,7 +46,7 @@ class NonOverlappingTest {
       val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
       val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
       val nonOverlapping = measureTimedValue { NonOverlappingTargets(projectDetails.targets, overlappingTargetsGraph) }
-      nonOverlapping.value.size shouldBe 680
+      nonOverlapping.value.size shouldBe 1958
       println("Computing non-overlapping targets took ${nonOverlapping.duration}")
     } finally {
         bspServerProcess.destroyForcibly()

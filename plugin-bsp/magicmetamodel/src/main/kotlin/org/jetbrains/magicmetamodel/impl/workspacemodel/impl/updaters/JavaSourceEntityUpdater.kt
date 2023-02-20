@@ -12,12 +12,13 @@ import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path
 
 internal data class SourceRoot(
-  val sourceDir: Path,
-  val generated: Boolean
+  val sourcePath: Path,
+  val generated: Boolean,
+  val isFile: Boolean,
 ) : WorkspaceModelEntity()
 
 internal data class JavaSourceRoot(
-  val sourceDir: Path,
+  val sourcePath: Path,
   val generated: Boolean,
   val packagePrefix: String,
   val rootType: String,
@@ -51,7 +52,7 @@ internal class JavaSourceEntityUpdater(
     parentModuleEntity: ModuleEntity
   ): ContentRootEntity {
     val contentRoot = ContentRoot(
-      url = entityToAdd.sourceDir,
+      url = entityToAdd.sourcePath,
       excludedUrls = entityToAdd.excludedFiles,
     )
 
@@ -64,7 +65,7 @@ internal class JavaSourceEntityUpdater(
     entityToAdd: JavaSourceRoot,
   ): SourceRootEntity = builder.addSourceRootEntity(
     contentRoot = contentRootEntity,
-    url = entityToAdd.sourceDir.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+    url = entityToAdd.sourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
     rootType = entityToAdd.rootType,
     source = DoNotSaveInDotIdeaDirEntitySource,
   )

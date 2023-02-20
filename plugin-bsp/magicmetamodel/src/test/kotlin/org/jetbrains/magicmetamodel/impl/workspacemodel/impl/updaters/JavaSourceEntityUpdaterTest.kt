@@ -38,7 +38,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     val packagePrefix = "example.package"
 
     val javaSourceRoot = JavaSourceRoot(
-      sourceDir = sourceDir,
+      sourcePath = sourceDir,
       generated = generated,
       rootType = "java-source",
       packagePrefix = packagePrefix,
@@ -87,7 +87,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     val packagePrefix1 = "example.package"
 
     val javaSourceRoot1 = JavaSourceRoot(
-      sourceDir = sourceDir1,
+      sourcePath = sourceDir1,
       generated = generated1,
       rootType = "java-source",
       packagePrefix = packagePrefix1,
@@ -99,7 +99,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     val packagePrefix2 = "another.example.package"
 
     val javaSourceRoot2 = JavaSourceRoot(
-      sourceDir = sourceDir2,
+      sourcePath = sourceDir2,
       generated = generated2,
       rootType = "java-test",
       packagePrefix = packagePrefix2,

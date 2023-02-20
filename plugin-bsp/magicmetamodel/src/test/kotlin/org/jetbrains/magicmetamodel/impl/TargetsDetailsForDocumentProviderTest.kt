@@ -284,7 +284,7 @@ class TargetsDetailsForDocumentProviderTest {
           targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(fileInNoTargetId)
 
         // then
-        fileInNoTargetTargetsDetails shouldBe emptyList()
+        fileInNoTargetTargetsDetails shouldBe emptySet()
       }
 
       @Test
@@ -331,7 +331,7 @@ class TargetsDetailsForDocumentProviderTest {
           )
 
         // then
-        fileInNoTargetTargetsDetails shouldBe emptyList()
+        fileInNoTargetTargetsDetails shouldBe emptySet()
         commonDirectoryFileInTarget1TargetsDetails shouldContainExactlyInAnyOrder listOf(target1)
         commonDirectoryChildFileInTarget1Target2Target3Targets shouldContainExactlyInAnyOrder listOf(
           target1,

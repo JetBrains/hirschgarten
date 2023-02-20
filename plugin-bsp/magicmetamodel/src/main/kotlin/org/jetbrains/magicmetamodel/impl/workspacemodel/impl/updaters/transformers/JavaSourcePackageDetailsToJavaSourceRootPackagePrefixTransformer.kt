@@ -7,7 +7,7 @@ import kotlin.io.path.pathString
 import kotlin.io.path.toPath
 
 internal data class JavaSourcePackageDetails(
-  val sourceDir: URI,
+  val sourceURI: URI,
   val sourceRoots: List<URI>
 )
 
@@ -21,7 +21,7 @@ internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer
   private const val PACKAGE_DELIMITER = '.'
 
   override fun transform(inputEntity: JavaSourcePackageDetails): JavaSourceRootPackagePrefix {
-    val packagePrefix = calculateRawPackagePrefix(inputEntity.sourceDir, inputEntity.sourceRoots)
+    val packagePrefix = calculateRawPackagePrefix(inputEntity.sourceURI, inputEntity.sourceRoots)
 
     return JavaSourceRootPackagePrefix(packagePrefix)
   }
