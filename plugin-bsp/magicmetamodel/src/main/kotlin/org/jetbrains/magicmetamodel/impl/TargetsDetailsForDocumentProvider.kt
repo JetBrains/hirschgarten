@@ -2,7 +2,6 @@ package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.logger
@@ -12,28 +11,19 @@ import org.jetbrains.magicmetamodel.extensions.toAbsolutePath
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
 
 public data class TargetsDetailsForDocumentProviderState(
   public var documentIdToTargetsIdsMap: Map<String, Set<BuildTargetIdentifierState>> = emptyMap(),
-  public var documentIdInTheSameDirectoryToTargetsIdsMapForHACK: Map<String, Set<BuildTargetIdentifierState>> = emptyMap(),
-  public var isFileMap4HACK: Map<String, Boolean> = emptyMap(),
 )
 
 public class TargetsDetailsForDocumentProvider {
 
   private val documentIdToTargetsIdsMap: Map<Path, Set<BuildTargetIdentifier>>
-  private val documentIdInTheSameDirectoryToTargetsIdsMapForHACK: Map<Path, Set<BuildTargetIdentifier>>
-  private val isFileMap4HACK: Map<String, Boolean>
 
   public constructor(sources: List<SourcesItem>) {
     log.trace { "Initializing TargetsDetailsForDocumentProvider with $sources..." }
 
     this.documentIdToTargetsIdsMap = DocumentIdToTargetsIdsMap(sources)
-    this.documentIdInTheSameDirectoryToTargetsIdsMapForHACK = DocumentIdToTargetsIdsMapInTheSameDirHACK(sources)
-    this.isFileMap4HACK = sources
-      .flatMap { it.sources }
-      .associateBy({ it.uri }, { it.kind == SourceItemKind.FILE })
 
     log.trace { "Initializing TargetsDetailsForDocumentProvider done!" }
   }
@@ -41,10 +31,6 @@ public class TargetsDetailsForDocumentProvider {
   public constructor(state: TargetsDetailsForDocumentProviderState) {
     this.documentIdToTargetsIdsMap =
       state.documentIdToTargetsIdsMap.mapKeys { Path(it.key) }.mapValues { it.value.map { it.fromState() }.toSet() }
-    this.documentIdInTheSameDirectoryToTargetsIdsMapForHACK =
-      state.documentIdInTheSameDirectoryToTargetsIdsMapForHACK.mapKeys { Path(it.key) }
-        .mapValues { it.value.map { it.fromState() }.toSet() }
-    this.isFileMap4HACK = state.isFileMap4HACK
   }
 
   public fun getAllDocuments(): List<TextDocumentIdentifier> =
@@ -55,22 +41,9 @@ public class TargetsDetailsForDocumentProvider {
   private fun mapPathToTextDocumentIdentifier(path: Path): TextDocumentIdentifier =
     TextDocumentIdentifier(path.toUri().toString())
 
-  public fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): Set<BuildTargetIdentifier> {
-    val targets = generateAllDocumentSubdirectoriesIncludingDocument(documentId)
+  public fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): Set<BuildTargetIdentifier> =
+    generateAllDocumentSubdirectoriesIncludingDocument(documentId)
       .flatMap { documentIdToTargetsIdsMap[it].orEmpty() }.toSet()
-
-    val targetsInTheSameDirectoryIfFile = getTargetsInTheSameDirectoryIfFileHACK(documentId)
-
-    return (targets + targetsInTheSameDirectoryIfFile)
-  }
-
-  private fun getTargetsInTheSameDirectoryIfFileHACK(documentId: TextDocumentIdentifier): Set<BuildTargetIdentifier> =
-    when {
-      isFileMap4HACK[documentId.uri] ?: false ->
-        documentIdInTheSameDirectoryToTargetsIdsMapForHACK[URI(documentId.uri).toPath().parent].orEmpty()
-
-      else -> emptySet()
-    }
 
   private fun generateAllDocumentSubdirectoriesIncludingDocument(documentId: TextDocumentIdentifier): Sequence<Path> {
     log.trace { "Generating all $documentId subdirectories..." }
@@ -87,10 +60,7 @@ public class TargetsDetailsForDocumentProvider {
   public fun toState(): TargetsDetailsForDocumentProviderState =
     TargetsDetailsForDocumentProviderState(
       documentIdToTargetsIdsMap.mapKeys { it.key.toString() }
-        .mapValues { it.value.map { it.toState() }.toSet() },
-      documentIdInTheSameDirectoryToTargetsIdsMapForHACK.mapKeys { it.key.toString() }
-        .mapValues { it.value.map { it.toState() }.toSet() },
-      isFileMap4HACK
+        .mapValues { it.value.map { it.toState() }.toSet() }
     )
 
   private companion object {
@@ -124,27 +94,4 @@ private object DocumentIdToTargetsIdsMap {
 
   private fun mapSourceItemToPath(sourceItem: SourceItem): Path =
     URI.create(sourceItem.uri).toAbsolutePath()
-}
-
-private object DocumentIdToTargetsIdsMapInTheSameDirHACK {
-
-  operator fun invoke(
-    sources: List<SourcesItem>
-  ): Map<Path, Set<BuildTargetIdentifier>> =
-    sources
-      .flatMap { mapSourcesItemToPairsOfDocumentIdAndTargetId(it) }
-      .groupBy({ it.first }, { it.second })
-      .mapValues { it.value.toSet() }
-
-  private fun mapSourcesItemToPairsOfDocumentIdAndTargetId(
-    sourceItem: SourcesItem,
-  ): List<Pair<Path, BuildTargetIdentifier>> =
-    sourceItem.sources
-      .mapNotNull { mapSourceItemToPath(it) }
-      .map { Pair(it, sourceItem.target) }
-
-  private fun mapSourceItemToPath(sourceItem: SourceItem): Path? = when (sourceItem.kind) {
-    SourceItemKind.FILE -> URI.create(sourceItem.uri).toAbsolutePath().parent
-    else -> null
-  }
 }

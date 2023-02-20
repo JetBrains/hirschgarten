@@ -134,7 +134,7 @@ class OverlappingTargetsGraphTest {
   }
 
   @Test
-  fun `should return graph with 2 edges for 2 files in the same directory (INTELLIJ HACK)`() {
+  fun `should return graph with 0 edges for 2 files in the same directory`() {
     // given
     val targetA1Source1 = SourceItem(
       uri = "file:///project/targetA/src/main/kotlin/File1.kt",
@@ -163,15 +163,15 @@ class OverlappingTargetsGraphTest {
 
     // then
     val expectedGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
-      BuildTargetId("targetA1") to setOf(BuildTargetId("targetA2")),
-      BuildTargetId("targetA2") to setOf(BuildTargetId("targetA1")),
+      BuildTargetId("targetA1") to emptySet(),
+      BuildTargetId("targetA2") to emptySet(),
     )
 
     overlappingTargetsGraph shouldContainExactly expectedGraph
   }
 
   @Test
-  fun `should return graph with no edges for 2 files in the directory and subdirectory (INTELLIJ HACK)`() {
+  fun `should return graph with no edges for 2 files in the directory and subdirectory`() {
     // given
     val targetA1Source1 = SourceItem(
       uri = "file:///project/src/main/kotlin/File1.kt",

@@ -151,14 +151,21 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val expectedBaseDirContentRoot = ContentRoot(projectRoot)
 
     val expectedJavaSourceRoot1 = JavaSourceRoot(
-      sourceDir = packageA2Path,
+      sourcePath = file1APath,
       generated = false,
       packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
       rootType = "java-source",
       targetId = BuildTargetIdentifier("module1"),
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
-      sourceDir = dir1BPath,
+      sourcePath = file2APath,
+      generated = false,
+      packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+      rootType = "java-source",
+      targetId = BuildTargetIdentifier("module1"),
+    )
+    val expectedJavaSourceRoot3 = JavaSourceRoot(
+      sourcePath = dir1BPath,
       generated = false,
       packagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
       rootType = "java-source",
@@ -183,7 +190,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val expectedJavaModule = JavaModule(
       module = expectedModule,
       baseDirContentRoot = expectedBaseDirContentRoot,
-      sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2),
+      sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3),
       resourceRoots = listOf(expectedJavaResourceRoot1),
       libraries = listOf(expectedLibrary1, expectedLibrary2),
       compilerOutput = Path("/compiler/output.jar")
@@ -361,14 +368,21 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val expectedBaseDirContentRoot1 = ContentRoot(module1Root)
 
     val expectedJavaSourceRoot11 = JavaSourceRoot(
-      sourceDir = packageA2Path,
+      sourcePath = file1APath,
       generated = false,
       packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
       rootType = "java-source",
       targetId = BuildTargetIdentifier("module1"),
     )
     val expectedJavaSourceRoot12 = JavaSourceRoot(
-      sourceDir = dir1BPath,
+      sourcePath = file2APath,
+      generated = false,
+      packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
+      rootType = "java-source",
+      targetId = BuildTargetIdentifier("module1"),
+    )
+    val expectedJavaSourceRoot13 = JavaSourceRoot(
+      sourcePath = dir1BPath,
       generated = false,
       packagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
       rootType = "java-source",
@@ -393,7 +407,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val expectedJavaModule1 = JavaModule(
       module = expectedModule1,
       baseDirContentRoot = expectedBaseDirContentRoot1,
-      sourceRoots = listOf(expectedJavaSourceRoot11, expectedJavaSourceRoot12),
+      sourceRoots = listOf(expectedJavaSourceRoot11, expectedJavaSourceRoot12, expectedJavaSourceRoot13),
       resourceRoots = listOf(expectedJavaResourceRoot11),
       libraries = listOf(expectedLibrary11, expectedLibrary12),
       compilerOutput = Path("/compiler/output1.jar"),
@@ -409,7 +423,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val expectedBaseDirContentRoot2 = ContentRoot(module2Root)
 
     val expectedJavaSourceRoot21 = JavaSourceRoot(
-      sourceDir = dir1CPath,
+      sourcePath = dir1CPath,
       generated = false,
       packagePrefix = "${packageC1Path.name}.${packageC2Path.name}.${dir1CPath.name}",
       rootType = "java-test",

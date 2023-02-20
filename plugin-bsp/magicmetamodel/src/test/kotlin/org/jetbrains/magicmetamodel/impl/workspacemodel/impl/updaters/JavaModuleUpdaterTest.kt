@@ -66,20 +66,20 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           url = URI.create("file:///root/dir/example/").toPath()
         )
 
-        val sourceDir1 = URI.create("file:///root/dir/example/package/one").toPath()
+        val sourcePath1 = URI.create("file:///root/dir/example/package/one").toPath()
         val sourcePackagePrefix1 = "example.package.one"
-        val sourceDir2 = URI.create("file:///root/dir/example/package/two").toPath()
+        val sourcePath2 = URI.create("file:///root/dir/example/package/two").toPath()
         val sourcePackagePrefix2 = "example.package.two"
         val sourceRoots = listOf(
           JavaSourceRoot(
-            sourceDir = sourceDir1,
+            sourcePath = sourcePath1,
             generated = false,
             packagePrefix = sourcePackagePrefix1,
             rootType = "java-source",
             targetId = BuildTargetIdentifier("target"),
           ),
           JavaSourceRoot(
-            sourceDir = sourceDir2,
+            sourcePath = sourcePath2,
             generated = false,
             packagePrefix = sourcePackagePrefix2,
             rootType = "java-source",
@@ -178,7 +178,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         returnedModuleEntity shouldBeEqual expectedModuleEntity
         loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedModuleEntity)
 
-        val virtualSourceDir1 = sourceDir1.toVirtualFileUrl(virtualFileUrlManager)
+        val virtualSourceDir1 = sourcePath1.toVirtualFileUrl(virtualFileUrlManager)
         val expectedJavaSourceRootEntity1 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
@@ -200,7 +200,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
-        val virtualSourceDir2 = sourceDir2.toVirtualFileUrl(virtualFileUrlManager)
+        val virtualSourceDir2 = sourcePath2.toVirtualFileUrl(virtualFileUrlManager)
         val expectedJavaSourceRootEntity2 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
@@ -306,20 +306,20 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           url = URI.create("file:///root/dir/example/").toPath()
         )
 
-        val sourceDir11 = URI.create("file:///root/dir/example/package/one").toPath()
+        val sourcePath11 = URI.create("file:///root/dir/example/package/one").toPath()
         val sourcePackagePrefix11 = "example.package.one"
-        val sourceDir12 = URI.create("file:///root/dir/example/package/two").toPath()
+        val sourcePath12 = URI.create("file:///root/dir/example/package/two").toPath()
         val sourcePackagePrefix12 = "example.package.two"
         val sourceRoots1 = listOf(
           JavaSourceRoot(
-            sourceDir = sourceDir11,
+            sourcePath = sourcePath11,
             generated = false,
             packagePrefix = sourcePackagePrefix11,
             rootType = "java-source",
             targetId = BuildTargetIdentifier("target"),
           ),
           JavaSourceRoot(
-            sourceDir = sourceDir12,
+            sourcePath = sourcePath12,
             generated = false,
             packagePrefix = sourcePackagePrefix12,
             rootType = "java-source",
@@ -380,11 +380,11 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           url = URI.create("file:///another/root/dir/example/").toPath()
         )
 
-        val sourceDir21 = URI.create("file:///another/root/dir/another/example/package/").toPath()
+        val sourcePath21 = URI.create("file:///another/root/dir/another/example/package/").toPath()
         val sourcePackagePrefix21 = "another.example.package"
         val sourceRoots2 = listOf(
           JavaSourceRoot(
-            sourceDir = sourceDir21,
+            sourcePath = sourcePath21,
             generated = false,
             packagePrefix = sourcePackagePrefix21,
             rootType = "java-test",
@@ -512,7 +512,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         returnedModuleEntries shouldContainExactlyInAnyOrder expectedModuleEntries
         loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder expectedModuleEntries
 
-        val virtualSourceDir11 = sourceDir11.toVirtualFileUrl(virtualFileUrlManager)
+        val virtualSourceDir11 = sourcePath11.toVirtualFileUrl(virtualFileUrlManager)
         val expectedJavaSourceRootEntity11 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
@@ -534,7 +534,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           },
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
-        val virtualSourceDir12 = sourceDir12.toVirtualFileUrl(virtualFileUrlManager)
+        val virtualSourceDir12 = sourcePath12.toVirtualFileUrl(virtualFileUrlManager)
         val expectedJavaSourceRootEntity12 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
@@ -556,7 +556,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           },
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
-        val virtualSourceDir21 = sourceDir21.toVirtualFileUrl(virtualFileUrlManager)
+        val virtualSourceDir21 = sourcePath21.toVirtualFileUrl(virtualFileUrlManager)
         val expectedJavaSourceRootEntity21 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
