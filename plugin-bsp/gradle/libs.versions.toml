@@ -20,4 +20,3 @@ ktlintGradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = 
 [plugins]
 intellij = { id = "org.jetbrains.intellij", version = "1.12.0" }
 changelog = { id = "org.jetbrains.changelog", version = "1.3.1" }
-
