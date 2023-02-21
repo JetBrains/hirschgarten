@@ -5,6 +5,7 @@ import com.intellij.remoterobot.fixtures.dataExtractor.RemoteText
 import org.virtuslab.ideprobe.IntelliJFixture
 import org.virtuslab.ideprobe.OS
 import org.virtuslab.ideprobe.dependencies.IntelliJVersion
+import org.virtuslab.ideprobe.robot.RobotProbeDriver
 import org.virtuslab.ideprobe.robot.SearchableComponent
 import scala.Option
 import scala.concurrent.duration.FiniteDuration
@@ -27,15 +28,19 @@ fun SearchableComponent.click(): Unit = fixture().runJs("component.click();", tr
 
 fun SearchableComponent.setText(text: String): Unit = fixture().runJs("component.setText('$text');", true)
 
+fun RobotProbeDriver.getBuildConsoleOutput(): List<String> = findElement(query.className("BuildTextConsoleView"))
+    .fixture()
+    .callJs<String>("component.getText();")
+    .split("\n")
+
 fun SearchableComponent.findElement(xpath: String) =
   RobotSyntaxObj.SearchableOps(this.findWithTimeout(xpath, robotTimeout))
 
-fun IntelliJFixture.withBuild(build: String) =
-  withVersion(
-    IntelliJVersion(
-      build, Option.apply(null), if (OS.Current() == OS.`Mac$`.`MODULE$`) ".dmg" else ".zip"
-    )
+fun IntelliJFixture.withBuild(build: String) = withVersion(
+  IntelliJVersion(
+    build, Option.apply(null), if (OS.Current() == OS.`Mac$`.`MODULE$`) ".dmg" else ".zip"
   )
+)
 
 object query {
 
