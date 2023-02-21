@@ -23,6 +23,7 @@ import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import java.net.URI
 
 private const val ID = "BspDocumentTargetsWidget"
 
@@ -71,6 +72,7 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     val documentDetails = getDocumentDetails(file)
 
     return when {
+      documentDetails == null -> inactiveWidgetState()
       documentDetails.loadedTargetId == null && documentDetails.notLoadedTargetsIds.isEmpty() -> inactiveWidgetState()
       else -> activeWidgetState(documentDetails.loadedTargetId)
     }
@@ -104,9 +106,10 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     val documentDetails = getDocumentDetails(file)
 
     val group = DefaultActionGroup()
-    updateActionGroupWithCurrentlyLoadedTarget(group, documentDetails.loadedTargetId)
-    updateActionGroupWithAvailableTargetsSection(group, documentDetails.notLoadedTargetsIds)
-
+    if (documentDetails != null) {
+      updateActionGroupWithCurrentlyLoadedTarget(group, documentDetails.loadedTargetId)
+      updateActionGroupWithAvailableTargetsSection(group, documentDetails.notLoadedTargetsIds)
+    }
     return group
   }
 
@@ -131,8 +134,13 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     group.addAll(actions)
   }
 
-  private fun getDocumentDetails(file: VirtualFile): DocumentTargetsDetails =
-    magicMetaModelService.value.getTargetsDetailsForDocument(TextDocumentIdentifier(file.url))
+  private fun getDocumentDetails(file: VirtualFile): DocumentTargetsDetails? {
+    return when (URI.create(file.url).scheme) {
+        // Could be also "jar"
+        "file" -> magicMetaModelService.value.getTargetsDetailsForDocument(TextDocumentIdentifier(file.url))
+        else -> null
+    }
+  }
 
   override fun createInstance(project: Project): StatusBarWidget =
     BspDocumentTargetsWidget(project)
