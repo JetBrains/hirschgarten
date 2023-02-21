@@ -11,7 +11,7 @@ import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
 
 public data class BspGeneratorConnectionState(
   public var fileConnectionState: BspFileConnectionState? = null,
-  public var generatorName: String? = null
+  public var generatorId: String? = null
 )
 
 public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGeneratorConnectionState> {
@@ -40,7 +40,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
     this.fileConnection = state.fileConnectionState?.let { BspFileConnection.fromState(project, it) }
 
     this.bspConnectionDetailsGenerator =
-      BspConnectionDetailsGeneratorExtension.extensions().first { it.name() == state.generatorName }
+      BspConnectionDetailsGeneratorExtension.extensions().first { it.id() == state.generatorId }
   }
 
   public override fun connect(taskId: Any) {
@@ -61,7 +61,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
   override fun toState(): BspGeneratorConnectionState =
     BspGeneratorConnectionState(
       fileConnectionState = fileConnection?.toState(),
-      generatorName = bspConnectionDetailsGenerator.name(),
+      generatorId = bspConnectionDetailsGenerator.id(),
     )
 
   public fun restart(taskId: Any) {
@@ -91,7 +91,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
     private const val generateConnectionFileSubtaskId = "bsp-generate-connection-file"
 
     public fun fromState(project: Project, state: BspGeneratorConnectionState): BspGeneratorConnection? =
-      when (state.generatorName) {
+      when (state.generatorId) {
         null -> null
         else -> BspGeneratorConnection(project, state)
       }

@@ -9,7 +9,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGeneratorExtension {
-  override fun name(): String = "sbt"
+  override fun id(): String = "sbt"
+
+  override fun displayName(): String = "Sbt"
 
   override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean =
     projectPath.children.any { it.name == "build.sbt" }

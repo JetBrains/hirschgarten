@@ -14,7 +14,9 @@ import kotlin.io.path.createTempDirectory
 
 private object GeneratorWhichCantGenerate : BspConnectionDetailsGenerator {
 
-  override fun name(): String = "cant generate"
+  override fun id(): String = "cant generate"
+
+  override fun displayName(): String = "cant generate"
 
   override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean = false
 
@@ -26,7 +28,9 @@ private class GeneratorWhichCanGenerate(private val name: String, private val ge
 
   var hasGenerated = false
 
-  override fun name(): String = name
+  override fun id(): String = name
+
+  override fun displayName(): String = name
 
   override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean = true
 

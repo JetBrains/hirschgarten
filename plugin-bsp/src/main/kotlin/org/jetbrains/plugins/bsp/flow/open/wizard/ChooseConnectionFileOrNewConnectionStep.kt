@@ -26,7 +26,7 @@ public open class ChooseConnectionFileOrNewConnectionStep(
     val connectionFiles = calculateAvailableConnectionFiles(projectPath)
     val connectionsFromFiles = connectionFiles.map { ConnectionFile(it) }
     val connectionsFromGenerators = availableGenerators.map { NewConnection(it) }
-    return (connectionsFromFiles + connectionsFromGenerators).groupBy { it.connectionName }
+    return (connectionsFromFiles + connectionsFromGenerators).groupBy { it.id }
   }
 
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection> =
@@ -68,7 +68,7 @@ public open class ChooseConnectionFileOrNewConnectionStep(
     if (connections.isNotEmpty()) {
       val choiceContainer = ConnectionChoiceContainer(connections.first())
       row {
-        val radioButton = radioButton(connectionEntry.key, choiceContainer)
+        val radioButton = radioButton(choiceContainer.connection.displayName, choiceContainer)
         radioButton.component.addActionListener {
           panel.apply()
           onChoiceChange()
