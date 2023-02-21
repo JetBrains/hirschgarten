@@ -2,27 +2,20 @@
 
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
+import ch.epfl.scala.bsp4j.*
+import com.google.gson.JsonObject
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaResourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JvmJdkInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
@@ -56,6 +49,13 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val projectRoot = createTempDirectory("project")
     projectRoot.toFile().deleteOnExit()
 
+    val javaHome = "/fake/path/to/local_jdk"
+    val javaVersion = "11"
+
+    val jdkInfoJsonObject = JsonObject()
+    jdkInfoJsonObject.addProperty("javaVersion", javaVersion)
+    jdkInfoJsonObject.addProperty("javaHome", javaHome)
+
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget = BuildTarget(
       buildTargetId,
@@ -70,7 +70,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
     buildTarget.baseDirectory = projectRoot.toUri().toString()
     buildTarget.dataKind = BuildTargetDataKind.JVM
-    buildTarget.data = JvmBuildTarget("file:///java/home", "11")
+    buildTarget.data = jdkInfoJsonObject
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")
     packageA1Path.toFile().deleteOnExit()
@@ -193,7 +193,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
       sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3),
       resourceRoots = listOf(expectedJavaResourceRoot1),
       libraries = listOf(expectedLibrary1, expectedLibrary2),
-      compilerOutput = Path("/compiler/output.jar")
+      compilerOutput = Path("/compiler/output.jar"),
+      jvmJdkInfo = JvmJdkInfo(javaVersion = javaVersion, javaHome = javaHome),
     )
 
     validateJavaModule(javaModule, expectedJavaModule)
@@ -411,6 +412,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resourceRoots = listOf(expectedJavaResourceRoot11),
       libraries = listOf(expectedLibrary11, expectedLibrary12),
       compilerOutput = Path("/compiler/output1.jar"),
+      jvmJdkInfo = null,
     )
 
     val expectedModule2 = Module(
@@ -447,6 +449,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resourceRoots = listOf(expectedJavaResourceRoot21),
       libraries = listOf(expectedLibrary21),
       compilerOutput = Path("/compiler/output2.jar"),
+      jvmJdkInfo = null,
     )
 
     javaModules shouldContainExactlyInAnyOrder Pair(
@@ -480,5 +483,52 @@ class ModuleDetailsToJavaModuleTransformerTest {
     actual.type shouldBe expected.type
     actual.modulesDependencies shouldContainExactlyInAnyOrder expected.modulesDependencies
     actual.librariesDependencies shouldContainExactlyInAnyOrder expected.librariesDependencies
+  }
+}
+
+class ExtractJvmBuildTargetTest {
+  @Test
+  fun `extractJvmBuildTarget should return JvmBuildTarget successfully when given non-null jdk information`() {
+    // given
+    val javaVersion = "17"
+    val javaHome = "/fake/path/to/test/local_jdk"
+    val jdkInfoJsonObject = JsonObject()
+    jdkInfoJsonObject.addProperty("javaVersion", javaVersion)
+    jdkInfoJsonObject.addProperty("javaHome", javaHome)
+
+    val buildTarget = buildDummyTarget()
+    buildTarget.dataKind = BuildTargetDataKind.JVM
+    buildTarget.data = jdkInfoJsonObject
+
+    // when
+    val extractedJvmBuildTarget = extractJvmBuildTarget(buildTarget)
+
+    // then
+    extractedJvmBuildTarget shouldBe JvmBuildTarget(javaHome, javaVersion)
+  }
+
+  @Test
+  fun `extractJvmBuildTarget should return null when given null jdk information`() {
+    // given
+    val buildTarget = buildDummyTarget()
+
+    // when
+    val extractedJvmBuildTarget = extractJvmBuildTarget(buildTarget)
+
+    // then
+    extractedJvmBuildTarget shouldBe null
+  }
+
+  private fun buildDummyTarget(): BuildTarget {
+    val buildTarget = BuildTarget(
+      BuildTargetIdentifier("target"),
+      listOf("tag1", "tag2"),
+      listOf("language1"),
+      listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
+      BuildTargetCapabilities(true, false, true, true)
+    )
+    buildTarget.displayName = "target name"
+    buildTarget.baseDirectory = "/base/dir"
+    return buildTarget
   }
 }

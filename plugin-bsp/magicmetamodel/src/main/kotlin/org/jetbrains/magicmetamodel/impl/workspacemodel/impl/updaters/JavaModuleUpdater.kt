@@ -1,11 +1,13 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.addJavaModuleSettingsEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.addJavaModuleSettingsEntity
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path
+
+internal data class JvmJdkInfo(val javaVersion: String, val javaHome: String)
 
 internal data class JavaModule(
   val module: Module,
@@ -14,7 +16,7 @@ internal data class JavaModule(
   val resourceRoots: List<JavaResourceRoot>,
   val libraries: List<Library>,
   val compilerOutput: Path?,
-//  val sdk: ModuleDependencyItem.SdkDependency,
+  val jvmJdkInfo: JvmJdkInfo?,
 ) : WorkspaceModelEntity()
 
 internal class JavaModuleWithSourcesUpdater(
@@ -22,7 +24,8 @@ internal class JavaModuleWithSourcesUpdater(
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
-    val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies)
+    val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateModuleDefaultDependencies(entityToAdd))
+
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
     addJavaModuleSettingsEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd, moduleEntity)
@@ -38,6 +41,12 @@ internal class JavaModuleWithSourcesUpdater(
 
     return moduleEntity
   }
+
+  private fun calculateModuleDefaultDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
+    if (entityToAdd.jvmJdkInfo != null) {
+      defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkInfo.javaVersion, "JavaSDK")
+    }
+    else defaultDependencies
 
   private fun addJavaModuleSettingsEntity(builder: MutableEntityStorage, entityToAdd: JavaModule, moduleEntity: ModuleEntity) {
     if (entityToAdd.compilerOutput != null) {
@@ -55,7 +64,6 @@ internal class JavaModuleWithSourcesUpdater(
 
   private companion object {
     val defaultDependencies = listOf(
-      ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
       ModuleDependencyItem.ModuleSourceDependency,
     )
   }
