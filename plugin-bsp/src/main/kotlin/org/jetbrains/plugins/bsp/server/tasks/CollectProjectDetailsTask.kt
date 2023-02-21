@@ -1,30 +1,21 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.InitializeBuildResult
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.JavacOptionsResult
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import ch.epfl.scala.bsp4j.*
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.ProjectJdkTable
+import com.intellij.openapi.projectRoots.Sdk
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
@@ -67,6 +58,10 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
 
     private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
+    private var uniqueJdkInfos: Set<JvmBuildTarget>? = null
+
+    private val jdkTable = ProjectJdkTable.getInstance()
+
     override fun run(indicator: ProgressIndicator) {
       progressIndicator = indicator
       beforeRun()
@@ -86,6 +81,10 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
       val projectDetails = logPerformance("collect-project-details") { collect(cancelOnFuture) }
 
       if (projectDetails != null) {
+        bspSyncConsole.startSubtask(taskId, "calculate-all-unique-jdk-infos", "Calculating all unique jdk infos...")
+        uniqueJdkInfos = logPerformance("calculate-all-unique-jdk-infos") { calculateAllUniqueJdkInfos(projectDetails) }
+        bspSyncConsole.finishSubtask("calculate-all-unique-jdk-infos", "Calculating all unique jdk infos done!")
+
         bspSyncConsole.startSubtask(taskId, "calculate-project-structure", "Calculating project structure...")
         logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
       }
@@ -93,9 +92,28 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
       return magicMetaModelService.value
     }
 
+    private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
+
     override fun onSuccess() {
+      addBspFetchedJdks()
       applyChangesOnWorkspaceModel()
       afterOnSuccess()
+    }
+
+    private fun addBspFetchedJdks() {
+      bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
+      logPerformance("add-bsp-fetched-jdks") { uniqueJdkInfos?.forEach(::addJdkIfNotYetAdded) }
+      bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
+    }
+
+    private fun addJdkIfNotYetAdded(jdkInfo: JvmBuildTarget) {
+      val jdk = ExternalSystemJdkProvider.getInstance().createJdk(jdkInfo.javaVersion, jdkInfo.javaHome.removePrefix("file://"))
+      if (jdk.isJdkNotAdded()) runWriteAction { jdkTable.addJdk(jdk) }
+    }
+
+    private fun Sdk.isJdkNotAdded(): Boolean {
+      val existingJdk = jdkTable.findJdk(this.name, this.sdkType.name)
+      return existingJdk == null || existingJdk.sdkAdditionalData !== this.sdkAdditionalData
     }
 
     private fun applyChangesOnWorkspaceModel() {
