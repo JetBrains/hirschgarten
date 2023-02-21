@@ -30,7 +30,9 @@ public interface BspConnectionDetailsGenerator {
     return found
   }
 
-  public fun name(): String
+  public fun id(): String
+
+  public fun displayName(): String
 
   public fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean
 
@@ -55,24 +57,24 @@ public class BspConnectionDetailsGeneratorProvider(
     availableBspConnectionDetailsGenerators.isNotEmpty()
 
   public fun availableGeneratorsNames(): List<String> =
-    availableBspConnectionDetailsGenerators.map { it.name() }
+    availableBspConnectionDetailsGenerators.map { it.id() }
 
   public fun firstGeneratorTEMPORARY(): String? =
     availableGeneratorsNames().firstOrNull()
 
   public fun calculateWizardSteps(
-    generatorName: String,
+    generatorId: String,
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
   ): List<ImportProjectWizardStep> =
     availableBspConnectionDetailsGenerators
-      .find { it.name() == generatorName }
+      .find { it.id() == generatorId }
       ?.calculateImportWizardSteps(projectPath.toNioPath(), connectionFileOrNewConnectionProperty).orEmpty()
 
   public fun generateBspConnectionDetailFileForGeneratorWithName(
-    generatorName: String,
+    generatorId: String,
     outputStream: OutputStream
   ): VirtualFile? =
     availableBspConnectionDetailsGenerators
-      .find { it.name() == generatorName }
+      .find { it.id() == generatorId }
       ?.generateBspConnectionDetailsFile(projectPath, outputStream)
 }

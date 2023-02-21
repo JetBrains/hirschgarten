@@ -59,9 +59,9 @@ public class ImportProjectWizard(
   }
 
   private fun calculateGeneratorSteps(): List<ImportProjectWizardStep> {
-    val connectionName = connectionFileOrNewConnectionProperty.get().connectionName
+    val connectionId = connectionFileOrNewConnectionProperty.get().id
     return bspConnectionDetailsGeneratorProvider.calculateWizardSteps(
-      connectionName,
+      connectionId,
       connectionFileOrNewConnectionProperty
     )
   }
