@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.flow.open
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.startup.StartupActivity
+import com.intellij.openapi.startup.ProjectPostStartupActivity
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
@@ -28,9 +28,9 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTarget
  * @see BspProjectOpenProcessor for additional actions that
  * may run when a project is being imported for the first time.
  */
-public class BspStartupActivity : StartupActivity.DumbAware {
+public class BspStartupActivity : ProjectPostStartupActivity {
 
-  override fun runActivity(project: Project) {
+  override suspend fun execute(project: Project) {
     val projectProperties = BspProjectPropertiesService.getInstance(project).value
 
     if (projectProperties.isBspProject) {
