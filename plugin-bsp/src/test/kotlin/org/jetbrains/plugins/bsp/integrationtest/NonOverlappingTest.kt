@@ -10,11 +10,12 @@ import org.jetbrains.magicmetamodel.impl.TargetsDetailsForDocumentProvider
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.tasks.calculateProjectDetailsWithCapabilities
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.createTempDirectory
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 import kotlin.time.ExperimentalTime
@@ -27,9 +28,22 @@ private const val bazelBspVersion = "2.3.1"
 
 @OptIn(ExperimentalTime::class)
 class NonOverlappingTest {
+
+
+
+  companion object {
+    private val systemTmpDir: Path = Paths.get(System.getProperty("java.io.tmpdir"))
+    val testTmpDir: Path = systemTmpDir.resolve("bazel-bsp-tests").resolve(NonOverlappingTargets.javaClass.name)
+
+    @BeforeAll
+    @JvmStatic
+    fun setup() {
+      testTmpDir.toFile().mkdirs()
+    }
+  }
   @Test
   fun `Compute non overlapping targets for bazelbuild_bazel project`() {
-    val bazelDir =  createTempDirectory("bazel-bsp-")
+    val bazelDir = testTmpDir.resolve("bazelbuild-bazel")
     cloneRepository(bazelDir, bazelRepositoryTag)
     setBazelVersion(bazelDir, bazelExecutableVersion)
     installBsp(bazelDir, "//...")
@@ -58,16 +72,30 @@ class NonOverlappingTest {
   }
 
   private fun cloneRepository(bazelDir: Path, gitRevision: String) {
-    ProcessBuilder("git", "clone",
-      "--branch", gitRevision,
-      "--depth", "1",
-      "https://github.com/bazelbuild/bazel",
-      bazelDir.toAbsolutePath().toString())
-      .inheritIO()
-      .start().run {
-        waitFor(3, TimeUnit.MINUTES)
-        if (exitValue() != 0) throw RuntimeException("Could not clone")
-      }
+    if(!bazelDir.toFile().exists()) {
+      println("Cloning into $bazelDir")
+      ProcessBuilder("git", "clone",
+        "--branch", gitRevision,
+        "--depth", "1",
+        "https://github.com/bazelbuild/bazel",
+        bazelDir.toAbsolutePath().toString())
+        .inheritIO()
+        .start().run {
+          waitFor(3, TimeUnit.MINUTES)
+          if (exitValue() != 0) throw RuntimeException("Could not clone")
+        }
+    } else {
+      println("Cleaning $bazelDir")
+      ProcessBuilder("git", "clean", "-dfx")
+        .directory(bazelDir.toFile())
+        .start()
+        .waitFor(1, TimeUnit.MINUTES)
+      println("Cheching out $gitRevision")
+      ProcessBuilder("git", "checkout", gitRevision)
+        .directory(bazelDir.toFile())
+        .start()
+        .waitFor(1, TimeUnit.MINUTES)
+    }
   }
 
   private fun installBsp(bazelDir: Path, target: String) {
