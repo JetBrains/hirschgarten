@@ -10,7 +10,7 @@ import com.intellij.workspaceModel.ide.StorageReplacement
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import org.jetbrains.magicmetamodel.*
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.magicmetamodel.impl.workspacemodel.*
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 
@@ -74,7 +74,10 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   internal constructor(state: DefaultMagicMetaModelState, magicMetaModelProjectConfig: MagicMetaModelProjectConfig) {
     this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
-    this.projectDetails = state.projectDetailsState.fromState()
+    //not loaded
+
+    this.projectDetails = state.projectDetailsState.fromState() +
+      WorkspaceModelToProjectDetailsTransformer(magicMetaModelProjectConfig.workspaceModel)
 
     this.targetsDetailsForDocumentProvider =
       TargetsDetailsForDocumentProvider(state.targetsDetailsForDocumentProviderState)
@@ -212,7 +215,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   // TODO - test
   override fun toState(): DefaultMagicMetaModelState =
     DefaultMagicMetaModelState(
-      projectDetailsState = projectDetails.toState(),
+      projectDetailsState = projectDetails.toStateWithoutLoadedTargets(loadedTargetsStorage.getLoadedTargets()),
       targetsDetailsForDocumentProviderState = targetsDetailsForDocumentProvider.toState(),
       overlappingTargetsGraph = overlappingTargetsGraph.mapKeys { it.key.toState() }
         .mapValues { it.value.map { it.toState() } },
