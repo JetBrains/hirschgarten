@@ -14,6 +14,8 @@ plugins {
   id("intellijbsp.kotlin-conventions")
 }
 
+val myToken: String by project
+
 group = Plugin.group
 version = Plugin.version
 
@@ -112,16 +114,26 @@ tasks {
 
   publishPlugin {
     dependsOn("patchChangelog")
-    token.set(System.getenv("PUBLISH_TOKEN"))
+    token.set(myToken)
     // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
     // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
     // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
+    // example command for publish "gradlew publishPlugin -PmyToken="perm:YOUR_TOKEN"
     channels.set(listOf(Plugin.version.split('-').getOrElse(1) { "default" }.split('.').first()))
   }
 }
 
+
 tasks {
   test {
+    if (project.findProperty("exclude.integration.test") == "true") {
+      filter {
+        excludeTest(
+          "org.jetbrains.plugins.bsp.integrationtest.NonOverlappingTest",
+          "Compute non overlapping targets for bazelbuild_bazel project"
+        )
+      }
+    }
     classpath -= classpath.filter { it.name.contains("kotlin-compiler-embeddable") }
   }
 }
