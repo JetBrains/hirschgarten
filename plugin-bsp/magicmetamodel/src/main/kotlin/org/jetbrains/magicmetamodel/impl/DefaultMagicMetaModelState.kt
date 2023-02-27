@@ -225,6 +225,16 @@ public fun ProjectDetails.toState(): ProjectDetailsState =
     javacOptions = javacOptions.map { it.toState() }
   )
 
+public fun ProjectDetails.toStateWithoutLoadedTargets(loaded: List<BuildTargetIdentifier>): ProjectDetailsState =
+  ProjectDetailsState(
+    targetsId = targetsId.filterNot { loaded.contains(it) }.map { it.toState() },
+    targets = targets.filterNot { loaded.contains(it.id) }.map { it.toState() },
+    sources = sources.filterNot { loaded.contains(it.target) }.map { it.toState() },
+    resources = resources.filterNot { loaded.contains(it.target) }.map { it.toState() },
+    dependenciesSources = dependenciesSources.filterNot { loaded.contains(it.target) }.map { it.toState() },
+    javacOptions = javacOptions.filterNot { loaded.contains(it.target) }.map { it.toState() }
+  )
+
 
 public data class ModuleDetailsState(
   public var target: BuildTargetState = BuildTargetState(),

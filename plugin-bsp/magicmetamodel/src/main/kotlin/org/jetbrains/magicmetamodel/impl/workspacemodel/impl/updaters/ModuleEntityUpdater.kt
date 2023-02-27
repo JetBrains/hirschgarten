@@ -17,7 +17,36 @@ internal data class Module(
   val type: String,
   val modulesDependencies: List<ModuleDependency>,
   val librariesDependencies: List<LibraryDependency>,
+  val capabilities: ModuleCapabilities = ModuleCapabilities(),
 ) : WorkspaceModelEntity()
+
+internal class ModuleCapabilities(private val map: Map<String, String> = mapOf()) :
+  Map<String, String> by map {
+  val canRun: Boolean
+    get() = map[KEYS.CAN_RUN.name].toBoolean()
+  val canDebug: Boolean
+    get() = map[KEYS.CAN_DEBUG.name].toBoolean()
+  val canTest: Boolean
+    get() = map[KEYS.CAN_TEST.name].toBoolean()
+  val canCompile: Boolean
+    get() = map[KEYS.CAN_COMPILE.name].toBoolean()
+
+  internal constructor(canRun: Boolean, canTest: Boolean, canCompile: Boolean, canDebug: Boolean) : this(
+    mapOf(
+      KEYS.CAN_RUN.name to canRun.toString(),
+      KEYS.CAN_DEBUG.name to canDebug.toString(),
+      KEYS.CAN_TEST.name to canTest.toString(),
+      KEYS.CAN_COMPILE.name to canCompile.toString(),
+    )
+  )
+
+  private enum class KEYS {
+    CAN_RUN,
+    CAN_DEBUG,
+    CAN_TEST,
+    CAN_COMPILE,
+  }
+}
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -34,13 +63,22 @@ internal class ModuleEntityUpdater(
     val modulesDependencies = entityToAdd.modulesDependencies.map(this::toModuleDependencyItemModuleDependency)
     val librariesDependencies =
       entityToAdd.librariesDependencies.map { toModuleDependencyItemLibraryDependency(it, entityToAdd.name) }
-
-    return builder.addModuleEntity(
+    val moduleEntity = builder.addModuleEntity(
       name = entityToAdd.name,
       dependencies = modulesDependencies + librariesDependencies + defaultDependencies,
       source = DoNotSaveInDotIdeaDirEntitySource,
       type = entityToAdd.type
     )
+    val imlData = builder.addModuleCustomImlDataEntity(
+      null,
+      entityToAdd.capabilities,
+      moduleEntity,
+      DoNotSaveInDotIdeaDirEntitySource
+    )
+    builder.modifyEntity(moduleEntity) {
+      this.customImlData = imlData
+    }
+    return moduleEntity
   }
 
   private fun toModuleDependencyItemModuleDependency(
