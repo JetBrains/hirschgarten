@@ -21,6 +21,8 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
 
   private var fileConnection: BspFileConnection? = null
 
+  public override val buildToolId: String?
+
   public override val server: BspServer?
     get() = fileConnection?.server
 
@@ -30,6 +32,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
   ) {
     this.project = project
     this.bspConnectionDetailsGenerator = bspConnectionDetailsGenerator
+    this.buildToolId = bspConnectionDetailsGenerator.id()
   }
 
   private constructor(
@@ -41,6 +44,8 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
 
     this.bspConnectionDetailsGenerator =
       BspConnectionDetailsGeneratorExtension.extensions().first { it.id() == state.generatorId }
+
+    this.buildToolId = state.generatorId
   }
 
   public override fun connect(taskId: Any) {
