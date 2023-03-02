@@ -100,6 +100,8 @@ public class BspFileConnection(
   private val locatedConnectionFile: LocatedBspConnectionDetails
 ) : BspConnection, ConvertableToState<BspFileConnectionState> {
 
+  public override val buildToolId: String? = locatedConnectionFile.bspConnectionDetails.name
+
   public override var server: BspServer? = null
     private set
 

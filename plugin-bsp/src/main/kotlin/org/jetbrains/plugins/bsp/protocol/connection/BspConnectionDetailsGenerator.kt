@@ -59,9 +59,6 @@ public class BspConnectionDetailsGeneratorProvider(
   public fun availableGeneratorsNames(): List<String> =
     availableBspConnectionDetailsGenerators.map { it.id() }
 
-  public fun firstGeneratorTEMPORARY(): String? =
-    availableGeneratorsNames().firstOrNull()
-
   public fun calculateWizardSteps(
     generatorId: String,
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>

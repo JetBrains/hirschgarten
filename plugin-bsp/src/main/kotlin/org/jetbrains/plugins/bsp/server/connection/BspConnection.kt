@@ -19,6 +19,11 @@ public interface BspServer : BuildServer, JavaBuildServer
 public interface BspConnection {
 
   /**
+   * ID of bsp connection's build tool
+   */
+  public val buildToolId: String?
+
+  /**
    * BSP server instance, it should be used to query the server
    *
    * the variable should be *null* before [connect] call and after [disconnect]
