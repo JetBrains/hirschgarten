@@ -30,13 +30,20 @@ public class RestartAction :
 
     if (connection is BspGeneratorConnection) {
       val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-      bspSyncConsole.startTask("bsp-restart", "Restart", "Restarting...")
-
       val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-restart").prepareBackgroundTask()
+
       collectProjectDetailsTask.executeInTheBackground(
         name = "Restarting...",
         cancelable = true,
-        beforeRun = { connection.restart("bsp-restart") },
+        beforeRun = {
+          connection.restart("bsp-restart")
+          bspSyncConsole.startTask(
+            taskId = "bsp-restart",
+            title = "Restart",
+            message = "Restarting...",
+            cancelAction = { collectProjectDetailsTask.cancelExecution() }
+          )
+        },
         afterOnSuccess = { bspSyncConsole.finishTask("bsp-restart", "Restarting done!") }
       )
     }

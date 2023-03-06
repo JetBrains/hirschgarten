@@ -24,12 +24,20 @@ public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.a
 
   private fun doAction(project: Project) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.startTask("bsp-reload", "Reload", "Reloading...")
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-reload").prepareBackgroundTask()
+
     collectProjectDetailsTask.executeInTheBackground(
       "Reloading...",
       true,
-      afterOnSuccess = { bspSyncConsole.finishTask("bsp-reload", "Done!") }
+      beforeRun = {
+        bspSyncConsole.startTask(
+          taskId = "bsp-reload",
+          title = "Reload",
+          message = "Reloading...",
+          cancelAction = { collectProjectDetailsTask.cancelExecution() }
+        )
+      },
+      afterOnSuccess = { bspSyncConsole.finishTask("bsp-reload", "Done!") },
     )
   }
 
