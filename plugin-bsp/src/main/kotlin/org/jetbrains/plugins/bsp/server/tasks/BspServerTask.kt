@@ -3,6 +3,8 @@ package org.jetbrains.plugins.bsp.server.tasks
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.registry.Registry
+import org.jetbrains.plugins.bsp.server.ChunkingBuildServer
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 
@@ -19,8 +21,14 @@ public abstract class BspServerTask<T>(private val taskName: String, protected v
     }
   }
 
-  private fun getServer(): BspServer? =
-    BspConnectionService.getInstance(project).value.server
+  private fun getServer(): BspServer? {
+    val server = BspConnectionService.getInstance(project).value.server
+    return if (server == null) null
+    else if (Registry.`is`("bsp.request.chunking.enable")) {
+      val minChunkSize = Registry.intValue("bsp.request.chunking.size.min")
+      ChunkingBuildServer(server, minChunkSize)
+    } else server
+  }
 
   private companion object {
     private val log = logger<BspServerTask<*>>()
