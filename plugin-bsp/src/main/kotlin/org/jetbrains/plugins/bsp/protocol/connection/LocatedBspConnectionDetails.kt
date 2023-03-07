@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile
 
 public data class LocatedBspConnectionDetails(
   val bspConnectionDetails: BspConnectionDetails,
-  val connectionFileLocation: VirtualFile,
+  val connectionFileLocation: VirtualFile
 )
 
 // TODO visib??
