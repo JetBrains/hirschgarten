@@ -39,8 +39,8 @@ public class ImportProjectWizard(
       this::updateWizardButtonsToGeneratorSelection
     )
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty
-
-    addStep(firstStep)
+    if (firstStep.canBeSkipped()) addGeneratorSteps()
+    else addStep(firstStep)
 
     init()
     updateWizardButtonsToGeneratorSelection()

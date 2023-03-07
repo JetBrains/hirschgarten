@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.intellij.openapi.observable.properties.AtomicLazyProperty
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
@@ -20,23 +21,41 @@ public open class ChooseConnectionFileOrNewConnectionStep(
   private val onChoiceChange: () -> Unit
 ) : ImportProjectWizardStep() {
 
-  private val allAvailableConnectionList by lazy { calculateAllAvailableConnections().entries.toList() }
+  private val allAvailableConnectionMap by lazy { calculateAllAvailableConnections() }
 
   private fun calculateAllAvailableConnections(): Map<String, List<ConnectionFileOrNewConnection>> {
-    val connectionFiles = calculateAvailableConnectionFiles(projectPath)
-    val connectionsFromFiles = connectionFiles.map { ConnectionFile(it) }
+    val connectionsFromFiles = calculateAvailableConnectionFiles(projectPath).map { ConnectionFile(it) }
     val connectionsFromGenerators = availableGenerators.map { NewConnection(it) }
     return (connectionsFromFiles + connectionsFromGenerators).groupBy { it.id }
   }
 
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection> =
-    AtomicLazyProperty { allAvailableConnectionList.first().value.first() }
+    AtomicLazyProperty { calculateDefaultConnectionFileOrNewConnection() }
+
+  private fun calculateDefaultConnectionFileOrNewConnection(): ConnectionFileOrNewConnection {
+    val allConnections = allAvailableConnectionMap.values.flatten()
+
+    return when {
+      canBeSkipped() -> calculateDefaultConnection(allConnections)
+      else -> allConnections.first()
+    }
+  }
+
+  private fun calculateDefaultConnection(allConnections: List<ConnectionFileOrNewConnection>): ConnectionFileOrNewConnection {
+    val newestConnectionFile = allConnections.filterIsInstance<ConnectionFile>().maxOrNull()
+    val newConnection = allConnections.filterIsInstance<NewConnection>().first()
+
+    return newestConnectionFile ?: newConnection
+  }
+
+  public fun canBeSkipped(): Boolean =
+    Registry.`is`("bsp.wizard.choose.default.connection") && allAvailableConnectionMap.size == 1
 
   protected override val panel: DialogPanel = panel {
     row {
       panel {
         buttonsGroup {
-          allAvailableConnectionList.map { generateButtonsGroupRow(it) }
+          allAvailableConnectionMap.entries.toList().map { generateButtonsGroupRow(it) }
         }.bind(
           { ConnectionChoiceContainer(connectionFileOrNewConnectionProperty.get()) },
           { connectionFileOrNewConnectionProperty.set(it.connection) }
@@ -87,10 +106,12 @@ public open class ChooseConnectionFileOrNewConnectionStep(
       connections.size == 1 && connections.first() is NewConnection -> {
         label("No connection files. New file will be created.")
       }
+
       connections.size == 1 && connections.first() is ConnectionFile -> {
         val connectionFile = connections.first() as ConnectionFile
         label("Connection file: $connectionFile")
       }
+
       else -> {
         label("Connection file: ")
         val dropDown = dropDownLink(connections.first(), connections)
