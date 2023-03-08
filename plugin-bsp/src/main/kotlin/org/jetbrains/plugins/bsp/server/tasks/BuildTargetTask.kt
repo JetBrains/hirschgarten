@@ -11,6 +11,8 @@ import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
+import java.util.concurrent.TimeoutException
 
 public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
 
@@ -66,7 +68,15 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
   ): CompletableFuture<T> =
     this.whenComplete { _, exception ->
       exception?.let {
-        bspBuildConsole.finishTask(buildId, "Failed", FailureResultImpl(exception))
+        if (isTimeoutException(it)) {
+          val message = BspTasksBundle.message("task.timeout.message")
+          bspBuildConsole.finishTask(buildId, "Timed out", FailureResultImpl(message))
+        } else {
+          bspBuildConsole.finishTask(buildId, "Failed", FailureResultImpl(it))
+        }
       }
     }
+
+  private fun isTimeoutException(e: Throwable): Boolean =
+    e is CompletionException && e.cause is TimeoutException
 }
