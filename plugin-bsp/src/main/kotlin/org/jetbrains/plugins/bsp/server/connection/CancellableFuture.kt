@@ -37,10 +37,19 @@ public class CancellableFuture<T> private constructor(private val original: Comp
   }
 }
 
-public fun <T> CompletableFuture<T>.cancelOn(cancelOnFuture: CompletableFuture<*>): CompletableFuture<T> {
-  cancelOnFuture.whenComplete { _, exception ->
+/**
+ * Cancels this future when given future is cancelled.
+ * Completes this future exceptionally when given future completes exceptionally (with the same exception).
+ *
+ * @param T type of this future
+ * @param otherFuture future, to whose completion this method will respond
+ * @return this future
+ */
+public fun <T> CompletableFuture<T>.reactToExceptionIn(otherFuture: CompletableFuture<*>): CompletableFuture<T> {
+  otherFuture.whenComplete { _, exception ->
     when (exception) {
-      is CancellationException -> if(!isDone) cancel(true)
+      is CancellationException -> cancel(true)
+      is Throwable -> completeExceptionally(exception)
     }
   }
   return this

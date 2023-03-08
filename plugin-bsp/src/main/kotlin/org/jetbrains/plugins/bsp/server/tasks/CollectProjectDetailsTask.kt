@@ -19,13 +19,14 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transforme
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
-import org.jetbrains.plugins.bsp.server.connection.cancelOn
+import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeoutException
 
 public class UpdateMagicMetaModelInTheBackgroundTask(
   private val project: Project,
@@ -147,8 +148,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     fun isCancellationException(e: Throwable): Boolean =
       e is CompletionException && e.cause is CancellationException
 
+    fun isTimeoutException(e: Throwable): Boolean =
+      e is CompletionException && e.cause is TimeoutException
+
     fun errorCallback(e: Throwable) = when {
         isCancellationException(e) -> bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
+        isTimeoutException(e) -> bspSyncConsole.finishTask(taskId, "Timed out", FailureResultImpl(BspTasksBundle.message("task.timeout.message")))
         else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
       }
 
@@ -197,19 +202,19 @@ public fun calculateProjectDetailsWithCapabilities(
   cancelOn: CompletableFuture<Void> = CompletableFuture(),
 ): ProjectDetails? {
   try {
-    val workspaceBuildTargetsResult = queryForBuildTargets(server).cancelOn(cancelOn).catchSyncErrors(errorCallback).get()
+    val workspaceBuildTargetsResult = queryForBuildTargets(server).reactToExceptionIn(cancelOn).catchSyncErrors(errorCallback).get()
 
     val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
 
-    val sourcesFuture = queryForSourcesResult(server, allTargetsIds).cancelOn(cancelOn).catchSyncErrors(errorCallback)
+    val sourcesFuture = queryForSourcesResult(server, allTargetsIds).reactToExceptionIn(cancelOn).catchSyncErrors(errorCallback)
 
     val resourcesFuture =
-      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
     val dependencySourcesFuture =
-      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
     val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
-    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.cancelOn(cancelOn)?.catchSyncErrors(errorCallback)
+    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
 
     return ProjectDetails(
       targetsId = allTargetsIds,

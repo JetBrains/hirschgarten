@@ -29,10 +29,12 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.Path
+import kotlin.time.Duration.Companion.seconds
 
 private class CancelableInvocationHandlerWithTimeout(
   private val remoteProxy: BspServer,
-  private val cancelOnFuture: CompletableFuture<Void>
+  private val cancelOnFuture: CompletableFuture<Void>,
+  private val timeoutHandler: TimeoutHandler
 ) : InvocationHandler {
 
   override fun invoke(proxy: Any, method: Method, args: Array<out Any>?): Any? {
@@ -53,16 +55,12 @@ private class CancelableInvocationHandlerWithTimeout(
     startTime: Long,
     methodName: String,
   ): CompletableFuture<Any?> {
-    val timeout = calculateTimeout()
 
     return CancellableFuture.from(result)
-      .cancelOn(cancelOnFuture)
-      .orTimeout(timeout, TimeUnit.SECONDS)
+      .reactToExceptionIn(cancelOnFuture)
+      .reactToExceptionIn(timeoutHandler.getUnfinishedTimeoutFuture())
       .handle { value, error -> doHandle(value, error, startTime, methodName) }
   }
-
-  private fun calculateTimeout(): Long =
-    Registry.intValue("bsp.request.timeout.seconds").toLong()
 
   private fun doHandle(value: Any?, error: Throwable?, startTime: Long, methodName: String): Any? {
     val elapsedTime = calculateElapsedTime(startTime)
@@ -77,13 +75,11 @@ private class CancelableInvocationHandlerWithTimeout(
   private fun calculateElapsedTime(startTime: Long): Long =
     currentTimeMillis() - startTime
 
-  private fun handleError(error: Throwable, methodName: String, elapsedTime: Long) = when (error) {
-    is TimeoutException -> {
-      log.error("BSP request '$methodName' timed out after ${elapsedTime}ms", error)
-      null
+  private fun handleError(error: Throwable, methodName: String, elapsedTime: Long): Nothing {
+    when (error) {
+      is TimeoutException -> log.error("BSP request '$methodName' timed out after ${elapsedTime}ms", error)
     }
-
-    else -> throw error
+    throw error
   }
 
   private companion object {
@@ -107,6 +103,7 @@ public class BspFileConnection(
 
   private var bspProcess: Process? = null
   private var disconnectActions: MutableList<() -> Unit> = mutableListOf()
+  private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
 
   public override fun connect(taskId: Any) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
@@ -167,6 +164,7 @@ public class BspFileConnection(
       bspConsoleService.bspBuildConsole,
       bspConsoleService.bspRunConsole,
       bspConsoleService.bspTestConsole,
+      timeoutHandler
     )
   }
 
@@ -202,7 +200,7 @@ public class BspFileConnection(
     return Proxy.newProxyInstance(
       javaClass.classLoader,
       arrayOf(BspServer::class.java),
-      CancelableInvocationHandlerWithTimeout(remoteProxy, cancelOnFuture)
+      CancelableInvocationHandlerWithTimeout(remoteProxy, cancelOnFuture, timeoutHandler)
     ) as BspServer
   }
 

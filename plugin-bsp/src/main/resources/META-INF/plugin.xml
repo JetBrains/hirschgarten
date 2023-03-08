@@ -37,7 +37,7 @@
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.BspProjectPropertiesService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.ProjectPropertiesService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.console.BspConsoleService"/>
-    <registryKey defaultValue="300" description="Timeout for BSP requests" key="bsp.request.timeout.seconds"/>
+    <registryKey defaultValue="30" description="Timeout for BSP requests in seconds" key="bsp.request.timeout.seconds"/>
     <registryKey defaultValue="true" description="Choose default connection" key="bsp.wizard.choose.default.connection"/>
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />

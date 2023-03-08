@@ -16,6 +16,7 @@ import ch.epfl.scala.bsp4j.TestStatus
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
+import org.jetbrains.plugins.bsp.server.connection.TimeoutHandler
 import org.jetbrains.plugins.bsp.ui.console.BspTargetRunConsole
 import org.jetbrains.plugins.bsp.ui.console.BspTargetTestConsole
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
@@ -27,17 +28,21 @@ public class BspClient(
   private val bspBuildConsole: TaskConsole,
   private val bspRunConsole: BspTargetRunConsole,
   private val bspTestConsole: BspTargetTestConsole,
+  private val timeoutHandler: TimeoutHandler
 ) : BuildClient {
 
   override fun onBuildShowMessage(params: ShowMessageParams) {
+    onBuildEvent()
     addMessageToConsole(params.originId, params.message)
   }
 
   override fun onBuildLogMessage(params: LogMessageParams) {
+    onBuildEvent()
     addMessageToConsole(params.originId, params.message)
   }
 
   override fun onBuildTaskStart(params: TaskStartParams?) {
+    onBuildEvent()
     when (params?.dataKind) {
       TaskDataKind.TEST_START -> {
         val gson = Gson()
@@ -52,9 +57,12 @@ public class BspClient(
     }
   }
 
-  override fun onBuildTaskProgress(params: TaskProgressParams?) { /* nothing to do */ }
+  override fun onBuildTaskProgress(params: TaskProgressParams?) {
+    onBuildEvent()
+  }
 
   override fun onBuildTaskFinish(params: TaskFinishParams?) {
+    onBuildEvent()
     when (params?.dataKind) {
       TaskDataKind.TEST_FINISH -> {
         val gson = Gson()
@@ -72,10 +80,17 @@ public class BspClient(
   }
 
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
+    onBuildEvent()
     addDiagnosticToConsole(params)
   }
 
-  override fun onBuildTargetDidChange(params: DidChangeBuildTarget?) { /* nothing to do */ }
+  override fun onBuildTargetDidChange(params: DidChangeBuildTarget?) {
+    onBuildEvent()
+  }
+
+  private fun onBuildEvent() {
+    timeoutHandler.resetTimer()
+  }
 
   private fun addMessageToConsole(originId: String?, message: String) {
     if (originId?.startsWith("build") == true) {
