@@ -43,6 +43,12 @@
     <registryKey defaultValue="100" description="Minimum chunk size for chunked BSP requests" key="bsp.request.chunking.size.min"/>
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
+
+    <toolWindow id="BSP"
+                factoryClass="org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory"
+                icon="/icons/bsp.svg"
+                anchor="right"/>
+
   </extensions>
 
   <actions>
