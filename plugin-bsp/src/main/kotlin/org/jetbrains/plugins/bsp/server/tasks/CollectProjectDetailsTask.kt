@@ -22,11 +22,14 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import java.io.File
+import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
+import kotlin.io.path.toPath
 
 public class UpdateMagicMetaModelInTheBackgroundTask(
   private val project: Project,
@@ -108,7 +111,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     }
 
     private fun addJdkIfNotYetAdded(jdkInfo: JvmBuildTarget) {
-      val jdk = ExternalSystemJdkProvider.getInstance().createJdk(jdkInfo.javaVersion, jdkInfo.javaHome.removePrefix("file://"))
+      val jdk = ExternalSystemJdkProvider.getInstance().createJdk(jdkInfo.javaVersion, URI.create(jdkInfo.javaHome).toPath().toString())
       if (jdk.isJdkNotAdded()) runWriteAction { jdkTable.addJdk(jdk) }
     }
 
