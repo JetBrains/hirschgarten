@@ -2,10 +2,15 @@ package org.jetbrains.bsp.probe.test
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.virtuslab.ideprobe.robot.RobotProbeDriver
 import scala.Option
 import scala.runtime.BoxedUnit
 
 class SingleProbeTests {
+
+  companion object {
+    const val LATEST_VERSION = "231.7665.28"
+  }
 
   @Test
   fun `open fresh instance of bazel-bsp project and check imported targets`() {
@@ -13,7 +18,7 @@ class SingleProbeTests {
       val fixture = fixtureWithWorkspaceFromGit(
         "https://github.com/JetBrains/bazel-bsp.git",
         "2.3.0"
-      ).withBuild("231.5920.14-EAP-SNAPSHOT")
+      ).withBuild(LATEST_VERSION)
       runAfterOpen(fixture, Option.apply(null)) { _, robot ->
         val stripeButton = robot.findElement(query.className("StripeButton", "text" to "BSP"))
         stripeButton.doClick()
@@ -23,6 +28,7 @@ class SingleProbeTests {
         loaded.click()
         val targetsTree = buildPanel.findElement(query.className("Tree"))
         Assertions.assertEquals(9, targetsTree.fullTexts().size)
+        robot.assertNoProblems()
         BoxedUnit.UNIT
       }
     }
@@ -34,12 +40,21 @@ class SingleProbeTests {
       val fixture = fixtureWithWorkspaceFromGit(
         "https://github.com/bazelbuild/bazel.git",
         "6.0.0"
-      ).withBuild("231.5920.14-EAP-SNAPSHOT")
+      ).withBuild(LATEST_VERSION)
       runAfterOpen(fixture, Option.apply(null)) { _, robot ->
-        val numberOfErrorsInBuildOutput = robot.getBuildConsoleOutput().filter { it.startsWith("ERROR: ") }.size
-        Assertions.assertEquals(0, numberOfErrorsInBuildOutput)
+        robot.assertNoProblems()
         BoxedUnit.UNIT
       }
     }
+  }
+
+  private fun RobotProbeDriver.assertNoProblems() {
+    findElement(query.className("StripeButton", "text" to "Problems")).doClick()
+    val errors = findElement(query.className("ContentTabLabel", "visible_text" to "Project Errors"))
+    errors.fixture().click()
+    val problemsTree = findElement(query.className("ProblemsViewPanel"))
+      .findElement(query.className("Tree"))
+    val problemsText = problemsTree.fullText().split("\n").firstOrNull()
+    Assertions.assertEquals("No errors found by the IDE", problemsText)
   }
 }

@@ -30,9 +30,10 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
     val openingProjectWaitLogic = openProjectAsync(intellij.probe, intellij.workspace)
     robot.clickDialogButton("Open or Import Project", "OK", continueOnFail = true)
     probe.await(openingProjectWaitLogic)
-    robot.clickDialogButton("Import Project via BSP", "Next", 360.second)
-    configuration.map(robot.setText(query.className("JBTextArea"), _))
-    robot.clickDialogButton("Import Project via BSP", "Create")
+    val importDialog = robot.findWithTimeout(query.className("MyDialog", ("title", "Import Project via BSP")), 360.second)
+    val configurationInput = importDialog.findWithTimeout(query.className("JBTextArea"), 1.second)
+    configuration.foreach(configurationInput.setText(_))
+    importDialog.findWithTimeout(query.button("text" -> "Create"), 1.second).doClick()
     probe.await(robot.extendWaitLogic(WaitLogic.Default))
     (probe, robot)
   }
