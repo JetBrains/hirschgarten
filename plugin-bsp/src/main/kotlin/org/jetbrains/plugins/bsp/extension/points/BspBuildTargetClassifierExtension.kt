@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.extension.points
 
-import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifier
 
@@ -21,8 +21,8 @@ public class TemporaryTestTargetClassifier : BspBuildTargetClassifierExtension {
 
   private val bazelLabelRegex = """@?(?<repository>.*)//(?<package>.*):(?<target>.*)""".toRegex()
 
-  override fun getBuildTargetPath(buildTarget: BuildTarget): List<String> {
-    val uri = buildTarget.id.uri
+  override fun getBuildTargetPath(buildTargetIdentifier: BuildTargetIdentifier): List<String> {
+    val uri = buildTargetIdentifier.uri
     return bazelLabelRegex.find(uri)?.groups
       ?.get("package")
       ?.value
@@ -31,8 +31,8 @@ public class TemporaryTestTargetClassifier : BspBuildTargetClassifierExtension {
       .orEmpty()
   }
 
-  override fun getBuildTargetName(buildTarget: BuildTarget): String {
-    val uri = buildTarget.id.uri
+  override fun getBuildTargetName(buildTargetIdentifier: BuildTargetIdentifier): String {
+    val uri = buildTargetIdentifier.uri
     return bazelLabelRegex.find(uri)?.groups?.get("target")?.value ?: uri
   }
 

@@ -2,6 +2,7 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetDataKind
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -14,9 +15,11 @@ import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.toPath
 
-internal object ModuleDetailsToJavaModuleTransformer : WorkspaceModelEntityTransformer<ModuleDetails, JavaModule> {
+internal class ModuleDetailsToJavaModuleTransformer(
+  moduleNameProvider: ((BuildTargetIdentifier) -> String)?
+): WorkspaceModelEntityTransformer<ModuleDetails, JavaModule> {
 
-  private const val type = "JAVA_MODULE"
+  private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(moduleNameProvider)
 
   override fun transform(inputEntity: ModuleDetails): JavaModule =
     JavaModule(
@@ -48,7 +51,7 @@ internal object ModuleDetailsToJavaModuleTransformer : WorkspaceModelEntityTrans
       javacOptions = inputEntity.javacOptions,
     )
 
-    return BspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
+    return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
 
   private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
@@ -64,6 +67,10 @@ internal object ModuleDetailsToJavaModuleTransformer : WorkspaceModelEntityTrans
     val jvmBuildTarget = extractJvmBuildTarget(inputEntity.target)
     return if (jvmBuildTarget != null) JvmJdkInfo(javaVersion = jvmBuildTarget.javaVersion, javaHome = jvmBuildTarget.javaHome)
     else null
+  }
+
+  companion object {
+    private const val type = "JAVA_MODULE"
   }
 
 }

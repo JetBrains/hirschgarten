@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
-import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 
 public interface BspBuildTargetClassifier {
   /**
@@ -30,7 +30,7 @@ public interface BspBuildTargetClassifier {
   public fun separator(): String? = null
 
   /**
-   * @param buildTarget a build target
+   * @param buildTargetIdentifier a build target
    * @return list of directories corresponding to a desired path of the given build target in the tree.
    * For example, path `["aaa", "bbb"]` will render as:
    * ```
@@ -40,28 +40,27 @@ public interface BspBuildTargetClassifier {
    * ```
    * If an empty list is returned, the build target will be rendered in the tree's top level
    */
-  public fun getBuildTargetPath(buildTarget: BuildTarget): List<String>
+  public fun getBuildTargetPath(buildTargetIdentifier: BuildTargetIdentifier): List<String>
 
   /**
-   * @param buildTarget - a build target
+   * @param buildTargetIdentifier a build target
    * @return the name under which the given build target will be rendered in the tree
    */
-  public fun getBuildTargetName(buildTarget: BuildTarget): String = buildTarget.displayName
+  public fun getBuildTargetName(buildTargetIdentifier: BuildTargetIdentifier): String = buildTargetIdentifier.uri
 }
 
 public class BspBuildTargetClassifierProvider(
-  private val toolName: String?,
-  private val bspBuildTargetClassifiers: List<BspBuildTargetClassifier>
+  toolName: String?,
+  bspBuildTargetClassifiers: List<BspBuildTargetClassifier>
 ) {
-  private fun getExtensionOrNull(): BspBuildTargetClassifier? =
-    bspBuildTargetClassifiers.firstOrNull { it.name() == toolName }
+  private val extensionOrNull = bspBuildTargetClassifiers.firstOrNull { it.name() == toolName }
 
   public fun getSeparator(): String? =
-    getExtensionOrNull()?.separator()
+    extensionOrNull?.separator()
 
-  public fun getBuildTargetPath(buildTarget: BuildTarget): List<String> =
-    getExtensionOrNull()?.getBuildTargetPath(buildTarget) ?: listOf()
+  public fun getBuildTargetPath(buildTargetIdentifier: BuildTargetIdentifier): List<String> =
+    extensionOrNull?.getBuildTargetPath(buildTargetIdentifier) ?: emptyList()
 
-  public fun getBuildTargetName(buildTarget: BuildTarget): String =
-    getExtensionOrNull()?.getBuildTargetName(buildTarget) ?: buildTarget.displayName
+  public fun getBuildTargetName(buildTargetIdentifier: BuildTargetIdentifier): String =
+    extensionOrNull?.getBuildTargetName(buildTargetIdentifier) ?: buildTargetIdentifier.uri
 }

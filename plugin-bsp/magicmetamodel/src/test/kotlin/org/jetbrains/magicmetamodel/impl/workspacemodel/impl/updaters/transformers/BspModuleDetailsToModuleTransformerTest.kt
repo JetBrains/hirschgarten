@@ -27,7 +27,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val emptyBspModuleDetails = listOf<BspModuleDetails>()
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer.transform(emptyBspModuleDetails)
+    val modules = BspModuleDetailsToModuleTransformer(null).transform(emptyBspModuleDetails)
 
     // then
     modules shouldBe emptyList()
@@ -82,7 +82,7 @@ class BspModuleDetailsToModuleTransformerTest {
     )
 
     // when
-    val module = BspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
+    val module = BspModuleDetailsToModuleTransformer(null).transform(bspModuleDetails)
 
     // then
     val expectedModule = Module(
@@ -199,7 +199,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
+    val modules = BspModuleDetailsToModuleTransformer(null).transform(bspModuleDetails)
 
     // then
     val expectedModule1 = Module(
@@ -242,6 +242,49 @@ class BspModuleDetailsToModuleTransformerTest {
       listOf(expectedModule1, expectedModule2),
       this::shouldBeIgnoringDependenciesOrder
     )
+  }
+
+  @Test
+  fun `should rename module using the given provider`() {
+    // given
+    val targetName = "//target1"
+    val targetId = BuildTargetIdentifier(targetName)
+
+    val target = BuildTarget(
+      targetId,
+      emptyList(),
+      emptyList(),
+      emptyList(),
+      BuildTargetCapabilities()
+    )
+
+    val javacOptions = JavacOptionsItem(
+      targetId,
+      emptyList(),
+      listOf(
+        "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+        "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
+      ),
+      "file:///compiler/output.jar",
+    )
+
+    val bspModuleDetails = BspModuleDetails(
+      target = target,
+      allTargetsIds = listOf(
+        BuildTargetIdentifier("//target1"),
+        BuildTargetIdentifier("//target2"),
+      ),
+      dependencySources = emptyList(),
+      type = "JAVA_MODULE",
+      javacOptions = javacOptions,
+    )
+
+    // when
+    val transformer = BspModuleDetailsToModuleTransformer { "${it.id.uri}${it.id.uri}" }
+    val module = transformer.transform(bspModuleDetails)
+
+    // then
+    module.name shouldBe "$targetName$targetName"
   }
 
   // TODO
