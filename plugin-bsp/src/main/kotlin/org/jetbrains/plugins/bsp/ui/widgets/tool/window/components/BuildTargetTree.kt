@@ -40,8 +40,8 @@ public class BuildTargetTree(
       targets.map {
         BuildTargetTreeIdentifier(
           it,
-          bspBuildTargetClassifierProvider.getBuildTargetPath(it),
-          bspBuildTargetClassifierProvider.getBuildTargetName(it)
+          bspBuildTargetClassifierProvider.getBuildTargetPath(it.id),
+          bspBuildTargetClassifierProvider.getBuildTargetName(it.id)
         )
       },
       bspBuildTargetClassifierProvider.getSeparator()

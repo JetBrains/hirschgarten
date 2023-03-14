@@ -37,7 +37,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val javaModules = ModuleDetailsToJavaModuleTransformer.transform(emptyModulesDetails)
+    val javaModules = ModuleDetailsToJavaModuleTransformer(null).transform(emptyModulesDetails)
 
     // then
     javaModules shouldBe emptyList()
@@ -135,7 +135,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     // when
-    val javaModule = ModuleDetailsToJavaModuleTransformer.transform(moduleDetails)
+    val javaModule = ModuleDetailsToJavaModuleTransformer(null).transform(moduleDetails)
 
     // then
     val expectedModule = Module(
@@ -353,7 +353,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
     // when
-    val javaModules = ModuleDetailsToJavaModuleTransformer.transform(modulesDetails)
+    val javaModules = ModuleDetailsToJavaModuleTransformer(null).transform(modulesDetails)
 
     // then
     val expectedModule1 = Module(

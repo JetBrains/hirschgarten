@@ -103,6 +103,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
+      magicMetaModelProjectConfig.moduleNameProvider
     )
 
     ProgressManager.checkCanceled()
@@ -158,6 +159,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
+      magicMetaModelProjectConfig.moduleNameProvider
     )
 
     ProgressManager.checkCanceled()
@@ -206,6 +208,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
+      magicMetaModelProjectConfig.moduleNameProvider
     )
 
     workspaceModelUpdater.clear()

@@ -18,14 +18,15 @@ internal data class BspModuleDetails(
   val type: String,
 )
 
-internal object BspModuleDetailsToModuleTransformer :
+internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvider: ((BuildTargetIdentifier) -> String)?) :
   WorkspaceModelEntityTransformer<BspModuleDetails, Module> {
 
   override fun transform(inputEntity: BspModuleDetails): Module {
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(inputEntity.allTargetsIds)
+    val buildTargetToModuleDependencyTransformer =
+      BuildTargetToModuleDependencyTransformer(inputEntity.allTargetsIds, moduleNameProvider)
 
     return Module(
-      name = inputEntity.target.id.uri,
+      name = moduleNameProvider?.let { it(inputEntity.target.id) } ?: inputEntity.target.id.uri,
       type = inputEntity.type,
       modulesDependencies = buildTargetToModuleDependencyTransformer.transform(inputEntity.target),
       librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer
@@ -52,8 +53,10 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
     )
 }
 
-internal class BuildTargetToModuleDependencyTransformer(private val allTargetsIds: List<BuildTargetIdentifier>) :
-  WorkspaceModelEntityPartitionTransformer<BuildTarget, ModuleDependency> {
+internal class BuildTargetToModuleDependencyTransformer(
+  private val allTargetsIds: List<BuildTargetIdentifier>,
+  private val moduleNameProvider: ((BuildTargetIdentifier) -> String)?
+) : WorkspaceModelEntityPartitionTransformer<BuildTarget, ModuleDependency> {
 
   override fun transform(inputEntity: BuildTarget): List<ModuleDependency> =
     inputEntity.dependencies
@@ -62,7 +65,6 @@ internal class BuildTargetToModuleDependencyTransformer(private val allTargetsId
 
   private fun toModuleDependency(targetId: BuildTargetIdentifier): ModuleDependency =
     ModuleDependency(
-      // TODO display name?
-      moduleName = targetId.uri,
+      moduleName = moduleNameProvider?.let { it(targetId) } ?: targetId.uri,
     )
 }

@@ -44,7 +44,8 @@ internal interface WorkspaceModelUpdater {
     fun create(
       workspaceEntityStorageBuilder: MutableEntityStorage,
       virtualFileUrlManager: VirtualFileUrlManager,
+      moduleNameProvider: ((BuildTargetIdentifier) -> String)?
     ): WorkspaceModelUpdater =
-      WorkspaceModelUpdaterImpl(workspaceEntityStorageBuilder, virtualFileUrlManager)
+      WorkspaceModelUpdaterImpl(workspaceEntityStorageBuilder, virtualFileUrlManager, moduleNameProvider)
   }
 }
