@@ -8,10 +8,15 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.workspaceModel.ide.StorageReplacement
 import com.intellij.workspaceModel.ide.WorkspaceModel
-import org.jetbrains.magicmetamodel.*
+import org.jetbrains.magicmetamodel.DocumentTargetsDetails
+import org.jetbrains.magicmetamodel.MagicMetaModel
+import org.jetbrains.magicmetamodel.MagicMetaModelDiff
+import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
+import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
-import org.jetbrains.magicmetamodel.impl.workspacemodel.*
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
+import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelToProjectDetailsTransformer
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 
 internal class DefaultMagicMetaModelDiff(
@@ -74,7 +79,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   internal constructor(state: DefaultMagicMetaModelState, magicMetaModelProjectConfig: MagicMetaModelProjectConfig) {
     this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
-    //not loaded
 
     this.projectDetails = state.projectDetailsState.fromState() +
       WorkspaceModelToProjectDetailsTransformer(magicMetaModelProjectConfig.workspaceModel)
@@ -82,7 +86,9 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     this.targetsDetailsForDocumentProvider =
       TargetsDetailsForDocumentProvider(state.targetsDetailsForDocumentProviderState)
     this.overlappingTargetsGraph =
-      state.overlappingTargetsGraph.mapKeys { it.key.fromState() }.mapValues { it.value.map { it.fromState() }.toSet() }
+      state.overlappingTargetsGraph.map { (key, value)  ->
+        key.fromState() to value.map { it.fromState() }.toSet()
+      }.toMap()
 
     this.targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
     this.loadedTargetsStorage =
