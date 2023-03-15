@@ -18,16 +18,15 @@ import com.intellij.util.io.readText
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizardStep
+import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.File
 import java.io.OutputStream
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
-import kotlin.io.path.Path
-import kotlin.io.path.exists
-import kotlin.io.path.name
-import kotlin.io.path.writeText
+import java.nio.file.StandardCopyOption
+import kotlin.io.path.*
 
 public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsGeneratorExtension {
 
@@ -63,7 +62,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
   }
 
   private fun calculateInstallerCommand(projectPath: VirtualFile): List<String> {
-    val coursierExecutable = findCoursierExecutableOrDownload(projectPath)
+    val coursierExecutable = findCoursierExecutableOrPrepare(projectPath)
 
     return listOf(
       coursierExecutable.toString(),
@@ -74,42 +73,30 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
     ) + calculateProjectViewFileInstallerOption()
   }
 
-  private fun findCoursierExecutableOrDownload(projectPath: VirtualFile): Path =
-    findCoursierExecutable() ?: downloadCoursierIfNotDownloaded(projectPath)
+  private fun findCoursierExecutableOrPrepare(projectPath: VirtualFile): Path =
+    findCoursierExecutable() ?: prepareCoursierIfNotExists(projectPath)
 
   private fun findCoursierExecutable(): Path? =
     EnvironmentUtil.getEnvironmentMap()["PATH"]
       ?.split(File.pathSeparator)
-      ?.map { File(it, "cs") }
+      ?.map { File(it, CoursierUtils.calculateCoursierExecutableName()) }
       ?.firstOrNull { it.canExecute() }
       ?.toPath()
 
-  private fun downloadCoursierIfNotDownloaded(projectPath: VirtualFile): Path {
+  private fun prepareCoursierIfNotExists(projectPath: VirtualFile): Path {
     // TODO we should pass it to syncConsole - it might take some time if the connection is really bad
-    val coursierUrl = "https://git.io/coursier-cli"
-    val coursierDestination = calculateCoursierDownloadDestination(projectPath)
+    val coursierDestination = calculateCoursierExecutableDestination(projectPath)
 
-    downloadCoursierIfDoesntExistInTheDestination(coursierDestination, coursierUrl)
+    CoursierUtils.prepareCoursierIfDoesntExistInTheDestination(coursierDestination)
 
     return coursierDestination
   }
 
-  private fun calculateCoursierDownloadDestination(projectPath: VirtualFile): Path {
+  private fun calculateCoursierExecutableDestination(projectPath: VirtualFile): Path {
     val dotBazelBsp = projectPath.toNioPath().resolve(".bazelbsp")
     Files.createDirectories(dotBazelBsp)
 
-    return dotBazelBsp.resolve("cs")
-  }
-
-  private fun downloadCoursierIfDoesntExistInTheDestination(coursierDestination: Path, coursierUrl: String) {
-    if (!coursierDestination.toFile().exists()) {
-      downloadCoursier(coursierUrl, coursierDestination)
-    }
-  }
-
-  private fun downloadCoursier(coursierUrl: String, coursierDestination: Path) {
-    Files.copy(URL(coursierUrl).openStream(), coursierDestination)
-    coursierDestination.toFile().setExecutable(true)
+    return dotBazelBsp.resolve(CoursierUtils.calculateCoursierExecutableName())
   }
 
   private fun calculateProjectViewFileInstallerOption(): List<String> =
@@ -255,5 +242,98 @@ public class BazelEditProjectViewStep(
 
   private companion object {
     private const val defaultProjectViewFileName = "projectview.bazelproject"
+  }
+}
+
+
+public object CoursierUtils {
+
+  public fun calculateCoursierExecutableName(): String = when (OS.current) {
+    OS.WINDOWS -> "cs.exe"
+    else -> "cs"
+  }
+
+  public fun prepareCoursierIfDoesntExistInTheDestination(coursierDestination: Path) {
+    if (!coursierDestination.toFile().exists()) {
+      prepareCoursier(coursierDestination)
+    }
+  }
+
+  private fun prepareCoursier(coursierDestination: Path) {
+    val coursierParentDir = coursierDestination.parent
+    val coursierZipPath = coursierParentDir.resolve(calculateCoursierZipName())
+    val coursierExtractedPath = coursierParentDir.resolve(calculateCoursierExtractedName())
+    downloadZipFile(calculateCoursierUrl(), coursierZipPath)
+    extractZipFile(coursierZipPath, coursierParentDir)
+    renameIfNeeded(coursierExtractedPath, coursierDestination)
+
+    coursierDestination.toFile().setExecutable(true)
+  }
+
+  private fun calculateCoursierZipName() = when (OS.current) {
+    OS.WINDOWS -> "cs.zip"
+    else -> "cs.gz"
+  }
+
+  private fun calculateCoursierExtractedName() = when (OS.current) {
+    OS.WINDOWS -> "cs-x86_64-pc-win32.exe"
+    else -> "cs"
+  }
+
+  private fun calculateCoursierUrl() = when (OS.current) {
+    OS.LINUX_ARM -> "https://github.com/VirtusLab/coursier-m1/releases/latest/download/cs-aarch64-pc-linux.gz"
+    OS.LINUX_INTEL -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz"
+    OS.MAC_INTEL -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-apple-darwin.gz"
+    OS.MAC_ARM -> "https://github.com/VirtusLab/coursier-m1/releases/latest/download/cs-aarch64-apple-darwin.gz"
+    OS.WINDOWS -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-win32.zip"
+    else -> throw UnsupportedOperationException("Unsupported OS")
+  }
+
+  private fun downloadZipFile(downloadUrl: String, path: Path) =
+    Files.copy(URL(downloadUrl).openStream(), path, StandardCopyOption.REPLACE_EXISTING)
+
+  private fun extractZipFile(zipPath: Path, workingDir: Path) =
+    calculateExtractCommand(zipPath).executeCommand(workingDir.toFile())
+
+  private fun renameIfNeeded(srcPath: Path, destPath: Path) {
+    if (destPath != srcPath) Files.move(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING)
+  }
+
+  private fun calculateExtractCommand(zipPath: Path): List<String> =
+    when (OS.current) {
+      OS.WINDOWS -> listOf("tar", "-xf", "$zipPath")
+      else -> listOf("gzip", "-d", "$zipPath")
+    }
+
+  private fun List<String>.executeCommand(workingDir: File = File(".")) =
+    ProcessBuilder(this)
+      .directory(workingDir)
+      .redirectOutput(ProcessBuilder.Redirect.PIPE)
+      .redirectError(ProcessBuilder.Redirect.PIPE)
+      .withRealEnvs()
+      .start()
+      .waitFor()
+}
+
+public enum class OS {
+  WINDOWS,
+  LINUX_ARM,
+  LINUX_INTEL,
+  MAC_INTEL,
+  MAC_ARM;
+  public companion object {
+    public val current: OS?
+      get() {
+        val osName = System.getProperty("os.name").lowercase()
+        val osArch = System.getProperty("os.arch").lowercase()
+        return when {
+          osName.startsWith("mac") && osArch.startsWith("x86") -> MAC_INTEL
+          osName.startsWith("mac") && osArch.startsWith("aarch64") -> MAC_ARM
+          osName.startsWith("linux") && osArch.startsWith("x86") -> LINUX_INTEL
+          osName.startsWith("linux") && osArch.startsWith("aarch64") -> LINUX_ARM
+          osName.startsWith("windows") -> WINDOWS
+          else -> null
+        }
+      }
   }
 }
