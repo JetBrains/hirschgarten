@@ -4,7 +4,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.EnvironmentUtil
 import java.io.File
 import java.io.OutputStream
-import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -17,46 +16,34 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
     projectPath.children.any { it.name == "build.sbt" }
 
   override fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream): VirtualFile {
-    executeAndWait(listOf(findCoursierExecutableOrDownload(projectPath).toString(), "launch", "sbt", "--", "bspConfig"), projectPath, outputStream)
+    executeAndWait(listOf(findCoursierExecutableOrPrepare(projectPath).toString(), "launch", "sbt", "--", "bspConfig"), projectPath, outputStream)
     return getChild(projectPath, listOf(".bsp", "sbt.json"))!!
   }
 
   // TODO copied from bazel extension, can we somehow move it to the ep?
-  private fun findCoursierExecutableOrDownload(projectPath: VirtualFile): Path =
-    findCoursierExecutable() ?: downloadCoursierIfNotDownloaded(projectPath)
+  private fun findCoursierExecutableOrPrepare(projectPath: VirtualFile): Path =
+    findCoursierExecutable() ?: prepareCoursierIfNotExists(projectPath)
 
   private fun findCoursierExecutable(): Path? =
     EnvironmentUtil.getEnvironmentMap()["PATH"]
       ?.split(File.pathSeparator)
-      ?.map { File(it, "cs") }
+      ?.map { File(it, CoursierUtils.calculateCoursierExecutableName()) }
       ?.firstOrNull { it.canExecute() }
       ?.toPath()
 
-  private fun downloadCoursierIfNotDownloaded(projectPath: VirtualFile): Path {
+  private fun prepareCoursierIfNotExists(projectPath: VirtualFile): Path {
     // TODO we should pass it to syncConsole - it might take some time if the connection is really bad
-    val coursierUrl = "https://git.io/coursier-cli"
-    val coursierDestination = calculateCoursierDownloadDestination(projectPath)
+    val coursierDestination = calculateCoursierExecutableDestination(projectPath)
 
-    downloadCoursierIfDoesntExistInTheDestination(coursierDestination, coursierUrl)
+    CoursierUtils.prepareCoursierIfDoesntExistInTheDestination(coursierDestination)
 
     return coursierDestination
   }
 
-  private fun calculateCoursierDownloadDestination(projectPath: VirtualFile): Path {
+  private fun calculateCoursierExecutableDestination(projectPath: VirtualFile): Path {
     val dotBazelBsp = projectPath.toNioPath().resolve(".bazelbsp")
     Files.createDirectories(dotBazelBsp)
 
-    return dotBazelBsp.resolve("cs")
-  }
-
-  private fun downloadCoursierIfDoesntExistInTheDestination(coursierDestination: Path, coursierUrl: String) {
-    if (!coursierDestination.toFile().exists()) {
-      downloadCoursier(coursierUrl, coursierDestination)
-    }
-  }
-
-  private fun downloadCoursier(coursierUrl: String, coursierDestination: Path) {
-    Files.copy(URL(coursierUrl).openStream(), coursierDestination)
-    coursierDestination.toFile().setExecutable(true)
+    return dotBazelBsp.resolve(CoursierUtils.calculateCoursierExecutableName())
   }
 }
