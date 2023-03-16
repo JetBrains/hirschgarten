@@ -54,6 +54,29 @@ public class ChunkingBuildServer<S: BspServer>(private val base: S, private val 
       wrapRes = { DependencyModulesResult(it) }
     )(params)
 
+  override fun buildTargetJavacOptions(params: JavacOptionsParams?): CompletableFuture<JavacOptionsResult> =
+    chunkedRequest(
+      unwrapReq = { it.targets },
+      wrapReq = { JavacOptionsParams(it) },
+      doRequest = base::buildTargetJavacOptions,
+      unwrapRes = { it.items },
+      wrapRes = { JavacOptionsResult(it) }
+    )(params)
+
+  override fun buildTargetCleanCache(params: CleanCacheParams?): CompletableFuture<CleanCacheResult> =
+    chunkedRequest(
+      unwrapReq = { it.targets },
+      wrapReq = { CleanCacheParams(it) },
+      doRequest = base::buildTargetCleanCache,
+      unwrapRes = { listOf(it) },
+      wrapRes = { results ->
+        CleanCacheResult(
+          results.joinToString("\n") { it.message },
+          results.all { it.cleaned }
+        )
+      }
+    )(params)
+
   private fun<ReqW, Res, ResW> chunkedRequest(
     unwrapReq: (ReqW) -> List<BTI>,
     wrapReq: (List<BTI>) -> ReqW,
