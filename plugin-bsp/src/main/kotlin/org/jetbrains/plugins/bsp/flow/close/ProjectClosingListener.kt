@@ -13,7 +13,7 @@ public class ProjectClosingListener : ProjectManagerListener {
   override fun projectClosing(project: Project) {
     val projectProperties = BspProjectPropertiesService.getInstance(project).value
 
-    if (projectProperties.isBspProject && !project.isNewProject()) {
+    if (projectProperties.isBspProject) {
       doProjectClosing(project)
     }
   }
