@@ -18,7 +18,7 @@ class BuildTargetToModuleDependencyTransformerTest {
     val allTargets = listOf<BuildTargetIdentifier>()
 
     // when
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets)
+    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets, null)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(emptyBuildTargets)
 
     // then
@@ -42,7 +42,7 @@ class BuildTargetToModuleDependencyTransformerTest {
     val allTargets = listOf<BuildTargetIdentifier>()
 
     // when
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets)
+    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets, null)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
@@ -68,7 +68,7 @@ class BuildTargetToModuleDependencyTransformerTest {
     )
 
     // when
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets)
+    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets, null)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
@@ -104,7 +104,7 @@ class BuildTargetToModuleDependencyTransformerTest {
     )
 
     // when
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets)
+    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets, null)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
@@ -159,7 +159,7 @@ class BuildTargetToModuleDependencyTransformerTest {
     val buildTargets = listOf(buildTarget1, buildTarget2)
 
     // when
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets)
+    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets, null)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTargets)
 
     // then

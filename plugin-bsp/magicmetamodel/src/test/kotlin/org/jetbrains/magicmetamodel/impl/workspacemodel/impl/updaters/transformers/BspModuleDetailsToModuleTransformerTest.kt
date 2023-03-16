@@ -280,7 +280,7 @@ class BspModuleDetailsToModuleTransformerTest {
     )
 
     // when
-    val transformer = BspModuleDetailsToModuleTransformer { "${it.id.uri}${it.id.uri}" }
+    val transformer = BspModuleDetailsToModuleTransformer { "${it.uri}${it.uri}" }
     val module = transformer.transform(bspModuleDetails)
 
     // then
