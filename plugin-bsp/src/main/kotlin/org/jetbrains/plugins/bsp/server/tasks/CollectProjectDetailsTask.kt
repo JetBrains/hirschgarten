@@ -99,9 +99,9 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
     private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
 
     override fun onSuccess() {
-      addBspFetchedJdks()
-      applyChangesOnWorkspaceModel()
-      afterOnSuccess()
+      logPerformance("add-bsp-fetched-jdks") { addBspFetchedJdks() }
+      logPerformance("apply-changes-on-workspace-model") { applyChangesOnWorkspaceModel() }
+      logPerformance("after-on-success") { afterOnSuccess() }
     }
 
     private fun addBspFetchedJdks() {
