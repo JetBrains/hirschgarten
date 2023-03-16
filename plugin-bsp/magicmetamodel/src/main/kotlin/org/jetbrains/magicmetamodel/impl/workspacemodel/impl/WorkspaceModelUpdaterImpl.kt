@@ -27,9 +27,15 @@ internal class WorkspaceModelUpdaterImpl(
 
   override fun loadModule(moduleDetails: ModuleDetails) {
     // TODO for now we are supporting only java modules
-    val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
-
-    javaModuleUpdater.addEntity(javaModule)
+    with (moduleDetails.target.languageIds) {
+      when {
+        contains("java") || contains("kotlin") -> {
+          val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
+          javaModuleUpdater.addEntity(javaModule)
+        }
+        else -> {}
+      }
+    }
   }
 
   override fun removeModule(module: ModuleName) {
