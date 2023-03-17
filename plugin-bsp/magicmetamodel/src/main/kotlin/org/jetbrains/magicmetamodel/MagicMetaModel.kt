@@ -13,11 +13,13 @@ import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
+import java.nio.file.Path
 
 public data class MagicMetaModelProjectConfig(
   val workspaceModel: WorkspaceModel,
   val virtualFileUrlManager: VirtualFileUrlManager,
-  val moduleNameProvider: ((BuildTargetIdentifier) -> String)? = null
+  val moduleNameProvider: ((BuildTargetIdentifier) -> String)? = null,
+  val projectBasePath: Path,
 )
 
 public data class ProjectDetails(

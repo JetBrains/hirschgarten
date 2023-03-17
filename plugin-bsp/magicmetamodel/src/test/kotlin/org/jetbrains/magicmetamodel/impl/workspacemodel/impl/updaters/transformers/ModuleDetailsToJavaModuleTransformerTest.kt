@@ -31,13 +31,15 @@ import kotlin.io.path.name
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToJavaModuleTransformerTest {
 
+  val projectBasePath = Path("")
+
   @Test
   fun `should return no java modules roots for no modules details`() {
     // given
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val javaModules = ModuleDetailsToJavaModuleTransformer(null).transform(emptyModulesDetails)
+    val javaModules = ModuleDetailsToJavaModuleTransformer(null, projectBasePath).transform(emptyModulesDetails)
 
     // then
     javaModules shouldBe emptyList()
@@ -135,7 +137,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     // when
-    val javaModule = ModuleDetailsToJavaModuleTransformer(null).transform(moduleDetails)
+    val javaModule = ModuleDetailsToJavaModuleTransformer(null, projectBasePath).transform(moduleDetails)
 
     // then
     val expectedModule = Module(
@@ -353,7 +355,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
     // when
-    val javaModules = ModuleDetailsToJavaModuleTransformer(null).transform(modulesDetails)
+    val javaModules = ModuleDetailsToJavaModuleTransformer(null, projectBasePath).transform(modulesDetails)
 
     // then
     val expectedModule1 = Module(
