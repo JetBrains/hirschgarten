@@ -15,6 +15,7 @@ plugins {
 }
 
 val myToken: String by project
+val releaseChannel: String by project
 
 group = Plugin.group
 version = Plugin.version
@@ -119,7 +120,7 @@ tasks {
     // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
     // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
     // example command for publish "gradlew publishPlugin -PmyToken="perm:YOUR_TOKEN"
-    channels.set(listOf(Plugin.version.split('-').getOrElse(1) { "default" }.split('.').first()))
+    channels.set(provider { listOf(releaseChannel) })
   }
 }
 
