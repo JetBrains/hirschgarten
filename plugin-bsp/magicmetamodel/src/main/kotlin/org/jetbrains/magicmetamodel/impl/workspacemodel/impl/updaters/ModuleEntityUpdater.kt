@@ -60,7 +60,7 @@ internal class ModuleEntityUpdater(
     builder: MutableEntityStorage,
     entityToAdd: Module,
   ): ModuleEntity {
-    val modulesDependencies = entityToAdd.modulesDependencies.map(::toModuleDependencyItemModuleDependency)
+    val modulesDependencies = entityToAdd.modulesDependencies.map(this::toModuleDependencyItemModuleDependency)
     val librariesDependencies =
       entityToAdd.librariesDependencies.map { toModuleDependencyItemLibraryDependency(it, entityToAdd.name) }
     val moduleEntity = builder.addModuleEntity(
@@ -80,30 +80,30 @@ internal class ModuleEntityUpdater(
     }
     return moduleEntity
   }
+
+  private fun toModuleDependencyItemModuleDependency(
+    moduleDependency: ModuleDependency
+  ): ModuleDependencyItem.Exportable.ModuleDependency =
+    ModuleDependencyItem.Exportable.ModuleDependency(
+      module = ModuleId(moduleDependency.moduleName),
+      exported = true,
+      scope = ModuleDependencyItem.DependencyScope.COMPILE,
+      productionOnTest = true,
+    )
+
+  private fun toModuleDependencyItemLibraryDependency(
+    libraryDependency: LibraryDependency,
+    moduleName: String
+  ): ModuleDependencyItem.Exportable.LibraryDependency =
+    ModuleDependencyItem.Exportable.LibraryDependency(
+      library = LibraryId(
+        name = libraryDependency.libraryName,
+        tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName)),
+      ),
+      exported = false,
+      scope = ModuleDependencyItem.DependencyScope.COMPILE,
+    )
 }
-
-internal fun toModuleDependencyItemModuleDependency(
-  moduleDependency: ModuleDependency
-): ModuleDependencyItem.Exportable.ModuleDependency =
-  ModuleDependencyItem.Exportable.ModuleDependency(
-    module = ModuleId(moduleDependency.moduleName),
-    exported = true,
-    scope = ModuleDependencyItem.DependencyScope.COMPILE,
-    productionOnTest = true,
-  )
-
-internal fun toModuleDependencyItemLibraryDependency(
-  libraryDependency: LibraryDependency,
-  moduleName: String
-): ModuleDependencyItem.Exportable.LibraryDependency =
-  ModuleDependencyItem.Exportable.LibraryDependency(
-    library = LibraryId(
-      name = libraryDependency.libraryName,
-      tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName)),
-    ),
-    exported = false,
-    scope = ModuleDependencyItem.DependencyScope.COMPILE,
-  )
 
 // TODO TEST TEST TEST TEST TEST !!11!1!
 internal class WorkspaceModuleRemover(

@@ -9,33 +9,34 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToDummyJavaModulesTransformerHACK
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
+import java.nio.file.Path
 
 internal class WorkspaceModelUpdaterImpl(
   workspaceEntityStorageBuilder: MutableEntityStorage,
   val virtualFileUrlManager: VirtualFileUrlManager,
-  moduleNameProvider: ((BuildTargetIdentifier) -> String)?
+  moduleNameProvider: ((BuildTargetIdentifier) -> String)?,
+  projectBasePath: Path,
 ) : WorkspaceModelUpdater {
 
   private val workspaceModelEntityUpdaterConfig = WorkspaceModelEntityUpdaterConfig(
     workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
     virtualFileUrlManager = virtualFileUrlManager,
+    projectBasePath = projectBasePath
   )
   private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
-  private val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(moduleNameProvider)
+  private val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(moduleNameProvider, projectBasePath)
+  private val moduleDetailsToDummyJavaModulesTransformerHACK = ModuleDetailsToDummyJavaModulesTransformerHACK(projectBasePath)
 
   override fun loadModule(moduleDetails: ModuleDetails) {
     // TODO for now we are supporting only java modules
-    with (moduleDetails.target.languageIds) {
-      when {
-        contains("java") || contains("kotlin") -> {
-          val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
-          javaModuleUpdater.addEntity(javaModule)
-        }
-        else -> {}
-      }
-    }
+    val dummyJavaModules = moduleDetailsToDummyJavaModulesTransformerHACK.transform(moduleDetails)
+    javaModuleUpdater.addEntries(dummyJavaModules)
+    val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
+    javaModuleUpdater.addEntity(javaModule)
+
   }
 
   override fun removeModule(module: ModuleName) {

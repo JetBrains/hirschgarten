@@ -13,6 +13,7 @@ import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
+import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
@@ -70,7 +71,10 @@ public class MagicMetaModelService(private val project: Project) :
     val toolName = obtainToolNameIfKnown(project)
     val moduleNameProvider = toolName?.let(::createModuleNameProvider)
 
-    return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider)
+    val projectProperties = ProjectPropertiesService.getInstance(project).value
+    val projectBasePath = projectProperties.projectRootDir.toNioPath()
+
+    return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider, projectBasePath)
   }
 
   private fun obtainToolNameIfKnown(project: Project): String? =

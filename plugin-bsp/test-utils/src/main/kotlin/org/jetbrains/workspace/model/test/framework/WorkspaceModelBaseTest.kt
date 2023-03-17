@@ -12,6 +12,8 @@ import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
 import org.junit.jupiter.api.BeforeEach
+import java.nio.file.Path
+import kotlin.io.path.Path
 
 public open class WorkspaceModelBaseTest {
 
@@ -19,6 +21,7 @@ public open class WorkspaceModelBaseTest {
   protected lateinit var workspaceModel: WorkspaceModel
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
   protected lateinit var virtualFileUrlManager: VirtualFileUrlManager
+  protected val projectBasePath: Path = Path("")
 
   @BeforeEach
   protected open fun beforeEach() {
