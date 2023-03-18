@@ -117,9 +117,11 @@ tasks {
     dependsOn("patchChangelog")
     token.set(provider { myToken })
     // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
-    // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
+    // Specify pre-release label to publish the plugin in a custom Release Channel. Read more:
     // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-    // example command for publish "gradlew publishPlugin -PmyToken="perm:YOUR_TOKEN"
+    // Release channel is set via comman-line param "releaseChannel"
+    // Marketplace token is set via command-line parm "myToken"
+    // Example command "./gradlew publishPlugin -PmyToken="perm:YOUR_TOKEN -PreleaseChannel=nightly"
     channels.set(provider { listOf(releaseChannel) })
   }
 }
