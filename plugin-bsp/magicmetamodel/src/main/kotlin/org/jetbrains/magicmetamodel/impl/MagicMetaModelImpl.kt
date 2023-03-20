@@ -161,7 +161,9 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     // TODO test it!
     val loadedTargetsToRemove = targetsToRemove.filter(loadedTargetsStorage::isTargetLoaded)
 
-    val modulesToRemove = loadedTargetsToRemove.map { ModuleName(it.uri) }
+    val modulesToRemove = loadedTargetsToRemove.map {
+      ModuleName(magicMetaModelProjectConfig.moduleNameProvider?.invoke(BuildTargetIdentifier(it.uri)) ?: it.uri)
+    }
     val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
