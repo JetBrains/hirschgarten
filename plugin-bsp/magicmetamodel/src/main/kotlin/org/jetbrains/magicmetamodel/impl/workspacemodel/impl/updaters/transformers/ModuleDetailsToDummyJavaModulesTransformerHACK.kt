@@ -66,7 +66,7 @@ private fun calculateDummyJavaSourceRoots(inputEntity: ModuleDetails): List<Path
 private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<Path>, projectBasePath: Path): List<String> =
   dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it, projectBasePath) }
 
-private fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
+internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
   val absoluteSourceRoot = sourceRoot.toAbsolutePath().toString()
   val absoluteProjectBasePath = projectBasePath.toAbsolutePath().toString()
   return absoluteSourceRoot
