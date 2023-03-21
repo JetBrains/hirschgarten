@@ -15,8 +15,9 @@ import java.util.concurrent.CompletableFuture
 public class CancellableFuture<T> private constructor(private val original: CompletableFuture<*>) :
   CompletableFuture<T>() {
 
+  @Synchronized
   override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
-    original.cancel(mayInterruptIfRunning)
+    if(!original.isDone) original.cancel(mayInterruptIfRunning)
     return super.cancel(mayInterruptIfRunning)
   }
 
