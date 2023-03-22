@@ -92,8 +92,11 @@ internal class JavaModuleUpdater(
   private val javaModuleWithoutSourcesUpdater = JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity =
-    when (Pair(entityToAdd.sourceRoots.size, entityToAdd.resourceRoots.size)) {
-      Pair(0, 0) -> javaModuleWithoutSourcesUpdater.addEntity(entityToAdd)
+    when (Triple(entityToAdd.sourceRoots.size, entityToAdd.resourceRoots.size, entityToAdd.containsJavaKotlinLanguageIds())) {
+      Triple(0, 0, true) -> javaModuleWithoutSourcesUpdater.addEntity(entityToAdd)
       else -> javaModuleWithSourcesUpdater.addEntity(entityToAdd)
     }
+
+  private fun JavaModule.containsJavaKotlinLanguageIds() =
+    this.module.languageIds.any { it == "kotlin" || it == "java" }
 }

@@ -4,11 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleCapabilities
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
 
 internal data class BspModuleDetails(
   val target: BuildTarget,
@@ -35,7 +31,8 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
         }),
       capabilities = inputEntity.target.capabilities.let {
         ModuleCapabilities(it.canRun, it.canTest, it.canCompile, it.canDebug)
-      }
+      },
+      languageIds = inputEntity.target.languageIds
     )
   }
 }
