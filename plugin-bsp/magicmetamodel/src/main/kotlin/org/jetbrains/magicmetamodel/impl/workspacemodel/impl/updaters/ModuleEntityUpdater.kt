@@ -18,6 +18,7 @@ internal data class Module(
   val modulesDependencies: List<ModuleDependency>,
   val librariesDependencies: List<LibraryDependency>,
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
+  val languageIds: List<String> = listOf(),
 ) : WorkspaceModelEntity()
 
 internal class ModuleCapabilities(private val map: Map<String, String> = mapOf()) :
