@@ -7,17 +7,18 @@ import com.intellij.util.io.isAncestor
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.SourceRoot
 import java.net.URI
+import java.nio.file.Path
 
 internal data class BuildTargetAndSourceItem(
   val buildTarget: BuildTarget,
   val sourcesItem: SourcesItem,
 )
 
-internal object SourcesItemToJavaSourceRootTransformer :
+internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePath: Path):
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
 
-  private const val sourceRootType = "java-source"
-  private const val testSourceRootType = "java-test"
+  private val sourceRootType = "java-source"
+  private val testSourceRootType = "java-test"
 
   override fun transform(inputEntities: List<BuildTargetAndSourceItem>): List<JavaSourceRoot> {
     val allSourceRoots = super.transform(inputEntities)
@@ -35,6 +36,7 @@ internal object SourcesItemToJavaSourceRootTransformer :
     return SourceItemToSourceRootTransformer
       .transform(inputEntity.sourcesItem.sources)
       .map { toJavaSourceRoot(it, sourceRoots, rootType, inputEntity.buildTarget.id) }
+      .filter { it.sourcePath.isPathInProjectBasePath(projectBasePath) }
   }
 
   private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> =

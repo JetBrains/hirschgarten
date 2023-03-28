@@ -18,18 +18,20 @@ internal class ModuleDetailsToJavaModuleTransformer(
 ): WorkspaceModelEntityTransformer<ModuleDetails, JavaModule> {
 
   private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(moduleNameProvider)
+  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(projectBasePath)
+  private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer(projectBasePath)
 
   override fun transform(inputEntity: ModuleDetails): JavaModule =
     JavaModule(
       module = toModule(inputEntity),
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
-      sourceRoots = SourcesItemToJavaSourceRootTransformer.transform(inputEntity.sources.map {
+      sourceRoots = sourcesItemToJavaSourceRootTransformer.transform(inputEntity.sources.map {
         BuildTargetAndSourceItem(
           inputEntity.target,
           it,
         )
       }),
-      resourceRoots = ResourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources),
+      resourceRoots = resourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources),
       libraries = DependencySourcesItemToLibraryTransformer.transform(inputEntity.dependenciesSources.map {
         DependencySourcesAndJavacOptions(
           it,

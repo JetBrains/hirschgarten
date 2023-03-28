@@ -28,7 +28,7 @@ internal class ContentRootEntityUpdater(
     moduleEntity: ModuleEntity,
     entityToAdd: ContentRoot,
   ): ContentRootEntity {
-    val toExclude = if (moduleEntity.name == "bsp-workspace-root") listOf("bazel-*") else DEFAULT_PATTERNS_URLS // todo this should be done only for bazelbsp projects
+    val toExclude = if (moduleEntity.name == ".bsp-workspace-root") listOf("bazel-*") else DEFAULT_PATTERNS_URLS // todo this should be done only for bazelbsp projects
     return builder.addContentRootEntity(
       url = entityToAdd.url.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
       excludedUrls = entityToAdd.excludedUrls

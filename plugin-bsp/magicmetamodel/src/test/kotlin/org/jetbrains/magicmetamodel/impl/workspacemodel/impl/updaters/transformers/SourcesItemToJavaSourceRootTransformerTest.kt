@@ -1,21 +1,22 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
+import ch.epfl.scala.bsp4j.*
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
+import kotlin.io.path.Path
 import kotlin.io.path.toPath
 
 @DisplayName("SourcesItemToWorkspaceModelJavaSourceRootTransformer.transform(sourcesItem)")
 class SourcesItemToJavaSourceRootTransformerTest {
+
+  private val projectBasePath = Path("")
+  private val projectBasePathURIStr = projectBasePath.toUri().toString()
+
+  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(projectBasePath)
 
   @Test
   fun `should return no sources roots for no sources items`() {
@@ -23,7 +24,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val emptySources = listOf<BuildTargetAndSourceItem>()
 
     // when
-    val javaSources = SourcesItemToJavaSourceRootTransformer.transform(emptySources)
+    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(emptySources)
 
     // then
     javaSources shouldBe emptyList()
@@ -32,12 +33,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
   @Test
   fun `should return single source root for sources item with one file source`() {
     // given
+    val rootDir = "${projectBasePathURIStr}root/dir"
     val sourceItem = SourceItem(
-      "file:///root/dir/example/package/File.java",
+      "$rootDir/example/package/File.java",
       SourceItemKind.FILE,
       false
     )
-    val sourceRoots = listOf("file:///root/dir/")
+    val sourceRoots = listOf(rootDir)
 
     val buildTargetAndSourceItem = BuildTargetAndSourceItem(
       buildTarget = BuildTarget(
@@ -56,11 +58,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
     )
 
     // when
-    val javaSources = SourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItem)
+    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItem)
 
     // then
     val expectedJavaSourceRoot = JavaSourceRoot(
-      sourcePath = URI.create("file:///root/dir/example/package/File.java").toPath(),
+      sourcePath = URI.create("$rootDir/example/package/File.java").toPath(),
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
@@ -73,12 +75,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
   @Test
   fun `should return single source test root for sources item with one file source`() {
     // given
+    val rootDir = "${projectBasePathURIStr}root/dir"
     val sourceItem = SourceItem(
-      "file:///root/dir/example/package/File.java",
+      "$rootDir/example/package/File.java",
       SourceItemKind.FILE,
       false
     )
-    val sourceRoots = listOf("file:///root/dir/")
+    val sourceRoots = listOf(rootDir)
 
     val buildTargetAndSourceItem = BuildTargetAndSourceItem(
       buildTarget = BuildTarget(
@@ -97,11 +100,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
     )
 
     // when
-    val javaSources = SourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItem)
+    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItem)
 
     // then
     val expectedJavaSourceRoot = JavaSourceRoot(
-      sourcePath = URI.create("file:///root/dir/example/package/File.java").toPath(),
+      sourcePath = URI.create("$rootDir/example/package/File.java").toPath(),
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-test",
@@ -114,12 +117,13 @@ class SourcesItemToJavaSourceRootTransformerTest {
   @Test
   fun `should return single source root for sources item with one dir source`() {
     // given
+    val rootDir = "${projectBasePathURIStr}root/dir"
     val sourceItem = SourceItem(
-      "file:///root/dir/example/package/",
+      "$rootDir/example/package/",
       SourceItemKind.DIRECTORY,
       false
     )
-    val sourceRoots = listOf("file:///root/dir/")
+    val sourceRoots = listOf(rootDir)
 
     val buildTargetAndSourceItem = BuildTargetAndSourceItem(
       buildTarget = BuildTarget(
@@ -138,11 +142,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
     )
 
     // when
-    val javaSources = SourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItem)
+    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItem)
 
     // then
     val expectedJavaSourceRoot = JavaSourceRoot(
-      sourcePath = URI.create("file:///root/dir/example/package/").toPath(),
+      sourcePath = URI.create("$rootDir/example/package/").toPath(),
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
@@ -155,24 +159,27 @@ class SourcesItemToJavaSourceRootTransformerTest {
   @Test
   fun `should return sources roots for sources item with multiple sources`() {
     // given
+    val rootDir = "${projectBasePathURIStr}root/dir"
+    val anotherRootDir = "${projectBasePathURIStr}another/root/dir"
+
     val sourceItem1 = SourceItem(
-      "file:///root/dir/example/package/File1.java",
+      "$rootDir/example/package/File1.java",
       SourceItemKind.FILE,
       false
     )
     val sourceItem2 = SourceItem(
-      "file:///root/dir/example/package/File2.java",
+      "$rootDir/example/package/File2.java",
       SourceItemKind.FILE,
       false
     )
     val sourceItem3 = SourceItem(
-      "file:///another/root/dir/another/example/package/",
+      "$anotherRootDir/another/example/package/",
       SourceItemKind.DIRECTORY,
       false
     )
     val sourceRoots = listOf(
-      "file:///root/dir/",
-      "file:///another/root/dir/",
+      rootDir,
+      anotherRootDir,
     )
 
     val buildTargetAndSourceItem = BuildTargetAndSourceItem(
@@ -192,25 +199,25 @@ class SourcesItemToJavaSourceRootTransformerTest {
     )
 
     // when
-    val javaSources = SourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItem)
+    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItem)
 
     // then
     val expectedJavaSourceRoot1 = JavaSourceRoot(
-      sourcePath = URI.create("file:///root/dir/example/package/File1.java").toPath(),
+      sourcePath = URI.create("$rootDir/example/package/File1.java").toPath(),
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
       targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
-      sourcePath = URI.create("file:///root/dir/example/package/File2.java").toPath(),
+      sourcePath = URI.create("$rootDir/example/package/File2.java").toPath(),
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
       targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot3 = JavaSourceRoot(
-      sourcePath = URI.create("file:///another/root/dir/another/example/package/").toPath(),
+      sourcePath = URI.create("$anotherRootDir/another/example/package/").toPath(),
       generated = false,
       packagePrefix = "another.example.package",
       rootType = "java-source",
@@ -222,29 +229,32 @@ class SourcesItemToJavaSourceRootTransformerTest {
   @Test
   fun `should return parent sources root for multiple sources items in the same directory`() {
     // given
+    val rootDir = "${projectBasePathURIStr}root/dir"
+    val anotherRootDir = "${projectBasePathURIStr}another/root/dir"
+
     val sourceItem1 = SourceItem(
-      "file:///root/dir/example/package/a/",
+      "$rootDir/example/package/a/",
       SourceItemKind.DIRECTORY,
       false
     )
     val sourceItem2 = SourceItem(
-      "file:///root/dir/example/package/a/b/",
+      "$rootDir/example/package/a/b/",
       SourceItemKind.DIRECTORY,
       false
     )
     val sourceItem3 = SourceItem(
-      "file:///root/dir/example/package/a/b/c",
+      "$rootDir/example/package/a/b/c",
       SourceItemKind.DIRECTORY,
       false
     )
     val sourceItem4 = SourceItem(
-      "file:///another/root/dir/another/example/package/",
+      "$anotherRootDir/another/example/package/",
       SourceItemKind.DIRECTORY,
       false
     )
     val sourceRoots = listOf(
-      "file:///root/dir/",
-      "file:///another/root/dir/",
+      rootDir,
+      anotherRootDir,
     )
 
     val buildTargetAndSourceItem1 = BuildTargetAndSourceItem(
@@ -280,18 +290,18 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
 
     // when
-    val javaSources = SourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItems)
+    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItems)
 
     // then
     val expectedJavaSourceRoot1 = JavaSourceRoot(
-      sourcePath = URI.create("file:///root/dir/example/package/a/").toPath(),
+      sourcePath = URI.create("$rootDir/example/package/a/").toPath(),
       generated = false,
       packagePrefix = "example.package.a",
       rootType = "java-source",
       targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
-      sourcePath = URI.create("file:///another/root/dir/another/example/package/").toPath(),
+      sourcePath = URI.create("$anotherRootDir/another/example/package/").toPath(),
       generated = false,
       packagePrefix = "another.example.package",
       rootType = "java-source",
@@ -303,24 +313,27 @@ class SourcesItemToJavaSourceRootTransformerTest {
   @Test
   fun `should return sources roots for multiple sources items`() {
     // given
+    val rootDir = "${projectBasePathURIStr}root/dir"
+    val anotherRootDir = "${projectBasePathURIStr}another/root/dir"
+
     val sourceItem1 = SourceItem(
-      "file:///root/dir/example/package/File1.java",
+      "$rootDir/example/package/File1.java",
       SourceItemKind.FILE,
       false
     )
     val sourceItem2 = SourceItem(
-      "file:///root/dir/example/package/File2.java",
+      "$rootDir/example/package/File2.java",
       SourceItemKind.FILE,
       false
     )
     val sourceItem3 = SourceItem(
-      "file:///another/root/dir/another/example/package/",
+      "$anotherRootDir/another/example/package/",
       SourceItemKind.DIRECTORY,
       false
     )
     val sourceRoots = listOf(
-      "file:///root/dir/",
-      "file:///another/root/dir/",
+      rootDir,
+      anotherRootDir,
     )
 
     val buildTargetAndSourceItem1 = BuildTargetAndSourceItem(
@@ -357,30 +370,176 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
 
     // when
-    val javaSources = SourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItems)
+    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItems)
 
     // then
     val expectedJavaSourceRoot1 = JavaSourceRoot(
-      sourcePath = URI.create("file:///root/dir/example/package/File1.java").toPath(),
+      sourcePath = URI.create("$rootDir/example/package/File1.java").toPath(),
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
       targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
-      sourcePath = URI.create("file:///root/dir/example/package/File2.java").toPath(),
+      sourcePath = URI.create("$rootDir/example/package/File2.java").toPath(),
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
       targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot3 = JavaSourceRoot(
-      sourcePath = URI.create("file:///another/root/dir/another/example/package/").toPath(),
+      sourcePath = URI.create("$anotherRootDir/another/example/package/").toPath(),
       generated = false,
       packagePrefix = "another.example.package",
       rootType = "java-source",
       targetId = BuildTargetIdentifier("target"),
     )
     javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3)
+  }
+
+  @Test
+  fun `should return sources root if source items are not in project base path`() {
+    // given
+    val rootDir = "file:///var/tmp/root/dir"
+    val anotherRootDir = "file:///var/tmp/another/root/dir"
+
+    val sourceItem1 = SourceItem(
+      "$rootDir/example/package/File1.java",
+      SourceItemKind.FILE,
+      false
+    )
+    val sourceItem2 = SourceItem(
+      "$rootDir/example/package/File2.java",
+      SourceItemKind.FILE,
+      false
+    )
+    val sourceItem3 = SourceItem(
+      "$anotherRootDir/another/example/package/",
+      SourceItemKind.DIRECTORY,
+      false
+    )
+    val sourceRoots = listOf(
+      rootDir,
+      anotherRootDir,
+    )
+
+    val buildTargetAndSourceItem1 = BuildTargetAndSourceItem(
+      buildTarget = BuildTarget(
+        BuildTargetIdentifier("target"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+      ),
+      sourcesItem = SourcesItem(
+        BuildTargetIdentifier("target"),
+        listOf(sourceItem1)
+      ).also {
+        it.roots = sourceRoots
+      }
+    )
+    val buildTargetAndSourceItem2 = BuildTargetAndSourceItem(
+      buildTarget = BuildTarget(
+        BuildTargetIdentifier("target"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+      ),
+      sourcesItem = SourcesItem(
+        BuildTargetIdentifier("target"),
+        listOf(sourceItem2, sourceItem3)
+      ).also {
+        it.roots = sourceRoots
+      }
+    )
+
+    val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
+
+    // when
+    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItems)
+
+    // then
+    javaSources shouldBe emptyList()
+  }
+
+  @Test
+  fun `should return only source roots that have source items in project base path`() {
+    // given
+    val rootDir = "${projectBasePathURIStr}root/dir"
+    val anotherRootDir = "file:///var/tmp/another/root/dir"
+
+    val sourceItem1 = SourceItem(
+      "$rootDir/example/package/File1.java",
+      SourceItemKind.FILE,
+      false
+    )
+    val sourceItem2 = SourceItem(
+      "$anotherRootDir/example/package/File2.java",
+      SourceItemKind.FILE,
+      false
+    )
+    val sourceItem3 = SourceItem(
+      "$rootDir/another/example/package/",
+      SourceItemKind.DIRECTORY,
+      false
+    )
+    val sourceRoots = listOf(
+      rootDir,
+      anotherRootDir,
+    )
+
+    val buildTargetAndSourceItem1 = BuildTargetAndSourceItem(
+      buildTarget = BuildTarget(
+        BuildTargetIdentifier("target"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+      ),
+      sourcesItem = SourcesItem(
+        BuildTargetIdentifier("target"),
+        listOf(sourceItem1)
+      ).also {
+        it.roots = sourceRoots
+      }
+    )
+    val buildTargetAndSourceItem2 = BuildTargetAndSourceItem(
+      buildTarget = BuildTarget(
+        BuildTargetIdentifier("target"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities(),
+      ),
+      sourcesItem = SourcesItem(
+        BuildTargetIdentifier("target"),
+        listOf(sourceItem2, sourceItem3)
+      ).also {
+        it.roots = sourceRoots
+      }
+    )
+
+    val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
+
+    // when
+    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItems)
+
+    // then
+    val expectedJavaSourceRoot1 = JavaSourceRoot(
+      sourcePath = URI.create("$rootDir/example/package/File1.java").toPath(),
+      generated = false,
+      packagePrefix = "example.package",
+      rootType = "java-source",
+      targetId = BuildTargetIdentifier("target"),
+    )
+    val expectedJavaSourceRoot2 = JavaSourceRoot(
+      sourcePath = URI.create("$rootDir/another/example/package/").toPath(),
+      generated = false,
+      packagePrefix = "another.example.package",
+      rootType = "java-source",
+      targetId = BuildTargetIdentifier("target"),
+    )
+    javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2)
   }
 }
