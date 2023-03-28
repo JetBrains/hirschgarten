@@ -17,6 +17,7 @@ import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 
 /**
  * Runs actions after the project has started up and the index is up-to-date.
@@ -35,6 +36,8 @@ public class BspStartupActivity : ProjectActivity {
   }
 
   private fun doRunActivity(project: Project) {
+    RunConfigurationProducersDisabler(project)
+
     val bspSyncConsoleService = BspConsoleService.getInstance(project)
     bspSyncConsoleService.init()
 
