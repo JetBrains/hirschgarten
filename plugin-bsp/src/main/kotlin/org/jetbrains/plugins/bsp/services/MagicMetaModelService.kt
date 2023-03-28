@@ -78,11 +78,7 @@ public class MagicMetaModelService(private val project: Project) :
   }
 
   private fun obtainToolNameIfKnown(project: Project): String? =
-    try {
-      BspConnectionService.getInstance(project).value.buildToolId
-    } catch (e: Throwable) {
-      null
-    }
+    BspConnectionService.getInstance(project).value?.buildToolId
 
   private fun createModuleNameProvider(toolName: String): (BuildTargetIdentifier) -> String {
     val targetClassifier =

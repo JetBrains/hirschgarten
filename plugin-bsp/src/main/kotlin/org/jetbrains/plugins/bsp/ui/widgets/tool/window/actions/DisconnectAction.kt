@@ -24,7 +24,7 @@ public class DisconnectAction : AnAction(BspAllTargetsWidgetBundle.message("dis-
   private fun doAction(project: Project) {
     runModalTask("Disconnecting...", project = project, cancellable = false) {
       val connection = BspConnectionService.getInstance(project).value
-      connection.disconnect()
+      connection!!.disconnect()
     }
   }
 
@@ -40,7 +40,7 @@ public class DisconnectAction : AnAction(BspAllTargetsWidgetBundle.message("dis-
 
   private fun doUpdate(project: Project, e: AnActionEvent) {
     val connection = BspConnectionService.getInstance(project).value
-    e.presentation.isEnabled = connection.isConnected() == true
+    e.presentation.isEnabled = connection?.isConnected() == true
   }
 
   override fun getActionUpdateThread(): ActionUpdateThread =

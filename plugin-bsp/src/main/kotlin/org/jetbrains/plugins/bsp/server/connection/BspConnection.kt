@@ -7,7 +7,6 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.services.ValueServiceWhichNeedsToBeInitialized
 
 public interface BspServer : BuildServer, JavaBuildServer
 
@@ -59,8 +58,9 @@ public data class BspConnectionState(
   reportStatistic = true
 )
 public class BspConnectionService(private val project: Project) :
-  ValueServiceWhichNeedsToBeInitialized<BspConnection>(),
   PersistentStateComponent<BspConnectionState> {
+
+  public var value: BspConnection? = null
 
   override fun getState(): BspConnectionState? =
     when (val safeConnection = value) {

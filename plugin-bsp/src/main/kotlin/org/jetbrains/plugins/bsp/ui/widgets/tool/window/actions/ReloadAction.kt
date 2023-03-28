@@ -53,7 +53,7 @@ public class ReloadAction : AnAction(BspAllTargetsWidgetBundle.message("reload.a
 
   private fun doUpdate(project: Project, e: AnActionEvent) {
     val connection = BspConnectionService.getInstance(project).value
-    e.presentation.isEnabled = connection.isConnected() == true
+    e.presentation.isEnabled = connection?.isConnected() == true
   }
 
   override fun getActionUpdateThread(): ActionUpdateThread =

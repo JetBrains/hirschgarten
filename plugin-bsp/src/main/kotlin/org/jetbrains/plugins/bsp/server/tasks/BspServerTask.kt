@@ -22,7 +22,7 @@ public abstract class BspServerTask<T>(private val taskName: String, protected v
   }
 
   private fun getServer(): BspServer? {
-    val server = BspConnectionService.getInstance(project).value.server
+    val server = BspConnectionService.getInstance(project).value!!.server
     return if (server == null) null
     else if (Registry.`is`("bsp.request.chunking.enable")) {
       val minChunkSize = Registry.intValue("bsp.request.chunking.size.min")
