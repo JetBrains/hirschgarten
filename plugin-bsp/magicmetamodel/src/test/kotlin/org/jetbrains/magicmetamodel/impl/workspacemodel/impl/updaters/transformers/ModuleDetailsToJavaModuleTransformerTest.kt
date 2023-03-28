@@ -91,7 +91,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
     sourcesItem.roots = listOf(projectRoot.toUri().toString())
 
-    val resourceFilePath = createTempFile("resource", "File.txt")
+    val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File.txt")
+    resourceFilePath.toFile().deleteOnExit()
     val resourcesItem = ResourcesItem(
       buildTargetId,
       listOf(resourceFilePath.toUri().toString())
@@ -243,8 +244,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
     sourcesItem1.roots = listOf(module1Root.toUri().toString())
 
-    val resourceFilePath11 = createTempFile("resource", "File1.txt")
-    val resourceFilePath12 = createTempFile("resource", "File2.txt")
+    val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
+    resourceFilePath11.toFile().deleteOnExit()
+    val resourceFilePath12 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File2.txt")
+    resourceFilePath12.toFile().deleteOnExit()
     val resourcesItem1 = ResourcesItem(
       buildTargetId1,
       listOf(
@@ -314,7 +317,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
     sourcesItem2.roots = listOf(module2Root.toUri().toString())
 
-    val resourceDirPath21 = Files.createTempDirectory("resource")
+    val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
     val resourcesItem2 = ResourcesItem(
       buildTargetId2,
       listOf(resourceDirPath21.toUri().toString())
