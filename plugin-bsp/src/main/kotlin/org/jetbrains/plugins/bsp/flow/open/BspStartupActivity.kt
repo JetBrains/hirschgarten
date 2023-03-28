@@ -3,7 +3,9 @@ package org.jetbrains.plugins.bsp.flow.open
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.startup.ProjectActivity
+import com.intellij.openapi.wm.impl.welcomeScreen.WelcomeFrame
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
@@ -41,7 +43,9 @@ public class BspStartupActivity : ProjectActivity {
     val bspSyncConsoleService = BspConsoleService.getInstance(project)
     bspSyncConsoleService.init()
 
-    if (project.isNewProject()) {
+    val isBspConnectionKnown = BspConnectionService.getInstance(project).value != null
+
+    if (project.isNewProject() || !isBspConnectionKnown) {
       suspendIndexingAndShowWizardAndInitializeConnectionOnUiThread(project)
     }
   }
@@ -71,6 +75,10 @@ public class BspStartupActivity : ProjectActivity {
       }
 
       collectProject(project)
+    }
+    else {
+      ProjectManager.getInstance().closeAndDispose(project)
+      WelcomeFrame.showIfNoProjectOpened()
     }
   }
 

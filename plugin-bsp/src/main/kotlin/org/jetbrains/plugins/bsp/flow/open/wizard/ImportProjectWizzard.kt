@@ -4,7 +4,6 @@ import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.ide.wizard.StepAdapter
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.DialogPanel
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
@@ -25,7 +24,7 @@ public abstract class ImportProjectWizardStep : StepAdapter() {
 }
 
 public class ImportProjectWizard(
-  private val project: Project,
+  project: Project,
   private val bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider
 ) : AbstractWizard<ImportProjectWizardStep>("Import Project via BSP", project) {
 
@@ -77,12 +76,6 @@ public class ImportProjectWizard(
     val panel = super.createSouthPanel()
     mySteps.remove(emptyStep)
     return panel
-  }
-
-  override fun doCancelAction() {
-    super.doCancelAction()
-
-    ProjectManager.getInstance().closeAndDispose(project)
   }
 
   override fun getHelpID(): String =
