@@ -55,7 +55,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
   public constructor(project: Project) : this() {
     val actionManager = ActionManager.getInstance()
     val bspConnection = BspConnectionService.getInstance(project).value
-    val listsUpdater = ListsUpdater(project, bspConnection.buildToolId, this::showCurrentPanel)
+    val listsUpdater = ListsUpdater(project, bspConnection!!.buildToolId, this::showCurrentPanel)
 
     val actionGroup = actionManager
       .getAction("Bsp.ActionsToolbar") as DefaultActionGroup

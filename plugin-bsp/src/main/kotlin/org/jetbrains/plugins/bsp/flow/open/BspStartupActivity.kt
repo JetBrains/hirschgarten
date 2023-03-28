@@ -79,14 +79,14 @@ public class BspStartupActivity : ProjectActivity {
     val bspGeneratorConnection = BspGeneratorConnection(project, generator)
 
     val bspConnectionService = BspConnectionService.getInstance(project)
-    bspConnectionService.init(bspGeneratorConnection)
+    bspConnectionService.value = bspGeneratorConnection
   }
 
   private fun initializeConnectionFromFile(project: Project, connectionFileInfo: ConnectionFile) {
     val bspFileConnection = BspFileConnection(project, connectionFileInfo.locatedBspConnectionDetails)
 
     val bspConnectionService = BspConnectionService.getInstance(project)
-    bspConnectionService.init(bspFileConnection)
+    bspConnectionService.value = bspFileConnection
   }
 
   private fun collectProject(project: Project) {
@@ -103,7 +103,7 @@ public class BspStartupActivity : ProjectActivity {
           message = "Importing...",
           cancelAction = { collectProjectDetailsTask.cancelExecution() }
         )
-        BspConnectionService.getInstance(project).value.connect("bsp-import")
+        BspConnectionService.getInstance(project).value!!.connect("bsp-import")
       },
       afterOnSuccess = { bspSyncConsole.finishTask("bsp-import", "Done!") }
     )

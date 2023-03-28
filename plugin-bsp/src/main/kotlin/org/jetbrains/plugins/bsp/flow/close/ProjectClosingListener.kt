@@ -4,7 +4,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.runModalTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManagerListener
-import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 
@@ -21,8 +20,10 @@ public class ProjectClosingListener : ProjectManagerListener {
   private fun doProjectClosing(project: Project) {
     runModalTask("Disconnecting...", project = project, cancellable = false) {
       try {
-        val connection = BspConnectionService.getInstance(project).value
-        connection.disconnect()
+        when (val connection = BspConnectionService.getInstance(project).value) {
+            null -> log.error("Connection not setup in BSP project")
+            else -> connection.disconnect()
+        }
       } catch (e: Exception) {
         log.warn("One of the disconnect actions has failed!", e)
       }

@@ -61,7 +61,7 @@ public class RestartAction :
 
   private fun doUpdate(project: Project, e: AnActionEvent) {
     val connection = BspConnectionService.getInstance(project).value
-    e.presentation.isEnabled = connection.isConnected() == true
+    e.presentation.isEnabled = connection?.isConnected() == true
     e.presentation.isVisible = connection is BspGeneratorConnection
   }
 
