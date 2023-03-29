@@ -1,13 +1,14 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
@@ -16,7 +17,8 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 
 public class LoadedTargetsMouseListener(
-  private val container: BuildTargetContainer
+  private val container: BuildTargetContainer,
+  private val project: Project,
 ) : MouseListener {
 
   override fun mouseClicked(e: MouseEvent?) {
@@ -41,8 +43,10 @@ public class LoadedTargetsMouseListener(
   }
 
   private fun calculatePopupGroup(): ActionGroup? {
-    val target: BuildTarget? = container.getSelectedBuildTarget()
-    return if (target != null) {
+    val target = container.getSelectedBuildTarget()
+    val isConnected = BspConnectionService.getInstance(project).value?.isConnected() == true
+
+    return if (target != null && isConnected) {
       val actions = mutableListOf<AnAction>()
       if (target.capabilities.canCompile) {
         actions.add(BuildTargetAction(target.id))
