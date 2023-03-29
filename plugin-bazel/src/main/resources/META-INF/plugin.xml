@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>org.jetbrains.bsp.bazel</id>
+    <id>org.jetbrains.bsp.bazel.starlark</id>
     <name>Starlark</name>
     <vendor>JetBrains</vendor>
 
