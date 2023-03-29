@@ -2,6 +2,10 @@
 
 # intellij-bsp Changelog
 
+## 2023.1.0-EAP
+
+- First release!
+
 ## 0.0.1-alpha.3
 
 ### Added
