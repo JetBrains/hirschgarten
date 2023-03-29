@@ -697,16 +697,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         returnedModuleEntity shouldBeEqual expectedModuleEntity
         loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedModuleEntity)
-
-        val virtualBaseDirContentRootPath = baseDirContentRootPath.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedContentRootEntity = ExpectedContentRootEntity(
-          url = virtualBaseDirContentRootPath,
-          excludedPatterns = emptyList(),
-          excludedUrls = emptyList(),
-          parentModuleEntity = expectedModuleEntity.moduleEntity,
-        )
-
-        loadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedContentRootEntity)
       }
     }
 
@@ -791,27 +781,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         returnedModuleEntries shouldContainExactlyInAnyOrder expectedModuleEntries
         loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder expectedModuleEntries
-
-        val virtualBaseDirContentRootPath1 = baseDirContentRootPath1.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedContentRootEntity1 = ExpectedContentRootEntity(
-          url = virtualBaseDirContentRootPath1,
-          excludedPatterns = emptyList(),
-          excludedUrls = emptyList(),
-          parentModuleEntity = expectedModuleEntity1.moduleEntity,
-        )
-
-        val virtualBaseDirContentRootPath2 = baseDirContentRootPath2.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedContentRootEntity2 = ExpectedContentRootEntity(
-          url = virtualBaseDirContentRootPath2,
-          excludedPatterns = emptyList(),
-          excludedUrls = emptyList(),
-          parentModuleEntity = expectedModuleEntity2.moduleEntity,
-        )
-
-        loadedEntries(ContentRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
-          expectedContentRootEntity1,
-          expectedContentRootEntity2
-        )
       }
     }
   }

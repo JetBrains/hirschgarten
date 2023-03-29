@@ -75,12 +75,8 @@ internal class JavaModuleWithoutSourcesUpdater(
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig)
-    val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
-    val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
-    contentRootEntityUpdater.addEntity(entityToAdd.baseDirContentRoot, moduleEntity)
-
-    return moduleEntity
+    return moduleEntityUpdater.addEntity(entityToAdd.module)
   }
 }
 

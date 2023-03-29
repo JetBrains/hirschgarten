@@ -134,6 +134,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
 
   private fun ModuleEntity.toBuildTarget(): BuildTarget {
     val sdkDependency = this.dependencies.filterIsInstance<ModuleDependencyItem.SdkDependency>().firstOrNull()
+    // TODO prob we can remove it, but we dont want to do it a few hours before the release
     val baseDirContentRoot = contentRoots.firstOrNull { it.sourceRoots.isEmpty() }
     val capabilities = ModuleCapabilities(customImlData?.customModuleOptions.orEmpty())
     val modulesDeps = dependencies.toBuildTargetIdentifiers()
