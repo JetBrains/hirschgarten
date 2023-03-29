@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>org.jetbrains.bsp.bazel</id>
-    <name>Bazel</name>
+    <name>Starlark</name>
     <vendor>JetBrains</vendor>
 
     <depends>com.intellij.modules.platform</depends>
