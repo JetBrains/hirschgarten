@@ -3,14 +3,12 @@ package org.jetbrains.bsp.bazel.languages.starlark.build.info
 import com.google.devtools.build.lib.query2.proto.proto2api.Build
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
-import com.intellij.openapi.startup.ProjectPostStartupActivity
-import com.intellij.openapi.startup.StartupActivity
+import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.util.EnvironmentUtil
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-class BazelInfoBuildLanguageRunner : ProjectPostStartupActivity {
+class BazelInfoBuildLanguageRunner : ProjectActivity {
 
     override suspend fun execute(project: Project) {
         val projectDir = project.basePath!!
