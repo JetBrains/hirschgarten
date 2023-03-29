@@ -5,7 +5,7 @@ import org.gradle.kotlin.dsl.provideDelegate
 object Plugin {
   const val group = "org.jetbrains"
   const val name = "intellij-bsp"
-  const val version = "0.1.0"
+  const val version = "2023.1.0-EAP"
 
 // See https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html
 // for insight into build numbers and IntelliJ Platform versions.
