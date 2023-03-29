@@ -2,6 +2,6 @@
 
 # intellij-bsp-bazel Changelog
 
-## [Unreleased]
-### Added
-- Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
+## [2023.1.0-EAP]
+
+- Everything! (work in progress)
