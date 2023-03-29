@@ -24,19 +24,26 @@ import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.magicmetamodel.impl.LoadedTargetsStorage
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleCapabilities
 import kotlin.io.path.Path
 
 public object WorkspaceModelToProjectDetailsTransformer {
-  public operator fun invoke(workspaceModel: WorkspaceModel): ProjectDetails = with(workspaceModel.currentSnapshot) {
+  public operator fun invoke(workspaceModel: WorkspaceModel,
+                             loadedTargetsStorage: LoadedTargetsStorage,
+                             moduleNameProvider: ((BuildTargetIdentifier) -> String)?): ProjectDetails = with(workspaceModel.currentSnapshot) {
     EntitiesToProjectDetailsTransformer(
       entities(ModuleEntity::class.java),
       entities(SourceRootEntity::class.java),
-      entities(LibraryEntity::class.java)
+      entities(LibraryEntity::class.java),
+      loadedTargetsStorage,
+      moduleNameProvider,
     )
   }
 
   internal object EntitiesToProjectDetailsTransformer {
+
+    private lateinit var loadedTargetsIndex: Map<String, BuildTargetIdentifier>
 
     private data class ModuleParsingData(
       val target: BuildTarget,
@@ -50,13 +57,17 @@ public object WorkspaceModelToProjectDetailsTransformer {
       loadedModules: Sequence<ModuleEntity>,
       sourceRoots: Sequence<SourceRootEntity>,
       libraries: Sequence<LibraryEntity>,
+      loadedTargetsStorage: LoadedTargetsStorage,
+      moduleNameProvider: ((BuildTargetIdentifier) -> String)? = null
     ): ProjectDetails {
+      loadedTargetsIndex = loadedTargetsStorage.getLoadedTargets().associateBy { id -> (moduleNameProvider?.let { it(id) }) ?: id.uri }
+
       val librariesIndex = libraries.associateBy { it.symbolicId }
       val modulesWithSources = sourceRoots.groupBy { it.contentRoot.module }
       val modulesWithoutSources =
         loadedModules.mapNotNull { it.takeUnless(modulesWithSources::contains)?.to(emptyList<SourceRootEntity>()) }
       val allModules = modulesWithSources + modulesWithoutSources
-      val modulesParsingData = allModules.map {
+      val modulesParsingData = allModules.mapNotNull {
         it.toModuleParsingData(librariesIndex)
       }
       val targets = modulesParsingData.map(ModuleParsingData::target)
@@ -72,9 +83,10 @@ public object WorkspaceModelToProjectDetailsTransformer {
 
     private fun Map.Entry<ModuleEntity, List<SourceRootEntity>>.toModuleParsingData(
       libraries: Map<LibraryId, LibraryEntity>,
-    ): ModuleParsingData {
+    ): ModuleParsingData? {
       val (module, sources) = this
-      val target = module.toBuildTarget()
+      val target = module.toBuildTarget(loadedTargetsIndex) ?: return null
+
       val moduleLibraries = libraries.getLibrariesForModule(module)
       val dependencySourcesItem = moduleLibraries.librariesSources(target.id)
       val javacSourcesItem = moduleLibraries.librariesJars(target.id)
@@ -95,6 +107,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
   }
 
   internal object JavaSourceRootToSourceItemTransformer {
+
     operator fun invoke(entity: JavaSourceRootPropertiesEntity): SourceItem {
       val path = entity.sourceRoot.url.presentableUrl
       val kind = if (Path(path).isDirectory()) SourceItemKind.DIRECTORY else SourceItemKind.FILE
@@ -102,8 +115,8 @@ public object WorkspaceModelToProjectDetailsTransformer {
     }
   }
 
-  private fun List<ModuleDependencyItem>.toBuildTargetIdentifiers() =
-    filterIsInstance<ModuleDependencyItem.Exportable.ModuleDependency>().map { BuildTargetIdentifier(it.module.name) }
+  private fun List<ModuleDependencyItem>.toBuildTargetIdentifiers(loadedTargetsIndex: Map<String, BuildTargetIdentifier>) =
+    filterIsInstance<ModuleDependencyItem.Exportable.ModuleDependency>().map { loadedTargetsIndex[it.module.name] }
 
   private fun JavaResourceRootPropertiesEntity.toResourcePath() = sourceRoot.url.presentableUrl
 
@@ -132,21 +145,22 @@ public object WorkspaceModelToProjectDetailsTransformer {
       JavacOptionsItem(target, emptyList(), it.toList(), "")
     }
 
-  private fun ModuleEntity.toBuildTarget(): BuildTarget {
-    val sdkDependency = this.dependencies.filterIsInstance<ModuleDependencyItem.SdkDependency>().firstOrNull()
-    // TODO prob we can remove it, but we dont want to do it a few hours before the release
-    val baseDirContentRoot = contentRoots.firstOrNull { it.sourceRoots.isEmpty() }
-    val capabilities = ModuleCapabilities(customImlData?.customModuleOptions.orEmpty())
-    val modulesDeps = dependencies.toBuildTargetIdentifiers()
-    return BuildTarget(
-      BuildTargetIdentifier(name), emptyList(), emptyList(), modulesDeps, BuildTargetCapabilities(
-        capabilities.canCompile, capabilities.canTest, capabilities.canRun, capabilities.canDebug
-      )
-    ).also {
-      it.baseDirectory = baseDirContentRoot?.url?.presentableUrl
-      sdkDependency?.addToBuildTarget(it)
+  private fun ModuleEntity.toBuildTarget(loadedTargetsIndex: Map<String, BuildTargetIdentifier>): BuildTarget? =
+    loadedTargetsIndex[name]?.let { moduleName ->
+      val sdkDependency = this.dependencies.filterIsInstance<ModuleDependencyItem.SdkDependency>().firstOrNull()
+      // TODO prob we can remove it, but we dont want to do it a few hours before the release
+      val baseDirContentRoot = contentRoots.firstOrNull { it.sourceRoots.isEmpty() }
+      val capabilities = ModuleCapabilities(customImlData?.customModuleOptions.orEmpty())
+      val modulesDeps = dependencies.toBuildTargetIdentifiers(loadedTargetsIndex)
+      return BuildTarget(
+        moduleName, emptyList(), emptyList(), modulesDeps, BuildTargetCapabilities(
+          capabilities.canCompile, capabilities.canTest, capabilities.canRun, capabilities.canDebug
+        )
+      ).also {
+        it.baseDirectory = baseDirContentRoot?.url?.presentableUrl
+        sdkDependency?.addToBuildTarget(it)
+      }
     }
-  }
 
   private fun ModuleDependencyItem.SdkDependency.addToBuildTarget(target: BuildTarget) {
     target.dataKind = BuildTargetDataKind.JVM
