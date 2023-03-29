@@ -79,9 +79,11 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   internal constructor(state: DefaultMagicMetaModelState, magicMetaModelProjectConfig: MagicMetaModelProjectConfig) {
     this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
+    this.loadedTargetsStorage =
+      LoadedTargetsStorage(state.loadedTargetsStorageState)
 
     this.projectDetails = state.projectDetailsState.fromState() +
-      WorkspaceModelToProjectDetailsTransformer(magicMetaModelProjectConfig.workspaceModel)
+      WorkspaceModelToProjectDetailsTransformer(magicMetaModelProjectConfig.workspaceModel, loadedTargetsStorage, magicMetaModelProjectConfig.moduleNameProvider)
 
     this.targetsDetailsForDocumentProvider =
       TargetsDetailsForDocumentProvider(state.targetsDetailsForDocumentProviderState)
@@ -91,8 +93,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       }.toMap()
 
     this.targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
-    this.loadedTargetsStorage =
-      LoadedTargetsStorage(state.loadedTargetsStorageState)
   }
 
   override fun loadDefaultTargets(): MagicMetaModelDiff {
@@ -251,64 +251,64 @@ public data class LoadedTargetsStorageState(
   public var notLoadedTargets: List<BuildTargetIdentifierState> = emptyList(),
 )
 
-internal class LoadedTargetsStorage private constructor(
+public class LoadedTargetsStorage private constructor(
   private val allTargets: Collection<BuildTargetIdentifier>,
   private val loadedTargets: MutableSet<BuildTargetIdentifier>,
   private val notLoadedTargets: MutableSet<BuildTargetIdentifier>,
 ) {
 
-  constructor(allTargets: Collection<BuildTargetIdentifier>) : this(
+  public constructor(allTargets: Collection<BuildTargetIdentifier>) : this(
     allTargets = allTargets,
     loadedTargets = mutableSetOf(),
     notLoadedTargets = allTargets.toMutableSet()
   )
 
-  constructor(state: LoadedTargetsStorageState) : this(
+  public constructor(state: LoadedTargetsStorageState) : this(
     allTargets = state.allTargets.map { it.fromState() },
     loadedTargets = state.loadedTargets.map { it.fromState() }.toMutableSet(),
     notLoadedTargets = state.notLoadedTargets.map { it.fromState() }.toMutableSet(),
   )
 
-  fun clear() {
+  public fun clear() {
     loadedTargets.clear()
     notLoadedTargets.clear()
     notLoadedTargets.addAll(allTargets)
   }
 
-  fun addTargets(targets: Collection<BuildTargetIdentifier>) {
+  public fun addTargets(targets: Collection<BuildTargetIdentifier>) {
     loadedTargets.addAll(targets)
     notLoadedTargets.removeAll(targets.toSet())
   }
 
-  fun addTarget(target: BuildTargetIdentifier) {
+  public fun addTarget(target: BuildTargetIdentifier) {
     loadedTargets.add(target)
     notLoadedTargets.remove(target)
   }
 
-  fun removeTargets(targets: Collection<BuildTargetIdentifier>) {
+  public fun removeTargets(targets: Collection<BuildTargetIdentifier>) {
     loadedTargets.removeAll(targets.toSet())
     notLoadedTargets.addAll(targets)
   }
 
-  fun isTargetNotLoaded(targetId: BuildTargetIdentifier): Boolean =
+  public fun isTargetNotLoaded(targetId: BuildTargetIdentifier): Boolean =
     notLoadedTargets.contains(targetId)
 
-  fun isTargetLoaded(targetId: BuildTargetIdentifier): Boolean =
+  public fun isTargetLoaded(targetId: BuildTargetIdentifier): Boolean =
     loadedTargets.contains(targetId)
 
-  fun getLoadedTargets(): List<BuildTargetIdentifier> =
+  public fun getLoadedTargets(): List<BuildTargetIdentifier> =
     loadedTargets.toList()
 
-  fun getNotLoadedTargets(): List<BuildTargetIdentifier> =
+  public fun getNotLoadedTargets(): List<BuildTargetIdentifier> =
     notLoadedTargets.toList()
 
-  fun toState(): LoadedTargetsStorageState =
+  public fun toState(): LoadedTargetsStorageState =
     LoadedTargetsStorageState(
       allTargets.map { it.toState() },
       loadedTargets.map { it.toState() },
       notLoadedTargets.map { it.toState() })
 
-  fun copy(): LoadedTargetsStorage =
+  public fun copy(): LoadedTargetsStorage =
     LoadedTargetsStorage(
       allTargets = allTargets.toList(),
       loadedTargets = loadedTargets.toMutableSet(),
