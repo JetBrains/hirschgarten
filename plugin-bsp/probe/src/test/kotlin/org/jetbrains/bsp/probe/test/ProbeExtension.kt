@@ -4,16 +4,37 @@ import com.intellij.remoterobot.fixtures.CommonContainerFixture
 import com.intellij.remoterobot.fixtures.dataExtractor.RemoteText
 import org.virtuslab.ideprobe.IntelliJFixture
 import org.virtuslab.ideprobe.OS
+import org.virtuslab.ideprobe.ProbeDriver
+import org.virtuslab.ideprobe.WaitDecision
+import org.virtuslab.ideprobe.WaitLogic
 import org.virtuslab.ideprobe.dependencies.IntelliJVersion
 import org.virtuslab.ideprobe.robot.RobotProbeDriver
 import org.virtuslab.ideprobe.robot.SearchableComponent
+import org.virtuslab.ideprobe.wait.BasicWaiting
+import org.virtuslab.ideprobe.wait.DoOnlyOnce
+import org.virtuslab.ideprobe.wait.`WaitLogicFactory$`.`MODULE$` as WaitLogicFactory
 import scala.Option
 import scala.concurrent.duration.FiniteDuration
+import scala.runtime.BoxedUnit
 import java.io.InvalidClassException
 import java.util.concurrent.TimeUnit
 import org.virtuslab.ideprobe.robot.`RobotSyntax$`.`MODULE$` as RobotSyntaxObj
 
 val robotTimeout: FiniteDuration = FiniteDuration(10, TimeUnit.SECONDS)
+val fiveSeconds: FiniteDuration = FiniteDuration(5, TimeUnit.SECONDS)
+val minute: FiniteDuration = FiniteDuration(1, TimeUnit.MINUTES)
+
+fun emptyBackgroundTaskWithoutTimeouts(
+  basicCheck: FiniteDuration = WaitLogicFactory.DefaultCheckFrequency(),
+  ensurePeriod: FiniteDuration = WaitLogicFactory.DefaultEnsurePeriod(),
+  ensureFrequency: FiniteDuration = WaitLogicFactory.DefaultEnsureFrequency(),
+  atMost: FiniteDuration = WaitLogicFactory.DefaultAtMost(),
+  action: () -> Unit,
+): WaitLogic =
+  WaitLogic.emptyBackgroundTasks(basicCheck, ensurePeriod, ensureFrequency, atMost).doWhileWaiting { _ ->
+    action()
+    BoxedUnit.UNIT
+  }
 
 fun SearchableComponent.fixture(): CommonContainerFixture = searchContext() as? CommonContainerFixture
   ?: throw InvalidClassException("Element ${searchContext()} is not a CommonContainerFixture ")
@@ -29,18 +50,31 @@ fun SearchableComponent.click(): Unit = fixture().runJs("component.click();", tr
 fun SearchableComponent.setText(text: String): Unit = fixture().runJs("component.setText('$text');", true)
 
 fun RobotProbeDriver.getBuildConsoleOutput(): List<String> = findElement(query.className("BuildTextConsoleView"))
-    .fixture()
-    .callJs<String>("component.getText();")
-    .split("\n")
+  .fixture()
+  .callJs<String>("component.getText();")
+  .split("\n")
 
 fun SearchableComponent.findElement(xpath: String) =
   RobotSyntaxObj.SearchableOps(this.findWithTimeout(xpath, robotTimeout))
 
-fun IntelliJFixture.withBuild(build: String) = withVersion(
+fun IntelliJFixture.withBuild(build: String, version: String? = null) = withVersion(
   IntelliJVersion(
-    build, Option.apply(null), if (OS.Current() == OS.`Mac$`.`MODULE$`) ".dmg" else ".zip"
+    build, Option.apply(version), if (OS.Current() == OS.`Mac$`.`MODULE$`) ".dmg" else ".zip"
   )
 )
+
+fun ProbeDriver.tryUntilSuccessful(action: () -> Unit) {
+  val actionToDo = DoOnlyOnce {
+    action()
+    BoxedUnit.UNIT
+  }
+  val waitLogic = BasicWaiting(fiveSeconds, minute) {
+    actionToDo.attempt()
+    if (actionToDo.isSuccessful) WaitDecision.`Done$`.`MODULE$`
+    else WaitDecision.KeepWaiting(Option.apply(null))
+  }
+  return await(waitLogic)
+}
 
 object query {
 
