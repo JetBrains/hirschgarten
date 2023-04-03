@@ -1,14 +1,14 @@
 package org.jetbrains.bsp.probe.test
 
-import com.intellij.remoterobot.utils.WaitForConditionTimeoutException
-import org.apache.commons.io.file.spi.FileSystemProviders.installed
+import org.virtuslab.ideprobe.WaitDecision.{Done, KeepWaiting}
+import org.virtuslab.ideprobe._
 import org.virtuslab.ideprobe.config.WorkspaceConfig
 import org.virtuslab.ideprobe.dependencies.Resource
-import org.virtuslab.ideprobe.protocol.Endpoints
 import org.virtuslab.ideprobe.ide.intellij.InstalledIntelliJ
+import org.virtuslab.ideprobe.protocol.Endpoints
 import org.virtuslab.ideprobe.reporting.AfterTestChecks
 import org.virtuslab.ideprobe.robot.{RobotPluginExtension, RobotProbeDriver}
-import org.virtuslab.ideprobe.{IdeProbeFixture, IntelliJFixture, ProbeDriver, RunnableIntelliJFixture, RunningIntelliJFixture, WaitDecision, WaitLogic, WorkspaceProvider}
+import org.virtuslab.ideprobe.wait.{BasicWaiting, DoOnlyOnce}
 
 import java.nio.file.Path
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
@@ -24,24 +24,45 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
     ))
   }
 
+  private def tryRunning(action: => Unit): Unit = {
+    new DoOnlyOnce(action).attempt()
+  }
+
   def openProject(intellij: RunningIntelliJFixture, configuration: Option[String] = None): (ProbeDriver, RobotProbeDriver) = {
     val probe = intellij.probe
     val robot = probe.withRobot
     val openingProjectWaitLogic = openProjectAsync(intellij.probe, intellij.workspace)
-    robot.clickDialogButton("Open or Import Project", "OK", continueOnFail = true)
+    tryRunning(
+      robot.clickDialogButton("Open or Import Project", "OK")
+    )
     probe.await(openingProjectWaitLogic)
-    val importDialog = robot.findWithTimeout(query.className("MyDialog", ("title", "Import Project via BSP")), 360.second)
-    val configurationInput = importDialog.findWithTimeout(query.className("JBTextArea"), 1.second)
-    configuration.foreach(configurationInput.setText(_))
-    importDialog.findWithTimeout(query.button("text" -> "Create"), 1.second).doClick()
-    probe.await(robot.extendWaitLogic(WaitLogic.Default))
+    val clickThroughImportDialog = new DoOnlyOnce({
+      val importDialog = robot.find(query.className("MyDialog", ("title", "Import Project via BSP")))
+      val configurationInput = importDialog.find(query.className("JBTextArea"))
+      configuration.foreach(configurationInput.setText(_))
+      importDialog.find(query.button("text" -> "Create")).doClick()
+    })
+    val importing = new BasicWaiting(5.seconds, 10.minutes, { _ =>
+      clickThroughImportDialog.attempt()
+      if (clickThroughImportDialog.isSuccessful) Done
+      else KeepWaiting()
+    })
+    probe.await(importing)
+    val closeTipOfTheDay = new DoOnlyOnce(robot.closeTipOfTheDay())
+    val waitLogic = WaitLogic.emptyNamedBackgroundTasks(basicCheckFrequency = 30.second, atMost = 1.hour).doWhileWaiting {
+      closeTipOfTheDay.attempt()
+      tryRunning(
+        robot.find(query.className("StripeButton", ("text", "BSP")))
+      )
+    }
+    probe.await(waitLogic)
     (probe, robot)
   }
 
-  def runAfterOpen(updateFixture: IntelliJFixture, configuration: Option[String] = None, action: (ProbeDriver, RobotProbeDriver) => Unit): Unit = {
+  def runAfterOpen(updateFixture: IntelliJFixture, configuration: Option[String] = None, action: (ProbeDriver, RobotProbeDriver, RunningIntelliJFixture) => Unit): Unit = {
     updateFixture.run { intellij =>
       val (probe, robot) = openProject(intellij, configuration)
-      action(probe, robot)
+      action(probe, robot, intellij)
     }
   }
 
@@ -70,14 +91,10 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
 
 
   implicit class RobotOpts(p: RobotProbeDriver) {
-    def clickDialogButton(dialogTitle: String, buttonTitle: String, timeout: FiniteDuration = 10.second, continueOnFail: Boolean = false): Unit = {
-      try {
-        p.findWithTimeout(query.dialog(dialogTitle), timeout)
-          .findWithTimeout(query.button("text" -> buttonTitle), 1.second)
-          .doClick()
-      } catch {
-        case e: WaitForConditionTimeoutException => if (!continueOnFail) throw e
-      }
+    def clickDialogButton(dialogTitle: String, buttonTitle: String, timeout: FiniteDuration = 10.second) = {
+      p.findWithTimeout(query.dialog(dialogTitle), timeout)
+        .findWithTimeout(query.button("text" -> buttonTitle), 1.second)
+        .doClick()
     }
 
     def setText(query: String, text: String): Unit = {
