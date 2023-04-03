@@ -1,6 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
@@ -14,7 +15,13 @@ class WorkspaceModelUpdaterCreateTest : WorkspaceModelBaseTest() {
     // given
 
     // when
-    val workspaceModelUpdater = WorkspaceModelUpdater.create(workspaceEntityStorageBuilder, virtualFileUrlManager, null, projectBasePath)
+    val workspaceModelUpdater =
+      WorkspaceModelUpdater.create(
+        workspaceEntityStorageBuilder,
+        virtualFileUrlManager,
+        projectBasePath,
+        DefaultModuleNameProvider
+      )
 
     // then
     workspaceModelUpdater::class shouldBe WorkspaceModelUpdaterImpl::class

@@ -23,6 +23,7 @@ import com.intellij.workspaceModel.storage.bridgeEntities.LibraryRootTypeId
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
 import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
+import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.LoadedTargetsStorage
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleCapabilities
@@ -31,19 +32,16 @@ import kotlin.io.path.Path
 public object WorkspaceModelToProjectDetailsTransformer {
   public operator fun invoke(workspaceModel: WorkspaceModel,
                              loadedTargetsStorage: LoadedTargetsStorage,
-                             moduleNameProvider: ((BuildTargetIdentifier) -> String)?): ProjectDetails = with(workspaceModel.currentSnapshot) {
+                             moduleNameProvider: ModuleNameProvider): ProjectDetails = with(workspaceModel.currentSnapshot) {
     EntitiesToProjectDetailsTransformer(
       entities(ModuleEntity::class.java),
       entities(SourceRootEntity::class.java),
       entities(LibraryEntity::class.java),
-      loadedTargetsStorage,
-      moduleNameProvider,
+      loadedTargetsStorage.getLoadedTargets().associateBy { id -> moduleNameProvider(id) },
     )
   }
 
   internal object EntitiesToProjectDetailsTransformer {
-
-    private lateinit var loadedTargetsIndex: Map<String, BuildTargetIdentifier>
 
     private data class ModuleParsingData(
       val target: BuildTarget,
@@ -57,18 +55,15 @@ public object WorkspaceModelToProjectDetailsTransformer {
       loadedModules: Sequence<ModuleEntity>,
       sourceRoots: Sequence<SourceRootEntity>,
       libraries: Sequence<LibraryEntity>,
-      loadedTargetsStorage: LoadedTargetsStorage,
-      moduleNameProvider: ((BuildTargetIdentifier) -> String)? = null
+      loadedTargetsIndex: Map<String, BuildTargetIdentifier>,
     ): ProjectDetails {
-      loadedTargetsIndex = loadedTargetsStorage.getLoadedTargets().associateBy { id -> (moduleNameProvider?.let { it(id) }) ?: id.uri }
-
       val librariesIndex = libraries.associateBy { it.symbolicId }
       val modulesWithSources = sourceRoots.groupBy { it.contentRoot.module }
       val modulesWithoutSources =
         loadedModules.mapNotNull { it.takeUnless(modulesWithSources::contains)?.to(emptyList<SourceRootEntity>()) }
       val allModules = modulesWithSources + modulesWithoutSources
       val modulesParsingData = allModules.mapNotNull {
-        it.toModuleParsingData(librariesIndex)
+        it.toModuleParsingData(librariesIndex, loadedTargetsIndex)
       }
       val targets = modulesParsingData.map(ModuleParsingData::target)
       return ProjectDetails(
@@ -83,6 +78,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
 
     private fun Map.Entry<ModuleEntity, List<SourceRootEntity>>.toModuleParsingData(
       libraries: Map<LibraryId, LibraryEntity>,
+      loadedTargetsIndex: Map<String, BuildTargetIdentifier>
     ): ModuleParsingData? {
       val (module, sources) = this
       val target = module.toBuildTarget(loadedTargetsIndex) ?: return null

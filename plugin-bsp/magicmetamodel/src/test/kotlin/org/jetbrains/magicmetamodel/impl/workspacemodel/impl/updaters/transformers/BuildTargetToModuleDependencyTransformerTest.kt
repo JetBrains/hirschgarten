@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
+import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -18,7 +19,8 @@ class BuildTargetToModuleDependencyTransformerTest {
     val allTargets = listOf<BuildTargetIdentifier>()
 
     // when
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets, null)
+    val buildTargetToModuleDependencyTransformer =
+      BuildTargetToModuleDependencyTransformer(allTargets, DefaultModuleNameProvider)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(emptyBuildTargets)
 
     // then
@@ -42,7 +44,8 @@ class BuildTargetToModuleDependencyTransformerTest {
     val allTargets = listOf<BuildTargetIdentifier>()
 
     // when
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets, null)
+    val buildTargetToModuleDependencyTransformer =
+      BuildTargetToModuleDependencyTransformer(allTargets, DefaultModuleNameProvider)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
@@ -68,7 +71,8 @@ class BuildTargetToModuleDependencyTransformerTest {
     )
 
     // when
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets, null)
+    val buildTargetToModuleDependencyTransformer =
+      BuildTargetToModuleDependencyTransformer(allTargets, DefaultModuleNameProvider)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
@@ -104,7 +108,8 @@ class BuildTargetToModuleDependencyTransformerTest {
     )
 
     // when
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets, null)
+    val buildTargetToModuleDependencyTransformer =
+      BuildTargetToModuleDependencyTransformer(allTargets, DefaultModuleNameProvider)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
@@ -159,7 +164,8 @@ class BuildTargetToModuleDependencyTransformerTest {
     val buildTargets = listOf(buildTarget1, buildTarget2)
 
     // when
-    val buildTargetToModuleDependencyTransformer = BuildTargetToModuleDependencyTransformer(allTargets, null)
+    val buildTargetToModuleDependencyTransformer =
+      BuildTargetToModuleDependencyTransformer(allTargets, DefaultModuleNameProvider)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTargets)
 
     // then
