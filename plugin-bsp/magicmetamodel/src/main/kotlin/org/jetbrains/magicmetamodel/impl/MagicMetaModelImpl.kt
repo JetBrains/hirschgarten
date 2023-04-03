@@ -83,12 +83,16 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       LoadedTargetsStorage(state.loadedTargetsStorageState)
 
     this.projectDetails = state.projectDetailsState.fromState() +
-      WorkspaceModelToProjectDetailsTransformer(magicMetaModelProjectConfig.workspaceModel, loadedTargetsStorage, magicMetaModelProjectConfig.moduleNameProvider)
+      WorkspaceModelToProjectDetailsTransformer(
+        magicMetaModelProjectConfig.workspaceModel,
+        loadedTargetsStorage,
+        magicMetaModelProjectConfig.moduleNameProvider
+      )
 
     this.targetsDetailsForDocumentProvider =
       TargetsDetailsForDocumentProvider(state.targetsDetailsForDocumentProviderState)
     this.overlappingTargetsGraph =
-      state.overlappingTargetsGraph.map { (key, value)  ->
+      state.overlappingTargetsGraph.map { (key, value) ->
         key.fromState() to value.map { it.fromState() }.toSet()
       }.toMap()
 
@@ -109,8 +113,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
+      magicMetaModelProjectConfig.projectBasePath,
       magicMetaModelProjectConfig.moduleNameProvider,
-      magicMetaModelProjectConfig.projectBasePath
     )
 
     ProgressManager.checkCanceled()
@@ -162,14 +166,14 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val loadedTargetsToRemove = targetsToRemove.filter(loadedTargetsStorage::isTargetLoaded)
 
     val modulesToRemove = loadedTargetsToRemove.map {
-      ModuleName(magicMetaModelProjectConfig.moduleNameProvider?.invoke(BuildTargetIdentifier(it.uri)) ?: it.uri)
+      ModuleName(magicMetaModelProjectConfig.moduleNameProvider(BuildTargetIdentifier(it.uri)))
     }
     val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.getBuilderSnapshot()
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
+      magicMetaModelProjectConfig.projectBasePath,
       magicMetaModelProjectConfig.moduleNameProvider,
-      magicMetaModelProjectConfig.projectBasePath
     )
 
     ProgressManager.checkCanceled()
@@ -218,8 +222,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
+      magicMetaModelProjectConfig.projectBasePath,
       magicMetaModelProjectConfig.moduleNameProvider,
-      magicMetaModelProjectConfig.projectBasePath
     )
 
     workspaceModelUpdater.clear()

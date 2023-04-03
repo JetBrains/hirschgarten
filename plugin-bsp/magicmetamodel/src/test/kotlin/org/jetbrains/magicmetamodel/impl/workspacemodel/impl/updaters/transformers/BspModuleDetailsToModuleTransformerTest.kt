@@ -12,6 +12,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
@@ -27,7 +28,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val emptyBspModuleDetails = listOf<BspModuleDetails>()
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer(null).transform(emptyBspModuleDetails)
+    val modules = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(emptyBspModuleDetails)
 
     // then
     modules shouldBe emptyList()
@@ -82,7 +83,7 @@ class BspModuleDetailsToModuleTransformerTest {
     )
 
     // when
-    val module = BspModuleDetailsToModuleTransformer(null).transform(bspModuleDetails)
+    val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule = Module(
@@ -199,7 +200,7 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer(null).transform(bspModuleDetails)
+    val modules = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule1 = Module(

@@ -18,9 +18,21 @@ import java.nio.file.Path
 public data class MagicMetaModelProjectConfig(
   val workspaceModel: WorkspaceModel,
   val virtualFileUrlManager: VirtualFileUrlManager,
-  val moduleNameProvider: ((BuildTargetIdentifier) -> String)? = null,
   val projectBasePath: Path,
-)
+  val moduleNameProvider: ModuleNameProvider,
+) {
+  public constructor(
+    workspaceModel: WorkspaceModel,
+    virtualFileUrlManager: VirtualFileUrlManager,
+    moduleNameProvider: ModuleNameProvider?,
+    projectBasePath: Path,
+  ) : this(workspaceModel, virtualFileUrlManager, projectBasePath, moduleNameProvider ?: DefaultModuleNameProvider)
+}
+
+public typealias ModuleNameProvider = (BuildTargetIdentifier) -> String
+internal object DefaultModuleNameProvider : ModuleNameProvider {
+  override fun invoke(id: BuildTargetIdentifier): String = id.uri
+}
 
 public data class ProjectDetails(
   val targetsId: List<BuildTargetIdentifier>,
