@@ -16,8 +16,7 @@ import javax.swing.SwingConstants
 
 private enum class PanelShown {
   LOADED,
-  NOTLOADED,
-  NONE
+  NOTLOADED
 }
 
 private class ListsUpdater(
@@ -51,7 +50,7 @@ private class ListsUpdater(
 }
 
 public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
-  private var panelShown = PanelShown.NONE
+  private var panelShown = PanelShown.LOADED
 
   public constructor(project: Project) : this() {
     val actionManager = ActionManager.getInstance()
@@ -95,6 +94,8 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     actionToolbar.targetComponent = this.component
     actionToolbar.setOrientation(SwingConstants.HORIZONTAL)
     this.toolbar = actionToolbar.component
+
+    showCurrentPanel(listsUpdater)
   }
 
   private fun ListsUpdater.showLoadedTargets() {
@@ -111,8 +112,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     when (panelShown) {
       PanelShown.LOADED -> listsUpdater.loadedTargetsPanel
       PanelShown.NOTLOADED -> listsUpdater.notLoadedTargetsPanel
-      else -> null
-    }?.let { setToolWindowContent(it.wrappedInScrollPane) }
+    }.let { setToolWindowContent(it.wrappedInScrollPane) }
   }
 
   private fun setToolWindowContent(component: JComponent) {
