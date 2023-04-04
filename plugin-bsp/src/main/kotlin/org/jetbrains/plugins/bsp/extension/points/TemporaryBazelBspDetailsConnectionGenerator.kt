@@ -15,6 +15,8 @@ import com.intellij.ui.dsl.builder.rows
 import com.intellij.util.EnvironmentUtil
 import com.intellij.util.io.isFile
 import com.intellij.util.io.readText
+import com.intellij.util.system.CpuArch
+import com.intellij.util.system.OS
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizardStep
@@ -26,7 +28,10 @@ import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
-import kotlin.io.path.*
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.name
+import kotlin.io.path.writeText
 
 public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsGeneratorExtension {
 
@@ -248,8 +253,8 @@ public class BazelEditProjectViewStep(
 
 public object CoursierUtils {
 
-  public fun calculateCoursierExecutableName(): String = when (OS.current) {
-    OS.WINDOWS -> "cs.exe"
+  public fun calculateCoursierExecutableName(): String = when (CoursierSupportedOS.current) {
+    CoursierSupportedOS.WINDOWS_X86_64 -> "cs.exe"
     else -> "cs"
   }
 
@@ -270,23 +275,23 @@ public object CoursierUtils {
     coursierDestination.toFile().setExecutable(true)
   }
 
-  private fun calculateCoursierZipName() = when (OS.current) {
-    OS.WINDOWS -> "cs.zip"
+  private fun calculateCoursierZipName() = when (CoursierSupportedOS.current) {
+    CoursierSupportedOS.WINDOWS_X86_64 -> "cs.zip"
     else -> "cs.gz"
   }
 
-  private fun calculateCoursierExtractedName() = when (OS.current) {
-    OS.WINDOWS -> "cs-x86_64-pc-win32.exe"
+  private fun calculateCoursierExtractedName() = when (CoursierSupportedOS.current) {
+    CoursierSupportedOS.WINDOWS_X86_64 -> "cs-x86_64-pc-win32.exe"
     else -> "cs"
   }
 
-  private fun calculateCoursierUrl() = when (OS.current) {
-    OS.LINUX_ARM -> "https://github.com/VirtusLab/coursier-m1/releases/latest/download/cs-aarch64-pc-linux.gz"
-    OS.LINUX_INTEL -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz"
-    OS.MAC_INTEL -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-apple-darwin.gz"
-    OS.MAC_ARM -> "https://github.com/VirtusLab/coursier-m1/releases/latest/download/cs-aarch64-apple-darwin.gz"
-    OS.WINDOWS -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-win32.zip"
-    else -> throw UnsupportedOperationException("Unsupported OS")
+  private fun calculateCoursierUrl() = when (CoursierSupportedOS.current) {
+    CoursierSupportedOS.LINUX_ARM64 -> "https://github.com/VirtusLab/coursier-m1/releases/latest/download/cs-aarch64-pc-linux.gz"
+    CoursierSupportedOS.LINUX_X86_64 -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz"
+    CoursierSupportedOS.MAC_ARM64 -> "https://github.com/VirtusLab/coursier-m1/releases/latest/download/cs-aarch64-apple-darwin.gz"
+    CoursierSupportedOS.MAC_X86_64 -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-apple-darwin.gz"
+    CoursierSupportedOS.WINDOWS_X86_64 -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-win32.zip"
+    else -> throw UnsupportedOperationException("Could not find coursier executable for your OS")
   }
 
   private fun downloadZipFile(downloadUrl: String, path: Path) =
@@ -300,8 +305,8 @@ public object CoursierUtils {
   }
 
   private fun calculateExtractCommand(zipPath: Path): List<String> =
-    when (OS.current) {
-      OS.WINDOWS -> listOf("tar", "-xf", "$zipPath")
+    when (CoursierSupportedOS.current) {
+      CoursierSupportedOS.WINDOWS_X86_64 -> listOf("tar", "-xf", "$zipPath")
       else -> listOf("gzip", "-d", "$zipPath")
     }
 
@@ -315,25 +320,20 @@ public object CoursierUtils {
       .waitFor()
 }
 
-public enum class OS {
-  WINDOWS,
-  LINUX_ARM,
-  LINUX_INTEL,
-  MAC_INTEL,
-  MAC_ARM;
+public enum class CoursierSupportedOS {
+  LINUX_ARM64,
+  LINUX_X86_64,
+  MAC_ARM64,
+  MAC_X86_64,
+  WINDOWS_X86_64;
   public companion object {
-    public val current: OS?
-      get() {
-        val osName = System.getProperty("os.name").lowercase()
-        val osArch = System.getProperty("os.arch").lowercase()
-        return when {
-          osName.startsWith("mac") && osArch.startsWith("x86") -> MAC_INTEL
-          osName.startsWith("mac") && osArch.startsWith("aarch64") -> MAC_ARM
-          osName.startsWith("linux") && osArch.startsWith("x86") -> LINUX_INTEL
-          osName.startsWith("linux") && osArch.startsWith("aarch64") -> LINUX_ARM
-          osName.startsWith("windows") -> WINDOWS
-          else -> null
-        }
-      }
+    public val current: CoursierSupportedOS? = when (Pair(OS.CURRENT, CpuArch.CURRENT)) {
+      Pair(OS.Linux, CpuArch.ARM64) -> LINUX_ARM64
+      Pair(OS.Linux, CpuArch.X86_64) -> LINUX_X86_64
+      Pair(OS.macOS, CpuArch.ARM64) -> MAC_ARM64
+      Pair(OS.macOS, CpuArch.X86_64) -> MAC_X86_64
+      Pair(OS.Windows, CpuArch.X86_64) -> WINDOWS_X86_64
+      else -> null
+    }
   }
 }
