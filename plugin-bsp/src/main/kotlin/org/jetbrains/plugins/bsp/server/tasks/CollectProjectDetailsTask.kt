@@ -22,7 +22,6 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import java.io.File
 import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
@@ -225,8 +224,6 @@ public fun calculateProjectDetailsWithCapabilities(
       sources = sourcesFuture.get().items,
       resources = resourcesFuture?.get()?.items ?: emptyList(),
       dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
-      // SBT seems not to support the javacOptions endpoint and seems just to hang when called,
-      // so it's just safer to add timeout here. This should not be called at all for SBT.
       javacOptions = javacOptionsFuture?.get()?.items ?: emptyList()
     )
   } catch (e: Exception) {
