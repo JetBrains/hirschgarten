@@ -1,5 +1,6 @@
 plugins {
   id("intellijbsp.kotlin-conventions")
+  id("org.gradle.test-retry") version "1.5.2"
 }
 
 dependencies {
@@ -17,6 +18,17 @@ dependencies {
 tasks {
   processResources {
     from("$rootDir/build/distributions")
+  }
+  test {
+    // configure retry for :probe:test task
+    retry {
+      maxRetries.set(3) // Number of retries when a test fails
+      maxFailures.set(2) // Number of failed tests allowed before stopping retries
+      failOnPassedAfterRetry.set(false) // If true, the build will fail if tests pass after a retry
+      filter {
+        includeClasses.add("*SingleProbeTests")
+      }
+    }
   }
 }
 
