@@ -156,6 +156,7 @@ public class BuildTargetSearch(
 
   override fun createNewWithTargets(newTargets: Collection<BuildTarget>): BuildTargetSearch {
     val new = BuildTargetSearch(targetIcon, newTargets)
+    new.searchBarComponent.text = getCurrentSearchQuery()
     for (listenerBuilder in this.mouseListenerBuilders) {
       new.addMouseListener(listenerBuilder)
     }
