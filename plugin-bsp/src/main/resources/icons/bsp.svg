@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-  <g fill="none" fill-rule="evenodd">
+<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 13 13">
+  <g fill="none" fill-rule="evenodd" transform="matrix(0.8125, 0, 0, 0.8125, 0, 0)">
     <polygon fill="#9AA7B0" points="6 5 10 2 10 4 13 4 13 6 10 6 10 8"/>
     <polygon fill="#40B6E0" fill-opacity=".7" points="11 1 11 3 14 3 14 7 11 7 11 15 15 15 15 1"/>
     <polygon fill="#9AA7B0" points="10 11 6 14 6 12 3 12 3 10 6 10 6 8"/>
