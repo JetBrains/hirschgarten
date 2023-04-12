@@ -17,6 +17,7 @@ import com.intellij.util.io.isFile
 import com.intellij.util.io.readText
 import com.intellij.util.system.CpuArch
 import com.intellij.util.system.OS
+import org.jetbrains.plugins.bsp.config.BspPluginTemplates
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizardStep
@@ -211,7 +212,8 @@ public class BazelEditProjectViewStep(
   private fun calculateProjectViewText(projectViewFilePathProperty: GraphProperty<Path?>): String =
     projectViewFilePathProperty.get()
       ?.takeIf { it.exists() }
-      ?.readText().orEmpty()
+      ?.readText()
+      ?: BspPluginTemplates.defaultBazelProjectViewContent
 
   override val panel: DialogPanel = panel {
     row {
