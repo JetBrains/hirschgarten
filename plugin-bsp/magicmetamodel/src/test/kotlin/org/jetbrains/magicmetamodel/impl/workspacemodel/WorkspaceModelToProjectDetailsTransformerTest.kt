@@ -73,7 +73,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         libraries = emptyList(),
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
-        jvmJdkInfo = JvmJdkInfo(javaVersion = "11", javaHome = "fake/path/to/local_jdk"),
+        jvmJdkInfo = JvmJdkInfo(name = "11", javaHome = "fake/path/to/local_jdk"),
       )
 
       val expectedSourceItem = SourceItem("/root/dir/example/package/one", SourceItemKind.FILE, false)
@@ -226,7 +226,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         libraries = libraries1,
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
-        jvmJdkInfo = JvmJdkInfo(javaVersion = "11", javaHome = "fake/path/to/local_jdk"),
+        jvmJdkInfo = JvmJdkInfo(name = "11", javaHome = "fake/path/to/local_jdk"),
       )
 
       val module2 = Module(
@@ -302,7 +302,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         resourceRoots = emptyList(),
         libraries = emptyList(),
         compilerOutput = compilerOutput3,
-        jvmJdkInfo = JvmJdkInfo(javaVersion = "13", javaHome = "fake/path/to/local_jdk"),
+        jvmJdkInfo = JvmJdkInfo(name = "13", javaHome = "fake/path/to/local_jdk"),
       )
 
       // when

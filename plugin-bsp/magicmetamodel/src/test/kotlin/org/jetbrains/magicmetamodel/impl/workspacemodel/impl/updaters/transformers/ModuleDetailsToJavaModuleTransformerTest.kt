@@ -23,7 +23,7 @@ import kotlin.io.path.name
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToJavaModuleTransformerTest {
 
-  val projectBasePath = Path("")
+  val projectBasePath = Path("").toAbsolutePath()
 
   @Test
   fun `should return no java modules roots for no modules details`() {
@@ -93,7 +93,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
     sourcesItem.roots = listOf(projectRoot.toUri().toString())
 
-    val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File.txt")
+    val resourceFilePath = createTempFile(projectBasePath, "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
     val resourcesItem = ResourcesItem(
       buildTargetId,
@@ -195,7 +195,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resourceRoots = listOf(expectedJavaResourceRoot1),
       libraries = listOf(expectedLibrary1, expectedLibrary2),
       compilerOutput = Path("/compiler/output.jar"),
-      jvmJdkInfo = JvmJdkInfo(javaVersion = javaVersion, javaHome = javaHome),
+      jvmJdkInfo = JvmJdkInfo(name = "${projectBasePath.name}-$javaVersion", javaHome = javaHome),
     )
 
     validateJavaModule(javaModule, expectedJavaModule)
@@ -484,6 +484,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     actual.sourceRoots shouldContainExactlyInAnyOrder expected.sourceRoots
     actual.resourceRoots shouldContainExactlyInAnyOrder expected.resourceRoots
     actual.libraries shouldContainExactlyInAnyOrder expected.libraries
+    actual.jvmJdkInfo shouldBe expected.jvmJdkInfo
   }
 
   // TODO
