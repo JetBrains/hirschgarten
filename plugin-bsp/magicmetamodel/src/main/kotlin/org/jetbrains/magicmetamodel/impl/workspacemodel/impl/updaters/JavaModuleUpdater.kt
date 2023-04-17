@@ -7,7 +7,7 @@ import com.intellij.workspaceModel.storage.bridgeEntities.addJavaModuleSettingsE
 import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path
 
-internal data class JvmJdkInfo(val javaVersion: String, val javaHome: String)
+internal data class JvmJdkInfo(val name: String, val javaHome: String)
 
 internal data class JavaModule(
   val module: Module,
@@ -44,7 +44,7 @@ internal class JavaModuleWithSourcesUpdater(
 
   private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
     if (entityToAdd.jvmJdkInfo != null) {
-      defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkInfo.javaVersion, "JavaSDK")
+      defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkInfo.name, "JavaSDK")
     }
     else defaultDependencies
 

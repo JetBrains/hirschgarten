@@ -16,6 +16,7 @@ import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
@@ -23,11 +24,7 @@ import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import java.net.URI
-import java.util.concurrent.CancellationException
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionException
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeoutException
+import java.util.concurrent.*
 import kotlin.io.path.toPath
 
 public class UpdateMagicMetaModelInTheBackgroundTask(
@@ -61,7 +58,7 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
 
     private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
-    private var uniqueJdkInfos: Set<JvmBuildTarget>? = null
+    private var uniqueJdkInfos: Set<JvmBuildTarget> = setOf()
 
     private val jdkTable = ProjectJdkTable.getInstance()
 
@@ -105,18 +102,27 @@ public class UpdateMagicMetaModelInTheBackgroundTask(
 
     private fun addBspFetchedJdks() {
       bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
-      logPerformance("add-bsp-fetched-jdks") { uniqueJdkInfos?.forEach(::addJdkIfNotYetAdded) }
+      logPerformance("add-bsp-fetched-jdks") { uniqueJdkInfos.forEach(::addJdk) }
       bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
     }
 
-    private fun addJdkIfNotYetAdded(jdkInfo: JvmBuildTarget) {
-      val jdk = ExternalSystemJdkProvider.getInstance().createJdk(jdkInfo.javaVersion, URI.create(jdkInfo.javaHome).toPath().toString())
-      if (jdk.isJdkNotAdded()) runWriteAction { jdkTable.addJdk(jdk) }
+    private fun addJdk(jdkInfo: JvmBuildTarget) {
+      val jdk = ExternalSystemJdkProvider.getInstance().createJdk(
+        jdkInfo.javaVersion.javaVersionToJdkName(project.name),
+        URI.create(jdkInfo.javaHome).toPath().toString()
+      )
+
+      addJdkIfNeeded(jdk)
     }
 
-    private fun Sdk.isJdkNotAdded(): Boolean {
-      val existingJdk = jdkTable.findJdk(this.name, this.sdkType.name)
-      return existingJdk == null || existingJdk.sdkAdditionalData !== this.sdkAdditionalData
+    private fun addJdkIfNeeded(jdk: Sdk) {
+      val existingJdk = jdkTable.findJdk(jdk.name, jdk.sdkType.name)
+      if (existingJdk == null || existingJdk.homePath != jdk.homePath) {
+        runWriteAction {
+          existingJdk?.let { jdkTable.removeJdk(existingJdk) }
+          jdkTable.addJdk(jdk)
+        }
+      }
     }
 
     private fun applyChangesOnWorkspaceModel() {

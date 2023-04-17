@@ -2,7 +2,6 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -11,6 +10,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
 import java.net.URI
 import java.nio.file.Path
+import kotlin.io.path.name
 import kotlin.io.path.toPath
 
 internal class ModuleDetailsToJavaModuleTransformer(
@@ -71,7 +71,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun toJdkInfo(inputEntity: ModuleDetails): JvmJdkInfo? {
     val jvmBuildTarget = extractJvmBuildTarget(inputEntity.target)
-    return if (jvmBuildTarget != null) JvmJdkInfo(javaVersion = jvmBuildTarget.javaVersion, javaHome = jvmBuildTarget.javaHome)
+    return if (jvmBuildTarget != null) JvmJdkInfo(name = jvmBuildTarget.javaVersion.javaVersionToJdkName(projectBasePath.name), javaHome = jvmBuildTarget.javaHome)
     else null
   }
 
@@ -84,3 +84,5 @@ internal class ModuleDetailsToJavaModuleTransformer(
 public fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
   if (target.dataKind == BuildTargetDataKind.JVM) Gson().fromJson(target.data as JsonObject, JvmBuildTarget::class.java)
   else null
+
+public fun String.javaVersionToJdkName(projectName: String): String = "$projectName-$this"
