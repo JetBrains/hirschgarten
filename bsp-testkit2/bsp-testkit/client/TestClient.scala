@@ -127,6 +127,17 @@ class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildP
     }
   }
 
+  def testPythonOptions(timeout: Duration)(params: PythonOptionsParams, expectedResult: PythonOptionsResult): Unit = {
+    implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[PythonOptionsParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
+    test(timeout) { session =>
+      session.server.buildTargetPythonOptions(transformedParams).asScala.map { result =>
+        assertJsonEquals(expectedResult, result)
+      }
+    }
+  }
+
   def testSources(timeout: Duration)(params: SourcesParams, expectedResult: SourcesResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
     val typeOfT = new TypeToken[SourcesParams] {}.getType
@@ -234,6 +245,7 @@ class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildP
       val getJavacOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetJavacOptions(new JavacOptionsParams(targetIds)).asScala
       val getScalacOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetScalacOptions(new ScalacOptionsParams(targetIds)).asScala
       val getCppOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetCppOptions(new CppOptionsParams(targetIds)).asScala
+      val getPythonOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetPythonOptions(new PythonOptionsParams(targetIds)).asScala
 
       for {
         targets <- getWorkspaceTargets
@@ -246,6 +258,8 @@ class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildP
         scalacOptions <- getScalacOptions(scalaTargetIds)
         cppTargetIds = extractTargetIdsForLanguage(targets, "cpp") // TODO: use a constant
         cppOptions <- getCppOptions(cppTargetIds)
+        pythonTargetIds = extractTargetIdsForLanguage(targets, "python")
+        pythonOptions <- getPythonOptions(pythonTargetIds)
       } yield ()
     }
   }

@@ -8,3 +8,4 @@ trait MockServer
     with JavaBuildServer
     with JvmBuildServer
     with CppBuildServer
+    with PythonBuildServer
