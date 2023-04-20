@@ -7,12 +7,13 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RestartAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.StickyTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.StickyTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.NotLoadedTargetsMouseListener
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
 import javax.swing.JComponent
 import javax.swing.SwingConstants
 
@@ -31,21 +32,23 @@ private class ListsUpdater(
   var notLoadedTargetsPanel: BspPanelComponent
     private set
   val targetFilter = TargetFilter(::rerenderComponents)
+  val searchBarPanel = SearchBarPanel()
 
   init {
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
     loadedTargetsPanel =
-      BspPanelComponent(BspPluginIcons.bsp, toolName ?: "", magicMetaModel.getAllLoadedTargets())
+      BspPanelComponent(BspPluginIcons.bsp, toolName ?: "", magicMetaModel.getAllLoadedTargets(), searchBarPanel)
     loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it, project) }
 
     notLoadedTargetsPanel =
-      BspPanelComponent(BspPluginIcons.bsp, toolName ?: "", magicMetaModel.getAllNotLoadedTargets())
+      BspPanelComponent(BspPluginIcons.notLoadedTarget, toolName ?: "", magicMetaModel.getAllNotLoadedTargets(), searchBarPanel)
     notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it, project) }
     magicMetaModel.registerTargetLoadListener { rerenderComponents() }
   }
 
   fun rerenderComponents() {
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
+    searchBarPanel.clearAllListeners()
     loadedTargetsPanel = loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(magicMetaModel))
     notLoadedTargetsPanel = notLoadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingNotLoadedTargets(magicMetaModel))
     targetPanelUpdater(this@ListsUpdater)
@@ -128,7 +131,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     when (panelShown) {
       PanelShown.LOADED -> listsUpdater.loadedTargetsPanel
       PanelShown.NOTLOADED -> listsUpdater.notLoadedTargetsPanel
-    }.let { setToolWindowContent(it.wrappedInScrollPane) }
+    }.let { setToolWindowContent(it.wrappedInScrollPane()) }
   }
 
   private fun setToolWindowContent(component: JComponent) {

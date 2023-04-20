@@ -4,89 +4,80 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.ui.components.JBLabel
-import com.intellij.ui.components.JBList
-import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import java.awt.event.MouseListener
 import java.util.concurrent.Callable
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-private const val TARGETS_TO_HIGHLIGHT: Int = 50
-
 private fun BuildTarget.getBuildTargetName(): String =
   this.displayName ?: this.id.uri
 
 public class BuildTargetSearch(
   private val targetIcon: Icon,
-  targets: Collection<BuildTarget>
+  private val toolName: String,
+  targets: Collection<BuildTarget>,
+  public val searchBarPanel: SearchBarPanel
 ) : BuildTargetContainer {
 
-  public val searchBarComponent: JBTextField = JBTextField()
   public val targetSearchPanel: JPanel = JPanel(VerticalLayout(0))
 
-  private val targets = targets.sortedBy { it.getBuildTargetName() }
-  private val searchListModel = DefaultListModel<PrintableBuildTarget>()
-  private val searchListComponent = JBList(searchListModel)
+  private val searchListDisplay = LazySearchListDisplay(targetIcon)
+  private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, toolName)
+
+  private var displayedSearchPanel: JPanel? = null
   private val inProgressInfoComponent = JBLabel(
     BspAllTargetsWidgetBundle.message("widget.loading.targets"),
     SwingConstants.CENTER
   )
-  private var showMoreButton = JButton("")
+  private val noResultsInfoComponent = JBLabel(
+    BspAllTargetsWidgetBundle.message("target.search.no.results"),
+    SwingConstants.CENTER
+  )
+
+  private val targets = targets.sortedBy { it.getBuildTargetName() }
+
   private val mouseListenerBuilders = mutableSetOf<(BuildTargetContainer) -> MouseListener>()
   private val queryChangeListeners = mutableSetOf<() -> Unit>()
 
   init {
     attachSearchBarTextChangeListener(::onSearchQueryChange)
-    searchListComponent.selectionMode = ListSelectionModel.SINGLE_SELECTION
-    searchListComponent.installCellRenderer(::renderSearchListCell)
+    searchBarPanel.registerDisplayChangeListener(::reloadPanels)
     inProgressInfoComponent.isVisible = false
     targetSearchPanel.add(inProgressInfoComponent)
-    targetSearchPanel.add(searchListComponent)
+    noResultsInfoComponent.isVisible = false
+    targetSearchPanel.add(noResultsInfoComponent)
+    onSearchQueryChange()
   }
 
   private fun attachSearchBarTextChangeListener(onUpdate: () -> Unit) {
-    searchBarComponent.document.addDocumentListener(TextChangeListener(onUpdate))
+    searchBarPanel.addTextFieldDocumentListener(TextChangeListener(onUpdate))
   }
 
   private fun onSearchQueryChange() {
     val currentQuery = getCurrentSearchQuery()
-    cleanPanelElements()
     maybeConductSearch(currentQuery)
     queryChangeListeners.forEach { it() }
   }
 
-  private fun getCurrentSearchQuery(): String = searchBarComponent.text
-
-  private fun cleanPanelElements() {
-    targetSearchPanel.remove(showMoreButton)
-    inProgressInfoComponent.isVisible = isSearchActive()
-    searchListComponent.isVisible = !searchListModel.isEmpty || !isSearchActive()
-  }
+  private fun getCurrentSearchQuery(): String = searchBarPanel.getCurrentSearchQuery()
 
   /**
    * @return `true` if search is in progress or its results are ready,
    * `false` if nothing is currently being searched for
    */
-  public fun isSearchActive(): Boolean = searchBarComponent.text.isNotEmpty()
-
-  private fun renderSearchListCell(printableBuildTarget: PrintableBuildTarget): JPanel {
-    val renderedCell = JPanel(VerticalLayout(0))
-    renderedCell.add(
-      JBLabel(
-        printableBuildTarget.displayName,
-        targetIcon,
-        SwingConstants.LEFT
-      )
-    )
-    return renderedCell
-  }
+  public fun isSearchActive(): Boolean = getCurrentSearchQuery().isNotEmpty()
 
   private fun maybeConductSearch(query: String) {
     if (isSearchActive()) {
+      noResultsInfoComponent.isVisible = false
+      inProgressInfoComponent.isVisible = true
       ReadAction
         .nonBlocking(SearchCallable(query, targets))
         .finishOnUiThread(ModalityState.defaultModalityState(), ::displaySearchResultsUnlessOutdated)
@@ -97,47 +88,38 @@ public class BuildTargetSearch(
 
   private fun displaySearchResultsUnlessOutdated(results: SearchResults) {
     if (results.query == getCurrentSearchQuery()) {
-      replaceSearchListElementsWith(takeSomeTargetsAndHighlight(results.targets))
-      searchListComponent.isVisible = true
-      maybeAddShowMoreButton(results.targets)
-    }
-    inProgressInfoComponent.isVisible = false
-  }
-
-  private fun replaceSearchListElementsWith(printableTargets: Collection<PrintableBuildTarget>) {
-    searchListModel.removeAllElements()
-    searchListModel.addAll(printableTargets)
-  }
-
-  private fun takeSomeTargetsAndHighlight(targets: Collection<BuildTarget>): List<PrintableBuildTarget> =
-    targets.take(TARGETS_TO_HIGHLIGHT).map {
-      PrintableBuildTarget(
-        it,
-        QueryHighlighter.highlight(it.getBuildTargetName(), getCurrentSearchQuery())
-      )
-    }
-
-  private fun maybeAddShowMoreButton(targets: Collection<BuildTarget>) {
-    val remainingTargets = targets.size - TARGETS_TO_HIGHLIGHT
-    if (remainingTargets > 0) {
-      showMoreButton = JButton("Show $remainingTargets more")
-      showMoreButton.addActionListener {
-        showMoreTargets(targets)
-      }
-      targetSearchPanel.add(showMoreButton)
+      searchListDisplay.updateSearch(results.targets, results.query)
+      searchTreeDisplay.updateSearch(results.targets, results.query)
+      reloadPanels()
+      inProgressInfoComponent.isVisible = false
+      noResultsInfoComponent.isVisible = results.targets.isEmpty()
     }
   }
 
-  private fun showMoreTargets(targets: Collection<BuildTarget>) {
-    targetSearchPanel.remove(showMoreButton)
-    replaceSearchListElementsWith(targets.map { PrintableBuildTarget(it) })
+  private fun reloadPanels() {
+    if (getCurrentSearchQuery().isNotEmpty()) {
+      displayedSearchPanel?.let(targetSearchPanel::remove)
+      displayedSearchPanel = targetSearchPanel.addLazySearchDisplayUnlessEmpty()
+      targetSearchPanel.revalidate()
+      targetSearchPanel.repaint()
+    }
   }
+
+  private fun JPanel.addLazySearchDisplayUnlessEmpty(): JPanel? {
+    val chosenDisplay = chooseTargetSearchPanel()
+    return if (chosenDisplay.isEmpty()) null
+    else chosenDisplay.get().also { this.add(it) }
+  }
+
+  private fun chooseTargetSearchPanel() =
+    if (searchBarPanel.isDisplayAsTreeChosen()) searchTreeDisplay else searchListDisplay
 
   override fun isEmpty(): Boolean = targets.isEmpty()
 
   override fun addMouseListener(listenerBuilder: (BuildTargetContainer) -> MouseListener) {
     mouseListenerBuilders.add(listenerBuilder)
-    searchListComponent.addMouseListener(listenerBuilder(this))
+    searchListDisplay.addMouseListener(listenerBuilder(this))
+    searchTreeDisplay.addMouseListener(listenerBuilder(this))
   }
 
   /**
@@ -149,25 +131,15 @@ public class BuildTargetSearch(
     queryChangeListeners.add(listener)
   }
 
-  override fun getSelectedBuildTarget(): BuildTarget? {
-    val selected = searchListComponent.selectedValue
-    return selected?.buildTarget
-  }
+  override fun getSelectedBuildTarget(): BuildTarget? =
+    chooseTargetSearchPanel().getSelectedBuildTarget()
 
   override fun createNewWithTargets(newTargets: Collection<BuildTarget>): BuildTargetSearch {
-    val new = BuildTargetSearch(targetIcon, newTargets)
-    new.searchBarComponent.text = getCurrentSearchQuery()
+    val new = BuildTargetSearch(targetIcon, toolName, newTargets, searchBarPanel)
     for (listenerBuilder in this.mouseListenerBuilders) {
       new.addMouseListener(listenerBuilder)
     }
     return new
-  }
-
-  public data class PrintableBuildTarget(
-    val buildTarget: BuildTarget,
-    var displayName: String = buildTarget.getBuildTargetName()
-  ) {
-    override fun toString(): String = buildTarget.displayName ?: buildTarget.id.uri
   }
 
   private class SearchCallable(
@@ -179,23 +151,6 @@ public class BuildTargetSearch(
         query,
         targets.filter { it.getBuildTargetName().contains(query, true) }
       )
-  }
-}
-
-private object QueryHighlighter {
-  fun highlight(text: String, query: String): String =
-    "<html>${highlightAllOccurrences(text, query)}</html>"
-
-  private tailrec fun highlightAllOccurrences(text: String, query: String, builtText: String = "", startIndex: Int = 0): String {
-    val foundIndex = text.indexOf(query, startIndex, true)
-    if (foundIndex < 0) {
-      return builtText + text.substring(startIndex)
-    }
-    val endFoundIndex = foundIndex + query.length
-    val updatedText = builtText +
-      text.substring(startIndex, foundIndex) +
-      "<b><u>${text.substring(foundIndex, endFoundIndex)}</u></b>"
-    return highlightAllOccurrences(text, query, updatedText, endFoundIndex)
   }
 }
 

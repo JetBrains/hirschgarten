@@ -22,8 +22,10 @@ public class StickyTargetAction(
   private val selectionProvider: () -> Boolean
 ) : AnAction({ hintText }, icon), Toggleable {
 
-  override fun actionPerformed(e: AnActionEvent): Unit =
+  override fun actionPerformed(e: AnActionEvent) {
     onPerform()
+    update(e)
+  }
 
   override fun update(e: AnActionEvent): Unit =
     Toggleable.setSelected(e.presentation, selectionProvider())
