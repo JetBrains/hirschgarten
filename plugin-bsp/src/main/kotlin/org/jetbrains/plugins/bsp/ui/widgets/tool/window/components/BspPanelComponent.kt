@@ -6,6 +6,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import java.awt.Component
 import java.awt.event.MouseListener
 import javax.swing.Icon
@@ -29,29 +30,27 @@ public class BspPanelComponent private constructor(
     SwingConstants.CENTER
   )
 
-  public val wrappedInScrollPane: JBScrollPane = JBScrollPane(this)
-
   /**
    * @property targetIcon icon which will be shown next to build targets in this panel
    * @property toolName name of the tool providing the build targets
    * @property targets collection of build targets this panel will contain
+   * @property searchBarPanel searchbar panel responsible for providing user's search queries
    */
   public constructor(
     targetIcon: Icon,
     toolName: String,
-    targets: Collection<BuildTarget>
+    targets: Collection<BuildTarget>,
+    searchBarPanel: SearchBarPanel
   ) : this(
     targetIcon = targetIcon,
     toolName = toolName,
     targetTree = BuildTargetTree(targetIcon, toolName, targets),
-    targetSearch = BuildTargetSearch(targetIcon, targets)
+    targetSearch = BuildTargetSearch(targetIcon, toolName, targets, searchBarPanel)
   )
 
   init {
-    targetSearch.searchBarComponent.isEnabled = !targetTree.isEmpty()
     targetSearch.addQueryChangeListener(::onSearchQueryUpdate)
-    this.add(targetSearch.searchBarComponent)
-    this.add(chooseNewContent())
+    replacePanelContent(null, chooseNewContent())
   }
 
   private fun onSearchQueryUpdate() {
@@ -72,7 +71,7 @@ public class BspPanelComponent private constructor(
 
   private fun getCurrentContent(): Component? =
     try {
-      this.getComponent(1)
+      this.getComponent(0)
     } catch (_: ArrayIndexOutOfBoundsException) {
       log.warn("Sidebar widget panel does not have enough children")
       null
@@ -83,6 +82,14 @@ public class BspPanelComponent private constructor(
     this.add(newContent)
     this.revalidate()
     this.repaint()
+  }
+
+  public fun wrappedInScrollPane(): JBScrollPane {
+    val scrollPane = JBScrollPane(this)
+    val headerComponent = targetSearch.searchBarPanel
+    headerComponent.isEnabled = !targetTree.isEmpty()
+    scrollPane.setColumnHeaderView(headerComponent)
+    return scrollPane
   }
 
   /**

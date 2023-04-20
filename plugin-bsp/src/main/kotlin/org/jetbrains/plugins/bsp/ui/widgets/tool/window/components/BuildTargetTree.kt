@@ -16,11 +16,12 @@ import javax.swing.tree.*
 public class BuildTargetTree(
   private val targetIcon: Icon,
   private val toolName: String,
-  private val targets: Collection<BuildTarget>
+  private val targets: Collection<BuildTarget>,
+  private val labelHighlighter: (String) -> String = { it }
 ) : BuildTargetContainer {
 
   private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
-  private val cellRenderer = TargetTreeCellRenderer(targetIcon)
+  private val cellRenderer = TargetTreeCellRenderer(targetIcon, labelHighlighter)
   private val mouseListenerBuilders = mutableSetOf<(BuildTargetContainer) -> MouseListener>()
 
   public val treeComponent: Tree = Tree(rootNode)
@@ -154,8 +155,14 @@ public class BuildTargetTree(
     else null
   }
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTarget>): BuildTargetTree {
-    val new = BuildTargetTree(targetIcon, toolName, newTargets)
+  override fun createNewWithTargets(newTargets: Collection<BuildTarget>): BuildTargetTree =
+    createNewWithTargetsAndHighlighter(newTargets, labelHighlighter)
+
+  public fun createNewWithTargetsAndHighlighter(
+    newTargets: Collection<BuildTarget>,
+    labelHighlighter: (String) -> String
+  ): BuildTargetTree {
+    val new = BuildTargetTree(targetIcon, toolName, newTargets, labelHighlighter)
     for (listenerBuilder in this.mouseListenerBuilders) {
       new.addMouseListener(listenerBuilder)
     }
@@ -177,7 +184,10 @@ private data class BuildTargetTreeIdentifier(
   val displayName: String
 )
 
-private class TargetTreeCellRenderer(val targetIcon: Icon) : TreeCellRenderer {
+private class TargetTreeCellRenderer(
+  val targetIcon: Icon,
+  val labelHighlighter: (String) -> String
+) : TreeCellRenderer {
   override fun getTreeCellRendererComponent(
     tree: JTree?,
     value: Any?,
@@ -189,13 +199,13 @@ private class TargetTreeCellRenderer(val targetIcon: Icon) : TreeCellRenderer {
   ): Component {
     return when (val userObject = (value as? DefaultMutableTreeNode)?.userObject) {
       is DirectoryNodeData -> JBLabel(
-        userObject.name,
+        labelHighlighter(userObject.name),
         PlatformIcons.FOLDER_ICON,
         SwingConstants.LEFT
       )
 
       is TargetNodeData -> JBLabel(
-        userObject.displayName,
+        labelHighlighter(userObject.displayName),
         targetIcon,
         SwingConstants.LEFT
       )
