@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import java.net.URI
-import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.toPath
 
 internal data class DependencySourcesAndJavacOptions(
@@ -67,20 +66,7 @@ internal object DependencySourcesItemToLibraryTransformer :
   private fun findSourceJarForClassJar(classJar: String, sourceJars: Set<String>): String? =
     sourceJars.find { removeSourcesSuffix(it).startsWith(classJar) }
 
-  /**
-   * When generating the display name, check first if a uri comes from maven repository, if it does, return
-   * the trimmed name, if not (internal dependencies), return the whole uri path for uniqueness.
-   * */
-  private fun calculateDisplayName(uri: String): String {
-    val depName = URI.create(uri).toPath().nameWithoutExtension
-    val depNameWithoutSourcesSuffix = removeSourcesSuffix(depName)
-    return if (isUriMaven(uri)) "BSP: $depNameWithoutSourcesSuffix" else "BSP: $uri"
-  }
-
-  /**
-   * Check if a dependency uri comes from maven repository.
-   * */
-  private fun isUriMaven(uri: String): Boolean = uri.contains("repo.maven.apache.org")
+  private fun calculateDisplayName(uri: String): String = "BSP: $uri"
 
   private fun removeSourcesSuffix(path: String): String =
     path.replace("-sources", "")

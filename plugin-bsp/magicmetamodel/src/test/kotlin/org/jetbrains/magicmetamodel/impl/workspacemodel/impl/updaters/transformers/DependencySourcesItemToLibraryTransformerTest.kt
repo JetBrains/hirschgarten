@@ -46,7 +46,7 @@ class DependencySourcesItemToLibraryTransformerTest {
 
     // then
     val expectedLibrary = Library(
-      displayName = "BSP: test-1.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0.jar",
       sourcesJar = "jar:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0-sources.jar!/",
       classesJar = "jar:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0.jar!/",
     )
@@ -81,17 +81,17 @@ class DependencySourcesItemToLibraryTransformerTest {
 
     // then
     val expectedLibrary1 = Library(
-      displayName = "BSP: test1-1.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
       sourcesJar = null,
       classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
     )
     val expectedLibrary2 = Library(
-      displayName = "BSP: test2-2.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
       sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
       classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
     )
     val expectedLibrary3 = Library(
-      displayName = "BSP: test3-3.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar",
       sourcesJar = "jar:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar!/",
       classesJar = null,
     )
@@ -144,17 +144,17 @@ class DependencySourcesItemToLibraryTransformerTest {
 
     // then
     val expectedLibrary1 = Library(
-      displayName = "BSP: test1-1.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
       sourcesJar = null,
       classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
     )
     val expectedLibrary2 = Library(
-      displayName = "BSP: test2-2.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
       sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
       classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
     )
     val expectedLibrary3 = Library(
-      displayName = "BSP: test3-3.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar",
       sourcesJar = "jar:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar!/",
       classesJar = null,
     )

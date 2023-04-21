@@ -1,10 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryRoot
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryRootTypeId
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryTableId
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
+import com.intellij.workspaceModel.storage.bridgeEntities.*
 import org.jetbrains.workspace.model.matchers.entries.ExpectedLibraryEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -32,7 +28,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
   fun `should add one library to the workspace model`() {
     // given
     val library = Library(
-      displayName = "BSP: test-1.0.0",
+      displayName = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
       sourcesJar = "jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/",
       classesJar = "jar:///dependency/test/1.0.0/test-1.0.0.jar!/",
     )
@@ -54,7 +50,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
     val expectedLibraryEntity = ExpectedLibraryEntity(
       libraryEntity = LibraryEntity(
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
-        name = "BSP: test-1.0.0",
+        name = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
         roots = listOf(expectedLibrarySourcesRoot, expectedLibraryClassesRoot),
         entitySource = DoNotSaveInDotIdeaDirEntitySource,
       )
@@ -68,13 +64,13 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
   fun `should add multiple libraries to the workspace model`() {
     // given
     val library1 = Library(
-      displayName = "BSP: test1-1.0.0",
+      displayName = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
       sourcesJar = "jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/",
       classesJar = "jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/",
     )
 
     val library2 = Library(
-      displayName = "BSP: test2-2.0.0",
+      displayName = "BSP: file:///dependency/test2/2.0.0/test2-2.0.0.jar",
       sourcesJar = "jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/",
       classesJar = "jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/",
     )
@@ -98,7 +94,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
     val expectedLibraryEntity1 = ExpectedLibraryEntity(
       libraryEntity = LibraryEntity(
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
-        name = "BSP: test1-1.0.0",
+        name = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
         roots = listOf(expectedLibrarySourcesRoot1, expectedLibraryClassesRoot1),
         entitySource = parentModuleEntity.entitySource,
       )
@@ -115,7 +111,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
     val expectedLibraryEntity2 = ExpectedLibraryEntity(
       libraryEntity = LibraryEntity(
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
-        name = "BSP: test2-2.0.0",
+        name = "BSP: file:///dependency/test2/2.0.0/test2-2.0.0.jar",
         roots = listOf(expectedLibrarySourcesRoot2, expectedLibraryClassesRoot2),
         entitySource = parentModuleEntity.entitySource,
       )
