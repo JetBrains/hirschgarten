@@ -2,11 +2,7 @@
 
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.*
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -99,10 +95,10 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       librariesDependencies = listOf(
         LibraryDependency(
-          libraryName = "BSP: test1-1.0.0",
+          libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
         ),
         LibraryDependency(
-          libraryName = "BSP: test2-1.0.0",
+          libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
         ),
       )
     )
@@ -216,10 +212,10 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       librariesDependencies = listOf(
         LibraryDependency(
-          libraryName = "BSP: test1-1.0.0",
+          libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
         ),
         LibraryDependency(
-          libraryName = "BSP: test2-1.0.0",
+          libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
         ),
       )
     )
@@ -234,7 +230,7 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       librariesDependencies = listOf(
         LibraryDependency(
-          libraryName = "BSP: test1-1.0.0",
+          libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
         ),
       )
     )

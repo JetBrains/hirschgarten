@@ -144,8 +144,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
         ModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath))
       ),
       librariesDependencies = listOf(
-        LibraryDependency("BSP: test1-1.0.0"),
-        LibraryDependency("BSP: test2-2.0.0"),
+        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
+        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
       )
     )
 
@@ -178,12 +178,12 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val expectedLibrary1 = Library(
-      displayName = "BSP: test1-1.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
       sourcesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/",
       classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
     )
     val expectedLibrary2 = Library(
-      displayName = "BSP: test2-2.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
       sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
       classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
     )
@@ -367,8 +367,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
         ModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath))
       ),
       librariesDependencies = listOf(
-        LibraryDependency("BSP: test1-1.0.0"),
-        LibraryDependency("BSP: test2-2.0.0"),
+        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
+        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
       )
     )
 
@@ -401,12 +401,12 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val expectedLibrary11 = Library(
-      displayName = "BSP: test1-1.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
       sourcesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/",
       classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
     )
     val expectedLibrary12 = Library(
-      displayName = "BSP: test2-2.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
       sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
       classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
     )
@@ -428,7 +428,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         ModuleDependency("module3"),
         ModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath))
       ),
-      librariesDependencies = listOf(LibraryDependency("BSP: test1-1.0.0")),
+      librariesDependencies = listOf(LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar")),
     )
 
     val expectedBaseDirContentRoot2 = ContentRoot(module2Root)
@@ -446,7 +446,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val expectedLibrary21 = Library(
-      displayName = "BSP: test1-1.0.0",
+      displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
       sourcesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/",
       classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
     )
