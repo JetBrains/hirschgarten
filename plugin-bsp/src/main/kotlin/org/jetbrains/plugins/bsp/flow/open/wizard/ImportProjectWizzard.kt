@@ -40,11 +40,12 @@ public class ImportProjectWizard(
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty
 
     addStep(firstStep)
+    init()
+
     if (firstStep.canBeSkipped()) {
       proceedToNextStep()
     }
 
-    init()
     updateWizardButtonsToGeneratorSelection()
   }
 
@@ -77,6 +78,15 @@ public class ImportProjectWizard(
     mySteps.remove(emptyStep)
     return panel
   }
+
+  override fun show() {
+    if (areThereStepsToShow()) {
+      super.show()
+    }
+  }
+
+  private fun areThereStepsToShow(): Boolean =
+    currentStep < mySteps.size - 1
 
   override fun getHelpID(): String =
     "TODO"
