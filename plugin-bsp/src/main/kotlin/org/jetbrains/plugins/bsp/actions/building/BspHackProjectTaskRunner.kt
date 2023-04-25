@@ -10,6 +10,7 @@ import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
+import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
 import org.jetbrains.plugins.bsp.server.tasks.BuildTargetTask
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -18,6 +19,11 @@ import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
  * WARNING: temporary solution, might change
  */
 public class BspHackProjectTaskRunner : ProjectTaskRunner() {
+
+  override fun canRun(project: Project, projectTask: ProjectTask): Boolean {
+    val isBspProject = BspProjectPropertiesService.getInstance(project).value.isBspProject
+    return isBspProject && canRun(projectTask)
+  }
 
   override fun canRun(projectTask: ProjectTask): Boolean = true
 
