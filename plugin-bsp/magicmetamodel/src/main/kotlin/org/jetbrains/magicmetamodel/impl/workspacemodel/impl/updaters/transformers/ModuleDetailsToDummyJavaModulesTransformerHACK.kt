@@ -26,11 +26,12 @@ internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projec
   override fun transform(inputEntity: ModuleDetails): List<JavaModule> {
     val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
-    return dummyJavaModuleSourceRoots.zip(dummyJavaModuleNames).map { calculateDummyJavaSourceModule(name = it.second, sourceRoot = it.first) }
+    return dummyJavaModuleSourceRoots.zip(dummyJavaModuleNames).mapNotNull { calculateDummyJavaSourceModule(name = it.second, sourceRoot = it.first) }
   }
 
-  private fun calculateDummyJavaSourceModule(name: String, sourceRoot: Path): JavaModule =
-    JavaModule(
+  private fun calculateDummyJavaSourceModule(name: String, sourceRoot: Path) =
+    if (name.isEmpty()) null
+    else JavaModule(
       module = Module(
         name = name,
         type = ModuleTypeId.JAVA_MODULE,
@@ -57,7 +58,7 @@ internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projec
 
 public fun calculateDummyJavaModuleNames(inputEntity: ModuleDetails, projectBasePath: Path): List<String> {
   val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity)
-  return calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
+  return calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath).filter { it.isNotEmpty() }
 }
 
 private fun calculateDummyJavaSourceRoots(inputEntity: ModuleDetails): List<Path> =
