@@ -16,9 +16,11 @@ public interface BspConnectionDetailsGenerator {
       .withRealEnvs()
 
     val consoleProcess = builder.start()
-
     consoleProcess.inputStream.transferTo(outputStream)
     consoleProcess.waitFor()
+    if (consoleProcess.exitValue() != 0) {
+      throw Exception(consoleProcess.errorStream.bufferedReader().readLines().joinToString("\n"))
+    }
   }
 
   public fun getChild(root: VirtualFile?, path: List<String>): VirtualFile? {

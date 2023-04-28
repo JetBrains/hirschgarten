@@ -49,6 +49,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
     projectBasePath: Path,
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
   ): List<ImportProjectWizardStep> {
+
     val step = BazelEditProjectViewStep(projectBasePath, connectionFileOrNewConnectionProperty)
     projectViewFilePathProperty = step.projectViewFilePathProperty
 
@@ -59,6 +60,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
     projectPath: VirtualFile,
     outputStream: OutputStream
   ): VirtualFile {
+
     executeAndWait(
       calculateInstallerCommand(projectPath),
       projectPath,
@@ -302,6 +304,18 @@ public object CoursierUtils {
   private fun extractZipFile(zipPath: Path, workingDir: Path) =
     calculateExtractCommand(zipPath).executeCommand(workingDir.toFile())
 
+  private fun List<String>.executeCommand(workingDir: File = File(".")) {
+    val process = ProcessBuilder(this)
+      .directory(workingDir)
+      .withRealEnvs()
+      .start()
+    process.waitFor()
+    if (process.exitValue() != 0) {
+      throw Exception(process.errorStream.bufferedReader().readLines().joinToString("\n"))
+    }
+  }
+
+
   private fun renameIfNeeded(srcPath: Path, destPath: Path) {
     if (destPath != srcPath) Files.move(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING)
   }
@@ -311,15 +325,6 @@ public object CoursierUtils {
       CoursierSupportedOS.WINDOWS_X86_64 -> listOf("tar", "-xf", "$zipPath")
       else -> listOf("gzip", "-d", "$zipPath")
     }
-
-  private fun List<String>.executeCommand(workingDir: File = File(".")) =
-    ProcessBuilder(this)
-      .directory(workingDir)
-      .redirectOutput(ProcessBuilder.Redirect.PIPE)
-      .redirectError(ProcessBuilder.Redirect.PIPE)
-      .withRealEnvs()
-      .start()
-      .waitFor()
 }
 
 public enum class CoursierSupportedOS {
