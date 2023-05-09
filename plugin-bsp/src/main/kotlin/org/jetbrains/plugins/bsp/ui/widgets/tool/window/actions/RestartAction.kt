@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
+import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -9,6 +10,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
@@ -19,33 +21,31 @@ public class RestartAction :
     val project = e.project
 
     if (project != null) {
-      doAction(project)
+      BspCoroutineService.getInstance().start { doAction(project) }
     } else {
       log.warn("RestartAction cannot be performed! Project not available.")
     }
   }
 
-  private fun doAction(project: Project) {
+  private suspend fun doAction(project: Project) {
     val connection = BspConnectionService.getInstance(project).value
 
     if (connection is BspGeneratorConnection) {
       val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-      val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-restart").prepareBackgroundTask()
-
-      collectProjectDetailsTask.executeInTheBackground(
-        name = "Restarting...",
-        cancelable = true,
-        beforeRun = {
-          connection.restart("bsp-restart")
-          bspSyncConsole.startTask(
-            taskId = "bsp-restart",
-            title = "Restart",
-            message = "Restarting...",
-            cancelAction = { collectProjectDetailsTask.cancelExecution() }
-          )
-        },
-        afterOnSuccess = { bspSyncConsole.finishTask("bsp-restart", "Restarting done!") }
+      val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-restart")
+      connection.restart("bsp-restart")
+      bspSyncConsole.startTask(
+        taskId = "bsp-restart",
+        title = "Restart",
+        message = "Restarting...",
+        cancelAction = { collectProjectDetailsTask.cancelExecution() }
       )
+      try {
+        collectProjectDetailsTask.execute(name = "Restarting...", cancelable = true)
+        bspSyncConsole.finishTask("bsp-restart", "Restarting done!")
+      } catch (e: Exception) {
+        bspSyncConsole.finishTask("bsp-restart", "Restarting failed!", FailureResultImpl(e))
+      }
     }
   }
 

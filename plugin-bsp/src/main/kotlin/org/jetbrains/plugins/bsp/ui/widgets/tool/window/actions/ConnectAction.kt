@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
+import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -7,6 +8,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
@@ -16,23 +18,27 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
     val project = e.project
 
     if (project != null) {
-      doAction(project)
+      BspCoroutineService.getInstance().start { doAction(project) }
     } else {
       log.warn("ConnectAction cannot be performed! Project not available.")
     }
   }
 
-  private fun doAction(project: Project) {
+  private suspend fun doAction(project: Project) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.startTask("bsp-connect", "Connect", "Connecting...")
+    val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-connect")
+    bspSyncConsole.startTask("bsp-connect", "Connect", "Connecting...", cancelAction = { collectProjectDetailsTask.cancelExecution() })
 
-    val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-connect").prepareBackgroundTask()
-    collectProjectDetailsTask.executeInTheBackground(
-      name = "Connecting...",
-      cancelable = true,
-      beforeRun = { BspConnectionService.getInstance(project).value!!.connect("bsp-connect") },
-      afterOnSuccess = { bspSyncConsole.finishTask("bsp-connect", "Done!") }
-    )
+    try {
+      BspConnectionService.getInstance(project).value!!.connect("bsp-connect")
+      collectProjectDetailsTask.execute(
+        name = "Connecting...",
+        cancelable = true
+      )
+      bspSyncConsole.finishTask("bsp-connect", "Connect done!")
+    } catch (e: Exception) {
+      bspSyncConsole.finishTask("bsp-connect", "Connect failed!", FailureResultImpl(e))
+    }
   }
 
   public override fun update(e: AnActionEvent) {

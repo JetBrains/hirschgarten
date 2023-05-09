@@ -5,7 +5,6 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.workspaceModel.ide.StorageReplacement
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
@@ -61,7 +60,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
     projectDetails: ProjectDetails,
   ) {
-    ProgressManager.checkCanceled()
     log.debug { "Initializing MagicMetaModelImpl with: $magicMetaModelProjectConfig and $projectDetails..." }
 
     this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
@@ -100,7 +98,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   }
 
   override fun loadDefaultTargets(): MagicMetaModelDiff {
-    ProgressManager.checkCanceled()
     log.debug { "Calculating default targets to load..." }
 
     val nonOverlappingTargetsToLoad = logPerformance("compute-non-overlapping-targets") {
@@ -117,15 +114,11 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       magicMetaModelProjectConfig.moduleNameProvider,
     )
 
-    ProgressManager.checkCanceled()
-
     workspaceModelUpdater.clear()
     val newStorage = loadedTargetsStorage.copy()
     newStorage.clear()
 
     val modulesToLoad = getModulesDetailsForTargetsToLoad(nonOverlappingTargetsToLoad)
-
-    ProgressManager.checkCanceled()
 
     // TODO TEST TESTS TEESTS RTEST11
     logPerformance("load-modules") { workspaceModelUpdater.loadModules(modulesToLoad) }
@@ -159,8 +152,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   // TODO ughh so ugly
   private fun doLoadTarget(targetId: BuildTargetIdentifier): DefaultMagicMetaModelDiff {
-    ProgressManager.checkCanceled()
-
     val targetsToRemove = overlappingTargetsGraph[targetId] ?: emptySet()
     // TODO test it!
     val loadedTargetsToRemove = targetsToRemove.filter(loadedTargetsStorage::isTargetLoaded)
@@ -176,13 +167,9 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       magicMetaModelProjectConfig.moduleNameProvider,
     )
 
-    ProgressManager.checkCanceled()
-
     workspaceModelUpdater.removeModules(modulesToRemove)
     val newStorage = loadedTargetsStorage.copy()
     newStorage.removeTargets(loadedTargetsToRemove)
-
-    ProgressManager.checkCanceled()
 
     // TODO null!!!
     val moduleToAdd = targetIdToModuleDetails[targetId]!!
