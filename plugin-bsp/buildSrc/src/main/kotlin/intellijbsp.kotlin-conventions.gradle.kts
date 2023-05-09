@@ -32,10 +32,8 @@ detekt {
 }
 
 dependencies {
-  implementation(libs.findLibrary("kotlinGradle").get())
   detektPlugins(libs.findLibrary("detektFormatting").get())
   implementation(kotlin("stdlib-jdk8"))
-  implementation(kotlin("reflect"))
 }
 
 tasks {

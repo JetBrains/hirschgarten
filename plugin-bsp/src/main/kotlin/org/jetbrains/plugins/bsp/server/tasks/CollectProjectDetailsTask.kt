@@ -1,20 +1,39 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.DependencySourcesParams
+import ch.epfl.scala.bsp4j.DependencySourcesResult
+import ch.epfl.scala.bsp4j.InitializeBuildParams
+import ch.epfl.scala.bsp4j.InitializeBuildResult
+import ch.epfl.scala.bsp4j.JavacOptionsParams
+import ch.epfl.scala.bsp4j.JavacOptionsResult
+import ch.epfl.scala.bsp4j.JvmBuildTarget
+import ch.epfl.scala.bsp4j.ResourcesParams
+import ch.epfl.scala.bsp4j.ResourcesResult
+import ch.epfl.scala.bsp4j.SourcesParams
+import ch.epfl.scala.bsp4j.SourcesResult
+import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.Task
+import com.intellij.openapi.progress.indeterminateStep
+import com.intellij.openapi.progress.progressStep
+import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import org.jetbrains.magicmetamodel.MagicMetaModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
+import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
 import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
@@ -24,133 +43,58 @@ import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import java.net.URI
-import java.util.concurrent.*
+import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeoutException
 import kotlin.io.path.toPath
 
-public class UpdateMagicMetaModelInTheBackgroundTask(
-  private val project: Project,
-  private val taskId: Any,
-  private val collect: (cancelOn: CompletableFuture<Void>) -> ProjectDetails?,
-) {
-
-  private var progressIndicator: ProgressIndicator? = null
-
-  private val cancelOnFuture = CompletableFuture<Void>()
-
-
-  public fun executeInTheBackground(
-    name: String,
-    cancelable: Boolean,
-    beforeRun: () -> Unit = {},
-    afterOnSuccess: () -> Unit = {}
-  ) {
-    prepareBackgroundTask(name, cancelable, beforeRun, afterOnSuccess).queue()
-  }
-
-  private fun prepareBackgroundTask(
-    name: String,
-    cancelable: Boolean,
-    beforeRun: () -> Unit = {},
-    afterOnSuccess: () -> Unit = {}
-  ) = object : Task.Backgroundable(project, name, cancelable) {
-
-    private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-
-    private var magicMetaModelDiff: MagicMetaModelDiff? = null
-
-    private var uniqueJdkInfos: Set<JvmBuildTarget> = setOf()
-
-    private val jdkTable = ProjectJdkTable.getInstance()
-
-    override fun run(indicator: ProgressIndicator) {
-      progressIndicator = indicator
-      beforeRun()
-      updateMagicMetaModelDiff()
-    }
-
-    private fun updateMagicMetaModelDiff() {
-      val magicMetaModel = logPerformance("update-magic-meta-model-diff") { initializeMagicMetaModel() }
-      magicMetaModelDiff = logPerformance("load-default-targets") { magicMetaModel.loadDefaultTargets() }
-
-      bspSyncConsole.finishSubtask("calculate-project-structure", "Calculating project structure done!")
-    }
-
-    // TODO ugh, it should be nicer
-    private fun initializeMagicMetaModel(): MagicMetaModel {
-      val magicMetaModelService = MagicMetaModelService.getInstance(project)
-      val projectDetails = logPerformance("collect-project-details") { collect(cancelOnFuture) }
-
-      if (projectDetails != null) {
-        bspSyncConsole.startSubtask(taskId, "calculate-all-unique-jdk-infos", "Calculating all unique jdk infos...")
-        uniqueJdkInfos = logPerformance("calculate-all-unique-jdk-infos") { calculateAllUniqueJdkInfos(projectDetails) }
-        bspSyncConsole.finishSubtask("calculate-all-unique-jdk-infos", "Calculating all unique jdk infos done!")
-
-        bspSyncConsole.startSubtask(taskId, "calculate-project-structure", "Calculating project structure...")
-        logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
-      }
-
-      return magicMetaModelService.value
-    }
-
-    private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
-
-    override fun onSuccess() {
-      logPerformance("add-bsp-fetched-jdks") { addBspFetchedJdks() }
-      logPerformance("apply-changes-on-workspace-model") { applyChangesOnWorkspaceModel() }
-      logPerformance("after-on-success") { afterOnSuccess() }
-    }
-
-    private fun addBspFetchedJdks() {
-      bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
-      logPerformance("add-bsp-fetched-jdks") { uniqueJdkInfos.forEach(::addJdk) }
-      bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
-    }
-
-    private fun addJdk(jdkInfo: JvmBuildTarget) {
-      val jdk = ExternalSystemJdkProvider.getInstance().createJdk(
-        jdkInfo.javaVersion.javaVersionToJdkName(project.name),
-        URI.create(jdkInfo.javaHome).toPath().toString()
-      )
-
-      addJdkIfNeeded(jdk)
-    }
-
-    private fun addJdkIfNeeded(jdk: Sdk) {
-      val existingJdk = jdkTable.findJdk(jdk.name, jdk.sdkType.name)
-      if (existingJdk == null || existingJdk.homePath != jdk.homePath) {
-        runWriteAction {
-          existingJdk?.let { jdkTable.removeJdk(existingJdk) }
-          jdkTable.addJdk(jdk)
-        }
-      }
-    }
-
-    private fun applyChangesOnWorkspaceModel() {
-      bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Applying changes...")
-      runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
-      bspSyncConsole.finishSubtask("apply-on-workspace-model", "Applying changes done!")
-    }
-
-    override fun onCancel() {
-      bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
-    }
-  }
-
-  public fun cancelExecution() {
-    cancelOnFuture.cancel(true)
-    progressIndicator?.cancel()
-  }
-}
 
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
   BspServerTask<ProjectDetails>("collect project details", project) {
 
+  private val cancelOnFuture = CompletableFuture<Void>()
+
   private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
-  public fun prepareBackgroundTask(): UpdateMagicMetaModelInTheBackgroundTask =
-    UpdateMagicMetaModelInTheBackgroundTask(project, taskId) { cancelOn ->
-      executeWithServerIfConnected { collectModel(it, cancelOn) }
+  private var magicMetaModelDiff: MagicMetaModelDiff? = null
+
+  private lateinit var uniqueJdkInfos: Set<JvmBuildTarget>
+
+  private val jdkTable = ProjectJdkTable.getInstance()
+
+  private val coroutineJob = Job()
+
+  public suspend fun execute(name: String, cancelable: Boolean) {
+    withContext(coroutineJob) {
+      try {
+        withBackgroundProgress(project, name, cancelable) {
+          doExecute()
+        }
+      } catch (e: CancellationException) {
+        onCancel()
+      }
     }
+  }
+
+  private suspend fun doExecute() {
+    val projectDetails = progressStep(endFraction = 0.5, text = "Collecting project details") {
+      calculateProjectDetailsSubtask()
+    }
+    indeterminateStep(text = "Calculating all unique jdk infos") {
+      calculateAllUniqueJdkInfosSubtask(projectDetails)
+    }
+    progressStep(endFraction = 0.75, "Updating magic meta model diff") {
+      updateMMMDiffSubtask(projectDetails)
+    }
+    progressStep(endFraction = 1.0, "Post-processing magic meta model") {
+      postprocessingMMMSubtask()
+    }
+  }
+
+  private fun calculateProjectDetailsSubtask() =
+    logPerformance("collect-project-details") { executeWithServerIfConnected { collectModel(it, cancelOnFuture) } }
 
   private fun collectModel(server: BspServer, cancelOn: CompletableFuture<Void>): ProjectDetails? {
     fun isCancellationException(e: Throwable): Boolean =
@@ -160,21 +104,20 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       e is CompletionException && e.cause is TimeoutException
 
     fun errorCallback(e: Throwable) = when {
-        isCancellationException(e) -> bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
-        isTimeoutException(e) -> bspSyncConsole.finishTask(taskId, "Timed out", FailureResultImpl(BspTasksBundle.message("task.timeout.message")))
-        else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
-      }
+      isCancellationException(e) -> bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
+      isTimeoutException(e) -> bspSyncConsole.finishTask(taskId, "Timed out", FailureResultImpl(BspTasksBundle.message("task.timeout.message")))
+      else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
+    }
 
     bspSyncConsole.startSubtask(taskId, importSubtaskId, "Collecting model...")
 
     val initializeBuildResult = queryForInitialize(server).catchSyncErrors { errorCallback(it) }.get()
     server.onBuildInitialized()
 
-
     val projectDetails =
       calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities, { errorCallback(it) }, cancelOn)
 
-    bspSyncConsole.finishSubtask(importSubtaskId, "Collection model done!")
+    bspSyncConsole.finishSubtask(importSubtaskId, "Collecting model done!")
 
     return projectDetails
   }
@@ -200,6 +143,80 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     params.data = dataJson
 
     return params
+  }
+
+  private fun calculateAllUniqueJdkInfosSubtask(projectDetails: ProjectDetails?) {
+    projectDetails?.let {
+      bspSyncConsole.startSubtask(taskId, "calculate-all-unique-jdk-infos", "Calculating all unique jdk infos...")
+      uniqueJdkInfos = logPerformance("calculate-all-unique-jdk-infos") { calculateAllUniqueJdkInfos(projectDetails) }
+      bspSyncConsole.finishSubtask("calculate-all-unique-jdk-infos", "Calculating all unique jdk infos done!")
+    }
+  }
+
+  private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
+
+  private fun updateMMMDiffSubtask(projectDetails: ProjectDetails?) {
+    val magicMetaModelService = MagicMetaModelService.getInstance(project)
+    bspSyncConsole.startSubtask(taskId, "calculate-project-structure", "Calculating project structure...")
+    projectDetails?.let {
+      logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
+    }
+    magicMetaModelDiff = logPerformance("load-default-targets") { magicMetaModelService.value.loadDefaultTargets() }
+    bspSyncConsole.finishSubtask("calculate-project-structure", "Calculating project structure done!")
+  }
+
+  private suspend fun postprocessingMMMSubtask() {
+    addBspFetchedJdks()
+    applyChangesOnWorkspaceModel()
+  }
+
+  private suspend fun addBspFetchedJdks() {
+    bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
+    logPerformanceSuspend("add-bsp-fetched-jdks") { uniqueJdkInfos.forEach { addJdk(it) } }
+    bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
+  }
+
+  private suspend fun addJdk(jdkInfo: JvmBuildTarget) {
+    val jdk = ExternalSystemJdkProvider.getInstance().createJdk(
+      jdkInfo.javaVersion.javaVersionToJdkName(project.name),
+      URI.create(jdkInfo.javaHome).toPath().toString()
+    )
+
+    addJdkIfNeeded(jdk)
+  }
+
+  private suspend fun addJdkIfNeeded(jdk: Sdk) {
+    val existingJdk = jdkTable.findJdk(jdk.name, jdk.sdkType.name)
+    if (existingJdk == null || existingJdk.homePath != jdk.homePath) {
+      withContext(Dispatchers.EDT) {
+        runWriteAction {
+          existingJdk?.let { jdkTable.removeJdk(existingJdk) }
+          jdkTable.addJdk(jdk)
+        }
+      }
+    }
+  }
+
+  private suspend fun applyChangesOnWorkspaceModel() {
+    bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Applying changes...")
+
+    logPerformanceSuspend("apply-changes-on-workspace-model") {
+      withContext(Dispatchers.EDT) {
+        runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
+      }
+    }
+
+    bspSyncConsole.finishSubtask("apply-on-workspace-model", "Applying changes done!")
+  }
+
+  private fun onCancel() {
+    cancelOnFuture.cancel(true)
+    bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
+  }
+
+  public fun cancelExecution() {
+    cancelOnFuture.cancel(true)
+    coroutineJob.cancel()
   }
 }
 
