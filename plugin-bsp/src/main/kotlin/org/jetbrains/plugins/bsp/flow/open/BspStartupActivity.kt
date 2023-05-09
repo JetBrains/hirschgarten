@@ -1,11 +1,11 @@
 package org.jetbrains.plugins.bsp.flow.open
 
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.startup.ProjectActivity
-import com.intellij.openapi.wm.impl.welcomeScreen.WelcomeFrame
+import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -75,8 +75,10 @@ public class BspStartupActivity : ProjectActivity {
       is NewConnection -> initializeNewConnectionFromGenerator(project, connectionFileOrNewConnection)
       is ConnectionFile -> initializeConnectionFromFile(project, connectionFileOrNewConnection)
       null -> {
-        ProjectManager.getInstance().closeAndDispose(project)
-        WelcomeFrame.showIfNoProjectOpened()
+        // TODO: it's really ugly - we shouldnt use it but it's the only option
+        AppUIExecutor.onUiThread().execute {
+          CloseProjectWindowHelper().windowClosing(project)
+        }
       }
     }
 
