@@ -20,10 +20,7 @@ public class ProjectClosingListener : ProjectManagerListener {
   private fun doProjectClosing(project: Project) {
     runModalTask("Disconnecting...", project = project, cancellable = false) {
       try {
-        when (val connection = BspConnectionService.getInstance(project).value) {
-            null -> log.error("Connection not setup in BSP project")
-            else -> connection.disconnect()
-        }
+        BspConnectionService.getInstance(project).value?.disconnect()
       } catch (e: Exception) {
         log.warn("One of the disconnect actions has failed!", e)
       }

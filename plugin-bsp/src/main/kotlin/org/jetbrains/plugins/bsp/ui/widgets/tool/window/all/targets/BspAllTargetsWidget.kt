@@ -6,6 +6,7 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowPanel
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 
 public class BspAllTargetsWidgetFactory : ToolWindowFactory {
 
@@ -16,7 +17,13 @@ public class BspAllTargetsWidgetFactory : ToolWindowFactory {
   }
 
   override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+    BspToolWindowService.getInstance(project).setDeepPanelReload { doCreateToolWindowContent(project, toolWindow) }
+    doCreateToolWindowContent(project, toolWindow)
+  }
+
+  private fun doCreateToolWindowContent(project: Project, toolWindow: ToolWindow) {
     val panel = BspToolWindowPanel(project)
+    toolWindow.contentManager.removeAllContents(true)
     toolWindow.contentManager.addContent(ContentFactory.getInstance().createContent(panel.component, "", false))
   }
 }
