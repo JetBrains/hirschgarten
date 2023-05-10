@@ -22,6 +22,7 @@ import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 
 /**
@@ -53,7 +54,10 @@ public class BspStartupActivity : ProjectActivity {
         showWizardAndGetResult(project)
       }
       initializeConnectionOrCloseProject(connectionFileOrNewConnection, project)
-      connectionFileOrNewConnection?.let { collectProject(project) }
+      connectionFileOrNewConnection?.let {
+        collectProject(project)
+        BspToolWindowService.getInstance(project).doDeepPanelReload()
+      }
     }
   }
 

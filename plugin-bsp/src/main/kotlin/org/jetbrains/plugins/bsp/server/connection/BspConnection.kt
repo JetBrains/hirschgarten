@@ -73,17 +73,17 @@ public class BspConnectionService(private val project: Project) :
     value = getConnection(project, state)
   }
 
-  // TODO the !!
-  private fun getConnection(project: Project, state: BspConnectionState): BspConnection =
-    when {
-      state.bspFileConnectionState != null -> BspFileConnection.fromState(project, state.bspFileConnectionState!!)!!
-      state.bspGeneratorConnectionState != null -> BspGeneratorConnection.fromState(
-        project,
-        state.bspGeneratorConnectionState!!
-      )!!
+  private fun getConnection(project: Project, state: BspConnectionState): BspConnection? =
+    state.bspFileConnectionState?.let { BspFileConnection.fromState(project, it) }
+      ?: state.bspGeneratorConnectionState?.toValidGeneratorConnection(project)
 
-      else -> error("Something is really wrong!")
+  private fun BspGeneratorConnectionState.toValidGeneratorConnection(project: Project): BspConnection? {
+    val generatorConnection = BspGeneratorConnection.fromState(project, this)
+    return when (generatorConnection?.hasFileConnectionDefined()) {
+      true -> generatorConnection
+      else -> null
     }
+  }
 
   public companion object {
 

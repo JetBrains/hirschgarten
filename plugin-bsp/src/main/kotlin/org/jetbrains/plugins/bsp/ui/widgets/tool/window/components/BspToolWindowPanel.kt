@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
@@ -14,6 +15,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.NotLoadedTargetsMouseListener
+import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.SwingConstants
 
@@ -61,7 +63,9 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
   public constructor(project: Project) : this() {
     val actionManager = ActionManager.getInstance()
     val bspConnection = BspConnectionService.getInstance(project).value
-    val listsUpdater = ListsUpdater(project, bspConnection!!.buildToolId, this::showCurrentPanel)
+    val listsUpdater = bspConnection?.buildToolId?.let {
+      ListsUpdater(project, it, this::showCurrentPanel)
+    }
 
     val actionGroup = actionManager
       .getAction("Bsp.ActionsToolbar") as DefaultActionGroup
@@ -82,28 +86,33 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
     actionGroup.addSeparator()
 
-    actionGroup.add(StickyTargetAction(
-      hintText = notLoadedTargetsActionName,
-      icon = BspPluginIcons.notLoadedTarget,
-      onPerform = { listsUpdater.showNotLoadedTargets() },
-      selectionProvider = { panelShown == PanelShown.NOTLOADED }
-    ))
-    actionGroup.add(StickyTargetAction(
-      hintText = loadedTargetsActionName,
-      icon = BspPluginIcons.loadedTarget,
-      onPerform = { listsUpdater.showLoadedTargets() },
-      selectionProvider = { panelShown == PanelShown.LOADED }
-    ))
+    if (listsUpdater != null) {
+      actionGroup.add(StickyTargetAction(
+        hintText = notLoadedTargetsActionName,
+        icon = BspPluginIcons.notLoadedTarget,
+        onPerform = { listsUpdater.showNotLoadedTargets() },
+        selectionProvider = { panelShown == PanelShown.NOTLOADED }
+      ))
+      actionGroup.add(StickyTargetAction(
+        hintText = loadedTargetsActionName,
+        icon = BspPluginIcons.loadedTarget,
+        onPerform = { listsUpdater.showLoadedTargets() },
+        selectionProvider = { panelShown == PanelShown.LOADED }
+      ))
 
-    actionGroup.addSeparator()
-    actionGroup.add(FilterActionGroup(listsUpdater.targetFilter))
+      actionGroup.addSeparator()
+      actionGroup.add(FilterActionGroup(listsUpdater.targetFilter))
+    } else {
+      actionGroup.addDummyActions()
+    }
+
 
     val actionToolbar = actionManager.createActionToolbar("Bsp Toolbar", actionGroup, true)
     actionToolbar.targetComponent = this.component
     actionToolbar.setOrientation(SwingConstants.HORIZONTAL)
     this.toolbar = actionToolbar.component
 
-    showCurrentPanel(listsUpdater)
+    listsUpdater?.let { showCurrentPanel(it) }
   }
 
   private fun AnAction.shouldBeDisposedAfterReload(): Boolean {
@@ -114,6 +123,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     return this.templateText == notLoadedTargetsActionName ||
         this.templateText == loadedTargetsActionName ||
         this.templateText == restartActionName ||
+        this is EternallyDisabledAction ||
         this is FilterActionGroup
   }
 
@@ -127,6 +137,28 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     showCurrentPanel(this)
   }
 
+  private fun DefaultActionGroup.addDummyActions() {
+    add(
+      EternallyDisabledAction(
+        BspAllTargetsWidgetBundle.message("widget.not.loaded.targets.tab.name"),
+        BspPluginIcons.notLoadedTarget
+      )
+    )
+    add(
+      EternallyDisabledAction(
+        BspAllTargetsWidgetBundle.message("widget.loaded.targets.tab.name"),
+        BspPluginIcons.loadedTarget
+      )
+    )
+    addSeparator()
+    add(
+      EternallyDisabledAction(
+        BspAllTargetsWidgetBundle.message("widget.filter.action.group"),
+        AllIcons.General.Filter
+      )
+    )
+  }
+
   private fun showCurrentPanel(listsUpdater: ListsUpdater) {
     when (panelShown) {
       PanelShown.LOADED -> listsUpdater.loadedTargetsPanel
@@ -137,4 +169,17 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
   private fun setToolWindowContent(component: JComponent) {
     this.setContent(component)
   }
+}
+
+private class EternallyDisabledAction(hintText: String, icon: Icon) : AnAction({ hintText }, icon) {
+  override fun actionPerformed(e: AnActionEvent) {
+    // do nothing
+  }
+
+  override fun update(e: AnActionEvent) {
+    e.presentation.isEnabled = false
+  }
+
+  override fun getActionUpdateThread(): ActionUpdateThread =
+    ActionUpdateThread.EDT
 }
