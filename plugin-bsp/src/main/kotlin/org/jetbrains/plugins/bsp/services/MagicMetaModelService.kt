@@ -68,8 +68,7 @@ public class MagicMetaModelService(private val project: Project) :
     val workspaceModel = WorkspaceModel.getInstance(project)
     val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
 
-    val toolName = obtainToolNameIfKnown(project)
-    val moduleNameProvider = toolName?.let(::createModuleNameProvider)
+    val moduleNameProvider = obtainModuleNameProvider()
 
     val projectProperties = ProjectPropertiesService.getInstance(project).value
     val projectBasePath = projectProperties.projectRootDir.toNioPath()
@@ -77,10 +76,13 @@ public class MagicMetaModelService(private val project: Project) :
     return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider, projectBasePath)
   }
 
+  public fun obtainModuleNameProvider(): ModuleNameProvider? =
+    obtainToolNameIfKnown(project)?.let { createModuleNameProviderForTool(it) }
+
   private fun obtainToolNameIfKnown(project: Project): String? =
     BspConnectionService.getInstance(project).value?.buildToolId
 
-  private fun createModuleNameProvider(toolName: String): ModuleNameProvider {
+  private fun createModuleNameProviderForTool(toolName: String): ModuleNameProvider {
     val targetClassifier =
       BspBuildTargetClassifierProvider(toolName, BspBuildTargetClassifierExtension.extensions())
     return {
