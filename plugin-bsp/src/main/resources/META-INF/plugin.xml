@@ -30,7 +30,7 @@
       implementation="org.jetbrains.plugins.bsp.flow.open.BspStartupActivity"/>
 
     <projectTaskRunner
-      implementation="org.jetbrains.plugins.bsp.actions.building.BspHackProjectTaskRunner"/>
+      implementation="org.jetbrains.plugins.bsp.actions.building.BspProjectTaskRunner"/>
 
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.server.connection.BspConnectionService"/>
