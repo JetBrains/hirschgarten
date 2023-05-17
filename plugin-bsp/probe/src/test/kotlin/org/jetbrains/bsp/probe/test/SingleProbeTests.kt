@@ -14,7 +14,7 @@ class SingleProbeTests {
 
   companion object {
     const val LATEST_NIGHTLY_VERSION = "232.5150.116"
-    const val LATEST_VERSION = "2023.2"
+    val LATEST_VERSION : String? = null
   }
 
   @Test

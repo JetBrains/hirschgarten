@@ -12,6 +12,7 @@ import org.virtuslab.ideprobe.wait.{BasicWaiting, DoOnlyOnce}
 
 import java.nio.file.Path
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.util.Try
 
 class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
 
@@ -49,7 +50,7 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
     })
     probe.await(importing)
     val closeTipOfTheDay = new DoOnlyOnce(robot.closeTipOfTheDay())
-    val waitLogic = WaitLogic.emptyNamedBackgroundTasks(basicCheckFrequency = 30.second, atMost = 1.hour).doWhileWaiting {
+    val waitLogic = waitForProjectImport(robot).doWhileWaiting {
       closeTipOfTheDay.attempt()
       tryRunning(
         robot.find(query.className("StripeButton", ("text", "BSP")))
@@ -99,6 +100,17 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
 
     def setText(query: String, text: String): Unit = {
       p.findWithTimeout(query, 60.second).setText(text)
+    }
+  }
+
+  def waitForProjectImport(robot: RobotProbeDriver): WaitLogic = {
+    WaitLogic.basic(checkFrequency = 15.second, atMost = 1.hour) {
+      Try({
+        robot.find(query.className("ContentTabLabel", ("mytext", "Sync")))
+        val textPanel = robot.find(query.className("InlineProgressPanel"))
+        if (textPanel.findAllText().isEmpty) WaitDecision.Done
+        else throw new Exception()
+      }).getOrElse(WaitDecision.KeepWaiting("Waiting for project import"))
     }
   }
 
