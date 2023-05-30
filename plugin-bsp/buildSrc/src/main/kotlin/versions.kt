@@ -17,7 +17,7 @@ const val pluginVerifierIdeVersions = "2023.2"
 
 object Platform {
   const val type = "IC"
-  const val version = "232.5150.116-EAP-SNAPSHOT"
+  const val version = "232.6095.10-EAP-SNAPSHOT"
   const val downloadSources = true
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
