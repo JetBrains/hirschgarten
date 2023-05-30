@@ -269,7 +269,8 @@ public fun ModuleDetails.toState(): ModuleDetailsState =
 
 public data class DefaultMagicMetaModelState(
   public var projectDetailsState: ProjectDetailsState = ProjectDetailsState(),
-  public var targetsDetailsForDocumentProviderState: TargetsDetailsForDocumentProviderState = TargetsDetailsForDocumentProviderState(),
+  public var targetsDetailsForDocumentProviderState: TargetsDetailsForDocumentProviderState =
+    TargetsDetailsForDocumentProviderState(),
   public var overlappingTargetsGraph: Map<BuildTargetIdentifierState, List<BuildTargetIdentifierState>> = emptyMap(),
   public var loadedTargetsStorageState: LoadedTargetsStorageState = LoadedTargetsStorageState(),
 )

@@ -7,7 +7,11 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JvmJdkInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.name
@@ -56,7 +60,8 @@ internal class ModuleDetailsToJavaModuleTransformer(
   }
 
   private fun Module.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): Module {
-    val dummyJavaModuleDependencies = calculateDummyJavaModuleNames(inputEntity, projectBasePath).map { ModuleDependency(it) }
+    val dummyJavaModuleDependencies = calculateDummyJavaModuleNames(inputEntity, projectBasePath)
+      .map { ModuleDependency(it) }
     return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
   }
 
@@ -71,7 +76,11 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun toJdkInfo(inputEntity: ModuleDetails): JvmJdkInfo? {
     val jvmBuildTarget = extractJvmBuildTarget(inputEntity.target)
-    return if (jvmBuildTarget != null) JvmJdkInfo(name = jvmBuildTarget.javaVersion.javaVersionToJdkName(projectBasePath.name), javaHome = jvmBuildTarget.javaHome)
+    return if (jvmBuildTarget != null)
+      JvmJdkInfo(
+        name = jvmBuildTarget.javaVersion.javaVersionToJdkName(projectBasePath.name),
+        javaHome = jvmBuildTarget.javaHome
+      )
     else null
   }
 

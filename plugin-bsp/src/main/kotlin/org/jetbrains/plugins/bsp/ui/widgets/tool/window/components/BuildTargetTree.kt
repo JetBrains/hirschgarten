@@ -4,14 +4,19 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
-import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
 import java.awt.Component
 import java.awt.event.MouseListener
 import javax.swing.Icon
 import javax.swing.JTree
 import javax.swing.SwingConstants
-import javax.swing.tree.*
+import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.MutableTreeNode
+import javax.swing.tree.TreeCellRenderer
+import javax.swing.tree.TreeNode
+import javax.swing.tree.TreePath
+import javax.swing.tree.TreeSelectionModel
+import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
 
 public class BuildTargetTree(
   private val targetIcon: Icon,
@@ -117,11 +122,10 @@ public class BuildTargetTree(
   private fun generateChildrenTargetNodes(
     pathToIdentifierMap: Map<String?, List<BuildTargetTreeIdentifier>>,
   ): List<TreeNode> =
-    pathToIdentifierMap[null]?.map(::generateTargetNode) ?: emptyList()
+    pathToIdentifierMap[null]?.map { generateTargetNode(it) } ?: emptyList()
 
-  private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode {
-    return DefaultMutableTreeNode(TargetNodeData(identifier.target, identifier.displayName))
-  }
+  private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
+    DefaultMutableTreeNode(TargetNodeData(identifier.target, identifier.displayName))
 
   private fun simplifyNodeIfHasOneChild(
     node: DefaultMutableTreeNode,

@@ -50,7 +50,6 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.toPath
 
-
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
   BspServerTask<ProjectDetails>("collect project details", project) {
 
@@ -104,8 +103,18 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       e is CompletionException && e.cause is TimeoutException
 
     fun errorCallback(e: Throwable) = when {
-      isCancellationException(e) -> bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
-      isTimeoutException(e) -> bspSyncConsole.finishTask(taskId, "Timed out", FailureResultImpl(BspTasksBundle.message("task.timeout.message")))
+      isCancellationException(e) ->
+        bspSyncConsole.finishTask(
+          taskId = taskId,
+          message = "Canceled",
+          result = FailureResultImpl("The task has been canceled!")
+        )
+      isTimeoutException(e) ->
+        bspSyncConsole.finishTask(
+          taskId = taskId,
+          message = "Timed out",
+          result = FailureResultImpl(BspTasksBundle.message("task.timeout.message"))
+        )
       else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
     }
 
@@ -115,7 +124,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     server.onBuildInitialized()
 
     val projectDetails =
-      calculateProjectDetailsWithCapabilities(server, initializeBuildResult.capabilities, { errorCallback(it) }, cancelOn)
+      calculateProjectDetailsWithCapabilities(
+        server = server,
+        buildServerCapabilities = initializeBuildResult.capabilities,
+        errorCallback = { errorCallback(it) },
+        cancelOn = cancelOn
+      )
 
     bspSyncConsole.finishSubtask(importSubtaskId, "Collecting model done!")
 
@@ -153,7 +167,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> = projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
+  private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> =
+    projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
 
   private fun updateMMMDiffSubtask(projectDetails: ProjectDetails?) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
@@ -227,19 +242,31 @@ public fun calculateProjectDetailsWithCapabilities(
   cancelOn: CompletableFuture<Void> = CompletableFuture(),
 ): ProjectDetails? {
   try {
-    val workspaceBuildTargetsResult = queryForBuildTargets(server).reactToExceptionIn(cancelOn).catchSyncErrors(errorCallback).get()
+    val workspaceBuildTargetsResult = queryForBuildTargets(server)
+      .reactToExceptionIn(cancelOn)
+      .catchSyncErrors(errorCallback)
+      .get()
 
     val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
 
-    val sourcesFuture = queryForSourcesResult(server, allTargetsIds).reactToExceptionIn(cancelOn).catchSyncErrors(errorCallback)
+    val sourcesFuture = queryForSourcesResult(server, allTargetsIds)
+      .reactToExceptionIn(cancelOn)
+      .catchSyncErrors(errorCallback)
 
     val resourcesFuture =
-      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)
+        ?.reactToExceptionIn(cancelOn)
+        ?.catchSyncErrors(errorCallback)
+
     val dependencySourcesFuture =
-      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
+      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)
+        ?.reactToExceptionIn(cancelOn)
+        ?.catchSyncErrors(errorCallback)
 
     val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
-    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)?.reactToExceptionIn(cancelOn)?.catchSyncErrors(errorCallback)
+    val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)
+      ?.reactToExceptionIn(cancelOn)
+      ?.catchSyncErrors(errorCallback)
 
     return ProjectDetails(
       targetsId = allTargetsIds,
@@ -266,7 +293,9 @@ public fun calculateProjectDetailsWithCapabilities(
 private fun queryForBuildTargets(server: BspServer): CompletableFuture<WorkspaceBuildTargetsResult> =
   server.workspaceBuildTargets()
 
-private fun calculateAllTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+private fun calculateAllTargetsIds(
+  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult
+): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.map { it.id }
 
 private fun queryForSourcesResult(
@@ -300,7 +329,8 @@ private fun queryForDependencySources(
   else null
 }
 
-private fun calculateJavaTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+private fun calculateJavaTargetsIds(
+  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("java") }.map { it.id }
 
 private fun queryForJavacOptions(

@@ -35,9 +35,8 @@ public class ImportProjectWizard(
     val projectProperties = ProjectPropertiesService.getInstance(project).value
     firstStep = ChooseConnectionFileOrNewConnectionStep(
       projectProperties.projectRootDir,
-      bspConnectionDetailsGeneratorProvider.availableBspConnectionDetailsGenerators,
-      this::updateWizardButtonsToGeneratorSelection
-    )
+      bspConnectionDetailsGeneratorProvider.availableBspConnectionDetailsGenerators
+    ) { updateWizardButtonsToGeneratorSelection() }
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty
 
     addStep(firstStep)
@@ -93,13 +92,13 @@ public class ImportProjectWizard(
     "TODO"
 
   override fun proceedToNextStep() {
-    doIfOnConnectionChoiceStep(::addGeneratorSteps)
+    doIfOnConnectionChoiceStep { addGeneratorSteps() }
     super.proceedToNextStep()
   }
 
   private fun addGeneratorSteps() {
     removeAllFollowingSteps()
-    calculateGeneratorSteps().forEach(::addStep)
+    calculateGeneratorSteps().forEach { addStep(it) }
   }
 
   private fun removeAllFollowingSteps() {

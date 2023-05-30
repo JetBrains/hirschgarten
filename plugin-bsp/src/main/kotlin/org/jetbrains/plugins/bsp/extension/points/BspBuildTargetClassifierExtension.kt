@@ -35,8 +35,4 @@ public class TemporaryTestTargetClassifier : BspBuildTargetClassifierExtension {
     val uri = buildTargetIdentifier.uri
     return bazelLabelRegex.find(uri)?.groups?.get("target")?.value ?: uri
   }
-
-  private fun isBazelMainRepositoryTarget(uri: String) =
-    uri.run { startsWith("//") || startsWith("@//") } // "//" should be removed once we drop support for Bazel 5
-      && uri.contains(':')
 }

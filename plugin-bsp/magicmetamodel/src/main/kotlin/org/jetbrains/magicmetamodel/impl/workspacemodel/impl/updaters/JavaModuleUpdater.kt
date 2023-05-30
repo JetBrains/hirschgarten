@@ -24,11 +24,16 @@ internal class JavaModuleWithSourcesUpdater(
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
-    val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
+    val moduleEntityUpdater =
+      ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
 
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
-    addJavaModuleSettingsEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd, moduleEntity)
+    addJavaModuleSettingsEntity(
+      builder = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
+      entityToAdd = entityToAdd,
+      moduleEntity = moduleEntity
+    )
 
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
     libraryEntityUpdater.addEntries(entityToAdd.libraries, moduleEntity)
@@ -48,12 +53,17 @@ internal class JavaModuleWithSourcesUpdater(
     }
     else defaultDependencies
 
-  private fun addJavaModuleSettingsEntity(builder: MutableEntityStorage, entityToAdd: JavaModule, moduleEntity: ModuleEntity) {
+  private fun addJavaModuleSettingsEntity(
+    builder: MutableEntityStorage,
+    entityToAdd: JavaModule,
+    moduleEntity: ModuleEntity
+  ) {
     if (entityToAdd.compilerOutput != null) {
       builder.addJavaModuleSettingsEntity(
         inheritedCompilerOutput = false,
         excludeOutput = true,
-        compilerOutput = entityToAdd.compilerOutput.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+        compilerOutput = entityToAdd.compilerOutput
+          .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         compilerOutputForTests = null,
         languageLevelId = null,
         module = moduleEntity,
@@ -88,10 +98,14 @@ internal class JavaModuleUpdater(
   private val javaModuleWithoutSourcesUpdater = JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity =
-    when (Triple(entityToAdd.sourceRoots.size, entityToAdd.resourceRoots.size, entityToAdd.containsJavaKotlinLanguageIds())) {
-      Triple(0, 0, true) -> javaModuleWithoutSourcesUpdater.addEntity(entityToAdd)
-      else -> javaModuleWithSourcesUpdater.addEntity(entityToAdd)
+    if (entityToAdd.doesntContainSourcesAndResources() && entityToAdd.containsJavaKotlinLanguageIds()) {
+      javaModuleWithoutSourcesUpdater.addEntity(entityToAdd)
+    } else {
+      javaModuleWithSourcesUpdater.addEntity(entityToAdd)
     }
+
+  private fun JavaModule.doesntContainSourcesAndResources() =
+    this.sourceRoots.isEmpty() && this.resourceRoots.isEmpty()
 
   private fun JavaModule.containsJavaKotlinLanguageIds() =
     this.module.languageIds.any { it == "kotlin" || it == "java" }

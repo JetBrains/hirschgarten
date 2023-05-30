@@ -17,7 +17,7 @@ public class CancellableFuture<T> private constructor(private val original: Comp
 
   @Synchronized
   override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
-    if(!original.isDone) original.cancel(mayInterruptIfRunning)
+    if (!original.isDone) original.cancel(mayInterruptIfRunning)
     return super.cancel(mayInterruptIfRunning)
   }
 

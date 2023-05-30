@@ -133,7 +133,8 @@ public class BazelEditProjectViewStep(
   ): Path? =
     when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
       is ConnectionFile ->
-        calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails)
+        calculateProjectViewFileNameFromConnectionDetails(
+          connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails)
           ?.let { Path(it) }
 
       else -> projectBasePath.resolve(defaultProjectViewFileName)
@@ -189,7 +190,9 @@ public class BazelEditProjectViewStep(
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
   ): Boolean =
     when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
-      is ConnectionFile -> calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails) != null
+      is ConnectionFile ->
+        calculateProjectViewFileNameFromConnectionDetails(
+          connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails) != null
       else -> true
     }
 
@@ -233,7 +236,8 @@ public class BazelEditProjectViewStep(
         .rows(15)
     }
     row {
-      text("Please choose a connection file with project view file or create a new connection in order to edit project view")
+      text("Please choose a connection file with project view file " +
+              "or create a new connection in order to edit project view")
         .visibleIf(isProjectViewFileNameSpecifiedProperty.transform { !it })
     }
   }
@@ -253,7 +257,6 @@ public class BazelEditProjectViewStep(
     private const val defaultProjectViewFileName = "projectview.bazelproject"
   }
 }
-
 
 public object CoursierUtils {
 
@@ -290,9 +293,12 @@ public object CoursierUtils {
   }
 
   private fun calculateCoursierUrl() = when (CoursierSupportedOS.current) {
-    CoursierSupportedOS.LINUX_ARM64 -> "https://github.com/VirtusLab/coursier-m1/releases/latest/download/cs-aarch64-pc-linux.gz"
-    CoursierSupportedOS.LINUX_X86_64 -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz"
-    CoursierSupportedOS.MAC_ARM64 -> "https://github.com/VirtusLab/coursier-m1/releases/latest/download/cs-aarch64-apple-darwin.gz"
+    CoursierSupportedOS.LINUX_ARM64 ->
+      "https://github.com/VirtusLab/coursier-m1/releases/latest/download/cs-aarch64-pc-linux.gz"
+    CoursierSupportedOS.LINUX_X86_64 ->
+      "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz"
+    CoursierSupportedOS.MAC_ARM64 ->
+      "https://github.com/VirtusLab/coursier-m1/releases/latest/download/cs-aarch64-apple-darwin.gz"
     CoursierSupportedOS.MAC_X86_64 -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-apple-darwin.gz"
     CoursierSupportedOS.WINDOWS_X86_64 -> "https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-win32.zip"
     else -> throw UnsupportedOperationException("Could not find coursier executable for your OS")
@@ -311,10 +317,9 @@ public object CoursierUtils {
       .start()
     process.waitFor()
     if (process.exitValue() != 0) {
-      throw Exception(process.errorStream.bufferedReader().readLines().joinToString("\n"))
+      error(process.errorStream.bufferedReader().readLines().joinToString("\n"))
     }
   }
-
 
   private fun renameIfNeeded(srcPath: Path, destPath: Path) {
     if (destPath != srcPath) Files.move(srcPath, destPath, StandardCopyOption.REPLACE_EXISTING)

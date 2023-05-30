@@ -36,11 +36,13 @@ internal object RunConfigurationProducersDisabler {
     "org.jetbrains.kotlin.idea.gradleJava.testing.KotlinMultiplatformAllInDirectoryConfigurationProducer",
     "org.jetbrains.kotlin.idea.gradleJava.testing.KotlinMultiplatformAllInPackageConfigurationProducer",
     "org.jetbrains.kotlin.idea.gradleJava.testing.common.KotlinMultiplatformCommonTestClassGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.testing.common.KotlinMultiplatformCommonTestMethodGradleConfigurationProducer",
+    "org.jetbrains.kotlin.idea.gradleJava.testing.common." +
+            "KotlinMultiplatformCommonTestMethodGradleConfigurationProducer",
     "org.jetbrains.kotlin.idea.gradleJava.testing.js.KotlinMultiplatformJsTestClassGradleConfigurationProducer",
     "org.jetbrains.kotlin.idea.gradleJava.testing.js.KotlinMultiplatformJsTestMethodGradleConfigurationProducer",
     "org.jetbrains.kotlin.idea.gradleJava.testing.native.KotlinMultiplatformNativeTestClassGradleConfigurationProducer",
-    "org.jetbrains.kotlin.idea.gradleJava.testing.native.KotlinMultiplatformNativeTestMethodGradleConfigurationProducer",
+    "org.jetbrains.kotlin.idea.gradleJava.testing.native." +
+            "KotlinMultiplatformNativeTestMethodGradleConfigurationProducer",
     "org.jetbrains.kotlin.idea.junit.KotlinJUnitRunConfigurationProducer",
     "org.jetbrains.kotlin.idea.junit.KotlinPatternConfigurationProducer",
     "org.jetbrains.kotlin.idea.run.KotlinJUnitRunConfigurationProducer",

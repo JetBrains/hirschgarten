@@ -5,7 +5,11 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import org.jetbrains.magicmetamodel.ModuleNameProvider
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleCapabilities
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 
 internal data class BspModuleDetails(
   val target: BuildTarget,
@@ -43,7 +47,7 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
 
   override fun transform(inputEntity: DependencySourcesAndJavacOptions): List<LibraryDependency> =
     DependencySourcesItemToLibraryTransformer.transform(inputEntity)
-      .map(this::toLibraryDependency)
+      .map { toLibraryDependency(it) }
 
   private fun toLibraryDependency(library: Library): LibraryDependency =
     LibraryDependency(
@@ -59,7 +63,7 @@ internal class BuildTargetToModuleDependencyTransformer(
   override fun transform(inputEntity: BuildTarget): List<ModuleDependency> =
     inputEntity.dependencies
       .filter { allTargetsIds.contains(it) }
-      .map(this::toModuleDependency)
+      .map { toModuleDependency(it) }
 
   private fun toModuleDependency(targetId: BuildTargetIdentifier): ModuleDependency =
     ModuleDependency(

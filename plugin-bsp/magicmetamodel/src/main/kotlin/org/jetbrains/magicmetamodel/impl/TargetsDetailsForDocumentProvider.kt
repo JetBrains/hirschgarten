@@ -35,7 +35,7 @@ public class TargetsDetailsForDocumentProvider {
 
   public fun getAllDocuments(): List<TextDocumentIdentifier> =
     documentIdToTargetsIdsMap.keys
-      .map(this::mapPathToTextDocumentIdentifier)
+      .map { mapPathToTextDocumentIdentifier(it) }
       .toList()
 
   private fun mapPathToTextDocumentIdentifier(path: Path): TextDocumentIdentifier =
@@ -43,7 +43,8 @@ public class TargetsDetailsForDocumentProvider {
 
   public fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): Set<BuildTargetIdentifier> =
     generateAllDocumentSubdirectoriesIncludingDocument(documentId)
-      .flatMap { documentIdToTargetsIdsMap[it].orEmpty() }.toSet()
+      .flatMap { documentIdToTargetsIdsMap[it].orEmpty() }
+      .toSet()
 
   private fun generateAllDocumentSubdirectoriesIncludingDocument(documentId: TextDocumentIdentifier): Sequence<Path> {
     log.trace { "Generating all $documentId subdirectories..." }
@@ -79,7 +80,7 @@ private object DocumentIdToTargetsIdsMap {
     log.trace { "Calculating document to target id map..." }
 
     return sources
-      .flatMap(this::mapSourcesItemToPairsOfDocumentIdAndTargetId)
+      .flatMap { mapSourcesItemToPairsOfDocumentIdAndTargetId(it) }
       .groupBy({ it.first }, { it.second })
       .mapValues { it.value.toSet() }
       .also { log.trace { "Calculating document to target id map done! Map: $it." } }

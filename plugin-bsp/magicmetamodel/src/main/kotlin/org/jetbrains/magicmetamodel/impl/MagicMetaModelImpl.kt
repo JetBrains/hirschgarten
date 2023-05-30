@@ -154,7 +154,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   private fun doLoadTarget(targetId: BuildTargetIdentifier): DefaultMagicMetaModelDiff {
     val targetsToRemove = overlappingTargetsGraph[targetId] ?: emptySet()
     // TODO test it!
-    val loadedTargetsToRemove = targetsToRemove.filter(loadedTargetsStorage::isTargetLoaded)
+    val loadedTargetsToRemove = targetsToRemove.filter { loadedTargetsStorage.isTargetLoaded(it) }
 
     val modulesToRemove = loadedTargetsToRemove.map {
       ModuleName(magicMetaModelProjectConfig.moduleNameProvider(BuildTargetIdentifier(it.uri)))

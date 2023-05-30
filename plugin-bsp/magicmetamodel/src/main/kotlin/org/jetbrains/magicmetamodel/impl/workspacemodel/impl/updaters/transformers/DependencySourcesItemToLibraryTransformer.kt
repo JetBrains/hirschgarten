@@ -24,7 +24,9 @@ internal object DependencySourcesItemToLibraryTransformer :
     )
   }
 
-  private fun toLibraryFromClassesAndSourcesAndReturnUnusedClassesAndSources(inputEntity: DependencySourcesAndJavacOptions): Triple<List<Library>, List<String>, List<String>> {
+  private fun toLibraryFromClassesAndSourcesAndReturnUnusedClassesAndSources(
+    inputEntity: DependencySourcesAndJavacOptions
+  ): Triple<List<Library>, List<String>, List<String>> {
     val unusedDependencySources = inputEntity.dependencySources.sources.toMutableSet()
     val unusedClasses = inputEntity.javacOptions?.classpath.orEmpty().toMutableSet()
 

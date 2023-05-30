@@ -33,9 +33,8 @@ internal class BspRunConfigurationType : ConfigurationType {
 
   override fun getId(): String = ID
 
-  override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-    return arrayOf(BspRunFactory(this))
-  }
+  override fun getConfigurationFactories(): Array<ConfigurationFactory> =
+    arrayOf(BspRunFactory(this))
 
   companion object {
     const val ID: String = "BSP_RUN_CONFIGURATION"
@@ -43,13 +42,11 @@ internal class BspRunConfigurationType : ConfigurationType {
 }
 
 public class BspRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
-  override fun createTemplateConfiguration(project: Project): RunConfiguration {
-    return BspRunConfiguration(project, this, "BSP RUN")
-  }
+  override fun createTemplateConfiguration(project: Project): RunConfiguration =
+    BspRunConfiguration(project, this, "BSP RUN")
 
-  override fun getId(): String {
-    return BspConfigurationType.ID
-  }
+  override fun getId(): String =
+    BspConfigurationType.ID
 }
 
 public class BspRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :

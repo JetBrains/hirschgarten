@@ -1,6 +1,5 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel
 
-
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetDataKind
@@ -32,14 +31,15 @@ import kotlin.io.path.Path
 public object WorkspaceModelToProjectDetailsTransformer {
   public operator fun invoke(workspaceModel: WorkspaceModel,
                              loadedTargetsStorage: LoadedTargetsStorage,
-                             moduleNameProvider: ModuleNameProvider): ProjectDetails = with(workspaceModel.currentSnapshot) {
-    EntitiesToProjectDetailsTransformer(
-      entities(ModuleEntity::class.java),
-      entities(SourceRootEntity::class.java),
-      entities(LibraryEntity::class.java),
-      loadedTargetsStorage.getLoadedTargets().associateBy { id -> moduleNameProvider(id) },
-    )
-  }
+                             moduleNameProvider: ModuleNameProvider): ProjectDetails =
+    with(workspaceModel.currentSnapshot) {
+      EntitiesToProjectDetailsTransformer(
+        entities(ModuleEntity::class.java),
+        entities(SourceRootEntity::class.java),
+        entities(LibraryEntity::class.java),
+        loadedTargetsStorage.getLoadedTargets().associateBy { id -> moduleNameProvider(id) },
+      )
+    }
 
   internal object EntitiesToProjectDetailsTransformer {
 
@@ -60,19 +60,21 @@ public object WorkspaceModelToProjectDetailsTransformer {
       val librariesIndex = libraries.associateBy { it.symbolicId }
       val modulesWithSources = sourceRoots.groupBy { it.contentRoot.module }
       val modulesWithoutSources =
-        loadedModules.mapNotNull { it.takeUnless(modulesWithSources::contains)?.to(emptyList<SourceRootEntity>()) }
+        loadedModules
+          .mapNotNull { it.takeUnless { modulesWithSources.contains(it) }
+            ?.to(emptyList<SourceRootEntity>()) }
       val allModules = modulesWithSources + modulesWithoutSources
       val modulesParsingData = allModules.mapNotNull {
         it.toModuleParsingData(librariesIndex, loadedTargetsIndex)
       }
-      val targets = modulesParsingData.map(ModuleParsingData::target)
+      val targets = modulesParsingData.map { it.target }
       return ProjectDetails(
-        targetsId = targets.map(BuildTarget::getId),
+        targetsId = targets.map { it.id },
         targets = targets.toSet(),
-        sources = modulesParsingData.mapNotNull(ModuleParsingData::sourcesItem),
-        resources = modulesParsingData.mapNotNull(ModuleParsingData::resourcesItem),
-        dependenciesSources = modulesParsingData.mapNotNull(ModuleParsingData::libSources),
-        javacOptions = modulesParsingData.mapNotNull(ModuleParsingData::libJars),
+        sources = modulesParsingData.mapNotNull { it.sourcesItem },
+        resources = modulesParsingData.mapNotNull { it.resourcesItem },
+        dependenciesSources = modulesParsingData.mapNotNull { it.libSources },
+        javacOptions = modulesParsingData.mapNotNull { it.libJars },
       )
     }
 
@@ -111,18 +113,24 @@ public object WorkspaceModelToProjectDetailsTransformer {
     }
   }
 
-  private fun List<ModuleDependencyItem>.toBuildTargetIdentifiers(loadedTargetsIndex: Map<String, BuildTargetIdentifier>) =
-    filterIsInstance<ModuleDependencyItem.Exportable.ModuleDependency>().map { loadedTargetsIndex[it.module.name] }
+  private fun List<ModuleDependencyItem>.toBuildTargetIdentifiers(
+    loadedTargetsIndex: Map<String, BuildTargetIdentifier>
+  ) =
+    filterIsInstance<ModuleDependencyItem.Exportable.ModuleDependency>()
+      .map { loadedTargetsIndex[it.module.name] }
 
   private fun JavaResourceRootPropertiesEntity.toResourcePath() = sourceRoot.url.presentableUrl
 
-  private fun SourceRootEntity.toSourceItems() = javaSourceRoots.map(JavaSourceRootToSourceItemTransformer::invoke)
+  private fun SourceRootEntity.toSourceItems() =
+    javaSourceRoots
+      .map { JavaSourceRootToSourceItemTransformer.invoke(it) }
 
   private fun SourceRootEntity.toResourcePaths() = javaResourceRoots.map { it.toResourcePath() }
 
   private fun Map<LibraryId, LibraryEntity>.getLibrariesForModule(module: ModuleEntity): Sequence<LibraryEntity> =
     module.dependencies.filterIsInstance<ModuleDependencyItem.Exportable.LibraryDependency>()
-      .mapNotNull { this[it.library] }.asSequence()
+      .mapNotNull { this[it.library] }
+      .asSequence()
 
   private fun Sequence<LibraryEntity>.filterRoots(type: LibraryRootTypeId) =
     flatMap { lib ->

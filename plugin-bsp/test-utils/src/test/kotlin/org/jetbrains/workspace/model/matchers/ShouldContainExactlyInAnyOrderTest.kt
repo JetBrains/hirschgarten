@@ -17,7 +17,7 @@ class ShouldContainExactlyInAnyOrderTest {
 
     //  when & then
     shouldNotThrow<AssertionError> {
-      actualValues.shouldContainExactlyInAnyOrder(::shouldBeTheSame, expectedValues)
+      actualValues.shouldContainExactlyInAnyOrder({ actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
     }
   }
 
@@ -29,7 +29,7 @@ class ShouldContainExactlyInAnyOrderTest {
 
     //  when & then
     shouldThrow<AssertionError> {
-      actualValues.shouldContainExactlyInAnyOrder(::shouldBeTheSame, expectedValues)
+      actualValues.shouldContainExactlyInAnyOrder({ actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
     }
   }
 
@@ -41,7 +41,7 @@ class ShouldContainExactlyInAnyOrderTest {
 
     //  when & then
     shouldNotThrow<AssertionError> {
-      actualValues.shouldContainExactlyInAnyOrder(::shouldBeTheSame, expectedValues)
+      actualValues.shouldContainExactlyInAnyOrder({ actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
     }
   }
 
@@ -53,7 +53,7 @@ class ShouldContainExactlyInAnyOrderTest {
 
     //  when & then
     shouldNotThrow<AssertionError> {
-      actualValues.shouldContainExactlyInAnyOrder(::shouldBeTheSame, expectedValues)
+      actualValues.shouldContainExactlyInAnyOrder({ actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
     }
   }
 

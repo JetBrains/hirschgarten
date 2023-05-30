@@ -1,7 +1,6 @@
 [versions]
 ideProbe = "0.51.0"
 detekt = "1.21.0"
-ktlint = "10.3.0"
 kotlin-gradle-version = "1.8.21"
 
 [libraries]
@@ -15,7 +14,6 @@ gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
 detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
-ktlintGradle = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
 
 [plugins]
 intellij = { id = "org.jetbrains.intellij", version = "1.13.3" }

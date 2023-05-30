@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.ui.components.panels.VerticalLayout
 import java.awt.event.MouseListener
-import javax.swing.*
+import javax.swing.JPanel
 
 public abstract class LazySearchDisplay {
   protected val component: JPanel = JPanel(VerticalLayout(0))
@@ -50,8 +50,7 @@ public abstract class LazySearchDisplay {
     public fun highlight(text: String, query: String): String =
       if (query.isNotEmpty() && text.contains(query, true)) {
         "<html>${highlightAllOccurrences(text, query)}</html>"
-      }
-      else text
+      } else text
 
     private tailrec fun highlightAllOccurrences(
       text: String,

@@ -97,7 +97,11 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
       fileConnection = BspFileConnection(project, locatedBspConnectionDetails)
       bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId, "Generating BSP connection details done!")
     } catch (e: Exception) {
-      bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId, "Generating BSP connection details failed!", FailureResultImpl(e))
+      bspSyncConsole.finishSubtask(
+        subtaskId = generateConnectionFileSubtaskId,
+        message = "Generating BSP connection details failed!",
+        result = FailureResultImpl(e)
+      )
     }
   }
 

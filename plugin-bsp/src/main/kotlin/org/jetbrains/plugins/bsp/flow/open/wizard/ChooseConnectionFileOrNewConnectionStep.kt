@@ -8,7 +8,11 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBRadioButton
-import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.dsl.builder.Cell
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.Row
+import com.intellij.ui.dsl.builder.bind
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.io.readText
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
@@ -41,7 +45,8 @@ public open class ChooseConnectionFileOrNewConnectionStep(
     }
   }
 
-  private fun calculateDefaultConnection(allConnections: List<ConnectionFileOrNewConnection>): ConnectionFileOrNewConnection {
+  private fun calculateDefaultConnection(
+    allConnections: List<ConnectionFileOrNewConnection>): ConnectionFileOrNewConnection {
     val newestConnectionFile = allConnections.filterIsInstance<ConnectionFile>().maxOrNull()
 
     return newestConnectionFile ?: allConnections.filterIsInstance<NewConnection>().first()
@@ -66,7 +71,8 @@ public open class ChooseConnectionFileOrNewConnectionStep(
   private fun calculateAvailableConnectionFiles(projectPath: VirtualFile): List<LocatedBspConnectionDetails> =
     projectPath.findChild(".bsp")
       ?.children
-      .orEmpty().toList()
+      .orEmpty()
+      .toList()
       .filter { it.extension == "json" }
       .map { parseConnectionFile(it) }
 
@@ -102,9 +108,8 @@ public open class ChooseConnectionFileOrNewConnectionStep(
     radioButton: Cell<JBRadioButton>
   ) {
     when {
-      connections.size == 1 && connections.first() is NewConnection -> {
+      connections.size == 1 && connections.first() is NewConnection ->
         label("No connection files. New file will be created.")
-      }
 
       connections.size == 1 && connections.first() is ConnectionFile -> {
         val connectionFile = connections.first() as ConnectionFile

@@ -1,6 +1,5 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.workspaceModel.storage.MutableEntityStorage
 import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
@@ -30,8 +29,10 @@ internal class WorkspaceModelUpdaterImpl(
   )
   private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
-  private val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(moduleNameProvider, projectBasePath)
-  private val moduleDetailsToDummyJavaModulesTransformerHACK = ModuleDetailsToDummyJavaModulesTransformerHACK(projectBasePath)
+  private val moduleDetailsToJavaModuleTransformer =
+    ModuleDetailsToJavaModuleTransformer(moduleNameProvider, projectBasePath)
+  private val moduleDetailsToDummyJavaModulesTransformerHACK =
+    ModuleDetailsToDummyJavaModulesTransformerHACK(projectBasePath)
 
   override fun loadModule(moduleDetails: ModuleDetails) {
     // TODO for now we are supporting only java modules
@@ -42,7 +43,8 @@ internal class WorkspaceModelUpdaterImpl(
 
   }
 
-  private fun Module.isAlreadyAdded() = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(this.name))
+  private fun Module.isAlreadyAdded() =
+    workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(this.name))
 
   override fun removeModule(module: ModuleName) {
     workspaceModuleRemover.removeEntity(module)

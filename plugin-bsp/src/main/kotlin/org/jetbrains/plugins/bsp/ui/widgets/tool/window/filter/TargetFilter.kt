@@ -26,8 +26,8 @@ public class TargetFilter(
     this.filter(currentFilter.predicate)
 
   public enum class FILTER(public val predicate: (BuildTarget) -> Boolean) {
-    OFF( { true } ),
-    CAN_RUN( { it.capabilities.canRun } ),
-    CAN_TEST( { it.capabilities.canTest } )
+    OFF({ true }),
+    CAN_RUN({ it.capabilities.canRun }),
+    CAN_TEST({ it.capabilities.canTest })
   }
 }

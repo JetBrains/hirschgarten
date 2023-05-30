@@ -20,7 +20,10 @@ internal class JavaResourceEntityUpdater(
 
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntity(entityToAdd: JavaResourceRoot, parentModuleEntity: ModuleEntity): JavaResourceRootPropertiesEntity {
+  override fun addEntity(
+    entityToAdd: JavaResourceRoot,
+    parentModuleEntity: ModuleEntity
+  ): JavaResourceRootPropertiesEntity {
     val contentRootEntity = addContentRootEntity(entityToAdd, parentModuleEntity)
 
     val sourceRoot = addSourceRootEntity(

@@ -35,7 +35,7 @@ public class NotLoadedTargetsMouseListener(
 
   private fun showPopup(mouseEvent: MouseEvent) {
     val actionGroup = calculatePopupGroup()
-     if (actionGroup != null) {
+    if (actionGroup != null) {
       val context = DataManager.getInstance().getDataContext(mouseEvent.component)
       val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
       JBPopupFactory.getInstance()

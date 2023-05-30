@@ -19,7 +19,7 @@ public interface BspConnectionDetailsGenerator {
     consoleProcess.inputStream.transferTo(outputStream)
     consoleProcess.waitFor()
     if (consoleProcess.exitValue() != 0) {
-      throw Exception(consoleProcess.errorStream.bufferedReader().readLines().joinToString("\n"))
+      error(consoleProcess.errorStream.bufferedReader().readLines().joinToString("\n"))
     }
   }
 
@@ -67,7 +67,8 @@ public class BspConnectionDetailsGeneratorProvider(
   ): List<ImportProjectWizardStep> =
     availableBspConnectionDetailsGenerators
       .find { it.id() == generatorId }
-      ?.calculateImportWizardSteps(projectPath.toNioPath(), connectionFileOrNewConnectionProperty).orEmpty()
+      ?.calculateImportWizardSteps(projectPath.toNioPath(), connectionFileOrNewConnectionProperty)
+      .orEmpty()
 
   public fun generateBspConnectionDetailFileForGeneratorWithName(
     generatorId: String,

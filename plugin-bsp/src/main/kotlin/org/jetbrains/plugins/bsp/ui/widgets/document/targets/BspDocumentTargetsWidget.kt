@@ -136,9 +136,9 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
 
   private fun getDocumentDetails(file: VirtualFile): DocumentTargetsDetails? {
     return when (URI.create(file.url).scheme) {
-        // Could be also "jar"
-        "file" -> magicMetaModelService.value.getTargetsDetailsForDocument(TextDocumentIdentifier(file.url))
-        else -> null
+      // Could be also "jar"
+      "file" -> magicMetaModelService.value.getTargetsDetailsForDocument(TextDocumentIdentifier(file.url))
+      else -> null
     }
   }
 

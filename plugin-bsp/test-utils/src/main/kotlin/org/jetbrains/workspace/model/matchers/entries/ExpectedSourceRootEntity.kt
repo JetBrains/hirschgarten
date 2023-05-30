@@ -20,7 +20,10 @@ public infix fun SourceRootEntity.shouldBeEqual(expected: ExpectedSourceRootEnti
 public infix fun Collection<SourceRootEntity>.shouldContainExactlyInAnyOrder(
   expectedValues: Collection<ExpectedSourceRootEntity>,
 ): Unit =
-  this.shouldContainExactlyInAnyOrder(::validateSourceRootEntity, expectedValues)
+  this.shouldContainExactlyInAnyOrder(
+    assertion = { actual, expected -> validateSourceRootEntity(actual, expected) },
+    expectedValues = expectedValues
+  )
 
 private fun validateSourceRootEntity(
   actual: SourceRootEntity,
@@ -30,11 +33,11 @@ private fun validateSourceRootEntity(
   actual.rootType shouldBe expected.sourceRootEntity.rootType
 
   actual.javaSourceRoots.shouldContainExactlyInAnyOrder(
-    ::validateJavaSourceRootEntity,
+    { actual, expected -> validateJavaSourceRootEntity(actual, expected) },
     expected.sourceRootEntity.javaSourceRoots
   )
   actual.javaResourceRoots.shouldContainExactlyInAnyOrder(
-    ::validateJavaResourceRootEntity,
+    { actual, expected -> validateJavaResourceRootEntity(actual, expected) },
     expected.sourceRootEntity.javaResourceRoots
   )
 

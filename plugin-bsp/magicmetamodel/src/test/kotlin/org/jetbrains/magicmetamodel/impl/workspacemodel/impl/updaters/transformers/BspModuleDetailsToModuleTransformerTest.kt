@@ -1,8 +1,10 @@
-@file:Suppress("LongMethod")
-
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -235,10 +237,7 @@ class BspModuleDetailsToModuleTransformerTest {
       )
     )
 
-    modules shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedModule1, expectedModule2),
-      this::shouldBeIgnoringDependenciesOrder
-    )
+    modules shouldContainExactlyInAnyOrder (listOf(expectedModule1, expectedModule2) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) } )
   }
 
   @Test

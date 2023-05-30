@@ -28,9 +28,8 @@ public class BspConfigurationType : ConfigurationType {
 
   override fun getId(): String = ID
 
-  override fun getConfigurationFactories(): Array<ConfigurationFactory> {
-    return arrayOf(TestRunFactory(this))
-  }
+  override fun getConfigurationFactories(): Array<ConfigurationFactory> =
+    arrayOf(TestRunFactory(this))
 
   public companion object {
     public const val ID: String = "BSP_TEST_RUN_CONFIGURATION"
@@ -38,13 +37,11 @@ public class BspConfigurationType : ConfigurationType {
 }
 
 public class TestRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
-  override fun createTemplateConfiguration(project: Project): RunConfiguration {
-    return TestRunConfiguration(project, this, "BSP TEST")
-  }
+  override fun createTemplateConfiguration(project: Project): RunConfiguration =
+    TestRunConfiguration(project, this, "BSP TEST")
 
-  override fun getId(): String {
-    return BspConfigurationType.ID
-  }
+  override fun getId(): String =
+    BspConfigurationType.ID
 }
 
 public class TestRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :

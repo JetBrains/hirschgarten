@@ -27,7 +27,12 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
   private suspend fun doAction(project: Project) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-connect")
-    bspSyncConsole.startTask("bsp-connect", "Connect", "Connecting...", cancelAction = { collectProjectDetailsTask.cancelExecution() })
+    bspSyncConsole.startTask(
+      taskId = "bsp-connect",
+      title = "Connect",
+      message = "Connecting...",
+      cancelAction = { collectProjectDetailsTask.cancelExecution() },
+    )
 
     try {
       BspConnectionService.getInstance(project).value!!.connect("bsp-connect")

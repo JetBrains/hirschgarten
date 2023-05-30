@@ -19,6 +19,7 @@ public class BspTestConsolePrinter(
   init {
     processHandler.startNotify()
   }
+
   /**
    * Ends the testing process. Tests executed after this method's invocation will not have their results shown
    */

@@ -6,7 +6,7 @@ import java.util.concurrent.TimeoutException
 import kotlin.time.Duration
 
 public class TimeoutHandler(private val timeProvider: () -> Duration) {
-  public constructor(constantTime: Duration) : this( { constantTime } )
+  public constructor(constantTime: Duration) : this({ constantTime })
 
   private var timer = CompletableFuture<Void>()
   private var timeoutFuture = CompletableFuture<Void>().also { it.complete(null) }

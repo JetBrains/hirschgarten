@@ -1,6 +1,13 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetDataKind
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.SourceItem
+import ch.epfl.scala.bsp4j.SourceItemKind
+import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.JsonObject
 import com.intellij.openapi.module.ModuleTypeId
 import io.kotest.inspectors.forAll
@@ -124,7 +131,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       jvmJdkInfo = null
     )
 
-    javaModules shouldContainExactlyInAnyOrder Pair(listOf(expectedJavaModule), this::validateJavaModule)
+    javaModules shouldContainExactlyInAnyOrder (listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) })
   }
 
   @Test
@@ -247,7 +254,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       jvmJdkInfo = null
     )
 
-    javaModules shouldContainExactlyInAnyOrder Pair(listOf(expectedJavaModule1, expectedJavaModule2), this::validateJavaModule)
+    javaModules shouldContainExactlyInAnyOrder (listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) })
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(
