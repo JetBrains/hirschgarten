@@ -31,12 +31,12 @@ internal interface WorkspaceModelUpdater {
 //  fun loadRootModule()
 
   fun loadModules(modulesDetails: List<ModuleDetails>) =
-    modulesDetails.forEach(this::loadModule)
+    modulesDetails.forEach { loadModule(it) }
 
   fun loadModule(moduleDetails: ModuleDetails)
 
   fun removeModules(modules: List<ModuleName>) =
-    modules.forEach(this::removeModule)
+    modules.forEach { removeModule(it) }
 
   fun removeModule(module: ModuleName)
 
@@ -49,6 +49,11 @@ internal interface WorkspaceModelUpdater {
       projectBasePath: Path,
       moduleNameProvider: ModuleNameProvider,
     ): WorkspaceModelUpdater =
-      WorkspaceModelUpdaterImpl(workspaceEntityStorageBuilder, virtualFileUrlManager, moduleNameProvider, projectBasePath)
+      WorkspaceModelUpdaterImpl(
+        workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
+        virtualFileUrlManager = virtualFileUrlManager,
+        moduleNameProvider = moduleNameProvider,
+        projectBasePath = projectBasePath
+      )
   }
 }

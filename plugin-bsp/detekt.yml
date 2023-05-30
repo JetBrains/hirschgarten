@@ -1,26 +1,293 @@
+
 console-reports:
   active: true
   exclude:
     - '' # Exclude nothing -> Enable all workaround
 
+# https://detekt.dev/docs/1.21.0/rules/complexity
+complexity:
+  ComplexCondition:
+    active: true
+  ComplexMethod:
+    active: true
+    ignoreSingleWhenExpression: true
+  LabeledExpression:
+    active: true
+  LongMethod:
+    active: true
+    excludes: [ '**/test/**' ]
+  LargeClass:
+    active: true
+  NestedBlockDepth:
+    active: true
+  NestedScopeFunctions:
+    active: true
+  StringLiteralDuplication:
+    active: true
+    excludes: [ '**/test/**' ]
+    # TODO
+    threshold: 7
+    ignoreAnnotation: true
+    excludeStringsWithLessThan5Characters: true
+    ignoreStringsRegex: '$^'
+
+# https://detekt.dev/docs/1.21.0/rules/coroutines
+coroutines:
+  GlobalCoroutineUsage:
+    active: true
+  RedundantSuspendModifier:
+    active: true
+  SleepInsteadOfDelay:
+    active: true
+  SuspendFunWithCoroutineScopeReceiver:
+    active: true
+  SuspendFunWithFlowReturnType:
+    active: true
+
+# https://detekt.dev/docs/1.21.0/rules/empty-blocks
+empty-blocks:
+  EmptyCatchBlock:
+    active: true
+  EmptyClassBlock:
+    active: true
+  EmptyDefaultConstructor:
+    active: true
+  EmptyDoWhileBlock:
+    active: true
+  EmptyElseBlock:
+    active: true
+  EmptyFinallyBlock:
+    active: true
+  EmptyForBlock:
+    active: true
+  EmptyFunctionBlock:
+    active: true
+  EmptyIfBlock:
+    active: true
+  EmptyInitBlock:
+    active: true
+  EmptyKtFile:
+    active: true
+  EmptySecondaryConstructor:
+    active: true
+  EmptyTryBlock:
+    active: true
+  EmptyWhenBlock:
+    active: true
+  EmptyWhileBlock:
+    active: true
+
+# https://detekt.dev/docs/1.21.0/rules/exceptions
+exceptions:
+  ExceptionRaisedInUnexpectedLocation:
+    active: true
+  # todo
+  InstanceOfCheckForException:
+    active: false
+  ObjectExtendsThrowable:
+    active: true
+  PrintStackTrace:
+    active: true
+  RethrowCaughtException:
+    active: true
+  ReturnFromFinally:
+    active: true
+  # todo
+  SwallowedException:
+    active: false
+  ThrowingExceptionFromFinally:
+    active: true
+  ThrowingExceptionInMain:
+    active: true
+  ThrowingExceptionsWithoutMessageOrCause:
+    active: true
+  ThrowingNewInstanceOfSameException:
+    active: true
+  # todo
+  TooGenericExceptionCaught:
+    active: false
+  TooGenericExceptionThrown:
+    active: true
+
+# https://detekt.dev/docs/1.21.0/rules/formatting
 formatting:
   active: true
   Indentation:
     indentSize: 2
-  MaximumLineLength:
-    active: false
-  ParameterListWrapping:
-    indentSize: 2
+  SpacingAroundAngleBrackets:
+    active: true
+  SpacingAroundDoubleColon:
+    active: true
+  SpacingAroundUnaryOperator:
+    active: true
+  SpacingBetweenDeclarationsWithAnnotations:
+    active: true
+  SpacingBetweenDeclarationsWithComments:
+    active: true
 
+# https://detekt.dev/docs/1.21.0/rules/performance
+performance:
+  ArrayPrimitive:
+    active: true
+  CouldBeSequence:
+    active: true
+  ForEachOnRange:
+    active: true
+  # todo
+  SpreadOperator:
+    active: false
+  UnnecessaryTemporaryInstantiation:
+    active: true
+
+# https://detekt.dev/docs/1.21.0/rules/potential-bugs
+potential-bugs:
+  AvoidReferentialEquality:
+    active: true
+  CastToNullableType:
+    active: true
+  DontDowncastCollectionTypes:
+    active: true
+  DoubleMutabilityForCollection:
+    active: true
+  DuplicateCaseInWhenExpression:
+    active: true
+  ElseCaseInsteadOfExhaustiveWhen:
+    active: true
+  EqualsAlwaysReturnsTrueOrFalse:
+    active: true
+  EqualsWithHashCodeExist:
+    active: true
+  ExitOutsideMain:
+    active: true
+  HasPlatformType:
+    active: true
+  ImplicitDefaultLocale:
+    active: true
+  ImplicitUnitReturnType:
+    active: true
+  InvalidRange:
+    active: true
+  IteratorHasNextCallsNextMethod:
+    active: true
+  IteratorNotThrowingNoSuchElementException:
+    active: true
+  MapGetWithNotNullAssertionOperator:
+    active: true
+  MissingPackageDeclaration:
+    active: true
+  MissingWhenCase:
+    active: true
+  NullCheckOnMutableProperty:
+    active: true
+  NullableToStringCall:
+    active: true
+  RedundantElseInWhen:
+    active: true
+  UnconditionalJumpStatementInLoop:
+    active: true
+  UnnecessaryNotNullOperator:
+    active: true
+  UnnecessarySafeCall:
+    active: true
+  UnreachableCatchBlock:
+    active: true
+  UnreachableCode:
+    active: true
+  UnsafeCallOnNullableType:
+    active: true
+  UnsafeCast:
+    active: true
+  UnusedUnaryOperator:
+    active: true
+  UselessPostfixExpression:
+    active: true
+  WrongEqualsTypeParameter:
+    active: true
+
+# https://detekt.dev/docs/1.21.0/rules/style
 style:
-  active: true
-  UnnecessaryAbstractClass:
-    active: false
   MaxLineLength:
-    active: false
-
-complexity:
-  LongParameterList:
-    active: false
-  TooManyFunctions:
-    active: false
+    active: true
+    maxLineLength: 120
+    excludes:
+      - '**/test/**'
+    excludeCommentStatements: true
+  WildcardImport:
+      active: true
+  UseDataClass:
+    active: true
+    allowVars: true
+  CanBeNonNullable:
+    active: true
+  CascadingCallWrapping:
+    active: true
+    includeElvis: false
+#  ClassOrdering:
+#    active: true
+#  CollapsibleIfStatements:
+#    active: true
+  DestructuringDeclarationWithTooManyEntries:
+    active: true
+  EqualsOnSignatureLine:
+    active: true
+  ExplicitCollectionElementAccessMethod:
+    active: true
+  ExpressionBodySyntax:
+    active: true
+  ForbiddenVoid:
+    active: true
+  LibraryCodeMustSpecifyReturnType:
+    active: true
+  MayBeConst:
+    active: true
+  ModifierOrder:
+    active: true
+  NewLineAtEndOfFile:
+    active: true
+  NoTabs:
+    active: true
+  ObjectLiteralToLambda:
+    active: true
+  OptionalAbstractKeyword:
+    active: true
+  OptionalWhenBraces:
+    active: true
+  PreferToOverPairSyntax:
+    active: true
+  RedundantExplicitType:
+    active: true
+  SafeCast:
+    active: true
+  SpacingBetweenPackageAndImports:
+    active: true
+  TrailingWhitespace:
+    active: true
+  UnnecessaryFilter:
+    active: true
+  UnnecessaryLet:
+    active: true
+  UnnecessaryParentheses:
+    active: true
+  UntilInsteadOfRangeTo:
+    active: true
+  UnusedImports:
+    active: true
+  UnusedPrivateClass:
+    active: true
+  UnusedPrivateMember:
+    active: true
+  UseAnyOrNoneInsteadOfFind:
+    active: true
+  UseIfEmptyOrIfBlank:
+    active: true
+  UseIsNullOrEmpty:
+    active: true
+  UseOrEmpty:
+    active: true
+  UselessCallOnNotNull:
+    active: true
+  UtilityClassWithPublicConstructor:
+    active: true
+  VarCouldBeVal:
+    active: true
+    ignoreLateinitVar: false

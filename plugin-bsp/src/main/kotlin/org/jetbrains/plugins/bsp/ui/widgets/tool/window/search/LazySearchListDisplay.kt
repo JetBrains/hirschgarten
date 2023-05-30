@@ -5,7 +5,12 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.panels.VerticalLayout
 import java.awt.event.MouseListener
-import javax.swing.*
+import javax.swing.DefaultListModel
+import javax.swing.Icon
+import javax.swing.JButton
+import javax.swing.JPanel
+import javax.swing.ListSelectionModel
+import javax.swing.SwingConstants
 
 private const val TARGETS_TO_HIGHLIGHT: Int = 50
 
@@ -17,7 +22,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
   init {
     component.add(searchListComponent)
     searchListComponent.selectionMode = ListSelectionModel.SINGLE_SELECTION
-    searchListComponent.installCellRenderer(::renderSearchListCell)
+    searchListComponent.installCellRenderer { renderSearchListCell(it) }
   }
 
   private fun renderSearchListCell(printableBuildTarget: PrintableBuildTarget): JPanel {

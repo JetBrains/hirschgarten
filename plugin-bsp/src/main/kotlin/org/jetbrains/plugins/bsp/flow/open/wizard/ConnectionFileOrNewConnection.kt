@@ -14,7 +14,8 @@ public data class ConnectionFile(val locatedBspConnectionDetails: LocatedBspConn
   override val id: String = locatedBspConnectionDetails.bspConnectionDetails.name
   override val displayName: String = BspConnectionDetailsGeneratorExtension
     .extensions()
-    .find { it.id() == id }?.displayName() ?: id
+    .find { it.id() == id }
+    ?.displayName() ?: id
 
   override fun compareTo(other: ConnectionFile): Int {
     val thisVersionList = this.locatedBspConnectionDetails.bspConnectionDetails.version.split(".")

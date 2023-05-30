@@ -33,9 +33,15 @@ internal object TargetIdToModuleDetails {
   private fun calculateResources(projectDetails: ProjectDetails, targetId: BuildTargetIdentifier): List<ResourcesItem> =
     projectDetails.resources.filter { it.target == targetId }
 
-  private fun calculateDependenciesSources(projectDetails: ProjectDetails, targetId: BuildTargetIdentifier): List<DependencySourcesItem> =
+  private fun calculateDependenciesSources(
+    projectDetails: ProjectDetails,
+    targetId: BuildTargetIdentifier
+  ): List<DependencySourcesItem> =
     projectDetails.dependenciesSources.filter { it.target == targetId }
 
-  private fun calculateJavacOptions(projectDetails: ProjectDetails, targetId: BuildTargetIdentifier): JavacOptionsItem? =
+  private fun calculateJavacOptions(
+    projectDetails: ProjectDetails,
+    targetId: BuildTargetIdentifier
+  ): JavacOptionsItem? =
     projectDetails.javacOptions.firstOrNull { it.target == targetId }
 }

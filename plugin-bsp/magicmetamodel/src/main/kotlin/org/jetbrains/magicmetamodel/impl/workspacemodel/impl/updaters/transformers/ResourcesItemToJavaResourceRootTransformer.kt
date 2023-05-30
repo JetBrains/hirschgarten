@@ -9,7 +9,7 @@ internal class ResourcesItemToJavaResourceRootTransformer(private val projectBas
 
   override fun transform(inputEntity: ResourcesItem): List<JavaResourceRoot> =
     inputEntity.resources
-      .map(this::toJavaResourceRoot)
+      .map { toJavaResourceRoot(it) }
       .filter { it.resourcePath.isPathInProjectBasePath(projectBasePath) }
       .distinct()
 
@@ -19,4 +19,5 @@ internal class ResourcesItemToJavaResourceRootTransformer(private val projectBas
     )
 }
 
-internal fun Path.isPathInProjectBasePath(projectBasePath: Path) = this.toAbsolutePath().startsWith(projectBasePath.toAbsolutePath())
+internal fun Path.isPathInProjectBasePath(projectBasePath: Path) =
+  this.toAbsolutePath().startsWith(projectBasePath.toAbsolutePath())

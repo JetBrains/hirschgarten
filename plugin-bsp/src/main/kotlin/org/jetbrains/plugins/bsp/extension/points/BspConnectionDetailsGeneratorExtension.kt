@@ -7,7 +7,8 @@ public interface BspConnectionDetailsGeneratorExtension : BspConnectionDetailsGe
 
   public companion object {
     private val ep =
-      ExtensionPointName.create<BspConnectionDetailsGeneratorExtension>("com.intellij.bspConnectionDetailsGeneratorExtension")
+      ExtensionPointName.create<BspConnectionDetailsGeneratorExtension>(
+        "com.intellij.bspConnectionDetailsGeneratorExtension")
 
     public fun extensions(): List<BspConnectionDetailsGeneratorExtension> =
       ep.extensionList

@@ -41,12 +41,17 @@ internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePat
 
   private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> =
     // TODO?
-    sourcesItem.roots.orEmpty().map(URI::create)
+    sourcesItem.roots.orEmpty().map { URI.create(it) }
 
   private fun inferRootType(buildTarget: BuildTarget): String =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
 
-  private fun toJavaSourceRoot(sourceRoot: SourceRoot, sourceRoots: List<URI>, rootType: String, targetId: BuildTargetIdentifier): JavaSourceRoot {
+  private fun toJavaSourceRoot(
+    sourceRoot: SourceRoot,
+    sourceRoots: List<URI>,
+    rootType: String,
+    targetId: BuildTargetIdentifier
+  ): JavaSourceRoot {
     val packagePrefix = calculatePackagePrefix(sourceRoot, sourceRoots)
 
     return JavaSourceRoot(

@@ -10,5 +10,4 @@ repositories {
 dependencies {
   implementation(libs.kotlinGradle)
   implementation(libs.detektGradle)
-  implementation(libs.ktlintGradle)
 }

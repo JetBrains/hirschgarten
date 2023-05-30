@@ -1,7 +1,15 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.*
+import com.intellij.workspaceModel.storage.bridgeEntities.LibraryEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.LibraryId
+import com.intellij.workspaceModel.storage.bridgeEntities.LibraryTableId
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
+import com.intellij.workspaceModel.storage.bridgeEntities.addModuleCustomImlDataEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
+import com.intellij.workspaceModel.storage.bridgeEntities.modifyEntity
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 
 internal data class ModuleDependency(
@@ -61,7 +69,7 @@ internal class ModuleEntityUpdater(
     builder: MutableEntityStorage,
     entityToAdd: Module,
   ): ModuleEntity {
-    val modulesDependencies = entityToAdd.modulesDependencies.map(this::toModuleDependencyItemModuleDependency)
+    val modulesDependencies = entityToAdd.modulesDependencies.map { toModuleDependencyItemModuleDependency(it) }
     val librariesDependencies =
       entityToAdd.librariesDependencies.map { toModuleDependencyItemLibraryDependency(it, entityToAdd.name) }
     val moduleEntity = builder.addModuleEntity(
@@ -123,7 +131,7 @@ internal class WorkspaceModuleRemover(
     val allModules =
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(ModuleEntity::class.java)
 
-    allModules.forEach(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder::removeEntity)
+    allModules.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
 
     val allLibraries =
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(LibraryEntity::class.java)

@@ -1,5 +1,3 @@
-@file:Suppress("LongMethod", "MaxLineLength")
-
 package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -8,7 +6,11 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.workspace.model.constructors.*
+import org.jetbrains.workspace.model.constructors.BuildTarget
+import org.jetbrains.workspace.model.constructors.BuildTargetId
+import org.jetbrains.workspace.model.constructors.SourceItem
+import org.jetbrains.workspace.model.constructors.SourcesItem
+import org.jetbrains.workspace.model.constructors.TextDocumentId
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName

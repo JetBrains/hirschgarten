@@ -6,15 +6,17 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
+import java.awt.event.MouseListener
+import java.util.concurrent.Callable
+import javax.swing.Icon
+import javax.swing.JPanel
+import javax.swing.SwingConstants
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
-import java.awt.event.MouseListener
-import java.util.concurrent.Callable
-import javax.swing.*
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
 
 private fun BuildTarget.getBuildTargetName(): String =
   this.displayName ?: this.id.uri
@@ -47,8 +49,8 @@ public class BuildTargetSearch(
   private val queryChangeListeners = mutableSetOf<() -> Unit>()
 
   init {
-    attachSearchBarTextChangeListener(::onSearchQueryChange)
-    searchBarPanel.registerDisplayChangeListener(::reloadPanels)
+    attachSearchBarTextChangeListener { onSearchQueryChange() }
+    searchBarPanel.registerDisplayChangeListener { reloadPanels() }
     inProgressInfoComponent.isVisible = false
     targetSearchPanel.add(inProgressInfoComponent)
     noResultsInfoComponent.isVisible = false
@@ -80,7 +82,7 @@ public class BuildTargetSearch(
       inProgressInfoComponent.isVisible = true
       ReadAction
         .nonBlocking(SearchCallable(query, targets))
-        .finishOnUiThread(ModalityState.defaultModalityState(), ::displaySearchResultsUnlessOutdated)
+        .finishOnUiThread(ModalityState.defaultModalityState()) { displaySearchResultsUnlessOutdated(it) }
         .coalesceBy(this)
         .submit(NonUrgentExecutor.getInstance())
     }
@@ -98,7 +100,7 @@ public class BuildTargetSearch(
 
   private fun reloadPanels() {
     if (getCurrentSearchQuery().isNotEmpty()) {
-      displayedSearchPanel?.let(targetSearchPanel::remove)
+      displayedSearchPanel?.let { targetSearchPanel.remove(it) }
       displayedSearchPanel = targetSearchPanel.addLazySearchDisplayUnlessEmpty()
       targetSearchPanel.revalidate()
       targetSearchPanel.repaint()

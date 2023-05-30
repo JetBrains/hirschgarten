@@ -1,3 +1,4 @@
+@file:Suppress("UnusedPrivateMember")
 package org.jetbrains.bsp.probe.test
 
 import org.junit.jupiter.api.AfterAll

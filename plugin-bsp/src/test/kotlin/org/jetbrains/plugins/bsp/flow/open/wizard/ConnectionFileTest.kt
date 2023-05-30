@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 
-class ConnectionFileTest: MockProjectBaseTest() {
+class ConnectionFileTest : MockProjectBaseTest() {
 
   private lateinit var filePath: Path
 

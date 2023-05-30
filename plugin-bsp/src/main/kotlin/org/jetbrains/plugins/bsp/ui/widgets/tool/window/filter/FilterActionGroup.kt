@@ -13,7 +13,8 @@ public class FilterActionGroup(private val targetFilter: TargetFilter) :
     BspAllTargetsWidgetBundle.message("widget.filter.action.group"),
     null,
     AllIcons.General.Filter
-  ), Toggleable {
+  ),
+  Toggleable {
 
   init {
     this.isPopup = true

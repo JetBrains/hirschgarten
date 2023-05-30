@@ -74,7 +74,10 @@ public class BspStartupActivity : ProjectActivity {
     else null
   }
 
-  private fun initializeConnectionOrCloseProject(connectionFileOrNewConnection: ConnectionFileOrNewConnection?, project: Project) =
+  private fun initializeConnectionOrCloseProject(
+    connectionFileOrNewConnection: ConnectionFileOrNewConnection?,
+    project: Project
+  ) =
     when (connectionFileOrNewConnection) {
       is NewConnection -> initializeNewConnectionFromGenerator(project, connectionFileOrNewConnection)
       is ConnectionFile -> initializeConnectionFromFile(project, connectionFileOrNewConnection)

@@ -15,7 +15,7 @@ public infix fun ModuleEntity.shouldBeEqual(expected: ExpectedModuleEntity): Uni
 public infix fun Collection<ModuleEntity>.shouldContainExactlyInAnyOrder(
   expectedValues: Collection<ExpectedModuleEntity>,
 ): Unit =
-  this.shouldContainExactlyInAnyOrder(::validateModuleEntity, expectedValues)
+  this.shouldContainExactlyInAnyOrder({ actual, expected -> validateModuleEntity(actual, expected) }, expectedValues)
 
 private fun validateModuleEntity(
   actual: ModuleEntity,

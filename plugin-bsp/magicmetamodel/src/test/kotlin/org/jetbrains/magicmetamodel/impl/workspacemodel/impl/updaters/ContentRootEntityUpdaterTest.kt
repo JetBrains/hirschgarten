@@ -37,7 +37,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     )
 
     // when
-    val returnedContentRootEntity = runTestWriteAction {
+    runTestWriteAction {
       contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)
     }
 
@@ -76,7 +76,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val contentRoots = listOf(contentRoot1, contentRoot2, contentRoot3)
 
     // when
-    val returnedContentRootEntries = runTestWriteAction {
+    runTestWriteAction {
       contentRootEntityUpdater.addEntries(contentRoots, parentModuleEntity)
     }
 

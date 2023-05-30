@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.probe.test
 
 import com.intellij.remoterobot.fixtures.CommonContainerFixture
-import com.intellij.remoterobot.fixtures.dataExtractor.RemoteText
 import org.virtuslab.ideprobe.IntelliJFixture
 import org.virtuslab.ideprobe.OS
 import org.virtuslab.ideprobe.ProbeDriver
@@ -41,7 +40,7 @@ fun SearchableComponent.fixture(): CommonContainerFixture = searchContext() as? 
 
 fun SearchableComponent.fullText(): String = fullTexts().joinToString("\n")
 
-fun SearchableComponent.fullTexts(): List<String> = fixture().findAllText().map(RemoteText::text)
+fun SearchableComponent.fullTexts(): List<String> = fixture().findAllText().map { it.text }
 
 fun SearchableComponent.doClick(): Unit = fixture().runJs("component.doClick();", true)
 

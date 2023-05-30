@@ -9,14 +9,19 @@ import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenedCallback
+import java.nio.file.Path
+import javax.swing.Icon
 import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.plugins.bsp.config.*
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.config.BspProjectProperties
+import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.ProjectProperties
+import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import java.nio.file.Path
-import javax.swing.Icon
 
 public class BspProjectOpenProcessor : ProjectOpenProcessor() {
 

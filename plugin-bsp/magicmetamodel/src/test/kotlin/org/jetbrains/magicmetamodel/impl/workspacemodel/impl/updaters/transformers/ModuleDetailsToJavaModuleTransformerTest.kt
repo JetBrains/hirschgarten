@@ -1,8 +1,15 @@
-@file:Suppress("LongMethod")
-
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetDataKind
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.JvmBuildTarget
+import ch.epfl.scala.bsp4j.ResourcesItem
+import ch.epfl.scala.bsp4j.SourceItemKind
+import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.JsonObject
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
@@ -11,7 +18,16 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.*
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaResourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JvmJdkInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
+import org.jetbrains.workspace.model.constructors.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -461,9 +477,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       jvmJdkInfo = null,
     )
 
-    javaModules shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedJavaModule1, expectedJavaModule2), this::validateJavaModule
-    )
+    javaModules shouldContainExactlyInAnyOrder (listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) })
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(

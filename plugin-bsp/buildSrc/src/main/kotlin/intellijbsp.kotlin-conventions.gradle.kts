@@ -8,8 +8,6 @@ plugins {
   kotlin("jvm")
   // detekt linter - read more: https://detekt.github.io/detekt/gradle.html
   id("io.gitlab.arturbosch.detekt")
-  // ktlint linter - read more: https://github.com/JLLeitschuh/ktlint-gradle
-  id("org.jlleitschuh.gradle.ktlint")
 }
 
 // Configure project's dependencies
@@ -26,7 +24,7 @@ kotlin {
 detekt {
   autoCorrect = true
   ignoreFailures = false
-  buildUponDefaultConfig = true
+  buildUponDefaultConfig = false
   config = files("$rootDir/detekt.yml")
   parallel = true
 }

@@ -58,8 +58,13 @@ private class BooleanWithButton(
 ) {
   var value: Boolean = false
     private set
-  val action = StickyTargetAction(buttonText, buttonIcon, ::toggleValue) { value }
-  val button: JComponent = ActionButton(action, action.templatePresentation.clone(), ActionPlaces.TOOLBAR, ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE)
+  val action = StickyTargetAction(buttonText, buttonIcon, { toggleValue() }) { value }
+  val button: JComponent = ActionButton(
+    action,
+    action.templatePresentation.clone(),
+    ActionPlaces.TOOLBAR,
+    ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+  )
 
   val displayChangeListeners: MutableList<() -> Unit> = mutableListOf()
 

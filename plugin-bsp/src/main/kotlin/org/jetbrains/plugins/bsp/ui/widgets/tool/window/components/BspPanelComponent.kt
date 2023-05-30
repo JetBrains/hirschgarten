@@ -49,7 +49,7 @@ public class BspPanelComponent private constructor(
   )
 
   init {
-    targetSearch.addQueryChangeListener(::onSearchQueryUpdate)
+    targetSearch.addQueryChangeListener { onSearchQueryUpdate() }
     replacePanelContent(null, chooseNewContent())
   }
 

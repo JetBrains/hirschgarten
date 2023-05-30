@@ -1,8 +1,21 @@
 package org.jetbrains.plugins.bsp.integrationtest
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BspConnectionDetails
+import ch.epfl.scala.bsp4j.BuildClient
+import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.DidChangeBuildTarget
+import ch.epfl.scala.bsp4j.InitializeBuildParams
+import ch.epfl.scala.bsp4j.LogMessageParams
+import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
+import ch.epfl.scala.bsp4j.ShowMessageParams
+import ch.epfl.scala.bsp4j.TaskFinishParams
+import ch.epfl.scala.bsp4j.TaskProgressParams
+import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.gson.Gson
 import io.kotest.matchers.shouldBe
+import java.nio.file.Path
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.impl.NonOverlappingTargets
 import org.jetbrains.magicmetamodel.impl.OverlappingTargetsGraph
@@ -11,9 +24,6 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.tasks.calculateProjectDetailsWithCapabilities
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import org.junit.jupiter.api.Test
-import java.nio.file.Path
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
@@ -29,7 +39,7 @@ private const val bazelBspVersion = "2.3.1"
 class NonOverlappingTest {
   @Test
   fun `Compute non overlapping targets for bazelbuild_bazel project`() {
-    val bazelDir =  createTempDirectory("bazel-bsp-")
+    val bazelDir = createTempDirectory("bazel-bsp-")
     cloneRepository(bazelDir, bazelRepositoryTag)
     setBazelVersion(bazelDir, bazelExecutableVersion)
     installBsp(bazelDir, "//...")
@@ -49,7 +59,7 @@ class NonOverlappingTest {
       nonOverlapping.value.size shouldBe 1958
       println("Computing non-overlapping targets took ${nonOverlapping.duration}")
     } finally {
-        bspServerProcess.destroyForcibly()
+      bspServerProcess.destroyForcibly()
     }
   }
 
@@ -58,15 +68,18 @@ class NonOverlappingTest {
   }
 
   private fun cloneRepository(bazelDir: Path, gitRevision: String) {
-    ProcessBuilder("git", "clone",
+    ProcessBuilder(
+      "git", "clone",
       "--branch", gitRevision,
       "--depth", "1",
       "https://github.com/bazelbuild/bazel",
-      bazelDir.toAbsolutePath().toString())
+      bazelDir.toAbsolutePath().toString()
+    )
       .inheritIO()
-      .start().run {
+      .start()
+      .run {
         waitFor(3, TimeUnit.MINUTES)
-        if (exitValue() != 0) throw RuntimeException("Could not clone")
+        if (exitValue() != 0) error("Could not clone")
       }
   }
 
@@ -82,7 +95,7 @@ class NonOverlappingTest {
       start()
     }.run {
       waitFor(3, TimeUnit.MINUTES)
-      if (exitValue() != 0) throw RuntimeException("Could not setup BSP")
+      if (exitValue() != 0) error("Could not setup BSP")
     }
   }
 
@@ -111,8 +124,6 @@ class NonOverlappingTest {
       .start()
   }
 }
-
-
 
 class DummyClient : BuildClient {
   override fun onBuildShowMessage(params: ShowMessageParams?) {

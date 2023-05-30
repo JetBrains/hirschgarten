@@ -1,7 +1,5 @@
 package org.jetbrains.plugins.bsp.extensions
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
 import org.jetbrains.plugins.bsp.extension.points.TemporaryTestTargetClassifier
@@ -9,12 +7,14 @@ import org.junit.jupiter.api.Test
 
 class TemporaryTestTargetClassifierTest {
   private val classifier = TemporaryTestTargetClassifier()
+
   @Test
   fun mainRepoTest() {
     val targetId = BuildTargetIdentifier("@//a/b/c:label")
     classifier.getBuildTargetName(targetId) shouldBe "label"
     classifier.getBuildTargetPath(targetId) shouldBe listOf("a", "b", "c")
   }
+
   @Test
   fun mainRepoTestOldSyntax() { // pre-bazel 6 syntax
     val targetId = BuildTargetIdentifier("//a/b/c:label")
@@ -28,6 +28,7 @@ class TemporaryTestTargetClassifierTest {
     classifier.getBuildTargetName(targetId) shouldBe "label"
     classifier.getBuildTargetPath(targetId) shouldBe listOf()
   }
+
   @Test
   fun labelNotMatchingBazelPattern() {
     val targetId = BuildTargetIdentifier("foo")

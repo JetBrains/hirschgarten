@@ -85,7 +85,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1))
       }
       // then
-      val actual = loadedEntries(JavaSourceRootPropertiesEntity::class.java).map(WorkspaceModelToProjectDetailsTransformer.JavaSourceRootToSourceItemTransformer::invoke)
+      val actual = loadedEntries(JavaSourceRootPropertiesEntity::class.java).map { WorkspaceModelToProjectDetailsTransformer.JavaSourceRootToSourceItemTransformer(it) }
       actual shouldBe listOf(expectedSourceItem)
     }
 
@@ -131,7 +131,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule1))
       }
       // then
-      val actual = loadedEntries(JavaSourceRootPropertiesEntity::class.java).map(WorkspaceModelToProjectDetailsTransformer.JavaSourceRootToSourceItemTransformer::invoke)
+      val actual = loadedEntries(JavaSourceRootPropertiesEntity::class.java).map { WorkspaceModelToProjectDetailsTransformer.JavaSourceRootToSourceItemTransformer(it) }
       actual shouldBe listOf(expectedSourceItem)
     }
 

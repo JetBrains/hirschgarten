@@ -16,7 +16,11 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
     projectPath.children.any { it.name == "build.sbt" }
 
   override fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream): VirtualFile {
-    executeAndWait(listOf(findCoursierExecutableOrPrepare(projectPath).toString(), "launch", "sbt", "--", "bspConfig"), projectPath, outputStream)
+    executeAndWait(
+      command = listOf(findCoursierExecutableOrPrepare(projectPath).toString(), "launch", "sbt", "--", "bspConfig"),
+      projectPath = projectPath,
+      outputStream = outputStream
+    )
     return getChild(projectPath, listOf(".bsp", "sbt.json"))!!
   }
 

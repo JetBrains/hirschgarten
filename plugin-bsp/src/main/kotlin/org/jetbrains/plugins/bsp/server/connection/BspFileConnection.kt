@@ -47,7 +47,7 @@ private class CancelableInvocationHandlerWithTimeout(
   }
 
   private fun invokeMethod(method: Method, args: Array<out Any>?): Any? =
-    method.invoke(remoteProxy, *(args ?: emptyArray()))
+    method.invoke(remoteProxy, *args ?: emptyArray())
 
   private fun addTimeoutAndHandler(
     result: CompletableFuture<*>,
@@ -63,7 +63,8 @@ private class CancelableInvocationHandlerWithTimeout(
 
   private fun doHandle(value: Any?, error: Throwable?, startTime: Long, methodName: String): Any? {
     val elapsedTime = calculateElapsedTime(startTime)
-    log.debug("BSP method '$methodName' call took ${elapsedTime}ms. Result: ${if (error == null) "SUCCESS" else "FAILURE"}")
+    log.debug("BSP method '$methodName' call took ${elapsedTime}ms. " +
+            "Result: ${if (error == null) "SUCCESS" else "FAILURE"}")
 
     return when (error) {
       null -> value
@@ -137,7 +138,7 @@ public class BspFileConnection(
     disconnectActions.add {
       process.waitFor(3, TimeUnit.SECONDS)
       if (process.exitValue() != 0) {
-        throw Exception(process.errorStream.bufferedReader().readLines().joinToString("\n"))
+        error(process.errorStream.bufferedReader().readLines().joinToString("\n"))
       }
     }
     disconnectActions.add { process.destroy() }

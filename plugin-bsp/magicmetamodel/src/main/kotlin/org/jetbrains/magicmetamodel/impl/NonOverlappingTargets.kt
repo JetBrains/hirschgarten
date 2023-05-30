@@ -86,7 +86,10 @@ public object NonOverlappingTargets {
     return conflictGraph.connectedNodes.maxWithOrNull(comparatorByOverlaps)
   }
 
-  private fun conflictingWithDependers(conflictGraph: ConflictGraph, availableDependers: MutableSet<BuildTargetIdentifier>): BuildTargetIdentifier? =
+  private fun conflictingWithDependers(
+    conflictGraph: ConflictGraph,
+    availableDependers: MutableSet<BuildTargetIdentifier>
+  ): BuildTargetIdentifier? =
     availableDependers.flatMap { conflictGraph.conflictMap[it].orEmpty() }.firstOrNull()
 
   private fun chooseWorstConflict(conflictGraph: ConflictGraph,
@@ -94,11 +97,13 @@ public object NonOverlappingTargets {
     conflictingWithDependers(conflictGraph, dependers)
       ?: mostConflictingTargets(conflictGraph)
 
-  private fun getInvertedDependencyMap(allTargets: Set<BuildTarget>): Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> =
+  private fun getInvertedDependencyMap(
+    allTargets: Set<BuildTarget>
+  ): Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> =
     allTargets.fold(emptyMap()) { acc, target ->
       val newEntries = target.dependencies.map { it to target.id }
       newEntries.fold(acc) { smallAcc, entry ->
-        smallAcc + (entry.first to (smallAcc[entry.first].orEmpty() + entry.second))
+        smallAcc + (entry.first to smallAcc[entry.first].orEmpty() + entry.second)
       }
     }
 }
@@ -106,7 +111,10 @@ public object NonOverlappingTargets {
 public class ConflictGraph(
   private val conflictMap0: MutableMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
 ) {
-  private val isolatedNodes0: MutableSet<BuildTargetIdentifier> = conflictMap0.filter { it.value.toSet().isEmpty() }.keys.toMutableSet()
+  private val isolatedNodes0: MutableSet<BuildTargetIdentifier> = conflictMap0
+    .filter { it.value.toSet().isEmpty() }
+    .keys
+    .toMutableSet()
   private val connectedNodes0: MutableSet<BuildTargetIdentifier> = (conflictMap0.keys - isolatedNodes0).toMutableSet()
 
   /**

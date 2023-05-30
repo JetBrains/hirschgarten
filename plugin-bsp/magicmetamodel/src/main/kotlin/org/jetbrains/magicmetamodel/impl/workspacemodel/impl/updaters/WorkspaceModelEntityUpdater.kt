@@ -19,8 +19,7 @@ internal data class WorkspaceModelEntityUpdaterConfig(
 
 internal sealed interface WorkspaceModelEntityUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity>
 
-internal interface WorkspaceModelEntityWithParentModuleUpdater
-<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
+internal interface WorkspaceModelEntityWithParentModuleUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
   WorkspaceModelEntityUpdater<E, R> {
 
   fun addEntries(entriesToAdd: List<E>, parentModuleEntity: ModuleEntity): List<R> =
@@ -29,9 +28,8 @@ internal interface WorkspaceModelEntityWithParentModuleUpdater
   fun addEntity(entityToAdd: E, parentModuleEntity: ModuleEntity): R
 }
 
-internal interface WorkspaceModelEntityWithoutParentModuleUpdater
-<in E : WorkspaceModelEntity, out R : WorkspaceEntity> :
-  WorkspaceModelEntityUpdater<E, R> {
+internal interface WorkspaceModelEntityWithoutParentModuleUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity>
+  : WorkspaceModelEntityUpdater<E, R> {
 
   fun addEntries(entriesToAdd: List<E>): List<R> =
     entriesToAdd.map { addEntity(it) }

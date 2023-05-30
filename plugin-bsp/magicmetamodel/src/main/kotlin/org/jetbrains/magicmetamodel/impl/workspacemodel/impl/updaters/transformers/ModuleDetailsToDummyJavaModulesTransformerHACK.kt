@@ -26,7 +26,8 @@ internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projec
   override fun transform(inputEntity: ModuleDetails): List<JavaModule> {
     val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
-    return dummyJavaModuleSourceRoots.zip(dummyJavaModuleNames).mapNotNull { calculateDummyJavaSourceModule(name = it.second, sourceRoot = it.first) }
+    return dummyJavaModuleSourceRoots.zip(dummyJavaModuleNames)
+      .mapNotNull { calculateDummyJavaSourceModule(name = it.second, sourceRoot = it.first) }
   }
 
   private fun calculateDummyJavaSourceModule(name: String, sourceRoot: Path) =
@@ -62,7 +63,7 @@ public fun calculateDummyJavaModuleNames(inputEntity: ModuleDetails, projectBase
 }
 
 private fun calculateDummyJavaSourceRoots(inputEntity: ModuleDetails): List<Path> =
-  inputEntity.sources.flatMap { it.roots }.map(URI::create).map { it.toPath() }
+  inputEntity.sources.flatMap { it.roots }.map { URI.create(it) }.map { it.toPath() }
 
 private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<Path>, projectBasePath: Path): List<String> =
   dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it, projectBasePath) }
