@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.server.connection
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import ch.epfl.scala.bsp4j.BuildClient
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.idea.LoggerFactory
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
@@ -14,6 +15,7 @@ import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
+import org.jetbrains.plugins.bsp.protocol.connection.logErrorOutputs
 import org.jetbrains.plugins.bsp.server.client.BspClient
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
@@ -104,6 +106,7 @@ public class BspFileConnection(
   private var bspProcess: Process? = null
   private var disconnectActions: MutableList<() -> Unit> = mutableListOf()
   private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
+  private val log = logger<BspFileConnection>()
 
   public override fun connect(taskId: Any) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
@@ -132,13 +135,18 @@ public class BspFileConnection(
 
   private fun createAndStartProcessAndAddDisconnectActions(bspConnectionDetails: BspConnectionDetails): Process {
     val process = createAndStartProcess(bspConnectionDetails)
+    process.logErrorOutputs(log)
     disconnectActions.add { server?.buildShutdown() }
     disconnectActions.add { server?.onBuildExit() }
 
     disconnectActions.add {
       process.waitFor(3, TimeUnit.SECONDS)
       if (process.exitValue() != 0) {
-        error(process.errorStream.bufferedReader().readLines().joinToString("\n"))
+        error(
+          """Server exited with exception!
+            |Refer to "${LoggerFactory.getLogFilePath()}" for more information.
+          """.trimMargin()
+        )
       }
     }
     disconnectActions.add { process.destroy() }
@@ -150,6 +158,7 @@ public class BspFileConnection(
     ProcessBuilder(bspConnectionDetails.argv)
       .directory(project.stateStore.projectBasePath.toFile())
       .withRealEnvs()
+      .redirectError(ProcessBuilder.Redirect.PIPE)
       .start()
 
   private fun createBspClient(): BspClient {
@@ -167,8 +176,8 @@ public class BspFileConnection(
   private fun Process.handleErrorOnExit(bspSyncConsole: TaskConsole, taskId: Any) =
     this.onExit().whenComplete { completedProcess, _ ->
       if (completedProcess.exitValue() != 0) {
-        val error = completedProcess.errorStream.bufferedReader().readLines().joinToString("\n")
-        bspSyncConsole.finishTask(taskId, "Server exited with exception!", FailureResultImpl(error))
+        val errorMessage = "Server exited with exception!"
+        bspSyncConsole.finishTask(taskId, errorMessage, FailureResultImpl(errorMessage))
       }
     }
 
