@@ -1,6 +1,8 @@
 package org.jetbrains.plugins.bsp.extension.points
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
+import com.intellij.idea.LoggerFactory
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.observable.properties.ObservableProperty
@@ -21,6 +23,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginTemplates
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizardStep
+import org.jetbrains.plugins.bsp.protocol.connection.logErrorOutputs
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.File
 import java.io.OutputStream
@@ -35,6 +38,8 @@ import kotlin.io.path.name
 import kotlin.io.path.writeText
 
 public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsGeneratorExtension {
+
+  private val log = logger<TemporaryBazelBspDetailsConnectionGenerator>()
 
   private lateinit var projectViewFilePathProperty: ObservableProperty<Path?>
 
@@ -64,7 +69,8 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
     executeAndWait(
       calculateInstallerCommand(projectPath),
       projectPath,
-      outputStream
+      outputStream,
+      log
     )
     return getChild(projectPath, listOf(".bsp", "bazelbsp.json"))!!
   }
@@ -260,6 +266,8 @@ public class BazelEditProjectViewStep(
 
 public object CoursierUtils {
 
+  private val log = logger<CoursierUtils>()
+
   public fun calculateCoursierExecutableName(): String = when (CoursierSupportedOS.current) {
     CoursierSupportedOS.WINDOWS_X86_64 -> "cs.exe"
     else -> "cs"
@@ -314,10 +322,16 @@ public object CoursierUtils {
     val process = ProcessBuilder(this)
       .directory(workingDir)
       .withRealEnvs()
+      .redirectError(ProcessBuilder.Redirect.PIPE)
       .start()
+    process.logErrorOutputs(log)
     process.waitFor()
     if (process.exitValue() != 0) {
-      error(process.errorStream.bufferedReader().readLines().joinToString("\n"))
+      error(
+        """An error has occurred when running the command: ${this.joinToString(" ")}
+          |Refer to "${LoggerFactory.getLogFilePath()}" for more information
+        """.trimMargin()
+      )
     }
   }
 

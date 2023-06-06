@@ -1,25 +1,36 @@
 package org.jetbrains.plugins.bsp.protocol.connection
 
+import com.intellij.idea.LoggerFactory
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.vfs.VirtualFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizardStep
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.OutputStream
 import java.nio.file.Path
 
 public interface BspConnectionDetailsGenerator {
-  public fun executeAndWait(command: List<String>, projectPath: VirtualFile, outputStream: OutputStream) {
+  public fun executeAndWait(command: List<String>, projectPath: VirtualFile, outputStream: OutputStream, log: Logger) {
     // TODO - consider verbosing what command is being executed
     val builder = ProcessBuilder(command)
       .directory(projectPath.toNioPath().toFile())
       .withRealEnvs()
+      .redirectError(ProcessBuilder.Redirect.PIPE)
 
     val consoleProcess = builder.start()
     consoleProcess.inputStream.transferTo(outputStream)
+    consoleProcess.logErrorOutputs(log)
     consoleProcess.waitFor()
     if (consoleProcess.exitValue() != 0) {
-      error(consoleProcess.errorStream.bufferedReader().readLines().joinToString("\n"))
+      error(
+        """An error has occurred when running the command: ${command.joinToString(" ")}
+          |Refer to "${LoggerFactory.getLogFilePath()}" for more information
+        """.trimMargin()
+      )
     }
   }
 
@@ -77,4 +88,14 @@ public class BspConnectionDetailsGeneratorProvider(
     availableBspConnectionDetailsGenerators
       .find { it.id() == generatorId }
       ?.generateBspConnectionDetailsFile(projectPath, outputStream)
+}
+
+public fun Process.logErrorOutputs(log: Logger) {
+  @Suppress("DeferredResultUnused")
+  BspCoroutineService.getInstance().startAsync {
+    val bufferedReader = this.errorReader()
+    withContext(Dispatchers.IO) {
+      bufferedReader.forEachLine { log.debug(it) }
+    }
+  }
 }

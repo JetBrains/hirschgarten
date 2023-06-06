@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.extension.points
 
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.EnvironmentUtil
 import java.io.File
@@ -8,6 +9,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGeneratorExtension {
+  private val log = logger<TemporarySbtBspConnectionDetailsGenerator>()
+
   override fun id(): String = "sbt"
 
   override fun displayName(): String = "Sbt"
@@ -19,7 +22,8 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
     executeAndWait(
       command = listOf(findCoursierExecutableOrPrepare(projectPath).toString(), "launch", "sbt", "--", "bspConfig"),
       projectPath = projectPath,
-      outputStream = outputStream
+      outputStream = outputStream,
+      log = log
     )
     return getChild(projectPath, listOf(".bsp", "sbt.json"))!!
   }
