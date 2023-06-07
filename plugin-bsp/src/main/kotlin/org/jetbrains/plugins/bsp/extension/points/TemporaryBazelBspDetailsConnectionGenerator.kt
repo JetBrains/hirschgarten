@@ -81,7 +81,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
     return listOf(
       coursierExecutable.toString(),
       "launch",
-      "org.jetbrains.bsp:bazel-bsp:2.6.1",
+      "org.jetbrains.bsp:bazel-bsp:2.7.1",
       "-M",
       "org.jetbrains.bsp.bazel.install.Install",
     ) + calculateProjectViewFileInstallerOption()
