@@ -219,11 +219,12 @@ class ModuleDetailsStateTest {
         )
       ),
       javacOptions = JavacOptionsItem(
-          BuildTargetIdentifier("target1"),
-          listOf("opt1", "opt2", "opt3"),
-          listOf("classpath1", "classpath2"),
-          "class/dir"
-        )
+        BuildTargetIdentifier("target1"),
+        listOf("opt1", "opt2", "opt3"),
+        listOf("classpath1", "classpath2"),
+        "class/dir"
+      ),
+      outputPathUris = listOf("file:///output/dir", "file:///output/file1.out"),
     )
 
     // when

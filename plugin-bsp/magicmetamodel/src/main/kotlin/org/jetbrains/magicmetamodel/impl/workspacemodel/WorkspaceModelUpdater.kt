@@ -20,6 +20,7 @@ public data class ModuleDetails(
   val resources: List<ResourcesItem>,
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
+  val outputPathUris: List<String>,
 )
 
 internal data class ModuleName(

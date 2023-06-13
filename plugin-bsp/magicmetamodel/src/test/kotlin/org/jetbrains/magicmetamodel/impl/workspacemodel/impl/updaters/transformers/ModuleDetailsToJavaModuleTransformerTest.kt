@@ -30,16 +30,19 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDepe
 import org.jetbrains.workspace.model.constructors.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.net.URI
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.name
+import kotlin.io.path.toPath
 
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToJavaModuleTransformerTest {
 
-  val projectBasePath = Path("").toAbsolutePath()
+  val projectBasePath: Path = Path("").toAbsolutePath()
 
   @Test
   fun `should return no java modules roots for no modules details`() {
@@ -133,6 +136,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
       "file:///compiler/output.jar",
     )
 
+    val outputPathUris = listOf("file:///output/file1.out", "file:///output/file2.out")
+
     val moduleDetails = ModuleDetails(
       target = buildTarget,
       allTargetsIds = listOf(
@@ -144,6 +149,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem),
       dependenciesSources = listOf(dependencySourcesItem),
       javacOptions = javacOptionsItem,
+      outputPathUris = outputPathUris,
     )
 
     // when
@@ -165,7 +171,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
       )
     )
 
-    val expectedBaseDirContentRoot = ContentRoot(projectRoot.toAbsolutePath())
+    val expectedBaseDirContentRoot = ContentRoot(
+      url = projectRoot.toAbsolutePath(),
+      excludedPaths = outputPathUris.map { URI.create(it).toPath() },
+    )
 
     val expectedJavaSourceRoot1 = JavaSourceRoot(
       sourcePath = file1APath,
@@ -292,6 +301,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       ),
       "file:///compiler/output1.jar",
     )
+    val target1OutputPathUris = listOf("file:///output/dir1a", "file:///output/file1b.out")
 
     val moduleDetails1 = ModuleDetails(
       target = buildTarget1,
@@ -304,6 +314,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem1),
       dependenciesSources = listOf(dependencySourcesItem1),
       javacOptions = target1JavacOptionsItem,
+      outputPathUris = target1OutputPathUris,
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -353,6 +364,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       listOf("file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
       "file:///compiler/output2.jar",
     )
+    val target2OutputPathUris = listOf("file:///output/dir2a", "file:///output/file2b.out")
 
     val moduleDetails2 = ModuleDetails(
       target = buildTarget2,
@@ -365,6 +377,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem2),
       dependenciesSources = listOf(dependencySourcesItem2),
       javacOptions = target2JavacOptionsItem,
+      outputPathUris = target2OutputPathUris,
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
@@ -388,7 +401,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
       )
     )
 
-    val expectedBaseDirContentRoot1 = ContentRoot(module1Root)
+    val expectedBaseDirContentRoot1 = ContentRoot(
+      url = module1Root,
+      excludedPaths = target1OutputPathUris.map { URI.create(it).toPath() },
+    )
 
     val expectedJavaSourceRoot11 = JavaSourceRoot(
       sourcePath = file1APath,
@@ -447,7 +463,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
       librariesDependencies = listOf(LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar")),
     )
 
-    val expectedBaseDirContentRoot2 = ContentRoot(module2Root)
+    val expectedBaseDirContentRoot2 = ContentRoot(
+      url = module2Root,
+      excludedPaths = target2OutputPathUris.map { URI.create(it).toPath() },
+    )
 
     val expectedJavaSourceRoot21 = JavaSourceRoot(
       sourcePath = dir1CPath,

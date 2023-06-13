@@ -188,12 +188,11 @@ public class JavacOptionsItemState(
 
 public fun JavacOptionsItem.toState(): JavacOptionsItemState =
   JavacOptionsItemState(
-      target = target.toState(),
-      options= options,
-      classpath = classpath,
+    target = target.toState(),
+    options= options,
+    classpath = classpath,
     classDirectory = classDirectory,
-    )
-
+  )
 
 public data class ProjectDetailsState(
   public var targetsId: List<BuildTargetIdentifierState> = emptyList(),
@@ -202,6 +201,7 @@ public data class ProjectDetailsState(
   public var resources: List<ResourcesItemState> = emptyList(),
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
   public var javacOptions: List<JavacOptionsItemState> = emptyList(),
+  public var outputPathUris: List<String> = emptyList(),
 ) : ConvertableFromState<ProjectDetails> {
 
   public override fun fromState(): ProjectDetails =
@@ -212,6 +212,7 @@ public data class ProjectDetailsState(
       resources = resources.map { it.fromState() },
       dependenciesSources = dependenciesSources.map { it.fromState() },
       javacOptions = javacOptions.map { it.fromState() },
+      outputPathUris = outputPathUris,
     )
 }
 
@@ -243,6 +244,7 @@ public data class ModuleDetailsState(
   public var resources: List<ResourcesItemState> = emptyList(),
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
   public var javacOptions: JavacOptionsItemState? = null,
+  public var outputPathUris: List<String> = emptyList(),
 ) : ConvertableFromState<ModuleDetails> {
 
   public override fun fromState(): ModuleDetails =
@@ -253,6 +255,7 @@ public data class ModuleDetailsState(
       resources = resources.map { it.fromState() },
       dependenciesSources = dependenciesSources.map { it.fromState() },
       javacOptions = javacOptions?.fromState(),
+      outputPathUris = outputPathUris,
     )
 }
 
@@ -264,6 +267,7 @@ public fun ModuleDetails.toState(): ModuleDetailsState =
     resources = resources.map { it.toState() },
     dependenciesSources = dependenciesSources.map { it.toState() },
     javacOptions = javacOptions?.toState(),
+    outputPathUris = outputPathUris,
   )
 
 

@@ -68,7 +68,8 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
     ContentRoot(
       // TODO what if null?
-      url = URI.create(inputEntity.target.baseDirectory ?: "file:///todo").toPath()
+      url = URI.create(inputEntity.target.baseDirectory ?: "file:///todo").toPath(),
+      excludedPaths = inputEntity.outputPathUris.map { URI.create(it).toPath() },
     )
 
   private fun toCompilerOutput(inputEntity: ModuleDetails): Path? =

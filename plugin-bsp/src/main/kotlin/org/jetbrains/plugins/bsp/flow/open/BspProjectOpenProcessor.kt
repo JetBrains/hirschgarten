@@ -76,6 +76,7 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
+        outputPathUris = emptyList(),
       )
     )
     ApplicationManager.getApplication().invokeLater {

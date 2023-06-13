@@ -41,6 +41,7 @@ public data class ProjectDetails(
   val resources: List<ResourcesItem>,
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: List<JavacOptionsItem>,
+  val outputPathUris: List<String>,
 ) {
   public operator fun plus(old: ProjectDetails): ProjectDetails = ProjectDetails(
     targetsId + old.targetsId,
@@ -49,6 +50,7 @@ public data class ProjectDetails(
     resources + old.resources,
     dependenciesSources + old.dependenciesSources,
     javacOptions + old.javacOptions,
+    outputPathUris + old.outputPathUris,
   )
 }
 

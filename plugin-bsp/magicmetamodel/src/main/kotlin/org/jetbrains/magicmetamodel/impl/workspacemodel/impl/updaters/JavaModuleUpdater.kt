@@ -35,14 +35,19 @@ internal class JavaModuleWithSourcesUpdater(
       moduleEntity = moduleEntity
     )
 
-    val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
-    libraryEntityUpdater.addEntries(entityToAdd.libraries, moduleEntity)
+    if (entityToAdd.isRoot()) {
+      val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
+      contentRootEntityUpdater.addEntity(entityToAdd.baseDirContentRoot, moduleEntity)
+    } else {
+      val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
+      libraryEntityUpdater.addEntries(entityToAdd.libraries, moduleEntity)
 
-    val javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
-    javaSourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)
+      val javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+      javaSourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)
 
-    val javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
-    javaResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
+      val javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+      javaResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
+    }
 
     return moduleEntity
   }
@@ -71,6 +76,9 @@ internal class JavaModuleWithSourcesUpdater(
       )
     }
   }
+
+  private fun JavaModule.isRoot(): Boolean =  // TODO - that is a temporary predicate
+    sourceRoots.isEmpty() && resourceRoots.isEmpty() && baseDirContentRoot.excludedPaths.isNotEmpty()
 
   private companion object {
     val defaultDependencies = listOf(

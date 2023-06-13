@@ -31,17 +31,17 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
 // TODO make sure these values are updated by dependabot or similar tool
-private const val bazelRepositoryTag = "6.0.0"
-private const val bazelExecutableVersion = "5.4.0"
-private const val bazelBspVersion = "2.3.1"
+private const val BAZEL_REPOSITORY_TAG = "6.0.0"
+private const val BAZEL_EXECUTABLE_VERSION = "5.4.0"
+private const val BAZEL_BSP_VERSION = "2.7.1"
 
 @OptIn(ExperimentalTime::class)
 class NonOverlappingTest {
   @Test
   fun `Compute non overlapping targets for bazelbuild_bazel project`() {
     val bazelDir = createTempDirectory("bazel-bsp-")
-    cloneRepository(bazelDir, bazelRepositoryTag)
-    setBazelVersion(bazelDir, bazelExecutableVersion)
+    cloneRepository(bazelDir, BAZEL_REPOSITORY_TAG)
+    setBazelVersion(bazelDir, BAZEL_EXECUTABLE_VERSION)
     installBsp(bazelDir, "//...")
     val connectionDetails = Gson().fromJson(bazelDir.resolve(".bsp/bazelbsp.json").readText(), BspConnectionDetails::class.java)
     val bspServerProcess = bspProcess(connectionDetails, bazelDir)
@@ -85,7 +85,7 @@ class NonOverlappingTest {
 
   private fun installBsp(bazelDir: Path, target: String) {
     ProcessBuilder(
-      "cs", "launch", "org.jetbrains.bsp:bazel-bsp:$bazelBspVersion",
+      "cs", "launch", "org.jetbrains.bsp:bazel-bsp:$BAZEL_BSP_VERSION",
       "-M", "org.jetbrains.bsp.bazel.install.Install",
       "--",
       "-t", target

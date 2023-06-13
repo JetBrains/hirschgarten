@@ -16,9 +16,13 @@ import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import java.net.URI
+import kotlin.io.path.toPath
 
 @DisplayName("TargetIdToModuleDetails(projectDetails) tests")
-class TargetIdToModuleDetailsTest {
+class TargetIdToModuleDetailsMapTest {
+  private val projectBasePathURI = "file:///root"
+  private val projectBasePath = URI.create(projectBasePathURI).toPath()
 
   @Test
   fun `should return empty map for empty project details`() {
@@ -30,10 +34,11 @@ class TargetIdToModuleDetailsTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
+      outputPathUris = emptyList(),
     )
 
     // when
-    val targetIdToModuleDetails = TargetIdToModuleDetails(emptyProjectDetails)
+    val targetIdToModuleDetails = TargetIdToModuleDetailsMap(emptyProjectDetails, projectBasePath)
 
     // then
     targetIdToModuleDetails shouldBe emptyMap()
@@ -57,10 +62,11 @@ class TargetIdToModuleDetailsTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
+      outputPathUris = emptyList(),
     )
 
     // when
-    val targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
+    val targetIdToModuleDetails = TargetIdToModuleDetailsMap(projectDetails, projectBasePath)
 
     // then
     val expectedModuleDetails = ModuleDetails(
@@ -70,6 +76,7 @@ class TargetIdToModuleDetailsTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = null,
+      outputPathUris = emptyList(),
     )
 
     targetIdToModuleDetails shouldBe mapOf(
@@ -113,10 +120,11 @@ class TargetIdToModuleDetailsTest {
       resources = listOf(targetResources),
       dependenciesSources = listOf(targetDependencySources),
       javacOptions = listOf(javacOptions),
+      outputPathUris = emptyList(),
     )
 
     // when
-    val targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
+    val targetIdToModuleDetails = TargetIdToModuleDetailsMap(projectDetails, projectBasePath)
 
     // then
     val expectedModuleDetails = ModuleDetails(
@@ -126,6 +134,7 @@ class TargetIdToModuleDetailsTest {
       resources = listOf(targetResources),
       dependenciesSources = listOf(targetDependencySources),
       javacOptions = javacOptions,
+      outputPathUris = emptyList(),
     )
 
     targetIdToModuleDetails shouldBe mapOf(
@@ -218,10 +227,11 @@ class TargetIdToModuleDetailsTest {
       resources = listOf(target1Resources, target2Resources),
       dependenciesSources = listOf(target2DependencySources, target1DependencySources),
       javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
+      outputPathUris = emptyList(),
     )
 
     // when
-    val targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
+    val targetIdToModuleDetails = TargetIdToModuleDetailsMap(projectDetails, projectBasePath)
 
     // then
     val expectedModuleDetails1 = ModuleDetails(
@@ -231,6 +241,7 @@ class TargetIdToModuleDetailsTest {
       resources = listOf(target1Resources),
       dependenciesSources = listOf(target1DependencySources),
       javacOptions = target1JavacOptionsItem,
+      outputPathUris = emptyList(),
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
@@ -239,6 +250,7 @@ class TargetIdToModuleDetailsTest {
       resources = listOf(target2Resources),
       dependenciesSources = listOf(target2DependencySources),
       javacOptions = null,
+      outputPathUris = emptyList(),
     )
     val expectedModuleDetails3 = ModuleDetails(
       target = target3,
@@ -247,12 +259,131 @@ class TargetIdToModuleDetailsTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = target3JavacOptionsItem,
+      outputPathUris = emptyList(),
     )
 
     targetIdToModuleDetails shouldBe mapOf(
       target1Id to expectedModuleDetails1,
       target2Id to expectedModuleDetails2,
       target3Id to expectedModuleDetails3,
+    )
+  }
+
+  @Test
+  fun `should assign all output path uris to a single root module`() {
+    // given
+    val targetId1 = BuildTargetIdentifier("target1")
+    val target1 = BuildTarget(
+      targetId1,
+      emptyList(),
+      emptyList(),
+      listOf(BuildTargetIdentifier("@maven//:test")),
+      BuildTargetCapabilities(),
+    )
+    val targetSources1 = SourcesItem(
+      targetId1,
+      listOf(SourceItem("file:///root/dir/example/package1/", SourceItemKind.DIRECTORY, false)),
+    )
+    val targetResources1 = ResourcesItem(
+      targetId1,
+      listOf("file:///root/dir/resource/File1.txt"),
+    )
+    val targetDependencySources1 = DependencySourcesItem(
+      targetId1,
+      listOf("file:///lib/test/1.0.0/test-sources1.jar"),
+    )
+    val javacOptions1 = JavacOptionsItem(
+      targetId1,
+      listOf("opt1", "opt2", "opt3"),
+      listOf("classpath1", "classpath2", "classpath3"),
+      "class/dir"
+    )
+    val outputPaths1 = listOf("file:///output/file1.out", "file:///output/file2.out")
+
+    val targetId2 = BuildTargetIdentifier("target2")
+    val target2 = BuildTarget(
+      targetId2,
+      emptyList(),
+      emptyList(),
+      listOf(BuildTargetIdentifier("@maven//:test")),
+      BuildTargetCapabilities(),
+    ).also { it.baseDirectory = "file:///root/dir/example" }
+    val targetSources2 = SourcesItem(
+      targetId2,
+      listOf(SourceItem("file:///root/dir/example/package2/", SourceItemKind.DIRECTORY, false)),
+    )
+    val targetResources2 = ResourcesItem(
+      targetId2,
+      listOf("file:///root/dir/resource/File2.txt"),
+    )
+    val targetDependencySources2 = DependencySourcesItem(
+      targetId2,
+      listOf("file:///lib/test/1.0.0/test-sources2.jar"),
+    )
+    val javacOptions2 = JavacOptionsItem(
+      targetId2,
+      listOf("opt1", "opt2", "opt3"),
+      listOf("classpath1", "classpath2", "classpath3"),
+      "class/dir"
+    )
+    val outputPaths2 = listOf("file:///output/dir")
+
+    val rootTargetId = BuildTargetIdentifier(".bsp-workspace-root")
+    val rootTarget = BuildTarget(
+      rootTargetId,
+      emptyList(),
+      emptyList(),
+      emptyList(),
+      BuildTargetCapabilities()
+    ).also { it.baseDirectory = projectBasePathURI }
+
+
+    val projectDetails = ProjectDetails(
+      targetsId = listOf(targetId1, targetId2, rootTargetId),
+      targets = setOf(target1, target2, rootTarget),
+      sources = listOf(targetSources1, targetSources2),
+      resources = listOf(targetResources1, targetResources2),
+      dependenciesSources = listOf(targetDependencySources1, targetDependencySources2),
+      javacOptions = listOf(javacOptions1, javacOptions2),
+      outputPathUris = listOf(outputPaths1, outputPaths2).flatten(),
+    )
+
+    // when
+    val targetIdToModuleDetails = TargetIdToModuleDetailsMap(projectDetails, projectBasePath)
+
+    // then
+    val expectedModuleDetails1 = ModuleDetails(
+      target = target1,
+      allTargetsIds = listOf(targetId1, targetId2, rootTargetId),
+      sources = listOf(targetSources1),
+      resources = listOf(targetResources1),
+      dependenciesSources = listOf(targetDependencySources1),
+      javacOptions = javacOptions1,
+      outputPathUris = emptyList(),
+    )
+    val expectedModuleDetails2 = ModuleDetails(
+      target = target2,
+      allTargetsIds = listOf(targetId1, targetId2, rootTargetId),
+      sources = listOf(targetSources2),
+      resources = listOf(targetResources2),
+      dependenciesSources = listOf(targetDependencySources2),
+      javacOptions = javacOptions2,
+      outputPathUris = emptyList(),
+    )
+    val expectedRootModuleDetails = ModuleDetails(
+      target = rootTarget,
+      allTargetsIds = listOf(targetId1, targetId2, rootTargetId),
+      sources = emptyList(),
+      resources = emptyList(),
+      dependenciesSources = emptyList(),
+      javacOptions = null,
+      outputPathUris = listOf(outputPaths1, outputPaths2).flatten(),
+    )
+
+    targetIdToModuleDetails shouldBe mapOf(
+      targetId1 to expectedModuleDetails1,
+      targetId2 to expectedModuleDetails2,
+      rootTargetId to expectedRootModuleDetails
     )
   }
 }
