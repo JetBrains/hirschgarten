@@ -100,6 +100,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       resources = listOf(),
       dependenciesSources = listOf(),
       javacOptions = javacOptionsItem,
+      outputPathUris = emptyList(),
     )
 
     // when
@@ -198,6 +199,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       resources = listOf(),
       dependenciesSources = listOf(),
       javacOptions = javacOptionsItem,
+      outputPathUris = emptyList(),
     )
 
     // when

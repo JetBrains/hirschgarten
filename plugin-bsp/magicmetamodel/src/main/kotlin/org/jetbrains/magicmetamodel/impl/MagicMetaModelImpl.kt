@@ -68,7 +68,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     this.targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
     this.overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
-    this.targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
+    this.targetIdToModuleDetails =
+      TargetIdToModuleDetailsMap(projectDetails, magicMetaModelProjectConfig.projectBasePath)
 
     this.loadedTargetsStorage = LoadedTargetsStorage(projectDetails.targetsId)
 
@@ -94,7 +95,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
         key.fromState() to value.map { it.fromState() }.toSet()
       }.toMap()
 
-    this.targetIdToModuleDetails = TargetIdToModuleDetails(projectDetails)
+    this.targetIdToModuleDetails =
+      TargetIdToModuleDetailsMap(projectDetails, magicMetaModelProjectConfig.projectBasePath)
   }
 
   override fun loadDefaultTargets(): MagicMetaModelDiff {

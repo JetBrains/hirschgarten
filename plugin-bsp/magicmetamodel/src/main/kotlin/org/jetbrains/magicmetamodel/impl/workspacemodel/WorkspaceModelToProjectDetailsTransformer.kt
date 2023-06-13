@@ -49,6 +49,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
       val resourcesItem: ResourcesItem?,
       val libSources: DependencySourcesItem?,
       val libJars: JavacOptionsItem?,
+      val outputPathUris: List<String>,
     )
 
     operator fun invoke(
@@ -75,6 +76,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
         resources = modulesParsingData.mapNotNull { it.resourcesItem },
         dependenciesSources = modulesParsingData.mapNotNull { it.libSources },
         javacOptions = modulesParsingData.mapNotNull { it.libJars },
+        outputPathUris = modulesParsingData.flatMap { it.outputPathUris },
       )
     }
 
@@ -94,12 +96,14 @@ public object WorkspaceModelToProjectDetailsTransformer {
         sourcesItem = SourcesItem(target.id, sources.flatMap { it.toSourceItems() })
         resourcesItem = ResourcesItem(target.id, sources.flatMap { it.toResourcePaths() })
       }
+      val outputPathUris = module.toOutputPathUris()
       return ModuleParsingData(
         target = target,
         sourcesItem = sourcesItem,
         resourcesItem = resourcesItem,
         libSources = dependencySourcesItem,
         libJars = javacSourcesItem,
+        outputPathUris = outputPathUris,
       )
     }
   }
@@ -170,7 +174,9 @@ public object WorkspaceModelToProjectDetailsTransformer {
     target.dataKind = BuildTargetDataKind.JVM
     target.data = Gson().toJson(JvmBuildTarget("", sdkName))
   }
+
+  private fun ModuleEntity.toOutputPathUris(): List<String> =
+    contentRoots
+      .flatMap { it.excludedUrls }
+      .map { it.url.url }
 }
-
-
-

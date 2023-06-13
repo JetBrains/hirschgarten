@@ -33,7 +33,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val contentPath = Path("/root/dir/example/resource/File.txt")
     val contentRoot = ContentRoot(
       url = contentPath,
-      excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
+      excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
     )
 
     // when
@@ -60,7 +60,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val contentPath1 = Path("/root/dir/example/resource/File1.txt")
     val contentRoot1 = ContentRoot(
       url = contentPath1,
-      excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
+      excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
     )
 
     val contentPath2 = Path("/root/dir/example/resource/File2.txt")

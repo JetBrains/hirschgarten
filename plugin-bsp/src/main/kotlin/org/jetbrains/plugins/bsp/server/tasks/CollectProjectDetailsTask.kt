@@ -10,6 +10,8 @@ import ch.epfl.scala.bsp4j.InitializeBuildResult
 import ch.epfl.scala.bsp4j.JavacOptionsParams
 import ch.epfl.scala.bsp4j.JavacOptionsResult
 import ch.epfl.scala.bsp4j.JvmBuildTarget
+import ch.epfl.scala.bsp4j.OutputPathsParams
+import ch.epfl.scala.bsp4j.OutputPathsResult
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.SourcesParams
@@ -268,13 +270,17 @@ public fun calculateProjectDetailsWithCapabilities(
       ?.reactToExceptionIn(cancelOn)
       ?.catchSyncErrors(errorCallback)
 
+    val outputPathsFuture =
+      queryForOutputPaths(server, allTargetsIds).reactToExceptionIn(cancelOn).catchSyncErrors(errorCallback)
+
     return ProjectDetails(
       targetsId = allTargetsIds,
       targets = workspaceBuildTargetsResult.targets.toSet(),
       sources = sourcesFuture.get().items,
       resources = resourcesFuture?.get()?.items ?: emptyList(),
       dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
-      javacOptions = javacOptionsFuture?.get()?.items ?: emptyList()
+      javacOptions = javacOptionsFuture?.get()?.items ?: emptyList(),
+      outputPathUris = outputPathsFuture.get().obtainDistinctUris(),
     )
   } catch (e: Exception) {
     // TODO the type xd
@@ -343,7 +349,22 @@ private fun queryForJavacOptions(
   } else null
 }
 
+private fun queryForOutputPaths(
+  server: BspServer,
+  allTargetIds: List<BuildTargetIdentifier>
+): CompletableFuture<OutputPathsResult> {
+  val outputPathsParams = OutputPathsParams(allTargetIds)
+  return server.buildTargetOutputPaths(outputPathsParams)
+}
+
 private fun <T> CompletableFuture<T>.catchSyncErrors(errorCallback: (Throwable) -> Unit): CompletableFuture<T> =
   this.whenComplete { _, exception ->
     exception?.let { errorCallback(it) }
   }
+
+private fun OutputPathsResult.obtainDistinctUris(): List<String> =
+  this.items
+    .filterNotNull()
+    .flatMap { it.outputPaths }
+    .map { it.uri }
+    .distinct()
