@@ -214,8 +214,9 @@ style:
     excludeCommentStatements: true
   WildcardImport:
       active: true
+  # TODO
   UseDataClass:
-    active: true
+    active: false
     allowVars: true
   CanBeNonNullable:
     active: true
