@@ -56,6 +56,20 @@ http_archive(
     url = "https://github.com/bazelbuild/rules_jvm_external/archive/{}.zip".format(RULES_JVM_EXTERNAL_TAG),
 )
 
-load("@bsp-testkit//:third_party.bzl", "dependencies")
+load("@rules_jvm_external//:defs.bzl", "maven_install")
 
-dependencies()
+maven_install(
+    artifacts = [
+     "com.google.code.gson:gson:2.8.9",
+     "com.google.guava:guava:31.1-jre",
+     "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.12.0",
+     "ch.epfl.scala:bsp4j:2.1.0-M4",
+     "org.junit.jupiter:junit-jupiter:5.9.3",
+     "org.scala-lang:scala-library:2.13.8",
+    ],
+    fetch_sources = True,
+    repositories = [
+        "https://maven.google.com",
+        "https://repo.maven.apache.org/maven2",
+    ],
+)
