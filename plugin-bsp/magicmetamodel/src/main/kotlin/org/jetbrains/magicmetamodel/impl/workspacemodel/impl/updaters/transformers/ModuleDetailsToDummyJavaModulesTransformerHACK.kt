@@ -63,7 +63,7 @@ public fun calculateDummyJavaModuleNames(inputEntity: ModuleDetails, projectBase
 }
 
 private fun calculateDummyJavaSourceRoots(inputEntity: ModuleDetails): List<Path> =
-  inputEntity.sources.flatMap { it.roots }.map { URI.create(it) }.map { it.toPath() }
+  inputEntity.sources.mapNotNull { it.roots }.flatten().map { URI.create(it) }.map { it.toPath() }
 
 private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<Path>, projectBasePath: Path): List<String> =
   dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it, projectBasePath) }

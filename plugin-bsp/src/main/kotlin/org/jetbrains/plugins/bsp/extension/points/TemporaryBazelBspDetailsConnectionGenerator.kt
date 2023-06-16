@@ -139,8 +139,7 @@ public class BazelEditProjectViewStep(
   ): Path? =
     when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
       is ConnectionFile ->
-        calculateProjectViewFileNameFromConnectionDetails(
-          connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails)
+        calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.bspConnectionDetails)
           ?.let { Path(it) }
 
       else -> projectBasePath.resolve(defaultProjectViewFileName)
@@ -197,8 +196,7 @@ public class BazelEditProjectViewStep(
   ): Boolean =
     when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
       is ConnectionFile ->
-        calculateProjectViewFileNameFromConnectionDetails(
-          connectionFileOrNewConnection.locatedBspConnectionDetails.bspConnectionDetails) != null
+        calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.bspConnectionDetails) != null
       else -> true
     }
 

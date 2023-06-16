@@ -79,7 +79,7 @@ class BspConnectionFilesProviderTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `should return true for isAnyBspConnectionFileDefined and list with 3 element for connectionFiles if there are three configuration files and 1 non configuration file and 1 invalid connection file`() {
+  fun `should return true for isAnyBspConnectionFileDefined and list with 5 elements for connectionFiles if there are three configuration files and 1 non configuration file and 1 invalid connection file`() {
     // given
     val dotBspDir = createDirectory(projectPath.resolve(".bsp"))
 
@@ -171,6 +171,14 @@ class BspConnectionFilesProviderTest : MockProjectBaseTest() {
           listOf("scala", "kotlin"),
         ),
         connectionFileLocation = connectionFile3.toVirtualFile(),
+      ),
+      LocatedBspConnectionDetails(
+        bspConnectionDetails = null,
+        connectionFileLocation = invalidConnectionFile.toVirtualFile()
+      ),
+      LocatedBspConnectionDetails(
+        bspConnectionDetails = null,
+        connectionFileLocation = nonConnectionFile.toVirtualFile()
       )
     )
     provider.connectionFiles shouldContainExactlyInAnyOrder expectedConnectionFiles

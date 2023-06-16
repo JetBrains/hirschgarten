@@ -16,6 +16,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ReloadAction
 import java.io.File
 import java.net.URI
 
@@ -49,6 +50,7 @@ public class TaskConsole(
   private fun doStartTask(taskId: Any, title: String, message: String, cancelAction: () -> Unit) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
     taskDescriptor.isActivateToolWindowWhenAdded = true
+    addReloadActionToTheDescriptor(taskDescriptor)
     addCancelActionToTheDescriptor(taskId, taskDescriptor, cancelAction)
 
     val startEvent = StartBuildEventImpl(taskDescriptor, message)
@@ -63,6 +65,15 @@ public class TaskConsole(
     val cancelAction = CancelSyncAction(doCancelAction, taskId)
     taskDescriptor.withAction(cancelAction)
   }
+
+  private fun addReloadActionToTheDescriptor(
+    taskDescriptor: DefaultBuildDescriptor
+  ) {
+    val reloadAction = ReloadAction()
+    taskDescriptor.withAction(reloadAction)
+  }
+
+  public fun hasTasksInProgress(): Boolean = tasksInProgress.isNotEmpty()
 
   /**
    * Displays finish of a task (and all its children) in this console.

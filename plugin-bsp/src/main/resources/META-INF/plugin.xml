@@ -36,7 +36,6 @@
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.server.connection.BspConnectionService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.BspProjectPropertiesService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.ProjectPropertiesService"/>
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.console.BspConsoleService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService"/>
     <registryKey defaultValue="600" description="Timeout for BSP requests in seconds" key="bsp.request.timeout.seconds"/>
     <registryKey defaultValue="true" description="Choose default connection" key="bsp.wizard.choose.default.connection"/>
@@ -58,6 +57,8 @@
             icon="/icons/disconnect.svg"/>
     <action id="Bsp.ReloadAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ReloadAction"
             icon="/icons/reload.svg"/>
+    <action id="Bsp.RestartAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RestartAction"
+            icon="/icons/restart.svg"/>
     <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ConnectAction"
             icon="/icons/connect.svg"/>
 

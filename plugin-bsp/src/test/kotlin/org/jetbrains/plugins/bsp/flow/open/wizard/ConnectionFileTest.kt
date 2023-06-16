@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.BspConnectionDetails
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.comparables.shouldBeLessThan
-import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -52,15 +51,13 @@ class ConnectionFileTest : MockProjectBaseTest() {
 
   private fun generateConnectionFile(version: String) =
     ConnectionFile(
-      LocatedBspConnectionDetails(
-        bspConnectionDetails = BspConnectionDetails(
-          "",
-          listOf(),
-          version,
-          "",
-          listOf(),
-        ),
-        connectionFileLocation = filePath.toVirtualFile(),
-      )
+      bspConnectionDetails = BspConnectionDetails(
+        "",
+        listOf(),
+        version,
+        "",
+        listOf(),
+      ),
+      connectionFile = filePath.toVirtualFile(),
     )
 }

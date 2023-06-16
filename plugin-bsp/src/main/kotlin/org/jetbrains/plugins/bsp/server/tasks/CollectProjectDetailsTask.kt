@@ -31,6 +31,7 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -205,7 +206,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private suspend fun addJdkIfNeeded(jdk: Sdk) {
     val existingJdk = jdkTable.findJdk(jdk.name, jdk.sdkType.name)
     if (existingJdk == null || existingJdk.homePath != jdk.homePath) {
-      withContext(Dispatchers.EDT) {
+      runInterruptible(Dispatchers.EDT) {
         runWriteAction {
           existingJdk?.let { jdkTable.removeJdk(existingJdk) }
           jdkTable.addJdk(jdk)
@@ -218,7 +219,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Applying changes...")
 
     logPerformanceSuspend("apply-changes-on-workspace-model") {
-      withContext(Dispatchers.EDT) {
+      runInterruptible(Dispatchers.EDT) {
         runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
       }
     }
