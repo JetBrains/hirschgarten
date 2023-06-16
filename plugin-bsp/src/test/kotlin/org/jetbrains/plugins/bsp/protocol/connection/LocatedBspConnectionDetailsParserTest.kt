@@ -29,7 +29,7 @@ class LocatedBspConnectionDetailsParserTest : MockProjectBaseTest() {
   }
 
   @Test
-  fun `should return null if file contains invalid json`() {
+  fun `bspConnectionDetails should return null if file contains invalid json`() {
     // given
     filePath.writeText(
       """
@@ -46,7 +46,7 @@ class LocatedBspConnectionDetailsParserTest : MockProjectBaseTest() {
     val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(filePath.toVirtualFile())
 
     // then
-    locatedBspConnectionDetails shouldBe null
+    locatedBspConnectionDetails.bspConnectionDetails shouldBe null
   }
 
   @Test

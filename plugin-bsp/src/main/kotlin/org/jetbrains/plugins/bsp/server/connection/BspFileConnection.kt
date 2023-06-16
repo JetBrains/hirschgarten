@@ -95,10 +95,10 @@ public data class BspFileConnectionState(
 
 public class BspFileConnection(
   private val project: Project,
-  private val locatedConnectionFile: LocatedBspConnectionDetails
+  public val locatedConnectionFile: LocatedBspConnectionDetails
 ) : BspConnection, ConvertableToState<BspFileConnectionState> {
 
-  public override val buildToolId: String? = locatedConnectionFile.bspConnectionDetails.name
+  public override val buildToolId: String? = locatedConnectionFile.bspConnectionDetails?.name
 
   public override var server: BspServer? = null
     private set
@@ -122,6 +122,8 @@ public class BspFileConnection(
   }
 
   private fun doConnectOrThrowIfFailed(bspSyncConsole: TaskConsole, taskId: Any) {
+    if (locatedConnectionFile.bspConnectionDetails == null)
+      error("Parsing connection file '${locatedConnectionFile.connectionFileLocation}' failed!")
     val client = createBspClient()
     val process = createAndStartProcessAndAddDisconnectActions(locatedConnectionFile.bspConnectionDetails)
 
@@ -132,6 +134,7 @@ public class BspFileConnection(
 
     initializeServer(process, client, bspSyncConsole)
   }
+
 
   private fun createAndStartProcessAndAddDisconnectActions(bspConnectionDetails: BspConnectionDetails): Process {
     val process = createAndStartProcess(bspConnectionDetails)

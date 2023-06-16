@@ -7,7 +7,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 
 public data class LocatedBspConnectionDetails(
-  val bspConnectionDetails: BspConnectionDetails,
+  val bspConnectionDetails: BspConnectionDetails?,
   val connectionFileLocation: VirtualFile
 )
 
@@ -16,19 +16,17 @@ public object LocatedBspConnectionDetailsParser {
 
   private val log = logger<LocatedBspConnectionDetailsParser>()
 
-  public fun parseFromFile(file: VirtualFile): LocatedBspConnectionDetails? =
-    parseBspConnectionDetails(file)?.let {
-      LocatedBspConnectionDetails(
-        bspConnectionDetails = it,
-        connectionFileLocation = file,
-      )
-    }
+  public fun parseFromFile(file: VirtualFile): LocatedBspConnectionDetails =
+    LocatedBspConnectionDetails(
+      bspConnectionDetails = parseBspConnectionDetails(file),
+      connectionFileLocation = file,
+    )
 
   private fun parseBspConnectionDetails(file: VirtualFile): BspConnectionDetails? =
     try {
       Gson().fromJson(VfsUtil.loadText(file), BspConnectionDetails::class.java)
     } catch (e: Exception) {
-      log.info("Parsing file '$file' to BspConnectionDetails failed!", e)
+      log.warn("Parsing file '$file' to BspConnectionDetails failed!", e)
       null
     }
 }
