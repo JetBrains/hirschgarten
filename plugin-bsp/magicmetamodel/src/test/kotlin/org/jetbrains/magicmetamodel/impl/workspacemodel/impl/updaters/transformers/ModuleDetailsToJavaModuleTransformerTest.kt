@@ -163,7 +163,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
       modulesDependencies = listOf(
         ModuleDependency("module2"),
         ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath))
       ),
       librariesDependencies = listOf(
         LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
@@ -393,7 +392,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
       modulesDependencies = listOf(
         ModuleDependency("module2"),
         ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath))
       ),
       librariesDependencies = listOf(
         LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
@@ -458,7 +456,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
         ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath))
       ),
       librariesDependencies = listOf(LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar")),
     )
