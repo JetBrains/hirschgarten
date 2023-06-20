@@ -14,17 +14,15 @@ import com.intellij.task.TaskRunnerResults
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
-import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.server.tasks.BuildTargetTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 
 public class BspProjectTaskRunner : ProjectTaskRunner() {
 
-  override fun canRun(project: Project, projectTask: ProjectTask): Boolean {
-    val isBspProject = BspProjectPropertiesService.getInstance(project).value.isBspProject
-    return isBspProject && canRun(projectTask)
-  }
+  override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
+    project.isBspProject && canRun(projectTask)
 
   override fun canRun(projectTask: ProjectTask): Boolean = projectTask is ModuleBuildTask
 

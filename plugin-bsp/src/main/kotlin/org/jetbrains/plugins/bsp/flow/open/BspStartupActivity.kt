@@ -9,8 +9,8 @@ import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
-import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.config.projectRootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
@@ -36,9 +36,7 @@ import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 public class BspStartupActivity : ProjectActivity {
 
   override suspend fun execute(project: Project) {
-    val projectProperties = BspProjectPropertiesService.getInstance(project).value
-
-    if (projectProperties.isBspProject) {
+    if (project.isBspProject) {
       doRunActivity(project)
     }
   }
@@ -89,9 +87,8 @@ public class BspStartupActivity : ProjectActivity {
   private fun showWizardAndGetResult(
     project: Project,
   ): ConnectionFileOrNewConnection? {
-    val projectProperties = ProjectPropertiesService.getInstance(project).value
     val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(
-      projectProperties.projectRootDir,
+      project.projectRootDir,
       BspConnectionDetailsGeneratorExtension.extensions()
     )
     val wizard = ImportProjectWizard(project, bspConnectionDetailsGeneratorProvider)

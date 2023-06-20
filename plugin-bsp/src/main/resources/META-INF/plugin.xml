@@ -34,8 +34,6 @@
 
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.services.MagicMetaModelService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.server.connection.BspConnectionService"/>
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.BspProjectPropertiesService"/>
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.config.ProjectPropertiesService"/>
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService"/>
     <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"
                     serviceImplementation="org.jetbrains.plugins.bsp.services.SingleFileSourcesTrackerImpl"
