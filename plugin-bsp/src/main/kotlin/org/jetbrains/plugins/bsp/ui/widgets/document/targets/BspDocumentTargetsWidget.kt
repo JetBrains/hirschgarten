@@ -21,7 +21,7 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.config.BspProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.net.URI
 
@@ -154,7 +154,7 @@ public class BspDocumentTargetsWidgetFactory : StatusBarWidgetFactory {
     BspDocumentTargetsWidgetBundle.message("widget.factory.display.name")
 
   override fun isAvailable(project: Project): Boolean =
-    BspProjectPropertiesService.getInstance(project).value.isBspProject
+    project.isBspProject
 
   override fun createWidget(project: Project): StatusBarWidget =
     BspDocumentTargetsWidget(project)

@@ -39,7 +39,7 @@ import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
-import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.projectRootDir
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
@@ -146,8 +146,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun createInitializeBuildParams(): InitializeBuildParams {
-    val projectProperties = ProjectPropertiesService.getInstance(project).value
-    val projectBaseDir = projectProperties.projectRootDir
+    val projectBaseDir = project.projectRootDir
     val params = InitializeBuildParams(
       "IntelliJ-BSP",
       "0.0.1",

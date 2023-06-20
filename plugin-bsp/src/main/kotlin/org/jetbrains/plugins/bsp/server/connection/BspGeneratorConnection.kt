@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.server.connection
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
-import org.jetbrains.plugins.bsp.config.ProjectPropertiesService
+import org.jetbrains.plugins.bsp.config.projectRootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
@@ -84,8 +84,6 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
   }
 
   private fun generateNewConnectionFile(taskId: Any) {
-    val projectProperties = ProjectPropertiesService.getInstance(project).value
-
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val consoleOutputStream = ConsoleOutputStream(generateConnectionFileSubtaskId, bspSyncConsole)
 
@@ -93,7 +91,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
 
     try {
       val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
-        projectProperties.projectRootDir,
+        project.projectRootDir,
         consoleOutputStream
       )
       // TODO
