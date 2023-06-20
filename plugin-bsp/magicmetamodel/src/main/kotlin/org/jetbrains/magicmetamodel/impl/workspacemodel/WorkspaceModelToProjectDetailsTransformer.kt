@@ -165,7 +165,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
           capabilities.canCompile, capabilities.canTest, capabilities.canRun, capabilities.canDebug
         )
       ).also {
-        it.baseDirectory = baseDirContentRoot?.url?.presentableUrl
+        it.baseDirectory = baseDirContentRoot?.url?.url
         sdkDependency?.addToBuildTarget(it)
       }
     }
