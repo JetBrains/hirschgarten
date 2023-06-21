@@ -389,7 +389,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         emptyList(),
         emptyList(),
         BuildTargetCapabilities()
-      ).also { it.baseDirectory = projectBasePath.toAbsolutePath().toString() }
+      ).also { it.baseDirectory = projectBasePath.toUri().toString().trimEnd('/') }
 
       val expectedSourcesItem1 = SourcesItem(
         expectedBuildTargetId1,
