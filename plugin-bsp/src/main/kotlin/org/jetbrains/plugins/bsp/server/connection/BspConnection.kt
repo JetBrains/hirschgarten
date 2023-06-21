@@ -3,10 +3,12 @@ package org.jetbrains.plugins.bsp.server.connection
 import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.JavaBuildServer
 import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.ApiStatus
 
 public interface BspServer : BuildServer, JavaBuildServer
 
@@ -57,6 +59,8 @@ public data class BspConnectionState(
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
   reportStatistic = true
 )
+@Service(Service.Level.PROJECT)
+@ApiStatus.Internal
 public class BspConnectionService(private val project: Project) :
   PersistentStateComponent<BspConnectionState> {
 
