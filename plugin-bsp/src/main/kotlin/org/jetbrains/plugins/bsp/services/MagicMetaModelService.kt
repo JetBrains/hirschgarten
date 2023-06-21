@@ -1,12 +1,14 @@
 package org.jetbrains.plugins.bsp.services
 
 import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.workspaceModel.ide.WorkspaceModel
 import com.intellij.workspaceModel.ide.getInstance
 import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ModuleNameProvider
@@ -23,6 +25,8 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClas
   storages = [Storage("magicmetamodel.xml")],
   reportStatistic = true
 )
+@Service(Service.Level.PROJECT)
+@ApiStatus.Internal
 public class MagicMetaModelService(private val project: Project) :
   ValueServiceWhichNeedsToBeInitialized<MagicMetaModelImpl>(),
   PersistentStateComponent<DefaultMagicMetaModelState> {
