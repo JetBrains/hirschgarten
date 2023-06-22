@@ -62,9 +62,9 @@
             icon="/icons/connect.svg"/>
 
     <group id="Bsp.ActionsToolbar">
-      <reference id="Bsp.DisconnectAction"/>
       <reference id="Bsp.ConnectAction"/>
       <reference id="Bsp.ReloadAction"/>
+      <reference id="Bsp.DisconnectAction"/>
     </group>
 
   </actions>
