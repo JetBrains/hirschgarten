@@ -2,9 +2,11 @@ package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetDataKind
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -61,8 +63,30 @@ class BuildTargetStateTest {
     )
     buildTarget.displayName = "target name"
     buildTarget.baseDirectory = "/base/dir"
-    buildTarget.dataKind = "kind"
-    buildTarget.data = "DATA"
+    buildTarget.dataKind = BuildTargetDataKind.JVM
+    buildTarget.data = JvmBuildTarget("/java/home", "17")
+
+    // when
+    val state = buildTarget.toState()
+
+    // then
+    state.fromState() shouldBe buildTarget
+  }
+
+  @Test
+  fun `should do toState and fromState for empty data`() {
+    // given
+    val buildTarget = BuildTarget(
+      BuildTargetIdentifier("target"),
+      listOf("tag1", "tag2"),
+      listOf("language1"),
+      listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
+      BuildTargetCapabilities(true, false, true, true)
+    )
+    buildTarget.displayName = "target name"
+    buildTarget.baseDirectory = "/base/dir"
+    buildTarget.dataKind = null
+    buildTarget.data = null
 
     // when
     val state = buildTarget.toState()
