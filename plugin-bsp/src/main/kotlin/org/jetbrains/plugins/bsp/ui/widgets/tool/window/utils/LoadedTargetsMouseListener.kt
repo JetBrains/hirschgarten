@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.AbstractActionWithTarget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
@@ -49,17 +50,25 @@ public class LoadedTargetsMouseListener(
     return if (target != null && isConnected) {
       val actions = mutableListOf<AnAction>()
       if (target.capabilities.canCompile) {
-        actions.add(BuildTargetAction(target.id))
+        val action = getAction(BuildTargetAction::class.java)
+        actions.add(action)
       }
       if (target.capabilities.canRun) {
-        actions.add(RunTargetAction(target.id))
+        val action = getAction(RunTargetAction::class.java)
+        actions.add(action)
       }
       if (target.capabilities.canTest) {
-        actions.add(TestTargetAction(target.id))
+        val action = getAction(TestTargetAction::class.java)
+        actions.add(action)
       }
       DefaultActionGroup().also { it.addAll(actions) }
     } else null
   }
+
+  private fun getAction(actionClass : Class<out AbstractActionWithTarget>) : AbstractActionWithTarget =
+    actions.getOrPut(actionClass) {
+      actionClass.constructors.first { it.parameterCount == 0 }.newInstance() as AbstractActionWithTarget
+    }.also { it.target = container.getSelectedBuildTarget()?.id }
 
   override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
 
@@ -68,4 +77,8 @@ public class LoadedTargetsMouseListener(
   override fun mouseEntered(e: MouseEvent?) { /* nothing to do */ }
 
   override fun mouseExited(e: MouseEvent?) { /* nothing to do */ }
+
+  private companion object {
+    val actions = HashMap<Class<out AbstractActionWithTarget>, AbstractActionWithTarget>()
+  }
 }
