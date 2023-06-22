@@ -84,8 +84,14 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
 }
 
+// TODO ugly, but we need to change it anyway
 public fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
-  if (target.dataKind == BuildTargetDataKind.JVM) Gson().fromJson(target.data as JsonObject, JvmBuildTarget::class.java)
+  if (target.dataKind == BuildTargetDataKind.JVM) {
+    when (target.data) {
+      is JvmBuildTarget -> target.data as JvmBuildTarget
+      else -> Gson().fromJson(target.data as JsonObject, JvmBuildTarget::class.java)
+    }
+  }
   else null
 
 public fun String.javaVersionToJdkName(projectName: String): String = "$projectName-$this"

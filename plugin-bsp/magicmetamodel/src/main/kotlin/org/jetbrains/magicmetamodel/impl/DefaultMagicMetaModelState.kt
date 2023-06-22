@@ -2,13 +2,16 @@ package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetDataKind
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
+import com.google.gson.Gson
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 
@@ -72,8 +75,7 @@ public data class BuildTargetState(
   public var dependencies: List<BuildTargetIdentifierState> = emptyList(),
   public var capabilities: BuildTargetCapabilitiesState = BuildTargetCapabilitiesState(),
   public var dataKind: String? = null,
-  // TODO: it cant be Any - we cant serialize it
-  public var data: Any? = null,
+  public var data: String? = null,
 ) : ConvertableFromState<BuildTarget> {
 
   public override fun fromState(): BuildTarget =
@@ -87,7 +89,10 @@ public data class BuildTargetState(
       displayName = this@BuildTargetState.displayName
       baseDirectory = this@BuildTargetState.baseDirectory
       dataKind = this@BuildTargetState.dataKind
-      data = this@BuildTargetState.data
+      data = when(this@BuildTargetState.dataKind) {
+        BuildTargetDataKind.JVM -> Gson().fromJson(this@BuildTargetState.data, JvmBuildTarget::class.java)
+        else -> null
+      }
     }
 }
 
@@ -101,7 +106,7 @@ public fun BuildTarget.toState(): BuildTargetState =
     dependencies = dependencies.map { it.toState() },
     capabilities = capabilities.toState(),
     dataKind = dataKind,
-    data = data,
+    data = Gson().toJson(data),
   )
 
 
