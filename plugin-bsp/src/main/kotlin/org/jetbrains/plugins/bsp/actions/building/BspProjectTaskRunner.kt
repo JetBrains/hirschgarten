@@ -11,6 +11,7 @@ import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
@@ -74,6 +75,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   private infix fun String.isSubmoduleOf(module: String): Boolean =
     this.startsWith("$module.", false)
 
+  @OptIn(ExperimentalCoroutinesApi::class)
   private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTarget>): Promise<Result> {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
     val result = BspCoroutineService.getInstance().startAsync {

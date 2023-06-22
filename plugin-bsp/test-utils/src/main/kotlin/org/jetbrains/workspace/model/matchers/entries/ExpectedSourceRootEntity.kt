@@ -33,11 +33,11 @@ private fun validateSourceRootEntity(
   actual.rootType shouldBe expected.sourceRootEntity.rootType
 
   actual.javaSourceRoots.shouldContainExactlyInAnyOrder(
-    { actual, expected -> validateJavaSourceRootEntity(actual, expected) },
+    { actualEntity, expectedEntity -> validateJavaSourceRootEntity(actualEntity, expectedEntity) },
     expected.sourceRootEntity.javaSourceRoots
   )
   actual.javaResourceRoots.shouldContainExactlyInAnyOrder(
-    { actual, expected -> validateJavaResourceRootEntity(actual, expected) },
+    { actualEntity, expectedEntity -> validateJavaResourceRootEntity(actualEntity, expectedEntity) },
     expected.sourceRootEntity.javaResourceRoots
   )
 
