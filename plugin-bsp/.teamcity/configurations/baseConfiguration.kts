@@ -66,39 +66,18 @@ open class BaseBuildType(
     if (setupSteps) {
         steps {
             script {
-                this.name = "Install Bazel, Coursier and build-essential"
+                this.name = "Coursier"
 
                 scriptContent = """
                     #!/bin/bash
                     set -euxo pipefail
-                    
-                    #install build-essential
-                    apt-get update -q
-                    apt-get install -y build-essential
                                         
                     #install coursier
-                    curl -fL "https://github.com/coursier/coursier/releases/download/v2.1.0-RC6/cs-x86_64-pc-linux.gz" | gzip -d > "/usr/bin/cs"
+                    curl -fL "https://github.com/coursier/coursier/releases/download/v2.1.5/cs-x86_64-pc-linux.gz" | gzip -d > cs 
+                    sudo mv cs /usr/bin/cs
                     
-                    chmod +x "/usr/bin/cs"
-                    cs version ||:
-                    
-                    #install bazelisk
-                    curl -L https://github.com/bazelbuild/bazelisk/releases/download/v1.15.0/bazelisk-linux-amd64 -o  \
-                    "/usr/bin/bazel"    
-                    
-                    chmod +x "/usr/bin/bazel"
-                    bazel version ||:
+                    sudo chmod +x "/usr/bin/cs"
             """.trimIndent()
-
-                dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
-                dockerPull = true
-                dockerImage = "ubuntu:focal"
-                dockerRunParameters = """
-                    -v /usr/:/usr/
-                    -v /etc/:/etc/
-                    -v /var/:/var/
-                    -v /tmp/:/tmp/
-                """.trimIndent()
             }
         }
     }
