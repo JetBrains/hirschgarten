@@ -8,7 +8,7 @@ object Plugin {
 // See https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html
 // for insight into build numbers and IntelliJ Platform versions.
   const val sinceBuild = "232"
-  const val untilBuild = "232.*"
+  const val untilBuild = "232.8276"
 }
 
 // Plugin Verifier integration -> https://github.com/JetBrains/gradle-intellij-plugin//plugin-verifier-dsl
