@@ -327,7 +327,7 @@ public object CoursierUtils {
     if (process.exitValue() != 0) {
       error(
         """An error has occurred when running the command: ${this.joinToString(" ")}
-          |Refer to "${LoggerFactory.getLogFilePath()}" for more information
+          |Refer to ${LoggerFactory.getLogFilePath().toUri()} for more information
         """.trimMargin()
       )
     }
