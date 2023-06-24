@@ -28,7 +28,7 @@ public interface BspConnectionDetailsGenerator {
     if (consoleProcess.exitValue() != 0) {
       error(
         """An error has occurred when running the command: ${command.joinToString(" ")}
-          |Refer to "${LoggerFactory.getLogFilePath()}" for more information
+          |Refer to ${LoggerFactory.getLogFilePath().toUri()} for more information
         """.trimMargin()
       )
     }
@@ -95,7 +95,7 @@ public fun Process.logErrorOutputs(log: Logger) {
   BspCoroutineService.getInstance().startAsync {
     val bufferedReader = this.errorReader()
     withContext(Dispatchers.IO) {
-      bufferedReader.forEachLine { log.debug(it) }
+      log.info(bufferedReader.readLines().joinToString("\n\t"))
     }
   }
 }
