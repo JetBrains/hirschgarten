@@ -1,10 +1,10 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.addJavaModuleSettingsEntity
-import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
+import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import java.nio.file.Path
 
 internal data class JvmJdkInfo(val name: String, val javaHome: String)
@@ -59,20 +59,26 @@ internal class JavaModuleWithSourcesUpdater(
     else defaultDependencies
 
   private fun addJavaModuleSettingsEntity(
-    builder: MutableEntityStorage,
-    entityToAdd: JavaModule,
-    moduleEntity: ModuleEntity
+          builder: MutableEntityStorage,
+          entityToAdd: JavaModule,
+          moduleEntity: ModuleEntity
   ) {
     if (entityToAdd.compilerOutput != null) {
-      builder.addJavaModuleSettingsEntity(
-        inheritedCompilerOutput = false,
-        excludeOutput = true,
-        compilerOutput = entityToAdd.compilerOutput
-          .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-        compilerOutputForTests = null,
-        languageLevelId = null,
-        module = moduleEntity,
-        source = DoNotSaveInDotIdeaDirEntitySource,
+      val compilerOutput =
+              entityToAdd.
+              compilerOutput.
+              toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+      builder.addEntity(
+        JavaModuleSettingsEntity(
+          inheritedCompilerOutput = false,
+          excludeOutput = true,
+          entitySource = BspEntitySource
+        ) {
+          this.compilerOutput = compilerOutput
+          this.compilerOutputForTests = null
+          this.languageLevelId = null
+          this.module = moduleEntity
+        }
       )
     }
   }

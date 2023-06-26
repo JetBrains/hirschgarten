@@ -9,8 +9,8 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.workspaceModel.ide.WorkspaceModel
-import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
+import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import java.nio.file.Path
@@ -74,9 +74,9 @@ public data class DocumentTargetsDetails(
 public interface MagicMetaModelDiff {
 
   /**
-   * Applies changes, should do it quickly - e.g. by using StorageReplacement
+   * Applies changes, should do it quickly - e.g. by using MutableEntityStorage.replaceBySource
    */
-  public fun applyOnWorkspaceModel(): Boolean
+  public suspend fun applyOnWorkspaceModel()
 }
 
 /**

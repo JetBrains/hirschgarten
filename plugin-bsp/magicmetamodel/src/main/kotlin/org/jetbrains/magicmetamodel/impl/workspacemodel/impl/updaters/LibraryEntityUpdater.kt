@@ -1,13 +1,12 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryRoot
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryRootTypeId
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryTableId
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
-import com.intellij.workspaceModel.storage.bridgeEntities.addLibraryEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.LibraryRoot
+import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
+import com.intellij.platform.workspace.jps.entities.LibraryTableId
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleId
 
 internal data class Library(
   val displayName: String,
@@ -27,12 +26,15 @@ internal class LibraryEntityUpdater(
     parentModuleEntity: ModuleEntity,
     entityToAdd: Library,
   ): LibraryEntity =
-    builder.addLibraryEntity(
-      name = entityToAdd.displayName,
-      tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
-      roots = listOfNotNull(toLibrarySourcesRoot(entityToAdd), toLibraryClassesRoot(entityToAdd)),
-      excludedRoots = ArrayList(),
-      source = DoNotSaveInDotIdeaDirEntitySource
+    builder.addEntity(
+      LibraryEntity(
+        name = entityToAdd.displayName,
+        tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
+        roots = listOfNotNull(toLibrarySourcesRoot(entityToAdd), toLibraryClassesRoot(entityToAdd)),
+        entitySource = BspEntitySource
+      ) {
+        this.excludedRoots = arrayListOf()
+      }
     )
 
   private fun toLibrarySourcesRoot(entityToAdd: Library): LibraryRoot? =
