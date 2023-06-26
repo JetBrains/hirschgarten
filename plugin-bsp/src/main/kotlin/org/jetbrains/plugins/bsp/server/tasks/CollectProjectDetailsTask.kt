@@ -19,8 +19,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.openapi.application.EDT
-import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
 import com.intellij.openapi.progress.indeterminateStep
@@ -29,9 +28,7 @@ import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -205,11 +202,9 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private suspend fun addJdkIfNeeded(jdk: Sdk) {
     val existingJdk = jdkTable.findJdk(jdk.name, jdk.sdkType.name)
     if (existingJdk == null || existingJdk.homePath != jdk.homePath) {
-      runInterruptible(Dispatchers.EDT) {
-        runWriteAction {
-          existingJdk?.let { jdkTable.removeJdk(existingJdk) }
-          jdkTable.addJdk(jdk)
-        }
+      writeAction {
+        existingJdk?.let { jdkTable.removeJdk(existingJdk) }
+        jdkTable.addJdk(jdk)
       }
     }
   }
@@ -218,9 +213,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Applying changes...")
 
     logPerformanceSuspend("apply-changes-on-workspace-model") {
-      runInterruptible(Dispatchers.EDT) {
-        runWriteAction { magicMetaModelDiff?.applyOnWorkspaceModel() }
-      }
+      magicMetaModelDiff?.applyOnWorkspaceModel()
     }
 
     bspSyncConsole.finishSubtask("apply-on-workspace-model", "Applying changes done!")

@@ -3,14 +3,13 @@ package org.jetbrains.workspace.model.test.framework
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
-import com.intellij.workspaceModel.ide.WorkspaceModel
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.workspaceModel.ide.getInstance
-import com.intellij.workspaceModel.storage.EntitySource
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.WorkspaceEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
-import com.intellij.workspaceModel.storage.url.VirtualFileUrlManager
+import com.intellij.platform.workspace.storage.EntitySource
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.WorkspaceEntity
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.junit.jupiter.api.BeforeEach
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -70,10 +69,13 @@ public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceMode
   }
 
   private fun addParentModuleEntity(builder: MutableEntityStorage): ModuleEntity =
-    builder.addModuleEntity(
-      name = parentModuleName,
-      dependencies = emptyList(),
-      source = object : EntitySource {},
-      type = parentModuleType
+    builder.addEntity(
+      ModuleEntity(
+        name = parentModuleName,
+        dependencies = emptyList(),
+        entitySource = object : EntitySource {}
+      ) {
+        this.type = parentModuleType
+      }
     )
 }

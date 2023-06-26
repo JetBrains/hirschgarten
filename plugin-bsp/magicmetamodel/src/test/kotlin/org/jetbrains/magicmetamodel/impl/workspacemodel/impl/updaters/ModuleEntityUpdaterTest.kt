@@ -2,11 +2,11 @@
 
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryId
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryTableId
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
+import com.intellij.platform.workspace.jps.entities.LibraryId
+import com.intellij.platform.workspace.jps.entities.LibraryTableId
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleId
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -100,7 +100,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
           ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
-        entitySource = DoNotSaveInDotIdeaDirEntitySource,
+        entitySource = BspEntitySource,
       ) {
         type = "JAVA_MODULE"
       }
@@ -192,7 +192,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
           ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
-        entitySource = DoNotSaveInDotIdeaDirEntitySource
+        entitySource = BspEntitySource
       ) {
         type = "JAVA_MODULE"
       }
@@ -218,7 +218,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
           ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
-        entitySource = DoNotSaveInDotIdeaDirEntitySource,
+        entitySource = BspEntitySource,
       ) {
         type = "JAVA_MODULE"
       }

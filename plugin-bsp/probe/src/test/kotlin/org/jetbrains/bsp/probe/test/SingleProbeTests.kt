@@ -13,7 +13,7 @@ import scala.runtime.BoxedUnit
 class SingleProbeTests {
 
   companion object {
-    const val LATEST_NIGHTLY_VERSION = "232.7754.73"
+    const val LATEST_NIGHTLY_VERSION = "232.8296.17"
     val LATEST_VERSION : String? = null
   }
 

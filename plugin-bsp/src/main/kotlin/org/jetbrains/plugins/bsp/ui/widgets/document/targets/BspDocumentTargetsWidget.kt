@@ -8,7 +8,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
@@ -22,6 +21,7 @@ import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.net.URI
 
@@ -45,7 +45,7 @@ private class LoadTargetAction(
   private fun doAction(project: Project) {
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
     val diff = magicMetaModel.loadTarget(target)
-    runWriteAction { diff?.applyOnWorkspaceModel() }
+    BspCoroutineService.getInstance().start { diff?.applyOnWorkspaceModel() }
 
     updateWidget()
   }

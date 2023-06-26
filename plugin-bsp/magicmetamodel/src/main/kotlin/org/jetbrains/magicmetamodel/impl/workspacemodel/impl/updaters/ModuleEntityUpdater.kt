@@ -1,15 +1,14 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.workspaceModel.storage.MutableEntityStorage
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryId
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryTableId
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
-import com.intellij.workspaceModel.storage.bridgeEntities.addModuleCustomImlDataEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.addModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.modifyEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.jps.entities.LibraryId
+import com.intellij.platform.workspace.jps.entities.LibraryTableId
+import com.intellij.platform.workspace.jps.entities.ModuleCustomImlDataEntity
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.modifyEntity
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 
 internal data class ModuleDependency(
@@ -72,17 +71,23 @@ internal class ModuleEntityUpdater(
     val modulesDependencies = entityToAdd.modulesDependencies.map { toModuleDependencyItemModuleDependency(it) }
     val librariesDependencies =
       entityToAdd.librariesDependencies.map { toModuleDependencyItemLibraryDependency(it, entityToAdd.name) }
-    val moduleEntity = builder.addModuleEntity(
-      name = entityToAdd.name,
-      dependencies = modulesDependencies + librariesDependencies + defaultDependencies,
-      source = DoNotSaveInDotIdeaDirEntitySource,
-      type = entityToAdd.type
+    val moduleEntity = builder.addEntity(
+      ModuleEntity(
+        name = entityToAdd.name,
+        dependencies = modulesDependencies + librariesDependencies + defaultDependencies,
+        entitySource = BspEntitySource
+      ) {
+        this.type = entityToAdd.type
+      }
     )
-    val imlData = builder.addModuleCustomImlDataEntity(
-      null,
-      entityToAdd.capabilities,
-      moduleEntity,
-      DoNotSaveInDotIdeaDirEntitySource
+    val imlData = builder.addEntity(
+      ModuleCustomImlDataEntity(
+        customModuleOptions = HashMap(entityToAdd.capabilities),
+        entitySource = BspEntitySource
+      ) {
+        this.rootManagerTagCustomData = null
+        this.module = moduleEntity
+      }
     )
     builder.modifyEntity(moduleEntity) {
       this.customImlData = imlData

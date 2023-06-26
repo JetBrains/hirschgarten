@@ -1,10 +1,12 @@
 package org.jetbrains.workspace.model.matchers.entries
 
-import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaResourceRootPropertiesEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootPropertiesEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
+import com.intellij.java.workspace.entities.JavaResourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.javaResourceRoots
+import com.intellij.java.workspace.entities.javaSourceRoots
+import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
@@ -45,16 +47,16 @@ private fun validateSourceRootEntity(
 }
 
 private fun validateJavaSourceRootEntity(
-  actual: JavaSourceRootPropertiesEntity,
-  expected: JavaSourceRootPropertiesEntity
+    actual: JavaSourceRootPropertiesEntity,
+    expected: JavaSourceRootPropertiesEntity
 ) {
   actual.generated shouldBe expected.generated
   actual.packagePrefix shouldBe expected.packagePrefix
 }
 
 private fun validateJavaResourceRootEntity(
-  actual: JavaResourceRootPropertiesEntity,
-  expected: JavaResourceRootPropertiesEntity
+    actual: JavaResourceRootPropertiesEntity,
+    expected: JavaResourceRootPropertiesEntity
 ) {
   actual.generated shouldBe expected.generated
   actual.relativeOutputPath shouldBe expected.relativeOutputPath

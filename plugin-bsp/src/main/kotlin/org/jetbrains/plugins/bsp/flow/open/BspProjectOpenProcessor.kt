@@ -3,7 +3,6 @@ package org.jetbrains.plugins.bsp.flow.open
 import com.intellij.ide.impl.OpenProjectTask
 import com.intellij.ide.impl.ProjectUtilCore
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.vfs.VirtualFile
@@ -17,6 +16,7 @@ import org.jetbrains.plugins.bsp.config.projectRootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.nio.file.Path
 import javax.swing.Icon
@@ -77,10 +77,9 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
         outputPathUris = emptyList(),
       )
     )
-    ApplicationManager.getApplication().invokeLater {
-      runWriteAction {
-        magicMetaModelService.value.loadDefaultTargets().applyOnWorkspaceModel()
-      }
+
+    BspCoroutineService.getInstance().start {
+      magicMetaModelService.value.loadDefaultTargets().applyOnWorkspaceModel()
     }
   }
 

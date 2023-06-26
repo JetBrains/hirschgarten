@@ -7,17 +7,17 @@ object Plugin {
 
 // See https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html
 // for insight into build numbers and IntelliJ Platform versions.
-  const val sinceBuild = "232"
-  const val untilBuild = "232.8276"
+  const val sinceBuild = "232.8296.3"
+  const val untilBuild = "232.*"
 }
 
 // Plugin Verifier integration -> https://github.com/JetBrains/gradle-intellij-plugin//plugin-verifier-dsl
 // See https://jb.gg/intellij-platform-builds-list for available build versions.
-const val pluginVerifierIdeVersions = "2023.2"
+const val pluginVerifierIdeVersions = "232.8296.17"
 
 object Platform {
   const val type = "IC"
-  const val version = "232.7754.73-EAP-SNAPSHOT"
+  const val version = "232.8296.17-EAP-SNAPSHOT"
   const val downloadSources = true
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html

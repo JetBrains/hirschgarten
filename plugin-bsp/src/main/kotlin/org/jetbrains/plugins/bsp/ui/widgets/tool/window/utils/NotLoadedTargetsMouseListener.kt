@@ -8,10 +8,10 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
@@ -76,7 +76,7 @@ private class LoadTargetAction(
     if (project != null) {
       val magicMetaModel = MagicMetaModelService.getInstance(project).value
       val diff = magicMetaModel.loadTarget(target.id)
-      runWriteAction { diff?.applyOnWorkspaceModel() }
+      BspCoroutineService.getInstance().start { diff?.applyOnWorkspaceModel() }
     }
   }
 }

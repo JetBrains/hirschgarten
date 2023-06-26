@@ -3,17 +3,20 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.intellij.workspaceModel.storage.bridgeEntities.ContentRootEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaModuleSettingsEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaResourceRootPropertiesEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.JavaSourceRootPropertiesEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryId
-import com.intellij.workspaceModel.storage.bridgeEntities.LibraryTableId
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleDependencyItem
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleEntity
-import com.intellij.workspaceModel.storage.bridgeEntities.ModuleId
-import com.intellij.workspaceModel.storage.bridgeEntities.SourceRootEntity
-import com.intellij.workspaceModel.storage.impl.url.toVirtualFileUrl
+import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
+import com.intellij.java.workspace.entities.JavaResourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.javaResourceRoots
+import com.intellij.java.workspace.entities.javaSettings
+import com.intellij.java.workspace.entities.javaSourceRoots
+import com.intellij.platform.workspace.jps.entities.ContentRootEntity
+import com.intellij.platform.workspace.jps.entities.LibraryId
+import com.intellij.platform.workspace.jps.entities.LibraryTableId
+import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -130,7 +133,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = listOf(
               ModuleDependencyItem.Exportable.ModuleDependency(
                 module = ModuleId("module2"),
@@ -168,7 +171,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             javaSettings = JavaModuleSettingsEntity(
               inheritedCompilerOutput = false,
               excludeOutput = true,
-              entitySource = DoNotSaveInDotIdeaDirEntitySource,
+              entitySource = BspEntitySource,
             ) {
               this.compilerOutput = Path("compiler/output").toVirtualFileUrl(virtualFileUrlManager)
             }
@@ -430,7 +433,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity1 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = listOf(
               ModuleDependencyItem.Exportable.ModuleDependency(
                 module = ModuleId("module2"),
@@ -468,7 +471,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             javaSettings = JavaModuleSettingsEntity(
               inheritedCompilerOutput = false,
               excludeOutput = true,
-              entitySource = DoNotSaveInDotIdeaDirEntitySource,
+              entitySource = BspEntitySource,
             ) {
               this.compilerOutput = Path("compiler/output1").toVirtualFileUrl(virtualFileUrlManager)
             }
@@ -478,7 +481,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity2 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module2",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = listOf(
               ModuleDependencyItem.Exportable.ModuleDependency(
                 module = ModuleId("module3"),
@@ -502,7 +505,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             javaSettings = JavaModuleSettingsEntity(
               inheritedCompilerOutput = false,
               excludeOutput = true,
-              entitySource = DoNotSaveInDotIdeaDirEntitySource,
+              entitySource = BspEntitySource,
             ) {
               this.compilerOutput = Path("compiler/output2").toVirtualFileUrl(virtualFileUrlManager)
             }
@@ -700,7 +703,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = emptyList(),
           ) {
             type = "JAVA_MODULE"
@@ -773,7 +776,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity1 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module1",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = emptyList(),
           ) {
             type = "JAVA_MODULE"
@@ -782,7 +785,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val expectedModuleEntity2 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
             name = "module2",
-            entitySource = DoNotSaveInDotIdeaDirEntitySource,
+            entitySource = BspEntitySource,
             dependencies = emptyList(),
           ) {
             type = "JAVA_MODULE"
