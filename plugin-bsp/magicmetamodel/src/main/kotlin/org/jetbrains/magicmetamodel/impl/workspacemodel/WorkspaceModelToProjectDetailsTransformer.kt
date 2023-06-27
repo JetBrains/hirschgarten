@@ -23,12 +23,12 @@ import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.jps.serialization.impl.toPath
 import com.intellij.util.io.isDirectory
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.LoadedTargetsStorage
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleCapabilities
-import kotlin.io.path.Path
 
 public object WorkspaceModelToProjectDetailsTransformer {
   public operator fun invoke(workspaceModel: WorkspaceModel,
@@ -113,9 +113,9 @@ public object WorkspaceModelToProjectDetailsTransformer {
   internal object JavaSourceRootToSourceItemTransformer {
 
     operator fun invoke(entity: JavaSourceRootPropertiesEntity): SourceItem {
-      val path = entity.sourceRoot.url.presentableUrl
-      val kind = if (Path(path).isDirectory()) SourceItemKind.DIRECTORY else SourceItemKind.FILE
-      return SourceItem(path, kind, entity.generated)
+      val path = entity.sourceRoot.url.toPath()
+      val kind = if (path.isDirectory()) SourceItemKind.DIRECTORY else SourceItemKind.FILE
+      return SourceItem(path.toUri().toString(), kind, entity.generated)
     }
   }
 
@@ -125,7 +125,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
     filterIsInstance<ModuleDependencyItem.Exportable.ModuleDependency>()
       .map { loadedTargetsIndex[it.module.name] }
 
-  private fun JavaResourceRootPropertiesEntity.toResourcePath() = sourceRoot.url.presentableUrl
+  private fun JavaResourceRootPropertiesEntity.toResourcePath() = sourceRoot.url.toPath().toUri().toString()
 
   private fun SourceRootEntity.toSourceItems() =
     javaSourceRoots
@@ -140,7 +140,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
 
   private fun Sequence<LibraryEntity>.filterRoots(type: LibraryRootTypeId) =
     flatMap { lib ->
-      lib.roots.filter { it.type == type }.map { it.url.presentableUrl }
+      lib.roots.filter { it.type == type }.map { it.url.toPath().toUri().toString() }
     }.takeIf {
       it.iterator().hasNext()
     }
@@ -167,7 +167,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
           capabilities.canCompile, capabilities.canTest, capabilities.canRun, capabilities.canDebug
         )
       ).also {
-        it.baseDirectory = baseDirContentRoot?.url?.url
+        it.baseDirectory = baseDirContentRoot?.url?.toPath()?.toUri()?.toString()
         sdkDependency?.addToBuildTarget(it)
       }
     }
@@ -180,5 +180,5 @@ public object WorkspaceModelToProjectDetailsTransformer {
   private fun ModuleEntity.toOutputPathUris(): List<String> =
     contentRoots
       .flatMap { it.excludedUrls }
-      .map { it.url.url }
+      .map { it.url.toPath().toUri().toString() }
 }

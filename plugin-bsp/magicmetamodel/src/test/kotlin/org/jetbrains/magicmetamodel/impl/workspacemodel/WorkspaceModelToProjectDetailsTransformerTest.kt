@@ -10,6 +10,7 @@ import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
@@ -76,7 +77,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         jvmJdkInfo = JvmJdkInfo(name = "11", javaHome = "fake/path/to/local_jdk"),
       )
 
-      val expectedSourceItem = SourceItem("/root/dir/example/package/one", SourceItemKind.FILE, false)
+      val expectedSourceItem = SourceItem("file:///root/dir/example/package/one", SourceItemKind.FILE, false)
 
       // when
       val workspaceModelEntityUpdaterConfig =
@@ -92,7 +93,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
     @Test
     fun `should return correct SourceItem for a directory`() {
       // given
-      val sourcePath11 = URI.create("file:///").toPath()
+      val sourcePath11 = FileUtil.createTempDirectory("directory", "1", true).toPath()
       val sourcePackagePrefix11 = "example.package.one"
       val sourceRoot1 = JavaSourceRoot(
         sourcePath = sourcePath11,
@@ -122,7 +123,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         jvmJdkInfo = null,
       )
 
-      val expectedSourceItem = SourceItem("/", SourceItemKind.DIRECTORY, false)
+      val expectedSourceItem = SourceItem(sourcePath11.toUri().toString(), SourceItemKind.DIRECTORY, false)
 
       // when
       val workspaceModelEntityUpdaterConfig =
@@ -389,56 +390,56 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         emptyList(),
         emptyList(),
         BuildTargetCapabilities()
-      ).also { it.baseDirectory = projectBasePath.toUri().toString().trimEnd('/') }
+      ).also { it.baseDirectory = projectBasePath.toUri().toString() }
 
       val expectedSourcesItem1 = SourcesItem(
         expectedBuildTargetId1,
         listOf(
-          SourceItem("/root/dir/example/package/one", SourceItemKind.FILE, false),
-          SourceItem("/root/dir/example/package/two", SourceItemKind.FILE, false)
+          SourceItem("file:///root/dir/example/package/one", SourceItemKind.FILE, false),
+          SourceItem("file:///root/dir/example/package/two", SourceItemKind.FILE, false)
         )
       )
       val expectedSourcesItem2 = SourcesItem(
         expectedBuildTargetId2,
         listOf(
-          SourceItem("/another/root/dir/another/example/package", SourceItemKind.FILE, false)
+          SourceItem("file:///another/root/dir/another/example/package", SourceItemKind.FILE, false)
         )
       )
       val expectedResourceItem1 = ResourcesItem(
         expectedBuildTargetId1, listOf(
-          "/root/dir/example/resource/File1.txt",
-          "/root/dir/example/resource/File2.txt",
+          "file:///root/dir/example/resource/File1.txt",
+          "file:///root/dir/example/resource/File2.txt",
         )
       )
       val expectedResourceItem2 = ResourcesItem(
         expectedBuildTargetId2, listOf(
-          "/another/root/dir/another/example/resource/File1.txt"
+          "file:///another/root/dir/another/example/resource/File1.txt"
         )
       )
       val expectedDependencySourceItem1 = DependencySourcesItem(
         expectedBuildTargetId1,
         listOf(
-          "/lib1/1.0.0/lib1-1.0.0-sources.jar",
-          "/lib2/2.0.0/lib2-2.0.0-sources.jar"
+          "file:///lib1/1.0.0/lib1-1.0.0-sources.jar",
+          "file:///lib2/2.0.0/lib2-2.0.0-sources.jar"
         )
       )
       val expectedDependencySourceItem2 = DependencySourcesItem(
         expectedBuildTargetId2,
-        listOf("/lib1/1.0.0/lib1-1.0.0-sources.jar")
+        listOf("file:///lib1/1.0.0/lib1-1.0.0-sources.jar")
       )
       val expectedJavacSourceItem1 = JavacOptionsItem(
         expectedBuildTargetId1,
         emptyList(),
         listOf(
-          "/lib1/1.0.0/lib1-1.0.0.jar",
-          "/lib2/2.0.0/lib2-2.0.0.jar"
+          "file:///lib1/1.0.0/lib1-1.0.0.jar",
+          "file:///lib2/2.0.0/lib2-2.0.0.jar"
         ),
         "",
       )
       val expectedJavacSourceItem2 = JavacOptionsItem(
         expectedBuildTargetId2,
         emptyList(),
-        listOf("/lib1/1.0.0/lib1-1.0.0.jar"),
+        listOf("file:///lib1/1.0.0/lib1-1.0.0.jar"),
         "",
       )
       val expectedProjectDetails = ProjectDetails(
