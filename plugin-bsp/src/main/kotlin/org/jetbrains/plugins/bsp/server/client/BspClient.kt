@@ -67,9 +67,9 @@ public class BspClient(
       TaskDataKind.TEST_FINISH -> {
         val gson = Gson()
         val testFinish = gson.fromJson(params.data as JsonObject, TestFinish::class.java)
-        val isSuite = params.message.take(3) == "<S>"
+        val isSuite = if (params.message.isNullOrBlank()) false else params.message.take(3) == "<S>"
         when (testFinish.status) {
-          TestStatus.FAILED -> bspTestConsole.failTest(testFinish.displayName, testFinish.message)
+          TestStatus.FAILED -> bspTestConsole.failTest(testFinish.displayName, testFinish.message.orEmpty())
           TestStatus.PASSED -> bspTestConsole.passTest(isSuite, testFinish.displayName)
           else -> bspTestConsole.ignoreTest(testFinish.displayName)
         }
