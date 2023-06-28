@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.server.connection
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import ch.epfl.scala.bsp4j.BuildClient
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
@@ -31,6 +32,10 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.seconds
+
+private const val OK_EXIT_CODE = 0
+private const val TERMINATED_EXIT_CODE = 130
+private val TERMINATION_TIMEOUT = 10.seconds
 
 private class CancelableInvocationHandlerWithTimeout(
   private val remoteProxy: BspServer,
@@ -106,6 +111,7 @@ public class BspFileConnection(
   private var bspProcess: Process? = null
   private var disconnectActions: MutableList<() -> Unit> = mutableListOf()
   private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
+  private val log = logger<BspFileConnection>()
 
   public override fun connect(taskId: Any, errorCallback: () -> Unit) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
@@ -138,21 +144,36 @@ public class BspFileConnection(
   private fun createAndStartProcessAndAddDisconnectActions(bspConnectionDetails: BspConnectionDetails): Process {
     val process = createAndStartProcess(bspConnectionDetails)
     process.logErrorOutputs(project.rootDir)
-    disconnectActions.add { server?.buildShutdown() }
+    disconnectActions.add { server?.buildShutdown()?.get(TERMINATION_TIMEOUT.inWholeSeconds, TimeUnit.SECONDS) }
     disconnectActions.add { server?.onBuildExit() }
 
+    disconnectActions.add { process.terminateDescendants() }
     disconnectActions.add {
-      process.waitFor(3, TimeUnit.SECONDS)
-      val exitValue = process.exitValue()
-      if (exitValue != 0) {
-        error(
-          "Server exited with exit value: $exitValue"
-        )
-      }
+      process.toHandle().terminateGracefully()
+      process.checkExitValueAndThrowIfError()
     }
-    disconnectActions.add { process.destroy() }
 
     return process
+  }
+
+  private fun Process.terminateDescendants() =
+    this.descendants().forEach { it.terminateGracefully() }
+
+  private fun ProcessHandle.terminateGracefully() {
+    try {
+      OSProcessUtil.terminateProcessGracefully(this.pid().toInt())
+    } catch (e: Exception) {
+      log.debug("OSProcessUtil.terminateProcessGracefully not supported! Fallback to '.destroy()'", e)
+      this.destroy()
+    }
+    this.onExit().get(TERMINATION_TIMEOUT.inWholeSeconds, TimeUnit.SECONDS)
+  }
+
+  private fun Process.checkExitValueAndThrowIfError() {
+    val exitValue = this.exitValue()
+    if (exitValue != OK_EXIT_CODE && exitValue != TERMINATED_EXIT_CODE) {
+      error("Server exited with exit value: $exitValue")
+    }
   }
 
   private fun createAndStartProcess(bspConnectionDetails: BspConnectionDetails): Process =
@@ -177,7 +198,7 @@ public class BspFileConnection(
   private fun Process.handleErrorOnExit(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) =
     this.onExit().whenComplete { completedProcess, _ ->
       val exitValue = completedProcess.exitValue()
-      if (exitValue != 0) {
+      if (exitValue != OK_EXIT_CODE && exitValue != TERMINATED_EXIT_CODE) {
         val errorMessage = "Server exited with exit value $exitValue"
         bspSyncConsole.finishTask(taskId, errorMessage, FailureResultImpl(errorMessage))
         errorCallback()
