@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.extension.points
 
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.EnvironmentUtil
 import java.io.File
@@ -9,7 +8,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGeneratorExtension {
-  private val log = logger<TemporarySbtBspConnectionDetailsGenerator>()
 
   override fun id(): String = "sbt"
 
@@ -18,12 +16,17 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
   override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean =
     projectPath.children.any { it.name == "build.sbt" }
 
-  override fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream): VirtualFile {
+  override fun generateBspConnectionDetailsFile(
+    projectPath: VirtualFile,
+    outputStream: OutputStream
+  ): VirtualFile {
     executeAndWait(
-      command = listOf(findCoursierExecutableOrPrepare(projectPath).toString(), "launch", "sbt", "--", "bspConfig"),
+      command = listOf(
+        findCoursierExecutableOrPrepare(projectPath).toString(),
+        "launch", "sbt", "--", "bspConfig"
+      ),
       projectPath = projectPath,
       outputStream = outputStream,
-      log = log
     )
     return getChild(projectPath, listOf(".bsp", "sbt.json"))!!
   }
@@ -43,7 +46,7 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
     // TODO we should pass it to syncConsole - it might take some time if the connection is really bad
     val coursierDestination = calculateCoursierExecutableDestination(projectPath)
 
-    CoursierUtils.prepareCoursierIfDoesntExistInTheDestination(coursierDestination)
+    CoursierUtils.prepareCoursierIfDoesntExistInTheDestination(coursierDestination, projectPath)
 
     return coursierDestination
   }

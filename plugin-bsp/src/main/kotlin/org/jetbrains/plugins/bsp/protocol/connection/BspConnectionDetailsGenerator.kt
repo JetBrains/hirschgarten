@@ -1,20 +1,20 @@
 package org.jetbrains.plugins.bsp.protocol.connection
 
-import com.intellij.idea.LoggerFactory
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
+import com.intellij.openapi.project.ProjectLocator
+import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizardStep
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.OutputStream
 import java.nio.file.Path
 
 public interface BspConnectionDetailsGenerator {
-  public fun executeAndWait(command: List<String>, projectPath: VirtualFile, outputStream: OutputStream, log: Logger) {
+  public fun executeAndWait(command: List<String>, projectPath: VirtualFile, outputStream: OutputStream) {
     // TODO - consider verbosing what command is being executed
     val builder = ProcessBuilder(command)
       .directory(projectPath.toNioPath().toFile())
@@ -23,13 +23,11 @@ public interface BspConnectionDetailsGenerator {
 
     val consoleProcess = builder.start()
     consoleProcess.inputStream.transferTo(outputStream)
-    consoleProcess.logErrorOutputs(log)
+    consoleProcess.logErrorOutputs(projectPath)
     consoleProcess.waitFor()
     if (consoleProcess.exitValue() != 0) {
       error(
-        """An error has occurred when running the command: ${command.joinToString(" ")}
-          |Refer to ${LoggerFactory.getLogFilePath().toUri()} for more information
-        """.trimMargin()
+        "An error has occurred while running the command: ${command.joinToString(" ")}"
       )
     }
   }
@@ -90,12 +88,25 @@ public class BspConnectionDetailsGeneratorProvider(
       ?.generateBspConnectionDetailsFile(projectPath, outputStream)
 }
 
-public fun Process.logErrorOutputs(log: Logger) {
+public fun Process.logErrorOutputs(projectPath: VirtualFile) {
+  if (!Registry.`is`("bsp.log.error.outputs")) return
+  val project = ProjectLocator.getInstance().guessProjectForFile(projectPath)
   @Suppress("DeferredResultUnused")
-  BspCoroutineService.getInstance().startAsync {
-    val bufferedReader = this.errorReader()
-    withContext(Dispatchers.IO) {
-      log.info(bufferedReader.readLines().joinToString("\n\t"))
+  project?.let {
+    val bspConsoleService = BspConsoleService.getInstance(project)
+    BspCoroutineService.getInstance(project).startAsync {
+      val bufferedReader = this.errorReader()
+      bufferedReader.forEachLine { doLogErrorOutputLine(it, bspConsoleService) }
     }
   }
 }
+
+private fun doLogErrorOutputLine(line: String, bspConsoleService: BspConsoleService) {
+  val taskConsole = bspConsoleService.getActiveConsole()
+  taskConsole?.addMessage(line)
+}
+
+private fun BspConsoleService.getActiveConsole(): TaskConsole? =
+  if (this.bspBuildConsole.hasTasksInProgress()) this.bspBuildConsole
+  else if (this.bspSyncConsole.hasTasksInProgress()) this.bspSyncConsole
+  else null

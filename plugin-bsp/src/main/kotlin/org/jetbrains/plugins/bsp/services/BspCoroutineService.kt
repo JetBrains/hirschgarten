@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
@@ -17,6 +18,6 @@ internal class BspCoroutineService(private val cs: CoroutineScope) {
 
   companion object {
     @JvmStatic
-    fun getInstance() = service<BspCoroutineService>()
+    fun getInstance(project: Project) = project.service<BspCoroutineService>()
   }
 }

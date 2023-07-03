@@ -1,8 +1,6 @@
 package org.jetbrains.plugins.bsp.extension.points
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
-import com.intellij.idea.LoggerFactory
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.observable.properties.ObservableProperty
@@ -39,8 +37,6 @@ import kotlin.io.path.writeText
 
 public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsGeneratorExtension {
 
-  private val log = logger<TemporaryBazelBspDetailsConnectionGenerator>()
-
   private lateinit var projectViewFilePathProperty: ObservableProperty<Path?>
 
   public override fun id(): String = "bazelbsp"
@@ -67,10 +63,9 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
   ): VirtualFile {
 
     executeAndWait(
-      calculateInstallerCommand(projectPath),
-      projectPath,
-      outputStream,
-      log
+      command = calculateInstallerCommand(projectPath),
+      projectPath = projectPath,
+      outputStream = outputStream,
     )
     return getChild(projectPath, listOf(".bsp", "bazelbsp.json"))!!
   }
@@ -101,7 +96,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
     // TODO we should pass it to syncConsole - it might take some time if the connection is really bad
     val coursierDestination = calculateCoursierExecutableDestination(projectPath)
 
-    CoursierUtils.prepareCoursierIfDoesntExistInTheDestination(coursierDestination)
+    CoursierUtils.prepareCoursierIfDoesntExistInTheDestination(coursierDestination, projectPath)
 
     return coursierDestination
   }
@@ -264,25 +259,26 @@ public class BazelEditProjectViewStep(
 
 public object CoursierUtils {
 
-  private val log = logger<CoursierUtils>()
-
   public fun calculateCoursierExecutableName(): String = when (CoursierSupportedOS.current) {
     CoursierSupportedOS.WINDOWS_X86_64 -> "cs.exe"
     else -> "cs"
   }
 
-  public fun prepareCoursierIfDoesntExistInTheDestination(coursierDestination: Path) {
+  public fun prepareCoursierIfDoesntExistInTheDestination(
+    coursierDestination: Path,
+    projectPath: VirtualFile
+  ) {
     if (!coursierDestination.toFile().exists()) {
-      prepareCoursier(coursierDestination)
+      prepareCoursier(coursierDestination, projectPath)
     }
   }
 
-  private fun prepareCoursier(coursierDestination: Path) {
+  private fun prepareCoursier(coursierDestination: Path, projectPath: VirtualFile) {
     val coursierParentDir = coursierDestination.parent
     val coursierZipPath = coursierParentDir.resolve(calculateCoursierZipName())
     val coursierExtractedPath = coursierParentDir.resolve(calculateCoursierExtractedName())
     downloadZipFile(calculateCoursierUrl(), coursierZipPath)
-    extractZipFile(coursierZipPath, coursierParentDir)
+    extractZipFile(coursierZipPath, coursierParentDir, projectPath)
     renameIfNeeded(coursierExtractedPath, coursierDestination)
 
     coursierDestination.toFile().setExecutable(true)
@@ -313,22 +309,20 @@ public object CoursierUtils {
   private fun downloadZipFile(downloadUrl: String, path: Path) =
     Files.copy(URL(downloadUrl).openStream(), path, StandardCopyOption.REPLACE_EXISTING)
 
-  private fun extractZipFile(zipPath: Path, workingDir: Path) =
-    calculateExtractCommand(zipPath).executeCommand(workingDir.toFile())
+  private fun extractZipFile(zipPath: Path, workingDir: Path, projectPath: VirtualFile) =
+    calculateExtractCommand(zipPath).executeCommand(workingDir.toFile(), projectPath)
 
-  private fun List<String>.executeCommand(workingDir: File = File(".")) {
+  private fun List<String>.executeCommand(workingDir: File = File("."), projectPath: VirtualFile) {
     val process = ProcessBuilder(this)
       .directory(workingDir)
       .withRealEnvs()
       .redirectError(ProcessBuilder.Redirect.PIPE)
       .start()
-    process.logErrorOutputs(log)
+    process.logErrorOutputs(projectPath)
     process.waitFor()
     if (process.exitValue() != 0) {
       error(
-        """An error has occurred when running the command: ${this.joinToString(" ")}
-          |Refer to ${LoggerFactory.getLogFilePath().toUri()} for more information
-        """.trimMargin()
+        "An error has occurred while running the command: ${this.joinToString(" ")}"
       )
     }
   }

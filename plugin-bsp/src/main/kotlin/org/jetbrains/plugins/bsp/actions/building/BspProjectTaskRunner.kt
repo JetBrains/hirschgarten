@@ -78,7 +78,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   @OptIn(ExperimentalCoroutinesApi::class)
   private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTarget>): Promise<Result> {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
-    val result = BspCoroutineService.getInstance().startAsync {
+    val result = BspCoroutineService.getInstance(project).startAsync {
       withBackgroundProgress(project, "Building project...") {
         BuildTargetTask(project).executeIfConnected(targetIdentifiers)
       }

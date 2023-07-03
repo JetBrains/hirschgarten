@@ -18,7 +18,7 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
     val project = e.project
 
     if (project != null) {
-      BspCoroutineService.getInstance().start { doAction(project) }
+      BspCoroutineService.getInstance(project).start { doAction(project) }
     } else {
       log.warn("ConnectAction cannot be performed! Project not available.")
     }

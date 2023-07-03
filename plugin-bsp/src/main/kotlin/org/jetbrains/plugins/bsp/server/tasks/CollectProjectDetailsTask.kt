@@ -36,7 +36,7 @@ import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
-import org.jetbrains.plugins.bsp.config.projectRootDir
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
@@ -72,7 +72,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
           doExecute()
         }
       } catch (e: CancellationException) {
-        onCancel()
+        onCancel(e)
       }
     }
   }
@@ -107,14 +107,16 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         bspSyncConsole.finishTask(
           taskId = taskId,
           message = "Canceled",
-          result = FailureResultImpl("The task has been canceled!")
+          result = FailureResultImpl(e)
         )
+
       isTimeoutException(e) ->
         bspSyncConsole.finishTask(
           taskId = taskId,
           message = "Timed out",
           result = FailureResultImpl(BspTasksBundle.message("task.timeout.message"))
         )
+
       else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
     }
 
@@ -143,7 +145,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun createInitializeBuildParams(): InitializeBuildParams {
-    val projectBaseDir = project.projectRootDir
+    val projectBaseDir = project.rootDir
     val params = InitializeBuildParams(
       "IntelliJ-BSP",
       "0.0.1",
@@ -219,9 +221,9 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     bspSyncConsole.finishSubtask("apply-on-workspace-model", "Applying changes done!")
   }
 
-  private fun onCancel() {
+  private fun onCancel(e: Exception) {
     cancelOnFuture.cancel(true)
-    bspSyncConsole.finishTask(taskId, "Canceled", FailureResultImpl("The task has been canceled!"))
+    bspSyncConsole.finishTask(taskId, e.message ?: "", FailureResultImpl(e))
   }
 
   public fun cancelExecution() {

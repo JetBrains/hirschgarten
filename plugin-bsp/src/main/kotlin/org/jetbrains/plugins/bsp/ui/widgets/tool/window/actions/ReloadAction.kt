@@ -26,7 +26,7 @@ public class ReloadAction :
     val project = e.project
 
     if (project != null) {
-      BspCoroutineService.getInstance().start { doAction(project) }
+      BspCoroutineService.getInstance(project).start { doAction(project) }
     } else {
       log.warn("ReloadAction cannot be performed! Project not available.")
     }
