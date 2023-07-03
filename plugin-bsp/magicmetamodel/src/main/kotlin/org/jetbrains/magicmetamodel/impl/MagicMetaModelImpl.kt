@@ -28,8 +28,9 @@ internal class DefaultMagicMetaModelDiff(
 ) : MagicMetaModelDiff {
 
   override suspend fun applyOnWorkspaceModel() {
+    val storageReplacement = builderSnapshot.getStorageReplacement()
     writeAction {
-      if (workspaceModel.replaceProjectModel(builderSnapshot.getStorageReplacement())) {
+      if (workspaceModel.replaceProjectModel(storageReplacement)) {
         mmmInstance.loadStorage(mmmStorageReplacement)
         targetLoadListeners.forEach { it() }
       }

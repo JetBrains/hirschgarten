@@ -15,7 +15,10 @@ import java.nio.file.Path
 
 public interface BspConnectionDetailsGenerator {
   public fun executeAndWait(command: List<String>, projectPath: VirtualFile, outputStream: OutputStream) {
-    // TODO - consider verbosing what command is being executed
+    val commandStr = command.joinToString(" ")
+    val project = ProjectLocator.getInstance().guessProjectForFile(projectPath)!!
+    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    bspSyncConsole.addMessage("Running command $commandStr")
     val builder = ProcessBuilder(command)
       .directory(projectPath.toNioPath().toFile())
       .withRealEnvs()
@@ -27,7 +30,7 @@ public interface BspConnectionDetailsGenerator {
     consoleProcess.waitFor()
     if (consoleProcess.exitValue() != 0) {
       error(
-        "An error has occurred while running the command: ${command.joinToString(" ")}"
+        "An error has occurred while running the command: $commandStr"
       )
     }
   }
