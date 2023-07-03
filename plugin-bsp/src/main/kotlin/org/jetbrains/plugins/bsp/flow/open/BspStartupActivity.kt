@@ -10,7 +10,7 @@ import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.config.projectRootDir
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
@@ -88,7 +88,7 @@ public class BspStartupActivity : ProjectActivity {
     project: Project,
   ): ConnectionFileOrNewConnection? {
     val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(
-      project.projectRootDir,
+      project.rootDir,
       BspConnectionDetailsGeneratorExtension.extensions()
     )
     val wizard = ImportProjectWizard(project, bspConnectionDetailsGeneratorProvider)

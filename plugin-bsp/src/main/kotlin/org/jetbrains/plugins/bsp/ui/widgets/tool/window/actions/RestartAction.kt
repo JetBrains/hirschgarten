@@ -21,7 +21,7 @@ public class RestartAction :
     val project = e.project
 
     if (project != null) {
-      BspCoroutineService.getInstance().start { doAction(project) }
+      BspCoroutineService.getInstance(project).start { doAction(project) }
     } else {
       log.warn("RestartAction cannot be performed! Project not available.")
     }

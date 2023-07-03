@@ -30,7 +30,7 @@ public class TaskConsole(
   private val basePath: String
 ) {
   private val tasksInProgress: MutableList<Any> = mutableListOf()
-  private val subtaskParentMap: MutableMap<Any, SubtaskParents> = mutableMapOf()
+  private val subtaskParentMap: LinkedHashMap<Any, SubtaskParents> = linkedMapOf()
 
   /**
    * Displays start of a task in this console.
@@ -206,6 +206,16 @@ public class TaskConsole(
       filePosition
     )
     taskView.onEvent(taskId, event)
+  }
+
+  /**
+   * Adds a message to the latest task in this console.
+   */
+  @Synchronized
+  public fun addMessage(message: String) {
+    val entry = subtaskParentMap.entries.lastOrNull()
+    val taskId = tasksInProgress.lastOrNull()
+    entry?.let { addMessage(it.key, message) } ?: taskId?.let { addMessage(taskId, message) }
   }
 
   /**

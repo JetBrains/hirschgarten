@@ -4,7 +4,7 @@ import com.intellij.build.BuildViewManager
 import com.intellij.build.SyncViewManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.config.projectRootDir
+import org.jetbrains.plugins.bsp.config.rootDir
 
 @Service(Service.Level.PROJECT)
 public class BspConsoleService(project: Project) {
@@ -18,7 +18,7 @@ public class BspConsoleService(project: Project) {
   public val bspRunConsole: BspTargetRunConsole = BspTargetRunConsole()
 
   init {
-    val basePath = project.projectRootDir.path
+    val basePath = project.rootDir.path
 
     bspBuildConsole = TaskConsole(project.getService(BuildViewManager::class.java), basePath)
     bspSyncConsole = TaskConsole(project.getService(SyncViewManager::class.java), basePath)

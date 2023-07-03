@@ -5,7 +5,7 @@ import com.intellij.ide.wizard.StepAdapter
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import org.jetbrains.plugins.bsp.config.projectRootDir
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import javax.swing.JComponent
 
@@ -33,7 +33,7 @@ public class ImportProjectWizard(
 
   init {
     firstStep = ChooseConnectionFileOrNewConnectionStep(
-      project.projectRootDir,
+      project.rootDir,
       bspConnectionDetailsGeneratorProvider.availableBspConnectionDetailsGenerators
     ) { updateWizardButtonsToGeneratorSelection() }
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty

@@ -15,7 +15,7 @@ import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
-import org.jetbrains.plugins.bsp.config.projectRootDir
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
@@ -74,7 +74,7 @@ public class MagicMetaModelService(private val project: Project) :
     val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
 
     val moduleNameProvider = obtainModuleNameProvider()
-    val projectBasePath = project.projectRootDir.toNioPath()
+    val projectBasePath = project.rootDir.toNioPath()
 
     return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider, projectBasePath)
   }

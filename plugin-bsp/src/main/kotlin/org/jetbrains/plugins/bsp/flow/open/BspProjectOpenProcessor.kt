@@ -12,7 +12,7 @@ import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.config.projectRootDir
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
@@ -78,13 +78,13 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
       )
     )
 
-    BspCoroutineService.getInstance().start {
+    BspCoroutineService.getInstance(project).start {
       magicMetaModelService.value.loadDefaultTargets().applyOnWorkspaceModel()
     }
   }
 
   private fun initProperties(project: Project, projectRootDir: VirtualFile) {
     project.isBspProject = true
-    project.projectRootDir = projectRootDir
+    project.rootDir = projectRootDir
   }
 }

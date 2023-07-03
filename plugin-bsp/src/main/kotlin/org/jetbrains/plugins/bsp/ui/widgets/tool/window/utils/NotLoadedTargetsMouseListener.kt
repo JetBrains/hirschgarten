@@ -76,7 +76,7 @@ private class LoadTargetAction(
     if (project != null) {
       val magicMetaModel = MagicMetaModelService.getInstance(project).value
       val diff = magicMetaModel.loadTarget(target.id)
-      BspCoroutineService.getInstance().start { diff?.applyOnWorkspaceModel() }
+      BspCoroutineService.getInstance(project).start { diff?.applyOnWorkspaceModel() }
     }
   }
 }
