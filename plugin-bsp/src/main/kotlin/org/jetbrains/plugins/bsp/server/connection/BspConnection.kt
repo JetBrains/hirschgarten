@@ -34,7 +34,7 @@ public interface BspConnection {
   /**
    * Establish a connection with the server, and initialize [server].
    */
-  public fun connect(taskId: Any)
+  public fun connect(taskId: Any, errorCallback: () -> Unit = {})
 
   /**
    * Disconnect from the server,

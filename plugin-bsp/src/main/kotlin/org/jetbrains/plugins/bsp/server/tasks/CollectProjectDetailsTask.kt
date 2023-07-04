@@ -29,6 +29,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -79,13 +80,13 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun doExecute() {
     val projectDetails = progressStep(endFraction = 0.5, text = "Collecting project details") {
-      calculateProjectDetailsSubtask()
+      runInterruptible { calculateProjectDetailsSubtask() }
     }
     indeterminateStep(text = "Calculating all unique jdk infos") {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
     }
     progressStep(endFraction = 0.75, "Updating magic meta model diff") {
-      updateMMMDiffSubtask(projectDetails)
+      runInterruptible { updateMMMDiffSubtask(projectDetails) }
     }
     progressStep(endFraction = 1.0, "Post-processing magic meta model") {
       postprocessingMMMSubtask()
