@@ -35,7 +35,8 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
     )
 
     try {
-      BspConnectionService.getInstance(project).value!!.connect("bsp-connect")
+      BspConnectionService.getInstance(project).value!!
+        .connect("bsp-connect") { collectProjectDetailsTask.cancelExecution() }
       collectProjectDetailsTask.execute(
         name = "Connecting...",
         cancelable = true

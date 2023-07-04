@@ -45,7 +45,7 @@ public class ReloadAction :
 
     try {
       val connection = BspConnectionService.getInstance(project).value!!
-      connection.handleConnection(project)
+      connection.handleConnection(project) { collectProjectDetailsTask.cancelExecution() }
       collectProjectDetailsTask.execute(name = "Reloading...", cancelable = true)
       bspSyncConsole.finishTask(RELOAD_TASK_ID, "Reload done!")
     } catch (e: Exception) {
@@ -53,26 +53,29 @@ public class ReloadAction :
     }
   }
 
-  private fun BspConnection.handleConnection(project: Project) = when (this) {
+  private fun BspConnection.handleConnection(project: Project, errorCallback: () -> Unit) = when (this) {
     is BspFileConnection -> {
       this.disconnect()
       val locatedBspConnectionDetails =
         LocatedBspConnectionDetailsParser.parseFromFile(this.locatedConnectionFile.connectionFileLocation)
-      doReloadConnectionFile(project, locatedBspConnectionDetails)
+      doReloadConnectionFile(project, locatedBspConnectionDetails, errorCallback)
     }
 
     is BspGeneratorConnection ->
       this.getLocatedBspConnectionDetails()?.let {
         this.disconnect()
-        doReloadConnectionFile(project, it)
+        doReloadConnectionFile(project, it, errorCallback)
       }
 
     else -> {}
   }
 
-  private fun doReloadConnectionFile(project: Project, locatedBspConnectionDetails: LocatedBspConnectionDetails) {
+  private fun doReloadConnectionFile(project: Project,
+                                     locatedBspConnectionDetails: LocatedBspConnectionDetails,
+                                     errorCallback: () -> Unit
+  ) {
     val newBspFileConnection = BspFileConnection(project, locatedBspConnectionDetails)
-    newBspFileConnection.connect(RELOAD_TASK_ID)
+    newBspFileConnection.connect(RELOAD_TASK_ID, errorCallback)
     val bspConnectionService = BspConnectionService.getInstance(project)
     bspConnectionService.value = newBspFileConnection
   }

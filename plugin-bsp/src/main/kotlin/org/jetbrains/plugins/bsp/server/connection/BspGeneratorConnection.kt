@@ -50,12 +50,12 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
     this.buildToolId = state.generatorId
   }
 
-  public override fun connect(taskId: Any) {
+  public override fun connect(taskId: Any, errorCallback: () -> Unit) {
     if (fileConnection == null) {
       generateNewConnectionFile(taskId)
     }
 
-    fileConnection?.connect(taskId)
+    fileConnection?.connect(taskId, errorCallback)
   }
 
   public override fun disconnect() {

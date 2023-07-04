@@ -107,26 +107,26 @@ public class BspFileConnection(
   private var disconnectActions: MutableList<() -> Unit> = mutableListOf()
   private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
 
-  public override fun connect(taskId: Any) {
+  public override fun connect(taskId: Any, errorCallback: () -> Unit) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
     bspSyncConsole.startSubtask(taskId, connectSubtaskId, "Connecting to the server...")
     bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection...")
 
     try {
-      doConnectOrThrowIfFailed(bspSyncConsole, taskId)
+      doConnectOrThrowIfFailed(bspSyncConsole, taskId, errorCallback)
     } catch (e: Exception) {
       bspSyncConsole.finishTask(taskId, "Establishing connection has failed!", FailureResultImpl(e))
     }
   }
 
-  private fun doConnectOrThrowIfFailed(bspSyncConsole: TaskConsole, taskId: Any) {
+  private fun doConnectOrThrowIfFailed(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) {
     if (locatedConnectionFile.bspConnectionDetails == null)
       error("Parsing connection file '${locatedConnectionFile.connectionFileLocation}' failed!")
     val client = createBspClient()
     val process = createAndStartProcessAndAddDisconnectActions(locatedConnectionFile.bspConnectionDetails)
 
-    process.handleErrorOnExit(bspSyncConsole, taskId)
+    process.handleErrorOnExit(bspSyncConsole, taskId, errorCallback)
 
     bspProcess = process
     bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection done!")
@@ -174,12 +174,13 @@ public class BspFileConnection(
     )
   }
 
-  private fun Process.handleErrorOnExit(bspSyncConsole: TaskConsole, taskId: Any) =
+  private fun Process.handleErrorOnExit(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) =
     this.onExit().whenComplete { completedProcess, _ ->
       val exitValue = completedProcess.exitValue()
       if (exitValue != 0) {
         val errorMessage = "Server exited with exit value $exitValue"
         bspSyncConsole.finishTask(taskId, errorMessage, FailureResultImpl(errorMessage))
+        errorCallback()
       }
     }
 

@@ -147,7 +147,8 @@ public class BspStartupActivity : ProjectActivity {
       cancelAction = { collectProjectDetailsTask.cancelExecution() }
     )
     try {
-      BspConnectionService.getInstance(project).value!!.connect("bsp-import")
+      BspConnectionService.getInstance(project).value!!
+        .connect("bsp-import") { collectProjectDetailsTask.cancelExecution() }
       collectProjectDetailsTask.execute(
         name = "Syncing...",
         cancelable = true
