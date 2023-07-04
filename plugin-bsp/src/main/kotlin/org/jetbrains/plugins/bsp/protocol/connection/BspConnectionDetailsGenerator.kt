@@ -18,7 +18,7 @@ public interface BspConnectionDetailsGenerator {
     val commandStr = command.joinToString(" ")
     val project = ProjectLocator.getInstance().guessProjectForFile(projectPath)!!
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.addMessage("Running command $commandStr")
+    bspSyncConsole.addMessage("Running command: $commandStr")
     val builder = ProcessBuilder(command)
       .directory(projectPath.toNioPath().toFile())
       .withRealEnvs()
