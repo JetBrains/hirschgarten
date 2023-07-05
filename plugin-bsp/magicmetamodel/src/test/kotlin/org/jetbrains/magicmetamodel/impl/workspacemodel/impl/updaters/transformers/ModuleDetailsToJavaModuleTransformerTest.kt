@@ -163,6 +163,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       modulesDependencies = listOf(
         ModuleDependency("module2"),
         ModuleDependency("module3"),
+        ModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath))
       ),
       librariesDependencies = listOf(
         LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
@@ -392,6 +393,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       modulesDependencies = listOf(
         ModuleDependency("module2"),
         ModuleDependency("module3"),
+        ModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath))
       ),
       librariesDependencies = listOf(
         LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
@@ -456,8 +458,11 @@ class ModuleDetailsToJavaModuleTransformerTest {
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
         ModuleDependency("module3"),
+        ModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath))
       ),
-      librariesDependencies = listOf(LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar")),
+      librariesDependencies = listOf(
+        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar")
+      ),
     )
 
     val expectedBaseDirContentRoot2 = ContentRoot(
@@ -493,7 +498,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
       jvmJdkInfo = null,
     )
 
-    javaModules shouldContainExactlyInAnyOrder (listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) })
+    javaModules shouldContainExactlyInAnyOrder (
+      listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) }
+    )
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(

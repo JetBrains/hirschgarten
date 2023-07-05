@@ -32,9 +32,9 @@
     <projectTaskRunner
       implementation="org.jetbrains.plugins.bsp.actions.building.BspProjectTaskRunner"/>
 
-    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"
-                    serviceImplementation="org.jetbrains.plugins.bsp.services.SingleFileSourcesTrackerImpl"
-                    overrides="true"/>
+<!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
+<!--                    serviceImplementation="org.jetbrains.plugins.bsp.services.SingleFileSourcesTrackerImpl"-->
+<!--                    overrides="true"/>-->
 
     <registryKey defaultValue="600" description="Timeout for BSP requests in seconds" key="bsp.request.timeout.seconds"/>
     <registryKey defaultValue="true" description="Choose default connection" key="bsp.wizard.choose.default.connection"/>
