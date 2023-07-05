@@ -28,7 +28,9 @@ import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
@@ -64,17 +66,20 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private val jdkTable = ProjectJdkTable.getInstance()
 
-  private val coroutineJob = Job()
+  private lateinit var coroutineJob: Job
 
   public suspend fun execute(name: String, cancelable: Boolean) {
-    withContext(coroutineJob) {
-      try {
-        withBackgroundProgress(project, name, cancelable) {
-          doExecute()
+    withContext(Dispatchers.Default) {
+      coroutineJob = launch {
+        try {
+          withBackgroundProgress(project, name, cancelable) {
+            doExecute()
+          }
+        } catch (e: CancellationException) {
+          onCancel(e)
         }
-      } catch (e: CancellationException) {
-        onCancel(e)
       }
+      coroutineJob.join()
     }
   }
 
@@ -108,7 +113,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         bspSyncConsole.finishTask(
           taskId = taskId,
           message = "Canceled",
-          result = FailureResultImpl(e)
+          result = FailureResultImpl("The task is canceled")
         )
 
       isTimeoutException(e) ->
