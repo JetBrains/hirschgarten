@@ -1,5 +1,6 @@
 plugins {
   id("intellijbsp.kotlin-conventions")
+  alias(libs.plugins.intellij)
 }
 
 dependencies {
@@ -13,4 +14,8 @@ tasks {
   test {
     classpath -= classpath.filter { it.name.contains("kotlin-compiler-embeddable") }
   }
+}
+
+intellij {
+  plugins.set(Platform.plugins)
 }

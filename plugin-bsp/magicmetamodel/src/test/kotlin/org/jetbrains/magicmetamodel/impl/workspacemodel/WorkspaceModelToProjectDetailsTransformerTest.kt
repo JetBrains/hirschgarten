@@ -75,6 +75,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
         jvmJdkInfo = JvmJdkInfo(name = "11", javaHome = "fake/path/to/local_jdk"),
+        kotlinAddendum = null,
       )
 
       val expectedSourceItem = SourceItem("file:///root/dir/example/package/one", SourceItemKind.FILE, false)
@@ -121,6 +122,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
         jvmJdkInfo = null,
+        kotlinAddendum = null,
       )
 
       val expectedSourceItem = SourceItem(sourcePath11.toUri().toString(), SourceItemKind.DIRECTORY, false)
@@ -228,6 +230,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
         jvmJdkInfo = JvmJdkInfo(name = "11", javaHome = "fake/path/to/local_jdk"),
+        kotlinAddendum = null,
       )
 
       val module2 = Module(
@@ -282,6 +285,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         libraries = libraries2,
         compilerOutput = compilerOutput2,
         jvmJdkInfo = null,
+        kotlinAddendum = null,
       )
 
       val module3 = Module(
@@ -304,6 +308,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         libraries = emptyList(),
         compilerOutput = compilerOutput3,
         jvmJdkInfo = JvmJdkInfo(name = "13", javaHome = "fake/path/to/local_jdk"),
+        kotlinAddendum = null,
       )
 
       val rootModule = Module(
@@ -326,6 +331,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         libraries = emptyList(),
         compilerOutput = null,
         jvmJdkInfo = null,
+        kotlinAddendum = null,
       )
 
       // when

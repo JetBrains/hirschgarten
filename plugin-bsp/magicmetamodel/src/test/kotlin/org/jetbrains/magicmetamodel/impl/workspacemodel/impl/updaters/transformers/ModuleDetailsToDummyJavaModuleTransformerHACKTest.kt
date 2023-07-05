@@ -129,7 +129,8 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       resourceRoots = listOf(),
       libraries = listOf(),
       compilerOutput = null,
-      jvmJdkInfo = null
+      jvmJdkInfo = null,
+      kotlinAddendum = null
     )
 
     javaModules shouldContainExactlyInAnyOrder (
@@ -230,7 +231,8 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       resourceRoots = listOf(),
       libraries = listOf(),
       compilerOutput = null,
-      jvmJdkInfo = null
+      jvmJdkInfo = null,
+      kotlinAddendum = null
     )
 
     val expectedModule2 = Module(
@@ -255,7 +257,8 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       resourceRoots = listOf(),
       libraries = listOf(),
       compilerOutput = null,
-      jvmJdkInfo = null
+      jvmJdkInfo = null,
+      kotlinAddendum = null
     )
 
     javaModules shouldContainExactlyInAnyOrder (listOf(expectedJavaModule1, expectedJavaModule2) to { actual, expected -> validateJavaModule(actual, expected) })

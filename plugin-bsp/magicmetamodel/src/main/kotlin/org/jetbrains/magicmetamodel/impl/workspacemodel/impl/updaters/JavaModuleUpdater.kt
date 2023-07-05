@@ -5,9 +5,16 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.KotlincOpts
 import java.nio.file.Path
 
 internal data class JvmJdkInfo(val name: String, val javaHome: String)
+
+internal data class KotlinAddendum(
+  val languageVersion: String,
+  val apiVersion: String,
+  val kotlincOptions: KotlincOpts?
+)
 
 internal data class JavaModule(
   val module: Module,
@@ -17,6 +24,7 @@ internal data class JavaModule(
   val libraries: List<Library>,
   val compilerOutput: Path?,
   val jvmJdkInfo: JvmJdkInfo?,
+  val kotlinAddendum: KotlinAddendum?,
 ) : WorkspaceModelEntity()
 
 internal class JavaModuleWithSourcesUpdater(
@@ -47,6 +55,11 @@ internal class JavaModuleWithSourcesUpdater(
 
       val javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
       javaResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
+    }
+
+    if (entityToAdd.module.languageIds.contains("kotlin")) {
+      val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
+      kotlinFacetEntityUpdater.addEntity(entityToAdd, moduleEntity)
     }
 
     return moduleEntity

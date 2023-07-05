@@ -26,6 +26,7 @@ internal data class Module(
   val librariesDependencies: List<LibraryDependency>,
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
   val languageIds: List<String> = listOf(),
+  val associates: List<ModuleDependency> = listOf(),
 ) : WorkspaceModelEntity()
 
 internal class ModuleCapabilities(private val map: Map<String, String> = mapOf()) :
@@ -69,12 +70,13 @@ internal class ModuleEntityUpdater(
     entityToAdd: Module,
   ): ModuleEntity {
     val modulesDependencies = entityToAdd.modulesDependencies.map { toModuleDependencyItemModuleDependency(it) }
+    val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val librariesDependencies =
       entityToAdd.librariesDependencies.map { toModuleDependencyItemLibraryDependency(it, entityToAdd.name) }
     val moduleEntity = builder.addEntity(
       ModuleEntity(
         name = entityToAdd.name,
-        dependencies = modulesDependencies + librariesDependencies + defaultDependencies,
+        dependencies = modulesDependencies + associatesDependencies + librariesDependencies + defaultDependencies,
         entitySource = BspEntitySource
       ) {
         this.type = entityToAdd.type

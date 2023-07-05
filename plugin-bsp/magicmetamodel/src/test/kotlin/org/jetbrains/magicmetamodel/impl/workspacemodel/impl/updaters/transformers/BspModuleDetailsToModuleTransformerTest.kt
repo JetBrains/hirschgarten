@@ -109,6 +109,69 @@ class BspModuleDetailsToModuleTransformerTest {
   }
 
   @Test
+  fun `should return module with associates when specified in BspModuleDetails`() {
+    // given
+    val targetName = "//target1"
+    val targetId = BuildTargetIdentifier(targetName)
+    val target = BuildTarget(
+      targetId,
+      emptyList(),
+      emptyList(),
+      listOf(
+        BuildTargetIdentifier("@maven//:test"),
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
+      ),
+      BuildTargetCapabilities()
+    )
+    val bspModuleDetails = BspModuleDetails(
+      target = target,
+      allTargetsIds = listOf(
+        BuildTargetIdentifier("//target1"),
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
+        BuildTargetIdentifier("//target4"),
+        BuildTargetIdentifier("//target5"),
+      ),
+      dependencySources = listOf(),
+      type = "JAVA_MODULE",
+      javacOptions = null,
+      associates = listOf(
+        BuildTargetIdentifier("//target4"),
+        BuildTargetIdentifier("//target5"),
+      )
+    )
+
+    // when
+    val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
+
+    // then
+    val expectedModule = Module(
+      name = targetName,
+      type = "JAVA_MODULE",
+      modulesDependencies = listOf(
+        ModuleDependency(
+          moduleName = "//target2",
+        ),
+        ModuleDependency(
+          moduleName = "//target3",
+        ),
+      ),
+      librariesDependencies = listOf(),
+      associates = listOf(
+        ModuleDependency(
+          moduleName = "//target4",
+        ),
+        ModuleDependency(
+          moduleName = "//target5",
+        ),
+      )
+    )
+
+    shouldBeIgnoringDependenciesOrder(module, expectedModule)
+  }
+
+  @Test
   fun `should return multiple modules with dependencies to other targets and libraries`() {
     // given
     val dependencySource1 = "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar"
@@ -237,7 +300,7 @@ class BspModuleDetailsToModuleTransformerTest {
       )
     )
 
-    modules shouldContainExactlyInAnyOrder (listOf(expectedModule1, expectedModule2) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) } )
+    modules shouldContainExactlyInAnyOrder (listOf(expectedModule1, expectedModule2) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
   }
 
   @Test

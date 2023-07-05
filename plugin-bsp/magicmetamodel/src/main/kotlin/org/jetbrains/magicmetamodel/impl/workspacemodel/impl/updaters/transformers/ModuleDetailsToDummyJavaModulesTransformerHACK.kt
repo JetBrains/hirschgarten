@@ -52,7 +52,8 @@ internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projec
       resourceRoots = listOf(),
       libraries = listOf(),
       compilerOutput = null,
-      jvmJdkInfo = null
+      jvmJdkInfo = null,
+      kotlinAddendum = null
     )
 }
 
