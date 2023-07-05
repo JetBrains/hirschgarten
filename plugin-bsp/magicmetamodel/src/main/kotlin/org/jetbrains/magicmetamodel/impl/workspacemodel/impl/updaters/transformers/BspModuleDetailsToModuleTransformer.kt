@@ -17,6 +17,7 @@ internal data class BspModuleDetails(
   val dependencySources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
   val type: String,
+  val associates: List<BuildTargetIdentifier> = listOf(),
 )
 
 internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvider: ModuleNameProvider) :
@@ -37,7 +38,8 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
       capabilities = inputEntity.target.capabilities.let {
         ModuleCapabilities(it.canRun, it.canTest, it.canCompile, it.canDebug)
       },
-      languageIds = inputEntity.target.languageIds
+      languageIds = inputEntity.target.languageIds,
+      associates = inputEntity.associates.map { it.toModuleDependency(moduleNameProvider) }
     )
   }
 }
@@ -61,12 +63,13 @@ internal class BuildTargetToModuleDependencyTransformer(
 ) : WorkspaceModelEntityPartitionTransformer<BuildTarget, ModuleDependency> {
 
   override fun transform(inputEntity: BuildTarget): List<ModuleDependency> =
-    inputEntity.dependencies
+    inputEntity
+      .dependencies
       .filter { allTargetsIds.contains(it) }
-      .map { toModuleDependency(it) }
-
-  private fun toModuleDependency(targetId: BuildTargetIdentifier): ModuleDependency =
-    ModuleDependency(
-      moduleName = moduleNameProvider(targetId),
-    )
+      .map { it.toModuleDependency(moduleNameProvider) }
 }
+
+internal fun BuildTargetIdentifier.toModuleDependency(moduleNameProvider: ModuleNameProvider): ModuleDependency =
+  ModuleDependency(
+    moduleName = moduleNameProvider(this),
+  )

@@ -121,7 +121,8 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           resourceRoots = resourceRoots,
           libraries = libraries,
           compilerOutput = compilerOutput,
-          jvmJdkInfo = JvmJdkInfo(name = "test-proj-11", javaHome = "fake/path/to/local_jdk")
+          jvmJdkInfo = JvmJdkInfo(name = "test-proj-11", javaHome = "fake/path/to/local_jdk"),
+          kotlinAddendum = null,
         )
 
         // when
@@ -363,6 +364,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           baseDirContentRoot = baseDirContentRoot1,
           compilerOutput = compilerOutput1,
           jvmJdkInfo = JvmJdkInfo(name = "test-proj-11", javaHome = "/fake/path/to/local_jdk"),
+          kotlinAddendum = null,
         )
 
         val module2 = Module(
@@ -420,6 +422,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           libraries = libraries2,
           compilerOutput = compilerOutput2,
           jvmJdkInfo = JvmJdkInfo(name = "test-proj-11", javaHome = "/fake/path/to/local_jdk"),
+          kotlinAddendum = null,
         )
 
         val javaModules = listOf(javaModule1, javaModule2)
@@ -692,6 +695,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           libraries = emptyList(),
           compilerOutput = null,
           jvmJdkInfo = null,
+          kotlinAddendum = null,
         )
 
         // when
@@ -740,6 +744,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           libraries = emptyList(),
           compilerOutput = null,
           jvmJdkInfo = null,
+          kotlinAddendum = null,
         )
 
         val module2 = Module(
@@ -763,6 +768,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           libraries = emptyList(),
           compilerOutput = null,
           jvmJdkInfo = null,
+          kotlinAddendum = null,
         )
 
         val javaModules = listOf(javaModule1, javaModule2)

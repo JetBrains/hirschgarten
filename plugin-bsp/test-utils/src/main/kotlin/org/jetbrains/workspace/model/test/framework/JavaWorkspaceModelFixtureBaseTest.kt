@@ -31,13 +31,16 @@ import com.intellij.workspaceModel.ide.getInstance
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInfo
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.Path
 
 private const val JAVA_ROOT_TYPE = "java-source"
 
 public abstract class JavaWorkspaceModelFixtureBaseTest : TestIndexingModeSupporter {
   private var indexingMode = IndexingMode.SMART
-  private lateinit var workspaceModel: WorkspaceModel
-  private lateinit var virtualFileUrlManager: VirtualFileUrlManager
+  protected lateinit var workspaceModel: WorkspaceModel
+  protected lateinit var virtualFileUrlManager: VirtualFileUrlManager
   private lateinit var jdk: Sdk
   protected lateinit var fixture: JavaCodeInsightTestFixture
 
@@ -50,8 +53,9 @@ public abstract class JavaWorkspaceModelFixtureBaseTest : TestIndexingModeSuppor
   }
 
   private fun initializeFixture(name: String) {
+    val formattedName = name.replace(" ", "_")
     val projectBuilder =
-      IdeaTestFixtureFactory.getFixtureFactory().createFixtureBuilder(name)
+      IdeaTestFixtureFactory.getFixtureFactory().createFixtureBuilder(formattedName)
     fixture = JavaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(projectBuilder.fixture)
     fixture = wrapFixture(fixture, indexingMode)
     val moduleFixtureBuilder = projectBuilder.addModule(JavaModuleFixtureBuilder::class.java)
@@ -62,6 +66,9 @@ public abstract class JavaWorkspaceModelFixtureBaseTest : TestIndexingModeSuppor
 
   protected val project: Project
     get() = fixture.project
+
+  protected val projectBasePath: Path
+    get() = project.basePath?.let { Paths.get(it) } ?: Path("")
 
   private fun initializeOthers() {
     workspaceModel = WorkspaceModel.getInstance(project)

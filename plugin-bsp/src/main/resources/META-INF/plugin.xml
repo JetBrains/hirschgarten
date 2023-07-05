@@ -4,6 +4,7 @@
   <vendor>JetBrains</vendor>
 
   <depends>com.intellij.modules.platform</depends>
+  <depends>org.jetbrains.kotlin</depends>
 
   <extensionPoints>
     <extensionPoint qualifiedName="com.intellij.bspConnectionDetailsGeneratorExtension"

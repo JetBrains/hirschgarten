@@ -14,6 +14,7 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.Gson
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.KotlinBuildTarget
 
 // TODO, we can do it better, but for now it should be good enough:
 // the pros (in my opinion @abrams27) of this solution:
@@ -91,6 +92,7 @@ public data class BuildTargetState(
       dataKind = this@BuildTargetState.dataKind
       data = when(this@BuildTargetState.dataKind) {
         BuildTargetDataKind.JVM -> Gson().fromJson(this@BuildTargetState.data, JvmBuildTarget::class.java)
+        "kotlin" -> Gson().fromJson(this@BuildTargetState.data, KotlinBuildTarget::class.java)
         else -> null
       }
     }

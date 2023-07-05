@@ -2,16 +2,17 @@ package org.jetbrains.workspace.model.test.framework
 
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.workspaceModel.ide.getInstance
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
-import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
+import com.intellij.workspaceModel.ide.getInstance
 import org.junit.jupiter.api.BeforeEach
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.Path
 
 public open class WorkspaceModelBaseTest {
@@ -20,11 +21,14 @@ public open class WorkspaceModelBaseTest {
   protected lateinit var workspaceModel: WorkspaceModel
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
   protected lateinit var virtualFileUrlManager: VirtualFileUrlManager
-  protected val projectBasePath: Path = Path("")
+  protected lateinit var projectBasePath: Path
 
   @BeforeEach
   protected open fun beforeEach() {
     project = emptyProjectTestMock()
+
+    projectBasePath = project.basePath?.let { Paths.get(it) } ?: Path("")
+
     workspaceModel = WorkspaceModel.getInstance(project)
     workspaceEntityStorageBuilder = workspaceModel.getBuilderSnapshot().builder
     virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
