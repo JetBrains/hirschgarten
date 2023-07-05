@@ -25,7 +25,7 @@ dependencies {
   testImplementation(project(":test-utils"))
   implementation(libs.bsp4j)
   implementation(libs.gson)
-  implementation("io.get-coursier:coursier_2.13:2.0.16")
+  implementation(libs.coursier)
 
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
