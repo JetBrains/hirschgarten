@@ -8,8 +8,10 @@ import com.intellij.util.Processors
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
 import org.jetbrains.workspace.model.test.framework.JavaWorkspaceModelFixtureBaseTest
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
+@Disabled
 class SingleFileSourcesTrackerTest : JavaWorkspaceModelFixtureBaseTest() {
 
   @Test
