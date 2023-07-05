@@ -42,6 +42,7 @@ object IntellijBsp : Project({
     allSteps.last().triggers {
         vcs {
             branchFilter = """
+                +:<default>
                 +:pull/*
             """.trimIndent()
         }
