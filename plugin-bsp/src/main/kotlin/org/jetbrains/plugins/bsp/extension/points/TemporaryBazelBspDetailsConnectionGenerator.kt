@@ -200,7 +200,7 @@ public class BazelEditProjectViewStep(
         .visibleIf(isProjectViewFileNameSpecifiedProperty)
         .align(Align.FILL)
         .rows(15)
-    }
+    }.resizableRow()
     row {
       text("Please choose a connection file with project view file " +
         "or create a new connection in order to edit project view")
