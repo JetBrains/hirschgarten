@@ -18,6 +18,8 @@ object IntellijBspAggregator : BuildType({
         showDependenciesChanges = false
     }
 
+    allowExternalStatus = true
+
     features {
         pullRequests {
             vcsRootExtId = "${BaseConfiguration.IntellijBspVcs.id}"

@@ -122,6 +122,6 @@ object IdeProbeTests : IntellijTestsBuildType(
     failureConditions = {
         supportTestRetry = true
         testFailure = false
-        executionTimeoutMin = 0
+        executionTimeoutMin = 180
     }
 )
