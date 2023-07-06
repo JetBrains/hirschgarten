@@ -6,6 +6,7 @@ import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.observable.properties.ObservableProperty
 import com.intellij.openapi.observable.properties.PropertyGraph
 import com.intellij.openapi.observable.util.transform
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.dsl.builder.Align
@@ -50,13 +51,15 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
 
   public override fun generateBspConnectionDetailsFile(
     projectPath: VirtualFile,
-    outputStream: OutputStream
+    outputStream: OutputStream,
+    project: Project
   ): VirtualFile {
 
     executeAndWait(
       command = calculateInstallerCommand(),
       projectPath = projectPath,
       outputStream = outputStream,
+      project = project
     )
     return getChild(projectPath, listOf(".bsp", "bazelbsp.json"))!!
   }

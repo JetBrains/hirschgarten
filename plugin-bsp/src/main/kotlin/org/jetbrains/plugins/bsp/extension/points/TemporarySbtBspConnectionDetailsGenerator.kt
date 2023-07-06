@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.extension.points
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.OutputStream
 
@@ -14,7 +15,8 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
 
   override fun generateBspConnectionDetailsFile(
     projectPath: VirtualFile,
-    outputStream: OutputStream
+    outputStream: OutputStream,
+    project: Project
   ): VirtualFile {
     executeAndWait(
       command = listOf(
@@ -31,6 +33,7 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
       ),
       projectPath = projectPath,
       outputStream = outputStream,
+      project = project
     )
     return getChild(projectPath, listOf(".bsp", "sbt.json"))!!
   }
