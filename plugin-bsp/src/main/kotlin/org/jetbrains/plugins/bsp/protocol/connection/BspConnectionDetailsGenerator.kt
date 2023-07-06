@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.protocol.connection
 
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
-import com.intellij.openapi.project.ProjectLocator
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
@@ -14,9 +14,13 @@ import java.io.OutputStream
 import java.nio.file.Path
 
 public interface BspConnectionDetailsGenerator {
-  public fun executeAndWait(command: List<String>, projectPath: VirtualFile, outputStream: OutputStream) {
+  public fun executeAndWait(
+    command: List<String>,
+    projectPath: VirtualFile,
+    outputStream: OutputStream,
+    project: Project
+  ) {
     val commandStr = command.joinToString(" ")
-    val project = ProjectLocator.getInstance().guessProjectForFile(projectPath)!!
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     bspSyncConsole.addMessage("Running command: $commandStr")
     val builder = ProcessBuilder(command)
@@ -26,7 +30,7 @@ public interface BspConnectionDetailsGenerator {
 
     val consoleProcess = builder.start()
     consoleProcess.inputStream.transferTo(outputStream)
-    consoleProcess.logErrorOutputs(projectPath)
+    consoleProcess.logErrorOutputs(project)
     consoleProcess.waitFor()
     if (consoleProcess.exitValue() != 0) {
       error(
@@ -55,7 +59,11 @@ public interface BspConnectionDetailsGenerator {
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
   ): List<ImportProjectWizardStep> = emptyList()
 
-  public fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream): VirtualFile
+  public fun generateBspConnectionDetailsFile(
+    projectPath: VirtualFile,
+    outputStream: OutputStream,
+    project: Project
+  ): VirtualFile
 }
 
 public class BspConnectionDetailsGeneratorProvider(
@@ -84,23 +92,21 @@ public class BspConnectionDetailsGeneratorProvider(
 
   public fun generateBspConnectionDetailFileForGeneratorWithName(
     generatorId: String,
-    outputStream: OutputStream
+    outputStream: OutputStream,
+    project: Project
   ): VirtualFile? =
     availableBspConnectionDetailsGenerators
       .find { it.id() == generatorId }
-      ?.generateBspConnectionDetailsFile(projectPath, outputStream)
+      ?.generateBspConnectionDetailsFile(projectPath, outputStream, project = project)
 }
 
-public fun Process.logErrorOutputs(projectPath: VirtualFile) {
+public fun Process.logErrorOutputs(project: Project) {
   if (!Registry.`is`("bsp.log.error.outputs")) return
-  val project = ProjectLocator.getInstance().guessProjectForFile(projectPath)
   @Suppress("DeferredResultUnused")
-  project?.let {
-    val bspConsoleService = BspConsoleService.getInstance(project)
-    BspCoroutineService.getInstance(project).startAsync {
-      val bufferedReader = this.errorReader()
-      bufferedReader.forEachLine { doLogErrorOutputLine(it, bspConsoleService) }
-    }
+  val bspConsoleService = BspConsoleService.getInstance(project)
+  BspCoroutineService.getInstance(project).startAsync {
+    val bufferedReader = this.errorReader()
+    bufferedReader.forEachLine { doLogErrorOutputLine(it, bspConsoleService) }
   }
 }
 

@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.protocol.connection
 
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.io.createFile
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -20,7 +21,7 @@ private object GeneratorWhichCantGenerate : BspConnectionDetailsGenerator {
 
   override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean = false
 
-  override fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream): VirtualFile = projectPath
+  override fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream, project: Project): VirtualFile = projectPath
 }
 
 private class GeneratorWhichCanGenerate(private val name: String, private val generatedFilePath: VirtualFile) :
@@ -34,7 +35,7 @@ private class GeneratorWhichCanGenerate(private val name: String, private val ge
 
   override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean = true
 
-  override fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream): VirtualFile {
+  override fun generateBspConnectionDetailsFile(projectPath: VirtualFile, outputStream: OutputStream, project: Project): VirtualFile {
     hasGenerated = true
 
     return generatedFilePath
@@ -101,7 +102,7 @@ class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
     provider.canGenerateAnyBspConnectionDetailsFile() shouldBe true
     provider.availableGeneratorsNames() shouldContainExactlyInAnyOrder listOf("generator 1")
 
-    provider.generateBspConnectionDetailFileForGeneratorWithName("wrong name", OutputStream.nullOutputStream()) shouldBe null
+    provider.generateBspConnectionDetailFileForGeneratorWithName("wrong name", OutputStream.nullOutputStream(), project) shouldBe null
     generator.hasGenerated shouldBe false
   }
 
@@ -118,7 +119,7 @@ class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
     provider.canGenerateAnyBspConnectionDetailsFile() shouldBe true
     provider.availableGeneratorsNames() shouldContainExactlyInAnyOrder listOf("generator 1")
 
-    provider.generateBspConnectionDetailFileForGeneratorWithName("generator 1", OutputStream.nullOutputStream()) shouldBe generatedVirtualFile
+    provider.generateBspConnectionDetailFileForGeneratorWithName("generator 1", OutputStream.nullOutputStream(), project) shouldBe generatedVirtualFile
     generator.hasGenerated shouldBe true
   }
 
@@ -142,7 +143,7 @@ class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
       "generator 3"
     )
 
-    provider.generateBspConnectionDetailFileForGeneratorWithName("generator 2", OutputStream.nullOutputStream()) shouldBe generatedVirtualFile
+    provider.generateBspConnectionDetailFileForGeneratorWithName("generator 2", OutputStream.nullOutputStream(), project) shouldBe generatedVirtualFile
     generator1.hasGenerated shouldBe false
     generator2.hasGenerated shouldBe true
     generator3.hasGenerated shouldBe false
@@ -170,7 +171,7 @@ class BspConnectionDetailsGeneratorProviderTest : MockProjectBaseTest() {
       "generator 3"
     )
 
-    provider.generateBspConnectionDetailFileForGeneratorWithName("generator 2", OutputStream.nullOutputStream()) shouldBe generatedVirtualFile
+    provider.generateBspConnectionDetailFileForGeneratorWithName("generator 2", OutputStream.nullOutputStream(), project) shouldBe generatedVirtualFile
     generator1.hasGenerated shouldBe false
     generator21.hasGenerated shouldBe true
     generator22.hasGenerated shouldBe false

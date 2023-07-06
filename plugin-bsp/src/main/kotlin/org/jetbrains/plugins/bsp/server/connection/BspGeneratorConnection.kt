@@ -92,7 +92,8 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
     try {
       val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
         project.rootDir,
-        consoleOutputStream
+        consoleOutputStream,
+        project
       )
       // TODO
       val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)
