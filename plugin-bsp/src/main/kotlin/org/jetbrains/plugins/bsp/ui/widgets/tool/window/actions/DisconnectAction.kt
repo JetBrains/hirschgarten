@@ -25,8 +25,11 @@ public class DisconnectAction : AnAction(BspAllTargetsWidgetBundle.message("dis-
   private fun doAction(project: Project) {
     BspCoroutineService.getInstance(project).start {
       withBackgroundProgress(project, "Disconnecting...") {
-        val connection = BspConnectionService.getInstance(project).value
-        connection!!.disconnect()
+        try {
+          BspConnectionService.getInstance(project).value?.disconnect()
+        } catch (e: Exception) {
+          log.warn("One of the disconnect actions has failed!", e)
+        }
       }
     }
   }
