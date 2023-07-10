@@ -18,32 +18,9 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
     val project = e.project
 
     if (project != null) {
-      BspCoroutineService.getInstance(project).start { doAction(project) }
+      BspCoroutineService.getInstance(project).start { connectCoroutine(project) }
     } else {
       log.warn("ConnectAction cannot be performed! Project not available.")
-    }
-  }
-
-  private suspend fun doAction(project: Project) {
-    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-connect")
-    bspSyncConsole.startTask(
-      taskId = "bsp-connect",
-      title = "Connect",
-      message = "Connecting...",
-      cancelAction = { collectProjectDetailsTask.cancelExecution() },
-    )
-
-    try {
-      BspConnectionService.getInstance(project).value!!
-        .connect("bsp-connect") { collectProjectDetailsTask.cancelExecution() }
-      collectProjectDetailsTask.execute(
-        name = "Connecting...",
-        cancelable = true
-      )
-      bspSyncConsole.finishTask("bsp-connect", "Connect done!")
-    } catch (e: Exception) {
-      bspSyncConsole.finishTask("bsp-connect", "Connect failed!", FailureResultImpl(e))
     }
   }
 
@@ -65,7 +42,30 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
   override fun getActionUpdateThread(): ActionUpdateThread =
     ActionUpdateThread.BGT
 
-  private companion object {
+  public companion object {
     private val log = logger<ConnectAction>()
+
+    public suspend fun connectCoroutine(project: Project) {
+      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+      val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-connect")
+      bspSyncConsole.startTask(
+        taskId = "bsp-connect",
+        title = "Connect",
+        message = "Connecting...",
+        cancelAction = { collectProjectDetailsTask.cancelExecution() },
+      )
+
+      try {
+        BspConnectionService.getInstance(project).value!!
+        .connect("bsp-connect") { collectProjectDetailsTask.cancelExecution() }
+        collectProjectDetailsTask.execute(
+          name = "Connecting...",
+          cancelable = true
+        )
+        bspSyncConsole.finishTask("bsp-connect", "Connect done!")
+      } catch (e: Exception) {
+        bspSyncConsole.finishTask("bsp-connect", "Connect failed!", FailureResultImpl(e))
+      }
+    }
   }
 }

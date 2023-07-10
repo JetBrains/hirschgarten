@@ -23,7 +23,7 @@ public class BuildTargetAction : AbstractActionWithTarget(
   private fun doAction(project: Project) {
     runBackgroundableTask("Building...", project) {
       target?.let {
-          BuildTargetTask(project).executeIfConnected(it)
+          BuildTargetTask(project).connectAndExecute(it)
       }
     }
   }

@@ -80,7 +80,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
     val result = BspCoroutineService.getInstance(project).startAsync {
       withBackgroundProgress(project, "Building project...") {
-        BuildTargetTask(project).executeIfConnected(targetIdentifiers)
+        BuildTargetTask(project).connectAndExecute(targetIdentifiers)
       }
     }
     return result
