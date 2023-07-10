@@ -99,7 +99,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun calculateProjectDetailsSubtask() =
-    logPerformance("collect-project-details") { executeWithServerIfConnected { collectModel(it, cancelOnFuture) } }
+    logPerformance("collect-project-details") { connectAndExecuteWithServer { collectModel(it, cancelOnFuture) } }
 
   private fun collectModel(server: BspServer, cancelOn: CompletableFuture<Void>): ProjectDetails? {
     fun isCancellationException(e: Throwable): Boolean =

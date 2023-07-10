@@ -70,7 +70,7 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
           val startRunMessage = "Running target $uri"
           processHandler.printOutput(startRunMessage)
           try {
-            RunTargetTask(project).executeIfConnected(BuildTargetIdentifier(uri))?.apply {
+            RunTargetTask(project).connectAndExecute(BuildTargetIdentifier(uri))?.apply {
               when (statusCode) {
                 StatusCode.OK -> processHandler.printOutput("Successfully completed!")
                 StatusCode.CANCELLED -> processHandler.printOutput("Cancelled!")
