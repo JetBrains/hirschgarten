@@ -35,6 +35,7 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
       outputPathUris = emptyList(),
+      libraries = emptyList(),
     )
 
     // when
@@ -63,6 +64,7 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
       outputPathUris = emptyList(),
+      libraries = emptyList(),
     )
 
     // when
@@ -77,7 +79,9 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = emptyList(),
       javacOptions = null,
       outputPathUris = emptyList(),
-    )
+      libraryDependencies = emptyList(),
+      moduleDependencies = emptyList(),
+)
 
     targetIdToModuleDetails shouldBe mapOf(
       targetId to expectedModuleDetails
@@ -121,6 +125,7 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = listOf(targetDependencySources),
       javacOptions = listOf(javacOptions),
       outputPathUris = emptyList(),
+      libraries = emptyList(),
     )
 
     // when
@@ -135,7 +140,9 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = listOf(targetDependencySources),
       javacOptions = javacOptions,
       outputPathUris = emptyList(),
-    )
+      libraryDependencies = emptyList(),
+      moduleDependencies = emptyList()
+)
 
     targetIdToModuleDetails shouldBe mapOf(
       targetId to expectedModuleDetails
@@ -146,11 +153,12 @@ class TargetIdToModuleDetailsMapTest {
   fun `should return map with multiple elements for project details with multiple targets`() {
     // given
     val target1Id = BuildTargetIdentifier("target1")
+    val target2Id = BuildTargetIdentifier("target2")
     val target1 = BuildTarget(
       target1Id,
       emptyList(),
       emptyList(),
-      listOf(BuildTargetIdentifier("target2"), BuildTargetIdentifier("@maven//:test")),
+      listOf(target2Id, BuildTargetIdentifier("@maven//:test")),
       BuildTargetCapabilities(),
     )
     val target1Sources = SourcesItem(
@@ -172,7 +180,6 @@ class TargetIdToModuleDetailsMapTest {
       "class/dir1"
     )
 
-    val target2Id = BuildTargetIdentifier("target2")
     val target2 = BuildTarget(
       target2Id,
       emptyList(),
@@ -206,7 +213,7 @@ class TargetIdToModuleDetailsMapTest {
       target3Id,
       emptyList(),
       emptyList(),
-      listOf(BuildTargetIdentifier("target2")),
+      listOf(target2Id),
       BuildTargetCapabilities(),
     )
     val target3Sources = SourcesItem(
@@ -228,6 +235,7 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = listOf(target2DependencySources, target1DependencySources),
       javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
       outputPathUris = emptyList(),
+      libraries = emptyList(),
     )
 
     // when
@@ -242,6 +250,8 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = listOf(target1DependencySources),
       javacOptions = target1JavacOptionsItem,
       outputPathUris = emptyList(),
+      libraryDependencies = emptyList(),
+      moduleDependencies = listOf(target2Id)
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
@@ -251,6 +261,8 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = listOf(target2DependencySources),
       javacOptions = null,
       outputPathUris = emptyList(),
+      libraryDependencies = emptyList(),
+      moduleDependencies = emptyList(),
     )
     val expectedModuleDetails3 = ModuleDetails(
       target = target3,
@@ -260,6 +272,8 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = emptyList(),
       javacOptions = target3JavacOptionsItem,
       outputPathUris = emptyList(),
+      libraryDependencies = emptyList(),
+      moduleDependencies = listOf(target2Id),
     )
 
     targetIdToModuleDetails shouldBe mapOf(
@@ -346,6 +360,7 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = listOf(targetDependencySources1, targetDependencySources2),
       javacOptions = listOf(javacOptions1, javacOptions2),
       outputPathUris = listOf(outputPaths1, outputPaths2).flatten(),
+      libraries = emptyList(),
     )
 
     // when
@@ -360,6 +375,8 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = listOf(targetDependencySources1),
       javacOptions = javacOptions1,
       outputPathUris = emptyList(),
+      libraryDependencies = emptyList(),
+      moduleDependencies = emptyList(),
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
@@ -369,6 +386,8 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = listOf(targetDependencySources2),
       javacOptions = javacOptions2,
       outputPathUris = emptyList(),
+      libraryDependencies = emptyList(),
+      moduleDependencies = emptyList(),
     )
     val expectedRootModuleDetails = ModuleDetails(
       target = rootTarget,
@@ -378,6 +397,8 @@ class TargetIdToModuleDetailsMapTest {
       dependenciesSources = emptyList(),
       javacOptions = null,
       outputPathUris = listOf(outputPaths1, outputPaths2).flatten(),
+      libraryDependencies = emptyList(),
+      moduleDependencies = emptyList(),
     )
 
     targetIdToModuleDetails shouldBe mapOf(

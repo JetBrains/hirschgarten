@@ -49,6 +49,7 @@ public class ReloadAction :
       collectProjectDetailsTask.execute(name = "Reloading...", cancelable = true)
       bspSyncConsole.finishTask(RELOAD_TASK_ID, "Reload done!")
     } catch (e: Exception) {
+      log.error(e)
       bspSyncConsole.finishTask(RELOAD_TASK_ID, "Reload failed!", FailureResultImpl(e))
     }
   }

@@ -21,7 +21,7 @@ internal data class JavaModule(
   val baseDirContentRoot: ContentRoot,
   val sourceRoots: List<JavaSourceRoot>,
   val resourceRoots: List<JavaResourceRoot>,
-  val libraries: List<Library>,
+  val moduleLevelLibraries: List<Library>?,
   val compilerOutput: Path?,
   val jvmJdkInfo: JvmJdkInfo?,
   val kotlinAddendum: KotlinAddendum?,
@@ -48,7 +48,7 @@ internal class JavaModuleWithSourcesUpdater(
       contentRootEntityUpdater.addEntity(entityToAdd.baseDirContentRoot, moduleEntity)
     } else {
       val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
-      libraryEntityUpdater.addEntries(entityToAdd.libraries, moduleEntity)
+      entityToAdd.moduleLevelLibraries?.let { libraryEntityUpdater.addEntries(it, moduleEntity) }
 
       val javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
       javaSourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)

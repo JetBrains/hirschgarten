@@ -74,12 +74,14 @@ internal class ModuleDetailsToJavaModuleTransformer(
         )
       }),
       resourceRoots = resourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources),
-      libraries = DependencySourcesItemToLibraryTransformer.transform(inputEntity.dependenciesSources.map {
-        DependencySourcesAndJavacOptions(
-          it,
-          inputEntity.javacOptions
-        )
-      }),
+      moduleLevelLibraries = if (inputEntity.libraryDependencies == null)
+          DependencySourcesItemToLibraryTransformer
+             .transform(inputEntity.dependenciesSources.map {
+                 DependencySourcesAndJavacOptions(
+                   it,
+                   inputEntity.javacOptions
+                 )
+             }) else null,
       compilerOutput = toCompilerOutput(inputEntity),
       jvmJdkInfo = toJdkInfo(inputEntity),
       kotlinAddendum = toKotlinAddendum(inputEntity)
@@ -92,7 +94,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
       dependencySources = inputEntity.dependenciesSources,
       type = type,
       javacOptions = inputEntity.javacOptions,
-      associates = toAssociates(inputEntity)
+      associates = toAssociates(inputEntity),
+      libraryDependencies = inputEntity.libraryDependencies,
+      moduleDependencies = inputEntity.moduleDependencies
     )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)

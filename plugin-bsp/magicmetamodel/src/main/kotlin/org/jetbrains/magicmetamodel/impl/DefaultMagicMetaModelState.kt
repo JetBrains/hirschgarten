@@ -12,6 +12,7 @@ import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.Gson
+import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.KotlinBuildTarget
@@ -46,6 +47,13 @@ public data class BuildTargetIdentifierState(
 public fun BuildTargetIdentifier.toState(): BuildTargetIdentifierState =
   BuildTargetIdentifierState(uri)
 
+public fun LibraryItem.toState(): LibraryItemState =
+        LibraryItemState(
+                id = this.id.toState(),
+                dependencies = this.dependencies.map { it.toState() },
+                uris = this.jars
+        )
+
 
 public data class BuildTargetCapabilitiesState(
   public var canCompile: Boolean = false,
@@ -66,6 +74,19 @@ public fun BuildTargetCapabilities.toState(): BuildTargetCapabilitiesState =
     canDebug = canDebug,
   )
 
+public data class LibraryItemState(
+        public var id: BuildTargetIdentifierState = BuildTargetIdentifierState(),
+        public var dependencies: List<BuildTargetIdentifierState> = emptyList(),
+        public var uris: List<String> = emptyList(),
+) : ConvertableFromState<LibraryItem> {
+
+  public override fun fromState(): LibraryItem =
+          LibraryItem(
+                  id.fromState(),
+                  dependencies.map { it.fromState() },
+                  emptyList()
+          )
+}
 
 public data class BuildTargetState(
   public var id: BuildTargetIdentifierState = BuildTargetIdentifierState(),
@@ -209,7 +230,8 @@ public data class ProjectDetailsState(
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
   public var javacOptions: List<JavacOptionsItemState> = emptyList(),
   public var outputPathUris: List<String> = emptyList(),
-) : ConvertableFromState<ProjectDetails> {
+  public var libraries: List<LibraryItemState>? = emptyList(),
+  ) : ConvertableFromState<ProjectDetails> {
 
   public override fun fromState(): ProjectDetails =
     ProjectDetails(
@@ -220,6 +242,7 @@ public data class ProjectDetailsState(
       dependenciesSources = dependenciesSources.map { it.fromState() },
       javacOptions = javacOptions.map { it.fromState() },
       outputPathUris = outputPathUris,
+      libraries = libraries?.map { it.fromState() },
     )
 }
 
@@ -230,7 +253,8 @@ public fun ProjectDetails.toState(): ProjectDetailsState =
     sources = sources.map { it.toState() },
     resources = resources.map { it.toState() },
     dependenciesSources = dependenciesSources.map { it.toState() },
-    javacOptions = javacOptions.map { it.toState() }
+    javacOptions = javacOptions.map { it.toState() },
+    libraries = libraries?.map { it.toState() }
   )
 
 public fun ProjectDetails.toStateWithoutLoadedTargets(loaded: List<BuildTargetIdentifier>): ProjectDetailsState =
@@ -240,7 +264,8 @@ public fun ProjectDetails.toStateWithoutLoadedTargets(loaded: List<BuildTargetId
     sources = sources.filterNot { loaded.contains(it.target) }.map { it.toState() },
     resources = resources.filterNot { loaded.contains(it.target) }.map { it.toState() },
     dependenciesSources = dependenciesSources.filterNot { loaded.contains(it.target) }.map { it.toState() },
-    javacOptions = javacOptions.filterNot { loaded.contains(it.target) }.map { it.toState() }
+    javacOptions = javacOptions.filterNot { loaded.contains(it.target) }.map { it.toState() },
+    libraries = libraries?.map { it.toState() }
   )
 
 
@@ -252,7 +277,9 @@ public data class ModuleDetailsState(
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
   public var javacOptions: JavacOptionsItemState? = null,
   public var outputPathUris: List<String> = emptyList(),
-) : ConvertableFromState<ModuleDetails> {
+  public var libraryDependencies: List<BuildTargetIdentifierState>? = emptyList(),
+  public var moduleDependencies: List<BuildTargetIdentifierState> = emptyList(),
+  ) : ConvertableFromState<ModuleDetails> {
 
   public override fun fromState(): ModuleDetails =
     ModuleDetails(
@@ -263,6 +290,8 @@ public data class ModuleDetailsState(
       dependenciesSources = dependenciesSources.map { it.fromState() },
       javacOptions = javacOptions?.fromState(),
       outputPathUris = outputPathUris,
+      libraryDependencies = libraryDependencies?.map { it.fromState() },
+      moduleDependencies = moduleDependencies.map { it.fromState() }
     )
 }
 
@@ -275,6 +304,8 @@ public fun ModuleDetails.toState(): ModuleDetailsState =
     dependenciesSources = dependenciesSources.map { it.toState() },
     javacOptions = javacOptions?.toState(),
     outputPathUris = outputPathUris,
+    libraryDependencies = libraryDependencies?.map { it.toState() },
+    moduleDependencies = moduleDependencies.map { it.toState() }
   )
 
 

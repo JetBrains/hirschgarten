@@ -71,7 +71,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         module = module1,
         sourceRoots = listOf(sourceRoot1),
         resourceRoots = emptyList(),
-        libraries = emptyList(),
+        moduleLevelLibraries = emptyList(),
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
         jvmJdkInfo = JvmJdkInfo(name = "11", javaHome = "fake/path/to/local_jdk"),
@@ -118,7 +118,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         module = module1,
         sourceRoots = listOf(sourceRoot1),
         resourceRoots = emptyList(),
-        libraries = emptyList(),
+        moduleLevelLibraries = emptyList(),
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
         jvmJdkInfo = null,
@@ -161,9 +161,11 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = listOf(
           LibraryDependency(
             libraryName = "lib1",
+            isProjectLevelLibrary = false
           ),
           LibraryDependency(
             libraryName = "lib2",
+            isProjectLevelLibrary = false
           ),
         ),
         ModuleCapabilities(canRun = true, canTest = true, canCompile = false, canDebug = false)
@@ -226,7 +228,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         module = module1,
         sourceRoots = sourceRoots1,
         resourceRoots = resourceRoots1,
-        libraries = libraries1,
+        moduleLevelLibraries = libraries1,
         baseDirContentRoot = baseDirContentRoot1,
         compilerOutput = compilerOutput1,
         jvmJdkInfo = JvmJdkInfo(name = "11", javaHome = "fake/path/to/local_jdk"),
@@ -244,6 +246,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = listOf(
           LibraryDependency(
             libraryName = "lib1",
+            isProjectLevelLibrary = false
           ),
         ),
         ModuleCapabilities(canRun = true, canTest = false, canCompile = true, canDebug = false)
@@ -282,7 +285,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         baseDirContentRoot = baseDirContentRoot2,
         sourceRoots = sourceRoots2,
         resourceRoots = resourceRoots2,
-        libraries = libraries2,
+        moduleLevelLibraries = libraries2,
         compilerOutput = compilerOutput2,
         jvmJdkInfo = null,
         kotlinAddendum = null,
@@ -305,7 +308,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         baseDirContentRoot = baseDirContentRoot3,
         sourceRoots = emptyList(),
         resourceRoots = emptyList(),
-        libraries = emptyList(),
+        moduleLevelLibraries = emptyList(),
         compilerOutput = compilerOutput3,
         jvmJdkInfo = JvmJdkInfo(name = "13", javaHome = "fake/path/to/local_jdk"),
         kotlinAddendum = null,
@@ -328,7 +331,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         baseDirContentRoot = rootModuleBaseDirContentRoot,
         sourceRoots = emptyList(),
         resourceRoots = emptyList(),
-        libraries = emptyList(),
+        moduleLevelLibraries = emptyList(),
         compilerOutput = null,
         jvmJdkInfo = null,
         kotlinAddendum = null,
@@ -457,6 +460,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         dependenciesSources = listOf(expectedDependencySourceItem1, expectedDependencySourceItem2),
         javacOptions = listOf(expectedJavacSourceItem1, expectedJavacSourceItem2),
         outputPathUris = rootModuleBaseDirContentRoot.excludedPaths.map { it.toUri().toString() },
+        libraries = null
       )
 
       projectDetails shouldBe expectedProjectDetails

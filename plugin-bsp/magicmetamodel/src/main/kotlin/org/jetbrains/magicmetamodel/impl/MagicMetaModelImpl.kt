@@ -18,6 +18,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelToProjectDetailsTransformer
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 
 internal class DefaultMagicMetaModelDiff(
     private val workspaceModel: WorkspaceModel,
@@ -123,8 +124,18 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
     val modulesToLoad = getModulesDetailsForTargetsToLoad(nonOverlappingTargetsToLoad)
 
-    // TODO TEST TESTS TEESTS RTEST11
-    logPerformance("load-modules") { workspaceModelUpdater.loadModules(modulesToLoad) }
+    // TODO TEST TESTS TESTS TEST
+    val libraries = projectDetails.libraries
+    logPerformance("load-modules") {
+      workspaceModelUpdater.loadModules(modulesToLoad)
+      workspaceModelUpdater.loadLibraries(libraries?.map {
+        Library(
+                it.id.uri,
+                null,
+                it.jars.firstOrNull()
+        )
+      }.orEmpty())
+    }
     newStorage.addTargets(nonOverlappingTargetsToLoad)
 
     return DefaultMagicMetaModelDiff(

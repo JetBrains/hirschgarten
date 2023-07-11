@@ -50,13 +50,12 @@ internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projec
         )
       ),
       resourceRoots = listOf(),
-      libraries = listOf(),
+      moduleLevelLibraries = listOf(),
       compilerOutput = null,
       jvmJdkInfo = null,
       kotlinAddendum = null
     )
 }
-
 
 public fun calculateDummyJavaModuleNames(inputEntity: ModuleDetails, projectBasePath: Path): List<String> {
   val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity)

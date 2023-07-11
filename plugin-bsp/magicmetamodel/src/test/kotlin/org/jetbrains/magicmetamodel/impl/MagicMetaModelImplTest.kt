@@ -50,6 +50,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -180,6 +181,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -395,6 +397,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -588,6 +591,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -662,6 +666,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -769,6 +774,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -863,6 +869,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -958,6 +965,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -1034,6 +1042,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1105,6 +1114,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1178,6 +1188,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -1257,6 +1268,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -1373,6 +1385,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when 1
@@ -1435,6 +1448,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1479,6 +1493,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1553,6 +1568,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when
@@ -1630,6 +1646,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
 
       // when

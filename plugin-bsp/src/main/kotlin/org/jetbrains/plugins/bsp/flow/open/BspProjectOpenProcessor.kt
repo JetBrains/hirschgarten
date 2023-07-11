@@ -75,6 +75,7 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         outputPathUris = emptyList(),
+        libraries = emptyList(),
       )
     )
 

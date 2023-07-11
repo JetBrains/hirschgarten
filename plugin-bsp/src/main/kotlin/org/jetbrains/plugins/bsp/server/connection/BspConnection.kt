@@ -9,8 +9,9 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.magicmetamodel.BazelBuildServer
 
-public interface BspServer : BuildServer, JavaBuildServer
+public interface BspServer : BuildServer, JavaBuildServer, BazelBuildServer
 
 /**
  * The BSP connection, implementation should keep all the information

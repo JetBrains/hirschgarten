@@ -35,6 +35,7 @@ import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.magicmetamodel.WorkspaceLibrariesResult
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
@@ -244,6 +245,8 @@ public fun calculateProjectDetailsWithCapabilities(
   errorCallback: (Throwable) -> Unit,
   cancelOn: CompletableFuture<Void> = CompletableFuture(),
 ): ProjectDetails? {
+  val log = logger<Any>()
+
   try {
     val workspaceBuildTargetsResult = queryForBuildTargets(server)
       .reactToExceptionIn(cancelOn)
@@ -270,10 +273,17 @@ public fun calculateProjectDetailsWithCapabilities(
     val javacOptionsFuture = queryForJavacOptions(server, javaTargetsIds)
       ?.reactToExceptionIn(cancelOn)
       ?.catchSyncErrors(errorCallback)
-
+    val libraries: WorkspaceLibrariesResult? = server.workspaceLibraries()
+      .reactToExceptionIn(cancelOn)
+      .exceptionally {
+        log.warn(it)
+        null
+      }
+      .get()
     val outputPathsFuture =
-      queryForOutputPaths(server, allTargetsIds).reactToExceptionIn(cancelOn).catchSyncErrors(errorCallback)
-
+      queryForOutputPaths(server, allTargetsIds)
+              .reactToExceptionIn(cancelOn)
+              .catchSyncErrors(errorCallback)
     return ProjectDetails(
       targetsId = allTargetsIds,
       targets = workspaceBuildTargetsResult.targets.toSet(),
@@ -282,11 +292,10 @@ public fun calculateProjectDetailsWithCapabilities(
       dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
       javacOptions = javacOptionsFuture?.get()?.items ?: emptyList(),
       outputPathUris = outputPathsFuture.get().obtainDistinctUris(),
+      libraries = libraries?.libraries,
     )
   } catch (e: Exception) {
     // TODO the type xd
-    val log = logger<Any>()
-
     if (e is ExecutionException && e.cause is CancellationException) {
       log.debug("calculateProjectDetailsWithCapabilities has been cancelled!", e)
     } else {

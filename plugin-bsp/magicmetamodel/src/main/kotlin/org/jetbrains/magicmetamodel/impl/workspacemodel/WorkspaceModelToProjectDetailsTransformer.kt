@@ -79,6 +79,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
         dependenciesSources = modulesParsingData.mapNotNull { it.libSources },
         javacOptions = modulesParsingData.mapNotNull { it.libJars },
         outputPathUris = modulesParsingData.flatMap { it.outputPathUris },
+        libraries = null // Libraries are saved to state as a whole, there's no need to read them from Workspace Model
       )
     }
 
@@ -162,6 +163,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
       val baseDirContentRoot = contentRoots.firstOrNull { it.sourceRoots.isEmpty() }
       val capabilities = ModuleCapabilities(customImlData?.customModuleOptions.orEmpty())
       val modulesDeps = dependencies.toBuildTargetIdentifiers(loadedTargetsIndex)
+        .filterNotNull() // there shouldn't be any nulls here, reported in BAZEL-513
       return BuildTarget(
         moduleName, emptyList(), emptyList(), modulesDeps, BuildTargetCapabilities(
           capabilities.canCompile, capabilities.canTest, capabilities.canRun, capabilities.canDebug
