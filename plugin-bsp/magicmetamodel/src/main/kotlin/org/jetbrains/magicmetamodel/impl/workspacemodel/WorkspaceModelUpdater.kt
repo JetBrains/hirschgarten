@@ -10,6 +10,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import java.nio.file.Path
 
 // TODO vis
@@ -21,6 +22,8 @@ public data class ModuleDetails(
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
   val outputPathUris: List<String>,
+  val libraryDependencies: List<BuildTargetIdentifier>?,
+  val moduleDependencies: List<BuildTargetIdentifier>,
 )
 
 internal data class ModuleName(
@@ -35,6 +38,8 @@ internal interface WorkspaceModelUpdater {
     modulesDetails.forEach { loadModule(it) }
 
   fun loadModule(moduleDetails: ModuleDetails)
+
+  fun loadLibraries(libraries: List<Library>)
 
   fun removeModules(modules: List<ModuleName>) =
     modules.forEach { removeModule(it) }

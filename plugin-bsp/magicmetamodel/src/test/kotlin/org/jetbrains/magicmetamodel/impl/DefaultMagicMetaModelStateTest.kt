@@ -249,6 +249,8 @@ class ModuleDetailsStateTest {
         "class/dir"
       ),
       outputPathUris = listOf("file:///output/dir", "file:///output/file1.out"),
+      libraryDependencies = emptyList(),
+      moduleDependencies = emptyList()
     )
 
     // when

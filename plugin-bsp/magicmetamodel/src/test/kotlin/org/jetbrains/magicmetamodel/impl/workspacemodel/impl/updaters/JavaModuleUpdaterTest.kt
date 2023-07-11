@@ -57,9 +57,11 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = listOf(
             LibraryDependency(
               libraryName = "lib1",
+              isProjectLevelLibrary = false
             ),
             LibraryDependency(
               libraryName = "lib2",
+              isProjectLevelLibrary = false
             ),
           ),
         )
@@ -119,7 +121,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           baseDirContentRoot = baseDirContentRoot,
           sourceRoots = sourceRoots,
           resourceRoots = resourceRoots,
-          libraries = libraries,
+          moduleLevelLibraries = libraries,
           compilerOutput = compilerOutput,
           jvmJdkInfo = JvmJdkInfo(name = "test-proj-11", javaHome = "fake/path/to/local_jdk"),
           kotlinAddendum = null,
@@ -299,9 +301,11 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = listOf(
             LibraryDependency(
               libraryName = "lib1",
+              isProjectLevelLibrary = false
             ),
             LibraryDependency(
               libraryName = "lib2",
+              isProjectLevelLibrary = false
             ),
           ),
         )
@@ -360,7 +364,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           module = module1,
           sourceRoots = sourceRoots1,
           resourceRoots = resourceRoots1,
-          libraries = libraries1,
+          moduleLevelLibraries = libraries1,
           baseDirContentRoot = baseDirContentRoot1,
           compilerOutput = compilerOutput1,
           jvmJdkInfo = JvmJdkInfo(name = "test-proj-11", javaHome = "/fake/path/to/local_jdk"),
@@ -378,6 +382,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = listOf(
             LibraryDependency(
               libraryName = "lib1",
+              isProjectLevelLibrary = false
             ),
           ),
         )
@@ -419,7 +424,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           baseDirContentRoot = baseDirContentRoot2,
           sourceRoots = sourceRoots2,
           resourceRoots = resourceRoots2,
-          libraries = libraries2,
+          moduleLevelLibraries = libraries2,
           compilerOutput = compilerOutput2,
           jvmJdkInfo = JvmJdkInfo(name = "test-proj-11", javaHome = "/fake/path/to/local_jdk"),
           kotlinAddendum = null,
@@ -692,7 +697,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           baseDirContentRoot = baseDirContentRoot,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
-          libraries = emptyList(),
+          moduleLevelLibraries = emptyList(),
           compilerOutput = null,
           jvmJdkInfo = null,
           kotlinAddendum = null,
@@ -741,7 +746,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           baseDirContentRoot = baseDirContentRoot1,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
-          libraries = emptyList(),
+          moduleLevelLibraries = emptyList(),
           compilerOutput = null,
           jvmJdkInfo = null,
           kotlinAddendum = null,
@@ -765,7 +770,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           baseDirContentRoot = baseDirContentRoot2,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
-          libraries = emptyList(),
+          moduleLevelLibraries = emptyList(),
           compilerOutput = null,
           jvmJdkInfo = null,
           kotlinAddendum = null,

@@ -46,6 +46,7 @@ public class MagicMetaModelService(private val project: Project) :
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
       outputPathUris = emptyList(),
+      libraries = emptyList(),
     )
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)

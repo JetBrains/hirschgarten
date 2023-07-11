@@ -18,29 +18,32 @@ internal data class BspModuleDetails(
   val javacOptions: JavacOptionsItem?,
   val type: String,
   val associates: List<BuildTargetIdentifier> = listOf(),
+  val moduleDependencies: List<BuildTargetIdentifier>,
+  val libraryDependencies: List<BuildTargetIdentifier>?,
 )
 
 internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvider: ModuleNameProvider) :
   WorkspaceModelEntityTransformer<BspModuleDetails, Module> {
 
   override fun transform(inputEntity: BspModuleDetails): Module {
-    val buildTargetToModuleDependencyTransformer =
-      BuildTargetToModuleDependencyTransformer(inputEntity.allTargetsIds, moduleNameProvider)
+      val librariesDependencies = inputEntity.libraryDependencies?.map { LibraryDependency(it.uri, true) }
+              ?: DependencySourcesItemToLibraryDependencyTransformer
+                      .transform(inputEntity.dependencySources.map {
+                          DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
+                      })
 
-    return Module(
-      name = moduleNameProvider(inputEntity.target.id),
-      type = inputEntity.type,
-      modulesDependencies = buildTargetToModuleDependencyTransformer.transform(inputEntity.target),
-      librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer
-        .transform(inputEntity.dependencySources.map {
-          DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
-        }),
-      capabilities = inputEntity.target.capabilities.let {
-        ModuleCapabilities(it.canRun, it.canTest, it.canCompile, it.canDebug)
-      },
-      languageIds = inputEntity.target.languageIds,
-      associates = inputEntity.associates.map { it.toModuleDependency(moduleNameProvider) }
-    )
+      return Module(
+              name = moduleNameProvider(inputEntity.target.id),
+              type = inputEntity.type,
+              modulesDependencies = inputEntity.moduleDependencies
+                  .map { ModuleDependency(moduleName = moduleNameProvider(it)) },
+              librariesDependencies = librariesDependencies,
+              capabilities = inputEntity.target.capabilities.let {
+                  ModuleCapabilities(it.canRun, it.canTest, it.canCompile, it.canDebug)
+              },
+              languageIds = inputEntity.target.languageIds,
+              associates = inputEntity.associates.map { it.toModuleDependency(moduleNameProvider) }
+      )
   }
 }
 
@@ -54,6 +57,7 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
   private fun toLibraryDependency(library: Library): LibraryDependency =
     LibraryDependency(
       libraryName = library.displayName,
+      isProjectLevelLibrary = false
     )
 }
 

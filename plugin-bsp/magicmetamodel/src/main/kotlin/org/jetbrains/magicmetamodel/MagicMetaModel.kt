@@ -42,6 +42,7 @@ public data class ProjectDetails(
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: List<JavacOptionsItem>,
   val outputPathUris: List<String>,
+  val libraries: List<LibraryItem>?,
 ) {
   public operator fun plus(old: ProjectDetails): ProjectDetails = ProjectDetails(
     targetsId + old.targetsId,
@@ -51,6 +52,7 @@ public data class ProjectDetails(
     dependenciesSources + old.dependenciesSources,
     javacOptions + old.javacOptions,
     outputPathUris + old.outputPathUris,
+    if(libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
   )
 }
 

@@ -17,6 +17,7 @@ internal data class ModuleDependency(
 
 internal data class LibraryDependency(
   val libraryName: String,
+  val isProjectLevelLibrary: Boolean = false
 ) : WorkspaceModelEntity()
 
 internal data class Module(
@@ -108,17 +109,20 @@ internal class ModuleEntityUpdater(
     )
 
   private fun toModuleDependencyItemLibraryDependency(
-    libraryDependency: LibraryDependency,
-    moduleName: String
-  ): ModuleDependencyItem.Exportable.LibraryDependency =
-    ModuleDependencyItem.Exportable.LibraryDependency(
-      library = LibraryId(
-        name = libraryDependency.libraryName,
-        tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName)),
-      ),
-      exported = false,
-      scope = ModuleDependencyItem.DependencyScope.COMPILE,
+          libraryDependency: LibraryDependency,
+          moduleName: String
+  ): ModuleDependencyItem.Exportable.LibraryDependency {
+    val libraryTableId = if (libraryDependency.isProjectLevelLibrary)
+      LibraryTableId.ProjectLibraryTableId else LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName))
+    return ModuleDependencyItem.Exportable.LibraryDependency(
+            library = LibraryId(
+                    name = libraryDependency.libraryName,
+                    tableId = libraryTableId,
+            ),
+            exported = false,
+            scope = ModuleDependencyItem.DependencyScope.COMPILE,
     )
+  }
 }
 
 // TODO TEST TEST TEST TEST TEST !!11!1!

@@ -101,6 +101,8 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       dependenciesSources = listOf(),
       javacOptions = javacOptionsItem,
       outputPathUris = emptyList(),
+      libraryDependencies = null,
+      moduleDependencies = emptyList()
     )
 
     // when
@@ -127,7 +129,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
         )
       ),
       resourceRoots = listOf(),
-      libraries = listOf(),
+      moduleLevelLibraries  = emptyList(),
       compilerOutput = null,
       jvmJdkInfo = null,
       kotlinAddendum = null
@@ -203,6 +205,8 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       dependenciesSources = listOf(),
       javacOptions = javacOptionsItem,
       outputPathUris = emptyList(),
+      moduleDependencies = emptyList(),
+      libraryDependencies = null
     )
 
     // when
@@ -229,7 +233,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
         )
       ),
       resourceRoots = listOf(),
-      libraries = listOf(),
+      moduleLevelLibraries = emptyList(),
       compilerOutput = null,
       jvmJdkInfo = null,
       kotlinAddendum = null
@@ -255,7 +259,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
         )
       ),
       resourceRoots = listOf(),
-      libraries = listOf(),
+      moduleLevelLibraries = emptyList(),
       compilerOutput = null,
       jvmJdkInfo = null,
       kotlinAddendum = null
@@ -281,7 +285,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
     actual.baseDirContentRoot shouldBe expected.baseDirContentRoot
     actual.sourceRoots shouldContainExactlyInAnyOrder expected.sourceRoots
     actual.resourceRoots shouldContainExactlyInAnyOrder expected.resourceRoots
-    actual.libraries shouldContainExactlyInAnyOrder expected.libraries
+    actual.moduleLevelLibraries shouldContainExactlyInAnyOrder expected.moduleLevelLibraries
   }
 
   private fun validateModule(actual: Module, expected: Module) {

@@ -76,8 +76,13 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target4"),
       ),
       dependencySources = listOf(dependencySourceItem1),
-      type = "JAVA_MODULE",
       javacOptions = javacOptions,
+      type = "JAVA_MODULE",
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
+      ),
+      libraryDependencies = null
     )
 
     // when
@@ -98,9 +103,11 @@ class BspModuleDetailsToModuleTransformerTest {
       librariesDependencies = listOf(
         LibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+          false,
         ),
         LibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
+          false
         ),
       )
     )
@@ -139,6 +146,13 @@ class BspModuleDetailsToModuleTransformerTest {
       associates = listOf(
         BuildTargetIdentifier("//target4"),
         BuildTargetIdentifier("//target5"),
+      ),
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3")
+      ),
+      libraryDependencies = listOf(
+        BuildTargetIdentifier("@maven//:test")
       )
     )
 
@@ -157,7 +171,9 @@ class BspModuleDetailsToModuleTransformerTest {
           moduleName = "//target3",
         ),
       ),
-      librariesDependencies = listOf(),
+      librariesDependencies = listOf(
+        LibraryDependency("@maven//:test", true)
+      ),
       associates = listOf(
         ModuleDependency(
           moduleName = "//target4",
@@ -215,8 +231,13 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target4"),
       ),
       dependencySources = listOf(dependencySourceItem1),
-      type = "JAVA_MODULE",
       javacOptions = javacOptionsItem1,
+      type = "JAVA_MODULE",
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
+      ),
+      libraryDependencies = null
     )
 
     val target2Name = "//target2"
@@ -254,8 +275,12 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target4"),
       ),
       dependencySources = listOf(dependencySourceItem2),
-      type = "JAVA_MODULE",
       javacOptions = javacOptionsItem2,
+      type = "JAVA_MODULE",
+      moduleDependencies = listOf(
+        BuildTargetIdentifier("//target3"),
+      ),
+      libraryDependencies = null,
     )
 
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
@@ -334,8 +359,10 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target2"),
       ),
       dependencySources = emptyList(),
-      type = "JAVA_MODULE",
       javacOptions = javacOptions,
+      type = "JAVA_MODULE",
+      moduleDependencies = emptyList(),
+      libraryDependencies = emptyList(),
     )
 
     // when

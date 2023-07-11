@@ -58,7 +58,7 @@ class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
         baseDirContentRoot = baseDirContentRoot,
         sourceRoots = listOf(),
         resourceRoots = listOf(),
-        libraries = listOf(),
+        moduleLevelLibraries = listOf(),
         compilerOutput = Path("/compiler/output.jar"),
         jvmJdkInfo = JvmJdkInfo(name = "${projectBasePath.name}-$javaVersion", javaHome = javaHome),
         kotlinAddendum = KotlinAddendum(
