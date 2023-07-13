@@ -10,4 +10,5 @@ internal object BspPluginIcons {
   val reload = IconLoader.getIcon("/icons/reload.svg", BspPluginIcons::class.java)
   val restart = IconLoader.getIcon("/icons/restart.svg", BspPluginIcons::class.java)
   val disconnect = IconLoader.getIcon("/icons/disconnect.svg", BspPluginIcons::class.java)
+  val bazel = IconLoader.getIcon("/icons/bazel.svg", BspPluginIcons::class.java)
 }
