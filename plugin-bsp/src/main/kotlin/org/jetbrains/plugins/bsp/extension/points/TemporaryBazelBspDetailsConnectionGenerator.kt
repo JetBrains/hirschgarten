@@ -27,16 +27,18 @@ import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.writeText
 
+public const val BAZEL_BSP_ID: String = "bazelbsp"
+
 public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsGeneratorExtension {
 
   private lateinit var projectViewFilePathProperty: ObservableProperty<Path?>
 
-  public override fun id(): String = "bazelbsp"
+  public override fun id(): String = BAZEL_BSP_ID
 
   public override fun displayName(): String = "Bazel"
 
   public override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean =
-    projectPath.children.any { it.name == "WORKSPACE" }
+    projectPath.children.any { it.name == "WORKSPACE" || it.name == "WORKSPACE.bazel" }
 
   override fun calculateImportWizardSteps(
     projectBasePath: Path,

@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.flow.open
 
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.notification.Notifications
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
@@ -24,6 +25,9 @@ import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.ui.misc.actions.OpenBazelProjectViaBspPluginAction
+import org.jetbrains.plugins.bsp.ui.misc.actions.isImportableBazelBspProject
+import org.jetbrains.plugins.bsp.ui.misc.notifications.BazelBspBalloonNotification
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 
@@ -38,6 +42,8 @@ public class BspStartupActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
     if (project.isBspProject) {
       doRunActivity(project)
+    } else {
+      showBazelImportNotificationIfEligible(project)
     }
   }
 
@@ -156,6 +162,14 @@ public class BspStartupActivity : ProjectActivity {
       bspSyncConsole.finishTask("bsp-import", "Import done!")
     } catch (e: Exception) {
       bspSyncConsole.finishTask("bsp-import", "Import failed!", FailureResultImpl(e))
+    }
+  }
+
+  private fun showBazelImportNotificationIfEligible(project: Project) {
+    if (isImportableBazelBspProject(project)) {
+      val notification = BazelBspBalloonNotification("Bazel configuration found for '${project.name}'")
+        .addAction(OpenBazelProjectViaBspPluginAction())
+      Notifications.Bus.notify(notification, project)
     }
   }
 }
