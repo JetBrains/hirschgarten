@@ -7,7 +7,6 @@ import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.util.alsoIfNull
 import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -22,24 +21,30 @@ internal object TargetIdToModuleDetailsMap {
   operator fun invoke(
     projectDetails: ProjectDetails,
     projectBasePath: Path
-  ): Map<BuildTargetIdentifier, ModuleDetails> =
-    projectDetails.targetsId.associateWith { toModuleDetails(projectDetails, projectBasePath, it) }
+  ): Map<BuildTargetIdentifier, ModuleDetails> {
+    val targetsIndex = projectDetails.targets.associateBy { it.id }
+    val librariesIndex = projectDetails.libraries?.associateBy { it.id }
+    return projectDetails.targetsId.associateWith {
+      toModuleDetails(projectDetails, projectBasePath, it, targetsIndex, librariesIndex)
+    }
+  }
 
   private fun toModuleDetails(
     projectDetails: ProjectDetails,
     projectBasePath: Path,
-    targetId: BuildTargetIdentifier
+    targetId: BuildTargetIdentifier,
+    targetsIndex: Map<BuildTargetIdentifier, BuildTarget>,
+    librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?
   ): ModuleDetails {
     val target = calculateTarget(projectDetails, targetId)
     return if (target.isRoot(projectBasePath)) {
       toRootModuleDetails(projectDetails, target)
     } else {
+      val allDependencies = allDependencies(target, librariesIndex)
       ModuleDetails(
         target = target,
-        libraryDependencies = projectDetails.libraries?.let { libraryDependencies(target, it) } ,
-        moduleDependencies = target.dependencies.filter { dependency ->
-          projectDetails.targets.any { it.id.uri == dependency.uri }
-        },
+        libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.toList(),
+        moduleDependencies = targetsIndex.keys.intersect(allDependencies).toList(),
         allTargetsIds = projectDetails.targetsId,
         sources = calculateSources(projectDetails, targetId),
         resources = calculateResources(projectDetails, targetId),
@@ -50,24 +55,25 @@ internal object TargetIdToModuleDetailsMap {
     }
   }
 
-  private fun libraryDependencies(target: BuildTarget, libraries: List<LibraryItem>): List<BuildTargetIdentifier> {
-    var librariesToVisit =  target.dependencies.filter { dependency -> libraries.any { it.id.uri == dependency.uri } }
+  private fun allDependencies(
+    target: BuildTarget,
+    librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?
+  ): Set<BuildTargetIdentifier> {
+    var librariesToVisit = target.dependencies
     var visited = emptySet<BuildTargetIdentifier>();
     while(librariesToVisit.isNotEmpty()) {
       val currentLib = librariesToVisit.first()
       librariesToVisit = librariesToVisit - currentLib
       visited = visited + currentLib
-      librariesToVisit = librariesToVisit + (findLibraryOrLogError(libraries, currentLib).orEmpty() - visited)
+      librariesToVisit = librariesToVisit + (findLibrary(currentLib, librariesIndex) - visited)
     }
-    return visited.toList()
+    return visited
   }
 
-  private fun findLibraryOrLogError(
-    libraries: List<LibraryItem>,
-    currentLib: BuildTargetIdentifier
-  ) = libraries.find { it.id == currentLib }?.dependencies
-      .alsoIfNull { log.error("Could not find library: ${currentLib.uri}") }
-
+  private fun findLibrary(
+    currentLib: BuildTargetIdentifier,
+    librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?,
+  ) = librariesIndex?.get(currentLib)?.dependencies.orEmpty()
   private fun toRootModuleDetails(
     projectDetails: ProjectDetails,
     target: BuildTarget,
