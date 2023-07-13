@@ -23,6 +23,8 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import java.net.URI
 
 private const val ID = "BspDocumentTargetsWidget"
@@ -47,6 +49,10 @@ private class LoadTargetAction(
     val diff = magicMetaModel.loadTarget(target)
     BspCoroutineService.getInstance(project).start { diff?.applyOnWorkspaceModel() }
 
+    BspBalloonNotifier.info(
+      BspAllTargetsWidgetBundle.message("widget.load.target.notification", target.uri),
+      "Load target"
+    )
     updateWidget()
   }
 

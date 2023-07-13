@@ -13,6 +13,7 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import java.awt.event.MouseEvent
@@ -77,6 +78,11 @@ private class LoadTargetAction(
       val magicMetaModel = MagicMetaModelService.getInstance(project).value
       val diff = magicMetaModel.loadTarget(target.id)
       BspCoroutineService.getInstance(project).start { diff?.applyOnWorkspaceModel() }
+
+      BspBalloonNotifier.info(
+        BspAllTargetsWidgetBundle.message("widget.load.target.notification", target.id.uri),
+        "Load target"
+      )
     }
   }
 }
