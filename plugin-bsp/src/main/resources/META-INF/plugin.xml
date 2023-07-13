@@ -51,6 +51,8 @@
                 icon="/icons/bsp.svg"
                 anchor="right"/>
 
+    <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
+
   </extensions>
 
   <actions>
