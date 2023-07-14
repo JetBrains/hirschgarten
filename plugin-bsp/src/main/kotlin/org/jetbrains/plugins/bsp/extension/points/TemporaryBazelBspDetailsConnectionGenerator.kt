@@ -5,7 +5,6 @@ import com.intellij.openapi.observable.properties.GraphProperty
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.observable.properties.ObservableProperty
 import com.intellij.openapi.observable.properties.PropertyGraph
-import com.intellij.openapi.observable.util.transform
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.vfs.VirtualFile
@@ -13,14 +12,12 @@ import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.rows
-import com.intellij.util.io.isFile
 import com.intellij.util.io.readText
 import org.jetbrains.plugins.bsp.config.BspPluginTemplates
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizardStep
 import java.io.OutputStream
-import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
@@ -31,7 +28,7 @@ public const val BAZEL_BSP_ID: String = "bazelbsp"
 
 public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsGeneratorExtension {
 
-  private lateinit var projectViewFilePathProperty: ObservableProperty<Path?>
+  private lateinit var projectViewFilePathProperty: ObservableProperty<Path>
 
   public override fun id(): String = BAZEL_BSP_ID
 
@@ -73,16 +70,17 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
         .calculateNeededJars(
           org = "org.jetbrains.bsp",
           name = "bazel-bsp",
-          version = "2.7.2-20230706-f4c9b25-NIGHTLY"
+          version = "2.7.2-20230708-6aa11e0-NIGHTLY"
         )
         .joinToString(":"),
       "org.jetbrains.bsp.bazel.install.Install",
     ) + calculateProjectViewFileInstallerOption()
 
   private fun calculateProjectViewFileInstallerOption(): List<String> =
-    projectViewFilePathProperty.get()
-      ?.let { listOf("-p", "$it") } ?: emptyList()
+    listOf("-p", "${projectViewFilePathProperty.get()}")
 }
+
+private const val DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 
 public class BazelEditProjectViewStep(
   private val projectBasePath: Path,
@@ -91,7 +89,7 @@ public class BazelEditProjectViewStep(
 
   private val propertyGraph = PropertyGraph(isBlockPropagation = false)
 
-  public val projectViewFilePathProperty: GraphProperty<Path?> =
+  public val projectViewFilePathProperty: GraphProperty<Path> =
     propertyGraph
       .lazyProperty { calculateProjectViewFilePath(connectionFileOrNewConnectionProperty) }
       .also {
@@ -102,13 +100,12 @@ public class BazelEditProjectViewStep(
 
   private fun calculateProjectViewFilePath(
     connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
-  ): Path? =
+  ): Path =
     when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
       is ConnectionFile ->
-        calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.bspConnectionDetails)
-          ?.let { Path(it) }
+        Path(calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.bspConnectionDetails))
 
-      else -> projectBasePath.resolve(defaultProjectViewFileName)
+      else -> projectBasePath.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
     }
 
   private val projectViewFileNameProperty =
@@ -123,12 +120,12 @@ public class BazelEditProjectViewStep(
         }
       }
 
-  private fun calculateProjectViewFileName(projectViewFilePathProperty: GraphProperty<Path?>): String =
-    projectViewFilePathProperty.get()?.name ?: "Not specified"
+  private fun calculateProjectViewFileName(projectViewFilePathProperty: GraphProperty<Path>): String =
+    projectViewFilePathProperty.get().name
 
-  private fun calculateNewProjectViewFilePath(projectViewFileNameProperty: GraphProperty<String>): Path? {
+  private fun calculateNewProjectViewFilePath(projectViewFileNameProperty: GraphProperty<String>): Path {
     val newFileName = projectViewFileNameProperty.get()
-    return projectViewFilePathProperty.get()?.parent?.resolve(newFileName)
+    return projectViewFilePathProperty.get().parent.resolve(newFileName)
   }
 
   private val isProjectViewFileNameEditableProperty =
@@ -148,33 +145,8 @@ public class BazelEditProjectViewStep(
       else -> true
     }
 
-  private val isProjectViewFileNameSpecifiedProperty =
-    propertyGraph
-      .lazyProperty { calculateIsProjectViewFileNameSpecified(connectionFileOrNewConnectionProperty) }
-      .also {
-        it.dependsOn(connectionFileOrNewConnectionProperty) {
-          calculateIsProjectViewFileNameSpecified(connectionFileOrNewConnectionProperty)
-        }
-      }
-
-  private fun calculateIsProjectViewFileNameSpecified(
-    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
-  ): Boolean =
-    when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
-      is ConnectionFile ->
-        calculateProjectViewFileNameFromConnectionDetails(connectionFileOrNewConnection.bspConnectionDetails) != null
-
-      else -> true
-    }
-
-  private fun calculateProjectViewFileNameFromConnectionDetails(bspConnectionDetails: BspConnectionDetails): String? =
-    bspConnectionDetails.argv.last().takeIf {
-      try {
-        Path(it).isFile()
-      } catch (e: InvalidPathException) {
-        false
-      }
-    }
+  private fun calculateProjectViewFileNameFromConnectionDetails(bspConnectionDetails: BspConnectionDetails): String =
+    bspConnectionDetails.argv[bspConnectionDetails.argv.lastIndex - 1]
 
   private val projectViewTextProperty =
     propertyGraph
@@ -185,9 +157,9 @@ public class BazelEditProjectViewStep(
         }
       }
 
-  private fun calculateProjectViewText(projectViewFilePathProperty: GraphProperty<Path?>): String =
+  private fun calculateProjectViewText(projectViewFilePathProperty: GraphProperty<Path>): String =
     projectViewFilePathProperty.get()
-      ?.takeIf { it.exists() }
+      .takeIf { it.exists() }
       ?.readText()
       ?: BspPluginTemplates.defaultBazelProjectViewContent
 
@@ -202,15 +174,9 @@ public class BazelEditProjectViewStep(
     row {
       textArea()
         .bindText(projectViewTextProperty)
-        .visibleIf(isProjectViewFileNameSpecifiedProperty)
         .align(Align.FILL)
         .rows(15)
     }.resizableRow()
-    row {
-      text("Please choose a connection file with project view file " +
-        "or create a new connection in order to edit project view")
-        .visibleIf(isProjectViewFileNameSpecifiedProperty.transform { !it })
-    }
   }
 
   override fun commit(finishChosen: Boolean) {
@@ -222,9 +188,5 @@ public class BazelEditProjectViewStep(
   }
 
   private fun saveProjectViewToFileIfExist() =
-    projectViewFilePathProperty.get()?.writeText(projectViewTextProperty.get())
-
-  private companion object {
-    private const val defaultProjectViewFileName = "projectview.bazelproject"
-  }
+    projectViewFilePathProperty.get().writeText(projectViewTextProperty.get())
 }
