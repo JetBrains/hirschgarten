@@ -7,27 +7,6 @@
 # Example:
 # import path/to/another/projectview.bazelproject
 
-# SERVER INSTALLER SECTIONS (These sections are read during server installation)
-# ------------------------------------------------------------------------------
-
-# Path to java which will be used to start the server (first argument in `argv` in `.bsp/bazelbsp.json`).
-#
-# Example:
-# java_path: /Library/Java/JavaVirtualMachines/adoptopenjdk-11.jdk/Contents/Home/bin/java
-#
-# Default: java path will be deducted automatically from JAVA_HOME
-
-# Address of debugger which will be attached to the java program by the flag:
-# <java path> <server runner> -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=<debugger_address>`
-#
-# Example:
-# debugger_address: 127.0.0.1:8000
-#
-# Default: The server will be started without debugger
-
-# PROJECT SECTIONS (These sections are read when server is starting)
-# ------------------------------------------------------------------
-
 # List of bazel target expressions, supporting `/...` notation.
 # e.g. `-//executioncontext/projectview/src/main/java/org/jetbrains/bsp/bazel/projectview/parser/...`).
 #
@@ -42,7 +21,7 @@ targets:
 # Path to bazel which will be used to invoke bazel from the server (e.g. to build a project, or query bazel).
 #
 # Example:
-# bazel_path: /usr/local/bin/bazel
+# bazel_binary: /usr/local/bin/bazel
 #
 # Default: The server will deduct bazel path from `$PATH`
 
@@ -57,7 +36,8 @@ targets:
 #   executioncontext/projectview/
 #   -executioncontext/projectview/src/main/java/org/jetbrains/bsp/bazel/projectview/parser
 #
-directories:
+# directories:
+#   .
 
 
 # Flag specifying if targets should be derived from list of directories in directories section.
