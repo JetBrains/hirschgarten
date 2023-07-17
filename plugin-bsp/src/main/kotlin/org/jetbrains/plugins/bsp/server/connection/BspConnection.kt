@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.server.connection
 
 import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.JavaBuildServer
+import ch.epfl.scala.bsp4j.PythonBuildServer
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -11,7 +12,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.BazelBuildServer
 
-public interface BspServer : BuildServer, JavaBuildServer, BazelBuildServer
+public interface BspServer : BuildServer, JavaBuildServer, BazelBuildServer, PythonBuildServer
 
 /**
  * The BSP connection, implementation should keep all the information

@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.openapi.diagnostic.Logger
@@ -50,6 +51,7 @@ internal object TargetIdToModuleDetailsMap {
         resources = calculateResources(projectDetails, targetId),
         dependenciesSources = calculateDependenciesSources(projectDetails, targetId),
         javacOptions = calculateJavacOptions(projectDetails, targetId),
+        pythonOptions = calculatePythonOptions(projectDetails, targetId),
         outputPathUris = emptyList(),
       )
     }
@@ -85,6 +87,7 @@ internal object TargetIdToModuleDetailsMap {
       resources = emptyList(),
       dependenciesSources = calculateDependenciesSources(projectDetails, target.id),
       javacOptions = calculateJavacOptions(projectDetails, target.id),
+      pythonOptions = calculatePythonOptions(projectDetails, target.id),
       outputPathUris = calculateAllOutputPaths(projectDetails),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
@@ -116,4 +119,10 @@ internal object TargetIdToModuleDetailsMap {
 
   private fun BuildTarget.isRoot(projectBasePath: Path): Boolean =
     this.baseDirectory?.let { URI.create(it).toPath() } == projectBasePath
+
+  private fun calculatePythonOptions(
+    projectDetails: ProjectDetails,
+    targetId: BuildTargetIdentifier
+  ): PythonOptionsItem? =
+    projectDetails.pythonOptions.firstOrNull { it.target == targetId }
 }

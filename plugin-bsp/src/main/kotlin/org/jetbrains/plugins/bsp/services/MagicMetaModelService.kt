@@ -45,6 +45,7 @@ public class MagicMetaModelService(private val project: Project) :
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
+      pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = emptyList(),
     )

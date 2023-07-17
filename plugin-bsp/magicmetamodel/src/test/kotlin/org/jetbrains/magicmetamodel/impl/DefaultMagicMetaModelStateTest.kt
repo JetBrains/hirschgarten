@@ -7,6 +7,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.JvmBuildTarget
+import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -202,6 +203,26 @@ class JavacOptionsItemStateTest {
 }
 
 
+@DisplayName("PythonOptionsItemState tests")
+class PythonOptionsItemStateTest {
+
+  @Test
+  fun `should do toState and fromState`() {
+    // given
+    val pythonOptionsItem = PythonOptionsItem(
+      BuildTargetIdentifier("target"),
+      listOf("opt1", "opt2", "opt3")
+    )
+
+    // when
+    val state = pythonOptionsItem.toState()
+
+    // then
+    state.fromState() shouldBe pythonOptionsItem
+  }
+}
+
+
 @DisplayName("ModuleDetailsState tests")
 class ModuleDetailsStateTest {
 
@@ -243,10 +264,14 @@ class ModuleDetailsStateTest {
         )
       ),
       javacOptions = JavacOptionsItem(
+          BuildTargetIdentifier("target1"),
+          listOf("opt1", "opt2", "opt3"),
+          listOf("classpath1", "classpath2"),
+          "class/dir"
+      ),
+      pythonOptions = PythonOptionsItem(
         BuildTargetIdentifier("target1"),
-        listOf("opt1", "opt2", "opt3"),
-        listOf("classpath1", "classpath2"),
-        "class/dir"
+        listOf("opt1", "opt2", "opt3")
       ),
       outputPathUris = listOf("file:///output/dir", "file:///output/file1.out"),
       libraryDependencies = emptyList(),
