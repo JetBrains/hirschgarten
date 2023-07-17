@@ -100,6 +100,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       resources = listOf(),
       dependenciesSources = listOf(),
       javacOptions = javacOptionsItem,
+      pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = emptyList()
@@ -204,6 +205,7 @@ class ModuleDetailsToDummyJavaModuleTransformerHACKTest {
       resources = listOf(),
       dependenciesSources = listOf(),
       javacOptions = javacOptionsItem,
+      pythonOptions = null,
       outputPathUris = emptyList(),
       moduleDependencies = emptyList(),
       libraryDependencies = null

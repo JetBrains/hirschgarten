@@ -5,6 +5,9 @@
 
   <depends>com.intellij.modules.platform</depends>
   <depends>org.jetbrains.kotlin</depends>
+  <depends
+          optional="true"
+          config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
 
   <extensionPoints>
     <extensionPoint qualifiedName="com.intellij.bspConnectionDetailsGeneratorExtension"
@@ -12,6 +15,9 @@
                     dynamic="true"/>
     <extensionPoint qualifiedName="com.intellij.bspBuildTargetClassifierExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.pythonSdkGetterExtension"
+                    interface="org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension"
                     dynamic="true"/>
   </extensionPoints>
   <extensions defaultExtensionNs="com.intellij">

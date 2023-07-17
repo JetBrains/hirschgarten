@@ -459,6 +459,7 @@ class WorkspaceModelToProjectDetailsTransformerTest : WorkspaceModelBaseTest() {
         resources = listOf(expectedResourceItem1, expectedResourceItem2),
         dependenciesSources = listOf(expectedDependencySourceItem1, expectedDependencySourceItem2),
         javacOptions = listOf(expectedJavacSourceItem1, expectedJavacSourceItem2),
+        pythonOptions = emptyList(),
         outputPathUris = rootModuleBaseDirContentRoot.excludedPaths.map { it.toUri().toString() },
         libraries = null
       )

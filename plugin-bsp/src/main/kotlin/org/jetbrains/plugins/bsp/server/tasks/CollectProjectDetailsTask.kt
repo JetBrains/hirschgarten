@@ -2,7 +2,9 @@ package org.jetbrains.plugins.bsp.server.tasks
 
 import ch.epfl.scala.bsp4j.BuildClientCapabilities
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.DependencySourcesResult
 import ch.epfl.scala.bsp4j.InitializeBuildParams
@@ -12,6 +14,8 @@ import ch.epfl.scala.bsp4j.JavacOptionsResult
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.OutputPathsParams
 import ch.epfl.scala.bsp4j.OutputPathsResult
+import ch.epfl.scala.bsp4j.PythonOptionsParams
+import ch.epfl.scala.bsp4j.PythonOptionsResult
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.SourcesParams
@@ -28,6 +32,8 @@ import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.workspaceModel.ide.getInstance
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -39,8 +45,12 @@ import org.jetbrains.magicmetamodel.WorkspaceLibrariesResult
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
+import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
+import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
@@ -54,6 +64,12 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.toPath
 
+public data class PythonSdk(
+  val name: String,
+  val interpreter: String,
+  val dependencies: List<DependencySourcesItem>
+)
+
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
   BspServerTask<ProjectDetails>("collect project details", project) {
 
@@ -64,6 +80,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
   private lateinit var uniqueJdkInfos: Set<JvmBuildTarget>
+
+  private var pythonSdks: Set<PythonSdk>? = null
 
   private val jdkTable = ProjectJdkTable.getInstance()
 
@@ -90,6 +108,11 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
     indeterminateStep(text = "Calculating all unique jdk infos") {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
+    }
+    if (pythonSdkGetterExtensionExists()) {
+      indeterminateStep(text = "Calculating all unique python sdk infos") {
+        calculateAllPythonSdkInfosSubtask(projectDetails)
+      }
     }
     progressStep(endFraction = 0.75, "Updating magic meta model diff") {
       runInterruptible { updateMMMDiffSubtask(projectDetails) }
@@ -178,6 +201,32 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> =
     projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
 
+  private fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails?) {
+    projectDetails?.let {
+      bspSyncConsole.startSubtask(taskId, "calculate-all-python-sdk-infos", "Calculating all python sdk infos...")
+      pythonSdks = logPerformance("calculate-all-python-sdk-infos") { calculateAllPythonSdkInfos(projectDetails) }
+      bspSyncConsole.finishSubtask("calculate-all-python-sdk-infos", "Calculating all python sdk infos done!")
+    }
+  }
+
+  private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? {
+    val pythonInfo = extractPythonBuildTarget(target) ?: return null
+
+    return PythonSdk(
+      "${target.id.uri}-${pythonInfo.version}",
+      pythonInfo.interpreter,
+      dependenciesSources
+    )
+  }
+
+  private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<PythonSdk> {
+    return projectDetails.targets
+      .mapNotNull {
+        createPythonSdk(it, projectDetails.dependenciesSources.filter { a -> a.target.uri == it.id.uri })
+      }
+      .toSet()
+  }
+
   private fun updateMMMDiffSubtask(projectDetails: ProjectDetails?) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
     bspSyncConsole.startSubtask(taskId, "calculate-project-structure", "Calculating project structure...")
@@ -191,6 +240,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private suspend fun postprocessingMMMSubtask() {
     addBspFetchedJdks()
     applyChangesOnWorkspaceModel()
+    addBspFetchedPythonSdks()
   }
 
   private suspend fun addBspFetchedJdks() {
@@ -218,6 +268,23 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
+  private suspend fun addBspFetchedPythonSdks() {
+    pythonSdkGetterExtension()?.let { extension ->
+      bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs...")
+      logPerformanceSuspend("add-bsp-fetched-python-sdks") {
+        pythonSdks?.forEach { addPythonSdkIfNeeded(it, extension) }
+      }
+      bspSyncConsole.finishSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs done!")
+    }
+  }
+
+  private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk, pythonSdkGetterExtension: PythonSdkGetterExtension) {
+    val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
+    val sdk = pythonSdkGetterExtension.getPythonSdk(pythonSdk, jdkTable, virtualFileUrlManager)
+
+    addJdkIfNeeded(sdk)
+  }
+
   private suspend fun applyChangesOnWorkspaceModel() {
     bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Applying changes...")
 
@@ -239,6 +306,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 }
 
+@Suppress("LongMethod")
 public fun calculateProjectDetailsWithCapabilities(
   server: BspServer,
   buildServerCapabilities: BuildServerCapabilities,
@@ -263,7 +331,6 @@ public fun calculateProjectDetailsWithCapabilities(
       queryForTargetResources(server, buildServerCapabilities, allTargetsIds)
         ?.reactToExceptionIn(cancelOn)
         ?.catchSyncErrors(errorCallback)
-
     val dependencySourcesFuture =
       queryForDependencySources(server, buildServerCapabilities, allTargetsIds)
         ?.reactToExceptionIn(cancelOn)
@@ -288,6 +355,11 @@ public fun calculateProjectDetailsWithCapabilities(
         ?.catchSyncErrors(errorCallback)
     else null
 
+    val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
+    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)
+      ?.reactToExceptionIn(cancelOn)
+      ?.catchSyncErrors(errorCallback)
+
     val outputPathsFuture =
       queryForOutputPaths(server, allTargetsIds)
               .reactToExceptionIn(cancelOn)
@@ -299,6 +371,7 @@ public fun calculateProjectDetailsWithCapabilities(
       resources = resourcesFuture?.get()?.items ?: emptyList(),
       dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
       javacOptions = javacOptionsFuture?.get()?.items ?: emptyList(),
+      pythonOptions = pythonOptionsFuture?.get()?.items ?: emptyList(),
       outputPathUris = outputPathsFuture.get().obtainDistinctUris(),
       libraries = libraries?.libraries,
     )
@@ -364,6 +437,20 @@ private fun queryForJavacOptions(
   return if (javaTargetsIds.isNotEmpty()) {
     val javacOptionsParams = JavacOptionsParams(javaTargetsIds)
     server.buildTargetJavacOptions(javacOptionsParams)
+  } else null
+}
+
+private fun calculatePythonTargetsIds(
+    workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("python") }.map { it.id }
+
+private fun queryForPythonOptions(
+  server: BspServer,
+  pythonTargetsIds: List<BuildTargetIdentifier>
+): CompletableFuture<PythonOptionsResult>? {
+  return if (pythonTargetsIds.isNotEmpty()) {
+    val pythonOptionsParams = PythonOptionsParams(pythonTargetsIds)
+    server.buildTargetPythonOptions(pythonOptionsParams)
   } else null
 }
 

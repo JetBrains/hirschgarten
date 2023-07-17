@@ -7,6 +7,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.JvmBuildTarget
+import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -223,6 +224,21 @@ public fun JavacOptionsItem.toState(): JavacOptionsItemState =
     classDirectory = classDirectory,
   )
 
+public class PythonOptionsItemState(
+  public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
+  public var options: List<String> = emptyList(),
+) : ConvertableFromState<PythonOptionsItem> {
+
+  public override fun fromState(): PythonOptionsItem =
+    PythonOptionsItem(target.fromState(), options)
+}
+
+public fun PythonOptionsItem.toState(): PythonOptionsItemState =
+  PythonOptionsItemState(
+    target = target.toState(),
+    options = interpreterOptions
+  )
+
 public data class ProjectDetailsState(
   public var targetsId: List<BuildTargetIdentifierState> = emptyList(),
   public var targets: List<BuildTargetState> = emptyList(),
@@ -230,6 +246,7 @@ public data class ProjectDetailsState(
   public var resources: List<ResourcesItemState> = emptyList(),
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
   public var javacOptions: List<JavacOptionsItemState> = emptyList(),
+  public var pythonOptions: List<PythonOptionsItemState> = emptyList(),
   public var outputPathUris: List<String> = emptyList(),
   @Nullable public var libraries: List<LibraryItemState>? = null,
   ) : ConvertableFromState<ProjectDetails> {
@@ -242,6 +259,7 @@ public data class ProjectDetailsState(
       resources = resources.map { it.fromState() },
       dependenciesSources = dependenciesSources.map { it.fromState() },
       javacOptions = javacOptions.map { it.fromState() },
+      pythonOptions = pythonOptions.map { it.fromState() },
       outputPathUris = outputPathUris,
       libraries = libraries?.map { it.fromState() },
     )
@@ -255,6 +273,7 @@ public fun ProjectDetails.toState(): ProjectDetailsState =
     resources = resources.map { it.toState() },
     dependenciesSources = dependenciesSources.map { it.toState() },
     javacOptions = javacOptions.map { it.toState() },
+    pythonOptions = pythonOptions.map { it.toState() },
     libraries = libraries?.map { it.toState() }
   )
 
@@ -266,6 +285,7 @@ public fun ProjectDetails.toStateWithoutLoadedTargets(loaded: List<BuildTargetId
     resources = resources.filterNot { loaded.contains(it.target) }.map { it.toState() },
     dependenciesSources = dependenciesSources.filterNot { loaded.contains(it.target) }.map { it.toState() },
     javacOptions = javacOptions.filterNot { loaded.contains(it.target) }.map { it.toState() },
+    pythonOptions = pythonOptions.filterNot { loaded.contains(it.target) }.map { it.toState() },
     libraries = libraries?.map { it.toState() }
   )
 
@@ -277,6 +297,7 @@ public data class ModuleDetailsState(
   public var resources: List<ResourcesItemState> = emptyList(),
   public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
   public var javacOptions: JavacOptionsItemState? = null,
+  public var pythonOptions: PythonOptionsItemState? = null,
   public var outputPathUris: List<String> = emptyList(),
   public var libraryDependencies: List<BuildTargetIdentifierState>? = emptyList(),
   public var moduleDependencies: List<BuildTargetIdentifierState> = emptyList(),
@@ -290,6 +311,7 @@ public data class ModuleDetailsState(
       resources = resources.map { it.fromState() },
       dependenciesSources = dependenciesSources.map { it.fromState() },
       javacOptions = javacOptions?.fromState(),
+      pythonOptions = pythonOptions?.fromState(),
       outputPathUris = outputPathUris,
       libraryDependencies = libraryDependencies?.map { it.fromState() },
       moduleDependencies = moduleDependencies.map { it.fromState() }
@@ -304,6 +326,7 @@ public fun ModuleDetails.toState(): ModuleDetailsState =
     resources = resources.map { it.toState() },
     dependenciesSources = dependenciesSources.map { it.toState() },
     javacOptions = javacOptions?.toState(),
+    pythonOptions = pythonOptions?.toState(),
     outputPathUris = outputPathUris,
     libraryDependencies = libraryDependencies?.map { it.toState() },
     moduleDependencies = moduleDependencies.map { it.toState() }

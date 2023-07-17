@@ -4,11 +4,11 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.PythonOptionsItem
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleCapabilities
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 
 internal data class BspModuleDetails(
@@ -16,6 +16,7 @@ internal data class BspModuleDetails(
   val allTargetsIds: List<BuildTargetIdentifier>,
   val dependencySources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
+  val pythonOptions: PythonOptionsItem?,
   val type: String,
   val associates: List<BuildTargetIdentifier> = listOf(),
   val moduleDependencies: List<BuildTargetIdentifier>,
@@ -25,26 +26,25 @@ internal data class BspModuleDetails(
 internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvider: ModuleNameProvider) :
   WorkspaceModelEntityTransformer<BspModuleDetails, Module> {
 
-  override fun transform(inputEntity: BspModuleDetails): Module {
-      val librariesDependencies = inputEntity.libraryDependencies?.map { LibraryDependency(it.uri, true) }
-              ?: DependencySourcesItemToLibraryDependencyTransformer
-                      .transform(inputEntity.dependencySources.map {
-                          DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
-                      })
+  override fun transform(inputEntity: BspModuleDetails): Module =
+    Module(
+      name = moduleNameProvider(inputEntity.target.id),
+      type = inputEntity.type,
+      modulesDependencies = inputEntity.moduleDependencies
+          .map { ModuleDependency(moduleName = moduleNameProvider(it)) },
+      librariesDependencies = calculateLibrariesDependencies(inputEntity),
+      languageIds = inputEntity.target.languageIds,
+      associates = inputEntity.associates.map { it.toModuleDependency(moduleNameProvider) }
+    )
 
-      return Module(
-              name = moduleNameProvider(inputEntity.target.id),
-              type = inputEntity.type,
-              modulesDependencies = inputEntity.moduleDependencies
-                  .map { ModuleDependency(moduleName = moduleNameProvider(it)) },
-              librariesDependencies = librariesDependencies,
-              capabilities = inputEntity.target.capabilities.let {
-                  ModuleCapabilities(it.canRun, it.canTest, it.canCompile, it.canDebug)
-              },
-              languageIds = inputEntity.target.languageIds,
-              associates = inputEntity.associates.map { it.toModuleDependency(moduleNameProvider) }
-      )
-  }
+  private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<LibraryDependency> =
+    inputEntity.libraryDependencies?.map { LibraryDependency(it.uri, true) }
+      ?: if (inputEntity.target.languageIds.contains("java"))
+         DependencySourcesItemToLibraryDependencyTransformer
+           .transform(inputEntity.dependencySources.map {
+             DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
+           }) else
+         emptyList()
 }
 
 internal object DependencySourcesItemToLibraryDependencyTransformer :

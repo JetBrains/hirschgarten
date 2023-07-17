@@ -15,10 +15,12 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.BspEntityS
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModuleUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToDummyJavaModulesTransformerHACK
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
 import java.net.URI
 import java.nio.file.Path
 
@@ -35,19 +37,27 @@ internal class WorkspaceModelUpdaterImpl(
     projectBasePath = projectBasePath
   )
   private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
+  private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig)
 
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
   private val moduleDetailsToJavaModuleTransformer =
     ModuleDetailsToJavaModuleTransformer(moduleNameProvider, projectBasePath)
+  private val moduleDetailsToPythonModuleTransformer =
+    ModuleDetailsToPythonModuleTransformer(moduleNameProvider, projectBasePath)
   private val moduleDetailsToDummyJavaModulesTransformerHACK =
     ModuleDetailsToDummyJavaModulesTransformerHACK(projectBasePath)
 
   override fun loadModule(moduleDetails: ModuleDetails) {
-    // TODO for now we are supporting only java modules
-    val dummyJavaModules = moduleDetailsToDummyJavaModulesTransformerHACK.transform(moduleDetails)
-    javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
-    val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
-    javaModuleUpdater.addEntity(javaModule)
+    // TODO for now we are supporting only java and python modules
+    if (moduleDetails.target.languageIds.contains("python")) {
+      val pythonModule = moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
+      pythonModuleUpdater.addEntity(pythonModule)
+    } else {
+      val dummyJavaModules = moduleDetailsToDummyJavaModulesTransformerHACK.transform(moduleDetails)
+      javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.module.isAlreadyAdded() })
+      val javaModule = moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
+      javaModuleUpdater.addEntity(javaModule)
+    }
   }
 
   override fun loadLibraries(libraries: List<Library>) {

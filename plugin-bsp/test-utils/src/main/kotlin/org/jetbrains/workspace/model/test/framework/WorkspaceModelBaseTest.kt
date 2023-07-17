@@ -54,12 +54,11 @@ public open class WorkspaceModelBaseTest {
     workspaceEntityStorageBuilder.entities(entityClass).toList()
 }
 
-public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceModelBaseTest() {
-
+public abstract class WorkspaceModelWithParentModuleBaseTest : WorkspaceModelBaseTest() {
   protected lateinit var parentModuleEntity: ModuleEntity
 
   private val parentModuleName = "test-module-root"
-  private val parentModuleType = "JAVA_MODULE"
+  public abstract val parentModuleType: String
 
   @BeforeEach
   override fun beforeEach() {
@@ -82,4 +81,12 @@ public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceMode
         this.type = parentModuleType
       }
     )
+}
+
+public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
+  override val parentModuleType: String = "JAVA_MODULE"
+}
+
+public abstract class WorkspaceModelWithParentPythonModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
+  override val parentModuleType: String = "PYTHON_MODULE"
 }

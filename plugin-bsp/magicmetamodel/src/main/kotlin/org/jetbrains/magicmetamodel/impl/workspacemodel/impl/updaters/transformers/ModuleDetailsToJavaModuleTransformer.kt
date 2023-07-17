@@ -8,7 +8,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JvmJdkInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinAddendum
@@ -57,9 +56,10 @@ public data class KotlinBuildTarget(
 internal class ModuleDetailsToJavaModuleTransformer(
   moduleNameProvider: ModuleNameProvider,
   private val projectBasePath: Path,
-) : WorkspaceModelEntityTransformer<ModuleDetails, JavaModule> {
+): ModuleDetailsToModuleTransformer<JavaModule>(moduleNameProvider) {
 
-  private val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(moduleNameProvider)
+  override val type = "JAVA_MODULE"
+
   private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(projectBasePath)
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer(projectBasePath)
 
@@ -87,13 +87,14 @@ internal class ModuleDetailsToJavaModuleTransformer(
       kotlinAddendum = toKotlinAddendum(inputEntity)
     )
 
-  private fun toModule(inputEntity: ModuleDetails): Module {
+  override fun toModule(inputEntity: ModuleDetails): Module {
     val bspModuleDetails = BspModuleDetails(
       target = inputEntity.target,
       allTargetsIds = inputEntity.allTargetsIds,
       dependencySources = inputEntity.dependenciesSources,
       type = type,
       javacOptions = inputEntity.javacOptions,
+      pythonOptions = inputEntity.pythonOptions,
       associates = toAssociates(inputEntity),
       libraryDependencies = inputEntity.libraryDependencies,
       moduleDependencies = inputEntity.moduleDependencies
@@ -107,13 +108,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
       .map { ModuleDependency(it) }
     return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
   }
-
-  private fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
-    ContentRoot(
-      // TODO what if null?
-      url = URI.create(inputEntity.target.baseDirectory ?: "file:///todo").toPath(),
-      excludedPaths = inputEntity.outputPathUris.map { URI.create(it).toPath() },
-    )
 
   private fun toCompilerOutput(inputEntity: ModuleDetails): Path? =
     inputEntity.javacOptions?.classDirectory?.let { URI(it).toPath() }
@@ -144,11 +138,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
     return kotlinBuildTarget?.associates ?: emptyList()
   }
-
-  companion object {
-    private const val type = "JAVA_MODULE"
-  }
-
 }
 
 // TODO ugly, but we need to change it anyway

@@ -75,7 +75,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget = BuildTarget(
       buildTargetId,
       listOf("library"),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -150,6 +150,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem),
       dependenciesSources = listOf(dependencySourcesItem),
       javacOptions = javacOptionsItem,
+      pythonOptions = null,
       outputPathUris = outputPathUris,
       libraryDependencies = null,
       moduleDependencies = listOf(
@@ -260,7 +261,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget = BuildTarget(
       buildTargetId,
       listOf("library"),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -285,6 +286,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(),
       dependenciesSources = listOf(),
       javacOptions = null,
+      pythonOptions = null,
       outputPathUris = listOf(),
       moduleDependencies = listOf(
         BuildTargetIdentifier("module2"),
@@ -350,7 +352,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget1 = BuildTarget(
       buildTargetId1,
       listOf("library"),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
@@ -427,6 +429,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem1),
       dependenciesSources = listOf(dependencySourcesItem1),
       javacOptions = target1JavacOptionsItem,
+      pythonOptions = null,
       outputPathUris = target1OutputPathUris,
       libraryDependencies = null,
       moduleDependencies = listOf(
@@ -442,7 +445,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val buildTarget2 = BuildTarget(
       buildTargetId2,
       listOf("test"),
-      emptyList(),
+      listOf("java"),
       listOf(
         BuildTargetIdentifier("module3"),
         BuildTargetIdentifier("@maven//:lib1"),
@@ -495,6 +498,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem2),
       dependenciesSources = listOf(dependencySourcesItem2),
       javacOptions = target2JavacOptionsItem,
+      pythonOptions = null,
       outputPathUris = target2OutputPathUris,
       libraryDependencies = null,
       moduleDependencies = listOf(

@@ -7,6 +7,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.JvmBuildTarget
+import ch.epfl.scala.bsp4j.PythonBuildTarget
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -78,6 +79,7 @@ public object WorkspaceModelToProjectDetailsTransformer {
         resources = modulesParsingData.mapNotNull { it.resourcesItem },
         dependenciesSources = modulesParsingData.mapNotNull { it.libSources },
         javacOptions = modulesParsingData.mapNotNull { it.libJars },
+        pythonOptions = emptyList(),
         outputPathUris = modulesParsingData.flatMap { it.outputPathUris },
         libraries = null // Libraries are saved to state as a whole, there's no need to read them from Workspace Model
       )
@@ -175,8 +177,16 @@ public object WorkspaceModelToProjectDetailsTransformer {
     }
 
   private fun ModuleDependencyItem.SdkDependency.addToBuildTarget(target: BuildTarget) {
-    target.dataKind = BuildTargetDataKind.JVM
-    target.data = Gson().toJson(JvmBuildTarget("", sdkName))
+    when (sdkType) {
+      "JavaSDK" -> {
+        target.dataKind = BuildTargetDataKind.JVM
+        target.data = Gson().toJson(JvmBuildTarget("", sdkName))
+      }
+      "PythonSDK" -> {
+        target.dataKind = BuildTargetDataKind.PYTHON
+        target.data = Gson().toJson(PythonBuildTarget(sdkName, ""))
+      }
+    }
   }
 
   private fun ModuleEntity.toOutputPathUris(): List<String> =
