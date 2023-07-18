@@ -16,6 +16,7 @@ import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
 
 public class BuildTargetTree(
@@ -30,6 +31,8 @@ public class BuildTargetTree(
   private val mouseListenerBuilders = mutableSetOf<(BuildTargetContainer) -> MouseListener>()
 
   public val treeComponent: Tree = Tree(rootNode)
+
+  override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction(this, treeComponent)
 
   init {
     treeComponent.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION

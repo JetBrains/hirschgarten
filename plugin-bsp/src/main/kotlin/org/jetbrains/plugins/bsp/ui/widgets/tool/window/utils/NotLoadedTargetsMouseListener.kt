@@ -60,11 +60,16 @@ public class NotLoadedTargetsMouseListener(
     val isConnected = BspConnectionService.getInstance(project).value?.isConnected() == true
 
     return if (target != null && isConnected) {
-      val action = LoadTargetAction(
+      val copyTargetIdAction = container.copyTargetIdAction
+      val loadTargetAction = LoadTargetAction(
         BspAllTargetsWidgetBundle.message("widget.load.target.popup.message"),
         target
       )
-      DefaultActionGroup().also { it.addAction(action) }
+      DefaultActionGroup().also {
+        it.addAction(copyTargetIdAction)
+        it.addSeparator()
+        it.addAction(loadTargetAction)
+      }
     } else null
   }
 

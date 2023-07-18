@@ -1,12 +1,17 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
 import ch.epfl.scala.bsp4j.BuildTarget
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import java.awt.event.MouseListener
 
 /**
  * Represents a container, which contains build targets and shows them in its UI representation
  */
 public interface BuildTargetContainer {
+  /**
+   * Action responsible for copying target IDs inside this container
+   */
+  public val copyTargetIdAction: CopyTargetIdAction
 
   /**
    * Returns `true` if this container contains no targets and `false` otherwise
