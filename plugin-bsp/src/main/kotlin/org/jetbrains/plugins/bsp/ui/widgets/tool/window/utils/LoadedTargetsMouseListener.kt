@@ -67,7 +67,11 @@ public class LoadedTargetsMouseListener(
         val action = getAction(TestTargetAction::class.java)
         actions.add(action)
       }
-      DefaultActionGroup().also { it.addAll(actions) }
+      DefaultActionGroup().also {
+        it.addAction(container.copyTargetIdAction)
+        it.addSeparator()
+        it.addAll(actions)
+      }
     } else null
   }
 

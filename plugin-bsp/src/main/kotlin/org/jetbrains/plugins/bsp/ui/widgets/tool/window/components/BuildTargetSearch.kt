@@ -6,6 +6,7 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import java.awt.event.MouseListener
 import java.util.concurrent.Callable
 import javax.swing.Icon
@@ -30,6 +31,8 @@ public class BuildTargetSearch(
 ) : BuildTargetContainer {
 
   public val targetSearchPanel: JPanel = JPanel(VerticalLayout(0))
+
+  override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction(this, targetSearchPanel)
 
   private val searchListDisplay = LazySearchListDisplay(targetIcon)
   private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, toolName)
