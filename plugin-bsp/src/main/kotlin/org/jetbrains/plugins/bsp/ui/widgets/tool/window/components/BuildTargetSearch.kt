@@ -17,6 +17,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTarget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
+import java.awt.Point
 
 private fun BuildTarget.getBuildTargetName(): String =
   this.displayName ?: this.id.uri
@@ -142,6 +143,13 @@ public class BuildTargetSearch(
       new.addMouseListener(listenerBuilder)
     }
     return new
+  }
+
+  /* https://youtrack.jetbrains.com/issue/BAZEL-522 */
+  public fun selectAtLocationIfListDisplayed(location: Point) {
+    if (!searchBarPanel.isDisplayAsTreeChosen()) {
+      searchListDisplay.selectAtLocation(location)
+    }
   }
 
   private class SearchCallable(
