@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.panels.VerticalLayout
+import java.awt.Point
 import java.awt.event.MouseListener
 import javax.swing.DefaultListModel
 import javax.swing.Icon
@@ -81,4 +82,12 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
 
   override fun getSelectedBuildTarget(): BuildTarget? =
     searchListComponent.selectedValue?.buildTarget
+
+  /* https://youtrack.jetbrains.com/issue/BAZEL-522 */
+  public fun selectAtLocation(location: Point) {
+    val index = searchListComponent.locationToIndex(location)
+    if (index >= 0 && !searchListComponent.isSelectedIndex(index)) {
+      searchListComponent.selectedIndex = index
+    }
+  }
 }

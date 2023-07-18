@@ -12,6 +12,8 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetActio
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
+import java.awt.Point
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 
@@ -25,7 +27,15 @@ public class LoadedTargetsMouseListener(
 
   private fun mouseClickedNotNull(mouseEvent: MouseEvent) {
     if (mouseEvent.mouseButton == MouseButton.Right) {
+      selectTargetIfSearchListIsDisplayed(mouseEvent.point)
       showPopup(mouseEvent)
+    }
+  }
+
+  /* https://youtrack.jetbrains.com/issue/BAZEL-522 */
+  private fun selectTargetIfSearchListIsDisplayed(point: Point) {
+    if (container is BuildTargetSearch) {
+      container.selectAtLocationIfListDisplayed(point)
     }
   }
 
