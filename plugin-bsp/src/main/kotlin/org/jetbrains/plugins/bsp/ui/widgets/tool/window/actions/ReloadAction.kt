@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.server.connection.BspConnection
@@ -92,10 +93,18 @@ public class ReloadAction :
   }
 
   private fun doUpdate(e: AnActionEvent, project: Project) {
-    val connection = BspConnectionService.getInstance(project).value
-    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    e.presentation.isEnabled = connection != null && !bspSyncConsole.hasTasksInProgress()
+    e.presentation.isVisible = project.isBspProject
+    e.presentation.isEnabled = shouldBeEnabled(project)
   }
+
+  private fun shouldBeEnabled(project: Project): Boolean {
+    val isConnected = BspConnectionService.getInstance(project).value != null
+
+    return project.isBspProject && isConnected && project.isSyncInProgress()
+  }
+
+  private fun Project.isSyncInProgress() =
+    BspConsoleService.getInstance(this).bspSyncConsole.hasTasksInProgress()
 
   override fun getActionUpdateThread(): ActionUpdateThread =
     ActionUpdateThread.BGT
