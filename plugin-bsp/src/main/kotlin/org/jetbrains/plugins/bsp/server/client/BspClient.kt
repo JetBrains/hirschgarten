@@ -47,7 +47,7 @@ public class BspClient(
       TaskDataKind.TEST_START -> {
         val gson = Gson()
         val testStart = gson.fromJson(params.data as JsonObject, TestStart::class.java)
-        val isSuite = params.message.take(3) == "<S>"
+        val isSuite = if (params.message.isNullOrBlank()) false else params.message.take(3) == "<S>"
         bspTestConsole.startTest(isSuite, testStart.displayName)
       }
 
