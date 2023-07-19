@@ -100,7 +100,7 @@ public class ReloadAction :
   private fun shouldBeEnabled(project: Project): Boolean {
     val isConnected = BspConnectionService.getInstance(project).value != null
 
-    return project.isBspProject && isConnected && project.isSyncInProgress()
+    return project.isBspProject && isConnected && !project.isSyncInProgress()
   }
 
   private fun Project.isSyncInProgress() =
