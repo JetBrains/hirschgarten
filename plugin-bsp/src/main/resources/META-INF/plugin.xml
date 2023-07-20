@@ -57,6 +57,9 @@
                 icon="/icons/bsp.svg"
                 anchor="right"/>
 
+
+    <iconMapper mappingFile="BSPIconMappings.json"/>
+
     <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
 
   </extensions>
