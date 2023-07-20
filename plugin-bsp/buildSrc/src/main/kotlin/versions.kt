@@ -26,4 +26,4 @@ object Platform {
 }
 
 const val javaVersion = "17"
-const val kotlinVersion = "1.8"
+const val kotlinVersion = "1.9"
