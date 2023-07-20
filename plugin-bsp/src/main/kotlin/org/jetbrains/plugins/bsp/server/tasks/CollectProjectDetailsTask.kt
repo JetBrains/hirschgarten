@@ -209,15 +209,16 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? {
-    val pythonInfo = extractPythonBuildTarget(target) ?: return null
-
-    return PythonSdk(
-      "${target.id.uri}-${pythonInfo.version}",
-      pythonInfo.interpreter,
-      dependenciesSources
-    )
-  }
+  private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? =
+      extractPythonBuildTarget(target)
+        ?.takeIf { it.version != null && it.interpreter != null }
+        ?.let {
+          PythonSdk(
+            name = "${target.id.uri}-${it.version}",
+            interpreter = it.interpreter,
+            dependencies = dependenciesSources
+          )
+        }
 
   private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<PythonSdk> {
     return projectDetails.targets
