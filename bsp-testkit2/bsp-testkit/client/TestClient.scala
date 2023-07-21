@@ -210,7 +210,7 @@ class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildP
     val typeOfT = new TypeToken[JvmRunEnvironmentParams] {}.getType
     val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.jvmRunEnvironment(transformedParams).asScala.map { result =>
+      session.server.buildTargetJvmRunEnvironment(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
@@ -221,7 +221,7 @@ class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildP
     val typeOfT = new TypeToken[JvmTestEnvironmentParams] {}.getType
     val transformedParams = applyJsonTransform(params, typeOfT)
     test(timeout) { session =>
-      session.server.jvmTestEnvironment(transformedParams).asScala.map { result =>
+      session.server.buildTargetJvmTestEnvironment(transformedParams).asScala.map { result =>
         assertJsonEquals(expectedResult, result)
       }
     }
