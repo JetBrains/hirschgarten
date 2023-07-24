@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.actions.building
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.toPromise
@@ -19,8 +20,11 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.server.tasks.BuildTargetTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.doesCompletableFutureGetThrowCancelledException
 
 public class BspProjectTaskRunner : ProjectTaskRunner() {
+
+  private val log = logger<BspProjectTaskRunner>()
 
   override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
     project.isBspProject && canRun(projectTask)
@@ -79,8 +83,20 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTarget>): Promise<Result> {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
     val result = BspCoroutineService.getInstance(project).startAsync {
-      withBackgroundProgress(project, "Building project...") {
-        BuildTargetTask(project).connectAndExecute(targetIdentifiers)
+      try {
+        withBackgroundProgress(project, "Building project...") {
+          BuildTargetTask(project).connectAndExecute(targetIdentifiers)
+        }
+      } catch (e: Exception) {
+        when {
+          doesCompletableFutureGetThrowCancelledException(e) ->
+            CompileResult(StatusCode.CANCELLED)
+
+          else -> {
+            log.error(e)
+            null
+          }
+        }
       }
     }
     return result

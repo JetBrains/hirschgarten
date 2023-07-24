@@ -4,9 +4,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.CancellationException
 import org.jetbrains.plugins.bsp.server.tasks.BuildTargetTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
+import java.util.concurrent.ExecutionException
 
 public class BuildTargetAction : AbstractActionWithTarget(
         BspAllTargetsWidgetBundle.message("widget.build.target.popup.message")) {
@@ -23,9 +25,16 @@ public class BuildTargetAction : AbstractActionWithTarget(
 
   private fun doAction(project: Project) {
     BspCoroutineService.getInstance(project).start {
-      withBackgroundProgress(project, "Building...") {
-        target?.let {
-          BuildTargetTask(project).connectAndExecute(it)
+      try {
+        withBackgroundProgress(project, "Building...") {
+          target?.let {
+            BuildTargetTask(project).connectAndExecute(it)
+          }
+        }
+      } catch (e: Exception) {
+        when {
+          doesCompletableFutureGetThrowCancelledException(e) -> {}
+          else -> log.error(e)
         }
       }
     }
@@ -35,3 +44,6 @@ public class BuildTargetAction : AbstractActionWithTarget(
     private val log = logger<BuildTargetAction>()
   }
 }
+
+public fun doesCompletableFutureGetThrowCancelledException(e: Exception): Boolean =
+  (e is ExecutionException || e is InterruptedException) && e.cause is CancellationException

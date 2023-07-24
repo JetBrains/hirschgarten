@@ -62,7 +62,7 @@ public class TaskConsole(
     taskDescriptor: DefaultBuildDescriptor,
     doCancelAction: () -> Unit
   ) {
-    val cancelAction = CancelSyncAction(doCancelAction, taskId)
+    val cancelAction = CancelAction(doCancelAction, taskId)
     taskDescriptor.withAction(cancelAction)
   }
 
@@ -280,10 +280,10 @@ public class TaskConsole(
   private fun maybeGetRootTask(taskId: Any): Any? =
     if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.rootTask
 
-  private inner class CancelSyncAction(
+  private inner class CancelAction(
     private val doCancelAction: () -> Unit,
     private val taskId: Any,
-  ) : DumbAwareAction({ "Stop Sync" }, BspPluginIcons.disconnect) {
+  ) : DumbAwareAction({ "Stop" }, BspPluginIcons.disconnect) {
     override fun actionPerformed(e: AnActionEvent) {
       doCancelAction()
     }
