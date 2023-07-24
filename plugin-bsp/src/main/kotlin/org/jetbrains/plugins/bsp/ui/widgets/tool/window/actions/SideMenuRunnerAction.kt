@@ -28,14 +28,18 @@ internal abstract class SideMenuRunnerAction(
   override fun actionPerformed(e: AnActionEvent) {
     e.project?.let { project ->
       target?.let { target ->
-        val factory = getConfigurationType().configurationFactories.first()
-        val settings = RunManager.getInstance(project).createConfiguration(getName(target), factory)
-        RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
-        val runExecutor = DefaultRunExecutor.getRunExecutorInstance()
-        ProgramRunner.getRunner(runExecutor.id, settings.configuration)?.let {
-          runExecutor.executeWithRunner(it, settings, project)
-        }
+        doPerformAction(project, target)
       }
+    }
+  }
+
+  fun doPerformAction(project: Project, targetId: BuildTargetIdentifier) {
+    val factory = getConfigurationType().configurationFactories.first()
+    val settings = RunManager.getInstance(project).createConfiguration(getName(targetId), factory)
+    RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
+    val runExecutor = DefaultRunExecutor.getRunExecutorInstance()
+    ProgramRunner.getRunner(runExecutor.id, settings.configuration)?.let {
+      runExecutor.executeWithRunner(it, settings, project)
     }
   }
 

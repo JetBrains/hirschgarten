@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
 import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
@@ -8,6 +9,7 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
@@ -21,6 +23,7 @@ import java.awt.event.MouseListener
 
 public class NotLoadedTargetsMouseListener(
   private val container: BuildTargetContainer,
+  private val project: Project,
 ) : MouseListener {
 
   override fun mouseClicked(e: MouseEvent?) {
@@ -31,6 +34,8 @@ public class NotLoadedTargetsMouseListener(
     if (mouseEvent.mouseButton == MouseButton.Right) {
       selectTargetIfSearchListIsDisplayed(mouseEvent.point)
       showPopup(mouseEvent)
+    } else if (mouseEvent.isDoubleClick()) {
+      onDoubleClick()
     }
   }
 
@@ -69,6 +74,15 @@ public class NotLoadedTargetsMouseListener(
     } else null
   }
 
+  private fun MouseEvent.isDoubleClick(): Boolean =
+    this.mouseButton == MouseButton.Left && this.clickCount == 2
+
+  private fun onDoubleClick() {
+    container.getSelectedBuildTarget()?.let {
+      LoadTargetAction.loadTarget(project, it.id)
+    }
+  }
+
   override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
 
   override fun mouseReleased(e: MouseEvent?) { /* nothing to do */ }
@@ -86,12 +100,18 @@ private class LoadTargetAction(
     val project = e.project
 
     if (project != null) {
+      loadTarget(project, target.id)
+    }
+  }
+
+  companion object {
+    fun loadTarget(project: Project, targetId: BuildTargetIdentifier) {
       val magicMetaModel = MagicMetaModelService.getInstance(project).value
-      val diff = magicMetaModel.loadTarget(target.id)
+      val diff = magicMetaModel.loadTarget(targetId)
       BspCoroutineService.getInstance(project).start { diff?.applyOnWorkspaceModel() }
 
       BspBalloonNotifier.info(
-        BspAllTargetsWidgetBundle.message("widget.load.target.notification", target.id.uri),
+        BspAllTargetsWidgetBundle.message("widget.load.target.notification", targetId.uri),
         "Load target"
       )
     }
