@@ -8,9 +8,7 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
@@ -23,7 +21,6 @@ import java.awt.event.MouseListener
 
 public class NotLoadedTargetsMouseListener(
   private val container: BuildTargetContainer,
-  private val project: Project,
 ) : MouseListener {
 
   override fun mouseClicked(e: MouseEvent?) {
@@ -57,9 +54,8 @@ public class NotLoadedTargetsMouseListener(
 
   private fun calculatePopupGroup(): ActionGroup? {
     val target = container.getSelectedBuildTarget()
-    val isConnected = BspConnectionService.getInstance(project).value?.isConnected() == true
 
-    return if (target != null && isConnected) {
+    return if (target != null) {
       val copyTargetIdAction = container.copyTargetIdAction
       val loadTargetAction = LoadTargetAction(
         BspAllTargetsWidgetBundle.message("widget.load.target.popup.message"),

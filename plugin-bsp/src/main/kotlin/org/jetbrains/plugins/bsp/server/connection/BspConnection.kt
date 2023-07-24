@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.server.connection
 
 import ch.epfl.scala.bsp4j.BuildServer
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.JavaBuildServer
 import ch.epfl.scala.bsp4j.PythonBuildServer
 import com.intellij.openapi.components.PersistentStateComponent
@@ -32,6 +33,13 @@ public interface BspConnection {
    * the variable should be *null* before [connect] call and after [disconnect]
    */
   public val server: BspServer?
+
+  /**
+   * BSP server capabilities
+   *
+   * the variable should be *null* before [connect] call and after [disconnect]
+   */
+  public val capabilities: BuildServerCapabilities?
 
   /**
    * Establish a connection with the server, and initialize [server].

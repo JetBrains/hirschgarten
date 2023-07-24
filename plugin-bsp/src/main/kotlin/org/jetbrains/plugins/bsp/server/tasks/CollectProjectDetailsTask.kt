@@ -1,14 +1,11 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.InitializeBuildParams
-import ch.epfl.scala.bsp4j.InitializeBuildResult
 import ch.epfl.scala.bsp4j.JavacOptionsParams
 import ch.epfl.scala.bsp4j.JavacOptionsResult
 import ch.epfl.scala.bsp4j.JvmBuildTarget
@@ -21,7 +18,6 @@ import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
@@ -47,7 +43,6 @@ import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
-import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
@@ -123,9 +118,15 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun calculateProjectDetailsSubtask() =
-    logPerformance("collect-project-details") { connectAndExecuteWithServer { collectModel(it, cancelOnFuture) } }
+    logPerformance("collect-project-details") {
+      connectAndExecuteWithServer { server, capabilities -> collectModel(server, capabilities, cancelOnFuture) }
+    }
 
-  private fun collectModel(server: BspServer, cancelOn: CompletableFuture<Void>): ProjectDetails? {
+  private fun collectModel(
+    server: BspServer,
+    capabilities: BuildServerCapabilities,
+    cancelOn: CompletableFuture<Void>
+  ): ProjectDetails? {
     fun isCancellationException(e: Throwable): Boolean =
       e is CompletionException && e.cause is CancellationException
 
@@ -152,13 +153,10 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     bspSyncConsole.startSubtask(taskId, importSubtaskId, "Collecting model...")
 
-    val initializeBuildResult = queryForInitialize(server).catchSyncErrors { errorCallback(it) }.get()
-    server.onBuildInitialized()
-
     val projectDetails =
       calculateProjectDetailsWithCapabilities(
         server = server,
-        buildServerCapabilities = initializeBuildResult.capabilities,
+        buildServerCapabilities = capabilities,
         errorCallback = { errorCallback(it) },
         cancelOn = cancelOn
       )
@@ -166,28 +164,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     bspSyncConsole.finishSubtask(importSubtaskId, "Collecting model done!")
 
     return projectDetails
-  }
-
-  private fun queryForInitialize(server: BspServer): CompletableFuture<InitializeBuildResult> {
-    val buildParams = createInitializeBuildParams()
-
-    return server.buildInitialize(buildParams)
-  }
-
-  private fun createInitializeBuildParams(): InitializeBuildParams {
-    val projectBaseDir = project.rootDir
-    val params = InitializeBuildParams(
-      "IntelliJ-BSP",
-      "0.0.1",
-      "2.0.0",
-      projectBaseDir.toString(),
-      BuildClientCapabilities(listOf("java"))
-    )
-    val dataJson = JsonObject()
-    dataJson.addProperty("clientClassesRootDir", "$projectBaseDir/out")
-    params.data = dataJson
-
-    return params
   }
 
   private fun calculateAllUniqueJdkInfosSubtask(projectDetails: ProjectDetails?) {
