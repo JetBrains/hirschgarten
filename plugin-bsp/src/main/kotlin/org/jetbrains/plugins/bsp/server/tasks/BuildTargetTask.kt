@@ -7,9 +7,11 @@ import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.server.connection.BspServer
+import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.*
+import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.TimeoutException
@@ -19,22 +21,28 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
   protected override fun executeWithServer(server: BspServer, targetsIds: List<BuildTargetIdentifier>): CompileResult {
     val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
     val originId = "build-" + UUID.randomUUID().toString()
+    val cancelOn = CompletableFuture<Void>()
 
-    startBuildConsoleTask(targetsIds, bspBuildConsole, originId)
+    startBuildConsoleTask(targetsIds, bspBuildConsole, originId, cancelOn)
     val compileParams = createCompileParams(targetsIds, originId)
 
-    return server.buildTargetCompile(compileParams).catchBuildErrors(bspBuildConsole, originId).get()
+    return server
+      .buildTargetCompile(compileParams)
+      .reactToExceptionIn(cancelOn)
+      .catchBuildErrors(bspBuildConsole, originId)
+      .get()
       .also { finishBuildConsoleTaskWithProperResult(it, bspBuildConsole, originId) }
   }
 
   private fun startBuildConsoleTask(
     targetIds: List<BuildTargetIdentifier>,
     bspBuildConsole: TaskConsole,
-    originId: String
+    originId: String,
+    cancelOn: CompletableFuture<Void>
   ) {
     val startBuildMessage = calculateStartBuildMessage(targetIds)
 
-    bspBuildConsole.startTask(originId, "Build", startBuildMessage)
+    bspBuildConsole.startTask(originId, "Build", startBuildMessage) { cancelOn.cancel(true) }
   }
 
   private fun calculateStartBuildMessage(targetIds: List<BuildTargetIdentifier>): String =
@@ -71,6 +79,8 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
         if (isTimeoutException(it)) {
           val message = BspTasksBundle.message("task.timeout.message")
           bspBuildConsole.finishTask(buildId, "Timed out", FailureResultImpl(message))
+        } else if (isCancellationException(it)) {
+          bspBuildConsole.finishTask(buildId, "Canceled", FailureResultImpl("Build task is canceled"))
         } else {
           bspBuildConsole.finishTask(buildId, "Failed", FailureResultImpl(it))
         }
@@ -79,4 +89,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
   private fun isTimeoutException(e: Throwable): Boolean =
     e is CompletionException && e.cause is TimeoutException
+
+  private fun isCancellationException(e: Throwable): Boolean =
+    e is CompletionException && e.cause is CancellationException
 }
