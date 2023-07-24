@@ -2,6 +2,10 @@ package org.jetbrains.plugins.bsp.server.connection
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import ch.epfl.scala.bsp4j.BuildClient
+import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.InitializeBuildParams
+import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.logger
@@ -13,6 +17,7 @@ import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.protocol.connection.logErrorOutputs
@@ -105,6 +110,9 @@ public class BspFileConnection(
   public override val buildToolId: String? = locatedConnectionFile.bspConnectionDetails?.name
 
   public override var server: BspServer? = null
+    private set
+
+  public override var capabilities: BuildServerCapabilities? = null
     private set
 
   private var bspProcess: Process? = null
@@ -212,6 +220,8 @@ public class BspFileConnection(
     bspSyncConsole.addMessage(connectSubtaskId, "Initializing server...")
 
     server = startServerAndAddDisconnectActions(process, client)
+    capabilities = server?.initializeAndObtainCapabilities()
+
     client.onConnectWithServer(server)
 
     bspSyncConsole.addMessage(connectSubtaskId, "Server initialized! Server is ready to use.")
@@ -249,12 +259,35 @@ public class BspFileConnection(
       .setLocalService(client)
       .create()
 
+  private fun BspServer.initializeAndObtainCapabilities(): BuildServerCapabilities {
+    val buildInitializeResults = buildInitialize(createInitializeBuildParams()).get()
+    onBuildInitialized()
+    return buildInitializeResults.capabilities
+  }
+
+  private fun createInitializeBuildParams(): InitializeBuildParams {
+    val projectBaseDir = project.rootDir
+    val params = InitializeBuildParams(
+      "IntelliJ-BSP",
+      "0.0.1",
+      "2.1.0-M5",
+      projectBaseDir.toString(),
+      BuildClientCapabilities(listOf("java"))
+    )
+    val dataJson = JsonObject()
+    dataJson.addProperty("clientClassesRootDir", "$projectBaseDir/out")
+    params.data = dataJson
+
+    return params
+  }
+
   public override fun disconnect() {
     val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
     disconnectActions.clear()
     throwExceptionWithSuppressedIfOccurred(exceptions)
 
     server = null
+    capabilities = null
   }
 
   private fun executeDisconnectActionsAndCollectExceptions(disconnectActions: List<() -> Unit>): List<Throwable> =

@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.CompileParams
 import ch.epfl.scala.bsp4j.CompileResult
@@ -18,7 +19,11 @@ import java.util.concurrent.TimeoutException
 
 public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
 
-  protected override fun executeWithServer(server: BspServer, targetsIds: List<BuildTargetIdentifier>): CompileResult {
+  protected override fun executeWithServer(
+    server: BspServer,
+    capabilities: BuildServerCapabilities,
+    targetsIds: List<BuildTargetIdentifier>
+  ): CompileResult {
     val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
     val originId = "build-" + UUID.randomUUID().toString()
     val cancelOn = CompletableFuture<Void>()

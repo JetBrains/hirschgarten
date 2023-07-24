@@ -52,7 +52,7 @@ private class ListsUpdater(
         targets = magicMetaModel.getAllNotLoadedTargets(),
         searchBarPanel = searchBarPanel
       )
-    notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it, project) }
+    notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it) }
     magicMetaModel.registerTargetLoadListener { rerenderComponents() }
   }
 

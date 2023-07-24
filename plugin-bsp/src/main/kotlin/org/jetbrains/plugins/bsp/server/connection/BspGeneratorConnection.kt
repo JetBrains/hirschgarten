@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.server.connection
 
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
@@ -27,6 +28,9 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
 
   public override val server: BspServer?
     get() = fileConnection?.server
+
+  public override val capabilities: BuildServerCapabilities?
+    get() = fileConnection?.capabilities
 
   public constructor(
     project: Project,
