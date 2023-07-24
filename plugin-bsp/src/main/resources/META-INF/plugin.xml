@@ -36,6 +36,7 @@
       implementation="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor"/>
     <postStartupActivity
       implementation="org.jetbrains.plugins.bsp.flow.open.BspStartupActivity"/>
+    <externalSystemUnlinkedProjectAware id="Bazel BSP" implementation="org.jetbrains.plugins.bsp.flow.open.BazelBspUnlinkedProjectAware"/>
 
     <projectTaskRunner
       implementation="org.jetbrains.plugins.bsp.actions.building.BspProjectTaskRunner"/>
@@ -52,10 +53,7 @@
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
 
-    <toolWindow id="BSP"
-                factoryClass="org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetFactory"
-                icon="/icons/bsp.svg"
-                anchor="right"/>
+    <toolWindowAllowlist id="BSP"/>
 
 
     <iconMapper mappingFile="BSPIconMappings.json"/>

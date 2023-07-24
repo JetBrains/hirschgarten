@@ -60,33 +60,33 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
     this.forceOpenInNewFrame = forceOpenInNewFrame
     this.projectToClose = projectToClose
 
-    beforeOpen = { initProperties(it, virtualFile); true }
-    callback = ProjectOpenedCallback { project, _ -> initializeEmptyMagicMetaModel(project) }
+    beforeOpen = { it.initProperties(virtualFile); true }
+    callback = ProjectOpenedCallback { project, _ -> project.initializeEmptyMagicMetaModel() }
   }
+}
 
-  private fun initializeEmptyMagicMetaModel(project: Project) {
-    val magicMetaModelService = MagicMetaModelService.getInstance(project)
-    magicMetaModelService.initializeMagicModel(
-      ProjectDetails(
-        targetsId = emptyList(),
-        targets = emptySet(),
-        sources = emptyList(),
-        resources = emptyList(),
-        dependenciesSources = emptyList(),
-        javacOptions = emptyList(),
-        pythonOptions = emptyList(),
-        outputPathUris = emptyList(),
-        libraries = emptyList(),
-      )
+public fun Project.initializeEmptyMagicMetaModel() {
+  val magicMetaModelService = MagicMetaModelService.getInstance(this)
+  magicMetaModelService.initializeMagicModel(
+    ProjectDetails(
+      targetsId = emptyList(),
+      targets = emptySet(),
+      sources = emptyList(),
+      resources = emptyList(),
+      dependenciesSources = emptyList(),
+      javacOptions = emptyList(),
+      pythonOptions = emptyList(),
+      outputPathUris = emptyList(),
+      libraries = emptyList(),
     )
+  )
 
-    BspCoroutineService.getInstance(project).start {
-      magicMetaModelService.value.loadDefaultTargets().applyOnWorkspaceModel()
-    }
+  BspCoroutineService.getInstance(this).start {
+    magicMetaModelService.value.loadDefaultTargets().applyOnWorkspaceModel()
   }
+}
 
-  private fun initProperties(project: Project, projectRootDir: VirtualFile) {
-    project.isBspProject = true
-    project.rootDir = projectRootDir
-  }
+public fun Project.initProperties(projectRootDir: VirtualFile) {
+  this.isBspProject = true
+  this.rootDir = projectRootDir
 }

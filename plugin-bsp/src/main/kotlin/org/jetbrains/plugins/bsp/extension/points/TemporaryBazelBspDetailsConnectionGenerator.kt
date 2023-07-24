@@ -13,6 +13,7 @@ import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.rows
 import com.intellij.util.io.readText
+import org.jetbrains.plugins.bsp.config.BazelBspConstants
 import org.jetbrains.plugins.bsp.config.BspPluginTemplates
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
@@ -24,18 +25,16 @@ import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.writeText
 
-public const val BAZEL_BSP_ID: String = "bazelbsp"
-
 public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsGeneratorExtension {
 
   private lateinit var projectViewFilePathProperty: ObservableProperty<Path>
 
-  public override fun id(): String = BAZEL_BSP_ID
+  public override fun id(): String = BazelBspConstants.ID
 
   public override fun displayName(): String = "Bazel"
 
   public override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean =
-    projectPath.children.any { it.name == "WORKSPACE" || it.name == "WORKSPACE.bazel" }
+    projectPath.children.any { it.name in BazelBspConstants.BUILD_FILE_NAMES }
 
   override fun calculateImportWizardSteps(
     projectBasePath: Path,
