@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.withBackgroundProgress
@@ -17,31 +18,29 @@ public class BuildTargetAction : AbstractActionWithTarget(
     val project = e.project
 
     if (project != null) {
-      doAction(project)
+      target?.let { buildTarget(project, it) }
     } else {
       log.warn("BuildTargetAction cannot be performed! Project not available.")
     }
   }
 
-  private fun doAction(project: Project) {
-    BspCoroutineService.getInstance(project).start {
-      try {
-        withBackgroundProgress(project, "Building...") {
-          target?.let {
-            BuildTargetTask(project).connectAndExecute(it)
+  public companion object {
+    private val log = logger<BuildTargetAction>()
+
+    public fun buildTarget(project: Project, targetId: BuildTargetIdentifier) {
+      BspCoroutineService.getInstance(project).start {
+        try {
+          withBackgroundProgress(project, "Building...") {
+            BuildTargetTask(project).connectAndExecute(targetId)
           }
-        }
-      } catch (e: Exception) {
-        when {
-          doesCompletableFutureGetThrowCancelledException(e) -> {}
-          else -> log.error(e)
+        } catch (e: Exception) {
+          when {
+            doesCompletableFutureGetThrowCancelledException(e) -> {}
+            else -> log.error(e)
+          }
         }
       }
     }
-  }
-
-  private companion object {
-    private val log = logger<BuildTargetAction>()
   }
 }
 

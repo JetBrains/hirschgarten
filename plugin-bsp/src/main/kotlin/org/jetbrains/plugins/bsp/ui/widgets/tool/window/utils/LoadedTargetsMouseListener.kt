@@ -1,15 +1,18 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.AbstractActionWithTarget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.SideMenuRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
@@ -19,6 +22,7 @@ import java.awt.event.MouseListener
 
 public class LoadedTargetsMouseListener(
   private val container: BuildTargetContainer,
+  private val project: Project,
 ) : MouseListener {
 
   override fun mouseClicked(e: MouseEvent?) {
@@ -29,6 +33,8 @@ public class LoadedTargetsMouseListener(
     if (mouseEvent.mouseButton == MouseButton.Right) {
       selectTargetIfSearchListIsDisplayed(mouseEvent.point)
       showPopup(mouseEvent)
+    } else if (mouseEvent.isDoubleClick()) {
+      onDoubleClick()
     }
   }
 
@@ -80,6 +86,19 @@ public class LoadedTargetsMouseListener(
       actionClass.constructors.first { it.parameterCount == 0 }.newInstance() as AbstractActionWithTarget
     }.also { it.target = container.getSelectedBuildTarget()?.id }
 
+  private fun MouseEvent.isDoubleClick(): Boolean =
+    this.mouseButton == MouseButton.Left && this.clickCount == 2
+
+  private fun onDoubleClick() {
+    container.getSelectedBuildTarget()?.also {
+      when {
+        it.capabilities.canTest -> TestTargetAction().prepareAndPerform(project, it.id)
+        it.capabilities.canRun -> RunTargetAction().prepareAndPerform(project, it.id)
+        it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
+      }
+    }
+  }
+
   override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
 
   override fun mouseReleased(e: MouseEvent?) { /* nothing to do */ }
@@ -91,4 +110,9 @@ public class LoadedTargetsMouseListener(
   private companion object {
     val actions = HashMap<Class<out AbstractActionWithTarget>, AbstractActionWithTarget>()
   }
+}
+
+private fun SideMenuRunnerAction.prepareAndPerform(project: Project, targetId: BuildTargetIdentifier) {
+  this.target = targetId
+  doPerformAction(project, targetId)
 }

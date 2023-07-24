@@ -43,7 +43,7 @@ private class ListsUpdater(
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
     loadedTargetsPanel =
       BspPanelComponent(BspPluginIcons.bsp, toolName ?: "", magicMetaModel.getAllLoadedTargets(), searchBarPanel)
-    loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it) }
+    loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it, project) }
 
     notLoadedTargetsPanel =
       BspPanelComponent(
@@ -52,7 +52,7 @@ private class ListsUpdater(
         targets = magicMetaModel.getAllNotLoadedTargets(),
         searchBarPanel = searchBarPanel
       )
-    notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it) }
+    notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it, project) }
     magicMetaModel.registerTargetLoadListener { rerenderComponents() }
   }
 
