@@ -9,12 +9,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
+import org.jetbrains.plugins.bsp.config.BazelBspConstants
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.extension.points.BAZEL_BSP_ID
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
-import org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor
+import org.jetbrains.plugins.bsp.flow.open.BspStartupActivity
+import org.jetbrains.plugins.bsp.flow.open.initProperties
+import org.jetbrains.plugins.bsp.flow.open.initializeEmptyMagicMetaModel
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 
 public val ELIGIBLE_BAZEL_PROJECT_FILE_NAMES: List<String> = listOf(
   "projectview.bazelproject",
@@ -30,9 +33,7 @@ public class OpenBazelProjectViaBspPluginAction:
     val psiFile = CommonDataKeys.PSI_FILE.getData(e.dataContext)
 
     val projectRootDir = calculateProjectRootDir(project, psiFile)
-    projectRootDir?.let {
-      BspProjectOpenProcessor().doOpenProject(it, project, false)
-    }
+    performOpenBazelProjectViaBspPlugin(project, projectRootDir)
   }
 
   override fun update(e: AnActionEvent) {
@@ -56,11 +57,11 @@ public fun isImportableBazelBspProject(project: Project?, psiFile: PsiFile? = nu
 
   val bazelBspGenerator = BspConnectionDetailsGeneratorExtension
     .extensions()
-    .firstOrNull { it.id() == BAZEL_BSP_ID }
+    .firstOrNull { it.id() == BazelBspConstants.ID }
 
   val bazelBspConnectionFile = BspConnectionFilesProvider(projectRootDir)
     .connectionFiles
-    .firstOrNull { it.bspConnectionDetails?.name == BAZEL_BSP_ID }
+    .firstOrNull { it.bspConnectionDetails?.name == BazelBspConstants.ID }
 
   return bazelBspGenerator?.canGenerateBspConnectionDetailsFile(projectRootDir) == true ||
     bazelBspConnectionFile != null
@@ -68,3 +69,13 @@ public fun isImportableBazelBspProject(project: Project?, psiFile: PsiFile? = nu
 
 private fun calculateProjectRootDir(project: Project?, psiFile: PsiFile?): VirtualFile? =
   psiFile?.virtualFile?.parent ?: project?.guessProjectDir()
+
+public fun performOpenBazelProjectViaBspPlugin(project: Project?, projectRootDir: VirtualFile?) {
+  if (projectRootDir != null && project != null) {
+    project.initProperties(projectRootDir)
+    project.initializeEmptyMagicMetaModel()
+    BspCoroutineService.getInstance(project).start {
+      BspStartupActivity().execute(project)
+    }
+  }
+}
