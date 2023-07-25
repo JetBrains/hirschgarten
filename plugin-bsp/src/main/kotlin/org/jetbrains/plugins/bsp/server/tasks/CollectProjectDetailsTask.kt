@@ -43,6 +43,7 @@ import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
+import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
@@ -104,7 +105,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     indeterminateStep(text = "Calculating all unique jdk infos") {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
     }
-    if (pythonSdkGetterExtensionExists()) {
+    if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
       indeterminateStep(text = "Calculating all unique python sdk infos") {
         calculateAllPythonSdkInfosSubtask(projectDetails)
       }
@@ -217,7 +218,10 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private suspend fun postprocessingMMMSubtask() {
     addBspFetchedJdks()
     applyChangesOnWorkspaceModel()
-    addBspFetchedPythonSdks()
+
+    if (BspFeatureFlags.isPythonSupportEnabled) {
+      addBspFetchedPythonSdks()
+    }
   }
 
   private suspend fun addBspFetchedJdks() {
@@ -425,7 +429,7 @@ private fun queryForPythonOptions(
   server: BspServer,
   pythonTargetsIds: List<BuildTargetIdentifier>
 ): CompletableFuture<PythonOptionsResult>? {
-  return if (pythonTargetsIds.isNotEmpty()) {
+  return if (pythonTargetsIds.isNotEmpty() && BspFeatureFlags.isPythonSupportEnabled) {
     val pythonOptionsParams = PythonOptionsParams(pythonTargetsIds)
     server.buildTargetPythonOptions(pythonOptionsParams)
   } else null

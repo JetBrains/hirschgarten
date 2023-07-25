@@ -50,6 +50,7 @@
     <registryKey defaultValue="true" description="Enable chunking for BSP requests" key="bsp.request.chunking.enable"/>
     <registryKey defaultValue="100" description="Minimum chunk size for chunked BSP requests" key="bsp.request.chunking.size.min"/>
     <registryKey defaultValue="true" description="Log error outputs from processes to build/sync console" key="bsp.log.error.outputs"/>
+    <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
 
