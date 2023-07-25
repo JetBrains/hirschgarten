@@ -6,18 +6,25 @@ import ch.epfl.scala.bsp4j.CompileParams
 import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.*
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 
 public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
+
+  private val log = logger<BuildTargetTask>()
 
   protected override fun executeWithServer(
     server: BspServer,
@@ -47,7 +54,13 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
   ) {
     val startBuildMessage = calculateStartBuildMessage(targetIds)
 
-    bspBuildConsole.startTask(originId, "Build", startBuildMessage) { cancelOn.cancel(true) }
+    bspBuildConsole.startTask(originId, "Build", startBuildMessage, {
+      cancelOn.cancel(true)
+    }) {
+      BspCoroutineService.getInstance(project).startAsync {
+        runBuildTargetTask(targetIds, project, log)
+      }
+    }
   }
 
   private fun calculateStartBuildMessage(targetIds: List<BuildTargetIdentifier>): String =
@@ -98,3 +111,27 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
   private fun isCancellationException(e: Throwable): Boolean =
     e is CompletionException && e.cause is CancellationException
 }
+
+public suspend fun runBuildTargetTask(
+  targetIds: List<BuildTargetIdentifier>,
+  project: Project,
+  log: Logger
+): CompileResult? =
+  try {
+    withBackgroundProgress(project, "Building target(s)...") {
+      BuildTargetTask(project).connectAndExecute(targetIds)
+    }
+  } catch (e: Exception) {
+    when {
+      doesCompletableFutureGetThrowCancelledException(e) ->
+        CompileResult(StatusCode.CANCELLED)
+
+      else -> {
+        log.error(e)
+        null
+      }
+    }
+  }
+
+private fun doesCompletableFutureGetThrowCancelledException(e: Exception): Boolean =
+  (e is ExecutionException || e is InterruptedException) && e.cause is CancellationException
