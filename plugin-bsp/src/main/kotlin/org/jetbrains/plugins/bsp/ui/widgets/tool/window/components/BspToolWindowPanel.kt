@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.extension.points.buildToolIconProviderExtensions
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
@@ -41,8 +42,11 @@ private class ListsUpdater(
 
   init {
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
+    val iconExtension = buildToolIconProviderExtensions().find { it.name() == toolName }
+    val loadedTargetIcon = iconExtension?.icon() ?: BspPluginIcons.bsp
+
     loadedTargetsPanel =
-      BspPanelComponent(BspPluginIcons.bsp, toolName ?: "", magicMetaModel.getAllLoadedTargets(), searchBarPanel)
+      BspPanelComponent(loadedTargetIcon, toolName ?: "", magicMetaModel.getAllLoadedTargets(), searchBarPanel)
     loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it, project) }
 
     notLoadedTargetsPanel =

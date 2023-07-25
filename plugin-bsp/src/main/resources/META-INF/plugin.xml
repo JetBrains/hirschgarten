@@ -19,6 +19,9 @@
     <extensionPoint qualifiedName="com.intellij.pythonSdkGetterExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.buildToolIconProviderExtension"
+                    interface="org.jetbrains.plugins.bsp.extension.points.BuildToolIconProviderExtension"
+                    dynamic="true"/>
   </extensionPoints>
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
@@ -30,6 +33,9 @@
     />
     <bspBuildTargetClassifierExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.TemporaryTestTargetClassifier"
+    />
+    <buildToolIconProviderExtension
+      implementation="org.jetbrains.plugins.bsp.extension.points.BazelBuildToolIconProvider"
     />
 
     <projectOpenProcessor
