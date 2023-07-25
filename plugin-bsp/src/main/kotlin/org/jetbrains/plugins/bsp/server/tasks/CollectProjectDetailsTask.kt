@@ -75,7 +75,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
-  private lateinit var uniqueJdkInfos: Set<JvmBuildTarget>
+  private var uniqueJdkInfos: Set<JvmBuildTarget>? = null
 
   private var pythonSdks: Set<PythonSdk>? = null
 
@@ -226,7 +226,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addBspFetchedJdks() {
     bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
-    logPerformanceSuspend("add-bsp-fetched-jdks") { uniqueJdkInfos.forEach { addJdk(it) } }
+    logPerformanceSuspend("add-bsp-fetched-jdks") { uniqueJdkInfos?.forEach { addJdk(it) } }
     bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
   }
 

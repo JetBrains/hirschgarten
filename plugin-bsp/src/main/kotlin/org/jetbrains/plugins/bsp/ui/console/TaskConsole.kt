@@ -12,11 +12,14 @@ import com.intellij.build.events.impl.OutputBuildEventImpl
 import com.intellij.build.events.impl.ProgressBuildEventImpl
 import com.intellij.build.events.impl.StartBuildEventImpl
 import com.intellij.build.events.impl.SuccessResultImpl
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ReloadAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import java.io.File
 import java.net.URI
 
@@ -25,11 +28,11 @@ private data class SubtaskParents(
   val parentTask: Any
 )
 
-public class TaskConsole(
+public abstract class TaskConsole(
   private val taskView: BuildProgressListener,
   private val basePath: String
 ) {
-  private val tasksInProgress: MutableList<Any> = mutableListOf()
+  protected val tasksInProgress: MutableList<Any> = mutableListOf()
   private val subtaskParentMap: LinkedHashMap<Any, SubtaskParents> = linkedMapOf()
 
   /**
@@ -41,16 +44,28 @@ public class TaskConsole(
    * @param taskId ID of the newly started task
    */
   @Synchronized
-  public fun startTask(taskId: Any, title: String, message: String, cancelAction: () -> Unit = {}): Unit =
+  public fun startTask(
+    taskId: Any,
+    title: String,
+    message: String,
+    cancelAction: () -> Unit = {},
+    redoAction: (() -> Unit)? = null
+  ): Unit =
     doUnlessTaskInProgress(taskId) {
       tasksInProgress.add(taskId)
-      doStartTask(taskId, "BSP: $title", message, cancelAction)
+      doStartTask(taskId, "BSP: $title", message, cancelAction, redoAction)
     }
 
-  private fun doStartTask(taskId: Any, title: String, message: String, cancelAction: () -> Unit) {
+  private fun doStartTask(
+    taskId: Any,
+    title: String,
+    message: String,
+    cancelAction: () -> Unit,
+    redoAction: (() -> Unit)?
+  ) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
     taskDescriptor.isActivateToolWindowWhenAdded = true
-    addReloadActionToTheDescriptor(taskDescriptor)
+    addRedoActionToTheDescriptor(taskDescriptor, redoAction)
     addCancelActionToTheDescriptor(taskId, taskDescriptor, cancelAction)
 
     val startEvent = StartBuildEventImpl(taskDescriptor, message)
@@ -66,12 +81,15 @@ public class TaskConsole(
     taskDescriptor.withAction(cancelAction)
   }
 
-  private fun addReloadActionToTheDescriptor(
-    taskDescriptor: DefaultBuildDescriptor
+  private fun addRedoActionToTheDescriptor(
+    taskDescriptor: DefaultBuildDescriptor,
+    redoAction: (() -> Unit)? = null
   ) {
-    val reloadAction = ReloadAction()
-    taskDescriptor.withAction(reloadAction)
+    val action = calculateRedoAction(redoAction)
+    taskDescriptor.withAction(action)
   }
+
+  protected abstract fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction
 
   public fun hasTasksInProgress(): Boolean = tasksInProgress.isNotEmpty()
 
@@ -295,4 +313,44 @@ public class TaskConsole(
     override fun getActionUpdateThread(): ActionUpdateThread =
       ActionUpdateThread.BGT
   }
+}
+
+public class SyncTaskConsole(
+  taskView: BuildProgressListener,
+  basePath: String
+) : TaskConsole(taskView, basePath) {
+
+  override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
+    object : AnAction({ BspAllTargetsWidgetBundle.message("reload.action.text") }, BspPluginIcons.reload) {
+      override fun actionPerformed(e: AnActionEvent) {
+        redoAction?.invoke() ?: ReloadAction().actionPerformed(e)
+      }
+
+      override fun update(e: AnActionEvent) {
+        e.presentation.isEnabled = tasksInProgress.isEmpty()
+      }
+
+      override fun getActionUpdateThread(): ActionUpdateThread =
+        ActionUpdateThread.BGT
+    }
+}
+
+public class BuildTaskConsole(
+  taskView: BuildProgressListener,
+  basePath: String
+) : TaskConsole(taskView, basePath) {
+
+  override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
+    object : AnAction({ BspAllTargetsWidgetBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
+      override fun actionPerformed(e: AnActionEvent) {
+        redoAction?.invoke()
+      }
+
+      override fun update(e: AnActionEvent) {
+        e.presentation.isEnabled = tasksInProgress.isEmpty()
+      }
+
+      override fun getActionUpdateThread(): ActionUpdateThread =
+        ActionUpdateThread.BGT
+    }
 }

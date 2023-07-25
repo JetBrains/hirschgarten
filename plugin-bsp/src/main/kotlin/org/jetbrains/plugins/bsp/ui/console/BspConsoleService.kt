@@ -20,8 +20,8 @@ public class BspConsoleService(project: Project) {
   init {
     val basePath = project.rootDir.path
 
-    bspBuildConsole = TaskConsole(project.getService(BuildViewManager::class.java), basePath)
-    bspSyncConsole = TaskConsole(project.getService(SyncViewManager::class.java), basePath)
+    bspBuildConsole = BuildTaskConsole(project.getService(BuildViewManager::class.java), basePath)
+    bspSyncConsole = SyncTaskConsole(project.getService(SyncViewManager::class.java), basePath)
   }
 
   public companion object {
