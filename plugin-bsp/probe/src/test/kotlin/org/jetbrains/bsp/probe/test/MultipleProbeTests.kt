@@ -49,7 +49,7 @@ class MultipleProbeTests {
       fixture = runner.fixtureWithWorkspaceFromGit(
         "repository",
         "branch"
-      ).withBuild("232.8660.48")
+      ).withBuild("232.8660.142")
       val data = runner.prepareInstance(fixture)
       path = data._2()
       intellij = data._3()
