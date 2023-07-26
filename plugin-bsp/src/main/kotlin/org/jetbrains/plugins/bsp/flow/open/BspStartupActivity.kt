@@ -5,10 +5,13 @@ import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
+import com.intellij.openapi.util.io.toNioPath
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
@@ -18,6 +21,7 @@ import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizard
 import org.jetbrains.plugins.bsp.flow.open.wizard.NewConnection
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
+import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
 import org.jetbrains.plugins.bsp.server.connection.BspConnection
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
@@ -27,6 +31,7 @@ import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
+import kotlin.system.exitProcess
 
 /**
  * Runs actions after the project has started up and the index is up-to-date.
@@ -66,15 +71,33 @@ public class BspStartupActivity : ProjectActivity {
     val isBspConnectionKnown = isBspConnectionKnownOrThrow(connection)
 
     if (project.isNewProject() || !isBspConnectionKnown) {
-      val connectionFileOrNewConnection = withContext(Dispatchers.EDT) {
-        showWizardAndGetResult(project)
-      }
+      val connectionFileOrNewConnection =
+        if (isBenchmark()) {
+          benchmarkConnection(project)
+        } else {
+          withContext(Dispatchers.EDT) {
+                showWizardAndGetResult(project)
+          }
+        }
 
       initializeConnectionOrCloseProject(connectionFileOrNewConnection, project)
       connectionFileOrNewConnection?.let {
         collectProject(project)
         BspToolWindowService.getInstance(project).doDeepPanelReload()
       }
+    }
+  }
+
+  private fun benchmarkConnection(project: Project): ConnectionFile {
+    try {
+      val connectionFilePath = project.basePath?.toNioPath()?.resolve(".bsp/bazelbsp.json")
+      val connectionFile = VfsUtil.findFileByIoFile(connectionFilePath?.toFile()!!, false)!!
+      val parsed = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)
+      return ConnectionFile(parsed.bspConnectionDetails!!, parsed.connectionFileLocation)
+    } catch (e: Throwable) {
+      e.printStackTrace(System.out)
+      println("BENCHMARK: Could not create benchmark connection file")
+      exitProcess(1)
     }
   }
 
@@ -159,7 +182,10 @@ public class BspStartupActivity : ProjectActivity {
       bspSyncConsole.finishTask("bsp-import", "Import done!")
     } catch (e: Exception) {
       bspSyncConsole.finishTask("bsp-import", "Import failed!", FailureResultImpl(e))
-    }
+      if (isBenchmark()) {
+        exitProcess(1)
+      }
+     }
   }
 
 }
