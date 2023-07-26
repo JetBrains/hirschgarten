@@ -47,12 +47,12 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
     return ProjectManagerEx.getInstanceEx().openProject(projectPath, openProjectTask)
   }
 
-  private fun calculateOpenProjectTask(
+  public fun calculateOpenProjectTask(
     projectPath: Path,
     forceOpenInNewFrame: Boolean,
     projectToClose: Project?,
     virtualFile: VirtualFile
-  ) = OpenProjectTask {
+  ): OpenProjectTask = OpenProjectTask {
     runConfigurators = true
     isNewProject = !ProjectUtilCore.isValidProjectPath(projectPath)
     isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode

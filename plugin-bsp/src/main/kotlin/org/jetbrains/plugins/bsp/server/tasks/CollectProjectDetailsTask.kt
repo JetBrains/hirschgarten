@@ -38,6 +38,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.WorkspaceLibrariesResult
+import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
+import org.jetbrains.magicmetamodel.impl.PerformanceLogger
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
@@ -59,6 +61,7 @@ import java.util.concurrent.CompletionException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.toPath
+import kotlin.system.exitProcess
 
 public data class PythonSdk(
   val name: String,
@@ -90,8 +93,13 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
           withBackgroundProgress(project, name, cancelable) {
             doExecute()
           }
+          PerformanceLogger.dumpMetrics()
         } catch (e: CancellationException) {
           onCancel(e)
+        } finally {
+          if (isBenchmark()) {
+            exitProcess(0)
+          }
         }
       }
       coroutineJob.join()

@@ -38,6 +38,8 @@
       implementation="org.jetbrains.plugins.bsp.extension.points.BazelBuildToolIconProvider"
     />
 
+    <applicationInitializedListener implementation="org.jetbrains.plugins.bsp.utils.StartBenchmarkListener"/>
+
     <projectOpenProcessor
       implementation="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor"/>
     <postStartupActivity
