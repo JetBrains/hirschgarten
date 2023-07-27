@@ -104,12 +104,15 @@ public data class BspFileConnectionState(
 
 public class BspFileConnection(
   private val project: Project,
-  public val locatedConnectionFile: LocatedBspConnectionDetails
+  locatedConnectionFile: LocatedBspConnectionDetails
 ) : BspConnection, ConvertableToState<BspFileConnectionState> {
 
   public override val buildToolId: String? = locatedConnectionFile.bspConnectionDetails?.name
 
   public override var server: BspServer? = null
+    private set
+
+  public var locatedConnectionFile: LocatedBspConnectionDetails = locatedConnectionFile
     private set
 
   public override var capabilities: BuildServerCapabilities? = null
@@ -121,6 +124,12 @@ public class BspFileConnection(
   private val log = logger<BspFileConnection>()
 
   public override fun connect(taskId: Any, errorCallback: () -> Unit) {
+    if (!isConnected()) {
+      doConnect(taskId, errorCallback)
+    }
+  }
+
+  private fun doConnect(taskId: Any, errorCallback: () -> Unit = {}) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
     bspSyncConsole.startSubtask(taskId, connectSubtaskId, "Connecting to the server...")
@@ -134,17 +143,21 @@ public class BspFileConnection(
   }
 
   private fun doConnectOrThrowIfFailed(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) {
-    if (locatedConnectionFile.bspConnectionDetails == null)
+    val connectionDetails = locatedConnectionFile.bspConnectionDetails
+
+    if (connectionDetails != null) {
+      val client = createBspClient()
+      val process = createAndStartProcessAndAddDisconnectActions(connectionDetails)
+
+      process.handleErrorOnExit(bspSyncConsole, taskId, errorCallback)
+
+      bspProcess = process
+      bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection done!")
+
+      initializeServer(process, client, bspSyncConsole)
+    } else {
       error("Parsing connection file '${locatedConnectionFile.connectionFileLocation}' failed!")
-    val client = createBspClient()
-    val process = createAndStartProcessAndAddDisconnectActions(locatedConnectionFile.bspConnectionDetails)
-
-    process.handleErrorOnExit(bspSyncConsole, taskId, errorCallback)
-
-    bspProcess = process
-    bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection done!")
-
-    initializeServer(process, client, bspSyncConsole)
+    }
   }
 
 
@@ -311,6 +324,11 @@ public class BspFileConnection(
 
       throw firstException
     }
+  }
+
+  override fun reload() {
+    locatedConnectionFile =
+      LocatedBspConnectionDetailsParser.parseFromFile(locatedConnectionFile.connectionFileLocation)
   }
 
   override fun isConnected(): Boolean =

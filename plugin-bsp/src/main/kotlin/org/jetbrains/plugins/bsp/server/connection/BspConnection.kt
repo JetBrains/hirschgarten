@@ -43,6 +43,7 @@ public interface BspConnection {
 
   /**
    * Establish a connection with the server, and initialize [server].
+   * If the connection is already established no actions should be performed.
    */
   public fun connect(taskId: Any, errorCallback: () -> Unit = {})
 
@@ -51,6 +52,11 @@ public interface BspConnection {
    * perform cleanup actions (like killing the process, closing resources) and set [server] to *null*.
    */
   public fun disconnect()
+
+  /**
+   * Reloads the state of the connection. If server is disconnected it should reload (reparse) the connection file.
+   */
+  public fun reload()
 
   /**
    * Returns *true* if connection is active ([connect] was called, but [disconnect] wasn't)
