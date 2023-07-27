@@ -12,6 +12,7 @@ import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
+import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
@@ -26,10 +27,9 @@ import org.jetbrains.plugins.bsp.server.connection.BspConnection
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
-import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
+import org.jetbrains.plugins.bsp.server.tasks.SyncProjectTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 import kotlin.system.exitProcess
 
@@ -81,9 +81,12 @@ public class BspStartupActivity : ProjectActivity {
         }
 
       initializeConnectionOrCloseProject(connectionFileOrNewConnection, project)
-      connectionFileOrNewConnection?.let {
-        collectProject(project)
-        BspToolWindowService.getInstance(project).doDeepPanelReload()
+
+      if (connectionFileOrNewConnection != null) {
+        SyncProjectTask(project).execute(
+          shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+          shouldReloadConnection = false
+        )
       }
     }
   }
@@ -160,32 +163,4 @@ public class BspStartupActivity : ProjectActivity {
     val bspConnectionService = BspConnectionService.getInstance(project)
     bspConnectionService.value = bspFileConnection
   }
-
-  private suspend fun collectProject(project: Project) {
-    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-
-    val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-import")
-
-    bspSyncConsole.startTask(
-      taskId = "bsp-import",
-      title = "Import",
-      message = "Importing...",
-      cancelAction = { collectProjectDetailsTask.cancelExecution() }
-    )
-    try {
-      BspConnectionService.getInstance(project).value!!
-        .connect("bsp-import") { collectProjectDetailsTask.cancelExecution() }
-      collectProjectDetailsTask.execute(
-        name = "Syncing...",
-        cancelable = true
-      )
-      bspSyncConsole.finishTask("bsp-import", "Import done!")
-    } catch (e: Exception) {
-      bspSyncConsole.finishTask("bsp-import", "Import failed!", FailureResultImpl(e))
-      if (isBenchmark()) {
-        exitProcess(1)
-      }
-     }
-  }
-
 }

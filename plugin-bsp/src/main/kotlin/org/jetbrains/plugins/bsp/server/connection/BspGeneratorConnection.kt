@@ -66,6 +66,10 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
     fileConnection?.disconnect()
   }
 
+  override fun reload() {
+    fileConnection?.reload()
+  }
+
   public override fun isConnected(): Boolean =
     fileConnection?.isConnected() == true
 
