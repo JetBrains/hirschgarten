@@ -32,6 +32,7 @@ public class BspAllTargetsWidgetFactory : ToolWindowFactory, DumbAware {
     val panel = BspToolWindowPanel(project)
     toolWindow.contentManager.removeAllContents(true)
     toolWindow.contentManager.addContent(ContentFactory.getInstance().createContent(panel.component, "", false))
+    toolWindow.show()
   }
 }
 
