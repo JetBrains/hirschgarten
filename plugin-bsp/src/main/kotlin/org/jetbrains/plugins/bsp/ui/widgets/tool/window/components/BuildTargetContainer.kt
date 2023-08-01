@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
-import ch.epfl.scala.bsp4j.BuildTarget
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import java.awt.event.MouseListener
 
@@ -30,7 +30,7 @@ public interface BuildTargetContainer {
    *
    * @return selected build target, or `null` if nothing is selected
    */
-  public fun getSelectedBuildTarget(): BuildTarget?
+  public fun getSelectedBuildTarget(): BuildTargetInfo?
 
   /**
    * Creates a new instance of this container. The new instance will have similar mouse listeners
@@ -38,5 +38,5 @@ public interface BuildTargetContainer {
    * @param newTargets collection of build targets the new container will contain
    * @return the newly created container
    */
-  public fun createNewWithTargets(newTargets: Collection<BuildTarget>): BuildTargetContainer
+  public fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetContainer
 }

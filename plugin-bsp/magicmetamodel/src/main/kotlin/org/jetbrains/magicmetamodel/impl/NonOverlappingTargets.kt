@@ -1,9 +1,9 @@
 package org.jetbrains.magicmetamodel.impl
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 /**
  * ## Conflicting Targets Problem
@@ -48,21 +48,21 @@ public object NonOverlappingTargets {
   private val log = logger<NonOverlappingTargets>()
 
   public operator fun invoke(
-    allTargets: Set<BuildTarget>,
-    conflictGraph: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
-  ): Set<BuildTargetIdentifier> {
+    allTargets: Set<BuildTargetInfo>,
+    conflictGraph: Map<BuildTargetId, Set<BuildTargetId>>,
+  ): Set<BuildTargetId> {
     log.trace { "Calculating non overlapping targets for $allTargets..." }
     val invertedDependencyMap = getInvertedDependencyMap(allTargets)
-    val fullConflictGraph = allTargets.associate { it.id to emptySet<BuildTargetIdentifier>() } + conflictGraph
+    val fullConflictGraph = allTargets.associate { it.id to emptySet<BuildTargetId>() } + conflictGraph
     return extractNonConflictingTargets(ConflictGraph(fullConflictGraph.toMutableMap()), invertedDependencyMap)
   }
 
   private fun extractNonConflictingTargets(
     conflictGraph: ConflictGraph,
-    invertedDependencyMap: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
-  ): Set<BuildTargetIdentifier> {
-    val elementsToTake = mutableSetOf<BuildTargetIdentifier>()
-    val availableDependers = mutableSetOf<BuildTargetIdentifier>()
+    invertedDependencyMap: Map<BuildTargetId, Set<BuildTargetId>>,
+  ): Set<BuildTargetId> {
+    val elementsToTake = mutableSetOf<BuildTargetId>()
+    val availableDependers = mutableSetOf<BuildTargetId>()
 
     while (conflictGraph.isNotEmpty()) {
       log.trace("Removing elements from conflict graph. Elements left: ${conflictGraph.connectedNodes.size}")
@@ -79,8 +79,8 @@ public object NonOverlappingTargets {
     return elementsToTake
   }
 
-  private fun mostConflictingTargets(conflictGraph: ConflictGraph): BuildTargetIdentifier? {
-    val comparatorByOverlaps = Comparator.comparingInt<BuildTargetIdentifier> {
+  private fun mostConflictingTargets(conflictGraph: ConflictGraph): BuildTargetId? {
+    val comparatorByOverlaps = Comparator.comparingInt<BuildTargetId> {
       conflictGraph.conflictMap[it]?.size ?: 0
     }
     return conflictGraph.connectedNodes.maxWithOrNull(comparatorByOverlaps)
@@ -88,18 +88,18 @@ public object NonOverlappingTargets {
 
   private fun conflictingWithDependers(
     conflictGraph: ConflictGraph,
-    availableDependers: MutableSet<BuildTargetIdentifier>
-  ): BuildTargetIdentifier? =
+    availableDependers: MutableSet<BuildTargetId>
+  ): BuildTargetId? =
     availableDependers.flatMap { conflictGraph.conflictMap[it].orEmpty() }.firstOrNull()
 
   private fun chooseWorstConflict(conflictGraph: ConflictGraph,
-                                  dependers: MutableSet<BuildTargetIdentifier>): BuildTargetIdentifier? =
+                                  dependers: MutableSet<BuildTargetId>): BuildTargetId? =
     conflictingWithDependers(conflictGraph, dependers)
       ?: mostConflictingTargets(conflictGraph)
 
   private fun getInvertedDependencyMap(
-    allTargets: Set<BuildTarget>
-  ): Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> =
+    allTargets: Set<BuildTargetInfo>
+  ): Map<BuildTargetId, Set<BuildTargetId>> =
     allTargets.fold(emptyMap()) { acc, target ->
       val newEntries = target.dependencies.map { it to target.id }
       newEntries.fold(acc) { smallAcc, entry ->
@@ -109,13 +109,13 @@ public object NonOverlappingTargets {
 }
 
 public class ConflictGraph(
-  private val conflictMap0: MutableMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
+  private val conflictMap0: MutableMap<BuildTargetId, Set<BuildTargetId>>,
 ) {
-  private val isolatedNodes0: MutableSet<BuildTargetIdentifier> = conflictMap0
+  private val isolatedNodes0: MutableSet<BuildTargetId> = conflictMap0
     .filter { it.value.toSet().isEmpty() }
     .keys
     .toMutableSet()
-  private val connectedNodes0: MutableSet<BuildTargetIdentifier> = (conflictMap0.keys - isolatedNodes0).toMutableSet()
+  private val connectedNodes0: MutableSet<BuildTargetId> = (conflictMap0.keys - isolatedNodes0).toMutableSet()
 
   /**
    * Get all nodes that does not conflict with any other.
@@ -123,7 +123,7 @@ public class ConflictGraph(
    * An equivalent of set of all keys in conflict map, whose values are empty sets. Kept as variable for performance
    * reasons.
    */
-  public val isolatedNodes: Set<BuildTargetIdentifier> = isolatedNodes0
+  public val isolatedNodes: Set<BuildTargetId> = isolatedNodes0
 
 
   /**
@@ -136,17 +136,17 @@ public class ConflictGraph(
    *
    * An equivalent of set of all keys in conflict map, whose values are nonempty sets.
    */
-  public val connectedNodes: Set<BuildTargetIdentifier> = connectedNodes0
+  public val connectedNodes: Set<BuildTargetId> = connectedNodes0
 
   /**
    * Value field in this map is a set of nodes that are conflicting with the key one.
    */
-  public val conflictMap: Map<BuildTargetIdentifier, Set<BuildTargetIdentifier>> = conflictMap0
+  public val conflictMap: Map<BuildTargetId, Set<BuildTargetId>> = conflictMap0
 
   /**
    * Remove all nodes and make sure the cache variables are up to date
    */
-  public fun removeAll(nodes: Set<BuildTargetIdentifier>) {
+  public fun removeAll(nodes: Set<BuildTargetId>) {
     val conflicts = nodes.flatMap { conflictMap0[it].orEmpty() }
     conflicts.forEach {
       conflictMap0.replace(it, conflictMap0[it].orEmpty() - nodes)

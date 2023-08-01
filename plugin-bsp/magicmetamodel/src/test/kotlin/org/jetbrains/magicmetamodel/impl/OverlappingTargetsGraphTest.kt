@@ -13,6 +13,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId as WMBuildTargetId
 import java.util.concurrent.TimeUnit
 
 @DisplayName("OverlappingTargetsGraph(targetsDetailsForDocumentProvider) tests")
@@ -81,10 +82,10 @@ class OverlappingTargetsGraphTest {
     val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
-    val expectedGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
-      BuildTargetId("targetA1") to setOf(),
-      BuildTargetId("targetB1") to setOf(),
-      BuildTargetId("targetC1") to setOf(),
+    val expectedGraph = mapOf<WMBuildTargetId, Set<WMBuildTargetId>>(
+      "targetA1" to setOf(),
+      "targetB1" to setOf(),
+      "targetC1" to setOf(),
     )
 
     overlappingTargetsGraph shouldContainExactly expectedGraph
@@ -125,9 +126,9 @@ class OverlappingTargetsGraphTest {
     val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
-    val expectedGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
-      BuildTargetId("targetA1") to setOf(BuildTargetId("targetA2")),
-      BuildTargetId("targetA2") to setOf(BuildTargetId("targetA1")),
+    val expectedGraph = mapOf(
+      "targetA1" to setOf("targetA2"),
+      "targetA2" to setOf("targetA1"),
     )
 
     overlappingTargetsGraph shouldContainExactly expectedGraph
@@ -162,9 +163,9 @@ class OverlappingTargetsGraphTest {
     val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
-    val expectedGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
-      BuildTargetId("targetA1") to emptySet(),
-      BuildTargetId("targetA2") to emptySet(),
+    val expectedGraph = mapOf<WMBuildTargetId, Set<WMBuildTargetId>>(
+      "targetA1" to emptySet(),
+      "targetA2" to emptySet(),
     )
 
     overlappingTargetsGraph shouldContainExactly expectedGraph
@@ -199,9 +200,9 @@ class OverlappingTargetsGraphTest {
     val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
 
     // then
-    val expectedGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
-      BuildTargetId("targetA1") to emptySet(),
-      BuildTargetId("targetB1") to emptySet()
+    val expectedGraph = mapOf<WMBuildTargetId, Set<WMBuildTargetId>>(
+      "targetA1" to emptySet(),
+      "targetB1" to emptySet()
     )
     overlappingTargetsGraph shouldContainExactly expectedGraph
   }
@@ -335,15 +336,15 @@ class OverlappingTargetsGraphTest {
 
     // then
     val expectedGraph = mapOf(
-      targetA1Id to setOf(targetA2B2C1Id, targetA3B3C2Id),
-      targetB1Id to setOf(targetA2B2C1Id, targetA3B3C2Id),
-      targetA2B2C1Id to setOf(targetA1Id, targetB1Id, targetA3B3C2Id, targetC3D1Id),
-      targetA3B3C2Id to setOf(targetA1Id, targetB1Id, targetA2B2C1Id, targetC3D1Id),
-      targetC3D1Id to setOf(targetA2B2C1Id, targetA3B3C2Id, targetD2E1Id, targetD3Id),
-      targetD2E1Id to setOf(targetC3D1Id, targetE2Id, targetD3Id),
-      targetF1Id to setOf(),
-      targetE2Id to setOf(targetD2E1Id),
-      targetD3Id to setOf(targetC3D1Id, targetD2E1Id),
+      "targetA1" to setOf("targetA2B2C1", "targetA3B3C2"),
+      "targetB1" to setOf("targetA2B2C1", "targetA3B3C2"),
+      "targetA2B2C1" to setOf("targetA1", "targetB1", "targetA3B3C2", "targetC3D1"),
+      "targetA3B3C2" to setOf("targetA1", "targetB1", "targetA2B2C1", "targetC3D1"),
+      "targetC3D1" to setOf("targetA2B2C1", "targetA3B3C2", "targetD2E1", "targetD3"),
+      "targetD2E1" to setOf("targetC3D1", "targetE2", "targetD3"),
+      "targetF1" to setOf(),
+      "targetE2" to setOf("targetD2E1"),
+      "targetD3" to setOf("targetC3D1", "targetD2E1"),
     )
 
     overlappingTargetsGraph shouldContainExactly expectedGraph
@@ -379,7 +380,7 @@ class OverlappingTargetsGraphTest {
       // then
       val expectedOverlappingTargetsGraph =
         sources
-          .map { it.target }
+          .map { it.target.uri }
           .associateWith { emptySet<BuildTargetIdentifier>() }
       overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
     }
@@ -414,8 +415,8 @@ class OverlappingTargetsGraphTest {
       // then
       val expectedOverlappingTargetsGraph =
         sources
-          .map { it.target }
-          .associateWith { sources.map { it.target }.filter { t -> t != it } }
+          .map { it.target.uri }
+          .associateWith { sources.map { it.target.uri }.filter { t -> t != it } }
       overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
     }
 
@@ -449,10 +450,10 @@ class OverlappingTargetsGraphTest {
       // then
       val expectedOverlappingTargetsGraph =
         sources.zipWithNext().zipWithNext()
-          .associateBy({ it.first.second.target }, { setOf(it.first.first.target, it.second.second.target) }) +
+          .associateBy({ it.first.second.target.uri }, { setOf(it.first.first.target.uri, it.second.second.target.uri) }) +
           setOf(
-            sources[0].target to setOf(sources[1].target),
-            sources[sources.lastIndex].target to setOf(sources[sources.lastIndex - 1].target)
+            sources[0].target.uri to setOf(sources[1].target.uri),
+            sources[sources.lastIndex].target.uri to setOf(sources[sources.lastIndex - 1].target.uri)
           )
       overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
     }
@@ -487,8 +488,8 @@ class OverlappingTargetsGraphTest {
       // then
       val expectedOverlappingTargetsGraph =
         sources
-          .map { it.target }
-          .associateWith { sources.map { it.target }.filter { t -> t != it } }
+          .map { it.target.uri }
+          .associateWith { sources.map { it.target.uri }.filter { t -> t != it } }
       overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
     }
 
@@ -519,8 +520,8 @@ class OverlappingTargetsGraphTest {
       // then
       val expectedOverlappingTargetsGraph =
         sources
-          .map { it.target }
-          .associateWith { sources.map { it.target }.filter { t -> t != it } }
+          .map { it.target.uri }
+          .associateWith { sources.map { it.target.uri }.filter { t -> t != it } }
       overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
     }
   }

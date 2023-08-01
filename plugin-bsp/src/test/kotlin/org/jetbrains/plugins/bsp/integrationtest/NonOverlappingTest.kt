@@ -20,6 +20,7 @@ import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.impl.NonOverlappingTargets
 import org.jetbrains.magicmetamodel.impl.OverlappingTargetsGraph
 import org.jetbrains.magicmetamodel.impl.TargetsDetailsForDocumentProvider
+import org.jetbrains.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.tasks.calculateProjectDetailsWithCapabilities
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
@@ -55,7 +56,8 @@ class NonOverlappingTest {
       val projectDetails = calculateProjectDetailsWithCapabilities(server, initializationResult.capabilities, { println(it) })!!
       val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
       val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
-      val nonOverlapping = measureTimedValue { NonOverlappingTargets(projectDetails.targets, overlappingTargetsGraph) }
+      val targets = projectDetails.targets.map { it.toBuildTargetInfo() }.toSet()
+      val nonOverlapping = measureTimedValue { NonOverlappingTargets(targets, overlappingTargetsGraph) }
       nonOverlapping.value.size shouldBe 1958
       println("Computing non-overlapping targets took ${nonOverlapping.duration}")
     } finally {

@@ -14,6 +14,8 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import java.nio.file.Path
 
 public data class MagicMetaModelProjectConfig(
@@ -30,9 +32,9 @@ public data class MagicMetaModelProjectConfig(
   ) : this(workspaceModel, virtualFileUrlManager, projectBasePath, moduleNameProvider ?: DefaultModuleNameProvider)
 }
 
-public typealias ModuleNameProvider = (BuildTargetIdentifier) -> String
+public typealias ModuleNameProvider = (BuildTargetId) -> String
 public object DefaultModuleNameProvider : ModuleNameProvider {
-  override fun invoke(id: BuildTargetIdentifier): String = id.uri
+  override fun invoke(id: BuildTargetId): String = id
 }
 
 public data class ProjectDetails(
@@ -65,8 +67,8 @@ public data class ProjectDetails(
  * @see [MagicMetaModel.getTargetsDetailsForDocument]
  */
 public data class DocumentTargetsDetails(
-  public val loadedTargetId: BuildTargetIdentifier?,
-  public val notLoadedTargetsIds: List<BuildTargetIdentifier>,
+  public val loadedTargetId: BuildTargetId?,
+  public val notLoadedTargetsIds: List<BuildTargetId>,
 )
 
 /**
@@ -111,7 +113,7 @@ public interface MagicMetaModel {
    *
    * Requires write action if used with [WorkspaceModel].
    */
-  public fun loadTarget(targetId: BuildTargetIdentifier): MagicMetaModelDiff?
+  public fun loadTarget(targetId: BuildTargetId): MagicMetaModelDiff?
 
   /**
    * Register a function to be executed when a target has been loaded
@@ -130,12 +132,12 @@ public interface MagicMetaModel {
   /**
    * Get all currently loaded targets.
    */
-  public fun getAllLoadedTargets(): List<BuildTarget>
+  public fun getAllLoadedTargets(): List<BuildTargetInfo>
 
   /**
    * Get all currently not loaded targets.
    */
-  public fun getAllNotLoadedTargets(): List<BuildTarget>
+  public fun getAllNotLoadedTargets(): List<BuildTargetInfo>
 
   public fun clear()
 

@@ -4,6 +4,7 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedContentRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelWithParentJavaModuleBaseTest
@@ -32,7 +33,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     // given
     val contentPath = Path("/root/dir/example/resource/File.txt")
     val contentRoot = ContentRoot(
-      url = contentPath,
+      path = contentPath,
       excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
     )
 
@@ -59,18 +60,18 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     // given
     val contentPath1 = Path("/root/dir/example/resource/File1.txt")
     val contentRoot1 = ContentRoot(
-      url = contentPath1,
+      path = contentPath1,
       excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
     )
 
     val contentPath2 = Path("/root/dir/example/resource/File2.txt")
     val contentRoot2 = ContentRoot(
-      url = contentPath2
+      path = contentPath2
     )
 
     val contentPath3 = Path("/root/dir/another/example/resource/File3.txt")
     val contentRoot3 = ContentRoot(
-      url = contentPath3
+      path = contentPath3
     )
 
     val contentRoots = listOf(contentRoot1, contentRoot2, contentRoot3)

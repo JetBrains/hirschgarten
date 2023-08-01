@@ -1,29 +1,28 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.module.ModuleTypeId
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ContentRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import java.io.File
-import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.toPath
+import kotlin.io.path.Path
+import kotlin.io.path.isDirectory
+import kotlin.io.path.pathString
 
 /**
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
  */
-internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projectBasePath: Path) :
-  WorkspaceModelEntityPartitionTransformer<ModuleDetails, JavaModule> {
+public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBasePath: Path) :
+  WorkspaceModelEntityPartitionTransformer<JavaModule, JavaModule> {
 
-  companion object {
+  internal companion object {
     const val DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE = "java-source"
   }
 
-  override fun transform(inputEntity: ModuleDetails): List<JavaModule> {
+  override fun transform(inputEntity: JavaModule): List<JavaModule> {
     val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
     return dummyJavaModuleSourceRoots.zip(dummyJavaModuleNames)
@@ -33,39 +32,46 @@ internal class ModuleDetailsToDummyJavaModulesTransformerHACK(private val projec
   private fun calculateDummyJavaSourceModule(name: String, sourceRoot: Path) =
     if (name.isEmpty()) null
     else JavaModule(
-      module = Module(
+      genericModuleInfo = GenericModuleInfo(
         name = name,
         type = ModuleTypeId.JAVA_MODULE,
         modulesDependencies = listOf(),
         librariesDependencies = listOf()
       ),
-      baseDirContentRoot = ContentRoot(url = sourceRoot),
+      baseDirContentRoot = ContentRoot(path = sourceRoot),
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = sourceRoot,
           generated = true,
           packagePrefix = "",
           rootType = DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
-          targetId = BuildTargetIdentifier(name)
         )
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = listOf(),
       compilerOutput = null,
-      jvmJdkInfo = null,
+      jvmJdkName = null,
       kotlinAddendum = null
     )
+  private fun calculateDummyJavaSourceRoots(inputEntity: JavaModule): List<Path> =
+    inputEntity.sourceRoots.map {
+      restoreSourceRootFromPackagePrefix(it)
+    }.distinct()
+
+  private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): Path {
+    val packagePrefixPath = sourceRoot.packagePrefix.replace('.', File.separatorChar)
+    val directory =
+      if (sourceRoot.sourcePath.isDirectory()) sourceRoot.sourcePath
+      else sourceRoot.sourcePath.parent
+    val sourceRootString = directory.pathString.removeSuffix(packagePrefixPath)
+    return Path(sourceRootString)
+  }
 }
 
-public fun calculateDummyJavaModuleNames(inputEntity: ModuleDetails, projectBasePath: Path): List<String> {
-  val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity)
-  return calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath).filter { it.isNotEmpty() }
-}
-
-private fun calculateDummyJavaSourceRoots(inputEntity: ModuleDetails): List<Path> =
-  inputEntity.sources.mapNotNull { it.roots }.flatten().map { URI.create(it) }.map { it.toPath() }
-
-private fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<Path>, projectBasePath: Path): List<String> =
+internal fun calculateDummyJavaModuleNames(
+  dummyJavaModuleSourceRoots: List<Path>,
+  projectBasePath: Path
+): List<String> =
   dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it, projectBasePath) }
 
 internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {

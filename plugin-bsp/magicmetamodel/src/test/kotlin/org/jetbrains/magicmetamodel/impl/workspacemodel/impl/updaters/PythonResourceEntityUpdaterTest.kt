@@ -3,6 +3,7 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -30,17 +31,17 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
   fun `should add one python resource root to the workspace model`() {
     // given
     val resourcePath = URI.create("file:///root/dir/example/resource/File.txt").toPath()
-    val pythonResourceRoot = PythonResourceRoot(resourcePath)
+    val pythonResourceRoot = ResourceRoot(resourcePath)
 
     //when
-    val returnedPythonResourceRootEntity = runTestWriteAction {
+    val returnedResourceRootEntity = runTestWriteAction {
       pythonResourceEntityUpdater.addEntity(pythonResourceRoot, parentModuleEntity)
     }
 
     // then
     val virtualResourceUrl = resourcePath.toVirtualFileUrl(virtualFileUrlManager)
 
-    val expectedPythonResourceRootEntity = ExpectedSourceRootEntity(
+    val expectedResourceRootEntity = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl,
@@ -55,9 +56,9 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
     )
 
 
-    returnedPythonResourceRootEntity shouldBeEqual expectedPythonResourceRootEntity
+    returnedResourceRootEntity shouldBeEqual expectedResourceRootEntity
     loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
-      expectedPythonResourceRootEntity
+      expectedResourceRootEntity
     )
   }
 
@@ -65,25 +66,25 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
   fun `shoulde add multiple python resource roots to the workspace model`() {
     // given
     val resourcePath1 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
-    val pythonResourceRoot1 = PythonResourceRoot(resourcePath1)
+    val pythonResourceRoot1 = ResourceRoot(resourcePath1)
 
     val resourcePath2 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
-    val pythonResourceRoot2 = PythonResourceRoot(resourcePath2)
+    val pythonResourceRoot2 = ResourceRoot(resourcePath2)
 
     val resourcePath3 = URI.create("file:///root/dir/example/resource/File3.txt").toPath()
-    val pythonResourceRoot3 = PythonResourceRoot(resourcePath2)
+    val pythonResourceRoot3 = ResourceRoot(resourcePath2)
 
     val pythonResourceRoots = listOf(pythonResourceRoot1, pythonResourceRoot2, pythonResourceRoot3)
 
     // when
-    val returnedPythonResourceRootEntities = runTestWriteAction {
+    val returnedResourceRootEntities = runTestWriteAction {
       pythonResourceEntityUpdater.addEntries(pythonResourceRoots, parentModuleEntity)
     }
 
     // then
     val virtualResourceUrl1 = resourcePath1.toVirtualFileUrl(virtualFileUrlManager)
 
-    val expectedPythonResourceRootEntity1 = ExpectedSourceRootEntity(
+    val expectedResourceRootEntity1 = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl1,
@@ -99,7 +100,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
 
     val virtualResourceUrl2 = resourcePath2.toVirtualFileUrl(virtualFileUrlManager)
 
-    val expectedPythonResourceRootEntity2 = ExpectedSourceRootEntity(
+    val expectedResourceRootEntity2 = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl2,
@@ -115,7 +116,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
 
     val virtualResourceUrl3 = resourcePath3.toVirtualFileUrl(virtualFileUrlManager)
 
-    val expectedPythonResourceRootEntity3 = ExpectedSourceRootEntity(
+    val expectedResourceRootEntity3 = ExpectedSourceRootEntity(
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl3,
@@ -129,13 +130,13 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
       parentModuleEntity = parentModuleEntity,
     )
 
-    val expectedPythonResourceRootEntities = listOf(
-      expectedPythonResourceRootEntity1,
-      expectedPythonResourceRootEntity2,
-      expectedPythonResourceRootEntity3
+    val expectedResourceRootEntities = listOf(
+      expectedResourceRootEntity1,
+      expectedResourceRootEntity2,
+      expectedResourceRootEntity3
     )
 
-    returnedPythonResourceRootEntities shouldContainExactlyInAnyOrder expectedPythonResourceRootEntities
-    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder expectedPythonResourceRootEntities
+    returnedResourceRootEntities shouldContainExactlyInAnyOrder expectedResourceRootEntities
+    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder expectedResourceRootEntities
   }
 }

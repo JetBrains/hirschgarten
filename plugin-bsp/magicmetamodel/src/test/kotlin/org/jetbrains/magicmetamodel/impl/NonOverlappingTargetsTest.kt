@@ -2,11 +2,10 @@
 
 package org.jetbrains.magicmetamodel.impl
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.workspace.model.constructors.BuildTarget
-import org.jetbrains.workspace.model.constructors.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -16,8 +15,8 @@ class NonOverlappingTargetsTest {
   @Test
   fun `should return empty set for no targets`() {
     // given
-    val allTargets = emptySet<BuildTarget>()
-    val overlappingTargetsGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>()
+    val allTargets = emptySet<BuildTargetInfo>()
+    val overlappingTargetsGraph = mapOf<BuildTargetId, Set<BuildTargetId>>()
 
     // when
     val nonOverlappingTargets = NonOverlappingTargets(allTargets, overlappingTargetsGraph)
@@ -29,26 +28,26 @@ class NonOverlappingTargetsTest {
   @Test
   fun `should return set with all targets for non overlapping targets`() {
     // given
-    val targetA1 = BuildTarget(
-      id = BuildTargetId("targetA1"),
+    val targetA1 = BuildTargetInfo(
+      id = "targetA1",
     )
-    val targetB1 = BuildTarget(
-      id = BuildTargetId("targetB1"),
-      dependencies = listOf(BuildTargetId("targetA1"), BuildTargetId("externalDep")),
+    val targetB1 = BuildTargetInfo(
+      id = "targetB1",
+      dependencies = listOf("targetA1", "externalDep"),
     )
-    val targetC1 = BuildTarget(
-      id = BuildTargetId("targetC1"),
+    val targetC1 = BuildTargetInfo(
+      id = "targetC1",
     )
-    val targetD1 = BuildTarget(
-      id = BuildTargetId("targetD1"),
-      dependencies = listOf(BuildTargetId("targetA1"), BuildTargetId("targetC1")),
+    val targetD1 = BuildTargetInfo(
+      id = "targetD1",
+      dependencies = listOf("targetA1", "targetC1"),
     )
 
     val allTargets = setOf(targetA1, targetB1, targetC1, targetD1)
-    val overlappingTargetsGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
-      BuildTargetId("targetA1") to emptySet(),
-      BuildTargetId("targetB1") to emptySet(),
-      BuildTargetId("targetC1") to emptySet(),
+    val overlappingTargetsGraph = mapOf<BuildTargetId, Set<BuildTargetId>>(
+      "targetA1" to emptySet(),
+      "targetB1" to emptySet(),
+      "targetC1" to emptySet(),
     )
 
     // when
@@ -56,10 +55,10 @@ class NonOverlappingTargetsTest {
 
     // then
     val expectedTargets = setOf(
-      BuildTargetId("targetA1"),
-      BuildTargetId("targetB1"),
-      BuildTargetId("targetC1"),
-      BuildTargetId("targetD1"),
+      "targetA1",
+      "targetB1",
+      "targetC1",
+      "targetD1",
     )
     nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
   }
@@ -67,40 +66,40 @@ class NonOverlappingTargetsTest {
   @Test
   fun `should return set with non overlapping targets for overlapping targets and one target without sources`() {
     // given
-    val targetA1 = BuildTarget(
-      id = BuildTargetId("targetA1"),
+    val targetA1 = BuildTargetInfo(
+      id = "targetA1",
     )
-    val targetA2 = BuildTarget(
-      id = BuildTargetId("targetA2"),
-      dependencies = listOf(BuildTargetId("externalDep")),
+    val targetA2 = BuildTargetInfo(
+      id = "targetA2",
+      dependencies = listOf("externalDep"),
     )
-    val targetB1 = BuildTarget(
-      id = BuildTargetId("targetB1"),
-      dependencies = listOf(BuildTargetId("targetA1"))
+    val targetB1 = BuildTargetInfo(
+      id = "targetB1",
+      dependencies = listOf("targetA1")
     )
-    val targetB2 = BuildTarget(
-      id = BuildTargetId("targetB2"),
-      dependencies = listOf(BuildTargetId("targetA1"), BuildTargetId("externalDep")),
+    val targetB2 = BuildTargetInfo(
+      id = "targetB2",
+      dependencies = listOf("targetA1", "externalDep"),
     )
-    val targetB3 = BuildTarget(
-      id = BuildTargetId("targetB3"),
+    val targetB3 = BuildTargetInfo(
+      id = "targetB3",
     )
-    val targetC1 = BuildTarget(
-      id = BuildTargetId("targetC1"),
+    val targetC1 = BuildTargetInfo(
+      id = "targetC1",
       dependencies = listOf(
-        BuildTargetId("targetA1"),
-        BuildTargetId("targetA2"),
-        BuildTargetId("externalDep")
+        "targetA1",
+        "targetA2",
+        "externalDep"
       ),
     )
 
     val allTargets = setOf(targetA1, targetA2, targetB1, targetB2, targetB3, targetC1)
-    val overlappingTargetsGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
-      BuildTargetId("targetA1") to setOf(BuildTargetId("targetA2")),
-      BuildTargetId("targetA2") to setOf(BuildTargetId("targetA1")),
-      BuildTargetId("targetB1") to setOf(BuildTargetId("targetB2"), BuildTargetId("targetB3")),
-      BuildTargetId("targetB2") to setOf(BuildTargetId("targetB1"), BuildTargetId("targetB3")),
-      BuildTargetId("targetB3") to setOf(BuildTargetId("targetB1"), BuildTargetId("targetB2")),
+    val overlappingTargetsGraph = mapOf<BuildTargetId, Set<BuildTargetId>>(
+      "targetA1" to setOf("targetA2"),
+      "targetA2" to setOf("targetA1"),
+      "targetB1" to setOf("targetB2", "targetB3"),
+      "targetB2" to setOf("targetB1", "targetB3"),
+      "targetB3" to setOf("targetB1", "targetB2"),
     )
 
     // when
@@ -108,9 +107,9 @@ class NonOverlappingTargetsTest {
 
     // then
     val expectedTargets = setOf(
-      BuildTargetId("targetA2"),
-      BuildTargetId("targetB3"),
-      BuildTargetId("targetC1")
+      "targetA2",
+      "targetB3",
+      "targetC1",
     )
     nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
   }
@@ -118,38 +117,38 @@ class NonOverlappingTargetsTest {
   @Test
   fun `should return set with non overlapping targets for overlapping targets and non overlapping targets and one target without sources`() {
     // given
-    val targetA1 = BuildTarget(
-      id = BuildTargetId("targetA1")
+    val targetA1 = BuildTargetInfo(
+      id = "targetA1",
     )
-    val targetA2B1 = BuildTarget(
-      id = BuildTargetId("targetA2B1")
+    val targetA2B1 = BuildTargetInfo(
+      id = "targetA2B1",
     )
-    val targetB2 = BuildTarget(
-      id = BuildTargetId("targetB2"),
-      dependencies = listOf(BuildTargetId("targetA1"), BuildTargetId("externalDep"))
+    val targetB2 = BuildTargetInfo(
+      id = "targetB2",
+      dependencies = listOf("targetA1", "externalDep"),
     )
-    val targetC1 = BuildTarget(
-      id = BuildTargetId("targetC1"),
-      dependencies = listOf(BuildTargetId("//target1"), BuildTargetId("externalDep"))
+    val targetC1 = BuildTargetInfo(
+      id = "targetC1",
+      dependencies = listOf("//target1", "externalDep"),
     )
-    val targetD1 = BuildTarget(
-      id = BuildTargetId("targetD1"),
-      dependencies = listOf(BuildTargetId("targetC1"))
+    val targetD1 = BuildTargetInfo(
+      id = "targetD1",
+      dependencies = listOf("targetC1"),
     )
-    val targetE1 = BuildTarget(
-      id = BuildTargetId("targetE1")
+    val targetE1 = BuildTargetInfo(
+      id = "targetE1",
     )
 
     val allTargets = setOf(targetA1, targetA2B1, targetB2, targetC1, targetD1, targetE1)
-    val overlappingTargetsGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
-      BuildTargetId("targetA1") to setOf(BuildTargetId("targetA2B1")),
-      BuildTargetId("targetA2B1") to setOf(
-        BuildTargetId("targetA1"),
-        BuildTargetId("targetB2")
+    val overlappingTargetsGraph = mapOf<BuildTargetId, Set<BuildTargetId>>(
+      "targetA1" to setOf("targetA2B1"),
+      "targetA2B1" to setOf(
+        "targetA1",
+        "targetB2"
       ),
-      BuildTargetId("targetB2") to setOf(BuildTargetId("targetA2B1")),
-      BuildTargetId("targetC1") to emptySet(),
-      BuildTargetId("targetD1") to emptySet(),
+      "targetB2" to setOf("targetA2B1"),
+      "targetC1" to emptySet(),
+      "targetD1" to emptySet(),
     )
 
     // when
@@ -157,11 +156,11 @@ class NonOverlappingTargetsTest {
 
     // then
     val expectedTargets = setOf(
-      BuildTargetId("targetA1"),
-      BuildTargetId("targetB2"),
-      BuildTargetId("targetC1"),
-      BuildTargetId("targetD1"),
-      BuildTargetId("targetE1")
+      "targetA1",
+      "targetB2",
+      "targetC1",
+      "targetD1",
+      "targetE1",
     )
     nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
   }
@@ -169,53 +168,53 @@ class NonOverlappingTargetsTest {
   @Test
   fun `should return set of non overlapping dependent targets for overlapping targets dependent on each other`() {
     // given
-    val targetA1 = BuildTarget(
-      id = BuildTargetId("targetA1"),
-      dependencies = listOf(BuildTargetId("targetB1"), BuildTargetId("externalDep")),
+    val targetA1 = BuildTargetInfo(
+      id = "targetA1",
+      dependencies = listOf("targetB1", "externalDep"),
     )
-    val targetA2 = BuildTarget(
-      id = BuildTargetId("targetA2"),
-      dependencies = listOf(BuildTargetId("targetB2"), BuildTargetId("externalDep")),
+    val targetA2 = BuildTargetInfo(
+      id = "targetA2",
+      dependencies = listOf("targetB2", "externalDep"),
     )
-    val targetB1 = BuildTarget(
-      id = BuildTargetId("targetB1"),
-      dependencies = listOf(BuildTargetId("targetC1"))
+    val targetB1 = BuildTargetInfo(
+      id = "targetB1",
+      dependencies = listOf("targetC1")
     )
-    val targetB2 = BuildTarget(
-      id = BuildTargetId("targetB2"),
-      dependencies = listOf(BuildTargetId("targetC2"))
+    val targetB2 = BuildTargetInfo(
+      id = "targetB2",
+      dependencies = listOf("targetC2")
     )
-    val targetC1 = BuildTarget(
-      id = BuildTargetId("targetC1"),
-      dependencies = listOf(BuildTargetId("targetD1"))
+    val targetC1 = BuildTargetInfo(
+      id = "targetC1",
+      dependencies = listOf("targetD1")
     )
-    val targetC2 = BuildTarget(
-      id = BuildTargetId("targetC2"),
-      dependencies = listOf(BuildTargetId("targetD2"))
+    val targetC2 = BuildTargetInfo(
+      id = "targetC2",
+      dependencies = listOf("targetD2")
     )
-    val targetD1 = BuildTarget(
-      id = BuildTargetId("targetD1"),
-      dependencies = listOf(BuildTargetId("targetE1"))
+    val targetD1 = BuildTargetInfo(
+      id = "targetD1",
+      dependencies = listOf("targetE1")
     )
-    val targetD2 = BuildTarget(
-      id = BuildTargetId("targetD2"),
-      dependencies = listOf(BuildTargetId("targetE1"))
+    val targetD2 = BuildTargetInfo(
+      id = "targetD2",
+      dependencies = listOf("targetE1")
     )
-    val targetE1 = BuildTarget(
-      id = BuildTargetId("targetE1"),
+    val targetE1 = BuildTargetInfo(
+      id = "targetE1",
     )
 
     val allTargets = setOf(targetA1, targetE1, targetD2, targetD1, targetB2, targetC1, targetB1, targetA2, targetC2)
-    val overlappingTargetsGraph = mapOf<BuildTargetIdentifier, Set<BuildTargetIdentifier>>(
-      BuildTargetId("targetA1") to setOf(BuildTargetId("targetA2")),
-      BuildTargetId("targetA2") to setOf(BuildTargetId("targetA1")),
-      BuildTargetId("targetB1") to setOf(BuildTargetId("targetB2")),
-      BuildTargetId("targetB2") to setOf(BuildTargetId("targetB1")),
-      BuildTargetId("targetC1") to setOf(BuildTargetId("targetC2")),
-      BuildTargetId("targetC2") to setOf(BuildTargetId("targetC1")),
-      BuildTargetId("targetD1") to setOf(BuildTargetId("targetD2")),
-      BuildTargetId("targetD2") to setOf(BuildTargetId("targetD1")),
-      BuildTargetId("targetE1") to emptySet()
+    val overlappingTargetsGraph = mapOf(
+      "targetA1" to setOf("targetA2"),
+      "targetA2" to setOf("targetA1"),
+      "targetB1" to setOf("targetB2"),
+      "targetB2" to setOf("targetB1"),
+      "targetC1" to setOf("targetC2"),
+      "targetC2" to setOf("targetC1"),
+      "targetD1" to setOf("targetD2"),
+      "targetD2" to setOf("targetD1"),
+      "targetE1" to emptySet()
     )
 
     // when
@@ -223,31 +222,31 @@ class NonOverlappingTargetsTest {
 
     // then
     val expectedTargets = setOf(
-      BuildTargetId("targetA2"),
-      BuildTargetId("targetB2"),
-      BuildTargetId("targetC2"),
-      BuildTargetId("targetD2"),
-      BuildTargetId("targetE1"),
+      "targetA2",
+      "targetB2",
+      "targetC2",
+      "targetD2",
+      "targetE1",
     )
     nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
   }
 
   @Test
   fun cycleInGraph() {
-    val targetA = BuildTarget(
-      id = BuildTargetId("targetA"),
-      dependencies = listOf(BuildTargetId("targetB"))
+    val targetA = BuildTargetInfo(
+      id = "targetA",
+      dependencies = listOf("targetB")
     )
 
-    val targetB = BuildTarget(
-      id = BuildTargetId("targetB"),
-      dependencies = listOf(BuildTargetId("targetA"))
+    val targetB = BuildTargetInfo(
+      id = "targetB",
+      dependencies = listOf("targetA")
     )
 
     val allTargets = setOf(targetA, targetB)
 
     val nonOverlappingTargets = NonOverlappingTargets(allTargets, conflictGraph = mapOf())
-    val expectedTargets = setOf(BuildTargetId("targetA"), BuildTargetId("targetB"))
+    val expectedTargets = setOf("targetA", "targetB")
     nonOverlappingTargets shouldContainExactlyInAnyOrder expectedTargets
   }
 }

@@ -7,12 +7,7 @@ import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
-
-internal data class Library(
-  val displayName: String,
-  val sourcesJar: String?,
-  val classesJar: String?,
-) : WorkspaceModelEntity()
+import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 
 internal class LibraryEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,

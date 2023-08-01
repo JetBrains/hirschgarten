@@ -5,6 +5,7 @@ import com.intellij.java.workspace.entities.javaResourceRoots
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -34,7 +35,7 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
   fun `should add one java resource root to the workspace model`() {
     // given
     val resourcePath = URI.create("file:///root/dir/example/resource/File.txt").toPath()
-    val javaResourceRoot = JavaResourceRoot(resourcePath)
+    val javaResourceRoot = ResourceRoot(resourcePath)
 
     // when
     val returnedJavaResourceRootEntity = runTestWriteAction {
@@ -76,13 +77,13 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
   fun `should add multiple java resource roots to the workspace model`() {
     // given
     val resourcePath1 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
-    val javaResourceRoot1 = JavaResourceRoot(resourcePath1)
+    val javaResourceRoot1 = ResourceRoot(resourcePath1)
 
     val resourcePath2 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
-    val javaResourceRoot2 = JavaResourceRoot(resourcePath2)
+    val javaResourceRoot2 = ResourceRoot(resourcePath2)
 
     val resourcePath3 = URI.create("file:///root/dir/example/another/resource/File3.txt").toPath()
-    val javaResourceRoot3 = JavaResourceRoot(resourcePath3)
+    val javaResourceRoot3 = ResourceRoot(resourcePath3)
 
     val javaResourceRoots = listOf(javaResourceRoot1, javaResourceRoot2, javaResourceRoot3)
 

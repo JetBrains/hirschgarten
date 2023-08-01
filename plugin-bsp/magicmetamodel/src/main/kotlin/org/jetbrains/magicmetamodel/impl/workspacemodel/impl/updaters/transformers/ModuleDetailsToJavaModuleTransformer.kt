@@ -7,43 +7,17 @@ import ch.epfl.scala.bsp4j.JvmBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.jetbrains.magicmetamodel.ModuleNameProvider
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
+import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlincOpts
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JvmJdkInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.KotlinAddendum
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.name
 import kotlin.io.path.toPath
-
-public data class KotlincOpts(
-  val includeStdlibs: String,
-  val javaParameters: Boolean,
-  val jvmTarget: String,
-  val warn : String,
-  val xAllowResultReturnType : Boolean,
-  val xBackendThreads: Int,
-  val xEmitJvmTypeAnnotations: Boolean,
-  val xEnableIncrementalCompilation: Boolean,
-  val xExplicitApiMode: String,
-  val xInlineClasses: Boolean,
-  val xJvmDefault: String,
-  val xLambdas: String,
-  val xMultiPlatform: Boolean,
-  val xNoCallAssertions: Boolean,
-  val xNoOptimize: Boolean,
-  val xNoOptimizedCallableReferences: Boolean,
-  val xNoParamAssertions: Boolean,
-  val xNoReceiverAssertions: Boolean,
-  val xOptinList: List<String>,
-  val xReportPerf: Boolean,
-  val xSamConversions: String,
-  val xSkipPrereleaseCheck: Boolean,
-  val xUseFirLt: Boolean,
-  val xUseK2: Boolean,
-)
 
 public data class KotlinBuildTarget(
   val languageVersion: String,
@@ -56,7 +30,7 @@ public data class KotlinBuildTarget(
 internal class ModuleDetailsToJavaModuleTransformer(
   moduleNameProvider: ModuleNameProvider,
   private val projectBasePath: Path,
-): ModuleDetailsToModuleTransformer<JavaModule>(moduleNameProvider) {
+) : ModuleDetailsToModuleTransformer<JavaModule>(moduleNameProvider) {
 
   override val type = "JAVA_MODULE"
 
@@ -65,7 +39,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   override fun transform(inputEntity: ModuleDetails): JavaModule =
     JavaModule(
-      module = toModule(inputEntity),
+      genericModuleInfo = toGenericModuleInfo(inputEntity),
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
       sourceRoots = sourcesItemToJavaSourceRootTransformer.transform(inputEntity.sources.map {
         BuildTargetAndSourceItem(
@@ -75,26 +49,25 @@ internal class ModuleDetailsToJavaModuleTransformer(
       }),
       resourceRoots = resourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources),
       moduleLevelLibraries = if (inputEntity.libraryDependencies == null)
-          DependencySourcesItemToLibraryTransformer
-             .transform(inputEntity.dependenciesSources.map {
-                 DependencySourcesAndJavacOptions(
-                   it,
-                   inputEntity.javacOptions
-                 )
-             }) else null,
+        DependencySourcesItemToLibraryTransformer
+          .transform(inputEntity.dependenciesSources.map {
+            DependencySourcesAndJavacOptions(
+              it,
+              inputEntity.javacOptions
+            )
+          }) else null,
       compilerOutput = toCompilerOutput(inputEntity),
-      jvmJdkInfo = toJdkInfo(inputEntity),
+      jvmJdkName = toJdkName(inputEntity),
       kotlinAddendum = toKotlinAddendum(inputEntity)
     )
 
-  override fun toModule(inputEntity: ModuleDetails): Module {
+  override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
     val bspModuleDetails = BspModuleDetails(
       target = inputEntity.target,
-      allTargetsIds = inputEntity.allTargetsIds,
       dependencySources = inputEntity.dependenciesSources,
       type = type,
       javacOptions = inputEntity.javacOptions,
-      pythonOptions = inputEntity.pythonOptions,
+      pythonOptions = null,
       associates = toAssociates(inputEntity),
       libraryDependencies = inputEntity.libraryDependencies,
       moduleDependencies = inputEntity.moduleDependencies
@@ -103,23 +76,22 @@ internal class ModuleDetailsToJavaModuleTransformer(
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)
   }
 
-  private fun Module.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): Module {
-    val dummyJavaModuleDependencies = calculateDummyJavaModuleNames(inputEntity, projectBasePath)
+  private fun GenericModuleInfo.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): GenericModuleInfo {
+    val dummyJavaModuleDependencies =
+      calculateDummyJavaModuleNames(inputEntity.calculateDummyJavaSourceRoots(), projectBasePath)
       .map { ModuleDependency(it) }
     return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
   }
 
+  private fun ModuleDetails.calculateDummyJavaSourceRoots(): List<Path> =
+    sources.mapNotNull { it.roots }.flatten().map { URI.create(it) }.map { it.toPath() }
+
   private fun toCompilerOutput(inputEntity: ModuleDetails): Path? =
     inputEntity.javacOptions?.classDirectory?.let { URI(it).toPath() }
 
-  private fun toJdkInfo(inputEntity: ModuleDetails): JvmJdkInfo? {
+  private fun toJdkName(inputEntity: ModuleDetails): String? {
     val jvmBuildTarget = extractJvmBuildTarget(inputEntity.target)
-    return if (jvmBuildTarget != null)
-      JvmJdkInfo(
-        name = jvmBuildTarget.javaVersion.javaVersionToJdkName(projectBasePath.name),
-        javaHome = jvmBuildTarget.javaHome
-      )
-    else null
+    return jvmBuildTarget?.javaVersion?.javaVersionToJdkName(projectBasePath.name)
   }
 
   private fun toKotlinAddendum(inputEntity: ModuleDetails): KotlinAddendum? {
@@ -134,9 +106,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
       } else null
   }
 
-  private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetIdentifier> {
+  private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetId> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
-    return kotlinBuildTarget?.associates ?: emptyList()
+    return kotlinBuildTarget?.associates?.map { it.uri } ?: emptyList()
   }
 }
 

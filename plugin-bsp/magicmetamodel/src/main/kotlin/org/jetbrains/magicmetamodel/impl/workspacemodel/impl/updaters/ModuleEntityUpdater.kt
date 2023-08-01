@@ -1,6 +1,5 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
@@ -9,66 +8,23 @@ import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.modifyEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
-
-internal data class ModuleDependency(
-  val moduleName: String,
-) : WorkspaceModelEntity()
-
-internal data class LibraryDependency(
-  val libraryName: String,
-  val isProjectLevelLibrary: Boolean = false
-) : WorkspaceModelEntity()
-
-internal data class Module(
-  val name: String,
-  val type: String,
-  val modulesDependencies: List<ModuleDependency>,
-  val librariesDependencies: List<LibraryDependency>,
-  val capabilities: ModuleCapabilities = ModuleCapabilities(),
-  val languageIds: List<String> = listOf(),
-  val associates: List<ModuleDependency> = listOf(),
-) : WorkspaceModelEntity()
-
-internal class ModuleCapabilities(private val map: Map<String, String> = mapOf()) :
-  Map<String, String> by map {
-  val canRun: Boolean
-    get() = map[KEYS.CAN_RUN.name].toBoolean()
-  val canDebug: Boolean
-    get() = map[KEYS.CAN_DEBUG.name].toBoolean()
-  val canTest: Boolean
-    get() = map[KEYS.CAN_TEST.name].toBoolean()
-  val canCompile: Boolean
-    get() = map[KEYS.CAN_COMPILE.name].toBoolean()
-
-  internal constructor(canRun: Boolean, canTest: Boolean, canCompile: Boolean, canDebug: Boolean) : this(
-    mapOf(
-      KEYS.CAN_RUN.name to canRun.toString(),
-      KEYS.CAN_DEBUG.name to canDebug.toString(),
-      KEYS.CAN_TEST.name to canTest.toString(),
-      KEYS.CAN_COMPILE.name to canCompile.toString(),
-    )
-  )
-
-  private enum class KEYS {
-    CAN_RUN,
-    CAN_DEBUG,
-    CAN_TEST,
-    CAN_COMPILE,
-  }
-}
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
-) : WorkspaceModelEntityWithoutParentModuleUpdater<Module, ModuleEntity> {
+) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
 
-  override fun addEntity(entityToAdd: Module): ModuleEntity =
+  override fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
   private fun addModuleEntity(
     builder: MutableEntityStorage,
-    entityToAdd: Module,
+    entityToAdd: GenericModuleInfo,
   ): ModuleEntity {
     val modulesDependencies = entityToAdd.modulesDependencies.map { toModuleDependencyItemModuleDependency(it) }
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
@@ -85,7 +41,7 @@ internal class ModuleEntityUpdater(
     )
     val imlData = builder.addEntity(
       ModuleCustomImlDataEntity(
-        customModuleOptions = HashMap(entityToAdd.capabilities),
+        customModuleOptions = entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap,
         entitySource = BspEntitySource
       ) {
         this.rootManagerTagCustomData = null

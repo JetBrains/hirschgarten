@@ -45,6 +45,8 @@ import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
+import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
+import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
@@ -417,7 +419,7 @@ private fun queryForDependencySources(
 
 private fun calculateJavaTargetsIds(
   workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
-  workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("java") }.map { it.id }
+  workspaceBuildTargetsResult.targets.filter { it.languageIds.includesJava() }.map { it.id }
 
 private fun queryForJavacOptions(
   server: BspServer,
@@ -431,7 +433,7 @@ private fun queryForJavacOptions(
 
 private fun calculatePythonTargetsIds(
     workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
-  workspaceBuildTargetsResult.targets.filter { it.languageIds.contains("python") }.map { it.id }
+  workspaceBuildTargetsResult.targets.filter { it.languageIds.includesPython() }.map { it.id }
 
 private fun queryForPythonOptions(
   server: BspServer,

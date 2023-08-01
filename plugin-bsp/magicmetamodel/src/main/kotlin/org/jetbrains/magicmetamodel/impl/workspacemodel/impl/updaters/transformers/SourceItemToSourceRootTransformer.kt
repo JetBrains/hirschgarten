@@ -2,9 +2,16 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.SourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelEntity
 import java.net.URI
+import java.nio.file.Path
 import kotlin.io.path.toPath
+
+public data class SourceRoot(
+  public val sourcePath: Path,
+  public val generated: Boolean,
+  public val isFile: Boolean,
+) : WorkspaceModelEntity()
 
 internal object SourceItemToSourceRootTransformer :
   WorkspaceModelEntityTransformer<SourceItem, SourceRoot> {

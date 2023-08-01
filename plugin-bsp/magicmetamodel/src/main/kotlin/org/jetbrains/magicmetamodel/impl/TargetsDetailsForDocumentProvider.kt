@@ -1,6 +1,5 @@
 package org.jetbrains.magicmetamodel.impl
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
@@ -8,17 +7,18 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
 import org.jetbrains.magicmetamodel.extensions.allSubdirectoriesSequence
 import org.jetbrains.magicmetamodel.extensions.toAbsolutePath
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path
 
 public data class TargetsDetailsForDocumentProviderState(
-  public var documentIdToTargetsIdsMap: Map<String, Set<BuildTargetIdentifierState>> = emptyMap(),
+  public var documentIdToTargetsIdsMap: Map<String, Set<BuildTargetId>> = emptyMap(),
 )
 
 public class TargetsDetailsForDocumentProvider {
 
-  private val documentIdToTargetsIdsMap: Map<Path, Set<BuildTargetIdentifier>>
+  private val documentIdToTargetsIdsMap: Map<Path, Set<BuildTargetId>>
 
   public constructor(sources: List<SourcesItem>) {
     log.trace { "Initializing TargetsDetailsForDocumentProvider with $sources..." }
@@ -30,7 +30,7 @@ public class TargetsDetailsForDocumentProvider {
 
   public constructor(state: TargetsDetailsForDocumentProviderState) {
     this.documentIdToTargetsIdsMap =
-      state.documentIdToTargetsIdsMap.mapKeys { Path(it.key) }.mapValues { it.value.map { it.fromState() }.toSet() }
+      state.documentIdToTargetsIdsMap.mapKeys { Path(it.key) }.mapValues { it.value }
   }
 
   public fun getAllDocuments(): List<TextDocumentIdentifier> =
@@ -41,7 +41,7 @@ public class TargetsDetailsForDocumentProvider {
   private fun mapPathToTextDocumentIdentifier(path: Path): TextDocumentIdentifier =
     TextDocumentIdentifier(path.toUri().toString())
 
-  public fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): Set<BuildTargetIdentifier> =
+  public fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): Set<BuildTargetId> =
     generateAllDocumentSubdirectoriesIncludingDocument(documentId)
       .flatMap { documentIdToTargetsIdsMap[it].orEmpty() }
       .toSet()
@@ -61,7 +61,6 @@ public class TargetsDetailsForDocumentProvider {
   public fun toState(): TargetsDetailsForDocumentProviderState =
     TargetsDetailsForDocumentProviderState(
       documentIdToTargetsIdsMap.mapKeys { it.key.toString() }
-        .mapValues { it.value.map { it.toState() }.toSet() }
     )
 
   private companion object {
@@ -76,7 +75,7 @@ private object DocumentIdToTargetsIdsMap {
 
   operator fun invoke(
     sources: List<SourcesItem>
-  ): Map<Path, Set<BuildTargetIdentifier>> {
+  ): Map<Path, Set<BuildTargetId>> {
     log.trace { "Calculating document to target id map..." }
 
     return sources
@@ -88,10 +87,10 @@ private object DocumentIdToTargetsIdsMap {
 
   private fun mapSourcesItemToPairsOfDocumentIdAndTargetId(
     sourceItem: SourcesItem,
-  ): List<Pair<Path, BuildTargetIdentifier>> =
+  ): List<Pair<Path, BuildTargetId>> =
     sourceItem.sources
       .map { mapSourceItemToPath(it) }
-      .map { Pair(it, sourceItem.target) }
+      .map { Pair(it, sourceItem.target.uri) }
 
   private fun mapSourceItemToPath(sourceItem: SourceItem): Path =
     URI.create(sourceItem.uri).toAbsolutePath()

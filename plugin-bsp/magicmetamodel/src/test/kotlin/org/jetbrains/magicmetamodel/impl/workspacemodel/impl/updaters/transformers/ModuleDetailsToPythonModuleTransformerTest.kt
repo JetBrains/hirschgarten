@@ -20,14 +20,14 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.GenericSourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonLibrary
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonResourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSdkInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonLibrary
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -124,11 +124,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val moduleDetails = ModuleDetails(
       target = buildTarget,
-      allTargetsIds = listOf(
-        BuildTargetIdentifier("module1"),
-        BuildTargetIdentifier("module2"),
-        BuildTargetIdentifier("module3"),
-      ),
       sources = listOf(sourcesItem),
       resources = listOf(resourcesItem),
       dependenciesSources = listOf(dependencySourcesItem),
@@ -137,8 +132,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = listOf(
-        BuildTargetIdentifier("module2"),
-        BuildTargetIdentifier("module3"),
+        "module2",
+        "module3",
       ),
     )
 
@@ -146,7 +141,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModule = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
 
     // then
-    val expectedModule = Module(
+    val expectedModule = GenericModuleInfo(
       name = "module1",
       type = "PYTHON_MODULE",
       modulesDependencies = listOf(ModuleDependency("module2"), ModuleDependency("module3")),
@@ -156,27 +151,24 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val expectedGenericSourceRoot1 = GenericSourceRoot(
       sourcePath = file1APath,
       rootType = "python-source",
-      targetId = BuildTargetIdentifier("module1"),
     )
     val expectedGenericSourceRoot2 = GenericSourceRoot(
       sourcePath = file2APath,
       rootType = "python-source",
-      targetId = BuildTargetIdentifier("module1"),
     )
     val expectedGenericSourceRoot3 = GenericSourceRoot(
       sourcePath = dir1BPath,
       rootType = "python-source",
-      targetId = BuildTargetIdentifier("module1"),
     )
 
-    val expectedPythonResourceRoot1 = PythonResourceRoot(
+    val expectedResourceRoot1 = ResourceRoot(
       resourcePath = resourceFilePath.parent,
     )
 
     val expectedPythonModule = PythonModule(
       module = expectedModule,
       sourceRoots = listOf(expectedGenericSourceRoot1, expectedGenericSourceRoot2, expectedGenericSourceRoot3),
-      resourceRoots = listOf(expectedPythonResourceRoot1),
+      resourceRoots = listOf(expectedResourceRoot1),
       libraries = emptyList(),
       sdkInfo = PythonSdkInfo(version = version, originalName = originalName),
     )
@@ -255,11 +247,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val moduleDetails1 = ModuleDetails(
       target = buildTarget1,
-      allTargetsIds = listOf(
-        buildTargetId1,
-        buildTargetId2,
-        buildTargetId3
-      ),
       sources = listOf(sourcesItem1),
       resources = listOf(resourcesItem1),
       dependenciesSources = listOf(dependencySourcesItem1),
@@ -268,8 +255,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = listOf(
-        buildTargetId2,
-        buildTargetId3
+        buildTargetId2.uri,
+        buildTargetId3.uri
       )
     )
 
@@ -317,11 +304,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val moduleDetails2 = ModuleDetails(
       target = buildTarget2,
-      allTargetsIds = listOf(
-        buildTargetId1,
-        buildTargetId2,
-        buildTargetId3
-      ),
       sources = listOf(sourcesItem2),
       resources = listOf(resourcesItem2),
       dependenciesSources = listOf(dependencySourcesItem2),
@@ -329,7 +311,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       pythonOptions = target2PythonOptionsItem,
       outputPathUris = emptyList(),
       libraryDependencies = null,
-      moduleDependencies = listOf(buildTargetId3)
+      moduleDependencies = listOf(buildTargetId3.uri)
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
@@ -338,7 +320,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
 
     // then
-    val expectedModule1 = Module(
+    val expectedModule1 = GenericModuleInfo(
       name = "module1",
       type = "PYTHON_MODULE",
       modulesDependencies = listOf(ModuleDependency("module2"), ModuleDependency("module3")),
@@ -348,32 +330,29 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val expectedGenericSourceRoot11 = GenericSourceRoot(
       sourcePath = file1APath,
       rootType = "python-source",
-      targetId = BuildTargetIdentifier("module1"),
     )
     val expectedGenericSourceRoot12 = GenericSourceRoot(
       sourcePath = file2APath,
       rootType = "python-source",
-      targetId = BuildTargetIdentifier("module1"),
     )
     val expectedGenericSourceRoot13 = GenericSourceRoot(
       sourcePath = dir1BPath,
       rootType = "python-source",
-      targetId = BuildTargetIdentifier("module1"),
     )
 
-    val expectedPythonResourceRoot11 = PythonResourceRoot(
+    val expectedResourceRoot11 = ResourceRoot(
       resourcePath = resourceFilePath11.parent,
     )
 
     val expectedPythonModule1 = PythonModule(
       module = expectedModule1,
       sourceRoots = listOf(expectedGenericSourceRoot11, expectedGenericSourceRoot12, expectedGenericSourceRoot13),
-      resourceRoots = listOf(expectedPythonResourceRoot11),
+      resourceRoots = listOf(expectedResourceRoot11),
       libraries = listOf(PythonLibrary(dependencySourcesItem1.sources.first())),
       sdkInfo = null,
     )
 
-    val expectedModule2 = Module(
+    val expectedModule2 = GenericModuleInfo(
       name = "module2",
       type = "PYTHON_MODULE",
       modulesDependencies = listOf(ModuleDependency("module3")),
@@ -383,17 +362,16 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val expectedGenericSourceRoot21 = GenericSourceRoot(
       sourcePath = dir1CPath,
       rootType = "python-test",
-      targetId = BuildTargetIdentifier("module2"),
     )
 
-    val expectedPythonResourceRoot21 = PythonResourceRoot(
+    val expectedResourceRoot21 = ResourceRoot(
       resourcePath = resourceDirPath21,
     )
 
     val expectedPythonModule2 = PythonModule(
       module = expectedModule2,
       sourceRoots = listOf(expectedGenericSourceRoot21),
-      resourceRoots = listOf(expectedPythonResourceRoot21),
+      resourceRoots = listOf(expectedResourceRoot21),
       libraries = emptyList(),
       sdkInfo = null,
     )
@@ -423,7 +401,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
   }
 
   // TODO
-  private fun validateModule(actual: Module, expected: Module) {
+  private fun validateModule(actual: GenericModuleInfo, expected: GenericModuleInfo) {
     actual.name shouldBe expected.name
     actual.type shouldBe expected.type
     actual.modulesDependencies shouldContainExactlyInAnyOrder expected.modulesDependencies

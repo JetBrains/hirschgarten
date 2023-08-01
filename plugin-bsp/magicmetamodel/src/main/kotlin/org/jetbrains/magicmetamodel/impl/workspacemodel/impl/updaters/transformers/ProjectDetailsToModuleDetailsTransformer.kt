@@ -1,4 +1,4 @@
-package org.jetbrains.magicmetamodel.impl
+package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
@@ -7,7 +7,6 @@ import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourcesItem
-import com.intellij.openapi.diagnostic.Logger
 import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -15,28 +14,15 @@ import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.toPath
 
-internal object TargetIdToModuleDetailsMap {
+internal class ProjectDetailsToModuleDetailsTransformer(
+  private val projectDetails: ProjectDetails,
+  private val projectBasePath: Path,
+) {
 
-  val log = Logger.getInstance(TargetIdToModuleDetailsMap::class.java)
+  private val targetsIndex = projectDetails.targets.associateBy { it.id }
+  private val librariesIndex = projectDetails.libraries?.associateBy { it.id }
 
-  operator fun invoke(
-    projectDetails: ProjectDetails,
-    projectBasePath: Path
-  ): Map<BuildTargetIdentifier, ModuleDetails> {
-    val targetsIndex = projectDetails.targets.associateBy { it.id }
-    val librariesIndex = projectDetails.libraries?.associateBy { it.id }
-    return projectDetails.targetsId.associateWith {
-      toModuleDetails(projectDetails, projectBasePath, it, targetsIndex, librariesIndex)
-    }
-  }
-
-  private fun toModuleDetails(
-    projectDetails: ProjectDetails,
-    projectBasePath: Path,
-    targetId: BuildTargetIdentifier,
-    targetsIndex: Map<BuildTargetIdentifier, BuildTarget>,
-    librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?
-  ): ModuleDetails {
+  fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
     val target = calculateTarget(projectDetails, targetId)
     return if (target.isRoot(projectBasePath)) {
       toRootModuleDetails(projectDetails, target)
@@ -44,9 +30,8 @@ internal object TargetIdToModuleDetailsMap {
       val allDependencies = allDependencies(target, librariesIndex)
       ModuleDetails(
         target = target,
-        libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.toList(),
-        moduleDependencies = targetsIndex.keys.intersect(allDependencies).toList(),
-        allTargetsIds = projectDetails.targetsId,
+        libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.map { it.uri },
+        moduleDependencies = targetsIndex.keys.intersect(allDependencies).map { it.uri },
         sources = calculateSources(projectDetails, targetId),
         resources = calculateResources(projectDetails, targetId),
         dependenciesSources = calculateDependenciesSources(projectDetails, targetId),
@@ -63,7 +48,7 @@ internal object TargetIdToModuleDetailsMap {
   ): Set<BuildTargetIdentifier> {
     var librariesToVisit = target.dependencies
     var visited = emptySet<BuildTargetIdentifier>();
-    while(librariesToVisit.isNotEmpty()) {
+    while (librariesToVisit.isNotEmpty()) {
       val currentLib = librariesToVisit.first()
       librariesToVisit = librariesToVisit - currentLib
       visited = visited + currentLib
@@ -76,13 +61,13 @@ internal object TargetIdToModuleDetailsMap {
     currentLib: BuildTargetIdentifier,
     librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?,
   ) = librariesIndex?.get(currentLib)?.dependencies.orEmpty()
+
   private fun toRootModuleDetails(
     projectDetails: ProjectDetails,
     target: BuildTarget,
   ): ModuleDetails =
     ModuleDetails(
       target = target,
-      allTargetsIds = projectDetails.targetsId,
       sources = emptyList(),
       resources = emptyList(),
       dependenciesSources = calculateDependenciesSources(projectDetails, target.id),

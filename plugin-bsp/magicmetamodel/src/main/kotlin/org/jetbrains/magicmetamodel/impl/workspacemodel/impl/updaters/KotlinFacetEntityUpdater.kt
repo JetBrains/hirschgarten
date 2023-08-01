@@ -9,7 +9,8 @@ import org.jetbrains.kotlin.cli.common.arguments.Freezable
 import org.jetbrains.kotlin.cli.common.arguments.copyCommonCompilerArguments
 import org.jetbrains.kotlin.config.LanguageVersion
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.KotlincOpts
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlincOpts
 
 internal class CommonCompilerArgsHolder: CommonCompilerArguments() {
 
@@ -28,6 +29,17 @@ internal class CommonCompilerArgsHolder: CommonCompilerArguments() {
     useK2 = kotlincOpts.xUseK2
   }
 }
+public fun CommonCompilerArguments.toKotlinCOption(): KotlincOpts = KotlincOpts(
+  xAllowResultReturnType = allowResultReturnType,
+  xExplicitApiMode = explicitApi,
+  xInlineClasses = inlineClasses,
+  xMultiPlatform = multiPlatform,
+  xOptinList = optIn?.toList().orEmpty(),
+  xReportPerf = reportPerf,
+  xSkipPrereleaseCheck = skipPrereleaseCheck,
+  xUseFirLt = useFirLT,
+  xUseK2 = useK2,
+)
 
 internal class KotlinFacetEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig
@@ -38,14 +50,16 @@ internal class KotlinFacetEntityUpdater(
     val facet = facetType.createDefaultConfiguration()
     facet.settings.useProjectSettings = false
     facet.settings.additionalVisibleModuleNames =
-      entityToAdd.module.associates.map { it.moduleName }.toSet()
+      entityToAdd.genericModuleInfo.associates.map { it.moduleName }.toSet()
     entityToAdd.kotlinAddendum?.let { kotlinAddendum ->
+      val commonCompilerArguments = CommonCompilerArgsHolder()
       kotlinAddendum.kotlincOptions?.let { kotlincOpts ->
-        val commonCompilerArguments = CommonCompilerArgsHolder()
         commonCompilerArguments.configure(kotlincOpts)
+        facet.settings.compilerArguments = commonCompilerArguments
+        // Settings are not saved without compiler arguments so there is no point in adding levels outside of this loop
+        facet.settings.languageLevel = LanguageVersion.fromVersionString(kotlinAddendum.languageVersion)
+        facet.settings.apiLevel = LanguageVersion.fromVersionString(kotlinAddendum.apiVersion)
       }
-      facet.settings.languageLevel = LanguageVersion.fromVersionString(kotlinAddendum.languageVersion)
-      facet.settings.apiLevel = LanguageVersion.fromVersionString(kotlinAddendum.apiVersion)
     }
     val facetConfigurationXml = FacetUtil.saveFacetConfiguration(facet)?.let { JDOMUtil.write(it) }
     return workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(

@@ -7,6 +7,9 @@ import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -16,7 +19,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
-internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
+internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
 
   private val defaultDependencies = listOf(
     ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
@@ -38,7 +41,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
   @Test
   fun `should add one module to the workspace model`() {
     // given
-    val module = Module(
+    val module = GenericModuleInfo(
       name = "module1",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
@@ -113,7 +116,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
   @Test
   fun `should add multiple modules to the workspace model`() {
     // given
-    val module1 = Module(
+    val module1 = GenericModuleInfo(
       name = "module1",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
@@ -134,7 +137,7 @@ internal class ModuleEntityUpdaterTest : WorkspaceModelBaseTest() {
       ),
     )
 
-    val module2 = Module(
+    val module2 = GenericModuleInfo(
       name = "module2",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(

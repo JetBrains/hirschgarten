@@ -2,18 +2,8 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-
-internal data class PythonSdkInfo(val version: String, val originalName: String)
-
-internal data class PythonLibrary(val sources: String?) : WorkspaceModelEntity()
-
-internal data class PythonModule(
-  val module: Module,
-  val sourceRoots: List<GenericSourceRoot>,
-  val resourceRoots: List<PythonResourceRoot>,
-  val libraries: List<PythonLibrary>,
-  val sdkInfo: PythonSdkInfo?,
-) : WorkspaceModelEntity()
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.PYTHON_SDK_ID
 
 internal class PythonModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -36,8 +26,7 @@ internal class PythonModuleWithSourcesUpdater(
 
   private fun calculateModuleDefaultDependencies(entityToAdd: PythonModule): List<ModuleDependencyItem> =
     if (entityToAdd.sdkInfo != null) {
-      val sdkName = "${entityToAdd.sdkInfo.originalName}-${entityToAdd.sdkInfo.version}"
-      defaultDependencies + ModuleDependencyItem.SdkDependency(sdkName, "PythonSDK")
+      defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.sdkInfo.toString(), PYTHON_SDK_ID)
     } else defaultDependencies
 
   private companion object {

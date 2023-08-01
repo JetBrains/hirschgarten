@@ -2,7 +2,7 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Library
+import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import java.net.URI
 import kotlin.io.path.toPath
 

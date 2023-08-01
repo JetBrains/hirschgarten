@@ -1,25 +1,12 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import java.nio.file.Path
-
-internal data class SourceRoot(
-  val sourcePath: Path,
-  val generated: Boolean,
-  val isFile: Boolean,
-) : WorkspaceModelEntity()
-
-internal data class GenericSourceRoot(
-  val sourcePath: Path,
-  val rootType: String,
-  val excludedPaths: List<Path> = ArrayList(),
-  val targetId: BuildTargetIdentifier,
-) : WorkspaceModelEntity()
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 
 internal open class SourceEntityUpdater(
   val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -42,7 +29,7 @@ internal open class SourceEntityUpdater(
     parentModuleEntity: ModuleEntity
   ): ContentRootEntity {
     val contentRoot = ContentRoot(
-      url = entityToAdd.sourcePath,
+      path = entityToAdd.sourcePath,
       excludedPaths = entityToAdd.excludedPaths,
     )
 

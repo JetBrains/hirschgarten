@@ -1,11 +1,9 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.util.io.isAncestor
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.SourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import java.net.URI
 import java.nio.file.Path
 
@@ -14,7 +12,7 @@ internal data class BuildTargetAndSourceItem(
   val sourcesItem: SourcesItem,
 )
 
-internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePath: Path):
+internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePath: Path) :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
 
   private val sourceRootType = "java-source"
@@ -35,7 +33,7 @@ internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePat
 
     return SourceItemToSourceRootTransformer
       .transform(inputEntity.sourcesItem.sources)
-      .map { toJavaSourceRoot(it, sourceRoots, rootType, inputEntity.buildTarget.id) }
+      .map { toJavaSourceRoot(it, sourceRoots, rootType) }
       .filter { it.sourcePath.isPathInProjectBasePath(projectBasePath) }
   }
 
@@ -50,7 +48,6 @@ internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePat
     sourceRoot: SourceRoot,
     sourceRoots: List<URI>,
     rootType: String,
-    targetId: BuildTargetIdentifier
   ): JavaSourceRoot {
     val packagePrefix = calculatePackagePrefix(sourceRoot, sourceRoots)
 
@@ -59,7 +56,6 @@ internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePat
       generated = sourceRoot.generated,
       packagePrefix = packagePrefix.packagePrefix,
       rootType = rootType,
-      targetId = targetId,
     )
   }
 

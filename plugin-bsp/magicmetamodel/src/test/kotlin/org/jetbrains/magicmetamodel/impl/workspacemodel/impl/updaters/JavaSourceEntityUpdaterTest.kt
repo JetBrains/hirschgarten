@@ -1,11 +1,11 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
 import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -43,7 +43,6 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       generated = generated,
       rootType = "java-source",
       packagePrefix = packagePrefix,
-      targetId = BuildTargetIdentifier("target"),
     )
 
     // when
@@ -92,7 +91,6 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       generated = generated1,
       rootType = "java-source",
       packagePrefix = packagePrefix1,
-      targetId = BuildTargetIdentifier("target1"),
     )
 
     val sourceDir2 = URI.create("file:///another/root/dir/another/example/package/").toPath()
@@ -104,7 +102,6 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       generated = generated2,
       rootType = "java-test",
       packagePrefix = packagePrefix2,
-      targetId = BuildTargetIdentifier("target2"),
     )
 
     val javaSourceRoots = listOf(javaSourceRoot1, javaSourceRoot2)

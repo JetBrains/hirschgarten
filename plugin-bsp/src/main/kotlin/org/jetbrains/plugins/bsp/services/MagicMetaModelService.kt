@@ -53,6 +53,8 @@ public class MagicMetaModelService(private val project: Project) :
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)
   }
 
+
+
   public fun initializeMagicModel(projectDetails: ProjectDetails) {
     val magicMetaModelProjectConfig = calculateProjectConfig(project)
 

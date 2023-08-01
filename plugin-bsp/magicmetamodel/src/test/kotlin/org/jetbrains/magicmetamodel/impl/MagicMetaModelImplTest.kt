@@ -7,6 +7,8 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleCapabilities
 import org.jetbrains.workspace.model.constructors.BuildTarget
 import org.jetbrains.workspace.model.constructors.BuildTargetId
 import org.jetbrains.workspace.model.constructors.SourceItem
@@ -33,6 +35,16 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
     testMagicMetaModelProjectConfig =
       MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath)
+  }
+
+  private fun createBuildTargetInfo(target: BuildTarget) = with(target) {
+    BuildTargetInfo(
+      id = id.uri,
+      displayName = displayName,
+      dependencies = dependencies.map { it.uri },
+      capabilities = with(capabilities) { ModuleCapabilities(canRun, canTest, canCompile, canDebug) },
+      languageIds = languageIds
+    )
   }
 
   @Nested
@@ -190,31 +202,35 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
       // then 1
+      val expectedTargetA1 = createBuildTargetInfo(targetA1)
+      val expectedTargetB1 = createBuildTargetInfo(targetB1)
+      val expectedTargetC1 = createBuildTargetInfo(targetC1)
+      val expectedTargetD1 = createBuildTargetInfo(targetD1)
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
       magicMetaModel.getAllLoadedTargets() shouldBe emptyList()
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        targetA1,
-        targetB1,
-        targetC1,
-        targetD1
+        expectedTargetA1,
+        expectedTargetB1,
+        expectedTargetC1,
+        expectedTargetD1
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetA1.id)
+        notLoadedTargetsIds = listOf(targetA1.id.uri)
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetB1.id)
+        notLoadedTargetsIds = listOf(targetB1.id.uri)
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetC1.id)
+        notLoadedTargetsIds = listOf(targetC1.id.uri)
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetD1.id)
+        notLoadedTargetsIds = listOf(targetD1.id.uri)
       )
 
       // when 2
@@ -225,24 +241,29 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
       runBlocking { diff.applyOnWorkspaceModel() }
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1, targetC1, targetD1)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
+        expectedTargetA1,
+        expectedTargetB1,
+        expectedTargetC1,
+        expectedTargetD1
+      )
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetA1.id,
+        loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetB1.id,
+        loadedTargetId = targetB1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetC1.id,
+        loadedTargetId = targetC1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetD1.id,
+        loadedTargetId = targetD1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
     }
@@ -384,7 +405,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       )
 
       val projectDetails = ProjectDetails(
-        targetsId = listOf(targetD1.id, targetA1.id, targetC2.id, targetB2.id, targetB1.id, targetC1.id, targetD2.id),
+        targetsId = listOf(
+          targetD1.id,
+          targetA1.id,
+          targetC2.id,
+          targetB2.id,
+          targetB1.id,
+          targetC1.id,
+          targetD2.id
+        ),
         targets = setOf(targetD1, targetA1, targetC2, targetB2, targetB1, targetC1, targetD2),
         sources = listOf(
           targetA1Sources,
@@ -407,16 +436,23 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
       // then 1
+      val expectedTargetA1 = createBuildTargetInfo(targetA1)
+      val expectedTargetB1 = createBuildTargetInfo(targetB1)
+      val expectedTargetB2 = createBuildTargetInfo(targetB2)
+      val expectedTargetC1 = createBuildTargetInfo(targetC1)
+      val expectedTargetC2 = createBuildTargetInfo(targetC2)
+      val expectedTargetD1 = createBuildTargetInfo(targetD1)
+      val expectedTargetD2 = createBuildTargetInfo(targetD2)
       // showing loaded and not loaded targets to user
       magicMetaModel.getAllLoadedTargets() shouldBe emptyList()
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        targetA1,
-        targetB2,
-        targetB1,
-        targetC1,
-        targetC2,
-        targetD2,
-        targetD1,
+        expectedTargetA1,
+        expectedTargetB2,
+        expectedTargetB1,
+        expectedTargetC1,
+        expectedTargetC2,
+        expectedTargetD2,
+        expectedTargetD1,
       )
 
       // when 2
@@ -428,113 +464,113 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       runBlocking { diff2.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        targetA1,
-        targetB1,
-        targetC1,
-        targetD1,
+        expectedTargetA1,
+        expectedTargetB1,
+        expectedTargetC1,
+        expectedTargetD1,
       )
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        targetB2,
-        targetC2,
-        targetD2,
+        expectedTargetB2,
+        expectedTargetC2,
+        expectedTargetD2,
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetA1.id,
+        loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetB1.id,
-        notLoadedTargetsIds = listOf(targetB2.id),
+        loadedTargetId = targetB1.id.uri,
+        notLoadedTargetsIds = listOf(targetB2.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetC1.id,
-        notLoadedTargetsIds = listOf(targetC2.id),
+        loadedTargetId = targetC1.id.uri,
+        notLoadedTargetsIds = listOf(targetC2.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetD1.id,
-        notLoadedTargetsIds = listOf(targetD2.id),
+        loadedTargetId = targetD1.id.uri,
+        notLoadedTargetsIds = listOf(targetD2.id.uri),
       )
 
       // when 3
       // ------
       // user decides to load not loaded `targetD2` by default
       // ------
-      val diff3 = magicMetaModel.loadTarget(targetD2.id)!!
+      val diff3 = magicMetaModel.loadTarget(targetD2.id.uri)!!
 
       // then 3
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
       runBlocking { diff3.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        targetA1,
-        targetB1,
-        targetC1,
-        targetD2,
+        expectedTargetA1,
+        expectedTargetB1,
+        expectedTargetC1,
+        expectedTargetD2,
       )
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        targetB2,
-        targetC2,
-        targetD1,
+        expectedTargetB2,
+        expectedTargetC2,
+        expectedTargetD1,
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetA1.id,
+        loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetB1.id,
-        notLoadedTargetsIds = listOf(targetB2.id),
+        loadedTargetId = targetB1.id.uri,
+        notLoadedTargetsIds = listOf(targetB2.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetC1.id,
-        notLoadedTargetsIds = listOf(targetC2.id),
+        loadedTargetId = targetC1.id.uri,
+        notLoadedTargetsIds = listOf(targetC2.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetD2.id,
-        notLoadedTargetsIds = listOf(targetD1.id),
+        loadedTargetId = targetD2.id.uri,
+        notLoadedTargetsIds = listOf(targetD1.id.uri),
       )
 
       // when 4
       // ------
       // well, now user decides to load not loaded `targetB2` by default
       // ------
-      val diff4 = magicMetaModel.loadTarget(targetB2.id)!!
+      val diff4 = magicMetaModel.loadTarget(targetB2.id.uri)!!
 
       // then 4
       // showing loaded and not loaded targets to user (e.g. at the sidebar)
       runBlocking { diff4.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        targetA1,
-        targetB2,
-        targetC1,
-        targetD2,
+        expectedTargetA1,
+        expectedTargetB2,
+        expectedTargetC1,
+        expectedTargetD2,
       )
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        targetB1,
-        targetC2,
-        targetD1,
+        expectedTargetB1,
+        expectedTargetC2,
+        expectedTargetD1,
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetA1.id,
+        loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetB2.id,
-        notLoadedTargetsIds = listOf(targetB1.id),
+        loadedTargetId = targetB2.id.uri,
+        notLoadedTargetsIds = listOf(targetB1.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetC1.id,
-        notLoadedTargetsIds = listOf(targetC2.id),
+        loadedTargetId = targetC1.id.uri,
+        notLoadedTargetsIds = listOf(targetC2.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetD2.id,
-        notLoadedTargetsIds = listOf(targetD1.id),
+        loadedTargetId = targetD2.id.uri,
+        notLoadedTargetsIds = listOf(targetD1.id.uri),
       )
 
       // when 5
@@ -548,33 +584,33 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       runBlocking { diff5.applyOnWorkspaceModel() }
 
       magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        targetA1,
-        targetB1,
-        targetC1,
-        targetD1,
+        expectedTargetA1,
+        expectedTargetB1,
+        expectedTargetC1,
+        expectedTargetD1,
       )
       magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-        targetB2,
-        targetC2,
-        targetD2,
+        expectedTargetB2,
+        expectedTargetC2,
+        expectedTargetD2,
       )
 
       // user opens each file and checks the loaded target for each file (e.g. at the bottom bar widget)
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetA1.id,
+        loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList(),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1B2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetB1.id,
-        notLoadedTargetsIds = listOf(targetB2.id),
+        loadedTargetId = targetB1.id.uri,
+        notLoadedTargetsIds = listOf(targetB2.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetC1C2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetC1.id,
-        notLoadedTargetsIds = listOf(targetC2.id),
+        loadedTargetId = targetC1.id.uri,
+        notLoadedTargetsIds = listOf(targetC2.id.uri),
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetD1D2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetD1.id,
-        notLoadedTargetsIds = listOf(targetD2.id),
+        loadedTargetId = targetD1.id.uri,
+        notLoadedTargetsIds = listOf(targetD2.id.uri),
       )
     }
   }
@@ -678,8 +714,10 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
       // then
+      val expectedTargetA1 = createBuildTargetInfo(targetA1)
+      val expectedTargetB1 = createBuildTargetInfo(targetB1)
       magicMetaModel.getAllLoadedTargets() shouldBe emptyList()
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA1, expectedTargetB1)
     }
 
     @Test
@@ -788,9 +826,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff = magicMetaModel.loadDefaultTargets()
 
       // then
+      val expectedTargetA1 = createBuildTargetInfo(targetA1)
+      val expectedTargetB1 = createBuildTargetInfo(targetB1)
+      val expectedTargetC1 = createBuildTargetInfo(targetC1)
+      val expectedTargetD1 = createBuildTargetInfo(targetD1)
       runBlocking { diff.applyOnWorkspaceModel() }
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1, targetC1, targetD1)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
+        expectedTargetA1, expectedTargetB1, expectedTargetC1, expectedTargetD1
+      )
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
     }
 
@@ -884,11 +928,18 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff = magicMetaModel.loadDefaultTargets()
 
       // then
+      val expectedTargetA1 = createBuildTargetInfo(targetA1)
+
+      val expectedTargetB1 = createBuildTargetInfo(targetB1)
+
+      val expectedTargetB2 = createBuildTargetInfo(targetB2)
+
+
       runBlocking { diff.applyOnWorkspaceModel() }
 
       // TODO how to make it deterministic?
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB2)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA1, expectedTargetB2)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetB1)
     }
 
     @Test
@@ -981,20 +1032,24 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val diff1 = magicMetaModel.loadDefaultTargets()
 
       // then 1
+      val expectedTargetA1 = createBuildTargetInfo(targetA1)
+      val expectedTargetB1 = createBuildTargetInfo(targetB1)
+      val expectedTargetB2 = createBuildTargetInfo(targetB2)
+
       runBlocking { diff1.applyOnWorkspaceModel() }
 
       // TODO should be B1 not B2 - how to make it deterministic?
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB2)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA1, expectedTargetB2)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetB1)
 
       // when 2
-      val diff2 = magicMetaModel.loadTarget(targetB1.id)!!
+      val diff2 = magicMetaModel.loadTarget(targetB1.id.uri)!!
 
       // then 2
       runBlocking { diff2.applyOnWorkspaceModel() }
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB2)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA1, expectedTargetB1)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetB2)
 
       // when 3
       val diff3 = magicMetaModel.loadDefaultTargets()
@@ -1002,8 +1057,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // then 3
       runBlocking { diff3.applyOnWorkspaceModel() }
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB2)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA1, expectedTargetB2)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetB1)
     }
   }
 
@@ -1058,7 +1113,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
       val notExistingTargetId = BuildTargetId("//not/existing/target")
-      val diff = magicMetaModel.loadTarget(notExistingTargetId)
+      val diff = magicMetaModel.loadTarget(notExistingTargetId.uri)
 
       // then
       diff shouldBe null
@@ -1130,13 +1185,15 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // when
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
-      val diff = magicMetaModel.loadTarget(targetA1.id)!!
+      val diff = magicMetaModel.loadTarget(targetA1.id.uri)!!
 
       // then
+      val expectedTargetA1 = createBuildTargetInfo(targetA1)
+      val expectedTargetB1 = createBuildTargetInfo(targetB1)
       runBlocking { diff.applyOnWorkspaceModel() }
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA1)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetB1)
     }
 
     @Test
@@ -1205,19 +1262,21 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // when 1
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
-      val diff1 = magicMetaModel.loadTarget(targetA1.id)!!
+      val diff1 = magicMetaModel.loadTarget(targetA1.id.uri)!!
 
       // then 1
       runBlocking { diff1.applyOnWorkspaceModel() }
 
       // when 2
-      val diff2 = magicMetaModel.loadTarget(targetA1.id)
+      val diff2 = magicMetaModel.loadTarget(targetA1.id.uri)
 
       // then 2
+      val expectedTargetA1 = createBuildTargetInfo(targetA1)
+      val expectedTargetB1 = createBuildTargetInfo(targetB1)
       diff2 shouldBe null
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetB1)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA1)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetB1)
     }
 
     @Test
@@ -1286,18 +1345,20 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // when 1
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
 
-      val diff1 = magicMetaModel.loadTarget(targetA1.id)!!
+      val diff1 = magicMetaModel.loadTarget(targetA1.id.uri)!!
 
       // then 1
       runBlocking { diff1.applyOnWorkspaceModel() }
 
       // when 2
-      val diff2 = magicMetaModel.loadTarget(targetB1.id)!!
+      val diff2 = magicMetaModel.loadTarget(targetB1.id.uri)!!
 
       // then 2
+      val expectedTargetA1 = createBuildTargetInfo(targetA1)
+      val expectedTargetB1 = createBuildTargetInfo(targetB1)
       runBlocking { diff2.applyOnWorkspaceModel() }
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1, targetB1)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA1, expectedTargetB1)
       magicMetaModel.getAllNotLoadedTargets() shouldBe emptyList()
     }
 
@@ -1403,28 +1464,31 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       // when 1
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
-      val diff1 = magicMetaModel.loadTarget(targetA2.id)!!
+      val diff1 = magicMetaModel.loadTarget(targetA2.id.uri)!!
 
       // then 1
       runBlocking { diff1.applyOnWorkspaceModel() }
 
       // when 2
-      val diff2 = magicMetaModel.loadTarget(targetA3.id)!!
+      val diff2 = magicMetaModel.loadTarget(targetA3.id.uri)!!
 
       // then 2
+      val expectedTargetA1 = createBuildTargetInfo(targetA1)
+      val expectedTargetA2 = createBuildTargetInfo(targetA2)
+      val expectedTargetA3 = createBuildTargetInfo(targetA3)
       runBlocking { diff2.applyOnWorkspaceModel() }
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA2, targetA3)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA2, expectedTargetA3)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA1)
 
       // when 3
-      val diff3 = magicMetaModel.loadTarget(targetA1.id)!!
+      val diff3 = magicMetaModel.loadTarget(targetA1.id.uri)!!
 
       // then 3
       runBlocking { diff3.applyOnWorkspaceModel() }
 
-      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA1)
-      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(targetA2, targetA3)
+      magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA1)
+      magicMetaModel.getAllNotLoadedTargets() shouldContainExactlyInAnyOrder listOf(expectedTargetA2, expectedTargetA3)
     }
   }
 
@@ -1519,7 +1583,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       // then
       documentTargetsDetails shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetA1.id)
+        notLoadedTargetsIds = listOf(targetA1.id.uri)
       )
     }
 
@@ -1595,11 +1659,11 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       runBlocking { diff.applyOnWorkspaceModel() }
 
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetA1.id,
+        loadedTargetId = targetA1.id.uri,
         notLoadedTargetsIds = emptyList()
       )
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetB1Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetB1.id,
+        loadedTargetId = targetB1.id.uri,
         notLoadedTargetsIds = emptyList()
       )
     }
@@ -1668,19 +1732,19 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
 
       // when
       val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
-      val diff = magicMetaModel.loadTarget(targetA1.id)!!
+      val diff = magicMetaModel.loadTarget(targetA1.id.uri)!!
 
       // then
       runBlocking { diff.applyOnWorkspaceModel() }
 
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA1A2Source1.uri)) shouldBe DocumentTargetsDetails(
-        loadedTargetId = targetA1.id,
-        notLoadedTargetsIds = listOf(targetA2.id)
+        loadedTargetId = targetA1.id.uri,
+        notLoadedTargetsIds = listOf(targetA2.id.uri)
       )
 
       magicMetaModel.getTargetsDetailsForDocument(TextDocumentId(targetA2Source1.uri)) shouldBe DocumentTargetsDetails(
         loadedTargetId = null,
-        notLoadedTargetsIds = listOf(targetA2.id)
+        notLoadedTargetsIds = listOf(targetA2.id.uri)
       )
     }
   }

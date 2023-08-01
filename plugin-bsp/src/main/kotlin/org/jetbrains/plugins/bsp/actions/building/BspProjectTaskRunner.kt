@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.actions.building
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.openapi.diagnostic.logger
@@ -15,6 +14,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifiers
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.server.tasks.runBuildTargetTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
@@ -50,7 +51,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
     return buildBspTargets(project, targetsToBuild)
   }
 
-  private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTarget> {
+  private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTargetInfo> {
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
     return when {
       tasks.isEmpty() -> emptyList()
@@ -65,7 +66,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
     }
   }
 
-  private fun BuildTarget.belongsToModules(project: Project, moduleNames: List<String>): Boolean {
+  private fun BuildTargetInfo.belongsToModules(project: Project, moduleNames: List<String>): Boolean {
     val moduleNameProvider =
       MagicMetaModelService.getInstance(project).obtainModuleNameProvider() ?: DefaultModuleNameProvider
     val targetModuleName = moduleNameProvider(this.id)
@@ -78,10 +79,10 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
     this.startsWith("$module.", false)
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTarget>): Promise<Result> {
+  private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTargetInfo>): Promise<Result> {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
     val result = BspCoroutineService.getInstance(project).startAsync {
-      runBuildTargetTask(targetIdentifiers, project, log)
+      runBuildTargetTask(targetIdentifiers.toBsp4JTargetIdentifiers(), project, log)
     }
     return result
       .toPromise()

@@ -1,10 +1,10 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import java.awt.Component
@@ -39,7 +39,7 @@ public class BspPanelComponent private constructor(
   public constructor(
     targetIcon: Icon,
     toolName: String,
-    targets: Collection<BuildTarget>,
+    targets: Collection<BuildTargetInfo>,
     searchBarPanel: SearchBarPanel
   ) : this(
     targetIcon = targetIcon,
@@ -109,7 +109,7 @@ public class BspPanelComponent private constructor(
    * @param targets collection of build targets which the new panel will contain
    * @return newly created panel
    */
-  public fun createNewWithTargets(targets: Collection<BuildTarget>): BspPanelComponent =
+  public fun createNewWithTargets(targets: Collection<BuildTargetInfo>): BspPanelComponent =
     BspPanelComponent(
       targetIcon,
       toolName,

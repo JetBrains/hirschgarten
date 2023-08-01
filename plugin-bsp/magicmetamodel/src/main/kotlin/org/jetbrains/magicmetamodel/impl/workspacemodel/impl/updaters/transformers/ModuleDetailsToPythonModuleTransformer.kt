@@ -6,16 +6,15 @@ import ch.epfl.scala.bsp4j.PythonBuildTarget
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.jetbrains.magicmetamodel.ModuleNameProvider
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonSdkInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
 import java.nio.file.Path
-import kotlin.io.path.Path
 
 internal class ModuleDetailsToPythonModuleTransformer(
   moduleNameProvider: ModuleNameProvider,
-  private val projectBasePath: Path,
+  projectBasePath: Path,
 ) : ModuleDetailsToModuleTransformer<PythonModule>(moduleNameProvider) {
 
   override val type = "PYTHON_MODULE"
@@ -26,7 +25,7 @@ internal class ModuleDetailsToPythonModuleTransformer(
 
   override fun transform(inputEntity: ModuleDetails): PythonModule =
     PythonModule(
-      module = toModule(inputEntity),
+      module = toGenericModuleInfo(inputEntity),
       sourceRoots = sourcesItemToPythonSourceRootTransformer.transform(inputEntity.sources.map {
         BuildTargetAndSourceItem(
           inputEntity.target,
@@ -38,16 +37,15 @@ internal class ModuleDetailsToPythonModuleTransformer(
       sdkInfo = toSdkInfo(inputEntity)
     )
 
-  override fun toModule(inputEntity: ModuleDetails): Module {
+  override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
     val bspModuleDetails = BspModuleDetails(
       target = inputEntity.target,
-      allTargetsIds = inputEntity.allTargetsIds,
       dependencySources = inputEntity.dependenciesSources,
       type = type,
       javacOptions = null,
       pythonOptions = inputEntity.pythonOptions,
       libraryDependencies = inputEntity.libraryDependencies,
-      moduleDependencies = inputEntity.moduleDependencies
+      moduleDependencies = inputEntity.moduleDependencies,
     )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)

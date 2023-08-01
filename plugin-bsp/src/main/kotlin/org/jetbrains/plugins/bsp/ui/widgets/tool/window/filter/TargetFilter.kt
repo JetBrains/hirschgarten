@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import org.jetbrains.magicmetamodel.MagicMetaModel
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 public class TargetFilter(
   private val onFilterChange: () -> Unit
@@ -16,16 +16,16 @@ public class TargetFilter(
 
   public fun isFilterOn(): Boolean = currentFilter != FILTER.OFF
 
-  public fun getMatchingLoadedTargets(magicMetaModel: MagicMetaModel): List<BuildTarget> =
+  public fun getMatchingLoadedTargets(magicMetaModel: MagicMetaModel): List<BuildTargetInfo> =
     magicMetaModel.getAllLoadedTargets().filterTargets()
 
-  public fun getMatchingNotLoadedTargets(magicMetaModel: MagicMetaModel): List<BuildTarget> =
+  public fun getMatchingNotLoadedTargets(magicMetaModel: MagicMetaModel): List<BuildTargetInfo> =
     magicMetaModel.getAllNotLoadedTargets().filterTargets()
 
-  private fun List<BuildTarget>.filterTargets(): List<BuildTarget> =
+  private fun List<BuildTargetInfo>.filterTargets(): List<BuildTargetInfo> =
     this.filter(currentFilter.predicate)
 
-  public enum class FILTER(public val predicate: (BuildTarget) -> Boolean) {
+  public enum class FILTER(public val predicate: (BuildTargetInfo) -> Boolean) {
     OFF({ true }),
     CAN_RUN({ it.capabilities.canRun }),
     CAN_TEST({ it.capabilities.canTest })
