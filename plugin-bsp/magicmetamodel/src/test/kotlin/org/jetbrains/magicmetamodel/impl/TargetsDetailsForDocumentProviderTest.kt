@@ -122,8 +122,8 @@ class TargetsDetailsForDocumentProviderTest {
           targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(file2InTarget1Id)
 
         // then
-        file1InTarget1TargetsDetails shouldBe listOf(target1)
-        file2InTarget1TargetsDetails shouldBe listOf(target1)
+        file1InTarget1TargetsDetails shouldBe listOf("//target1")
+        file2InTarget1TargetsDetails shouldBe listOf("//target1")
       }
 
       @Test
@@ -150,7 +150,7 @@ class TargetsDetailsForDocumentProviderTest {
           targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(fileInTarget1Target2Id)
 
         // then
-        fileInTarget1Target2TargetsDetails shouldContainExactlyInAnyOrder listOf(target1, target2)
+        fileInTarget1Target2TargetsDetails shouldContainExactlyInAnyOrder listOf("//target1", "//target2")
       }
 
       @Test
@@ -184,8 +184,8 @@ class TargetsDetailsForDocumentProviderTest {
           targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(fileInTarget1Target3Id)
 
         // then
-        fileInTarget1Target2TargetsDetails shouldContainExactlyInAnyOrder listOf(target1, target2)
-        fileInTarget1Target3TargetsDetails shouldContainExactlyInAnyOrder listOf(target1, target3)
+        fileInTarget1Target2TargetsDetails shouldContainExactlyInAnyOrder listOf("//target1", "//target2")
+        fileInTarget1Target3TargetsDetails shouldContainExactlyInAnyOrder listOf("//target1", "//target3")
       }
     }
 
@@ -221,8 +221,8 @@ class TargetsDetailsForDocumentProviderTest {
           targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(commonDirectoryFile2InTarget1Id)
 
         // then
-        commonDirectoryFile1InTarget1TargetsDetails shouldBe listOf(target1)
-        commonDirectoryFile2InTarget1TargetsDetails shouldBe listOf(target1)
+        commonDirectoryFile1InTarget1TargetsDetails shouldBe listOf("//target1")
+        commonDirectoryFile2InTarget1TargetsDetails shouldBe listOf("//target1")
       }
 
       @Test
@@ -258,8 +258,8 @@ class TargetsDetailsForDocumentProviderTest {
           targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(commonDirectoryChildFileInTarget1Target2Id)
 
         // then
-        commonDirectoryFileInTarget1TargetsDetails shouldContainExactlyInAnyOrder listOf(target1)
-        commonDirectoryChildFileInTarget1Target2TargetsDetails shouldContainExactlyInAnyOrder listOf(target1, target2)
+        commonDirectoryFileInTarget1TargetsDetails shouldContainExactlyInAnyOrder listOf("//target1")
+        commonDirectoryChildFileInTarget1Target2TargetsDetails shouldContainExactlyInAnyOrder listOf("//target1", "//target2")
       }
     }
 
@@ -332,11 +332,11 @@ class TargetsDetailsForDocumentProviderTest {
 
         // then
         fileInNoTargetTargetsDetails shouldBe emptySet()
-        commonDirectoryFileInTarget1TargetsDetails shouldContainExactlyInAnyOrder listOf(target1)
+        commonDirectoryFileInTarget1TargetsDetails shouldContainExactlyInAnyOrder listOf("//target1")
         commonDirectoryChildFileInTarget1Target2Target3Targets shouldContainExactlyInAnyOrder listOf(
-          target1,
-          target2,
-          target3
+          "//target1",
+          "//target2",
+          "//target3"
         )
       }
     }

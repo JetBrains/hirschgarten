@@ -2,7 +2,6 @@
 
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
 import com.intellij.java.workspace.entities.JavaResourceRootPropertiesEntity
 import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
@@ -17,6 +16,14 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
+import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -43,7 +50,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add one java module with sources to the workspace model`() {
       runTestForUpdaters(listOf(JavaModuleWithSourcesUpdater::class, JavaModuleUpdater::class)) { updater ->
         // given
-        val module = Module(
+        val module = GenericModuleInfo(
           name = "module1",
           type = "JAVA_MODULE",
           modulesDependencies = listOf(
@@ -67,7 +74,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         )
 
         val baseDirContentRoot = ContentRoot(
-          url = URI.create("file:///root/dir/example/").toPath()
+          path = URI.create("file:///root/dir/example/").toPath()
         )
 
         val sourcePath1 = URI.create("file:///root/dir/example/package/one").toPath()
@@ -80,24 +87,22 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             generated = false,
             packagePrefix = sourcePackagePrefix1,
             rootType = "java-source",
-            targetId = BuildTargetIdentifier("target"),
           ),
           JavaSourceRoot(
             sourcePath = sourcePath2,
             generated = false,
             packagePrefix = sourcePackagePrefix2,
             rootType = "java-source",
-            targetId = BuildTargetIdentifier("target"),
           ),
         )
 
         val resourcePath1 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
         val resourcePath2 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
         val resourceRoots = listOf(
-          JavaResourceRoot(
+          ResourceRoot(
             resourcePath = resourcePath1,
           ),
-          JavaResourceRoot(
+          ResourceRoot(
             resourcePath = resourcePath2,
           ),
         )
@@ -117,14 +122,13 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val compilerOutput = Path("compiler/output")
 
         val javaModule = JavaModule(
-          module = module,
+          genericModuleInfo = module,
           baseDirContentRoot = baseDirContentRoot,
           sourceRoots = sourceRoots,
           resourceRoots = resourceRoots,
           moduleLevelLibraries = libraries,
           compilerOutput = compilerOutput,
-          jvmJdkInfo = JvmJdkInfo(name = "test-proj-11", javaHome = "fake/path/to/local_jdk"),
-          kotlinAddendum = null,
+          jvmJdkName = "test-proj-11",
         )
 
         // when
@@ -287,7 +291,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add multiple java module with sources to the workspace model`() {
       runTestForUpdaters(listOf(JavaModuleWithSourcesUpdater::class, JavaModuleUpdater::class)) { updater ->
         // given
-        val module1 = Module(
+        val module1 = GenericModuleInfo(
           name = "module1",
           type = "JAVA_MODULE",
           modulesDependencies = listOf(
@@ -311,7 +315,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         )
 
         val baseDirContentRoot1 = ContentRoot(
-          url = URI.create("file:///root/dir/example/").toPath()
+          path = URI.create("file:///root/dir/example/").toPath()
         )
 
         val sourcePath11 = URI.create("file:///root/dir/example/package/one").toPath()
@@ -324,24 +328,22 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             generated = false,
             packagePrefix = sourcePackagePrefix11,
             rootType = "java-source",
-            targetId = BuildTargetIdentifier("target"),
           ),
           JavaSourceRoot(
             sourcePath = sourcePath12,
             generated = false,
             packagePrefix = sourcePackagePrefix12,
             rootType = "java-source",
-            targetId = BuildTargetIdentifier("target"),
           ),
         )
 
         val resourcePath11 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
         val resourcePath12 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
         val resourceRoots1 = listOf(
-          JavaResourceRoot(
+          ResourceRoot(
             resourcePath = resourcePath11,
           ),
-          JavaResourceRoot(
+          ResourceRoot(
             resourcePath = resourcePath12,
           ),
         )
@@ -361,17 +363,17 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val compilerOutput1 = Path("compiler/output1")
 
         val javaModule1 = JavaModule(
-          module = module1,
+          genericModuleInfo = module1,
           sourceRoots = sourceRoots1,
           resourceRoots = resourceRoots1,
           moduleLevelLibraries = libraries1,
           baseDirContentRoot = baseDirContentRoot1,
           compilerOutput = compilerOutput1,
-          jvmJdkInfo = JvmJdkInfo(name = "test-proj-11", javaHome = "/fake/path/to/local_jdk"),
+          jvmJdkName = "test-proj-11",
           kotlinAddendum = null,
         )
 
-        val module2 = Module(
+        val module2 = GenericModuleInfo(
           name = "module2",
           type = "JAVA_MODULE",
           modulesDependencies = listOf(
@@ -388,7 +390,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         )
 
         val baseDirContentRoot2 = ContentRoot(
-          url = URI.create("file:///another/root/dir/example/").toPath()
+          path = URI.create("file:///another/root/dir/example/").toPath()
         )
 
         val sourcePath21 = URI.create("file:///another/root/dir/another/example/package/").toPath()
@@ -399,13 +401,12 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             generated = false,
             packagePrefix = sourcePackagePrefix21,
             rootType = "java-test",
-            targetId = BuildTargetIdentifier("target"),
           ),
         )
 
         val resourcePath21 = URI.create("file:///another/root/dir/another/example/resource/File1.txt").toPath()
         val resourceRoots2 = listOf(
-          JavaResourceRoot(
+          ResourceRoot(
             resourcePath = resourcePath21,
           ),
         )
@@ -420,13 +421,13 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val compilerOutput2 = Path("compiler/output2")
 
         val javaModule2 = JavaModule(
-          module = module2,
+          genericModuleInfo = module2,
           baseDirContentRoot = baseDirContentRoot2,
           sourceRoots = sourceRoots2,
           resourceRoots = resourceRoots2,
           moduleLevelLibraries = libraries2,
           compilerOutput = compilerOutput2,
-          jvmJdkInfo = JvmJdkInfo(name = "test-proj-11", javaHome = "/fake/path/to/local_jdk"),
+          jvmJdkName = "test-proj-11",
           kotlinAddendum = null,
         )
 
@@ -679,7 +680,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add one java module without sources to the workspace model`() {
       runTestForUpdaters(listOf(JavaModuleWithoutSourcesUpdater::class, JavaModuleUpdater::class)) { updater ->
         // given
-        val module = Module(
+        val module = GenericModuleInfo(
           name = "module1",
           type = "JAVA_MODULE",
           modulesDependencies = emptyList(),
@@ -689,17 +690,17 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val baseDirContentRootPath = URI.create("file:///root/dir/").toPath()
         val baseDirContentRoot = ContentRoot(
-          url = baseDirContentRootPath,
+          path = baseDirContentRootPath,
         )
 
         val javaModule = JavaModule(
-          module = module,
+          genericModuleInfo = module,
           baseDirContentRoot = baseDirContentRoot,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
           moduleLevelLibraries = emptyList(),
           compilerOutput = null,
-          jvmJdkInfo = null,
+          jvmJdkName = null,
           kotlinAddendum = null,
         )
 
@@ -728,7 +729,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add multiple java module without sources to the workspace model`() {
       runTestForUpdaters(listOf(JavaModuleWithoutSourcesUpdater::class, JavaModuleUpdater::class)) { updater ->
         // given
-        val module1 = Module(
+        val module1 = GenericModuleInfo(
           name = "module1",
           type = "JAVA_MODULE",
           modulesDependencies = emptyList(),
@@ -738,21 +739,21 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val baseDirContentRootPath1 = URI.create("file:///root/dir1/").toPath()
         val baseDirContentRoot1 = ContentRoot(
-          url = baseDirContentRootPath1,
+          path = baseDirContentRootPath1,
         )
 
         val javaModule1 = JavaModule(
-          module = module1,
+          genericModuleInfo = module1,
           baseDirContentRoot = baseDirContentRoot1,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
           moduleLevelLibraries = emptyList(),
           compilerOutput = null,
-          jvmJdkInfo = null,
+          jvmJdkName = null,
           kotlinAddendum = null,
         )
 
-        val module2 = Module(
+        val module2 = GenericModuleInfo(
           name = "module2",
           type = "JAVA_MODULE",
           modulesDependencies = emptyList(),
@@ -762,17 +763,17 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
 
         val baseDirContentRootPath2 = URI.create("file:///root/dir2/").toPath()
         val baseDirContentRoot2 = ContentRoot(
-          url = baseDirContentRootPath2,
+          path = baseDirContentRootPath2,
         )
 
         val javaModule2 = JavaModule(
-          module = module2,
+          genericModuleInfo = module2,
           baseDirContentRoot = baseDirContentRoot2,
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
           moduleLevelLibraries = emptyList(),
           compilerOutput = null,
-          jvmJdkInfo = null,
+          jvmJdkName = null,
           kotlinAddendum = null,
         )
 

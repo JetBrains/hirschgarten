@@ -2,13 +2,18 @@
 
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -32,7 +37,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add one python module with sources to the workspace model`() {
       runTestForUpdaters(listOf(PythonModuleWithSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
         // given
-        val module = Module(
+        val module = GenericModuleInfo(
           name = "module1",
           type = "PYTHON_MODULE",
           modulesDependencies = listOf(
@@ -53,12 +58,10 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           GenericSourceRoot(
             sourcePath = sourcePath1,
             rootType = "python-source",
-            targetId = BuildTargetIdentifier("target"),
           ),
           GenericSourceRoot(
             sourcePath = sourcePath2,
             rootType = "python-source",
-            targetId = BuildTargetIdentifier("target"),
           ),
         )
 
@@ -66,10 +69,10 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val resourcePath2 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
 
         val resourceRoots = listOf(
-          PythonResourceRoot(
+          ResourceRoot(
             resourcePath = resourcePath1,
           ),
-          PythonResourceRoot(
+          ResourceRoot(
             resourcePath = resourcePath2,
           ),
         )
@@ -154,7 +157,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
 
 
         val virtualResourceUrl1 = resourcePath1.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedPythonResourceRootEntity1 = ExpectedSourceRootEntity(
+        val expectedResourceRootEntity1 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl1,
@@ -169,7 +172,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
         val virtualResourceUrl2 = resourcePath2.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedPythonResourceRootEntity2 = ExpectedSourceRootEntity(
+        val expectedResourceRootEntity2 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl2,
@@ -187,8 +190,8 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
           expectedPythonSourceRootEntity1,
           expectedPythonSourceRootEntity2,
-          expectedPythonResourceRootEntity1,
-          expectedPythonResourceRootEntity2,
+          expectedResourceRootEntity1,
+          expectedResourceRootEntity2,
         )
       }
     }
@@ -197,7 +200,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add multiple python modules with sources to the workspace model`() {
       runTestForUpdaters(listOf(PythonModuleWithSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
         // given
-        val module1 = Module(
+        val module1 = GenericModuleInfo(
           name = "module1",
           type = "PYTHON_MODULE",
           modulesDependencies = listOf(
@@ -217,22 +220,20 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           GenericSourceRoot(
             sourcePath = sourcePath11,
             rootType = "python-source",
-            targetId = BuildTargetIdentifier("target"),
           ),
           GenericSourceRoot(
             sourcePath = sourcePath12,
             rootType = "python-source",
-            targetId = BuildTargetIdentifier("target"),
           ),
         )
 
         val resourcePath11 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
         val resourcePath12 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
         val resourceRoots1 = listOf(
-          PythonResourceRoot(
+          ResourceRoot(
             resourcePath = resourcePath11,
           ),
-          PythonResourceRoot(
+          ResourceRoot(
             resourcePath = resourcePath12,
           ),
         )
@@ -247,7 +248,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           sdkInfo = sdkInfo1,
         )
 
-        val module2 = Module(
+        val module2 = GenericModuleInfo(
           name = "module2",
           type = "PYTHON_MODULE",
           modulesDependencies = listOf(
@@ -263,13 +264,12 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           GenericSourceRoot(
             sourcePath = sourcePath21,
             rootType = "python-test",
-            targetId = BuildTargetIdentifier("target"),
           ),
         )
 
         val resourcePath21 = URI.create("file:///another/root/dir/another/example/resource/File1.txt").toPath()
         val resourceRoots2 = listOf(
-          PythonResourceRoot(
+          ResourceRoot(
             resourcePath = resourcePath21,
           ),
         )
@@ -385,7 +385,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         )
 
         val virtualResourceUrl11 = resourcePath11.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedPythonResourceRootEntity11 = ExpectedSourceRootEntity(
+        val expectedResourceRootEntity11 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl11,
@@ -399,7 +399,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
         val virtualResourceUrl12 = resourcePath12.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedPythonResourceRootEntity12 = ExpectedSourceRootEntity(
+        val expectedResourceRootEntity12 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl12,
@@ -413,7 +413,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
         val virtualResourceUrl21 = resourcePath21.toVirtualFileUrl(virtualFileUrlManager)
-        val expectedPythonResourceRootEntity21 = ExpectedSourceRootEntity(
+        val expectedResourceRootEntity21 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualResourceUrl21,
@@ -431,9 +431,9 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           expectedPythonSourceRootEntity11,
           expectedPythonSourceRootEntity12,
           expectedPythonSourceRootEntity21,
-          expectedPythonResourceRootEntity11,
-          expectedPythonResourceRootEntity12,
-          expectedPythonResourceRootEntity21,
+          expectedResourceRootEntity11,
+          expectedResourceRootEntity12,
+          expectedResourceRootEntity21,
         )
       }
     }
@@ -447,7 +447,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add one python module without sources to the workspace model`() {
       runTestForUpdaters(listOf(PythonModuleWithoutSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
         // given
-        val module = Module(
+        val module = GenericModuleInfo(
           name = "module1",
           type = "PYTHON_MODULE",
           modulesDependencies = emptyList(),
@@ -487,7 +487,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
     fun `should add multiple python modules without sources to the workspace model`() {
       runTestForUpdaters(listOf(PythonModuleWithoutSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
         // given
-        val module1 = Module(
+        val module1 = GenericModuleInfo(
           name = "module1",
           type = "PYTHON_MODULE",
           modulesDependencies = emptyList(),
@@ -502,7 +502,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           sdkInfo = null,
         )
 
-        val module2 = Module(
+        val module2 = GenericModuleInfo(
           name = "module2",
           type = "PYTHON_MODULE",
           modulesDependencies = emptyList(),

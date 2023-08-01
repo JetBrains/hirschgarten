@@ -8,7 +8,7 @@ import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -71,7 +71,6 @@ class SourcesItemToJavaSourceRootTransformerTest {
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
 
     javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot)
@@ -113,7 +112,6 @@ class SourcesItemToJavaSourceRootTransformerTest {
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-test",
-      targetId = BuildTargetIdentifier("target"),
     )
 
     javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot)
@@ -155,7 +153,6 @@ class SourcesItemToJavaSourceRootTransformerTest {
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
 
     javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot)
@@ -212,21 +209,18 @@ class SourcesItemToJavaSourceRootTransformerTest {
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
       sourcePath = URI.create("$rootDir/example/package/File2.java").toPath(),
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot3 = JavaSourceRoot(
       sourcePath = URI.create("$anotherRootDir/another/example/package/").toPath(),
       generated = false,
       packagePrefix = "another.example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
     javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3)
   }
@@ -303,14 +297,12 @@ class SourcesItemToJavaSourceRootTransformerTest {
       generated = false,
       packagePrefix = "example.package.a",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
       sourcePath = URI.create("$anotherRootDir/another/example/package/").toPath(),
       generated = false,
       packagePrefix = "another.example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
     javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2)
   }
@@ -383,21 +375,18 @@ class SourcesItemToJavaSourceRootTransformerTest {
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
       sourcePath = URI.create("$rootDir/example/package/File2.java").toPath(),
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot3 = JavaSourceRoot(
       sourcePath = URI.create("$anotherRootDir/another/example/package/").toPath(),
       generated = false,
       packagePrefix = "another.example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
     javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3)
   }
@@ -536,14 +525,12 @@ class SourcesItemToJavaSourceRootTransformerTest {
       generated = false,
       packagePrefix = "example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
       sourcePath = URI.create("$rootDir/another/example/package/").toPath(),
       generated = false,
       packagePrefix = "another.example.package",
       rootType = "java-source",
-      targetId = BuildTargetIdentifier("target"),
     )
     javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2)
   }

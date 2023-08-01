@@ -1,11 +1,11 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import java.awt.event.MouseListener
 import java.util.concurrent.Callable
@@ -20,13 +20,13 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDis
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import java.awt.Point
 
-private fun BuildTarget.getBuildTargetName(): String =
-  this.displayName ?: this.id.uri
+private fun BuildTargetInfo.getBuildTargetName(): String =
+  this.displayName ?: this.id
 
 public class BuildTargetSearch(
   private val targetIcon: Icon,
   private val toolName: String,
-  targets: Collection<BuildTarget>,
+  targets: Collection<BuildTargetInfo>,
   public val searchBarPanel: SearchBarPanel
 ) : BuildTargetContainer {
 
@@ -137,10 +137,10 @@ public class BuildTargetSearch(
     queryChangeListeners.add(listener)
   }
 
-  override fun getSelectedBuildTarget(): BuildTarget? =
+  override fun getSelectedBuildTarget(): BuildTargetInfo? =
     chooseTargetSearchPanel().getSelectedBuildTarget()
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTarget>): BuildTargetSearch {
+  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetSearch {
     val new = BuildTargetSearch(targetIcon, toolName, newTargets, searchBarPanel)
     for (listenerBuilder in this.mouseListenerBuilders) {
       new.addMouseListener(listenerBuilder)
@@ -157,7 +157,7 @@ public class BuildTargetSearch(
 
   private class SearchCallable(
     private val query: String,
-    private val targets: Collection<BuildTarget>
+    private val targets: Collection<BuildTargetInfo>
   ) : Callable<SearchResults> {
     override fun call(): SearchResults =
       SearchResults(
@@ -183,5 +183,5 @@ private class TextChangeListener(val onUpdate: () -> Unit) : DocumentListener {
 
 private data class SearchResults(
   val query: String,
-  val targets: List<BuildTarget>
+  val targets: List<BuildTargetInfo>
 )

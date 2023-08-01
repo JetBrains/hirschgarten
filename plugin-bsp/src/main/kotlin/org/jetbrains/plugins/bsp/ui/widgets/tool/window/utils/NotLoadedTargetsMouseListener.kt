@@ -1,7 +1,5 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
@@ -11,6 +9,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
@@ -94,7 +94,7 @@ public class NotLoadedTargetsMouseListener(
 
 private class LoadTargetAction(
   text: String,
-  private val target: BuildTarget
+  private val target: BuildTargetInfo
 ) : AnAction(text) {
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
@@ -105,13 +105,13 @@ private class LoadTargetAction(
   }
 
   companion object {
-    fun loadTarget(project: Project, targetId: BuildTargetIdentifier) {
+    fun loadTarget(project: Project, targetId: BuildTargetId) {
       val magicMetaModel = MagicMetaModelService.getInstance(project).value
       val diff = magicMetaModel.loadTarget(targetId)
       BspCoroutineService.getInstance(project).start { diff?.applyOnWorkspaceModel() }
 
       BspBalloonNotifier.info(
-        BspAllTargetsWidgetBundle.message("widget.load.target.notification", targetId.uri),
+        BspAllTargetsWidgetBundle.message("widget.load.target.notification", targetId),
         "Load target"
       )
     }

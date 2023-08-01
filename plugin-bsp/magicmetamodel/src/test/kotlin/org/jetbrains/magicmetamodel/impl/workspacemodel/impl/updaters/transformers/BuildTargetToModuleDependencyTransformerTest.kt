@@ -5,7 +5,8 @@ import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -16,7 +17,7 @@ class BuildTargetToModuleDependencyTransformerTest {
   fun `should return no module dependencies for no dependencies`() {
     // given
     val emptyBuildTargets = listOf<BuildTarget>()
-    val allTargets = listOf<BuildTargetIdentifier>()
+    val allTargets = setOf<BuildTargetId>()
 
     // when
     val buildTargetToModuleDependencyTransformer =
@@ -41,7 +42,7 @@ class BuildTargetToModuleDependencyTransformerTest {
       ),
       BuildTargetCapabilities(),
     )
-    val allTargets = listOf<BuildTargetIdentifier>()
+    val allTargets = setOf<BuildTargetId>()
 
     // when
     val buildTargetToModuleDependencyTransformer =
@@ -65,9 +66,9 @@ class BuildTargetToModuleDependencyTransformerTest {
       ),
       BuildTargetCapabilities(),
     )
-    val allTargets = listOf(
-      BuildTargetIdentifier("//target1"),
-      BuildTargetIdentifier("//target2"),
+    val allTargets = setOf(
+      "//target1",
+      "//target2",
     )
 
     // when
@@ -99,12 +100,12 @@ class BuildTargetToModuleDependencyTransformerTest {
       ),
       BuildTargetCapabilities(),
     )
-    val allTargets = listOf(
-      BuildTargetIdentifier("//target1"),
-      BuildTargetIdentifier("//target2"),
-      BuildTargetIdentifier("//target3"),
-      BuildTargetIdentifier("//target4"),
-      BuildTargetIdentifier("//target5"),
+    val allTargets = setOf(
+      "//target1",
+      "//target2",
+      "//target3",
+      "//target4",
+      "//target5",
     )
 
     // when
@@ -153,12 +154,12 @@ class BuildTargetToModuleDependencyTransformerTest {
       BuildTargetCapabilities(),
     )
 
-    val allTargets = listOf(
-      BuildTargetIdentifier("//target1"),
-      BuildTargetIdentifier("//target2"),
-      BuildTargetIdentifier("//target3"),
-      BuildTargetIdentifier("//target4"),
-      BuildTargetIdentifier("//target5"),
+    val allTargets = setOf(
+      "//target1",
+      "//target2",
+      "//target3",
+      "//target4",
+      "//target5",
     )
 
     val buildTargets = listOf(buildTarget1, buildTarget2)

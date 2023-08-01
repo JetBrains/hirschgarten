@@ -1,23 +1,20 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import java.nio.file.Path
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-
-internal data class PythonResourceRoot(
-  val resourcePath: Path,
-) : WorkspaceModelEntity()
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 
 internal class PythonResourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithParentModuleUpdater<PythonResourceRoot, SourceRootEntity> {
+) : WorkspaceModelEntityWithParentModuleUpdater<ResourceRoot, SourceRootEntity> {
 
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntity(entityToAdd: PythonResourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity {
+  override fun addEntity(entityToAdd: ResourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity {
     val contentRootEntity = addContentRootEntity(entityToAdd, parentModuleEntity)
 
     return addSourceRootEntity(
@@ -28,11 +25,11 @@ internal class PythonResourceEntityUpdater(
   }
 
   private fun addContentRootEntity(
-    entityToAdd: PythonResourceRoot,
+    entityToAdd: ResourceRoot,
     parentModuleEntity: ModuleEntity
   ): ContentRootEntity {
     val contentRoot = ContentRoot(
-      url = entityToAdd.resourcePath
+      path = entityToAdd.resourcePath
     )
 
     return contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)
@@ -41,7 +38,7 @@ internal class PythonResourceEntityUpdater(
   private fun addSourceRootEntity(
     builder: MutableEntityStorage,
     contentRootEntity: ContentRootEntity,
-    entityToAdd: PythonResourceRoot,
+    entityToAdd: ResourceRoot,
   ): SourceRootEntity =
     builder.addEntity(
       SourceRootEntity(

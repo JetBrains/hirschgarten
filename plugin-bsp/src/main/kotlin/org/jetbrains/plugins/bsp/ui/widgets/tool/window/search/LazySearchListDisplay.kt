@@ -1,9 +1,9 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.panels.VerticalLayout
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import java.awt.Point
 import java.awt.event.MouseListener
 import javax.swing.DefaultListModel
@@ -49,7 +49,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     searchListModel.addAll(printableTargets)
   }
 
-  private fun takeSomeTargetsAndHighlight(targets: Collection<BuildTarget>): List<PrintableBuildTarget> =
+  private fun takeSomeTargetsAndHighlight(targets: Collection<BuildTargetInfo>): List<PrintableBuildTarget> =
     targets.take(TARGETS_TO_HIGHLIGHT).map {
       PrintableBuildTarget(
         it,
@@ -57,10 +57,10 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
       )
     }
 
-  private fun BuildTarget.getBuildTargetName(): String =
-    this.displayName ?: this.id.uri
+  private fun BuildTargetInfo.getBuildTargetName(): String =
+    this.displayName ?: this.id
 
-  private fun maybeAddShowMoreButton(targets: Collection<BuildTarget>) {
+  private fun maybeAddShowMoreButton(targets: Collection<BuildTargetInfo>) {
     val remainingTargets = targets.size - TARGETS_TO_HIGHLIGHT
     if (remainingTargets > 0) {
       showMoreButton = JButton("Show $remainingTargets more")
@@ -71,7 +71,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     }
   }
 
-  private fun showMoreTargets(targets: Collection<BuildTarget>) {
+  private fun showMoreTargets(targets: Collection<BuildTargetInfo>) {
     component.remove(showMoreButton)
     replaceSearchListElementsWith(targets.map { PrintableBuildTarget(it) })
   }
@@ -80,7 +80,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     searchListComponent.addMouseListener(mouseListener)
   }
 
-  override fun getSelectedBuildTarget(): BuildTarget? =
+  override fun getSelectedBuildTarget(): BuildTargetInfo? =
     searchListComponent.selectedValue?.buildTarget
 
   /* https://youtrack.jetbrains.com/issue/BAZEL-522 */

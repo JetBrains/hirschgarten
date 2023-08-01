@@ -6,20 +6,17 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import java.nio.file.Path
-
-internal data class JavaResourceRoot(
-  val resourcePath: Path,
-) : WorkspaceModelEntity()
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 
 internal class JavaResourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithParentModuleUpdater<JavaResourceRoot, JavaResourceRootPropertiesEntity> {
+) : WorkspaceModelEntityWithParentModuleUpdater<ResourceRoot, JavaResourceRootPropertiesEntity> {
 
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(
-    entityToAdd: JavaResourceRoot,
+    entityToAdd: ResourceRoot,
     parentModuleEntity: ModuleEntity
   ): JavaResourceRootPropertiesEntity {
     val contentRootEntity = addContentRootEntity(entityToAdd, parentModuleEntity)
@@ -33,11 +30,11 @@ internal class JavaResourceEntityUpdater(
   }
 
   private fun addContentRootEntity(
-    entityToAdd: JavaResourceRoot,
+    entityToAdd: ResourceRoot,
     parentModuleEntity: ModuleEntity
   ): ContentRootEntity {
     val contentRoot = ContentRoot(
-      url = entityToAdd.resourcePath
+      path = entityToAdd.resourcePath
     )
 
     return contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)
@@ -46,7 +43,7 @@ internal class JavaResourceEntityUpdater(
   private fun addSourceRootEntity(
     builder: MutableEntityStorage,
     contentRootEntity: ContentRootEntity,
-    entityToAdd: JavaResourceRoot,
+    entityToAdd: ResourceRoot,
   ): SourceRootEntity =
     builder.addEntity(
       SourceRootEntity(

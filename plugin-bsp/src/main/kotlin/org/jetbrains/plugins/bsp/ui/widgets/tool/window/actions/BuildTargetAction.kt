@@ -1,9 +1,10 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.server.tasks.runBuildTargetTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
@@ -24,9 +25,9 @@ public class BuildTargetAction : AbstractActionWithTarget(
   public companion object {
     private val log = logger<BuildTargetAction>()
 
-    public fun buildTarget(project: Project, targetId: BuildTargetIdentifier) {
+    public fun buildTarget(project: Project, targetId: BuildTargetId) {
       BspCoroutineService.getInstance(project).start {
-        runBuildTargetTask(listOf(targetId), project, log)
+        runBuildTargetTask(listOf(targetId.toBsp4JTargetIdentifier()), project, log)
       }
     }
   }

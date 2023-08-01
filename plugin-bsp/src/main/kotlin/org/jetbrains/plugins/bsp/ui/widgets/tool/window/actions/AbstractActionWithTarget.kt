@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.actionSystem.AnAction
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import java.lang.ref.WeakReference
 
 /**
@@ -11,11 +11,11 @@ import java.lang.ref.WeakReference
  */
 public abstract class AbstractActionWithTarget(text: String) : AnAction(text) {
 
-    private var _target: WeakReference<BuildTargetIdentifier?> = WeakReference(null)
+  private var _target: WeakReference<BuildTargetId?> = WeakReference(null)
 
-    public var target: BuildTargetIdentifier?
-        get() = _target.get()
-        set(value) {
-            _target = WeakReference(value)
-        }
+  public var target: BuildTargetId?
+    get() = _target.get()
+    set(value) {
+      _target = WeakReference(value)
+    }
 }

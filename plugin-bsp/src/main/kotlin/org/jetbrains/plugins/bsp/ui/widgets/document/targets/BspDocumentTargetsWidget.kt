@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.ui.widgets.document.targets
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
@@ -19,6 +18,7 @@ import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
@@ -30,9 +30,9 @@ import java.net.URI
 private const val ID = "BspDocumentTargetsWidget"
 
 private class LoadTargetAction(
-  private val target: BuildTargetIdentifier,
+  private val target: BuildTargetId,
   private val updateWidget: () -> Unit
-) : AnAction(target.uri) {
+) : AnAction(target) {
 
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
@@ -50,7 +50,7 @@ private class LoadTargetAction(
     BspCoroutineService.getInstance(project).start { diff?.applyOnWorkspaceModel() }
 
     BspBalloonNotifier.info(
-      BspAllTargetsWidgetBundle.message("widget.load.target.notification", target.uri),
+      BspAllTargetsWidgetBundle.message("widget.load.target.notification", target),
       "Load target"
     )
     updateWidget()
@@ -91,8 +91,8 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     return state
   }
 
-  private fun activeWidgetState(loadedTarget: BuildTargetIdentifier?): WidgetState {
-    val text = loadedTarget?.uri ?: ""
+  private fun activeWidgetState(loadedTarget: BuildTargetId?): WidgetState {
+    val text = loadedTarget ?: ""
     val state = WidgetState(BspDocumentTargetsWidgetBundle.message("widget.tooltip.text.active"), text, true)
     state.icon = BspPluginIcons.bsp
 
@@ -121,7 +121,7 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
 
   private fun updateActionGroupWithCurrentlyLoadedTarget(
     group: DefaultActionGroup,
-    loadedTarget: BuildTargetIdentifier?
+    loadedTarget: BuildTargetId?
   ) {
     group.addSeparator(BspDocumentTargetsWidgetBundle.message("widget.loaded.target.separator.title"))
 
@@ -132,7 +132,7 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
 
   private fun updateActionGroupWithAvailableTargetsSection(
     group: DefaultActionGroup,
-    notLoadedTargetsIds: List<BuildTargetIdentifier>
+    notLoadedTargetsIds: List<BuildTargetId>
   ) {
     group.addSeparator(BspDocumentTargetsWidgetBundle.message("widget.available.targets.to.load"))
 

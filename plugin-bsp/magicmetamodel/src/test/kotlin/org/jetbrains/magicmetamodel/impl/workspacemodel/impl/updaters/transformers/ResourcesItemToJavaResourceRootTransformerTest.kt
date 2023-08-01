@@ -4,7 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.ResourcesItem
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaResourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -45,7 +45,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItem)
 
     // then
-    val expectedJavaResource = JavaResourceRoot(
+    val expectedJavaResource = ResourceRoot(
       resourcePath = resourceFilePath.parent
     )
 
@@ -68,7 +68,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItem)
 
     // then
-    val expectedJavaResource = JavaResourceRoot(
+    val expectedJavaResource = ResourceRoot(
       resourcePath = resourceDirPath
     )
 
@@ -97,7 +97,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItem)
 
     // then
-    val expectedJavaResource = JavaResourceRoot(
+    val expectedJavaResource = ResourceRoot(
       resourcePath = resourceFilePath1.parent
     )
 
@@ -123,10 +123,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItem)
 
     // then
-    val expectedJavaResource1 = JavaResourceRoot(
+    val expectedJavaResource1 = ResourceRoot(
       resourcePath = resourceFilePath.parent
     )
-    val expectedJavaResource2 = JavaResourceRoot(
+    val expectedJavaResource2 = ResourceRoot(
       resourcePath = resourceDirPath
     )
 
@@ -163,10 +163,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItems)
 
     // then
-    val expectedJavaResource1 = JavaResourceRoot(
+    val expectedJavaResource1 = ResourceRoot(
       resourcePath = resourceFilePath1.parent
     )
-    val expectedJavaResource2 = JavaResourceRoot(
+    val expectedJavaResource2 = ResourceRoot(
       resourcePath = resourceDirPath3
     )
 
@@ -239,10 +239,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItems)
 
     // then
-    val expectedJavaResource1 = JavaResourceRoot(
+    val expectedJavaResource1 = ResourceRoot(
       resourcePath = resourceFilePath1.parent
     )
-    val expectedJavaResource2 = JavaResourceRoot(
+    val expectedJavaResource2 = ResourceRoot(
       resourcePath = resourceDirPath3
     )
 

@@ -1,15 +1,14 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
-import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelEntity
 import java.nio.file.Path
 
 internal object BspEntitySource : EntitySource
-
-internal abstract class WorkspaceModelEntity
 
 internal data class WorkspaceModelEntityUpdaterConfig(
   val workspaceEntityStorageBuilder: MutableEntityStorage,

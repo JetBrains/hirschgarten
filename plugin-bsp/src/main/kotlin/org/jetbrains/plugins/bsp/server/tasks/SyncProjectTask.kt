@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -71,6 +72,6 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
     val allTargets = magicMetaModel.getAllLoadedTargets() + magicMetaModel.getAllNotLoadedTargets()
     val compilableTargets = allTargets.filter { it.capabilities.canCompile }
 
-    return compilableTargets.map { it.id }
+    return compilableTargets.map { it.id.toBsp4JTargetIdentifier() }
   }
 }

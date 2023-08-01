@@ -1,23 +1,26 @@
 package org.jetbrains.magicmetamodel.impl
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.PythonOptionsItem
-import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItem
-import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.Gson
-import org.jetbrains.annotations.Nullable
-import org.jetbrains.magicmetamodel.LibraryItem
-import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.KotlinBuildTarget
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
+import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlincOpts
+import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
+import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleCapabilities
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonLibrary
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
+import kotlin.io.path.Path
 
 // TODO, we can do it better, but for now it should be good enough:
 // the pros (in my opinion @abrams27) of this solution:
@@ -37,306 +40,238 @@ public interface ConvertableToState<out T> {
   public fun toState(): T
 }
 
+public data class BuildTargetInfoState(
+  var id: BuildTargetId = "",
+  var displayName: String? = null,
+  var dependencies: List<BuildTargetId> = emptyList(),
+  var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState(),
+  var languageIds: List<String> = emptyList(),
+) : ConvertableFromState<BuildTargetInfo> {
+  override fun fromState(): BuildTargetInfo =
+    BuildTargetInfo(
+      id = id,
+      displayName = displayName,
+      dependencies = dependencies,
+      capabilities = capabilities.fromState(),
+      languageIds = languageIds,
+    )
+}
 
-public data class BuildTargetIdentifierState(
-  public var uri: String = ""
+public fun BuildTargetInfo.toState(): BuildTargetInfoState = BuildTargetInfoState(
+  id = id,
+  displayName = displayName,
+  dependencies = dependencies,
+  capabilities = capabilities.toState(),
+  languageIds = languageIds,
+)
+
+public data class ContentRootState(
+  var path: String = "",
+  var excludedPaths: List<String> = emptyList(),
+) : ConvertableFromState<ContentRoot> {
+  override fun fromState(): ContentRoot =
+    ContentRoot(
+      path = Path(path),
+      excludedPaths = excludedPaths.map { Path(it) }
+    )
+}
+
+public fun ContentRoot.toState(): ContentRootState =
+  ContentRootState(
+    path = path.toString(),
+    excludedPaths = excludedPaths.map { it.toString() }
+  )
+
+public data class SourceRootState(
+  var sourcePath: String = "",
+  var generated: Boolean = false,
+  var packagePrefix: String = "",
+  var rootType: String = "",
+  var excludedPaths: List<String> = emptyList(),
 ) {
+  public fun toJavaSourceRoot(): JavaSourceRoot = JavaSourceRoot(
+    sourcePath = Path(sourcePath),
+    generated = generated,
+    packagePrefix = packagePrefix,
+    rootType = rootType,
+    excludedPaths = excludedPaths.map { Path(it) },
+  )
 
-  public fun fromState(): BuildTargetIdentifier =
-    BuildTargetIdentifier(uri)
+  public fun toGenericSourceRoot(): GenericSourceRoot = GenericSourceRoot(
+    sourcePath = Path(sourcePath),
+    rootType = rootType,
+    excludedPaths = excludedPaths.map { Path(it) },
+  )
 }
 
-public fun BuildTargetIdentifier.toState(): BuildTargetIdentifierState =
-  BuildTargetIdentifierState(uri)
+public fun JavaSourceRoot.toState(): SourceRootState = SourceRootState(
+  sourcePath = sourcePath.toString(),
+  generated = generated,
+  packagePrefix = packagePrefix,
+  rootType = rootType,
+  excludedPaths = excludedPaths.map { it.toString() },
+)
 
-public fun LibraryItem.toState(): LibraryItemState =
-        LibraryItemState(
-                id = this.id.toState(),
-                dependencies = this.dependencies.map { it.toState() },
-                uris = this.jars
-        )
+internal fun String.toResourceRoot() = ResourceRoot(Path(this))
 
+public fun GenericSourceRoot.toState(): SourceRootState = SourceRootState(
+  sourcePath = sourcePath.toString(),
+  rootType = rootType,
+  excludedPaths = excludedPaths.map { it.toString() },
+)
 
-public data class BuildTargetCapabilitiesState(
-  public var canCompile: Boolean = false,
-  public var canTest: Boolean = false,
-  public var canRun: Boolean = false,
-  public var canDebug: Boolean = false
-) : ConvertableFromState<BuildTargetCapabilities> {
+public data class LibraryState(
+  var displayName: String = "",
+  var sourcesJar: String? = null,
+  var classesJar: String? = null,
+) : ConvertableFromState<Library> {
+  override fun fromState(): Library = Library(
+    displayName = displayName,
+    sourcesJar = sourcesJar,
+    classesJar = classesJar,
+  )
 
-  public override fun fromState(): BuildTargetCapabilities =
-    BuildTargetCapabilities(canCompile, canTest, canRun, canDebug)
+  internal fun toPythonLibrary(): PythonLibrary = PythonLibrary(sourcesJar)
 }
 
-public fun BuildTargetCapabilities.toState(): BuildTargetCapabilitiesState =
-  BuildTargetCapabilitiesState(
-    canCompile = canCompile,
-    canTest = canTest,
+public fun Library.toState(): LibraryState = LibraryState(
+  displayName = displayName,
+  sourcesJar = sourcesJar,
+  classesJar = classesJar,
+)
+
+public fun PythonLibrary.toState(): LibraryState = LibraryState(
+  sourcesJar = sources.orEmpty()
+)
+
+public data class GenericModuleInfoState(
+  var name: String = "",
+  var type: String = "",
+  var modulesDependencies: List<String> = emptyList(),
+  var librariesDependencies: List<String> = emptyList(),
+  var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState(),
+  var languageIds: List<String> = emptyList(),
+) : ConvertableFromState<GenericModuleInfo> {
+  override fun fromState(): GenericModuleInfo = GenericModuleInfo(
+    name = name,
+    type = type,
+    modulesDependencies = modulesDependencies.map { ModuleDependency(it) },
+    librariesDependencies = librariesDependencies.map { LibraryDependency(it) },
+    capabilities = capabilities.fromState(),
+    languageIds = languageIds,
+  )
+}
+
+public fun GenericModuleInfo.toState(): GenericModuleInfoState = GenericModuleInfoState(
+  name = name,
+  type = type,
+  modulesDependencies = modulesDependencies.map { it.moduleName },
+  librariesDependencies = librariesDependencies.map { it.libraryName },
+  capabilities = capabilities.toState(),
+  languageIds = languageIds,
+)
+
+// TODO: Provide more generic structure for module with support for other languages
+public data class ModuleState(
+  var module: GenericModuleInfoState = GenericModuleInfoState(),
+  var baseDirContentRoot: ContentRootState? = null,
+  var sourceRoots: List<SourceRootState> = emptyList(),
+  var resourceRoots: List<String> = emptyList(),
+  var libraries: List<LibraryState>? = emptyList(),
+  var compilerOutput: String? = null,
+  var jvmJdkName: String? = null,
+  val sdkInfo: PythonSdkInfoState? = null,
+  var kotlinAddendum: KotlinAddendumState? = null,
+) : ConvertableFromState<Module> {
+
+
+  public fun toJavaModule(): JavaModule = JavaModule(
+    genericModuleInfo = module.fromState(),
+    baseDirContentRoot = baseDirContentRoot?.fromState(),
+    sourceRoots = sourceRoots.map { it.toJavaSourceRoot() },
+    resourceRoots = resourceRoots.map { it.toResourceRoot() },
+    moduleLevelLibraries = libraries?.map { it.fromState() },
+    compilerOutput = compilerOutput?.let { Path(it) },
+    jvmJdkName = jvmJdkName,
+    kotlinAddendum = kotlinAddendum?.fromState()
+  )
+
+  public fun toPythonModule(): PythonModule = PythonModule(
+    module = module.fromState(),
+    sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
+    libraries = libraries?.map { it.toPythonLibrary() }.orEmpty(),
+    resourceRoots = resourceRoots.map { it.toResourceRoot() },
+    sdkInfo = sdkInfo?.fromState()
+  )
+
+  override fun fromState(): Module =
+    if (module.languageIds.includesPython())
+      toPythonModule()
+    else
+      toJavaModule()
+}
+
+public data class PythonSdkInfoState(
+  var version: String = "",
+  var originalName: String = "",
+) : ConvertableFromState<PythonSdkInfo> {
+  override fun fromState(): PythonSdkInfo = PythonSdkInfo(
+    version = version,
+    originalName = originalName,
+  )
+}
+
+public fun PythonSdkInfo.toState(): PythonSdkInfoState = PythonSdkInfoState(
+  version = version,
+  originalName = originalName,
+)
+
+public data class KotlinAddendumState(
+  var languageVersion: String = "",
+  val apiVersion: String = "",
+  val kotlincOptions: String = "",
+) : ConvertableFromState<KotlinAddendum> {
+  override fun fromState(): KotlinAddendum = KotlinAddendum(
+    languageVersion = languageVersion,
+    apiVersion = apiVersion,
+    kotlincOptions = Gson().fromJson(kotlincOptions, KotlincOpts::class.java)
+  )
+}
+
+public data class ModuleCapabilitiesState(
+  var canRun: Boolean = false,
+  var canTest: Boolean = false,
+  var canCompile: Boolean = false,
+  var canDebug: Boolean = false
+) : ConvertableFromState<ModuleCapabilities> {
+  override fun fromState(): ModuleCapabilities = ModuleCapabilities(
     canRun = canRun,
+    canTest = canTest,
+    canCompile = canCompile,
     canDebug = canDebug,
   )
-
-public data class LibraryItemState(
-        public var id: BuildTargetIdentifierState = BuildTargetIdentifierState(),
-        public var dependencies: List<BuildTargetIdentifierState> = emptyList(),
-        public var uris: List<String> = emptyList(),
-) : ConvertableFromState<LibraryItem> {
-
-  public override fun fromState(): LibraryItem =
-          LibraryItem(
-                  id.fromState(),
-                  dependencies.map { it.fromState() },
-                  emptyList()
-          )
 }
 
-public data class BuildTargetState(
-  public var id: BuildTargetIdentifierState = BuildTargetIdentifierState(),
-  public var displayName: String? = null,
-  public var baseDirectory: String? = null,
-  public var tags: List<String> = emptyList(),
-  public var languageIds: List<String> = emptyList(),
-  public var dependencies: List<BuildTargetIdentifierState> = emptyList(),
-  public var capabilities: BuildTargetCapabilitiesState = BuildTargetCapabilitiesState(),
-  public var dataKind: String? = null,
-  public var data: String? = null,
-) : ConvertableFromState<BuildTarget> {
+public fun KotlinAddendum.toState(): KotlinAddendumState = KotlinAddendumState(
+  languageVersion = languageVersion,
+  apiVersion = apiVersion,
+  kotlincOptions = Gson().toJson(kotlincOptions),
+)
 
-  public override fun fromState(): BuildTarget =
-    BuildTarget(
-      id.fromState(),
-      tags,
-      languageIds,
-      dependencies.map { it.fromState() },
-      capabilities.fromState()
-    ).apply {
-      displayName = this@BuildTargetState.displayName
-      baseDirectory = this@BuildTargetState.baseDirectory
-      dataKind = this@BuildTargetState.dataKind
-      data = when(this@BuildTargetState.dataKind) {
-        BuildTargetDataKind.JVM -> Gson().fromJson(this@BuildTargetState.data, JvmBuildTarget::class.java)
-        "kotlin" -> Gson().fromJson(this@BuildTargetState.data, KotlinBuildTarget::class.java)
-        else -> null
-      }
-    }
-}
-
-public fun BuildTarget.toState(): BuildTargetState =
-  BuildTargetState(
-    id = id.toState(),
-    displayName = displayName,
-    baseDirectory = baseDirectory,
-    tags = tags,
-    languageIds = languageIds,
-    dependencies = dependencies.map { it.toState() },
-    capabilities = capabilities.toState(),
-    dataKind = dataKind,
-    data = Gson().toJson(data),
-  )
-
-
-public data class SourceItemState(
-  public var uri: String = "",
-  public var kind: Int = 0,
-  public var generated: Boolean = false,
-) : ConvertableFromState<SourceItem> {
-
-  public override fun fromState(): SourceItem =
-    SourceItem(uri, SourceItemKind.forValue(kind), generated)
-}
-
-public fun SourceItem.toState(): SourceItemState =
-  SourceItemState(
-    uri = uri,
-    kind = kind.value,
-    generated = generated,
-  )
-
-
-public data class SourcesItemState(
-  public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
-  public var sources: List<SourceItemState> = emptyList(),
-  public var roots: List<String>? = null,
-) : ConvertableFromState<SourcesItem> {
-
-  public override fun fromState(): SourcesItem =
-    SourcesItem(target.fromState(), sources.map { it.fromState() }).apply {
-      roots = this@SourcesItemState.roots
-    }
-}
-
-public fun SourcesItem.toState(): SourcesItemState =
-  SourcesItemState(
-    target = target.toState(),
-    sources = sources.map { it.toState() },
-    roots = roots,
-  )
-
-
-public class ResourcesItemState(
-  public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
-  public var resources: List<String> = emptyList(),
-) : ConvertableFromState<ResourcesItem> {
-
-  public override fun fromState(): ResourcesItem =
-    ResourcesItem(target.fromState(), resources)
-}
-
-public fun ResourcesItem.toState(): ResourcesItemState =
-  ResourcesItemState(
-    target = target.toState(),
-    resources = resources,
-  )
-
-
-public class DependencySourcesItemState(
-  public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
-  public var sources: List<String> = emptyList(),
-) : ConvertableFromState<DependencySourcesItem> {
-
-  public override fun fromState(): DependencySourcesItem =
-    DependencySourcesItem(target.fromState(), sources)
-}
-
-public fun DependencySourcesItem.toState(): DependencySourcesItemState =
-    DependencySourcesItemState(
-      target = target.toState(),
-      sources = sources,
-    )
-
-
-public class JavacOptionsItemState(
-  public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
-  public var options: List<String> = emptyList(),
-  public var classpath: List<String> = emptyList(),
-  public var classDirectory: String = ""
-) : ConvertableFromState<JavacOptionsItem> {
-
-  public override fun fromState(): JavacOptionsItem =
-    JavacOptionsItem(target.fromState(), options, classpath, classDirectory)
-}
-
-public fun JavacOptionsItem.toState(): JavacOptionsItemState =
-  JavacOptionsItemState(
-    target = target.toState(),
-    options= options,
-    classpath = classpath,
-    classDirectory = classDirectory,
-  )
-
-public class PythonOptionsItemState(
-  public var target: BuildTargetIdentifierState = BuildTargetIdentifierState(),
-  public var options: List<String> = emptyList(),
-) : ConvertableFromState<PythonOptionsItem> {
-
-  public override fun fromState(): PythonOptionsItem =
-    PythonOptionsItem(target.fromState(), options)
-}
-
-public fun PythonOptionsItem.toState(): PythonOptionsItemState =
-  PythonOptionsItemState(
-    target = target.toState(),
-    options = interpreterOptions
-  )
-
-public data class ProjectDetailsState(
-  public var targetsId: List<BuildTargetIdentifierState> = emptyList(),
-  public var targets: List<BuildTargetState> = emptyList(),
-  public var sources: List<SourcesItemState> = emptyList(),
-  public var resources: List<ResourcesItemState> = emptyList(),
-  public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
-  public var javacOptions: List<JavacOptionsItemState> = emptyList(),
-  public var pythonOptions: List<PythonOptionsItemState> = emptyList(),
-  public var outputPathUris: List<String> = emptyList(),
-  @Nullable public var libraries: List<LibraryItemState>? = null,
-  ) : ConvertableFromState<ProjectDetails> {
-
-  public override fun fromState(): ProjectDetails =
-    ProjectDetails(
-      targetsId = targetsId.map { it.fromState() },
-      targets = targets.map { it.fromState() }.toSet(),
-      sources = sources.map { it.fromState() },
-      resources = resources.map { it.fromState() },
-      dependenciesSources = dependenciesSources.map { it.fromState() },
-      javacOptions = javacOptions.map { it.fromState() },
-      pythonOptions = pythonOptions.map { it.fromState() },
-      outputPathUris = outputPathUris,
-      libraries = libraries?.map { it.fromState() },
-    )
-}
-
-public fun ProjectDetails.toState(): ProjectDetailsState =
-  ProjectDetailsState(
-    targetsId = targetsId.map { it.toState() },
-    targets = targets.map { it.toState() },
-    sources = sources.map { it.toState() },
-    resources = resources.map { it.toState() },
-    dependenciesSources = dependenciesSources.map { it.toState() },
-    javacOptions = javacOptions.map { it.toState() },
-    pythonOptions = pythonOptions.map { it.toState() },
-    libraries = libraries?.map { it.toState() }
-  )
-
-public fun ProjectDetails.toStateWithoutLoadedTargets(loaded: List<BuildTargetIdentifier>): ProjectDetailsState =
-  ProjectDetailsState(
-    targetsId = targetsId.filterNot { loaded.contains(it) }.map { it.toState() },
-    targets = targets.filterNot { loaded.contains(it.id) }.map { it.toState() },
-    sources = sources.filterNot { loaded.contains(it.target) }.map { it.toState() },
-    resources = resources.filterNot { loaded.contains(it.target) }.map { it.toState() },
-    dependenciesSources = dependenciesSources.filterNot { loaded.contains(it.target) }.map { it.toState() },
-    javacOptions = javacOptions.filterNot { loaded.contains(it.target) }.map { it.toState() },
-    pythonOptions = pythonOptions.filterNot { loaded.contains(it.target) }.map { it.toState() },
-    libraries = libraries?.map { it.toState() }
-  )
-
-
-public data class ModuleDetailsState(
-  public var target: BuildTargetState = BuildTargetState(),
-  public var allTargetsIds: List<BuildTargetIdentifierState> = emptyList(),
-  public var sources: List<SourcesItemState> = emptyList(),
-  public var resources: List<ResourcesItemState> = emptyList(),
-  public var dependenciesSources: List<DependencySourcesItemState> = emptyList(),
-  public var javacOptions: JavacOptionsItemState? = null,
-  public var pythonOptions: PythonOptionsItemState? = null,
-  public var outputPathUris: List<String> = emptyList(),
-  public var libraryDependencies: List<BuildTargetIdentifierState>? = emptyList(),
-  public var moduleDependencies: List<BuildTargetIdentifierState> = emptyList(),
-  ) : ConvertableFromState<ModuleDetails> {
-
-  public override fun fromState(): ModuleDetails =
-    ModuleDetails(
-      target = target.fromState(),
-      allTargetsIds = allTargetsIds.map { it.fromState() },
-      sources = sources.map { it.fromState() },
-      resources = resources.map { it.fromState() },
-      dependenciesSources = dependenciesSources.map { it.fromState() },
-      javacOptions = javacOptions?.fromState(),
-      pythonOptions = pythonOptions?.fromState(),
-      outputPathUris = outputPathUris,
-      libraryDependencies = libraryDependencies?.map { it.fromState() },
-      moduleDependencies = moduleDependencies.map { it.fromState() }
-    )
-}
-
-public fun ModuleDetails.toState(): ModuleDetailsState =
-  ModuleDetailsState(
-    target = target.toState(),
-    allTargetsIds = allTargetsIds.map { it.toState() },
-    sources = sources.map { it.toState() },
-    resources = resources.map { it.toState() },
-    dependenciesSources = dependenciesSources.map { it.toState() },
-    javacOptions = javacOptions?.toState(),
-    pythonOptions = pythonOptions?.toState(),
-    outputPathUris = outputPathUris,
-    libraryDependencies = libraryDependencies?.map { it.toState() },
-    moduleDependencies = moduleDependencies.map { it.toState() }
-  )
-
+public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(
+  canRun = canRun,
+  canTest = canTest,
+  canCompile = canCompile,
+  canDebug = canDebug,
+)
 
 public data class DefaultMagicMetaModelState(
-  public var projectDetailsState: ProjectDetailsState = ProjectDetailsState(),
+  public var targets: List<BuildTargetInfoState> = emptyList(),
+  public var libraries: List<LibraryState>? = null,
+  public var unloadedTargets: Map<BuildTargetId, ModuleState> = emptyMap(),
   public var targetsDetailsForDocumentProviderState: TargetsDetailsForDocumentProviderState =
     TargetsDetailsForDocumentProviderState(),
-  public var overlappingTargetsGraph: Map<BuildTargetIdentifierState, List<BuildTargetIdentifierState>> = emptyMap(),
+  public var overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>> = emptyMap(),
   public var loadedTargetsStorageState: LoadedTargetsStorageState = LoadedTargetsStorageState(),
 )
+

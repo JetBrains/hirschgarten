@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 
 public interface BspBuildTargetClassifier {
   /**
@@ -40,13 +40,13 @@ public interface BspBuildTargetClassifier {
    * ```
    * If an empty list is returned, the build target will be rendered in the tree's top level
    */
-  public fun getBuildTargetPath(buildTargetIdentifier: BuildTargetIdentifier): List<String>
+  public fun getBuildTargetPath(buildTargetIdentifier: BuildTargetId): List<String>
 
   /**
    * @param buildTargetIdentifier a build target
    * @return the name under which the given build target will be rendered in the tree
    */
-  public fun getBuildTargetName(buildTargetIdentifier: BuildTargetIdentifier): String = buildTargetIdentifier.uri
+  public fun getBuildTargetName(buildTargetIdentifier: BuildTargetId): String = buildTargetIdentifier
 }
 
 public class BspBuildTargetClassifierProvider(
@@ -58,9 +58,9 @@ public class BspBuildTargetClassifierProvider(
   public fun getSeparator(): String? =
     extensionOrNull?.separator()
 
-  public fun getBuildTargetPath(buildTargetIdentifier: BuildTargetIdentifier): List<String> =
+  public fun getBuildTargetPath(buildTargetIdentifier: BuildTargetId): List<String> =
     extensionOrNull?.getBuildTargetPath(buildTargetIdentifier) ?: emptyList()
 
-  public fun getBuildTargetName(buildTargetIdentifier: BuildTargetIdentifier): String =
-    extensionOrNull?.getBuildTargetName(buildTargetIdentifier) ?: buildTargetIdentifier.uri
+  public fun getBuildTargetName(buildTargetIdentifier: BuildTargetId): String =
+    extensionOrNull?.getBuildTargetName(buildTargetIdentifier) ?: buildTargetIdentifier
 }

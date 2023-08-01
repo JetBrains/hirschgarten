@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunManagerEx
@@ -14,8 +13,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Key
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 
-public val targetIdTOREMOVE: Key<BuildTargetIdentifier> = Key<BuildTargetIdentifier>("targetId")
+public val targetIdTOREMOVE: Key<BuildTargetId> = Key<BuildTargetId>("targetId")
 
 internal abstract class SideMenuRunnerAction(
   text: String,
@@ -23,7 +23,7 @@ internal abstract class SideMenuRunnerAction(
 
   abstract fun getConfigurationType(): ConfigurationType
 
-  abstract fun getName(target: BuildTargetIdentifier): String
+  abstract fun getName(target: BuildTargetId): String
 
   override fun actionPerformed(e: AnActionEvent) {
     e.project?.let { project ->
@@ -33,7 +33,7 @@ internal abstract class SideMenuRunnerAction(
     }
   }
 
-  fun doPerformAction(project: Project, targetId: BuildTargetIdentifier) {
+  fun doPerformAction(project: Project, targetId: BuildTargetId) {
     val factory = getConfigurationType().configurationFactories.first()
     val settings = RunManager.getInstance(project).createConfiguration(getName(targetId), factory)
     RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)

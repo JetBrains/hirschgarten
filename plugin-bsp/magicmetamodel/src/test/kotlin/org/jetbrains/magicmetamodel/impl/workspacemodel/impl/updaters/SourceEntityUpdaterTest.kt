@@ -1,9 +1,9 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
@@ -37,7 +37,6 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
     val genericSourceRoot = GenericSourceRoot(
       sourcePath = sourceDir,
       rootType = "python-source",
-      targetId = BuildTargetIdentifier("target"),
     )
 
     // when
@@ -74,7 +73,6 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
     val genericSourceRoot1 = GenericSourceRoot(
       sourcePath = sourceDir1,
       rootType = "python-source",
-      targetId = BuildTargetIdentifier("target1"),
     )
 
     val sourceDir2 = URI.create("file:///another/root/dir/another/example/package/").toPath()
@@ -82,7 +80,6 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
     val genericSourceRoot2 = GenericSourceRoot(
       sourcePath = sourceDir2,
       rootType = "python-test",
-      targetId = BuildTargetIdentifier("target2"),
     )
 
     val pythonSourceRoots = listOf(genericSourceRoot1, genericSourceRoot2)

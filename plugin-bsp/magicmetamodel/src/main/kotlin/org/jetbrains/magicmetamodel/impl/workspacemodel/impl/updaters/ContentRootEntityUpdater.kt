@@ -5,12 +5,7 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ExcludeUrlEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import java.nio.file.Path
-
-internal data class ContentRoot(
-  val url: Path,
-  val excludedPaths: List<Path> = ArrayList(),
-) : WorkspaceModelEntity()
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 
 internal class ContentRootEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -28,7 +23,7 @@ internal class ContentRootEntityUpdater(
     moduleEntity: ModuleEntity,
     entityToAdd: ContentRoot,
   ): ContentRootEntity {
-    val url = entityToAdd.url.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+    val url = entityToAdd.path.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
     val excludedUrls = entityToAdd.excludedPaths
             .map { it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager) }
     val excludes = excludedUrls.map {

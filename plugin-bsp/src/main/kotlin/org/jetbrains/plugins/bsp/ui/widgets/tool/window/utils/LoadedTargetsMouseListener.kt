@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
@@ -9,6 +8,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.AbstractActionWithTarget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
@@ -112,7 +112,7 @@ public class LoadedTargetsMouseListener(
   }
 }
 
-private fun SideMenuRunnerAction.prepareAndPerform(project: Project, targetId: BuildTargetIdentifier) {
+private fun SideMenuRunnerAction.prepareAndPerform(project: Project, targetId: BuildTargetId) {
   this.target = targetId
   doPerformAction(project, targetId)
 }

@@ -64,7 +64,7 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
       val console = createConsole(executor)?.apply {
         attachToProcess(processHandler)
       }
-      environment.getUserData(targetIdTOREMOVE)?.uri?.let { uri ->
+      environment.getUserData(targetIdTOREMOVE)?.let { uri ->
         bspRunConsole.registerPrinter(processHandler)
         processHandler.execute {
           val startRunMessage = "Running target $uri"

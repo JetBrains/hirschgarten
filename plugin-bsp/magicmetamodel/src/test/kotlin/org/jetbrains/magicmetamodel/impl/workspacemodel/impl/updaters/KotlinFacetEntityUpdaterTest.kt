@@ -11,6 +11,11 @@ import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.KotlinBuildTarget
 import org.jetbrains.workspace.model.test.framework.JavaWorkspaceModelFixtureBaseTest
 import org.junit.jupiter.api.DisplayName
@@ -38,7 +43,7 @@ class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
         jvmBuildTarget = JvmBuildTarget(javaHome, javaVersion)
       )
 
-      val module = Module(
+      val module = GenericModuleInfo(
         name = "module1",
         type = "JAVA_MODULE",
         modulesDependencies = listOf(
@@ -50,17 +55,17 @@ class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
       )
 
       val baseDirContentRoot = ContentRoot(
-        url = projectBasePath.toAbsolutePath(),
+        path = projectBasePath.toAbsolutePath(),
         excludedPaths = listOf(),
       )
       val javaModule = JavaModule(
-        module = module,
+        genericModuleInfo = module,
         baseDirContentRoot = baseDirContentRoot,
         sourceRoots = listOf(),
         resourceRoots = listOf(),
         moduleLevelLibraries = listOf(),
         compilerOutput = Path("/compiler/output.jar"),
-        jvmJdkInfo = JvmJdkInfo(name = "${projectBasePath.name}-$javaVersion", javaHome = javaHome),
+        jvmJdkName = "${projectBasePath.name}-$javaVersion",
         kotlinAddendum = KotlinAddendum(
           languageVersion = kotlinBuildTarget.languageVersion,
           apiVersion = kotlinBuildTarget.apiVersion,

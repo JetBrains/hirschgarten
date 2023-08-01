@@ -11,6 +11,7 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.server.tasks.TestTargetTask
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
@@ -59,7 +60,7 @@ public class TestRunConfiguration(project: Project, configurationFactory: Config
         processHandler.execute {
           try {
             // TODO error handling?
-            TestTargetTask(project).connectAndExecute(it)
+            TestTargetTask(project).connectAndExecute(it.toBsp4JTargetIdentifier())
           } finally {
             testConsole.endTesting()
             bspTestConsole.deregisterPrinter(testConsole)

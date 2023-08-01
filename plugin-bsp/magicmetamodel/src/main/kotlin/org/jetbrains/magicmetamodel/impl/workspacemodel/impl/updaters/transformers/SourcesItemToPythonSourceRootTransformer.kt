@@ -1,10 +1,8 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.util.io.isAncestor
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.GenericSourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.SourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import java.nio.file.Path
 
 internal class SourcesItemToPythonSourceRootTransformer(private val projectBasePath: Path) :
@@ -30,7 +28,7 @@ internal class SourcesItemToPythonSourceRootTransformer(private val projectBaseP
 
     return SourceItemToSourceRootTransformer
       .transform(inputEntity.sourcesItem.sources)
-      .map { toPythonSourceRoot(it, rootType, inputEntity.buildTarget.id) }
+      .map { toPythonSourceRoot(it, rootType) }
       .filter { it.sourcePath.isPathInProjectBasePath(projectBasePath) }
   }
 
@@ -40,12 +38,10 @@ internal class SourcesItemToPythonSourceRootTransformer(private val projectBaseP
   private fun toPythonSourceRoot(
     sourceRoot: SourceRoot,
     rootType: String,
-    targetId: BuildTargetIdentifier
   ): GenericSourceRoot {
     return GenericSourceRoot(
       sourcePath = sourceRoot.sourcePath,
       rootType = rootType,
-      targetId = targetId,
     )
   }
 }

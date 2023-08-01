@@ -1,5 +1,3 @@
-@file:Suppress("LongMethod")
-
 package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.BuildTarget
@@ -15,40 +13,19 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
 import kotlin.io.path.toPath
 
-@DisplayName("TargetIdToModuleDetails(projectDetails) tests")
-class TargetIdToModuleDetailsMapTest {
+@DisplayName("ProjectDetailsToModuleDetailsTransformer.moduleDetailsForTargetId(projectDetails) tests")
+class ProjectDetailsToModuleDetailsTransformerTest {
   private val projectBasePathURI = "file:///root"
   private val projectBasePath = URI.create(projectBasePathURI).toPath()
 
   @Test
-  fun `should return empty map for empty project details`() {
-    // given
-    val emptyProjectDetails = ProjectDetails(
-      targetsId = emptyList(),
-      targets = setOf(),
-      sources = emptyList(),
-      resources = emptyList(),
-      dependenciesSources = emptyList(),
-      javacOptions = emptyList(),
-      pythonOptions = emptyList(),
-      outputPathUris = emptyList(),
-      libraries = emptyList(),
-    )
-
-    // when
-    val targetIdToModuleDetails = TargetIdToModuleDetailsMap(emptyProjectDetails, projectBasePath)
-
-    // then
-    targetIdToModuleDetails shouldBe emptyMap()
-  }
-
-  @Test
-  fun `should return map with one element only with target for project details without matching target details`() {
+  fun `should return empty module details for singular module`() {
     // given
     val targetId = BuildTargetIdentifier("target")
     val target = BuildTarget(
@@ -67,33 +44,31 @@ class TargetIdToModuleDetailsMapTest {
       javacOptions = emptyList(),
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
-      libraries = emptyList(),
+      libraries = null,
     )
 
     // when
-    val targetIdToModuleDetails = TargetIdToModuleDetailsMap(projectDetails, projectBasePath)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, projectBasePath)
+    val actualModuleDetails = transformer.moduleDetailsForTargetId(target.id)
 
     // then
     val expectedModuleDetails = ModuleDetails(
       target = target,
-      allTargetsIds = listOf(targetId),
       sources = emptyList(),
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = null,
       pythonOptions = null,
       outputPathUris = emptyList(),
-      libraryDependencies = emptyList(),
+      libraryDependencies = null,
       moduleDependencies = emptyList(),
-)
-
-    targetIdToModuleDetails shouldBe mapOf(
-      targetId to expectedModuleDetails
     )
+
+    actualModuleDetails shouldBe expectedModuleDetails
   }
 
   @Test
-  fun `should return map with one element for project details with one target`() {
+  fun `should return one module details for project details with one target`() {
     // given
     val targetId = BuildTargetIdentifier("target")
     val target = BuildTarget(
@@ -140,12 +115,12 @@ class TargetIdToModuleDetailsMapTest {
     )
 
     // when
-    val targetIdToModuleDetails = TargetIdToModuleDetailsMap(projectDetails, projectBasePath)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, projectBasePath)
+    val actualModuleDetails = transformer.moduleDetailsForTargetId(target.id)
 
     // then
     val expectedModuleDetails = ModuleDetails(
       target = target,
-      allTargetsIds = listOf(targetId),
       sources = listOf(targetSources),
       resources = listOf(targetResources),
       dependenciesSources = listOf(targetDependencySources),
@@ -154,15 +129,13 @@ class TargetIdToModuleDetailsMapTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList()
-)
-
-    targetIdToModuleDetails shouldBe mapOf(
-      targetId to expectedModuleDetails
     )
+
+    actualModuleDetails shouldBe expectedModuleDetails
   }
 
   @Test
-  fun `should return map with multiple elements for project details with multiple targets`() {
+  fun `should multiple module details for project details with multiple targets`() {
     // given
     val target1Id = BuildTargetIdentifier("target1")
     val target2Id = BuildTargetIdentifier("target2")
@@ -271,12 +244,15 @@ class TargetIdToModuleDetailsMapTest {
     )
 
     // when
-    val targetIdToModuleDetails = TargetIdToModuleDetailsMap(projectDetails, projectBasePath)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, projectBasePath)
+    val actualModuleDetails1 = transformer.moduleDetailsForTargetId(target1.id)
+    val actualModuleDetails2 = transformer.moduleDetailsForTargetId(target2.id)
+    val actualModuleDetails3 = transformer.moduleDetailsForTargetId(target3.id)
+    val actualModuleDetails4 = transformer.moduleDetailsForTargetId(target4.id)
 
     // then
     val expectedModuleDetails1 = ModuleDetails(
       target = target1,
-      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
       sources = listOf(target1Sources),
       resources = listOf(target1Resources),
       dependenciesSources = listOf(target1DependencySources),
@@ -284,11 +260,10 @@ class TargetIdToModuleDetailsMapTest {
       pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
-      moduleDependencies = listOf(target2Id)
+      moduleDependencies = listOf(target2Id.uri)
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
-      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
       sources = listOf(target2Sources1, target2Sources2),
       resources = listOf(target2Resources),
       dependenciesSources = listOf(target2DependencySources),
@@ -300,7 +275,6 @@ class TargetIdToModuleDetailsMapTest {
     )
     val expectedModuleDetails3 = ModuleDetails(
       target = target3,
-      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
       sources = listOf(target3Sources),
       resources = emptyList(),
       dependenciesSources = emptyList(),
@@ -308,11 +282,10 @@ class TargetIdToModuleDetailsMapTest {
       pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
-      moduleDependencies = listOf(target2Id),
+      moduleDependencies = listOf(target2Id.uri),
     )
     val expectedModuleDetails4 = ModuleDetails(
       target = target4,
-      allTargetsIds = listOf(target1Id, target3Id, target2Id, target4Id),
       sources = listOf(target4Sources),
       resources = emptyList(),
       dependenciesSources = emptyList(),
@@ -320,15 +293,13 @@ class TargetIdToModuleDetailsMapTest {
       pythonOptions = target4PythonOptionsItem,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
-      moduleDependencies = listOf(target1Id),
+      moduleDependencies = listOf(target1Id.uri),
     )
 
-    targetIdToModuleDetails shouldBe mapOf(
-      target1Id to expectedModuleDetails1,
-      target2Id to expectedModuleDetails2,
-      target3Id to expectedModuleDetails3,
-      target4Id to expectedModuleDetails4,
-    )
+    actualModuleDetails1 shouldBe expectedModuleDetails1
+    actualModuleDetails2 shouldBe expectedModuleDetails2
+    actualModuleDetails3 shouldBe expectedModuleDetails3
+    actualModuleDetails4 shouldBe expectedModuleDetails4
   }
 
   @Test
@@ -413,12 +384,14 @@ class TargetIdToModuleDetailsMapTest {
     )
 
     // when
-    val targetIdToModuleDetails = TargetIdToModuleDetailsMap(projectDetails, projectBasePath)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, projectBasePath)
+    val actualModuleDetails1 = transformer.moduleDetailsForTargetId(targetId1)
+    val actualModuleDetails2 = transformer.moduleDetailsForTargetId(targetId2)
+    val actualRootDetails = transformer.moduleDetailsForTargetId(rootTargetId)
 
     // then
     val expectedModuleDetails1 = ModuleDetails(
       target = target1,
-      allTargetsIds = listOf(targetId1, targetId2, rootTargetId),
       sources = listOf(targetSources1),
       resources = listOf(targetResources1),
       dependenciesSources = listOf(targetDependencySources1),
@@ -430,7 +403,6 @@ class TargetIdToModuleDetailsMapTest {
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
-      allTargetsIds = listOf(targetId1, targetId2, rootTargetId),
       sources = listOf(targetSources2),
       resources = listOf(targetResources2),
       dependenciesSources = listOf(targetDependencySources2),
@@ -442,7 +414,6 @@ class TargetIdToModuleDetailsMapTest {
     )
     val expectedRootModuleDetails = ModuleDetails(
       target = rootTarget,
-      allTargetsIds = listOf(targetId1, targetId2, rootTargetId),
       sources = emptyList(),
       resources = emptyList(),
       dependenciesSources = emptyList(),
@@ -453,10 +424,8 @@ class TargetIdToModuleDetailsMapTest {
       moduleDependencies = emptyList(),
     )
 
-    targetIdToModuleDetails shouldBe mapOf(
-      targetId1 to expectedModuleDetails1,
-      targetId2 to expectedModuleDetails2,
-      rootTargetId to expectedRootModuleDetails
-    )
+    actualModuleDetails1 shouldBe expectedModuleDetails1
+    actualModuleDetails2 shouldBe expectedModuleDetails2
+    actualRootDetails shouldBe expectedRootModuleDetails
   }
 }

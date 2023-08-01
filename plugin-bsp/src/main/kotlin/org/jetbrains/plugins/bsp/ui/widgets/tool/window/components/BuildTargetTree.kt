@@ -1,9 +1,9 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
-import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import java.awt.Component
 import java.awt.event.MouseListener
 import javax.swing.Icon
@@ -22,7 +22,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClas
 public class BuildTargetTree(
   private val targetIcon: Icon,
   private val toolName: String,
-  private val targets: Collection<BuildTarget>,
+  private val targets: Collection<BuildTargetInfo>,
   private val labelHighlighter: (String) -> String = { it }
 ) : BuildTargetContainer {
 
@@ -154,7 +154,7 @@ public class BuildTargetTree(
     treeComponent.addMouseListener(listenerBuilder(this))
   }
 
-  override fun getSelectedBuildTarget(): BuildTarget? {
+  override fun getSelectedBuildTarget(): BuildTargetInfo? {
     val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
     val userObject = selected?.userObject
     return if (userObject is TargetNodeData)
@@ -162,11 +162,11 @@ public class BuildTargetTree(
     else null
   }
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTarget>): BuildTargetTree =
+  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetTree =
     createNewWithTargetsAndHighlighter(newTargets, labelHighlighter)
 
   public fun createNewWithTargetsAndHighlighter(
-    newTargets: Collection<BuildTarget>,
+    newTargets: Collection<BuildTargetInfo>,
     labelHighlighter: (String) -> String
   ): BuildTargetTree {
     val new = BuildTargetTree(targetIcon, toolName, newTargets, labelHighlighter)
@@ -181,12 +181,12 @@ private interface NodeData
 private data class DirectoryNodeData(val name: String) : NodeData {
   override fun toString(): String = name
 }
-private data class TargetNodeData(val target: BuildTarget, val displayName: String) : NodeData {
-  override fun toString(): String = target.displayName ?: target.id.uri
+private data class TargetNodeData(val target: BuildTargetInfo, val displayName: String) : NodeData {
+  override fun toString(): String = target.displayName ?: target.id
 }
 
 private data class BuildTargetTreeIdentifier(
-  val target: BuildTarget,
+  val target: BuildTargetInfo,
   val path: List<String>,
   val displayName: String
 )

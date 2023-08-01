@@ -1,6 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntity
+import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelEntity
 
 internal interface WorkspaceModelEntityBaseTransformer<in T, out R> {
 

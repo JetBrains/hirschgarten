@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 
-import ch.epfl.scala.bsp4j.BuildTarget
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetTree
 import java.awt.event.MouseListener
 import javax.swing.Icon
@@ -18,6 +18,6 @@ public class LazySearchTreeDisplay(icon: Icon, toolName: String) : LazySearchDis
     targetTree.addMouseListener { _ -> mouseListener }
   }
 
-  override fun getSelectedBuildTarget(): BuildTarget? =
+  override fun getSelectedBuildTarget(): BuildTargetInfo? =
     targetTree.getSelectedBuildTarget()
 }
