@@ -81,9 +81,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
     this.libraries = projectDetails.libraries?.map {
       Library(
-        it.id.uri,
-        null,
-        it.jars.firstOrNull()
+        displayName = it.id.uri,
+        classJars = it.jars
       )
     }
 

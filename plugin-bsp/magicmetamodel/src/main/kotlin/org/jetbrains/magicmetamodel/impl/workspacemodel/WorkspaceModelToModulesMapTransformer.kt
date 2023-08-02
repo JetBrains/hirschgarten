@@ -44,8 +44,8 @@ public object WorkspaceModelToModulesMapTransformer {
       val librariesIndex = libraries.map { entity ->
         entity.symbolicId to Library(
           displayName = entity.name,
-          sourcesJar = entity.librariesSource(),
-          classesJar = entity.librariesJar(),
+          sourceJars = entity.librarySources(),
+          classJars = entity.libraryClasses(),
         )
       }.toMap()
       val modulesWithSources = sourceRoots.groupBy { it.contentRoot.module }
@@ -85,7 +85,7 @@ public object WorkspaceModelToModulesMapTransformer {
           module = genericModuleInfo,
           sourceRoots = sources.map { it.toGenericSourceRoot() },
           resourceRoots = sources.map { it.toResourceRoot() }.flatten(),
-          libraries = libraries.map { PythonLibrary(it.sourcesJar) }.toList(),
+          libraries = libraries.map { PythonLibrary(it.sourceJars) }.toList(),
           sdkInfo = entity.getPythonSdk(),
         )
       } else {
@@ -181,10 +181,10 @@ private fun ModuleEntity.getPythonSdk(): PythonSdkInfo? =
 
 
 private fun LibraryEntity.filterRoots(type: LibraryRootTypeId) =
-  roots.firstOrNull { it.type == type }?.url?.url
+  roots.filter { it.type == type }.map { it.url.url }
 
-private fun LibraryEntity.librariesSource() =
+private fun LibraryEntity.librarySources() =
   filterRoots(LibraryRootTypeId.SOURCES)
 
-private fun LibraryEntity.librariesJar() =
+private fun LibraryEntity.libraryClasses() =
   filterRoots(LibraryRootTypeId.COMPILED)

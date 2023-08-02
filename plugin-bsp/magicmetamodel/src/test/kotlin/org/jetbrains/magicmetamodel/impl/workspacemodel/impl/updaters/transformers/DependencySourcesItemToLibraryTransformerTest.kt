@@ -47,8 +47,8 @@ class DependencySourcesItemToLibraryTransformerTest {
     // then
     val expectedLibrary = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0-sources.jar!/",
-      classesJar = "jar:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0.jar!/",
+      sourceJars = listOf("jar:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0-sources.jar!/"),
+      classJars = listOf("jar:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0.jar!/"),
     )
     libraries shouldContainExactlyInAnyOrder listOf(expectedLibrary)
   }
@@ -82,18 +82,16 @@ class DependencySourcesItemToLibraryTransformerTest {
     // then
     val expectedLibrary1 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-      sourcesJar = null,
-      classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
+      classJars = listOf("jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/"),
     )
     val expectedLibrary2 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
-      classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
+      sourceJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/"),
+      classJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/"),
     )
     val expectedLibrary3 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar!/",
-      classesJar = null,
+      sourceJars = listOf("jar:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar!/"),
     )
     libraries shouldContainExactlyInAnyOrder listOf(expectedLibrary1, expectedLibrary2, expectedLibrary3)
   }
@@ -145,18 +143,16 @@ class DependencySourcesItemToLibraryTransformerTest {
     // then
     val expectedLibrary1 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-      sourcesJar = null,
-      classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
+      classJars = listOf("jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/"),
     )
     val expectedLibrary2 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
-      classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
+      sourceJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/"),
+      classJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/"),
     )
     val expectedLibrary3 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar!/",
-      classesJar = null,
+      sourceJars = listOf("jar:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar!/"),
     )
     libraries shouldContainExactlyInAnyOrder listOf(expectedLibrary1, expectedLibrary2, expectedLibrary3)
   }

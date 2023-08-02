@@ -80,7 +80,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
         )
       ),
       resourceRoots = listOf(),
-      moduleLevelLibraries = listOf(Library("lib1", null, null)),
+      moduleLevelLibraries = listOf(Library(displayName = "lib1")),
       compilerOutput = Path("file:///compiler/output.jar"),
       jvmJdkName = javaVersion,
       kotlinAddendum = null

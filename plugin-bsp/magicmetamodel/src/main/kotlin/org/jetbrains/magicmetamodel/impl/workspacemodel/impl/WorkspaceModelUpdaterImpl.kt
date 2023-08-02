@@ -57,12 +57,12 @@ internal class WorkspaceModelUpdaterImpl(
         LibraryEntity(
           name = entityToAdd.displayName,
           tableId = LibraryTableId.ProjectLibraryTableId,
-          roots = listOfNotNull(entityToAdd.classesJar?.let {
+          roots = entityToAdd.classJars.map {
             LibraryRoot(
               url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl("jar://${URI.create(it).path}!/"),
               type = LibraryRootTypeId.COMPILED
             )
-          }),
+          },
           entitySource = BspEntitySource,
         ) {
           this.excludedRoots = arrayListOf()

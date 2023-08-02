@@ -16,14 +16,14 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -110,13 +110,13 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val libraries = listOf(
           Library(
             displayName = "lib1",
-            sourcesJar = "jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/",
-            classesJar = "jar:///lib1/1.0.0/lib1.jar!/",
+            sourceJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/"),
+            classJars = listOf("jar:///lib1/1.0.0/lib1.jar!/"),
           ),
           Library(
             displayName = "lib2",
-            sourcesJar = "jar:///lib2/1.0.0/lib2-2.0.0-sources.jar!/",
-            classesJar = "jar:///lib2/1.0.0/lib2-2.0.0.jar!/",
+            sourceJars = listOf("jar:///lib2/1.0.0/lib2-2.0.0-sources.jar!/"),
+            classJars = listOf("jar:///lib2/1.0.0/lib2-2.0.0.jar!/"),
           ),
         )
         val compilerOutput = Path("compiler/output")
@@ -351,13 +351,13 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val libraries1 = listOf(
           Library(
             displayName = "lib1",
-            sourcesJar = "jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/",
-            classesJar = "jar:///lib1/1.0.0/lib1-1.0.0.jar!/",
+            sourceJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/"),
+            classJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0.jar!/"),
           ),
           Library(
             displayName = "lib2",
-            sourcesJar = "jar:///lib2/2.0.0/lib2-2.0.0-sources.jar!/",
-            classesJar = "jar:///lib2/1.0.0/lib2-2.0.0.jar!/",
+            sourceJars = listOf("jar:///lib2/2.0.0/lib2-2.0.0-sources.jar!/"),
+            classJars = listOf("jar:///lib2/1.0.0/lib2-2.0.0.jar!/"),
           ),
         )
         val compilerOutput1 = Path("compiler/output1")
@@ -414,8 +414,8 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val libraries2 = listOf(
           Library(
             displayName = "lib1",
-            sourcesJar = "jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/",
-            classesJar = "jar:///lib1/1.0.0/lib1-1.0.0.jar!/",
+            sourceJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/"),
+            classJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0.jar!/"),
           ),
         )
         val compilerOutput2 = Path("compiler/output2")

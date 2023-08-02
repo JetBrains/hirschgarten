@@ -7,6 +7,6 @@ internal object DependencySourcesItemToPythonLibraryTransformer :
   WorkspaceModelEntityPartitionTransformer<DependencySourcesItem, PythonLibrary> {
 
   override fun transform(inputEntity: DependencySourcesItem): List<PythonLibrary> =
-    inputEntity.sources.mapNotNull { PythonLibrary(it) }
+    inputEntity.sources.mapNotNull { PythonLibrary(listOf(it)) }
 
 }
