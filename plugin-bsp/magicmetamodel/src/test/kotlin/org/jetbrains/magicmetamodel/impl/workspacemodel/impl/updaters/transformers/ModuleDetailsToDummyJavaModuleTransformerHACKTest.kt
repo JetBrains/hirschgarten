@@ -103,7 +103,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = projectRoot.toAbsolutePath(),
-          generated = true,
+          generated = false,
           packagePrefix = "",
           rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
         )
@@ -200,7 +200,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = projectRoot1.toAbsolutePath(),
-          generated = true,
+          generated = false,
           packagePrefix = "",
           rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
         )
@@ -225,7 +225,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = projectRoot2.toAbsolutePath(),
-          generated = true,
+          generated = false,
           packagePrefix = "",
           rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
         )

@@ -42,7 +42,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
       sourceRoots = listOf(
         JavaSourceRoot(
           sourcePath = sourceRoot,
-          generated = true,
+          generated = false,
           packagePrefix = "",
           rootType = DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
         )
