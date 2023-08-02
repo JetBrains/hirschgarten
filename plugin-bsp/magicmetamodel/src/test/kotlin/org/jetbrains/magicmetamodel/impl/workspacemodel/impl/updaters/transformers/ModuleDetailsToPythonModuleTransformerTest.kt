@@ -348,7 +348,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       module = expectedModule1,
       sourceRoots = listOf(expectedGenericSourceRoot11, expectedGenericSourceRoot12, expectedGenericSourceRoot13),
       resourceRoots = listOf(expectedResourceRoot11),
-      libraries = listOf(PythonLibrary(dependencySourcesItem1.sources.first())),
+      libraries = listOf(PythonLibrary(dependencySourcesItem1.sources)),
       sdkInfo = null,
     )
 

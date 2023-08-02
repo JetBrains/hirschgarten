@@ -38,8 +38,8 @@ internal object DependencySourcesItemToLibraryTransformer :
 
           Library(
             displayName = calculateDisplayName(classJar),
-            classesJar = toJarString(classJar),
-            sourcesJar = toJarString(sourceJar),
+            classJars = listOf(toJarString(classJar)),
+            sourceJars = listOf(toJarString(sourceJar)),
           )
         }
       }
@@ -51,8 +51,7 @@ internal object DependencySourcesItemToLibraryTransformer :
     classJars.map {
       Library(
         displayName = calculateDisplayName(it),
-        classesJar = toJarString(it),
-        sourcesJar = null,
+        classJars = listOf(toJarString(it)),
       )
     }
 
@@ -60,8 +59,7 @@ internal object DependencySourcesItemToLibraryTransformer :
     classJars.map {
       Library(
         displayName = calculateDisplayName(it),
-        classesJar = null,
-        sourcesJar = toJarString(it),
+        sourceJars = listOf(toJarString(it)),
       )
     }
 

@@ -20,13 +20,13 @@ import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.workspace.model.constructors.SourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -201,13 +201,13 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val expectedLibrary1 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/",
-      classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
+      sourceJars = listOf("jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/"),
+      classJars = listOf("jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/"),
     )
     val expectedLibrary2 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
-      classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
+      sourceJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/"),
+      classJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/"),
     )
 
     val expectedJavaModule = JavaModule(
@@ -532,13 +532,13 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
     val expectedLibrary1 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/",
-      classesJar = "jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/",
+      sourceJars = listOf("jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0-sources.jar!/"),
+      classJars = listOf("jar:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar!/"),
     )
     val expectedLibrary2 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-      sourcesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/",
-      classesJar = "jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/",
+      sourceJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar!/"),
+      classJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/"),
     )
 
     val expectedJavaModule1 = JavaModule(

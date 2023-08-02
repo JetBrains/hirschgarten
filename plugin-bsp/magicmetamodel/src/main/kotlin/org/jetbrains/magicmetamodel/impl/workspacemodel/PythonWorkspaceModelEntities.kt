@@ -18,7 +18,7 @@ public data class PythonSdkInfo(val version: String, val originalName: String) {
   }
 }
 
-public data class PythonLibrary(val sources: String?) : WorkspaceModelEntity()
+public data class PythonLibrary(val sources: List<String>) : WorkspaceModelEntity()
 
 public data class PythonModule(
   val module: GenericModuleInfo,

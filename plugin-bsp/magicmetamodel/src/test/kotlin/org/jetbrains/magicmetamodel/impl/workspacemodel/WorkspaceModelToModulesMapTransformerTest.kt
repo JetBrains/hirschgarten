@@ -85,13 +85,13 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
 
       val library1 = Library(
         displayName = "lib1",
-        sourcesJar = "jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/",
-        classesJar = "jar:///lib1/1.0.0/lib1-1.0.0.jar!/",
+        sourceJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0-sources.jar!/"),
+        classJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0.jar!/"),
       )
       val library2 = Library(
         displayName = "lib2",
-        sourcesJar = "jar:///lib2/2.0.0/lib2-2.0.0-sources.jar!/",
-        classesJar = "jar:///lib2/2.0.0/lib2-2.0.0.jar!/",
+        sourceJars = listOf("jar:///lib2/2.0.0/lib2-2.0.0-sources.jar!/"),
+        classJars = listOf("jar:///lib2/2.0.0/lib2-2.0.0.jar!/"),
       )
 
       val libraries1 = listOf(

@@ -34,8 +34,8 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
     // given
     val library = Library(
       displayName = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
-      sourcesJar = "jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/",
-      classesJar = "jar:///dependency/test/1.0.0/test-1.0.0.jar!/",
+      sourceJars = listOf("jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/"),
+      classJars = listOf("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
     )
 
     // when
@@ -70,14 +70,14 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBase
     // given
     val library1 = Library(
       displayName = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
-      sourcesJar = "jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/",
-      classesJar = "jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/",
+      sourceJars = listOf("jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/"),
+      classJars = listOf("jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/"),
     )
 
     val library2 = Library(
       displayName = "BSP: file:///dependency/test2/2.0.0/test2-2.0.0.jar",
-      sourcesJar = "jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/",
-      classesJar = "jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/",
+      sourceJars = listOf("jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/"),
+      classJars = listOf("jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/"),
     )
 
     val libraries = listOf(library1, library2)

@@ -1,12 +1,12 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 
 internal class LibraryEntityUpdater(
@@ -25,26 +25,26 @@ internal class LibraryEntityUpdater(
       LibraryEntity(
         name = entityToAdd.displayName,
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
-        roots = listOfNotNull(toLibrarySourcesRoot(entityToAdd), toLibraryClassesRoot(entityToAdd)),
+        roots = toLibrarySourcesRoots(entityToAdd) + toLibraryClassesRoots(entityToAdd),
         entitySource = BspEntitySource
       ) {
         this.excludedRoots = arrayListOf()
       }
     )
 
-  private fun toLibrarySourcesRoot(entityToAdd: Library): LibraryRoot? =
-    entityToAdd.sourcesJar?.let {
+  private fun toLibrarySourcesRoots(entityToAdd: Library): List<LibraryRoot> =
+    entityToAdd.sourceJars.map {
       LibraryRoot(
         url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(it),
-        type = LibraryRootTypeId.SOURCES,
+        type = LibraryRootTypeId.SOURCES
       )
     }
 
-  private fun toLibraryClassesRoot(entityToAdd: Library): LibraryRoot? =
-    entityToAdd.classesJar?.let {
+  private fun toLibraryClassesRoots(entityToAdd: Library): List<LibraryRoot> =
+    entityToAdd.classJars.map {
       LibraryRoot(
         url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(it),
-        type = LibraryRootTypeId.COMPILED,
+        type = LibraryRootTypeId.COMPILED
       )
     }
 }
