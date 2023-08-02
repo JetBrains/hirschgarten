@@ -21,3 +21,4 @@ It is possible to run a benchmark that imports an arbitrary project.
 ./gradlew runIde --args="-Dbsp.benchmark.project.path=<repository_path> -Dbsp.benchmark.metrics.file=$PWD/metrics.txt -Djb.consents.confirmation.enabled=false -Djava.awt.headless=true -Djb.privacy.policy.text=<\!--999.999--> -Dide.show.tips.on.startup.default.value=false"
 ```
 4. Read the output of metrics.txt file
+...
