@@ -177,7 +177,7 @@ public data class ModuleState(
   var baseDirContentRoot: ContentRootState? = null,
   var sourceRoots: List<SourceRootState> = emptyList(),
   var resourceRoots: List<String> = emptyList(),
-  var libraries: List<LibraryState>? = emptyList(),
+  var libraries: List<LibraryState>? = null,
   var compilerOutput: String? = null,
   var jvmJdkName: String? = null,
   val sdkInfo: PythonSdkInfoState? = null,
