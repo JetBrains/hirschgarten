@@ -15,12 +15,19 @@ import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
+import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelToModulesMapTransformer
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
+import java.net.URI
+import kotlin.io.path.name
+import kotlin.io.path.toPath
 
 internal class DefaultMagicMetaModelDiff(
   private val workspaceModel: WorkspaceModel,
@@ -61,6 +68,9 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   private val targetLoadListeners = mutableSetOf<() -> Unit>()
 
+  // TODO ITS SUUPER UGLY I'LL MAKE IT NICER BUT WE NEED TO FIX THE ISSUE ASAP
+  private val excludedPaths: List<String>
+
   internal constructor(
     magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
     projectDetails: ProjectDetails,
@@ -87,6 +97,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     }
 
     this.loadedTargetsStorage = LoadedTargetsStorage(targetIdToModule.keys)
+    this.excludedPaths = projectDetails.outputPathUris
 
     log.debug { "Initializing MagicMetaModelImpl done!" }
   }
@@ -110,6 +121,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       loadedTargetsStorage,
       magicMetaModelProjectConfig.moduleNameProvider
     ) + unloadedTargets
+
+    this.excludedPaths = state.excludedPaths
   }
 
   override fun loadDefaultTargets(): MagicMetaModelDiff {
@@ -133,11 +146,16 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     newStorage.clear()
 
     val modulesToLoad = getModulesForTargetsToLoad(nonOverlappingTargetsToLoad)
+    val rootModule = rootModuleToLoadIfNeeded()
 
     // TODO TEST TESTS TESTS TEST
     logPerformance("load-modules") {
       workspaceModelUpdater.loadModules(modulesToLoad)
       workspaceModelUpdater.loadLibraries(libraries.orEmpty())
+
+      if (rootModule != null) {
+        workspaceModelUpdater.loadModule(rootModule)
+      }
     }
     newStorage.addTargets(nonOverlappingTargetsToLoad)
 
@@ -153,6 +171,45 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   // TODO what if null?
   private fun getModulesForTargetsToLoad(targetsToLoad: Collection<BuildTargetId>): List<Module> =
     targetsToLoad.map { targetIdToModule[it]!! }
+
+  private fun rootModuleToLoadIfNeeded(): Module? =
+    if (!isRootModuleIncluded() && isProjectNonEmpty()) rootModuleToLoad() else null
+
+  private fun isRootModuleIncluded(): Boolean =
+    targetIdToModule.values.any { it.doesIncludeRootDir() }
+
+  private fun Module.doesIncludeRootDir() =
+    when(this) {
+      is JavaModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath }
+          || baseDirContentRoot?.path == magicMetaModelProjectConfig.projectBasePath
+      is PythonModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath }
+      else -> false
+    }
+
+  private fun isProjectNonEmpty(): Boolean =
+    targets.isNotEmpty()
+
+  private fun rootModuleToLoad(): Module {
+    val genericModuleInfo = GenericModuleInfo(
+      name = magicMetaModelProjectConfig.projectBasePath.name,
+      type = "JAVA_MODULE",
+      modulesDependencies = emptyList(),
+      librariesDependencies = emptyList(),
+    )
+
+    return JavaModule(
+      genericModuleInfo = genericModuleInfo,
+      baseDirContentRoot = ContentRoot(
+        path = magicMetaModelProjectConfig.projectBasePath,
+        excludedPaths = excludedPaths.map { URI.create(it).toPath() }
+      ),
+      sourceRoots = emptyList(),
+      resourceRoots = emptyList(),
+      moduleLevelLibraries = null,
+      compilerOutput = null,
+      jvmJdkName = null
+    )
+  }
 
   override fun registerTargetLoadListener(function: () -> Unit) {
     targetLoadListeners.add(function)
