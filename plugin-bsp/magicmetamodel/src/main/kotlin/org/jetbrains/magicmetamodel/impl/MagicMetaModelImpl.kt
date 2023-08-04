@@ -25,6 +25,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelToModulesMapTransformer
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.toModuleCapabilities
 import java.net.URI
 import kotlin.io.path.name
 import kotlin.io.path.toPath
@@ -92,7 +93,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     this.libraries = projectDetails.libraries?.map {
       Library(
         displayName = it.id.uri,
-        classJars = it.jars
+        classJars = it.jars,
+        capabilities = it.capabilities.toModuleCapabilities()
       )
     }
 
@@ -272,7 +274,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   }
 
   override fun getAllLoadedTargets(): List<BuildTargetInfo> =
-    targets.filter { loadedTargetsStorage.isTargetLoaded(it.id) }
+    targets.filter { loadedTargetsStorage.isTargetLoaded(it.id) } +
+            libraries.orEmpty().map { BuildTargetInfo(id = it.displayName, capabilities = it.capabilities) }
 
   override fun getAllNotLoadedTargets(): List<BuildTargetInfo> =
     targets.filter { loadedTargetsStorage.isTargetNotLoaded(it.id) }

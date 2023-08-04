@@ -46,6 +46,7 @@ public data class Library(
   val displayName: String,
   val sourceJars: List<String> = listOf(),
   val classJars: List<String> = listOf(),
+  val capabilities: ModuleCapabilities = ModuleCapabilities()
 ) : WorkspaceModelEntity(), ResourceRootEntity
 
 public data class ModuleDependency(

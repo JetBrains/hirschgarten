@@ -124,11 +124,13 @@ public data class LibraryState(
   var displayName: String = "",
   var sourceJars: List<String> = listOf(),
   var classeJars: List<String> = listOf(),
+  var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState()
 ) : ConvertableFromState<Library> {
   override fun fromState(): Library = Library(
     displayName = displayName,
     sourceJars = sourceJars,
     classJars = classeJars,
+    capabilities = capabilities.fromState()
   )
 
   internal fun toPythonLibrary(): PythonLibrary = PythonLibrary(sourceJars)
