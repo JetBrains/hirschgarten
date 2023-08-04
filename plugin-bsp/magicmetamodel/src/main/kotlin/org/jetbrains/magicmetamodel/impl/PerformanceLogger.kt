@@ -14,9 +14,9 @@ public object PerformanceLogger {
   private val metrics: java.util.HashMap<String, Long> = HashMap()
 
   public fun <T> logPerformance(computationId: String, block: () -> T): T {
-    log.debug("Task '${computationId}' started")
+    log.info("Task '${computationId}' started")
     return measureTimedValue(block).let {
-      log.debug("Task '$computationId' finished in ${it.duration.inWholeMilliseconds}ms")
+      log.info("Task '$computationId' finished in ${it.duration.inWholeMilliseconds}ms")
       val clearKey = computationId.replace("""[\s-_]+""".toRegex(), ".").lowercase(Locale.getDefault())
       logMemory(clearKey)
       logMilliseconds(clearKey, it.duration.inWholeMilliseconds)
@@ -29,9 +29,9 @@ public object PerformanceLogger {
   }
 
   public suspend fun <T> logPerformanceSuspend(computationId: String, block: suspend () -> T): T {
-    log.debug("Task '${computationId}' started")
+    log.info("Task '${computationId}' started")
     return measureTimedValue { block() }.let {
-      log.debug("Task '$computationId' finished in ${it.duration.inWholeMilliseconds}ms")
+      log.info("Task '$computationId' finished in ${it.duration.inWholeMilliseconds}ms")
       it.value
     }
   }
