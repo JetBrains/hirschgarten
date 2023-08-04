@@ -8,6 +8,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.platform.backend.workspace.BuilderSnapshot
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
+import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
@@ -80,26 +81,38 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
     targets = projectDetails.targets.map(BuildTarget::toBuildTargetInfo).toHashSet()
 
-    this.targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
-    this.overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+    this.targetsDetailsForDocumentProvider = logPerformance("create-target-details-for-document-provider") {
+      TargetsDetailsForDocumentProvider(projectDetails.sources)
+    }
+    this.overlappingTargetsGraph = logPerformance("create-overlapping-targets-graph") {
+      OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+    }
 
-    this.targetIdToModule = TargetIdToModuleEntitiesMap(
-      projectDetails,
-      magicMetaModelProjectConfig.projectBasePath,
-      magicMetaModelProjectConfig.moduleNameProvider,
-    )
-
-    this.libraries = projectDetails.libraries?.map {
-      Library(
-        displayName = it.id.uri,
-        classJars = it.jars
+    this.targetIdToModule = logPerformance("create-target-id-to-module-entities-map") {
+      TargetIdToModuleEntitiesMap(
+        projectDetails,
+        magicMetaModelProjectConfig.projectBasePath,
+        magicMetaModelProjectConfig.moduleNameProvider,
       )
     }
 
-    this.loadedTargetsStorage = LoadedTargetsStorage(targetIdToModule.keys)
+    this.libraries = logPerformance("create-libraries") {
+      createLibraries(projectDetails.libraries)
+    }
+
+    this.loadedTargetsStorage = logPerformance("create-loaded-targets-storage") {
+      LoadedTargetsStorage(targetIdToModule.keys)
+    }
     this.excludedPaths = projectDetails.outputPathUris
 
     log.debug { "Initializing MagicMetaModelImpl done!" }
+  }
+
+  private fun createLibraries(libraries: List<LibraryItem>?) = libraries?.map {
+    Library(
+      displayName = it.id.uri,
+      classJars = it.jars
+    )
   }
 
   internal constructor(state: DefaultMagicMetaModelState, magicMetaModelProjectConfig: MagicMetaModelProjectConfig) {
