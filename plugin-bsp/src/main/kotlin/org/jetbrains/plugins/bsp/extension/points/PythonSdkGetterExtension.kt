@@ -14,17 +14,16 @@ import java.net.URI
 import kotlin.io.path.toPath
 
 public interface PythonSdkGetterExtension {
-
   public fun getPythonSdk(
     pythonSdk: PythonSdk,
     jdkTable: ProjectJdkTable,
-    virtualFileUrlManager: VirtualFileUrlManager
+    virtualFileUrlManager: VirtualFileUrlManager,
   ): Sdk
 }
 
 private val ep =
   ExtensionPointName.create<PythonSdkGetterExtension>(
-    "com.intellij.pythonSdkGetterExtension"
+    "com.intellij.pythonSdkGetterExtension",
   )
 
 public fun pythonSdkGetterExtension(): PythonSdkGetterExtension? =
@@ -33,12 +32,11 @@ public fun pythonSdkGetterExtension(): PythonSdkGetterExtension? =
 public fun pythonSdkGetterExtensionExists(): Boolean =
   ep.extensionList.isNotEmpty()
 
-
 public class PythonSdkGetter : PythonSdkGetterExtension {
   override fun getPythonSdk(
     pythonSdk: PythonSdk,
     jdkTable: ProjectJdkTable,
-    virtualFileUrlManager: VirtualFileUrlManager
+    virtualFileUrlManager: VirtualFileUrlManager,
   ): Sdk {
     val allJdks = jdkTable.allJdks.toList()
     val additionalData = PythonSdkAdditionalData()
@@ -58,7 +56,7 @@ public class PythonSdkGetter : PythonSdkGetterExtension {
       URI.create(pythonSdk.interpreter).toPath().toString(),
       PythonSdkType.getInstance(),
       additionalData,
-      pythonSdk.name
+      pythonSdk.name,
     )
   }
 }

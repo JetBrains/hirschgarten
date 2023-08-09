@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("BspModuleDetailsToModuleTransformer.transform(bspModuleDetails) tests")
 class BspModuleDetailsToModuleTransformerTest {
-
   @Test
   fun `should return no modules for no bsp module details items`() {
     // given
@@ -51,12 +50,12 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target2"),
         BuildTargetIdentifier("//target3"),
       ),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
     )
 
     val dependencySourceItem1 = DependencySourcesItem(
       targetId,
-      listOf(dependencySource1, dependencySource2)
+      listOf(dependencySource1, dependencySource2),
     )
     val javacOptions = JavacOptionsItem(
       targetId,
@@ -78,7 +77,7 @@ class BspModuleDetailsToModuleTransformerTest {
         "//target2",
         "//target3",
       ),
-      libraryDependencies = null
+      libraryDependencies = null,
     )
 
     // when
@@ -103,9 +102,9 @@ class BspModuleDetailsToModuleTransformerTest {
         ),
         LibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
-          false
+          false,
         ),
-      )
+      ),
     )
 
     shouldBeIgnoringDependenciesOrder(module, expectedModule)
@@ -125,7 +124,7 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target2"),
         BuildTargetIdentifier("//target3"),
       ),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
     )
     val bspModuleDetails = BspModuleDetails(
       target = target,
@@ -142,8 +141,8 @@ class BspModuleDetailsToModuleTransformerTest {
         "//target3",
       ),
       libraryDependencies = listOf(
-        "@maven//:test"
-      )
+        "@maven//:test",
+      ),
     )
     // when
     val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
@@ -161,7 +160,7 @@ class BspModuleDetailsToModuleTransformerTest {
         ),
       ),
       librariesDependencies = listOf(
-        LibraryDependency("@maven//:test", true)
+        LibraryDependency("@maven//:test", true),
       ),
       associates = listOf(
         ModuleDependency(
@@ -170,7 +169,7 @@ class BspModuleDetailsToModuleTransformerTest {
         ModuleDependency(
           moduleName = "//target5",
         ),
-      )
+      ),
     )
 
     shouldBeIgnoringDependenciesOrder(module, expectedModule)
@@ -212,7 +211,7 @@ class BspModuleDetailsToModuleTransformerTest {
       moduleDependencies = listOf(
         "//target2",
         "//target3",
-      )
+      ),
     )
 
     // when
@@ -231,7 +230,7 @@ class BspModuleDetailsToModuleTransformerTest {
         ),
       ),
       librariesDependencies = emptyList(),
-      associates = emptyList()
+      associates = emptyList(),
     )
 
     shouldBeIgnoringDependenciesOrder(module, expectedModule)
@@ -255,19 +254,19 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("//target2"),
         BuildTargetIdentifier("//target3"),
       ),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
     )
 
     val dependencySourceItem1 = DependencySourcesItem(
       target1Id,
-      listOf(dependencySource1, dependencySource2)
+      listOf(dependencySource1, dependencySource2),
     )
     val javacOptionsItem1 = JavacOptionsItem(
       target1Id,
       emptyList(),
       listOf(
         "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-        "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar"
+        "file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
       ),
       "file:///compiler/output1.jar",
     )
@@ -282,7 +281,7 @@ class BspModuleDetailsToModuleTransformerTest {
         "//target2",
         "//target3",
       ),
-      libraryDependencies = null
+      libraryDependencies = null,
     )
 
     val target2Name = "//target2"
@@ -296,12 +295,12 @@ class BspModuleDetailsToModuleTransformerTest {
         BuildTargetIdentifier("@maven//:test"),
         BuildTargetIdentifier("//target3"),
       ),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
     )
 
     val dependencySourceItem2 = DependencySourcesItem(
       target2Id,
-      listOf(dependencySource1)
+      listOf(dependencySource1),
     )
     val javacOptionsItem2 = JavacOptionsItem(
       target2Id,
@@ -346,7 +345,7 @@ class BspModuleDetailsToModuleTransformerTest {
         LibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
         ),
-      )
+      ),
     )
 
     val expectedModule2 = GenericModuleInfo(
@@ -403,7 +402,7 @@ class BspModuleDetailsToModuleTransformerTest {
       moduleDependencies = listOf(
         "//target2",
         "//target3",
-      )
+      ),
     )
 
     val target2Name = "//target2"
@@ -436,7 +435,7 @@ class BspModuleDetailsToModuleTransformerTest {
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(
         "//target3",
-      )
+      ),
     )
 
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
@@ -484,7 +483,7 @@ class BspModuleDetailsToModuleTransformerTest {
       emptyList(),
       listOf("java"),
       emptyList(),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
     )
 
     val javacOptions = JavacOptionsItem(
@@ -508,7 +507,7 @@ class BspModuleDetailsToModuleTransformerTest {
     )
     // when
     val transformer = BspModuleDetailsToModuleTransformer(
-      moduleNameProvider = { "$it$it" }
+      moduleNameProvider = { "$it$it" },
     )
     val module = transformer.transform(bspModuleDetails)
 
@@ -518,7 +517,7 @@ class BspModuleDetailsToModuleTransformerTest {
 
   // TODO
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(
-    expectedWithAssertion: Pair<Collection<E>, (T, E) -> Unit>
+    expectedWithAssertion: Pair<Collection<E>, (T, E) -> Unit>,
   ) {
     val expectedValues = expectedWithAssertion.first
     val assertion = expectedWithAssertion.second

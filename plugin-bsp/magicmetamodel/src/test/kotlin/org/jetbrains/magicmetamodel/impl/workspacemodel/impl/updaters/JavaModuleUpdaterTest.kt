@@ -41,11 +41,9 @@ import kotlin.reflect.full.primaryConstructor
 
 // TODO add libraries tests
 internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
-
   @Nested
   @DisplayName("javaModuleWithSourcesUpdater.addEntity(entityToAdd) tests")
   inner class JavaModuleWithSourcesUpdaterTest {
-
     @Test
     fun `should add one java module with sources to the workspace model`() {
       runTestForUpdaters(listOf(JavaModuleWithSourcesUpdater::class, JavaModuleUpdater::class)) { updater ->
@@ -64,17 +62,17 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = listOf(
             LibraryDependency(
               libraryName = "lib1",
-              isProjectLevelLibrary = false
+              isProjectLevelLibrary = false,
             ),
             LibraryDependency(
               libraryName = "lib2",
-              isProjectLevelLibrary = false
+              isProjectLevelLibrary = false,
             ),
           ),
         )
 
         val baseDirContentRoot = ContentRoot(
-          path = URI.create("file:///root/dir/example/").toPath()
+          path = URI.create("file:///root/dir/example/").toPath(),
         )
 
         val sourcePath1 = URI.create("file:///root/dir/example/package/one").toPath()
@@ -172,7 +170,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
               ModuleDependencyItem.SdkDependency("test-proj-11", "JavaSDK"),
               ModuleDependencyItem.ModuleSourceDependency,
-            )
+            ),
           ) {
             type = "JAVA_MODULE"
             javaSettings = JavaModuleSettingsEntity(
@@ -182,7 +180,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             ) {
               this.compilerOutput = Path("compiler/output").toVirtualFileUrl(virtualFileUrlManager)
             }
-          }
+          },
         )
 
         returnedModuleEntity shouldBeEqual expectedModuleEntity
@@ -204,8 +202,8 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               JavaSourceRootPropertiesEntity(
                 entitySource = expectedModuleEntity.moduleEntity.entitySource,
                 generated = false,
-                packagePrefix = sourcePackagePrefix1
-              )
+                packagePrefix = sourcePackagePrefix1,
+              ),
             )
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
@@ -215,19 +213,19 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualSourceDir2,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualSourceDir2,
-            rootType = "java-source"
+            rootType = "java-source",
           ) {
             javaSourceRoots = listOf(
               JavaSourceRootPropertiesEntity(
                 entitySource = expectedModuleEntity.moduleEntity.entitySource,
                 generated = false,
-                packagePrefix = sourcePackagePrefix2
-              )
+                packagePrefix = sourcePackagePrefix2,
+              ),
             )
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
@@ -238,19 +236,19 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl1,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl1,
-            rootType = "java-resource"
+            rootType = "java-resource",
           ) {
             javaResourceRoots = listOf(
               JavaResourceRootPropertiesEntity(
                 entitySource = expectedModuleEntity.moduleEntity.entitySource,
                 generated = false,
-                relativeOutputPath = ""
-              )
+                relativeOutputPath = "",
+              ),
             )
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
@@ -260,19 +258,19 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl2,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl2,
-            rootType = "java-resource"
+            rootType = "java-resource",
           ) {
             javaResourceRoots = listOf(
               JavaResourceRootPropertiesEntity(
                 entitySource = expectedModuleEntity.moduleEntity.entitySource,
                 generated = false,
-                relativeOutputPath = ""
-              )
+                relativeOutputPath = "",
+              ),
             )
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
@@ -305,17 +303,17 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = listOf(
             LibraryDependency(
               libraryName = "lib1",
-              isProjectLevelLibrary = false
+              isProjectLevelLibrary = false,
             ),
             LibraryDependency(
               libraryName = "lib2",
-              isProjectLevelLibrary = false
+              isProjectLevelLibrary = false,
             ),
           ),
         )
 
         val baseDirContentRoot1 = ContentRoot(
-          path = URI.create("file:///root/dir/example/").toPath()
+          path = URI.create("file:///root/dir/example/").toPath(),
         )
 
         val sourcePath11 = URI.create("file:///root/dir/example/package/one").toPath()
@@ -384,13 +382,13 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           librariesDependencies = listOf(
             LibraryDependency(
               libraryName = "lib1",
-              isProjectLevelLibrary = false
+              isProjectLevelLibrary = false,
             ),
           ),
         )
 
         val baseDirContentRoot2 = ContentRoot(
-          path = URI.create("file:///another/root/dir/example/").toPath()
+          path = URI.create("file:///another/root/dir/example/").toPath(),
         )
 
         val sourcePath21 = URI.create("file:///another/root/dir/another/example/package/").toPath()
@@ -474,7 +472,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
               ModuleDependencyItem.SdkDependency("test-proj-11", "JavaSDK"),
               ModuleDependencyItem.ModuleSourceDependency,
-            )
+            ),
           ) {
             type = "JAVA_MODULE"
             javaSettings = JavaModuleSettingsEntity(
@@ -484,7 +482,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             ) {
               this.compilerOutput = Path("compiler/output1").toVirtualFileUrl(virtualFileUrlManager)
             }
-          }
+          },
         )
 
         val expectedModuleEntity2 = ExpectedModuleEntity(
@@ -508,7 +506,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
               ModuleDependencyItem.SdkDependency("test-proj-11", "JavaSDK"),
               ModuleDependencyItem.ModuleSourceDependency,
-            )
+            ),
           ) {
             type = "JAVA_MODULE"
             javaSettings = JavaModuleSettingsEntity(
@@ -518,7 +516,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             ) {
               this.compilerOutput = Path("compiler/output2").toVirtualFileUrl(virtualFileUrlManager)
             }
-          }
+          },
         )
 
         val expectedModuleEntries = listOf(expectedModuleEntity1, expectedModuleEntity2)
@@ -531,19 +529,19 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir11,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir11,
-            rootType = "java-source"
+            rootType = "java-source",
           ) {
             javaSourceRoots = listOf(
               JavaSourceRootPropertiesEntity(
                 entitySource = expectedModuleEntity1.moduleEntity.entitySource,
                 generated = false,
-                packagePrefix = sourcePackagePrefix11
-              )
+                packagePrefix = sourcePackagePrefix11,
+              ),
             )
           },
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
@@ -553,19 +551,19 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir12,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir12,
-            rootType = "java-source"
+            rootType = "java-source",
           ) {
             javaSourceRoots = listOf(
               JavaSourceRootPropertiesEntity(
                 entitySource = expectedModuleEntity1.moduleEntity.entitySource,
                 generated = false,
-                packagePrefix = sourcePackagePrefix12
-              )
+                packagePrefix = sourcePackagePrefix12,
+              ),
             )
           },
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
@@ -575,19 +573,19 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualSourceDir21,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualSourceDir21,
-            rootType = "java-test"
+            rootType = "java-test",
           ) {
             javaSourceRoots = listOf(
               JavaSourceRootPropertiesEntity(
                 entitySource = expectedModuleEntity2.moduleEntity.entitySource,
                 generated = false,
-                packagePrefix = sourcePackagePrefix21
-              )
+                packagePrefix = sourcePackagePrefix21,
+              ),
             )
           },
           parentModuleEntity = expectedModuleEntity2.moduleEntity,
@@ -598,19 +596,19 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl11,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl11,
-            rootType = "java-resource"
+            rootType = "java-resource",
           ) {
             javaResourceRoots = listOf(
               JavaResourceRootPropertiesEntity(
                 entitySource = expectedModuleEntity1.moduleEntity.entitySource,
                 generated = false,
-                relativeOutputPath = ""
-              )
+                relativeOutputPath = "",
+              ),
             )
           },
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
@@ -620,19 +618,19 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl12,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl12,
-            rootType = "java-resource"
+            rootType = "java-resource",
           ) {
             javaResourceRoots = listOf(
               JavaResourceRootPropertiesEntity(
                 entitySource = expectedModuleEntity1.moduleEntity.entitySource,
                 generated = false,
-                relativeOutputPath = ""
-              )
+                relativeOutputPath = "",
+              ),
             )
           },
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
@@ -642,19 +640,19 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualResourceUrl21,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualResourceUrl21,
-            rootType = "java-resource"
+            rootType = "java-resource",
           ) {
             javaResourceRoots = listOf(
               JavaResourceRootPropertiesEntity(
                 entitySource = expectedModuleEntity2.moduleEntity.entitySource,
                 generated = false,
-                relativeOutputPath = ""
-              )
+                relativeOutputPath = "",
+              ),
             )
           },
           parentModuleEntity = expectedModuleEntity2.moduleEntity,
@@ -675,7 +673,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
   @Nested
   @DisplayName("javaModuleWithoutSourcesUpdater.addEntity(entityToAdd) tests")
   inner class JavaModuleWithoutSourcesUpdaterTest {
-
     @Test
     fun `should add one java module without sources to the workspace model`() {
       runTestForUpdaters(listOf(JavaModuleWithoutSourcesUpdater::class, JavaModuleUpdater::class)) { updater ->
@@ -685,7 +682,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           type = "JAVA_MODULE",
           modulesDependencies = emptyList(),
           librariesDependencies = emptyList(),
-          languageIds = listOf("java")
+          languageIds = listOf("java"),
         )
 
         val baseDirContentRootPath = URI.create("file:///root/dir/").toPath()
@@ -717,7 +714,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             dependencies = emptyList(),
           ) {
             type = "JAVA_MODULE"
-          }
+          },
         )
 
         returnedModuleEntity shouldBeEqual expectedModuleEntity
@@ -734,7 +731,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           type = "JAVA_MODULE",
           modulesDependencies = emptyList(),
           librariesDependencies = emptyList(),
-          languageIds = listOf("java")
+          languageIds = listOf("java"),
         )
 
         val baseDirContentRootPath1 = URI.create("file:///root/dir1/").toPath()
@@ -758,7 +755,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           type = "JAVA_MODULE",
           modulesDependencies = emptyList(),
           librariesDependencies = emptyList(),
-          languageIds = listOf("java")
+          languageIds = listOf("java"),
         )
 
         val baseDirContentRootPath2 = URI.create("file:///root/dir2/").toPath()
@@ -792,7 +789,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             dependencies = emptyList(),
           ) {
             type = "JAVA_MODULE"
-          }
+          },
         )
         val expectedModuleEntity2 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
@@ -801,7 +798,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             dependencies = emptyList(),
           ) {
             type = "JAVA_MODULE"
-          }
+          },
         )
 
         val expectedModuleEntries = listOf(expectedModuleEntity1, expectedModuleEntity2)

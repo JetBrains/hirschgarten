@@ -12,7 +12,6 @@ import kotlin.io.path.Path
 
 @DisplayName("ResourcesItemToJavaResourceRootTransformer.transform(resourcesItem) tests")
 class ResourcesItemToJavaResourceRootTransformerTest {
-
   private val projectBasePath = Path("").toAbsolutePath()
 
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer(projectBasePath)
@@ -38,7 +37,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val resourcesItem = ResourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(resourceRawUri)
+      listOf(resourceRawUri),
     )
 
     // when
@@ -46,7 +45,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     // then
     val expectedJavaResource = ResourceRoot(
-      resourcePath = resourceFilePath.parent
+      resourcePath = resourceFilePath.parent,
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
@@ -61,7 +60,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val resourcesItem = ResourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(resourceRawUri)
+      listOf(resourceRawUri),
     )
 
     // when
@@ -69,7 +68,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     // then
     val expectedJavaResource = ResourceRoot(
-      resourcePath = resourceDirPath
+      resourcePath = resourceDirPath,
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
@@ -90,7 +89,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val resourcesItem = ResourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(resourceRawUri1, resourceRawUri2, resourceRawUri3)
+      listOf(resourceRawUri1, resourceRawUri2, resourceRawUri3),
     )
 
     // when
@@ -98,7 +97,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     // then
     val expectedJavaResource = ResourceRoot(
-      resourcePath = resourceFilePath1.parent
+      resourcePath = resourceFilePath1.parent,
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
@@ -124,10 +123,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     // then
     val expectedJavaResource1 = ResourceRoot(
-      resourcePath = resourceFilePath.parent
+      resourcePath = resourceFilePath.parent,
     )
     val expectedJavaResource2 = ResourceRoot(
-      resourcePath = resourceDirPath
+      resourcePath = resourceDirPath,
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource1, expectedJavaResource2)
@@ -150,11 +149,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val resourcesItem1 = ResourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(resourceRawUri1, resourceRawUri2)
+      listOf(resourceRawUri1, resourceRawUri2),
     )
     val resourcesItem2 = ResourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(resourceRawUri2, resourceDirRawUri3)
+      listOf(resourceRawUri2, resourceDirRawUri3),
     )
 
     val resourcesItems = listOf(resourcesItem1, resourcesItem2)
@@ -164,10 +163,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     // then
     val expectedJavaResource1 = ResourceRoot(
-      resourcePath = resourceFilePath1.parent
+      resourcePath = resourceFilePath1.parent,
     )
     val expectedJavaResource2 = ResourceRoot(
-      resourcePath = resourceDirPath3
+      resourcePath = resourceDirPath3,
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(
@@ -193,11 +192,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     val resourcesItem1 = ResourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(resourceRawUri1, resourceRawUri2)
+      listOf(resourceRawUri1, resourceRawUri2),
     )
     val resourcesItem2 = ResourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(resourceRawUri2, resourceDirRawUri3)
+      listOf(resourceRawUri2, resourceDirRawUri3),
     )
 
     val resourcesItems = listOf(resourcesItem1, resourcesItem2)
@@ -220,17 +219,17 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     resourceFilePath2.toFile().deleteOnExit()
     val resourceRawUri2 = resourceFilePath2.toUri().toString()
 
-    val resourceDirPath3 = Files.createTempDirectory(projectBasePath,"resourcedir")
+    val resourceDirPath3 = Files.createTempDirectory(projectBasePath, "resourcedir")
     resourceDirPath3.toFile().deleteOnExit()
     val resourceDirRawUri3 = resourceDirPath3.toUri().toString()
 
     val resourcesItem1 = ResourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(resourceRawUri1, resourceRawUri2)
+      listOf(resourceRawUri1, resourceRawUri2),
     )
     val resourcesItem2 = ResourcesItem(
       BuildTargetIdentifier("//target"),
-      listOf(resourceRawUri2, resourceDirRawUri3)
+      listOf(resourceRawUri2, resourceDirRawUri3),
     )
 
     val resourcesItems = listOf(resourcesItem1, resourcesItem2)
@@ -240,10 +239,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     // then
     val expectedJavaResource1 = ResourceRoot(
-      resourcePath = resourceFilePath1.parent
+      resourcePath = resourceFilePath1.parent,
     )
     val expectedJavaResource2 = ResourceRoot(
-      resourcePath = resourceDirPath3
+      resourcePath = resourceDirPath3,
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(

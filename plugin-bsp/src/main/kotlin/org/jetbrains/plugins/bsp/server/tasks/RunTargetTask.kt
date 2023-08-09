@@ -9,11 +9,10 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import java.util.*
 
 public class RunTargetTask(project: Project) : BspServerSingleTargetTask<RunResult>("run target", project) {
-
   protected override fun executeWithServer(
     server: BspServer,
     capabilities: BuildServerCapabilities,
-    targetId: BuildTargetIdentifier
+    targetId: BuildTargetIdentifier,
   ): RunResult {
     val runParams = createRunParams(targetId)
 

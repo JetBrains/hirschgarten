@@ -11,7 +11,6 @@ import kotlin.io.path.toPath
 
 @DisplayName("SourceItemToSourceRootTransformer.transform(sourcesItems) tests")
 class SourceItemToSourceRootTransformerTest {
-
   @Test
   fun `should return no dirs for no sources`() {
     // given

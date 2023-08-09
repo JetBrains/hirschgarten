@@ -9,7 +9,7 @@ public class TimeoutHandler(private val timeProvider: () -> Duration) {
   public constructor(constantTime: Duration) : this({ constantTime })
 
   private var timer = CompletableFuture<Void>()
-  private var timeoutFuture = CompletableFuture<Void>().also { it.complete(null) }
+  private var timeoutFuture = CompletableFuture<Void>().apply { complete(null) }
 
   public fun getUnfinishedTimeoutFuture(): CompletableFuture<Void> {
     if (timeoutFuture.isDone) {

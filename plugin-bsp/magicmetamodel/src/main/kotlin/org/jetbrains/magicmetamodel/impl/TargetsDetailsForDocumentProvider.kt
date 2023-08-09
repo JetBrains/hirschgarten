@@ -17,7 +17,6 @@ public data class TargetsDetailsForDocumentProviderState(
 )
 
 public class TargetsDetailsForDocumentProvider {
-
   private val documentIdToTargetsIdsMap: Map<Path, Set<BuildTargetId>>
 
   public constructor(sources: List<SourcesItem>) {
@@ -60,7 +59,7 @@ public class TargetsDetailsForDocumentProvider {
 
   public fun toState(): TargetsDetailsForDocumentProviderState =
     TargetsDetailsForDocumentProviderState(
-      documentIdToTargetsIdsMap.mapKeys { it.key.toString() }
+      documentIdToTargetsIdsMap.mapKeys { it.key.toString() },
     )
 
   private companion object {
@@ -70,11 +69,10 @@ public class TargetsDetailsForDocumentProvider {
 
 // TODO reverse sources
 private object DocumentIdToTargetsIdsMap {
-
   private val log = logger<DocumentIdToTargetsIdsMap>()
 
   operator fun invoke(
-    sources: List<SourcesItem>
+    sources: List<SourcesItem>,
   ): Map<Path, Set<BuildTargetId>> {
     log.trace { "Calculating document to target id map..." }
 

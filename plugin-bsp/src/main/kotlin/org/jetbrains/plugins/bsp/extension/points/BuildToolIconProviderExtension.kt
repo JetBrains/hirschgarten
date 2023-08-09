@@ -13,7 +13,6 @@ private val ep =
 public fun buildToolIconProviderExtensions(): List<BuildToolIconProviderExtension> =
   ep.extensionList
 
-
 public class BazelBuildToolIconProvider : BuildToolIconProviderExtension {
   override fun name(): String = "bazelbsp"
 

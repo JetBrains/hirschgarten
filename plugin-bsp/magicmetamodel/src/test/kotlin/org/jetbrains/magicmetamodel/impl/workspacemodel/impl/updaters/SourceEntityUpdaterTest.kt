@@ -16,7 +16,6 @@ import kotlin.io.path.toPath
 
 @DisplayName("sourceEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
-
   private lateinit var sourceEntityUpdater: SourceEntityUpdater
 
   @BeforeEach
@@ -51,12 +50,12 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir,
-        excludedPatterns = emptyList()
+        excludedPatterns = emptyList(),
       ),
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir,
-        rootType = "python-source"
+        rootType = "python-source",
       ) {},
       parentModuleEntity = parentModuleEntity,
     )
@@ -96,12 +95,12 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir1,
-        excludedPatterns = emptyList()
+        excludedPatterns = emptyList(),
       ),
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir1,
-        rootType = "python-source"
+        rootType = "python-source",
       ) {},
       parentModuleEntity = parentModuleEntity,
     )
@@ -112,12 +111,12 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir2,
-        excludedPatterns = emptyList()
+        excludedPatterns = emptyList(),
       ),
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir2,
-        rootType = "python-test"
+        rootType = "python-test",
       ) {},
       parentModuleEntity = parentModuleEntity,
     )

@@ -1,6 +1,6 @@
 [versions]
 ideProbe = "0.52.0"
-detekt = "1.23.0"
+detekt = "1.23.1"
 kotlin-gradle-version = "1.9.0"
 
 [libraries]

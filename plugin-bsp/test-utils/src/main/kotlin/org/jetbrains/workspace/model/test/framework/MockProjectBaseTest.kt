@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach
 import java.nio.file.Path
 
 public open class MockProjectBaseTest {
-
   protected lateinit var project: Project
   protected lateinit var virtualFileManager: VirtualFileManager
 

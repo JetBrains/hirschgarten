@@ -44,9 +44,8 @@ private val TERMINATION_TIMEOUT = 10.seconds
 private class CancelableInvocationHandlerWithTimeout(
   private val remoteProxy: BspServer,
   private val cancelOnFuture: CompletableFuture<Void>,
-  private val timeoutHandler: TimeoutHandler
+  private val timeoutHandler: TimeoutHandler,
 ) : InvocationHandler {
-
   override fun invoke(proxy: Any, method: Method, args: Array<out Any>?): Any? {
     val startTime = currentTimeMillis()
     log.debug("Running BSP request '${method.name}'")
@@ -64,18 +63,16 @@ private class CancelableInvocationHandlerWithTimeout(
     result: CompletableFuture<*>,
     startTime: Long,
     methodName: String,
-  ): CompletableFuture<Any?> {
-
-    return CancellableFuture.from(result)
+  ): CompletableFuture<Any?> =
+    CancellableFuture.from(result)
       .reactToExceptionIn(cancelOnFuture)
       .reactToExceptionIn(timeoutHandler.getUnfinishedTimeoutFuture())
       .handle { value, error -> doHandle(value, error, startTime, methodName) }
-  }
 
   private fun doHandle(value: Any?, error: Throwable?, startTime: Long, methodName: String): Any? {
     val elapsedTime = calculateElapsedTime(startTime)
     log.debug("BSP method '$methodName' call took ${elapsedTime}ms. " +
-            "Result: ${if (error == null) "SUCCESS" else "FAILURE"}")
+      "Result: ${if (error == null) "SUCCESS" else "FAILURE"}")
 
     return when (error) {
       null -> value
@@ -99,14 +96,13 @@ private class CancelableInvocationHandlerWithTimeout(
 }
 
 public data class BspFileConnectionState(
-  public var connectionFilePath: String? = null
+  public var connectionFilePath: String? = null,
 )
 
 public class BspFileConnection(
   private val project: Project,
-  locatedConnectionFile: LocatedBspConnectionDetails
+  locatedConnectionFile: LocatedBspConnectionDetails,
 ) : BspConnection, ConvertableToState<BspFileConnectionState> {
-
   public override val buildToolId: String? = locatedConnectionFile.bspConnectionDetails?.name
 
   public override var server: BspServer? = null
@@ -160,7 +156,6 @@ public class BspFileConnection(
     }
   }
 
-
   private fun createAndStartProcessAndAddDisconnectActions(bspConnectionDetails: BspConnectionDetails): Process {
     val process = createAndStartProcess(bspConnectionDetails)
     process.logErrorOutputs(project)
@@ -211,7 +206,7 @@ public class BspFileConnection(
       bspConsoleService.bspBuildConsole,
       bspConsoleService.bspRunConsole,
       bspConsoleService.bspTestConsole,
-      timeoutHandler
+      timeoutHandler,
     )
   }
 
@@ -228,7 +223,7 @@ public class BspFileConnection(
   private fun initializeServer(
     process: Process,
     client: BspClient,
-    bspSyncConsole: TaskConsole
+    bspSyncConsole: TaskConsole,
   ) {
     bspSyncConsole.addMessage(connectSubtaskId, "Initializing server...")
 
@@ -259,7 +254,7 @@ public class BspFileConnection(
     return Proxy.newProxyInstance(
       javaClass.classLoader,
       arrayOf(BspServer::class.java),
-      CancelableInvocationHandlerWithTimeout(remoteProxy, cancelOnFuture, timeoutHandler)
+      CancelableInvocationHandlerWithTimeout(remoteProxy, cancelOnFuture, timeoutHandler),
     ) as BspServer
   }
 
@@ -285,7 +280,7 @@ public class BspFileConnection(
       "0.0.1",
       "2.1.0-M5",
       projectBaseDir.toString(),
-      BuildClientCapabilities(listOf("java"))
+      BuildClientCapabilities(listOf("java")),
     )
     val dataJson = JsonObject()
     dataJson.addProperty("clientClassesRootDir", "$projectBaseDir/out")

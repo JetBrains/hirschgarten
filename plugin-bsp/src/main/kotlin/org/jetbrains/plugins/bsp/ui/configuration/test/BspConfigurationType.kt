@@ -20,7 +20,6 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
 import javax.swing.Icon
 
 public class BspConfigurationType : ConfigurationType {
-
   override fun getDisplayName(): String = "BSP TEST"
 
   override fun getConfigurationTypeDescription(): String = "BSP TEST"
@@ -47,7 +46,6 @@ public class TestRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
 
 public class TestRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :
   RunConfigurationBase<String>(project, configurationFactory, name) {
-
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return RunProfileState { executor2, _ ->
 

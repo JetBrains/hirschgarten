@@ -21,7 +21,6 @@ public interface BspServer : BuildServer, JavaBuildServer, BazelBuildServer, Pyt
  * Implementation shouldn't perform any heavy actions before [connect].
  */
 public interface BspConnection {
-
   /**
    * ID of bsp connection's build tool
    */
@@ -73,13 +72,12 @@ public data class BspConnectionState(
 @State(
   name = "BspConnectionService",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
-  reportStatistic = true
+  reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
 public class BspConnectionService(private val project: Project) :
   PersistentStateComponent<BspConnectionState> {
-
   public var value: BspConnection? = null
 
   override fun getState(): BspConnectionState? =
@@ -106,7 +104,6 @@ public class BspConnectionService(private val project: Project) :
   }
 
   public companion object {
-
     public fun getInstance(project: Project): BspConnectionService =
       project.getService(BspConnectionService::class.java)
   }

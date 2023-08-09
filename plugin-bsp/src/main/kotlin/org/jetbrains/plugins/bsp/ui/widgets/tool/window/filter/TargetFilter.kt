@@ -4,7 +4,7 @@ import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 public class TargetFilter(
-  private val onFilterChange: () -> Unit
+  private val onFilterChange: () -> Unit,
 ) {
   public var currentFilter: FILTER = FILTER.OFF
     set(value) {
@@ -28,6 +28,6 @@ public class TargetFilter(
   public enum class FILTER(public val predicate: (BuildTargetInfo) -> Boolean) {
     OFF({ true }),
     CAN_RUN({ it.capabilities.canRun }),
-    CAN_TEST({ it.capabilities.canTest })
+    CAN_TEST({ it.capabilities.canTest }),
   }
 }

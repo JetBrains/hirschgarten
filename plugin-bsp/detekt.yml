@@ -1,14 +1,27 @@
-
 console-reports:
   active: true
   exclude:
     - '' # Exclude nothing -> Enable all workaround
 
-# https://detekt.dev/docs/1.21.0/rules/complexity
+# https://detekt.dev/docs/rules/comments
+comments:
+  active: true
+  KDocReferencesNonPublicProperty:
+    active: true
+  OutdatedDocumentation:
+    active: true
+
+# https://detekt.dev/docs/rules/complexity/#complexcondition
 complexity:
+  active: true
+  # kinda an experiment, let's see how it works
+  CognitiveComplexMethod:
+    active: true
   ComplexCondition:
     active: true
-  ComplexMethod:
+  ComplexInterface:
+    active: true
+  CyclomaticComplexMethod:
     active: true
     ignoreSingleWhenExpression: true
   LabeledExpression:
@@ -17,6 +30,10 @@ complexity:
     active: true
     excludes: [ '**/test/**' ]
   LargeClass:
+    active: true
+  MethodOverloading:
+    active: true
+  NamedArguments:
     active: true
   NestedBlockDepth:
     active: true
@@ -29,23 +46,28 @@ complexity:
     threshold: 7
     ignoreAnnotation: true
     excludeStringsWithLessThan5Characters: true
-    ignoreStringsRegex: '$^'
 
-# https://detekt.dev/docs/1.21.0/rules/coroutines
+# https://detekt.dev/docs/rules/coroutines
 coroutines:
+  active: true
   GlobalCoroutineUsage:
+    active: true
+  InjectDispatcher:
     active: true
   RedundantSuspendModifier:
     active: true
   SleepInsteadOfDelay:
+    active: true
+  SuspendFunSwallowedCancellation:
     active: true
   SuspendFunWithCoroutineScopeReceiver:
     active: true
   SuspendFunWithFlowReturnType:
     active: true
 
-# https://detekt.dev/docs/1.21.0/rules/empty-blocks
+# https://detekt.dev/docs/rules/empty-blocks
 empty-blocks:
+  active: true
   EmptyCatchBlock:
     active: true
   EmptyClassBlock:
@@ -61,8 +83,8 @@ empty-blocks:
   EmptyForBlock:
     active: true
   EmptyFunctionBlock:
-    ignoreOverridden: true
     active: true
+    ignoreOverridden: true
   EmptyIfBlock:
     active: true
   EmptyInitBlock:
@@ -78,17 +100,19 @@ empty-blocks:
   EmptyWhileBlock:
     active: true
 
-# https://detekt.dev/docs/1.21.0/rules/exceptions
+# https://detekt.dev/docs/rules/exceptions
 exceptions:
+  active: true
   ExceptionRaisedInUnexpectedLocation:
     active: true
   # todo
   InstanceOfCheckForException:
     active: false
+  # todo
+  NotImplementedDeclaration:
+    active: false
   ObjectExtendsThrowable:
     active: true
-  PrintStackTrace:
-    active: false
   RethrowCaughtException:
     active: true
   ReturnFromFinally:
@@ -110,14 +134,118 @@ exceptions:
   TooGenericExceptionThrown:
     active: true
 
-# https://detekt.dev/docs/1.21.0/rules/formatting
+# https://detekt.dev/docs/rules/formatting
 formatting:
   active: true
+  AnnotationOnSeparateLine:
+    active: true
+    indentSize: 2
+  AnnotationSpacing:
+    active: true
+  # todo
+  ArgumentListWrapping:
+    active: false
+  BlockCommentInitialStarAlignment:
+    active: true
+  ChainWrapping:
+    active: true
+    indentSize: 2
+  ClassName:
+    active: true
+  CommentSpacing:
+    active: true
+  CommentWrapping:
+    active: true
+  DiscouragedCommentLocation:
+    active: true
+  EnumEntryNameCase:
+    active: true
+  EnumWrapping:
+    active: true
+  FunKeywordSpacing:
+    active: true
+  # todo
+  FunctionReturnTypeSpacing:
+    active: true
+  # todo
+  FunctionSignature:
+    active: false
+  FunctionStartOfBodySpacing:
+    active: true
+  FunctionTypeReferenceSpacing:
+    active: true
+  # todo
+  IfElseBracing:
+    active: false
+  # todo
+  IfElseWrapping:
+    active: false
+  ImportOrdering:
+    active: true
   Indentation:
+    active: true
+    indentSize: 2
+  KdocWrapping:
+    active: true
+    indentSize: 2
+  ModifierListSpacing:
+    active: true
+  NoBlankLineBeforeRbrace:
+    active: true
+  NoBlankLinesInChainedMethodCalls:
+    active: true
+  NoConsecutiveBlankLines:
+    active: true
+  NoEmptyClassBody:
+    active: true
+  NoEmptyFirstLineInClassBody:
+    active: true
+  NoEmptyFirstLineInMethodBlock:
+    active: true
+  NoLineBreakAfterElse:
+    active: true
+  NoLineBreakBeforeAssignment:
+    active: true
+  NoMultipleSpaces:
+    active: true
+  NoSemicolons:
+    active: true
+  NoSingleLineBlockComment:
+    active: true
+  NoTrailingSpaces:
+    active: true
+  NoUnitReturn:
+    active: true
+  NoUnusedImports:
+    active: true
+  NoWildcardImports:
+    active: true
+  NullableTypeSpacing:
+    active: true
+  PackageName:
+    active: true
+  ParameterListSpacing:
+    active: true
+  ParameterListWrapping:
+    active: true
     indentSize: 2
   SpacingAroundAngleBrackets:
     active: true
+  SpacingAroundComma:
+    active: true
+  SpacingAroundCurly:
+    active: true
+  SpacingAroundDot:
+    active: true
   SpacingAroundDoubleColon:
+    active: true
+  SpacingAroundKeyword:
+    active: true
+  SpacingAroundOperators:
+    active: true
+  SpacingAroundParens:
+    active: true
+  SpacingAroundRangeOperator:
     active: true
   SpacingAroundUnaryOperator:
     active: true
@@ -125,8 +253,67 @@ formatting:
     active: true
   SpacingBetweenDeclarationsWithComments:
     active: true
+  SpacingBetweenFunctionNameAndOpeningParenthesis:
+    active: true
+  StringTemplate:
+    active: true
+  StringTemplateIndent:
+    active: true
+    indentSize: 2
+  TrailingCommaOnCallSite:
+    active: true
+  TrailingCommaOnDeclarationSite:
+    active: true
+  TryCatchFinallySpacing:
+    active: true
+    indentSize: 2
+  TypeArgumentListSpacing:
+    active: true
+    indentSize: 2
+  TypeParameterListSpacing:
+    active: true
+    indentSize: 2
+  UnnecessaryParenthesesBeforeTrailingLambda:
+    active: true
+  # todo
+  Wrapping:
+    active: false
 
-# https://detekt.dev/docs/1.21.0/rules/performance
+# https://detekt.dev/docs/rules/naming
+naming:
+  BooleanPropertyNaming:
+    active: true
+  ClassNaming:
+    active: true
+  ConstructorParameterNaming:
+    active: true
+  EnumNaming:
+    active: true
+  FunctionParameterNaming:
+    active: true
+  InvalidPackageDeclaration:
+    active: true
+  LambdaParameterNaming:
+    active: true
+  MatchingDeclarationName:
+    active: true
+  MemberNameEqualsClassName:
+    active: true
+  NoNameShadowing:
+    active: true
+  NonBooleanPropertyPrefixedWithIs:
+    active: true
+  ObjectPropertyNaming:
+    active: true
+  PackageNaming:
+    active: true
+  # todo
+  TopLevelPropertyNaming:
+    active: false
+  VariableNaming:
+    active: true
+
+# https://detekt.dev/docs/rules/performance
 performance:
   ArrayPrimitive:
     active: true
@@ -137,20 +324,22 @@ performance:
   # todo
   SpreadOperator:
     active: false
+  UnnecessaryPartOfBinaryExpression:
+    active: true
   UnnecessaryTemporaryInstantiation:
     active: true
 
-# https://detekt.dev/docs/1.21.0/rules/potential-bugs
+# https://detekt.dev/docs/rules/potential-bugs
 potential-bugs:
   AvoidReferentialEquality:
     active: true
   CastToNullableType:
     active: true
+  Deprecation:
+    active: true
   DontDowncastCollectionTypes:
     active: true
   DoubleMutabilityForCollection:
-    active: true
-  DuplicateCaseInWhenExpression:
     active: true
   ElseCaseInsteadOfExhaustiveWhen:
     active: true
@@ -161,6 +350,8 @@ potential-bugs:
   ExitOutsideMain:
     active: true
   HasPlatformType:
+    active: true
+  IgnoredReturnValue:
     active: true
   ImplicitDefaultLocale:
     active: true
@@ -176,13 +367,11 @@ potential-bugs:
     active: true
   MissingPackageDeclaration:
     active: true
-  MissingWhenCase:
-    active: true
   NullCheckOnMutableProperty:
     active: true
   NullableToStringCall:
     active: true
-  RedundantElseInWhen:
+  PropertyUsedBeforeDeclaration:
     active: true
   UnconditionalJumpStatementInLoop:
     active: true
@@ -205,66 +394,118 @@ potential-bugs:
   WrongEqualsTypeParameter:
     active: true
 
-# https://detekt.dev/docs/1.21.0/rules/style
+# https://detekt.dev/docs/rules/style
 style:
+  AlsoCouldBeApply:
+    active: true
+  CanBeNonNullable:
+    active: true
+  CascadingCallWrapping:
+    active: true
+    includeElvis: false
+  # todo
+  ClassOrdering:
+    active: false
+  CollapsibleIfStatements:
+    active: true
+  # todo
+  DataClassContainsFunctions:
+    active: false
+    allowOperators: true
+  DestructuringDeclarationWithTooManyEntries:
+    active: true
+  DoubleNegativeLambda:
+    active: true
+  EqualsNullCall:
+    active: true
+  EqualsOnSignatureLine:
+    active: true
+  ExplicitCollectionElementAccessMethod:
+    active: true
+  ExplicitItLambdaParameter:
+    active: true
+  ExpressionBodySyntax:
+    active: true
+  ForbiddenVoid:
+    active: true
+  FunctionOnlyReturningConstant:
+    active: true
+  LoopWithTooManyJumpStatements:
+    active: true
+  # todo
+  MagicNumber:
+    active: false
+  MandatoryBracesLoops:
+    active: true
+  MaxChainedCallsOnSameLine:
+    active: true
   MaxLineLength:
     active: true
     maxLineLength: 120
     excludes:
       - '**/test/**'
     excludeCommentStatements: true
-  WildcardImport:
-      active: true
-  # TODO
-  UseDataClass:
-    active: false
-    allowVars: true
-  CanBeNonNullable:
-    active: true
-  CascadingCallWrapping:
-    active: true
-    includeElvis: false
-#  ClassOrdering:
-#    active: true
-#  CollapsibleIfStatements:
-#    active: true
-  DestructuringDeclarationWithTooManyEntries:
-    active: true
-  EqualsOnSignatureLine:
-    active: true
-  ExplicitCollectionElementAccessMethod:
-    active: true
-  ExpressionBodySyntax:
-    active: true
-  ForbiddenVoid:
-    active: true
-  LibraryCodeMustSpecifyReturnType:
-    active: true
   MayBeConst:
     active: true
   ModifierOrder:
+    active: true
+  MultilineLambdaItParameter:
+    active: true
+  MultilineRawStringIndentation:
+    active: true
+    indentSize: 2
+  NestedClassesVisibility:
     active: true
   NewLineAtEndOfFile:
     active: true
   NoTabs:
     active: true
+  NullableBooleanCheck:
+    active: true
   ObjectLiteralToLambda:
     active: true
   OptionalAbstractKeyword:
     active: true
-  OptionalWhenBraces:
-    active: true
+  # todo
+  OptionalUnit:
+    active: false
   PreferToOverPairSyntax:
+    active: true
+  ProtectedMemberInFinalClass:
     active: true
   RedundantExplicitType:
     active: true
+  RedundantHigherOrderMapUsage:
+    active: true
   SafeCast:
+    active: true
+  SerialVersionUIDInSerializableClass:
     active: true
   SpacingBetweenPackageAndImports:
     active: true
+  StringShouldBeRawString:
+    active: true
   TrailingWhitespace:
     active: true
+  TrimMultilineRawString:
+    active: true
+  UnderscoresInNumericLiterals:
+    active: true
+  UnnecessaryAbstractClass:
+    active: true
+  UnnecessaryAnnotationUseSiteTarget:
+    active: true
+  UnnecessaryApply:
+    active: true
+  UnnecessaryBackticks:
+    active: true
+  UnnecessaryBracesAroundTrailingLambda:
+    active: true
   UnnecessaryFilter:
+    active: true
+  UnnecessaryInheritance:
+    active: true
+  UnnecessaryInnerClass:
     active: true
   UnnecessaryLet:
     active: true
@@ -274,17 +515,39 @@ style:
     active: true
   UnusedImports:
     active: true
+  UnusedParameter:
+    active: true
   UnusedPrivateClass:
     active: true
   UnusedPrivateMember:
     active: true
+  UnusedPrivateProperty:
+    active: true
   UseAnyOrNoneInsteadOfFind:
+    active: true
+  UseArrayLiteralsInAnnotations:
+    active: true
+  UseCheckNotNull:
+    active: true
+  UseCheckOrError:
+    active: true
+  # TODO
+  UseDataClass:
+    active: true
+    allowVars: true
+  UseEmptyCounterpart:
     active: true
   UseIfEmptyOrIfBlank:
     active: true
   UseIsNullOrEmpty:
     active: true
   UseOrEmpty:
+    active: true
+  UseRequire:
+    active: true
+  UseRequireNotNull:
+    active: true
+  UseSumOfInsteadOfFlatMapSize:
     active: true
   UselessCallOnNotNull:
     active: true
@@ -293,3 +556,5 @@ style:
   VarCouldBeVal:
     active: true
     ignoreLateinitVar: false
+  WildcardImport:
+    active: true

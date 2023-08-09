@@ -12,7 +12,7 @@ public sealed interface ConnectionFileOrNewConnection {
 
 public data class ConnectionFile(
   val bspConnectionDetails: BspConnectionDetails,
-  val connectionFile: VirtualFile
+  val connectionFile: VirtualFile,
 ) :
   ConnectionFileOrNewConnection, Comparable<ConnectionFile> {
   override val id: String = bspConnectionDetails.name

@@ -40,7 +40,6 @@ import kotlin.system.exitProcess
  * may run when a project is being imported for the first time.
  */
 public class BspStartupActivity : ProjectActivity {
-
   override suspend fun execute(project: Project) {
     if (project.isBspProject) {
       doRunActivity(project)
@@ -60,7 +59,7 @@ public class BspStartupActivity : ProjectActivity {
       bspSyncConsole.startTask(
         taskId = "bsp-pre-import",
         title = "Pre-import",
-        message = "Pre-importing..."
+        message = "Pre-importing...",
       )
       bspSyncConsole.finishTask("bsp-pre-import", "Pre-import failed!", FailureResultImpl(e))
     }
@@ -76,7 +75,7 @@ public class BspStartupActivity : ProjectActivity {
           benchmarkConnection(project)
         } else {
           withContext(Dispatchers.EDT) {
-                showWizardAndGetResult(project)
+            showWizardAndGetResult(project)
           }
         }
 
@@ -85,7 +84,7 @@ public class BspStartupActivity : ProjectActivity {
       if (connectionFileOrNewConnection != null) {
         SyncProjectTask(project).execute(
           shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
-          shouldReloadConnection = false
+          shouldReloadConnection = false,
         )
       }
     }
@@ -118,7 +117,7 @@ public class BspStartupActivity : ProjectActivity {
   ): ConnectionFileOrNewConnection? {
     val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(
       project.rootDir,
-      BspConnectionDetailsGeneratorExtension.extensions()
+      BspConnectionDetailsGeneratorExtension.extensions(),
     )
     val wizard = ImportProjectWizard(project, bspConnectionDetailsGeneratorProvider)
     return if (wizard.showAndGet()) wizard.connectionFileOrNewConnectionProperty.get()
@@ -127,7 +126,7 @@ public class BspStartupActivity : ProjectActivity {
 
   private fun initializeConnectionOrCloseProject(
     connectionFileOrNewConnection: ConnectionFileOrNewConnection?,
-    project: Project
+    project: Project,
   ) =
     when (connectionFileOrNewConnection) {
       is NewConnection -> initializeNewConnectionFromGenerator(project, connectionFileOrNewConnection)
@@ -142,7 +141,7 @@ public class BspStartupActivity : ProjectActivity {
 
   private fun initializeNewConnectionFromGenerator(
     project: Project,
-    newConnection: NewConnection
+    newConnection: NewConnection,
   ) {
     val generator = newConnection.generator
     val bspGeneratorConnection = BspGeneratorConnection(project, generator)
@@ -156,8 +155,8 @@ public class BspStartupActivity : ProjectActivity {
       project,
       LocatedBspConnectionDetails(
         connectionFileInfo.bspConnectionDetails,
-        connectionFileInfo.connectionFile
-      )
+        connectionFileInfo.connectionFile,
+      ),
     )
 
     val bspConnectionService = BspConnectionService.getInstance(project)

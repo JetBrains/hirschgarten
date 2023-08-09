@@ -1,4 +1,3 @@
-@file:Suppress("MaxLineLength")
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe
@@ -8,7 +7,6 @@ import java.net.URI
 
 @DisplayName("JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer.transform(javaSourcePackageDetails) tests")
 class JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformerTest {
-
   @Test
   fun `should return no package for equal source dir and single root`() {
     // given

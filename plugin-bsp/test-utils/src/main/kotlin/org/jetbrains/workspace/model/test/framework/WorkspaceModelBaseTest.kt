@@ -16,7 +16,6 @@ import java.nio.file.Paths
 import kotlin.io.path.Path
 
 public open class WorkspaceModelBaseTest {
-
   protected lateinit var project: Project
   protected lateinit var workspaceModel: WorkspaceModel
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
@@ -76,10 +75,10 @@ public abstract class WorkspaceModelWithParentModuleBaseTest : WorkspaceModelBas
       ModuleEntity(
         name = parentModuleName,
         dependencies = emptyList(),
-        entitySource = object : EntitySource {}
+        entitySource = object : EntitySource {},
       ) {
         this.type = parentModuleType
-      }
+      },
     )
 }
 

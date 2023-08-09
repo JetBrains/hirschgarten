@@ -41,7 +41,7 @@ public abstract class LazySearchDisplay {
 
   protected data class PrintableBuildTarget(
     val buildTarget: BuildTargetInfo,
-    var displayName: String = buildTarget.let { it.displayName ?: it.id }
+    var displayName: String = buildTarget.let { it.displayName ?: it.id },
   ) {
     override fun toString(): String = buildTarget.displayName ?: buildTarget.id
   }
@@ -56,7 +56,7 @@ public abstract class LazySearchDisplay {
       text: String,
       query: String,
       builtText: String = "",
-      startIndex: Int = 0
+      startIndex: Int = 0,
     ): String {
       val foundIndex = text.indexOf(query, startIndex, true)
       if (foundIndex < 0) {

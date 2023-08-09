@@ -11,7 +11,6 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTarget
 
 public class BuildTargetAction : AbstractActionWithTarget(
   BspAllTargetsWidgetBundle.message("widget.build.target.popup.message")) {
-
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
 

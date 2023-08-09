@@ -16,7 +16,6 @@ private const val RESYNC_TASK_ID = "bsp-resync-project"
 private val log = logger<SyncProjectTask>()
 
 public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Project", project) {
-
   private val connectionService = BspConnectionService.getInstance(project)
   private val syncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
@@ -46,13 +45,13 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
       taskId = taskId,
       title = "Sync",
       message = "Syncing...",
-      cancelAction = { collectProjectDetailsTask.cancelExecution() }
+      cancelAction = { collectProjectDetailsTask.cancelExecution() },
     )
     connectionService.value!!.connect(taskId) { collectProjectDetailsTask.cancelExecution() }
     try {
       collectProjectDetailsTask.execute(
         name = "Syncing...",
-        cancelable = true
+        cancelable = true,
       )
       syncConsole.finishTask(taskId, "Sync")
     } catch (e: Exception) {

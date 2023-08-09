@@ -22,12 +22,12 @@ public infix fun Collection<ContentRootEntity>.shouldContainExactlyInAnyOrder(
 ): Unit =
   this.shouldContainExactlyInAnyOrder(
     assertion = { actual, expected -> validateContentRootEntity(actual, expected) },
-    expectedValues = expectedValues
+    expectedValues = expectedValues,
   )
 
 private fun validateContentRootEntity(
   actual: ContentRootEntity,
-  expected: ExpectedContentRootEntity
+  expected: ExpectedContentRootEntity,
 ) {
   actual.url shouldBe expected.url
   actual.excludedUrls.map { it.url } shouldContainExactlyInAnyOrder expected.excludedUrls

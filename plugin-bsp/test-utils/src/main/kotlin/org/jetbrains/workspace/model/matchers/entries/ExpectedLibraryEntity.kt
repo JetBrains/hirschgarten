@@ -19,7 +19,7 @@ public infix fun Collection<LibraryEntity>.shouldContainExactlyInAnyOrder(
 
 private fun validateLibraryEntity(
   actual: LibraryEntity,
-  expected: ExpectedLibraryEntity
+  expected: ExpectedLibraryEntity,
 ) {
   actual.tableId shouldBe expected.libraryEntity.tableId
   actual.name shouldBe expected.libraryEntity.name

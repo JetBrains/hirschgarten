@@ -4,6 +4,9 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
 import java.awt.Component
 import java.awt.event.MouseListener
 import javax.swing.Icon
@@ -15,17 +18,13 @@ import javax.swing.tree.TreeCellRenderer
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
-import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
 
 public class BuildTargetTree(
   private val targetIcon: Icon,
   private val toolName: String,
   private val targets: Collection<BuildTargetInfo>,
-  private val labelHighlighter: (String) -> String = { it }
+  private val labelHighlighter: (String) -> String = { it },
 ) : BuildTargetContainer {
-
   private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
   private val cellRenderer = TargetTreeCellRenderer(targetIcon, labelHighlighter)
   private val mouseListenerBuilders = mutableSetOf<(BuildTargetContainer) -> MouseListener>()
@@ -50,10 +49,10 @@ public class BuildTargetTree(
         BuildTargetTreeIdentifier(
           it,
           bspBuildTargetClassifierProvider.getBuildTargetPath(it.id),
-          bspBuildTargetClassifierProvider.getBuildTargetName(it.id)
+          bspBuildTargetClassifierProvider.getBuildTargetName(it.id),
         )
       },
-      bspBuildTargetClassifierProvider.getSeparator()
+      bspBuildTargetClassifierProvider.getSeparator(),
     )
   }
 
@@ -77,7 +76,7 @@ public class BuildTargetTree(
     targets: List<BuildTargetTreeIdentifier>,
     dirname: String,
     separator: String?,
-    depth: Int
+    depth: Int,
   ): DefaultMutableTreeNode {
     val node = DefaultMutableTreeNode()
     node.userObject = DirectoryNodeData(dirname)
@@ -98,7 +97,7 @@ public class BuildTargetTree(
   private fun generateChildrenNodes(
     pathToIdentifierMap: Map<String?, List<BuildTargetTreeIdentifier>>,
     separator: String?,
-    depth: Int
+    depth: Int,
   ): List<TreeNode> {
     val childrenDirectoryNodes =
       generateChildrenDirectoryNodes(pathToIdentifierMap, separator, depth)
@@ -110,7 +109,7 @@ public class BuildTargetTree(
   private fun generateChildrenDirectoryNodes(
     pathToIdentifierMap: Map<String?, List<BuildTargetTreeIdentifier>>,
     separator: String?,
-    depth: Int
+    depth: Int,
   ): List<TreeNode> =
     pathToIdentifierMap
       .keys
@@ -134,7 +133,7 @@ public class BuildTargetTree(
     node: DefaultMutableTreeNode,
     dirname: String,
     separator: String?,
-    childrenList: MutableList<TreeNode>
+    childrenList: MutableList<TreeNode>,
   ) {
     if (separator != null && childrenList.size == 1) {
       val onlyChild = childrenList.first() as? DefaultMutableTreeNode
@@ -167,7 +166,7 @@ public class BuildTargetTree(
 
   public fun createNewWithTargetsAndHighlighter(
     newTargets: Collection<BuildTargetInfo>,
-    labelHighlighter: (String) -> String
+    labelHighlighter: (String) -> String,
   ): BuildTargetTree {
     val new = BuildTargetTree(targetIcon, toolName, newTargets, labelHighlighter)
     for (listenerBuilder in this.mouseListenerBuilders) {
@@ -188,12 +187,12 @@ private data class TargetNodeData(val target: BuildTargetInfo, val displayName: 
 private data class BuildTargetTreeIdentifier(
   val target: BuildTargetInfo,
   val path: List<String>,
-  val displayName: String
+  val displayName: String,
 )
 
 private class TargetTreeCellRenderer(
   val targetIcon: Icon,
-  val labelHighlighter: (String) -> String
+  val labelHighlighter: (String) -> String,
 ) : TreeCellRenderer {
   override fun getTreeCellRendererComponent(
     tree: JTree?,
@@ -202,25 +201,25 @@ private class TargetTreeCellRenderer(
     expanded: Boolean,
     leaf: Boolean,
     row: Int,
-    hasFocus: Boolean
+    hasFocus: Boolean,
   ): Component {
     return when (val userObject = (value as? DefaultMutableTreeNode)?.userObject) {
       is DirectoryNodeData -> JBLabel(
         labelHighlighter(userObject.name),
         PlatformIcons.FOLDER_ICON,
-        SwingConstants.LEFT
+        SwingConstants.LEFT,
       )
 
       is TargetNodeData -> JBLabel(
         labelHighlighter(userObject.displayName),
         targetIcon,
-        SwingConstants.LEFT
+        SwingConstants.LEFT,
       )
 
       else -> JBLabel(
         "[not renderable]",
         PlatformIcons.ERROR_INTRODUCTION_ICON,
-        SwingConstants.LEFT
+        SwingConstants.LEFT,
       )
     }
   }

@@ -17,7 +17,6 @@ import kotlin.io.path.pathString
  */
 public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBasePath: Path) :
   WorkspaceModelEntityPartitionTransformer<JavaModule, JavaModule> {
-
   internal companion object {
     const val DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE = "java-source"
   }
@@ -36,7 +35,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
         name = name,
         type = ModuleTypeId.JAVA_MODULE,
         modulesDependencies = listOf(),
-        librariesDependencies = listOf()
+        librariesDependencies = listOf(),
       ),
       baseDirContentRoot = ContentRoot(path = sourceRoot),
       sourceRoots = listOf(
@@ -45,13 +44,13 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
           generated = false,
           packagePrefix = "",
           rootType = DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
-        )
+        ),
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = listOf(),
       compilerOutput = null,
       jvmJdkName = null,
-      kotlinAddendum = null
+      kotlinAddendum = null,
     )
   private fun calculateDummyJavaSourceRoots(inputEntity: JavaModule): List<Path> =
     inputEntity.sourceRoots.map {
@@ -70,7 +69,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
 
 internal fun calculateDummyJavaModuleNames(
   dummyJavaModuleSourceRoots: List<Path>,
-  projectBasePath: Path
+  projectBasePath: Path,
 ): List<String> =
   dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it, projectBasePath) }
 

@@ -27,7 +27,6 @@ internal data class BspModuleDetails(
 
 internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvider: ModuleNameProvider) :
   WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
-
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
     GenericModuleInfo(
       name = moduleNameProvider(inputEntity.target.id.uri),
@@ -37,7 +36,7 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
       librariesDependencies = calculateLibrariesDependencies(inputEntity),
       capabilities = inputEntity.target.capabilities.toModuleCapabilities(),
       languageIds = inputEntity.target.languageIds,
-      associates = inputEntity.associates.map { it.toModuleDependency(moduleNameProvider) }
+      associates = inputEntity.associates.map { it.toModuleDependency(moduleNameProvider) },
     )
 
   private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<LibraryDependency> =
@@ -52,7 +51,6 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
 
 internal object DependencySourcesItemToLibraryDependencyTransformer :
   WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJavacOptions, LibraryDependency> {
-
   override fun transform(inputEntity: DependencySourcesAndJavacOptions): List<LibraryDependency> =
     DependencySourcesItemToLibraryTransformer.transform(inputEntity)
       .map { toLibraryDependency(it) }
@@ -60,7 +58,7 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
   private fun toLibraryDependency(library: Library): LibraryDependency =
     LibraryDependency(
       libraryName = library.displayName,
-      isProjectLevelLibrary = false
+      isProjectLevelLibrary = false,
     )
 }
 
@@ -68,7 +66,6 @@ internal class BuildTargetToModuleDependencyTransformer(
   private val allTargetsIds: Set<BuildTargetId>,
   private val moduleNameProvider: ModuleNameProvider,
 ) : WorkspaceModelEntityPartitionTransformer<BuildTarget, ModuleDependency> {
-
   override fun transform(inputEntity: BuildTarget): List<ModuleDependency> =
     inputEntity
       .dependencies

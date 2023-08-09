@@ -54,7 +54,7 @@ public data class ModuleDependency(
 
 public data class LibraryDependency(
   val libraryName: String,
-  val isProjectLevelLibrary: Boolean = false
+  val isProjectLevelLibrary: Boolean = false,
 ) : WorkspaceModelEntity(), EntityDependency
 
 /**
@@ -69,7 +69,6 @@ public data class GenericModuleInfo(
   val languageIds: LanguageIds = listOf(),
   val associates: List<ModuleDependency> = listOf(),
 ) : WorkspaceModelEntity() {
-
   internal constructor(
     name: String,
     type: String,
@@ -85,7 +84,7 @@ public data class GenericModuleInfo(
     librariesDependencies,
     capabilities,
     languageIdsFromMap(languageIds),
-    associates
+    associates,
   )
 
   internal val languageIdsAsSingleEntryMap: Map<String, String>
@@ -105,7 +104,7 @@ public data class ModuleCapabilities(
   val canRun: Boolean = false,
   val canTest: Boolean = false,
   val canCompile: Boolean = false,
-  val canDebug: Boolean = false
+  val canDebug: Boolean = false,
 ) {
   public constructor(map: Map<String, String>) : this(
     map[KEYS.CAN_RUN.name]?.toBoolean() ?: false,

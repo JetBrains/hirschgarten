@@ -29,7 +29,6 @@ import kotlin.reflect.KFunction
 import kotlin.reflect.full.primaryConstructor
 
 internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
-
   @Nested
   @DisplayName("pythonModuleWithSourcesUpdater.addEntity(entityToAdd) tests")
   inner class PythonModuleWithSourcesUpdaterTest {
@@ -87,7 +86,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           sdkInfo = sdkInfo,
         )
 
-
         // when
         val returnedModuleEntity = runTestWriteAction {
           updater.addEntity(pythonModule)
@@ -112,11 +110,11 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
                 productionOnTest = true,
               ),
               ModuleDependencyItem.ModuleSourceDependency,
-              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK")
-            )
+              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
+            ),
           ) {
             type = "PYTHON_MODULE"
-          }
+          },
         )
 
         returnedModuleEntity shouldBeEqual expectedModuleEntity
@@ -144,29 +142,28 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualSourceDir2,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualSourceDir2,
-            rootType = "python-source"
+            rootType = "python-source",
           ) {
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
         )
-
 
         val virtualResourceUrl1 = resourcePath1.toVirtualFileUrl(virtualFileUrlManager)
         val expectedResourceRootEntity1 = ExpectedSourceRootEntity(
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl1,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl1,
-            rootType = "python-resource"
+            rootType = "python-resource",
           ) {
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
@@ -176,12 +173,12 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl2,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity.moduleEntity.entitySource,
             url = virtualResourceUrl2,
-            rootType = "python-resource"
+            rootType = "python-resource",
           ) {
           },
           parentModuleEntity = expectedModuleEntity.moduleEntity,
@@ -311,10 +308,10 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
               ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
               ModuleDependencyItem.ModuleSourceDependency,
-            )
+            ),
           ) {
             type = "PYTHON_MODULE"
-          }
+          },
         )
 
         val expectedModuleEntity2 = ExpectedModuleEntity(
@@ -330,10 +327,10 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
               ),
               ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
               ModuleDependencyItem.ModuleSourceDependency,
-            )
+            ),
           ) {
             type = "PYTHON_MODULE"
-          }
+          },
         )
 
         val expectedModuleEntries = listOf(expectedModuleEntity1, expectedModuleEntity2)
@@ -346,12 +343,12 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir11,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir11,
-            rootType = "python-source"
+            rootType = "python-source",
           ) {},
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
@@ -360,12 +357,12 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir12,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualSourceDir12,
-            rootType = "python-source"
+            rootType = "python-source",
           ) {},
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
@@ -374,12 +371,12 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualSourceDir21,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualSourceDir21,
-            rootType = "python-test"
+            rootType = "python-test",
           ) {},
           parentModuleEntity = expectedModuleEntity2.moduleEntity,
         )
@@ -389,12 +386,12 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl11,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl11,
-            rootType = "python-resource"
+            rootType = "python-resource",
           ) {},
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
@@ -403,12 +400,12 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl12,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity1.moduleEntity.entitySource,
             url = virtualResourceUrl12,
-            rootType = "python-resource"
+            rootType = "python-resource",
           ) {},
           parentModuleEntity = expectedModuleEntity1.moduleEntity,
         )
@@ -417,12 +414,12 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           contentRootEntity = ContentRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualResourceUrl21,
-            excludedPatterns = emptyList()
+            excludedPatterns = emptyList(),
           ),
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualResourceUrl21,
-            rootType = "python-resource"
+            rootType = "python-resource",
           ) {},
           parentModuleEntity = expectedModuleEntity2.moduleEntity,
         )
@@ -438,7 +435,6 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
       }
     }
   }
-
 
   @Nested
   @DisplayName("pythonModuleWithoutSourcesUpdater.addEntity(entityToAdd) tests")
@@ -475,7 +471,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             dependencies = emptyList(),
           ) {
             type = "PYTHON_MODULE"
-          }
+          },
         )
 
         returnedModuleEntity shouldBeEqual expectedModuleEntity
@@ -532,7 +528,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             dependencies = emptyList(),
           ) {
             type = "PYTHON_MODULE"
-          }
+          },
         )
         val expectedModuleEntity2 = ExpectedModuleEntity(
           moduleEntity = ModuleEntity(
@@ -541,7 +537,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             dependencies = emptyList(),
           ) {
             type = "PYTHON_MODULE"
-          }
+          },
         )
 
         val expectedModuleEntries = listOf(expectedModuleEntity1, expectedModuleEntity2)

@@ -25,7 +25,6 @@ import kotlin.io.path.name
 
 @DisplayName("kotlinFacetEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
-
   @Test
   fun `should add KotlinFacet when given KotlinAddendum`() {
     runInEdtAndWait {
@@ -40,7 +39,7 @@ class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
         apiVersion = "1.8",
         kotlincOptions = null,
         associates = associates.map { BuildTargetIdentifier(it) },
-        jvmBuildTarget = JvmBuildTarget(javaHome, javaVersion)
+        jvmBuildTarget = JvmBuildTarget(javaHome, javaVersion),
       )
 
       val module = GenericModuleInfo(
@@ -51,7 +50,7 @@ class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
           ModuleDependency("module3"),
         ),
         librariesDependencies = listOf(),
-        associates = associates.map { ModuleDependency(it) }
+        associates = associates.map { ModuleDependency(it) },
       )
 
       val baseDirContentRoot = ContentRoot(
@@ -69,7 +68,7 @@ class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
         kotlinAddendum = KotlinAddendum(
           languageVersion = kotlinBuildTarget.languageVersion,
           apiVersion = kotlinBuildTarget.apiVersion,
-          kotlincOptions = kotlinBuildTarget.kotlincOptions
+          kotlincOptions = kotlinBuildTarget.kotlincOptions,
         ),
       )
 
@@ -94,13 +93,13 @@ class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
   private fun addKotlinFacetEntity(
     javaModule: JavaModule,
     parentEntity: ModuleEntity,
-    builder: MutableEntityStorage
+    builder: MutableEntityStorage,
   ): FacetEntity {
     val workspaceModelEntityUpdaterConfig =
       WorkspaceModelEntityUpdaterConfig(
         builder,
         virtualFileUrlManager,
-        projectBasePath
+        projectBasePath,
       )
     val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
     return kotlinFacetEntityUpdater.addEntity(javaModule, parentEntity)

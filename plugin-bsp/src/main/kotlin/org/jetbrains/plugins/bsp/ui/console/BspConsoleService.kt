@@ -8,7 +8,6 @@ import org.jetbrains.plugins.bsp.config.rootDir
 
 @Service(Service.Level.PROJECT)
 public class BspConsoleService(project: Project) {
-
   public val bspBuildConsole: TaskConsole
 
   public val bspSyncConsole: TaskConsole

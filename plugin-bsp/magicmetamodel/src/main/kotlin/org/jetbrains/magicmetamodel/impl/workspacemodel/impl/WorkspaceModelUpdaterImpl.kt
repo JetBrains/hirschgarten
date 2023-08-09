@@ -27,11 +27,10 @@ internal class WorkspaceModelUpdaterImpl(
   val virtualFileUrlManager: VirtualFileUrlManager,
   projectBasePath: Path,
 ) : WorkspaceModelUpdater {
-
   private val workspaceModelEntityUpdaterConfig = WorkspaceModelEntityUpdaterConfig(
     workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
     virtualFileUrlManager = virtualFileUrlManager,
-    projectBasePath = projectBasePath
+    projectBasePath = projectBasePath,
   )
   private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
   private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig)
@@ -60,13 +59,13 @@ internal class WorkspaceModelUpdaterImpl(
           roots = entityToAdd.classJars.map {
             LibraryRoot(
               url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl("jar://${URI.create(it).path}!/"),
-              type = LibraryRootTypeId.COMPILED
+              type = LibraryRootTypeId.COMPILED,
             )
           },
           entitySource = BspEntitySource,
         ) {
           this.excludedRoots = arrayListOf()
-        }
+        },
       )
     }
   }

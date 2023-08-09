@@ -97,41 +97,43 @@ public abstract class JavaWorkspaceModelFixtureBaseTest : TestIndexingModeSuppor
         name = name,
         dependencies = listOf(
           ModuleDependencyItem.SdkDependency(jdk.name, jdk.sdkType.name),
-          ModuleDependencyItem.ModuleSourceDependency
+          ModuleDependencyItem.ModuleSourceDependency,
         ),
-        entitySource = object : EntitySource {}
+        entitySource = object : EntitySource {},
       ) {
         this.type = ModuleTypeId.JAVA_MODULE
-      }
+      },
     )
 
-  public fun addJavaSourceRootEntities(files: List<VirtualFile>,
-                                       packagePrefix: String,
-                                       module: ModuleEntity,
-                                       entityStorage: MutableEntityStorage): List<JavaSourceRootPropertiesEntity> =
+  public fun addJavaSourceRootEntities(
+    files: List<VirtualFile>,
+    packagePrefix: String,
+    module: ModuleEntity,
+    entityStorage: MutableEntityStorage,
+  ): List<JavaSourceRootPropertiesEntity> =
     files.map {
       entityStorage.addEntity(
         ContentRootEntity(
           url = virtualFileUrlManager.fromUrl(it.url),
           excludedPatterns = emptyList(),
-          entitySource = module.entitySource
-        ) { this.module = module }
+          entitySource = module.entitySource,
+        ) { this.module = module },
       )
     }.map {
       entityStorage.addEntity(
         SourceRootEntity(
           url = it.url,
           rootType = JAVA_ROOT_TYPE,
-          entitySource = it.entitySource
-        ) { this.contentRoot = it }
+          entitySource = it.entitySource,
+        ) { this.contentRoot = it },
       )
     }.map {
       entityStorage.addEntity(
         JavaSourceRootPropertiesEntity(
           generated = false,
           packagePrefix = packagePrefix,
-          entitySource = it.entitySource
-        ) { this.sourceRoot = it }
+          entitySource = it.entitySource,
+        ) { this.sourceRoot = it },
       )
     }
 

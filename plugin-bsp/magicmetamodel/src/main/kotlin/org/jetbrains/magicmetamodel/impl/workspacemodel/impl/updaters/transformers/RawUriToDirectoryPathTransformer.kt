@@ -6,7 +6,6 @@ import java.nio.file.Path
 import kotlin.io.path.toPath
 
 internal object RawUriToDirectoryPathTransformer : WorkspaceModelEntityBaseTransformer<String, Path> {
-
   override fun transform(inputEntity: String): Path {
     val path = URI.create(inputEntity).toPath()
 

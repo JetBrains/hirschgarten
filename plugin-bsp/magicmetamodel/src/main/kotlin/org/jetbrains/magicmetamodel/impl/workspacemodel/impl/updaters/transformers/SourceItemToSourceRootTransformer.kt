@@ -15,7 +15,6 @@ public data class SourceRoot(
 
 internal object SourceItemToSourceRootTransformer :
   WorkspaceModelEntityTransformer<SourceItem, SourceRoot> {
-
   override fun transform(inputEntity: SourceItem): SourceRoot {
     val sourceURI = URI.create(inputEntity.uri).toPath()
 

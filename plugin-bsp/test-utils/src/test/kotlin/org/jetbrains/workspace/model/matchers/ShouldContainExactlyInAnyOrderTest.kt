@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("actualValues.shouldContainExactlyInAnyOrder(assertion, expectedValues) tests")
 class ShouldContainExactlyInAnyOrderTest {
-
   @Test
   fun `should pass for empty collections`() {
     // given

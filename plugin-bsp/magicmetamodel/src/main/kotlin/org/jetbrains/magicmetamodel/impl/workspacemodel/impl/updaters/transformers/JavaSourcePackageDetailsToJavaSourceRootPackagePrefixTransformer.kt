@@ -8,16 +8,15 @@ import kotlin.io.path.toPath
 
 internal data class JavaSourcePackageDetails(
   val sourceURI: URI,
-  val sourceRoots: List<URI>
+  val sourceRoots: List<URI>,
 )
 
 internal data class JavaSourceRootPackagePrefix(
-  val packagePrefix: String
+  val packagePrefix: String,
 )
 
 internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer :
   WorkspaceModelEntityBaseTransformer<JavaSourcePackageDetails, JavaSourceRootPackagePrefix> {
-
   private const val PACKAGE_DELIMITER = '.'
 
   override fun transform(inputEntity: JavaSourcePackageDetails): JavaSourceRootPackagePrefix {

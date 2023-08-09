@@ -11,7 +11,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
 import java.nio.file.Path
 
 public object TargetIdToModuleEntitiesMap {
-
   public operator fun invoke(
     projectDetails: ProjectDetails,
     projectBasePath: Path,
@@ -19,11 +18,11 @@ public object TargetIdToModuleEntitiesMap {
   ): Map<BuildTargetId, Module> {
     val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(
       moduleNameProvider,
-      projectBasePath
+      projectBasePath,
     )
     val moduleDetailsToPythonModuleTransformer = ModuleDetailsToPythonModuleTransformer(
       moduleNameProvider,
-      projectBasePath
+      projectBasePath,
     )
 
     val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, projectBasePath)

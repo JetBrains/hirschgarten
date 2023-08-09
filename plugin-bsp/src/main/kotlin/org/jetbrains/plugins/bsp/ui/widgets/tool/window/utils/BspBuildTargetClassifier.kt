@@ -51,7 +51,7 @@ public interface BspBuildTargetClassifier {
 
 public class BspBuildTargetClassifierProvider(
   toolName: String?,
-  bspBuildTargetClassifiers: List<BspBuildTargetClassifier>
+  bspBuildTargetClassifiers: List<BspBuildTargetClassifier>,
 ) {
   private val extensionOrNull = bspBuildTargetClassifiers.firstOrNull { it.name() == toolName }
 

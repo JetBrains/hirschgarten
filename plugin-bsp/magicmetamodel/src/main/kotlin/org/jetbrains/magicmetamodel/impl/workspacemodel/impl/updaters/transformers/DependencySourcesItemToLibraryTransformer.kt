@@ -13,19 +13,18 @@ internal data class DependencySourcesAndJavacOptions(
 
 internal object DependencySourcesItemToLibraryTransformer :
   WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJavacOptions, Library> {
-
   override fun transform(inputEntity: DependencySourcesAndJavacOptions): List<Library> {
     val librariesWithUnused = toLibraryFromClassesAndSourcesAndReturnUnusedClassesAndSources(inputEntity)
     val unusedClassJars = librariesWithUnused.second
     val unusedSourceJars = librariesWithUnused.third
 
     return librariesWithUnused.first + toLibraryFromClassJars(unusedClassJars) + toLibraryFromSourceJars(
-      unusedSourceJars
+      unusedSourceJars,
     )
   }
 
   private fun toLibraryFromClassesAndSourcesAndReturnUnusedClassesAndSources(
-    inputEntity: DependencySourcesAndJavacOptions
+    inputEntity: DependencySourcesAndJavacOptions,
   ): Triple<List<Library>, List<String>, List<String>> {
     val unusedDependencySources = inputEntity.dependencySources.sources.toMutableSet()
     val unusedClasses = inputEntity.javacOptions?.classpath.orEmpty().toMutableSet()

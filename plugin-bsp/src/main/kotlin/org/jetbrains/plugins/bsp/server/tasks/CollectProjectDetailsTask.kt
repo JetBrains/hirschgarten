@@ -68,12 +68,11 @@ import kotlin.system.exitProcess
 public data class PythonSdk(
   val name: String,
   val interpreter: String,
-  val dependencies: List<DependencySourcesItem>
+  val dependencies: List<DependencySourcesItem>,
 )
 
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
   BspServerTask<ProjectDetails>("collect project details", project) {
-
   private val cancelOnFuture = CompletableFuture<Void>()
 
   private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
@@ -136,7 +135,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private fun collectModel(
     server: BspServer,
     capabilities: BuildServerCapabilities,
-    cancelOn: CompletableFuture<Void>
+    cancelOn: CompletableFuture<Void>,
   ): ProjectDetails? {
     fun isCancellationException(e: Throwable): Boolean =
       e is CompletionException && e.cause is CancellationException
@@ -149,14 +148,14 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         bspSyncConsole.finishTask(
           taskId = taskId,
           message = "Canceled",
-          result = FailureResultImpl("The task is canceled")
+          result = FailureResultImpl("The task is canceled"),
         )
 
       isTimeoutException(e) ->
         bspSyncConsole.finishTask(
           taskId = taskId,
           message = "Timed out",
-          result = FailureResultImpl(BspTasksBundle.message("task.timeout.message"))
+          result = FailureResultImpl(BspTasksBundle.message("task.timeout.message")),
         )
 
       else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
@@ -169,7 +168,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         server = server,
         buildServerCapabilities = capabilities,
         errorCallback = { errorCallback(it) },
-        cancelOn = cancelOn
+        cancelOn = cancelOn,
       )
 
     bspSyncConsole.finishSubtask(importSubtaskId, "Collecting model done!")
@@ -197,15 +196,15 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? =
-      extractPythonBuildTarget(target)
-        ?.takeIf { it.version != null && it.interpreter != null }
-        ?.let {
-          PythonSdk(
-            name = "${target.id.uri}-${it.version}",
-            interpreter = it.interpreter,
-            dependencies = dependenciesSources
-          )
-        }
+    extractPythonBuildTarget(target)
+      ?.takeIf { it.version != null && it.interpreter != null }
+      ?.let {
+        PythonSdk(
+          name = "${target.id.uri}-${it.version}",
+          interpreter = it.interpreter,
+          dependencies = dependenciesSources,
+        )
+      }
 
   private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<PythonSdk> {
     return projectDetails.targets
@@ -243,7 +242,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private suspend fun addJdk(jdkInfo: JvmBuildTarget) {
     val jdk = ExternalSystemJdkProvider.getInstance().createJdk(
       jdkInfo.javaVersion.javaVersionToJdkName(project.name),
-      URI.create(jdkInfo.javaHome).toPath().toString()
+      URI.create(jdkInfo.javaHome).toPath().toString(),
     )
 
     addJdkIfNeeded(jdk)
@@ -353,8 +352,8 @@ public fun calculateProjectDetailsWithCapabilities(
 
     val outputPathsFuture =
       queryForOutputPaths(server, allTargetsIds)
-              .reactToExceptionIn(cancelOn)
-              .catchSyncErrors(errorCallback)
+        .reactToExceptionIn(cancelOn)
+        .catchSyncErrors(errorCallback)
     return ProjectDetails(
       targetsId = allTargetsIds,
       targets = workspaceBuildTargetsResult.targets.toSet(),
@@ -382,13 +381,13 @@ private fun queryForBuildTargets(server: BspServer): CompletableFuture<Workspace
   server.workspaceBuildTargets()
 
 private fun calculateAllTargetsIds(
-  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult
+  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
 ): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.map { it.id }
 
 private fun queryForSourcesResult(
   server: BspServer,
-  allTargetsIds: List<BuildTargetIdentifier>
+  allTargetsIds: List<BuildTargetIdentifier>,
 ): CompletableFuture<SourcesResult> {
   val sourcesParams = SourcesParams(allTargetsIds)
 
@@ -398,7 +397,7 @@ private fun queryForSourcesResult(
 private fun queryForTargetResources(
   server: BspServer,
   capabilities: BuildServerCapabilities,
-  allTargetsIds: List<BuildTargetIdentifier>
+  allTargetsIds: List<BuildTargetIdentifier>,
 ): CompletableFuture<ResourcesResult>? {
   val resourcesParams = ResourcesParams(allTargetsIds)
 
@@ -409,7 +408,7 @@ private fun queryForTargetResources(
 private fun queryForDependencySources(
   server: BspServer,
   capabilities: BuildServerCapabilities,
-  allTargetsIds: List<BuildTargetIdentifier>
+  allTargetsIds: List<BuildTargetIdentifier>,
 ): CompletableFuture<DependencySourcesResult>? {
   val dependencySourcesParams = DependencySourcesParams(allTargetsIds)
 
@@ -418,12 +417,13 @@ private fun queryForDependencySources(
 }
 
 private fun calculateJavaTargetsIds(
-  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
+): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.includesJava() }.map { it.id }
 
 private fun queryForJavacOptions(
   server: BspServer,
-  javaTargetsIds: List<BuildTargetIdentifier>
+  javaTargetsIds: List<BuildTargetIdentifier>,
 ): CompletableFuture<JavacOptionsResult>? {
   return if (javaTargetsIds.isNotEmpty()) {
     val javacOptionsParams = JavacOptionsParams(javaTargetsIds)
@@ -432,12 +432,13 @@ private fun queryForJavacOptions(
 }
 
 private fun calculatePythonTargetsIds(
-    workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
+): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.includesPython() }.map { it.id }
 
 private fun queryForPythonOptions(
   server: BspServer,
-  pythonTargetsIds: List<BuildTargetIdentifier>
+  pythonTargetsIds: List<BuildTargetIdentifier>,
 ): CompletableFuture<PythonOptionsResult>? {
   return if (pythonTargetsIds.isNotEmpty() && BspFeatureFlags.isPythonSupportEnabled) {
     val pythonOptionsParams = PythonOptionsParams(pythonTargetsIds)
@@ -447,7 +448,7 @@ private fun queryForPythonOptions(
 
 private fun queryForOutputPaths(
   server: BspServer,
-  allTargetIds: List<BuildTargetIdentifier>
+  allTargetIds: List<BuildTargetIdentifier>,
 ): CompletableFuture<OutputPathsResult> {
   val outputPathsParams = OutputPathsParams(allTargetIds)
   return server.buildTargetOutputPaths(outputPathsParams)

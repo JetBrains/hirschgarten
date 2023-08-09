@@ -11,13 +11,13 @@ import org.virtuslab.ideprobe.robot.RobotProbeDriver
 import org.virtuslab.ideprobe.robot.SearchableComponent
 import org.virtuslab.ideprobe.wait.BasicWaiting
 import org.virtuslab.ideprobe.wait.DoOnlyOnce
-import org.virtuslab.ideprobe.wait.`WaitLogicFactory$`.`MODULE$` as WaitLogicFactory
 import scala.Option
 import scala.concurrent.duration.FiniteDuration
 import scala.runtime.BoxedUnit
 import java.io.InvalidClassException
 import java.util.concurrent.TimeUnit
 import org.virtuslab.ideprobe.robot.`RobotSyntax$`.`MODULE$` as RobotSyntaxObj
+import org.virtuslab.ideprobe.wait.`WaitLogicFactory$`.`MODULE$` as WaitLogicFactory
 
 val robotTimeout: FiniteDuration = FiniteDuration(10, TimeUnit.SECONDS)
 val fiveSeconds: FiniteDuration = FiniteDuration(5, TimeUnit.SECONDS)
@@ -48,7 +48,7 @@ fun SearchableComponent.click(): Unit = fixture().runJs("component.click();", tr
 
 fun SearchableComponent.setText(text: String): Unit = fixture().runJs("component.setText('$text');", true)
 
-fun RobotProbeDriver.getBuildConsoleOutput(): List<String> = findElement(query.className("BuildTextConsoleView"))
+fun RobotProbeDriver.getBuildConsoleOutput(): List<String> = findElement(Query.className("BuildTextConsoleView"))
   .fixture()
   .callJs<String>("component.getText();")
   .split("\n")
@@ -58,8 +58,8 @@ fun SearchableComponent.findElement(xpath: String) =
 
 fun IntelliJFixture.withBuild(build: String, version: String? = null) = withVersion(
   IntelliJVersion(
-    build, Option.apply(version), if (OS.Current() == OS.`Mac$`.`MODULE$`) ".dmg" else ".zip"
-  )
+    build, Option.apply(version), if (OS.Current() == OS.`Mac$`.`MODULE$`) ".dmg" else ".zip",
+  ),
 )
 
 fun ProbeDriver.tryUntilSuccessful(action: () -> Unit) {
@@ -75,8 +75,7 @@ fun ProbeDriver.tryUntilSuccessful(action: () -> Unit) {
   return await(waitLogic)
 }
 
-object query {
-
+object Query {
   fun dialog(title: String): String = dialog("title" to title)
 
   fun dialog(vararg attributes: Pair<String, String>): String = div("class" to "MyDialog", *attributes)
@@ -95,5 +94,4 @@ object query {
 
   fun div(vararg attributes: Pair<String, String>): String =
     attributes.joinToString(" and ", "//div[", "]") { (name, value) -> "@$name='$value'" }
-
 }

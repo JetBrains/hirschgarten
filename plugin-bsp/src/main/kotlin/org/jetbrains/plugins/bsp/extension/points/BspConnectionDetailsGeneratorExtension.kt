@@ -1,26 +1,22 @@
 package org.jetbrains.plugins.bsp.extension.points
 
 import com.intellij.openapi.extensions.ExtensionPointName
-import coursier.core.Dependency as CoursierDependency
-import coursier.core.Module as CoursierModule
-import java.io.File
-import java.nio.file.Paths
-import kotlin.collections.List
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.mapOf
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
-import scala.collection.immutable.List as ScalaImmutableList
-import scala.collection.immutable.Map as ScalaImmutableMap
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.jdk.javaapi.CollectionConverters.asJava
 import scala.jdk.javaapi.CollectionConverters.asScala
+import java.io.File
+import java.nio.file.Paths
+import kotlin.collections.List
+import kotlin.collections.map
+import coursier.core.Dependency as CoursierDependency
+import coursier.core.Module as CoursierModule
+import scala.collection.immutable.List as ScalaImmutableList
+import scala.collection.immutable.Map as ScalaImmutableMap
 
 public interface BspConnectionDetailsGeneratorExtension : BspConnectionDetailsGenerator {
-
   public companion object {
-
     private val ep =
       ExtensionPointName.create<BspConnectionDetailsGeneratorExtension>(
         "com.intellij.bspConnectionDetailsGeneratorExtension")
@@ -31,7 +27,6 @@ public interface BspConnectionDetailsGeneratorExtension : BspConnectionDetailsGe
 }
 
 public object ExternalCommandUtils {
-
   public fun calculateJavaExecPath(): String {
     val javaHome = System.getProperty("java.home")
     if (javaHome == null) {
@@ -47,8 +42,8 @@ public object ExternalCommandUtils {
     val dependencies = listOf<CoursierDependency>(
       CoursierDependency.apply(
         CoursierModule.apply(org, name, attributes),
-        version
-      )
+        version,
+      ),
     )
     val fetchTask = coursier
       .Fetch

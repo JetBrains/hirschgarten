@@ -28,7 +28,6 @@ internal data class ModuleName(
 )
 
 internal interface WorkspaceModelUpdater {
-
   fun loadModules(moduleEntities: List<Module>) =
     moduleEntities.forEach { loadModule(it) }
 
@@ -52,7 +51,7 @@ internal interface WorkspaceModelUpdater {
       WorkspaceModelUpdaterImpl(
         workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
         virtualFileUrlManager = virtualFileUrlManager,
-        projectBasePath = projectBasePath
+        projectBasePath = projectBasePath,
       )
   }
 }

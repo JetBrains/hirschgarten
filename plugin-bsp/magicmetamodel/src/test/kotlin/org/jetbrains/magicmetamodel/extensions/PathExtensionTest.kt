@@ -7,7 +7,6 @@ import java.nio.file.Paths
 
 @DisplayName("uri.toAbsolutePath() tests")
 class PathExtensionTest {
-
   @Test
   fun `should return sequence for empty path`() {
     // given

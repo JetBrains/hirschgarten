@@ -18,7 +18,7 @@ public interface BspConnectionDetailsGenerator {
     command: List<String>,
     projectPath: VirtualFile,
     outputStream: OutputStream,
-    project: Project
+    project: Project,
   ) {
     val commandStr = command.joinToString(" ")
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
@@ -34,7 +34,7 @@ public interface BspConnectionDetailsGenerator {
     consoleProcess.waitFor()
     if (consoleProcess.exitValue() != 0) {
       error(
-        "An error has occurred while running the command: $commandStr"
+        "An error has occurred while running the command: $commandStr",
       )
     }
   }
@@ -56,13 +56,13 @@ public interface BspConnectionDetailsGenerator {
 
   public fun calculateImportWizardSteps(
     projectBasePath: Path,
-    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>,
   ): List<ImportProjectWizardStep> = emptyList()
 
   public fun generateBspConnectionDetailsFile(
     projectPath: VirtualFile,
     outputStream: OutputStream,
-    project: Project
+    project: Project,
   ): VirtualFile
 }
 
@@ -70,7 +70,6 @@ public class BspConnectionDetailsGeneratorProvider(
   private val projectPath: VirtualFile,
   bspConnectionDetailsGenerators: List<BspConnectionDetailsGenerator>,
 ) {
-
   public val availableBspConnectionDetailsGenerators: List<BspConnectionDetailsGenerator> by lazy {
     bspConnectionDetailsGenerators.filter { it.canGenerateBspConnectionDetailsFile(projectPath) }
   }
@@ -83,7 +82,7 @@ public class BspConnectionDetailsGeneratorProvider(
 
   public fun calculateWizardSteps(
     generatorId: String,
-    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>,
   ): List<ImportProjectWizardStep> =
     availableBspConnectionDetailsGenerators
       .find { it.id() == generatorId }
@@ -93,7 +92,7 @@ public class BspConnectionDetailsGeneratorProvider(
   public fun generateBspConnectionDetailFileForGeneratorWithName(
     generatorId: String,
     outputStream: OutputStream,
-    project: Project
+    project: Project,
   ): VirtualFile? =
     availableBspConnectionDetailsGenerators
       .find { it.id() == generatorId }

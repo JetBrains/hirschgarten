@@ -32,8 +32,8 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
       JBLabel(
         printableBuildTarget.displayName,
         icon,
-        SwingConstants.LEFT
-      )
+        SwingConstants.LEFT,
+      ),
     )
     return renderedCell
   }
@@ -53,7 +53,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     targets.take(TARGETS_TO_HIGHLIGHT).map {
       PrintableBuildTarget(
         it,
-        QueryHighlighter.highlight(it.getBuildTargetName(), query)
+        QueryHighlighter.highlight(it.getBuildTargetName(), query),
       )
     }
 
@@ -83,7 +83,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
   override fun getSelectedBuildTarget(): BuildTargetInfo? =
     searchListComponent.selectedValue?.buildTarget
 
-  /* https://youtrack.jetbrains.com/issue/BAZEL-522 */
+  // https://youtrack.jetbrains.com/issue/BAZEL-522
   public fun selectAtLocation(location: Point) {
     val index = searchListComponent.locationToIndex(location)
     if (index >= 0 && !searchListComponent.isSelectedIndex(index)) {

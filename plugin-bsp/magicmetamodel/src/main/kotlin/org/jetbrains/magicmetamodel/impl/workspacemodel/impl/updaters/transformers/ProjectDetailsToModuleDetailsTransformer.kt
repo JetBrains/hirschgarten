@@ -18,7 +18,6 @@ internal class ProjectDetailsToModuleDetailsTransformer(
   private val projectDetails: ProjectDetails,
   private val projectBasePath: Path,
 ) {
-
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
   private val librariesIndex = projectDetails.libraries?.associateBy { it.id }
 
@@ -44,10 +43,10 @@ internal class ProjectDetailsToModuleDetailsTransformer(
 
   private fun allDependencies(
     target: BuildTarget,
-    librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?
+    librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?,
   ): Set<BuildTargetIdentifier> {
     var librariesToVisit = target.dependencies
-    var visited = emptySet<BuildTargetIdentifier>();
+    var visited = emptySet<BuildTargetIdentifier>()
     while (librariesToVisit.isNotEmpty()) {
       val currentLib = librariesToVisit.first()
       librariesToVisit = librariesToVisit - currentLib
@@ -89,13 +88,13 @@ internal class ProjectDetailsToModuleDetailsTransformer(
 
   private fun calculateDependenciesSources(
     projectDetails: ProjectDetails,
-    targetId: BuildTargetIdentifier
+    targetId: BuildTargetIdentifier,
   ): List<DependencySourcesItem> =
     projectDetails.dependenciesSources.filter { it.target == targetId }
 
   private fun calculateJavacOptions(
     projectDetails: ProjectDetails,
-    targetId: BuildTargetIdentifier
+    targetId: BuildTargetIdentifier,
   ): JavacOptionsItem? =
     projectDetails.javacOptions.firstOrNull { it.target == targetId }
 
@@ -107,7 +106,7 @@ internal class ProjectDetailsToModuleDetailsTransformer(
 
   private fun calculatePythonOptions(
     projectDetails: ProjectDetails,
-    targetId: BuildTargetIdentifier
+    targetId: BuildTargetIdentifier,
   ): PythonOptionsItem? =
     projectDetails.pythonOptions.firstOrNull { it.target == targetId }
 }

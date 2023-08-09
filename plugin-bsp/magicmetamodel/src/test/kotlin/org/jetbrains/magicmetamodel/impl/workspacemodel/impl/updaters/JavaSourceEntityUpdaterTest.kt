@@ -18,7 +18,6 @@ import kotlin.io.path.toPath
 
 @DisplayName("javaSourceEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest() {
-
   private lateinit var javaSourceEntityUpdater: JavaSourceEntityUpdater
 
   @BeforeEach
@@ -56,19 +55,19 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir,
-        excludedPatterns = emptyList()
+        excludedPatterns = emptyList(),
       ),
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir,
-        rootType = "java-source"
+        rootType = "java-source",
       ) {
         javaSourceRoots = listOf(
           JavaSourceRootPropertiesEntity(
             entitySource = parentModuleEntity.entitySource,
             generated = generated,
-            packagePrefix = packagePrefix
-          )
+            packagePrefix = packagePrefix,
+          ),
         )
       },
       parentModuleEntity = parentModuleEntity,
@@ -117,19 +116,19 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir1,
-        excludedPatterns = emptyList()
+        excludedPatterns = emptyList(),
       ),
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir1,
-        rootType = "java-source"
+        rootType = "java-source",
       ) {
         this.javaSourceRoots = listOf(
           JavaSourceRootPropertiesEntity(
             entitySource = parentModuleEntity.entitySource,
             generated = generated1,
-            packagePrefix = packagePrefix1
-          )
+            packagePrefix = packagePrefix1,
+          ),
         )
       },
       parentModuleEntity = parentModuleEntity,
@@ -140,19 +139,19 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       contentRootEntity = ContentRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir2,
-        excludedPatterns = emptyList()
+        excludedPatterns = emptyList(),
       ),
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir2,
-        rootType = "java-test"
+        rootType = "java-test",
       ) {
         this.javaSourceRoots = listOf(
           JavaSourceRootPropertiesEntity(
             entitySource = parentModuleEntity.entitySource,
             generated = generated2,
-            packagePrefix = packagePrefix2
-          )
+            packagePrefix = packagePrefix2,
+          ),
         )
       },
       parentModuleEntity = parentModuleEntity,

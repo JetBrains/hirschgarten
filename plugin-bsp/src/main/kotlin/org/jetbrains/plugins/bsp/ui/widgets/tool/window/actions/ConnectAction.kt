@@ -13,7 +13,6 @@ import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
 public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect.action.text")) {
-
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
 
@@ -39,7 +38,7 @@ public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect
         .connect("bsp-connect") { collectProjectDetailsTask.cancelExecution() }
       collectProjectDetailsTask.execute(
         name = "Connecting...",
-        cancelable = true
+        cancelable = true,
       )
       bspSyncConsole.finishTask("bsp-connect", "Connect done!")
     } catch (e: Exception) {

@@ -5,8 +5,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonLibrary
 
 internal object DependencySourcesItemToPythonLibraryTransformer :
   WorkspaceModelEntityPartitionTransformer<DependencySourcesItem, PythonLibrary> {
-
   override fun transform(inputEntity: DependencySourcesItem): List<PythonLibrary> =
     inputEntity.sources.mapNotNull { PythonLibrary(listOf(it)) }
-
 }

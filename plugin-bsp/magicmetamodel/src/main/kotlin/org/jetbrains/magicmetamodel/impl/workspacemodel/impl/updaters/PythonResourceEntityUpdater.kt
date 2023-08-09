@@ -11,7 +11,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 internal class PythonResourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithParentModuleUpdater<ResourceRoot, SourceRootEntity> {
-
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(entityToAdd: ResourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity {
@@ -20,16 +19,16 @@ internal class PythonResourceEntityUpdater(
     return addSourceRootEntity(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       contentRootEntity,
-      entityToAdd
+      entityToAdd,
     )
   }
 
   private fun addContentRootEntity(
     entityToAdd: ResourceRoot,
-    parentModuleEntity: ModuleEntity
+    parentModuleEntity: ModuleEntity,
   ): ContentRootEntity {
     val contentRoot = ContentRoot(
-      path = entityToAdd.resourcePath
+      path = entityToAdd.resourcePath,
     )
 
     return contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)
@@ -44,10 +43,10 @@ internal class PythonResourceEntityUpdater(
       SourceRootEntity(
         url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         rootType = ROOT_TYPE,
-        entitySource = BspEntitySource
+        entitySource = BspEntitySource,
       ) {
         this.contentRoot = contentRootEntity
-      }
+      },
     )
 
   private companion object {

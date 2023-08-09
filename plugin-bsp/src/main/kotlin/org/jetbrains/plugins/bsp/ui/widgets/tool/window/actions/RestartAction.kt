@@ -16,7 +16,6 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTarget
 
 public class RestartAction :
   AnAction({ BspAllTargetsWidgetBundle.message("restart.action.text") }, BspPluginIcons.restart) {
-
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
 
@@ -38,7 +37,7 @@ public class RestartAction :
         taskId = "bsp-restart",
         title = "Restart",
         message = "Restarting...",
-        cancelAction = { collectProjectDetailsTask.cancelExecution() }
+        cancelAction = { collectProjectDetailsTask.cancelExecution() },
       )
       try {
         collectProjectDetailsTask.execute(name = "Restarting...", cancelable = true)

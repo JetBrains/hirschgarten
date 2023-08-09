@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("WorkspaceModelUpdater.create(workspaceModelUpdaterConfig) tests")
 class WorkspaceModelUpdaterCreateTest : WorkspaceModelBaseTest() {
-
   @Test
   fun `should return WorkspaceModelUpdaterImpl`() {
     // given

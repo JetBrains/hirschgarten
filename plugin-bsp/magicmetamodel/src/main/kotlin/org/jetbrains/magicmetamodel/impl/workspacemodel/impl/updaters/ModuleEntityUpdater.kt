@@ -18,7 +18,6 @@ internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
-
   override fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
@@ -34,19 +33,19 @@ internal class ModuleEntityUpdater(
       ModuleEntity(
         name = entityToAdd.name,
         dependencies = modulesDependencies + associatesDependencies + librariesDependencies + defaultDependencies,
-        entitySource = BspEntitySource
+        entitySource = BspEntitySource,
       ) {
         this.type = entityToAdd.type
-      }
+      },
     )
     val imlData = builder.addEntity(
       ModuleCustomImlDataEntity(
         customModuleOptions = entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap,
-        entitySource = BspEntitySource
+        entitySource = BspEntitySource,
       ) {
         this.rootManagerTagCustomData = null
         this.module = moduleEntity
-      }
+      },
     )
     builder.modifyEntity(moduleEntity) {
       this.customImlData = imlData
@@ -55,7 +54,7 @@ internal class ModuleEntityUpdater(
   }
 
   private fun toModuleDependencyItemModuleDependency(
-    moduleDependency: ModuleDependency
+    moduleDependency: ModuleDependency,
   ): ModuleDependencyItem.Exportable.ModuleDependency =
     ModuleDependencyItem.Exportable.ModuleDependency(
       module = ModuleId(moduleDependency.moduleName),
@@ -65,18 +64,18 @@ internal class ModuleEntityUpdater(
     )
 
   private fun toModuleDependencyItemLibraryDependency(
-          libraryDependency: LibraryDependency,
-          moduleName: String
+    libraryDependency: LibraryDependency,
+    moduleName: String,
   ): ModuleDependencyItem.Exportable.LibraryDependency {
     val libraryTableId = if (libraryDependency.isProjectLevelLibrary)
       LibraryTableId.ProjectLibraryTableId else LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName))
     return ModuleDependencyItem.Exportable.LibraryDependency(
-            library = LibraryId(
-                    name = libraryDependency.libraryName,
-                    tableId = libraryTableId,
-            ),
-            exported = false,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+      library = LibraryId(
+        name = libraryDependency.libraryName,
+        tableId = libraryTableId,
+      ),
+      exported = false,
+      scope = ModuleDependencyItem.DependencyScope.COMPILE,
     )
   }
 }
@@ -85,7 +84,6 @@ internal class ModuleEntityUpdater(
 internal class WorkspaceModuleRemover(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModuleEntityRemover<ModuleName> {
-
   override fun removeEntity(entityToRemove: ModuleName) {
     // TODO null
     val moduleToRemove =
