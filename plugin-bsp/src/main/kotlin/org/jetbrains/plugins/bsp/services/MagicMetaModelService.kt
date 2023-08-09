@@ -6,8 +6,8 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.workspaceModel.ide.getInstance
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.workspaceModel.ide.getInstance
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
@@ -23,14 +23,13 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClas
 @State(
   name = "MagicMetaModelService",
   storages = [Storage("magicmetamodel.xml")],
-  reportStatistic = true
+  reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
 public class MagicMetaModelService(private val project: Project) :
   ValueServiceWhichNeedsToBeInitialized<MagicMetaModelImpl>(),
   PersistentStateComponent<DefaultMagicMetaModelState> {
-
   // TODO ugh again
   init {
     init(initEmptyMagicMetaModelTEMPORARY())
@@ -52,8 +51,6 @@ public class MagicMetaModelService(private val project: Project) :
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)
   }
-
-
 
   public fun initializeMagicModel(projectDetails: ProjectDetails) {
     val magicMetaModelProjectConfig = calculateProjectConfig(project)

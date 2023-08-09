@@ -19,7 +19,7 @@ public infix fun Collection<ModuleEntity>.shouldContainExactlyInAnyOrder(
 
 private fun validateModuleEntity(
   actual: ModuleEntity,
-  expected: ExpectedModuleEntity
+  expected: ExpectedModuleEntity,
 ) {
   actual.name shouldBe expected.moduleEntity.name
   actual.type shouldBe expected.moduleEntity.type

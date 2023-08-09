@@ -9,19 +9,17 @@ import javax.swing.Icon
 /**
  * An action which will be presented with a sticky button (one that might stay selected after clicking)
  *
- * @property onPerform function to be performed upon clicking this action's button
- * @property selectionProvider function deciding whether the button is to be displayed as selected or not
- *
  * @param hintText text to be displayed on hover
  * @param icon an icon for this action's button
+ * @property onPerform function to be performed upon clicking this action's button
+ * @property selectionProvider function deciding whether the button is to be displayed as selected or not
  */
 public class StickyTargetAction(
   hintText: String,
   icon: Icon,
   private val onPerform: () -> Unit,
-  private val selectionProvider: () -> Boolean
+  private val selectionProvider: () -> Boolean,
 ) : AnAction({ hintText }, icon), Toggleable {
-
   override fun actionPerformed(e: AnActionEvent) {
     onPerform()
     update(e)

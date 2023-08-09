@@ -10,7 +10,6 @@ import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.misc.actions.performOpenBazelProjectViaBspPlugin
 
 internal class BazelBspOpenProjectProvider : AbstractOpenProjectProvider() {
-
   private val log = logger<BazelBspOpenProjectProvider>()
 
   override val systemId = BazelBspConstants.SYSTEM_ID

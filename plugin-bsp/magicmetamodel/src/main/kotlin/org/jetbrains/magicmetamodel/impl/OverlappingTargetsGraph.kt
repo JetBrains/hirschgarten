@@ -6,7 +6,6 @@ import org.jetbrains.magicmetamodel.extensions.reduceSets
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 
 public object OverlappingTargetsGraph {
-
   private val log = logger<OverlappingTargetsGraph>()
 
   public operator fun invoke(

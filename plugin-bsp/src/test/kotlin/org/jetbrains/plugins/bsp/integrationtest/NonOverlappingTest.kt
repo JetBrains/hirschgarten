@@ -13,9 +13,6 @@ import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.gson.Gson
 import io.kotest.matchers.shouldBe
-import java.nio.file.Path
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.impl.NonOverlappingTargets
 import org.jetbrains.magicmetamodel.impl.OverlappingTargetsGraph
@@ -25,6 +22,9 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.tasks.calculateProjectDetailsWithCapabilities
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
@@ -75,7 +75,7 @@ class NonOverlappingTest {
       "--branch", gitRevision,
       "--depth", "1",
       "https://github.com/bazelbuild/bazel",
-      bazelDir.toAbsolutePath().toString()
+      bazelDir.toAbsolutePath().toString(),
     )
       .inheritIO()
       .start()
@@ -90,7 +90,7 @@ class NonOverlappingTest {
       "cs", "launch", "org.jetbrains.bsp:bazel-bsp:$BAZEL_BSP_VERSION",
       "-M", "org.jetbrains.bsp.bazel.install.Install",
       "--",
-      "-t", target
+      "-t", target,
     ).run {
       inheritIO()
       directory(bazelDir.toFile())
@@ -106,7 +106,7 @@ class NonOverlappingTest {
     "0.0.1",
     "2.0.0",
     bazelDir.toUri().toString(),
-    BuildClientCapabilities(listOf("java"))
+    BuildClientCapabilities(listOf("java")),
   )
 
   private fun startBsp(bspServerProcess: Process): Launcher<BspServer> {

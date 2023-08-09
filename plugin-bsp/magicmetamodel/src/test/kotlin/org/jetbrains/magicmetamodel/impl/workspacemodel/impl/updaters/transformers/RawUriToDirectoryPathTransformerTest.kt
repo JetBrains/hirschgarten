@@ -7,7 +7,6 @@ import java.nio.file.Files
 
 @DisplayName("RawUriToDirectoryPathTransformer.transform(rawUri) tests")
 class RawUriToDirectoryPathTransformerTest {
-
   @Test
   fun `should return dir path for dir raw uri`() {
     // given

@@ -14,11 +14,10 @@ import org.jetbrains.plugins.bsp.ui.console.ConsoleOutputStream
 
 public data class BspGeneratorConnectionState(
   public var fileConnectionState: BspFileConnectionState? = null,
-  public var generatorId: String? = null
+  public var generatorId: String? = null,
 )
 
 public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGeneratorConnectionState> {
-
   private val project: Project
   private val bspConnectionDetailsGenerator: BspConnectionDetailsGenerator
 
@@ -34,7 +33,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
 
   public constructor(
     project: Project,
-    bspConnectionDetailsGenerator: BspConnectionDetailsGenerator
+    bspConnectionDetailsGenerator: BspConnectionDetailsGenerator,
   ) {
     this.project = project
     this.bspConnectionDetailsGenerator = bspConnectionDetailsGenerator
@@ -43,7 +42,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
 
   private constructor(
     project: Project,
-    state: BspGeneratorConnectionState
+    state: BspGeneratorConnectionState,
   ) {
     this.project = project
     this.fileConnection = state.fileConnectionState?.let { BspFileConnection.fromState(project, it) }
@@ -101,7 +100,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
       val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
         project.rootDir,
         consoleOutputStream,
-        project
+        project,
       )
       // TODO
       val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)
@@ -111,7 +110,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
       bspSyncConsole.finishSubtask(
         subtaskId = generateConnectionFileSubtaskId,
         message = "Generating BSP connection details failed!",
-        result = FailureResultImpl(e)
+        result = FailureResultImpl(e),
       )
     }
   }

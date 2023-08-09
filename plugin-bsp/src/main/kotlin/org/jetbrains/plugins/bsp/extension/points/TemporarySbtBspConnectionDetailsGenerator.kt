@@ -5,7 +5,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import java.io.OutputStream
 
 public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGeneratorExtension {
-
   override fun id(): String = "sbt"
 
   override fun displayName(): String = "Sbt"
@@ -16,7 +15,7 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
   override fun generateBspConnectionDetailsFile(
     projectPath: VirtualFile,
     outputStream: OutputStream,
-    project: Project
+    project: Project,
   ): VirtualFile {
     executeAndWait(
       command = listOf(
@@ -26,14 +25,14 @@ public class TemporarySbtBspConnectionDetailsGenerator : BspConnectionDetailsGen
           .calculateNeededJars(
             org = "org.scala-sbt",
             name = "sbt-launch",
-            version = "1.9.1"
+            version = "1.9.1",
           )
           .joinToString(""),
-        "bspConfig"
+        "bspConfig",
       ),
       projectPath = projectPath,
       outputStream = outputStream,
-      project = project
+      project = project,
     )
     return getChild(projectPath, listOf(".bsp", "sbt.json"))!!
   }

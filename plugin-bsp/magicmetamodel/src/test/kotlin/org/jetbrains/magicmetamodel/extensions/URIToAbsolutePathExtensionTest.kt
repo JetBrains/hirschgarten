@@ -8,7 +8,6 @@ import java.nio.file.Paths
 
 @DisplayName("uri.toAbsolutePath() tests")
 class URIToAbsolutePathExtensionTest {
-
   @Test
   fun `should map root uri to root path`() {
     // given

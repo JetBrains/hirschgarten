@@ -37,7 +37,6 @@ import kotlin.io.path.createTempFile
 
 @DisplayName("ModuleDetailsToPythonModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToPythonModuleTransformerTest {
-
   val projectBasePath = Path("")
 
   @Test
@@ -74,7 +73,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         BuildTargetIdentifier("module2"),
         BuildTargetIdentifier("module3"),
       ),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
     )
     buildTarget.baseDirectory = projectRoot.toUri().toString()
     buildTarget.dataKind = BuildTargetDataKind.PYTHON
@@ -102,7 +101,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
         SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
         SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
-      )
+      ),
     )
     sourcesItem.roots = listOf(projectRoot.toUri().toString())
 
@@ -194,7 +193,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       listOf("library"),
       listOf("python"),
       listOf(buildTargetId2, buildTargetId2),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
     )
     buildTarget1.baseDirectory = module1Root.toUri().toString()
 
@@ -220,7 +219,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
         SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
         SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
-      )
+      ),
     )
     sourcesItem1.roots = listOf(module1Root.toUri().toString())
 
@@ -233,7 +232,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       listOf(
         resourceFilePath11.toUri().toString(),
         resourceFilePath12.toUri().toString(),
-      )
+      ),
     )
 
     val dependencySourcesItem1 = DependencySourcesItem(
@@ -256,8 +255,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
       libraryDependencies = null,
       moduleDependencies = listOf(
         buildTargetId2.uri,
-        buildTargetId3.uri
-      )
+        buildTargetId3.uri,
+      ),
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -268,7 +267,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       listOf("test"),
       listOf("python"),
       listOf(buildTargetId3),
-      BuildTargetCapabilities()
+      BuildTargetCapabilities(),
     )
     buildTarget2.baseDirectory = module2Root.toUri().toString()
 
@@ -283,19 +282,19 @@ class ModuleDetailsToPythonModuleTransformerTest {
       buildTargetId2,
       listOf(
         SourceItem(dir1CPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
-      )
+      ),
     )
     sourcesItem2.roots = listOf(module2Root.toUri().toString())
 
     val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
     val resourcesItem2 = ResourcesItem(
       buildTargetId2,
-      listOf(resourceDirPath21.toUri().toString())
+      listOf(resourceDirPath21.toUri().toString()),
     )
 
     val dependencySourcesItem2 = DependencySourcesItem(
       buildTargetId2,
-      emptyList()
+      emptyList(),
     )
     val target2PythonOptionsItem = PythonOptionsItem(
       buildTargetId2,
@@ -311,7 +310,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       pythonOptions = target2PythonOptionsItem,
       outputPathUris = emptyList(),
       libraryDependencies = null,
-      moduleDependencies = listOf(buildTargetId3.uri)
+      moduleDependencies = listOf(buildTargetId3.uri),
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
@@ -377,12 +376,12 @@ class ModuleDetailsToPythonModuleTransformerTest {
     )
 
     pythonModules shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedPythonModule1, expectedPythonModule2), this::validatePythonModule
+      listOf(expectedPythonModule1, expectedPythonModule2), this::validatePythonModule,
     )
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(
-    expectedWithAssertion: Pair<Collection<E>, (T, E) -> Unit>
+    expectedWithAssertion: Pair<Collection<E>, (T, E) -> Unit>,
   ) {
     val expectedValues = expectedWithAssertion.first
     val assertion = expectedWithAssertion.second
@@ -448,7 +447,7 @@ class ExtractPythonBuildTargetTest {
       listOf("tag1", "tag2"),
       listOf("language1"),
       listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
-      BuildTargetCapabilities(true, false, true, true)
+      BuildTargetCapabilities(true, false, true, true),
     )
     buildTarget.displayName = "target name"
     buildTarget.baseDirectory = "/base/dir"

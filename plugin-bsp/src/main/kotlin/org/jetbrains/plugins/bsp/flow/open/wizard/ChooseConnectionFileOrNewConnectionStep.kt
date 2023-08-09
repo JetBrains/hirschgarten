@@ -20,9 +20,8 @@ private data class ConnectionChoiceContainer(var connection: ConnectionFileOrNew
 public open class ChooseConnectionFileOrNewConnectionStep(
   private val projectPath: VirtualFile,
   private val availableGenerators: List<BspConnectionDetailsGenerator>,
-  private val onChoiceChange: () -> Unit
+  private val onChoiceChange: () -> Unit,
 ) : ImportProjectWizardStep() {
-
   private val allAvailableConnectionMap by lazy { calculateAllAvailableConnections() }
   private val log = logger<ChooseConnectionFileOrNewConnectionStep>()
 
@@ -45,7 +44,8 @@ public open class ChooseConnectionFileOrNewConnectionStep(
   }
 
   private fun calculateDefaultConnection(
-    allConnections: List<ConnectionFileOrNewConnection>): ConnectionFileOrNewConnection {
+    allConnections: List<ConnectionFileOrNewConnection>,
+  ): ConnectionFileOrNewConnection {
     val newestConnectionFile = allConnections.filterIsInstance<ConnectionFile>().maxOrNull()
 
     return newestConnectionFile ?: allConnections.filterIsInstance<NewConnection>().first()
@@ -61,7 +61,7 @@ public open class ChooseConnectionFileOrNewConnectionStep(
           allAvailableConnectionMap.entries.toList().map { generateButtonsGroupRow(it) }
         }.bind(
           { ConnectionChoiceContainer(connectionFileOrNewConnectionProperty.get()) },
-          { connectionFileOrNewConnectionProperty.set(it.connection) }
+          { connectionFileOrNewConnectionProperty.set(it.connection) },
         )
       }
     }
@@ -84,12 +84,12 @@ public open class ChooseConnectionFileOrNewConnectionStep(
 
     return ConnectionFile(
       bspConnectionDetails = connectionDetails.bspConnectionDetails,
-      connectionFile = connectionDetails.connectionFileLocation
+      connectionFile = connectionDetails.connectionFileLocation,
     )
   }
 
   private fun Panel.generateButtonsGroupRow(
-    connectionEntry: Map.Entry<String, List<ConnectionFileOrNewConnection>>
+    connectionEntry: Map.Entry<String, List<ConnectionFileOrNewConnection>>,
   ) {
     val connections = connectionEntry.value
     if (connections.isNotEmpty()) {
@@ -108,7 +108,7 @@ public open class ChooseConnectionFileOrNewConnectionStep(
   private fun Row.generateRadioButtonLabel(
     connections: List<ConnectionFileOrNewConnection>,
     choiceContainer: ConnectionChoiceContainer,
-    radioButton: Cell<JBRadioButton>
+    radioButton: Cell<JBRadioButton>,
   ) {
     when {
       connections.size == 1 && connections.first() is NewConnection ->

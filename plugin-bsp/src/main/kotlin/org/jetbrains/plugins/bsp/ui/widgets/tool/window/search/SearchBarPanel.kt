@@ -17,7 +17,7 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
   private val textFieldComponent = JBTextField()
   private val displayAsTree = BooleanWithButton(
     buttonText = BspAllTargetsWidgetBundle.message("target.search.display.as.tree"),
-    buttonIcon = AllIcons.Actions.ShowAsTree
+    buttonIcon = AllIcons.Actions.ShowAsTree,
   )
 
   private val queryChangeListeners = mutableListOf<DocumentListener>()
@@ -54,7 +54,7 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
 
 private class BooleanWithButton(
   buttonText: String,
-  buttonIcon: Icon
+  buttonIcon: Icon,
 ) {
   var value: Boolean = false
     private set
@@ -63,7 +63,7 @@ private class BooleanWithButton(
     action,
     action.templatePresentation.clone(),
     ActionPlaces.TOOLBAR,
-    ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+    ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE,
   )
 
   val displayChangeListeners: MutableList<() -> Unit> = mutableListOf()

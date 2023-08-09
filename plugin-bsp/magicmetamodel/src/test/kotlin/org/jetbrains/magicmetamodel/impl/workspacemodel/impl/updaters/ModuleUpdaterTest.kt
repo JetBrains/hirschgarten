@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
-
   private val defaultDependencies = listOf(
     ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
     ModuleDependencyItem.ModuleSourceDependency,
@@ -106,7 +105,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         entitySource = BspEntitySource,
       ) {
         type = "JAVA_MODULE"
-      }
+      },
     )
 
     returnedModuleEntity shouldBeEqual expectedModule
@@ -195,10 +194,10 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
           ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
-        entitySource = BspEntitySource
+        entitySource = BspEntitySource,
       ) {
         type = "JAVA_MODULE"
-      }
+      },
     )
     val expectedModule2 = ExpectedModuleEntity(
       moduleEntity = ModuleEntity(
@@ -224,7 +223,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         entitySource = BspEntitySource,
       ) {
         type = "JAVA_MODULE"
-      }
+      },
     )
 
     val expectedModuleEntries = listOf(expectedModule1, expectedModule2)

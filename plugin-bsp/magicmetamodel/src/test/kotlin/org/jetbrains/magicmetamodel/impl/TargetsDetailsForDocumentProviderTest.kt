@@ -13,11 +13,9 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("TargetsDetailsForDocumentProvider tests")
 class TargetsDetailsForDocumentProviderTest {
-
   @Nested
   @DisplayName("targetsDetailsForDocumentProvider.getAllDocumentsTest() tests")
   inner class TargetsDetailsForDocumentProviderGetAllDocumentsTest {
-
     @Test
     fun `should return no documents for no sources`() {
       // given
@@ -90,11 +88,9 @@ class TargetsDetailsForDocumentProviderTest {
   @Nested
   @DisplayName("targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(sources) tests")
   inner class TargetsDetailsForDocumentProviderGetTargetsDetailsForDocumentTest {
-
     @Nested
     @DisplayName("tests with files as sources")
     inner class FileBasedSourcesTests {
-
       @Test
       fun `should map multiple files to single target`() {
         // given
@@ -192,7 +188,6 @@ class TargetsDetailsForDocumentProviderTest {
     @Nested
     @DisplayName("tests with directories as sources")
     inner class DirectoryBasedSourcesTests {
-
       @Test
       fun `should map multiple files in single directory to single target`() {
         // given
@@ -266,7 +261,6 @@ class TargetsDetailsForDocumentProviderTest {
     @Nested
     @DisplayName("tests with files and directories as sources")
     inner class FileAndDirectoryBasedSourcesTests {
-
       @Test
       fun `should map document to no targets for no sources`() {
         // given
@@ -327,7 +321,7 @@ class TargetsDetailsForDocumentProviderTest {
           targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(commonDirectoryFileInTarget1Id)
         val commonDirectoryChildFileInTarget1Target2Target3Targets =
           targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(
-            commonDirectoryChildFileInTarget1Target2Target3Id
+            commonDirectoryChildFileInTarget1Target2Target3Id,
           )
 
         // then
@@ -336,7 +330,7 @@ class TargetsDetailsForDocumentProviderTest {
         commonDirectoryChildFileInTarget1Target2Target3Targets shouldContainExactlyInAnyOrder listOf(
           "//target1",
           "//target2",
-          "//target3"
+          "//target3",
         )
       }
     }

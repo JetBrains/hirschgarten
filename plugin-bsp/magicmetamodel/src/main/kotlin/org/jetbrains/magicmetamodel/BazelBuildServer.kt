@@ -5,18 +5,18 @@ import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
 import java.util.concurrent.CompletableFuture
 
 public data class LibraryItem(
-        val id: BuildTargetIdentifier,
-        val dependencies: List<BuildTargetIdentifier>,
-        val jars: List<String>
+  val id: BuildTargetIdentifier,
+  val dependencies: List<BuildTargetIdentifier>,
+  val jars: List<String>,
 )
 
 public data class WorkspaceLibrariesResult(
-        val libraries: List<LibraryItem>
+  val libraries: List<LibraryItem>,
 )
 
 public data class LibraryDetails(
-        val name: String,
-        val roots: List<String>
+  val name: String,
+  val roots: List<String>,
 )
 
 public interface BazelBuildServer {

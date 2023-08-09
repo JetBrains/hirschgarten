@@ -11,7 +11,6 @@ public var Project.isBspProject: Boolean
   get() = properties.getBoolean(IS_BSP_PROJECT_KEY, false)
   set(value) = properties.setValue(IS_BSP_PROJECT_KEY, value)
 
-
 private const val PROJECT_ROOT_DIR_KEY = "org.jetbrains.bsp.project.root.dir"
 
 public var Project.rootDir: VirtualFile
@@ -19,7 +18,6 @@ public var Project.rootDir: VirtualFile
     ?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
     ?: error("$PROJECT_ROOT_DIR_KEY value not set!")
   set(value) = properties.setValue(PROJECT_ROOT_DIR_KEY, value.url)
-
 
 private val Project.properties: PropertiesComponent
   get() = PropertiesComponent.getInstance(this)

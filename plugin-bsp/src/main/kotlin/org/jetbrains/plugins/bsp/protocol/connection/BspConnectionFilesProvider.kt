@@ -3,7 +3,6 @@ package org.jetbrains.plugins.bsp.protocol.connection
 import com.intellij.openapi.vfs.VirtualFile
 
 public class BspConnectionFilesProvider(projectPath: VirtualFile) {
-
   public val connectionFiles: List<LocatedBspConnectionDetails> by lazy { calculateConnectionFile(projectPath) }
 
   private fun calculateConnectionFile(projectPath: VirtualFile): List<LocatedBspConnectionDetails> =

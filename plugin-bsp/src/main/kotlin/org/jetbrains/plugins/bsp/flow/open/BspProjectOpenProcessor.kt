@@ -22,7 +22,6 @@ import java.nio.file.Path
 import javax.swing.Icon
 
 public class BspProjectOpenProcessor : ProjectOpenProcessor() {
-
   override val name: String = BspPluginBundle.message("plugin.name")
 
   override val icon: Icon = BspPluginIcons.bsp
@@ -39,7 +38,7 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
   override fun doOpenProject(
     virtualFile: VirtualFile,
     projectToClose: Project?,
-    forceOpenInNewFrame: Boolean
+    forceOpenInNewFrame: Boolean,
   ): Project? {
     val projectPath = virtualFile.toNioPath()
     val openProjectTask = calculateOpenProjectTask(projectPath, forceOpenInNewFrame, projectToClose, virtualFile)
@@ -51,7 +50,7 @@ public class BspProjectOpenProcessor : ProjectOpenProcessor() {
     projectPath: Path,
     forceOpenInNewFrame: Boolean,
     projectToClose: Project?,
-    virtualFile: VirtualFile
+    virtualFile: VirtualFile,
   ): OpenProjectTask = OpenProjectTask {
     runConfigurators = true
     isNewProject = !ProjectUtilCore.isValidProjectPath(projectPath)
@@ -78,7 +77,7 @@ public fun Project.initializeEmptyMagicMetaModel() {
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = emptyList(),
-    )
+    ),
   )
 
   BspCoroutineService.getInstance(this).start {

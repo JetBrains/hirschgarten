@@ -12,7 +12,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 internal class LibraryEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithParentModuleUpdater<Library, LibraryEntity> {
-
   override fun addEntity(entityToAdd: Library, parentModuleEntity: ModuleEntity): LibraryEntity =
     addLibraryEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, parentModuleEntity, entityToAdd)
 
@@ -26,17 +25,17 @@ internal class LibraryEntityUpdater(
         name = entityToAdd.displayName,
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         roots = toLibrarySourcesRoots(entityToAdd) + toLibraryClassesRoots(entityToAdd),
-        entitySource = BspEntitySource
+        entitySource = BspEntitySource,
       ) {
         this.excludedRoots = arrayListOf()
-      }
+      },
     )
 
   private fun toLibrarySourcesRoots(entityToAdd: Library): List<LibraryRoot> =
     entityToAdd.sourceJars.map {
       LibraryRoot(
         url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(it),
-        type = LibraryRootTypeId.SOURCES
+        type = LibraryRootTypeId.SOURCES,
       )
     }
 
@@ -44,7 +43,7 @@ internal class LibraryEntityUpdater(
     entityToAdd.classJars.map {
       LibraryRoot(
         url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(it),
-        type = LibraryRootTypeId.COMPILED
+        type = LibraryRootTypeId.COMPILED,
       )
     }
 }

@@ -12,7 +12,6 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.writeText
 
 class LocatedBspConnectionDetailsParserTest : MockProjectBaseTest() {
-
   private lateinit var filePath: Path
 
   @BeforeEach
@@ -39,7 +38,7 @@ class LocatedBspConnectionDetailsParserTest : MockProjectBaseTest() {
         | "version": "1.2.3
         | "languages": ["scala", "kotlin"]
         |}
-      """.trimMargin()
+      """.trimMargin(),
     )
 
     // when
@@ -61,7 +60,7 @@ class LocatedBspConnectionDetailsParserTest : MockProjectBaseTest() {
         | "bspVersion": "2.0.0",
         | "languages": ["scala", "kotlin"]
         |}
-      """.trimMargin()
+      """.trimMargin(),
     )
 
     // when

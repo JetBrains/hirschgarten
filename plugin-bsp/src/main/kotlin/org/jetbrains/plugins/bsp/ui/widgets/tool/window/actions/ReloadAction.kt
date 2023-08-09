@@ -28,7 +28,7 @@ public class ReloadAction :
   private suspend fun doAction(project: Project) {
     SyncProjectTask(project).execute(
       shouldBuildProject = false,
-      shouldReloadConnection = true
+      shouldReloadConnection = true,
     )
   }
 

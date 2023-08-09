@@ -24,7 +24,6 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
 import javax.swing.Icon
 
 internal class BspRunConfigurationType : ConfigurationType {
-
   override fun getDisplayName(): String = "BSP RUN"
 
   override fun getConfigurationTypeDescription(): String = "BSP RUN"
@@ -51,7 +50,6 @@ public class BspRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
 
 public class BspRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :
   RunConfigurationBase<String>(project, configurationFactory, name) {
-
   internal class BspCommandLineState(val project: Project, environment: ExecutionEnvironment) :
     CommandLineState(environment) {
     override fun startProcess(): BspProcessHandler = BspProcessHandler().apply {

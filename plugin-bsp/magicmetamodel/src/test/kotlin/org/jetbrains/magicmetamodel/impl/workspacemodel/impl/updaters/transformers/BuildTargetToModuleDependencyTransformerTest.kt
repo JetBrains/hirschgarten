@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("buildTargetToModuleDependencyTransformer.transform(buildTarget) tests")
 class BuildTargetToModuleDependencyTransformerTest {
-
   @Test
   fun `should return no module dependencies for no dependencies`() {
     // given
@@ -78,7 +77,7 @@ class BuildTargetToModuleDependencyTransformerTest {
 
     // then
     val expectedModuleDependency = ModuleDependency(
-      moduleName = "//target2"
+      moduleName = "//target2",
     )
 
     moduleDependencies shouldBe listOf(expectedModuleDependency)
@@ -115,13 +114,13 @@ class BuildTargetToModuleDependencyTransformerTest {
 
     // then
     val expectedModuleDependency1 = ModuleDependency(
-      moduleName = "//target2"
+      moduleName = "//target2",
     )
     val expectedModuleDependency2 = ModuleDependency(
-      moduleName = "//target3"
+      moduleName = "//target3",
     )
     val expectedModuleDependency3 = ModuleDependency(
-      moduleName = "//target4"
+      moduleName = "//target4",
     )
 
     moduleDependencies shouldBe listOf(expectedModuleDependency1, expectedModuleDependency2, expectedModuleDependency3)
@@ -171,13 +170,13 @@ class BuildTargetToModuleDependencyTransformerTest {
 
     // then
     val expectedModuleDependency1 = ModuleDependency(
-      moduleName = "//target2"
+      moduleName = "//target2",
     )
     val expectedModuleDependency2 = ModuleDependency(
-      moduleName = "//target3"
+      moduleName = "//target3",
     )
     val expectedModuleDependency3 = ModuleDependency(
-      moduleName = "//target4"
+      moduleName = "//target4",
     )
 
     moduleDependencies shouldBe listOf(expectedModuleDependency1, expectedModuleDependency2, expectedModuleDependency3)

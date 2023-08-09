@@ -12,23 +12,22 @@ public class FilterActionGroup(private val targetFilter: TargetFilter) :
   DefaultActionGroup(
     BspAllTargetsWidgetBundle.message("widget.filter.action.group"),
     null,
-    AllIcons.General.Filter
+    AllIcons.General.Filter,
   ),
   Toggleable {
-
   init {
     this.isPopup = true
     addFilterChangeAction(
       TargetFilter.FILTER.OFF,
-      BspAllTargetsWidgetBundle.message("widget.filter.turn.off")
+      BspAllTargetsWidgetBundle.message("widget.filter.turn.off"),
     )
     addFilterChangeAction(
       TargetFilter.FILTER.CAN_RUN,
-      BspAllTargetsWidgetBundle.message("widget.filter.can.run")
+      BspAllTargetsWidgetBundle.message("widget.filter.can.run"),
     )
     addFilterChangeAction(
       TargetFilter.FILTER.CAN_TEST,
-      BspAllTargetsWidgetBundle.message("widget.filter.can.test")
+      BspAllTargetsWidgetBundle.message("widget.filter.can.test"),
     )
   }
 
@@ -47,7 +46,7 @@ public class FilterActionGroup(private val targetFilter: TargetFilter) :
 private class FilterChangeAction(
   private val targetFilter: TargetFilter,
   private val filterType: TargetFilter.FILTER,
-  text: String
+  text: String,
 ) : ToggleAction(text) {
   override fun isSelected(e: AnActionEvent): Boolean =
     targetFilter.currentFilter == filterType

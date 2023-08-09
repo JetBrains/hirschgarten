@@ -25,12 +25,12 @@ import java.net.URI
 
 private data class SubtaskParents(
   val rootTask: Any,
-  val parentTask: Any
+  val parentTask: Any,
 )
 
 public abstract class TaskConsole(
   private val taskView: BuildProgressListener,
-  private val basePath: String
+  private val basePath: String,
 ) {
   protected val tasksInProgress: MutableList<Any> = mutableListOf()
   private val subtaskParentMap: LinkedHashMap<Any, SubtaskParents> = linkedMapOf()
@@ -39,9 +39,11 @@ public abstract class TaskConsole(
    * Displays start of a task in this console.
    * Will not display anything if a task with given `taskId` is already running
    *
+   * @param taskId ID of the newly started task
    * @param title task title which will be displayed in the console
    * @param message message informing about the start of the task
-   * @param taskId ID of the newly started task
+   * @param cancelAction action which will be executed on cancel button click
+   * @param redoAction action which will be executed on redo button click
    */
   @Synchronized
   public fun startTask(
@@ -49,7 +51,7 @@ public abstract class TaskConsole(
     title: String,
     message: String,
     cancelAction: () -> Unit = {},
-    redoAction: (() -> Unit)? = null
+    redoAction: (() -> Unit)? = null,
   ): Unit =
     doUnlessTaskInProgress(taskId) {
       tasksInProgress.add(taskId)
@@ -61,7 +63,7 @@ public abstract class TaskConsole(
     title: String,
     message: String,
     cancelAction: () -> Unit,
-    redoAction: (() -> Unit)?
+    redoAction: (() -> Unit)?,
   ) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
     taskDescriptor.isActivateToolWindowWhenAdded = true
@@ -75,7 +77,7 @@ public abstract class TaskConsole(
   private fun addCancelActionToTheDescriptor(
     taskId: Any,
     taskDescriptor: DefaultBuildDescriptor,
-    doCancelAction: () -> Unit
+    doCancelAction: () -> Unit,
   ) {
     val cancelAction = CancelAction(doCancelAction, taskId)
     taskDescriptor.withAction(cancelAction)
@@ -83,7 +85,7 @@ public abstract class TaskConsole(
 
   private fun addRedoActionToTheDescriptor(
     taskDescriptor: DefaultBuildDescriptor,
-    redoAction: (() -> Unit)? = null
+    redoAction: (() -> Unit)? = null,
   ) {
     val action = calculateRedoAction(redoAction)
     taskDescriptor.withAction(action)
@@ -96,16 +98,16 @@ public abstract class TaskConsole(
   /**
    * Displays finish of a task (and all its children) in this console.
    * Will not display anything if a task with given `taskId` is not running
-   *
+
+   * @param taskId ID of the finished task (last started task by default, if nothing passed)
    * @param message message informing about the start of the task
    * @param result result of the task execution (success by default, if nothing passed)
-   * @param taskId ID of the finished task (last started task by default, if nothing passed)
    */
   @Synchronized
   public fun finishTask(
     taskId: Any,
     message: String,
-    result: EventResult = SuccessResultImpl()
+    result: EventResult = SuccessResultImpl(),
   ): Unit =
     doIfTaskInProgress(taskId) {
       doFinishTask(taskId, message, result)
@@ -137,7 +139,7 @@ public abstract class TaskConsole(
   private fun doStartSubtask(rootTaskId: Any, parentTaskId: Any, subtaskId: Any, message: String) {
     subtaskParentMap[subtaskId] = SubtaskParents(
       rootTask = rootTaskId,
-      parentTask = parentTaskId
+      parentTask = parentTaskId,
     )
     val event = ProgressBuildEventImpl(subtaskId, parentTaskId, System.currentTimeMillis(), message, -1, -1, "")
     taskView.onEvent(rootTaskId, event)
@@ -149,6 +151,7 @@ public abstract class TaskConsole(
    * @param subtaskId id of the subtask to be finished.
    * If there is no such subtask running, this method will not do anything
    * @param message will be displayed as this subtask's title after it is finished
+   * @param result result type of the subtask, default [SuccessResultImpl]
    */
   @Synchronized
   public fun finishSubtask(subtaskId: Any, message: String, result: EventResult = SuccessResultImpl()) {
@@ -193,7 +196,7 @@ public abstract class TaskConsole(
     line: Int,
     column: Int,
     message: String,
-    severity: MessageEvent.Kind
+    severity: MessageEvent.Kind,
   ) {
     maybeGetRootTask(taskId)?.let {
       doIfTaskInProgress(it) {
@@ -213,7 +216,7 @@ public abstract class TaskConsole(
     subtaskId: Any,
     filePosition: FilePosition,
     message: String,
-    severity: MessageEvent.Kind
+    severity: MessageEvent.Kind,
   ) {
     val event = FileMessageEventImpl(
       subtaskId,
@@ -221,7 +224,7 @@ public abstract class TaskConsole(
       null,
       prepareTextToPrint(message),
       null,
-      filePosition
+      filePosition,
     )
     taskView.onEvent(taskId, event)
   }
@@ -317,9 +320,8 @@ public abstract class TaskConsole(
 
 public class SyncTaskConsole(
   taskView: BuildProgressListener,
-  basePath: String
+  basePath: String,
 ) : TaskConsole(taskView, basePath) {
-
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
     object : AnAction({ BspAllTargetsWidgetBundle.message("reload.action.text") }, BspPluginIcons.reload) {
       override fun actionPerformed(e: AnActionEvent) {
@@ -337,9 +339,8 @@ public class SyncTaskConsole(
 
 public class BuildTaskConsole(
   taskView: BuildProgressListener,
-  basePath: String
+  basePath: String,
 ) : TaskConsole(taskView, basePath) {
-
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
     object : AnAction({ BspAllTargetsWidgetBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
       override fun actionPerformed(e: AnActionEvent) {

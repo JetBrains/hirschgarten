@@ -31,9 +31,8 @@ private const val ID = "BspDocumentTargetsWidget"
 
 private class LoadTargetAction(
   private val target: BuildTargetId,
-  private val updateWidget: () -> Unit
+  private val updateWidget: () -> Unit,
 ) : AnAction(target) {
-
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
 
@@ -51,7 +50,7 @@ private class LoadTargetAction(
 
     BspBalloonNotifier.info(
       BspAllTargetsWidgetBundle.message("widget.load.target.notification", target),
-      "Load target"
+      "Load target",
     )
     updateWidget()
   }
@@ -62,7 +61,6 @@ private class LoadTargetAction(
 }
 
 public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
-
   private val magicMetaModelService = MagicMetaModelService.getInstance(project)
 
   init {
@@ -121,7 +119,7 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
 
   private fun updateActionGroupWithCurrentlyLoadedTarget(
     group: DefaultActionGroup,
-    loadedTarget: BuildTargetId?
+    loadedTarget: BuildTargetId?,
   ) {
     group.addSeparator(BspDocumentTargetsWidgetBundle.message("widget.loaded.target.separator.title"))
 
@@ -132,7 +130,7 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
 
   private fun updateActionGroupWithAvailableTargetsSection(
     group: DefaultActionGroup,
-    notLoadedTargetsIds: List<BuildTargetId>
+    notLoadedTargetsIds: List<BuildTargetId>,
   ) {
     group.addSeparator(BspDocumentTargetsWidgetBundle.message("widget.available.targets.to.load"))
 
@@ -153,7 +151,6 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
 }
 
 public class BspDocumentTargetsWidgetFactory : StatusBarWidgetFactory {
-
   override fun getId(): String = ID
 
   override fun getDisplayName(): String =

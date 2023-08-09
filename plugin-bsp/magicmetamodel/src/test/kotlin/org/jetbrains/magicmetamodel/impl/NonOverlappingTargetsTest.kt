@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("NonOverlappingTargets(overlappingTargetsGraph) tests")
 class NonOverlappingTargetsTest {
-
   @Test
   fun `should return empty set for no targets`() {
     // given
@@ -75,7 +74,7 @@ class NonOverlappingTargetsTest {
     )
     val targetB1 = BuildTargetInfo(
       id = "targetB1",
-      dependencies = listOf("targetA1")
+      dependencies = listOf("targetA1"),
     )
     val targetB2 = BuildTargetInfo(
       id = "targetB2",
@@ -89,7 +88,7 @@ class NonOverlappingTargetsTest {
       dependencies = listOf(
         "targetA1",
         "targetA2",
-        "externalDep"
+        "externalDep",
       ),
     )
 
@@ -144,7 +143,7 @@ class NonOverlappingTargetsTest {
       "targetA1" to setOf("targetA2B1"),
       "targetA2B1" to setOf(
         "targetA1",
-        "targetB2"
+        "targetB2",
       ),
       "targetB2" to setOf("targetA2B1"),
       "targetC1" to emptySet(),
@@ -178,27 +177,27 @@ class NonOverlappingTargetsTest {
     )
     val targetB1 = BuildTargetInfo(
       id = "targetB1",
-      dependencies = listOf("targetC1")
+      dependencies = listOf("targetC1"),
     )
     val targetB2 = BuildTargetInfo(
       id = "targetB2",
-      dependencies = listOf("targetC2")
+      dependencies = listOf("targetC2"),
     )
     val targetC1 = BuildTargetInfo(
       id = "targetC1",
-      dependencies = listOf("targetD1")
+      dependencies = listOf("targetD1"),
     )
     val targetC2 = BuildTargetInfo(
       id = "targetC2",
-      dependencies = listOf("targetD2")
+      dependencies = listOf("targetD2"),
     )
     val targetD1 = BuildTargetInfo(
       id = "targetD1",
-      dependencies = listOf("targetE1")
+      dependencies = listOf("targetE1"),
     )
     val targetD2 = BuildTargetInfo(
       id = "targetD2",
-      dependencies = listOf("targetE1")
+      dependencies = listOf("targetE1"),
     )
     val targetE1 = BuildTargetInfo(
       id = "targetE1",
@@ -214,7 +213,7 @@ class NonOverlappingTargetsTest {
       "targetC2" to setOf("targetC1"),
       "targetD1" to setOf("targetD2"),
       "targetD2" to setOf("targetD1"),
-      "targetE1" to emptySet()
+      "targetE1" to emptySet(),
     )
 
     // when
@@ -235,12 +234,12 @@ class NonOverlappingTargetsTest {
   fun cycleInGraph() {
     val targetA = BuildTargetInfo(
       id = "targetA",
-      dependencies = listOf("targetB")
+      dependencies = listOf("targetB"),
     )
 
     val targetB = BuildTargetInfo(
       id = "targetB",
-      dependencies = listOf("targetA")
+      dependencies = listOf("targetA"),
     )
 
     val allTargets = setOf(targetA, targetB)

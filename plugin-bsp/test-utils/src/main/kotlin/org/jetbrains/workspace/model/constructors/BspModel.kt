@@ -6,7 +6,7 @@ import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 
 public class BuildTargetId(
-  uri: String
+  uri: String,
 ) : BuildTargetIdentifier(uri)
 
 public class BuildTarget(
@@ -20,7 +20,6 @@ public class BuildTarget(
   dataKind: String? = null,
   data: Any? = null,
 ) : ch.epfl.scala.bsp4j.BuildTarget(id, tags, languageIds, dependencies, capabilities) {
-
   init {
     super.setDisplayName(displayName)
     super.setBaseDirectory(baseDirectory)
@@ -40,7 +39,6 @@ public class SourcesItem(
   sources: List<SourceItem>,
   roots: List<String> = emptyList(),
 ) : ch.epfl.scala.bsp4j.SourcesItem(target, sources) {
-
   init {
     super.setRoots(roots)
   }

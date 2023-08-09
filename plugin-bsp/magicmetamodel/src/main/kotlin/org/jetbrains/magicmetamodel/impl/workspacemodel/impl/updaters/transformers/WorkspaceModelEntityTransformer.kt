@@ -3,13 +3,11 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelEntity
 
 internal interface WorkspaceModelEntityBaseTransformer<in T, out R> {
-
   fun transform(inputEntity: T): R
 }
 
 internal interface WorkspaceModelEntityTransformer<in T, out R : WorkspaceModelEntity> :
   WorkspaceModelEntityBaseTransformer<T, R> {
-
   fun transform(inputEntities: List<T>): List<R> =
     inputEntities.map { transform(it) }.distinct()
 
@@ -18,7 +16,6 @@ internal interface WorkspaceModelEntityTransformer<in T, out R : WorkspaceModelE
 
 internal interface WorkspaceModelEntityPartitionTransformer<in T, out R : WorkspaceModelEntity> :
   WorkspaceModelEntityBaseTransformer<T, List<R>> {
-
   fun transform(inputEntities: List<T>): List<R> =
     inputEntities.flatMap { transform(it) }.distinct()
 

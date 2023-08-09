@@ -8,7 +8,6 @@ import org.jetbrains.annotations.PropertyKey
 private const val BUNDLE = "messages.BspTasksBundle"
 
 internal object BspTasksBundle : DynamicBundle(BUNDLE) {
-
   @JvmStatic
   fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =
     getMessage(key, *params)

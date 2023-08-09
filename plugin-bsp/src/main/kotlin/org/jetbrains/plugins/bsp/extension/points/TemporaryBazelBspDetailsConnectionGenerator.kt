@@ -26,7 +26,6 @@ import kotlin.io.path.name
 import kotlin.io.path.writeText
 
 public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsGeneratorExtension {
-
   private lateinit var projectViewFilePathProperty: ObservableProperty<Path>
 
   public override fun id(): String = BazelBspConstants.ID
@@ -38,9 +37,8 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
 
   override fun calculateImportWizardSteps(
     projectBasePath: Path,
-    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>,
   ): List<ImportProjectWizardStep> {
-
     val step = BazelEditProjectViewStep(projectBasePath, connectionFileOrNewConnectionProperty)
     projectViewFilePathProperty = step.projectViewFilePathProperty
 
@@ -50,30 +48,29 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
   public override fun generateBspConnectionDetailsFile(
     projectPath: VirtualFile,
     outputStream: OutputStream,
-    project: Project
+    project: Project,
   ): VirtualFile {
-
     executeAndWait(
       command = calculateInstallerCommand(),
       projectPath = projectPath,
       outputStream = outputStream,
-      project = project
+      project = project,
     )
     return getChild(projectPath, listOf(".bsp", "bazelbsp.json"))!!
   }
 
   private fun calculateInstallerCommand(): List<String> = listOf(
-      ExternalCommandUtils.calculateJavaExecPath(),
-      "-cp",
-      ExternalCommandUtils
-        .calculateNeededJars(
-          org = "org.jetbrains.bsp",
-          name = "bazel-bsp",
-          version = "2.7.2-20230803-9d5cd19-NIGHTLY"
-        )
-        .joinToString(":"),
-      "org.jetbrains.bsp.bazel.install.Install",
-    ) + calculateProjectViewFileInstallerOption()
+    ExternalCommandUtils.calculateJavaExecPath(),
+    "-cp",
+    ExternalCommandUtils
+      .calculateNeededJars(
+        org = "org.jetbrains.bsp",
+        name = "bazel-bsp",
+        version = "2.7.2-20230803-9d5cd19-NIGHTLY",
+      )
+      .joinToString(":"),
+    "org.jetbrains.bsp.bazel.install.Install",
+  ) + calculateProjectViewFileInstallerOption()
 
   private fun calculateProjectViewFileInstallerOption(): List<String> =
     listOf("-p", "${projectViewFilePathProperty.get()}")
@@ -83,22 +80,21 @@ private const val DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 
 public class BazelEditProjectViewStep(
   private val projectBasePath: Path,
-  private val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+  private val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>,
 ) : ImportProjectWizardStep() {
-
   private val propertyGraph = PropertyGraph(isBlockPropagation = false)
 
   public val projectViewFilePathProperty: GraphProperty<Path> =
     propertyGraph
       .lazyProperty { calculateProjectViewFilePath(connectionFileOrNewConnectionProperty) }
-      .also {
-        it.dependsOn(connectionFileOrNewConnectionProperty) {
+      .apply {
+        dependsOn(connectionFileOrNewConnectionProperty) {
           calculateProjectViewFilePath(connectionFileOrNewConnectionProperty)
         }
       }
 
   private fun calculateProjectViewFilePath(
-    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>,
   ): Path =
     when (val connectionFileOrNewConnection = connectionFileOrNewConnectionProperty.get()) {
       is ConnectionFile ->
@@ -130,14 +126,14 @@ public class BazelEditProjectViewStep(
   private val isProjectViewFileNameEditableProperty =
     propertyGraph
       .lazyProperty { calculateIsProjectViewFileNameEditable(connectionFileOrNewConnectionProperty) }
-      .also {
-        it.dependsOn(connectionFileOrNewConnectionProperty) {
+      .apply {
+        dependsOn(connectionFileOrNewConnectionProperty) {
           calculateIsProjectViewFileNameEditable(connectionFileOrNewConnectionProperty)
         }
       }
 
   private fun calculateIsProjectViewFileNameEditable(
-    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
+    connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>,
   ): Boolean =
     when (connectionFileOrNewConnectionProperty.get()) {
       is ConnectionFile -> false
@@ -150,8 +146,8 @@ public class BazelEditProjectViewStep(
   private val projectViewTextProperty =
     propertyGraph
       .lazyProperty { calculateProjectViewText(projectViewFilePathProperty) }
-      .also {
-        it.dependsOn(projectViewFilePathProperty) {
+      .apply {
+        dependsOn(projectViewFilePathProperty) {
           calculateProjectViewText(projectViewFilePathProperty)
         }
       }

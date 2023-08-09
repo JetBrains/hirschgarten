@@ -24,14 +24,13 @@ public data class KotlinBuildTarget(
   val apiVersion: String,
   val kotlincOptions: KotlincOpts?,
   val associates: List<BuildTargetIdentifier>,
-  var jvmBuildTarget: JvmBuildTarget? = null
+  var jvmBuildTarget: JvmBuildTarget? = null,
 )
 
 internal class ModuleDetailsToJavaModuleTransformer(
   moduleNameProvider: ModuleNameProvider,
   private val projectBasePath: Path,
 ) : ModuleDetailsToModuleTransformer<JavaModule>(moduleNameProvider) {
-
   override val type = "JAVA_MODULE"
 
   private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(projectBasePath)
@@ -53,12 +52,12 @@ internal class ModuleDetailsToJavaModuleTransformer(
           .transform(inputEntity.dependenciesSources.map {
             DependencySourcesAndJavacOptions(
               it,
-              inputEntity.javacOptions
+              inputEntity.javacOptions,
             )
           }) else null,
       compilerOutput = toCompilerOutput(inputEntity),
       jvmJdkName = toJdkName(inputEntity),
-      kotlinAddendum = toKotlinAddendum(inputEntity)
+      kotlinAddendum = toKotlinAddendum(inputEntity),
     )
 
   override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
@@ -70,7 +69,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
       pythonOptions = null,
       associates = toAssociates(inputEntity),
       libraryDependencies = inputEntity.libraryDependencies,
-      moduleDependencies = inputEntity.moduleDependencies
+      moduleDependencies = inputEntity.moduleDependencies,
     )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)
@@ -79,7 +78,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private fun GenericModuleInfo.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): GenericModuleInfo {
     val dummyJavaModuleDependencies =
       calculateDummyJavaModuleNames(inputEntity.calculateDummyJavaSourceRoots(), projectBasePath)
-      .map { ModuleDependency(it) }
+        .map { ModuleDependency(it) }
     return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
   }
 
@@ -101,7 +100,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         KotlinAddendum(
           languageVersion = languageVersion,
           apiVersion = apiVersion,
-          kotlincOptions = kotlincOptions
+          kotlincOptions = kotlincOptions,
         )
       } else null
   }

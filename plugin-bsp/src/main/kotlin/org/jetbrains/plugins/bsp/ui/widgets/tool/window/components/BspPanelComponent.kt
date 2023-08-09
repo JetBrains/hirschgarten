@@ -22,30 +22,29 @@ public class BspPanelComponent private constructor(
   private val targetIcon: Icon,
   private val toolName: String,
   private val targetTree: BuildTargetTree,
-  private val targetSearch: BuildTargetSearch
+  private val targetSearch: BuildTargetSearch,
 ) : JPanel(VerticalLayout(0)) {
-
   private val emptyTreeMessage = JBLabel(
     BspAllTargetsWidgetBundle.message("widget.no.targets.message"),
-    SwingConstants.CENTER
+    SwingConstants.CENTER,
   )
 
   /**
-   * @property targetIcon icon which will be shown next to build targets in this panel
-   * @property toolName name of the tool providing the build targets
-   * @property targets collection of build targets this panel will contain
-   * @property searchBarPanel searchbar panel responsible for providing user's search queries
+   * @param targetIcon icon which will be shown next to build targets in this panel
+   * @param toolName name of the tool providing the build targets
+   * @param targets collection of build targets this panel will contain
+   * @param searchBarPanel searchbar panel responsible for providing user's search queries
    */
   public constructor(
     targetIcon: Icon,
     toolName: String,
     targets: Collection<BuildTargetInfo>,
-    searchBarPanel: SearchBarPanel
+    searchBarPanel: SearchBarPanel,
   ) : this(
     targetIcon = targetIcon,
     toolName = toolName,
     targetTree = BuildTargetTree(targetIcon, toolName, targets),
-    targetSearch = BuildTargetSearch(targetIcon, toolName, targets, searchBarPanel)
+    targetSearch = BuildTargetSearch(targetIcon, toolName, targets, searchBarPanel),
   )
 
   init {
@@ -114,7 +113,7 @@ public class BspPanelComponent private constructor(
       targetIcon,
       toolName,
       targetTree.createNewWithTargets(targets),
-      targetSearch.createNewWithTargets(targets)
+      targetSearch.createNewWithTargets(targets),
     )
 
   private companion object {

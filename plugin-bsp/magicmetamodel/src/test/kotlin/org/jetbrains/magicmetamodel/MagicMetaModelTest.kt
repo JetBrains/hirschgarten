@@ -9,11 +9,9 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("MagicMetaModel tests")
 class MagicMetaModelTest : WorkspaceModelBaseTest() {
-
   @Nested
   @DisplayName("MagicMetaModel.create(magicMetaModelProjectConfig, projectDetails) tests")
   inner class MagicMetaModelCreateTest {
-
     @Test
     fun `should return MagicMetaModelImpl`() {
       // given

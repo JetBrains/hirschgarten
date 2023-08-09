@@ -24,7 +24,6 @@ public class LoadedTargetsMouseListener(
   private val container: BuildTargetContainer,
   private val project: Project,
 ) : MouseListener {
-
   override fun mouseClicked(e: MouseEvent?) {
     e?.let { mouseClickedNotNull(it) }
   }
@@ -38,7 +37,7 @@ public class LoadedTargetsMouseListener(
     }
   }
 
-  /* https://youtrack.jetbrains.com/issue/BAZEL-522 */
+  // https://youtrack.jetbrains.com/issue/BAZEL-522
   private fun selectTargetIfSearchListIsDisplayed(point: Point) {
     if (container is BuildTargetSearch) {
       container.selectAtLocationIfListDisplayed(point)
@@ -73,15 +72,15 @@ public class LoadedTargetsMouseListener(
         val action = getAction(TestTargetAction::class.java)
         actions.add(action)
       }
-      DefaultActionGroup().also {
-        it.addAction(container.copyTargetIdAction)
-        it.addSeparator()
-        it.addAll(actions)
+      DefaultActionGroup().apply {
+        addAction(container.copyTargetIdAction)
+        addSeparator()
+        addAll(actions)
       }
     } else null
   }
 
-  private fun getAction(actionClass : Class<out AbstractActionWithTarget>) : AbstractActionWithTarget =
+  private fun getAction(actionClass: Class<out AbstractActionWithTarget>): AbstractActionWithTarget =
     actions.getOrPut(actionClass) {
       actionClass.constructors.first { it.parameterCount == 0 }.newInstance() as AbstractActionWithTarget
     }.also { it.target = container.getSelectedBuildTarget()?.id }

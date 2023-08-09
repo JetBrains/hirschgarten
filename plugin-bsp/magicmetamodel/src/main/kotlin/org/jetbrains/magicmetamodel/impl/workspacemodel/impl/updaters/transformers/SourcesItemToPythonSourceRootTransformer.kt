@@ -7,7 +7,6 @@ import java.nio.file.Path
 
 internal class SourcesItemToPythonSourceRootTransformer(private val projectBasePath: Path) :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, GenericSourceRoot> {
-
   private val sourceRootType = "python-source"
   private val testSourceRootType = "python-test"
 
@@ -19,7 +18,7 @@ internal class SourcesItemToPythonSourceRootTransformer(private val projectBaseP
 
   private fun isNotAChildOfAnySourceDir(
     sourceRoot: GenericSourceRoot,
-    allSourceRoots: List<GenericSourceRoot>
+    allSourceRoots: List<GenericSourceRoot>,
   ): Boolean =
     allSourceRoots.none { it.sourcePath.isAncestor(sourceRoot.sourcePath.parent) }
 

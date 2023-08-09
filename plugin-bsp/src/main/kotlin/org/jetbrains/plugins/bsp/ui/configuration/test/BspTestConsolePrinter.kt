@@ -10,9 +10,8 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 
 public class BspTestConsolePrinter(
   private val processHandler: BspProcessHandler,
-  properties: SMTRunnerConsoleProperties
+  properties: SMTRunnerConsoleProperties,
 ) : BspConsolePrinter by processHandler {
-
   public var console: BaseTestsOutputConsoleView =
     SMTestRunnerConnectionUtil.createAndAttachConsole("BSP", processHandler, properties)
 
@@ -35,7 +34,7 @@ public class BspTestConsolePrinter(
    */
   public fun startTest(isSuite: Boolean, name: String) {
     executeCommand(
-      if (isSuite) ServiceMessageTypes.TEST_SUITE_STARTED else ServiceMessageTypes.TEST_STARTED, "name" to name
+      if (isSuite) ServiceMessageTypes.TEST_SUITE_STARTED else ServiceMessageTypes.TEST_STARTED, "name" to name,
     )
   }
 
@@ -48,7 +47,7 @@ public class BspTestConsolePrinter(
   public fun passTest(isSuite: Boolean, name: String) {
     executeCommand(
       if (isSuite) ServiceMessageTypes.TEST_SUITE_FINISHED else ServiceMessageTypes.TEST_FINISHED,
-      "name" to name
+      "name" to name,
     )
   }
 
@@ -64,7 +63,7 @@ public class BspTestConsolePrinter(
       ServiceMessageTypes.TEST_FAILED,
       "name" to name,
       "error" to "true",
-      "message" to message
+      "message" to message,
     )
   }
 

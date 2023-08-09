@@ -3,9 +3,8 @@ package org.jetbrains.plugins.bsp.protocol.connection
 import com.intellij.openapi.vfs.VirtualFile
 
 public class BspConnectionDetailsProvider(
-  private val bspConnectionDetailsGenerators: List<BspConnectionDetailsGenerator>
+  private val bspConnectionDetailsGenerators: List<BspConnectionDetailsGenerator>,
 ) {
-
   private lateinit var bspConnectionFilesProvider: BspConnectionFilesProvider
 
   private lateinit var bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider

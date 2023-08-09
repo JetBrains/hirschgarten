@@ -10,7 +10,6 @@ import java.lang.ref.WeakReference
  * create a leak.
  */
 public abstract class AbstractActionWithTarget(text: String) : AnAction(text) {
-
   private var _target: WeakReference<BuildTargetId?> = WeakReference(null)
 
   public var target: BuildTargetId?

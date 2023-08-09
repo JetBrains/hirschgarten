@@ -28,9 +28,8 @@ public class BspClient(
   private val bspBuildConsole: TaskConsole,
   private val bspRunConsole: BspTargetRunConsole,
   private val bspTestConsole: BspTargetTestConsole,
-  private val timeoutHandler: TimeoutHandler
+  private val timeoutHandler: TimeoutHandler,
 ) : BuildClient {
-
   override fun onBuildShowMessage(params: ShowMessageParams) {
     onBuildEvent()
     addMessageToConsole(params.originId, params.message)
@@ -114,7 +113,7 @@ public class BspClient(
           it.range.start.line,
           it.range.start.character,
           it.message,
-          getMessageEventKind(it.severity)
+          getMessageEventKind(it.severity),
         )
       }
     }

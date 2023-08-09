@@ -22,7 +22,6 @@ import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 
 public class BspProjectTaskRunner : ProjectTaskRunner() {
-
   private val log = logger<BspProjectTaskRunner>()
 
   override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
@@ -33,7 +32,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   override fun run(
     project: Project,
     projectTaskContext: ProjectTaskContext,
-    vararg tasks: ProjectTask
+    vararg tasks: ProjectTask,
   ): Promise<Result> {
     val result = AsyncPromise<Result>()
 
@@ -45,7 +44,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
 
   private fun runModuleBuildTasks(
     project: Project,
-    tasks: List<ModuleBuildTask>
+    tasks: List<ModuleBuildTask>,
   ): Promise<Result> {
     val targetsToBuild = obtainTargetsToBuild(project, tasks)
     return buildBspTargets(project, targetsToBuild)

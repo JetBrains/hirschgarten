@@ -15,7 +15,6 @@ import kotlin.io.path.Path
 
 @DisplayName("ContentRootEntityUpdater.addEntity()")
 internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest() {
-
   private lateinit var contentRootEntityUpdater: ContentRootEntityUpdater
 
   @BeforeEach
@@ -34,7 +33,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val contentPath = Path("/root/dir/example/resource/File.txt")
     val contentRoot = ContentRoot(
       path = contentPath,
-      excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
+      excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt")),
     )
 
     // when
@@ -61,17 +60,17 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     val contentPath1 = Path("/root/dir/example/resource/File1.txt")
     val contentRoot1 = ContentRoot(
       path = contentPath1,
-      excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt"))
+      excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt")),
     )
 
     val contentPath2 = Path("/root/dir/example/resource/File2.txt")
     val contentRoot2 = ContentRoot(
-      path = contentPath2
+      path = contentPath2,
     )
 
     val contentPath3 = Path("/root/dir/another/example/resource/File3.txt")
     val contentRoot3 = ContentRoot(
-      path = contentPath3
+      path = contentPath3,
     )
 
     val contentRoots = listOf(contentRoot1, contentRoot2, contentRoot3)

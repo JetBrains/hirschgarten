@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("DependencySourcesItemToLibraryDependencyTransformer.transformer(library) tests")
 class DependencySourcesItemToLibraryDependencyTransformerTest {
-
   @Test
   fun `should return no library dependencies for no dependency sources`() {
     // given
@@ -33,14 +32,14 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     val dependencySourceItem = DependencySourcesAndJavacOptions(
       dependencySources = DependencySourcesItem(
         BuildTargetIdentifier("//target"),
-        listOf(dependencySource)
+        listOf(dependencySource),
       ),
       javacOptions = JavacOptionsItem(
         BuildTargetIdentifier("//target"),
         emptyList(),
         listOf("file:///dependency/test/test-1.0.0.jar"),
         "file:///compiler/output.jar",
-      )
+      ),
     )
 
     // when
@@ -64,7 +63,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     val dependencySourceItem = DependencySourcesAndJavacOptions(
       dependencySources = DependencySourcesItem(
         BuildTargetIdentifier("//target"),
-        listOf(dependencySource1, dependencySource2, dependencySource3)
+        listOf(dependencySource1, dependencySource2, dependencySource3),
       ),
       javacOptions = JavacOptionsItem(
         BuildTargetIdentifier("//target"),
@@ -75,7 +74,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
           "file:///dependency/test3/test3-1.0.0.jar",
         ),
         "file:///compiler/output.jar",
-      )
+      ),
     )
 
     // when
@@ -109,7 +108,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     val dependencySourceItem1 = DependencySourcesAndJavacOptions(
       dependencySources = DependencySourcesItem(
         BuildTargetIdentifier("//target"),
-        listOf(dependencySource1, dependencySource2)
+        listOf(dependencySource1, dependencySource2),
       ),
       javacOptions = JavacOptionsItem(
         BuildTargetIdentifier("//target"),
@@ -124,7 +123,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     val dependencySourceItem2 = DependencySourcesAndJavacOptions(
       dependencySources = DependencySourcesItem(
         BuildTargetIdentifier("//target"),
-        listOf(dependencySource2, dependencySource3)
+        listOf(dependencySource2, dependencySource3),
       ),
       javacOptions = JavacOptionsItem(
         BuildTargetIdentifier("//target"),
@@ -134,7 +133,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
           "file:///dependency/test3/test3-1.0.0.jar",
         ),
         "file:///compiler/output.jar",
-      )
+      ),
     )
 
     val dependencySourceItems = listOf(dependencySourceItem1, dependencySourceItem2)

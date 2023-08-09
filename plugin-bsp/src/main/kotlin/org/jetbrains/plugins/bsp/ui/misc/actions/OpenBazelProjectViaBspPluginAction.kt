@@ -27,7 +27,6 @@ public val ELIGIBLE_BAZEL_PROJECT_FILE_NAMES: List<String> = listOf(
 
 public class OpenBazelProjectViaBspPluginAction:
   AnAction(BspPluginBundle.message("open.bazel.via.bsp.action.text")), DumbAware {
-
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
     val psiFile = CommonDataKeys.PSI_FILE.getData(e.dataContext)

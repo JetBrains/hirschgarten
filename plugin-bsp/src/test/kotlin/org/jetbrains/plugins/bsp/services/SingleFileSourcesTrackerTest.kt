@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 
 @Disabled
 class SingleFileSourcesTrackerTest : JavaWorkspaceModelFixtureBaseTest() {
-
   @Test
   fun `Java single file sources should be registered and resolved properly`() {
     runInEdtAndWait {
@@ -22,28 +21,28 @@ class SingleFileSourcesTrackerTest : JavaWorkspaceModelFixtureBaseTest() {
         "module1/x/org/jetbrains/module1/A1.java",
         """
           |package org.jetbrains.module1;
-  
+          |
           |class A1 {
           |  String a1() {
           |    return "XDDD";
           |  }
           |}
-        """.trimMargin()
+        """.trimMargin(),
       )
 
       val fileA2 = fixture.addFileToProject(
         "module1/x/org/jetbrains/module1/A2.java",
         """
           |package org.jetbrains.module1;
-    
+          |
           |class A2 {
-    
+          |
           |  String a2() {
           |    A1 a = new A1();
           |    return a.a<caret>1() + "XD";
           |  }
           |}
-        """.trimMargin()
+        """.trimMargin(),
       )
 
       // when
@@ -53,7 +52,7 @@ class SingleFileSourcesTrackerTest : JavaWorkspaceModelFixtureBaseTest() {
           files = listOf(fileA1.virtualFile, fileA2.virtualFile),
           packagePrefix = "org.jetbrains.module1",
           module = module1,
-          entityStorage = it
+          entityStorage = it,
         )
       }
 

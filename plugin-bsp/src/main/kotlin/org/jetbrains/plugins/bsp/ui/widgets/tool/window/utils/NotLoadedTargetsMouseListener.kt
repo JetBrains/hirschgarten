@@ -25,7 +25,6 @@ public class NotLoadedTargetsMouseListener(
   private val container: BuildTargetContainer,
   private val project: Project,
 ) : MouseListener {
-
   override fun mouseClicked(e: MouseEvent?) {
     e?.let { mouseClickedNotNull(it) }
   }
@@ -39,7 +38,7 @@ public class NotLoadedTargetsMouseListener(
     }
   }
 
-  /* https://youtrack.jetbrains.com/issue/BAZEL-522 */
+  // https://youtrack.jetbrains.com/issue/BAZEL-522
   private fun selectTargetIfSearchListIsDisplayed(point: Point) {
     if (container is BuildTargetSearch) {
       container.selectAtLocationIfListDisplayed(point)
@@ -64,12 +63,12 @@ public class NotLoadedTargetsMouseListener(
       val copyTargetIdAction = container.copyTargetIdAction
       val loadTargetAction = LoadTargetAction(
         BspAllTargetsWidgetBundle.message("widget.load.target.popup.message"),
-        target
+        target,
       )
-      DefaultActionGroup().also {
-        it.addAction(copyTargetIdAction)
-        it.addSeparator()
-        it.addAction(loadTargetAction)
+      DefaultActionGroup().apply {
+        addAction(copyTargetIdAction)
+        addSeparator()
+        addAction(loadTargetAction)
       }
     } else null
   }
@@ -94,7 +93,7 @@ public class NotLoadedTargetsMouseListener(
 
 private class LoadTargetAction(
   text: String,
-  private val target: BuildTargetInfo
+  private val target: BuildTargetInfo,
 ) : AnAction(text) {
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
@@ -112,7 +111,7 @@ private class LoadTargetAction(
 
       BspBalloonNotifier.info(
         BspAllTargetsWidgetBundle.message("widget.load.target.notification", targetId),
-        "Load target"
+        "Load target",
       )
     }
   }

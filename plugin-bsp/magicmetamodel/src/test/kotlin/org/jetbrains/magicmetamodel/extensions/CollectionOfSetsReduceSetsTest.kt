@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 
 @DisplayName("collectionOfSets.reduceSets() tests")
 class CollectionOfSetsReduceSetsTest {
-
   @Test
   fun `should reduce empty collection`() {
     // given

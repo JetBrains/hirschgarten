@@ -24,39 +24,39 @@ public infix fun Collection<SourceRootEntity>.shouldContainExactlyInAnyOrder(
 ): Unit =
   this.shouldContainExactlyInAnyOrder(
     assertion = { actual, expected -> validateSourceRootEntity(actual, expected) },
-    expectedValues = expectedValues
+    expectedValues = expectedValues,
   )
 
 private fun validateSourceRootEntity(
   actual: SourceRootEntity,
-  expected: ExpectedSourceRootEntity
+  expected: ExpectedSourceRootEntity,
 ) {
   actual.url shouldBe expected.sourceRootEntity.url
   actual.rootType shouldBe expected.sourceRootEntity.rootType
 
   actual.javaSourceRoots.shouldContainExactlyInAnyOrder(
     { actualEntity, expectedEntity -> validateJavaSourceRootEntity(actualEntity, expectedEntity) },
-    expected.sourceRootEntity.javaSourceRoots
+    expected.sourceRootEntity.javaSourceRoots,
   )
   actual.javaResourceRoots.shouldContainExactlyInAnyOrder(
     { actualEntity, expectedEntity -> validateJavaResourceRootEntity(actualEntity, expectedEntity) },
-    expected.sourceRootEntity.javaResourceRoots
+    expected.sourceRootEntity.javaResourceRoots,
   )
 
   actual.contentRoot shouldBeEqual toExpectedContentRootEntity(expected)
 }
 
 private fun validateJavaSourceRootEntity(
-    actual: JavaSourceRootPropertiesEntity,
-    expected: JavaSourceRootPropertiesEntity
+  actual: JavaSourceRootPropertiesEntity,
+  expected: JavaSourceRootPropertiesEntity,
 ) {
   actual.generated shouldBe expected.generated
   actual.packagePrefix shouldBe expected.packagePrefix
 }
 
 private fun validateJavaResourceRootEntity(
-    actual: JavaResourceRootPropertiesEntity,
-    expected: JavaResourceRootPropertiesEntity
+  actual: JavaResourceRootPropertiesEntity,
+  expected: JavaResourceRootPropertiesEntity,
 ) {
   actual.generated shouldBe expected.generated
   actual.relativeOutputPath shouldBe expected.relativeOutputPath
@@ -69,4 +69,3 @@ private fun toExpectedContentRootEntity(expected: ExpectedSourceRootEntity): Exp
     excludedPatterns = expected.contentRootEntity.excludedPatterns,
     parentModuleEntity = expected.parentModuleEntity,
   )
-

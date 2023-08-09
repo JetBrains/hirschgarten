@@ -1,5 +1,3 @@
-@file:Suppress("LongMethod", "MaxLineLength")
-
 package org.jetbrains.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
@@ -13,12 +11,11 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId as WMBuildTargetId
 import java.util.concurrent.TimeUnit
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId as WMBuildTargetId
 
 @DisplayName("OverlappingTargetsGraph(targetsDetailsForDocumentProvider) tests")
 class OverlappingTargetsGraphTest {
-
   @Test
   fun `should return empty graph for no targets`() {
     // given
@@ -106,7 +103,7 @@ class OverlappingTargetsGraphTest {
     )
     val targetA1Sources = SourcesItem(
       target = BuildTargetId("targetA1"),
-      sources = listOf(targetA1Source1, targetA1A2Source1)
+      sources = listOf(targetA1Source1, targetA1A2Source1),
     )
 
     val targetA2Source1 = SourceItem(
@@ -143,7 +140,7 @@ class OverlappingTargetsGraphTest {
     )
     val targetA1Sources = SourcesItem(
       target = BuildTargetId("targetA1"),
-      sources = listOf(targetA1Source1)
+      sources = listOf(targetA1Source1),
     )
 
     val targetA2Source1 = SourceItem(
@@ -180,7 +177,7 @@ class OverlappingTargetsGraphTest {
     )
     val targetA1Sources = SourcesItem(
       target = BuildTargetId("targetA1"),
-      sources = listOf(targetA1Source1)
+      sources = listOf(targetA1Source1),
     )
 
     val targetB1Source1 = SourceItem(
@@ -202,7 +199,7 @@ class OverlappingTargetsGraphTest {
     // then
     val expectedGraph = mapOf<WMBuildTargetId, Set<WMBuildTargetId>>(
       "targetA1" to emptySet(),
-      "targetB1" to emptySet()
+      "targetB1" to emptySet(),
     )
     overlappingTargetsGraph shouldContainExactly expectedGraph
   }
@@ -353,7 +350,6 @@ class OverlappingTargetsGraphTest {
   @Nested
   @DisplayName("performance tests")
   inner class PerformanceTests {
-
     @Test
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     fun `should finish before timeout for project without shared sources (each target has 1 source file)`() {
@@ -367,7 +363,7 @@ class OverlappingTargetsGraphTest {
             SourceItem(
               uri = "file:///project/target$it/src/main/kotlin/File.kt",
               kind = SourceItemKind.FILE,
-            )
+            ),
           ),
         )
       }
@@ -402,7 +398,7 @@ class OverlappingTargetsGraphTest {
             SourceItem(
               uri = "file:///project/target/src/main/kotlin/File.kt",
               kind = SourceItemKind.FILE,
-            )
+            ),
           ),
         )
       }
@@ -437,7 +433,7 @@ class OverlappingTargetsGraphTest {
             SourceItem(
               uri = "file:///project/target${it.second}/src/main/kotlin/File.kt",
               kind = SourceItemKind.FILE,
-            )
+            ),
           ),
         )
       }
@@ -453,7 +449,7 @@ class OverlappingTargetsGraphTest {
           .associateBy({ it.first.second.target.uri }, { setOf(it.first.first.target.uri, it.second.second.target.uri) }) +
           setOf(
             sources[0].target.uri to setOf(sources[1].target.uri),
-            sources[sources.lastIndex].target.uri to setOf(sources[sources.lastIndex - 1].target.uri)
+            sources[sources.lastIndex].target.uri to setOf(sources[sources.lastIndex - 1].target.uri),
           )
       overlappingTargetsGraph shouldBe expectedOverlappingTargetsGraph
     }
@@ -476,7 +472,7 @@ class OverlappingTargetsGraphTest {
           } + SourceItem(
             uri = "file:///project/target/src/main/kotlin/File.kt",
             kind = SourceItemKind.FILE,
-          )
+          ),
         )
       }
 
@@ -508,7 +504,7 @@ class OverlappingTargetsGraphTest {
               uri = "file:///project/target$rand/src/main/kotlin/File.kt",
               kind = SourceItemKind.FILE,
             )
-          }
+          },
         )
       }
 

@@ -13,7 +13,6 @@ internal data class BuildTargetAndSourceItem(
 
 internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePath: Path) :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
-
   private val sourceRootType = "java-source"
   private val testSourceRootType = "java-test"
 
@@ -52,7 +51,7 @@ internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePat
   private fun calculatePackagePrefix(sourceRoot: SourceRoot, sourceRoots: List<URI>): JavaSourceRootPackagePrefix {
     val packageDetails = JavaSourcePackageDetails(
       sourceURI = sourceRoot.sourcePath.let { if (sourceRoot.isFile) it.parent else it }.toUri(),
-      sourceRoots = sourceRoots
+      sourceRoots = sourceRoots,
     )
 
     return JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer.transform(packageDetails)

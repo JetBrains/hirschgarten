@@ -8,7 +8,6 @@ import org.jetbrains.annotations.ApiStatus
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
 public class BspToolWindowService {
-
   private var deepPanelReload: (() -> Unit)? = null
 
   public fun setDeepPanelReload(function: () -> Unit) {

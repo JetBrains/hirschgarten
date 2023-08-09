@@ -8,7 +8,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.
 internal class PythonModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
-
   override fun addEntity(entityToAdd: PythonModule): ModuleEntity {
     val moduleEntityUpdater =
       ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateModuleDefaultDependencies(entityToAdd))
@@ -39,7 +38,6 @@ internal class PythonModuleWithSourcesUpdater(
 internal class PythonModuleWithoutSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
-
   override fun addEntity(entityToAdd: PythonModule): ModuleEntity {
     val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig)
     return moduleEntityUpdater.addEntity(entityToAdd.module)
@@ -49,7 +47,6 @@ internal class PythonModuleWithoutSourcesUpdater(
 internal class PythonModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
-
   private val pythonModuleWithSourcesUpdater = PythonModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig)
   private val pythonModuleWithoutSourcesUpdater = PythonModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 

@@ -11,7 +11,6 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 
 public abstract class BspServerTask<T>(private val taskName: String, protected val project: Project) {
-
   protected fun connectAndExecuteWithServer(task: (BspServer, BuildServerCapabilities) -> T?): T? {
     val server = getServer()
     val capabilities = getCapabilities()
@@ -55,24 +54,22 @@ public abstract class BspServerTask<T>(private val taskName: String, protected v
 
 public abstract class BspServerSingleTargetTask<T>(taskName: String, project: Project) :
   BspServerTask<T>(taskName, project) {
-
   public fun connectAndExecute(targetId: BuildTargetIdentifier): T? =
     connectAndExecuteWithServer { server, capabilities -> executeWithServer(server, capabilities, targetId) }
 
   protected abstract fun executeWithServer(
     server: BspServer,
     capabilities: BuildServerCapabilities,
-    targetId: BuildTargetIdentifier
+    targetId: BuildTargetIdentifier,
   ): T
 }
 
 public abstract class BspServerMultipleTargetsTask<T>(taskName: String, project: Project) :
   BspServerSingleTargetTask<T>(taskName, project) {
-
   protected override fun executeWithServer(
     server: BspServer,
     capabilities: BuildServerCapabilities,
-    targetId: BuildTargetIdentifier
+    targetId: BuildTargetIdentifier,
   ): T = executeWithServer(server, capabilities, listOf(targetId))
 
   public fun connectAndExecute(targetsIds: List<BuildTargetIdentifier>): T? =
@@ -81,6 +78,6 @@ public abstract class BspServerMultipleTargetsTask<T>(taskName: String, project:
   protected abstract fun executeWithServer(
     server: BspServer,
     capabilities: BuildServerCapabilities,
-    targetsIds: List<BuildTargetIdentifier>
+    targetsIds: List<BuildTargetIdentifier>,
   ): T
 }

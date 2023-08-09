@@ -6,7 +6,6 @@ import java.nio.file.Path
 
 internal class ResourcesItemToPythonResourceRootTransformer(private val projectBasePath: Path) :
   WorkspaceModelEntityPartitionTransformer<ResourcesItem, ResourceRoot> {
-
   override fun transform(inputEntity: ResourcesItem): List<ResourceRoot> =
     inputEntity.resources
       .map(this::toResourceRoot)
@@ -15,6 +14,6 @@ internal class ResourcesItemToPythonResourceRootTransformer(private val projectB
 
   private fun toResourceRoot(resourcePath: String) =
     ResourceRoot(
-      resourcePath = RawUriToDirectoryPathTransformer.transform(resourcePath)
+      resourcePath = RawUriToDirectoryPathTransformer.transform(resourcePath),
     )
 }

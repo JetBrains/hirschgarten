@@ -10,7 +10,6 @@ public interface BspConsolePrinter {
 }
 
 public class BspProcessHandler : ProcessHandler(), BspConsolePrinter {
-
   override fun destroyProcessImpl() {
     super.notifyProcessTerminated(0)
   }

@@ -10,7 +10,6 @@ import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerat
 import javax.swing.JComponent
 
 public abstract class ImportProjectWizardStep : StepAdapter() {
-
   protected abstract val panel: DialogPanel
 
   override fun getComponent(): JComponent = panel
@@ -25,16 +24,15 @@ public abstract class ImportProjectWizardStep : StepAdapter() {
 
 public class ImportProjectWizard(
   project: Project,
-  private val bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider
+  private val bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider,
 ) : AbstractWizard<ImportProjectWizardStep>("Import Project via BSP", project) {
-
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
   private val firstStep: ChooseConnectionFileOrNewConnectionStep
 
   init {
     firstStep = ChooseConnectionFileOrNewConnectionStep(
       project.rootDir,
-      bspConnectionDetailsGeneratorProvider.availableBspConnectionDetailsGenerators
+      bspConnectionDetailsGeneratorProvider.availableBspConnectionDetailsGenerators,
     ) { updateWizardButtonsToGeneratorSelection() }
     connectionFileOrNewConnectionProperty = firstStep.connectionFileOrNewConnectionProperty
 
@@ -64,7 +62,7 @@ public class ImportProjectWizard(
     val connectionId = connectionFileOrNewConnectionProperty.get().id
     return bspConnectionDetailsGeneratorProvider.calculateWizardSteps(
       connectionId,
-      connectionFileOrNewConnectionProperty
+      connectionFileOrNewConnectionProperty,
     )
   }
 

@@ -1,9 +1,9 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
@@ -12,7 +12,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
 internal class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
-
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
       ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
@@ -22,7 +21,7 @@ internal class JavaModuleWithSourcesUpdater(
     addJavaModuleSettingsEntity(
       builder = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       entityToAdd = entityToAdd,
-      moduleEntity = moduleEntity
+      moduleEntity = moduleEntity,
     )
 
     if (entityToAdd.isRoot()) {
@@ -55,7 +54,7 @@ internal class JavaModuleWithSourcesUpdater(
   private fun addJavaModuleSettingsEntity(
     builder: MutableEntityStorage,
     entityToAdd: JavaModule,
-    moduleEntity: ModuleEntity
+    moduleEntity: ModuleEntity,
   ) {
     if (entityToAdd.compilerOutput != null) {
       val compilerOutput =
@@ -64,18 +63,18 @@ internal class JavaModuleWithSourcesUpdater(
         JavaModuleSettingsEntity(
           inheritedCompilerOutput = false,
           excludeOutput = true,
-          entitySource = BspEntitySource
+          entitySource = BspEntitySource,
         ) {
           this.compilerOutput = compilerOutput
           this.compilerOutputForTests = null
           this.languageLevelId = null
           this.module = moduleEntity
-        }
+        },
       )
     }
   }
 
-  private fun JavaModule.isRoot(): Boolean =  // TODO - that is a temporary predicate
+  private fun JavaModule.isRoot(): Boolean = // TODO - that is a temporary predicate
     sourceRoots.isEmpty() && resourceRoots.isEmpty() && baseDirContentRoot?.excludedPaths?.isNotEmpty() == true
 
   private companion object {
@@ -88,7 +87,6 @@ internal class JavaModuleWithSourcesUpdater(
 internal class JavaModuleWithoutSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
-
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig)
 
@@ -99,7 +97,6 @@ internal class JavaModuleWithoutSourcesUpdater(
 internal class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
-
   private val javaModuleWithSourcesUpdater = JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig)
   private val javaModuleWithoutSourcesUpdater = JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 

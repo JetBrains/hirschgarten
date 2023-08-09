@@ -35,9 +35,8 @@ internal class DefaultMagicMetaModelDiff(
   private val builderSnapshot: BuilderSnapshot,
   private val mmmStorageReplacement: LoadedTargetsStorage,
   private val mmmInstance: MagicMetaModelImpl,
-  private val targetLoadListeners: Set<() -> Unit>
+  private val targetLoadListeners: Set<() -> Unit>,
 ) : MagicMetaModelDiff {
-
   override suspend fun applyOnWorkspaceModel() {
     val storageReplacement = builderSnapshot.getStorageReplacement()
     writeAction {
@@ -55,7 +54,6 @@ internal class DefaultMagicMetaModelDiff(
  * provided by the BSP and build on top of [WorkspaceModel].
  */
 public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagicMetaModelState> {
-
   private val magicMetaModelProjectConfig: MagicMetaModelProjectConfig
   private val targets: Set<BuildTargetInfo>
   private val libraries: List<Library>?
@@ -111,7 +109,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   private fun createLibraries(libraries: List<LibraryItem>?) = libraries?.map {
     Library(
       displayName = it.id.uri,
-      classJars = it.jars
+      classJars = it.jars,
     )
   }
 
@@ -132,7 +130,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     this.targetIdToModule = WorkspaceModelToModulesMapTransformer(
       magicMetaModelProjectConfig.workspaceModel,
       loadedTargetsStorage,
-      magicMetaModelProjectConfig.moduleNameProvider
+      magicMetaModelProjectConfig.moduleNameProvider,
     ) + unloadedTargets
 
     this.excludedPaths = state.excludedPaths
@@ -192,9 +190,9 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     targetIdToModule.values.any { it.doesIncludeRootDir() }
 
   private fun Module.doesIncludeRootDir() =
-    when(this) {
-      is JavaModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath }
-          || baseDirContentRoot?.path == magicMetaModelProjectConfig.projectBasePath
+    when (this) {
+      is JavaModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath } ||
+        baseDirContentRoot?.path == magicMetaModelProjectConfig.projectBasePath
       is PythonModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath }
       else -> false
     }
@@ -214,13 +212,13 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       genericModuleInfo = genericModuleInfo,
       baseDirContentRoot = ContentRoot(
         path = magicMetaModelProjectConfig.projectBasePath,
-        excludedPaths = excludedPaths.map { URI.create(it).toPath() }
+        excludedPaths = excludedPaths.map { URI.create(it).toPath() },
       ),
       sourceRoots = emptyList(),
       resourceRoots = emptyList(),
       moduleLevelLibraries = null,
       compilerOutput = null,
-      jvmJdkName = null
+      jvmJdkName = null,
     )
   }
 
@@ -312,7 +310,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
         .mapValues { it.value.toState() },
       targetsDetailsForDocumentProviderState = targetsDetailsForDocumentProvider.toState(),
       overlappingTargetsGraph = overlappingTargetsGraph,
-      loadedTargetsStorageState = loadedTargetsStorage.toState()
+      loadedTargetsStorageState = loadedTargetsStorage.toState(),
     )
 
   internal fun loadStorage(storage: LoadedTargetsStorage) {
@@ -335,11 +333,10 @@ public class LoadedTargetsStorage private constructor(
   private val loadedTargets: MutableSet<BuildTargetId>,
   private val notLoadedTargets: MutableSet<BuildTargetId>,
 ) {
-
   public constructor(allTargets: Collection<BuildTargetId>) : this(
     allTargets = allTargets,
     loadedTargets = mutableSetOf(),
-    notLoadedTargets = allTargets.toMutableSet()
+    notLoadedTargets = allTargets.toMutableSet(),
   )
 
   public constructor(state: LoadedTargetsStorageState) : this(
@@ -385,7 +382,7 @@ public class LoadedTargetsStorage private constructor(
     LoadedTargetsStorageState(
       allTargets,
       loadedTargets.toMutableList(),
-      notLoadedTargets.toMutableList()
+      notLoadedTargets.toMutableList(),
     )
 
   public fun copy(): LoadedTargetsStorage =

@@ -10,12 +10,11 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 internal class JavaSourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithParentModuleUpdater<JavaSourceRoot, JavaSourceRootPropertiesEntity> {
-
   private val sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(
     entityToAdd: JavaSourceRoot,
-    parentModuleEntity: ModuleEntity
+    parentModuleEntity: ModuleEntity,
   ): JavaSourceRootPropertiesEntity {
     val sourceRootEntity = sourceEntityUpdater.addEntity(entityToAdd.run {
       GenericSourceRoot(
@@ -28,7 +27,7 @@ internal class JavaSourceEntityUpdater(
     return addJavaSourceRootEntity(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       sourceRootEntity,
-      entityToAdd
+      entityToAdd,
     )
   }
 
@@ -41,9 +40,9 @@ internal class JavaSourceEntityUpdater(
       JavaSourceRootPropertiesEntity(
         generated = entityToAdd.generated,
         packagePrefix = entityToAdd.packagePrefix,
-        entitySource = sourceRoot.entitySource
+        entitySource = sourceRoot.entitySource,
       ) {
         this.sourceRoot = sourceRoot
-      }
+      },
     )
 }

@@ -23,13 +23,12 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 
 public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
-
   private val log = logger<BuildTargetTask>()
 
   protected override fun executeWithServer(
     server: BspServer,
     capabilities: BuildServerCapabilities,
-    targetsIds: List<BuildTargetIdentifier>
+    targetsIds: List<BuildTargetIdentifier>,
   ): CompileResult {
     val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
     val originId = "build-" + UUID.randomUUID().toString()
@@ -50,7 +49,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     targetIds: List<BuildTargetIdentifier>,
     bspBuildConsole: TaskConsole,
     originId: String,
-    cancelOn: CompletableFuture<Void>
+    cancelOn: CompletableFuture<Void>,
   ) {
     val startBuildMessage = calculateStartBuildMessage(targetIds)
 
@@ -79,7 +78,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
   private fun finishBuildConsoleTaskWithProperResult(
     compileResult: CompileResult,
     bspBuildConsole: TaskConsole,
-    uuid: String
+    uuid: String,
   ) = when (compileResult.statusCode) {
     StatusCode.OK -> bspBuildConsole.finishTask(uuid, "Successfully completed!")
     StatusCode.CANCELLED -> bspBuildConsole.finishTask(uuid, "Cancelled!")
@@ -90,7 +89,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
   // TODO update and move
   private fun <T> CompletableFuture<T>.catchBuildErrors(
     bspBuildConsole: TaskConsole,
-    buildId: String
+    buildId: String,
   ): CompletableFuture<T> =
     this.whenComplete { _, exception ->
       exception?.let {
@@ -115,7 +114,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 public suspend fun runBuildTargetTask(
   targetIds: List<BuildTargetIdentifier>,
   project: Project,
-  log: Logger
+  log: Logger,
 ): CompileResult? =
   try {
     withBackgroundProgress(project, "Building target(s)...") {

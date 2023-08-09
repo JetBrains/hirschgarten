@@ -31,7 +31,6 @@ import kotlin.io.path.Path
 // theoretically we could use those instead of real BSP entities,
 // but those are mutable (well, BSP are mutable as well)
 
-
 public interface ConvertableFromState<out T> {
   public fun fromState(): T
 }
@@ -72,14 +71,14 @@ public data class ContentRootState(
   override fun fromState(): ContentRoot =
     ContentRoot(
       path = Path(path),
-      excludedPaths = excludedPaths.map { Path(it) }
+      excludedPaths = excludedPaths.map { Path(it) },
     )
 }
 
 public fun ContentRoot.toState(): ContentRootState =
   ContentRootState(
     path = path.toString(),
-    excludedPaths = excludedPaths.map { it.toString() }
+    excludedPaths = excludedPaths.map { it.toString() },
   )
 
 public data class SourceRootState(
@@ -141,7 +140,7 @@ public fun Library.toState(): LibraryState = LibraryState(
 )
 
 public fun PythonLibrary.toState(): LibraryState = LibraryState(
-  sourceJars = sources.orEmpty()
+  sourceJars = sources,
 )
 
 public data class GenericModuleInfoState(
@@ -183,8 +182,6 @@ public data class ModuleState(
   val sdkInfo: PythonSdkInfoState? = null,
   var kotlinAddendum: KotlinAddendumState? = null,
 ) : ConvertableFromState<Module> {
-
-
   public fun toJavaModule(): JavaModule = JavaModule(
     genericModuleInfo = module.fromState(),
     baseDirContentRoot = baseDirContentRoot?.fromState(),
@@ -193,7 +190,7 @@ public data class ModuleState(
     moduleLevelLibraries = libraries?.map { it.fromState() },
     compilerOutput = compilerOutput?.let { Path(it) },
     jvmJdkName = jvmJdkName,
-    kotlinAddendum = kotlinAddendum?.fromState()
+    kotlinAddendum = kotlinAddendum?.fromState(),
   )
 
   public fun toPythonModule(): PythonModule = PythonModule(
@@ -201,7 +198,7 @@ public data class ModuleState(
     sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
     libraries = libraries?.map { it.toPythonLibrary() }.orEmpty(),
     resourceRoots = resourceRoots.map { it.toResourceRoot() },
-    sdkInfo = sdkInfo?.fromState()
+    sdkInfo = sdkInfo?.fromState(),
   )
 
   override fun fromState(): Module =
@@ -234,7 +231,7 @@ public data class KotlinAddendumState(
   override fun fromState(): KotlinAddendum = KotlinAddendum(
     languageVersion = languageVersion,
     apiVersion = apiVersion,
-    kotlincOptions = Gson().fromJson(kotlincOptions, KotlincOpts::class.java)
+    kotlincOptions = Gson().fromJson(kotlincOptions, KotlincOpts::class.java),
   )
 }
 
@@ -242,7 +239,7 @@ public data class ModuleCapabilitiesState(
   var canRun: Boolean = false,
   var canTest: Boolean = false,
   var canCompile: Boolean = false,
-  var canDebug: Boolean = false
+  var canDebug: Boolean = false,
 ) : ConvertableFromState<ModuleCapabilities> {
   override fun fromState(): ModuleCapabilities = ModuleCapabilities(
     canRun = canRun,
@@ -273,6 +270,5 @@ public data class DefaultMagicMetaModelState(
     TargetsDetailsForDocumentProviderState(),
   public var overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>> = emptyMap(),
   public var loadedTargetsStorageState: LoadedTargetsStorageState = LoadedTargetsStorageState(),
-  public var excludedPaths: List<String> = emptyList()
+  public var excludedPaths: List<String> = emptyList(),
 )
-

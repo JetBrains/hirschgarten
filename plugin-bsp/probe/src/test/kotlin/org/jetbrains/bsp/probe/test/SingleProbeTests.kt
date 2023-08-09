@@ -11,7 +11,6 @@ import scala.Option
 import scala.runtime.BoxedUnit
 
 class SingleProbeTests {
-
   companion object {
     const val LATEST_NIGHTLY_VERSION = "232.8660.142"
     val LATEST_VERSION : String? = null
@@ -22,31 +21,31 @@ class SingleProbeTests {
     with(IdeProbeTestRunner()) {
       val fixture = fixtureWithWorkspaceFromGit(
         "https://github.com/JetBrains/bazel-bsp.git",
-        "2.3.0"
+        "2.3.0",
       ).withBuild(LATEST_NIGHTLY_VERSION, LATEST_VERSION)
       runAfterOpen(fixture, Option.apply(null)) { probe, robot, intellij ->
         fun testTargetsTree(buildPanel: SearchableOps) {
           val loaded =
-            buildPanel.findElement(query.className("ActionButton", "myaction.key" to "widget.loaded.targets.tab.name"))
+            buildPanel.findElement(Query.className("ActionButton", "myaction.key" to "widget.loaded.targets.tab.name"))
           loaded.click()
-          val targetsTree = buildPanel.findElement(query.className("Tree"))
+          val targetsTree = buildPanel.findElement(Query.className("Tree"))
           Assertions.assertEquals(9, targetsTree.fullTexts().size)
         }
 
-        val stripeButton = robot.findElement(query.className("StripeButton", "text" to "BSP"))
+        val stripeButton = robot.findElement(Query.className("StripeButton", "text" to "BSP"))
         stripeButton.doClick()
-        val buildPanel = robot.findElement(query.className("BspToolWindowPanel"))
+        val buildPanel = robot.findElement(Query.className("BspToolWindowPanel"))
         testTargetsTree(buildPanel)
 
         robot.assertNoProblems(probe)
         robot.reopenProject(probe, intellij)
 
-        val newBuildPanel = robot.findElement(query.className("BspToolWindowPanel"))
+        val newBuildPanel = robot.findElement(Query.className("BspToolWindowPanel"))
         val reconnect =
-          newBuildPanel.findElement(query.className("ActionButton", "myaction.key" to "connect.action.text"))
+          newBuildPanel.findElement(Query.className("ActionButton", "myaction.key" to "connect.action.text"))
         reconnect.click()
         probe.await(emptyBackgroundTaskWithoutTimeouts {
-          robot.findElement(query.className("StripeButton", "text" to "BSP"))
+          robot.findElement(Query.className("StripeButton", "text" to "BSP"))
         })
         testTargetsTree(newBuildPanel)
         BoxedUnit.UNIT
@@ -58,7 +57,7 @@ class SingleProbeTests {
   fun `open fresh instance of bazel project and check build console output for errors`() {
     with(IdeProbeTestRunner()) {
       val fixture = fixtureWithWorkspaceFromGit(
-        "https://github.com/bazelbuild/bazel.git", "6.0.0"
+        "https://github.com/bazelbuild/bazel.git", "6.0.0",
       ).withBuild(LATEST_NIGHTLY_VERSION, LATEST_VERSION)
       runAfterOpen(fixture, Option.apply(null)) { probe, robot, _ ->
         robot.assertNoProblems(probe)
@@ -69,14 +68,14 @@ class SingleProbeTests {
 
   private fun RobotProbeDriver.reopenProject(probe: ProbeDriver, intellij: RunningIntelliJFixture) {
     val file = findElement(
-      query.className(
+      Query.className(
         "ActionMenu",
-        "text.key" to "group.FileMenu.text action.NewFile.text problems.view.highlighting"
-      )
+        "text.key" to "group.FileMenu.text action.NewFile.text problems.view.highlighting",
+      ),
     )
     file.doClick()
     probe.tryUntilSuccessful {
-      val closeProject = file.find(query.div("visible_text" to "Close Project"))
+      val closeProject = file.find(Query.div("visible_text" to "Close Project"))
       closeProject.click()
     }
     probe.tryUntilSuccessful {
@@ -85,13 +84,13 @@ class SingleProbeTests {
   }
 
   private fun RobotProbeDriver.assertNoProblems(probe: ProbeDriver) {
-    findElement(query.className("StripeButton", "text" to "Problems")).doClick()
-    val errors = findElement(query.className("ContentTabLabel", "visible_text" to "Project Errors"))
+    findElement(Query.className("StripeButton", "text" to "Problems")).doClick()
+    val errors = findElement(Query.className("ContentTabLabel", "visible_text" to "Project Errors"))
     var problemsText = ""
     probe.tryUntilSuccessful {
       errors.fixture().click()
-      val problemsTree = findElement(query.className("ProblemsViewPanel"))
-        .findElement(query.className("Tree"))
+      val problemsTree = findElement(Query.className("ProblemsViewPanel"))
+        .findElement(Query.className("Tree"))
       problemsText = problemsTree.fullText().split("\n").firstOrNull().orEmpty()
     }
     Assertions.assertEquals("No errors found by the IDE", problemsText)

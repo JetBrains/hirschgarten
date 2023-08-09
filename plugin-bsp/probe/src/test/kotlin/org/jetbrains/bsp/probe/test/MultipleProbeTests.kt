@@ -1,4 +1,5 @@
 @file:Suppress("UnusedPrivateMember")
+
 package org.jetbrains.bsp.probe.test
 
 import org.junit.jupiter.api.AfterAll
@@ -27,13 +28,11 @@ import java.nio.file.Path
  *   }
  */
 class MultipleProbeTests {
-
   private val runData by lazy {
     Tuple3(fixture, path, intellij)
   }
 
   companion object {
-
     private lateinit var fixture: IntelliJFixture
     private lateinit var runner: IdeProbeTestRunner
     private lateinit var path: Path
@@ -48,7 +47,7 @@ class MultipleProbeTests {
       runner = IdeProbeTestRunner()
       fixture = runner.fixtureWithWorkspaceFromGit(
         "repository",
-        "branch"
+        "branch",
       ).withBuild("232.8660.142")
       val data = runner.prepareInstance(fixture)
       path = data._2()
