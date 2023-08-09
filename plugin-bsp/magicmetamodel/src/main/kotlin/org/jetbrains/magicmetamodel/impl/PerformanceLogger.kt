@@ -40,13 +40,13 @@ public object PerformanceLogger {
     if (isBenchmark()) {
       System.gc()
       val usedMemory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024
-      logMetric(key, usedMemory)
+      logMetric("$key.mb", usedMemory)
     }
   }
 
   private fun logMetric(key: String, usedMemory: Long) {
     if(metricsFile() != null) {
-      metrics["$key.mb"] = usedMemory
+      metrics[key] = usedMemory
     }
   }
 
