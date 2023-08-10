@@ -10,35 +10,27 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
-import java.net.URI
-import java.nio.file.Path
-import kotlin.io.path.toPath
 
 internal class ProjectDetailsToModuleDetailsTransformer(
   private val projectDetails: ProjectDetails,
-  private val projectBasePath: Path,
 ) {
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
   private val librariesIndex = projectDetails.libraries?.associateBy { it.id }
 
   fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
     val target = calculateTarget(projectDetails, targetId)
-    return if (target.isRoot(projectBasePath)) {
-      toRootModuleDetails(projectDetails, target)
-    } else {
-      val allDependencies = allDependencies(target, librariesIndex)
-      ModuleDetails(
-        target = target,
-        libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.map { it.uri },
-        moduleDependencies = targetsIndex.keys.intersect(allDependencies).map { it.uri },
-        sources = calculateSources(projectDetails, targetId),
-        resources = calculateResources(projectDetails, targetId),
-        dependenciesSources = calculateDependenciesSources(projectDetails, targetId),
-        javacOptions = calculateJavacOptions(projectDetails, targetId),
-        pythonOptions = calculatePythonOptions(projectDetails, targetId),
-        outputPathUris = emptyList(),
-      )
-    }
+    val allDependencies = allDependencies(target, librariesIndex)
+    return ModuleDetails(
+      target = target,
+      libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.map { it.uri },
+      moduleDependencies = targetsIndex.keys.intersect(allDependencies).map { it.uri },
+      sources = calculateSources(projectDetails, targetId),
+      resources = calculateResources(projectDetails, targetId),
+      dependenciesSources = calculateDependenciesSources(projectDetails, targetId),
+      javacOptions = calculateJavacOptions(projectDetails, targetId),
+      pythonOptions = calculatePythonOptions(projectDetails, targetId),
+      outputPathUris = emptyList(),
+    )
   }
 
   private fun allDependencies(
@@ -61,22 +53,6 @@ internal class ProjectDetailsToModuleDetailsTransformer(
     librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?,
   ) = librariesIndex?.get(currentLib)?.dependencies.orEmpty()
 
-  private fun toRootModuleDetails(
-    projectDetails: ProjectDetails,
-    target: BuildTarget,
-  ): ModuleDetails =
-    ModuleDetails(
-      target = target,
-      sources = emptyList(),
-      resources = emptyList(),
-      dependenciesSources = calculateDependenciesSources(projectDetails, target.id),
-      javacOptions = calculateJavacOptions(projectDetails, target.id),
-      pythonOptions = calculatePythonOptions(projectDetails, target.id),
-      outputPathUris = calculateAllOutputPaths(projectDetails),
-      libraryDependencies = emptyList(),
-      moduleDependencies = emptyList(),
-    )
-
   private fun calculateTarget(projectDetails: ProjectDetails, targetId: BuildTargetIdentifier): BuildTarget =
     projectDetails.targets.first { it.id == targetId }
 
@@ -97,12 +73,6 @@ internal class ProjectDetailsToModuleDetailsTransformer(
     targetId: BuildTargetIdentifier,
   ): JavacOptionsItem? =
     projectDetails.javacOptions.firstOrNull { it.target == targetId }
-
-  private fun calculateAllOutputPaths(projectDetails: ProjectDetails): List<String> =
-    projectDetails.outputPathUris
-
-  private fun BuildTarget.isRoot(projectBasePath: Path): Boolean =
-    this.baseDirectory?.let { URI.create(it).toPath() } == projectBasePath
 
   private fun calculatePythonOptions(
     projectDetails: ProjectDetails,
