@@ -20,6 +20,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
   private val syncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
   public suspend fun execute(shouldBuildProject: Boolean, shouldReloadConnection: Boolean) {
+    saveAllFiles()
     if (shouldReloadConnection) {
       reloadConnection()
     }

@@ -14,6 +14,7 @@ public class RunTargetTask(project: Project) : BspServerSingleTargetTask<RunResu
     capabilities: BuildServerCapabilities,
     targetId: BuildTargetIdentifier,
   ): RunResult {
+    saveAllFiles()
     val runParams = createRunParams(targetId)
 
     return server.buildTargetRun(runParams).get()
