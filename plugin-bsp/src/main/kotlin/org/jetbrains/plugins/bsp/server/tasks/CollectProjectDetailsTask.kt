@@ -88,6 +88,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private lateinit var coroutineJob: Job
 
   public suspend fun execute(name: String, cancelable: Boolean) {
+    saveAllFiles()
     withContext(Dispatchers.Default) {
       coroutineJob = launch {
         try {
