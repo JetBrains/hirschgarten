@@ -261,7 +261,7 @@ formatting:
     active: true
     indentSize: 2
   TrailingCommaOnCallSite:
-    active: true
+    active: false
   TrailingCommaOnDeclarationSite:
     active: true
   TryCatchFinallySpacing:
