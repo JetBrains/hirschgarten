@@ -6,6 +6,7 @@ import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.metricsFile
 import java.nio.file.Path
 import java.util.Locale
 import kotlin.io.path.writeText
+import kotlin.time.TimedValue
 import kotlin.time.measureTimedValue
 
 public object PerformanceLogger {
@@ -13,27 +14,26 @@ public object PerformanceLogger {
 
   private val metrics: java.util.HashMap<String, Long> = HashMap()
 
-  public fun <T> logPerformance(computationId: String, block: () -> T): T {
-    log.info("Task '$computationId' started")
-    return measureTimedValue(block).let {
-      log.info("Task '$computationId' finished in ${it.duration.inWholeMilliseconds}ms")
-      val clearKey = computationId.replace("""[\s-_]+""".toRegex(), ".").lowercase(Locale.getDefault())
-      logMemory(clearKey)
-      logMilliseconds(clearKey, it.duration.inWholeMilliseconds)
-      it.value
-    }
+  private fun <T> logPerformanceBase(computationId: String, timedValue: TimedValue<T>): T {
+    log.info("Task '$computationId' finished in ${timedValue.duration.inWholeMilliseconds}ms")
+    val clearKey = computationId.replace("""[\s-_]+""".toRegex(), ".").lowercase(Locale.getDefault())
+    logMemory(clearKey)
+    logMilliseconds(clearKey, timedValue.duration.inWholeMilliseconds)
+    return timedValue.value
   }
 
-  private fun logMilliseconds(clearKey: String, value: Long) {
-    logMetric("$clearKey.ms", value)
+  public fun <T> logPerformance(computationId: String, block: () -> T): T {
+    log.info("Task '$computationId' started")
+    return logPerformanceBase(computationId, measureTimedValue(block))
   }
 
   public suspend fun <T> logPerformanceSuspend(computationId: String, block: suspend () -> T): T {
     log.info("Task '$computationId' started")
-    return measureTimedValue { block() }.let {
-      log.info("Task '$computationId' finished in ${it.duration.inWholeMilliseconds}ms")
-      it.value
-    }
+    return logPerformanceBase(computationId, measureTimedValue { block() })
+  }
+
+  private fun logMilliseconds(clearKey: String, value: Long) {
+    logMetric("$clearKey.ms", value)
   }
 
   private fun logMemory(key: String) {
