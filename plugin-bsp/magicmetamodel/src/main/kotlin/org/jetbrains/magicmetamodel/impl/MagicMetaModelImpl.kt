@@ -192,7 +192,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   private fun Module.doesIncludeRootDir() =
     when (this) {
       is JavaModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath } ||
-        baseDirContentRoot?.path == magicMetaModelProjectConfig.projectBasePath
+        resourceRoots.any { it.resourcePath == magicMetaModelProjectConfig.projectBasePath }
       is PythonModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath }
       else -> false
     }
