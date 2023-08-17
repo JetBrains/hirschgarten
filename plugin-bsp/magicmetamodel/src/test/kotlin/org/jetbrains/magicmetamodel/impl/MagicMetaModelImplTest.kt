@@ -41,7 +41,14 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       id = id.uri,
       displayName = displayName,
       dependencies = dependencies.map { it.uri },
-      capabilities = with(capabilities) { ModuleCapabilities(canRun, canTest, canCompile, canDebug) },
+      capabilities = with(capabilities) {
+        ModuleCapabilities(
+          canRun == true,
+          canTest == true,
+          canCompile == true,
+          canDebug == true
+        )
+      },
       languageIds = languageIds,
     )
   }

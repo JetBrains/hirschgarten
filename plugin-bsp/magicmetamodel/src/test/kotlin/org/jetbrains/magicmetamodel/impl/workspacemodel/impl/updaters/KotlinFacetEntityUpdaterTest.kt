@@ -39,7 +39,10 @@ class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
         apiVersion = "1.8",
         kotlincOptions = null,
         associates = associates.map { BuildTargetIdentifier(it) },
-        jvmBuildTarget = JvmBuildTarget(javaHome, javaVersion),
+        jvmBuildTarget = JvmBuildTarget().also {
+          it.javaHome = javaHome
+          it.javaVersion = javaVersion
+        }
       )
 
       val module = GenericModuleInfo(

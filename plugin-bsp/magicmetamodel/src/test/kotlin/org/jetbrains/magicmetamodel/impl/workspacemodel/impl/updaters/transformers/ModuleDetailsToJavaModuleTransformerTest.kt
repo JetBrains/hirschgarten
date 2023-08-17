@@ -243,7 +243,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
         BuildTargetIdentifier("//target4"),
         BuildTargetIdentifier("//target5"),
       ),
-      jvmBuildTarget = JvmBuildTarget(javaHome, javaVersion),
+      jvmBuildTarget = JvmBuildTarget().also {
+        it.javaHome = javaHome
+        it.javaVersion = javaVersion
+      }
     )
 
     val buildTargetId = BuildTargetIdentifier("module1")
@@ -642,7 +645,10 @@ class ExtractJvmBuildTargetTest {
     val extractedJvmBuildTarget = extractJvmBuildTarget(buildTarget)
 
     // then
-    extractedJvmBuildTarget shouldBe JvmBuildTarget(javaHome, javaVersion)
+    extractedJvmBuildTarget shouldBe JvmBuildTarget().also {
+      it.javaVersion = javaVersion
+      it.javaHome = javaHome
+    }
   }
 
   @Test
@@ -663,7 +669,12 @@ class ExtractJvmBuildTargetTest {
       listOf("tag1", "tag2"),
       listOf("language1"),
       listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
-      BuildTargetCapabilities(true, false, true, true),
+      BuildTargetCapabilities().also {
+        it.canCompile = true
+        it.canTest = false
+        it.canRun = true
+        it.canDebug = true
+      }
     )
     buildTarget.displayName = "target name"
     buildTarget.baseDirectory = "/base/dir"
