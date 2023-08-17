@@ -91,7 +91,6 @@ public class ChunkingBuildServer<S : BspServer>(
       unwrapRes = { listOf(it) },
       wrapRes = { results ->
         CleanCacheResult(
-          results.joinToString("\n") { it.message },
           results.all { it.cleaned },
         )
       },

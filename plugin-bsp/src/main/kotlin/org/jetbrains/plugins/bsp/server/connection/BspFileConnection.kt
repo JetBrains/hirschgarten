@@ -230,8 +230,6 @@ public class BspFileConnection(
     server = startServerAndAddDisconnectActions(process, client)
     capabilities = server?.initializeAndObtainCapabilities()
 
-    client.onConnectWithServer(server)
-
     bspSyncConsole.addMessage(connectSubtaskId, "Server initialized! Server is ready to use.")
     bspSyncConsole.finishSubtask(connectSubtaskId, "Connecting to the server done!")
   }

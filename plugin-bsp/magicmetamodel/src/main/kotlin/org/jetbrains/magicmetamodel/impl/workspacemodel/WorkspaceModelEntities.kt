@@ -130,7 +130,7 @@ public data class ModuleCapabilities(
 }
 
 internal fun BuildTargetCapabilities.toModuleCapabilities() =
-  ModuleCapabilities(canRun, canTest, canCompile, canDebug)
+  ModuleCapabilities(canRun == true, canTest == true, canCompile == true, canDebug == true)
 
 public interface Module {
   public fun toState(): ModuleState

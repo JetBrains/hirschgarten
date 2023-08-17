@@ -426,7 +426,10 @@ class ExtractPythonBuildTargetTest {
     val extractedPythonBuildTarget = extractPythonBuildTarget(buildTarget)
 
     // then
-    extractedPythonBuildTarget shouldBe PythonBuildTarget(version, interpreter)
+    extractedPythonBuildTarget shouldBe PythonBuildTarget().also {
+      it.version = version
+      it.interpreter = interpreter
+    }
   }
 
   @Test
@@ -447,7 +450,12 @@ class ExtractPythonBuildTargetTest {
       listOf("tag1", "tag2"),
       listOf("language1"),
       listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
-      BuildTargetCapabilities(true, false, true, true),
+      BuildTargetCapabilities().also {
+        it.canCompile = true
+        it.canTest = false
+        it.canRun = true
+        it.canDebug = true
+      }
     )
     buildTarget.displayName = "target name"
     buildTarget.baseDirectory = "/base/dir"
