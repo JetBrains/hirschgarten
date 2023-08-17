@@ -36,9 +36,14 @@ object BazelTestClient {
       .lines()
       .collect(Collectors.joining())
 
+    val bazelOutputBasePath = processOutput(workspacePath, Seq("bazel", "info", "output_base"))
+      .lines()
+      .collect(Collectors.joining())
+
     (s: String) =>
       s.replace("$WORKSPACE", workspacePath.toString)
         .replace("$BAZEL_CACHE", bazelCachePath)
+        .replace("$BAZEL_OUTPUT_BASE_PATH", bazelOutputBasePath)
         .replace("$OS", osFamily)
   }
 }
