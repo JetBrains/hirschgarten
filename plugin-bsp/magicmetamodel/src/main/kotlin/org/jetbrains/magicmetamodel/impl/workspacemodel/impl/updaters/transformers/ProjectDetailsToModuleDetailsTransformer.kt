@@ -10,8 +10,12 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+import java.net.URI
+import java.nio.file.Path
+import kotlin.io.path.toPath
 
 internal class ProjectDetailsToModuleDetailsTransformer(
+  private val projectBasePath: Path,
   private val projectDetails: ProjectDetails,
 ) {
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
@@ -20,16 +24,19 @@ internal class ProjectDetailsToModuleDetailsTransformer(
   fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
     val target = calculateTarget(projectDetails, targetId)
     val allDependencies = allDependencies(target, librariesIndex)
+    val sources = calculateSources(projectDetails, targetId)
+    val resources = calculateResources(projectDetails, targetId)
+    val isRoot = target.isRoot(sources, resources)
     return ModuleDetails(
       target = target,
       libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.map { it.uri },
       moduleDependencies = targetsIndex.keys.intersect(allDependencies).map { it.uri },
-      sources = calculateSources(projectDetails, targetId),
-      resources = calculateResources(projectDetails, targetId),
+      sources = if (isRoot) emptyList() else sources,
+      resources = if (isRoot) emptyList() else resources,
       dependenciesSources = calculateDependenciesSources(projectDetails, targetId),
       javacOptions = calculateJavacOptions(projectDetails, targetId),
       pythonOptions = calculatePythonOptions(projectDetails, targetId),
-      outputPathUris = emptyList(),
+      outputPathUris = if (isRoot) calculateAllOutputPaths(projectDetails) else emptyList(),
     )
   }
 
@@ -46,6 +53,21 @@ internal class ProjectDetailsToModuleDetailsTransformer(
       librariesToVisit = librariesToVisit + (findLibrary(currentLib, librariesIndex) - visited)
     }
     return visited
+  }
+
+  private fun calculateAllOutputPaths(projectDetails: ProjectDetails): List<String> =
+    projectDetails.outputPathUris
+
+  private fun BuildTarget.isRoot(
+    targetSources: List<SourcesItem>,
+    targetResources: List<ResourcesItem>,
+  ): Boolean =
+    targetSources.all { it.sources.isEmpty() } &&
+      (baseDirectory?.let { URI.create(it).toPath() } == projectBasePath ||
+        projectBasePath.existsInResources(targetResources))
+
+  private fun Path.existsInResources(resources: List<ResourcesItem>) = resources.any { resourcesItem ->
+    resourcesItem.resources.any { URI.create(it).toPath() == this }
   }
 
   private fun findLibrary(

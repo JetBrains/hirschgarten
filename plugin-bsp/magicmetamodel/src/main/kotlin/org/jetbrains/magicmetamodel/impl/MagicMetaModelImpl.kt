@@ -25,6 +25,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelToModulesMapTransformer
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.isRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
 import java.net.URI
 import kotlin.io.path.name
@@ -191,8 +192,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   private fun Module.doesIncludeRootDir() =
     when (this) {
-      is JavaModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath } ||
-        resourceRoots.any { it.resourcePath == magicMetaModelProjectConfig.projectBasePath }
+      is JavaModule -> isRoot(magicMetaModelProjectConfig.projectBasePath)
       is PythonModule -> sourceRoots.any { it.sourcePath == magicMetaModelProjectConfig.projectBasePath }
       else -> false
     }

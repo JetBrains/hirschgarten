@@ -8,9 +8,11 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
+import java.nio.file.Path
 
 internal class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+  private val projectBasePath: Path,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
@@ -24,7 +26,7 @@ internal class JavaModuleWithSourcesUpdater(
       moduleEntity = moduleEntity,
     )
 
-    if (entityToAdd.isRoot()) {
+    if (entityToAdd.isRoot(projectBasePath)) {
       val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
       contentRootEntityUpdater.addEntity(entityToAdd.baseDirContentRoot!!, moduleEntity)
     } else {
@@ -74,15 +76,15 @@ internal class JavaModuleWithSourcesUpdater(
     }
   }
 
-  private fun JavaModule.isRoot(): Boolean = // TODO - that is a temporary predicate
-    sourceRoots.isEmpty() && resourceRoots.isEmpty() && baseDirContentRoot?.excludedPaths?.isNotEmpty() == true
-
   private companion object {
     val defaultDependencies = listOf(
       ModuleDependencyItem.ModuleSourceDependency,
     )
   }
 }
+
+internal fun JavaModule.isRoot(projectBasePath: Path): Boolean = // TODO - that is a temporary predicate
+  sourceRoots.isEmpty() && resourceRoots.isEmpty() && baseDirContentRoot?.path == projectBasePath
 
 internal class JavaModuleWithoutSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -96,8 +98,10 @@ internal class JavaModuleWithoutSourcesUpdater(
 
 internal class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+  projectBasePath: Path,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
-  private val javaModuleWithSourcesUpdater = JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig)
+  private val javaModuleWithSourcesUpdater =
+    JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
   private val javaModuleWithoutSourcesUpdater = JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity =

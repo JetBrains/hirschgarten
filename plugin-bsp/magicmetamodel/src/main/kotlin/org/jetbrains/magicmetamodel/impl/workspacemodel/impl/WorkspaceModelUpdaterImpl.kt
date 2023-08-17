@@ -32,7 +32,7 @@ internal class WorkspaceModelUpdaterImpl(
     virtualFileUrlManager = virtualFileUrlManager,
     projectBasePath = projectBasePath,
   )
-  private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig)
+  private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
   private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig)
 
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
