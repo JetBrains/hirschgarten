@@ -826,6 +826,9 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     val workspaceModelEntityUpdaterConfig =
       WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
 
-    test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))
+    if (updaterConstructor.parameters.size == 1)
+      test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))
+    else if (updaterConstructor.parameters.size == 2)
+      test(updaterConstructor.call(workspaceModelEntityUpdaterConfig, projectBasePath))
   }
 }
