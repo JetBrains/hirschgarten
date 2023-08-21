@@ -2,7 +2,9 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.ResourcesItem
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
+import java.net.URI
 import java.nio.file.Path
+import kotlin.io.path.toPath
 
 internal class ResourcesItemToJavaResourceRootTransformer(private val projectBasePath: Path) :
   WorkspaceModelEntityPartitionTransformer<ResourcesItem, ResourceRoot> {
@@ -14,7 +16,7 @@ internal class ResourcesItemToJavaResourceRootTransformer(private val projectBas
 
   private fun toJavaResourceRoot(resourcePath: String) =
     ResourceRoot(
-      resourcePath = RawUriToDirectoryPathTransformer.transform(resourcePath),
+      resourcePath = URI.create(resourcePath).toPath(),
     )
 }
 

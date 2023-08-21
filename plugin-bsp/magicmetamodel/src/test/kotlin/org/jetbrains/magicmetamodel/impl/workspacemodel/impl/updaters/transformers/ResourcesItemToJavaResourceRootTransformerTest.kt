@@ -45,7 +45,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     // then
     val expectedJavaResource = ResourceRoot(
-      resourcePath = resourceFilePath.parent,
+      resourcePath = resourceFilePath,
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
@@ -75,7 +75,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   }
 
   @Test
-  fun `should return one resource root for resources item with multiple paths with the same directories`() {
+  fun `should return multiple resource roots for resources item with multiple paths with the same directories`() {
     // given
     val resourceFilePath1 = Files.createTempFile(projectBasePath, "resource", "File1.txt")
     resourceFilePath1.toFile().deleteOnExit()
@@ -96,11 +96,21 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItem)
 
     // then
-    val expectedJavaResource = ResourceRoot(
-      resourcePath = resourceFilePath1.parent,
+    val expectedJavaResource1 = ResourceRoot(
+      resourcePath = resourceFilePath1,
     )
 
-    javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
+    val expectedJavaResource2 = ResourceRoot(
+      resourcePath = resourceFilePath2,
+    )
+
+    val expectedJavaResource3 = ResourceRoot(
+      resourcePath = resourceFilePath3,
+    )
+
+    val expectedJavaResources = listOf(expectedJavaResource1, expectedJavaResource2, expectedJavaResource3)
+
+    javaResources shouldContainExactlyInAnyOrder expectedJavaResources
   }
 
   @Test
@@ -123,7 +133,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     // then
     val expectedJavaResource1 = ResourceRoot(
-      resourcePath = resourceFilePath.parent,
+      resourcePath = resourceFilePath,
     )
     val expectedJavaResource2 = ResourceRoot(
       resourcePath = resourceDirPath,
@@ -163,15 +173,19 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     // then
     val expectedJavaResource1 = ResourceRoot(
-      resourcePath = resourceFilePath1.parent,
+      resourcePath = resourceFilePath1,
     )
     val expectedJavaResource2 = ResourceRoot(
+      resourcePath = resourceFilePath2,
+    )
+    val expectedJavaResource3 = ResourceRoot(
       resourcePath = resourceDirPath3,
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(
       expectedJavaResource1,
       expectedJavaResource2,
+      expectedJavaResource3
     )
   }
 
@@ -239,7 +253,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
 
     // then
     val expectedJavaResource1 = ResourceRoot(
-      resourcePath = resourceFilePath1.parent,
+      resourcePath = resourceFilePath1,
     )
     val expectedJavaResource2 = ResourceRoot(
       resourcePath = resourceDirPath3,
