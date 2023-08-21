@@ -195,7 +195,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val expectedResourceRoot1 = ResourceRoot(
-      resourcePath = resourceFilePath.parent,
+      resourcePath = resourceFilePath,
     )
 
     val expectedLibrary1 = Library(
@@ -331,7 +331,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
   }
 
   @Test
-  fun `should return multiple java module for multiple module details`() {
+  fun `should return multiple java modules for multiple module details`() {
     // given
 
     val module1Root = createTempDirectory(projectBasePath, "module1").toAbsolutePath()
@@ -530,7 +530,10 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val expectedResourceRoot11 = ResourceRoot(
-      resourcePath = resourceFilePath11.parent,
+      resourcePath = resourceFilePath11,
+    )
+    val expectedResourceRoot12 = ResourceRoot(
+      resourcePath = resourceFilePath12,
     )
     val expectedLibrary1 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
@@ -547,7 +550,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       genericModuleInfo = expectedModule1,
       baseDirContentRoot = expectedBaseDirContentRoot1,
       sourceRoots = listOf(expectedJavaSourceRoot11, expectedJavaSourceRoot12, expectedJavaSourceRoot13),
-      resourceRoots = listOf(expectedResourceRoot11),
+      resourceRoots = listOf(expectedResourceRoot11, expectedResourceRoot12),
       compilerOutput = Path("/compiler/output1.jar"),
       jvmJdkName = null,
       kotlinAddendum = null,
