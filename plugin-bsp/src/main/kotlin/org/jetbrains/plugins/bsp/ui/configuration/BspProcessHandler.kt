@@ -1,15 +1,19 @@
 package org.jetbrains.plugins.bsp.ui.configuration
 
+import com.intellij.execution.process.AnsiEscapeDecoder
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessIOExecutorService
 import com.intellij.execution.process.ProcessOutputType
+import com.intellij.openapi.util.Key
 import java.io.OutputStream
 
 public interface BspConsolePrinter {
   public fun printOutput(text: String)
 }
 
-public class BspProcessHandler : ProcessHandler(), BspConsolePrinter {
+public class BspProcessHandler : ProcessHandler(), BspConsolePrinter, AnsiEscapeDecoder.ColoredTextAcceptor {
+  private val ansiDecoder = AnsiEscapeDecoder()
+
   override fun destroyProcessImpl() {
     super.notifyProcessTerminated(0)
   }
@@ -24,7 +28,7 @@ public class BspProcessHandler : ProcessHandler(), BspConsolePrinter {
 
   override fun printOutput(text: String) {
     val output = prepareTextToPrint(text)
-    notifyTextAvailable(output, ProcessOutputType.STDOUT)
+    ansiDecoder.escapeText(output, ProcessOutputType.STDOUT, this)
   }
 
   private fun prepareTextToPrint(text: String): String =
@@ -36,5 +40,9 @@ public class BspProcessHandler : ProcessHandler(), BspConsolePrinter {
 
   public fun execute(task: Runnable) {
     ProcessIOExecutorService.INSTANCE.submit(task)
+  }
+
+  override fun coloredTextAvailable(text: String, attributes: Key<*>) {
+    super.notifyTextAvailable(text, attributes)
   }
 }
