@@ -12,7 +12,7 @@
         <!--        />-->
         <fileType
                 name="Starlark"
-                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkLanguageFileType"
+                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkFileType"
                 fieldName="INSTANCE"
                 language="Starlark"
                 fileNames="BUILD;WORKSPACE"
@@ -21,7 +21,6 @@
         <lang.parserDefinition
                 language="Starlark"
                 implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkParserDefinition"/>
-
         <lang.syntaxHighlighterFactory
                 language="Starlark"
                 implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkSyntaxHighlighterFactory"/>
@@ -33,26 +32,6 @@
         <additionalTextAttributes
                 scheme="Darcula"
                 file="colorSchemes/StarlarkDarcula.xml"/>
-
-        <annotator
-                language="Starlark"
-                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.annotations.StarlarkFunctionHighlightingAnnotator"/>
-
-        <!--Starlark Annotations -->
-        <postStartupActivity implementation="org.jetbrains.bsp.bazel.languages.starlark.build.info.BazelInfoBuildLanguageRunner"/>
-        <projectService serviceImplementation="org.jetbrains.bsp.bazel.languages.starlark.build.info.ProjectBuildLanguageInfoService"/>
-
-        <annotator
-                language="Starlark"
-                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.annotations.rules.InvalidRuleArgumentAnnotator"/>
-
-        <annotator
-                language="Starlark"
-                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.annotations.rules.DuplicatedNamedRuleArgumentAnnotator"/>
-
-        <annotator
-                language="Starlark"
-                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.annotations.rules.MissingRequiredNamedRuleArgumentsAnnotator"/>
 
     </extensions>
 

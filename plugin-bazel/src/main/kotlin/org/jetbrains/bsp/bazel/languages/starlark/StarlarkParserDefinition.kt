@@ -8,10 +8,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
-import org.jetbrains.bsp.bazel.languages.starlark.parser.StarlarkParser
 import org.jetbrains.bsp.bazel.languages.starlark.psi.StarlarkFile
 
 class StarlarkParserDefinition : ParserDefinition {
@@ -20,25 +18,25 @@ class StarlarkParserDefinition : ParserDefinition {
 
 
     override fun createLexer(project: Project?): Lexer =
-        StarlarkLexerAdapter
+        TODO()
 
     override fun createParser(project: Project?): PsiParser =
-        StarlarkParser()
+        TODO()
 
     override fun getFileNodeType(): IFileElementType =
         file
 
     override fun getWhitespaceTokens(): TokenSet =
-        TokenSet.create(TokenType.WHITE_SPACE)
+        TODO()
 
     override fun getCommentTokens(): TokenSet =
-        TokenSet.create(StarlarkTypes.COMMENT)
+        TODO()
 
     override fun getStringLiteralElements(): TokenSet =
-        TokenSet.create(StarlarkTypes.STRING)
+        TODO()
 
     override fun createElement(node: ASTNode?): PsiElement =
-        StarlarkTypes.Factory.createElement(node)
+        TODO()
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile =
         StarlarkFile(viewProvider)

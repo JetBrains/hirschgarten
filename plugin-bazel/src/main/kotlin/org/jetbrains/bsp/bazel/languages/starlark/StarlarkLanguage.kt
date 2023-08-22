@@ -6,7 +6,7 @@ import javax.swing.Icon
 
 object StarlarkLanguage : Language("Starlark")
 
-object StarlarkLanguageFileType : LanguageFileType(StarlarkLanguage) {
+object StarlarkFileType : LanguageFileType(StarlarkLanguage) {
 
     override fun getName(): String =
         "Starlark"
