@@ -7,16 +7,15 @@ import javax.swing.Icon
 object StarlarkLanguage : Language("Starlark")
 
 object StarlarkFileType : LanguageFileType(StarlarkLanguage) {
+  override fun getName(): String =
+    "Starlark"
 
-    override fun getName(): String =
-        "Starlark"
+  override fun getDescription(): String =
+    "Starlark language"
 
-    override fun getDescription(): String =
-        "Starlark language"
+  override fun getDefaultExtension(): String =
+    "bzl;bazel"
 
-    override fun getDefaultExtension(): String =
-        "bzl;bazel"
-
-    override fun getIcon(): Icon =
-        StarlarkLanguageIcons.bazel
+  override fun getIcon(): Icon =
+    StarlarkLanguageIcons.bazel
 }
