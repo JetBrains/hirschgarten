@@ -10,16 +10,14 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.tree.IElementType
 
 object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
+  private val keys: Map<IElementType, TextAttributesKey> = TODO()
 
-    private val keys: Map<IElementType, TextAttributesKey> = TODO()
+  override fun getHighlightingLexer(): Lexer = TODO()
 
-    override fun getHighlightingLexer(): Lexer = TODO()
-
-    override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
+  override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
 }
 
 class StarlarkSyntaxHighlighterFactory : SyntaxHighlighterFactory() {
-
-    override fun getSyntaxHighlighter(project: Project?, virtualFile: VirtualFile?): SyntaxHighlighter =
-        StarlarkSyntaxHighlighter
+  override fun getSyntaxHighlighter(project: Project?, virtualFile: VirtualFile?): SyntaxHighlighter =
+    StarlarkSyntaxHighlighter
 }

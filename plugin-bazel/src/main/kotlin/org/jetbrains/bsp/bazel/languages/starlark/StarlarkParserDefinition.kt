@@ -13,31 +13,29 @@ import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bsp.bazel.languages.starlark.psi.StarlarkFile
 
 class StarlarkParserDefinition : ParserDefinition {
+  private val file = IFileElementType(StarlarkLanguage)
 
-    private val file = IFileElementType(StarlarkLanguage)
+  override fun createLexer(project: Project?): Lexer =
+    TODO()
 
+  override fun createParser(project: Project?): PsiParser =
+    TODO()
 
-    override fun createLexer(project: Project?): Lexer =
-        TODO()
+  override fun getFileNodeType(): IFileElementType =
+    file
 
-    override fun createParser(project: Project?): PsiParser =
-        TODO()
+  override fun getWhitespaceTokens(): TokenSet =
+    TODO()
 
-    override fun getFileNodeType(): IFileElementType =
-        file
+  override fun getCommentTokens(): TokenSet =
+    TODO()
 
-    override fun getWhitespaceTokens(): TokenSet =
-        TODO()
+  override fun getStringLiteralElements(): TokenSet =
+    TODO()
 
-    override fun getCommentTokens(): TokenSet =
-        TODO()
+  override fun createElement(node: ASTNode?): PsiElement =
+    TODO()
 
-    override fun getStringLiteralElements(): TokenSet =
-        TODO()
-
-    override fun createElement(node: ASTNode?): PsiElement =
-        TODO()
-
-    override fun createFile(viewProvider: FileViewProvider): PsiFile =
-        StarlarkFile(viewProvider)
+  override fun createFile(viewProvider: FileViewProvider): PsiFile =
+    StarlarkFile(viewProvider)
 }

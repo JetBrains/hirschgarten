@@ -8,17 +8,17 @@ plugins {
     id("java")
     // Kotlin support
     id("org.jetbrains.kotlin.jvm") version "1.9.0"
-    // Gradle IntelliJ Plugin
     id("org.jetbrains.intellij") version "1.15.0"
-    // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "2.1.2"
-    // Gradle Protobuf Plugin
     id("com.google.protobuf") version "0.9.4"
+    id("io.gitlab.arturbosch.detekt") version "1.23.1"
 }
 
 
 dependencies {
     implementation("com.google.protobuf:protobuf-java:3.23.4")
+    implementation("io.gitlab.arturbosch.detekt:1.23.1")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.1")
 }
 
 
@@ -64,6 +64,14 @@ changelog {
 //    saveReport.set(true)
 //    showReport.set(System.getenv("QODANA_SHOW_REPORT")?.toBoolean() ?: false)
 //}
+
+detekt {
+    autoCorrect = true
+    ignoreFailures = false
+    buildUponDefaultConfig = false
+    config.from(files("$rootDir/detekt.yml"))
+    parallel = true
+}
 
 tasks {
 

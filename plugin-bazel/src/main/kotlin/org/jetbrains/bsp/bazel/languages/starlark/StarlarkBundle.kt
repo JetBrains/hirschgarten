@@ -9,8 +9,8 @@ import org.jetbrains.annotations.PropertyKey
 const val BUNDLE = "messages.StarlarkBundle"
 
 object StarlarkBundle : DynamicBundle(BUNDLE) {
-    @Nls
-    @JvmStatic
-    fun message(@NonNls @PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any): String =
-        getMessage(key, *params)
+  @Nls
+  @JvmStatic
+  fun message(@NonNls @PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any): String =
+    getMessage(key, *params)
 }

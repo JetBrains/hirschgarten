@@ -1,8 +1,7 @@
 package org.jetbrains.bsp.bazel.extension
 
-
 // TODO we will do it later
-//class BazelBspConnectionDetailsGenerator : BspConnectionDetailsGeneratorExtension      {
+// class BazelBspConnectionDetailsGenerator : BspConnectionDetailsGeneratorExtension      {
 //    override fun name(): String = "bazel"
 //
 //    override fun canGenerateBspConnectionDetailsFile(projectPath: VirtualFile): Boolean =
@@ -13,4 +12,4 @@ package org.jetbrains.bsp.bazel.extension
 //        return getChild(projectPath, listOf(".bsp", "bazelbsp.json"))!!
 //    }
 //
-//}
+// }
