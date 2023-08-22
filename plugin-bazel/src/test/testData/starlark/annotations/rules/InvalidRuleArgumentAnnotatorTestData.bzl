@@ -1,1 +1,0 @@
-alias(<error descr="No argument named wrongArgName found for built-in rule alias">wrongArgName</error> = "")

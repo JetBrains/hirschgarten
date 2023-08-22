@@ -1,4 +1,0 @@
-FILE
-  StarlarkSimpleStatementImpl(SIMPLE_STATEMENT)
-    StarlarkReturnStmtImpl(RETURN_STMT)
-      PsiElement(return)('return')

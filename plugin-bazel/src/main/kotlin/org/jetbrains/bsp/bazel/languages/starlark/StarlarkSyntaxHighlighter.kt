@@ -11,53 +11,9 @@ import com.intellij.psi.tree.IElementType
 
 object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
 
-    private val keys: Map<IElementType, TextAttributesKey> = mapOf(
-        StarlarkTypes.DEF to StarlarkHighlightingColors.KEYWORD,
-        StarlarkTypes.LAMBDA to StarlarkHighlightingColors.KEYWORD,
+    private val keys: Map<IElementType, TextAttributesKey> = TODO()
 
-        StarlarkTypes.IF to StarlarkHighlightingColors.KEYWORD,
-        StarlarkTypes.ELIF to StarlarkHighlightingColors.KEYWORD,
-        StarlarkTypes.ELSE to StarlarkHighlightingColors.KEYWORD,
-
-        StarlarkTypes.FOR to StarlarkHighlightingColors.KEYWORD,
-        StarlarkTypes.IN to StarlarkHighlightingColors.KEYWORD,
-
-        StarlarkTypes.RETURN to StarlarkHighlightingColors.KEYWORD,
-        StarlarkTypes.BREAK to StarlarkHighlightingColors.KEYWORD,
-        StarlarkTypes.CONTINUE to StarlarkHighlightingColors.KEYWORD,
-        StarlarkTypes.PASS to StarlarkHighlightingColors.KEYWORD,
-
-        StarlarkTypes.LOAD to StarlarkHighlightingColors.KEYWORD,
-
-        // boolean operators
-        StarlarkTypes.OR to StarlarkHighlightingColors.KEYWORD,
-        StarlarkTypes.AND to StarlarkHighlightingColors.KEYWORD,
-        StarlarkTypes.NOT to StarlarkHighlightingColors.KEYWORD,
-
-        // code organization
-        StarlarkTypes.SEMICOLON to StarlarkHighlightingColors.SEMICOLON,
-        StarlarkTypes.COMMA to StarlarkHighlightingColors.COMMA,
-        StarlarkTypes.DOT to StarlarkHighlightingColors.DOT,
-
-        StarlarkTypes.LEFT_PAREN to StarlarkHighlightingColors.PARENTHESES,
-        StarlarkTypes.RIGHT_PAREN to StarlarkHighlightingColors.PARENTHESES,
-
-        StarlarkTypes.LEFT_CURLY to StarlarkHighlightingColors.BRACKETS,
-        StarlarkTypes.RIGHT_CURLY to StarlarkHighlightingColors.BRACKETS,
-
-        // random
-        StarlarkTypes.INT to StarlarkHighlightingColors.NUMBER,
-        StarlarkTypes.FLOAT to StarlarkHighlightingColors.NUMBER,
-
-        StarlarkTypes.IDENTIFIER to StarlarkHighlightingColors.IDENTIFIER,
-
-        StarlarkTypes.STRING to StarlarkHighlightingColors.STRING,
-        StarlarkTypes.BYTES to StarlarkHighlightingColors.STRING,
-
-        StarlarkTypes.COMMENT to StarlarkHighlightingColors.LINE_COMMENT,
-    )
-
-    override fun getHighlightingLexer(): Lexer = StarlarkLexerAdapter
+    override fun getHighlightingLexer(): Lexer = TODO()
 
     override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
 }
