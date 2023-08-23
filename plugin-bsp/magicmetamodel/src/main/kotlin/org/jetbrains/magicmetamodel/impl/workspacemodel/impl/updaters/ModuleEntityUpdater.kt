@@ -74,7 +74,7 @@ internal class ModuleEntityUpdater(
         name = libraryDependency.libraryName,
         tableId = libraryTableId,
       ),
-      exported = false,
+      exported = true, // TODO there should be a better way to limit the scope for library dependency
       scope = ModuleDependencyItem.DependencyScope.COMPILE,
     )
   }
