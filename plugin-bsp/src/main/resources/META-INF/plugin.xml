@@ -4,6 +4,7 @@
   <vendor>JetBrains</vendor>
 
   <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.java</depends>
   <depends>org.jetbrains.kotlin</depends>
   <depends
           optional="true"
@@ -39,6 +40,8 @@
     />
 
     <applicationInitializedListener implementation="org.jetbrains.plugins.bsp.utils.StartBenchmarkListener"/>
+
+    <java.programPatcher implementation="org.jetbrains.plugins.bsp.runner.BspJvmEnvironmentProgramPatcher"/>
 
     <projectOpenProcessor
       implementation="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor"/>
@@ -88,6 +91,11 @@
             icon="/icons/restart.svg"/>
     <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ConnectAction"
             icon="/icons/connect.svg"/>
+    <action id="Bsp.DebugWithLocalJvmRunnerAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DebugWithLocalJvmRunnerAction"
+            icon="/icons/restart.svg"/>
+    <action id="Bsp.RunWithLocalJvmRunnerAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunWithLocalJvmRunnerAction"
+            icon="/icons/connect.svg"/>
+
 
     <group id="Bsp.ActionsToolbar">
       <reference id="Bsp.ConnectAction"/>
