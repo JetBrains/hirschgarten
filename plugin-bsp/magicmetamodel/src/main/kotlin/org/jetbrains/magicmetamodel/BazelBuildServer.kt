@@ -8,6 +8,7 @@ public data class LibraryItem(
   val id: BuildTargetIdentifier,
   val dependencies: List<BuildTargetIdentifier>,
   val jars: List<String>,
+  val sourceJars: List<String>,
 )
 
 public data class WorkspaceLibrariesResult(

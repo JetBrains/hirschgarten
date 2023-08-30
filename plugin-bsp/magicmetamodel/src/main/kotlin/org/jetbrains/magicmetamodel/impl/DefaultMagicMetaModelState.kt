@@ -122,13 +122,13 @@ public fun GenericSourceRoot.toState(): SourceRootState = SourceRootState(
 
 public data class LibraryState(
   var displayName: String = "",
-  var sourceJars: List<String> = listOf(),
-  var classeJars: List<String> = listOf(),
+  var sourceJars: List<String> = emptyList(),
+  var classJars: List<String> = emptyList(),
 ) : ConvertableFromState<Library> {
   override fun fromState(): Library = Library(
     displayName = displayName,
     sourceJars = sourceJars,
-    classJars = classeJars,
+    classJars = classJars,
   )
 
   internal fun toPythonLibrary(): PythonLibrary = PythonLibrary(sourceJars)
@@ -137,7 +137,7 @@ public data class LibraryState(
 public fun Library.toState(): LibraryState = LibraryState(
   displayName = displayName,
   sourceJars = sourceJars,
-  classeJars = classJars,
+  classJars = classJars,
 )
 
 public fun PythonLibrary.toState(): LibraryState = LibraryState(

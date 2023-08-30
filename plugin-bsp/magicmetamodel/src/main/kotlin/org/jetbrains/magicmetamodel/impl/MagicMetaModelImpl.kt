@@ -112,6 +112,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     Library(
       displayName = it.id.uri,
       classJars = it.jars,
+      sourceJars = it.sourceJars,
     )
   }
 
