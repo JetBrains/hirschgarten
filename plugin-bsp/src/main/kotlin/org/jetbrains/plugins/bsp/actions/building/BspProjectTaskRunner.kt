@@ -13,13 +13,14 @@ import com.intellij.task.TaskRunnerResults
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
-import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifiers
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.server.tasks.runBuildTargetTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
+import org.jetbrains.plugins.bsp.utils.orDefault
 
 public class BspProjectTaskRunner : ProjectTaskRunner() {
   private val log = logger<BspProjectTaskRunner>()
@@ -66,8 +67,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   }
 
   private fun BuildTargetInfo.belongsToModules(project: Project, moduleNames: List<String>): Boolean {
-    val moduleNameProvider =
-      MagicMetaModelService.getInstance(project).obtainModuleNameProvider() ?: DefaultModuleNameProvider
+    val moduleNameProvider = project.findModuleNameProvider().orDefault()
     val targetModuleName = moduleNameProvider(this.id)
     return moduleNames.any {
       it == targetModuleName || targetModuleName isSubmoduleOf it

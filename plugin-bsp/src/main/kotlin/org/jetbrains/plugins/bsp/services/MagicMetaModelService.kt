@@ -11,14 +11,11 @@ import com.intellij.workspaceModel.ide.getInstance
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
-import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
-import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
+import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 
 @State(
   name = "MagicMetaModelService",
@@ -74,25 +71,10 @@ public class MagicMetaModelService(private val project: Project) :
     val workspaceModel = WorkspaceModel.getInstance(project)
     val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
 
-    val moduleNameProvider = obtainModuleNameProvider()
+    val moduleNameProvider = project.findModuleNameProvider()
     val projectBasePath = project.rootDir.toNioPath()
 
     return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider, projectBasePath)
-  }
-
-  public fun obtainModuleNameProvider(): ModuleNameProvider? =
-    obtainToolNameIfKnown(project)?.let { createModuleNameProviderForTool(it) }
-
-  private fun obtainToolNameIfKnown(project: Project): String? =
-    BspConnectionService.getInstance(project).value?.buildToolId
-
-  private fun createModuleNameProviderForTool(toolName: String): ModuleNameProvider {
-    val targetClassifier =
-      BspBuildTargetClassifierProvider(toolName, BspBuildTargetClassifierExtension.extensions())
-    return {
-      targetClassifier.getBuildTargetPath(it)
-        .joinToString(".", postfix = ".${targetClassifier.getBuildTargetName(it)}")
-    }
   }
 
   public companion object {

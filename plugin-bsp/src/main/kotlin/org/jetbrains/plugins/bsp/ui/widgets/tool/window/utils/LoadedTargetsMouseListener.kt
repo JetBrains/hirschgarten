@@ -9,9 +9,14 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
+import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.AbstractActionWithTarget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DebugWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.SideMenuRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
@@ -61,16 +66,17 @@ public class LoadedTargetsMouseListener(
     return if (target != null) {
       val actions = mutableListOf<AnAction>()
       if (target.capabilities.canCompile) {
-        val action = getAction(BuildTargetAction::class.java)
-        actions.add(action)
+        actions.addAction(BuildTargetAction::class.java)
       }
       if (target.capabilities.canRun) {
-        val action = getAction(RunTargetAction::class.java)
-        actions.add(action)
+        actions.addAction(RunTargetAction::class.java)
+        if (target.isJvmTarget()) {
+          actions.addAction(RunWithLocalJvmRunnerAction::class.java)
+          actions.addAction(DebugWithLocalJvmRunnerAction::class.java)
+        }
       }
       if (target.capabilities.canTest) {
-        val action = getAction(TestTargetAction::class.java)
-        actions.add(action)
+        actions.addAction(TestTargetAction::class.java)
       }
       DefaultActionGroup().apply {
         addAction(container.copyTargetIdAction)
@@ -80,10 +86,19 @@ public class LoadedTargetsMouseListener(
     } else null
   }
 
-  private fun getAction(actionClass: Class<out AbstractActionWithTarget>): AbstractActionWithTarget =
+  private fun MutableList<AnAction>.addAction(
+    actionClass: Class<out AbstractActionWithTarget>,
+  ): AbstractActionWithTarget =
     actions.getOrPut(actionClass) {
       actionClass.constructors.first { it.parameterCount == 0 }.newInstance() as AbstractActionWithTarget
-    }.also { it.target = container.getSelectedBuildTarget()?.id }
+    }.also {
+      it.target = container.getSelectedBuildTarget()?.id
+      add(it)
+    }
+
+  private fun BuildTargetInfo.isJvmTarget(): Boolean = with(languageIds) {
+    includesJava() or includesKotlin()
+  }
 
   private fun MouseEvent.isDoubleClick(): Boolean =
     this.mouseButton == MouseButton.Left && this.clickCount == 2
