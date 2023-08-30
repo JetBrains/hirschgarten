@@ -57,18 +57,21 @@ internal class WorkspaceModelUpdaterImpl(
         LibraryEntity(
           name = entityToAdd.displayName,
           tableId = LibraryTableId.ProjectLibraryTableId,
-          roots = entityToAdd.classJars.map {
-            LibraryRoot(
-              url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl("jar://${URI.create(it).path}!/"),
-              type = LibraryRootTypeId.COMPILED,
-            )
-          },
+          roots = entityToAdd.classJars.toLibraryRootsOfType(LibraryRootTypeId.COMPILED) +
+            entityToAdd.sourceJars.toLibraryRootsOfType(LibraryRootTypeId.SOURCES),
           entitySource = BspEntitySource,
         ) {
           this.excludedRoots = arrayListOf()
         },
       )
     }
+  }
+
+  private fun List<String>.toLibraryRootsOfType(type: LibraryRootTypeId) = map {
+    LibraryRoot(
+      url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl("jar://${URI.create(it).path}!/"),
+      type = type,
+    )
   }
 
   private fun Module.isAlreadyAdded() =
