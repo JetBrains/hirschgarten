@@ -160,7 +160,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val modulesToLoad = getModulesForTargetsToLoad(nonOverlappingTargetsToLoad)
     val rootModule = rootModuleToLoadIfNeeded()
 
-    // TODO TEST TESTS TESTS TEST
     logPerformance("load-modules") {
       workspaceModelUpdater.loadModules(modulesToLoad)
       workspaceModelUpdater.loadLibraries(libraries.orEmpty())

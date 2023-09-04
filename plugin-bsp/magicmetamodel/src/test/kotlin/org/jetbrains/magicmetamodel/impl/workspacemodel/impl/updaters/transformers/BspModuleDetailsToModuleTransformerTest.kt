@@ -515,7 +515,6 @@ class BspModuleDetailsToModuleTransformerTest {
     module.name shouldBe "$targetName$targetName"
   }
 
-  // TODO
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(
     expectedWithAssertion: Pair<Collection<E>, (T, E) -> Unit>,
   ) {

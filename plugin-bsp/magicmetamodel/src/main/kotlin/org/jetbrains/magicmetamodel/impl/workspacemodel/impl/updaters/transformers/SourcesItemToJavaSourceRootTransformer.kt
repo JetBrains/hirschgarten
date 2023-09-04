@@ -27,7 +27,6 @@ internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePat
   }
 
   private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> =
-    // TODO?
     sourcesItem.roots.orEmpty().map { URI.create(it) }
 
   private fun inferRootType(buildTarget: BuildTarget): String =

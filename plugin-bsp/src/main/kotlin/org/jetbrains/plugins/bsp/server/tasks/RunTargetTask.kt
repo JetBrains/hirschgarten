@@ -22,7 +22,6 @@ public class RunTargetTask(project: Project) : BspServerSingleTargetTask<RunResu
 
   private fun createRunParams(targetId: BuildTargetIdentifier): RunParams =
     RunParams(targetId).apply {
-      // TODO
       originId = "run-" + UUID.randomUUID().toString()
       arguments = listOf()
     }

@@ -85,6 +85,7 @@ public class ImportProjectWizard(
   private fun areThereStepsToShow(): Boolean =
     !firstStep.canBeSkipped() || stepCount > 1
 
+  // TODO https://youtrack.jetbrains.com/issue/BAZEL-631
   override fun getHelpID(): String =
     "TODO"
 

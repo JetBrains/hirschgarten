@@ -65,7 +65,6 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
       parentModuleEntity = parentModuleEntity,
     )
 
-    // TODO
     returnedJavaResourceRootEntity.sourceRoot shouldBeEqual expectedJavaResourceRootEntity
     loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
       expectedJavaResourceRootEntity,
@@ -167,7 +166,6 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
       expectedJavaResourceRootEntity3,
     )
 
-    // TODO
     returnedJavaResourceRootEntries.map { it.sourceRoot } shouldContainExactlyInAnyOrder expectedJavaResourceRootEntries
     loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder expectedJavaResourceRootEntries
   }

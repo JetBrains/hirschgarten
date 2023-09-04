@@ -27,7 +27,7 @@ internal abstract class LocalJvmRunnerAction(label: String) : AbstractActionWith
 
   open suspend fun runWithEnvironment(environment: JvmEnvironmentItem, uri: String, module: Module, project: Project) {
     environment.mainClasses
-      ?.firstOrNull() // TODO: support targets with multiple main classes
+      ?.firstOrNull() // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
       ?.let { mainClass ->
         val applicationConfiguration = ApplicationConfiguration("Run $uri", project).apply {
           setModule(module)
