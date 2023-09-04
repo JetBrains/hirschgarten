@@ -132,7 +132,7 @@ public class BspStartupActivity : ProjectActivity {
       is NewConnection -> initializeNewConnectionFromGenerator(project, connectionFileOrNewConnection)
       is ConnectionFile -> initializeConnectionFromFile(project, connectionFileOrNewConnection)
       null -> {
-        // TODO: it's really ugly - we shouldnt use it but it's the only option
+        // TODO https://youtrack.jetbrains.com/issue/BAZEL-623
         AppUIExecutor.onUiThread().execute {
           CloseProjectWindowHelper().windowClosing(project)
         }

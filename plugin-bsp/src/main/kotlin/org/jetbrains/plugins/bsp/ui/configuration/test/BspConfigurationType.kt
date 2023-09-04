@@ -70,6 +70,7 @@ public class TestRunConfiguration(project: Project, configurationFactory: Config
   }
 
   override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
+    // TODO https://youtrack.jetbrains.com/issue/BAZEL-628
     TODO("Not yet implemented")
   }
 }

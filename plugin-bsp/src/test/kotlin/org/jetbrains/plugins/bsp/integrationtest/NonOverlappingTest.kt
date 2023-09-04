@@ -31,7 +31,7 @@ import kotlin.io.path.writeText
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
-// TODO make sure these values are updated by dependabot or similar tool
+// TODO https://youtrack.jetbrains.com/issue/BAZEL-629
 private const val BAZEL_REPOSITORY_TAG = "6.0.0"
 private const val BAZEL_EXECUTABLE_VERSION = "5.4.0"
 private const val BAZEL_BSP_VERSION = "2.7.1"

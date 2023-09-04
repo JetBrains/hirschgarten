@@ -74,18 +74,17 @@ internal class ModuleEntityUpdater(
         name = libraryDependency.libraryName,
         tableId = libraryTableId,
       ),
-      exported = true, // TODO there should be a better way to limit the scope for library dependency
+      exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
       scope = ModuleDependencyItem.DependencyScope.COMPILE,
     )
   }
 }
 
-// TODO TEST TEST TEST TEST TEST !!11!1!
 internal class WorkspaceModuleRemover(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModuleEntityRemover<ModuleName> {
   override fun removeEntity(entityToRemove: ModuleName) {
-    // TODO null
+    // TODO https://youtrack.jetbrains.com/issue/BAZEL-634
     val moduleToRemove =
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.resolve(ModuleId(entityToRemove.name))!!
 

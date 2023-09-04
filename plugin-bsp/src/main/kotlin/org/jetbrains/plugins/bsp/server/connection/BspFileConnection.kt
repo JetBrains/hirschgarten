@@ -327,7 +327,6 @@ public class BspFileConnection(
   override fun isConnected(): Boolean =
     bspProcess?.isAlive == true
 
-  // TODO test
   override fun toState(): BspFileConnectionState =
     BspFileConnectionState(locatedConnectionFile.connectionFileLocation.canonicalPath)
 

@@ -73,7 +73,6 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       parentModuleEntity = parentModuleEntity,
     )
 
-    // TODO
     returnedJavaSourceRootEntity.sourceRoot shouldBeEqual expectedJavaSourceRootEntity
     loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRootEntity)
   }
@@ -159,7 +158,6 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
 
     val expectedJavaSourceRootEntries = listOf(expectedJavaSourceRootEntity1, expectedJavaSourceRootEntity2)
 
-    // TODO
     returnedJavaSourceRootEntries.map { it.sourceRoot } shouldContainExactlyInAnyOrder expectedJavaSourceRootEntries
     loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder expectedJavaSourceRootEntries
   }

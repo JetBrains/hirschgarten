@@ -135,8 +135,8 @@ public suspend fun runBuildTargetTask(
     }
   }
 
+// TODO https://youtrack.jetbrains.com/issue/BAZEL-630
 public fun saveAllFiles() {
-  // TODO run it in a suspendable manner once all the tasks allow
   ApplicationManager.getApplication().invokeAndWait {
     FileDocumentManager.getInstance().saveAllDocuments()
   }

@@ -21,7 +21,6 @@ public class TestTargetTask(project: Project) : BspServerSingleTargetTask<TestRe
 
   private fun createTestParams(targetId: BuildTargetIdentifier): TestParams =
     TestParams(listOf(targetId)).apply {
-      // TODO
       originId = "test-" + UUID.randomUUID().toString()
       arguments = emptyList()
     }

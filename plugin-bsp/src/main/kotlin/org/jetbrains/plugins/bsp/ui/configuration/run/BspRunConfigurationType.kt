@@ -90,6 +90,7 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
     BspCommandLineState(project, environment)
 
   override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
+    // TODO https://youtrack.jetbrains.com/issue/BAZEL-627
     TODO("Not yet implemented")
   }
 }

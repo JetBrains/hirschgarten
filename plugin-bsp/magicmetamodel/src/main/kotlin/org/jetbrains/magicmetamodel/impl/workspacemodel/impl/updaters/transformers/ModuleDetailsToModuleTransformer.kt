@@ -22,7 +22,7 @@ internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelE
 
   protected fun toBaseDirContentRoot(inputEntity: ModuleDetails): ContentRoot =
     ContentRoot(
-      // TODO what if null?
+      // TODO https://youtrack.jetbrains.com/issue/BAZEL-635
       path = URI.create(inputEntity.target.baseDirectory ?: "file:///todo").toPath(),
       excludedPaths = inputEntity.outputPathUris.map { URI.create(it).toPath() },
     )

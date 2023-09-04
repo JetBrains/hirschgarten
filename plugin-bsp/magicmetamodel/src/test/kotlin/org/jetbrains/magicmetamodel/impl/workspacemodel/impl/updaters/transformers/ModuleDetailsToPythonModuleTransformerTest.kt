@@ -399,7 +399,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
     actual.libraries shouldContainExactlyInAnyOrder expected.libraries
   }
 
-  // TODO
   private fun validateModule(actual: GenericModuleInfo, expected: GenericModuleInfo) {
     actual.name shouldBe expected.name
     actual.type shouldBe expected.type

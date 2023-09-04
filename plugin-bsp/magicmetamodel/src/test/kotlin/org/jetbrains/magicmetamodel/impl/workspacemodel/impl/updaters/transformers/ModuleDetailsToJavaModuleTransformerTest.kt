@@ -621,7 +621,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
     actual.jvmJdkName shouldBe expected.jvmJdkName
   }
 
-  // TODO
   private fun validateModule(actual: GenericModuleInfo, expected: GenericModuleInfo) {
     actual.name shouldBe expected.name
     actual.type shouldBe expected.type
