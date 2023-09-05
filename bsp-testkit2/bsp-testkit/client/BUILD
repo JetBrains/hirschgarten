@@ -6,7 +6,7 @@ scala_library(
     visibility = ["//visibility:public"],
     deps = [
         "//bsp-testkit/utils:JsonComparator",
-        "@maven//:ch_epfl_scala_bsp4j_2_13",
+        "@maven//:com_github_zpp_This_is_fine_build_server_protocol_bsp4j",
         "@maven//:com_google_code_gson_gson",
         "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
         "@maven//:org_junit_jupiter_junit_jupiter_api",

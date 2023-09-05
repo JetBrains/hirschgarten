@@ -69,7 +69,7 @@ maven_install(
     artifacts = [
         "com.google.code.gson:gson:2.10.1",
         "com.google.guava:guava:31.0.1-jre",
-        "ch.epfl.scala:bsp4j_2.13:2.1.0-M6.alpha",
+        "com.github.zpp-This-is-fine:build-server-protocol:fixed-rust-edition",
         "org.junit.jupiter:junit-jupiter:5.9.3",
         "org.scala-lang:scala-library:2.13.11"
     ],
