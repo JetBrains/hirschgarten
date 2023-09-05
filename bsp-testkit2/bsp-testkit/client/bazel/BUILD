@@ -5,7 +5,7 @@ scala_library(
     srcs = glob(["*.scala"]),
     visibility = ["//visibility:public"],
     deps = [
-        "@maven//:ch_epfl_scala_bsp4j_2_13",
+        "@maven//:com_github_zpp_This_is_fine_build_server_protocol_bsp4j",
         "//bsp-testkit/client"
     ],
 )
