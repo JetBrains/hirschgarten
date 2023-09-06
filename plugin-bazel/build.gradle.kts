@@ -1,3 +1,4 @@
+import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -14,13 +15,11 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.23.1"
 }
 
-
 dependencies {
     implementation("com.google.protobuf:protobuf-java:3.23.4")
-    implementation("io.gitlab.arturbosch.detekt:1.23.1")
+    implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.1")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.1")
 }
-
 
 group = properties("pluginGroup")
 version = properties("pluginVersion")
@@ -94,11 +93,7 @@ tasks {
         )
 
         // Get the latest available change notes from the changelog file
-        changeNotes.set(provider {
-            changelog.run {
-                getOrNull(properties("pluginVersion")) ?: getLatest()
-            }.toHTML()
-        })
+        changeNotes.set(provider { changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML) })
     }
 
     // Configure UI tests plugin
