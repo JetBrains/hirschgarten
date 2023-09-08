@@ -10,32 +10,29 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.bsp.bazel.languages.starlark.elements.StarlarkElementTypes
+import org.jetbrains.bsp.bazel.languages.starlark.elements.StarlarkTokenSets
+import org.jetbrains.bsp.bazel.languages.starlark.lexer.StarlarkIndentingLexer
 import org.jetbrains.bsp.bazel.languages.starlark.psi.StarlarkFile
 
 class StarlarkParserDefinition : ParserDefinition {
   private val file = IFileElementType(StarlarkLanguage)
 
-  override fun createLexer(project: Project?): Lexer =
-    TODO()
+  override fun createLexer(project: Project?): Lexer = StarlarkIndentingLexer()
 
-  override fun createParser(project: Project?): PsiParser =
-    TODO()
+  override fun createParser(project: Project?): PsiParser {
+    TODO("Not yet implemented")
+  }
 
-  override fun getFileNodeType(): IFileElementType =
-    file
+  override fun getFileNodeType(): IFileElementType = file
 
-  override fun getWhitespaceTokens(): TokenSet =
-    TODO()
+  override fun getWhitespaceTokens(): TokenSet = StarlarkTokenSets.WHITESPACE
 
-  override fun getCommentTokens(): TokenSet =
-    TODO()
+  override fun getCommentTokens(): TokenSet = StarlarkTokenSets.COMMENT
 
-  override fun getStringLiteralElements(): TokenSet =
-    TODO()
+  override fun getStringLiteralElements(): TokenSet = StarlarkTokenSets.STRINGS
 
-  override fun createElement(node: ASTNode?): PsiElement =
-    TODO()
+  override fun createElement(node: ASTNode): PsiElement = StarlarkElementTypes.createElement(node)
 
-  override fun createFile(viewProvider: FileViewProvider): PsiFile =
-    StarlarkFile(viewProvider)
+  override fun createFile(viewProvider: FileViewProvider): PsiFile = StarlarkFile(viewProvider)
 }

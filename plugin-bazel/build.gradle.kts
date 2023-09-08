@@ -17,6 +17,7 @@ plugins {
 
 dependencies {
     implementation("com.google.protobuf:protobuf-java:3.23.4")
+    implementation("io.kotest:kotest-assertions-core:5.6.2")
     implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.1")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.1")
 }
