@@ -14,9 +14,12 @@ import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.StickyTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.cargo.features.extension.BspPanelCargoFeaturesComponent
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.cargo.features.extension.FeaturesService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.cargo.features.extension.FeaturesMouseListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.NotLoadedTargetsMouseListener
 import javax.swing.Icon
@@ -26,6 +29,7 @@ import javax.swing.SwingConstants
 private enum class PanelShown {
   LOADED,
   NOTLOADED,
+  CARGOFEATURES,
 }
 
 private class ListsUpdater(
@@ -36,6 +40,8 @@ private class ListsUpdater(
   var loadedTargetsPanel: BspPanelComponent
     private set
   var notLoadedTargetsPanel: BspPanelComponent
+    private set
+  var cargoFeaturesPanel: BspPanelCargoFeaturesComponent? = null
     private set
   val targetFilter = TargetFilter { rerenderComponents() }
   val searchBarPanel = SearchBarPanel()
@@ -58,6 +64,18 @@ private class ListsUpdater(
       )
     notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it, project) }
     magicMetaModel.registerTargetLoadListener { rerenderComponents() }
+
+    // Create panel for Cargo features if server provides support for Cargo BSP extension
+    // and therefore cargoFeatures are set in `MagicMetaModel`
+    val featuresService = FeaturesService.getInstance(project)
+    val bspConnection = BspConnectionService.getInstance(project).value
+    val bool = bspConnection?.capabilities == null || bspConnection.capabilities?.cargoFeaturesProvider == true
+      if (featuresService.areCargoFeaturesInitialized() && bool) {
+        featuresService.value.getPackageFeatures().let { features ->
+        cargoFeaturesPanel = BspPanelCargoFeaturesComponent(project, features)
+        cargoFeaturesPanel!!.addMouseListener {  FeaturesMouseListener(it) }
+      }
+    }
   }
 
   fun rerenderComponents() {
@@ -85,6 +103,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
     val notLoadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.not.loaded.targets.tab.name")
     val loadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.loaded.targets.tab.name")
+    val cargoFeatures = BspAllTargetsWidgetBundle.message("widget.cargo.features.tab.name")
 
     actionGroup.childActionsOrStubs.iterator().forEach {
       if (it.shouldBeDisposedAfterReload()) {
@@ -108,6 +127,17 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
         selectionProvider = { panelShown == PanelShown.LOADED },
       ))
 
+      val featuresService = FeaturesService.getInstance(project)
+      val cargoFeaturesProviderOrNoCapabilities = bspConnection.capabilities == null || bspConnection.capabilities?.cargoFeaturesProvider == true
+      if (featuresService.areCargoFeaturesInitialized() && cargoFeaturesProviderOrNoCapabilities) {
+        actionGroup.add(StickyTargetAction(
+          hintText = cargoFeatures,
+          icon = BspPluginIcons.cargoFeatures,
+          onPerform = { listsUpdater.showCargoFeatures() },
+          selectionProvider = { panelShown == PanelShown.CARGOFEATURES },
+        ))
+      }
+
       actionGroup.addSeparator()
       actionGroup.add(FilterActionGroup(listsUpdater.targetFilter))
     } else {
@@ -125,10 +155,12 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
   private fun AnAction.shouldBeDisposedAfterReload(): Boolean {
     val notLoadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.not.loaded.targets.tab.name")
     val loadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.loaded.targets.tab.name")
+    val cargoFeaturesActionName = BspAllTargetsWidgetBundle.message("widget.cargo.features.tab.name")
     val restartActionName = BspAllTargetsWidgetBundle.message("restart.action.text")
 
     return this.templateText == notLoadedTargetsActionName ||
       this.templateText == loadedTargetsActionName ||
+      this.templateText == cargoFeaturesActionName || 
       this.templateText == restartActionName ||
       this is EternallyDisabledAction ||
       this is FilterActionGroup
@@ -141,6 +173,11 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
   private fun ListsUpdater.showNotLoadedTargets() {
     panelShown = PanelShown.NOTLOADED
+    showCurrentPanel(this)
+  }
+
+  private fun ListsUpdater.showCargoFeatures() {
+    panelShown = PanelShown.CARGOFEATURES
     showCurrentPanel(this)
   }
 
@@ -164,12 +201,14 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
         AllIcons.General.Filter,
       ),
     )
+    // I don't show Cargo Features panel in default actions, should I?
   }
 
   private fun showCurrentPanel(listsUpdater: ListsUpdater) {
     when (panelShown) {
       PanelShown.LOADED -> listsUpdater.loadedTargetsPanel
       PanelShown.NOTLOADED -> listsUpdater.notLoadedTargetsPanel
+      PanelShown.CARGOFEATURES -> listsUpdater.cargoFeaturesPanel!!
     }.let { setToolWindowContent(it.wrappedInScrollPane()) }
   }
 

@@ -13,6 +13,7 @@ plugins {
 // Configure project's dependencies
 repositories {
   mavenCentral()
+  maven("https://jitpack.io")
 }
 
 kotlin {

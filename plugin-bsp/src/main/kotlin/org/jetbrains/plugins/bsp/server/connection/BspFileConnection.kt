@@ -1,10 +1,6 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
-import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.InitializeBuildParams
+import ch.epfl.scala.bsp4j.*
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.process.OSProcessUtil
@@ -24,6 +20,7 @@ import org.jetbrains.plugins.bsp.protocol.connection.logErrorOutputs
 import org.jetbrains.plugins.bsp.server.client.BspClient
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.cargo.features.extension.FeaturesService
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.InputStream
 import java.io.OutputStream
@@ -122,6 +119,25 @@ public class BspFileConnection(
   public override fun connect(taskId: Any, errorCallback: () -> Unit) {
     if (!isConnected()) {
       doConnect(taskId, errorCallback)
+    }
+  }
+
+  override fun cargoFeaturesPostConnectAction(parentTaskId: Any) {
+    if (capabilities?.cargoFeaturesProvider == true) {
+      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+      val postConnectActionId = "sync-features-state-with-server"
+      bspSyncConsole.startSubtask(parentTaskId, postConnectActionId, "Updating server's features state...")
+      try {
+        val featuresState = FeaturesService.getInstance(project).value.enabled
+        featuresState.forEach { (packageId, enabledFeatures) ->
+          server!!.setCargoFeatures(SetCargoFeaturesParams(packageId, enabledFeatures.toList())).get()
+        }
+        bspSyncConsole.addMessage(postConnectActionId, "Server's features state updated.")
+        bspSyncConsole.finishSubtask(parentTaskId, postConnectActionId)
+      }
+      catch (e: Exception) {
+        bspSyncConsole.finishSubtask(parentTaskId, postConnectActionId, FailureResultImpl(e))
+      }
     }
   }
 

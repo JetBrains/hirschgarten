@@ -1,23 +1,6 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.JavacOptionsResult
-import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.OutputPathsParams
-import ch.epfl.scala.bsp4j.OutputPathsResult
-import ch.epfl.scala.bsp4j.PythonOptionsParams
-import ch.epfl.scala.bsp4j.PythonOptionsResult
-import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
-import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import ch.epfl.scala.bsp4j.*
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
@@ -56,6 +39,7 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.cargo.features.extension.FeaturesService
 import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
@@ -120,6 +104,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         calculateAllPythonSdkInfosSubtask(projectDetails)
       }
     }
+    if (projectDetails?.cargoFeatures != null) {
+      indeterminateStep(text = "Collecting cargo features") {
+        initializeCargoFeaturesState(projectDetails.cargoFeatures!!)
+      }
+    }
+
     progressStep(endFraction = 0.75, "Updating magic meta model diff") {
       runInterruptible { updateMMMDiffSubtask(projectDetails) }
     }
@@ -194,6 +184,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       pythonSdks = logPerformance("calculate-all-python-sdk-infos") { calculateAllPythonSdkInfos(projectDetails) }
       bspSyncConsole.finishSubtask("calculate-all-python-sdk-infos", "Calculating all python sdk infos done!")
     }
+  }
+
+  private fun initializeCargoFeaturesState(cargoFeatures: List<PackageFeatures>) {
+    bspSyncConsole.startSubtask(taskId, "initialize-cargo-features-state", "Initializing cargo features state...")
+    FeaturesService.getInstance(project).setFeaturesState(cargoFeatures)
+    bspSyncConsole.finishSubtask("initialize-cargo-features-state", "Initializing cargo features state done!")
   }
 
   private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? =
@@ -327,6 +323,12 @@ public fun calculateProjectDetailsWithCapabilities(
         ?.reactToExceptionIn(cancelOn)
         ?.catchSyncErrors(errorCallback)
 
+    val projectCargoFeatures = buildServerCapabilities.cargoFeaturesProvider?. let {
+        queryForCargoFeatures(server, buildServerCapabilities)
+            ?.reactToExceptionIn(cancelOn)
+            ?.catchSyncErrors(errorCallback)
+    }
+
     val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
     val libraries: WorkspaceLibrariesResult? = server.workspaceLibraries()
       .reactToExceptionIn(cancelOn)
@@ -365,6 +367,7 @@ public fun calculateProjectDetailsWithCapabilities(
       pythonOptions = pythonOptionsFuture?.get()?.items ?: emptyList(),
       outputPathUris = outputPathsFuture.get().obtainDistinctUris(),
       libraries = libraries?.libraries,
+      cargoFeatures = projectCargoFeatures?.get()?.packagesFeatures,
     )
   } catch (e: Exception) {
     // TODO the type xd
@@ -414,6 +417,14 @@ private fun queryForDependencySources(
   val dependencySourcesParams = DependencySourcesParams(allTargetsIds)
 
   return if (capabilities.dependencySourcesProvider) server.buildTargetDependencySources(dependencySourcesParams)
+  else null
+}
+
+private fun queryForCargoFeatures(
+  server: BspServer,
+  capabilities: BuildServerCapabilities,
+): CompletableFuture<CargoFeaturesStateResult>? {
+  return if (capabilities.cargoFeaturesProvider) server.cargoFeaturesState()
   else null
 }
 

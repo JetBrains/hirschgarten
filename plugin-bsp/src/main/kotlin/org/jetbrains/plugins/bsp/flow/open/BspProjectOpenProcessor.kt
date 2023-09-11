@@ -77,6 +77,7 @@ public fun Project.initializeEmptyMagicMetaModel() {
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = emptyList(),
+      cargoFeatures = emptyList(),
     ),
   )
 

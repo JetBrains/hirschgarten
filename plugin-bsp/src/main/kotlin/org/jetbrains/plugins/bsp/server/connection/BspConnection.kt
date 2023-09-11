@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.server.connection
 
 import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.CargoBuildServer
 import ch.epfl.scala.bsp4j.JavaBuildServer
 import ch.epfl.scala.bsp4j.JvmBuildServer
 import ch.epfl.scala.bsp4j.PythonBuildServer
@@ -14,7 +15,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.BazelBuildServer
 
-public interface BspServer : BuildServer, JavaBuildServer, JvmBuildServer, BazelBuildServer, PythonBuildServer
+public interface BspServer : BuildServer, CargoBuildServer, JavaBuildServer, BazelBuildServer, PythonBuildServer
 
 /**
  * The BSP connection, implementation should keep all the information
@@ -46,6 +47,8 @@ public interface BspConnection {
    * If the connection is already established no actions should be performed.
    */
   public fun connect(taskId: Any, errorCallback: () -> Unit = {})
+
+  public fun cargoFeaturesPostConnectAction(parentTaskId: Any)
 
   /**
    * Disconnect from the server,

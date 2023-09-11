@@ -7,7 +7,7 @@ kotlin-gradle-version = "1.9.0"
 ideProbeDriver = { module = "org.virtuslab.ideprobe:driver_2.13", version.ref = "ideProbe" }
 ideProbeRobot = { module = "org.virtuslab.ideprobe:robot-driver_2.13", version.ref = "ideProbe" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.9.3" }
-bsp4j = { module = "ch.epfl.scala:bsp4j_2.13", version = "2.1.0-M6.alpha" }
+bsp4j = { module = "com.github.Toomimi:build-server-protocol", version = "fd7b0d8f0" }
 kotest = { module = "io.kotest:kotest-assertions-core", version = "5.6.2" }
 scala = { module = "org.scala-lang:scala-library", version = "2.13.11" }
 gson = { module = "com.google.code.gson:gson", version = "2.10.1" }

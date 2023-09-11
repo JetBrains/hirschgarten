@@ -30,19 +30,21 @@ public abstract class BspServerTask<T>(private val taskName: String, protected v
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val bspConnection = BspConnectionService.getInstance(project).value!!
 
+    val autoConnectTaskId = "bsp-autoconnect"
     bspSyncConsole.startTask(
-      taskId = "bsp-autoconnect",
+      taskId = autoConnectTaskId,
       title = "Connect",
       message = "Connecting...",
     )
 
     return try {
-      bspConnection.connect("bsp-autoconnect")
+      bspConnection.connect(autoConnectTaskId)
+      bspConnection.cargoFeaturesPostConnectAction(autoConnectTaskId)
       bspConnection.server!!.also {
-        bspSyncConsole.finishTask("bsp-autoconnect", "Auto-connect done!")
+        bspSyncConsole.finishTask(autoConnectTaskId, "Auto-connect done!")
       }
     } catch (e: Exception) {
-      bspSyncConsole.finishTask("bsp-autoconnect", "Auto-connect failed!", FailureResultImpl(e))
+      bspSyncConsole.finishTask(autoConnectTaskId, "Auto-connect failed!", FailureResultImpl(e))
       error("Server connection failed!")
     }
   }

@@ -23,7 +23,7 @@ public class BspPanelComponent private constructor(
   private val toolName: String,
   private val targetTree: BuildTargetTree,
   private val targetSearch: BuildTargetSearch,
-) : JPanel(VerticalLayout(0)) {
+) : JPanel(VerticalLayout(0)), BspComponentInterface {
   private val emptyTreeMessage = JBLabel(
     BspAllTargetsWidgetBundle.message("widget.no.targets.message"),
     SwingConstants.CENTER,
@@ -83,7 +83,7 @@ public class BspPanelComponent private constructor(
     this.repaint()
   }
 
-  public fun wrappedInScrollPane(): JBScrollPane {
+  public override fun wrappedInScrollPane(): JBScrollPane {
     val scrollPane = JBScrollPane(this)
     val headerComponent = targetSearch.searchBarPanel
     headerComponent.isEnabled = !targetTree.isEmpty()

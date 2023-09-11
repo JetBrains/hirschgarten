@@ -61,6 +61,10 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
     fileConnection?.connect(taskId, errorCallback)
   }
 
+  override fun cargoFeaturesPostConnectAction(parentTaskId: Any) {
+    fileConnection?.cargoFeaturesPostConnectAction(parentTaskId)
+  }
+
   public override fun disconnect() {
     fileConnection?.disconnect()
   }

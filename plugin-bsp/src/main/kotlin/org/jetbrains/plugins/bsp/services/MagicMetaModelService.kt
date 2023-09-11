@@ -44,6 +44,7 @@ public class MagicMetaModelService(private val project: Project) :
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = emptyList(),
+      cargoFeatures = emptyList(),
     )
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)

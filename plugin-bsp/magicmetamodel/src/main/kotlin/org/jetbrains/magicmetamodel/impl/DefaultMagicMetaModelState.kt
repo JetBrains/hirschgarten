@@ -1,25 +1,7 @@
 package org.jetbrains.magicmetamodel.impl
 
 import com.google.gson.Gson
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
-import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlincOpts
-import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleCapabilities
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonLibrary
-import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
+import org.jetbrains.magicmetamodel.impl.workspacemodel.*
 import kotlin.io.path.Path
 
 // TODO, we can do it better, but for now it should be good enough:
@@ -261,6 +243,9 @@ public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabil
   canCompile = canCompile,
   canDebug = canDebug,
 )
+
+
+
 
 public data class DefaultMagicMetaModelState(
   public var targets: List<BuildTargetInfoState> = emptyList(),

@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.PackageFeatures
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourcesItem
@@ -47,6 +48,7 @@ public data class ProjectDetails(
   val pythonOptions: List<PythonOptionsItem>,
   val outputPathUris: List<String>,
   val libraries: List<LibraryItem>?,
+  val cargoFeatures: List<PackageFeatures>?,
 ) {
   public operator fun plus(old: ProjectDetails): ProjectDetails = ProjectDetails(
     targetsId + old.targetsId,
@@ -58,6 +60,7 @@ public data class ProjectDetails(
     pythonOptions + old.pythonOptions,
     outputPathUris + old.outputPathUris,
     if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
+    if (cargoFeatures == null && old.cargoFeatures == null) null else cargoFeatures.orEmpty() + old.cargoFeatures.orEmpty(),
   )
 }
 

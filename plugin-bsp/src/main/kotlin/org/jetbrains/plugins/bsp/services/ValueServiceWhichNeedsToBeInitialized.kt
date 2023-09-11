@@ -11,10 +11,12 @@ public abstract class ValueServiceWhichNeedsToBeInitialized<T>(private val defau
   private var valueToInitialize: T? = null
   private var wasInitialized = false
 
-  public fun init(value: T) {
+  protected fun init(value: T) {
     check(!wasInitialized) { "Init called on initialized service! This function can be called only once." }
     wasInitialized = true
 
     this.valueToInitialize = value
   }
+
+  protected fun hasInitializedValue(): Boolean = wasInitialized
 }
