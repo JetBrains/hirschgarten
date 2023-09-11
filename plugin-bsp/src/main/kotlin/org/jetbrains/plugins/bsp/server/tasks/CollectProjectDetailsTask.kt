@@ -1,6 +1,25 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.DependencySourcesItem
+import ch.epfl.scala.bsp4j.DependencySourcesParams
+import ch.epfl.scala.bsp4j.DependencySourcesResult
+import ch.epfl.scala.bsp4j.JavacOptionsParams
+import ch.epfl.scala.bsp4j.JavacOptionsResult
+import ch.epfl.scala.bsp4j.JvmBuildTarget
+import ch.epfl.scala.bsp4j.OutputPathsParams
+import ch.epfl.scala.bsp4j.OutputPathsResult
+import ch.epfl.scala.bsp4j.PythonOptionsParams
+import ch.epfl.scala.bsp4j.PythonOptionsResult
+import ch.epfl.scala.bsp4j.ResourcesParams
+import ch.epfl.scala.bsp4j.ResourcesResult
+import ch.epfl.scala.bsp4j.SourcesParams
+import ch.epfl.scala.bsp4j.SourcesResult
+import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import ch.epfl.scala.bsp4j.PackageFeatures
+import ch.epfl.scala.bsp4j.CargoFeaturesStateResult
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger

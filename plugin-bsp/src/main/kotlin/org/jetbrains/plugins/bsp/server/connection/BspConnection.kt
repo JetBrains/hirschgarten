@@ -15,7 +15,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.BazelBuildServer
 
-public interface BspServer : BuildServer, CargoBuildServer, JavaBuildServer, BazelBuildServer, PythonBuildServer
+public interface BspServer : BuildServer, CargoBuildServer, JvmBuildServer, JavaBuildServer, BazelBuildServer, PythonBuildServer
 
 /**
  * The BSP connection, implementation should keep all the information

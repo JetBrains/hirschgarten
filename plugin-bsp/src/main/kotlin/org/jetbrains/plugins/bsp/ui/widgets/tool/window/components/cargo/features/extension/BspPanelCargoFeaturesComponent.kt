@@ -20,10 +20,6 @@ public class BspPanelCargoFeaturesComponent private constructor(
             SwingConstants.CENTER
     )
 
-    /**
-     * @property project collection of build targets this panel will contain
-     * @property packagesFeatures collection of build targets this panel will contain
-     */
     public constructor(
         project: Project,
         packagesFeatures: Collection<PackageFeatures>,

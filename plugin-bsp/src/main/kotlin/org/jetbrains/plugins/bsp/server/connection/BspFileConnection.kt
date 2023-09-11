@@ -1,6 +1,11 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BspConnectionDetails
+import ch.epfl.scala.bsp4j.BuildClient
+import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.InitializeBuildParams
+import ch.epfl.scala.bsp4j.SetCargoFeaturesParams
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.process.OSProcessUtil

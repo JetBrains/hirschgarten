@@ -201,7 +201,6 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
         AllIcons.General.Filter,
       ),
     )
-    // I don't show Cargo Features panel in default actions, should I?
   }
 
   private fun showCurrentPanel(listsUpdater: ListsUpdater) {

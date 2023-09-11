@@ -83,8 +83,8 @@ public class FeaturesTree(
 
     override fun isEmpty(): Boolean = rootNode.isLeaf
 
-    override fun addMouseListener(listenerBuilder: (FeaturesContainer) -> MouseListener) {
-        treeComponent.addMouseListener(listenerBuilder(this))
+    override fun addMouseListener(mouseListener: (FeaturesContainer) -> MouseListener) {
+        treeComponent.addMouseListener(mouseListener(this))
     }
 
     private fun getSelectedFeatureAndPackage(): Selection? {
