@@ -6,23 +6,19 @@ import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 
 public class FeaturesMouseListener(
-    private val container: FeaturesContainer,
+  private val container: FeaturesContainer,
 ) : MouseListener {
-    override fun mouseClicked(e: MouseEvent?) {
-        if (e?.mouseButton == MouseButton.Left) {
-            container.toggleFeatureIfSelected()
-        }
+  override fun mouseClicked(e: MouseEvent?) {
+    if (e?.mouseButton == MouseButton.Left) {
+      container.toggleFeatureIfSelected()
     }
+  }
 
-    override fun mousePressed(e: MouseEvent?) { /* nothing to do */
-    }
+  override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
 
-    override fun mouseReleased(e: MouseEvent?) { /* nothing to do */
-    }
+  override fun mouseReleased(e: MouseEvent?) { /* nothing to do */ }
 
-    override fun mouseEntered(e: MouseEvent?) { /* nothing to do */
-    }
+  override fun mouseEntered(e: MouseEvent?) { /* nothing to do */ }
 
-    override fun mouseExited(e: MouseEvent?) { /* nothing to do */
-    }
+  override fun mouseExited(e: MouseEvent?) { /* nothing to do */ }
 }

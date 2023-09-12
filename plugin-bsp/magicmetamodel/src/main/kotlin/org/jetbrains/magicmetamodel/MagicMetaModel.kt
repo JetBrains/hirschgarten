@@ -60,7 +60,8 @@ public data class ProjectDetails(
     pythonOptions + old.pythonOptions,
     outputPathUris + old.outputPathUris,
     if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
-    if (cargoFeatures == null && old.cargoFeatures == null) null else cargoFeatures.orEmpty() + old.cargoFeatures.orEmpty(),
+    if (cargoFeatures == null && old.cargoFeatures == null) null
+    else cargoFeatures.orEmpty() + old.cargoFeatures.orEmpty(),
   )
 }
 

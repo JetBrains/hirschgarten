@@ -44,6 +44,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = null,
+      cargoFeatures = null
     )
 
     // when
@@ -111,6 +112,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = listOf(pythonOptions),
       outputPathUris = emptyList(),
       libraries = emptyList(),
+      cargoFeatures = null
     )
 
     // when
@@ -240,6 +242,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = listOf(target4PythonOptionsItem),
       outputPathUris = emptyList(),
       libraries = emptyList(),
+      cargoFeatures = null
     )
 
     // when

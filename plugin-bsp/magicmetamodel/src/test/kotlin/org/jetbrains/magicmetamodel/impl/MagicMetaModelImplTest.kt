@@ -69,6 +69,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null,
       )
 
       // when 1
@@ -201,6 +202,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null,
       )
 
       // when 1
@@ -435,6 +437,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null,
       )
 
       // when 1
@@ -636,6 +639,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null,
       )
 
       // when
@@ -712,6 +716,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null,
       )
 
       // when
@@ -823,6 +828,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when
@@ -925,6 +931,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when
@@ -1028,6 +1035,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when 1
@@ -1109,6 +1117,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when
@@ -1182,6 +1191,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when
@@ -1259,6 +1269,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when 1
@@ -1342,6 +1353,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when 1
@@ -1462,6 +1474,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when 1
@@ -1528,6 +1541,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when
@@ -1574,6 +1588,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when
@@ -1650,6 +1665,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when
@@ -1729,6 +1745,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        cargoFeatures = null
       )
 
       // when

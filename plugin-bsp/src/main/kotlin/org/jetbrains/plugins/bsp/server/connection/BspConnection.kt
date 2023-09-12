@@ -15,7 +15,8 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.BazelBuildServer
 
-public interface BspServer : BuildServer, CargoBuildServer, JvmBuildServer, JavaBuildServer, BazelBuildServer, PythonBuildServer
+public interface BspServer : BuildServer, CargoBuildServer, JvmBuildServer,
+  JavaBuildServer, BazelBuildServer, PythonBuildServer
 
 /**
  * The BSP connection, implementation should keep all the information
@@ -48,6 +49,10 @@ public interface BspConnection {
    */
   public fun connect(taskId: Any, errorCallback: () -> Unit = {})
 
+  /**
+   * Update server with `SeverCapabilities.cargoFeaturesProvider == true`
+   * with cached features state. Should only be called when connection is established.
+   */
   public fun cargoFeaturesPostConnectAction(parentTaskId: Any)
 
   /**

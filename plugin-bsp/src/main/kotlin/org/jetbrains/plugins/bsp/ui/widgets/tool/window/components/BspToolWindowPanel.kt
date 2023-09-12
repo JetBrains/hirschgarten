@@ -15,11 +15,11 @@ import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.StickyTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.cargo.features.extension.BspPanelCargoFeaturesComponent
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.cargo.features.extension.FeaturesMouseListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.cargo.features.extension.FeaturesService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.cargo.features.extension.FeaturesMouseListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.NotLoadedTargetsMouseListener
 import javax.swing.Icon
@@ -69,11 +69,12 @@ private class ListsUpdater(
     // and therefore cargoFeatures are set in `MagicMetaModel`
     val featuresService = FeaturesService.getInstance(project)
     val bspConnection = BspConnectionService.getInstance(project).value
-    val bool = bspConnection?.capabilities == null || bspConnection.capabilities?.cargoFeaturesProvider == true
-      if (featuresService.areCargoFeaturesInitialized() && bool) {
-        featuresService.value.getPackageFeatures().let { features ->
+    val bool =
+      bspConnection?.capabilities == null || bspConnection.capabilities?.cargoFeaturesProvider == true
+    if (featuresService.areCargoFeaturesInitialized() && bool) {
+      featuresService.value.getPackageFeatures().let { features ->
         cargoFeaturesPanel = BspPanelCargoFeaturesComponent(project, features)
-        cargoFeaturesPanel!!.addMouseListener {  FeaturesMouseListener(it) }
+        cargoFeaturesPanel!!.addMouseListener { FeaturesMouseListener(it) }
       }
     }
   }
@@ -128,7 +129,8 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
       ))
 
       val featuresService = FeaturesService.getInstance(project)
-      val cargoFeaturesProviderOrNoCapabilities = bspConnection.capabilities == null || bspConnection.capabilities?.cargoFeaturesProvider == true
+      val cargoFeaturesProviderOrNoCapabilities =
+        bspConnection.capabilities == null || bspConnection.capabilities?.cargoFeaturesProvider == true
       if (featuresService.areCargoFeaturesInitialized() && cargoFeaturesProviderOrNoCapabilities) {
         actionGroup.add(StickyTargetAction(
           hintText = cargoFeatures,
@@ -160,7 +162,7 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
 
     return this.templateText == notLoadedTargetsActionName ||
       this.templateText == loadedTargetsActionName ||
-      this.templateText == cargoFeaturesActionName || 
+      this.templateText == cargoFeaturesActionName ||
       this.templateText == restartActionName ||
       this is EternallyDisabledAction ||
       this is FilterActionGroup

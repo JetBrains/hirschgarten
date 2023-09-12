@@ -131,17 +131,32 @@ public class BspFileConnection(
     if (capabilities?.cargoFeaturesProvider == true) {
       val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
       val postConnectActionId = "sync-features-state-with-server"
-      bspSyncConsole.startSubtask(parentTaskId, postConnectActionId, "Updating server's features state...")
+      bspSyncConsole.startSubtask(
+        parentTaskId,
+        postConnectActionId,
+        "Updating server's features state..."
+      )
       try {
         val featuresState = FeaturesService.getInstance(project).value.enabled
         featuresState.forEach { (packageId, enabledFeatures) ->
-          server!!.setCargoFeatures(SetCargoFeaturesParams(packageId, enabledFeatures.toList())).get()
+          server!!.setCargoFeatures(
+            SetCargoFeaturesParams(
+              packageId,
+              enabledFeatures.toList()
+            )
+          ).get()
         }
-        bspSyncConsole.addMessage(postConnectActionId, "Server's features state updated.")
+        bspSyncConsole.addMessage(
+          postConnectActionId,
+          "Server's features state updated."
+        )
         bspSyncConsole.finishSubtask(parentTaskId, postConnectActionId)
-      }
-      catch (e: Exception) {
-        bspSyncConsole.finishSubtask(parentTaskId, postConnectActionId, FailureResultImpl(e))
+      } catch (e: Exception) {
+        bspSyncConsole.finishSubtask(
+          parentTaskId,
+          postConnectActionId,
+          FailureResultImpl(e)
+        )
       }
     }
   }
