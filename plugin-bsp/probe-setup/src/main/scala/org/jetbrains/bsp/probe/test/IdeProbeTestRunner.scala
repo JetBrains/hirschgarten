@@ -32,31 +32,22 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
   def openProject(intellij: RunningIntelliJFixture, configuration: Option[String] = None): (ProbeDriver, RobotProbeDriver) = {
     val probe = intellij.probe
     val robot = probe.withRobot
-    val openingProjectWaitLogic = openProjectAsync(intellij.probe, intellij.workspace)
-    tryRunning(
-      robot.clickDialogButton("Open or Import Project", "OK")
-    )
-    probe.await(openingProjectWaitLogic)
-    val clickThroughImportDialog = new DoOnlyOnce({
-      val importDialog = robot.find(query.className("MyDialog", ("title", "Import Project via BSP")))
-      val configurationInput = importDialog.find(query.className("JBTextArea"))
-      configuration.foreach(configurationInput.setText(_))
-      importDialog.find(query.button("text" -> "Create")).doClick()
-    })
-    val importing = new BasicWaiting(5.seconds, 10.minutes, { _ =>
-      clickThroughImportDialog.attempt()
-      if (clickThroughImportDialog.isSuccessful) Done
-      else KeepWaiting()
-    })
-    probe.await(importing)
+
+    openProjectAsync(intellij.probe, intellij.workspace)
+
+    val openingIntellijProjectWaitLogic = robot.startOpeningIntellijProject()
+    probe.await(openingIntellijProjectWaitLogic)
+
     val closeTipOfTheDay = new DoOnlyOnce(robot.closeTipOfTheDay())
-    val waitLogic = waitForProjectImport(robot).doWhileWaiting {
+
+    val waitLogic = robot.waitForProjectImport().doWhileWaiting {
       closeTipOfTheDay.attempt()
       tryRunning(
         robot.find(query.className("StripeButton", ("text", "BSP")))
       )
     }
     probe.await(waitLogic)
+
     (probe, robot)
   }
 
@@ -90,6 +81,9 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
     baseFixture.deleteWorkspace(workspace)
   }
 
+  def openProjectAsync(driver: ProbeDriver, path: Path) = {
+    driver.sendAsync(Endpoints.OpenProject, path)
+  }
 
   implicit class RobotOpts(p: RobotProbeDriver) {
     def clickDialogButton(dialogTitle: String, buttonTitle: String, timeout: FiniteDuration = 10.second) = {
@@ -103,24 +97,47 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
     }
   }
 
-  def waitForProjectImport(robot: RobotProbeDriver): WaitLogic = {
-    WaitLogic.basic(checkFrequency = 15.second, atMost = 1.hour) {
-      Try({
-        robot.find(query.className("ContentTabLabel", ("mytext", "Sync")))
-        val textPanel = robot.find(query.className("InlineProgressPanel"))
-        if (textPanel.findAllText().isEmpty) WaitDecision.Done
-        else throw new Exception()
-      }).getOrElse(WaitDecision.KeepWaiting("Waiting for project import"))
-    }
-  }
+  private def waitForAnySuccess(actions: DoOnlyOnce*) = new BasicWaiting(5.seconds, 10.minutes, { _ =>
+    actions.foreach(_.attempt())
+    if (actions.exists(_.isSuccessful)) Done
+    else KeepWaiting()
+  })
 
-  def openProjectAsync(driver: ProbeDriver, path: Path): WaitLogic = {
-    val future = driver.sendAsync(Endpoints.OpenProject, path)
-    WaitLogic.basic() {
-      if (future.isCompleted)
-        WaitDecision.Done
-      else
-        WaitDecision.KeepWaiting("Waiting for opening the project")
+  private implicit class BspImportOps(r: RobotProbeDriver) {
+
+    def startOpeningIntellijProject() = {
+      val startOpening = clickThroughRunnersDialog()
+      val findImportDialog = new DoOnlyOnce(r.findMainWindow())
+      waitForAnySuccess(startOpening, findImportDialog)
+    }
+
+    private def clickThroughRunnersDialog() = new DoOnlyOnce({
+      r.findWithTimeout(
+        query.div("title.key" -> "project.open.select.from.multiple.processors.dialog.title"),
+        5.second
+      )
+      r.find(query.div("text" -> "BSP (experimental) project")).doClick()
+      r.clickDialogButton("Open or Import Project", "OK")
+    })
+
+    def findMainWindow() =
+      r.find(query.className("ToolWindowPane"))
+
+    def waitForProjectImport(): WaitLogic = {
+      WaitLogic.forUnstableCondition(
+        basicCheckFrequency = 15.second,
+        atMost = 1.hour,
+        ensurePeriod = 15.second,
+        ensureFrequency = 5.second
+      ) {
+        Try({
+          r.find(query.className("BuildView"))
+          r.find(query.className("ContentTabLabel", ("mytext", "Sync")))
+          val textPanel = r.find(query.className("InlineProgressPanel"))
+          if (textPanel.findAllText().isEmpty) WaitDecision.Done
+          else throw new Exception()
+        }).getOrElse(WaitDecision.KeepWaiting("Waiting for project import"))
+      }
     }
   }
 }
