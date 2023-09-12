@@ -21,7 +21,7 @@ class SingleProbeTests {
     with(IdeProbeTestRunner()) {
       val fixture = fixtureWithWorkspaceFromGit(
         "https://github.com/JetBrains/bazel-bsp.git",
-        "2.3.0",
+        "3.0.0",
       ).withBuild(LATEST_NIGHTLY_VERSION, LATEST_VERSION)
       runAfterOpen(fixture, Option.apply(null)) { probe, robot, intellij ->
         fun testTargetsTree(buildPanel: SearchableOps) {
