@@ -12,6 +12,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
@@ -96,7 +97,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     this.whenComplete { _, exception ->
       exception?.let {
         if (isTimeoutException(it)) {
-          val message = BspTasksBundle.message("task.timeout.message")
+          val message = BspPluginBundle.message("task.timeout.message")
           bspBuildConsole.finishTask(buildId, "Timed out", FailureResultImpl(message))
         } else if (isCancellationException(it)) {
           bspBuildConsole.finishTask(buildId, "Canceled", FailureResultImpl("Build task is canceled"))

@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.ui.components.JBTextField
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.StickyTargetAction
 import java.awt.BorderLayout
 import javax.swing.Icon
@@ -16,7 +16,7 @@ import javax.swing.event.DocumentListener
 public class SearchBarPanel : JPanel(BorderLayout()) {
   private val textFieldComponent = JBTextField()
   private val displayAsTree = BooleanWithButton(
-    buttonText = BspAllTargetsWidgetBundle.message("target.search.display.as.tree"),
+    buttonText = BspPluginBundle.message("widget.target.search.display.as.tree"),
     buttonIcon = AllIcons.Actions.ShowAsTree,
   )
 

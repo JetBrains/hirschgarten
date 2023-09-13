@@ -6,8 +6,8 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
@@ -38,11 +38,11 @@ public class BuildTargetSearch(
 
   private var displayedSearchPanel: JPanel? = null
   private val inProgressInfoComponent = JBLabel(
-    BspAllTargetsWidgetBundle.message("widget.loading.targets"),
+    BspPluginBundle.message("widget.loading.targets"),
     SwingConstants.CENTER,
   )
   private val noResultsInfoComponent = JBLabel(
-    BspAllTargetsWidgetBundle.message("target.search.no.results"),
+    BspPluginBundle.message("widget.target.search.no.results"),
     SwingConstants.CENTER,
   )
 

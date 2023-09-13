@@ -48,6 +48,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transforme
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
@@ -156,7 +157,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         bspSyncConsole.finishTask(
           taskId = taskId,
           message = "Timed out",
-          result = FailureResultImpl(BspTasksBundle.message("task.timeout.message")),
+          result = FailureResultImpl(BspPluginBundle.message("task.timeout.message")),
         )
 
       else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))

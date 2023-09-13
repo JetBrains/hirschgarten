@@ -19,12 +19,12 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import java.net.URI
 
 private const val ID = "BspDocumentTargetsWidget"
@@ -49,7 +49,7 @@ private class LoadTargetAction(
     BspCoroutineService.getInstance(project).start { diff?.applyOnWorkspaceModel() }
 
     BspBalloonNotifier.info(
-      BspAllTargetsWidgetBundle.message("widget.load.target.notification", target),
+      BspPluginBundle.message("widget.load.target.notification", target),
       "Load target",
     )
     updateWidget()
@@ -83,7 +83,7 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
   }
 
   private fun inactiveWidgetState(): WidgetState {
-    val state = WidgetState(BspDocumentTargetsWidgetBundle.message("widget.tooltip.text.inactive"), "", false)
+    val state = WidgetState(BspPluginBundle.message("widget.tooltip.text.inactive"), "", false)
     state.icon = BspPluginIcons.bsp
 
     return state
@@ -91,7 +91,7 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
 
   private fun activeWidgetState(loadedTarget: BuildTargetId?): WidgetState {
     val text = loadedTarget ?: ""
-    val state = WidgetState(BspDocumentTargetsWidgetBundle.message("widget.tooltip.text.active"), text, true)
+    val state = WidgetState(BspPluginBundle.message("widget.tooltip.text.active"), text, true)
     state.icon = BspPluginIcons.bsp
 
     return state
@@ -101,7 +101,7 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     val file = CommonDataKeys.VIRTUAL_FILE.getData(context)!!
     val group = calculatePopupGroup(file)
     val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
-    val title = BspDocumentTargetsWidgetBundle.message("widget.title")
+    val title = BspPluginBundle.message("widget.title")
 
     return JBPopupFactory.getInstance().createActionGroupPopup(title, group, context, mnemonics, true)
   }
@@ -121,7 +121,7 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     group: DefaultActionGroup,
     loadedTarget: BuildTargetId?,
   ) {
-    group.addSeparator(BspDocumentTargetsWidgetBundle.message("widget.loaded.target.separator.title"))
+    group.addSeparator(BspPluginBundle.message("widget.loaded.target.separator.title"))
 
     if (loadedTarget != null) {
       group.addAction(LoadTargetAction(loadedTarget) { update() })
@@ -132,7 +132,7 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     group: DefaultActionGroup,
     notLoadedTargetsIds: List<BuildTargetId>,
   ) {
-    group.addSeparator(BspDocumentTargetsWidgetBundle.message("widget.available.targets.to.load"))
+    group.addSeparator(BspPluginBundle.message("widget.available.targets.to.load"))
 
     val actions = notLoadedTargetsIds.map { LoadTargetAction(it) { update() } }
     group.addAll(actions)
@@ -154,7 +154,7 @@ public class BspDocumentTargetsWidgetFactory : StatusBarWidgetFactory {
   override fun getId(): String = ID
 
   override fun getDisplayName(): String =
-    BspDocumentTargetsWidgetBundle.message("widget.factory.display.name")
+    BspPluginBundle.message("widget.factory.display.name")
 
   override fun isAvailable(project: Project): Boolean =
     project.isBspProject

@@ -11,10 +11,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
 import java.awt.Point
@@ -62,7 +62,7 @@ public class NotLoadedTargetsMouseListener(
     return if (target != null) {
       val copyTargetIdAction = container.copyTargetIdAction
       val loadTargetAction = LoadTargetAction(
-        BspAllTargetsWidgetBundle.message("widget.load.target.popup.message"),
+        BspPluginBundle.message("widget.load.target.popup.message"),
         target,
       )
       DefaultActionGroup().apply {
@@ -82,13 +82,17 @@ public class NotLoadedTargetsMouseListener(
     }
   }
 
-  override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
+  override fun mousePressed(e: MouseEvent?) { // nothing to do
+  }
 
-  override fun mouseReleased(e: MouseEvent?) { /* nothing to do */ }
+  override fun mouseReleased(e: MouseEvent?) { // nothing to do
+  }
 
-  override fun mouseEntered(e: MouseEvent?) { /* nothing to do */ }
+  override fun mouseEntered(e: MouseEvent?) { // nothing to do
+  }
 
-  override fun mouseExited(e: MouseEvent?) { /* nothing to do */ }
+  override fun mouseExited(e: MouseEvent?) { // nothing to do
+  }
 }
 
 private class LoadTargetAction(
@@ -110,8 +114,8 @@ private class LoadTargetAction(
       BspCoroutineService.getInstance(project).start { diff?.applyOnWorkspaceModel() }
 
       BspBalloonNotifier.info(
-        BspAllTargetsWidgetBundle.message("widget.load.target.notification", targetId),
-        "Load target",
+        BspPluginBundle.message("widget.load.target.notification", targetId),
+        BspPluginBundle.message("widget.load.target")
       )
     }
   }
