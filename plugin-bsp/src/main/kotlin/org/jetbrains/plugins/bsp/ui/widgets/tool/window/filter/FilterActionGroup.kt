@@ -6,11 +6,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.actionSystem.Toggleable
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 
 public class FilterActionGroup(private val targetFilter: TargetFilter) :
   DefaultActionGroup(
-    BspAllTargetsWidgetBundle.message("widget.filter.action.group"),
+    BspPluginBundle.message("widget.filter.action.group"),
     null,
     AllIcons.General.Filter,
   ),
@@ -19,15 +19,15 @@ public class FilterActionGroup(private val targetFilter: TargetFilter) :
     this.isPopup = true
     addFilterChangeAction(
       TargetFilter.FILTER.OFF,
-      BspAllTargetsWidgetBundle.message("widget.filter.turn.off"),
+      BspPluginBundle.message("widget.filter.turn.off"),
     )
     addFilterChangeAction(
       TargetFilter.FILTER.CAN_RUN,
-      BspAllTargetsWidgetBundle.message("widget.filter.can.run"),
+      BspPluginBundle.message("widget.filter.can.run"),
     )
     addFilterChangeAction(
       TargetFilter.FILTER.CAN_TEST,
-      BspAllTargetsWidgetBundle.message("widget.filter.can.test"),
+      BspPluginBundle.message("widget.filter.can.test"),
     )
   }
 

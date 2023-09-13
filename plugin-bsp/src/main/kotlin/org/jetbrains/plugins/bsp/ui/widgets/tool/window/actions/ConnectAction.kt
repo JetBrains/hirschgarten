@@ -6,13 +6,13 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 
-public class ConnectAction : AnAction(BspAllTargetsWidgetBundle.message("connect.action.text")) {
+public class ConnectAction : AnAction(BspPluginBundle.message("connect.action.text")) {
   override fun actionPerformed(e: AnActionEvent) {
     val project = e.project
 

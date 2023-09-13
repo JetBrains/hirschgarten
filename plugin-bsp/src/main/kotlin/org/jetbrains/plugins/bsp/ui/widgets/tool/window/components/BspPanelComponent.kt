@@ -5,7 +5,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import java.awt.Component
 import java.awt.event.MouseListener
@@ -25,7 +25,7 @@ public class BspPanelComponent private constructor(
   private val targetSearch: BuildTargetSearch,
 ) : JPanel(VerticalLayout(0)) {
   private val emptyTreeMessage = JBLabel(
-    BspAllTargetsWidgetBundle.message("widget.no.targets.message"),
+    BspPluginBundle.message("widget.no.targets.message"),
     SwingConstants.CENTER,
   )
 

@@ -17,9 +17,9 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ReloadAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import java.io.File
 import java.net.URI
 
@@ -323,7 +323,7 @@ public class SyncTaskConsole(
   basePath: String,
 ) : TaskConsole(taskView, basePath) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
-    object : AnAction({ BspAllTargetsWidgetBundle.message("reload.action.text") }, BspPluginIcons.reload) {
+    object : AnAction({ BspPluginBundle.message("reload.action.text") }, BspPluginIcons.reload) {
       override fun actionPerformed(e: AnActionEvent) {
         redoAction?.invoke() ?: ReloadAction().actionPerformed(e)
       }
@@ -342,7 +342,7 @@ public class BuildTaskConsole(
   basePath: String,
 ) : TaskConsole(taskView, basePath) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
-    object : AnAction({ BspAllTargetsWidgetBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
+    object : AnAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
       override fun actionPerformed(e: AnActionEvent) {
         redoAction?.invoke()
       }

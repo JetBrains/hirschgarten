@@ -7,14 +7,14 @@ import com.intellij.openapi.actionSystem.CommonShortcuts
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.util.ui.TextTransferable
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import javax.swing.JComponent
 
 public class CopyTargetIdAction(
   private val container: BuildTargetContainer,
   component: JComponent,
-) : AnAction({ BspAllTargetsWidgetBundle.message("widget.copy.target.id") }, AllIcons.Actions.Copy) {
+) : AnAction({ BspPluginBundle.message("widget.copy.target.id") }, AllIcons.Actions.Copy) {
   init {
     registerCustomShortcutSet(CommonShortcuts.getCopy(), component)
   }

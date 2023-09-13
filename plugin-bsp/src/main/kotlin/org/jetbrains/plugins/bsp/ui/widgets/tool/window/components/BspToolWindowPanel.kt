@@ -8,11 +8,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.extension.points.buildToolIconProviderExtensions
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspAllTargetsWidgetBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.StickyTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
@@ -83,8 +83,8 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     val actionGroup = actionManager
       .getAction("Bsp.ActionsToolbar") as DefaultActionGroup
 
-    val notLoadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.not.loaded.targets.tab.name")
-    val loadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.loaded.targets.tab.name")
+    val notLoadedTargetsActionName = BspPluginBundle.message("widget.not.loaded.targets.tab.name")
+    val loadedTargetsActionName = BspPluginBundle.message("widget.loaded.targets.tab.name")
 
     actionGroup.childActionsOrStubs.iterator().forEach {
       if (it.shouldBeDisposedAfterReload()) {
@@ -123,9 +123,9 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
   }
 
   private fun AnAction.shouldBeDisposedAfterReload(): Boolean {
-    val notLoadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.not.loaded.targets.tab.name")
-    val loadedTargetsActionName = BspAllTargetsWidgetBundle.message("widget.loaded.targets.tab.name")
-    val restartActionName = BspAllTargetsWidgetBundle.message("restart.action.text")
+    val notLoadedTargetsActionName = BspPluginBundle.message("widget.not.loaded.targets.tab.name")
+    val loadedTargetsActionName = BspPluginBundle.message("widget.loaded.targets.tab.name")
+    val restartActionName = BspPluginBundle.message("restart.action.text")
 
     return this.templateText == notLoadedTargetsActionName ||
       this.templateText == loadedTargetsActionName ||
@@ -147,20 +147,20 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
   private fun DefaultActionGroup.addDummyActions() {
     add(
       EternallyDisabledAction(
-        BspAllTargetsWidgetBundle.message("widget.not.loaded.targets.tab.name"),
+        BspPluginBundle.message("widget.not.loaded.targets.tab.name"),
         BspPluginIcons.notLoadedTarget,
       ),
     )
     add(
       EternallyDisabledAction(
-        BspAllTargetsWidgetBundle.message("widget.loaded.targets.tab.name"),
+        BspPluginBundle.message("widget.loaded.targets.tab.name"),
         BspPluginIcons.loadedTarget,
       ),
     )
     addSeparator()
     add(
       EternallyDisabledAction(
-        BspAllTargetsWidgetBundle.message("widget.filter.action.group"),
+        BspPluginBundle.message("widget.filter.action.group"),
         AllIcons.General.Filter,
       ),
     )
