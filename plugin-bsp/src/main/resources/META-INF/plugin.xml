@@ -49,6 +49,8 @@
       implementation="org.jetbrains.plugins.bsp.flow.open.BspStartupActivity"/>
     <externalSystemUnlinkedProjectAware id="Bazel BSP" implementation="org.jetbrains.plugins.bsp.flow.open.BazelBspUnlinkedProjectAware"/>
 
+    <treeStructureProvider implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspTreeStructureProvider"/>
+    <projectViewNodeDecorator implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspProjectViewNodeDecorator"/>
     <projectTaskRunner
       implementation="org.jetbrains.plugins.bsp.actions.building.BspProjectTaskRunner"/>
 

@@ -11,6 +11,7 @@ public data class BuildTargetInfo(
   val dependencies: List<BuildTargetId> = emptyList(),
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
   val languageIds: LanguageIds = emptyList(),
+  val baseDirectory: String? = null,
 )
 
 public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
@@ -20,6 +21,7 @@ public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
     dependencies = dependencies.map { it.uri },
     capabilities = capabilities.toModuleCapabilities(),
     languageIds = languageIds,
+    baseDirectory = baseDirectory
   )
 
 public abstract class WorkspaceModelEntity
