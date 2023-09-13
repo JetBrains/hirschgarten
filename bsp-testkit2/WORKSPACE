@@ -69,7 +69,7 @@ maven_install(
     artifacts = [
         "com.google.code.gson:gson:2.10.1",
         "com.google.guava:guava:31.0.1-jre",
-        "com.github.zpp-This-is-fine:build-server-protocol:fixed-rust-edition",
+        "com.github.zpp-This-is-fine:build-server-protocol:resolved-targets-workspace",
         "org.junit.jupiter:junit-jupiter:5.9.3",
         "org.scala-lang:scala-library:2.13.11"
     ],
@@ -77,5 +77,6 @@ maven_install(
     repositories = [
         "https://maven.google.com",
         "https://repo.maven.apache.org/maven2",
+        "https://jitpack.io",
     ],
 )
