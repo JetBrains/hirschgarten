@@ -26,6 +26,7 @@ internal class WorkspaceModelUpdaterImpl(
   workspaceEntityStorageBuilder: MutableEntityStorage,
   val virtualFileUrlManager: VirtualFileUrlManager,
   projectBasePath: Path,
+  isPythonSupportEnabled: Boolean,
 ) : WorkspaceModelUpdater {
   private val workspaceModelEntityUpdaterConfig = WorkspaceModelEntityUpdaterConfig(
     workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
@@ -33,7 +34,7 @@ internal class WorkspaceModelUpdaterImpl(
     projectBasePath = projectBasePath,
   )
   private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
-  private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig)
+  private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled)
 
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
   private val javaModuleToDummyJavaModulesTransformerHACK =

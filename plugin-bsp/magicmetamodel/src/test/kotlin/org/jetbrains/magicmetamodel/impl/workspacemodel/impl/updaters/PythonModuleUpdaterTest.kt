@@ -34,7 +34,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
   inner class PythonModuleWithSourcesUpdaterTest {
     @Test
     fun `should add one python module with sources to the workspace model`() {
-      runTestForUpdaters(listOf(PythonModuleWithSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
+      runTestForUpdaters(isPythonSupportEnabled = true, listOf(PythonModuleWithSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
         // given
         val module = GenericModuleInfo(
           name = "module1",
@@ -195,7 +195,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
 
     @Test
     fun `should add multiple python modules with sources to the workspace model`() {
-      runTestForUpdaters(listOf(PythonModuleWithSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
+      runTestForUpdaters(isPythonSupportEnabled = true, listOf(PythonModuleWithSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
         // given
         val module1 = GenericModuleInfo(
           name = "module1",
@@ -434,6 +434,68 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         )
       }
     }
+
+    @Test
+    fun `should not add the sdk dependency when python support is not enabled`() {
+      runTestForUpdaters(isPythonSupportEnabled = false, listOf(PythonModuleWithSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
+        // given
+        val module = GenericModuleInfo(
+          name = "module1",
+          type = "PYTHON_MODULE",
+          modulesDependencies = listOf(
+            ModuleDependency(
+              moduleName = "module2",
+            ),
+          ),
+          librariesDependencies = listOf(),
+        )
+
+        val sourceRoots = listOf(
+          GenericSourceRoot(
+            sourcePath = URI.create("file:///root/dir/example/package/one").toPath(),
+            rootType = "python-source",
+          ),
+        )
+
+        val sdkInfo = PythonSdkInfo(version = "3", originalName = "fake-interpreter-name")
+
+        val pythonModule = PythonModule(
+          module = module,
+          sourceRoots = sourceRoots,
+          resourceRoots = emptyList(),
+          libraries = listOf(),
+          sdkInfo = sdkInfo,
+        )
+
+        // when
+        val returnedModuleEntity = runTestWriteAction {
+          updater.addEntity(pythonModule)
+        }
+
+        // then
+        val expectedModuleEntity = ExpectedModuleEntity(
+          moduleEntity = ModuleEntity(
+            name = "module1",
+            entitySource = BspEntitySource,
+            dependencies = listOf(
+              ModuleDependencyItem.Exportable.ModuleDependency(
+                module = ModuleId("module2"),
+                exported = true,
+                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                productionOnTest = true,
+              ),
+              ModuleDependencyItem.ModuleSourceDependency,
+            ),
+          ) {
+            type = "PYTHON_MODULE"
+          },
+        )
+
+        returnedModuleEntity shouldBeEqual expectedModuleEntity
+
+        loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedModuleEntity)
+      }
+    }
   }
 
   @Nested
@@ -441,7 +503,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
   inner class PythonModuleWithoutSourcesUpdaterTest {
     @Test
     fun `should add one python module without sources to the workspace model`() {
-      runTestForUpdaters(listOf(PythonModuleWithoutSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
+      runTestForUpdaters(isPythonSupportEnabled = true, listOf(PythonModuleWithoutSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
         // given
         val module = GenericModuleInfo(
           name = "module1",
@@ -481,7 +543,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
 
     @Test
     fun `should add multiple python modules without sources to the workspace model`() {
-      runTestForUpdaters(listOf(PythonModuleWithoutSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
+      runTestForUpdaters(isPythonSupportEnabled = true, listOf(PythonModuleWithoutSourcesUpdater::class, PythonModuleUpdater::class)) { updater ->
         // given
         val module1 = GenericModuleInfo(
           name = "module1",
@@ -549,22 +611,27 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
   }
 
   private fun runTestForUpdaters(
+    isPythonSupportEnabled: Boolean = true,
     updaters: List<KClass<out WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity>>>,
     test: (WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity>) -> Unit,
   ) =
     updaters
       .map { it.primaryConstructor!! }
-      .forEach { runTest(it, test) }
+      .forEach { runTest(it, test, isPythonSupportEnabled) }
 
   private fun runTest(
     updaterConstructor: KFunction<WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity>>,
     test: (WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity>) -> Unit,
+    isPythonSupportEnabled: Boolean,
   ) {
     beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
       WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
 
-    test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))
+    if (updaterConstructor.parameters.size == 1)
+      test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))
+    else if (updaterConstructor.parameters.size == 2)
+      test(updaterConstructor.call(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled))
   }
 }

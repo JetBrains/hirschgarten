@@ -7,6 +7,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.
 
 internal class PythonModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+  private val isPythonSupportEnabled: Boolean,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
   override fun addEntity(entityToAdd: PythonModule): ModuleEntity {
     val moduleEntityUpdater =
@@ -24,9 +25,10 @@ internal class PythonModuleWithSourcesUpdater(
   }
 
   private fun calculateModuleDefaultDependencies(entityToAdd: PythonModule): List<ModuleDependencyItem> =
-    if (entityToAdd.sdkInfo != null) {
+    if (isPythonSupportEnabled && entityToAdd.sdkInfo != null)
       defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.sdkInfo.toString(), PYTHON_SDK_ID)
-    } else defaultDependencies
+    else
+      defaultDependencies
 
   private companion object {
     val defaultDependencies = listOf(
@@ -46,8 +48,10 @@ internal class PythonModuleWithoutSourcesUpdater(
 
 internal class PythonModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+  isPythonSupportEnabled: Boolean,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
-  private val pythonModuleWithSourcesUpdater = PythonModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig)
+  private val pythonModuleWithSourcesUpdater =
+    PythonModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled)
   private val pythonModuleWithoutSourcesUpdater = PythonModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(entityToAdd: PythonModule): ModuleEntity =

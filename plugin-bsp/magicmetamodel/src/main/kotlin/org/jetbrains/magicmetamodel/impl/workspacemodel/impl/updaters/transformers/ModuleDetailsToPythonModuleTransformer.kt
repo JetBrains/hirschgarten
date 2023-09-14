@@ -15,6 +15,7 @@ import java.nio.file.Path
 internal class ModuleDetailsToPythonModuleTransformer(
   moduleNameProvider: ModuleNameProvider,
   projectBasePath: Path,
+  private val hasDefaultPythonInterpreter: Boolean,
 ) : ModuleDetailsToModuleTransformer<PythonModule>(moduleNameProvider) {
   override val type = "PYTHON_MODULE"
 
@@ -57,8 +58,17 @@ internal class ModuleDetailsToPythonModuleTransformer(
         version = pythonBuildTarget.version,
         originalName = inputEntity.target.id.uri,
       )
-    else null
+    else
+      toDefaultSdkInfo(inputEntity, pythonBuildTarget)
   }
+
+  private fun toDefaultSdkInfo(inputEntity: ModuleDetails, pythonBuildTarget: PythonBuildTarget?): PythonSdkInfo? =
+    if (hasDefaultPythonInterpreter)
+      PythonSdkInfo(
+        version = pythonBuildTarget?.version ?: "PY3",
+        originalName = "${inputEntity.target.id.uri}-detected"
+      )
+    else null
 }
 
 public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? =

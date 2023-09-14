@@ -15,6 +15,7 @@ public object TargetIdToModuleEntitiesMap {
     projectDetails: ProjectDetails,
     projectBasePath: Path,
     moduleNameProvider: ModuleNameProvider,
+    hasDefaultPythonInterpreter: Boolean,
   ): Map<BuildTargetId, Module> {
     val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(
       moduleNameProvider,
@@ -23,6 +24,7 @@ public object TargetIdToModuleEntitiesMap {
     val moduleDetailsToPythonModuleTransformer = ModuleDetailsToPythonModuleTransformer(
       moduleNameProvider,
       projectBasePath,
+      hasDefaultPythonInterpreter,
     )
 
     val transformer = ProjectDetailsToModuleDetailsTransformer(projectBasePath, projectDetails)
