@@ -63,12 +63,13 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
+import kotlin.io.path.Path
 import kotlin.io.path.toPath
 import kotlin.system.exitProcess
 
 public data class PythonSdk(
   val name: String,
-  val interpreter: String,
+  val interpreterUri: String,
   val dependencies: List<DependencySourcesItem>,
 )
 
@@ -198,15 +199,23 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? =
-    extractPythonBuildTarget(target)
-      ?.takeIf { it.version != null && it.interpreter != null }
-      ?.let {
+    extractPythonBuildTarget(target)?.let {
+      if (it.interpreter != null && it.version != null)
         PythonSdk(
           name = "${target.id.uri}-${it.version}",
-          interpreter = it.interpreter,
+          interpreterUri = it.interpreter,
           dependencies = dependenciesSources,
         )
-      }
+      else
+        pythonSdkGetterExtension()
+          ?.getSystemSdk()
+          ?.let { sdk ->
+            PythonSdk(
+              name = "${target.id.uri}-detected-PY3",
+              interpreterUri = Path(sdk.homePath!!).toUri().toString(),
+              dependencies = dependenciesSources)
+          }
+    }
 
   private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<PythonSdk> {
     return projectDetails.targets

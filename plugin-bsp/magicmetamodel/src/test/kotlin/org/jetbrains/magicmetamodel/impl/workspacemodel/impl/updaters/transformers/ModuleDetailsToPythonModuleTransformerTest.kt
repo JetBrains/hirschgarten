@@ -38,6 +38,8 @@ import kotlin.io.path.createTempFile
 @DisplayName("ModuleDetailsToPythonModuleTransformer.transform(moduleDetails) tests")
 class ModuleDetailsToPythonModuleTransformerTest {
   val projectBasePath = Path("")
+  private val defaultPythonVersion = "PY3"
+  private val hasDefaultPythonInterpreter = true
 
   @Test
   fun `should return no python modules roots for no modules details`() {
@@ -45,7 +47,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(emptyModulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath, hasDefaultPythonInterpreter).transform(emptyModulesDetails)
 
     // then
     pythonModules shouldBe emptyList()
@@ -57,12 +59,12 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
     projectRoot.toFile().deleteOnExit()
 
-    val version = "3"
-    val originalName = "fake-original-name"
+    val version = "PY3"
+    val interpreter = "/path/to/interpreter"
 
     val sdkInfoJsonObject = JsonObject()
     sdkInfoJsonObject.addProperty("version", version)
-    sdkInfoJsonObject.addProperty("originalName", originalName)
+    sdkInfoJsonObject.addProperty("interpreter", interpreter)
 
     val buildTargetId = BuildTargetIdentifier("module1")
     val buildTarget = BuildTarget(
@@ -137,7 +139,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     )
 
     // when
-    val pythonModule = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
+    val pythonModule = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath, hasDefaultPythonInterpreter).transform(moduleDetails)
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -164,12 +166,14 @@ class ModuleDetailsToPythonModuleTransformerTest {
       resourcePath = resourceFilePath.parent,
     )
 
+    val expectedPythonSdkInfo = PythonSdkInfo(version = version, originalName = buildTargetId.uri)
+
     val expectedPythonModule = PythonModule(
       module = expectedModule,
       sourceRoots = listOf(expectedGenericSourceRoot1, expectedGenericSourceRoot2, expectedGenericSourceRoot3),
       resourceRoots = listOf(expectedResourceRoot1),
       libraries = emptyList(),
-      sdkInfo = PythonSdkInfo(version = version, originalName = originalName),
+      sdkInfo = expectedPythonSdkInfo,
     )
 
     validatePythonModule(pythonModule, expectedPythonModule)
@@ -316,7 +320,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath, hasDefaultPythonInterpreter).transform(modulesDetails)
 
     // then
     val expectedModule1 = GenericModuleInfo(
@@ -343,12 +347,14 @@ class ModuleDetailsToPythonModuleTransformerTest {
       resourcePath = resourceFilePath11.parent,
     )
 
+    val expectedPythonSdk1 = PythonSdkInfo(version = defaultPythonVersion, originalName = "${buildTargetId1.uri}-detected")
+
     val expectedPythonModule1 = PythonModule(
       module = expectedModule1,
       sourceRoots = listOf(expectedGenericSourceRoot11, expectedGenericSourceRoot12, expectedGenericSourceRoot13),
       resourceRoots = listOf(expectedResourceRoot11),
       libraries = listOf(PythonLibrary(dependencySourcesItem1.sources)),
-      sdkInfo = null,
+      sdkInfo = expectedPythonSdk1,
     )
 
     val expectedModule2 = GenericModuleInfo(
@@ -367,16 +373,133 @@ class ModuleDetailsToPythonModuleTransformerTest {
       resourcePath = resourceDirPath21,
     )
 
+    val expectedPythonSdk2 = PythonSdkInfo(version = defaultPythonVersion, originalName = "${buildTargetId2.uri}-detected")
+
     val expectedPythonModule2 = PythonModule(
       module = expectedModule2,
       sourceRoots = listOf(expectedGenericSourceRoot21),
       resourceRoots = listOf(expectedResourceRoot21),
       libraries = emptyList(),
-      sdkInfo = null,
+      sdkInfo = expectedPythonSdk2,
     )
 
     pythonModules shouldContainExactlyInAnyOrder Pair(
       listOf(expectedPythonModule1, expectedPythonModule2), this::validatePythonModule,
+    )
+  }
+
+  @Test
+  fun `should set default sdk info if there's no sdk provided`() {
+    fun emptyModuleDetails(target: BuildTarget) =
+      ModuleDetails(
+        target = target,
+        sources = emptyList(),
+        resources = emptyList(),
+        dependenciesSources = emptyList(),
+        javacOptions = null,
+        pythonOptions = null,
+        outputPathUris = emptyList(),
+        libraryDependencies = null,
+        moduleDependencies = emptyList()
+      )
+
+    fun emptyExpectedModule(name: String, sdkInfo: PythonSdkInfo): PythonModule {
+      val expectedModule = GenericModuleInfo(
+        name = name,
+        type = "PYTHON_MODULE",
+        modulesDependencies = emptyList(),
+        librariesDependencies = emptyList(),
+      )
+
+      return PythonModule(
+        module = expectedModule,
+        sourceRoots = emptyList(),
+        resourceRoots = emptyList(),
+        libraries = emptyList(),
+        sdkInfo = sdkInfo,
+      )
+    }
+
+    // given
+    val projectRoot = createTempDirectory(projectBasePath, "project").toAbsolutePath()
+    projectRoot.toFile().deleteOnExit()
+
+    val version1 = "PY2"
+    val interpreter1: String? = null
+
+    val version2: String? = null
+    val interpreter2 = "/path/to/interpreter"
+
+    val sdkInfoJsonObject1 = JsonObject()
+    sdkInfoJsonObject1.addProperty("version", version1)
+    sdkInfoJsonObject1.addProperty("interpreter", interpreter1)
+
+    val sdkInfoJsonObject2 = JsonObject()
+    sdkInfoJsonObject2.addProperty("version", version2)
+    sdkInfoJsonObject2.addProperty("interpreter", interpreter2)
+
+    val sdkInfoJsonObject3 = JsonObject()
+
+    val buildTarget1Id = BuildTargetIdentifier("module1")
+    val buildTarget1 = BuildTarget(
+      buildTarget1Id,
+      listOf("library"),
+      listOf("python"),
+      emptyList(),
+      BuildTargetCapabilities(),
+    )
+    buildTarget1.baseDirectory = projectRoot.toUri().toString()
+    buildTarget1.dataKind = BuildTargetDataKind.PYTHON
+    buildTarget1.data = sdkInfoJsonObject1
+
+    val moduleDetails1 = emptyModuleDetails(buildTarget1)
+
+    val buildTarget2Id = BuildTargetIdentifier("module2")
+    val buildTarget2 = BuildTarget(
+      buildTarget2Id,
+      listOf("library"),
+      listOf("python"),
+      emptyList(),
+      BuildTargetCapabilities(),
+    )
+    buildTarget2.baseDirectory = projectRoot.toUri().toString()
+    buildTarget2.dataKind = BuildTargetDataKind.PYTHON
+    buildTarget2.data = sdkInfoJsonObject2
+
+    val moduleDetails2 = emptyModuleDetails(buildTarget2)
+
+    val buildTarget3Id = BuildTargetIdentifier("module3")
+    val buildTarget3 = BuildTarget(
+      buildTarget3Id,
+      listOf("library"),
+      listOf("python"),
+      emptyList(),
+      BuildTargetCapabilities(),
+    )
+    buildTarget3.baseDirectory = projectRoot.toUri().toString()
+    buildTarget3.dataKind = BuildTargetDataKind.PYTHON
+    buildTarget3.data = sdkInfoJsonObject3
+
+    val moduleDetails3 = emptyModuleDetails(buildTarget3)
+
+    val modulesDetails = listOf(moduleDetails1, moduleDetails2, moduleDetails3)
+
+    // when
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath, hasDefaultPythonInterpreter).transform(modulesDetails)
+
+    // then
+    val expectedSdkInfo1 = PythonSdkInfo(version = version1, "${buildTarget1.id.uri}-detected")
+    val expectedSdkInfo2 = PythonSdkInfo(version = defaultPythonVersion, "${buildTarget2.id.uri}-detected")
+    val expectedSdkInfo3 = PythonSdkInfo(version = defaultPythonVersion, "${buildTarget3.id.uri}-detected")
+
+    val expectedModule1 = emptyExpectedModule("module1", expectedSdkInfo1)
+    val expectedModule2 = emptyExpectedModule("module2", expectedSdkInfo2)
+    val expectedModule3 = emptyExpectedModule("module3", expectedSdkInfo3)
+
+    val expectedModules = listOf(expectedModule1, expectedModule2, expectedModule3)
+
+    pythonModules shouldContainExactlyInAnyOrder Pair(
+      expectedModules, this::validatePythonModule,
     )
   }
 
@@ -397,6 +520,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     actual.sourceRoots shouldContainExactlyInAnyOrder expected.sourceRoots
     actual.resourceRoots shouldContainExactlyInAnyOrder expected.resourceRoots
     actual.libraries shouldContainExactlyInAnyOrder expected.libraries
+    actual.sdkInfo shouldBe expected.sdkInfo
   }
 
   private fun validateModule(actual: GenericModuleInfo, expected: GenericModuleInfo) {

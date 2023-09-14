@@ -14,7 +14,10 @@ import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
+import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
+import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 
 @State(
@@ -74,7 +77,18 @@ public class MagicMetaModelService(private val project: Project) :
     val moduleNameProvider = project.findModuleNameProvider()
     val projectBasePath = project.rootDir.toNioPath()
 
-    return MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, moduleNameProvider, projectBasePath)
+    val isPythonSupportEnabled = BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()
+
+    val hasDefaultPythonInterpreter = pythonSdkGetterExtension()?.hasDetectedPythonSdk() == true
+
+    return MagicMetaModelProjectConfig(
+      workspaceModel,
+      virtualFileUrlManager,
+      moduleNameProvider,
+      projectBasePath,
+      isPythonSupportEnabled,
+      hasDefaultPythonInterpreter
+    )
   }
 
   public companion object {

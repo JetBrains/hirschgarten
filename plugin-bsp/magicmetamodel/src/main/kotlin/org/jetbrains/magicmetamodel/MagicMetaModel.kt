@@ -23,16 +23,28 @@ public data class MagicMetaModelProjectConfig(
   val virtualFileUrlManager: VirtualFileUrlManager,
   val projectBasePath: Path,
   val moduleNameProvider: ModuleNameProvider,
+  val isPythonSupportEnabled: Boolean,
+  val hasDefaultPythonInterpreter: Boolean,
 ) {
   public constructor(
     workspaceModel: WorkspaceModel,
     virtualFileUrlManager: VirtualFileUrlManager,
     moduleNameProvider: ModuleNameProvider?,
     projectBasePath: Path,
-  ) : this(workspaceModel, virtualFileUrlManager, projectBasePath, moduleNameProvider ?: DefaultModuleNameProvider)
+    isPythonSupportEnabled: Boolean = false,
+    hasDefaultPythonInterpreter: Boolean = false,
+  ) : this(
+    workspaceModel,
+    virtualFileUrlManager,
+    projectBasePath,
+    moduleNameProvider ?: DefaultModuleNameProvider,
+    isPythonSupportEnabled,
+    hasDefaultPythonInterpreter
+  )
 }
 
 public typealias ModuleNameProvider = (BuildTargetId) -> String
+
 public object DefaultModuleNameProvider : ModuleNameProvider {
   override fun invoke(id: BuildTargetId): String = id
 }

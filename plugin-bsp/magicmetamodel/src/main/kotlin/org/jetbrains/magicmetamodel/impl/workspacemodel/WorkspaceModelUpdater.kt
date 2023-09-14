@@ -47,11 +47,13 @@ internal interface WorkspaceModelUpdater {
       workspaceEntityStorageBuilder: MutableEntityStorage,
       virtualFileUrlManager: VirtualFileUrlManager,
       projectBasePath: Path,
+      isPythonSupportEnabled: Boolean = false,
     ): WorkspaceModelUpdater =
       WorkspaceModelUpdaterImpl(
         workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
         virtualFileUrlManager = virtualFileUrlManager,
         projectBasePath = projectBasePath,
+        isPythonSupportEnabled = isPythonSupportEnabled,
       )
   }
 }

@@ -92,6 +92,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
         projectDetails,
         magicMetaModelProjectConfig.projectBasePath,
         magicMetaModelProjectConfig.moduleNameProvider,
+        magicMetaModelProjectConfig.hasDefaultPythonInterpreter,
       )
     }
 
@@ -151,6 +152,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
       magicMetaModelProjectConfig.projectBasePath,
+      magicMetaModelProjectConfig.isPythonSupportEnabled
     )
 
     workspaceModelUpdater.clear()
@@ -248,6 +250,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
       magicMetaModelProjectConfig.projectBasePath,
+      magicMetaModelProjectConfig.isPythonSupportEnabled
     )
 
     workspaceModelUpdater.removeModules(modulesToRemove)
@@ -293,6 +296,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
       magicMetaModelProjectConfig.projectBasePath,
+      magicMetaModelProjectConfig.isPythonSupportEnabled
     )
 
     workspaceModelUpdater.clear()
@@ -315,6 +319,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   internal fun loadStorage(storage: LoadedTargetsStorage) {
     loadedTargetsStorage = storage
   }
+
+  public fun isPythonSupportEnabled(): Boolean = magicMetaModelProjectConfig.isPythonSupportEnabled
 
   private companion object {
     private val log = logger<MagicMetaModelImpl>()
