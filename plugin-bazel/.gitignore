@@ -3,6 +3,7 @@
 
 # .idea
 .idea/
+!.idea/icon.svg
 
 
 # gradle
