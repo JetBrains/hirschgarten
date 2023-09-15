@@ -14,10 +14,13 @@ private fun createModuleNameProvider(toolName: String): ModuleNameProvider {
   val targetClassifier =
     BspBuildTargetClassifierProvider(toolName, BspBuildTargetClassifierExtension.extensions())
   return {
+    val sanitizedName = targetClassifier.getBuildTargetName(it).replaceDots()
     targetClassifier.getBuildTargetPath(it)
-      .joinToString(".", postfix = ".${targetClassifier.getBuildTargetName(it)}")
+      .joinToString(".", postfix = ".$sanitizedName") { pathElement -> pathElement.replaceDots() }
   }
 }
+
+private fun String.replaceDots(): String = this.replace('.', ' ')
 
 public fun Project.findModuleNameProvider(): ModuleNameProvider? =
   obtainToolNameIfKnown(this)?.let(::createModuleNameProvider)
