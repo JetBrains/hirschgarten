@@ -53,7 +53,7 @@ public class TemporaryBazelBspDetailsConnectionGenerator : BspConnectionDetailsG
       .calculateNeededJars(
         org = "org.jetbrains.bsp",
         name = "bazel-bsp",
-        version = "3.0.0-20230912-bb47e49-NIGHTLY",
+        version = "3.0.0-20230915-c03090d-NIGHTLY",
       )
       .joinToString(":"),
     "org.jetbrains.bsp.bazel.install.Install",
