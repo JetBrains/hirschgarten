@@ -119,7 +119,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
     if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
       indeterminateStep(text = "Calculating all unique python sdk infos") {
-        calculateAllPythonSdkInfosSubtask(projectDetails)
+        runInterruptible { calculateAllPythonSdkInfosSubtask(projectDetails) }
       }
     }
     progressStep(endFraction = 0.75, "Updating magic meta model diff") {
@@ -218,10 +218,9 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
 
   private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<PythonSdk> {
-    return projectDetails.targets
-      .mapNotNull {
-        createPythonSdk(it, projectDetails.dependenciesSources.filter { a -> a.target.uri == it.id.uri })
-      }
+    return projectDetails.targets.mapNotNull {
+      createPythonSdk(it, projectDetails.dependenciesSources.filter { a -> a.target.uri == it.id.uri })
+    }
       .toSet()
   }
 
@@ -281,7 +280,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk, pythonSdkGetterExtension: PythonSdkGetterExtension) {
     val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
-    val sdk = pythonSdkGetterExtension.getPythonSdk(pythonSdk, jdkTable, virtualFileUrlManager)
+    val sdk = runInterruptible { pythonSdkGetterExtension.getPythonSdk(pythonSdk, virtualFileUrlManager) }
 
     addJdkIfNeeded(sdk)
   }
