@@ -238,7 +238,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val kotlinBuildTarget = KotlinBuildTarget(
       languageVersion = "1.8",
       apiVersion = "1.8",
-      kotlincOptions = null,
+      kotlincOptions = listOf(),
       associates = listOf(
         BuildTargetIdentifier("//target4"),
         BuildTargetIdentifier("//target5"),

@@ -1,6 +1,5 @@
 package org.jetbrains.magicmetamodel.impl
 
-import com.google.gson.Gson
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
@@ -9,7 +8,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
-import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlincOpts
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
@@ -226,12 +224,12 @@ public fun PythonSdkInfo.toState(): PythonSdkInfoState = PythonSdkInfoState(
 public data class KotlinAddendumState(
   var languageVersion: String = "",
   val apiVersion: String = "",
-  val kotlincOptions: String = "",
+  val kotlincOptions: List<String> = emptyList(),
 ) : ConvertableFromState<KotlinAddendum> {
   override fun fromState(): KotlinAddendum = KotlinAddendum(
     languageVersion = languageVersion,
     apiVersion = apiVersion,
-    kotlincOptions = Gson().fromJson(kotlincOptions, KotlincOpts::class.java),
+    kotlincOptions = kotlincOptions,
   )
 }
 
@@ -252,7 +250,7 @@ public data class ModuleCapabilitiesState(
 public fun KotlinAddendum.toState(): KotlinAddendumState = KotlinAddendumState(
   languageVersion = languageVersion,
   apiVersion = apiVersion,
-  kotlincOptions = Gson().toJson(kotlincOptions),
+  kotlincOptions = kotlincOptions,
 )
 
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(

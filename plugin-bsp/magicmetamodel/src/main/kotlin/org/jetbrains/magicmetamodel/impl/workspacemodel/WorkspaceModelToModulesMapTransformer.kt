@@ -15,10 +15,11 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.workspaceModel.ide.toPath
 import org.jetbrains.kotlin.idea.facet.KotlinFacetConfiguration
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
+import org.jetbrains.kotlin.platform.jvm.JdkPlatform
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.LoadedTargetsStorage
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.PYTHON_SDK_ID
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.toKotlinCOption
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.toKotlincOptions
 
 public object WorkspaceModelToModulesMapTransformer {
   public operator fun invoke(
@@ -124,7 +125,9 @@ public object WorkspaceModelToModulesMapTransformer {
     KotlinAddendum(
       languageVersion = settings.languageLevel?.versionString.orEmpty(),
       apiVersion = settings.apiLevel?.toString().orEmpty(),
-      kotlincOptions = settings.compilerArguments?.toKotlinCOption(),
+      kotlincOptions = settings
+        .compilerArguments
+        ?.toKotlincOptions(settings.targetPlatform?.singleOrNull() as? JdkPlatform) ?: emptyList(),
     )
 
   private fun ModuleEntity.getBaseDir() =

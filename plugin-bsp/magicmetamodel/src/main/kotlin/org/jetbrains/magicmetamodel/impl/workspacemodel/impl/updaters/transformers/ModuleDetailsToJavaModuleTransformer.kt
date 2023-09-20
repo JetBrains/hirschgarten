@@ -11,7 +11,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
-import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlincOpts
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import java.net.URI
@@ -22,7 +21,7 @@ import kotlin.io.path.toPath
 public data class KotlinBuildTarget(
   val languageVersion: String,
   val apiVersion: String,
-  val kotlincOptions: KotlincOpts?,
+  val kotlincOptions: List<String>,
   val associates: List<BuildTargetIdentifier>,
   var jvmBuildTarget: JvmBuildTarget? = null,
 )
