@@ -37,7 +37,7 @@ class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
       val kotlinBuildTarget = KotlinBuildTarget(
         languageVersion = "1.8",
         apiVersion = "1.8",
-        kotlincOptions = null,
+        kotlincOptions = listOf(),
         associates = associates.map { BuildTargetIdentifier(it) },
         jvmBuildTarget = JvmBuildTarget().also {
           it.javaHome = javaHome
