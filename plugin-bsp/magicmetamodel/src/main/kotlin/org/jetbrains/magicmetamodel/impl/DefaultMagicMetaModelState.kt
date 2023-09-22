@@ -43,6 +43,7 @@ public data class BuildTargetInfoState(
   var dependencies: List<BuildTargetId> = emptyList(),
   var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState(),
   var languageIds: List<String> = emptyList(),
+  var baseDirectory: String? = null,
 ) : ConvertableFromState<BuildTargetInfo> {
   override fun fromState(): BuildTargetInfo =
     BuildTargetInfo(
@@ -51,6 +52,7 @@ public data class BuildTargetInfoState(
       dependencies = dependencies,
       capabilities = capabilities.fromState(),
       languageIds = languageIds,
+      baseDirectory = baseDirectory,
     )
 }
 
@@ -60,6 +62,7 @@ public fun BuildTargetInfo.toState(): BuildTargetInfoState = BuildTargetInfoStat
   dependencies = dependencies,
   capabilities = capabilities.toState(),
   languageIds = languageIds,
+  baseDirectory = baseDirectory,
 )
 
 public data class ContentRootState(

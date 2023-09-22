@@ -19,6 +19,8 @@ public class BspProjectViewNodeDecorator(private val project: Project) : Project
 
   init {
     if (project.isBspProject) {
+      loadedModulesBaseDirectories = calculateAllTargetsBaseDirectories()
+
       val magicMetaModel = MagicMetaModelService.getInstance(project).value
       magicMetaModel.registerTargetLoadListener {
         loadedModulesBaseDirectories = calculateAllTargetsBaseDirectories()
