@@ -19,7 +19,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ReloadAction
+import org.jetbrains.plugins.bsp.ui.actions.registered.ReloadAction
 import java.io.File
 import java.net.URI
 

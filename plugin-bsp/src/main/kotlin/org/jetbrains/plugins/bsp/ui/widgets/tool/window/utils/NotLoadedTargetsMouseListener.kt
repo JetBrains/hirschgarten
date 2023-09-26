@@ -4,17 +4,11 @@ import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
+import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
 import java.awt.Point
@@ -61,10 +55,7 @@ public class NotLoadedTargetsMouseListener(
 
     return if (target != null) {
       val copyTargetIdAction = container.copyTargetIdAction
-      val loadTargetAction = LoadTargetAction(
-        BspPluginBundle.message("widget.load.target.popup.message"),
-        target,
-      )
+      val loadTargetAction = LoadTargetAction(target.id)
       DefaultActionGroup().apply {
         addAction(copyTargetIdAction)
         addSeparator()
@@ -78,7 +69,7 @@ public class NotLoadedTargetsMouseListener(
 
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.let {
-      LoadTargetAction.loadTarget(project, it.id)
+      BspCoroutineService.getInstance(project).start { LoadTargetAction.loadTarget(project, it.id) }
     }
   }
 
@@ -92,31 +83,5 @@ public class NotLoadedTargetsMouseListener(
   }
 
   override fun mouseExited(e: MouseEvent?) { // nothing to do
-  }
-}
-
-private class LoadTargetAction(
-  text: String,
-  private val target: BuildTargetInfo,
-) : AnAction(text) {
-  override fun actionPerformed(e: AnActionEvent) {
-    val project = e.project
-
-    if (project != null) {
-      loadTarget(project, target.id)
-    }
-  }
-
-  companion object {
-    fun loadTarget(project: Project, targetId: BuildTargetId) {
-      val magicMetaModel = MagicMetaModelService.getInstance(project).value
-      val diff = magicMetaModel.loadTarget(targetId)
-      BspCoroutineService.getInstance(project).start { diff?.applyOnWorkspaceModel() }
-
-      BspBalloonNotifier.info(
-        BspPluginBundle.message("widget.load.target.notification", targetId),
-        BspPluginBundle.message("widget.load.target")
-      )
-    }
   }
 }

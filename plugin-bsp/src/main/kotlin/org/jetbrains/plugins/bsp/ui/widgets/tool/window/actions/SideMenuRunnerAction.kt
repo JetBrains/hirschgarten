@@ -10,25 +10,31 @@ import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Key
+import com.intellij.platform.diagnostic.telemetry.EDT
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import javax.swing.Icon
 
 public val targetIdTOREMOVE: Key<BuildTargetId> = Key<BuildTargetId>("targetId")
 
 internal abstract class SideMenuRunnerAction(
-  text: String,
-) : AbstractActionWithTarget(text) {
+  protected val targetId: BuildTargetId,
+  text: () -> String,
+  icon: Icon? = null,
+) : SuspendableAction(text, icon) {
   abstract fun getConfigurationType(): ConfigurationType
 
   abstract fun getName(target: BuildTargetId): String
 
-  override fun actionPerformed(e: AnActionEvent) {
-    e.project?.let { project ->
-      target?.let { target ->
-        doPerformAction(project, target)
-      }
+  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+    withContext(Dispatchers.EDT) {
+      doPerformAction(project, targetId)
     }
   }
 
@@ -52,7 +58,7 @@ internal abstract class SideMenuRunnerAction(
         .runnerAndSettings(runner, settings)
         .build()
       // TODO shouldnt we use 'target' for that?
-      executionEnvironment.putUserData(targetIdTOREMOVE, target)
+      executionEnvironment.putUserData(targetIdTOREMOVE, targetId)
       runner.execute(executionEnvironment)
     } catch (e: Exception) {
       Messages.showErrorDialog(project, e.message, "Error")

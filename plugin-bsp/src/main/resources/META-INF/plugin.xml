@@ -78,26 +78,20 @@
   </extensions>
 
   <actions>
-
-    <action class="org.jetbrains.plugins.bsp.ui.misc.actions.OpenBazelProjectViaBspPluginAction"
+    <action class="org.jetbrains.plugins.bsp.ui.actions.registered.OpenBazelProjectViaBspPluginAction"
             icon="/icons/bazel.svg">
       <add-to-group group-id="EditorPopupMenu" anchor="last"/>
       <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
     </action>
 
-    <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DisconnectAction"
+    <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.DisconnectAction"
             icon="/icons/disconnect.svg"/>
-    <action id="Bsp.ReloadAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ReloadAction"
+    <action id="Bsp.ReloadAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.ReloadAction"
             icon="/icons/reload.svg"/>
-    <action id="Bsp.RestartAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RestartAction"
+    <action id="Bsp.RestartAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.RestartAction"
             icon="/icons/restart.svg"/>
-    <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.ConnectAction"
+    <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.ConnectAction"
             icon="/icons/connect.svg"/>
-    <action id="Bsp.DebugWithLocalJvmRunnerAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DebugWithLocalJvmRunnerAction"
-            icon="/icons/restart.svg"/>
-    <action id="Bsp.RunWithLocalJvmRunnerAction" class="org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunWithLocalJvmRunnerAction"
-            icon="/icons/connect.svg"/>
-
 
     <group id="Bsp.ActionsToolbar">
       <reference id="Bsp.ConnectAction"/>

@@ -1,32 +1,18 @@
-package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
+package org.jetbrains.plugins.bsp.ui.actions.registered
 
 import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
 import org.jetbrains.plugins.bsp.server.tasks.CollectProjectDetailsTask
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
+import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 
-public class RestartAction :
-  AnAction({ BspPluginBundle.message("restart.action.text") }, BspPluginIcons.restart) {
-  override fun actionPerformed(e: AnActionEvent) {
-    val project = e.project
-
-    if (project != null) {
-      BspCoroutineService.getInstance(project).start { doAction(project) }
-    } else {
-      log.warn("RestartAction cannot be performed! Project not available.")
-    }
-  }
-
-  private suspend fun doAction(project: Project) {
+public class RestartAction : SuspendableAction({ BspPluginBundle.message("restart.action.text") }), DumbAware {
+  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val connection = BspConnectionService.getInstance(project).value
 
     if (connection is BspGeneratorConnection) {
@@ -48,26 +34,9 @@ public class RestartAction :
     }
   }
 
-  public override fun update(e: AnActionEvent) {
-    val project = e.project
-
-    if (project != null) {
-      doUpdate(project, e)
-    } else {
-      log.warn("RestartAction cannot be updated! Project not available.")
-    }
-  }
-
-  private fun doUpdate(project: Project, e: AnActionEvent) {
+  override fun update(project: Project, e: AnActionEvent) {
     val connection = BspConnectionService.getInstance(project).value
     e.presentation.isEnabled = connection?.isConnected() == true
     e.presentation.isVisible = connection is BspGeneratorConnection
-  }
-
-  override fun getActionUpdateThread(): ActionUpdateThread =
-    ActionUpdateThread.BGT
-
-  private companion object {
-    private val log = logger<RestartAction>()
   }
 }

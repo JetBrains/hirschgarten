@@ -7,7 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.plugins.bsp.config.BazelBspConstants
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.ui.misc.actions.performOpenBazelProjectViaBspPlugin
+import org.jetbrains.plugins.bsp.ui.actions.registered.performOpenBazelProjectViaBspPlugin
 
 internal class BazelBspOpenProjectProvider : AbstractOpenProjectProvider() {
   private val log = logger<BazelBspOpenProjectProvider>()
