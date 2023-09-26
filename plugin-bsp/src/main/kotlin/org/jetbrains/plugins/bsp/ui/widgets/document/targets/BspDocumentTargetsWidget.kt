@@ -2,12 +2,9 @@ package org.jetbrains.plugins.bsp.ui.widgets.document.targets
 
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
@@ -22,43 +19,11 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
+import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
 import java.net.URI
 
 private const val ID = "BspDocumentTargetsWidget"
-
-private class LoadTargetAction(
-  private val target: BuildTargetId,
-  private val updateWidget: () -> Unit,
-) : AnAction(target) {
-  override fun actionPerformed(e: AnActionEvent) {
-    val project = e.project
-
-    if (project != null) {
-      doAction(project)
-    } else {
-      log.warn("LoadTargetAction cannot be performed! Project not available.")
-    }
-  }
-
-  private fun doAction(project: Project) {
-    val magicMetaModel = MagicMetaModelService.getInstance(project).value
-    val diff = magicMetaModel.loadTarget(target)
-    BspCoroutineService.getInstance(project).start { diff?.applyOnWorkspaceModel() }
-
-    BspBalloonNotifier.info(
-      BspPluginBundle.message("widget.load.target.notification", target),
-      "Load target",
-    )
-    updateWidget()
-  }
-
-  private companion object {
-    private val log = logger<LoadTargetAction>()
-  }
-}
 
 public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
   private val magicMetaModelService = MagicMetaModelService.getInstance(project)

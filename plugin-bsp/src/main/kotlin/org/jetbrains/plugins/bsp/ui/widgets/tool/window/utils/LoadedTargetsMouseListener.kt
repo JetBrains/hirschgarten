@@ -4,7 +4,6 @@ import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
@@ -12,7 +11,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.AbstractActionWithTarget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DebugWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
@@ -42,7 +40,6 @@ public class LoadedTargetsMouseListener(
     }
   }
 
-  // https://youtrack.jetbrains.com/issue/BAZEL-522
   private fun selectTargetIfSearchListIsDisplayed(point: Point) {
     if (container is BuildTargetSearch) {
       container.selectAtLocationIfListDisplayed(point)
@@ -50,7 +47,7 @@ public class LoadedTargetsMouseListener(
   }
 
   private fun showPopup(mouseEvent: MouseEvent) {
-    val actionGroup = calculatePopupGroup()
+    val actionGroup = container.getSelectedBuildTarget()?.let { calculatePopupGroup(it) }
     if (actionGroup != null) {
       val context = DataManager.getInstance().getDataContext(mouseEvent.component)
       val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
@@ -60,40 +57,23 @@ public class LoadedTargetsMouseListener(
     }
   }
 
-  private fun calculatePopupGroup(): ActionGroup? {
-    val target = container.getSelectedBuildTarget()
-
-    return if (target != null) {
-      val actions = mutableListOf<AnAction>()
+  private fun calculatePopupGroup(target: BuildTargetInfo): ActionGroup =
+    DefaultActionGroup().apply {
+      addAction(container.copyTargetIdAction)
+      addSeparator()
       if (target.capabilities.canCompile) {
-        actions.addAction(BuildTargetAction::class.java)
+        addAction(BuildTargetAction(target.id))
       }
       if (target.capabilities.canRun) {
-        actions.addAction(RunTargetAction::class.java)
-        if (target.isJvmTarget()) {
-          actions.addAction(RunWithLocalJvmRunnerAction::class.java)
-          actions.addAction(DebugWithLocalJvmRunnerAction::class.java)
-        }
+        addAction(RunTargetAction(target.id))
+      }
+      if (target.capabilities.canRun && target.isJvmTarget()) {
+        addAction(RunWithLocalJvmRunnerAction(target.id))
+        addAction(DebugWithLocalJvmRunnerAction(target.id))
       }
       if (target.capabilities.canTest) {
-        actions.addAction(TestTargetAction::class.java)
+        addAction(TestTargetAction(target.id))
       }
-      DefaultActionGroup().apply {
-        addAction(container.copyTargetIdAction)
-        addSeparator()
-        addAll(actions)
-      }
-    } else null
-  }
-
-  private fun MutableList<AnAction>.addAction(
-    actionClass: Class<out AbstractActionWithTarget>,
-  ): AbstractActionWithTarget =
-    actions.getOrPut(actionClass) {
-      actionClass.constructors.first { it.parameterCount == 0 }.newInstance() as AbstractActionWithTarget
-    }.also {
-      it.target = container.getSelectedBuildTarget()?.id
-      add(it)
     }
 
   private fun BuildTargetInfo.isJvmTarget(): Boolean = with(languageIds) {
@@ -106,8 +86,8 @@ public class LoadedTargetsMouseListener(
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
       when {
-        it.capabilities.canTest -> TestTargetAction().prepareAndPerform(project, it.id)
-        it.capabilities.canRun -> RunTargetAction().prepareAndPerform(project, it.id)
+        it.capabilities.canTest -> TestTargetAction(it.id).prepareAndPerform(project, it.id)
+        it.capabilities.canRun -> RunTargetAction(it.id).prepareAndPerform(project, it.id)
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
@@ -120,13 +100,8 @@ public class LoadedTargetsMouseListener(
   override fun mouseEntered(e: MouseEvent?) { /* nothing to do */ }
 
   override fun mouseExited(e: MouseEvent?) { /* nothing to do */ }
-
-  private companion object {
-    val actions = HashMap<Class<out AbstractActionWithTarget>, AbstractActionWithTarget>()
-  }
 }
 
 private fun SideMenuRunnerAction.prepareAndPerform(project: Project, targetId: BuildTargetId) {
-  this.target = targetId
   doPerformAction(project, targetId)
 }

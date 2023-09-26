@@ -16,16 +16,38 @@ import com.intellij.openapi.project.modules
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.orDefault
+import javax.swing.Icon
 
-internal abstract class LocalJvmRunnerAction(label: String) : AbstractActionWithTarget(label) {
+internal abstract class LocalJvmRunnerAction(
+  protected val targetId: BuildTargetId,
+  text: () -> String,
+  icon: Icon? = null,
+) : SuspendableAction(text, icon) {
   abstract fun getEnvironment(project: Project): JvmEnvironmentItem?
 
   abstract fun getExecutor(): Executor
 
-  open suspend fun runWithEnvironment(environment: JvmEnvironmentItem, uri: String, module: Module, project: Project) {
+  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+    val moduleNameProvider = project.findModuleNameProvider().orDefault()
+    val module = project.modules.find { it.name == moduleNameProvider(targetId) } ?: return
+
+    withContext(Dispatchers.EDT) {
+      getEnvironment(project)
+    }?.let {
+      runWithEnvironment(it, targetId, module, project)
+    }
+  }
+
+  protected open suspend fun runWithEnvironment(
+    environment: JvmEnvironmentItem,
+    uri: String,
+    module: Module,
+    project: Project,
+  ) {
     environment.mainClasses
       ?.firstOrNull() // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
       ?.let { mainClass ->
@@ -48,21 +70,6 @@ internal abstract class LocalJvmRunnerAction(label: String) : AbstractActionWith
           }
         }
       }
-  }
-
-  override fun actionPerformed(e: AnActionEvent) {
-    target?.let { target ->
-      val project = e.project ?: return
-      val moduleNameProvider = project.findModuleNameProvider().orDefault()
-      val module = project.modules.find { it.name == moduleNameProvider(target) } ?: return
-      BspCoroutineService.getInstance(project).start {
-        withContext(Dispatchers.EDT) {
-          getEnvironment(project)
-        }?.let {
-          runWithEnvironment(it, target, module, project)
-        }
-      }
-    }
   }
 
   companion object {
