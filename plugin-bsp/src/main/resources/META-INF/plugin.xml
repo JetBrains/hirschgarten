@@ -70,6 +70,7 @@
 
     <toolWindowAllowlist id="BSP"/>
 
+    <toolWindow id="JewelDemo" anchor="bottom" secondary="false" canCloseContents="false" factoryClass="org.jetbrains.plugins.bsp.jewel.ui.JewelDemoToolWindow" />
 
     <iconMapper mappingFile="BSPIconMappings.json"/>
 

@@ -2,6 +2,8 @@
 ideProbe = "0.52.0"
 detekt = "1.23.1"
 kotlin-gradle-version = "1.9.0"
+composeDesktop = "1.5.10-beta01"
+jewel = "0.6.3"
 
 [libraries]
 ideProbeDriver = { module = "org.virtuslab.ideprobe:driver_2.13", version.ref = "ideProbe" }
@@ -15,7 +17,10 @@ detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", v
 detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
 coursier = { module = "io.get-coursier:coursier_2.13", version = "2.1.5" }
+jewelIdeLafBridge = {module = "org.jetbrains.jewel:jewel-ide-laf-bridge", version.ref = "jewel" }
 
 [plugins]
 intellij = { id = "org.jetbrains.intellij", version = "1.15.0" }
 changelog = { id = "org.jetbrains.changelog", version = "2.1.2" }
+composeDesktop = { id = "org.jetbrains.compose", version.ref = "composeDesktop" }
+shadow = { id = "com.github.johnrengelman.shadow", version = "8.1.1" }
