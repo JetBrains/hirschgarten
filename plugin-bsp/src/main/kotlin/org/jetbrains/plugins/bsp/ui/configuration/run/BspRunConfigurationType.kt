@@ -18,7 +18,6 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.server.tasks.RunTargetTask
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
-import org.jetbrains.plugins.bsp.ui.configuration.test.BspConfigurationType
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
 import javax.swing.Icon
@@ -36,7 +35,7 @@ internal class BspRunConfigurationType : ConfigurationType {
     arrayOf(BspRunFactory(this))
 
   companion object {
-    const val ID: String = "BSP_RUN_CONFIGURATION"
+    const val ID: String = "BspRunConfiguration"
   }
 }
 
@@ -45,7 +44,7 @@ public class BspRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
     BspRunConfiguration(project, this, "BSP RUN")
 
   override fun getId(): String =
-    BspConfigurationType.ID
+    BspRunConfigurationType.ID
 }
 
 public class BspRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :
