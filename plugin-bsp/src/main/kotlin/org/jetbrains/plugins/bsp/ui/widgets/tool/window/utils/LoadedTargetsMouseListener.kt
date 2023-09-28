@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
+import com.intellij.icons.AllIcons
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -11,6 +12,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DebugWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
@@ -65,14 +67,24 @@ public class LoadedTargetsMouseListener(
         addAction(BuildTargetAction(target.id))
       }
       if (target.capabilities.canRun) {
-        addAction(RunTargetAction(target.id))
+        addAction(RunTargetAction(
+          targetId = target.id,
+          text = { BspPluginBundle.message("widget.run.target.popup.message") },
+          icon = AllIcons.Toolwindows.ToolWindowRun,
+        )
+        )
       }
       if (target.capabilities.canRun && target.isJvmTarget()) {
         addAction(RunWithLocalJvmRunnerAction(target.id))
         addAction(DebugWithLocalJvmRunnerAction(target.id))
       }
       if (target.capabilities.canTest) {
-        addAction(TestTargetAction(target.id))
+        addAction(TestTargetAction(
+          targetId = target.id,
+          text = { BspPluginBundle.message("widget.test.target.popup.message") },
+          icon = AllIcons.Toolwindows.ToolWindowRun
+        )
+        )
       }
     }
 
@@ -86,8 +98,16 @@ public class LoadedTargetsMouseListener(
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
       when {
-        it.capabilities.canTest -> TestTargetAction(it.id).prepareAndPerform(project, it.id)
-        it.capabilities.canRun -> RunTargetAction(it.id).prepareAndPerform(project, it.id)
+        it.capabilities.canTest -> TestTargetAction(
+          targetId = it.id,
+          text = { BspPluginBundle.message("widget.test.target.popup.message") },
+          icon = AllIcons.Toolwindows.ToolWindowRun
+        ).prepareAndPerform(project, it.id)
+        it.capabilities.canRun -> RunTargetAction(
+          targetId = it.id,
+          text = { BspPluginBundle.message("widget.run.target.popup.message") },
+          icon = AllIcons.Toolwindows.ToolWindowRun,
+        ).prepareAndPerform(project, it.id)
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
