@@ -1,4 +1,4 @@
-# intellij-bsp-bazel
+# intellij-bazel
 
 <!-- Plugin description -->
 Starlark support plugin for IntelliJ (super early version)

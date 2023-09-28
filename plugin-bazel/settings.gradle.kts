@@ -1,1 +1,1 @@
-rootProject.name = "intellij-bsp-bazel"
+rootProject.name = "intellij-bazel"
