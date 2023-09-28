@@ -19,7 +19,7 @@ import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
 import javax.swing.Icon
 
-public class BspConfigurationType : ConfigurationType {
+public class BspTestRunConfigurationType : ConfigurationType {
   override fun getDisplayName(): String = "BSP TEST"
 
   override fun getConfigurationTypeDescription(): String = "BSP TEST"
@@ -29,22 +29,22 @@ public class BspConfigurationType : ConfigurationType {
   override fun getId(): String = ID
 
   override fun getConfigurationFactories(): Array<ConfigurationFactory> =
-    arrayOf(TestRunFactory(this))
+    arrayOf(BspTestRunFactory(this))
 
   public companion object {
-    public const val ID: String = "BSP_TEST_RUN_CONFIGURATION"
+    public const val ID: String = "BspTestRunConfiguration"
   }
 }
 
-public class TestRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
+public class BspTestRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
   override fun createTemplateConfiguration(project: Project): RunConfiguration =
-    TestRunConfiguration(project, this, "BSP TEST")
+    BspTestRunConfiguration(project, this, "BSP TEST")
 
   override fun getId(): String =
-    BspConfigurationType.ID
+    BspTestRunConfigurationType.ID
 }
 
-public class TestRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :
+public class BspTestRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :
   RunConfigurationBase<String>(project, configurationFactory, name) {
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return RunProfileState { executor2, _ ->
