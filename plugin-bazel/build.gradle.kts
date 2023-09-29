@@ -1,5 +1,6 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.pluginRepository.PluginRepositoryFactory
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = project.findProperty(key).toString()
@@ -43,13 +44,32 @@ intellij {
     version.set(properties("platformVersion"))
     type.set(properties("platformType"))
 
-    // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file.
+    pluginsRepositories {
+        custom("https://plugins.jetbrains.com/plugins/nightly/20329")
+    }
 
-    // TODO for now we dont need this
-    // change for location where your intellij-bsp-0.0.1-plugin.jar is created (as a result of the  pluginJar task)
-    // val bsp = file("/Users/azdrojowa/IdeaProjects/intellij-bsp/build/libs/intellij-bsp-0.0.1-plugin.jar")
-    // plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty) + bsp)
+    val platformPlugins = properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty)
+    val bspPlugin = findLatestCompatibleBspPlugin()
+
+    plugins.set(platformPlugins + bspPlugin)
 }
+
+fun findLatestCompatibleBspPlugin(): String {
+    val pluginId = "org.jetbrains.bsp"
+    val buildVersion = "${properties("platformType")}-${properties("platformVersion")}"
+    val version = findLatestCompatiblePluginVersion(pluginId, buildVersion, "nightly")
+        ?: error("Couldn't find compatible BSP plugin version")
+
+    return "$pluginId:$version"
+}
+
+
+fun findLatestCompatiblePluginVersion(id: String, buildVersion: String, channel: String): String? =
+    PluginRepositoryFactory.create()
+        .pluginManager
+        .searchCompatibleUpdates(listOf(id), buildVersion, channel)
+        .firstOrNull()
+        ?.version
 
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
 changelog {
