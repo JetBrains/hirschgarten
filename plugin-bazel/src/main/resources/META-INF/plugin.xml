@@ -1,10 +1,10 @@
 <idea-plugin>
-    <id>org.jetbrains.bsp.bazel</id>
+    <id>org.jetbrains.bazel</id>
     <name>Bazel</name>
     <vendor>JetBrains</vendor>
 
     <depends>com.intellij.modules.platform</depends>
-    <!--    <depends>org.jetbrains.bsp</depends>-->
+    <depends>org.jetbrains.bsp</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <!--        <bspConnectionDetailsGeneratorExtension-->
