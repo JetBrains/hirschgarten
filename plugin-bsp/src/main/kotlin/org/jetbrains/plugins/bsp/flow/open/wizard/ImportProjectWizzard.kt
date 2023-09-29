@@ -76,10 +76,12 @@ public class ImportProjectWizard(
     return panel
   }
 
-  override fun show() {
+  override fun showAndGet(): Boolean {
     if (areThereStepsToShow()) {
-      super.show()
+      super.showAndGet()
     }
+
+    return true
   }
 
   private fun areThereStepsToShow(): Boolean =
