@@ -19,16 +19,26 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
   private val connectionService = BspConnectionService.getInstance(project)
   private val syncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
-  public suspend fun execute(shouldBuildProject: Boolean, shouldReloadConnection: Boolean) {
+  public suspend fun execute(
+    shouldRunInitialSync: Boolean,
+    shouldBuildProject: Boolean,
+    shouldRunResync: Boolean,
+    shouldReloadConnection: Boolean,
+  ) {
     saveAllFiles()
     if (shouldReloadConnection) {
       reloadConnection()
     }
 
-    collectProject(SYNC_TASK_ID)
+    if (shouldRunInitialSync) {
+      collectProject(SYNC_TASK_ID)
+    }
 
     if (shouldBuildProject) {
       buildProject()
+    }
+
+    if (shouldRunResync) {
       collectProject(RESYNC_TASK_ID)
     }
   }

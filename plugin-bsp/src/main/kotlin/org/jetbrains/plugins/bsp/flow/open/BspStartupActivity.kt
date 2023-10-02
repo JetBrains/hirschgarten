@@ -83,7 +83,9 @@ public class BspStartupActivity : ProjectActivity {
 
       if (connectionFileOrNewConnection != null) {
         SyncProjectTask(project).execute(
+          shouldRunInitialSync = true,
           shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+          shouldRunResync = BspFeatureFlags.isBuildProjectOnSyncEnabled,
           shouldReloadConnection = false,
         )
       }
