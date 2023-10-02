@@ -13,7 +13,9 @@ import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 public class ReloadAction : SuspendableAction({ BspPluginBundle.message("reload.action.text") }), DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     SyncProjectTask(project).execute(
+      shouldRunInitialSync = true,
       shouldBuildProject = false,
+      shouldRunResync = false,
       shouldReloadConnection = true,
     )
   }
