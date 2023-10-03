@@ -13,7 +13,7 @@ import org.jetbrains.plugins.bsp.server.tasks.JvmRunEnvironmentTask
 internal class DebugWithLocalJvmRunnerAction(targetId: BuildTargetId): LocalJvmRunnerAction(
   targetId = targetId,
   text = { BspPluginBundle.message("widget.debug.target.with.runner.popup.message") },
-  icon = AllIcons.Toolwindows.ToolWindowDebugger,
+  icon = AllIcons.Actions.StartDebugger,
 ) {
   override fun getEnvironment(project: Project): JvmEnvironmentItem? =
     JvmRunEnvironmentTask(project).connectAndExecute(targetId.toBsp4JTargetIdentifier())?.items?.first()

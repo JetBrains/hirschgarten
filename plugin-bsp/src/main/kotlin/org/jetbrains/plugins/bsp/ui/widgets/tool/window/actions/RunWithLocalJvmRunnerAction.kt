@@ -13,7 +13,7 @@ import org.jetbrains.plugins.bsp.server.tasks.JvmRunEnvironmentTask
 internal class RunWithLocalJvmRunnerAction(targetId: BuildTargetId): LocalJvmRunnerAction(
   targetId = targetId,
   text = { BspPluginBundle.message("widget.run.target.with.runner.popup.message") },
-  icon = AllIcons.Toolwindows.ToolWindowRun
+  icon = AllIcons.Actions.Execute
 ) {
   override fun getEnvironment(project: Project): JvmEnvironmentItem? =
     JvmRunEnvironmentTask(project).connectAndExecute(targetId.toBsp4JTargetIdentifier())?.items?.first()
