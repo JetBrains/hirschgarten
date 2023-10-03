@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
@@ -28,7 +29,7 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? = getSlowInfo(element)
 
   override fun getSlowInfo(element: PsiElement): Info? =
-    if (element.shouldAddMarker()) element.calculateLineMarkerInfo()
+    if (element.project.isBspProject && element.shouldAddMarker()) element.calculateLineMarkerInfo()
     else null
 
   private fun PsiElement.shouldAddMarker(): Boolean =
