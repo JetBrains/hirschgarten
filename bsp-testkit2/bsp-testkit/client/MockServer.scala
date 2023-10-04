@@ -9,3 +9,4 @@ trait MockServer
     with JvmBuildServer
     with CppBuildServer
     with PythonBuildServer
+    with RustBuildServer

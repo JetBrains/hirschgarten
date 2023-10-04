@@ -139,6 +139,17 @@ class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildP
     }
   }
 
+  def testRustWorkspace(timeout: Duration)(params: RustWorkspaceParams, expectedResult: RustWorkspaceResult): Unit = {
+    implicit val ec: ExecutionContext = ExecutionContext.global
+    val typeOfT = new TypeToken[RustWorkspaceParams] {}.getType
+    val transformedParams = applyJsonTransform(params, typeOfT)
+    test(timeout) { session =>
+      session.server.rustWorkspace(transformedParams).asScala.map { result =>
+        assertJsonEquals(expectedResult, result)
+      }
+    }
+  }
+
   def testSources(timeout: Duration)(params: SourcesParams, expectedResult: SourcesResult): Unit = {
     implicit val ec: ExecutionContext = ExecutionContext.global
     val typeOfT = new TypeToken[SourcesParams] {}.getType
@@ -247,6 +258,7 @@ class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildP
       val getScalacOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetScalacOptions(new ScalacOptionsParams(targetIds)).asScala
       val getCppOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetCppOptions(new CppOptionsParams(targetIds)).asScala
       val getPythonOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetPythonOptions(new PythonOptionsParams(targetIds)).asScala
+      val getRustWorkspace = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.rustWorkspace(new RustWorkspaceParams(targetIds)).asScala
 
       for {
         targets <- getWorkspaceTargets
@@ -261,6 +273,8 @@ class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildP
         cppOptions <- getCppOptions(cppTargetIds)
         pythonTargetIds = extractTargetIdsForLanguage(targets, "python")
         pythonOptions <- getPythonOptions(pythonTargetIds)
+        rustTargetIds = extractTargetIdsForLanguage(targets, "rust")
+        rustWorkspace <- getRustWorkspace(rustTargetIds)
       } yield ()
     }
   }
