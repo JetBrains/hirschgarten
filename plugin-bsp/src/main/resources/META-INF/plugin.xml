@@ -23,6 +23,9 @@
     <extensionPoint qualifiedName="com.intellij.buildToolIconProviderExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.BuildToolIconProviderExtension"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bspProjectOpenProcessorExtension"
+                    interface="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension"
+                    dynamic="true"/>
   </extensionPoints>
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
@@ -38,6 +41,9 @@
     <buildToolIconProviderExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.BazelBuildToolIconProvider"
     />
+    <bspProjectOpenProcessorExtension
+      implementation="org.jetbrains.plugins.bsp.flow.open.BazelBspProjectOpenProcessorExtension"
+    />
 
     <applicationInitializedListener implementation="org.jetbrains.plugins.bsp.utils.StartBenchmarkListener"/>
 
@@ -45,6 +51,9 @@
 
     <projectOpenProcessor
       implementation="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor"/>
+
+    <projectOpenProcessor
+            implementation="org.jetbrains.plugins.bsp.flow.open.BazelBspProjectOpenProcessor"/>
     <postStartupActivity
       implementation="org.jetbrains.plugins.bsp.flow.open.BspStartupActivity"/>
     <externalSystemUnlinkedProjectAware id="Bazel BSP" implementation="org.jetbrains.plugins.bsp.flow.open.BazelBspUnlinkedProjectAware"/>
