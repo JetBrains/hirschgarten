@@ -1,91 +1,81 @@
 package org.jetbrains.plugins.bsp.flow.open
 
-import com.intellij.ide.impl.OpenProjectTask
-import com.intellij.ide.impl.ProjectUtilCore
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.ex.ProjectManagerEx
+import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.projectImport.ProjectOpenProcessor
-import com.intellij.projectImport.ProjectOpenedCallback
-import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.plugins.bsp.config.BazelBspConstants
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
-import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import java.nio.file.Path
 import javax.swing.Icon
 
-public class BspProjectOpenProcessor : ProjectOpenProcessor() {
+// TODO: move to a better package
+public data class BuildToolId(public val id: String)
+
+// TODO: move to a better package
+public interface WithBuildToolId {
+  public val buildToolId: BuildToolId
+}
+
+// TODO: move to a better package
+internal fun <T : WithBuildToolId> ExtensionPointName<T>.withBuildToolId(buildToolId: BuildToolId): T? =
+  this.extensions.find { it.buildToolId == buildToolId }
+
+public interface BspProjectOpenProcessorExtension : WithBuildToolId {
+  /**
+   * When a project is opened for the first time [com.intellij.projectImport.ProjectOpenProcessor.canOpenProject]
+   * is executed on each registered processor. BSP plugin implements one as well ([org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor]).
+   * Basically it checks if there are available [connection files](https://build-server-protocol.github.io/docs/overview/server-discovery#default-locations-for-bsp-connection-files)
+   * and returns `True` if there is at least one connection file.
+   *
+   * In case you want to support a particular build tool in a more "native" way a dedicated [com.intellij.projectImport.ProjectOpenProcessor]
+   * is required. Then, if you want to dismiss BSP processor for connection files of your build tool
+   * (so the user will not see BSP and your build tool options) [shouldBspProjectOpenProcessorBeAvailable] should be `False`.
+   * If you still want to display the BSP processor option [shouldBspProjectOpenProcessorBeAvailable] should be `True`.
+   *
+   * NOTE: the mechanism works per build tool, so if there is a connection file of another build tool for which
+   * [shouldBspProjectOpenProcessorBeAvailable] is `True` or an extension does not exist the BSP option will be still available.
+   */
+  public val shouldBspProjectOpenProcessorBeAvailable: Boolean
+
+  public companion object {
+    internal val ep =
+      ExtensionPointName.create<BspProjectOpenProcessorExtension>("com.intellij.bspProjectOpenProcessorExtension")
+  }
+}
+
+internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor() {
   override val name: String = BspPluginBundle.message("plugin.name")
 
   override val icon: Icon = BspPluginIcons.bsp
 
   override fun canOpenProject(file: VirtualFile): Boolean {
-    val bspConnectionFilesProvider = BspConnectionFilesProvider(file)
-    val bspConnectionDetailsGeneratorProvider =
-      BspConnectionDetailsGeneratorProvider(file, BspConnectionDetailsGeneratorExtension.extensions())
+    val buildToolIds = file.collectBuildToolIdsFromConnectionFiles()
 
-    return bspConnectionFilesProvider.isAnyBspConnectionFileDefined() or
-      bspConnectionDetailsGeneratorProvider.canGenerateAnyBspConnectionDetailsFile()
+    return buildToolIds.any { it.shouldBspProjectOpenProcessorBeAvailable() }
   }
 
-  override fun doOpenProject(
-    virtualFile: VirtualFile,
-    projectToClose: Project?,
-    forceOpenInNewFrame: Boolean,
-  ): Project? {
-    val projectPath = virtualFile.toNioPath()
-    val openProjectTask = calculateOpenProjectTask(projectPath, forceOpenInNewFrame, projectToClose, virtualFile)
+  private fun VirtualFile.collectBuildToolIdsFromConnectionFiles(): List<BuildToolId> =
+    BspConnectionFilesProvider(this)
+      .connectionFiles
+      .mapNotNull { it.bspConnectionDetails?.name }
+      .map { BuildToolId(it) }
 
-    return ProjectManagerEx.getInstanceEx().openProject(projectPath, openProjectTask)
-  }
-
-  public fun calculateOpenProjectTask(
-    projectPath: Path,
-    forceOpenInNewFrame: Boolean,
-    projectToClose: Project?,
-    virtualFile: VirtualFile,
-  ): OpenProjectTask = OpenProjectTask {
-    runConfigurators = true
-    isNewProject = !ProjectUtilCore.isValidProjectPath(projectPath)
-    isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode
-
-    this.forceOpenInNewFrame = forceOpenInNewFrame
-    this.projectToClose = projectToClose
-
-    beforeOpen = { it.initProperties(virtualFile); true }
-    callback = ProjectOpenedCallback { project, _ -> project.initializeEmptyMagicMetaModel() }
-  }
+  private fun BuildToolId.shouldBspProjectOpenProcessorBeAvailable(): Boolean =
+    BspProjectOpenProcessorExtension.ep.withBuildToolId(this)?.shouldBspProjectOpenProcessorBeAvailable ?: true
 }
 
-public fun Project.initializeEmptyMagicMetaModel() {
-  val magicMetaModelService = MagicMetaModelService.getInstance(this)
-  magicMetaModelService.initializeMagicModel(
-    ProjectDetails(
-      targetsId = emptyList(),
-      targets = emptySet(),
-      sources = emptyList(),
-      resources = emptyList(),
-      dependenciesSources = emptyList(),
-      javacOptions = emptyList(),
-      pythonOptions = emptyList(),
-      outputPathUris = emptyList(),
-      libraries = emptyList(),
-    ),
-  )
+// TODO should be moved to the bazel plugin
+public class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor() {
+  override val icon: Icon = BspPluginIcons.bazel
 
-  BspCoroutineService.getInstance(this).start {
-    magicMetaModelService.value.loadDefaultTargets().applyOnWorkspaceModel()
-  }
+  override val name: String = "Bazel"
+
+  override fun canOpenProject(file: VirtualFile): Boolean =
+    file.children.any { it.name in BazelBspConstants.BUILD_FILE_NAMES }
 }
 
-public fun Project.initProperties(projectRootDir: VirtualFile) {
-  this.isBspProject = true
-  this.rootDir = projectRootDir
+public class BazelBspProjectOpenProcessorExtension : BspProjectOpenProcessorExtension {
+  override val buildToolId: BuildToolId = BuildToolId("bazelbsp")
+
+  override val shouldBspProjectOpenProcessorBeAvailable: Boolean = false
 }
