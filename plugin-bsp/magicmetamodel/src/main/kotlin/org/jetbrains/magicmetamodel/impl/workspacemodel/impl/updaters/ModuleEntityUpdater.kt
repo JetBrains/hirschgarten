@@ -32,7 +32,7 @@ internal class ModuleEntityUpdater(
     val moduleEntity = builder.addEntity(
       ModuleEntity(
         name = entityToAdd.name,
-        dependencies = modulesDependencies + associatesDependencies + librariesDependencies + defaultDependencies,
+        dependencies = defaultDependencies + modulesDependencies + associatesDependencies + librariesDependencies,
         entitySource = BspEntitySource,
       ) {
         this.type = entityToAdd.type
