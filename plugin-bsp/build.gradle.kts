@@ -23,6 +23,7 @@ version = Plugin.version
 
 dependencies {
   implementation(project(":magicmetamodel"))
+  implementation(project(":workspacemodel"))
   testImplementation(project(":test-utils"))
   implementation(libs.bsp4j)
   implementation(libs.gson)

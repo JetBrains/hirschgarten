@@ -45,6 +45,7 @@
       implementation="org.jetbrains.plugins.bsp.flow.open.BazelBspProjectOpenProcessorExtension"
     />
 
+    <workspaceModel.fileIndexContributor implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
     <applicationInitializedListener implementation="org.jetbrains.plugins.bsp.utils.StartBenchmarkListener"/>
 
     <java.programPatcher implementation="org.jetbrains.plugins.bsp.runner.BspJvmEnvironmentProgramPatcher"/>

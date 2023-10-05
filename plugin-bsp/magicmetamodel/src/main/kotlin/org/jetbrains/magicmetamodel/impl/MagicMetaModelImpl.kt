@@ -7,12 +7,15 @@ import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.platform.backend.workspace.BuilderSnapshot
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.magicmetamodel.DirectoryItem
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.magicmetamodel.WorkspaceDirectoriesResult
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
@@ -58,6 +61,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   private val magicMetaModelProjectConfig: MagicMetaModelProjectConfig
   private val targets: Set<BuildTargetInfo>
   private val libraries: List<Library>?
+  private val directories: WorkspaceDirectoriesResult?
 
   private val targetsDetailsForDocumentProvider: TargetsDetailsForDocumentProvider
   private val overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>>
@@ -100,6 +104,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       createLibraries(projectDetails.libraries)
     }
 
+    this.directories = projectDetails.directories
+
     this.loadedTargetsStorage = logPerformance("create-loaded-targets-storage") {
       LoadedTargetsStorage(targetIdToModule.keys)
     }
@@ -128,6 +134,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     this.targets = state.targets.map { it.fromState() }.toSet()
 
     this.libraries = state.libraries?.map { it.fromState() }
+    this.directories = null // workspace model keeps info about them
 
     val unloadedTargets = state.unloadedTargets.mapValues { it.value.fromState() }
     this.targetIdToModule = WorkspaceModelToModulesMapTransformer(
@@ -166,6 +173,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     logPerformance("load-modules") {
       workspaceModelUpdater.loadModules(modulesToLoad)
       workspaceModelUpdater.loadLibraries(libraries.orEmpty())
+      workspaceModelUpdater.loadDirectories()
 
       if (rootModule != null) {
         workspaceModelUpdater.loadModule(rootModule)
@@ -223,6 +231,18 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       jvmJdkName = null,
     )
   }
+
+  private fun WorkspaceModelUpdater.loadDirectories() {
+    if (directories != null) {
+      val includedDirectories = directories.includedDirectories.map { it.toVirtualFileUrl() }
+      val excludedDirectories = directories.excludedDirectories.map { it.toVirtualFileUrl() }
+
+      loadDirectories(includedDirectories, excludedDirectories)
+    }
+  }
+
+  private fun DirectoryItem.toVirtualFileUrl(): VirtualFileUrl =
+    magicMetaModelProjectConfig.virtualFileUrlManager.fromUrl(uri)
 
   override fun registerTargetLoadListener(function: () -> Unit) {
     targetLoadListeners.add(function)

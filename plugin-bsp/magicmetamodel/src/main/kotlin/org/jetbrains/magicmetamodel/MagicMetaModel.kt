@@ -59,18 +59,26 @@ public data class ProjectDetails(
   val pythonOptions: List<PythonOptionsItem>,
   val outputPathUris: List<String>,
   val libraries: List<LibraryItem>?,
+  val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
 ) {
   public operator fun plus(old: ProjectDetails): ProjectDetails = ProjectDetails(
-    targetsId + old.targetsId,
-    targets + old.targets,
-    sources + old.sources,
-    resources + old.resources,
-    dependenciesSources + old.dependenciesSources,
-    javacOptions + old.javacOptions,
-    pythonOptions + old.pythonOptions,
-    outputPathUris + old.outputPathUris,
-    if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
+    targetsId = targetsId + old.targetsId,
+    targets = targets + old.targets,
+    sources = sources + old.sources,
+    resources = resources + old.resources,
+    dependenciesSources = dependenciesSources + old.dependenciesSources,
+    javacOptions = javacOptions + old.javacOptions,
+    pythonOptions = pythonOptions + old.pythonOptions,
+    outputPathUris = outputPathUris + old.outputPathUris,
+    libraries = if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
+    directories = directories + old.directories,
   )
+
+  private operator fun WorkspaceDirectoriesResult.plus(old: WorkspaceDirectoriesResult): WorkspaceDirectoriesResult =
+    WorkspaceDirectoriesResult(
+      includedDirectories = includedDirectories + old.includedDirectories,
+      excludedDirectories = excludedDirectories + old.excludedDirectories,
+    )
 }
 
 /**

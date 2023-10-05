@@ -8,7 +8,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelEntity
 import java.nio.file.Path
 
-internal object BspEntitySource : EntitySource
+public object BspEntitySource : EntitySource
 
 internal data class WorkspaceModelEntityUpdaterConfig(
   val workspaceEntityStorageBuilder: MutableEntityStorage,

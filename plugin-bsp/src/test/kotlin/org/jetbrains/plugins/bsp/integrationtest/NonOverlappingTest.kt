@@ -21,6 +21,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.tasks.calculateProjectDetailsWithCapabilities
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
+import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.util.concurrent.Executors
@@ -28,16 +29,14 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
 // TODO https://youtrack.jetbrains.com/issue/BAZEL-629
 private const val BAZEL_REPOSITORY_TAG = "6.0.0"
 private const val BAZEL_EXECUTABLE_VERSION = "5.4.0"
-private const val BAZEL_BSP_VERSION = "2.7.1"
+private const val BAZEL_BSP_VERSION = "3.1.0-20231004-838ae95-NIGHTLY"
 
-@OptIn(ExperimentalTime::class)
-class NonOverlappingTest {
+class NonOverlappingTest : MockProjectBaseTest() {
   @Test
   fun `Compute non overlapping targets for bazelbuild_bazel project`() {
     val bazelDir = createTempDirectory("bazel-bsp-")
@@ -58,7 +57,7 @@ class NonOverlappingTest {
       val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
       val targets = projectDetails.targets.map { it.toBuildTargetInfo() }.toSet()
       val nonOverlapping = measureTimedValue { NonOverlappingTargets(targets, overlappingTargetsGraph) }
-      nonOverlapping.value.size shouldBe 1958
+      nonOverlapping.value.size shouldBe 1684
       println("Computing non-overlapping targets took ${nonOverlapping.duration}")
     } finally {
       bspServerProcess.destroyForcibly()
