@@ -9,10 +9,12 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.modifyEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.WorkspaceEntity
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
+import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -92,13 +94,13 @@ internal class WorkspaceModuleRemover(
   }
 
   override fun clear() {
-    val allModules =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(ModuleEntity::class.java)
+    removeEntities(ModuleEntity::class.java)
+    removeEntities(LibraryEntity::class.java)
+    removeEntities(BspProjectDirectoriesEntity::class.java)
+  }
 
-    allModules.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
-
-    val allLibraries =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(LibraryEntity::class.java)
-    allLibraries.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
+  private fun <E : WorkspaceEntity> removeEntities(entityClass: Class<E>) {
+    val allEntities = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(entityClass)
+    allEntities.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
   }
 }

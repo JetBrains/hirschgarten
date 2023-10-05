@@ -189,14 +189,10 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         librariesDependencies = emptyList(),
         ModuleCapabilities(),
       )
-      val rootModuleBaseDirContentRoot = ContentRoot(
-        path = projectBasePath.toVirtualFileUrl(virtualFileUrlManager).toPath(),
-        excludedPaths = listOf("file:///output/dir", "file:///output/file.out").map { URI.create(it).toPath() },
-      )
 
       val rootJavaModule = JavaModule(
         genericModuleInfo = rootModule,
-        baseDirContentRoot = rootModuleBaseDirContentRoot,
+        baseDirContentRoot = null,
         sourceRoots = emptyList(),
         resourceRoots = emptyList(),
         moduleLevelLibraries = emptyList(),

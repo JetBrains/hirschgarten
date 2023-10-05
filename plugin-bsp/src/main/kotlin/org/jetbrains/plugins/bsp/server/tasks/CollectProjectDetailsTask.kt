@@ -345,6 +345,10 @@ public fun calculateProjectDetailsWithCapabilities(
       }
       .get()
 
+    val directoriesFuture = server.workspaceDirectories()
+      .reactToExceptionIn(cancelOn)
+      .catchSyncErrors(errorCallback)
+
     // We use javacOptions only do build dependency tree based on classpath
     // If workspace/libraries endpoint is available (like in bazel-bsp)
     // we don't need javacOptions at all. For other servers (like SBT)
@@ -374,6 +378,7 @@ public fun calculateProjectDetailsWithCapabilities(
       pythonOptions = pythonOptionsFuture?.get()?.items ?: emptyList(),
       outputPathUris = outputPathsFuture.get().obtainDistinctUris(),
       libraries = libraries?.libraries,
+      directories = directoriesFuture.get(),
     )
   } catch (e: Exception) {
     // TODO the type xd

@@ -6,6 +6,8 @@ import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
@@ -19,6 +21,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModu
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.JavaModuleToDummyJavaModulesTransformerHACK
+import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
 import java.net.URI
 import java.nio.file.Path
 
@@ -72,6 +75,17 @@ internal class WorkspaceModelUpdaterImpl(
       url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl("jar://${URI.create(it).path}!/"),
       type = type,
     )
+  }
+
+  override fun loadDirectories(includedDirectories: List<VirtualFileUrl>, excludedDirectories: List<VirtualFileUrl>) {
+    val entity = BspProjectDirectoriesEntity(
+      projectRoot = workspaceModelEntityUpdaterConfig.projectBasePath
+        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+      includedRoots = includedDirectories,
+      excludedRoots = excludedDirectories,
+      entitySource = BspEntitySource,
+    )
+    workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(entity)
   }
 
   private fun Module.isAlreadyAdded() =

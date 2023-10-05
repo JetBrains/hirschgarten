@@ -15,12 +15,19 @@ public data class WorkspaceLibrariesResult(
   val libraries: List<LibraryItem>,
 )
 
-public data class LibraryDetails(
-  val name: String,
-  val roots: List<String>,
+public data class DirectoryItem(
+  val uri: String,
+)
+
+public data class WorkspaceDirectoriesResult(
+  val includedDirectories: List<DirectoryItem>,
+  val excludedDirectories: List<DirectoryItem>,
 )
 
 public interface BazelBuildServer {
   @JsonRequest("workspace/libraries")
   public fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult>
+
+  @JsonRequest("workspace/directories")
+  public fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult>
 }
