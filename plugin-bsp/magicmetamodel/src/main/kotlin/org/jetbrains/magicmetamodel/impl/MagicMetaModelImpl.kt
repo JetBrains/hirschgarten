@@ -324,6 +324,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     loadedTargetsStorage.clear()
   }
 
+  override fun getLibraries(): List<Library> = libraries.orEmpty()
+
   // TODO - test
   override fun toState(): DefaultMagicMetaModelState =
     DefaultMagicMetaModelState(
