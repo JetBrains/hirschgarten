@@ -22,7 +22,6 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceM
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.JavaModuleToDummyJavaModulesTransformerHACK
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
-import java.net.URI
 import java.nio.file.Path
 
 internal class WorkspaceModelUpdaterImpl(
@@ -60,8 +59,7 @@ internal class WorkspaceModelUpdaterImpl(
         LibraryEntity(
           name = entityToAdd.displayName,
           tableId = LibraryTableId.ProjectLibraryTableId,
-          roots = entityToAdd.classJars.toLibraryRootsOfType(LibraryRootTypeId.COMPILED) +
-            entityToAdd.sourceJars.toLibraryRootsOfType(LibraryRootTypeId.SOURCES),
+          roots = entityToAdd.classJars.toLibraryRootsOfType(LibraryRootTypeId.COMPILED),
           entitySource = BspEntitySource,
         ) {
           this.excludedRoots = arrayListOf()
@@ -72,7 +70,7 @@ internal class WorkspaceModelUpdaterImpl(
 
   private fun List<String>.toLibraryRootsOfType(type: LibraryRootTypeId) = map {
     LibraryRoot(
-      url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl("jar://${URI.create(it).path}!/"),
+      url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(Library.formatJarString(it)),
       type = type,
     )
   }

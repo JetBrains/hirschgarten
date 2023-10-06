@@ -3,6 +3,7 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import org.jetbrains.magicmetamodel.impl.ModuleState
+import java.net.URI
 import java.nio.file.Path
 
 public data class BuildTargetInfo(
@@ -48,7 +49,12 @@ public data class Library(
   val displayName: String,
   val sourceJars: List<String> = listOf(),
   val classJars: List<String> = listOf(),
-) : WorkspaceModelEntity(), ResourceRootEntity
+) : WorkspaceModelEntity(), ResourceRootEntity {
+  public companion object {
+    public fun formatJarString(jar: String): String =
+      "jar://${URI.create(jar).path}!/"
+  }
+}
 
 public data class ModuleDependency(
   val moduleName: String,

@@ -16,6 +16,7 @@ import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import java.nio.file.Path
 
 public data class MagicMetaModelProjectConfig(
@@ -158,6 +159,8 @@ public interface MagicMetaModel {
   public fun getAllNotLoadedTargets(): List<BuildTargetInfo>
 
   public fun clear()
+
+  public fun getLibraries(): List<Library>
 
   public companion object {
     private val log = logger<MagicMetaModel>()
