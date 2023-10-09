@@ -54,8 +54,8 @@ internal object DependencySourcesItemToLibraryTransformer :
       )
     }
 
-  private fun toLibraryFromSourceJars(classJars: List<String>) =
-    classJars.map {
+  private fun toLibraryFromSourceJars(sourceJars: List<String>) =
+    sourceJars.map {
       Library(
         displayName = calculateDisplayName(it),
         sourceJars = listOf(toJarString(it)),
