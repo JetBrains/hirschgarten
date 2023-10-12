@@ -71,7 +71,7 @@ internal object DependencySourcesItemToLibraryTransformer :
     path.replace("-sources", "")
 
   private fun toJarString(dependencyUri: String): String =
-    "jar://${removeUriFilePrefix(dependencyUri)}!/"
+    Library.formatJarString(removeUriFilePrefix(dependencyUri))
 
   private fun removeUriFilePrefix(uri: String): String =
     URI.create(uri).toPath().toString()

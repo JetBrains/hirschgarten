@@ -20,8 +20,8 @@ import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
 
-private class BspLineMakerInfo(text: String, actions: List<AnAction>)
-: RunLineMarkerContributor.Info(null, actions.toTypedArray(), { text }) {
+private class BspLineMakerInfo(text: String, actions: List<AnAction>) :
+  RunLineMarkerContributor.Info(null, actions.toTypedArray(), { text }) {
   override fun shouldReplace(other: RunLineMarkerContributor.Info): Boolean = true
 }
 
@@ -33,22 +33,25 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
     else null
 
   private fun PsiElement.shouldAddMarker(): Boolean =
-    getStrictParentOfType<PsiNameIdentifierOwner>()
+    !isInsideJar() && getStrictParentOfType<PsiNameIdentifierOwner>()
       ?.takeIf { it.nameIdentifier == this }
       ?.isClassOrMethod() ?: false
+
+  private fun PsiElement.isInsideJar() =
+    containingFile.virtualFile?.url?.startsWith("jar://") ?: false
 
   private fun PsiNameIdentifierOwner.isClassOrMethod(): Boolean =
     this is KtClassOrObject || this is KtNamedFunction || this is PsiClass || this is PsiMethod
 
-  private fun PsiElement.calculateLineMarkerInfo(): Info {
-    val magicMetaModel = MagicMetaModelService.getInstance(project).value
-    val fileUrl = containingFile.virtualFile.url
-    val documentId = TextDocumentIdentifier(fileUrl)
-    val documentTargetDetails = magicMetaModel.getTargetsDetailsForDocument(documentId)
+  private fun PsiElement.calculateLineMarkerInfo(): Info? =
+    containingFile.virtualFile?.url?.let { url ->
+      val magicMetaModel = MagicMetaModelService.getInstance(project).value
+      val documentId = TextDocumentIdentifier(url)
+      val documentTargetDetails = magicMetaModel.getTargetsDetailsForDocument(documentId)
 
-    return if (isTest()) documentTargetDetails.calculateTestLineMarkerInfo()
-    else documentTargetDetails.calculateRunLineMarkerInfo()
-  }
+      return if (isTest()) documentTargetDetails.calculateTestLineMarkerInfo()
+      else documentTargetDetails.calculateRunLineMarkerInfo()
+    }
 
   private fun PsiElement.isTest(): Boolean {
     val fileIndex = ProjectRootManager.getInstance(project).fileIndex
