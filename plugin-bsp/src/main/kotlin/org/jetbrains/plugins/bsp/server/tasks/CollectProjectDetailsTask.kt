@@ -35,8 +35,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
+import org.jetbrains.magicmetamodel.DirectoryItem
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.magicmetamodel.WorkspaceDirectoriesResult
 import org.jetbrains.magicmetamodel.WorkspaceLibrariesResult
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger
@@ -49,6 +51,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
@@ -170,6 +173,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       calculateProjectDetailsWithCapabilities(
         server = server,
         buildServerCapabilities = capabilities,
+        projectRootDir = project.rootDir.url,
         errorCallback = { errorCallback(it) },
         cancelOn = cancelOn,
       )
@@ -310,6 +314,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 public fun calculateProjectDetailsWithCapabilities(
   server: BspServer,
   buildServerCapabilities: BuildServerCapabilities,
+  projectRootDir: String,
   errorCallback: (Throwable) -> Unit,
   cancelOn: CompletableFuture<Void> = CompletableFuture(),
 ): ProjectDetails? {
@@ -346,6 +351,10 @@ public fun calculateProjectDetailsWithCapabilities(
       .get()
 
     val directoriesFuture = server.workspaceDirectories()
+      .exceptionally {
+        log.warn(it)
+        null
+      }
       .reactToExceptionIn(cancelOn)
       .catchSyncErrors(errorCallback)
 
@@ -378,7 +387,8 @@ public fun calculateProjectDetailsWithCapabilities(
       pythonOptions = pythonOptionsFuture?.get()?.items ?: emptyList(),
       outputPathUris = outputPathsFuture.get().obtainDistinctUris(),
       libraries = libraries?.libraries,
-      directories = directoriesFuture.get(),
+      directories = directoriesFuture.get()
+        ?: WorkspaceDirectoriesResult(listOf(DirectoryItem(projectRootDir)), emptyList()),
     )
   } catch (e: Exception) {
     // TODO the type xd
