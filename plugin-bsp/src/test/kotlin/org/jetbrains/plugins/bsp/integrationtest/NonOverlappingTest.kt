@@ -52,7 +52,11 @@ class NonOverlappingTest : MockProjectBaseTest() {
       val server = launcher.remoteProxy
       val initializationResult = server.buildInitialize(params).get()
       server.onBuildInitialized()
-      val projectDetails = calculateProjectDetailsWithCapabilities(server, initializationResult.capabilities, { println(it) })!!
+      val projectDetails = calculateProjectDetailsWithCapabilities(
+        server = server,
+        buildServerCapabilities = initializationResult.capabilities,
+        projectRootDir = bazelDir.toUri().toString(),
+        errorCallback = { println(it) },)!!
       val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
       val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
       val targets = projectDetails.targets.map { it.toBuildTargetInfo() }.toSet()
