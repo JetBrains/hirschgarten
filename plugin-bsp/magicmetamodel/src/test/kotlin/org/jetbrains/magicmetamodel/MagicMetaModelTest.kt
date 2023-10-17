@@ -28,6 +28,7 @@ class MagicMetaModelTest : WorkspaceModelBaseTest() {
         pythonOptions = emptyList(),
         outputPathUris = emptyList(),
         libraries = emptyList(),
+        scalacOptions = emptyList(),
       )
 
       // when

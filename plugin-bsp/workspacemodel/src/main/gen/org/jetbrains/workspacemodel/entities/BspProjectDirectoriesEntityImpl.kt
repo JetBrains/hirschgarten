@@ -1,11 +1,9 @@
 @file:SuppressWarnings("all")
 package org.jetbrains.workspacemodel.entities
 
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.workspace.storage.EntityInformation
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityStorage
-import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -284,9 +282,9 @@ public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDir
   }
 
   override fun collectClassUsagesData(collector: UsedClassesCollector) {
-    this.includedRoots?.let { collector.add(it::class.java) }
-    this.excludedRoots?.let { collector.add(it::class.java) }
-    this.projectRoot?.let { collector.add(it::class.java) }
+    this.includedRoots.let { collector.add(it::class.java) }
+    this.excludedRoots.let { collector.add(it::class.java) }
+    this.projectRoot.let { collector.add(it::class.java) }
     collector.sameForAllEntities = false
   }
 }

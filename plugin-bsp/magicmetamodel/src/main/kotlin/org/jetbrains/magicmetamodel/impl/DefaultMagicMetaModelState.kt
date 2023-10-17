@@ -17,6 +17,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonLibrary
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
 import kotlin.io.path.Path
 
@@ -182,6 +183,7 @@ public data class ModuleState(
   var jvmJdkName: String? = null,
   val sdkInfo: PythonSdkInfoState? = null,
   var kotlinAddendum: KotlinAddendumState? = null,
+  var scalaAddendum: ScalaAddendumState? = null,
 ) : ConvertableFromState<Module> {
   public fun toJavaModule(): JavaModule = JavaModule(
     genericModuleInfo = module.fromState(),
@@ -192,6 +194,7 @@ public data class ModuleState(
     compilerOutput = compilerOutput?.let { Path(it) },
     jvmJdkName = jvmJdkName,
     kotlinAddendum = kotlinAddendum?.fromState(),
+    scalaAddendum = scalaAddendum?.fromState()
   )
 
   public fun toPythonModule(): PythonModule = PythonModule(
@@ -236,6 +239,17 @@ public data class KotlinAddendumState(
   )
 }
 
+// TODO: What is it needed for? It's the same as ScalaAddendum
+public data class ScalaAddendumState(
+  var scalaSdkName: String = "",
+  var scalaSdkLibraries: List<String> = emptyList(),
+) : ConvertableFromState<ScalaAddendum> {
+  override fun fromState(): ScalaAddendum = ScalaAddendum(
+    scalaSdkName = scalaSdkName,
+    scalaSdkLibraries = scalaSdkLibraries,
+  )
+}
+
 public data class ModuleCapabilitiesState(
   var canRun: Boolean = false,
   var canTest: Boolean = false,
@@ -254,6 +268,11 @@ public fun KotlinAddendum.toState(): KotlinAddendumState = KotlinAddendumState(
   languageVersion = languageVersion,
   apiVersion = apiVersion,
   kotlincOptions = kotlincOptions,
+)
+
+public fun ScalaAddendum.toState(): ScalaAddendumState = ScalaAddendumState(
+  scalaSdkName = scalaSdkName,
+  scalaSdkLibraries = scalaSdkLibraries,
 )
 
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(

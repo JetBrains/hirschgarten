@@ -10,13 +10,13 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.KotlinBuildTarget
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.KotlinBuildTarget
 import org.jetbrains.workspace.model.test.framework.JavaWorkspaceModelFixtureBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test

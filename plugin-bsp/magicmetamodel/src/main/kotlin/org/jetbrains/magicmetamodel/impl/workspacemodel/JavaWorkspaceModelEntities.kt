@@ -23,6 +23,7 @@ public data class JavaModule(
   val compilerOutput: Path?,
   val jvmJdkName: String? = null,
   val kotlinAddendum: KotlinAddendum? = null,
+  val scalaAddendum: ScalaAddendum? = null,
 ) : WorkspaceModelEntity(), Module {
   override fun toState(): ModuleState = ModuleState(
     module = genericModuleInfo.toState(),
@@ -33,6 +34,7 @@ public data class JavaModule(
     compilerOutput = compilerOutput?.toString(),
     jvmJdkName = jvmJdkName,
     kotlinAddendum = kotlinAddendum?.toState(),
+    scalaAddendum = scalaAddendum?.toState(),
   )
 
   override fun getModuleName(): String = genericModuleInfo.name
@@ -42,4 +44,9 @@ public data class KotlinAddendum(
   val languageVersion: String,
   val apiVersion: String,
   val kotlincOptions: List<String>,
+)
+
+public data class ScalaAddendum(
+  val scalaSdkName: String,
+  val scalaSdkLibraries: List<String>,
 )

@@ -6,6 +6,7 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
+import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import org.jetbrains.magicmetamodel.LibraryItem
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -35,6 +36,7 @@ internal class ProjectDetailsToModuleDetailsTransformer(
       resources = if (isRoot) emptyList() else resources,
       dependenciesSources = calculateDependenciesSources(projectDetails, targetId),
       javacOptions = calculateJavacOptions(projectDetails, targetId),
+      scalacOptions = calculateScalacOptions(projectDetails, targetId),
       pythonOptions = calculatePythonOptions(projectDetails, targetId),
       outputPathUris = if (isRoot) calculateAllOutputPaths(projectDetails) else emptyList(),
     )
@@ -95,6 +97,12 @@ internal class ProjectDetailsToModuleDetailsTransformer(
     targetId: BuildTargetIdentifier,
   ): JavacOptionsItem? =
     projectDetails.javacOptions.firstOrNull { it.target == targetId }
+
+  private fun calculateScalacOptions(
+    projectDetails: ProjectDetails,
+    targetId: BuildTargetIdentifier,
+  ): ScalacOptionsItem? =
+    projectDetails.scalacOptions.firstOrNull { it.target == targetId }
 
   private fun calculatePythonOptions(
     projectDetails: ProjectDetails,

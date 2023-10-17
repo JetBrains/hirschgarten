@@ -9,6 +9,11 @@
   <depends
           optional="true"
           config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
+  <!-- Dependency on the Scala plugin should be optional, but we have to wait until they figure out their
+        classpath problem with scala sdk -->
+  <depends
+          config-file="bsp-withScala.xml">org.intellij.scala</depends>
+
 
   <extensionPoints>
     <extensionPoint qualifiedName="com.intellij.bspConnectionDetailsGeneratorExtension"
@@ -19,6 +24,9 @@
                     dynamic="true"/>
     <extensionPoint qualifiedName="com.intellij.pythonSdkGetterExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension"
+                    dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.scalaSdkGetterExtension"
+                    interface="org.jetbrains.plugins.bsp.extension.points.ScalaSdkGetterExtension"
                     dynamic="true"/>
     <extensionPoint qualifiedName="com.intellij.buildToolIconProviderExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.BuildToolIconProviderExtension"
@@ -78,6 +86,7 @@
     <registryKey defaultValue="true" description="Log error outputs from processes to build/sync console" key="bsp.log.error.outputs"/>
     <registryKey defaultValue="false" description="Build project on initial project sync" key="bsp.build.project.on.sync"/>
     <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
+    <registryKey defaultValue="false" description="Scala modules support" key="bsp.scala.support"/>
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
 
