@@ -1,10 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
 import ch.epfl.scala.bsp4j.PythonBuildTarget
-import com.google.gson.Gson
-import com.google.gson.JsonObject
+import org.jetbrains.bsp.utils.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -70,10 +67,3 @@ internal class ModuleDetailsToPythonModuleTransformer(
       )
     else null
 }
-
-public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? =
-  if (target.dataKind == BuildTargetDataKind.PYTHON) Gson().fromJson(
-    target.data as JsonObject,
-    PythonBuildTarget::class.java,
-  )
-  else null

@@ -15,6 +15,8 @@ import ch.epfl.scala.bsp4j.PythonOptionsParams
 import ch.epfl.scala.bsp4j.PythonOptionsResult
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
+import ch.epfl.scala.bsp4j.ScalacOptionsParams
+import ch.epfl.scala.bsp4j.ScalacOptionsResult
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
@@ -22,6 +24,7 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
+import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.progress.indeterminateStep
 import com.intellij.openapi.progress.progressStep
 import com.intellij.openapi.progress.withBackgroundProgress
@@ -35,6 +38,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
+import org.jetbrains.bsp.utils.extractJvmBuildTarget
+import org.jetbrains.bsp.utils.extractPythonBuildTarget
+import org.jetbrains.bsp.utils.extractScalaBuildTarget
 import org.jetbrains.magicmetamodel.DirectoryItem
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -44,17 +50,18 @@ import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractJvmBuildTarget
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
+import org.jetbrains.magicmetamodel.impl.workspacemodel.includesScala
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
+import org.jetbrains.plugins.bsp.extension.points.scalaSdkGetterExtension
+import org.jetbrains.plugins.bsp.extension.points.scalaSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
@@ -76,6 +83,12 @@ public data class PythonSdk(
   val dependencies: List<DependencySourcesItem>,
 )
 
+public data class ScalaSdk(
+  val name: String,
+  val scalaVersion: String,
+  val sdkJars: List<String>,
+)
+
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
   BspServerTask<ProjectDetails>("collect project details", project) {
   private val cancelOnFuture = CompletableFuture<Void>()
@@ -88,7 +101,9 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private var pythonSdks: Set<PythonSdk>? = null
 
-  private val jdkTable = ProjectJdkTable.getInstance()
+  private var scalaSdks: Set<ScalaSdk>? = null
+
+  private val sdkTable = ProjectJdkTable.getInstance()
 
   private lateinit var coroutineJob: Job
 
@@ -116,17 +131,22 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private suspend fun doExecute() {
     val projectDetails = progressStep(endFraction = 0.5, text = "Collecting project details") {
       runInterruptible { calculateProjectDetailsSubtask() }
-    }
+    } ?: return
     indeterminateStep(text = "Calculating all unique jdk infos") {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
     }
     if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
       indeterminateStep(text = "Calculating all unique python sdk infos") {
-        runInterruptible { calculateAllPythonSdkInfosSubtask(projectDetails) }
+        calculateAllPythonSdkInfosSubtask(projectDetails)
+      }
+    }
+    if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkGetterExtensionExists()) {
+      indeterminateStep(text = "Calculating all unique scala sdk infos") {
+        calculateAllScalaSdkInfosSubtask(projectDetails)
       }
     }
     progressStep(endFraction = 0.75, "Updating magic meta model diff") {
-      runInterruptible { updateMMMDiffSubtask(projectDetails) }
+      updateMMMDiffSubtask(projectDetails)
     }
     progressStep(endFraction = 1.0, "Post-processing magic meta model") {
       postprocessingMMMSubtask()
@@ -183,24 +203,62 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     return projectDetails
   }
 
-  private fun calculateAllUniqueJdkInfosSubtask(projectDetails: ProjectDetails?) {
-    projectDetails?.let {
-      bspSyncConsole.startSubtask(taskId, "calculate-all-unique-jdk-infos", "Calculating all unique jdk infos...")
-      uniqueJdkInfos = logPerformance("calculate-all-unique-jdk-infos") { calculateAllUniqueJdkInfos(projectDetails) }
-      bspSyncConsole.finishSubtask("calculate-all-unique-jdk-infos", "Calculating all unique jdk infos done!")
+  private suspend fun withSubtask(
+    subtaskId: String,
+    message: String,
+    block: suspend (subtaskId: String) -> Unit,
+  ) {
+    bspSyncConsole.startSubtask(taskId, subtaskId, message)
+    block(subtaskId)
+    bspSyncConsole.finishSubtask(subtaskId, message)
+  }
+
+  private suspend fun calculateAllUniqueJdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
+    "calculate-all-unique-jdk-infos",
+    "Calculating all unique jdk infos"
+  ) {
+    uniqueJdkInfos = logPerformance(it) {
+      calculateAllUniqueJdkInfos(projectDetails)
     }
   }
 
   private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> =
     projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
 
-  private fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails?) {
-    projectDetails?.let {
-      bspSyncConsole.startSubtask(taskId, "calculate-all-python-sdk-infos", "Calculating all python sdk infos...")
-      pythonSdks = logPerformance("calculate-all-python-sdk-infos") { calculateAllPythonSdkInfos(projectDetails) }
-      bspSyncConsole.finishSubtask("calculate-all-python-sdk-infos", "Calculating all python sdk infos done!")
+  private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
+    "calculate-all-scala-sdk-infos",
+    "Calculating all scala sdk infos"
+  ) {
+    scalaSdks = logPerformance(it) {
+      calculateAllScalaSdkInfos(projectDetails)
     }
   }
+
+  private fun calculateAllScalaSdkInfos(projectDetails: ProjectDetails): Set<ScalaSdk> =
+    projectDetails.targets
+      .mapNotNull {
+        createScalaSdk(it)
+      }
+      .toSet()
+
+  private fun createScalaSdk(target: BuildTarget): ScalaSdk? =
+    extractScalaBuildTarget(target)
+      ?.let {
+        ScalaSdk(
+          name = "${target.id.uri}-${it.scalaVersion}",
+          scalaVersion = it.scalaVersion,
+          sdkJars = it.jars
+        )
+      }
+
+  private suspend fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails) =
+    withSubtask("calculate-all-python-sdk-infos", "Calculating all python sdk infos") {
+      runInterruptible {
+        pythonSdks = logPerformance(it) {
+          calculateAllPythonSdkInfos(projectDetails)
+        }
+      }
+    }
 
   private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? =
     extractPythonBuildTarget(target)?.let {
@@ -217,7 +275,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
             PythonSdk(
               name = "${target.id.uri}-detected-PY3",
               interpreterUri = Path(sdk.homePath!!).toUri().toString(),
-              dependencies = dependenciesSources)
+              dependencies = dependenciesSources
+            )
           }
     }
 
@@ -228,14 +287,18 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       .toSet()
   }
 
-  private fun updateMMMDiffSubtask(projectDetails: ProjectDetails?) {
+  private suspend fun updateMMMDiffSubtask(projectDetails: ProjectDetails) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
-    bspSyncConsole.startSubtask(taskId, "calculate-project-structure", "Calculating project structure...")
-    projectDetails?.let {
-      logPerformance("initialize-magic-meta-model") { magicMetaModelService.initializeMagicModel(projectDetails) }
+    withSubtask("calculate-project-structure", "Calculating project structure") {
+      runInterruptible {
+        logPerformance("initialize-magic-meta-model") {
+          magicMetaModelService.initializeMagicModel(projectDetails)
+        }
+        magicMetaModelDiff = logPerformance("load-default-targets") {
+          magicMetaModelService.value.loadDefaultTargets()
+        }
+      }
     }
-    magicMetaModelDiff = logPerformance("load-default-targets") { magicMetaModelService.value.loadDefaultTargets() }
-    bspSyncConsole.finishSubtask("calculate-project-structure", "Calculating project structure done!")
   }
 
   private suspend fun postprocessingMMMSubtask() {
@@ -245,12 +308,17 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     if (BspFeatureFlags.isPythonSupportEnabled) {
       addBspFetchedPythonSdks()
     }
+
+    if (BspFeatureFlags.isScalaSupportEnabled) {
+      addBspFetchedScalaSdks()
+    }
   }
 
-  private suspend fun addBspFetchedJdks() {
-    bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-jdks", "Adding BSP-fetched JDKs...")
+  private suspend fun addBspFetchedJdks() = withSubtask(
+    "add-bsp-fetched-jdks",
+    "Adding BSP-fetched JDKs"
+  ) {
     logPerformanceSuspend("add-bsp-fetched-jdks") { uniqueJdkInfos?.forEach { addJdk(it) } }
-    bspSyncConsole.finishSubtask("add-bsp-fetched-jdks", "Adding BSP-fetched JDKs done!")
   }
 
   private suspend fun addJdk(jdkInfo: JvmBuildTarget) {
@@ -259,26 +327,39 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       URI.create(jdkInfo.javaHome).toPath().toString(),
     )
 
-    addJdkIfNeeded(jdk)
+    addSdkIfNeeded(jdk)
   }
 
-  private suspend fun addJdkIfNeeded(jdk: Sdk) {
-    val existingJdk = jdkTable.findJdk(jdk.name, jdk.sdkType.name)
-    if (existingJdk == null || existingJdk.homePath != jdk.homePath) {
+  private suspend fun addSdkIfNeeded(sdk: Sdk) {
+    val existingSdk = sdkTable.findJdk(sdk.name, sdk.sdkType.name)
+    if (existingSdk == null || existingSdk.homePath != sdk.homePath) {
       writeAction {
-        existingJdk?.let { jdkTable.removeJdk(existingJdk) }
-        jdkTable.addJdk(jdk)
+        existingSdk?.let { sdkTable.removeJdk(existingSdk) }
+        sdkTable.addJdk(sdk)
+      }
+    }
+  }
+
+  private suspend fun addBspFetchedScalaSdks() {
+    scalaSdkGetterExtension()?.let { extension ->
+      withSubtask("add-bsp-fetched-scala-sdks", "Adding BSP-fetched Scala SDKs") {
+        val modifiableProvider = IdeModifiableModelsProviderImpl(project)
+
+        writeAction {
+          scalaSdks?.forEach { extension.addScalaSdk(it, modifiableProvider) }
+          modifiableProvider.commit()
+        }
       }
     }
   }
 
   private suspend fun addBspFetchedPythonSdks() {
     pythonSdkGetterExtension()?.let { extension ->
-      bspSyncConsole.startSubtask(taskId, "add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs...")
-      logPerformanceSuspend("add-bsp-fetched-python-sdks") {
-        pythonSdks?.forEach { addPythonSdkIfNeeded(it, extension) }
+      withSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs") {
+        logPerformanceSuspend("add-bsp-fetched-python-sdks") {
+          pythonSdks?.forEach { addPythonSdkIfNeeded(it, extension) }
+        }
       }
-      bspSyncConsole.finishSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs done!")
     }
   }
 
@@ -286,17 +367,16 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
     val sdk = runInterruptible { pythonSdkGetterExtension.getPythonSdk(pythonSdk, virtualFileUrlManager) }
 
-    addJdkIfNeeded(sdk)
+    addSdkIfNeeded(sdk)
   }
 
-  private suspend fun applyChangesOnWorkspaceModel() {
-    bspSyncConsole.startSubtask(taskId, "apply-on-workspace-model", "Applying changes...")
-
+  private suspend fun applyChangesOnWorkspaceModel() = withSubtask(
+    "apply-changes-on-workspace-model",
+    "Applying changes on workspace model"
+  ) {
     logPerformanceSuspend("apply-changes-on-workspace-model") {
       magicMetaModelDiff?.applyOnWorkspaceModel()
     }
-
-    bspSyncConsole.finishSubtask("apply-on-workspace-model", "Applying changes done!")
   }
 
   private fun onCancel(e: Exception) {
@@ -341,7 +421,8 @@ public fun calculateProjectDetailsWithCapabilities(
         ?.reactToExceptionIn(cancelOn)
         ?.catchSyncErrors(errorCallback)
 
-    val javaTargetsIds = calculateJavaTargetsIds(workspaceBuildTargetsResult)
+    val javaTargetIds = calculateJavaTargetIds(workspaceBuildTargetsResult)
+    val scalaTargetIds = calculateScalaTargetIds(workspaceBuildTargetsResult)
     val libraries: WorkspaceLibrariesResult? = server.workspaceLibraries()
       .reactToExceptionIn(cancelOn)
       .exceptionally {
@@ -363,7 +444,14 @@ public fun calculateProjectDetailsWithCapabilities(
     // we don't need javacOptions at all. For other servers (like SBT)
     // we still need to retrieve it
     val javacOptionsFuture = if (libraries == null)
-      queryForJavacOptions(server, javaTargetsIds)
+      queryForJavacOptions(server, javaTargetIds)
+        ?.reactToExceptionIn(cancelOn)
+        ?.catchSyncErrors(errorCallback)
+    else null
+
+    // Same for Scala
+    val scalacOptionsFuture = if (libraries == null)
+      queryForScalacOptions(server, scalaTargetIds)
         ?.reactToExceptionIn(cancelOn)
         ?.catchSyncErrors(errorCallback)
     else null
@@ -384,6 +472,7 @@ public fun calculateProjectDetailsWithCapabilities(
       resources = resourcesFuture?.get()?.items ?: emptyList(),
       dependenciesSources = dependencySourcesFuture?.get()?.items ?: emptyList(),
       javacOptions = javacOptionsFuture?.get()?.items ?: emptyList(),
+      scalacOptions = scalacOptionsFuture?.get()?.items ?: emptyList(),
       pythonOptions = pythonOptionsFuture?.get()?.items ?: emptyList(),
       outputPathUris = outputPathsFuture.get().obtainDistinctUris(),
       libraries = libraries?.libraries,
@@ -441,10 +530,15 @@ private fun queryForDependencySources(
   else null
 }
 
-private fun calculateJavaTargetsIds(
+private fun calculateJavaTargetIds(
   workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
 ): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.includesJava() }.map { it.id }
+
+private fun calculateScalaTargetIds(
+  workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
+): List<BuildTargetIdentifier> =
+  workspaceBuildTargetsResult.targets.filter { it.languageIds.includesScala() }.map { it.id }
 
 private fun queryForJavacOptions(
   server: BspServer,
@@ -453,6 +547,16 @@ private fun queryForJavacOptions(
   return if (javaTargetsIds.isNotEmpty()) {
     val javacOptionsParams = JavacOptionsParams(javaTargetsIds)
     server.buildTargetJavacOptions(javacOptionsParams)
+  } else null
+}
+
+private fun queryForScalacOptions(
+  server: BspServer,
+  scalaTargetsIds: List<BuildTargetIdentifier>,
+): CompletableFuture<ScalacOptionsResult>? {
+  return if (scalaTargetsIds.isNotEmpty()) {
+    val scalacOptionsParams = ScalacOptionsParams(scalaTargetsIds)
+    server.buildTargetScalacOptions(scalacOptionsParams)
   } else null
 }
 

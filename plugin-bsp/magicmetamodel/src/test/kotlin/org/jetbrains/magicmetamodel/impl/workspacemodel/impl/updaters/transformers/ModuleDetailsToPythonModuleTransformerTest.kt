@@ -19,6 +19,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.utils.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
@@ -136,6 +137,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         "module2",
         "module3",
       ),
+      scalacOptions = null,
     )
 
     // when
@@ -261,6 +263,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         buildTargetId2.uri,
         buildTargetId3.uri,
       ),
+      scalacOptions = null,
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -315,6 +318,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = listOf(buildTargetId3.uri),
+      scalacOptions = null,
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
@@ -398,9 +402,10 @@ class ModuleDetailsToPythonModuleTransformerTest {
         dependenciesSources = emptyList(),
         javacOptions = null,
         pythonOptions = null,
+        scalacOptions = null,
         outputPathUris = emptyList(),
         libraryDependencies = null,
-        moduleDependencies = emptyList()
+        moduleDependencies = emptyList(),
       )
 
     fun emptyExpectedModule(name: String, sdkInfo: PythonSdkInfo): PythonModule {

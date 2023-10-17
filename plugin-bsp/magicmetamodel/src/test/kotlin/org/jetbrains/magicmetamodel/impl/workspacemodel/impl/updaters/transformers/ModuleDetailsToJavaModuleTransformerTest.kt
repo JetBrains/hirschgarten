@@ -16,6 +16,8 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.KotlinBuildTarget
+import org.jetbrains.bsp.utils.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
@@ -150,6 +152,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         "module2",
         "module3",
       ),
+      scalacOptions = null
     )
     // when
     val javaModule =
@@ -282,6 +285,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       libraryDependencies = listOf(
         "@maven//:lib1",
       ),
+      scalacOptions = null,
     )
 
     // when
@@ -420,6 +424,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         "module2",
         "module3",
       ),
+      scalacOptions = null,
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -483,6 +488,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       moduleDependencies = listOf(
         "module3",
       ),
+      scalacOptions = null,
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)

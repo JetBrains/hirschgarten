@@ -5,6 +5,7 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
+import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
@@ -18,6 +19,7 @@ internal data class ModuleDetails(
   val resources: List<ResourcesItem>,
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
+  val scalacOptions: ScalacOptionsItem?,
   val pythonOptions: PythonOptionsItem?,
   val outputPathUris: List<String>,
   val libraryDependencies: List<BuildTargetId>?,

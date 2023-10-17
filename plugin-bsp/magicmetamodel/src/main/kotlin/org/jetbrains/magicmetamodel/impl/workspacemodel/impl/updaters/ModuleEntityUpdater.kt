@@ -64,22 +64,22 @@ internal class ModuleEntityUpdater(
       scope = ModuleDependencyItem.DependencyScope.COMPILE,
       productionOnTest = true,
     )
+}
 
-  private fun toModuleDependencyItemLibraryDependency(
-    libraryDependency: LibraryDependency,
-    moduleName: String,
-  ): ModuleDependencyItem.Exportable.LibraryDependency {
-    val libraryTableId = if (libraryDependency.isProjectLevelLibrary)
-      LibraryTableId.ProjectLibraryTableId else LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName))
-    return ModuleDependencyItem.Exportable.LibraryDependency(
-      library = LibraryId(
-        name = libraryDependency.libraryName,
-        tableId = libraryTableId,
-      ),
-      exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
-      scope = ModuleDependencyItem.DependencyScope.COMPILE,
-    )
-  }
+internal fun toModuleDependencyItemLibraryDependency(
+  libraryDependency: LibraryDependency,
+  moduleName: String,
+): ModuleDependencyItem.Exportable.LibraryDependency {
+  val libraryTableId = if (libraryDependency.isProjectLevelLibrary)
+    LibraryTableId.ProjectLibraryTableId else LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName))
+  return ModuleDependencyItem.Exportable.LibraryDependency(
+    library = LibraryId(
+      name = libraryDependency.libraryName,
+      tableId = libraryTableId,
+    ),
+    exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
+    scope = ModuleDependencyItem.DependencyScope.COMPILE,
+  )
 }
 
 internal class WorkspaceModuleRemover(

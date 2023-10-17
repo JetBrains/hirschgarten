@@ -1,11 +1,10 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
-import com.google.gson.Gson
-import com.google.gson.JsonObject
+import org.jetbrains.bsp.utils.extractJvmBuildTarget
+import org.jetbrains.bsp.utils.extractKotlinBuildTarget
+import org.jetbrains.bsp.utils.extractScalaBuildTarget
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
@@ -13,8 +12,10 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import java.net.URI
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.name
 import kotlin.io.path.toPath
 
@@ -57,6 +58,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
       compilerOutput = toCompilerOutput(inputEntity),
       jvmJdkName = toJdkName(inputEntity),
       kotlinAddendum = toKotlinAddendum(inputEntity),
+      scalaAddendum = toScalaAddendum(inputEntity),
     )
 
   override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
@@ -105,35 +107,22 @@ internal class ModuleDetailsToJavaModuleTransformer(
       } else null
   }
 
+  private fun toScalaAddendum(inputEntity: ModuleDetails): ScalaAddendum? {
+    val scalaBuildTarget = extractScalaBuildTarget(inputEntity.target)
+    val version = scalaBuildTarget?.scalaVersion?.scalaVersionToScalaSdkName() ?: return null
+    val jars = scalaBuildTarget.jars
+    return ScalaAddendum(
+      scalaSdkName = version,
+      scalaSdkLibraries = jars.map { Paths.get(URI(it)).toFile().name },
+    )
+  }
+
   private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetId> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
     return kotlinBuildTarget?.associates?.map { it.uri } ?: emptyList()
   }
 }
 
-// TODO ugly, but we need to change it anyway
-public fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
-  when (target.dataKind) {
-    BuildTargetDataKind.JVM ->
-      when (target.data) {
-        is JvmBuildTarget -> target.data as JvmBuildTarget
-        else -> Gson().fromJson(target.data as JsonObject, JvmBuildTarget::class.java)
-      }
-
-    "kotlin" -> extractKotlinBuildTargetIfIsKotlinDataKind(target.data)?.jvmBuildTarget
-    else -> null
-  }
-
-public fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? =
-  when (target.dataKind) {
-    "kotlin" -> extractKotlinBuildTargetIfIsKotlinDataKind(target.data)
-    else -> null
-  }
-
-public fun extractKotlinBuildTargetIfIsKotlinDataKind(data: Any): KotlinBuildTarget? =
-  when (data) {
-    is KotlinBuildTarget -> data
-    else -> Gson().fromJson(data as JsonObject, KotlinBuildTarget::class.java)
-  }
-
 public fun String.javaVersionToJdkName(projectName: String): String = "$projectName-$this"
+
+public fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"

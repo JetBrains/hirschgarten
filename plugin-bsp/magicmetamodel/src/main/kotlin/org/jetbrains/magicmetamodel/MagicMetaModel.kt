@@ -6,6 +6,7 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
+import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.debug
@@ -57,6 +58,7 @@ public data class ProjectDetails(
   val resources: List<ResourcesItem>,
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: List<JavacOptionsItem>,
+  val scalacOptions: List<ScalacOptionsItem>,
   val pythonOptions: List<PythonOptionsItem>,
   val outputPathUris: List<String>,
   val libraries: List<LibraryItem>?,
@@ -69,6 +71,7 @@ public data class ProjectDetails(
     resources = resources + old.resources,
     dependenciesSources = dependenciesSources + old.dependenciesSources,
     javacOptions = javacOptions + old.javacOptions,
+    scalacOptions = scalacOptions + old.scalacOptions,
     pythonOptions = pythonOptions + old.pythonOptions,
     outputPathUris = outputPathUris + old.outputPathUris,
     libraries = if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),

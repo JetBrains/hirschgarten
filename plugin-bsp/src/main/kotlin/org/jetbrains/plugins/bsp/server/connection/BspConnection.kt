@@ -5,6 +5,7 @@ import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.JavaBuildServer
 import ch.epfl.scala.bsp4j.JvmBuildServer
 import ch.epfl.scala.bsp4j.PythonBuildServer
+import ch.epfl.scala.bsp4j.ScalaBuildServer
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -14,7 +15,8 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.BazelBuildServer
 
-public interface BspServer : BuildServer, JavaBuildServer, JvmBuildServer, BazelBuildServer, PythonBuildServer
+public interface BspServer : BuildServer, JavaBuildServer, JvmBuildServer, BazelBuildServer, PythonBuildServer,
+  ScalaBuildServer
 
 /**
  * The BSP connection, implementation should keep all the information

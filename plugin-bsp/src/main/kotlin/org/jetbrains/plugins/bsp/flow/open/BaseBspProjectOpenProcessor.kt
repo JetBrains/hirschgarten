@@ -55,6 +55,7 @@ public fun Project.initializeEmptyMagicMetaModel() {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = emptyList(),
+      scalacOptions = emptyList(),
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = emptyList(),

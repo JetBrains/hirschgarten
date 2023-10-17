@@ -6,6 +6,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
 import java.nio.file.Path
@@ -47,10 +48,25 @@ internal class JavaModuleWithSourcesUpdater(
     return moduleEntity
   }
 
-  private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
-    if (entityToAdd.jvmJdkName != null) {
-      defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkName, "JavaSDK")
-    } else defaultDependencies
+  private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> {
+    val returnDependencies: MutableList<ModuleDependencyItem> = defaultDependencies.toMutableList()
+    entityToAdd.jvmJdkName?.let {
+      returnDependencies.add(ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkName, "JavaSDK"))
+    }
+    entityToAdd.scalaAddendum?.let { addendum ->
+      returnDependencies.add(toModuleDependencyItemLibraryDependency(
+        LibraryDependency(addendum.scalaSdkName, true),
+        entityToAdd.genericModuleInfo.name
+      ))
+      addendum.scalaSdkLibraries.forEach {
+        returnDependencies.add(toModuleDependencyItemLibraryDependency(
+          LibraryDependency(it, true),
+          entityToAdd.genericModuleInfo.name
+        ))
+      }
+    }
+    return returnDependencies
+  }
 
   private fun addJavaModuleSettingsEntity(
     builder: MutableEntityStorage,

@@ -47,6 +47,7 @@ public class MagicMetaModelService(private val project: Project) :
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = emptyList(),
+      scalacOptions = emptyList()
     )
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)
