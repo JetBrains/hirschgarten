@@ -15,14 +15,3 @@ public class BspAssetsExtension : BuildToolAssetsExtension {
   override val loadedTargetIcon: Icon = BspPluginIcons.bsp
   override val unloadedTargetIcon: Icon = IconLoader.getIcon("/icons/notLoaded.svg", javaClass)
 }
-
-public class BazelAssetsExtension : BuildToolAssetsExtension {
-  override val buildToolId: BuildToolId = BuildToolId("bazelbsp")
-
-  override val presentableName: String = "Bazel"
-
-  override val icon: Icon = IconLoader.getIcon("/icons/bazel.svg", javaClass)
-
-  override val loadedTargetIcon: Icon = IconLoader.getIcon("/icons/bazel.svg", javaClass)
-  override val unloadedTargetIcon: Icon = IconLoader.getIcon("/icons/grayBazel.svg", javaClass)
-}

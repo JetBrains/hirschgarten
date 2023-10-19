@@ -28,12 +28,6 @@ dependencies {
   testImplementation(project(":test-utils"))
   implementation(libs.bsp4j)
   implementation(libs.gson)
-  implementation(libs.coursier) {
-    // This is needed because the scala plugin also provides the scala sdk
-    //  and it causes a classpath conflict
-    exclude(group = "org.scala-lang")
-  }
-
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
 }
