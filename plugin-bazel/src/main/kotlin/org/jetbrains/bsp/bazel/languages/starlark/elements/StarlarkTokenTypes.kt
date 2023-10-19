@@ -9,6 +9,9 @@ object StarlarkTokenTypes {
   val TAB = StarlarkTokenType("TAB")
 
   @JvmField
+  val LINE_CONTINUATION = StarlarkTokenType("LINE_CONTINUATION")
+
+  @JvmField
   val LINE_BREAK = StarlarkTokenType("LINE_BREAK")
 
   // Significant whitespaces

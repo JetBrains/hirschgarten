@@ -1,0 +1,9 @@
+FILE
+  StarlarkAssignmentStatementImpl(ASSIGNMENT_STATEMENT)
+    StarlarkTargetExpressionImpl(TARGET_EXPRESSION)
+      PsiElement(Starlark:IDENTIFIER)('variable')
+    PsiWhiteSpace(' ')
+    PsiElement(Starlark:=)('=')
+    PsiWhiteSpace(' ')
+    StarlarkIntegerLiteralExpressionImpl(INTEGER_LITERAL_EXPRESSION)
+      PsiElement(Starlark:INT)('0')
