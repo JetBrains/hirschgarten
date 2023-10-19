@@ -316,7 +316,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addBspFetchedJdks() = withSubtask(
     "add-bsp-fetched-jdks",
-    "Adding BSP-fetched JDKs"
+    "Adding fetched JDKs"
   ) {
     logPerformanceSuspend("add-bsp-fetched-jdks") { uniqueJdkInfos?.forEach { addJdk(it) } }
   }
@@ -342,7 +342,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addBspFetchedScalaSdks() {
     scalaSdkGetterExtension()?.let { extension ->
-      withSubtask("add-bsp-fetched-scala-sdks", "Adding BSP-fetched Scala SDKs") {
+      withSubtask("add-bsp-fetched-scala-sdks", "Adding fetched Scala SDKs") {
         val modifiableProvider = IdeModifiableModelsProviderImpl(project)
 
         writeAction {
@@ -355,7 +355,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addBspFetchedPythonSdks() {
     pythonSdkGetterExtension()?.let { extension ->
-      withSubtask("add-bsp-fetched-python-sdks", "Adding BSP-fetched Python SDKs") {
+      withSubtask("add-bsp-fetched-python-sdks", "Adding fetched Python SDKs") {
         logPerformanceSuspend("add-bsp-fetched-python-sdks") {
           pythonSdks?.forEach { addPythonSdkIfNeeded(it, extension) }
         }

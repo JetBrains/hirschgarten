@@ -9,13 +9,14 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenedCallback
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.nio.file.Path
 
-public abstract class BaseBspProjectOpenProcessor : ProjectOpenProcessor() {
+public abstract class BaseBspProjectOpenProcessor(private val buildToolId: BuildToolId) : ProjectOpenProcessor() {
   override fun doOpenProject(
     virtualFile: VirtualFile,
     projectToClose: Project?,
@@ -40,12 +41,13 @@ public abstract class BaseBspProjectOpenProcessor : ProjectOpenProcessor() {
     this.forceOpenInNewFrame = forceOpenInNewFrame
     this.projectToClose = projectToClose
 
-    beforeOpen = { it.initProperties(virtualFile); true }
-    callback = ProjectOpenedCallback { project, _ -> project.initializeEmptyMagicMetaModel() }
+    beforeOpen = { it.initProperties(virtualFile, buildToolId); true }
+    callback = ProjectOpenedCallback { project, _ -> project.initializeEmptyMagicMetaModel(virtualFile) }
   }
 }
 
-public fun Project.initializeEmptyMagicMetaModel() {
+public fun Project.initializeEmptyMagicMetaModel(projectRootDir: VirtualFile) {
+  this.rootDir = projectRootDir
   val magicMetaModelService = MagicMetaModelService.getInstance(this)
   magicMetaModelService.initializeMagicModel(
     ProjectDetails(
@@ -67,7 +69,8 @@ public fun Project.initializeEmptyMagicMetaModel() {
   }
 }
 
-public fun Project.initProperties(projectRootDir: VirtualFile) {
+public fun Project.initProperties(projectRootDir: VirtualFile, buildToolId: BuildToolId) {
   this.isBspProject = true
   this.rootDir = projectRootDir
+  this.buildToolId = buildToolId
 }

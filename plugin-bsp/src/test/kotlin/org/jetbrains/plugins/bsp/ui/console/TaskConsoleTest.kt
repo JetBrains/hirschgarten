@@ -85,7 +85,7 @@ private class MockProgressEventListener : BuildProgressListener {
 class TestTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
-) : TaskConsole(taskView, basePath) {
+) : TaskConsole(taskView, basePath, "build tool") {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction = object : AnAction({ "test" }) {
     override fun actionPerformed(e: AnActionEvent) {}
     override fun getActionUpdateThread(): ActionUpdateThread =

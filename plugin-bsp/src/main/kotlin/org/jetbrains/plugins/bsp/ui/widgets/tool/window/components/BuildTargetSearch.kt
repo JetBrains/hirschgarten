@@ -7,6 +7,8 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.flow.open.BuildToolId
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
@@ -25,6 +27,7 @@ private fun BuildTargetInfo.getBuildTargetName(): String =
 
 public class BuildTargetSearch(
   private val targetIcon: Icon,
+  private val buildToolId: BuildToolId,
   private val toolName: String,
   targets: Collection<BuildTargetInfo>,
   public val searchBarPanel: SearchBarPanel,
@@ -34,7 +37,7 @@ public class BuildTargetSearch(
   override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction(this, targetSearchPanel)
 
   private val searchListDisplay = LazySearchListDisplay(targetIcon)
-  private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, toolName)
+  private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, buildToolId)
 
   private var displayedSearchPanel: JPanel? = null
   private val inProgressInfoComponent = JBLabel(
@@ -140,7 +143,7 @@ public class BuildTargetSearch(
     chooseTargetSearchPanel().getSelectedBuildTarget()
 
   override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetSearch {
-    val new = BuildTargetSearch(targetIcon, toolName, newTargets, searchBarPanel)
+    val new = BuildTargetSearch(targetIcon, buildToolId, toolName, newTargets, searchBarPanel)
     for (listenerBuilder in this.mouseListenerBuilders) {
       new.addMouseListener(listenerBuilder)
     }

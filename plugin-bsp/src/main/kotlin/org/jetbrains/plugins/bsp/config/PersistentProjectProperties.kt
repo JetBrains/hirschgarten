@@ -4,6 +4,7 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import org.jetbrains.plugins.bsp.flow.open.BuildToolId
 
 private const val IS_BSP_PROJECT_KEY = "org.jetbrains.bsp.is.bsp.project"
 
@@ -18,6 +19,14 @@ public var Project.rootDir: VirtualFile
     ?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
     ?: error("$PROJECT_ROOT_DIR_KEY value not set!")
   set(value) = properties.setValue(PROJECT_ROOT_DIR_KEY, value.url)
+
+private const val BUILD_TOOL_ID_KEY = "org.jetbrains.bsp.build.tool.id"
+
+public var Project.buildToolId: BuildToolId
+  get() = properties.getValue(BUILD_TOOL_ID_KEY)
+    ?.let { BuildToolId(it) }
+    ?: error("$BUILD_TOOL_ID_KEY value not set!")
+  set(value) = properties.setValue(BUILD_TOOL_ID_KEY, value.id)
 
 private val Project.properties: PropertiesComponent
   get() = PropertiesComponent.getInstance(this)
