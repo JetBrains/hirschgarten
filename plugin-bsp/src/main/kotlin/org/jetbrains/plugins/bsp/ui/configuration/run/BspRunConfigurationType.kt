@@ -15,19 +15,23 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
+import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.server.tasks.RunTargetTask
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
 import javax.swing.Icon
 
-internal class BspRunConfigurationType : ConfigurationType {
-  override fun getDisplayName(): String = "BSP RUN"
+internal class BspRunConfigurationType(project: Project) : ConfigurationType {
+  private val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
 
-  override fun getConfigurationTypeDescription(): String = "BSP RUN"
+  override fun getDisplayName(): String = "${assetsExtension.presentableName} RUN"
 
-  override fun getIcon(): Icon = BspPluginIcons.bsp
+  override fun getConfigurationTypeDescription(): String = "${assetsExtension.presentableName} RUN"
+
+  override fun getIcon(): Icon = assetsExtension.icon
 
   override fun getId(): String = ID
 
@@ -40,8 +44,10 @@ internal class BspRunConfigurationType : ConfigurationType {
 }
 
 public class BspRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
-  override fun createTemplateConfiguration(project: Project): RunConfiguration =
-    BspRunConfiguration(project, this, "BSP RUN")
+  override fun createTemplateConfiguration(project: Project): RunConfiguration {
+    val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
+    return BspRunConfiguration(project, this, "${assetsExtension.presentableName} RUN")
+  }
 
   override fun getId(): String =
     BspRunConfigurationType.ID

@@ -6,6 +6,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.flow.open.BuildToolId
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import java.awt.Component
 import java.awt.event.MouseListener
@@ -31,20 +32,22 @@ public class BspPanelComponent private constructor(
 
   /**
    * @param targetIcon icon which will be shown next to build targets in this panel
+   * @param buildToolId id of the build tool
    * @param toolName name of the tool providing the build targets
    * @param targets collection of build targets this panel will contain
    * @param searchBarPanel searchbar panel responsible for providing user's search queries
    */
   public constructor(
     targetIcon: Icon,
+    buildToolId: BuildToolId,
     toolName: String,
     targets: Collection<BuildTargetInfo>,
     searchBarPanel: SearchBarPanel,
   ) : this(
     targetIcon = targetIcon,
     toolName = toolName,
-    targetTree = BuildTargetTree(targetIcon, toolName, targets),
-    targetSearch = BuildTargetSearch(targetIcon, toolName, targets, searchBarPanel),
+    targetTree = BuildTargetTree(targetIcon, buildToolId, targets),
+    targetSearch = BuildTargetSearch(targetIcon, buildToolId, toolName, targets, searchBarPanel),
   )
 
   init {

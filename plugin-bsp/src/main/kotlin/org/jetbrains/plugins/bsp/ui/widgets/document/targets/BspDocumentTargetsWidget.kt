@@ -16,12 +16,15 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
 import java.net.URI
+import javax.swing.Icon
 
 private const val ID = "BspDocumentTargetsWidget"
 
@@ -34,30 +37,33 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
 
   override fun ID(): String = ID
 
-  override fun getWidgetState(file: VirtualFile?): WidgetState =
-    if (file == null) inactiveWidgetState() else activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file)
+  override fun getWidgetState(file: VirtualFile?): WidgetState {
+    val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
+    return if (file == null) inactiveWidgetState(assetsExtension.icon)
+    else activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, assetsExtension.icon)
+  }
 
-  private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile): WidgetState {
+  private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
     val documentDetails = getDocumentDetails(file)
-
     return when {
-      documentDetails == null -> inactiveWidgetState()
-      documentDetails.loadedTargetId == null && documentDetails.notLoadedTargetsIds.isEmpty() -> inactiveWidgetState()
-      else -> activeWidgetState(documentDetails.loadedTargetId)
+      documentDetails == null -> inactiveWidgetState(icon)
+      documentDetails.loadedTargetId == null && documentDetails.notLoadedTargetsIds.isEmpty() ->
+        inactiveWidgetState(icon)
+      else -> activeWidgetState(documentDetails.loadedTargetId, icon)
     }
   }
 
-  private fun inactiveWidgetState(): WidgetState {
+  private fun inactiveWidgetState(icon: Icon): WidgetState {
     val state = WidgetState(BspPluginBundle.message("widget.tooltip.text.inactive"), "", false)
-    state.icon = BspPluginIcons.bsp
+    state.icon = icon
 
     return state
   }
 
-  private fun activeWidgetState(loadedTarget: BuildTargetId?): WidgetState {
+  private fun activeWidgetState(loadedTarget: BuildTargetId?, icon: Icon): WidgetState {
     val text = loadedTarget ?: ""
     val state = WidgetState(BspPluginBundle.message("widget.tooltip.text.active"), text, true)
-    state.icon = BspPluginIcons.bsp
+    state.icon = icon
 
     return state
   }

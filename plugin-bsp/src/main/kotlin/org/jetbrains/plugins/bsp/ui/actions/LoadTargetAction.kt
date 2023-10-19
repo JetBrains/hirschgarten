@@ -4,7 +4,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
@@ -23,9 +26,12 @@ public class LoadTargetAction(
       val diff = magicMetaModel.loadTarget(targetId)
       diff?.applyOnWorkspaceModel()
 
+      val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
       BspBalloonNotifier.info(
-        BspPluginBundle.message("widget.load.target.notification", targetId),
-        BspPluginBundle.message("widget.load.target")
+        title = assetsExtension.presentableName,
+        content = BspPluginBundle.message("widget.load.target.notification", targetId),
+        subtitle = BspPluginBundle.message("widget.load.target"),
+        customIcon = assetsExtension.icon
       )
     }
   }

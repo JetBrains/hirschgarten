@@ -5,6 +5,7 @@ import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.flow.open.BuildToolId
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
 import java.awt.Component
@@ -21,7 +22,7 @@ import javax.swing.tree.TreeSelectionModel
 
 public class BuildTargetTree(
   private val targetIcon: Icon,
-  private val toolName: String,
+  private val buildToolId: BuildToolId,
   private val targets: Collection<BuildTargetInfo>,
   private val labelHighlighter: (String) -> String = { it },
 ) : BuildTargetContainer {
@@ -43,7 +44,7 @@ public class BuildTargetTree(
 
   private fun generateTree() {
     val bspBuildTargetClassifierProvider =
-      BspBuildTargetClassifierProvider(toolName, BspBuildTargetClassifierExtension.extensions())
+      BspBuildTargetClassifierProvider(buildToolId.id, BspBuildTargetClassifierExtension.extensions())
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
@@ -168,7 +169,7 @@ public class BuildTargetTree(
     newTargets: Collection<BuildTargetInfo>,
     labelHighlighter: (String) -> String,
   ): BuildTargetTree {
-    val new = BuildTargetTree(targetIcon, toolName, newTargets, labelHighlighter)
+    val new = BuildTargetTree(targetIcon, buildToolId, newTargets, labelHighlighter)
     for (listenerBuilder in this.mouseListenerBuilders) {
       new.addMouseListener(listenerBuilder)
     }

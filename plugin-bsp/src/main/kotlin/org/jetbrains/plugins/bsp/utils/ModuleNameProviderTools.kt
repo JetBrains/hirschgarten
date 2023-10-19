@@ -3,12 +3,12 @@ package org.jetbrains.plugins.bsp.utils
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.ModuleNameProvider
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
-import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
 
-private fun obtainToolNameIfKnown(project: Project): String? =
-  BspConnectionService.getInstance(project).value?.buildToolId
+public fun Project.findModuleNameProvider(): ModuleNameProvider? =
+  this.buildToolId.takeIf { it.id != "bsp" }?.let { createModuleNameProvider(it.id) }
 
 private fun createModuleNameProvider(toolName: String): ModuleNameProvider {
   val targetClassifier =
@@ -21,8 +21,5 @@ private fun createModuleNameProvider(toolName: String): ModuleNameProvider {
 }
 
 private fun String.replaceDots(): String = this.replace('.', ' ')
-
-public fun Project.findModuleNameProvider(): ModuleNameProvider? =
-  obtainToolNameIfKnown(this)?.let(::createModuleNameProvider)
 
 public fun ModuleNameProvider?.orDefault(): ModuleNameProvider = this ?: DefaultModuleNameProvider

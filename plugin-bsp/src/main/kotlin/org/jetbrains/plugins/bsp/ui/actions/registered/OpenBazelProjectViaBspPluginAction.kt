@@ -12,6 +12,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.flow.open.BspStartupActivity
+import org.jetbrains.plugins.bsp.flow.open.BuildToolId
 import org.jetbrains.plugins.bsp.flow.open.initProperties
 import org.jetbrains.plugins.bsp.flow.open.initializeEmptyMagicMetaModel
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
@@ -66,8 +67,8 @@ public class OpenBazelProjectViaBspPluginAction:
 
 public fun performOpenBazelProjectViaBspPlugin(project: Project?, projectRootDir: VirtualFile?) {
   if (projectRootDir != null && project != null) {
-    project.initProperties(projectRootDir)
-    project.initializeEmptyMagicMetaModel()
+    project.initProperties(projectRootDir, BuildToolId("bazelbsp"))
+    project.initializeEmptyMagicMetaModel(projectRootDir)
     BspCoroutineService.getInstance(project).start {
       BspStartupActivity().execute(project)
     }

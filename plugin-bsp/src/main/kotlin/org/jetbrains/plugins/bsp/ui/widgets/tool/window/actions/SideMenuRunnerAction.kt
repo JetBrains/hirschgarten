@@ -28,7 +28,7 @@ internal abstract class SideMenuRunnerAction(
   text: () -> String,
   icon: Icon? = null,
 ) : SuspendableAction(text, icon) {
-  abstract fun getConfigurationType(): ConfigurationType
+  abstract fun getConfigurationType(project: Project): ConfigurationType
 
   abstract fun getName(target: BuildTargetId): String
 
@@ -39,7 +39,7 @@ internal abstract class SideMenuRunnerAction(
   }
 
   fun doPerformAction(project: Project, targetId: BuildTargetId) {
-    val factory = getConfigurationType().configurationFactories.first()
+    val factory = getConfigurationType(project).configurationFactories.first()
     val settings = RunManager.getInstance(project).createConfiguration(getName(targetId), factory)
     RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
     val runExecutor = DefaultRunExecutor.getRunExecutorInstance()

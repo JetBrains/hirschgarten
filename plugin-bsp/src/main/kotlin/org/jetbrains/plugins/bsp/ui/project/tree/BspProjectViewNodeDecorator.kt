@@ -10,12 +10,17 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.workspaceModel.ide.getInstance
-import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import javax.swing.Icon
 
 public class BspProjectViewNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
   private var loadedModulesBaseDirectories: Set<VirtualFile> = emptySet()
+
+  private lateinit var buildToolIcon: Icon
 
   init {
     if (project.isBspProject) {
@@ -25,6 +30,9 @@ public class BspProjectViewNodeDecorator(private val project: Project) : Project
       magicMetaModel.registerTargetLoadListener {
         loadedModulesBaseDirectories = calculateAllTargetsBaseDirectories()
       }
+
+      val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
+      buildToolIcon = assetsExtension.icon
     }
   }
 
@@ -62,7 +70,7 @@ public class BspProjectViewNodeDecorator(private val project: Project) : Project
     loadedModulesBaseDirectories.contains(virtualFile)
 
   private fun PresentationData.addIconAndHighlight() {
-    setIcon(BspPluginIcons.bsp)
+    setIcon(buildToolIcon)
     addText(presentableText, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
   }
 

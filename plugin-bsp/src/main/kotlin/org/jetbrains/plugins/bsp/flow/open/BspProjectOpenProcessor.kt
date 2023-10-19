@@ -20,6 +20,11 @@ public interface WithBuildToolId {
 internal fun <T : WithBuildToolId> ExtensionPointName<T>.withBuildToolId(buildToolId: BuildToolId): T? =
   this.extensions.find { it.buildToolId == buildToolId }
 
+internal fun <T : WithBuildToolId> ExtensionPointName<T>.withBuildToolIdOrDefault(buildToolId: BuildToolId): T =
+  this.extensions.find { it.buildToolId == buildToolId }
+    ?: withBuildToolId(BuildToolId("bsp"))
+    ?: error("Missing default implementation for extension: ${this.javaClass.name}")
+
 public interface BspProjectOpenProcessorExtension : WithBuildToolId {
   /**
    * When a project is opened for the first time [com.intellij.projectImport.ProjectOpenProcessor.canOpenProject]
@@ -43,7 +48,7 @@ public interface BspProjectOpenProcessorExtension : WithBuildToolId {
   }
 }
 
-internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor() {
+internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(BuildToolId("bsp")) {
   override val name: String = BspPluginBundle.message("plugin.name")
 
   override val icon: Icon = BspPluginIcons.bsp
@@ -65,7 +70,7 @@ internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor() {
 }
 
 // TODO should be moved to the bazel plugin
-public class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor() {
+public class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(BuildToolId("bazelbsp")) {
   override val icon: Icon = BspPluginIcons.bazel
 
   override val name: String = "Bazel"

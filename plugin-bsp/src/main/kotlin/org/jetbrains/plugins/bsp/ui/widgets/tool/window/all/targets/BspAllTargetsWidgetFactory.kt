@@ -10,8 +10,10 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.ContentFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowPanel
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 
@@ -37,11 +39,12 @@ public class BspAllTargetsWidgetFactory : ToolWindowFactory, DumbAware {
 
 public suspend fun registerBspToolWindow(project: Project) {
   val toolWindowManager = ToolWindowManager.getInstance(project)
-  val currentToolWindow = toolWindowManager.getToolWindow("BSP")
+  val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
+  val currentToolWindow = toolWindowManager.getToolWindow(assetsExtension.presentableName)
   if (currentToolWindow == null) {
     withContext(Dispatchers.EDT) {
-      toolWindowManager.registerToolWindow("BSP") {
-        this.icon = BspPluginIcons.bsp
+      toolWindowManager.registerToolWindow(assetsExtension.presentableName) {
+        this.icon = assetsExtension.icon
         this.anchor = ToolWindowAnchor.RIGHT
         this.canCloseContent = false
         this.contentFactory = BspAllTargetsWidgetFactory()
