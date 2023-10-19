@@ -49,12 +49,14 @@ TRIPLE_QUOTE_STRING = (\"\"\"{TRIPLE_QUOTE_STRING_ITEM}*\"\"\")
 TRIPLE_QUOTE_STRING_ITEM = [^\\\"] | {ONE_TWO_QUOTES} | {ESCAPE_SEQUENCE}
 ONE_TWO_QUOTES = (\"[^\\\"]) | (\"\\[^]) | (\"\"[^\\\"]) | (\"\"\\[^])
 
+LINE_CONTINUATION = \\[\n]
 ESCAPE_SEQUENCE = \\[^]
 %%
 
 [\ ]          { return StarlarkTokenTypes.SPACE; }
 [\t]          { return StarlarkTokenTypes.TAB; }
 [\n]          { return StarlarkTokenTypes.LINE_BREAK; }
+{LINE_CONTINUATION} { return StarlarkTokenTypes.LINE_CONTINUATION; }
 
 {COMMENT}     { return StarlarkTokenTypes.COMMENT; }
 
@@ -62,6 +64,7 @@ ESCAPE_SEQUENCE = \\[^]
 {BYTES}       { return StarlarkTokenTypes.BYTES; }
 {INT}         { return StarlarkTokenTypes.INT; }
 {FLOAT}       { return StarlarkTokenTypes.FLOAT; }
+
 
 "and"         { return StarlarkTokenTypes.AND_KEYWORD; }
 "break"       { return StarlarkTokenTypes.BREAK_KEYWORD; }

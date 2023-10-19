@@ -1,0 +1,3 @@
+FILE
+  StarlarkBreakStatementImpl(BREAK_STATEMENT)
+    PsiElement(Starlark:break)('break')

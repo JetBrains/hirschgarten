@@ -13,6 +13,7 @@ import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bsp.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bsp.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bsp.bazel.languages.starlark.lexer.StarlarkIndentingLexer
+import org.jetbrains.bsp.bazel.languages.starlark.parser.StarlarkParser
 import org.jetbrains.bsp.bazel.languages.starlark.psi.StarlarkFile
 
 class StarlarkParserDefinition : ParserDefinition {
@@ -20,9 +21,7 @@ class StarlarkParserDefinition : ParserDefinition {
 
   override fun createLexer(project: Project?): Lexer = StarlarkIndentingLexer()
 
-  override fun createParser(project: Project?): PsiParser {
-    TODO("Not yet implemented")
-  }
+  override fun createParser(project: Project?): PsiParser = StarlarkParser()
 
   override fun getFileNodeType(): IFileElementType = file
 

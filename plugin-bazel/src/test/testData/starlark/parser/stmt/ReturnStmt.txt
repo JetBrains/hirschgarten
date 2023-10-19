@@ -1,0 +1,3 @@
+FILE
+  StarlarkReturnStatementImpl(RETURN_STATEMENT)
+    PsiElement(Starlark:return)('return')

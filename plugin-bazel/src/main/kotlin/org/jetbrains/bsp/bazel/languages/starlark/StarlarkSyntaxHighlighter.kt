@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.tree.IElementType
 import org.jetbrains.bsp.bazel.languages.starlark.elements.StarlarkTokenTypes
-import org.jetbrains.bsp.bazel.languages.starlark.lexer.StarlarkIndentingLexer
+import org.jetbrains.bsp.bazel.languages.starlark.lexer.StarlarkHighlightingLexer
 
 object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
   private val keys = mapOf(
@@ -58,8 +58,7 @@ object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
     StarlarkTokenTypes.COMMENT to StarlarkHighlightingColors.LINE_COMMENT,
   )
 
-  override fun getHighlightingLexer(): Lexer =
-    StarlarkIndentingLexer()
+  override fun getHighlightingLexer(): Lexer = StarlarkHighlightingLexer()
 
   override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
 }
