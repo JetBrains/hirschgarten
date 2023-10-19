@@ -2,7 +2,6 @@ package org.jetbrains.plugins.bsp.flow.open
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.plugins.bsp.config.BazelBspConstants
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
@@ -67,20 +66,4 @@ internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(BuildToolId
 
   private fun BuildToolId.shouldBspProjectOpenProcessorBeAvailable(): Boolean =
     BspProjectOpenProcessorExtension.ep.withBuildToolId(this)?.shouldBspProjectOpenProcessorBeAvailable ?: true
-}
-
-// TODO should be moved to the bazel plugin
-public class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(BuildToolId("bazelbsp")) {
-  override val icon: Icon = BspPluginIcons.bazel
-
-  override val name: String = "Bazel"
-
-  override fun canOpenProject(file: VirtualFile): Boolean =
-    file.children.any { it.name in BazelBspConstants.BUILD_FILE_NAMES }
-}
-
-public class BazelBspProjectOpenProcessorExtension : BspProjectOpenProcessorExtension {
-  override val buildToolId: BuildToolId = BuildToolId("bazelbsp")
-
-  override val shouldBspProjectOpenProcessorBeAvailable: Boolean = false
 }

@@ -14,7 +14,6 @@ gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
 detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
-coursier = { module = "io.get-coursier:coursier_2.13", version = "2.1.7" }
 
 [plugins]
 intellij = { id = "org.jetbrains.intellij", version = "1.15.0" }
