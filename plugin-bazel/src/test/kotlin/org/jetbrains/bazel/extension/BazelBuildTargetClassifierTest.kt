@@ -1,7 +1,6 @@
-package org.jetbrains.bsp.bazel.extension
+package org.jetbrains.bazel.extension
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.extension.BazelBuildTargetClassifier
 import org.junit.Test
 
 class BazelBuildTargetClassifierTest {
