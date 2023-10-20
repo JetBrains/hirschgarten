@@ -11,6 +11,7 @@ import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.psi.impl.PsiManagerImpl
 import com.intellij.psi.impl.file.PsiDirectoryImpl
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
+import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 
 public class BspTreeStructureProvider: TreeStructureProvider {
@@ -18,6 +19,13 @@ public class BspTreeStructureProvider: TreeStructureProvider {
     parent: AbstractTreeNode<*>,
     children: MutableCollection<AbstractTreeNode<*>>,
     settings: ViewSettings,
+  ): MutableCollection<AbstractTreeNode<*>> =
+    if (parent.project.isBspProject) doModify(parent, children)
+    else children
+
+  private fun doModify(
+    parent: AbstractTreeNode<*>,
+    children: MutableCollection<AbstractTreeNode<*>>,
   ): MutableCollection<AbstractTreeNode<*>> =
     if (parent is ProjectViewProjectNode) createRootDirAndAddExternalLibraries(parent, children)
     else children.removeModuleAndModuleGroupsNodes()
