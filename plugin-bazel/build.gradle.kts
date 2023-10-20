@@ -15,6 +15,9 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.23.1"
 }
 
+val myToken: String by project
+val releaseChannel: String by project
+
 dependencies {
     implementation("io.kotest:kotest-assertions-core:5.7.2")
     implementation("io.get-coursier:coursier_2.13:2.1.7")
@@ -132,11 +135,14 @@ tasks {
 
     publishPlugin {
         dependsOn("patchChangelog")
-        token.set(System.getenv("PUBLISH_TOKEN"))
+        token.set(provider { myToken })
         // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels.set(listOf(properties("pluginVersion").split('-').getOrElse(1) { "default" }.split('.').first()))
+        // Release channel is set via command-line param "releaseChannel"
+        // Marketplace token is set via command-line parm "myToken"
+        // Example command "./gradlew publishPlugin -PmyToken="perm:YOUR_TOKEN -PreleaseChannel=nightly"
+        channels.set(provider { listOf(releaseChannel) })
     }
 
 // Set the JVM compatibility versions
