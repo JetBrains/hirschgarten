@@ -4,14 +4,15 @@
     <vendor>JetBrains</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.bsp</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <!--        <bspConnectionDetailsGeneratorExtension-->
-        <!--                implementation="org.jetbrains.bsp.bazel.extension.BazelBspConnectionDetailsGenerator"-->
+        <!--                implementation="org.jetbrains.bazel.extension.BazelBspConnectionDetailsGenerator"-->
         <!--        />-->
         <fileType
                 name="Starlark"
-                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkFileType"
+                implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkFileType"
                 fieldName="INSTANCE"
                 language="Starlark"
                 fileNames="BUILD;WORKSPACE"
@@ -19,12 +20,12 @@
 
         <lang.parserDefinition
                 language="Starlark"
-                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkParserDefinition"/>
+                implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkParserDefinition"/>
         <lang.syntaxHighlighterFactory
                 language="Starlark"
-                implementationClass="org.jetbrains.bsp.bazel.languages.starlark.StarlarkSyntaxHighlighterFactory"/>
+                implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkSyntaxHighlighterFactory"/>
         <colorSettingsPage
-                implementation="org.jetbrains.bsp.bazel.languages.starlark.StarlarkColorSettingsPage"/>
+                implementation="org.jetbrains.bazel.languages.starlark.StarlarkColorSettingsPage"/>
         <additionalTextAttributes
                 scheme="Default"
                 file="colorSchemes/StarlarkDefault.xml"/>
