@@ -1,12 +1,29 @@
 <idea-plugin>
     <id>org.jetbrains.bazel</id>
-    <name>Bazel</name>
+    <name>Bazel by JetBrains (experimental)</name>
     <vendor>JetBrains</vendor>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.bsp</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <bspProjectOpenProcessorExtension
+            implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessorExtension"/>
+
+        <projectOpenProcessor
+            implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
+
+        <buildToolAssetsExtension
+            implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
+
+        <bspConnectionDetailsGeneratorExtension
+            implementation="org.jetbrains.bazel.flow.open.BazelBspDetailsConnectionGenerator"/>
+        <bspBuildTargetClassifierExtension
+            implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
+        <externalSystemUnlinkedProjectAware
+            id="Bazel BSP"
+            implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
+
         <!--        <bspConnectionDetailsGeneratorExtension-->
         <!--                implementation="org.jetbrains.bazel.extension.BazelBspConnectionDetailsGenerator"-->
         <!--        />-->
@@ -35,5 +52,12 @@
 
     </extensions>
 
+    <actions>
+        <action class="org.jetbrains.bazel.flow.open.OpenBazelProjectViaBspPluginAction"
+                icon="/icons/bazel.svg">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
 
+    </actions>
 </idea-plugin>
