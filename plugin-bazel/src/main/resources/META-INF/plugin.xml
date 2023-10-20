@@ -49,6 +49,9 @@
         <additionalTextAttributes
                 scheme="Darcula"
                 file="colorSchemes/StarlarkDarcula.xml"/>
+        <annotator
+            language="Starlark"
+            implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkFunctionAnnotator"/>
 
     </extensions>
 

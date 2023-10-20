@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.lexer;
 
+import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes;
