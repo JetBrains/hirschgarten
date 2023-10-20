@@ -8,7 +8,7 @@ internal class BazelBuildTargetClassifier : BspBuildTargetClassifierExtension {
 
   override fun separator(): String = "/"
 
-  private val bazelLabelRegex = """@?(?<repository>.*)//(?<package>.*):(?<target>.*)""".toRegex()
+  private val bazelLabelRegex = """@?@?(?<repository>.*)//(?<package>.*):(?<target>.*)""".toRegex()
 
   override fun getBuildTargetPath(buildTargetIdentifier: BuildTargetId): List<String> {
     return bazelLabelRegex.find(buildTargetIdentifier)?.groups
