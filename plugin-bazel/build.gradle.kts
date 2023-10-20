@@ -16,7 +16,6 @@ plugins {
 }
 
 dependencies {
-    implementation("com.google.protobuf:protobuf-java:3.24.3")
     implementation("io.kotest:kotest-assertions-core:5.7.2")
     implementation("io.get-coursier:coursier_2.13:2.1.7")
     implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.1")
