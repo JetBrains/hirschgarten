@@ -7,8 +7,9 @@
 
 Allows importing projects into IntelliJ IDEA using Build Server Protocol.
 
-Includes Bazel BSP extension - Bazel projects can be imported directly without explicitly installing a BSP server.
+Used by [experimental Bazel plugin](https://plugins.jetbrains.com/plugin/22977-bazel-by-jetbrains-experimental-).
 <!-- Plugin description end -->
+
 
 ## Benchmarks (experimental)
 It is possible to run a benchmark that imports an arbitrary project.
