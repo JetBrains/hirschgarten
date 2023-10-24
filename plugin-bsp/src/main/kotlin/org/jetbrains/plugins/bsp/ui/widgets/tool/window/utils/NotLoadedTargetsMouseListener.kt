@@ -55,7 +55,10 @@ public class NotLoadedTargetsMouseListener(
 
     return if (target != null) {
       val copyTargetIdAction = container.copyTargetIdAction
-      val loadTargetAction = LoadTargetAction(target.id)
+      val loadTargetAction = LoadTargetAction(
+        targetId = target.id,
+        text = { org.jetbrains.plugins.bsp.config.BspPluginBundle.message("widget.load.target.popup.message") },
+      )
       DefaultActionGroup().apply {
         addAction(copyTargetIdAction)
         addSeparator()
