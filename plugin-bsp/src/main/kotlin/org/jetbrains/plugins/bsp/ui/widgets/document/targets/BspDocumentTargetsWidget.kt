@@ -95,7 +95,12 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     group.addSeparator(BspPluginBundle.message("widget.loaded.target.separator.title"))
 
     if (loadedTarget != null) {
-      group.addAction(LoadTargetAction(loadedTarget) { update() })
+      group.addAction(
+        LoadTargetAction(
+          targetId = loadedTarget,
+          text = { loadedTarget },
+        ) { update() }
+      )
     }
   }
 
@@ -105,7 +110,11 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
   ) {
     group.addSeparator(BspPluginBundle.message("widget.available.targets.to.load"))
 
-    val actions = notLoadedTargetsIds.map { LoadTargetAction(it) { update() } }
+    val actions = notLoadedTargetsIds.map {
+      LoadTargetAction(
+        targetId = it,
+        text = { it },
+      ) { update() } }
     group.addAll(actions)
   }
 

@@ -13,8 +13,9 @@ import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
 public class LoadTargetAction(
   private val targetId: BuildTargetId,
+  text: () -> String,
   private val updateWidget: () -> Unit = {},
-) : SuspendableAction({ BspPluginBundle.message("widget.load.target.popup.message") }), DumbAware {
+) : SuspendableAction(text), DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     loadTarget(project, targetId)
     updateWidget()
