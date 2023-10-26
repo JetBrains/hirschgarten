@@ -14,7 +14,7 @@ object StarlarkFileType : LanguageFileType(StarlarkLanguage) {
     "Starlark language"
 
   override fun getDefaultExtension(): String =
-    "bzl;bazel"
+    "bzl"
 
   override fun getIcon(): Icon =
     StarlarkLanguageIcons.bazel
