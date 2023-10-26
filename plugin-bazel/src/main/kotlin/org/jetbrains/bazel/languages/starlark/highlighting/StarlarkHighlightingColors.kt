@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark
+package org.jetbrains.bazel.languages.starlark.highlighting
 
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey

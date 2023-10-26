@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark
+package org.jetbrains.bazel.languages.starlark.parser
 
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
@@ -10,10 +10,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
+import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkElementTypes
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.lexer.StarlarkIndentingLexer
-import org.jetbrains.bazel.languages.starlark.parser.StarlarkParser
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 
 class StarlarkParserDefinition : ParserDefinition {

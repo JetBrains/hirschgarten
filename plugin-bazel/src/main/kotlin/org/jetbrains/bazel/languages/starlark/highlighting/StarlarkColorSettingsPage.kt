@@ -1,10 +1,13 @@
-package org.jetbrains.bazel.languages.starlark
+package org.jetbrains.bazel.languages.starlark.highlighting
 
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.options.colors.AttributesDescriptor
 import com.intellij.openapi.options.colors.ColorDescriptor
 import com.intellij.openapi.options.colors.ColorSettingsPage
+import org.jetbrains.bazel.languages.starlark.StarlarkBundle
+import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
+import org.jetbrains.bazel.languages.starlark.StarlarkLanguageIcons
 import javax.swing.Icon
 
 class StarlarkColorSettingsPage : ColorSettingsPage {

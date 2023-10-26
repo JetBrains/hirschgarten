@@ -37,15 +37,15 @@
 
         <lang.parserDefinition
                 language="Starlark"
-                implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkParserDefinition"/>
+                implementationClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserDefinition"/>
         <lang.syntaxHighlighterFactory
                 language="Starlark"
-                implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkSyntaxHighlighterFactory"/>
+                implementationClass="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkSyntaxHighlighterFactory"/>
         <lang.commenter
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.commenter.StarlarkCommenter"/>
         <colorSettingsPage
-                implementation="org.jetbrains.bazel.languages.starlark.StarlarkColorSettingsPage"/>
+                implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage"/>
         <additionalTextAttributes
                 scheme="Default"
                 file="colorSchemes/StarlarkDefault.xml"/>
