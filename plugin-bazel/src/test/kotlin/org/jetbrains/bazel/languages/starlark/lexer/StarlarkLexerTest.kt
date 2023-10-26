@@ -696,6 +696,41 @@ class StarlarkLexerTest : StarlarkLexerTestCase() {
     )
   }
 
+  @Test
+  fun `should lex incomplete single quoted string`() {
+    // given
+    val code =
+      """
+        |"hello
+        |world
+      """.trimMargin()
+
+    // when & then
+    code shouldLexTo listOf(
+      "Starlark:STRING",
+      "Starlark:STATEMENT_BREAK",
+      "Starlark:LINE_BREAK",
+      "Starlark:IDENTIFIER",
+      "Starlark:STATEMENT_BREAK",
+    )
+  }
+
+  @Test
+  fun `should lex incomplete triple quoted string`() {
+    // given
+    val code =
+      """
+        |${TRIPLE_QUOTE}hello
+        |world
+      """.trimMargin()
+
+    // when & then
+    code shouldLexTo listOf(
+      "Starlark:STRING",
+      "Starlark:STATEMENT_BREAK",
+    )
+  }
+
   private infix fun String.shouldLexTo(expectedTokens: List<String>) {
     doLexerTest(this, StarlarkIndentingLexer(), expectedTokens)
   }
