@@ -33,7 +33,7 @@
                 fieldName="INSTANCE"
                 language="Starlark"
                 fileNames="BUILD;WORKSPACE"
-                extensions="bzl;bazel"/>
+                extensions="bzl;bazel;bzlmod"/>
 
         <lang.parserDefinition
                 language="Starlark"
