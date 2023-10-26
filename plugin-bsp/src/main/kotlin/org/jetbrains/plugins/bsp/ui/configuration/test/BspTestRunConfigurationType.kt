@@ -13,6 +13,7 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.server.tasks.TestTargetTask
@@ -24,9 +25,11 @@ import javax.swing.Icon
 public class BspTestRunConfigurationType(project: Project) : ConfigurationType {
   private val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
 
-  override fun getDisplayName(): String = "${assetsExtension.presentableName} TEST"
+  override fun getDisplayName(): String =
+    BspPluginBundle.message("test.config.type.display.name", assetsExtension.presentableName)
 
-  override fun getConfigurationTypeDescription(): String = "${assetsExtension.presentableName} TEST"
+  override fun getConfigurationTypeDescription(): String =
+    BspPluginBundle.message("test.config.type.description", assetsExtension.presentableName)
 
   override fun getIcon(): Icon = assetsExtension.icon
 
@@ -43,7 +46,7 @@ public class BspTestRunConfigurationType(project: Project) : ConfigurationType {
 public class BspTestRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
   override fun createTemplateConfiguration(project: Project): RunConfiguration {
     val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
-    return BspTestRunConfiguration(project, this, "${assetsExtension.presentableName} TEST")
+    return BspTestRunConfiguration(project, this, BspPluginBundle.message("test.config.name", assetsExtension.presentableName))
   }
 
   override fun getId(): String =

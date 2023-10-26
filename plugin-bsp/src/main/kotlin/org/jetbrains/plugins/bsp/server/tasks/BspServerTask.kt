@@ -5,6 +5,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.ChunkingBuildServer
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.server.connection.BspServer
@@ -32,17 +33,18 @@ public abstract class BspServerTask<T>(private val taskName: String, protected v
 
     bspSyncConsole.startTask(
       taskId = "bsp-autoconnect",
-      title = "Connect",
-      message = "Connecting...",
+      title = BspPluginBundle.message("console.task.auto.connect.title"),
+      message = BspPluginBundle.message("console.task.auto.connect.in.progress"),
     )
 
     return try {
       bspConnection.connect("bsp-autoconnect")
       bspConnection.server!!.also {
-        bspSyncConsole.finishTask("bsp-autoconnect", "Auto-connect done!")
+        bspSyncConsole.finishTask("bsp-autoconnect", BspPluginBundle.message("console.task.auto.connect.success"))
       }
     } catch (e: Exception) {
-      bspSyncConsole.finishTask("bsp-autoconnect", "Auto-connect failed!", FailureResultImpl(e))
+      bspSyncConsole.finishTask("bsp-autoconnect",
+        BspPluginBundle.message("console.task.auto.connect.failed"), FailureResultImpl(e))
       error("Server connection failed!")
     }
   }

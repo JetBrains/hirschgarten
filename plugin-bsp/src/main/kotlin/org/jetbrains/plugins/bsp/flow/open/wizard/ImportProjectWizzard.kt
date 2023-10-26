@@ -5,6 +5,7 @@ import com.intellij.ide.wizard.StepAdapter
 import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
 import javax.swing.JComponent
@@ -25,7 +26,7 @@ public abstract class ImportProjectWizardStep : StepAdapter() {
 public class ImportProjectWizard(
   project: Project,
   private val bspConnectionDetailsGeneratorProvider: BspConnectionDetailsGeneratorProvider,
-) : AbstractWizard<ImportProjectWizardStep>("Import Project via BSP", project) {
+) : AbstractWizard<ImportProjectWizardStep>(BspPluginBundle.message("wizard.import.project.title"), project) {
   public val connectionFileOrNewConnectionProperty: ObservableMutableProperty<ConnectionFileOrNewConnection>
   private val firstStep: ChooseConnectionFileOrNewConnectionStep
 

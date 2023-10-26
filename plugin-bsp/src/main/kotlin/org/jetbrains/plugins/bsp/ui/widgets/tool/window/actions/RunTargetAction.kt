@@ -15,5 +15,5 @@ internal class RunTargetAction(
 ) : SideMenuRunnerAction(targetId, text, icon) {
   override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType(project)
 
-  override fun getName(target: BuildTargetId): String = "run $target"
+  override fun getName(target: BuildTargetId): String = BspPluginBundle.message("console.task.run.config.name", target)
 }

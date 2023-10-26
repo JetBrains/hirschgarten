@@ -5,6 +5,7 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -54,8 +55,8 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
 
     syncConsole.startTask(
       taskId = taskId,
-      title = "Sync",
-      message = "Syncing...",
+      title = BspPluginBundle.message("console.task.sync.title"),
+      message = BspPluginBundle.message("console.task.sync.in.progress"),
       cancelAction = { collectProjectDetailsTask.cancelExecution() },
     )
     connectionService.value!!.connect(taskId) { collectProjectDetailsTask.cancelExecution() }
@@ -64,9 +65,9 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
         name = "Syncing...",
         cancelable = true,
       )
-      syncConsole.finishTask(taskId, "Sync")
+      syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.success"))
     } catch (e: Exception) {
-      syncConsole.finishTask(taskId, "Sync failed!", FailureResultImpl(e))
+      syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.failed"), FailureResultImpl(e))
     }
 
     BspToolWindowService.getInstance(project).doDeepPanelReload()

@@ -4,6 +4,7 @@ import com.intellij.openapi.observable.properties.ObservableMutableProperty
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
 import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizardStep
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
@@ -22,7 +23,7 @@ public interface BspConnectionDetailsGenerator {
   ) {
     val commandStr = command.joinToString(" ")
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.addMessage("Running command: $commandStr")
+    bspSyncConsole.addMessage(BspPluginBundle.message("console.task.run.message.command", commandStr))
     val builder = ProcessBuilder(command)
       .directory(projectPath.toNioPath().toFile())
       .withRealEnvs()

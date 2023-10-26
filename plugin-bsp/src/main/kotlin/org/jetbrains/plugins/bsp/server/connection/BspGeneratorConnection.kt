@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGenerator
@@ -94,7 +95,8 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val consoleOutputStream = ConsoleOutputStream(generateConnectionFileSubtaskId, bspSyncConsole)
 
-    bspSyncConsole.startSubtask(taskId, generateConnectionFileSubtaskId, "Generating BSP connection details...")
+    bspSyncConsole.startSubtask(taskId, generateConnectionFileSubtaskId,
+      BspPluginBundle.message("console.task.generate.connection.file.in.progress"))
 
     try {
       val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
@@ -104,11 +106,12 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
       )
       val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)
       fileConnection = BspFileConnection(project, locatedBspConnectionDetails)
-      bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId, "Generating BSP connection details done!")
+      bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId,
+        BspPluginBundle.message("console.task.generate.connection.file.success"))
     } catch (e: Exception) {
       bspSyncConsole.finishSubtask(
         subtaskId = generateConnectionFileSubtaskId,
-        message = "Generating BSP connection details failed!",
+        message = BspPluginBundle.message("console.task.generate.connection.file.failed"),
         result = FailureResultImpl(e),
       )
     }

@@ -17,6 +17,7 @@ import com.intellij.openapi.util.Key
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.orDefault
@@ -51,7 +52,8 @@ internal abstract class LocalJvmRunnerAction(
     environment.mainClasses
       ?.firstOrNull() // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
       ?.let { mainClass ->
-        val applicationConfiguration = ApplicationConfiguration("Run $uri", project).apply {
+        val applicationConfiguration = ApplicationConfiguration(
+          BspPluginBundle.message("console.task.run.with.jvm.env.config.name", uri), project).apply {
           setModule(module)
           mainClassName = mainClass.className
           programParameters = mainClass.arguments.joinToString(" ")

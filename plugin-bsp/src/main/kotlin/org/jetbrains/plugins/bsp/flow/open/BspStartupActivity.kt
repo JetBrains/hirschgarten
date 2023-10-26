@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
@@ -58,10 +59,11 @@ public class BspStartupActivity : ProjectActivity {
     } catch (e: Exception) {
       bspSyncConsole.startTask(
         taskId = "bsp-pre-import",
-        title = "Pre-import",
-        message = "Pre-importing...",
+        title = BspPluginBundle.message("console.task.pre.import.title"),
+        message = BspPluginBundle.message("console.task.pre.import.in.progress"),
       )
-      bspSyncConsole.finishTask("bsp-pre-import", "Pre-import failed!", FailureResultImpl(e))
+      bspSyncConsole.finishTask("bsp-pre-import",
+        BspPluginBundle.message("console.task.pre.import.failed"), FailureResultImpl(e))
     }
   }
 
