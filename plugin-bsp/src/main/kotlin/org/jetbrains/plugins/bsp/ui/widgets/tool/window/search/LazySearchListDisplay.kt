@@ -4,6 +4,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import java.awt.Point
 import java.awt.event.MouseListener
 import javax.swing.DefaultListModel
@@ -63,7 +64,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
   private fun maybeAddShowMoreButton(targets: Collection<BuildTargetInfo>) {
     val remainingTargets = targets.size - TARGETS_TO_HIGHLIGHT
     if (remainingTargets > 0) {
-      showMoreButton = JButton("Show $remainingTargets more")
+      showMoreButton = JButton(BspPluginBundle.message("widget.show.more.targets.button", remainingTargets))
       showMoreButton.addActionListener {
         showMoreTargets(targets)
       }

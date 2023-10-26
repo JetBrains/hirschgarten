@@ -21,15 +21,16 @@ public class RestartAction : SuspendableAction({ BspPluginBundle.message("restar
       connection.restart("bsp-restart")
       bspSyncConsole.startTask(
         taskId = "bsp-restart",
-        title = "Restart",
-        message = "Restarting...",
+        title = BspPluginBundle.message("console.task.restart.title"),
+        message = BspPluginBundle.message("console.task.restart.in.progress"),
         cancelAction = { collectProjectDetailsTask.cancelExecution() },
       )
       try {
         collectProjectDetailsTask.execute(name = "Restarting...", cancelable = true)
-        bspSyncConsole.finishTask("bsp-restart", "Restarting done!")
+        bspSyncConsole.finishTask("bsp-restart", BspPluginBundle.message("console.task.restart.success"))
       } catch (e: Exception) {
-        bspSyncConsole.finishTask("bsp-restart", "Restarting failed!", FailureResultImpl(e))
+        bspSyncConsole.finishTask("bsp-restart",
+          BspPluginBundle.message("console.task.restart.failed"), FailureResultImpl(e))
       }
     }
   }

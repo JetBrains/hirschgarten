@@ -4,6 +4,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.flow.open.BuildToolId
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
@@ -218,7 +219,7 @@ private class TargetTreeCellRenderer(
       )
 
       else -> JBLabel(
-        "[not renderable]",
+        BspPluginBundle.message("widget.no.renderable.component"),
         PlatformIcons.ERROR_INTRODUCTION_ICON,
         SwingConstants.LEFT,
       )

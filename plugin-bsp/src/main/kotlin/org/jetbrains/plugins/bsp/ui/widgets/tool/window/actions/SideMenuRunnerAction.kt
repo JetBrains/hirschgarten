@@ -18,6 +18,7 @@ import com.intellij.platform.diagnostic.telemetry.EDT
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import javax.swing.Icon
 
@@ -61,7 +62,7 @@ internal abstract class SideMenuRunnerAction(
       executionEnvironment.putUserData(targetIdTOREMOVE, targetId)
       runner.execute(executionEnvironment)
     } catch (e: Exception) {
-      Messages.showErrorDialog(project, e.message, "Error")
+      Messages.showErrorDialog(project, e.message, BspPluginBundle.message("widget.side.menu.error.title"))
     }
   }
 }

@@ -16,8 +16,8 @@ public class ConnectAction : SuspendableAction({ BspPluginBundle.message("connec
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-connect")
     bspSyncConsole.startTask(
       taskId = "bsp-connect",
-      title = "Connect",
-      message = "Connecting...",
+      title = BspPluginBundle.message("console.task.connect.title"),
+      message = BspPluginBundle.message("console.task.connect.in.progress"),
       cancelAction = { collectProjectDetailsTask.cancelExecution() },
     )
 
@@ -28,9 +28,10 @@ public class ConnectAction : SuspendableAction({ BspPluginBundle.message("connec
         name = "Connecting...",
         cancelable = true,
       )
-      bspSyncConsole.finishTask("bsp-connect", "Connect done!")
+      bspSyncConsole.finishTask("bsp-connect", BspPluginBundle.message("console.task.connect.success"))
     } catch (e: Exception) {
-      bspSyncConsole.finishTask("bsp-connect", "Connect failed!", FailureResultImpl(e))
+      bspSyncConsole.finishTask("bsp-connect",
+        BspPluginBundle.message("console.task.connect.failed"), FailureResultImpl(e))
     }
   }
 

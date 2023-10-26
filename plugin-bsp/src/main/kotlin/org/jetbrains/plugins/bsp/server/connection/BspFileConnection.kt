@@ -17,6 +17,7 @@ import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
 import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
@@ -128,13 +129,15 @@ public class BspFileConnection(
   private fun doConnect(taskId: Any, errorCallback: () -> Unit = {}) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
-    bspSyncConsole.startSubtask(taskId, connectSubtaskId, "Connecting to the server...")
-    bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection...")
+    bspSyncConsole.startSubtask(taskId, connectSubtaskId,
+      BspPluginBundle.message("console.subtask.connect.in.progress"))
+    bspSyncConsole.addMessage(connectSubtaskId, BspPluginBundle.message("console.task.connect.message.in.progress"))
 
     try {
       doConnectOrThrowIfFailed(bspSyncConsole, taskId, errorCallback)
     } catch (e: Exception) {
-      bspSyncConsole.finishTask(taskId, "Establishing connection has failed!", FailureResultImpl(e))
+      bspSyncConsole.finishTask(taskId,
+        BspPluginBundle.message("console.task.connect.message.failed"), FailureResultImpl(e))
     }
   }
 
@@ -148,7 +151,7 @@ public class BspFileConnection(
       process.handleErrorOnExit(bspSyncConsole, taskId, errorCallback)
 
       bspProcess = process
-      bspSyncConsole.addMessage(connectSubtaskId, "Establishing connection done!")
+      bspSyncConsole.addMessage(connectSubtaskId, BspPluginBundle.message("console.task.connect.message.success"))
 
       initializeServer(process, client, bspSyncConsole)
     } else {
@@ -214,7 +217,7 @@ public class BspFileConnection(
     this.onExit().whenComplete { completedProcess, _ ->
       val exitValue = completedProcess.exitValue()
       if (exitValue != OK_EXIT_CODE && exitValue != TERMINATED_EXIT_CODE) {
-        val errorMessage = "Server exited with exit value $exitValue"
+        val errorMessage = BspPluginBundle.message("console.server.exited", exitValue)
         bspSyncConsole.finishTask(taskId, errorMessage, FailureResultImpl(errorMessage))
         errorCallback()
       }
@@ -225,13 +228,14 @@ public class BspFileConnection(
     client: BspClient,
     bspSyncConsole: TaskConsole,
   ) {
-    bspSyncConsole.addMessage(connectSubtaskId, "Initializing server...")
+    bspSyncConsole.addMessage(connectSubtaskId,
+      BspPluginBundle.message("console.message.initialize.server.in.progress"))
 
     server = startServerAndAddDisconnectActions(process, client)
     capabilities = server?.initializeAndObtainCapabilities()
 
-    bspSyncConsole.addMessage(connectSubtaskId, "Server initialized! Server is ready to use.")
-    bspSyncConsole.finishSubtask(connectSubtaskId, "Connecting to the server done!")
+    bspSyncConsole.addMessage(connectSubtaskId, BspPluginBundle.message("console.message.initialize.server.success"))
+    bspSyncConsole.finishSubtask(connectSubtaskId, BspPluginBundle.message("console.subtask.connect.success"))
   }
 
   private fun startServerAndAddDisconnectActions(process: Process, client: BuildClient): BspServer {

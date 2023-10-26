@@ -16,6 +16,7 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.server.tasks.RunTargetTask
@@ -27,9 +28,11 @@ import javax.swing.Icon
 internal class BspRunConfigurationType(project: Project) : ConfigurationType {
   private val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
 
-  override fun getDisplayName(): String = "${assetsExtension.presentableName} RUN"
+  override fun getDisplayName(): String =
+    BspPluginBundle.message("run.config.type.display.name", assetsExtension.presentableName)
 
-  override fun getConfigurationTypeDescription(): String = "${assetsExtension.presentableName} RUN"
+  override fun getConfigurationTypeDescription(): String =
+    BspPluginBundle.message("run.config.type.description", assetsExtension.presentableName)
 
   override fun getIcon(): Icon = assetsExtension.icon
 
@@ -46,7 +49,8 @@ internal class BspRunConfigurationType(project: Project) : ConfigurationType {
 public class BspRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
   override fun createTemplateConfiguration(project: Project): RunConfiguration {
     val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
-    return BspRunConfiguration(project, this, "${assetsExtension.presentableName} RUN")
+    return BspRunConfiguration(project, this,
+      BspPluginBundle.message("run.config.name", assetsExtension.presentableName))
   }
 
   override fun getId(): String =
@@ -70,15 +74,15 @@ public class BspRunConfiguration(project: Project, configurationFactory: Configu
       environment.getUserData(targetIdTOREMOVE)?.let { uri ->
         bspRunConsole.registerPrinter(processHandler)
         processHandler.execute {
-          val startRunMessage = "Running target $uri"
-          processHandler.printOutput(startRunMessage)
+          processHandler.printOutput(BspPluginBundle.message("console.task.run.start", uri))
           try {
             RunTargetTask(project).connectAndExecute(BuildTargetIdentifier(uri))?.apply {
               when (statusCode) {
-                StatusCode.OK -> processHandler.printOutput("Successfully completed!")
-                StatusCode.CANCELLED -> processHandler.printOutput("Cancelled!")
-                StatusCode.ERROR -> processHandler.printOutput("Ended with an error!")
-                else -> processHandler.printOutput("Finished!")
+                StatusCode.OK -> processHandler.printOutput(BspPluginBundle.message("console.task.status.ok"))
+                StatusCode.CANCELLED -> processHandler.printOutput(
+                  BspPluginBundle.message("console.task.status.cancelled"))
+                StatusCode.ERROR -> processHandler.printOutput(BspPluginBundle.message("console.task.status.error"))
+                else -> processHandler.printOutput(BspPluginBundle.message("console.task.status.other"))
               }
             }
           } finally {

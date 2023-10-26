@@ -56,7 +56,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
   ) {
     val startBuildMessage = calculateStartBuildMessage(targetIds)
 
-    bspBuildConsole.startTask(originId, "Build", startBuildMessage, {
+    bspBuildConsole.startTask(originId, BspPluginBundle.message("console.task.build.title"), startBuildMessage, {
       cancelOn.cancel(true)
     }) {
       BspCoroutineService.getInstance(project).startAsync {
@@ -67,9 +67,9 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
   private fun calculateStartBuildMessage(targetIds: List<BuildTargetIdentifier>): String =
     when (targetIds.size) {
-      0 -> "No targets to build! Skipping"
-      1 -> "Building ${targetIds.first().uri}..."
-      else -> "Building ${targetIds.size} targets..."
+      0 -> BspPluginBundle.message("console.task.build.no.targets")
+      1 -> BspPluginBundle.message("console.task.build.in.progress.one", targetIds.first().uri)
+      else -> BspPluginBundle.message("console.task.build.in.progress.many", targetIds.size)
     }
 
   private fun createCompileParams(targetIds: List<BuildTargetIdentifier>, originId: String) =
@@ -83,10 +83,11 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     bspBuildConsole: TaskConsole,
     uuid: String,
   ) = when (compileResult.statusCode) {
-    StatusCode.OK -> bspBuildConsole.finishTask(uuid, "Successfully completed!")
-    StatusCode.CANCELLED -> bspBuildConsole.finishTask(uuid, "Cancelled!")
-    StatusCode.ERROR -> bspBuildConsole.finishTask(uuid, "Ended with an error!", FailureResultImpl())
-    else -> bspBuildConsole.finishTask(uuid, "Finished!")
+    StatusCode.OK -> bspBuildConsole.finishTask(uuid, BspPluginBundle.message("console.task.status.ok"))
+    StatusCode.CANCELLED -> bspBuildConsole.finishTask(uuid, BspPluginBundle.message("console.task.status.cancelled"))
+    StatusCode.ERROR -> bspBuildConsole.finishTask(uuid,
+      BspPluginBundle.message("console.task.status.error"), FailureResultImpl())
+    else -> bspBuildConsole.finishTask(uuid, BspPluginBundle.message("console.task.status.other"))
   }
 
   // TODO update and move
@@ -97,12 +98,15 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
     this.whenComplete { _, exception ->
       exception?.let {
         if (isTimeoutException(it)) {
-          val message = BspPluginBundle.message("task.timeout.message")
-          bspBuildConsole.finishTask(buildId, "Timed out", FailureResultImpl(message))
+          val message = BspPluginBundle.message("console.task.exception.timeout.message")
+          bspBuildConsole.finishTask(buildId,
+            BspPluginBundle.message("console.task.exception.timed.out"), FailureResultImpl(message))
         } else if (isCancellationException(it)) {
-          bspBuildConsole.finishTask(buildId, "Canceled", FailureResultImpl("Build task is canceled"))
+          bspBuildConsole.finishTask(buildId, BspPluginBundle.message("console.task.exception.cancellation"),
+            FailureResultImpl(BspPluginBundle.message("console.task.exception.cancellation.message")))
         } else {
-          bspBuildConsole.finishTask(buildId, "Failed", FailureResultImpl(it))
+          bspBuildConsole.finishTask(buildId,
+            BspPluginBundle.message("console.task.exception.other"), FailureResultImpl(it))
         }
       }
     }

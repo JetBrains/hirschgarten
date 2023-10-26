@@ -56,7 +56,8 @@ public abstract class TaskConsole(
   ): Unit =
     doUnlessTaskInProgress(taskId) {
       tasksInProgress.add(taskId)
-      doStartTask(taskId, "$buildToolName: $title", message, cancelAction, redoAction)
+      doStartTask(taskId, BspPluginBundle.message("console.tasks.title", buildToolName, title),
+        message, cancelAction, redoAction)
     }
 
   private fun doStartTask(

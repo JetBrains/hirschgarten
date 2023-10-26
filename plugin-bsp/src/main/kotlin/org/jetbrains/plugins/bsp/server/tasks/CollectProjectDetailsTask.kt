@@ -129,14 +129,15 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun doExecute() {
-    val projectDetails = progressStep(endFraction = 0.5, text = "Collecting project details") {
+    val projectDetails = progressStep(endFraction = 0.5,
+      text = BspPluginBundle.message("progress.bar.collect.project.details")) {
       runInterruptible { calculateProjectDetailsSubtask() }
     } ?: return
-    indeterminateStep(text = "Calculating all unique jdk infos") {
+    indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
     }
     if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
-      indeterminateStep(text = "Calculating all unique python sdk infos") {
+      indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
         calculateAllPythonSdkInfosSubtask(projectDetails)
       }
     }
@@ -145,10 +146,10 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         calculateAllScalaSdkInfosSubtask(projectDetails)
       }
     }
-    progressStep(endFraction = 0.75, "Updating magic meta model diff") {
+    progressStep(endFraction = 0.75, BspPluginBundle.message("progress.bar.update.mmm.diff")) {
       updateMMMDiffSubtask(projectDetails)
     }
-    progressStep(endFraction = 1.0, "Post-processing magic meta model") {
+    progressStep(endFraction = 1.0, BspPluginBundle.message("progress.bar.post.processing.mmm")) {
       postprocessingMMMSubtask()
     }
   }
@@ -173,21 +174,23 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       isCancellationException(e) ->
         bspSyncConsole.finishTask(
           taskId = taskId,
-          message = "Canceled",
-          result = FailureResultImpl("The task is canceled"),
+          message = BspPluginBundle.message("console.task.exception.cancellation"),
+          result = FailureResultImpl(BspPluginBundle.message("console.task.exception.cancellation.message")),
         )
 
       isTimeoutException(e) ->
         bspSyncConsole.finishTask(
           taskId = taskId,
-          message = "Timed out",
-          result = FailureResultImpl(BspPluginBundle.message("task.timeout.message")),
+          message = BspPluginBundle.message("console.task.exception.timed.out"),
+          result = FailureResultImpl(BspPluginBundle.message("console.task.exception.timeout.message")),
         )
 
-      else -> bspSyncConsole.finishTask(taskId, "Failed", FailureResultImpl(e))
+      else -> bspSyncConsole.finishTask(taskId,
+        BspPluginBundle.message("console.task.exception.other"), FailureResultImpl(e))
     }
 
-    bspSyncConsole.startSubtask(taskId, importSubtaskId, "Collecting model...")
+    bspSyncConsole.startSubtask(this.taskId, importSubtaskId,
+      BspPluginBundle.message("console.task.model.collect.in.progress"))
 
     val projectDetails =
       calculateProjectDetailsWithCapabilities(
@@ -198,7 +201,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         cancelOn = cancelOn,
       )
 
-    bspSyncConsole.finishSubtask(importSubtaskId, "Collecting model done!")
+    bspSyncConsole.finishSubtask(importSubtaskId, BspPluginBundle.message("console.task.model.collect.success"))
 
     return projectDetails
   }
@@ -215,7 +218,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun calculateAllUniqueJdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-unique-jdk-infos",
-    "Calculating all unique jdk infos"
+    BspPluginBundle.message("console.task.model.calculate.jdks.infos")
   ) {
     uniqueJdkInfos = logPerformance(it) {
       calculateAllUniqueJdkInfos(projectDetails)
@@ -227,7 +230,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-scala-sdk-infos",
-    "Calculating all scala sdk infos"
+    BspPluginBundle.message("console.task.model.calculate.scala.sdk.infos")
   ) {
     scalaSdks = logPerformance(it) {
       calculateAllScalaSdkInfos(projectDetails)
@@ -251,14 +254,16 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         )
       }
 
-  private suspend fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails) =
-    withSubtask("calculate-all-python-sdk-infos", "Calculating all python sdk infos") {
-      runInterruptible {
-        pythonSdks = logPerformance(it) {
-          calculateAllPythonSdkInfos(projectDetails)
-        }
+  private suspend fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
+    "calculate-all-python-sdk-infos",
+    BspPluginBundle.message("console.task.model.calculate.python.sdks.done")
+  ) {
+    runInterruptible {
+      pythonSdks = logPerformance(it) {
+        calculateAllPythonSdkInfos(projectDetails)
       }
     }
+  }
 
   private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? =
     extractPythonBuildTarget(target)?.let {
@@ -289,7 +294,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun updateMMMDiffSubtask(projectDetails: ProjectDetails) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
-    withSubtask("calculate-project-structure", "Calculating project structure") {
+    withSubtask("calculate-project-structure", BspPluginBundle.message("console.task.model.calculate.structure")) {
       runInterruptible {
         logPerformance("initialize-magic-meta-model") {
           magicMetaModelService.initializeMagicModel(projectDetails)
@@ -316,7 +321,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addBspFetchedJdks() = withSubtask(
     "add-bsp-fetched-jdks",
-    "Adding fetched JDKs"
+    BspPluginBundle.message("console.task.model.add.fetched.jdks")
   ) {
     logPerformanceSuspend("add-bsp-fetched-jdks") { uniqueJdkInfos?.forEach { addJdk(it) } }
   }
@@ -342,7 +347,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addBspFetchedScalaSdks() {
     scalaSdkGetterExtension()?.let { extension ->
-      withSubtask("add-bsp-fetched-scala-sdks", "Adding fetched Scala SDKs") {
+      withSubtask("add-bsp-fetched-scala-sdks", BspPluginBundle.message("console.task.model.add.scala.fetched.sdks")) {
         val modifiableProvider = IdeModifiableModelsProviderImpl(project)
 
         writeAction {
@@ -355,7 +360,10 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun addBspFetchedPythonSdks() {
     pythonSdkGetterExtension()?.let { extension ->
-      withSubtask("add-bsp-fetched-python-sdks", "Adding fetched Python SDKs") {
+      withSubtask(
+        "add-bsp-fetched-python-sdks",
+        BspPluginBundle.message("console.task.model.add.python.fetched.sdks")
+      ) {
         logPerformanceSuspend("add-bsp-fetched-python-sdks") {
           pythonSdks?.forEach { addPythonSdkIfNeeded(it, extension) }
         }
@@ -372,7 +380,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private suspend fun applyChangesOnWorkspaceModel() = withSubtask(
     "apply-changes-on-workspace-model",
-    "Applying changes on workspace model"
+    BspPluginBundle.message("console.task.model.apply.changes")
   ) {
     logPerformanceSuspend("apply-changes-on-workspace-model") {
       magicMetaModelDiff?.applyOnWorkspaceModel()

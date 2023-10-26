@@ -5,6 +5,7 @@ import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessageTypes
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.configuration.BspConsolePrinter
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 
@@ -13,7 +14,7 @@ public class BspTestConsolePrinter(
   properties: SMTRunnerConsoleProperties,
 ) : BspConsolePrinter by processHandler {
   public var console: BaseTestsOutputConsoleView =
-    SMTestRunnerConnectionUtil.createAndAttachConsole("BSP", processHandler, properties)
+    SMTestRunnerConnectionUtil.createAndAttachConsole(BspPluginBundle.message("console.tasks.test.framework.name"), processHandler, properties)
 
   init {
     processHandler.startNotify()
