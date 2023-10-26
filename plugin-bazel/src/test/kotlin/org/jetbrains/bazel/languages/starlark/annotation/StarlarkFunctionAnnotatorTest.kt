@@ -5,7 +5,7 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 class StarlarkFunctionAnnotatorTest : BasePlatformTestCase() {
   override fun getTestDataPath(): String = "src/test/testData/starlark/annotation"
 
-  fun test() {
+  fun testFunctionAnnotator() {
     myFixture.configureByFile("FunctionAnnotatorTestData.bzl")
     myFixture.checkHighlighting(true, true, true)
   }

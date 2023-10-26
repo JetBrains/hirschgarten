@@ -41,6 +41,9 @@
         <lang.syntaxHighlighterFactory
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkSyntaxHighlighterFactory"/>
+        <lang.commenter
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.commenter.StarlarkCommenter"/>
         <colorSettingsPage
                 implementation="org.jetbrains.bazel.languages.starlark.StarlarkColorSettingsPage"/>
         <additionalTextAttributes
