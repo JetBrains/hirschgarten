@@ -28,6 +28,9 @@
     <extensionPoint qualifiedName="com.intellij.buildToolAssetsExtension"
                     interface="org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension"
                     dynamic="true"/>
+    <extensionPoint qualifiedName="com.intellij.bspProjectAwareExtension"
+                    interface="org.jetbrains.plugins.bsp.config.BspProjectAwareExtension"
+                    dynamic="true"/>
   </extensionPoints>
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
