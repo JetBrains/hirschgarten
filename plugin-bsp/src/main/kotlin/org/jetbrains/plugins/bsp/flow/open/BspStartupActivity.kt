@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.BspWorkspace
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
@@ -44,6 +45,7 @@ public class BspStartupActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
     if (project.isBspProject) {
       doRunActivity(project)
+      postActivity(project)
     }
   }
 
@@ -165,5 +167,9 @@ public class BspStartupActivity : ProjectActivity {
 
     val bspConnectionService = BspConnectionService.getInstance(project)
     bspConnectionService.value = bspFileConnection
+  }
+
+  private fun postActivity(project: Project) {
+    BspWorkspace.getInstance(project).initialize()
   }
 }
