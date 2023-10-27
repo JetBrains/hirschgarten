@@ -84,6 +84,10 @@
         <completion.contributor
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkParamsCompletionContributor"/>
+
+        <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType"/>
+        <configurationType implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugConfigurationType"/>
+        <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner"/>
     </extensions>
 
     <actions>

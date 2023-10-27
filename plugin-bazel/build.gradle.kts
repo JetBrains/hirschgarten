@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.intellij)
     alias(libs.plugins.changelog)
     id("intellijbazel.kotlin-conventions")
+    id("com.google.protobuf") version "0.9.4"
 }
 
 val myToken: String by project
@@ -21,6 +22,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlinx")
         exclude(group = "ch.epfl.scala")
     }
+    implementation("com.google.protobuf:protobuf-java:3.24.4")
     testImplementation(libs.junit5)
     testRuntimeOnly(libs.junitVintage)
     testImplementation(libs.kotest)
