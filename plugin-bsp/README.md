@@ -12,6 +12,9 @@ Used by [experimental Bazel plugin](https://plugins.jetbrains.com/plugin/22977-b
 
 
 ## Benchmarks (experimental)
+**WARNING** the benchmarks will run headless intellij instance that will open the project you specify with repository_path setting.
+This means it will include its build scripts or init scripts that could run any code, so **make sure you trust the project you pass to repository_path setting**.
+
 It is possible to run a benchmark that imports an arbitrary project.
 
 ### Steps:
