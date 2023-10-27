@@ -8,21 +8,21 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <bspProjectOpenProcessorExtension
-            implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessorExtension"/>
+                implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessorExtension"/>
 
         <projectOpenProcessor
-            implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
+                implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
 
         <buildToolAssetsExtension
-            implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
+                implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
 
         <bspConnectionDetailsGeneratorExtension
-            implementation="org.jetbrains.bazel.flow.open.BazelBspDetailsConnectionGenerator"/>
+                implementation="org.jetbrains.bazel.flow.open.BazelBspDetailsConnectionGenerator"/>
         <bspBuildTargetClassifierExtension
-            implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
+                implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
         <externalSystemUnlinkedProjectAware
-            id="Bazel BSP"
-            implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
+                id="Bazel BSP"
+                implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
 
         <!--        <bspConnectionDetailsGeneratorExtension-->
         <!--                implementation="org.jetbrains.bazel.extension.BazelBspConnectionDetailsGenerator"-->
@@ -53,9 +53,11 @@
                 scheme="Darcula"
                 file="colorSchemes/StarlarkDarcula.xml"/>
         <annotator
-            language="Starlark"
-            implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkFunctionAnnotator"/>
-
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkFunctionAnnotator"/>
+        <annotator
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkStringAnnotator"/>
     </extensions>
 
     <actions>

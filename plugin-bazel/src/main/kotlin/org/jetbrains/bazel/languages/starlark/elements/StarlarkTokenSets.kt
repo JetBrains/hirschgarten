@@ -18,8 +18,6 @@ object StarlarkTokenSets {
 
   val CLOSE_BRACKETS = TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.RBRACE, StarlarkTokenTypes.RPAR)
 
-  val STRING_NODES = TokenSet.create(StarlarkTokenTypes.STRING, StarlarkTokenTypes.BYTES)
-
   val RESERVED_KEYWORDS = TokenSet.create(
     StarlarkTokenTypes.AS_KEYWORD,
     StarlarkTokenTypes.ASSERT_KEYWORD,
