@@ -9,6 +9,6 @@ public class BazelBspBalloonNotification(
   contentType: NotificationType = NotificationType.INFORMATION,
 ): Notification("Bazel BSP", content, contentType) {
   init {
-    setIcon(BazelPluginIcons.bazelIcon)
+    setIcon(BazelPluginIcons.bazel)
   }
 }

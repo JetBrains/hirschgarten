@@ -18,6 +18,6 @@ internal class CoroutineService(private val cs: CoroutineScope) {
 
   companion object {
     @JvmStatic
-    fun getInstance(project: Project) = project.service<CoroutineService>()
+    fun getInstance(project: Project): CoroutineService = project.service()
   }
 }
