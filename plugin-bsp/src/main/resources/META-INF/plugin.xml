@@ -40,7 +40,6 @@
     />
 
     <workspaceModel.fileIndexContributor implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
-    <applicationInitializedListener implementation="org.jetbrains.plugins.bsp.utils.StartBenchmarkListener"/>
 
     <attachSourcesProvider implementation="org.jetbrains.plugins.bsp.ui.notifications.BazelAttachSourcesProvider"/>
 
