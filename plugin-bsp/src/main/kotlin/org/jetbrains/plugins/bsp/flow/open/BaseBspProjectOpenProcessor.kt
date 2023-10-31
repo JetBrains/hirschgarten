@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenedCallback
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.magicmetamodel.impl.BenchmarkFlags
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
@@ -27,6 +28,9 @@ public abstract class BaseBspProjectOpenProcessor(private val buildToolId: Build
 
     return ProjectManagerEx.getInstanceEx().openProject(projectPath, openProjectTask)
   }
+
+  override val isStrongProjectInfoHolder: Boolean
+    get() = BenchmarkFlags.isBenchmark()
 
   internal fun calculateOpenProjectTask(
     projectPath: Path,
