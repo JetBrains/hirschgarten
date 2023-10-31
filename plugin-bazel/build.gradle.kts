@@ -118,6 +118,18 @@ tasks {
         changeNotes.set(provider { changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML) })
     }
 
+    prepareSandbox {
+        val runtimeConfiguration = project.configurations.getByName(JavaPlugin.RUNTIME_CLASSPATH_CONFIGURATION_NAME)
+        runtimeClasspathFiles.set(
+            runtimeConfiguration.exclude(
+                mapOf(
+                    "group" to "org.jetbrains.kotlinx",
+                    "module" to "kotlinx-coroutines-core",
+                )
+            )
+        )
+    }
+
     // Configure UI tests plugin
     // Read more: https://github.com/JetBrains/intellij-ui-test-robot
     runIdeForUiTests {
