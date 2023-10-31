@@ -1,0 +1,12 @@
+diff --git a/src/main/resources/META-INF/plugin.xml b/src/main/resources/META-INF/plugin.xml
+index f54f9b4..b898ba0 100644
+--- a/src/main/resources/META-INF/plugin.xml
++++ b/src/main/resources/META-INF/plugin.xml
+@@ -40,6 +40,7 @@
+     />
+ 
+     <workspaceModel.fileIndexContributor implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
++    <applicationInitializedListener implementation="org.jetbrains.plugins.bsp.utils.StartBenchmarkListener"/>
+ 
+     <attachSourcesProvider implementation="org.jetbrains.plugins.bsp.ui.notifications.BazelAttachSourcesProvider"/>
+ 
