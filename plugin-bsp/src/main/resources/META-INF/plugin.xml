@@ -56,6 +56,7 @@
     <projectViewNodeDecorator implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspProjectViewNodeDecorator"/>
     <projectTaskRunner
       implementation="org.jetbrains.plugins.bsp.actions.building.BspProjectTaskRunner"/>
+    <programRunner implementation="org.jetbrains.plugins.bsp.runner.BspDebugRunner"/>
 
 <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
 <!--                    serviceImplementation="org.jetbrains.plugins.bsp.services.SingleFileSourcesTrackerImpl"-->
