@@ -46,6 +46,12 @@
         <lang.commenter
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.commenter.StarlarkCommenter"/>
+        <lang.braceMatcher
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkBraceMatcher"/>
+        <lang.quoteHandler
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkQuoteHandler"/>
         <colorSettingsPage
                 implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage"/>
         <additionalTextAttributes
