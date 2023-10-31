@@ -9,7 +9,7 @@ import org.jetbrains.plugins.bsp.flow.open.BuildToolId
 import javax.swing.Icon
 
 internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(BuildToolId("bazelbsp")) {
-  override val icon: Icon = BazelPluginIcons.bazelIcon
+  override val icon: Icon = BazelPluginIcons.bazel
 
   override val name: String = "Bazel"
 

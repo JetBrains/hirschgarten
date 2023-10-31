@@ -20,9 +20,11 @@
                 implementation="org.jetbrains.bazel.flow.open.BazelBspDetailsConnectionGenerator"/>
         <bspBuildTargetClassifierExtension
                 implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
+        <bspProjectAwareExtension implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
         <externalSystemUnlinkedProjectAware
                 id="Bazel BSP"
                 implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
+        <externalIconProvider key="bazelbsp" implementationClass="org.jetbrains.bazel.config.BazelExternalSystemIconProvider"/>
 
         <!--        <bspConnectionDetailsGeneratorExtension-->
         <!--                implementation="org.jetbrains.bazel.extension.BazelBspConnectionDetailsGenerator"-->
