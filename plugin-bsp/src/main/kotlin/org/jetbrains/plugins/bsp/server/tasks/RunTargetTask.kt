@@ -5,19 +5,30 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RunParams
 import ch.epfl.scala.bsp4j.RunResult
 import com.intellij.openapi.project.Project
+import org.jetbrains.magicmetamodel.RemoteDebugData
+import org.jetbrains.magicmetamodel.RunWithDebugParams
 import org.jetbrains.plugins.bsp.server.connection.BspServer
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
 import java.util.*
 
-public class RunTargetTask(project: Project) : BspServerSingleTargetTask<RunResult>("run target", project) {
+public class RunTargetTask(
+  project: Project,
+  private val debugType: BspDebugType?,
+  private val port: Int?,
+) : BspServerSingleTargetTask<RunResult>("run target", project) {
   protected override fun executeWithServer(
     server: BspServer,
     capabilities: BuildServerCapabilities,
     targetId: BuildTargetIdentifier,
   ): RunResult {
     saveAllFiles()
-    val runParams = createRunParams(targetId)
-
-    return server.buildTargetRun(runParams).get()
+    return if (debugType == null || port == null) {
+      val runParams = createRunParams(targetId)
+      server.buildTargetRun(runParams).get()
+    } else {
+      val debugParams = createDebugParams(targetId, debugType, port)
+      server.buildTargetRunWithDebug(debugParams).get()
+    }
   }
 
   private fun createRunParams(targetId: BuildTargetIdentifier): RunParams =
@@ -25,4 +36,17 @@ public class RunTargetTask(project: Project) : BspServerSingleTargetTask<RunResu
       originId = "run-" + UUID.randomUUID().toString()
       arguments = listOf()
     }
+
+  private fun createDebugParams(
+    targetId: BuildTargetIdentifier,
+    type: BspDebugType,
+    port: Int,
+  ): RunWithDebugParams {
+    val runParams = createRunParams(targetId)
+    return RunWithDebugParams(
+      originId = runParams.originId,
+      runParams = runParams,
+      debug = RemoteDebugData(type.s, port)
+    )
+  }
 }

@@ -5,7 +5,9 @@ import com.intellij.execution.RunManager
 import com.intellij.execution.RunManagerEx
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
+import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunnerSettings
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
 import com.intellij.execution.runners.ProgramRunner
@@ -14,12 +16,12 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.Key
-import com.intellij.platform.diagnostic.telemetry.EDT
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
 import javax.swing.Icon
 
 public val targetIdTOREMOVE: Key<BuildTargetId> = Key<BuildTargetId>("targetId")
@@ -28,6 +30,7 @@ internal abstract class SideMenuRunnerAction(
   protected val targetId: BuildTargetId,
   text: () -> String,
   icon: Icon? = null,
+  private val useDebugExecutor: Boolean = false,
 ) : SuspendableAction(text, icon) {
   abstract fun getConfigurationType(project: Project): ConfigurationType
 
@@ -42,12 +45,26 @@ internal abstract class SideMenuRunnerAction(
   fun doPerformAction(project: Project, targetId: BuildTargetId) {
     val factory = getConfigurationType(project).configurationFactories.first()
     val settings = RunManager.getInstance(project).createConfiguration(getName(targetId), factory)
+    prepareRunConfiguration(settings.configuration)
     RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
-    val runExecutor = DefaultRunExecutor.getRunExecutorInstance()
-    ProgramRunner.getRunner(runExecutor.id, settings.configuration)?.let {
-      runExecutor.executeWithRunner(it, settings, project)
+    val executor = getExecutorInstance()
+    ProgramRunner.getRunner(executor.id, settings.configuration)?.let {
+      executor.executeWithRunner(it, settings, project)
     }
   }
+
+  /** This function is called after a run configuration instance is created
+   * (it is passed as this function's argument), but before it's executed. */
+  protected open fun prepareRunConfiguration(configuration: RunConfiguration) {
+    // nothing by default
+  }
+
+  private fun getExecutorInstance(): Executor =
+    if (useDebugExecutor) {
+      DefaultDebugExecutor.getDebugExecutorInstance()
+    } else {
+      DefaultRunExecutor.getRunExecutorInstance()
+    }
 
   private fun Executor.executeWithRunner(
     runner: ProgramRunner<RunnerSettings>,
@@ -58,8 +75,9 @@ internal abstract class SideMenuRunnerAction(
       val executionEnvironment = ExecutionEnvironmentBuilder(project, this)
         .runnerAndSettings(runner, settings)
         .build()
-      // TODO shouldnt we use 'target' for that?
-      executionEnvironment.putUserData(targetIdTOREMOVE, targetId)
+      (settings.configuration as? BspRunConfiguration)?.let {
+        it.targetUri = targetId
+      }
       runner.execute(executionEnvironment)
     } catch (e: Exception) {
       Messages.showErrorDialog(project, e.message, BspPluginBundle.message("widget.side.menu.error.title"))

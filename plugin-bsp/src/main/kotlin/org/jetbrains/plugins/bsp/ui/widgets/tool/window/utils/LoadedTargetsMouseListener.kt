@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
+import com.intellij.icons.AllIcons
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -11,6 +12,8 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DebugWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
@@ -59,13 +62,27 @@ public class LoadedTargetsMouseListener(
 
   private fun calculatePopupGroup(target: BuildTargetInfo): ActionGroup =
     DefaultActionGroup().apply {
+      val debugType = target.inferDebugType()
+
       addAction(container.copyTargetIdAction)
       addSeparator()
       if (target.capabilities.canCompile) {
         addAction(BuildTargetAction(target.id))
       }
       if (target.capabilities.canRun) {
-        addAction(RunTargetAction(targetId = target.id))
+        addAction(RunTargetAction(
+          targetId = target.id,
+          debugType = debugType,
+        ))
+      }
+      if (debugType != null) {
+        addAction(RunTargetAction(
+          targetId = target.id,
+          text = { BspPluginBundle.message("widget.debug.target.popup.message") },
+          icon = AllIcons.Actions.StartDebugger,
+          debugType = debugType,
+          useDebugMode = true,
+        ))
       }
       if (target.capabilities.canRun && target.isJvmTarget()) {
         addAction(RunWithLocalJvmRunnerAction(target.id))
@@ -74,6 +91,12 @@ public class LoadedTargetsMouseListener(
       if (target.capabilities.canTest) {
         addAction(TestTargetAction(targetId = target.id))
       }
+    }
+
+  private fun BuildTargetInfo.inferDebugType(): BspDebugType? =
+    when {
+      isJvmTarget() -> BspDebugType.JDWP
+      else -> null
     }
 
   private fun BuildTargetInfo.isJvmTarget(): Boolean = with(languageIds) {
@@ -87,7 +110,10 @@ public class LoadedTargetsMouseListener(
     container.getSelectedBuildTarget()?.also {
       when {
         it.capabilities.canTest -> TestTargetAction(targetId = it.id).prepareAndPerform(project, it.id)
-        it.capabilities.canRun -> RunTargetAction(targetId = it.id).prepareAndPerform(project, it.id)
+        it.capabilities.canRun -> RunTargetAction(
+          targetId = it.id,
+          debugType = it.inferDebugType(),
+        ).prepareAndPerform(project, it.id)
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
