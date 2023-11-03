@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin require-restart="false">
     <id>org.jetbrains.bazel</id>
     <name>Bazel by JetBrains (experimental)</name>
     <vendor>JetBrains</vendor>
