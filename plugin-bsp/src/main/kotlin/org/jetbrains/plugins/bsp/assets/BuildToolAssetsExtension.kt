@@ -12,6 +12,8 @@ public interface BuildToolAssetsExtension : WithBuildToolId {
   public val loadedTargetIcon: Icon
   public val unloadedTargetIcon: Icon
 
+  public val invalidTargetIcon: Icon
+
   public companion object {
     internal val ep =
       ExtensionPointName.create<BuildToolAssetsExtension>("com.intellij.buildToolAssetsExtension")

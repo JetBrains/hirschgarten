@@ -29,6 +29,7 @@ class MagicMetaModelTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
+        invalidTargets = WorkspaceInvalidTargetsResult(emptyList())
       )
 
       // when

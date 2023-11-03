@@ -43,19 +43,23 @@ private class ListsUpdater(
     loadedTargetsPanel =
       BspPanelComponent(
         targetIcon = assetsExtension.loadedTargetIcon,
+        invalidTargetIcon = assetsExtension.invalidTargetIcon,
         buildToolId = project.buildToolId,
         toolName = assetsExtension.presentableName,
         targets = magicMetaModel.getAllLoadedTargets(),
-        searchBarPanel = searchBarPanel
+        invalidTargets = magicMetaModel.getAllInvalidTargets(),
+        searchBarPanel = searchBarPanel,
       )
     loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it, project) }
 
     notLoadedTargetsPanel =
       BspPanelComponent(
         targetIcon = assetsExtension.unloadedTargetIcon,
+        invalidTargetIcon = assetsExtension.invalidTargetIcon,
         buildToolId = project.buildToolId,
         toolName = assetsExtension.presentableName,
         targets = magicMetaModel.getAllNotLoadedTargets(),
+        invalidTargets = emptyList(),
         searchBarPanel = searchBarPanel,
       )
     notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it, project) }
