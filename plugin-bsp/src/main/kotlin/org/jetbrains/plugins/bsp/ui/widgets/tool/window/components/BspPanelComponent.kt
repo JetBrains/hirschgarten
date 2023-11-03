@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.flow.open.BuildToolId
@@ -31,22 +32,26 @@ public class BspPanelComponent private constructor(
   )
 
   /**
-   * @param targetIcon icon which will be shown next to build targets in this panel
+   * @param targetIcon icon which will be shown next to valid build targets in this panel
+   * @param invalidTargetIcon icon which will be shown next to invalid build targets in this panel
    * @param buildToolId id of the build tool
    * @param toolName name of the tool providing the build targets
    * @param targets collection of build targets this panel will contain
+   * @param invalidTargets collection of invalid targets this panel will contain
    * @param searchBarPanel searchbar panel responsible for providing user's search queries
    */
   public constructor(
     targetIcon: Icon,
+    invalidTargetIcon: Icon,
     buildToolId: BuildToolId,
     toolName: String,
     targets: Collection<BuildTargetInfo>,
+    invalidTargets: Collection<BuildTargetId>,
     searchBarPanel: SearchBarPanel,
   ) : this(
     targetIcon = targetIcon,
     toolName = toolName,
-    targetTree = BuildTargetTree(targetIcon, buildToolId, targets),
+    targetTree = BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, targets, invalidTargets),
     targetSearch = BuildTargetSearch(targetIcon, buildToolId, toolName, targets, searchBarPanel),
   )
 

@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter
 
 import org.jetbrains.magicmetamodel.MagicMetaModel
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 public class TargetFilter(
@@ -21,6 +22,9 @@ public class TargetFilter(
 
   public fun getMatchingNotLoadedTargets(magicMetaModel: MagicMetaModel): List<BuildTargetInfo> =
     magicMetaModel.getAllNotLoadedTargets().filterTargets()
+
+  public fun getAllInvalidTargets(magicMetaModel: MagicMetaModel): List<BuildTargetId> =
+    magicMetaModel.getAllInvalidTargets()
 
   private fun List<BuildTargetInfo>.filterTargets(): List<BuildTargetInfo> =
     this.filter(currentFilter.predicate)

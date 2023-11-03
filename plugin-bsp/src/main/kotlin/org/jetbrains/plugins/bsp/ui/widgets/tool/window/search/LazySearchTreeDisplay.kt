@@ -7,7 +7,7 @@ import java.awt.event.MouseListener
 import javax.swing.Icon
 
 public class LazySearchTreeDisplay(icon: Icon, buildToolId: BuildToolId) : LazySearchDisplay() {
-  private var targetTree: BuildTargetTree = BuildTargetTree(icon, buildToolId, targets)
+  private var targetTree: BuildTargetTree = BuildTargetTree(icon, icon, buildToolId, targets, emptyList())
 
   override fun rerender() {
     component.remove(targetTree.treeComponent)

@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
 import com.intellij.projectImport.ProjectOpenedCallback
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.magicmetamodel.WorkspaceInvalidTargetsResult
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
@@ -61,6 +62,7 @@ public fun Project.initializeEmptyMagicMetaModel(projectRootDir: VirtualFile) {
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = emptyList(),
+      invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
     ),
   )
 

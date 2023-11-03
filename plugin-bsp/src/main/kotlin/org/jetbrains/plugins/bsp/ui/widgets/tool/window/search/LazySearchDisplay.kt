@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 
 import com.intellij.ui.components.panels.VerticalLayout
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import java.awt.event.MouseListener
 import javax.swing.JPanel
@@ -9,6 +10,7 @@ public abstract class LazySearchDisplay {
   protected val component: JPanel = JPanel(VerticalLayout(0))
 
   protected var targets: List<BuildTargetInfo> = emptyList()
+  protected var invalidTargets: List<BuildTargetId> = emptyList()
   protected var query: String = ""
 
   private var isOutdated = true

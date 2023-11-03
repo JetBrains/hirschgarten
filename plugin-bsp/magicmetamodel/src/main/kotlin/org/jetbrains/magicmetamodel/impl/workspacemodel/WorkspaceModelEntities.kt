@@ -22,7 +22,7 @@ public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
     dependencies = dependencies.map { it.uri },
     capabilities = capabilities.toModuleCapabilities(),
     languageIds = languageIds,
-    baseDirectory = baseDirectory
+    baseDirectory = baseDirectory,
   )
 
 public abstract class WorkspaceModelEntity

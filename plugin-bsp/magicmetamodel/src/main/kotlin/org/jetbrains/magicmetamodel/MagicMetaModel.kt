@@ -63,6 +63,7 @@ public data class ProjectDetails(
   val outputPathUris: List<String>,
   val libraries: List<LibraryItem>?,
   val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
+  val invalidTargets: WorkspaceInvalidTargetsResult,
 ) {
   public operator fun plus(old: ProjectDetails): ProjectDetails = ProjectDetails(
     targetsId = targetsId + old.targetsId,
@@ -76,6 +77,7 @@ public data class ProjectDetails(
     outputPathUris = outputPathUris + old.outputPathUris,
     libraries = if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
     directories = directories + old.directories,
+    invalidTargets = invalidTargets + old.invalidTargets
   )
 
   private operator fun WorkspaceDirectoriesResult.plus(old: WorkspaceDirectoriesResult): WorkspaceDirectoriesResult =
@@ -83,6 +85,11 @@ public data class ProjectDetails(
       includedDirectories = includedDirectories + old.includedDirectories,
       excludedDirectories = excludedDirectories + old.excludedDirectories,
     )
+
+  private operator fun WorkspaceInvalidTargetsResult.plus(
+    old: WorkspaceInvalidTargetsResult,
+  ): WorkspaceInvalidTargetsResult =
+    WorkspaceInvalidTargetsResult(targets = targets + old.targets)
 }
 
 /**
@@ -160,6 +167,11 @@ public interface MagicMetaModel {
    * Get all currently not loaded targets.
    */
   public fun getAllNotLoadedTargets(): List<BuildTargetInfo>
+
+  /**
+   * Get ids of all currently invalid targets.
+   */
+  public fun getAllInvalidTargets(): List<BuildTargetId>
 
   public fun clear()
 

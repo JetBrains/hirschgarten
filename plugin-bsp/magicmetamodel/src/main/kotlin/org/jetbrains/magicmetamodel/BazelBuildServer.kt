@@ -26,6 +26,10 @@ public data class WorkspaceDirectoriesResult(
   val excludedDirectories: List<DirectoryItem>,
 )
 
+public data class WorkspaceInvalidTargetsResult(
+  val targets: List<BuildTargetIdentifier>,
+)
+
 public data class RemoteDebugData(
   val debugType: String,
   val port: Int,
@@ -43,6 +47,9 @@ public interface BazelBuildServer {
 
   @JsonRequest("workspace/directories")
   public fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult>
+
+  @JsonRequest("workspace/invalidTargets")
+  public fun workspaceInvalidTargets(): CompletableFuture<WorkspaceInvalidTargetsResult>
 
   @JsonRequest("buildTarget/runWithDebug")
   public fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult>

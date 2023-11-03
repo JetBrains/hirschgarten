@@ -45,6 +45,7 @@ import org.jetbrains.magicmetamodel.DirectoryItem
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.WorkspaceDirectoriesResult
+import org.jetbrains.magicmetamodel.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.WorkspaceLibrariesResult
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger
@@ -67,6 +68,7 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
@@ -398,7 +400,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 }
 
-@Suppress("LongMethod")
+@Suppress("LongMethod", "CyclomaticComplexMethod")
 public fun calculateProjectDetailsWithCapabilities(
   server: BspServer,
   buildServerCapabilities: BuildServerCapabilities,
@@ -447,6 +449,14 @@ public fun calculateProjectDetailsWithCapabilities(
       .reactToExceptionIn(cancelOn)
       .catchSyncErrors(errorCallback)
 
+    val invalidTargetsFuture = server.workspaceInvalidTargets()
+      .exceptionally {
+        log.warn("Fetching workspace/invalidTargets has failed", it)
+        null
+      }
+      .reactToExceptionIn(cancelOn)
+      .catchSyncErrors(errorCallback)
+
     // We use javacOptions only do build dependency tree based on classpath
     // If workspace/libraries endpoint is available (like in bazel-bsp)
     // we don't need javacOptions at all. For other servers (like SBT)
@@ -473,6 +483,14 @@ public fun calculateProjectDetailsWithCapabilities(
       queryForOutputPaths(server, allTargetsIds)
         .reactToExceptionIn(cancelOn)
         .catchSyncErrors(errorCallback)
+
+    val invalidTargets = invalidTargetsFuture?.get() ?: WorkspaceInvalidTargetsResult(emptyList())
+    if (invalidTargets.targets.isNotEmpty())
+      BspBalloonNotifier.warn(
+        BspPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
+        BspPluginBundle.message("widget.collect.targets.not.imported.properly.message")
+      )
+
     return ProjectDetails(
       targetsId = allTargetsIds,
       targets = workspaceBuildTargetsResult.targets.toSet(),
@@ -486,6 +504,7 @@ public fun calculateProjectDetailsWithCapabilities(
       libraries = libraries?.libraries,
       directories = directoriesFuture.get()
         ?: WorkspaceDirectoriesResult(listOf(DirectoryItem(projectRootDir)), emptyList()),
+      invalidTargets = invalidTargetsFuture?.get() ?: WorkspaceInvalidTargetsResult(emptyList()),
     )
   } catch (e: Exception) {
     // TODO the type xd

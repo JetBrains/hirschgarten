@@ -12,6 +12,7 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
+import org.jetbrains.magicmetamodel.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
@@ -47,7 +48,8 @@ public class MagicMetaModelService(private val project: Project) :
       pythonOptions = emptyList(),
       outputPathUris = emptyList(),
       libraries = emptyList(),
-      scalacOptions = emptyList()
+      scalacOptions = emptyList(),
+      invalidTargets = WorkspaceInvalidTargetsResult(emptyList())
     )
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)
