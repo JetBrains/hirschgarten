@@ -14,7 +14,7 @@ public class BuildAndResyncAction
       shouldRunInitialSync = false,
       shouldBuildProject = true,
       shouldRunResync = true,
-      shouldReloadConnection = false,
+      shouldReloadConnection = true,
     )
   }
 }
