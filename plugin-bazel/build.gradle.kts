@@ -9,10 +9,10 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.9.10"
-    id("org.jetbrains.intellij") version "1.15.0"
+    id("org.jetbrains.kotlin.jvm") version "1.9.20"
+    id("org.jetbrains.intellij") version "1.16.0"
     id("org.jetbrains.changelog") version "2.2.0"
-    id("io.gitlab.arturbosch.detekt") version "1.23.1"
+    id("io.gitlab.arturbosch.detekt") version "1.23.3"
 }
 
 val myToken: String by project
@@ -21,8 +21,8 @@ val releaseChannel: String by project
 dependencies {
     implementation("io.kotest:kotest-assertions-core:5.7.2")
     implementation("io.get-coursier:coursier_2.13:2.1.7")
-    implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.1")
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.1")
+    implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.3")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.3")
 }
 
 group = properties("pluginGroup")
