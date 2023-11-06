@@ -484,7 +484,7 @@ public fun calculateProjectDetailsWithCapabilities(
         .reactToExceptionIn(cancelOn)
         .catchSyncErrors(errorCallback)
 
-    val invalidTargets = invalidTargetsFuture?.get() ?: WorkspaceInvalidTargetsResult(emptyList())
+    val invalidTargets = invalidTargetsFuture.get() ?: WorkspaceInvalidTargetsResult(emptyList())
     if (invalidTargets.targets.isNotEmpty())
       BspBalloonNotifier.warn(
         BspPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
@@ -504,7 +504,7 @@ public fun calculateProjectDetailsWithCapabilities(
       libraries = libraries?.libraries,
       directories = directoriesFuture.get()
         ?: WorkspaceDirectoriesResult(listOf(DirectoryItem(projectRootDir)), emptyList()),
-      invalidTargets = invalidTargetsFuture?.get() ?: WorkspaceInvalidTargetsResult(emptyList()),
+      invalidTargets = invalidTargets,
     )
   } catch (e: Exception) {
     // TODO the type xd
