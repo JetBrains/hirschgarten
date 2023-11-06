@@ -1,6 +1,6 @@
-def square(x):
+def <info>square</info>(x):
     return x * x
 
-square(x = 3)
+square(<info>x</info> <info>=</info> 3)
 
 square(3)
