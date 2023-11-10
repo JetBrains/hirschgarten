@@ -15,6 +15,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.workspacemodel.storage.BspEntitySource
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,

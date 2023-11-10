@@ -56,6 +56,17 @@ changelog {
   groups.set(emptyList())
 }
 
+allprojects {
+  tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+    // disable the malfunctioned platform listener com.intellij.tests.JUnit5TestSessionListener
+    // this listener caused the CI tests to fail with
+    // AlreadyDisposedException: Already disposed: Application (containerState DISPOSE_COMPLETED)
+    // TODO: follow up https://youtrack.jetbrains.com/issue/IDEA-337508/AlreadyDisposedException-Already-disposed-Application-containerState-DISPOSECOMPLETED-after-junit5-tests-on-TeamCity
+    systemProperty("intellij.build.test.ignoreFirstAndLastTests", "true")
+  }
+}
+
 subprojects {
   apply(plugin = "org.jetbrains.intellij")
 
@@ -126,7 +137,6 @@ tasks {
     channels.set(provider { listOf(releaseChannel) })
   }
 }
-
 
 tasks {
   test {

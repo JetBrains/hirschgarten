@@ -18,9 +18,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindow
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 
 public class BspAllTargetsWidgetFactory : ToolWindowFactory, DumbAware {
-  override fun isApplicable(project: Project): Boolean =
-    project.isBspProject
-
+  override suspend fun isApplicableAsync(project: Project): Boolean = project.isBspProject
   override fun shouldBeAvailable(project: Project): Boolean =
     project.isBspProject
 

@@ -15,13 +15,13 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.BspEntitySource
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModuleUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.JavaModuleToDummyJavaModulesTransformerHACK
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.workspacemodel.storage.BspEntitySource
 import java.nio.file.Path
 
 internal class WorkspaceModelUpdaterImpl(

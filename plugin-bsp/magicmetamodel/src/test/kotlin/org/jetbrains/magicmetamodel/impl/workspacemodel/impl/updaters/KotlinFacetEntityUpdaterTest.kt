@@ -17,14 +17,14 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
-import org.jetbrains.workspace.model.test.framework.JavaWorkspaceModelFixtureBaseTest
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 import kotlin.io.path.name
 
 @DisplayName("kotlinFacetEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
-class KotlinFacetEntityUpdaterTest : JavaWorkspaceModelFixtureBaseTest() {
+class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
   @Test
   fun `should add KotlinFacet when given KotlinAddendum`() {
     runInEdtAndWait {

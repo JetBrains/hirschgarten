@@ -8,6 +8,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
+import org.jetbrains.workspacemodel.storage.BspEntitySource
 
 internal class LibraryEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
