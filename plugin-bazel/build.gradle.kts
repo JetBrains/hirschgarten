@@ -43,7 +43,7 @@ kotlin {
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
     pluginName.set(properties("pluginName"))
-    version.set(properties("platformVersion"))
+    version.set(properties("platformSnapshotVersion"))
     type.set(properties("platformType"))
 
     pluginsRepositories {
