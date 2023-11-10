@@ -25,12 +25,12 @@ import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
-import com.intellij.openapi.progress.indeterminateStep
-import com.intellij.openapi.progress.progressStep
-import com.intellij.openapi.progress.withBackgroundProgress
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.platform.ide.progress.withBackgroundProgress
+import com.intellij.platform.util.progress.indeterminateStep
+import com.intellij.platform.util.progress.progressStep
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.getInstance
 import kotlinx.coroutines.Dispatchers

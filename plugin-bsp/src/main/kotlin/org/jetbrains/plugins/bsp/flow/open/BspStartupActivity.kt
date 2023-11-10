@@ -5,7 +5,7 @@ import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
-import com.intellij.openapi.util.io.toNioPath
+import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
@@ -98,7 +98,7 @@ public class BspStartupActivity : ProjectActivity {
 
   private fun benchmarkConnection(project: Project): ConnectionFile {
     try {
-      val connectionFilePath = project.basePath?.toNioPath()?.resolve(".bsp/bazelbsp.json")
+      val connectionFilePath = project.basePath?.toNioPathOrNull()?.resolve(".bsp/bazelbsp.json")
       val connectionFile = VfsUtil.findFileByIoFile(connectionFilePath?.toFile()!!, false)!!
       val parsed = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)
       return ConnectionFile(parsed.bspConnectionDetails!!, parsed.connectionFileLocation)

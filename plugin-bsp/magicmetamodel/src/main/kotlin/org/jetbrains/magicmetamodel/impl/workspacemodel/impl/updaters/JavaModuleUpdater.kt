@@ -9,6 +9,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
+import org.jetbrains.workspacemodel.storage.BspEntitySource
 import java.nio.file.Path
 
 internal class JavaModuleWithSourcesUpdater(

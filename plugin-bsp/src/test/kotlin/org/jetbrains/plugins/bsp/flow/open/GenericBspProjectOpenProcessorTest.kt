@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import kotlin.io.path.createTempDirectory
 
 private class TestableProjectOpenProcessorExtension(
   override val buildToolId: BuildToolId,
@@ -29,9 +28,8 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
   override fun beforeEach() {
     // given
     super.beforeEach()
-
     processor = BspProjectOpenProcessor()
-    projectRoot = createTempDirectory("root").also { it.toFile().deleteOnExit() }.toVirtualFile()
+    projectRoot = projectModel.projectRootDir.toVirtualFile()
 
     WriteCommandAction.runWriteCommandAction(project) {
       projectRoot.createFile("not-a-connection-file")

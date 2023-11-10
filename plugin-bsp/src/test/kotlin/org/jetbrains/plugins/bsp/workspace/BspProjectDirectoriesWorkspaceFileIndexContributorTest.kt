@@ -15,9 +15,9 @@ import com.intellij.workspaceModel.ide.toPath
 import io.kotest.inspectors.shouldForAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.BspEntitySource
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.workspacemodel.storage.BspEntitySource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

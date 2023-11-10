@@ -10,6 +10,7 @@ dependencies {
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
   testImplementation(project(":test-utils"))
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks {

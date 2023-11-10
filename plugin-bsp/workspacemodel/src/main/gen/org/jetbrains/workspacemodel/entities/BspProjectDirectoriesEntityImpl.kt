@@ -1,4 +1,3 @@
-@file:SuppressWarnings("all")
 package org.jetbrains.workspacemodel.entities
 
 import com.intellij.platform.workspace.storage.EntityInformation
@@ -10,22 +9,22 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.impl.ConnectionId
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
-import com.intellij.platform.workspace.storage.impl.UsedClassesCollector
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityData
 import com.intellij.platform.workspace.storage.impl.containers.MutableWorkspaceList
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
+import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 
 @GeneratedCodeApiVersion(2)
-@GeneratedCodeImplVersion(2)
-public open class BspProjectDirectoriesEntityImpl(public val dataSource: BspProjectDirectoriesEntityData) :
-  BspProjectDirectoriesEntity, WorkspaceEntityBase() {
+@GeneratedCodeImplVersion(3)
+public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) :
+  BspProjectDirectoriesEntity, WorkspaceEntityBase(dataSource) {
 
-  public companion object {
+  private companion object {
 
 
-    public val connections: List<ConnectionId> = listOf<ConnectionId>(
+    private val connections = listOf<ConnectionId>(
     )
 
   }
@@ -45,6 +44,7 @@ public open class BspProjectDirectoriesEntityImpl(public val dataSource: BspProj
   override fun connectionIdList(): List<ConnectionId> {
     return connections
   }
+
 
   public class Builder(result: BspProjectDirectoriesEntityData?) :
     ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(result),
@@ -77,7 +77,7 @@ public open class BspProjectDirectoriesEntityImpl(public val dataSource: BspProj
       checkInitialization() // TODO uncomment and check failed tests
     }
 
-    public fun checkInitialization() {
+    private fun checkInitialization() {
       val _diff = diff
       if (!getEntityData().isEntitySourceInitialized()) {
         error("Field WorkspaceEntity#entitySource should be initialized")
@@ -191,9 +191,9 @@ public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDir
   public lateinit var includedRoots: MutableList<VirtualFileUrl>
   public lateinit var excludedRoots: MutableList<VirtualFileUrl>
 
-  public fun isProjectRootInitialized(): Boolean = ::projectRoot.isInitialized
-  public fun isIncludedRootsInitialized(): Boolean = ::includedRoots.isInitialized
-  public fun isExcludedRootsInitialized(): Boolean = ::excludedRoots.isInitialized
+  internal fun isProjectRootInitialized(): Boolean = ::projectRoot.isInitialized
+  internal fun isIncludedRootsInitialized(): Boolean = ::includedRoots.isInitialized
+  internal fun isExcludedRootsInitialized(): Boolean = ::excludedRoots.isInitialized
 
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
     val modifiable = BspProjectDirectoriesEntityImpl.Builder(null)
@@ -210,6 +210,10 @@ public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDir
       entity.id = createEntityId()
       entity
     }
+  }
+
+  override fun getMetadata(): EntityMetadata {
+    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity") as EntityMetadata
   }
 
   override fun clone(): BspProjectDirectoriesEntityData {
@@ -279,12 +283,5 @@ public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDir
     result = 31 * result + includedRoots.hashCode()
     result = 31 * result + excludedRoots.hashCode()
     return result
-  }
-
-  override fun collectClassUsagesData(collector: UsedClassesCollector) {
-    this.includedRoots.let { collector.add(it::class.java) }
-    this.excludedRoots.let { collector.add(it::class.java) }
-    this.projectRoot.let { collector.add(it::class.java) }
-    collector.sameForAllEntities = false
   }
 }
