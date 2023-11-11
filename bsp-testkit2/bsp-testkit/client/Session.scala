@@ -25,7 +25,7 @@ class Session(val workspacePath: Path) extends AutoCloseable {
   private val process =
     new ProcessBuilder(connectionDetails.getArgv)
       .directory(workspaceFile)
-      .start() // side-effect: starts the process process
+      .start() // side-effect: starts the process
 
   val client: MockClient = new MockClient()
 
