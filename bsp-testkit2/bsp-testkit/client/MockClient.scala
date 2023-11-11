@@ -42,4 +42,8 @@ class MockClient extends BuildClient {
 
   override def onBuildTargetDidChange(params: DidChangeBuildTarget): Unit =
     didChangeBuildTarget += params
+
+  override def onRunPrintStderr(params: PrintParams): Unit = {}
+
+  override def onRunPrintStdout(params: PrintParams): Unit = {}
 }
