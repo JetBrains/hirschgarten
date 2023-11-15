@@ -5,7 +5,6 @@ import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.module.ModuleTypeId
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
@@ -16,8 +15,6 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.intellij.pom.java.LanguageLevel
-import com.intellij.testFramework.IdeaTestUtil
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.workspaceModel.updateProjectModel
@@ -27,12 +24,12 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
 
 private const val JAVA_ROOT_TYPE = "java-source"
+private const val JAVA_SDK_NAME = "11"
+private const val JAVA_SDK_TYPE = "JavaSDK"
 
 @TestApplication
 public open class WorkspaceModelBaseTest {
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
-  protected lateinit var jdk: Sdk
-  private val languageLevel = LanguageLevel.JDK_17
 
   @JvmField
   @RegisterExtension
@@ -41,7 +38,6 @@ public open class WorkspaceModelBaseTest {
   @BeforeEach
   protected open fun beforeEach() {
     workspaceEntityStorageBuilder = workspaceModel.getBuilderSnapshot().builder
-    jdk = IdeaTestUtil.getMockJdk(languageLevel.toJavaVersion())
   }
 
   protected val project: Project
@@ -75,7 +71,7 @@ public open class WorkspaceModelBaseTest {
       ModuleEntity(
         name = name,
         dependencies = listOf(
-          ModuleDependencyItem.SdkDependency(jdk.name, jdk.sdkType.name),
+          ModuleDependencyItem.SdkDependency(JAVA_SDK_NAME, JAVA_SDK_TYPE),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
         entitySource = object : EntitySource {},
