@@ -1,7 +1,6 @@
 package org.jetbrains.plugins.bsp.server.connection
 
 import ch.epfl.scala.bsp4j.BuildServer
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.JavaBuildServer
 import ch.epfl.scala.bsp4j.JvmBuildServer
 import ch.epfl.scala.bsp4j.PythonBuildServer
@@ -13,7 +12,8 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.magicmetamodel.BazelBuildServer
+import org.jetbrains.bsp.BazelBuildServer
+import org.jetbrains.bsp.BazelBuildServerCapabilities
 
 public interface BspServer : BuildServer, JavaBuildServer, JvmBuildServer, BazelBuildServer, PythonBuildServer,
   ScalaBuildServer
@@ -41,7 +41,7 @@ public interface BspConnection {
    *
    * the variable should be *null* before [connect] call and after [disconnect]
    */
-  public val capabilities: BuildServerCapabilities?
+  public val capabilities: BazelBuildServerCapabilities?
 
   /**
    * Establish a connection with the server, and initialize [server].

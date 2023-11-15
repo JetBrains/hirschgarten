@@ -1,24 +1,17 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.DependencySourcesParams
-import ch.epfl.scala.bsp4j.DependencySourcesResult
 import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.JavacOptionsResult
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.OutputPathsParams
 import ch.epfl.scala.bsp4j.OutputPathsResult
 import ch.epfl.scala.bsp4j.PythonOptionsParams
-import ch.epfl.scala.bsp4j.PythonOptionsResult
 import ch.epfl.scala.bsp4j.ResourcesParams
-import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
-import ch.epfl.scala.bsp4j.ScalacOptionsResult
 import ch.epfl.scala.bsp4j.SourcesParams
-import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
@@ -38,15 +31,16 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
+import org.jetbrains.bsp.BazelBuildServerCapabilities
+import org.jetbrains.bsp.DirectoryItem
+import org.jetbrains.bsp.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
+import org.jetbrains.bsp.WorkspaceLibrariesResult
 import org.jetbrains.bsp.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.utils.extractPythonBuildTarget
 import org.jetbrains.bsp.utils.extractScalaBuildTarget
-import org.jetbrains.magicmetamodel.DirectoryItem
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.magicmetamodel.WorkspaceDirectoriesResult
-import org.jetbrains.magicmetamodel.WorkspaceInvalidTargetsResult
-import org.jetbrains.magicmetamodel.WorkspaceLibrariesResult
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
@@ -131,8 +125,10 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun doExecute() {
-    val projectDetails = progressStep(endFraction = 0.5,
-      text = BspPluginBundle.message("progress.bar.collect.project.details")) {
+    val projectDetails = progressStep(
+      endFraction = 0.5,
+      text = BspPluginBundle.message("progress.bar.collect.project.details")
+    ) {
       runInterruptible { calculateProjectDetailsSubtask() }
     } ?: return
     indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
@@ -163,7 +159,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private fun collectModel(
     server: BspServer,
-    capabilities: BuildServerCapabilities,
+    capabilities: BazelBuildServerCapabilities,
     cancelOn: CompletableFuture<Void>,
   ): ProjectDetails? {
     fun isCancellationException(e: Throwable): Boolean =
@@ -187,12 +183,16 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
           result = FailureResultImpl(BspPluginBundle.message("console.task.exception.timeout.message")),
         )
 
-      else -> bspSyncConsole.finishTask(taskId,
-        BspPluginBundle.message("console.task.exception.other"), FailureResultImpl(e))
+      else -> bspSyncConsole.finishTask(
+        taskId,
+        BspPluginBundle.message("console.task.exception.other"), FailureResultImpl(e)
+      )
     }
 
-    bspSyncConsole.startSubtask(this.taskId, importSubtaskId,
-      BspPluginBundle.message("console.task.model.collect.in.progress"))
+    bspSyncConsole.startSubtask(
+      this.taskId, importSubtaskId,
+      BspPluginBundle.message("console.task.model.collect.in.progress")
+    )
 
     val projectDetails =
       calculateProjectDetailsWithCapabilities(
@@ -400,96 +400,101 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 }
 
-@Suppress("LongMethod", "CyclomaticComplexMethod")
+@Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")
 public fun calculateProjectDetailsWithCapabilities(
   server: BspServer,
-  buildServerCapabilities: BuildServerCapabilities,
+  buildServerCapabilities: BazelBuildServerCapabilities,
   projectRootDir: String,
   errorCallback: (Throwable) -> Unit,
   cancelOn: CompletableFuture<Void> = CompletableFuture(),
 ): ProjectDetails? {
   val log = logger<Any>()
 
-  try {
-    val workspaceBuildTargetsResult = queryForBuildTargets(server)
+  fun <Result> query(
+    check: Boolean,
+    queryName: String,
+    doQuery: () -> CompletableFuture<Result>,
+  ): CompletableFuture<Result>? =
+    if (check) doQuery()
       .reactToExceptionIn(cancelOn)
       .catchSyncErrors(errorCallback)
+      .exceptionally {
+        log.warn("Query '$queryName' has failed", it)
+        null
+      }
+    else null
+
+  try {
+    val workspaceBuildTargetsResult = query(true, "workspace/buildTargets") { server.workspaceBuildTargets() }!!
       .get()
 
     val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
 
-    val sourcesFuture = queryForSourcesResult(server, allTargetsIds)
-      .reactToExceptionIn(cancelOn)
-      .catchSyncErrors(errorCallback)
+    val sourcesFuture = query(true, "buildTarget/sources") {
+      server.buildTargetSources(SourcesParams(allTargetsIds))
+    }!!
 
-    val resourcesFuture =
-      queryForTargetResources(server, buildServerCapabilities, allTargetsIds)
-        ?.reactToExceptionIn(cancelOn)
-        ?.catchSyncErrors(errorCallback)
+    // We have to check == true because bsp4j uses non-primitive Boolean (which is Boolean? in Kotlin)
+    val resourcesFuture = query(buildServerCapabilities.resourcesProvider == true, "buildTarget/resources") {
+      server.buildTargetResources(ResourcesParams(allTargetsIds))
+    }
+
     val dependencySourcesFuture =
-      queryForDependencySources(server, buildServerCapabilities, allTargetsIds)
-        ?.reactToExceptionIn(cancelOn)
-        ?.catchSyncErrors(errorCallback)
+      query(buildServerCapabilities.dependencySourcesProvider == true, "buildTarget/dependencySources") {
+        server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds))
+      }
 
     val javaTargetIds = calculateJavaTargetIds(workspaceBuildTargetsResult)
     val scalaTargetIds = calculateScalaTargetIds(workspaceBuildTargetsResult)
-    val libraries: WorkspaceLibrariesResult? = server.workspaceLibraries()
-      .reactToExceptionIn(cancelOn)
-      .exceptionally {
-        log.warn(it)
-        null
-      }
-      .get()
+    val libraries: WorkspaceLibrariesResult? =
+      query(buildServerCapabilities.workspaceLibrariesProvider, "workspace/libraries") {
+        server.workspaceLibraries()
+      }?.get()
 
-    val directoriesFuture = server.workspaceDirectories()
-      .exceptionally {
-        log.warn(it)
-        null
-      }
-      .reactToExceptionIn(cancelOn)
-      .catchSyncErrors(errorCallback)
+    val directoriesFuture = query(buildServerCapabilities.workspaceDirectoriesProvider, "workspace/directories") {
+      server.workspaceDirectories()
+    }
 
-    val invalidTargetsFuture = server.workspaceInvalidTargets()
-      .exceptionally {
-        log.warn("Fetching workspace/invalidTargets has failed", it)
-        null
+    val invalidTargetsFuture =
+      query(buildServerCapabilities.workspaceInvalidTargetsProvider, "workspace/invalidTargets") {
+        server.workspaceInvalidTargets()
       }
-      .reactToExceptionIn(cancelOn)
-      .catchSyncErrors(errorCallback)
 
     // We use javacOptions only do build dependency tree based on classpath
     // If workspace/libraries endpoint is available (like in bazel-bsp)
     // we don't need javacOptions at all. For other servers (like SBT)
     // we still need to retrieve it
+    // There's no capability for javacOptions
     val javacOptionsFuture = if (libraries == null)
-      queryForJavacOptions(server, javaTargetIds)
-        ?.reactToExceptionIn(cancelOn)
-        ?.catchSyncErrors(errorCallback)
+      query(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
+        server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
+      }
     else null
 
     // Same for Scala
     val scalacOptionsFuture = if (libraries == null)
-      queryForScalacOptions(server, scalaTargetIds)
-        ?.reactToExceptionIn(cancelOn)
-        ?.catchSyncErrors(errorCallback)
+      query(scalaTargetIds.isNotEmpty() && BspFeatureFlags.isScalaSupportEnabled, "buildTarget/scalacOptions") {
+        server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
+      }
     else null
 
     val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
-    val pythonOptionsFuture = queryForPythonOptions(server, pythonTargetsIds)
-      ?.reactToExceptionIn(cancelOn)
-      ?.catchSyncErrors(errorCallback)
+    val pythonOptionsFuture =
+      query(pythonTargetsIds.isNotEmpty() && BspFeatureFlags.isPythonSupportEnabled, "buildTarget/pythonOptions") {
+        server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetsIds))
+      }
 
-    val outputPathsFuture =
-      queryForOutputPaths(server, allTargetsIds)
-        .reactToExceptionIn(cancelOn)
-        .catchSyncErrors(errorCallback)
+    val outputPathsFuture = query(buildServerCapabilities.outputPathsProvider == true, "buildTarget/outputPaths") {
+      server.buildTargetOutputPaths(OutputPathsParams(allTargetsIds))
+    }
 
-    val invalidTargets = invalidTargetsFuture.get() ?: WorkspaceInvalidTargetsResult(emptyList())
-    if (invalidTargets.targets.isNotEmpty())
+    val invalidTargets = invalidTargetsFuture?.get() ?: WorkspaceInvalidTargetsResult(emptyList())
+    if (invalidTargets.targets.isNotEmpty()) {
       BspBalloonNotifier.warn(
         BspPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
         BspPluginBundle.message("widget.collect.targets.not.imported.properly.message")
       )
+    }
 
     return ProjectDetails(
       targetsId = allTargetsIds,
@@ -500,62 +505,28 @@ public fun calculateProjectDetailsWithCapabilities(
       javacOptions = javacOptionsFuture?.get()?.items ?: emptyList(),
       scalacOptions = scalacOptionsFuture?.get()?.items ?: emptyList(),
       pythonOptions = pythonOptionsFuture?.get()?.items ?: emptyList(),
-      outputPathUris = outputPathsFuture.get().obtainDistinctUris(),
+      outputPathUris = outputPathsFuture?.get()?.obtainDistinctUris() ?: emptyList(),
       libraries = libraries?.libraries,
-      directories = directoriesFuture.get()
+      directories = directoriesFuture?.get()
         ?: WorkspaceDirectoriesResult(listOf(DirectoryItem(projectRootDir)), emptyList()),
       invalidTargets = invalidTargets,
     )
   } catch (e: Exception) {
     // TODO the type xd
     if (e is ExecutionException && e.cause is CancellationException) {
-      log.debug("calculateProjectDetailsWithCapabilities has been cancelled!", e)
+      log.debug("calculateProjectDetailsWithCapabilities has been cancelled", e)
     } else {
-      log.error("calculateProjectDetailsWithCapabilities has failed!", e)
+      log.error("calculateProjectDetailsWithCapabilities has failed", e)
     }
 
     return null
   }
 }
 
-private fun queryForBuildTargets(server: BspServer): CompletableFuture<WorkspaceBuildTargetsResult> =
-  server.workspaceBuildTargets()
-
 private fun calculateAllTargetsIds(
   workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
 ): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.map { it.id }
-
-private fun queryForSourcesResult(
-  server: BspServer,
-  allTargetsIds: List<BuildTargetIdentifier>,
-): CompletableFuture<SourcesResult> {
-  val sourcesParams = SourcesParams(allTargetsIds)
-
-  return server.buildTargetSources(sourcesParams)
-}
-
-private fun queryForTargetResources(
-  server: BspServer,
-  capabilities: BuildServerCapabilities,
-  allTargetsIds: List<BuildTargetIdentifier>,
-): CompletableFuture<ResourcesResult>? {
-  val resourcesParams = ResourcesParams(allTargetsIds)
-
-  return if (capabilities.resourcesProvider) server.buildTargetResources(resourcesParams)
-  else null
-}
-
-private fun queryForDependencySources(
-  server: BspServer,
-  capabilities: BuildServerCapabilities,
-  allTargetsIds: List<BuildTargetIdentifier>,
-): CompletableFuture<DependencySourcesResult>? {
-  val dependencySourcesParams = DependencySourcesParams(allTargetsIds)
-
-  return if (capabilities.dependencySourcesProvider) server.buildTargetDependencySources(dependencySourcesParams)
-  else null
-}
 
 private fun calculateJavaTargetIds(
   workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
@@ -567,48 +538,10 @@ private fun calculateScalaTargetIds(
 ): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.includesScala() }.map { it.id }
 
-private fun queryForJavacOptions(
-  server: BspServer,
-  javaTargetsIds: List<BuildTargetIdentifier>,
-): CompletableFuture<JavacOptionsResult>? {
-  return if (javaTargetsIds.isNotEmpty()) {
-    val javacOptionsParams = JavacOptionsParams(javaTargetsIds)
-    server.buildTargetJavacOptions(javacOptionsParams)
-  } else null
-}
-
-private fun queryForScalacOptions(
-  server: BspServer,
-  scalaTargetsIds: List<BuildTargetIdentifier>,
-): CompletableFuture<ScalacOptionsResult>? {
-  return if (scalaTargetsIds.isNotEmpty()) {
-    val scalacOptionsParams = ScalacOptionsParams(scalaTargetsIds)
-    server.buildTargetScalacOptions(scalacOptionsParams)
-  } else null
-}
-
 private fun calculatePythonTargetsIds(
   workspaceBuildTargetsResult: WorkspaceBuildTargetsResult,
 ): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.filter { it.languageIds.includesPython() }.map { it.id }
-
-private fun queryForPythonOptions(
-  server: BspServer,
-  pythonTargetsIds: List<BuildTargetIdentifier>,
-): CompletableFuture<PythonOptionsResult>? {
-  return if (pythonTargetsIds.isNotEmpty() && BspFeatureFlags.isPythonSupportEnabled) {
-    val pythonOptionsParams = PythonOptionsParams(pythonTargetsIds)
-    server.buildTargetPythonOptions(pythonOptionsParams)
-  } else null
-}
-
-private fun queryForOutputPaths(
-  server: BspServer,
-  allTargetIds: List<BuildTargetIdentifier>,
-): CompletableFuture<OutputPathsResult> {
-  val outputPathsParams = OutputPathsParams(allTargetIds)
-  return server.buildTargetOutputPaths(outputPathsParams)
-}
 
 private fun <T> CompletableFuture<T>.catchSyncErrors(errorCallback: (Throwable) -> Unit): CompletableFuture<T> =
   this.whenComplete { _, exception ->

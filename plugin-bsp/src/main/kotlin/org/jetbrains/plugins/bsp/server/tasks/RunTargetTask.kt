@@ -5,11 +5,11 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RunParams
 import ch.epfl.scala.bsp4j.RunResult
 import com.intellij.openapi.project.Project
-import org.jetbrains.magicmetamodel.RemoteDebugData
-import org.jetbrains.magicmetamodel.RunWithDebugParams
+import org.jetbrains.bsp.RemoteDebugData
+import org.jetbrains.bsp.RunWithDebugParams
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
-import java.util.*
+import java.util.UUID
 
 public class RunTargetTask(
   project: Project,

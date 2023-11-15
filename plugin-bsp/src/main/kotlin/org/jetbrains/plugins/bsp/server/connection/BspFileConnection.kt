@@ -16,6 +16,8 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
+import org.jetbrains.bsp.BazelBuildServerCapabilities
+import org.jetbrains.bsp.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
@@ -72,8 +74,10 @@ private class CancelableInvocationHandlerWithTimeout(
 
   private fun doHandle(value: Any?, error: Throwable?, startTime: Long, methodName: String): Any? {
     val elapsedTime = calculateElapsedTime(startTime)
-    log.debug("BSP method '$methodName' call took ${elapsedTime}ms. " +
-      "Result: ${if (error == null) "SUCCESS" else "FAILURE"}")
+    log.debug(
+      "BSP method '$methodName' call took ${elapsedTime}ms. " +
+        "Result: ${if (error == null) "SUCCESS" else "FAILURE"}"
+    )
 
     return when (error) {
       null -> value
@@ -112,7 +116,7 @@ public class BspFileConnection(
   public var locatedConnectionFile: LocatedBspConnectionDetails = locatedConnectionFile
     private set
 
-  public override var capabilities: BuildServerCapabilities? = null
+  public override var capabilities: BazelBuildServerCapabilities? = null
     private set
 
   private var bspProcess: Process? = null
@@ -129,15 +133,19 @@ public class BspFileConnection(
   private fun doConnect(taskId: Any, errorCallback: () -> Unit = {}) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
-    bspSyncConsole.startSubtask(taskId, connectSubtaskId,
-      BspPluginBundle.message("console.subtask.connect.in.progress"))
+    bspSyncConsole.startSubtask(
+      taskId, connectSubtaskId,
+      BspPluginBundle.message("console.subtask.connect.in.progress")
+    )
     bspSyncConsole.addMessage(connectSubtaskId, BspPluginBundle.message("console.task.connect.message.in.progress"))
 
     try {
       doConnectOrThrowIfFailed(bspSyncConsole, taskId, errorCallback)
     } catch (e: Exception) {
-      bspSyncConsole.finishTask(taskId,
-        BspPluginBundle.message("console.task.connect.message.failed"), FailureResultImpl(e))
+      bspSyncConsole.finishTask(
+        taskId,
+        BspPluginBundle.message("console.task.connect.message.failed"), FailureResultImpl(e)
+      )
     }
   }
 
@@ -228,8 +236,10 @@ public class BspFileConnection(
     client: BspClient,
     bspSyncConsole: TaskConsole,
   ) {
-    bspSyncConsole.addMessage(connectSubtaskId,
-      BspPluginBundle.message("console.message.initialize.server.in.progress"))
+    bspSyncConsole.addMessage(
+      connectSubtaskId,
+      BspPluginBundle.message("console.message.initialize.server.in.progress")
+    )
 
     server = startServerAndAddDisconnectActions(process, client)
     capabilities = server?.initializeAndObtainCapabilities()
@@ -267,12 +277,20 @@ public class BspFileConnection(
       .setInput(bspIn)
       .setOutput(bspOut)
       .setLocalService(client)
+      // Allows us to deserialize our custom capabilities
+      .configureGson { builder ->
+        builder.registerTypeAdapter(
+          BuildServerCapabilities::class.java,
+          BazelBuildServerCapabilitiesTypeAdapter(),
+        )
+      }
       .create()
 
-  private fun BspServer.initializeAndObtainCapabilities(): BuildServerCapabilities {
+  private fun BspServer.initializeAndObtainCapabilities(): BazelBuildServerCapabilities {
     val buildInitializeResults = buildInitialize(createInitializeBuildParams()).get()
     onBuildInitialized()
-    return buildInitializeResults.capabilities
+    // cast is safe because we registered a custom type adapter
+    return buildInitializeResults.capabilities as BazelBuildServerCapabilities
   }
 
   private fun createInitializeBuildParams(): InitializeBuildParams {

@@ -5,6 +5,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
+import org.jetbrains.bsp.BazelBuildServerCapabilities
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.ChunkingBuildServer
 import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
@@ -12,7 +13,7 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 
 public abstract class BspServerTask<T>(private val taskName: String, protected val project: Project) {
-  protected fun connectAndExecuteWithServer(task: (BspServer, BuildServerCapabilities) -> T?): T? {
+  protected fun connectAndExecuteWithServer(task: (BspServer, BazelBuildServerCapabilities) -> T?): T? {
     val server = getServer()
     val capabilities = getCapabilities()
     return task(server, capabilities)
@@ -43,13 +44,15 @@ public abstract class BspServerTask<T>(private val taskName: String, protected v
         bspSyncConsole.finishTask("bsp-autoconnect", BspPluginBundle.message("console.task.auto.connect.success"))
       }
     } catch (e: Exception) {
-      bspSyncConsole.finishTask("bsp-autoconnect",
-        BspPluginBundle.message("console.task.auto.connect.failed"), FailureResultImpl(e))
+      bspSyncConsole.finishTask(
+        "bsp-autoconnect",
+        BspPluginBundle.message("console.task.auto.connect.failed"), FailureResultImpl(e)
+      )
       error("Server connection failed!")
     }
   }
 
-  private fun getCapabilities(): BuildServerCapabilities =
+  private fun getCapabilities(): BazelBuildServerCapabilities =
     BspConnectionService.getInstance(project).value!!.capabilities
       ?: error("Unable to obtain server capabilities")
 }
