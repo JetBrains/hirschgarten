@@ -8,6 +8,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transforme
 import org.jetbrains.plugins.bsp.server.tasks.ScalaSdk
 import org.jetbrains.plugins.scala.project.ScalaLanguageLevel
 import org.jetbrains.plugins.scala.project.external.ScalaSdkUtils
+import scala.Option
 import scala.Some
 import scala.jdk.javaapi.CollectionConverters.asScala
 import java.io.File
@@ -65,9 +66,10 @@ public class ScalaSdkGetter : ScalaSdkGetterExtension {
     ScalaSdkUtils.ensureScalaLibraryIsConvertedToScalaSdk(
       modelsProvider,
       scalaLibrary,
+      Some(scalaSdk.scalaVersion),
       ScalaImmutableSeq.from(asScala(sdkJars)),
       ScalaImmutableSeq.from(asScala(emptyList<File>())),
-      Some(scalaSdk.scalaVersion)
+      Option.empty(),
     )
   }
 }
