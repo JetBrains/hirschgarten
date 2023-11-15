@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.integrationtest
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.LogMessageParams
@@ -15,6 +16,7 @@ import com.google.gson.Gson
 import io.kotest.matchers.shouldBe
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.bsp.BazelBuildServerCapabilities
+import org.jetbrains.bsp.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.magicmetamodel.impl.NonOverlappingTargets
 import org.jetbrains.magicmetamodel.impl.OverlappingTargetsGraph
 import org.jetbrains.magicmetamodel.impl.TargetsDetailsForDocumentProvider
@@ -35,7 +37,7 @@ import kotlin.time.measureTimedValue
 // TODO https://youtrack.jetbrains.com/issue/BAZEL-629
 private const val BAZEL_REPOSITORY_TAG = "6.0.0"
 private const val BAZEL_EXECUTABLE_VERSION = "5.4.0"
-private const val BAZEL_BSP_VERSION = "3.1.0-20231004-838ae95-NIGHTLY"
+private const val BAZEL_BSP_VERSION = "3.1.0-20231115-3400084-NIGHTLY"
 
 class NonOverlappingTest : MockProjectBaseTest() {
   @Test
@@ -120,6 +122,12 @@ class NonOverlappingTest : MockProjectBaseTest() {
       .setInput(bspServerProcess.inputStream)
       .setOutput(bspServerProcess.outputStream)
       .setLocalService(DummyClient())
+      .configureGson { builder ->
+        builder.registerTypeAdapter(
+          BuildServerCapabilities::class.java,
+          BazelBuildServerCapabilitiesTypeAdapter(),
+        )
+      }
       .create()
   }
 
