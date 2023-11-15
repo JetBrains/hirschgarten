@@ -106,7 +106,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
         consoleOutputStream,
         project,
       )
-      val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)!!
+      val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)
       fileConnection = BspFileConnection(project, locatedBspConnectionDetails)
       bspSyncConsole.finishSubtask(
         generateConnectionFileSubtaskId,
