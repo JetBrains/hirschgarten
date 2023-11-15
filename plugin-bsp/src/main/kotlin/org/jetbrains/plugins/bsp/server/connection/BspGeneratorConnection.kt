@@ -1,8 +1,8 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.project.Project
+import org.jetbrains.bsp.BazelBuildServerCapabilities
 import org.jetbrains.magicmetamodel.impl.ConvertableToState
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
@@ -29,7 +29,7 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
   public override val server: BspServer?
     get() = fileConnection?.server
 
-  public override val capabilities: BuildServerCapabilities?
+  public override val capabilities: BazelBuildServerCapabilities?
     get() = fileConnection?.capabilities
 
   public constructor(
@@ -95,8 +95,10 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val consoleOutputStream = ConsoleOutputStream(generateConnectionFileSubtaskId, bspSyncConsole)
 
-    bspSyncConsole.startSubtask(taskId, generateConnectionFileSubtaskId,
-      BspPluginBundle.message("console.task.generate.connection.file.in.progress"))
+    bspSyncConsole.startSubtask(
+      taskId, generateConnectionFileSubtaskId,
+      BspPluginBundle.message("console.task.generate.connection.file.in.progress")
+    )
 
     try {
       val connectionFile = bspConnectionDetailsGenerator.generateBspConnectionDetailsFile(
@@ -104,10 +106,12 @@ public class BspGeneratorConnection : BspConnection, ConvertableToState<BspGener
         consoleOutputStream,
         project,
       )
-      val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)
+      val locatedBspConnectionDetails = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)!!
       fileConnection = BspFileConnection(project, locatedBspConnectionDetails)
-      bspSyncConsole.finishSubtask(generateConnectionFileSubtaskId,
-        BspPluginBundle.message("console.task.generate.connection.file.success"))
+      bspSyncConsole.finishSubtask(
+        generateConnectionFileSubtaskId,
+        BspPluginBundle.message("console.task.generate.connection.file.success")
+      )
     } catch (e: Exception) {
       bspSyncConsole.finishSubtask(
         subtaskId = generateConnectionFileSubtaskId,

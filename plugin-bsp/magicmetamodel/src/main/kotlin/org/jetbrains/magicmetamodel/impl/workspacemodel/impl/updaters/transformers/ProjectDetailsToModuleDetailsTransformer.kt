@@ -8,7 +8,7 @@ import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
-import org.jetbrains.magicmetamodel.LibraryItem
+import org.jetbrains.bsp.LibraryItem
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import java.net.URI

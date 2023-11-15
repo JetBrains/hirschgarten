@@ -14,6 +14,7 @@ import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.gson.Gson
 import io.kotest.matchers.shouldBe
 import org.eclipse.lsp4j.jsonrpc.Launcher
+import org.jetbrains.bsp.BazelBuildServerCapabilities
 import org.jetbrains.magicmetamodel.impl.NonOverlappingTargets
 import org.jetbrains.magicmetamodel.impl.OverlappingTargetsGraph
 import org.jetbrains.magicmetamodel.impl.TargetsDetailsForDocumentProvider
@@ -54,7 +55,7 @@ class NonOverlappingTest : MockProjectBaseTest() {
       server.onBuildInitialized()
       val projectDetails = calculateProjectDetailsWithCapabilities(
         server = server,
-        buildServerCapabilities = initializationResult.capabilities,
+        buildServerCapabilities = initializationResult.capabilities as BazelBuildServerCapabilities,
         projectRootDir = bazelDir.toUri().toString(),
         errorCallback = { println(it) },)!!
       val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(projectDetails.sources)
