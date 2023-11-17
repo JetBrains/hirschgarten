@@ -1,6 +1,7 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.pluginRepository.PluginRepositoryFactory
+import org.jetbrains.intellij.tasks.RunPluginVerifierTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 fun properties(key: String) = project.findProperty(key).toString()
@@ -128,6 +129,14 @@ tasks {
                 )
             )
         )
+    }
+
+    runPluginVerifier {
+        ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
+        failureLevel.set(setOf(
+            RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+            RunPluginVerifierTask.FailureLevel.NOT_DYNAMIC
+        ))
     }
 
     // Configure UI tests plugin
