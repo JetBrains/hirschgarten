@@ -1,21 +1,69 @@
 package org.jetbrains.bsp.testkit.client
 
-import ch.epfl.scala.bsp4j._
+import ch.epfl.scala.bsp4j.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import org.jetbrains.bsp.testkit.client.TestClient.{withLifetime, withSession}
 import org.jetbrains.bsp.testkit.JsonComparator
-
 import java.lang.reflect.Type
-import java.nio.file.{Path, Paths}
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Duration
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.jdk.CollectionConverters.{CollectionHasAsScala, SeqHasAsJava}
-import scala.jdk.DurationConverters._
-import scala.jdk.FutureConverters.CompletionStageOps
-import scala.util.{Failure, Success}
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
+
+class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildParams, val transformJson: (String) -> String) {
+
+  val gson = Gson()
+
+  private fun test(timeout: Duration, ignoreEarlyExit: Boolean = false, test: (Session) -> CompletableFuture<Unit>) {
+    val session = Session(workspacePath)
+    val testResult = test(session)
+    val serverClosed = thread(start = false) {
+      val exitCode = session.process.waitFor()
+      val stderr = session.process.errorStream.bufferedReader().readText()
+      SessionResult(exitCode, stderr)
+    }
+
+    try {
+      if (ignoreEarlyExit) {
+        testResult.get(timeout.toMillis(), TimeUnit.MILLISECONDS)
+      } else {
+        CompletableFuture.anyOf(testResult, session.serverClosed).get(timeout.toMillis(), TimeUnit.MILLISECONDS)
+      }
+    } catch (e: ExecutionException) {
+      throw e.cause ?: e
+    } finally {
+      session.close()
+      serverClosed.join()
+      val result = serverClosed.get()
+      println("Server exited with code ${result.exitCode} and stderr:\n${result.stderr}")
+    }
+  }
+
+  private inline fun <reified T> applyJsonTransform(element: T): T {
+    val json = gson.toJson(element)
+    val transformed = transformJson(json)
+    return gson.fromJson(transformed, T::class.java)
+  }
+
+  private inline fun <reified T> assertJsonEquals(expected: T, actual: T) {
+    val transformedExpected = applyJsonTransform(expected)
+    val transformedActual = applyJsonTransform(actual)
+    JsonComparator.assertJsonEquals(transformedExpected, transformedActual, T::class.java)
+  }
+
+  fun testJavacOptions(timeout: Duration, params: JavacOptionsParams, expectedResult: JavacOptionsResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      session.server.buildTargetJavacOptions(transformedParams).thenApply { result ->
+        assertJsonEquals(expectedResult, result)
+      }
+    }
+  }
+}
 
 object TestClient {
   def withSession(workspace: Path, timeout: Duration, ignoreEarlyExit: Boolean = false)(
