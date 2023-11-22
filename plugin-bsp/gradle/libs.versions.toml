@@ -1,15 +1,15 @@
 [versions]
 ideProbe = "0.52.0"
-detekt = "1.23.1"
-kotlin-gradle-version = "1.9.10"
+detekt = "1.23.3"
+kotlin-gradle-version = "1.9.20"
 
 [libraries]
 ideProbeDriver = { module = "org.virtuslab.ideprobe:driver_2.13", version.ref = "ideProbe" }
 ideProbeRobot = { module = "org.virtuslab.ideprobe:robot-driver_2.13", version.ref = "ideProbe" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.0" }
-bsp4j = { module = "ch.epfl.scala:bsp4j", version = "2.1.0-M6" }
+bsp4j = { module = "ch.epfl.scala:bsp4j", version = "2.1.0-M7" }
 kotest = { module = "io.kotest:kotest-assertions-core", version = "5.7.2" }
-scala = { module = "org.scala-lang:scala-library", version = "2.13.11" }
+scala = { module = "org.scala-lang:scala-library", version = "2.13.12" }
 gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
 detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
