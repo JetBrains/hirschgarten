@@ -1,6 +1,6 @@
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
-scala_library(
+kt_jvm_library(
     name = "testkit-client",
     visibility = ["//visibility:public"],
     exports = [
@@ -8,7 +8,7 @@ scala_library(
     ],
 )
 
-scala_library(
+kt_jvm_library(
     name = "bazel-testkit-client",
     visibility = ["//visibility:public"],
     exports = [
