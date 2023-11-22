@@ -11,8 +11,8 @@ import javax.swing.Icon
  *
  * @param hintText text to be displayed on hover
  * @param icon an icon for this action's button
- * @property onPerform function to be performed upon clicking this action's button
- * @property selectionProvider function deciding whether the button is to be displayed as selected or not
+ * @param onPerform function to be performed upon clicking this action's button
+ * @param selectionProvider function deciding whether the button is to be displayed as selected or not
  */
 public class StickyTargetAction(
   hintText: String,
