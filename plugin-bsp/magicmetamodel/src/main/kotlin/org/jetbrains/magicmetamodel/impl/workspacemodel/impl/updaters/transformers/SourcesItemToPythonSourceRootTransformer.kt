@@ -1,7 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
-import com.intellij.util.io.isAncestor
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import java.nio.file.Path
 
@@ -20,7 +19,7 @@ internal class SourcesItemToPythonSourceRootTransformer(private val projectBaseP
     sourceRoot: GenericSourceRoot,
     allSourceRoots: List<GenericSourceRoot>,
   ): Boolean =
-    allSourceRoots.none { it.sourcePath.isAncestor(sourceRoot.sourcePath.parent) }
+    allSourceRoots.none { sourceRoot.sourcePath.parent.startsWith(it.sourcePath) }
 
   override fun transform(inputEntity: BuildTargetAndSourceItem): List<GenericSourceRoot> {
     val rootType = inferRootType(inputEntity.buildTarget)
