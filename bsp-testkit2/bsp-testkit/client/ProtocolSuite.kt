@@ -1,16 +1,15 @@
 package org.jetbrains.bsp.testkit.client
 
 import ch.epfl.scala.bsp4j.*
+import kotlinx.coroutines.test.runTest
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException
-import org.jetbrains.bsp.testkit.client.TestClient.withLifetime
-import org.jetbrains.bsp.testkit.client.TestClient.withSession
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.time.Duration
-import java.util.concurrent.CompletableFuture
+import kotlinx.coroutines.future.await
 import java.util.concurrent.ExecutionException
 import kotlin.collections.ArrayList
 
@@ -26,7 +25,7 @@ class ProtocolSuite(private val workspacePath: Path) {
         "1.0.0",
         bspVersion,
         workspacePath.toString(),
-        BuildClientCapabilities(ArrayList())
+        BuildClientCapabilities(listOf())
     )
 
     private val initializeParamsFullCapabilities = InitializeBuildParams(
@@ -39,10 +38,10 @@ class ProtocolSuite(private val workspacePath: Path) {
 
     @Test
     @DisplayName("Before initialization server responds with an error")
-    fun errorBeforeInitialization() {
+    fun errorBeforeInitialization() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20)) { session ->
             try {
-                session.server.workspaceReload().get()
+                session.server.workspaceReload().await()
             } catch (e: ExecutionException) {
                 val cause = e.cause
                 if (cause is ResponseErrorException) {
@@ -54,9 +53,9 @@ class ProtocolSuite(private val workspacePath: Path) {
 
     @Test
     @DisplayName("Initialization succeeds")
-    fun initializationSucceeds() {
+    fun initializationSucceeds() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20)) { session ->
-            val initializationResult = session.server.buildInitialize(initializeParamsNoCapabilities).get()
+            val initializationResult = session.server.buildInitialize(initializeParamsNoCapabilities).await()
             session.server.onBuildInitialized()
             session.close()
             println(initializationResult)
@@ -65,33 +64,33 @@ class ProtocolSuite(private val workspacePath: Path) {
 
     @Test
     @DisplayName("Server exits with 0 after a shutdown request")
-    fun exitAfterShutdown() {
+    fun exitAfterShutdown() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20), true) { session ->
-            session.server.buildInitialize(initializeParamsNoCapabilities).get()
+            session.server.buildInitialize(initializeParamsNoCapabilities).await()
             session.server.onBuildInitialized()
-            session.server.buildShutdown().get()
+            session.server.buildShutdown().await()
             session.server.onBuildExit()
-            val sessionResult = session.serverClosed.get()
+            val sessionResult = session.serverClosed.await()
             assertEquals(0, sessionResult.exitCode)
         }
     }
 
     @Test
     @DisplayName("Server exits with 1 without a shutdown request")
-    fun exitNoShutdown() {
+    fun exitNoShutdown() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20), true) { session ->
             session.server.onBuildExit()
-            val sessionResult = session.serverClosed.get()
+            val sessionResult = session.serverClosed.await()
             assertEquals(1, sessionResult.exitCode)
         }
     }
 
     @Test
     @DisplayName("No build targets are returned if the client has no capabilities")
-    fun buildTargets() {
+    fun buildTargets() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20)) { session ->
             withLifetime(initializeParamsNoCapabilities, session) {
-                val result = session.server.workspaceBuildTargets().get()
+                val result = session.server.workspaceBuildTargets().await()
                 assertTrue(result.targets.isEmpty())
             }
         }
@@ -99,11 +98,11 @@ class ProtocolSuite(private val workspacePath: Path) {
 
     @Test
     @DisplayName("Reload request works if is supported")
-    fun reload() {
+    fun reload() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20)) { session ->
             withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
                 if (capabilities.canReload) {
-                    session.server.workspaceReload().get()
+                    session.server.workspaceReload()
                 }
             }
         }
@@ -111,10 +110,10 @@ class ProtocolSuite(private val workspacePath: Path) {
 
     @Test
     @DisplayName("Target sources list is empty if given no targets")
-    fun sources() {
+    fun sources() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20)) { session ->
             withLifetime(initializeParamsFullCapabilities, session) {
-                val result = session.server.buildTargetSources(SourcesParams(ArrayList())).get()
+                val result = session.server.buildTargetSources(SourcesParams(ArrayList())).await()
                 assertTrue(result.items.isEmpty())
             }
         }
@@ -122,11 +121,11 @@ class ProtocolSuite(private val workspacePath: Path) {
 
     @Test
     @DisplayName("Dependency sources list is empty if given no targets (if supported)")
-    fun dependencySources() {
+    fun dependencySources() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20)) { session ->
             withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
                 if (capabilities.dependencySourcesProvider) {
-                    val result = session.server.buildTargetDependencySources(DependencySourcesParams(ArrayList())).get()
+                    val result = session.server.buildTargetDependencySources(DependencySourcesParams(ArrayList())).await()
                     assertTrue(result.items.isEmpty())
                 }
             }
@@ -135,11 +134,11 @@ class ProtocolSuite(private val workspacePath: Path) {
 
     @Test
     @DisplayName("Dependency modules list is empty if given no targets (if supported)")
-    fun dependencyModules() {
+    fun dependencyModules() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20)) { session ->
             withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
                 if (capabilities.dependencyModulesProvider) {
-                    val result = session.server.buildTargetDependencyModules(DependencyModulesParams(ArrayList())).get()
+                    val result = session.server.buildTargetDependencyModules(DependencyModulesParams(ArrayList())).await()
                     assertTrue(result.items.isEmpty())
                 }
             }
@@ -148,11 +147,11 @@ class ProtocolSuite(private val workspacePath: Path) {
 
     @Test
     @DisplayName("Resources list is empty if given no targets (if supported)")
-    fun resources() {
+    fun resources() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20)) { session ->
             withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
                 if (capabilities.resourcesProvider) {
-                    val result = session.server.buildTargetResources(ResourcesParams(ArrayList())).get()
+                    val result = session.server.buildTargetResources(ResourcesParams(ArrayList())).await()
                     assertTrue(result.items.isEmpty())
                 }
             }
@@ -161,10 +160,10 @@ class ProtocolSuite(private val workspacePath: Path) {
 
     @Test
     @DisplayName("Clean cache method works")
-    fun cleanCache() {
+    fun cleanCache() = runTest {
         withSession(workspacePath, Duration.ofSeconds(20)) { session ->
             withLifetime(initializeParamsFullCapabilities, session) {
-                session.server.buildTargetCleanCache(CleanCacheParams(ArrayList())).get()
+                session.server.buildTargetCleanCache(CleanCacheParams(ArrayList())).await()
             }
         }
     }

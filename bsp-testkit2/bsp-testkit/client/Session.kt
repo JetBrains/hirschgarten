@@ -2,22 +2,27 @@ package org.jetbrains.bsp.testkit.client
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.future.asDeferred
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import java.io.File
 import java.nio.file.Path
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import kotlin.concurrent.thread
+import kotlin.coroutines.EmptyCoroutineContext
 
 
 /**
  * A session is a "physical" connection to a BSP server. It must be closed when it is no longer
  * needed. The user is responsible for maintaining the correct BSP life-cycle.
  */
-class Session(val workspacePath: Path) : AutoCloseable {
+class Session(val workspacePath: Path, val coroutineScope: CoroutineScope) : AutoCloseable {
     private val workspaceFile = workspacePath.toFile()
     private val connectionDetails = readBspConnectionDetails(workspaceFile)
 
-    private val process = ProcessBuilder(connectionDetails.argv)
+    public val process: Process = ProcessBuilder(connectionDetails.argv)
         .directory(workspaceFile)
         .start()
 
@@ -38,11 +43,9 @@ class Session(val workspacePath: Path) : AutoCloseable {
 
     val server: MockServer = launcher.remoteProxy
 
-    val serverClosed = thread(start = false) {
-        val exitCode = process.waitFor()
-        val stderr = process.errorStream.bufferedReader().readText()
-        SessionResult(exitCode, stderr)
-    }
+    val serverClosed: Deferred<SessionResult> = process.onExit().thenApply {
+        SessionResult(process.exitValue(), process.errorStream.bufferedReader().readText())
+    }.asDeferred()
 
     override fun close() {
         executor.shutdown()
