@@ -15,7 +15,10 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
@@ -48,9 +51,10 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
       val magicMetaModel = MagicMetaModelService.getInstance(project).value
       val documentId = TextDocumentIdentifier(url)
       val documentTargetDetails = magicMetaModel.getTargetsDetailsForDocument(documentId)
+      val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
 
-      return if (isTest()) documentTargetDetails.calculateTestLineMarkerInfo()
-      else documentTargetDetails.calculateRunLineMarkerInfo()
+      return if (isTest()) documentTargetDetails.calculateTestLineMarkerInfo(assetsExtension.presentableName)
+      else documentTargetDetails.calculateRunLineMarkerInfo(assetsExtension.presentableName)
     }
 
   private fun PsiElement.isTest(): Boolean {
@@ -59,29 +63,29 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
     return fileIndex.isInTestSourceContent(containingFile.virtualFile)
   }
 
-  private fun DocumentTargetsDetails.calculateTestLineMarkerInfo(): BspLineMakerInfo =
+  private fun DocumentTargetsDetails.calculateTestLineMarkerInfo(buildToolPresentableName: String): BspLineMakerInfo =
     BspLineMakerInfo(
       text = "Run Test",
-      actions = this.calculateActions(::toTestTargetAction)
+      actions = this.calculateActions { toTestTargetAction(it, buildToolPresentableName) }
     )
 
-  private fun toTestTargetAction(targetId: BuildTargetId): TestTargetAction =
+  private fun toTestTargetAction(targetId: BuildTargetId, buildToolPresentableName: String): TestTargetAction =
     TestTargetAction(
       targetId = targetId,
-      text = { "Run '$targetId' using BSP" },
+      text = { "Run '$targetId' using $buildToolPresentableName" },
       icon = AllIcons.RunConfigurations.TestState.Run
     )
 
-  private fun DocumentTargetsDetails.calculateRunLineMarkerInfo(): BspLineMakerInfo =
+  private fun DocumentTargetsDetails.calculateRunLineMarkerInfo(buildToolPresentableName: String): BspLineMakerInfo =
     BspLineMakerInfo(
       text = "Run",
-      actions = this.calculateActions(::toRunTargetAction)
+      actions = this.calculateActions { toRunTargetAction(it, buildToolPresentableName) }
     )
 
-  private fun toRunTargetAction(targetId: BuildTargetId): RunTargetAction =
+  private fun toRunTargetAction(targetId: BuildTargetId, buildToolPresentableName: String): RunTargetAction =
     RunTargetAction(
       targetId = targetId,
-      text = { "Run '$targetId' using BSP" },
+      text = { "Run '$targetId' using $buildToolPresentableName" },
       icon = AllIcons.RunConfigurations.TestState.Run
     )
 
