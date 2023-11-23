@@ -9,7 +9,7 @@ class BazelTestClient(
   override val workspacePath: Path,
   override val initializeParams: InitializeBuildParams,
   private val bazelCache: Path,
-  private val bazelOutputBase: Path
+  private val bazelOutputBase: Path,
 ) : TestClient(
   workspacePath,
   initializeParams,

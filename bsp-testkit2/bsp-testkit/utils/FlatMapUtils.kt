@@ -12,9 +12,11 @@ object FlatMapUtils {
       is Map<*, *> -> value.entries.flatMap { e ->
         flatten(AbstractMap.SimpleEntry("${entry.key}/${e.key}", e.value!!))
       }
+
       is List<*> -> value.indices.map { i ->
         AbstractMap.SimpleEntry("${entry.key}/$i", value[i]!!)
       }.flatMap { flatten(it) }
+
       else -> listOf(entry)
     }
   }
