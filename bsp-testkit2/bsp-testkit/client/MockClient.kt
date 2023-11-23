@@ -11,6 +11,8 @@ class MockClient : BuildClient {
     private val taskFinish = ArrayList<TaskFinishParams>()
     private val publishDiagnostics = ArrayList<PublishDiagnosticsParams>()
     private val didChangeBuildTarget = ArrayList<DidChangeBuildTarget>()
+    private val printStdout = ArrayList<PrintParams>()
+    private val printStderr = ArrayList<PrintParams>()
 
     val showMessageNotifications: List<ShowMessageParams>
         get() = showMessage
@@ -51,6 +53,14 @@ class MockClient : BuildClient {
 
     override fun onBuildTaskFinish(params: TaskFinishParams) {
         taskFinish.add(params)
+    }
+
+    override fun onRunPrintStdout(params: PrintParams) {
+        printStdout.add(params)
+    }
+
+    override fun onRunPrintStderr(params: PrintParams) {
+        printStderr.add(params)
     }
 
     override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
