@@ -72,222 +72,137 @@ open class TestClient(open val workspacePath: Path, open val initializeParams: I
     JsonComparator.assertJsonEquals(transformedExpected, transformedActual, T::class.java)
   }
 
-//  fun testJavacOptions(timeout: Duration, params: JavacOptionsParams, expectedResult: JavacOptionsResult) {
-//    val transformedParams = applyJsonTransform(params)
-//    withS(timeout) { session ->
-//      session.server.buildTargetJavacOptions(transformedParams).thenApply { result ->
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
+  private suspend fun test(timeout: Duration, ignoreEarlyExit: Boolean = false, runTest: suspend (Session) -> Unit) {
+      withSession(workspacePath, timeout, ignoreEarlyExit) { session ->
+        withLifetime(initializeParams, session) { _ ->
+          runTest(session)
+        }
+      }
+    }
+
+  suspend fun testJavacOptions(timeout: Duration, params: JavacOptionsParams, expectedResult: JavacOptionsResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetJavacOptions(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testScalacOptions(timeout: Duration, params: ScalacOptionsParams, expectedResult: ScalacOptionsResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetScalacOptions(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testWorkspaceTargets(timeout: Duration, expectedResult: WorkspaceBuildTargetsResult) {
+    test(timeout) { session ->
+      val result = session.server.workspaceBuildTargets().await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testCppOptions(timeout: Duration, params: CppOptionsParams, expectedResult: CppOptionsResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetCppOptions(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testPythonOptions(timeout: Duration, params: PythonOptionsParams, expectedResult: PythonOptionsResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetPythonOptions(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testSources(timeout: Duration, params: SourcesParams, expectedResult: SourcesResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetSources(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testResources(timeout: Duration, params: ResourcesParams, expectedResult: ResourcesResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetResources(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testInverseSources(timeout: Duration, params: InverseSourcesParams, expectedResult: InverseSourcesResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetInverseSources(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testScalaMainClasses(timeout: Duration, params: ScalaMainClassesParams, expectedResult: ScalaMainClassesResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetScalaMainClasses(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testScalaTestClasses(timeout: Duration, params: ScalaTestClassesParams, expectedResult: ScalaTestClassesResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetScalaTestClasses(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testDependencySources(timeout: Duration, params: DependencySourcesParams, expectedResult: DependencySourcesResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetDependencySources(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testJvmRunEnvironment(timeout: Duration, params: JvmRunEnvironmentParams, expectedResult: JvmRunEnvironmentResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetJvmRunEnvironment(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  suspend fun testJvmTestEnvironment(timeout: Duration, params: JvmTestEnvironmentParams, expectedResult: JvmTestEnvironmentResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session ->
+      val result = session.server.buildTargetJvmTestEnvironment(transformedParams).await()
+        assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  /**
+   * Simulates a typical workflow
+   */
+  suspend fun testResolveProject(timeout: Duration) {
+    test(timeout) { session ->
+      val getWorkspaceTargets = session.server.workspaceBuildTargets().await()
+      val targets = getWorkspaceTargets.targets
+      val targetIds = targets.map { it.id }
+      val sources = session.server.buildTargetSources(SourcesParams(targetIds)).await()
+      val resources = session.server.buildTargetResources(ResourcesParams(targetIds)).await()
+      val javaTargetIds = targets.filter { it.languageIds.contains("java") }.map { it.id }
+      val javacOptions = session.server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds)).await()
+      val scalaTargetIds = targets.filter { it.languageIds.contains("scala") }.map { it.id }
+      val scalacOptions = session.server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds)).await()
+      val cppTargetIds = targets.filter { it.languageIds.contains("cpp") }.map { it.id }
+      val cppOptions = session.server.buildTargetCppOptions(CppOptionsParams(cppTargetIds)).await()
+      val pythonTargetIds = targets.filter { it.languageIds.contains("python") }.map { it.id }
+      val pythonOptions = session.server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetIds)).await()
+      val rustTargetIds = targets.filter { it.languageIds.contains("rust") }.map { it.id }
+      val rustWorkspace = session.server.rustWorkspace(RustWorkspaceParams(rustTargetIds)).await()
+    }
 }
-
-
-//
-//class TestClient(val workspacePath: Path, val initializeParams: InitializeBuildParams, val transformJson: String => String) {
-//
-//  val gson = new Gson()
-//
-//  private def test(timeout: Duration, ignoreEarlyExit: Boolean = false)(
-//    test: Session => Future[Unit]
-//  ): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    withSession(Paths.get(initializeParams.getRootUri), timeout, ignoreEarlyExit) { session =>
-//      withLifetime(initializeParams, session) { _ =>
-//        test(session)
-//      }
-//    }
-//  }
-//
-//  private def applyJsonTransform[T](element: T, typeOfT: Type): T = {
-//    val json = gson.toJson(element, typeOfT)
-//    val transformed = transformJson(json)
-//    gson.fromJson[T](transformed, typeOfT)
-//  }
-//
-//  private def assertJsonEquals[T](expected: T, actual: T): Unit = {
-//    val typeOfT = new TypeToken[T] {}.getType
-//    val transformedExpected = applyJsonTransform(expected, typeOfT)
-//    val transformedActual = applyJsonTransform(actual, typeOfT)
-//    JsonComparator.assertJsonEquals(transformedExpected, transformedActual, typeOfT)
-//  }
-//
-//  def testJavacOptions(timeout: Duration)(params: JavacOptionsParams, expectedResult: JavacOptionsResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[JavacOptionsParams] {}.getType
-//    val transformedParams = applyJsonTransform[JavacOptionsParams](params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetJavacOptions(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testScalacOptions(timeout: Duration)(params: ScalacOptionsParams, expectedResult: ScalacOptionsResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[ScalacOptionsParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetScalacOptions(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testWorkspaceTargets(timeout: Duration)(expectedResult: WorkspaceBuildTargetsResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    test(timeout) { session =>
-//      session.server.workspaceBuildTargets().asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testCppOptions(timeout: Duration)(params: CppOptionsParams, expectedResult: CppOptionsResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[CppOptionsParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetCppOptions(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testPythonOptions(timeout: Duration)(params: PythonOptionsParams, expectedResult: PythonOptionsResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[PythonOptionsParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetPythonOptions(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testSources(timeout: Duration)(params: SourcesParams, expectedResult: SourcesResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[SourcesParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetSources(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testResources(timeout: Duration)(params: ResourcesParams, expectedResult: ResourcesResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[ResourcesParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetResources(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testInverseSources(timeout: Duration)(params: InverseSourcesParams, expectedResult: InverseSourcesResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[InverseSourcesParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetInverseSources(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testScalaMainClasses(timeout: Duration)(params: ScalaMainClassesParams, expectedResult: ScalaMainClassesResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[ScalaMainClassesParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetScalaMainClasses(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testScalaTestClasses(timeout: Duration)(params: ScalaTestClassesParams, expectedResult: ScalaTestClassesResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[ScalaTestClassesParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetScalaTestClasses(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testDependencySources(timeout: Duration)(params: DependencySourcesParams, expectedResult: DependencySourcesResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[DependencySourcesParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetDependencySources(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testJvmRunEnvironment(timeout: Duration)(params: JvmRunEnvironmentParams, expectedResult: JvmRunEnvironmentResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[JvmRunEnvironmentParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetJvmRunEnvironment(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  def testJvmTestEnvironment(timeout: Duration)(params: JvmTestEnvironmentParams, expectedResult: JvmTestEnvironmentResult): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    val typeOfT = new TypeToken[JvmTestEnvironmentParams] {}.getType
-//    val transformedParams = applyJsonTransform(params, typeOfT)
-//    test(timeout) { session =>
-//      session.server.buildTargetJvmTestEnvironment(transformedParams).asScala.map { result =>
-//        assertJsonEquals(expectedResult, result)
-//      }
-//    }
-//  }
-//
-//  /**
-//   * Simulates a typical workflow
-//   */
-//  def testResolveProject(timeout: Duration): Unit = {
-//    implicit val ec: ExecutionContext = ExecutionContext.global
-//    test(timeout) { session =>
-//      val getWorkspaceTargets = session.server.workspaceBuildTargets().asScala
-//        .map(targetsResult => targetsResult.getTargets)
-//
-//      val extractTargetIdsForLanguage = (targets: java.util.List[BuildTarget], languageId: String) => targets.asScala.filter(_.getLanguageIds.contains(languageId)).map(_.getId).toList.asJava
-//
-//      val extractTargetIds = (targets: java.util.List[BuildTarget]) =>
-//        targets.asScala.map(_.getId).toList.asJava
-//
-//      val getSources = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetSources(new SourcesParams(targetIds)).asScala
-//      val getResources = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetResources(new ResourcesParams(targetIds)).asScala
-//      val getJavacOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetJavacOptions(new JavacOptionsParams(targetIds)).asScala
-//      val getScalacOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetScalacOptions(new ScalacOptionsParams(targetIds)).asScala
-//      val getCppOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetCppOptions(new CppOptionsParams(targetIds)).asScala
-//      val getPythonOptions = (targetIds: java.util.List[BuildTargetIdentifier]) => session.server.buildTargetPythonOptions(new PythonOptionsParams(targetIds)).asScala
-//
-//      for {
-//        targets <- getWorkspaceTargets
-//        targetIds = extractTargetIds(targets)
-//        sources <- getSources(targetIds)
-//        resources <- getResources(targetIds)
-//        javaTargetIds = extractTargetIdsForLanguage(targets, "java") // TODO: use a constant
-//        javacOptions <- getJavacOptions(javaTargetIds)
-//        scalaTargetIds = extractTargetIdsForLanguage(targets, "scala") // TODO: use a constant
-//        scalacOptions <- getScalacOptions(scalaTargetIds)
-//        cppTargetIds = extractTargetIdsForLanguage(targets, "cpp") // TODO: use a constant
-//        cppOptions <- getCppOptions(cppTargetIds)
-//        pythonTargetIds = extractTargetIdsForLanguage(targets, "python")
-//        pythonOptions <- getPythonOptions(pythonTargetIds)
-//      } yield ()
-//    }
-//  }
-//}
+  }

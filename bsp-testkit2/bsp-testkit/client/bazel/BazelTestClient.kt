@@ -3,6 +3,7 @@ package org.jetbrains.bsp.testkit.client.bazel
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import org.jetbrains.bsp.testkit.client.TestClient
 import java.nio.file.Path
+import java.util.Locale
 
 class BazelTestClient(
   override val workspacePath: Path,
@@ -20,7 +21,7 @@ class BazelTestClient(
   }
 ) {
   companion object {
-    private val osFamily: String = System.getProperty("os.name").toLowerCase().let { osName ->
+    private val osFamily: String = System.getProperty("os.name").lowercase(Locale.getDefault()).let { osName ->
       when {
         osName.startsWith("windows") -> "win"
         osName.startsWith("mac") -> "macos"
