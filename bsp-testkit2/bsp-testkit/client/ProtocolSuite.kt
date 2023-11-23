@@ -20,8 +20,11 @@ class ProtocolSuite(private val workspacePath: Path) {
     private val executionContext = java.util.concurrent.Executors.newCachedThreadPool()
     private val bspVersion = "2.0.0"
 
+    val javaString = java.lang.String()
+    val kotlinString = kotlin.String()
+
     private val initializeParamsNoCapabilities = InitializeBuildParams(
-        "TestClient",
+        kotlinString,
         "1.0.0",
         bspVersion,
         workspacePath.toString(),

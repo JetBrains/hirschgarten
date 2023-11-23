@@ -7,6 +7,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.time.withTimeout
 import org.jetbrains.bsp.testkit.JsonComparator
 import java.nio.file.Path
@@ -28,25 +29,27 @@ suspend fun withSession(
         if (ignoreEarlyExit) {
           testResult.await()
         } else {
-          Deferred.
-          CompletableFuture.anyOf(testResult, serverClosed).await()
+          select {
+            testResult.onAwait {}
+            session.serverClosed.onAwait {}
+          }
         }
       }
     } catch (e: ExecutionException) {
       throw e.cause ?: e
     } finally {
       session.close()
-      val result = serverClosed.await()
+      val result = session.serverClosed.await()
       println("Server exited with code ${result.exitCode} and stderr:\n${result.stderr}")
     }
   }
 }
 
-suspend fun CoroutineScope.withLifetime(
+suspend fun withLifetime(
   initializeParams: InitializeBuildParams,
   session: Session,
   f: suspend (BuildServerCapabilities) -> Unit
-): CompletableFuture<Unit> {
+) {
   val initializeResult = session.server.buildInitialize(initializeParams).await()
   session.server.onBuildInitialized()
   f(initializeResult.capabilities)
@@ -71,7 +74,7 @@ open class TestClient(open val workspacePath: Path, open val initializeParams: I
 
 //  fun testJavacOptions(timeout: Duration, params: JavacOptionsParams, expectedResult: JavacOptionsResult) {
 //    val transformedParams = applyJsonTransform(params)
-//    test(timeout) { session ->
+//    withS(timeout) { session ->
 //      session.server.buildTargetJavacOptions(transformedParams).thenApply { result ->
 //        assertJsonEquals(expectedResult, result)
 //      }
