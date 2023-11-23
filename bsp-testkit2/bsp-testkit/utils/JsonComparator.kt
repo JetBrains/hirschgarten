@@ -26,11 +26,13 @@ object JsonComparator {
 
     val difference = Maps.difference(FlatMapUtils.flatten(expectedMap), FlatMapUtils.flatten(actualMap))
 
-    assertTrue(difference.areEqual()) { "Expected: $sortedExpected\n\n" +
-      "Actual: $sortedActual\n\n" +
-      "Entries only in expected \n${difference.entriesOnlyOnLeft()}\n\n" +
-      "Entries only in actual\n${difference.entriesOnlyOnRight()}\n\n" +
-      "Entries differing\n${difference.entriesDiffering()}" }
+    assertTrue(difference.areEqual()) {
+      "Expected: $sortedExpected\n\n" +
+        "Actual: $sortedActual\n\n" +
+        "Entries only in expected \n${difference.entriesOnlyOnLeft()}\n\n" +
+        "Entries only in actual\n${difference.entriesOnlyOnRight()}\n\n" +
+        "Entries differing\n${difference.entriesDiffering()}"
+    }
   }
 
   fun deepSort(element: JsonElement): JsonElement {
@@ -44,6 +46,7 @@ object JsonComparator {
         treeSet.forEach { element -> sortedArray.add(element) }
         sortedArray
       }
+
       element.isJsonObject -> {
         val map = element.asJsonObject
         val treeSet = TreeSet<Pair<String, JsonElement>>(Comparator.comparing { it.first })
@@ -52,6 +55,7 @@ object JsonComparator {
         treeSet.forEach { entry -> sortedMap.add(entry.first, entry.second) }
         sortedMap
       }
+
       else -> {
         element
       }

@@ -2,8 +2,6 @@ package org.jetbrains.bsp.testkit.client
 
 import ch.epfl.scala.bsp4j.*
 import com.google.gson.Gson
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
@@ -12,14 +10,13 @@ import kotlinx.coroutines.time.withTimeout
 import org.jetbrains.bsp.testkit.JsonComparator
 import java.nio.file.Path
 import java.time.Duration
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 
 suspend fun withSession(
   workspace: Path,
   timeout: Duration,
   ignoreEarlyExit: Boolean = false,
-  test: suspend (Session) -> Unit
+  test: suspend (Session) -> Unit,
 ) {
   coroutineScope {
     val session = Session(workspace, this)
@@ -48,7 +45,7 @@ suspend fun withSession(
 suspend fun withLifetime(
   initializeParams: InitializeBuildParams,
   session: Session,
-  f: suspend (BuildServerCapabilities) -> Unit
+  f: suspend (BuildServerCapabilities) -> Unit,
 ) {
   val initializeResult = session.server.buildInitialize(initializeParams).await()
   session.server.onBuildInitialized()
@@ -57,7 +54,11 @@ suspend fun withLifetime(
   session.server.onBuildExit()
 }
 
-open class TestClient(open val workspacePath: Path, open val initializeParams: InitializeBuildParams, val transformJson: (String) -> String) {
+open class TestClient(
+  open val workspacePath: Path,
+  open val initializeParams: InitializeBuildParams,
+  val transformJson: (String) -> String,
+) {
   val gson = Gson()
 
   private inline fun <reified T> applyJsonTransform(element: T): T {
@@ -73,18 +74,18 @@ open class TestClient(open val workspacePath: Path, open val initializeParams: I
   }
 
   private suspend fun test(timeout: Duration, ignoreEarlyExit: Boolean = false, runTest: suspend (Session) -> Unit) {
-      withSession(workspacePath, timeout, ignoreEarlyExit) { session ->
-        withLifetime(initializeParams, session) { _ ->
-          runTest(session)
-        }
+    withSession(workspacePath, timeout, ignoreEarlyExit) { session ->
+      withLifetime(initializeParams, session) { _ ->
+        runTest(session)
       }
     }
+  }
 
   suspend fun testJavacOptions(timeout: Duration, params: JavacOptionsParams, expectedResult: JavacOptionsResult) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetJavacOptions(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
@@ -92,14 +93,14 @@ open class TestClient(open val workspacePath: Path, open val initializeParams: I
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetScalacOptions(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
   suspend fun testWorkspaceTargets(timeout: Duration, expectedResult: WorkspaceBuildTargetsResult) {
     test(timeout) { session ->
       val result = session.server.workspaceBuildTargets().await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
@@ -107,7 +108,7 @@ open class TestClient(open val workspacePath: Path, open val initializeParams: I
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetCppOptions(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
@@ -115,7 +116,7 @@ open class TestClient(open val workspacePath: Path, open val initializeParams: I
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetPythonOptions(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
@@ -123,7 +124,7 @@ open class TestClient(open val workspacePath: Path, open val initializeParams: I
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetSources(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
@@ -131,55 +132,79 @@ open class TestClient(open val workspacePath: Path, open val initializeParams: I
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetResources(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
-  suspend fun testInverseSources(timeout: Duration, params: InverseSourcesParams, expectedResult: InverseSourcesResult) {
+  suspend fun testInverseSources(
+    timeout: Duration,
+    params: InverseSourcesParams,
+    expectedResult: InverseSourcesResult,
+  ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetInverseSources(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
-  suspend fun testScalaMainClasses(timeout: Duration, params: ScalaMainClassesParams, expectedResult: ScalaMainClassesResult) {
+  suspend fun testScalaMainClasses(
+    timeout: Duration,
+    params: ScalaMainClassesParams,
+    expectedResult: ScalaMainClassesResult,
+  ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetScalaMainClasses(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
-  suspend fun testScalaTestClasses(timeout: Duration, params: ScalaTestClassesParams, expectedResult: ScalaTestClassesResult) {
+  suspend fun testScalaTestClasses(
+    timeout: Duration,
+    params: ScalaTestClassesParams,
+    expectedResult: ScalaTestClassesResult,
+  ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetScalaTestClasses(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
-  suspend fun testDependencySources(timeout: Duration, params: DependencySourcesParams, expectedResult: DependencySourcesResult) {
+  suspend fun testDependencySources(
+    timeout: Duration,
+    params: DependencySourcesParams,
+    expectedResult: DependencySourcesResult,
+  ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetDependencySources(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
-  suspend fun testJvmRunEnvironment(timeout: Duration, params: JvmRunEnvironmentParams, expectedResult: JvmRunEnvironmentResult) {
+  suspend fun testJvmRunEnvironment(
+    timeout: Duration,
+    params: JvmRunEnvironmentParams,
+    expectedResult: JvmRunEnvironmentResult,
+  ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetJvmRunEnvironment(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
-  suspend fun testJvmTestEnvironment(timeout: Duration, params: JvmTestEnvironmentParams, expectedResult: JvmTestEnvironmentResult) {
+  suspend fun testJvmTestEnvironment(
+    timeout: Duration,
+    params: JvmTestEnvironmentParams,
+    expectedResult: JvmTestEnvironmentResult,
+  ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session ->
       val result = session.server.buildTargetJvmTestEnvironment(transformedParams).await()
-        assertJsonEquals(expectedResult, result)
+      assertJsonEquals(expectedResult, result)
     }
   }
 
@@ -204,5 +229,5 @@ open class TestClient(open val workspacePath: Path, open val initializeParams: I
       val rustTargetIds = targets.filter { it.languageIds.contains("rust") }.map { it.id }
       val rustWorkspace = session.server.rustWorkspace(RustWorkspaceParams(rustTargetIds)).await()
     }
-}
   }
+}
