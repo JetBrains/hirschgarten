@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.configuration.test
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
@@ -11,7 +12,6 @@ import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
-import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
@@ -19,7 +19,6 @@ import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.server.tasks.TestTargetTask
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.targetIdTOREMOVE
 import javax.swing.Icon
 
 public class BspTestRunConfigurationType(project: Project) : ConfigurationType {
@@ -55,6 +54,8 @@ public class BspTestRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
 
 public class BspTestRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :
   RunConfigurationBase<String>(project, configurationFactory, name) {
+  public var targetUri: String? = null
+
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return RunProfileState { executor2, _ ->
 
@@ -62,12 +63,12 @@ public class BspTestRunConfiguration(project: Project, configurationFactory: Con
 
       val processHandler = BspProcessHandler()
       val testConsole = BspTestConsolePrinter(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))
-      environment.getUserData(targetIdTOREMOVE)?.let {
+      targetUri?.let { uri ->
         bspTestConsole.registerPrinter(testConsole)
         processHandler.execute {
           try {
             // TODO error handling?
-            TestTargetTask(project).connectAndExecute(it.toBsp4JTargetIdentifier())
+            TestTargetTask(project).connectAndExecute(BuildTargetIdentifier(uri))
           } finally {
             testConsole.endTesting()
             bspTestConsole.deregisterPrinter(testConsole)
