@@ -53,7 +53,7 @@ intellij {
 
     val platformPlugins = properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty)
     val bspPlugin = findLatestCompatibleBspPlugin()
-    plugins.set(platformPlugins + bspPlugin)
+    plugins.set(platformPlugins + file("/Users/xuan-son.trinh/Documents/Projects/bazel/intellij-bsp/build/distributions/intellij-bsp"))
 }
 
 fun findLatestCompatibleBspPlugin(): String {
