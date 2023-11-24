@@ -15,16 +15,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.util.Key
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestRunConfiguration
 import javax.swing.Icon
-
-public val targetIdTOREMOVE: Key<BuildTargetId> = Key<BuildTargetId>("targetId")
 
 internal abstract class SideMenuRunnerAction(
   protected val targetId: BuildTargetId,
@@ -75,8 +73,9 @@ internal abstract class SideMenuRunnerAction(
       val executionEnvironment = ExecutionEnvironmentBuilder(project, this)
         .runnerAndSettings(runner, settings)
         .build()
-      (settings.configuration as? BspRunConfiguration)?.let {
-        it.targetUri = targetId
+      when (val config = settings.configuration) {
+        is BspRunConfiguration -> config.targetUri = targetId
+        is BspTestRunConfiguration -> config.targetUri = targetId
       }
       runner.execute(executionEnvironment)
     } catch (e: Exception) {
