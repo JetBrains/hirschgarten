@@ -2,6 +2,9 @@
   <id>org.jetbrains.bsp</id>
   <name>Build Server Protocol</name>
   <vendor>JetBrains</vendor>
+  <content>
+    <module name="org.jetbrains.plugins.bsp/ext"/>
+  </content>
 
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.java</depends>
