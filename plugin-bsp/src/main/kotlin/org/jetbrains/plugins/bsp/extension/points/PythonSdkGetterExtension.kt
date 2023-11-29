@@ -28,7 +28,7 @@ public interface PythonSdkGetterExtension {
 
 private val ep =
   ExtensionPointName.create<PythonSdkGetterExtension>(
-    "com.intellij.pythonSdkGetterExtension",
+    "org.jetbrains.bsp.pythonSdkGetterExtension",
   )
 
 public fun pythonSdkGetterExtension(): PythonSdkGetterExtension? =

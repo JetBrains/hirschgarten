@@ -30,7 +30,7 @@ public interface BspProjectOpenProcessorExtension : WithBuildToolId {
 
   public companion object {
     internal val ep =
-      ExtensionPointName.create<BspProjectOpenProcessorExtension>("com.intellij.bspProjectOpenProcessorExtension")
+      ExtensionPointName.create<BspProjectOpenProcessorExtension>("org.jetbrains.bsp.bspProjectOpenProcessorExtension")
   }
 }
 

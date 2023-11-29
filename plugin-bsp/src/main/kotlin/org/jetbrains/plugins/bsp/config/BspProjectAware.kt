@@ -20,7 +20,7 @@ public interface BspProjectAwareExtension {
 
   public companion object {
     public val ep: ExtensionPointName<BspProjectAwareExtension> =
-      ExtensionPointName.create("com.intellij.bspProjectAwareExtension")
+      ExtensionPointName.create("org.jetbrains.bsp.bspProjectAwareExtension")
   }
 }
 

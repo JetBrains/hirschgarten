@@ -9,34 +9,36 @@
   <depends optional="true" config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
 
   <extensionPoints>
-    <extensionPoint qualifiedName="com.intellij.bspConnectionDetailsGeneratorExtension"
-                    interface="org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension"
+    <extensionPoint interface="org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension"
+                    name="bspConnectionDetailsGeneratorExtension"
                     dynamic="true"/>
-    <extensionPoint qualifiedName="com.intellij.bspBuildTargetClassifierExtension"
+    <extensionPoint name="bspBuildTargetClassifierExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension"
                     dynamic="true"/>
-    <extensionPoint qualifiedName="com.intellij.pythonSdkGetterExtension"
+    <extensionPoint name="pythonSdkGetterExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension"
                     dynamic="true"/>
-    <extensionPoint qualifiedName="com.intellij.scalaSdkGetterExtension"
+    <extensionPoint name="scalaSdkGetterExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.ScalaSdkGetterExtension"
                     dynamic="true"/>
-    <extensionPoint qualifiedName="com.intellij.bspProjectOpenProcessorExtension"
+    <extensionPoint name="bspProjectOpenProcessorExtension"
                     interface="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension"
                     dynamic="true"/>
-    <extensionPoint qualifiedName="com.intellij.buildToolAssetsExtension"
+    <extensionPoint name="buildToolAssetsExtension"
                     interface="org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension"
                     dynamic="true"/>
-    <extensionPoint qualifiedName="com.intellij.bspProjectAwareExtension"
+    <extensionPoint name="bspProjectAwareExtension"
                     interface="org.jetbrains.plugins.bsp.config.BspProjectAwareExtension"
                     dynamic="true"/>
   </extensionPoints>
+
+  <extensions defaultExtensionNs="org.jetbrains.bsp">
+    <buildToolAssetsExtension
+      implementation="org.jetbrains.plugins.bsp.assets.BspAssetsExtension"/>
+  </extensions>
+
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
-
-    <buildToolAssetsExtension
-      implementation="org.jetbrains.plugins.bsp.assets.BspAssetsExtension"
-    />
 
     <workspaceModel.fileIndexContributor implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
 
