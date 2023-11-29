@@ -6,7 +6,8 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClas
 public interface BspBuildTargetClassifierExtension : BspBuildTargetClassifier {
   public companion object {
     private val ep =
-      ExtensionPointName.create<BspBuildTargetClassifierExtension>("com.intellij.bspBuildTargetClassifierExtension")
+      ExtensionPointName
+        .create<BspBuildTargetClassifierExtension>("org.jetbrains.bsp.bspBuildTargetClassifierExtension")
 
     public fun extensions(): List<BspBuildTargetClassifierExtension> =
       ep.extensionList

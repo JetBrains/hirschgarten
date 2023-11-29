@@ -13,7 +13,7 @@ public interface ScalaSdkGetterExtension {
 
 private val ep =
   ExtensionPointName.create<ScalaSdkGetterExtension>(
-    "com.intellij.scalaSdkGetterExtension",
+    "org.jetbrains.bsp.scalaSdkGetterExtension",
   )
 
 public fun scalaSdkGetterExtension(): ScalaSdkGetterExtension? =
