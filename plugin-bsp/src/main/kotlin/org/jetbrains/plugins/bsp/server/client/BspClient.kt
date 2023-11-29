@@ -6,9 +6,10 @@ import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.LogMessageParams
 import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import ch.epfl.scala.bsp4j.ShowMessageParams
-import ch.epfl.scala.bsp4j.TaskDataKind
+import ch.epfl.scala.bsp4j.TaskFinishDataKind
 import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
+import ch.epfl.scala.bsp4j.TaskStartDataKind
 import ch.epfl.scala.bsp4j.TaskStartParams
 import ch.epfl.scala.bsp4j.TestFinish
 import ch.epfl.scala.bsp4j.TestStart
@@ -43,14 +44,14 @@ public class BspClient(
   override fun onBuildTaskStart(params: TaskStartParams?) {
     onBuildEvent()
     when (params?.dataKind) {
-      TaskDataKind.TEST_START -> {
+      TaskStartDataKind.TEST_START -> {
         val gson = Gson()
         val testStart = gson.fromJson(params.data as JsonObject, TestStart::class.java)
         val isSuite = if (params.message.isNullOrBlank()) false else params.message.take(3) == "<S>"
         bspTestConsole.startTest(isSuite, testStart.displayName)
       }
 
-      TaskDataKind.TEST_TASK -> {
+      TaskStartDataKind.TEST_TASK -> {
         // ignore
       }
     }
@@ -63,7 +64,7 @@ public class BspClient(
   override fun onBuildTaskFinish(params: TaskFinishParams?) {
     onBuildEvent()
     when (params?.dataKind) {
-      TaskDataKind.TEST_FINISH -> {
+      TaskFinishDataKind.TEST_FINISH -> {
         val gson = Gson()
         val testFinish = gson.fromJson(params.data as JsonObject, TestFinish::class.java)
         val isSuite = if (params.message.isNullOrBlank()) false else params.message.take(3) == "<S>"
@@ -74,7 +75,7 @@ public class BspClient(
         }
       }
 
-      TaskDataKind.TEST_REPORT -> {}
+      TaskFinishDataKind.TEST_REPORT -> {}
     }
   }
 
