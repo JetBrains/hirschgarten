@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 
 @Service(Service.Level.PROJECT)
 public class BspConsoleService(project: Project) {

@@ -4,25 +4,12 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
+import org.jetbrains.plugins.bsp.extension.points.BuildToolId
+import org.jetbrains.plugins.bsp.extension.points.WithBuildToolId
+import org.jetbrains.plugins.bsp.extension.points.bspBuildToolId
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
 import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
 import javax.swing.Icon
-
-// TODO: move to a better package
-public data class BuildToolId(public val id: String)
-
-// TODO: move to a better package
-public interface WithBuildToolId {
-  public val buildToolId: BuildToolId
-}
-
-// TODO: move to a better package
-internal fun <T : WithBuildToolId> ExtensionPointName<T>.withBuildToolId(buildToolId: BuildToolId): T? =
-  this.extensions.find { it.buildToolId == buildToolId }
-
-internal fun <T : WithBuildToolId> ExtensionPointName<T>.withBuildToolIdOrDefault(buildToolId: BuildToolId): T =
-  this.extensions.find { it.buildToolId == buildToolId }
-    ?: withBuildToolId(BuildToolId("bsp"))
-    ?: error("Missing default implementation for extension: ${this.javaClass.name}")
 
 public interface BspProjectOpenProcessorExtension : WithBuildToolId {
   /**
@@ -47,7 +34,7 @@ public interface BspProjectOpenProcessorExtension : WithBuildToolId {
   }
 }
 
-internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(BuildToolId("bsp")) {
+internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(bspBuildToolId) {
   override val name: String = BspPluginBundle.message("plugin.name")
 
   override val icon: Icon = BspPluginIcons.bsp

@@ -8,6 +8,7 @@ import com.intellij.testFramework.registerExtension
 import com.intellij.testFramework.utils.vfs.createFile
 import com.intellij.util.application
 import io.kotest.matchers.shouldBe
+import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
