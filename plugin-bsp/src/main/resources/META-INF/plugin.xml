@@ -7,7 +7,6 @@
   <depends>com.intellij.java</depends>
   <depends>org.jetbrains.kotlin</depends>
   <depends optional="true" config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
-  <depends optional="true" config-file="bsp-withScala.xml">org.intellij.scala</depends>
 
   <extensionPoints>
     <extensionPoint qualifiedName="com.intellij.bspConnectionDetailsGeneratorExtension"

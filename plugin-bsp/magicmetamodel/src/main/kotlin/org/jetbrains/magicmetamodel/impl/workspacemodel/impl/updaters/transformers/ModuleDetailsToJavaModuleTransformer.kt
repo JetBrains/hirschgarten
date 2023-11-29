@@ -109,8 +109,8 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun toScalaAddendum(inputEntity: ModuleDetails): ScalaAddendum? {
     val scalaBuildTarget = extractScalaBuildTarget(inputEntity.target)
-    val version = scalaBuildTarget?.scalaVersion?.scalaVersionToScalaSdkName() ?: return null
-    val jars = scalaBuildTarget.jars
+    val version = ScalaUtil.scalaVersionToScalaSdkName(scalaBuildTarget?.scalaVersion) ?: return null
+    val jars = scalaBuildTarget?.jars ?: return null
     return ScalaAddendum(
       scalaSdkName = version,
       scalaSdkLibraries = jars.map { Paths.get(URI(it)).toFile().name },
@@ -125,4 +125,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
 public fun String.javaVersionToJdkName(projectName: String): String = "$projectName-$this"
 
-public fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
+public object ScalaUtil {
+  public fun scalaVersionToScalaSdkName(version: String?): String? = version?.let { "scala-sdk-$version" }
+}

@@ -1,6 +1,0 @@
-<idea-plugin>
-  <extensions defaultExtensionNs="com.intellij">
-    <scalaSdkGetterExtension
-        implementation="org.jetbrains.plugins.bsp.extension.points.ScalaSdkGetter" />
-  </extensions>
-</idea-plugin>
