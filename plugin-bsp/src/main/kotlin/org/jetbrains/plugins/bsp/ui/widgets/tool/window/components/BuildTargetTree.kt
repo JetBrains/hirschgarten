@@ -6,10 +6,10 @@ import com.intellij.util.PlatformIcons
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
 import java.awt.Component
 import java.awt.event.MouseListener
 import javax.swing.Icon
@@ -47,25 +47,25 @@ public class BuildTargetTree(
   }
 
   private fun generateTree() {
-    val bspBuildTargetClassifierProvider =
-      BspBuildTargetClassifierProvider(buildToolId.id, BspBuildTargetClassifierExtension.extensions())
+    val bspBuildTargetClassifier = BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
+
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
           it.id,
           it,
-          bspBuildTargetClassifierProvider.getBuildTargetPath(it.id),
-          bspBuildTargetClassifierProvider.getBuildTargetName(it.id),
+          bspBuildTargetClassifier.calculateBuildTargetPath(it.id),
+          bspBuildTargetClassifier.calculateBuildTargetName(it.id),
         )
       } + invalidTargets.map {
         BuildTargetTreeIdentifier(
           it,
           null,
-          bspBuildTargetClassifierProvider.getBuildTargetPath(it),
-          bspBuildTargetClassifierProvider.getBuildTargetName(it),
+          bspBuildTargetClassifier.calculateBuildTargetPath(it),
+          bspBuildTargetClassifier.calculateBuildTargetName(it),
         )
       },
-      bspBuildTargetClassifierProvider.getSeparator(),
+      bspBuildTargetClassifier.separator,
     )
   }
 
