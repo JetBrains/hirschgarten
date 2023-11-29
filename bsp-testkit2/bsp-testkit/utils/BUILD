@@ -1,13 +1,13 @@
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
-java_library(
+kt_jvm_library(
     name = "FlatMapUtils",
-    srcs = ["FlatMapUtils.java"],
+    srcs = ["FlatMapUtils.kt"],
 )
 
-scala_library(
+kt_jvm_library(
     name = "JsonComparator",
-    srcs = ["JsonComparator.scala"],
+    srcs = ["JsonComparator.kt"],
     visibility = ["//visibility:public"],
     deps = [
         "FlatMapUtils",

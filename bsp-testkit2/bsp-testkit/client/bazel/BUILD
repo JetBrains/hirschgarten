@@ -1,8 +1,8 @@
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
-scala_library(
+kt_jvm_library(
     name = "bazel",
-    srcs = glob(["*.scala"]),
+    srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
         "@maven//:ch_epfl_scala_bsp4j",
