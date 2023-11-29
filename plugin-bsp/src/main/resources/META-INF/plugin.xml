@@ -12,8 +12,8 @@
     <extensionPoint interface="org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension"
                     name="bspConnectionDetailsGeneratorExtension"
                     dynamic="true"/>
-    <extensionPoint name="bspBuildTargetClassifierExtension"
-                    interface="org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension"
+    <extensionPoint name="buildTargetClassifierExtension"
+                    interface="org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension"
                     dynamic="true"/>
     <extensionPoint name="pythonSdkGetterExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension"
@@ -35,6 +35,9 @@
   <extensions defaultExtensionNs="org.jetbrains.bsp">
     <buildToolAssetsExtension
       implementation="org.jetbrains.plugins.bsp.assets.BspAssetsExtension"/>
+
+    <buildTargetClassifierExtension
+      implementation="org.jetbrains.plugins.bsp.extension.points.DefaultBuildTargetClassifierExtension"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

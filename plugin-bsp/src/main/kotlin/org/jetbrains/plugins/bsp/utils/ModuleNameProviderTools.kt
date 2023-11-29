@@ -4,18 +4,19 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.plugins.bsp.config.buildToolId
-import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspBuildTargetClassifierProvider
+import org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.extension.points.BuildToolId
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 
 public fun Project.findModuleNameProvider(): ModuleNameProvider? =
-  this.buildToolId.takeIf { it.id != "bsp" }?.let { createModuleNameProvider(it.id) }
+  this.buildToolId.takeIf { it.id != "bsp" }?.let { createModuleNameProvider(it) }
 
-private fun createModuleNameProvider(toolName: String): ModuleNameProvider {
-  val targetClassifier =
-    BspBuildTargetClassifierProvider(toolName, BspBuildTargetClassifierExtension.extensions())
+private fun createModuleNameProvider(buildToolId: BuildToolId): ModuleNameProvider {
+  val bspBuildTargetClassifier = BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
+
   return {
-    val sanitizedName = targetClassifier.getBuildTargetName(it).replaceDots()
-    targetClassifier.getBuildTargetPath(it)
+    val sanitizedName = bspBuildTargetClassifier.calculateBuildTargetName(it).replaceDots()
+    bspBuildTargetClassifier.calculateBuildTargetPath(it)
       .joinToString(".", postfix = ".$sanitizedName") { pathElement -> pathElement.replaceDots() }
   }
 }
