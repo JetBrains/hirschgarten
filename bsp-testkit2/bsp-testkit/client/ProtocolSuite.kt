@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.ExecutionException
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * This file contains test which are not specific to any language or build tool.
@@ -37,8 +38,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("Before initialization server responds with an error")
-  fun errorBeforeInitialization() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20)) { session ->
+  fun errorBeforeInitialization() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath) { session ->
       try {
         session.server.workspaceReload().await()
       } catch (e: ExecutionException) {
@@ -52,8 +53,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("Initialization succeeds")
-  fun initializationSucceeds() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20)) { session ->
+  fun initializationSucceeds() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath) { session ->
       val initializationResult = session.server.buildInitialize(initializeParamsNoCapabilities).await()
       session.server.onBuildInitialized()
       session.close()
@@ -63,8 +64,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("Server exits with 0 after a shutdown request")
-  fun exitAfterShutdown() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20), true) { session ->
+  fun exitAfterShutdown() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath, true) { session ->
       session.server.buildInitialize(initializeParamsNoCapabilities).await()
       session.server.onBuildInitialized()
       session.server.buildShutdown().await()
@@ -76,8 +77,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("Server exits with 1 without a shutdown request")
-  fun exitNoShutdown() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20), true) { session ->
+  fun exitNoShutdown() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath, true) { session ->
       session.server.onBuildExit()
       val sessionResult = session.serverClosed.await()
       assertEquals(1, sessionResult.exitCode)
@@ -86,8 +87,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("No build targets are returned if the client has no capabilities")
-  fun buildTargets() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20)) { session ->
+  fun buildTargets() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath) { session ->
       withLifetime(initializeParamsNoCapabilities, session) {
         val result = session.server.workspaceBuildTargets().await()
         assertTrue(result.targets.isEmpty())
@@ -97,8 +98,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("Reload request works if is supported")
-  fun reload() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20)) { session ->
+  fun reload() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         if (capabilities.canReload) {
           session.server.workspaceReload()
@@ -109,8 +110,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("Target sources list is empty if given no targets")
-  fun sources() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20)) { session ->
+  fun sources() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath) { session ->
       withLifetime(initializeParamsFullCapabilities, session) {
         val result = session.server.buildTargetSources(SourcesParams(ArrayList())).await()
         assertTrue(result.items.isEmpty())
@@ -120,8 +121,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("Dependency sources list is empty if given no targets (if supported)")
-  fun dependencySources() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20)) { session ->
+  fun dependencySources() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         if (capabilities.dependencySourcesProvider) {
           val result = session.server.buildTargetDependencySources(DependencySourcesParams(ArrayList())).await()
@@ -133,8 +134,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("Dependency modules list is empty if given no targets (if supported)")
-  fun dependencyModules() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20)) { session ->
+  fun dependencyModules() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         if (capabilities.dependencyModulesProvider) {
           val result = session.server.buildTargetDependencyModules(DependencyModulesParams(ArrayList())).await()
@@ -146,8 +147,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("Resources list is empty if given no targets (if supported)")
-  fun resources() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20)) { session ->
+  fun resources() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         if (capabilities.resourcesProvider) {
           val result = session.server.buildTargetResources(ResourcesParams(ArrayList())).await()
@@ -159,8 +160,8 @@ class ProtocolSuite(private val workspacePath: Path) {
 
   @Test
   @DisplayName("Clean cache method works")
-  fun cleanCache() = runTest {
-    withSession(workspacePath, Duration.ofSeconds(20)) { session ->
+  fun cleanCache() = runTest(timeout = 20.seconds) {
+    withSession(workspacePath) { session ->
       withLifetime(initializeParamsFullCapabilities, session) {
         session.server.buildTargetCleanCache(CleanCacheParams(ArrayList())).await()
       }
