@@ -19,7 +19,7 @@ suspend fun withSession(
   test: suspend (Session) -> Unit,
 ) {
   coroutineScope {
-    val session = Session(workspace, this)
+    val session = Session(workspace)
     val testResult = this.async { test(session) }
     try {
       withTimeout(timeout) {
