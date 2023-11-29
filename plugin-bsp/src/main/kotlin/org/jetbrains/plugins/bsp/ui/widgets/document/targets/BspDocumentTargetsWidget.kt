@@ -20,7 +20,7 @@ import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.flow.open.withBuildToolIdOrDefault
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
 import java.net.URI

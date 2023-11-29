@@ -11,7 +11,7 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import io.kotest.matchers.shouldBe
 import org.jetbrains.plugins.bsp.config.buildToolId
-import org.jetbrains.plugins.bsp.flow.open.BuildToolId
+import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationType

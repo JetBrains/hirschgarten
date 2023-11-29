@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.assets
 
 import com.intellij.openapi.extensions.ExtensionPointName
-import org.jetbrains.plugins.bsp.flow.open.WithBuildToolId
+import org.jetbrains.plugins.bsp.extension.points.WithBuildToolId
 import javax.swing.Icon
 
 public interface BuildToolAssetsExtension : WithBuildToolId {
