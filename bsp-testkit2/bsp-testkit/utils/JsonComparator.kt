@@ -41,9 +41,9 @@ object JsonComparator {
       element.isJsonArray -> {
         val array = element.asJsonArray
         val treeSet = TreeSet(comparator)
-        array.forEach { element -> treeSet.add(deepSort(element)) }
+        array.forEach { elem -> treeSet.add(deepSort(elem)) }
         val sortedArray = JsonArray()
-        treeSet.forEach { element -> sortedArray.add(element) }
+        treeSet.forEach { elem -> sortedArray.add(elem) }
         sortedArray
       }
 
