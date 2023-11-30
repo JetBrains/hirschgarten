@@ -111,6 +111,14 @@ open class TestClient(
     }
   }
 
+  fun testRustWorkspace(timeout: Duration, params: RustWorkspaceParams, expectedResult: RustWorkspaceResult) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session, _ ->
+      val result = session.server.rustWorkspace(transformedParams).await()
+      assertJsonEquals(expectedResult, result)
+    }
+  }
+
   fun testSources(timeout: Duration, params: SourcesParams, expectedResult: SourcesResult) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
@@ -222,9 +230,8 @@ open class TestClient(
         session.server.buildTargetCppOptions(CppOptionsParams(cppTargetIds)).await()
         val pythonTargetIds = targets.filter { it.languageIds.contains("python") }.map { it.id }
         session.server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetIds)).await()
-        // TODO: There should be a provider for this
-        //  val rustTargetIds = targets.filter { it.languageIds.contains("rust") }.map { it.id }
-        //  val rustWorkspace = session.server.rustWorkspace(RustWorkspaceParams(rustTargetIds)).await()
+        val rustTargetIds = targets.filter { it.languageIds.contains("rust") }.map { it.id }
+        session.server.rustWorkspace(RustWorkspaceParams(rustTargetIds)).await()
       }
     }
   }
