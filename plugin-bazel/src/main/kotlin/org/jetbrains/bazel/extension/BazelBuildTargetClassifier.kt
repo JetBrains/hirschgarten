@@ -1,16 +1,18 @@
 package org.jetbrains.bazel.extension
 
+import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.plugins.bsp.extension.points.BspBuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 
-internal class BazelBuildTargetClassifier : BspBuildTargetClassifierExtension {
-  override fun name(): String = "bazelbsp"
+internal class BazelBuildTargetClassifier : BuildTargetClassifierExtension {
+  override val buildToolId: BuildToolId = bazelBspBuildToolId
 
-  override fun separator(): String = "/"
+  override val separator: String = "/"
 
   private val bazelLabelRegex = """@?@?(?<repository>.*)//(?<package>.*):(?<target>.*)""".toRegex()
 
-  override fun getBuildTargetPath(buildTargetIdentifier: BuildTargetId): List<String> {
+  override fun calculateBuildTargetPath(buildTargetIdentifier: BuildTargetId): List<String> {
     return bazelLabelRegex.find(buildTargetIdentifier)?.groups
       ?.get("package")
       ?.value
@@ -19,6 +21,6 @@ internal class BazelBuildTargetClassifier : BspBuildTargetClassifierExtension {
       .orEmpty()
   }
 
-  override fun getBuildTargetName(buildTargetIdentifier: BuildTargetId): String =
+  override fun calculateBuildTargetName(buildTargetIdentifier: BuildTargetId): String =
     bazelLabelRegex.find(buildTargetIdentifier)?.groups?.get("target")?.value ?: buildTargetIdentifier
 }
