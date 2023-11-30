@@ -6,29 +6,32 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.bsp</depends>
 
-    <extensions defaultExtensionNs="com.intellij">
+    <extensions defaultExtensionNs="org.jetbrains.bsp">
         <bspProjectOpenProcessorExtension
-                implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessorExtension"/>
+            implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessorExtension"/>
 
+        <buildToolAssetsExtension
+            implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
+
+        <bspConnectionDetailsGeneratorExtension
+            implementation="org.jetbrains.bazel.flow.open.BazelBspDetailsConnectionGenerator"/>
+
+        <buildTargetClassifierExtension
+            implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
+
+        <bspProjectAwareExtension
+            implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
         <projectOpenProcessor
                 implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
 
-        <buildToolAssetsExtension
-                implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
-
-        <bspConnectionDetailsGeneratorExtension
-                implementation="org.jetbrains.bazel.flow.open.BazelBspDetailsConnectionGenerator"/>
-        <bspBuildTargetClassifierExtension
-                implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
-        <bspProjectAwareExtension implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
         <externalSystemUnlinkedProjectAware
                 id="Bazel BSP"
                 implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
         <externalIconProvider key="bazelbsp" implementationClass="org.jetbrains.bazel.config.BazelExternalSystemIconProvider"/>
 
-        <!--        <bspConnectionDetailsGeneratorExtension-->
-        <!--                implementation="org.jetbrains.bazel.extension.BazelBspConnectionDetailsGenerator"-->
-        <!--        />-->
         <fileType
                 name="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkFileType"
