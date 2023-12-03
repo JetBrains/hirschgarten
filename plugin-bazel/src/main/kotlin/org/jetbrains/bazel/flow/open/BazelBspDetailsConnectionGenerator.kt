@@ -65,7 +65,7 @@ internal class BazelBspDetailsConnectionGenerator : BspConnectionDetailsGenerato
     ExternalCommandUtils.calculateNeededJars(
       org = "org.jetbrains.bsp",
       name = "bazel-bsp",
-      version = "3.1.0-20231116-0c942d9-NIGHTLY",
+      version = "3.1.0-20231201-80ec82c-NIGHTLY",
     )
       .joinToString(":"),
     "org.jetbrains.bsp.bazel.install.Install",
