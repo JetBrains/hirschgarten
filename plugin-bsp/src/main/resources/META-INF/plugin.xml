@@ -18,8 +18,8 @@
     <extensionPoint name="pythonSdkGetterExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension"
                     dynamic="true"/>
-    <extensionPoint name="scalaSdkGetterExtension"
-                    interface="org.jetbrains.plugins.bsp.extension.points.ScalaSdkGetterExtension"
+    <extensionPoint name="scalaSdkExtension"
+                    interface="org.jetbrains.plugins.bsp.extension.points.ScalaSdkExtension"
                     dynamic="true"/>
     <extensionPoint name="bspProjectOpenProcessorExtension"
                     interface="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension"

@@ -55,8 +55,8 @@ import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
-import org.jetbrains.plugins.bsp.extension.points.scalaSdkGetterExtension
-import org.jetbrains.plugins.bsp.extension.points.scalaSdkGetterExtensionExists
+import org.jetbrains.plugins.bsp.extension.points.scalaSdkExtension
+import org.jetbrains.plugins.bsp.extension.points.scalaSdkExtensionExists
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
@@ -139,7 +139,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         calculateAllPythonSdkInfosSubtask(projectDetails)
       }
     }
-    if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkGetterExtensionExists()) {
+    if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkExtensionExists()) {
       indeterminateStep(text = "Calculating all unique scala sdk infos") {
         calculateAllScalaSdkInfosSubtask(projectDetails)
       }
@@ -348,7 +348,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun addBspFetchedScalaSdks() {
-    scalaSdkGetterExtension()?.let { extension ->
+    scalaSdkExtension()?.let { extension ->
       withSubtask("add-bsp-fetched-scala-sdks", BspPluginBundle.message("console.task.model.add.scala.fetched.sdks")) {
         val modifiableProvider = IdeModifiableModelsProviderImpl(project)
 

@@ -4,7 +4,7 @@ import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider
 import org.jetbrains.plugins.bsp.server.tasks.ScalaSdk
 
-public interface ScalaSdkGetterExtension {
+public interface ScalaSdkExtension {
   public fun addScalaSdk(
     scalaSdk: ScalaSdk,
     modelsProvider: IdeModifiableModelsProvider,
@@ -12,12 +12,12 @@ public interface ScalaSdkGetterExtension {
 }
 
 private val ep =
-  ExtensionPointName.create<ScalaSdkGetterExtension>(
-    "org.jetbrains.bsp.scalaSdkGetterExtension",
+  ExtensionPointName.create<ScalaSdkExtension>(
+    "org.jetbrains.bsp.scalaSdkExtension",
   )
 
-public fun scalaSdkGetterExtension(): ScalaSdkGetterExtension? =
+public fun scalaSdkExtension(): ScalaSdkExtension? =
   ep.extensionList.firstOrNull()
 
-public fun scalaSdkGetterExtensionExists(): Boolean =
+public fun scalaSdkExtensionExists(): Boolean =
   ep.extensionList.isNotEmpty()

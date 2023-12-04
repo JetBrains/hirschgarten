@@ -242,11 +242,9 @@ public data class KotlinAddendumState(
 // TODO: What is it needed for? It's the same as ScalaAddendum
 public data class ScalaAddendumState(
   var scalaSdkName: String = "",
-  var scalaSdkLibraries: List<String> = emptyList(),
 ) : ConvertableFromState<ScalaAddendum> {
   override fun fromState(): ScalaAddendum = ScalaAddendum(
     scalaSdkName = scalaSdkName,
-    scalaSdkLibraries = scalaSdkLibraries,
   )
 }
 
@@ -272,7 +270,6 @@ public fun KotlinAddendum.toState(): KotlinAddendumState = KotlinAddendumState(
 
 public fun ScalaAddendum.toState(): ScalaAddendumState = ScalaAddendumState(
   scalaSdkName = scalaSdkName,
-  scalaSdkLibraries = scalaSdkLibraries,
 )
 
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(
