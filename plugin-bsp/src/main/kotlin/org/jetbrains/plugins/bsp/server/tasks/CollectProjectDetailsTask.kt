@@ -46,6 +46,7 @@ import org.jetbrains.magicmetamodel.impl.PerformanceLogger
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesScala
@@ -55,8 +56,9 @@ import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
-import org.jetbrains.plugins.bsp.extension.points.scalaSdkExtension
-import org.jetbrains.plugins.bsp.extension.points.scalaSdkExtensionExists
+import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
+import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
+import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
@@ -77,12 +79,6 @@ public data class PythonSdk(
   val name: String,
   val interpreterUri: String,
   val dependencies: List<DependencySourcesItem>,
-)
-
-public data class ScalaSdk(
-  val name: String,
-  val scalaVersion: String,
-  val sdkJars: List<String>,
 )
 
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
@@ -250,7 +246,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     extractScalaBuildTarget(target)
       ?.let {
         ScalaSdk(
-          name = "${target.id.uri}-${it.scalaVersion}",
+          name = it.scalaVersion.scalaVersionToScalaSdkName(),
           scalaVersion = it.scalaVersion,
           sdkJars = it.jars
         )
