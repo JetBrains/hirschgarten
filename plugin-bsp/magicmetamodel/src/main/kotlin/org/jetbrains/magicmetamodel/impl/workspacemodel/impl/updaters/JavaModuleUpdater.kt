@@ -59,12 +59,6 @@ internal class JavaModuleWithSourcesUpdater(
         LibraryDependency(addendum.scalaSdkName, true),
         entityToAdd.genericModuleInfo.name
       ))
-      addendum.scalaSdkLibraries.forEach {
-        returnDependencies.add(toModuleDependencyItemLibraryDependency(
-          LibraryDependency(it, true),
-          entityToAdd.genericModuleInfo.name
-        ))
-      }
     }
     return returnDependencies
   }

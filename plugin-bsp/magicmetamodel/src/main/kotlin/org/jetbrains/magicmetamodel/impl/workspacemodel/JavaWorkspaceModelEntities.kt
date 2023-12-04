@@ -48,5 +48,4 @@ public data class KotlinAddendum(
 
 public data class ScalaAddendum(
   val scalaSdkName: String,
-  val scalaSdkLibraries: List<String>,
 )
