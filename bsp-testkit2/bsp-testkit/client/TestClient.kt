@@ -12,6 +12,7 @@ import kotlin.time.Duration
 suspend fun withSession(
     workspace: Path,
     ignoreEarlyExit: Boolean = false,
+    withShutdown: Boolean = true,
     test: suspend (Session) -> Unit,
 ) = coroutineScope {
     val session = Session(workspace)
@@ -26,8 +27,10 @@ suspend fun withSession(
       }
     }
 
-    val result = session.serverClosed.await()
-    println("Server exited with code ${result.exitCode} and stderr:\n${result.stderr}")
+    if (withShutdown) {
+      val result = session.serverClosed.await()
+      println("Server exited with code ${result.exitCode} and stderr:\n${result.stderr}")
+    }
   }
 
 
