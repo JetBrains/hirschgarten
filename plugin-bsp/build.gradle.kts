@@ -140,14 +140,6 @@ tasks {
 
 tasks {
   test {
-    if (project.findProperty("exclude.integration.test") == "true") {
-      filter {
-        excludeTest(
-          "org.jetbrains.plugins.bsp.integrationtest.NonOverlappingTest",
-          "Compute non overlapping targets for bazelbuild_bazel project"
-        )
-      }
-    }
     classpath -= classpath.filter { it.name.contains("kotlin-compiler-embeddable") }
   }
 }
