@@ -37,7 +37,7 @@ import kotlin.time.measureTimedValue
 // TODO https://youtrack.jetbrains.com/issue/BAZEL-629
 private const val BAZEL_REPOSITORY_TAG = "6.0.0"
 private const val BAZEL_EXECUTABLE_VERSION = "5.4.0"
-private const val BAZEL_BSP_VERSION = "3.1.0-20231201-80ec82c-NIGHTLY"
+private const val BAZEL_BSP_VERSION = "3.1.0-20231205-ec256a9-NIGHTLY"
 
 class NonOverlappingTest : MockProjectBaseTest() {
   @Test
