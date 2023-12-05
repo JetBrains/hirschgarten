@@ -32,7 +32,6 @@ object UnitTests : IntellijTestsBuildType(
         gradle {
             this.name = "run unit tests"
             tasks = "test"
-            gradleParams = "-x :probe:test -Pexclude.integration.test=true"
             jdkHome = "%env.JDK_17_0%"
         }
     }
