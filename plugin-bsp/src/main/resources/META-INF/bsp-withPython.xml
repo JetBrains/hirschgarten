@@ -1,5 +1,5 @@
 <idea-plugin>
-  <extensions defaultExtensionNs="com.intellij">
+  <extensions defaultExtensionNs="org.jetbrains.bsp">
     <pythonSdkGetterExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.PythonSdkGetter" />
   </extensions>
