@@ -23,6 +23,7 @@ object IntellijBazel : Project({
         }) {
             buildType(IntellijBazelBuild.BuildTheProject)
             buildType(IntellijBazelTests.UnitTests)
+            buildType(IntellijBazelTests.IdeProbeTests)
         }
 
         buildType(ResultsAggregator.IntellijBazelAggregator) {
@@ -47,6 +48,7 @@ object IntellijBazel : Project({
     // setup display order for intellij-bsp pipeline
     buildTypesOrderIds = arrayListOf(
             RelativeId("BuildBuildIntellijBazel"),
+            RelativeId("TestsIdeProbeTests"),
             RelativeId("TestsUnitTests"),
             RelativeId("IntellijBazelResults")
     )
