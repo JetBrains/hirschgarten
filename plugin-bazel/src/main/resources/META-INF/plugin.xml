@@ -69,6 +69,9 @@
         <annotator
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkStringAnnotator"/>
+        <completion.contributor
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkBuiltInCompletionContributor"/>
     </extensions>
 
     <actions>
