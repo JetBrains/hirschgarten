@@ -2,18 +2,11 @@ import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.pluginRepository.PluginRepositoryFactory
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
-    // Java support
-    id("java")
-    // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.9.20"
-    id("org.jetbrains.intellij") version "1.16.0"
-    id("org.jetbrains.changelog") version "2.2.0"
-    id("io.gitlab.arturbosch.detekt") version "1.23.3"
+    alias(libs.plugins.intellij)
+    alias(libs.plugins.changelog)
+    id("intellijbazel.kotlin-conventions")
 }
 
 val myToken: String by project
@@ -22,43 +15,48 @@ val releaseChannel: String by project
 dependencies {
     implementation("io.kotest:kotest-assertions-core:5.7.2")
     implementation("io.get-coursier:coursier_2.13:2.1.7")
-    implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.3")
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.3")
 }
 
-group = properties("pluginGroup")
-version = properties("pluginVersion")
+group = Plugin.group
+version = Plugin.version
 
-// Configure project's dependencies
-repositories {
-    mavenCentral()
+allprojects {
+    tasks.withType<Test>().configureEach {
+        // Uncomment useJUnitPlatform() to run :probe:test locally, for some reason it doesn't run locally without it.
+        // On TC it runs fine
+//        useJUnitPlatform()
+        // disable the malfunctioned platform listener com.intellij.tests.JUnit5TestSessionListener
+        // this listener caused the CI tests to fail with
+        // AlreadyDisposedException: Already disposed: Application (containerState DISPOSE_COMPLETED)
+        // TODO: follow up https://youtrack.jetbrains.com/issue/IDEA-337508/AlreadyDisposedException-Already-disposed-Application-containerState-DISPOSECOMPLETED-after-junit5-tests-on-TeamCity
+        systemProperty("intellij.build.test.ignoreFirstAndLastTests", "true")
+    }
 }
 
-// Set the JVM language level used to compile sources and generate files - Java 11 is required since 2020.3
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+subprojects {
+    apply(plugin = "org.jetbrains.intellij")
+    intellij {
+        version.set(Platform.snapshotVersion)
     }
 }
 
 // Configure Gradle IntelliJ Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    pluginName.set(properties("pluginName"))
-    version.set(properties("platformSnapshotVersion"))
-    type.set(properties("platformType"))
+    pluginName.set(Plugin.name)
+    version.set(Platform.snapshotVersion)
+    type.set(Platform.type)
 
     pluginsRepositories {
         custom("https://plugins.jetbrains.com/plugins/nightly/20329")
     }
 
-    val platformPlugins = properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty)
     val bspPlugin = findLatestCompatibleBspPlugin()
-    plugins.set(platformPlugins + bspPlugin)
+    plugins.set(Platform.plugins + bspPlugin)
 }
 
 fun findLatestCompatibleBspPlugin(): String {
     val pluginId = "org.jetbrains.bsp"
-    val buildVersion = "${properties("platformType")}-${properties("platformVersion")}"
+    val buildVersion = "${Platform.type}-${Platform.version}"
     val version = findLatestCompatiblePluginVersion(pluginId, buildVersion, "nightly")
         ?: error("Couldn't find compatible BSP plugin version")
 
@@ -75,7 +73,7 @@ fun findLatestCompatiblePluginVersion(id: String, buildVersion: String, channel:
 
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
 changelog {
-    version.set(properties("pluginVersion"))
+    version.set(Plugin.version)
     groups.set(emptyList())
 }
 
@@ -87,20 +85,12 @@ changelog {
 //    showReport.set(System.getenv("QODANA_SHOW_REPORT")?.toBoolean() ?: false)
 //}
 
-detekt {
-    autoCorrect = true
-    ignoreFailures = false
-    buildUponDefaultConfig = false
-    config.from(files("$rootDir/detekt.yml"))
-    parallel = true
-}
-
 tasks {
 
     patchPluginXml {
-        version.set(properties("pluginVersion"))
-        sinceBuild.set(properties("pluginSinceBuild"))
-        untilBuild.set(properties("pluginUntilBuild"))
+        version.set(Plugin.version)
+        sinceBuild.set(Plugin.sinceBuild)
+        untilBuild.set(Plugin.untilBuild)
 
         // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
         pluginDescription.set(
@@ -132,7 +122,7 @@ tasks {
     }
 
     runPluginVerifier {
-        ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
+        ideVersions.set(pluginVerifierIdeVersions.split(',').map(String::trim).filter(String::isNotEmpty))
         failureLevel.set(setOf(
             RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS,
             RunPluginVerifierTask.FailureLevel.NOT_DYNAMIC
@@ -168,16 +158,8 @@ tasks {
 
 // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = properties("javaVersion")
-        targetCompatibility = properties("javaVersion")
-    }
-    withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = properties("javaVersion")
-    }
-
-    withType<KotlinCompile> {
-        kotlinOptions.languageVersion = properties("kotlinVersion")
-        kotlinOptions.apiVersion = properties("kotlinVersion")
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
 }
 
