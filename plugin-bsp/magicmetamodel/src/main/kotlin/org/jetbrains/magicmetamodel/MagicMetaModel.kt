@@ -148,6 +148,17 @@ public interface MagicMetaModel {
   public fun loadTarget(targetId: BuildTargetId): MagicMetaModelDiff?
 
   /**
+   * Loads given target and all its dependencies.
+   *
+   * If the project contains shared sources, all "overlapping" targets should be unloaded.
+   * For example, if there are :target1 and :target2 that have the same sources,
+   * and :target1 is currently loaded and :target2 is loaded then after this call *:target1 should no longer be loaded*.
+   *
+   * Requires write action if used with [WorkspaceModel].
+   */
+  public fun loadTargetWithDependencies(targetId: BuildTargetId): MagicMetaModelDiff?
+
+  /**
    * Register a function to be executed when a target has been loaded
    */
   public fun registerTargetLoadListener(function: () -> Unit)

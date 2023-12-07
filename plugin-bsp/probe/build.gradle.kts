@@ -17,6 +17,7 @@ dependencies {
 
 tasks {
   processResources {
+    dependsOn(":buildPlugin")
     from("$rootDir/build/distributions")
   }
   test {

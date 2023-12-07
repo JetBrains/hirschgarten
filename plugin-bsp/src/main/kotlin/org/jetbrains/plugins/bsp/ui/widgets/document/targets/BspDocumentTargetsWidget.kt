@@ -23,6 +23,7 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
+import org.jetbrains.plugins.bsp.ui.actions.LoadTargetWithDependenciesAction
 import java.net.URI
 import javax.swing.Icon
 
@@ -101,6 +102,13 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
           text = { loadedTarget },
         ) { update() }
       )
+      group.addSeparator()
+      group.addAction(
+        LoadTargetWithDependenciesAction(
+          targetId = loadedTarget,
+          text = { loadedTarget },
+        ) { update() }
+      )
     }
   }
 
@@ -109,7 +117,6 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     notLoadedTargetsIds: List<BuildTargetId>,
   ) {
     group.addSeparator(BspPluginBundle.message("widget.available.targets.to.load"))
-
     val actions = notLoadedTargetsIds.map {
       LoadTargetAction(
         targetId = it,
