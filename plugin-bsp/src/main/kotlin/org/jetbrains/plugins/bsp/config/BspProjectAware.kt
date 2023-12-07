@@ -36,7 +36,6 @@ public abstract class BspProjectAware(private val workspace: BspWorkspace) :
           shouldRunInitialSync = true,
           shouldBuildProject = false,
           shouldRunResync = false,
-          shouldReloadConnection = true,
         )
       }
     }

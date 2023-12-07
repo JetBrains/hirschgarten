@@ -15,8 +15,7 @@ public var Project.isBspProject: Boolean
 private const val PROJECT_ROOT_DIR_KEY = "org.jetbrains.bsp.project.root.dir"
 
 public var Project.rootDir: VirtualFile
-  get() = properties.getValueOrThrow(PROJECT_ROOT_DIR_KEY)
-    .let { VirtualFileManager.getInstance().findFileByUrl(it) ?: error("Cannot find file by url (url: $it)") }
+  get() = properties.getVirtualFileOrThrow(PROJECT_ROOT_DIR_KEY)
   set(value) = properties.setValue(PROJECT_ROOT_DIR_KEY, value.url)
 
 private const val BUILD_TOOL_ID_KEY = "org.jetbrains.bsp.build.tool.id"
@@ -27,6 +26,10 @@ public var Project.buildToolId: BuildToolId
 
 private val Project.properties: PropertiesComponent
   get() = PropertiesComponent.getInstance(this)
+
+private fun PropertiesComponent.getVirtualFileOrThrow(key: String): VirtualFile =
+  getValueOrThrow(key)
+    .let { VirtualFileManager.getInstance().findFileByUrl(it) ?: error("Cannot find file by url (url: $it)") }
 
 private fun PropertiesComponent.getValueOrThrow(key: String): String =
   getValue(key) ?: error("$key value not set")

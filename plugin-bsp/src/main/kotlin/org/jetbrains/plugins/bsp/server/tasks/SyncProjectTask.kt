@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspReloadStatusService
-import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
@@ -22,15 +22,9 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
     shouldRunInitialSync: Boolean,
     shouldBuildProject: Boolean,
     shouldRunResync: Boolean,
-    shouldReloadConnection: Boolean,
   ) {
     try {
-      BspReloadStatusService.getInstance(project).startReload()
       saveAllFiles()
-      if (shouldReloadConnection) {
-        reloadConnection()
-      }
-
       if (shouldRunInitialSync) {
         collectProject(SYNC_TASK_ID)
       }
@@ -47,12 +41,6 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
     }
   }
 
-  private fun reloadConnection() {
-    val connection = BspConnectionService.getInstance(project).value
-    connection?.disconnect()
-    connection?.reload()
-  }
-
   private suspend fun collectProject(taskId: String) {
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, taskId)
 
@@ -63,7 +51,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
       message = BspPluginBundle.message("console.task.sync.in.progress"),
       cancelAction = { collectProjectDetailsTask.onCancel() },
     )
-    BspConnectionService.getInstance(project).value!!.connect(taskId) { collectProjectDetailsTask.cancelExecution() }
+    project.connection.connect(taskId) { collectProjectDetailsTask.cancelExecution() }
     try {
       collectProjectDetailsTask.execute(
         name = "Syncing...",

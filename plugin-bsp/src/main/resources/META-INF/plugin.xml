@@ -9,9 +9,6 @@
   <depends optional="true" config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
 
   <extensionPoints>
-    <extensionPoint interface="org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension"
-                    name="bspConnectionDetailsGeneratorExtension"
-                    dynamic="true"/>
     <extensionPoint name="buildTargetClassifierExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension"
                     dynamic="true"/>
@@ -30,6 +27,9 @@
     <extensionPoint name="bspProjectAwareExtension"
                     interface="org.jetbrains.plugins.bsp.config.BspProjectAwareExtension"
                     dynamic="true"/>
+    <extensionPoint name="connectionDetailsProviderExtension"
+                    interface="org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension"
+                    dynamic="true"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bsp">
@@ -38,6 +38,9 @@
 
     <buildTargetClassifierExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.DefaultBuildTargetClassifierExtension"/>
+
+    <connectionDetailsProviderExtension
+      implementation="org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -92,8 +95,6 @@
             icon="/icons/reload.svg"/>
     <action id="Bsp.BuildAndResyncAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.BuildAndResyncAction"
             icon="/icons/buildAndResync.svg"/>
-    <action id="Bsp.RestartAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.RestartAction"
-            icon="/icons/restart.svg"/>
     <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.ConnectAction"
             icon="/icons/connect.svg"/>
 

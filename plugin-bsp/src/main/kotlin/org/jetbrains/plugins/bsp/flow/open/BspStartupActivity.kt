@@ -1,39 +1,47 @@
 package org.jetbrains.plugins.bsp.flow.open
 
+import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.AppUIExecutor
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.PlatformProjectOpenProcessor.Companion.isNewProject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import org.jetbrains.bsp.utils.parseBspConnectionDetails
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspWorkspace
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
-import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFile
-import org.jetbrains.plugins.bsp.flow.open.wizard.ConnectionFileOrNewConnection
-import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizard
-import org.jetbrains.plugins.bsp.flow.open.wizard.NewConnection
-import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionDetailsGeneratorProvider
-import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
-import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
-import org.jetbrains.plugins.bsp.server.connection.BspConnection
-import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
-import org.jetbrains.plugins.bsp.server.connection.BspFileConnection
-import org.jetbrains.plugins.bsp.server.connection.BspGeneratorConnection
+import org.jetbrains.plugins.bsp.extension.points.BuildToolId
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
+import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
+import org.jetbrains.plugins.bsp.server.connection.DefaultBspConnection
+import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.server.tasks.SyncProjectTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 import kotlin.system.exitProcess
+
+private class BspBenchmarkConnectionFileProvider(
+  private val bspConnectionDetails: BspConnectionDetails,
+) : ConnectionDetailsProviderExtension {
+  override val buildToolId: BuildToolId = BuildToolId("bsp benchmark")
+
+  override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean = true
+
+  override fun provideNewConnectionDetails(
+    project: Project,
+    currentConnectionDetails: BspConnectionDetails?,
+  ): BspConnectionDetails =
+    bspConnectionDetails
+}
 
 /**
  * Runs actions after the project has started up and the index is up-to-date.
@@ -44,64 +52,72 @@ import kotlin.system.exitProcess
 public class BspStartupActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
     if (project.isBspProject) {
-      doRunActivity(project)
-      postActivity(project)
+      project.executeForBspProject()
     }
   }
 
-  private suspend fun doRunActivity(project: Project) {
-    registerBspToolWindow(project)
+  private suspend fun Project.executeForBspProject() {
+    executeEveryTime()
 
-    RunConfigurationProducersDisabler(project)
+    if (isNewProject()) {
+      executeForNewProject()
+    }
 
-    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    postActivity()
+  }
 
+  private suspend fun Project.executeEveryTime() {
+    registerBspToolWindow(this)
+    RunConfigurationProducersDisabler(this)
+  }
+
+  private suspend fun Project.executeForNewProject() {
     try {
-      showWizardAndInitializeConnectionIfApplicable(project)
+      runSync(this)
     } catch (e: Exception) {
+      val bspSyncConsole = BspConsoleService.getInstance(this).bspSyncConsole
       bspSyncConsole.startTask(
         taskId = "bsp-pre-import",
         title = BspPluginBundle.message("console.task.pre.import.title"),
         message = BspPluginBundle.message("console.task.pre.import.in.progress"),
       )
-      bspSyncConsole.finishTask("bsp-pre-import",
-        BspPluginBundle.message("console.task.pre.import.failed"), FailureResultImpl(e))
+      bspSyncConsole.finishTask(
+        taskId = "bsp-pre-import",
+        message = BspPluginBundle.message("console.task.pre.import.failed"),
+        result = FailureResultImpl(e),
+      )
     }
   }
 
-  private suspend fun showWizardAndInitializeConnectionIfApplicable(project: Project) {
-    val connection = BspConnectionService.getInstance(project).value
-    val isBspConnectionKnown = isBspConnectionKnownOrThrow(connection)
+  private suspend fun runSync(project: Project) {
+    val connectionDetailsProviderExtension =
+      if (isBenchmark()) benchmarkConnectionFileProvider(project)
+      else ConnectionDetailsProviderExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
 
-    if (project.isNewProject() || !isBspConnectionKnown) {
-      val connectionFileOrNewConnection =
-        if (isBenchmark()) {
-          benchmarkConnection(project)
-        } else {
-          withContext(Dispatchers.EDT) {
-            showWizardAndGetResult(project)
-          }
-        }
+    project.connection = DefaultBspConnection(project, connectionDetailsProviderExtension)
 
-      initializeConnectionOrCloseProject(connectionFileOrNewConnection, project)
+    val wasFirstOpeningSuccessful = connectionDetailsProviderExtension.onFirstOpening(project, project.rootDir)
 
-      if (connectionFileOrNewConnection != null) {
-        SyncProjectTask(project).execute(
-          shouldRunInitialSync = true,
-          shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
-          shouldRunResync = BspFeatureFlags.isBuildProjectOnSyncEnabled,
-          shouldReloadConnection = false,
-        )
+    if (wasFirstOpeningSuccessful) {
+      SyncProjectTask(project).execute(
+        shouldRunInitialSync = true,
+        shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+        shouldRunResync = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+      )
+    } else {
+      // TODO https://youtrack.jetbrains.com/issue/BAZEL-623
+      AppUIExecutor.onUiThread().execute {
+        CloseProjectWindowHelper().windowClosing(project)
       }
     }
   }
 
-  private fun benchmarkConnection(project: Project): ConnectionFile {
+  private fun benchmarkConnectionFileProvider(project: Project): ConnectionDetailsProviderExtension {
     try {
       val connectionFilePath = project.basePath?.toNioPathOrNull()?.resolve(".bsp/bazelbsp.json")
       val connectionFile = VfsUtil.findFileByIoFile(connectionFilePath?.toFile()!!, false)!!
-      val parsed = LocatedBspConnectionDetailsParser.parseFromFile(connectionFile)
-      return ConnectionFile(parsed.bspConnectionDetails!!, parsed.connectionFileLocation)
+      val connectionDetails = connectionFile.parseBspConnectionDetails()!!
+      return BspBenchmarkConnectionFileProvider(connectionDetails)
     } catch (e: Throwable) {
       e.printStackTrace(System.out)
       println("BENCHMARK: Could not create benchmark connection file")
@@ -109,67 +125,7 @@ public class BspStartupActivity : ProjectActivity {
     }
   }
 
-  private fun isBspConnectionKnownOrThrow(connection: BspConnection?): Boolean =
-    if (connection is BspFileConnection) {
-      if (connection.locatedConnectionFile.bspConnectionDetails == null)
-        error("Parsing connection file '${connection.locatedConnectionFile.connectionFileLocation}' failed!")
-      true
-    } else {
-      connection != null
-    }
-
-  private fun showWizardAndGetResult(
-    project: Project,
-  ): ConnectionFileOrNewConnection? {
-    val bspConnectionDetailsGeneratorProvider = BspConnectionDetailsGeneratorProvider(
-      project.rootDir,
-      BspConnectionDetailsGeneratorExtension.extensions(),
-    )
-    val wizard = ImportProjectWizard(project, bspConnectionDetailsGeneratorProvider)
-    return if (wizard.showAndGet()) wizard.connectionFileOrNewConnectionProperty.get()
-    else null
-  }
-
-  private fun initializeConnectionOrCloseProject(
-    connectionFileOrNewConnection: ConnectionFileOrNewConnection?,
-    project: Project,
-  ) =
-    when (connectionFileOrNewConnection) {
-      is NewConnection -> initializeNewConnectionFromGenerator(project, connectionFileOrNewConnection)
-      is ConnectionFile -> initializeConnectionFromFile(project, connectionFileOrNewConnection)
-      null -> {
-        // TODO https://youtrack.jetbrains.com/issue/BAZEL-623
-        AppUIExecutor.onUiThread().execute {
-          CloseProjectWindowHelper().windowClosing(project)
-        }
-      }
-    }
-
-  private fun initializeNewConnectionFromGenerator(
-    project: Project,
-    newConnection: NewConnection,
-  ) {
-    val generator = newConnection.generator
-    val bspGeneratorConnection = BspGeneratorConnection(project, generator)
-
-    val bspConnectionService = BspConnectionService.getInstance(project)
-    bspConnectionService.value = bspGeneratorConnection
-  }
-
-  private fun initializeConnectionFromFile(project: Project, connectionFileInfo: ConnectionFile) {
-    val bspFileConnection = BspFileConnection(
-      project,
-      LocatedBspConnectionDetails(
-        connectionFileInfo.bspConnectionDetails,
-        connectionFileInfo.connectionFile,
-      ),
-    )
-
-    val bspConnectionService = BspConnectionService.getInstance(project)
-    bspConnectionService.value = bspFileConnection
-  }
-
-  private fun postActivity(project: Project) {
-    BspWorkspace.getInstance(project).initialize()
+  private fun Project.postActivity() {
+    BspWorkspace.getInstance(this).initialize()
   }
 }
