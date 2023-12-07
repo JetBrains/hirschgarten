@@ -8,19 +8,19 @@
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">
         <bspProjectOpenProcessorExtension
-            implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessorExtension"/>
+                implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessorExtension"/>
 
         <buildToolAssetsExtension
-            implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
+                implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
 
         <bspConnectionDetailsGeneratorExtension
-            implementation="org.jetbrains.bazel.flow.open.BazelBspDetailsConnectionGenerator"/>
+                implementation="org.jetbrains.bazel.flow.open.BazelBspDetailsConnectionGenerator"/>
 
         <buildTargetClassifierExtension
-            implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
+                implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
 
         <bspProjectAwareExtension
-            implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
+                implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -30,7 +30,9 @@
         <externalSystemUnlinkedProjectAware
                 id="Bazel BSP"
                 implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
-        <externalIconProvider key="bazelbsp" implementationClass="org.jetbrains.bazel.config.BazelExternalSystemIconProvider"/>
+        <externalIconProvider
+                key="bazelbsp"
+                implementationClass="org.jetbrains.bazel.config.BazelExternalSystemIconProvider"/>
 
         <fileType
                 name="Starlark"
@@ -72,6 +74,9 @@
         <completion.contributor
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkBuiltInCompletionContributor"/>
+        <completion.contributor
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkParamsCompletionContributor"/>
     </extensions>
 
     <actions>

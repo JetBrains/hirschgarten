@@ -4,7 +4,7 @@ import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixture4TestC
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.junit.Test
 
-class StarlarkBuiltInCompletionProviderTest : LightPlatformCodeInsightFixture4TestCase() {
+class StarlarkBuiltInCompletionContributorTest : LightPlatformCodeInsightFixture4TestCase() {
   @Test
   fun `should complete buildIn const`() {
     // given
