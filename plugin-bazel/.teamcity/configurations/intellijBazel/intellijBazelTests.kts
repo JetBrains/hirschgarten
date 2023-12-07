@@ -83,7 +83,7 @@ object IdeProbeTests : IntellijTestsBuildType(
             set -euxo pipefail
 
             #turn on virtual display for ide-probe tests
-            sed -i '/driver.vmOptions = \[ "-Dgit.process.ignored=false", "-Xms4g", "-Xmx4g" \]/a \\n  driver.display = "xvfb"\n' ./probe-setup/src/main/resources/ideprobe.conf
+            sed -i '/driver.vmOptions = \[ "-Dgit.process.ignored=false", "-Xms4g", "-Xmx12g" \]/a \\n  driver.display = "xvfb"\n' ./probe-setup/src/main/resources/ideprobe.conf
         """.trimIndent()
     }
 
@@ -96,13 +96,14 @@ object IdeProbeTests : IntellijTestsBuildType(
     gradle {
         this.name = "run ide-probe tests"
         tasks = ":probe:test"
+        gradleParams = "-Dorg.gradle.jvmargs=-Xmx12g"
         jdkHome = "%env.JDK_17_0%"
         jvmArgs = "-Xmx12g"
-        }
-    },
-    failureConditions = {
+    }
+  },
+  failureConditions = {
         supportTestRetry = true
         testFailure = true
         executionTimeoutMin = 180
-    }
+  }
 )

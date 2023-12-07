@@ -24,6 +24,8 @@ tasks {
   }
   test {
     // configure retry for :probe:test task
+    useJUnitPlatform()
+
     retry {
       maxRetries.set(3) // Number of retries when a test fails
       maxFailures.set(2) // Number of failed tests allowed before stopping retries
