@@ -6,7 +6,7 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 
 private val log = logger<DisconnectAction>()
@@ -15,7 +15,7 @@ public class DisconnectAction : SuspendableAction({ BspPluginBundle.message("dis
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     withBackgroundProgress(project, "Disconnecting...") {
       try {
-        BspConnectionService.getInstance(project).value?.disconnect()
+        project.connection.disconnect()
       } catch (e: Exception) {
         log.warn("One of the disconnect actions has failed!", e)
       }
@@ -23,7 +23,6 @@ public class DisconnectAction : SuspendableAction({ BspPluginBundle.message("dis
   }
 
   override fun update(project: Project, e: AnActionEvent) {
-    val connection = BspConnectionService.getInstance(project).value
-    e.presentation.isEnabled = connection?.isConnected() == true
+    e.presentation.isEnabled = project.connection.isConnected()
   }
 }

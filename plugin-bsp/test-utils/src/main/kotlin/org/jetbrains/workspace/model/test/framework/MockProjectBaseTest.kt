@@ -1,5 +1,6 @@
 package org.jetbrains.workspace.model.test.framework
 
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -25,4 +26,13 @@ public open class MockProjectBaseTest {
   protected open fun beforeEach() {}
 
   protected fun Path.toVirtualFile(): VirtualFile = virtualFileManager.findFileByNioPath(this)!!
+
+  protected fun <T> runWriteAction(task: () -> T): T {
+    var result: T? = null
+    WriteCommandAction.runWriteCommandAction(project) {
+      result = task()
+    }
+
+    return result!!
+  }
 }

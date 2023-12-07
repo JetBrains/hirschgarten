@@ -2,7 +2,6 @@ package org.jetbrains.plugins.bsp.server.connection
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import ch.epfl.scala.bsp4j.BuildClient
-import ch.epfl.scala.bsp4j.BuildClientCapabilities
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import com.google.gson.JsonObject
@@ -11,20 +10,18 @@ import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
+import org.jetbrains.bsp.BSP_CLIENT_NAME
+import org.jetbrains.bsp.BSP_VERSION
 import org.jetbrains.bsp.BazelBuildServerCapabilities
+import org.jetbrains.bsp.CLIENT_CAPABILITIES
 import org.jetbrains.bsp.utils.BazelBuildServerCapabilitiesTypeAdapter
-import org.jetbrains.magicmetamodel.impl.ConvertableToState
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetails
-import org.jetbrains.plugins.bsp.protocol.connection.LocatedBspConnectionDetailsParser
-import org.jetbrains.plugins.bsp.protocol.connection.logErrorOutputs
 import org.jetbrains.plugins.bsp.server.client.BspClient
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
@@ -37,7 +34,6 @@ import java.lang.reflect.Proxy
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import kotlin.io.path.Path
 import kotlin.time.Duration.Companion.seconds
 
 private const val OK_EXIT_CODE = 0
@@ -100,75 +96,90 @@ private class CancelableInvocationHandlerWithTimeout(
   }
 }
 
-public data class BspFileConnectionState(
-  public var connectionFilePath: String? = null,
-)
+private val log = logger<DefaultBspConnection>()
+private const val connectSubtaskId = "bsp-file-connection-connect"
 
-public class BspFileConnection(
+internal class DefaultBspConnection(
   private val project: Project,
-  locatedConnectionFile: LocatedBspConnectionDetails,
-) : BspConnection, ConvertableToState<BspFileConnectionState> {
-  public override val buildToolId: String? = locatedConnectionFile.bspConnectionDetails?.name
+  private val connectionDetailsProviderExtension: ConnectionDetailsProviderExtension,
+) : BspConnection {
+  private var connectionDetails: BspConnectionDetails? = null
 
-  public override var server: BspServer? = null
-    private set
-
-  public var locatedConnectionFile: LocatedBspConnectionDetails = locatedConnectionFile
-    private set
-
-  public override var capabilities: BazelBuildServerCapabilities? = null
-    private set
+  private var server: BspServer? = null
+  private var capabilities: BazelBuildServerCapabilities? = null
 
   private var bspProcess: Process? = null
   private var disconnectActions: MutableList<() -> Unit> = mutableListOf()
   private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
-  private val log = logger<BspFileConnection>()
 
-  public override fun connect(taskId: Any, errorCallback: () -> Unit) {
+  override fun connect(taskId: Any, errorCallback: () -> Unit) {
     if (!isConnected()) {
       doConnect(taskId, errorCallback)
     }
   }
 
-  private fun doConnect(taskId: Any, errorCallback: () -> Unit = {}) {
+  private fun doConnect(taskId: Any, errorCallback: () -> Unit) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
     bspSyncConsole.startSubtask(
-      taskId, connectSubtaskId,
-      BspPluginBundle.message("console.subtask.connect.in.progress")
+      parentTaskId = taskId,
+      subtaskId = connectSubtaskId,
+      message = BspPluginBundle.message("console.subtask.connect.in.progress"),
     )
-    bspSyncConsole.addMessage(connectSubtaskId, BspPluginBundle.message("console.task.connect.message.in.progress"))
 
     try {
-      doConnectOrThrowIfFailed(bspSyncConsole, taskId, errorCallback)
+      connectOrThrowIfFailed(bspSyncConsole, taskId, errorCallback)
     } catch (e: Exception) {
       bspSyncConsole.finishTask(
-        taskId,
-        BspPluginBundle.message("console.task.connect.message.failed"), FailureResultImpl(e)
+        taskId = taskId,
+        message = BspPluginBundle.message("console.task.connect.message.failed"),
+        result = FailureResultImpl(e),
       )
     }
   }
 
-  private fun doConnectOrThrowIfFailed(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) {
-    val connectionDetails = locatedConnectionFile.bspConnectionDetails
+  private fun connectOrThrowIfFailed(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) {
+    bspSyncConsole.addMessage(
+      taskId = connectSubtaskId,
+      message = BspPluginBundle.message("console.task.connect.message.in.progress"),
+    )
 
-    if (connectionDetails != null) {
-      val client = createBspClient()
-      val process = createAndStartProcessAndAddDisconnectActions(connectionDetails)
+    val newConnectionDetails = connectionDetailsProviderExtension.provideNewConnectionDetails(project, null)
 
-      process.handleErrorOnExit(bspSyncConsole, taskId, errorCallback)
-
-      bspProcess = process
-      bspSyncConsole.addMessage(connectSubtaskId, BspPluginBundle.message("console.task.connect.message.success"))
-
-      initializeServer(process, client, bspSyncConsole)
+    if (newConnectionDetails != null) {
+      this.connectionDetails = newConnectionDetails
+      newConnectionDetails.connect(bspSyncConsole, taskId, errorCallback)
     } else {
-      error("Parsing connection file '${locatedConnectionFile.connectionFileLocation}' failed!")
+      error("Cannot connect. Please check your connection file.")
     }
   }
 
+  private fun BspConnectionDetails.connect(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) {
+    val client = createBspClient()
+    val process = createAndStartProcessAndAddDisconnectActions(this)
+
+    process.handleErrorOnExit(bspSyncConsole, taskId, errorCallback)
+
+    bspProcess = process
+    bspSyncConsole.addMessage(connectSubtaskId, BspPluginBundle.message("console.task.connect.message.success"))
+
+    initializeServer(process, client, bspSyncConsole)
+  }
+
+  private fun createBspClient(): BspClient {
+    val bspConsoleService = BspConsoleService.getInstance(project)
+
+    return BspClient(
+      bspConsoleService.bspSyncConsole,
+      bspConsoleService.bspBuildConsole,
+      bspConsoleService.bspRunConsole,
+      bspConsoleService.bspTestConsole,
+      timeoutHandler,
+    )
+  }
+
   private fun createAndStartProcessAndAddDisconnectActions(bspConnectionDetails: BspConnectionDetails): Process {
-    val process = createAndStartProcess(bspConnectionDetails)
+    val process = bspConnectionDetails.createAndStartProcess()
     process.logErrorOutputs(project)
     disconnectActions.add { server?.buildShutdown()?.get(TERMINATION_TIMEOUT.inWholeSeconds, TimeUnit.SECONDS) }
     disconnectActions.add { server?.onBuildExit() }
@@ -182,8 +193,12 @@ public class BspFileConnection(
     return process
   }
 
-  private fun Process.terminateDescendants() =
-    this.descendants().forEach { it.terminateGracefully() }
+  private fun BspConnectionDetails.createAndStartProcess(): Process =
+    ProcessBuilder(argv)
+      .directory(project.stateStore.projectBasePath.toFile())
+      .withRealEnvs()
+      .redirectError(ProcessBuilder.Redirect.PIPE)
+      .start()
 
   private fun ProcessHandle.terminateGracefully() {
     try {
@@ -195,30 +210,14 @@ public class BspFileConnection(
     this.onExit().get(TERMINATION_TIMEOUT.inWholeSeconds, TimeUnit.SECONDS)
   }
 
+  private fun Process.terminateDescendants() =
+    this.descendants().forEach { it.terminateGracefully() }
+
   private fun Process.checkExitValueAndThrowIfError() {
     val exitValue = this.exitValue()
     if (exitValue != OK_EXIT_CODE && exitValue != TERMINATED_EXIT_CODE) {
       error("Server exited with exit value: $exitValue")
     }
-  }
-
-  private fun createAndStartProcess(bspConnectionDetails: BspConnectionDetails): Process =
-    ProcessBuilder(bspConnectionDetails.argv)
-      .directory(project.stateStore.projectBasePath.toFile())
-      .withRealEnvs()
-      .redirectError(ProcessBuilder.Redirect.PIPE)
-      .start()
-
-  private fun createBspClient(): BspClient {
-    val bspConsoleService = BspConsoleService.getInstance(project)
-
-    return BspClient(
-      bspConsoleService.bspSyncConsole,
-      bspConsoleService.bspBuildConsole,
-      bspConsoleService.bspRunConsole,
-      bspConsoleService.bspTestConsole,
-      timeoutHandler,
-    )
   }
 
   private fun Process.handleErrorOnExit(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) =
@@ -296,11 +295,11 @@ public class BspFileConnection(
   private fun createInitializeBuildParams(): InitializeBuildParams {
     val projectBaseDir = project.rootDir
     val params = InitializeBuildParams(
-      "IntelliJ-BSP",
-      "0.0.1",
-      "2.1.0-M5",
+      BSP_CLIENT_NAME,
+      "2023.3-EAP",
+      BSP_VERSION,
       projectBaseDir.toString(),
-      BuildClientCapabilities(listOf("java")),
+      CLIENT_CAPABILITIES,
     )
     val dataJson = JsonObject()
     dataJson.addProperty("clientClassesRootDir", "$projectBaseDir/out")
@@ -309,11 +308,55 @@ public class BspFileConnection(
     return params
   }
 
-  public override fun disconnect() {
-    val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
-    disconnectActions.clear()
-    throwExceptionWithSuppressedIfOccurred(exceptions)
+  override fun <T> runWithServer(task: (server: BspServer, capabilities: BazelBuildServerCapabilities) -> T?): T? {
+    val currentConnectionDetails =
+      connectionDetailsProviderExtension.provideNewConnectionDetails(project, connectionDetails)
 
+    if (currentConnectionDetails != null) {
+      currentConnectionDetails.autoConnect()
+    } else if (!isConnected()) {
+      connectionDetails?.autoConnect()
+    }
+
+    if (server != null && capabilities != null) {
+      return task(server!!, capabilities!!)
+    } else {
+      error("Cannot execute the task. Server not available.")
+    }
+  }
+
+  private fun BspConnectionDetails.autoConnect() {
+    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    bspSyncConsole.startTask(
+      taskId = "bsp-autoconnect",
+      title = BspPluginBundle.message("console.task.auto.connect.title"),
+      message = BspPluginBundle.message("console.task.auto.connect.in.progress"),
+    )
+
+    try {
+      disconnect()
+      this.connect(bspSyncConsole, "bsp-autoconnect") {}
+      bspSyncConsole.finishTask(
+        taskId = "bsp-autoconnect",
+        message = BspPluginBundle.message("console.task.auto.connect.success"),
+      )
+    } catch (e: Exception) {
+      bspSyncConsole.finishTask(
+        taskId = "bsp-autoconnect",
+        message = BspPluginBundle.message("console.task.auto.connect.failed"),
+        result = FailureResultImpl(e),
+      )
+      error("Auto connect has failed.")
+    }
+  }
+
+  override fun disconnect() {
+    if (isConnected()) {
+      val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
+      throwExceptionWithSuppressedIfOccurred(exceptions)
+    }
+
+    disconnectActions.clear()
     server = null
     capabilities = null
   }
@@ -341,27 +384,26 @@ public class BspFileConnection(
     }
   }
 
-  override fun reload() {
-    locatedConnectionFile =
-      LocatedBspConnectionDetailsParser.parseFromFile(locatedConnectionFile.connectionFileLocation)
-  }
-
   override fun isConnected(): Boolean =
     bspProcess?.isAlive == true
+}
 
-  override fun toState(): BspFileConnectionState =
-    BspFileConnectionState(locatedConnectionFile.connectionFileLocation.canonicalPath)
-
-  public companion object {
-    private const val connectSubtaskId = "bsp-file-connection-connect"
-
-    public fun fromState(project: Project, state: BspFileConnectionState): BspFileConnection? =
-      state.connectionFilePath
-        ?.let { toVirtualFile(it) }
-        ?.let { LocatedBspConnectionDetailsParser.parseFromFile(it) }
-        ?.let { BspFileConnection(project, it) }
-
-    private fun toVirtualFile(path: String): VirtualFile? =
-      VirtualFileManager.getInstance().findFileByNioPath(Path(path))
+private fun Process.logErrorOutputs(project: Project) {
+  if (!Registry.`is`("bsp.log.error.outputs")) return
+  @Suppress("DeferredResultUnused")
+  val bspConsoleService = BspConsoleService.getInstance(project)
+  BspCoroutineService.getInstance(project).startAsync {
+    val bufferedReader = this.errorReader()
+    bufferedReader.forEachLine { doLogErrorOutputLine(it, bspConsoleService) }
   }
 }
+
+private fun doLogErrorOutputLine(line: String, bspConsoleService: BspConsoleService) {
+  val taskConsole = bspConsoleService.getActiveConsole()
+  taskConsole?.addMessage(line)
+}
+
+private fun BspConsoleService.getActiveConsole(): TaskConsole? =
+  if (this.bspBuildConsole.hasTasksInProgress()) this.bspBuildConsole
+  else if (this.bspSyncConsole.hasTasksInProgress()) this.bspSyncConsole
+  else null

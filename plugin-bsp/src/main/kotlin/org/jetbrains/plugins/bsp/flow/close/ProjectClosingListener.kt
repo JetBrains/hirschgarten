@@ -6,7 +6,7 @@ import com.intellij.openapi.project.ProjectManagerListener
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.server.connection.BspConnectionService
+import org.jetbrains.plugins.bsp.server.connection.connection
 
 public class ProjectClosingListener : ProjectManagerListener {
   override fun projectClosing(project: Project) {
@@ -18,7 +18,7 @@ public class ProjectClosingListener : ProjectManagerListener {
   private fun doProjectClosing(project: Project) {
     runWithModalProgressBlocking(project, BspPluginBundle.message("progress.bar.project.close.disconnect")) {
       try {
-        BspConnectionService.getInstance(project).value?.disconnect()
+        project.connection.disconnect()
       } catch (e: Exception) {
         log.warn("One of the disconnect actions has failed!", e)
       }
