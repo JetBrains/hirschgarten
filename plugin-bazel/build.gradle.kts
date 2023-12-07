@@ -20,19 +20,6 @@ dependencies {
 group = Plugin.group
 version = Plugin.version
 
-allprojects {
-    tasks.withType<Test>().configureEach {
-        // Uncomment useJUnitPlatform() to run :probe:test locally, for some reason it doesn't run locally without it.
-        // On TC it runs fine
-//        useJUnitPlatform()
-        // disable the malfunctioned platform listener com.intellij.tests.JUnit5TestSessionListener
-        // this listener caused the CI tests to fail with
-        // AlreadyDisposedException: Already disposed: Application (containerState DISPOSE_COMPLETED)
-        // TODO: follow up https://youtrack.jetbrains.com/issue/IDEA-337508/AlreadyDisposedException-Already-disposed-Application-containerState-DISPOSECOMPLETED-after-junit5-tests-on-TeamCity
-        systemProperty("intellij.build.test.ignoreFirstAndLastTests", "true")
-    }
-}
-
 subprojects {
     apply(plugin = "org.jetbrains.intellij")
     intellij {
