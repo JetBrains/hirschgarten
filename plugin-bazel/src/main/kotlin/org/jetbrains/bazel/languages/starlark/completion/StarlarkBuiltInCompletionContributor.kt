@@ -14,7 +14,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkBuiltIn
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
-import org.jetbrains.bazel.languages.starlark.psi.impl.StarlarkReferenceExpressionImpl
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceExpression
 
 class StarlarkBuiltInCompletionContributor : CompletionContributor() {
   init {
@@ -62,11 +62,11 @@ private fun builtInLookupElement(name: String) =
 
 private val nameCompletionElement = psiElement()
   .withLanguage(StarlarkLanguage)
-  .withParent(StarlarkReferenceExpressionImpl::class.java)
+  .withParent(StarlarkReferenceExpression::class.java)
   .andNot(psiComment())
   .andNot(psiElement().afterLeaf(psiElement(StarlarkTokenTypes.DOT)))
 
 private val stringCompletionElement = psiElement()
   .withLanguage(StarlarkLanguage)
-  .withParent(StarlarkReferenceExpressionImpl::class.java)
+  .withParent(StarlarkReferenceExpression::class.java)
   .afterLeaf(psiElement(StarlarkTokenTypes.DOT).afterLeaf(psiElement(StarlarkTokenTypes.STRING)))

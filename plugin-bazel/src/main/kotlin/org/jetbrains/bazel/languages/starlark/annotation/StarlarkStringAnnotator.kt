@@ -5,14 +5,14 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.psi.impl.StarlarkStringLiteralExpressionImpl
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkStringLiteralExpression
 
 private const val TRIPLE_QUOTE = "\"\"\""
 private const val TRIPLE_APOSTROPHE = "\'\'\'"
 
 class StarlarkStringAnnotator : Annotator {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-    if (element is StarlarkStringLiteralExpressionImpl) {
+    if (element is StarlarkStringLiteralExpression) {
       element.firstChild.text.annotateUnterminated(element, holder)
     }
   }

@@ -1,5 +1,8 @@
 package org.jetbrains.bazel.languages.starlark.psi
 
-import com.intellij.psi.PsiElement
+import com.intellij.lang.ASTNode
+import org.jetbrains.bazel.languages.starlark.psi.base.StarlarkBaseElement
 
-interface StarlarkParameterList : PsiElement
+class StarlarkParameterList(node: ASTNode) : StarlarkBaseElement(node) {
+  override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitParameterList(this)
+}
