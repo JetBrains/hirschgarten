@@ -15,6 +15,8 @@ public data class BuildTargetInfo(
   val baseDirectory: String? = null,
 )
 
+internal fun BuildTargetInfo.toPair() = this.id to this
+
 public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
   BuildTargetInfo(
     id = id.uri,

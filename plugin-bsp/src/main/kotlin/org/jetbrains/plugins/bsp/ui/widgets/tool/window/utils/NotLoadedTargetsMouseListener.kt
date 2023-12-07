@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
+import org.jetbrains.plugins.bsp.ui.actions.LoadTargetWithDependenciesAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
 import java.awt.Point
@@ -59,10 +60,18 @@ public class NotLoadedTargetsMouseListener(
         targetId = target.id,
         text = { org.jetbrains.plugins.bsp.config.BspPluginBundle.message("widget.load.target.popup.message") },
       )
+      val loadTargetWithDepsAction = LoadTargetWithDependenciesAction(
+        targetId = target.id,
+        text = {
+          org.jetbrains.plugins.bsp.config.BspPluginBundle.message("widget.load.target.with.deps.popup.message")
+        },
+      )
       DefaultActionGroup().apply {
         addAction(copyTargetIdAction)
         addSeparator()
         addAction(loadTargetAction)
+        addSeparator()
+        addAction(loadTargetWithDepsAction)
       }
     } else null
   }

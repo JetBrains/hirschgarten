@@ -20,7 +20,7 @@ complexity:
   ComplexCondition:
     active: true
   ComplexInterface:
-    active: true
+    active: false
   CyclomaticComplexMethod:
     active: true
     ignoreSingleWhenExpression: true

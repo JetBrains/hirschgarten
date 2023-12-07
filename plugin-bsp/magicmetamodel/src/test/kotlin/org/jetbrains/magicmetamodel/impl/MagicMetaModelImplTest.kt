@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 
 // TODO add checking workspacemodel
@@ -625,6 +626,130 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         notLoadedTargetsIds = listOf(targetD2.id.uri),
       )
     }
+  }
+
+  @Test
+  fun `should correctly load and unload targets with dependencies`() {
+    // given
+    val projectRoot = createTempDirectory("root")
+    projectRoot.toFile().deleteOnExit()
+
+    val createTarget = fun(name: String, deps: List<String>) =
+      BuildTarget(
+        id = BuildTargetId(name),
+        languageIds = listOf("kotlin"),
+        dependencies = deps.map { BuildTargetId(it) }
+      )
+    val tempDir = fun(prefix: String): Path {
+      val rootPackage = createTempDirectory(projectRoot, prefix)
+      rootPackage.toFile().deleteOnExit()
+      val targetPackage = createTempDirectory(rootPackage, "package")
+      targetPackage.toFile().deleteOnExit()
+      return targetPackage
+    }
+    val tempFile = fun(prefix: String): Path {
+      val path = tempDir(prefix)
+      val file = kotlin.io.path.createTempFile(path, prefix, ".kt")
+      file.toFile().deleteOnExit()
+      return file
+    }
+    val sourceFile = fun(name: String) = SourceItem(
+      uri = tempFile(name).toUri().toString(),
+      kind = SourceItemKind.FILE
+    )
+    val sources = fun(target: BuildTarget, source: SourceItem) = SourcesItem(
+      target = target.id,
+      sources = listOf(source)
+    )
+    val sourcesWithList = fun(target: BuildTarget, sources: List<SourceItem>) = SourcesItem(
+      target = target.id,
+      sources = sources
+    )
+
+    val targetA1 = createTarget("A1", listOf("B1", "C2", "external1"))
+    val targetB1 = createTarget("B1", listOf("C1", "external1"))
+    val targetC1 = createTarget("C1", listOf("D1", "external2"))
+    val targetD1 = createTarget("D1", listOf("external2"))
+
+    val targetA2 = createTarget("A2", listOf("B2", "C1", "external2"))
+    val targetB2 = createTarget("B2", listOf("C2", "external2"))
+    val targetC2 = createTarget("C2", listOf("external2"))
+
+    val a1a2SourceFile = sourceFile("targetA1")
+    val b1b2SourceFile = sourceFile("targetB1B2")
+    val c1c2SourceFile = sourceFile("targetC1C2")
+    val d1A2SourceFile = sourceFile("targetD1A2")
+    val d1B2SourceFile = sourceFile("targetD1B2")
+
+    val a1Sources = sources(targetA1, a1a2SourceFile)
+    val a2Sources = sourcesWithList(targetA2, listOf(a1a2SourceFile, d1A2SourceFile))
+    val b1Sources = sources(targetB1, b1b2SourceFile)
+    val b2Sources = sourcesWithList(targetB2, listOf(b1b2SourceFile, d1B2SourceFile))
+    val c1Sources = sources(targetC1, c1c2SourceFile)
+    val c2Sources = sources(targetC2, c1c2SourceFile)
+    val d1Sources = sourcesWithList(targetD1, listOf(d1A2SourceFile, d1B2SourceFile))
+
+    val projectDetails = ProjectDetails(
+      targetsId = listOf(
+        targetA1.id,
+        targetB1.id,
+        targetC1.id,
+        targetD1.id,
+        targetA2.id,
+        targetB2.id,
+        targetC2.id,
+      ),
+      targets = setOf(
+        targetA1,
+        targetB1,
+        targetC1,
+        targetD1,
+        targetA2,
+        targetB2,
+        targetC2,
+      ),
+      sources = listOf(
+        a1Sources,
+        a2Sources,
+        b1Sources,
+        b2Sources,
+        c1Sources,
+        c2Sources,
+        d1Sources,
+      ),
+      resources = emptyList(),
+      dependenciesSources = emptyList(),
+      javacOptions = emptyList(),
+      pythonOptions = emptyList(),
+      outputPathUris = emptyList(),
+      libraries = emptyList(),
+      scalacOptions = emptyList(),
+      invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
+    )
+
+    val expectedTargetA1 = createBuildTargetInfo(targetA1)
+    val expectedTargetA2 = createBuildTargetInfo(targetA2)
+    val expectedTargetB1 = createBuildTargetInfo(targetB1)
+    val expectedTargetB2 = createBuildTargetInfo(targetB2)
+    val expectedTargetC1 = createBuildTargetInfo(targetC1)
+    val expectedTargetD1 = createBuildTargetInfo(targetD1)
+
+    // when
+    val magicMetaModel = MagicMetaModelImpl(testMagicMetaModelProjectConfig, projectDetails)
+    val diff = magicMetaModel.loadDefaultTargets()
+    runBlocking { diff.applyOnWorkspaceModel() }
+
+    magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
+      expectedTargetA1, expectedTargetB1, expectedTargetC1, expectedTargetD1)
+
+    val diff2 = magicMetaModel.loadTargetWithDependencies(targetA2.id.uri)
+
+    runBlocking { diff2?.applyOnWorkspaceModel() }
+
+    // then
+    magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
+      expectedTargetA2, expectedTargetB2, expectedTargetC1,
+    )
   }
 
   @Nested
