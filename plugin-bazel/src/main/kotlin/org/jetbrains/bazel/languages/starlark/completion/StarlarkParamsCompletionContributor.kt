@@ -8,7 +8,7 @@ import com.intellij.codeInsight.completion.CompletionType
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.util.ProcessingContext
-import org.jetbrains.bazel.languages.starlark.psi.impl.StarlarkParameterListImpl
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkParameterList
 
 class StarlarkParamsCompletionContributor : CompletionContributor() {
   init {
@@ -28,4 +28,4 @@ private class StarlarkParamsCompletionProvider(val lookupString: String) : Compl
 }
 
 private fun paramElement(token: String) =
-  psiElement().inside(StarlarkParameterListImpl::class.java).afterLeaf(token)
+  psiElement().inside(StarlarkParameterList::class.java).afterLeaf(token)

@@ -1,3 +1,3 @@
 FILE
-  StarlarkContinueStatementImpl(CONTINUE_STATEMENT)
+  StarlarkContinueStatement(CONTINUE_STATEMENT)
     PsiElement(Starlark:continue)('continue')
