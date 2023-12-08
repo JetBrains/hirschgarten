@@ -7,15 +7,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
-import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.coroutines.CoroutineService
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.extension.points.BspConnectionDetailsGeneratorExtension
 import org.jetbrains.plugins.bsp.flow.open.BspStartupActivity
 import org.jetbrains.plugins.bsp.flow.open.initProperties
 import org.jetbrains.plugins.bsp.flow.open.initializeEmptyMagicMetaModel
-import org.jetbrains.plugins.bsp.protocol.connection.BspConnectionFilesProvider
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 
 private val ELIGIBLE_BAZEL_PROJECT_FILE_NAMES = listOf(
@@ -50,16 +47,7 @@ internal class OpenBazelProjectViaBspPluginAction:
 
     val projectRootDir = calculateProjectRootDir(project, psiFile) ?: return false
 
-    val bazelBspGenerator = BspConnectionDetailsGeneratorExtension
-      .extensions()
-      .firstOrNull { it.id() == BazelPluginConstants.ID }
-
-    val bazelBspConnectionFile = BspConnectionFilesProvider(projectRootDir)
-      .connectionFiles
-      .firstOrNull { it.bspConnectionDetails?.name == BazelPluginConstants.ID }
-
-    return bazelBspGenerator?.canGenerateBspConnectionDetailsFile(projectRootDir) == true ||
-      bazelBspConnectionFile != null
+    return BazelBspProjectOpenProcessor().canOpenProject(projectRootDir)
   }
 
   private fun calculateProjectRootDir(project: Project?, psiFile: PsiFile?): VirtualFile? =

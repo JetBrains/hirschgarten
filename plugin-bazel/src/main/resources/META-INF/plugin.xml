@@ -13,8 +13,8 @@
         <buildToolAssetsExtension
                 implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
 
-        <bspConnectionDetailsGeneratorExtension
-                implementation="org.jetbrains.bazel.flow.open.BazelBspDetailsConnectionGenerator"/>
+        <connectionDetailsProviderExtension
+                implementation="org.jetbrains.bazel.bsp.connection.BazelConnectionDetailsProviderExtension"/>
 
         <buildTargetClassifierExtension
                 implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>

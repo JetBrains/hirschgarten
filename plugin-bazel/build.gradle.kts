@@ -13,8 +13,12 @@ val myToken: String by project
 val releaseChannel: String by project
 
 dependencies {
-    implementation("io.kotest:kotest-assertions-core:5.7.2")
-    implementation("io.get-coursier:coursier_2.13:2.1.7")
+    implementation(libs.kotest)
+    implementation(libs.coursier)
+    implementation(libs.bazelBsp) {
+        exclude(group = "org.jetbrains.kotlinx")
+        exclude(group = "ch.epfl.scala")
+    }
 }
 
 group = Plugin.group
