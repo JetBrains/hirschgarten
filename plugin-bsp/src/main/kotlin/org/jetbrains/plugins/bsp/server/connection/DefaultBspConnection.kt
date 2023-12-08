@@ -20,6 +20,7 @@ import org.jetbrains.bsp.CLIENT_CAPABILITIES
 import org.jetbrains.bsp.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.server.ChunkingBuildServer
 import org.jetbrains.plugins.bsp.server.client.BspClient
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -240,7 +241,8 @@ internal class DefaultBspConnection(
       BspPluginBundle.message("console.message.initialize.server.in.progress")
     )
 
-    server = startServerAndAddDisconnectActions(process, client)
+    val newServer = startServerAndAddDisconnectActions(process, client)
+    server = newServer.wrapInChunkingServerIfRequired()
     capabilities = server?.initializeAndObtainCapabilities()
 
     bspSyncConsole.addMessage(connectSubtaskId, BspPluginBundle.message("console.message.initialize.server.success"))
@@ -284,6 +286,12 @@ internal class DefaultBspConnection(
         )
       }
       .create()
+
+  private fun BspServer.wrapInChunkingServerIfRequired(): BspServer =
+    if (Registry.`is`("bsp.request.chunking.enable")) {
+      val minChunkSize = Registry.intValue("bsp.request.chunking.size.min")
+      ChunkingBuildServer(this, minChunkSize)
+    } else this
 
   private fun BspServer.initializeAndObtainCapabilities(): BazelBuildServerCapabilities {
     val buildInitializeResults = buildInitialize(createInitializeBuildParams()).get()
