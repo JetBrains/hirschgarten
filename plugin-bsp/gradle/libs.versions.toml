@@ -1,11 +1,8 @@
 [versions]
-ideProbe = "0.52.0"
 detekt = "1.23.4"
 kotlin-gradle-version = "1.9.20"
 
 [libraries]
-ideProbeDriver = { module = "org.virtuslab.ideprobe:driver_2.13", version.ref = "ideProbe" }
-ideProbeRobot = { module = "org.virtuslab.ideprobe:robot-driver_2.13", version.ref = "ideProbe" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.1" }
 bsp4j = { module = "ch.epfl.scala:bsp4j", version = "2.1.0-M7" }
 kotest = { module = "io.kotest:kotest-assertions-core", version = "5.8.0" }
