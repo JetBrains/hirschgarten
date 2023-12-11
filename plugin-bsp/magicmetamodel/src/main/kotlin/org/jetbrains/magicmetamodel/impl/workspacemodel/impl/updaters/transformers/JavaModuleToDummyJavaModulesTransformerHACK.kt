@@ -25,10 +25,16 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
     val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
     return dummyJavaModuleSourceRoots.zip(dummyJavaModuleNames)
-      .mapNotNull { calculateDummyJavaSourceModule(name = it.second, sourceRoot = it.first) }
+      .mapNotNull {
+        calculateDummyJavaSourceModule(
+          name = it.second,
+          sourceRoot = it.first,
+          jdkName = inputEntity.jvmJdkName
+        )
+      }
   }
 
-  private fun calculateDummyJavaSourceModule(name: String, sourceRoot: Path) =
+  private fun calculateDummyJavaSourceModule(name: String, sourceRoot: Path, jdkName: String?) =
     if (name.isEmpty()) null
     else JavaModule(
       genericModuleInfo = GenericModuleInfo(
@@ -49,9 +55,10 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
       resourceRoots = listOf(),
       moduleLevelLibraries = listOf(),
       compilerOutput = null,
-      jvmJdkName = null,
+      jvmJdkName = jdkName,
       kotlinAddendum = null,
     )
+
   private fun calculateDummyJavaSourceRoots(inputEntity: JavaModule): List<Path> =
     inputEntity.sourceRoots.map {
       restoreSourceRootFromPackagePrefix(it)

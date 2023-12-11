@@ -30,8 +30,6 @@ internal class ProjectDetailsToModuleDetailsTransformer(
     val isRoot = target.isRoot(sources, resources)
     return ModuleDetails(
       target = target,
-      libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.map { it.uri },
-      moduleDependencies = targetsIndex.keys.intersect(allDependencies).map { it.uri },
       sources = if (isRoot) emptyList() else sources,
       resources = if (isRoot) emptyList() else resources,
       dependenciesSources = calculateDependenciesSources(projectDetails, targetId),
@@ -39,6 +37,9 @@ internal class ProjectDetailsToModuleDetailsTransformer(
       scalacOptions = calculateScalacOptions(projectDetails, targetId),
       pythonOptions = calculatePythonOptions(projectDetails, targetId),
       outputPathUris = if (isRoot) calculateAllOutputPaths(projectDetails) else emptyList(),
+      libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.map { it.uri },
+      moduleDependencies = targetsIndex.keys.intersect(allDependencies).map { it.uri },
+      defaultJdkInfo = projectDetails.defaultJdkInfo,
     )
   }
 
