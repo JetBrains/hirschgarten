@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import coursier.core.Dependency
 import coursier.core.Module
+import org.jetbrains.bazel.assets.BspPluginTemplates
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.utils.parseBspConnectionDetails
@@ -25,7 +26,12 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.jdk.javaapi.CollectionConverters
 import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.exists
+import kotlin.io.path.writeText
+
+private const val DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 
 internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProviderExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
@@ -33,9 +39,24 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
   override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean {
     project.stateService.projectPath = projectPath
 
+    initializeProjectViewFile(projectPath)
     writeAction { generateConnectionFile(project, projectPath) }
 
     return project.connectionFile != null
+  }
+
+  private fun initializeProjectViewFile(projectPath: VirtualFile) {
+    val projectViewFilePath = calculateProjectViewFilePath(projectPath)
+    setDefaultProjectViewFilePathContentIfNotExists(projectViewFilePath)
+  }
+
+  private fun calculateProjectViewFilePath(projectPath: VirtualFile): Path =
+    projectPath.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
+
+  private fun setDefaultProjectViewFilePathContentIfNotExists(projectViewFilePath: Path) {
+    if (!projectViewFilePath.exists()) {
+      projectViewFilePath.writeText(BspPluginTemplates.defaultBazelProjectViewContent)
+    }
   }
 
   override fun provideNewConnectionDetails(
