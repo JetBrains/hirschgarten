@@ -55,7 +55,8 @@ internal class ModuleDetailsToJavaModuleTransformer(
             )
           }) else null,
       compilerOutput = toCompilerOutput(inputEntity),
-      jvmJdkName = toJdkName(inputEntity),
+      // Any java module must be assigned a jdk if there is any available.
+      jvmJdkName = inputEntity.toJdkName() ?: inputEntity.defaultJdkInfo.toJdkName(),
       kotlinAddendum = toKotlinAddendum(inputEntity),
       scalaAddendum = toScalaAddendum(inputEntity),
     )
@@ -89,10 +90,11 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private fun toCompilerOutput(inputEntity: ModuleDetails): Path? =
     inputEntity.javacOptions?.classDirectory?.let { URI(it).toPath() }
 
-  private fun toJdkName(inputEntity: ModuleDetails): String? {
-    val jvmBuildTarget = extractJvmBuildTarget(inputEntity.target)
-    return jvmBuildTarget?.javaVersion?.javaVersionToJdkName(projectBasePath.name)
-  }
+  private fun ModuleDetails.toJdkName(): String? =
+    extractJvmBuildTarget(this.target).toJdkName()
+
+  private fun JvmBuildTarget?.toJdkName(): String? =
+    this?.javaVersion?.javaVersionToJdkName(projectBasePath.name)
 
   private fun toKotlinAddendum(inputEntity: ModuleDetails): KotlinAddendum? {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)

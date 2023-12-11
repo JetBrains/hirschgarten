@@ -145,6 +145,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem),
       dependenciesSources = listOf(dependencySourcesItem),
       javacOptions = javacOptionsItem,
+      scalacOptions = null,
       pythonOptions = null,
       outputPathUris = outputPathUris,
       libraryDependencies = null,
@@ -152,7 +153,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         "module2",
         "module3",
       ),
-      scalacOptions = null
+      defaultJdkInfo = null
     )
     // when
     val javaModule =
@@ -276,16 +277,17 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(),
       dependenciesSources = listOf(),
       javacOptions = null,
+      scalacOptions = null,
       pythonOptions = null,
       outputPathUris = listOf(),
+      libraryDependencies = listOf(
+        "@maven//:lib1",
+      ),
       moduleDependencies = listOf(
         "module2",
         "module3",
       ),
-      libraryDependencies = listOf(
-        "@maven//:lib1",
-      ),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
 
     // when
@@ -417,6 +419,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem1),
       dependenciesSources = listOf(dependencySourcesItem1),
       javacOptions = target1JavacOptionsItem,
+      scalacOptions = null,
       pythonOptions = null,
       outputPathUris = target1OutputPathUris,
       libraryDependencies = null,
@@ -424,7 +427,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         "module2",
         "module3",
       ),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -482,13 +485,14 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resources = listOf(resourcesItem2),
       dependenciesSources = listOf(dependencySourcesItem2),
       javacOptions = target2JavacOptionsItem,
+      scalacOptions = null,
       pythonOptions = null,
       outputPathUris = target2OutputPathUris,
       libraryDependencies = null,
       moduleDependencies = listOf(
         "module3",
       ),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)

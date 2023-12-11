@@ -64,6 +64,7 @@ public fun Project.initializeEmptyMagicMetaModel(projectRootDir: VirtualFile) {
       outputPathUris = emptyList(),
       libraries = emptyList(),
       invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
+      defaultJdkInfo = null,
     ),
   )
 

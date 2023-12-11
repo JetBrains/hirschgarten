@@ -49,7 +49,8 @@ public class MagicMetaModelService(private val project: Project) :
       outputPathUris = emptyList(),
       libraries = emptyList(),
       scalacOptions = emptyList(),
-      invalidTargets = WorkspaceInvalidTargetsResult(emptyList())
+      invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
+      defaultJdkInfo = null,
     )
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)

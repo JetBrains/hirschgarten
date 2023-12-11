@@ -55,10 +55,12 @@ internal class JavaModuleWithSourcesUpdater(
       returnDependencies.add(ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkName, "JavaSDK"))
     }
     entityToAdd.scalaAddendum?.let { addendum ->
-      returnDependencies.add(toModuleDependencyItemLibraryDependency(
-        LibraryDependency(addendum.scalaSdkName, true),
-        entityToAdd.genericModuleInfo.name
-      ))
+      returnDependencies.add(
+        toModuleDependencyItemLibraryDependency(
+          LibraryDependency(addendum.scalaSdkName, true),
+          entityToAdd.genericModuleInfo.name
+        )
+      )
     }
     return returnDependencies
   }
@@ -100,10 +102,17 @@ internal class JavaModuleWithoutSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
-    val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig)
+    val moduleEntityUpdater =
+      ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
 
     return moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
   }
+
+  private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
+    entityToAdd.jvmJdkName
+      ?.let {
+        listOf(ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkName, "JavaSDK"))
+      } ?: listOf()
 }
 
 internal class JavaModuleUpdater(

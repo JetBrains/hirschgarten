@@ -60,11 +60,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = null,
+      scalacOptions = null,
       pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = emptyList(),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
 
     actualModuleDetails shouldBe expectedModuleDetails
@@ -130,11 +131,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       resources = listOf(targetResources),
       dependenciesSources = listOf(targetDependencySources),
       javacOptions = javacOptions,
+      scalacOptions = null,
       pythonOptions = pythonOptions,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
 
     actualModuleDetails shouldBe expectedModuleDetails
@@ -265,11 +267,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       resources = listOf(target1Resources),
       dependenciesSources = listOf(target1DependencySources),
       javacOptions = target1JavacOptionsItem,
+      scalacOptions = null,
       pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target2Id.uri),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
@@ -277,11 +280,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       resources = listOf(target2Resources),
       dependenciesSources = listOf(target2DependencySources),
       javacOptions = null,
+      scalacOptions = null,
       pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
     val expectedModuleDetails3 = ModuleDetails(
       target = target3,
@@ -289,11 +293,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = target3JavacOptionsItem,
+      scalacOptions = null,
       pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target2Id.uri),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
     val expectedModuleDetails4 = ModuleDetails(
       target = target4,
@@ -301,11 +306,12 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       resources = emptyList(),
       dependenciesSources = emptyList(),
       javacOptions = null,
+      scalacOptions = null,
       pythonOptions = target4PythonOptionsItem,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target1Id.uri),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
 
     actualModuleDetails1 shouldBe expectedModuleDetails1

@@ -130,6 +130,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       resources = listOf(resourcesItem),
       dependenciesSources = listOf(dependencySourcesItem),
       javacOptions = null,
+      scalacOptions = null,
       pythonOptions = pythonOptionsItem,
       outputPathUris = emptyList(),
       libraryDependencies = null,
@@ -137,7 +138,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         "module2",
         "module3",
       ),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
 
     // when
@@ -256,6 +257,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       resources = listOf(resourcesItem1),
       dependenciesSources = listOf(dependencySourcesItem1),
       javacOptions = null,
+      scalacOptions = null,
       pythonOptions = target1PythonOptionsItem,
       outputPathUris = emptyList(),
       libraryDependencies = null,
@@ -263,7 +265,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         buildTargetId2.uri,
         buildTargetId3.uri,
       ),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -314,11 +316,12 @@ class ModuleDetailsToPythonModuleTransformerTest {
       resources = listOf(resourcesItem2),
       dependenciesSources = listOf(dependencySourcesItem2),
       javacOptions = null,
+      scalacOptions = null,
       pythonOptions = target2PythonOptionsItem,
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = listOf(buildTargetId3.uri),
-      scalacOptions = null,
+      defaultJdkInfo = null,
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
@@ -401,11 +404,12 @@ class ModuleDetailsToPythonModuleTransformerTest {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = null,
-        pythonOptions = null,
         scalacOptions = null,
+        pythonOptions = null,
         outputPathUris = emptyList(),
         libraryDependencies = null,
         moduleDependencies = emptyList(),
+        defaultJdkInfo = null,
       )
 
     fun emptyExpectedModule(name: String, sdkInfo: PythonSdkInfo): PythonModule {

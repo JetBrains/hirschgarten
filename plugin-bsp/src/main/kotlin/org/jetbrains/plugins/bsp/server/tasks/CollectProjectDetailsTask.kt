@@ -129,6 +129,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     } ?: return
     indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
+      uniqueJdkInfos?.also { if (it.isNotEmpty()) projectDetails.defaultJdkInfo = it.first() }
     }
     if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
       indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
