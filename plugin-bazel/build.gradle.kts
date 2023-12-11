@@ -1,7 +1,11 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.pluginRepository.PluginRepositoryFactory
+import org.jetbrains.intellij.tasks.BuildSearchableOptionsTask
+import org.jetbrains.intellij.tasks.PublishPluginTask
+import org.jetbrains.intellij.tasks.RunIdeTask
 import org.jetbrains.intellij.tasks.RunPluginVerifierTask
+import org.jetbrains.intellij.tasks.VerifyPluginTask
 
 plugins {
     alias(libs.plugins.intellij)
@@ -28,6 +32,22 @@ subprojects {
     apply(plugin = "org.jetbrains.intellij")
     intellij {
         version.set(Platform.snapshotVersion)
+    }
+
+    tasks.withType(PublishPluginTask::class.java) {
+        enabled = false
+    }
+
+    tasks.withType(VerifyPluginTask::class.java) {
+        enabled = false
+    }
+
+    tasks.withType(BuildSearchableOptionsTask::class.java) {
+        enabled = false
+    }
+
+    tasks.withType(RunIdeTask::class.java) {
+        enabled = false
     }
 }
 
