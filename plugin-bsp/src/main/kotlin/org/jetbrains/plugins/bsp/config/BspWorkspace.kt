@@ -32,29 +32,29 @@ public class BspWorkspace(public val project: Project) : Disposable {
 }
 
 @Service(Service.Level.PROJECT)
-public class BspReloadStatusService(private val project: Project) {
+internal class BspSyncStatusService(private val project: Project) {
   private var isCanceled = false
 
   @Synchronized
-  public fun startReload() {
+  fun startSync() {
     isCanceled = false
-    project.messageBus.syncPublisher(BspWorkspaceListener.TOPIC).reloadStarted()
+    project.messageBus.syncPublisher(BspWorkspaceListener.TOPIC).syncStarted()
   }
 
   @Synchronized
-  public fun finishReload() {
-    project.messageBus.syncPublisher(BspWorkspaceListener.TOPIC).reloadFinished(isCanceled)
+  fun finishSync() {
+    project.messageBus.syncPublisher(BspWorkspaceListener.TOPIC).syncFinished(isCanceled)
   }
 
   @Synchronized
-  public fun cancel() {
+  fun cancel() {
     isCanceled = true
   }
 
-  public companion object {
+  companion object {
     @JvmStatic
-    public fun getInstance(project: Project): BspReloadStatusService =
-      project.getService(BspReloadStatusService::class.java)
+    fun getInstance(project: Project): BspSyncStatusService =
+      project.getService(BspSyncStatusService::class.java)
   }
 }
 
@@ -81,8 +81,8 @@ public class BspWorkspaceWatcher(private val project: Project) {
 }
 
 public interface BspWorkspaceListener {
-  public fun reloadStarted()
-  public fun reloadFinished(canceled: Boolean)
+  public fun syncStarted()
+  public fun syncFinished(canceled: Boolean)
 
   public companion object {
     public val TOPIC: Topic<BspWorkspaceListener> = Topic(BspWorkspaceListener::class.java)
