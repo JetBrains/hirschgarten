@@ -43,11 +43,11 @@ public abstract class BspProjectAware(private val workspace: BspWorkspace) :
 
   override fun subscribe(listener: ExternalSystemProjectListener, parentDisposable: Disposable) {
     workspace.project.messageBus.connect().subscribe(BspWorkspaceListener.TOPIC, object : BspWorkspaceListener {
-      override fun reloadStarted() {
+      override fun syncStarted() {
         listener.onProjectReloadStart()
       }
 
-      override fun reloadFinished(canceled: Boolean) {
+      override fun syncFinished(canceled: Boolean) {
         listener.onProjectReloadFinish(
           if (canceled) ExternalSystemRefreshStatus.CANCEL
           else ExternalSystemRefreshStatus.SUCCESS

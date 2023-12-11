@@ -6,7 +6,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.BspReloadStatusService
+import org.jetbrains.plugins.bsp.config.BspSyncStatusService
 import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -24,7 +24,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
     shouldRunResync: Boolean,
   ) {
     try {
-      saveAllFiles()
+      preSync()
       if (shouldRunInitialSync) {
         collectProject(SYNC_TASK_ID)
       }
@@ -37,8 +37,13 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
         collectProject(RESYNC_TASK_ID)
       }
     } finally {
-      BspReloadStatusService.getInstance(project).finishReload()
+      BspSyncStatusService.getInstance(project).finishSync()
     }
+  }
+
+  private fun preSync() {
+    BspSyncStatusService.getInstance(project).startSync()
+    saveAllFiles()
   }
 
   private suspend fun collectProject(taskId: String) {
@@ -66,7 +71,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
   }
 
   private fun CollectProjectDetailsTask.onCancel() {
-    BspReloadStatusService.getInstance(project).cancel()
+    BspSyncStatusService.getInstance(project).cancel()
     this.cancelExecution()
   }
 
