@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.utils
 
+import GoBuildTarget
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetDataKind
 import ch.epfl.scala.bsp4j.JvmBuildTarget
@@ -26,6 +27,8 @@ public fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? =
 
 public fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? =
   extractData(target, "kotlin")
+public fun extractGoBuildTarget(target: BuildTarget): GoBuildTarget? =
+  extractData(target, "go")
 
 public fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
   extractData(target, BuildTargetDataKind.JVM)
