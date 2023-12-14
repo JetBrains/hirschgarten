@@ -77,6 +77,8 @@
     <registryKey defaultValue="false" description="Build project on initial project sync" key="bsp.build.project.on.sync"/>
     <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
     <registryKey defaultValue="false" description="Scala modules support" key="bsp.scala.support"/>
+    <registryKey defaultValue="false" description="Go modules support" key="bsp.go.support"/>
+
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
 

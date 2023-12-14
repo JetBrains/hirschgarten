@@ -59,6 +59,7 @@ public class BspStartupActivity : ProjectActivity {
   private suspend fun Project.executeForBspProject() {
     executeEveryTime()
 
+    print("executeForBspProject ${isNewProject()  }")
     if (isNewProject()) {
       executeForNewProject()
     }
