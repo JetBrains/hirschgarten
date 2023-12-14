@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.actions
 
+import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -31,7 +32,11 @@ public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) 
     val project = e.project
 
     if (project != null) {
-      update(project, e)
+      if (project.isTrusted()) {
+        update(project, e)
+      } else {
+        e.presentation.isEnabled = false
+      }
     } else {
       log.warn("`update` for action '${e.presentation.text}' cannot be performed. Project is missing.")
     }
