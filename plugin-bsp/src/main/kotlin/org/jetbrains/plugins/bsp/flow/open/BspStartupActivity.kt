@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.flow.open
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
@@ -99,11 +100,12 @@ public class BspStartupActivity : ProjectActivity {
     val wasFirstOpeningSuccessful = connectionDetailsProviderExtension.onFirstOpening(project, project.rootDir)
 
     if (wasFirstOpeningSuccessful) {
-      SyncProjectTask(project).execute(
-        shouldRunInitialSync = true,
-        shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
-        shouldRunResync = BspFeatureFlags.isBuildProjectOnSyncEnabled,
-      )
+      if (project.isTrusted())
+        SyncProjectTask(project).execute(
+          shouldRunInitialSync = true,
+          shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+          shouldRunResync = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+        )
     } else {
       // TODO https://youtrack.jetbrains.com/issue/BAZEL-623
       AppUIExecutor.onUiThread().execute {
