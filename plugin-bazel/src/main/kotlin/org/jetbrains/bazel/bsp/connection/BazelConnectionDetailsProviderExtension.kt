@@ -111,7 +111,7 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
       calculateNeededJars(
         org = "org.jetbrains.bsp",
         name = "bazel-bsp",
-        version = "3.1.0-20231215-d43b8c9-NIGHTLY",
+        version = "3.1.0-20231216-ec66172-NIGHTLY",
       )
         .joinToString(":"),
       "org.jetbrains.bsp.bazel.install.Install",
