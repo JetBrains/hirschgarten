@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
@@ -68,7 +67,7 @@ public data class ProjectDetails(
   val libraries: List<LibraryItem>?,
   val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
   val invalidTargets: WorkspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
-  var defaultJdkInfo: JvmBuildTarget? = null,
+  var defaultJdkName: String? = null,
 ) {
   public operator fun plus(old: ProjectDetails): ProjectDetails = ProjectDetails(
     targetsId = targetsId + old.targetsId,
@@ -83,7 +82,7 @@ public data class ProjectDetails(
     libraries = if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
     directories = directories + old.directories,
     invalidTargets = invalidTargets + old.invalidTargets,
-    defaultJdkInfo = defaultJdkInfo ?: old.defaultJdkInfo,
+    defaultJdkName = defaultJdkName ?: old.defaultJdkName,
   )
 
   private operator fun WorkspaceDirectoriesResult.plus(old: WorkspaceDirectoriesResult): WorkspaceDirectoriesResult =

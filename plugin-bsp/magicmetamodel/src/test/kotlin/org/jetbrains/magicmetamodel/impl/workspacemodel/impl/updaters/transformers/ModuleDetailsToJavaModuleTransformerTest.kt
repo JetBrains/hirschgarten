@@ -153,7 +153,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         "module2",
         "module3",
       ),
-      defaultJdkInfo = null
+      defaultJdkName = null
     )
     // when
     val javaModule =
@@ -287,7 +287,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         "module2",
         "module3",
       ),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     // when
@@ -427,7 +427,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         "module2",
         "module3",
       ),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -492,7 +492,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       moduleDependencies = listOf(
         "module3",
       ),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)

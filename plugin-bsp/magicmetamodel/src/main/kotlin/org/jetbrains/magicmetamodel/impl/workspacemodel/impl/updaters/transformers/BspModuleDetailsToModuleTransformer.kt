@@ -4,13 +4,14 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
+import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
+import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJavaOrScala
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toModuleCapabilities
 
 internal data class BspModuleDetails(
@@ -19,6 +20,7 @@ internal data class BspModuleDetails(
   val javacOptions: JavacOptionsItem?,
   // TODO: determine if pythonOptions has a purpose here (it's not used anywhere)
   val pythonOptions: PythonOptionsItem?,
+  val scalacOptions: ScalacOptionsItem?,
   val type: String,
   val associates: List<BuildTargetId> = listOf(),
   val moduleDependencies: List<BuildTargetId>,
@@ -41,17 +43,20 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
 
   private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<LibraryDependency> =
     inputEntity.libraryDependencies?.map { LibraryDependency(it, true) }
-      ?: if (inputEntity.target.languageIds.includesJava())
+      ?: if (inputEntity.target.languageIds.includesJavaOrScala())
         DependencySourcesItemToLibraryDependencyTransformer
           .transform(inputEntity.dependencySources.map {
-            DependencySourcesAndJavacOptions(it, inputEntity.javacOptions)
+            DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
           }) else
         emptyList()
+
+  private fun BspModuleDetails.toJvmClassPaths() =
+    (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
 }
 
 internal object DependencySourcesItemToLibraryDependencyTransformer :
-  WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJavacOptions, LibraryDependency> {
-  override fun transform(inputEntity: DependencySourcesAndJavacOptions): List<LibraryDependency> =
+  WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJvmClassPaths, LibraryDependency> {
+  override fun transform(inputEntity: DependencySourcesAndJvmClassPaths): List<LibraryDependency> =
     DependencySourcesItemToLibraryTransformer.transform(inputEntity)
       .map { toLibraryDependency(it) }
 

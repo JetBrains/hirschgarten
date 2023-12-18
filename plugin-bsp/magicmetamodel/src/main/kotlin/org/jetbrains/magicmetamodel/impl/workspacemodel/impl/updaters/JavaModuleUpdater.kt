@@ -51,10 +51,10 @@ internal class JavaModuleWithSourcesUpdater(
 
   private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> {
     val returnDependencies: MutableList<ModuleDependencyItem> = defaultDependencies.toMutableList()
-    entityToAdd.jvmJdkName?.let {
+    entityToAdd.jvmJdkName?.also {
       returnDependencies.add(ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkName, "JavaSDK"))
     }
-    entityToAdd.scalaAddendum?.let { addendum ->
+    entityToAdd.scalaAddendum?.also { addendum ->
       returnDependencies.add(
         toModuleDependencyItemLibraryDependency(
           LibraryDependency(addendum.scalaSdkName, true),

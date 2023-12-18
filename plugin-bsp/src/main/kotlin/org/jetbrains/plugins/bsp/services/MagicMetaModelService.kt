@@ -50,7 +50,7 @@ public class MagicMetaModelService(private val project: Project) :
       libraries = emptyList(),
       scalacOptions = emptyList(),
       invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     return MagicMetaModel.create(magicMetaModelProjectConfig, emptyProjectDetails)

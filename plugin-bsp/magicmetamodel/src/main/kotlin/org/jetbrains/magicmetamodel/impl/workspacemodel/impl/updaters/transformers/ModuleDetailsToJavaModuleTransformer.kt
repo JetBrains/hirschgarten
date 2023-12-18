@@ -49,17 +49,17 @@ internal class ModuleDetailsToJavaModuleTransformer(
       moduleLevelLibraries = if (inputEntity.libraryDependencies == null)
         DependencySourcesItemToLibraryTransformer
           .transform(inputEntity.dependenciesSources.map {
-            DependencySourcesAndJavacOptions(
-              it,
-              inputEntity.javacOptions,
-            )
+            DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
           }) else null,
       compilerOutput = toCompilerOutput(inputEntity),
       // Any java module must be assigned a jdk if there is any available.
-      jvmJdkName = inputEntity.toJdkName() ?: inputEntity.defaultJdkInfo.toJdkName(),
+      jvmJdkName = inputEntity.toJdkName() ?: inputEntity.defaultJdkName,
       kotlinAddendum = toKotlinAddendum(inputEntity),
       scalaAddendum = toScalaAddendum(inputEntity),
     )
+
+  private fun ModuleDetails.toJvmClassPaths() =
+    (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
 
   override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
     val bspModuleDetails = BspModuleDetails(
@@ -71,6 +71,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
       associates = toAssociates(inputEntity),
       libraryDependencies = inputEntity.libraryDependencies,
       moduleDependencies = inputEntity.moduleDependencies,
+      scalacOptions = inputEntity.scalacOptions,
     )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails).applyHACK(inputEntity, projectBasePath)

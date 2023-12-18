@@ -65,7 +65,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = emptyList(),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     actualModuleDetails shouldBe expectedModuleDetails
@@ -136,7 +136,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     actualModuleDetails shouldBe expectedModuleDetails
@@ -272,7 +272,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target2Id.uri),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
@@ -285,7 +285,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
     val expectedModuleDetails3 = ModuleDetails(
       target = target3,
@@ -298,7 +298,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target2Id.uri),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
     val expectedModuleDetails4 = ModuleDetails(
       target = target4,
@@ -311,7 +311,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target1Id.uri),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     actualModuleDetails1 shouldBe expectedModuleDetails1
