@@ -2,7 +2,6 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
@@ -14,7 +13,7 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
   @Test
   fun `should return no library dependencies for no dependency sources`() {
     // given
-    val emptyDependencySourcesItems = listOf<DependencySourcesAndJavacOptions>()
+    val emptyDependencySourcesItems = listOf<DependencySourcesAndJvmClassPaths>()
 
     // when
     val librariesDependencies =
@@ -29,17 +28,12 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     // given
     val dependencySource = "file:///dependency/test/test-1.0.0-sources.jar"
 
-    val dependencySourceItem = DependencySourcesAndJavacOptions(
+    val dependencySourceItem = DependencySourcesAndJvmClassPaths(
       dependencySources = DependencySourcesItem(
         BuildTargetIdentifier("//target"),
         listOf(dependencySource),
       ),
-      javacOptions = JavacOptionsItem(
-        BuildTargetIdentifier("//target"),
-        emptyList(),
-        listOf("file:///dependency/test/test-1.0.0.jar"),
-        "file:///compiler/output.jar",
-      ),
+      listOf("file:///dependency/test/test-1.0.0.jar"),
     )
 
     // when
@@ -60,20 +54,15 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     val dependencySource2 = "file:///dependency/test2/test2-1.0.0-sources.jar"
     val dependencySource3 = "file:///dependency/test3/test3-1.0.0-sources.jar"
 
-    val dependencySourceItem = DependencySourcesAndJavacOptions(
+    val dependencySourceItem = DependencySourcesAndJvmClassPaths(
       dependencySources = DependencySourcesItem(
         BuildTargetIdentifier("//target"),
         listOf(dependencySource1, dependencySource2, dependencySource3),
       ),
-      javacOptions = JavacOptionsItem(
-        BuildTargetIdentifier("//target"),
-        emptyList(),
-        listOf(
-          "file:///dependency/test1/test1-1.0.0.jar",
-          "file:///dependency/test2/test2-1.0.0.jar",
-          "file:///dependency/test3/test3-1.0.0.jar",
-        ),
-        "file:///compiler/output.jar",
+      listOf(
+        "file:///dependency/test1/test1-1.0.0.jar",
+        "file:///dependency/test2/test2-1.0.0.jar",
+        "file:///dependency/test3/test3-1.0.0.jar",
       ),
     )
 
@@ -105,34 +94,24 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     val dependencySource2 = "file:///dependency/test2/test2-1.0.0-sources.jar"
     val dependencySource3 = "file:///dependency/test3/test3-1.0.0-sources.jar"
 
-    val dependencySourceItem1 = DependencySourcesAndJavacOptions(
+    val dependencySourceItem1 = DependencySourcesAndJvmClassPaths(
       dependencySources = DependencySourcesItem(
         BuildTargetIdentifier("//target"),
         listOf(dependencySource1, dependencySource2),
       ),
-      javacOptions = JavacOptionsItem(
-        BuildTargetIdentifier("//target"),
-        emptyList(),
-        listOf(
-          "file:///dependency/test1/test1-1.0.0.jar",
-          "file:///dependency/test2/test2-1.0.0.jar",
-        ),
-        "file:///compiler/output.jar",
+      listOf(
+        "file:///dependency/test1/test1-1.0.0.jar",
+        "file:///dependency/test2/test2-1.0.0.jar",
       ),
     )
-    val dependencySourceItem2 = DependencySourcesAndJavacOptions(
+    val dependencySourceItem2 = DependencySourcesAndJvmClassPaths(
       dependencySources = DependencySourcesItem(
         BuildTargetIdentifier("//target"),
         listOf(dependencySource2, dependencySource3),
       ),
-      javacOptions = JavacOptionsItem(
-        BuildTargetIdentifier("//target"),
-        emptyList(),
-        listOf(
-          "file:///dependency/test2/test2-1.0.0.jar",
-          "file:///dependency/test3/test3-1.0.0.jar",
-        ),
-        "file:///compiler/output.jar",
+      listOf(
+        "file:///dependency/test2/test2-1.0.0.jar",
+        "file:///dependency/test3/test3-1.0.0.jar",
       ),
     )
 

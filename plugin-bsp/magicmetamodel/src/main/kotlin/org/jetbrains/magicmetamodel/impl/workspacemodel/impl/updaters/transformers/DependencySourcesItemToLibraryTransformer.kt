@@ -1,35 +1,41 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import java.net.URI
 import kotlin.io.path.toPath
 
-internal data class DependencySourcesAndJavacOptions(
+internal data class DependencySourcesAndJvmClassPaths(
   val dependencySources: DependencySourcesItem,
-  val javacOptions: JavacOptionsItem?,
+  val jvmClassPaths: List<String>,
 )
 
 internal object DependencySourcesItemToLibraryTransformer :
-  WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJavacOptions, Library> {
-  override fun transform(inputEntity: DependencySourcesAndJavacOptions): List<Library> {
-    val librariesWithUnused = toLibraryFromClassesAndSourcesAndReturnUnusedClassesAndSources(inputEntity)
-    val unusedClassJars = librariesWithUnused.second
-    val unusedSourceJars = librariesWithUnused.third
+  WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJvmClassPaths, Library> {
+  private data class LibrariesPreprocessedResult(
+    val libraries: List<Library>,
+    val unusedClassJars: List<String>,
+    val unusedSourceJars: List<String>,
+  )
 
-    return librariesWithUnused.first + toLibraryFromClassJars(unusedClassJars) + toLibraryFromSourceJars(
+  override fun transform(inputEntity: DependencySourcesAndJvmClassPaths): List<Library> {
+    val librariesPreprocessedResult = preprocessLibraries(inputEntity)
+    val unusedClassJars = librariesPreprocessedResult.unusedClassJars
+    val unusedSourceJars = librariesPreprocessedResult.unusedSourceJars
+
+    return librariesPreprocessedResult.libraries + toLibraryFromClassJars(unusedClassJars) + toLibraryFromSourceJars(
       unusedSourceJars,
     )
   }
 
-  private fun toLibraryFromClassesAndSourcesAndReturnUnusedClassesAndSources(
-    inputEntity: DependencySourcesAndJavacOptions,
-  ): Triple<List<Library>, List<String>, List<String>> {
+  private fun preprocessLibraries(
+    inputEntity: DependencySourcesAndJvmClassPaths,
+  ): LibrariesPreprocessedResult {
     val unusedDependencySources = inputEntity.dependencySources.sources.toMutableSet()
-    val unusedClasses = inputEntity.javacOptions?.classpath.orEmpty().toMutableSet()
+    val allClasses = inputEntity.jvmClassPaths
+    val unusedClasses = allClasses.toMutableSet()
 
-    val result = inputEntity.javacOptions?.classpath.orEmpty()
+    val result = allClasses
       .mapNotNull { classJar ->
         findSourceJarForClassJar(classJar, unusedDependencySources)?.let { sourceJar ->
           unusedDependencySources.remove(sourceJar)
@@ -43,7 +49,11 @@ internal object DependencySourcesItemToLibraryTransformer :
         }
       }
 
-    return Triple(result, unusedClasses.toList(), unusedDependencySources.toList())
+    return LibrariesPreprocessedResult(
+      libraries = result,
+      unusedClassJars = unusedClasses.toList(),
+      unusedSourceJars = unusedDependencySources.toList()
+    )
   }
 
   private fun toLibraryFromClassJars(classJars: List<String>) =

@@ -39,7 +39,7 @@ internal class ProjectDetailsToModuleDetailsTransformer(
       outputPathUris = if (isRoot) calculateAllOutputPaths(projectDetails) else emptyList(),
       libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.map { it.uri },
       moduleDependencies = targetsIndex.keys.intersect(allDependencies).map { it.uri },
-      defaultJdkInfo = projectDetails.defaultJdkInfo,
+      defaultJdkName = projectDetails.defaultJdkName,
     )
   }
 
