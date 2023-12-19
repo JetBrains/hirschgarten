@@ -113,7 +113,7 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
         name = "bazel-bsp",
         version = "3.1.0-20231216-ec66172-NIGHTLY",
       )
-        .joinToString(":"),
+        .joinToString(File.pathSeparator),
       "org.jetbrains.bsp.bazel.install.Install",
     )
 
