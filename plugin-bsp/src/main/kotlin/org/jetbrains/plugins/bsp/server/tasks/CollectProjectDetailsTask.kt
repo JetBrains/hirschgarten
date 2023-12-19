@@ -142,11 +142,11 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         calculateAllScalaSdkInfosSubtask(projectDetails)
       }
     }
-    progressStep(endFraction = 0.75, BspPluginBundle.message("progress.bar.update.mmm.diff")) {
-      updateMMMDiffSubtask(projectDetails)
+    progressStep(endFraction = 0.75, BspPluginBundle.message("progress.bar.update.internal.model")) {
+      updateInternalModelSubtask(projectDetails)
     }
-    progressStep(endFraction = 1.0, BspPluginBundle.message("progress.bar.post.processing.mmm")) {
-      postprocessingMMMSubtask()
+    progressStep(endFraction = 1.0, BspPluginBundle.message("progress.bar.post.processing")) {
+      postprocessingSubtask()
     }
   }
 
@@ -292,7 +292,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       .toSet()
   }
 
-  private suspend fun updateMMMDiffSubtask(projectDetails: ProjectDetails) {
+  private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
     withSubtask("calculate-project-structure", BspPluginBundle.message("console.task.model.calculate.structure")) {
       runInterruptible {
@@ -306,7 +306,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private suspend fun postprocessingMMMSubtask() {
+  private suspend fun postprocessingSubtask() {
     addBspFetchedJdks()
     applyChangesOnWorkspaceModel()
 
