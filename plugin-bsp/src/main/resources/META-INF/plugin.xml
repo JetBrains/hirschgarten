@@ -48,8 +48,6 @@
 
     <workspaceModel.fileIndexContributor implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
 
-    <attachSourcesProvider implementation="org.jetbrains.plugins.bsp.ui.notifications.BazelAttachSourcesProvider"/>
-
     <java.programPatcher implementation="org.jetbrains.plugins.bsp.runner.BspJvmEnvironmentProgramPatcher"/>
 
     <projectOpenProcessor
