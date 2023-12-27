@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.DiagnosticSeverity
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.LogMessageParams
+import ch.epfl.scala.bsp4j.PrintParams
 import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import ch.epfl.scala.bsp4j.ShowMessageParams
 import ch.epfl.scala.bsp4j.TaskFinishDataKind
@@ -77,6 +78,14 @@ public class BspClient(
 
       TaskFinishDataKind.TEST_REPORT -> {}
     }
+  }
+
+  override fun onRunPrintStdout(printParams: PrintParams?) {
+    // TODO https://youtrack.jetbrains.com/issue/BAZEL-801
+  }
+
+  override fun onRunPrintStderr(printParams: PrintParams?) {
+    // TODO https://youtrack.jetbrains.com/issue/BAZEL-801
   }
 
   override fun onBuildPublishDiagnostics(params: PublishDiagnosticsParams) {
