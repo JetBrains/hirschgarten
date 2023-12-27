@@ -37,7 +37,6 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
 
   private fun PsiElement.shouldAddMarker(): Boolean =
     !isInsideJar() && getStrictParentOfType<PsiNameIdentifierOwner>()
-      ?.takeIf { it.nameIdentifier == this }
       ?.isClassOrMethod() ?: false
 
   private fun PsiElement.isInsideJar() =
