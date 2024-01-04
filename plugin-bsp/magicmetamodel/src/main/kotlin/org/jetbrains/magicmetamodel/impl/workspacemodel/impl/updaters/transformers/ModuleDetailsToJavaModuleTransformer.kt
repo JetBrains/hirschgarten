@@ -139,7 +139,7 @@ public fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 public fun String.projectNameToJdkName(homePath: String): String =
   projectNameToBaseJdkName() + "-" + homePath.createJavaHomeHash()
 
-public fun String.createJavaHomeHash(): String {
+private fun String.createJavaHomeHash(): String {
   val md = MessageDigest.getInstance("MD5")
   val hash = md.digest(this.toByteArray())
   return hash.toHexString().substring(0, 5)
