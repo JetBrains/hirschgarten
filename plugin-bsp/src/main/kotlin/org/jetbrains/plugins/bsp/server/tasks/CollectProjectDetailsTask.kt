@@ -255,7 +255,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private fun calculateAllUniqueGoSdkInfos(projectDetails: ProjectDetails): Set<GoBuildTarget> {
-    println("projectDetails.targets: ${projectDetails.targets.mapNotNull{ t -> t.languageIds.contains("go") }}")
     return projectDetails.targets.mapNotNull(::extractGoBuildTarget).toSet()
   }
 
@@ -285,10 +284,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         )
       }
 
-  private fun createGoSdk(target: GoBuildTarget): GoSdk {
-    GoSdkService.getInstance(project).setSdk(GoSdk.fromHomePath("/home/michal"))
-    return GoSdkService.getInstance(project).getSdk(null)
-  }
+  private fun getGoSdk(target: GoBuildTarget): GoSdk =
+    GoSdk.fromHomePath(target.sdkHomePath)
 
   private suspend fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-python-sdk-infos",
@@ -363,19 +360,23 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       BspPluginBundle.message("console.task.model.add.go.fetched.sdks")
     ) {
       logPerformanceSuspend("add-bsp-fetched-go-sdks") {
-        val goSdk = createGoSdk(GoBuildTarget("/home/michal", ""))
-        val sdk = ProjectJdkImpl(
-          goSdk.name,
-          sdkTable.defaultSdkType,
-        )
-        sdk.homePath = goSdk.homeUrl
-        sdk.versionString
-        addSdkIfNeeded(sdk)
-        println("goSdk as sdk: $sdk")
-        uniqueGoSdkInfos?.forEach { createGoSdk(it) } // empty
+        val goSdk = getGoSdk(GoBuildTarget("/usr/local/go", ""))
+        addGoSdk(goSdk)
+//        uniqueGoSdkInfos?.forEach { addGoSdk(getGoSdk(it)) } // empty
       }
     }
   }
+
+  private suspend fun addGoSdk(goSdk: GoSdk) {
+    val sdk = ProjectJdkImpl(
+      goSdk.name,
+      sdkTable.defaultSdkType, // will be changed to GoSdkType
+    )
+    sdk.homePath = goSdk.homeUrl
+    sdk.versionString
+    addSdkIfNeeded(sdk)
+  }
+
   private suspend fun addBspFetchedJdks() = withSubtask(
     "add-bsp-fetched-jdks",
     BspPluginBundle.message("console.task.model.add.fetched.jdks")
