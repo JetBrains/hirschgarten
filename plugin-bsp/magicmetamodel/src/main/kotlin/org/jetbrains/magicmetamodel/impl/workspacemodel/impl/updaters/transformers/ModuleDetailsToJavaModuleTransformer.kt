@@ -5,9 +5,11 @@ import ch.epfl.scala.bsp4j.JvmBuildTarget
 import org.jetbrains.bsp.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.utils.extractScalaBuildTarget
+import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
@@ -15,6 +17,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import java.net.URI
 import java.nio.file.Path
+import java.security.MessageDigest
 import kotlin.io.path.name
 import kotlin.io.path.toPath
 
@@ -53,9 +56,10 @@ internal class ModuleDetailsToJavaModuleTransformer(
           }) else null,
       compilerOutput = toCompilerOutput(inputEntity),
       // Any java module must be assigned a jdk if there is any available.
-      jvmJdkName = inputEntity.toJdkName() ?: inputEntity.defaultJdkName,
+      jvmJdkName = inputEntity.toJdkName(),
       kotlinAddendum = toKotlinAddendum(inputEntity),
       scalaAddendum = toScalaAddendum(inputEntity),
+      javaAddendum = toJavaAddendum(inputEntity),
     )
 
   private fun ModuleDetails.toJvmClassPaths() =
@@ -95,7 +99,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
     extractJvmBuildTarget(this.target).toJdkName()
 
   private fun JvmBuildTarget?.toJdkName(): String? =
-    this?.javaVersion?.javaVersionToJdkName(projectBasePath.name)
+    this?.javaHome?.let { projectBasePath.name.projectNameToJdkName(it) }
 
   private fun toKotlinAddendum(inputEntity: ModuleDetails): KotlinAddendum? {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
@@ -117,6 +121,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
     )
   }
 
+  private fun toJavaAddendum(inputEntity: ModuleDetails): JavaAddendum? =
+    extractJvmBuildTarget(inputEntity.target)?.javaVersion?.let { JavaAddendum(languageVersion = it) }
+
   private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetId> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
     return kotlinBuildTarget?.associates?.map { it.uri } ?: emptyList()
@@ -126,3 +133,14 @@ internal class ModuleDetailsToJavaModuleTransformer(
 public fun String.javaVersionToJdkName(projectName: String): String = "$projectName-$this"
 
 public fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
+
+public fun String.projectNameToBaseJdkName(): String = "$this-jdk"
+
+public fun String.projectNameToJdkName(homePath: String): String =
+  projectNameToBaseJdkName() + "-" + homePath.createJavaHomeHash()
+
+public fun String.createJavaHomeHash(): String {
+  val md = MessageDigest.getInstance("MD5")
+  val hash = md.digest(this.toByteArray())
+  return hash.toHexString().substring(0, 5)
+}
