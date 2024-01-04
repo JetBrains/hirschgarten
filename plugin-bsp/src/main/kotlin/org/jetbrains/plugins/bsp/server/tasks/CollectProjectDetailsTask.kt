@@ -24,11 +24,15 @@ import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsPr
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.projectRoots.SdkType
+import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
+import com.intellij.openapi.projectRoots.impl.UnknownSdkType
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.indeterminateStep
 import com.intellij.platform.util.progress.progressStep
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.getInstance
+import com.jetbrains.python.sdk.PythonSdkType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -246,10 +250,14 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     uniqueGoSdkInfos = logPerformance(it) {
       calculateAllUniqueGoSdkInfos(projectDetails)
     }
+    println("projecDetails.targets: ${projectDetails.targets}")
+    println("uniqueGoSdkInfos: $uniqueGoSdkInfos")
   }
 
-  private fun calculateAllUniqueGoSdkInfos(projectDetails: ProjectDetails): Set<GoBuildTarget> =
-    projectDetails.targets.mapNotNull(::extractGoBuildTarget).toSet()
+  private fun calculateAllUniqueGoSdkInfos(projectDetails: ProjectDetails): Set<GoBuildTarget> {
+    println("projectDetails.targets: ${projectDetails.targets.mapNotNull{ t -> t.languageIds.contains("go") }}")
+    return projectDetails.targets.mapNotNull(::extractGoBuildTarget).toSet()
+  }
 
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-scala-sdk-infos",
@@ -355,7 +363,16 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       BspPluginBundle.message("console.task.model.add.go.fetched.sdks")
     ) {
       logPerformanceSuspend("add-bsp-fetched-go-sdks") {
-        uniqueGoSdkInfos?.forEach { createGoSdk(it) }
+        val goSdk = createGoSdk(GoBuildTarget("/home/michal", ""))
+        val sdk = ProjectJdkImpl(
+          goSdk.name,
+          sdkTable.defaultSdkType,
+        )
+        sdk.homePath = goSdk.homeUrl
+        sdk.versionString
+        addSdkIfNeeded(sdk)
+        println("goSdk as sdk: $sdk")
+        uniqueGoSdkInfos?.forEach { createGoSdk(it) } // empty
       }
     }
   }
