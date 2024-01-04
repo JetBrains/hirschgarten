@@ -16,13 +16,13 @@ object Plugin {
 const val pluginVerifierIdeVersions = "233.11799.241"
 
 object Platform {
-  const val type = "IC"
+  const val type = "IU"
   const val version = "233.11799.241"
   const val downloadSources = true
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
   // Example: platformPlugins =" com.intellij.java, com.jetbrains.php:203.4449.22"
-  val plugins = listOf("com.intellij.java", "org.jetbrains.kotlin", "PythonCore:233.11799.241")
+  val plugins = listOf("com.intellij.java", "org.jetbrains.kotlin", "PythonCore:233.11799.241", "org.jetbrains.plugins.go:233.11799.67")
 }
 
 const val javaVersion = "17"

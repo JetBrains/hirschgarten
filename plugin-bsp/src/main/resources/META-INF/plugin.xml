@@ -6,6 +6,7 @@
   <depends>com.intellij.modules.platform</depends>
   <depends>com.intellij.java</depends>
   <depends>org.jetbrains.kotlin</depends>
+  <depends>org.jetbrains.plugins.go</depends>
   <depends optional="true" config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
 
   <extensionPoints>

@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
+import GoBuildTarget
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
@@ -13,6 +14,8 @@ import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import com.goide.sdk.GoSdk
+import com.goide.sdk.GoSdkService
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
@@ -82,9 +85,6 @@ public data class PythonSdk(
   val dependencies: List<DependencySourcesItem>,
 )
 
-public data class GoSdk(
-  val name: String,
-)
 
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
   BspServerTask<ProjectDetails>("collect project details", project) {
@@ -100,7 +100,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private var scalaSdks: Set<ScalaSdk>? = null
 
-  private var goSdks: Set<GoSdk>? = null
+  private var uniqueGoSdkInfos: Set<GoBuildTarget>? = null
 
   private val sdkTable = ProjectJdkTable.getInstance()
 
@@ -149,10 +149,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       }
     }
 
-    if (true /* BspFeatureFlags.isGoSupportEnabled && goSdkExtensionExists())*/) {
-      indeterminateStep(text = "Calculating all unique go sdk infos") {
-        calculateAllGoSdkInfosSubtask(projectDetails)
-      }
+    indeterminateStep(text = "Calculating all unique go sdk infos") {
+      calculateAllUniqueGoSdkInfosSubtask(projectDetails)
     }
 
     progressStep(endFraction = 0.75, BspPluginBundle.message("progress.bar.update.mmm.diff")) {
@@ -241,6 +239,18 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> =
     projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
 
+  private suspend fun calculateAllUniqueGoSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
+    "calculate-all-unique-go-sdk-infos",
+    BspPluginBundle.message("console.task.model.calculate.jdks.infos")
+  ) {
+    uniqueGoSdkInfos = logPerformance(it) {
+      calculateAllUniqueGoSdkInfos(projectDetails)
+    }
+  }
+
+  private fun calculateAllUniqueGoSdkInfos(projectDetails: ProjectDetails): Set<GoBuildTarget> =
+    projectDetails.targets.mapNotNull(::extractGoBuildTarget).toSet()
+
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-scala-sdk-infos",
     BspPluginBundle.message("console.task.model.calculate.scala.sdk.infos")
@@ -266,6 +276,11 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
           sdkJars = it.jars
         )
       }
+
+  private fun createGoSdk(target: GoBuildTarget): GoSdk {
+    GoSdkService.getInstance(project).setSdk(GoSdk.fromHomePath("/home/michal"))
+    return GoSdkService.getInstance(project).getSdk(null)
+  }
 
   private suspend fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-python-sdk-infos",
@@ -330,8 +345,20 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     if (BspFeatureFlags.isScalaSupportEnabled) {
       addBspFetchedScalaSdks()
     }
+
+    addBspFetchedGoSdks()
   }
 
+  private suspend fun addBspFetchedGoSdks() {
+    withSubtask(
+      "add-bsp-fetched-go-sdks",
+      BspPluginBundle.message("console.task.model.add.go.fetched.sdks")
+    ) {
+      logPerformanceSuspend("add-bsp-fetched-go-sdks") {
+        uniqueGoSdkInfos?.forEach { createGoSdk(it) }
+      }
+    }
+  }
   private suspend fun addBspFetchedJdks() = withSubtask(
     "add-bsp-fetched-jdks",
     BspPluginBundle.message("console.task.model.add.fetched.jdks")
@@ -347,7 +374,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     addSdkIfNeeded(jdk)
   }
-
   private suspend fun addSdkIfNeeded(sdk: Sdk) {
     val existingSdk = sdkTable.findJdk(sdk.name, sdk.sdkType.name)
     if (existingSdk == null || existingSdk.homePath != sdk.homePath) {
@@ -355,30 +381,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         existingSdk?.let { sdkTable.removeJdk(existingSdk) }
         sdkTable.addJdk(sdk)
       }
-    }
-  }
-
-  private fun createGoSdk(target: BuildTarget): GoSdk? =
-    extractGoBuildTarget(target)
-      ?.let {
-        GoSdk(
-          name = "dummy go sdk name",
-        )
-      }
-
-  private fun calculateAllGoSdkInfos(projectDetails: ProjectDetails): Set<GoSdk> =
-    projectDetails.targets
-      .mapNotNull {
-        createGoSdk(it)
-      }
-      .toSet()
-
-  private suspend fun calculateAllGoSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
-    "calculate-all-go-sdk-infos",
-    BspPluginBundle.message("console.task.model.calculate.go.sdk.infos")
-  ) {
-    goSdks = logPerformance(it) {
-      calculateAllGoSdkInfos(projectDetails)
     }
   }
 
