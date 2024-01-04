@@ -41,7 +41,7 @@ import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToBaseJdkName
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
@@ -84,7 +84,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
-  private var uniqueJdkInfos: Set<String>? = null
+  private var uniqueJavaHomes: Set<String>? = null
 
   private var pythonSdks: Set<PythonSdk>? = null
 
@@ -122,9 +122,9 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     } ?: return
     indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
-      uniqueJdkInfos.orEmpty().also {
+      uniqueJavaHomes.orEmpty().also {
         if (it.isNotEmpty())
-          projectDetails.defaultJdkName = project.name.projectNameToBaseJdkName()
+          projectDetails.defaultJdkName = project.name.projectNameToJdkName(it.first())
         else
           projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
       }
@@ -217,12 +217,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     "calculate-all-unique-jdk-infos",
     BspPluginBundle.message("console.task.model.calculate.jdks.infos")
   ) {
-    uniqueJdkInfos = logPerformance(it) {
-      calculateAllUniqueJdkInfos(projectDetails)
+    uniqueJavaHomes = logPerformance(it) {
+      calculateAllUniqueJavaHomes(projectDetails)
     }
   }
 
-  private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<String> =
+  private fun calculateAllUniqueJavaHomes(projectDetails: ProjectDetails): Set<String> =
     projectDetails.targets.mapNotNull(::extractJvmBuildTarget).map { it.javaHome }.toSet()
 
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
@@ -321,7 +321,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     BspPluginBundle.message("console.task.model.add.fetched.jdks")
   ) {
     logPerformanceSuspend("add-bsp-fetched-jdks") {
-      uniqueJdkInfos?.forEach {
+      uniqueJavaHomes?.forEach {
         SdkUtils.addJdkIfNeeded(
           projectName = project.name,
           javaHomeUri = it

@@ -56,7 +56,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
           }) else null,
       compilerOutput = toCompilerOutput(inputEntity),
       // Any java module must be assigned a jdk if there is any available.
-      jvmJdkName = inputEntity.toJdkName(),
+      jvmJdkName = inputEntity.toJdkNameOrDefault(),
       kotlinAddendum = toKotlinAddendum(inputEntity),
       scalaAddendum = toScalaAddendum(inputEntity),
       javaAddendum = toJavaAddendum(inputEntity),
@@ -94,6 +94,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun toCompilerOutput(inputEntity: ModuleDetails): Path? =
     inputEntity.javacOptions?.classDirectory?.let { URI(it).toPath() }
+
+  private fun ModuleDetails.toJdkNameOrDefault(): String? =
+    toJdkName() ?: defaultJdkName
 
   private fun ModuleDetails.toJdkName(): String? =
     extractJvmBuildTarget(this.target).toJdkName()
@@ -136,8 +139,8 @@ public fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
 
 public fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 
-public fun String.projectNameToJdkName(homePath: String): String =
-  projectNameToBaseJdkName() + "-" + homePath.createJavaHomeHash()
+public fun String.projectNameToJdkName(javaHomeUri: String): String =
+  projectNameToBaseJdkName() + "-" + javaHomeUri.createJavaHomeHash()
 
 private fun String.createJavaHomeHash(): String {
   val md = MessageDigest.getInstance("MD5")
