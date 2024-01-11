@@ -35,6 +35,12 @@
                 key="bazelbsp"
                 implementationClass="org.jetbrains.bazel.config.BazelExternalSystemIconProvider"/>
 
+        <applicationConfigurable
+                parentId="tools"
+                instance="org.jetbrains.bazel.settings.BazelApplicationSettingsPanel"
+                id="org.jetbrains.bazel.settings.BazelApplicationSettingsPanel"
+                displayName="Bazel"/>
+
         <fileType
                 name="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkFileType"

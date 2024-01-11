@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-  testImplementation(libs.junitJupiter)
+  testImplementation(libs.junit5)
   testImplementation(libs.ideProbeDriver)
   testImplementation(libs.ideProbeRobot)
   testImplementation(project(":probe-setup"))

@@ -1,48 +1,68 @@
 package org.jetbrains.bazel.bsp.connection
 
+import com.intellij.openapi.application.EDT
 import ch.epfl.scala.bsp4j.BspConnectionDetails
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runWriteAction
-import com.intellij.openapi.application.writeAction
+import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
+import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import coursier.core.Dependency
-import coursier.core.Module
+import com.intellij.openapi.vfs.findFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.assets.BspPluginTemplates
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
+import org.jetbrains.bazel.coroutines.CoroutineService
+import org.jetbrains.bazel.settings.bazelApplicationSettings
+import org.jetbrains.bazel.settings.serverDetectedJdk
 import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bsp.bazel.install.BspConnectionDetailsCreator
+import org.jetbrains.bsp.bazel.install.EnvironmentCreator
+import org.jetbrains.bsp.bazel.installationcontext.InstallationContext
+import org.jetbrains.bsp.bazel.installationcontext.InstallationContextJavaPathEntity
+import org.jetbrains.bsp.bazel.installationcontext.InstallationContextJavaPathEntityMapper
 import org.jetbrains.bsp.utils.parseBspConnectionDetails
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
-import org.jetbrains.plugins.bsp.utils.withRealEnvs
-import scala.collection.immutable.Map
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import scala.jdk.javaapi.CollectionConverters
 import java.io.File
 import java.nio.file.Path
-import java.nio.file.Paths
+import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.writeText
 
+private class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectPath.toNioPath()) {
+  override fun create() {
+    createDotBazelBsp()
+  }
+}
+
 private const val DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
+private const val BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH = ".bsp/bazelbsp.json"
+
+private const val BAZEL_PLUGIN_ID = "org.jetbrains.bazel"
+private const val BSP_PLUGIN_ID = "org.jetbrains.bsp"
+
+private const val BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX = 0
+private const val BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX = 2
 
 internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProviderExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
 
   override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean {
     project.stateService.projectPath = projectPath
+    project.stateService.connectionFile = projectPath.findFile(BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH)
 
-    initializeProjectViewFile(projectPath)
-    writeAction { generateConnectionFile(project, projectPath) }
+    if (project.stateService.connectionFile == null) {
+      initializeProjectViewFile(projectPath)
+    }
 
-    return project.connectionFile != null
+    return true
   }
 
   private fun initializeProjectViewFile(projectPath: VirtualFile) {
@@ -62,105 +82,93 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
   override fun provideNewConnectionDetails(
     project: Project,
     currentConnectionDetails: BspConnectionDetails?
-  ): BspConnectionDetails? =
-    if (currentConnectionDetails?.version != Constants.VERSION) {
-      ApplicationManager.getApplication().invokeAndWait {
-        runWriteAction { project.connectionFile?.delete(this) }
-      }
-      val projectPath = project.stateService.projectPath
-        ?: error("Cannot obtain project path, please reimport the project.")
+  ): BspConnectionDetails? {
+    val connectionFile = project.stateService.connectionFile
 
-      ApplicationManager.getApplication().invokeAndWait {
-        runWriteAction { generateConnectionFile(project, projectPath) }
-      }
-      project.connectionFile?.parseBspConnectionDetails()
+    return if (connectionFile != null) {
+      connectionFile.doProvideNewConnectionDetails(currentConnectionDetails)
     } else {
-      null
+      doProvideNewConnectionDetails(project, currentConnectionDetails)
     }
-
-  private fun generateConnectionFile(project: Project, projectPath: VirtualFile) {
-    executeAndWait(
-      command = calculateInstallerCommand(),
-      projectPath = projectPath,
-      project = project,
-    )
   }
 
-  private fun executeAndWait(
-    command: List<String>,
-    projectPath: VirtualFile,
+  private fun VirtualFile.doProvideNewConnectionDetails(currentConnectionDetails: BspConnectionDetails?): BspConnectionDetails? =
+    parseBspConnectionDetails()?.takeIf { it != currentConnectionDetails }
+
+  private fun doProvideNewConnectionDetails(
     project: Project,
-  ) {
-    val commandStr = command.joinToString(" ")
-    val builder = ProcessBuilder(command)
-      .directory(projectPath.toNioPath().toFile())
-      .withRealEnvs()
-      .redirectError(ProcessBuilder.Redirect.PIPE)
+    currentConnectionDetails: BspConnectionDetails?
+  ): BspConnectionDetails? {
+    val javaBin = calculateSelectedJavaBin()
 
-    val consoleProcess = builder.start()
-    consoleProcess.waitFor()
-    if (consoleProcess.exitValue() != 0) {
-      error("An error has occurred while running the command: $commandStr")
-    }
-  }
-
-  private fun calculateInstallerCommand(): List<String> =
-    listOf(
-      calculateJavaExecPath(),
-      "-cp",
-      calculateNeededJars(
-        org = "org.jetbrains.bsp",
-        name = "bazel-bsp",
-        version = "3.1.0-20231216-ec66172-NIGHTLY",
-      )
-        .joinToString(File.pathSeparator),
-      "org.jetbrains.bsp.bazel.install.Install",
-    )
-
-  private fun calculateJavaExecPath(): String {
-    val javaHome = System.getProperty("java.home")
-    if (javaHome == null) {
-      error("Java needs to be set up before running the plugin")
+    return if (currentConnectionDetails?.hasNotChanged(javaBin) == true) {
+      null
     } else {
-      return "${Paths.get(javaHome, "bin", "java")}"
+      calculateNewConnectionDetails(project, javaBin)
     }
   }
 
-  @Suppress("UNCHECKED_CAST")
-  private fun calculateNeededJars(org: String, name: String, version: String): List<String> {
-    val attributes = Map.from(CollectionConverters.asScala(mapOf<String, String>()))
-    val dependencies = listOf<Dependency>(
-      Dependency.apply(
-        Module.apply(org, name, attributes),
-        version,
-      ),
+  private fun calculateSelectedJavaBin(): Path {
+    val selectedJdk = bazelApplicationSettings.serverSettings.selectedJdk
+    return if (selectedJdk.name == serverDetectedJdk.name) InstallationContextJavaPathEntityMapper.default().value
+    else selectedJdk.toJavaBin()
+  }
+
+  private fun Sdk.toJavaBin(): Path =
+    homePath?.let { Path(it) }?.resolve("bin")?.resolve("java") ?: error("Cannot obtain jdk home path for $name")
+
+  private fun BspConnectionDetails.hasNotChanged(javaBin: Path): Boolean =
+    version == Constants.VERSION && argv[BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX] == javaBin.toAbsolutePath().toString()
+
+  private fun calculateNewConnectionDetails(project: Project, javaBin: Path): BspConnectionDetails {
+    val projectPath = project.stateService.projectPath ?: error("Cannot obtain project path. Please reopen the project")
+    val installationContext = InstallationContext(
+      javaPath = InstallationContextJavaPathEntity(javaBin),
+      debuggerAddress = null,
+      bazelWorkspaceRootDir = projectPath.toNioPath(),
+      projectViewFilePath =  projectPath.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
     )
-    val fetchTask = coursier
-      .Fetch
-      .apply()
-      .addDependencies(CollectionConverters.asScala(dependencies).toSeq())
-    val executionContext = fetchTask.cache().ec()
-    val future = fetchTask.io().future(executionContext)
-    val futureResult = Await.result(future, Duration.Inf())
-    return CollectionConverters.asJava(futureResult as scala.collection.immutable.List<File>).map { it.canonicalPath }
-  }
+    val dotBazelBspCreator = DotBazelBspCreator(projectPath)
 
-  private val Project.connectionFile: VirtualFile?
-    get() = getChild(stateService.projectPath, listOf(".bsp", "bazelbsp.json"))
-
-  private fun getChild(root: VirtualFile?, path: List<String>): VirtualFile? {
-    val found: VirtualFile? = path.fold(root) { vf: VirtualFile?, child: String ->
-      vf?.refresh(false, false)
-      vf?.findChild(child)
+    CoroutineService.getInstance(project).start {
+      withContext(Dispatchers.EDT) {
+        dotBazelBspCreator.create()
+      }
     }
-    found?.refresh(false, false)
-    return found
-  }
-}
 
+    return BspConnectionDetailsCreator(installationContext, false).create().also { it.updateClasspath() }
+  }
+
+  private fun BspConnectionDetails.updateClasspath() {
+    argv[BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX] = calculateNewClasspath()
+  }
+
+  private fun BspConnectionDetails.calculateNewClasspath(): String {
+    val oldClasspath = argv[BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX]
+
+    val bazelPluginClasspath = calculatePluginClasspath(BAZEL_PLUGIN_ID)
+    val bspPluginClasspath = calculatePluginClasspath(BSP_PLUGIN_ID)
+
+    return listOf(bazelPluginClasspath, bspPluginClasspath, oldClasspath).joinToString(File.pathSeparator)
+  }
+
+  private fun calculatePluginClasspath(pluginIdString: String): String {
+    val pluginId = PluginId.findId(pluginIdString) ?: error("Cannot find $pluginIdString plugin")
+    val pluginDescriptor = PluginManager.getInstance().findEnabledPlugin(pluginId) ?: error("Cannot find $pluginId plugin descriptor")
+    val pluginJarsDir = pluginDescriptor.pluginPath.resolve("lib")
+
+    return pluginJarsDir.mapJarDirToClasspath()
+  }
+
+  private fun Path.mapJarDirToClasspath(): String =
+    toFile().listFiles()?.toList().orEmpty()
+      .map { it.toPath().toAbsolutePath().normalize() }
+      .joinToString(separator = File.pathSeparator, transform = { it.toString() })
+}
 
 internal data class BazelConnectionDetailsProviderExtensionState(
   var projectPath: String? = null,
+  var connectionFile: String? = null
 )
 
 @State(
@@ -172,24 +180,21 @@ internal data class BazelConnectionDetailsProviderExtensionState(
 internal class BazelConnectionDetailsProviderExtensionService
   : PersistentStateComponent<BazelConnectionDetailsProviderExtensionState> {
   var projectPath: VirtualFile? = null
+  var connectionFile: VirtualFile? = null
 
   override fun getState(): BazelConnectionDetailsProviderExtensionState? =
     BazelConnectionDetailsProviderExtensionState(
       projectPath = projectPath?.url,
+      connectionFile = connectionFile?.url,
     )
 
   override fun loadState(state: BazelConnectionDetailsProviderExtensionState) {
     val virtualFileManager = VirtualFileManager.getInstance()
 
     projectPath = state.projectPath?.let { virtualFileManager.findFileByUrl(it) }
-  }
-
-  companion object {
-    @JvmStatic
-    fun getInstance(project: Project): BazelConnectionDetailsProviderExtensionService =
-      project.getService(BazelConnectionDetailsProviderExtensionService::class.java)
+    connectionFile = state.connectionFile?.let { virtualFileManager.findFileByUrl(it) }
   }
 }
 
 private val Project.stateService: BazelConnectionDetailsProviderExtensionService
-  get() = BazelConnectionDetailsProviderExtensionService.getInstance(this)
+  get() = getService(BazelConnectionDetailsProviderExtensionService::class.java)

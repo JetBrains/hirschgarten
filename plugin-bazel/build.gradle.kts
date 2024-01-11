@@ -17,12 +17,13 @@ val myToken: String by project
 val releaseChannel: String by project
 
 dependencies {
-    implementation(libs.kotest)
-    implementation(libs.coursier)
     implementation(libs.bazelBsp) {
         exclude(group = "org.jetbrains.kotlinx")
         exclude(group = "ch.epfl.scala")
     }
+    testImplementation(libs.junit5)
+    testRuntimeOnly(libs.junitVintage)
+    testImplementation(libs.kotest)
 }
 
 group = Plugin.group
@@ -130,6 +131,24 @@ tasks {
                 )
             )
         )
+
+        runtimeClasspathFiles.set(
+            runtimeConfiguration.exclude(
+                mapOf(
+                    "group" to "ch.epfl.scala",
+                    "module" to "bsp4j",
+                )
+            )
+        )
+
+        runtimeClasspathFiles.set(
+            runtimeConfiguration.exclude(
+                mapOf(
+                    "group" to "org.jetbrains.kotlin",
+                    "module" to "kotlin-stdlib",
+                )
+            )
+        )
     }
 
     runPluginVerifier {
@@ -171,6 +190,19 @@ tasks {
     withType<JavaCompile> {
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
+    }
+
+    test {
+        useJUnitPlatform()
+        testLogging {
+            events("PASSED", "SKIPPED", "FAILED")
+        }
+
+        // disable the malfunctioned platform listener com.intellij.tests.JUnit5TestSessionListener
+        // this listener caused the CI tests to fail with
+        // AlreadyDisposedException: Already disposed: Application (containerState DISPOSE_COMPLETED)
+        // TODO: follow up https://youtrack.jetbrains.com/issue/IDEA-337508/AlreadyDisposedException-Already-disposed-Application-containerState-DISPOSECOMPLETED-after-junit5-tests-on-TeamCity
+        systemProperty("intellij.build.test.ignoreFirstAndLastTests", "true")
     }
 }
 
