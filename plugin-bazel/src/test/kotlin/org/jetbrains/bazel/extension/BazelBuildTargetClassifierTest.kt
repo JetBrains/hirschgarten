@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.extension
 
 import io.kotest.matchers.shouldBe
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class BazelBuildTargetClassifierTest {
   private val classifier = BazelBuildTargetClassifier()
