@@ -14,7 +14,7 @@ gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
 detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
-bazelBsp = { module = "org.jetbrains.bsp:bazel-bsp", version = "3.1.0-20240111-8009bec-NIGHTLY" }
+bazelBsp = { module = "org.jetbrains.bsp:bazel-bsp", version = "3.1.0-20240113-6ec65a8-NIGHTLY" }
 
 [plugins]
 intellij = { id = "org.jetbrains.intellij", version = "1.16.0" }
