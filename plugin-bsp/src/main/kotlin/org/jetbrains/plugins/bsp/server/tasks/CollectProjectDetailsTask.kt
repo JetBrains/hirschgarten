@@ -14,8 +14,10 @@ import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import com.goide.project.GoModuleSettings
 import com.goide.sdk.GoSdk
 import com.goide.sdk.GoSdkService
+import com.goide.vgo.project.VgoModulesRegistry
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
@@ -27,11 +29,14 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.projectRoots.SdkType
 import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.projectRoots.impl.UnknownSdkType
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.indeterminateStep
 import com.intellij.platform.util.progress.progressStep
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.getInstance
+import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import com.jetbrains.python.sdk.PythonSdkType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -355,15 +360,28 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun addBspFetchedGoSdks() {
-    withSubtask(
-      "add-bsp-fetched-go-sdks",
-      BspPluginBundle.message("console.task.model.add.go.fetched.sdks")
-    ) {
-      logPerformanceSuspend("add-bsp-fetched-go-sdks") {
-        val goSdk = getGoSdk(GoBuildTarget("/usr/local/go", ""))
-        addGoSdk(goSdk)
-//        uniqueGoSdkInfos?.forEach { addGoSdk(getGoSdk(it)) } // empty
+    val goSdkService = GoSdkService.getInstance(project)
+    // `/user/local/go` or result of `readlink -f bazel-basic-go-project/external/go_sdk/bin/go without /bin/go suffix`
+    val goSdk = GoSdk.fromHomePath("/usr/local/go")
+    println("goSdk.version ${goSdk.version}")
+
+    writeAction {
+        goSdkService.setSdk(goSdk)
+    }
+    val currentStorage = WorkspaceModel.getInstance(project).currentSnapshot
+    val entities = currentStorage.entities(ModuleEntity::class.java)
+    for (moduleEntity in entities) {
+      println(moduleEntity)
+      val module = moduleEntity.findModule(currentStorage) ?: continue
+      println("module $module")
+      writeAction {
+        GoModuleSettings.getInstance(module).isGoSupportEnabled = true
       }
+//      val vGoModules = VgoModulesRegistry.getInstance(project).getModules(module)
+//      print("VgoModulesRegistry ${vGoModules.toList()}")
+//      for (vgoModule in vGoModules) {
+//        println("vgoModule.s $vgoModule")
+//      }
     }
   }
 
