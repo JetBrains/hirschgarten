@@ -11,21 +11,25 @@ internal data class JavaSourcePackageDetails(
   val sourceRoots: List<URI>,
 )
 
-internal data class JavaSourceRootPackagePrefix(
+public data class JavaSourceRootPackagePrefix(
   val packagePrefix: String,
 )
 
 internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer :
   WorkspaceModelEntityBaseTransformer<JavaSourcePackageDetails, JavaSourceRootPackagePrefix> {
-  private const val PACKAGE_DELIMITER = '.'
 
   override fun transform(inputEntity: JavaSourcePackageDetails): JavaSourceRootPackagePrefix {
-    val packagePrefix = calculateRawPackagePrefix(inputEntity.sourceURI, inputEntity.sourceRoots)
+    val packagePrefix = JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformerHelper.calculateRawPackagePrefix(inputEntity.sourceURI, inputEntity.sourceRoots)
 
     return JavaSourceRootPackagePrefix(packagePrefix)
   }
 
-  private fun calculateRawPackagePrefix(sourceDir: URI, sourceRoots: List<URI>): String {
+}
+
+public object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformerHelper {
+  private const val PACKAGE_DELIMITER = '.'
+
+  public fun calculateRawPackagePrefix(sourceDir: URI, sourceRoots: List<URI>): String {
     val sourceDirRawPath = sourceDir.toPath().pathString
     val matchingRootRawPath = calculateMatchingRootPath(sourceDir, sourceRoots)?.pathString
 

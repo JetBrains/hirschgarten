@@ -108,5 +108,10 @@
   <applicationListeners>
     <listener class="org.jetbrains.plugins.bsp.flow.close.ProjectClosingListener"
               topic="com.intellij.openapi.project.ProjectManagerListener"/>
+
   </applicationListeners>
+  <projectListeners>
+    <listener class="org.jetbrains.plugins.bsp.workspace.AssignFileToModuleListener"
+              topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+  </projectListeners>
 </idea-plugin>
