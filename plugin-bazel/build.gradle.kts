@@ -22,7 +22,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlinx")
         exclude(group = "ch.epfl.scala")
     }
-    implementation("com.google.protobuf:protobuf-java:3.24.4")
+    implementation("com.google.protobuf:protobuf-java:3.25.2")
     testImplementation(libs.junit5)
     testRuntimeOnly(libs.junitVintage)
     testImplementation(libs.kotest)
