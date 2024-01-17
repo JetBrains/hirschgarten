@@ -68,34 +68,7 @@ public data class ProjectDetails(
   val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
   val invalidTargets: WorkspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
   var defaultJdkName: String? = null,
-) {
-  public operator fun plus(old: ProjectDetails): ProjectDetails = ProjectDetails(
-    targetsId = targetsId + old.targetsId,
-    targets = targets + old.targets,
-    sources = sources + old.sources,
-    resources = resources + old.resources,
-    dependenciesSources = dependenciesSources + old.dependenciesSources,
-    javacOptions = javacOptions + old.javacOptions,
-    scalacOptions = scalacOptions + old.scalacOptions,
-    pythonOptions = pythonOptions + old.pythonOptions,
-    outputPathUris = outputPathUris + old.outputPathUris,
-    libraries = if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
-    directories = directories + old.directories,
-    invalidTargets = invalidTargets + old.invalidTargets,
-    defaultJdkName = defaultJdkName ?: old.defaultJdkName,
-  )
-
-  private operator fun WorkspaceDirectoriesResult.plus(old: WorkspaceDirectoriesResult): WorkspaceDirectoriesResult =
-    WorkspaceDirectoriesResult(
-      includedDirectories = includedDirectories + old.includedDirectories,
-      excludedDirectories = excludedDirectories + old.excludedDirectories,
-    )
-
-  private operator fun WorkspaceInvalidTargetsResult.plus(
-    old: WorkspaceInvalidTargetsResult,
-  ): WorkspaceInvalidTargetsResult =
-    WorkspaceInvalidTargetsResult(targets = targets + old.targets)
-}
+)
 
 /**
  * Contains information about loaded target and not loaded targets for given document.
