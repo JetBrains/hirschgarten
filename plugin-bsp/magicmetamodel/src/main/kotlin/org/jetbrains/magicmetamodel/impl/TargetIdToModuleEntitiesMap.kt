@@ -27,7 +27,7 @@ public object TargetIdToModuleEntitiesMap {
       hasDefaultPythonInterpreter,
     )
 
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectBasePath, projectDetails)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
 
     return projectDetails.targetsId.associate {
       val moduleDetails = transformer.moduleDetailsForTargetId(it)
