@@ -17,7 +17,7 @@ class SingleProbeTests {
     with(IdeProbeTestRunner()) {
       val fixture = fixtureWithWorkspaceFromGit(
         "https://github.com/JetBrains/bazel-bsp.git",
-        "3.0.0",
+        "3.1.0",
       )
       runAfterOpen(fixture, Option.apply(null)) { probe, robot, intellij ->
         fun testTargetsTree(buildPanel: SearchableOps) {
@@ -25,26 +25,35 @@ class SingleProbeTests {
             buildPanel.findElement(Query.className("ActionButton", "myaction.key" to "widget.loaded.targets.tab.name"))
           loaded.click()
           val targetsTree = buildPanel.findElement(Query.className("Tree"))
+          probe.screenshot("_bazel-bsp-build-panel")
           Assertions.assertEquals(9, targetsTree.fullTexts().size)
         }
 
+        probe.screenshot("_bazel-bsp-on-open")
         val stripeButton = robot.findElement(Query.className("StripeButton", "text" to "Bazel"))
+        probe.screenshot("_bazel-bsp-button-before-click")
         stripeButton.doClick()
         val buildPanel = robot.findElement(Query.className("BspToolWindowPanel"))
+        probe.screenshot("_bazel-bsp-button-after-click")
         testTargetsTree(buildPanel)
 
         robot.assertNoProblems(probe)
+        probe.screenshot("_bazel-bsp-project-before-closing")
         closeProject(probe)
         robot.reopenProject(probe, intellij)
+        probe.screenshot("_bazel-bsp-project-on-reopen")
 
         val newBuildPanel = robot.findElement(Query.className("BspToolWindowPanel"))
         val reconnect =
           newBuildPanel.findElement(Query.className("ActionButton", "myaction.key" to "connect.action.text"))
+        probe.screenshot("_bazel-bsp-before-reconnect-click")
         reconnect.click()
         probe.await(emptyBackgroundTaskWithoutTimeouts {
           robot.findElement(Query.className("StripeButton", "text" to "Bazel"))
         })
+        probe.screenshot("_bazel-bsp-after-reconnect-click")
         testTargetsTree(newBuildPanel)
+        probe.screenshot("_bazel-bsp-before-end-of-test")
         BoxedUnit.UNIT
       }
     }
@@ -57,7 +66,9 @@ class SingleProbeTests {
         "https://github.com/bazelbuild/bazel.git", "6.0.0",
       )
       runAfterOpen(fixture, Option.apply(null)) { probe, robot, _ ->
+        probe.screenshot("_bazel-on-open")
         robot.assertNoProblems(probe)
+        probe.screenshot("_bazel-before-end-of-test")
 
         BoxedUnit.UNIT
       }
@@ -66,6 +77,7 @@ class SingleProbeTests {
 
   private fun RobotProbeDriver.reopenProject(probe: ProbeDriver, intellij: RunningIntelliJFixture) {
     probe.tryUntilSuccessful {
+      probe.screenshot("_bazel-bsp-before-reopen")
       probe.openProject(intellij.workspace(), WaitLogic.Default())
     }
   }
