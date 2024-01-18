@@ -31,7 +31,7 @@ public class AssignFileToModuleListener(private val project: Project) : BulkFile
     override fun after(events: MutableList<out VFileEvent>) {
         if (!project.isTrusted())
             return
-        if (!project.isBspProject)
+        if (!project.isBspProject) // TODO also hide behind registry flag
             return
         val logger = Logger.getInstance(AssignFileToModuleListener::class.java)
         val workspaceModel = WorkspaceModel.getInstance(project)
