@@ -26,7 +26,7 @@ class SingleProbeTests {
           loaded.click()
           val targetsTree = buildPanel.findElement(Query.className("Tree"))
           probe.screenshot("_bazel-bsp-build-panel")
-          Assertions.assertEquals(9, targetsTree.fullTexts().size)
+          Assertions.assertEquals(8, targetsTree.fullTexts().size)
         }
 
         probe.screenshot("_bazel-bsp-on-open")
