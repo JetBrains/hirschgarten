@@ -69,6 +69,7 @@ public class NotLoadedTargetsMouseListener(
       DefaultActionGroup().apply {
         addAction(copyTargetIdAction)
         addSeparator()
+        container.getTargetActions(project, target).map { addAction(it); addSeparator() }
         addAction(loadTargetAction)
         addSeparator()
         addAction(loadTargetWithDepsAction)
