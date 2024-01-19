@@ -1,5 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.project.Project
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import java.awt.event.MouseListener
@@ -39,4 +41,12 @@ public interface BuildTargetContainer {
    * @return the newly created container
    */
   public fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetContainer
+
+  /**
+   * Returns actions available for a target.
+   *
+   * @param project this project
+   * @param buildTargetInfo information about the target
+   */
+  public fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction>
 }
