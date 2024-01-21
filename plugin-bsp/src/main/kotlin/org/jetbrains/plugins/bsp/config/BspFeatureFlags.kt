@@ -16,6 +16,7 @@ public object BspFeatureFlags {
 
   public val isGoSupportEnabled: Boolean
     get() = Registry.`is`(GO_SUPPORT)
+
   public val isBuildProjectOnSyncEnabled: Boolean
     get() = Registry.`is`(BUILD_PROJECT_ON_SYNC)
 }

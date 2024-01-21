@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import GoBuildTarget
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
@@ -14,10 +13,8 @@ import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import com.goide.project.GoModuleSettings
 import com.goide.sdk.GoSdk
 import com.goide.sdk.GoSdkService
-import com.goide.vgo.project.VgoModulesRegistry
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
@@ -26,18 +23,11 @@ import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsPr
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.projectRoots.SdkType
-import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
-import com.intellij.openapi.projectRoots.impl.UnknownSdkType
-import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.indeterminateStep
 import com.intellij.platform.util.progress.progressStep
-import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.getInstance
-import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
-import com.jetbrains.python.sdk.PythonSdkType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -67,6 +57,8 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
+import org.jetbrains.plugins.bsp.extension.points.goSdkExtension
+import org.jetbrains.plugins.bsp.extension.points.goSdkExtensionExists
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
@@ -109,7 +101,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private var scalaSdks: Set<ScalaSdk>? = null
 
-  private var uniqueGoSdkInfos: Set<GoBuildTarget>? = null
+  private var goSdks: Set<GoSdk>? = null
 
   private val sdkTable = ProjectJdkTable.getInstance()
 
@@ -157,9 +149,10 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         calculateAllScalaSdkInfosSubtask(projectDetails)
       }
     }
-
-    indeterminateStep(text = "Calculating all unique go sdk infos") {
-      calculateAllUniqueGoSdkInfosSubtask(projectDetails)
+    if (BspFeatureFlags.isGoSupportEnabled && goSdkExtensionExists()) {
+      indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
+        calculateAllGoSdkInfosSubtask(projectDetails)
+      }
     }
 
     progressStep(endFraction = 0.75, BspPluginBundle.message("progress.bar.update.mmm.diff")) {
@@ -248,21 +241,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> =
     projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
 
-  private suspend fun calculateAllUniqueGoSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
-    "calculate-all-unique-go-sdk-infos",
-    BspPluginBundle.message("console.task.model.calculate.jdks.infos")
-  ) {
-    uniqueGoSdkInfos = logPerformance(it) {
-      calculateAllUniqueGoSdkInfos(projectDetails)
-    }
-    println("projecDetails.targets: ${projectDetails.targets}")
-    println("uniqueGoSdkInfos: $uniqueGoSdkInfos")
-  }
-
-  private fun calculateAllUniqueGoSdkInfos(projectDetails: ProjectDetails): Set<GoBuildTarget> {
-    return projectDetails.targets.mapNotNull(::extractGoBuildTarget).toSet()
-  }
-
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-scala-sdk-infos",
     BspPluginBundle.message("console.task.model.calculate.scala.sdk.infos")
@@ -288,9 +266,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
           sdkJars = it.jars
         )
       }
-
-  private fun getGoSdk(target: GoBuildTarget): GoSdk =
-    GoSdk.fromHomePath(target.sdkHomePath)
 
   private suspend fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-python-sdk-infos",
@@ -330,6 +305,33 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       .toSet()
   }
 
+  private suspend fun calculateAllGoSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
+    "calculate-all-go-sdk-infos",
+    BspPluginBundle.message("console.task.model.calculate.go.sdk.infos")
+  ) {
+    runInterruptible {
+      goSdks = logPerformance(it) {
+        calculateAllGoSdkInfos(projectDetails)
+      }
+    }
+  }
+
+  private fun calculateAllGoSdkInfos(projectDetails: ProjectDetails): Set<GoSdk> =
+    projectDetails.targets
+      .mapNotNull {
+        createGoSdk(it)
+      }
+      .toSet()
+
+  private fun createGoSdk(target: BuildTarget): GoSdk? =
+    extractGoBuildTarget(target)?.let {
+        if (it.sdkHomePath == null) {
+          GoSdk.NULL
+        } else {
+          GoSdk.fromHomePath(it.sdkHomePath?.path)
+        }
+      }
+
   private suspend fun updateMMMDiffSubtask(projectDetails: ProjectDetails) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
     withSubtask("calculate-project-structure", BspPluginBundle.message("console.task.model.calculate.structure")) {
@@ -356,43 +358,9 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       addBspFetchedScalaSdks()
     }
 
-    addBspFetchedGoSdks()
-  }
-
-  private suspend fun addBspFetchedGoSdks() {
-    val goSdkService = GoSdkService.getInstance(project)
-    // `/user/local/go` or result of `readlink -f bazel-basic-go-project/external/go_sdk/bin/go without /bin/go suffix`
-    val goSdk = GoSdk.fromHomePath("/usr/local/go")
-    println("goSdk.version ${goSdk.version}")
-
-    writeAction {
-        goSdkService.setSdk(goSdk)
+    if (BspFeatureFlags.isGoSupportEnabled) {
+      addBspFetchedGoSdks()
     }
-    val currentStorage = WorkspaceModel.getInstance(project).currentSnapshot
-    val entities = currentStorage.entities(ModuleEntity::class.java)
-    for (moduleEntity in entities) {
-      println(moduleEntity)
-      val module = moduleEntity.findModule(currentStorage) ?: continue
-      println("module $module")
-      writeAction {
-        GoModuleSettings.getInstance(module).isGoSupportEnabled = true
-      }
-//      val vGoModules = VgoModulesRegistry.getInstance(project).getModules(module)
-//      print("VgoModulesRegistry ${vGoModules.toList()}")
-//      for (vgoModule in vGoModules) {
-//        println("vgoModule.s $vgoModule")
-//      }
-    }
-  }
-
-  private suspend fun addGoSdk(goSdk: GoSdk) {
-    val sdk = ProjectJdkImpl(
-      goSdk.name,
-      sdkTable.defaultSdkType, // will be changed to GoSdkType
-    )
-    sdk.homePath = goSdk.homeUrl
-    sdk.versionString
-    addSdkIfNeeded(sdk)
   }
 
   private suspend fun addBspFetchedJdks() = withSubtask(
@@ -452,6 +420,29 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     addSdkIfNeeded(sdk)
   }
+
+  private suspend fun addBspFetchedGoSdks() =
+    goSdkExtension()?.let { extension ->
+      withSubtask("add-bsp-fetched-go-sdks", BspPluginBundle.message("console.task.model.add.go.fetched.sdks")) {
+        logPerformanceSuspend("add-bsp-fetched-go-sdks") {
+          val goSdkService = GoSdkService.getInstance(project)
+//          TODO: service should add only one sdk
+          goSdks?.forEach { extension.addGoSdk(it, goSdkService) }
+//          TODO: Access is allowed from Event Dispatch Thread (EDT) only
+//          val workspaceModel = WorkspaceModel.getInstance(project)
+//          workspaceModel.currentSnapshot.entities(ModuleEntity::class.java).forEach { moduleEntity ->
+//              moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
+//                writeAction {
+//                  GoModuleSettings.getInstance(module).isGoSupportEnabled = true
+//                }
+//            }
+//          }
+        }
+      }
+    }
+
+
+
 
   private suspend fun applyChangesOnWorkspaceModel() = withSubtask(
     "apply-changes-on-workspace-model",
