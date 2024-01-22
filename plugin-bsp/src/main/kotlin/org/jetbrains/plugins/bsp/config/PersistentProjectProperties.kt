@@ -24,6 +24,12 @@ public var Project.buildToolId: BuildToolId
   get() = BuildToolId(properties.getValueOrThrow(BUILD_TOOL_ID_KEY))
   set(value) = properties.setValue(BUILD_TOOL_ID_KEY, value.id)
 
+private const val IS_PROJECT_INITIALIZED = "org.jetbrains.bsp.is.project.initialized"
+
+public var Project.isBspProjectInitialized: Boolean
+  get() = properties.getBoolean(IS_PROJECT_INITIALIZED, false)
+  set(value) = properties.setValue(IS_PROJECT_INITIALIZED, value)
+
 private val Project.properties: PropertiesComponent
   get() = PropertiesComponent.getInstance(this)
 
