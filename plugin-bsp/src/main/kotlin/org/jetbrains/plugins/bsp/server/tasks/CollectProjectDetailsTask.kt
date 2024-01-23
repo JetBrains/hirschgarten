@@ -46,12 +46,15 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transforme
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesScala
+import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
@@ -191,6 +194,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     val projectDetails =
       calculateProjectDetailsWithCapabilities(
+        project = project,
         server = server,
         buildServerCapabilities = capabilities,
         projectRootDir = project.rootDir.url,
@@ -385,6 +389,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
 @Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")
 public fun calculateProjectDetailsWithCapabilities(
+  project: Project,
   server: BspServer,
   buildServerCapabilities: BazelBuildServerCapabilities,
   projectRootDir: String,
@@ -473,9 +478,10 @@ public fun calculateProjectDetailsWithCapabilities(
 
     val invalidTargets = invalidTargetsFuture?.get() ?: WorkspaceInvalidTargetsResult(emptyList())
     if (invalidTargets.targets.isNotEmpty()) {
+      val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
       BspBalloonNotifier.warn(
         BspPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
-        BspPluginBundle.message("widget.collect.targets.not.imported.properly.message")
+        BspPluginBundle.message("widget.collect.targets.not.imported.properly.message", assetsExtension.presentableName)
       )
     }
 
