@@ -33,7 +33,12 @@ public class AssignFileToModuleListener(private val project: Project) : BulkFile
             return
         if (!project.isBspProject) // TODO also hide behind registry flag
             return
-        val logger = Logger.getInstance(AssignFileToModuleListener::class.java)
+      // TODO consider moving to background, measure time, log warning if takes too long and support cancellation
+      // TODO consider batching requests 
+      // TODO handle also renames (and git pull)
+
+      
+      val logger = Logger.getInstance(AssignFileToModuleListener::class.java)
         val workspaceModel = WorkspaceModel.getInstance(project)
         val builder = workspaceModel.getBuilderSnapshot()
         val modules = workspaceModel.currentSnapshot.entities(ModuleEntity::class.java)
