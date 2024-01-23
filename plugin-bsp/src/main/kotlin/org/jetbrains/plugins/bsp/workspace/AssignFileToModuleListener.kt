@@ -100,7 +100,7 @@ public class AssignFileToModuleListener(private val project: Project) : BulkFile
                 val sourceRoot = builder.builder.addEntity(
                     SourceRootEntity(
                         url = url,
-                        rootType = "java-source", //TODO java-test
+                        rootType = "java-source", //TODO java-test, python, rust etc.
                         entitySource = BspEntitySource,
                     ) {
                         this.contentRoot = contentRoot
