@@ -83,7 +83,7 @@ public class AssignFileToModuleListener(private val project: Project) : BulkFile
                     logger.debug("Could not find target matching the source file")
                     return@forEach
                 }
-                val module = modules.find { m -> m.name == moduleName }
+                val module = modules.find { m -> m.name == moduleName } // todo find or create an index, so we don't have to traverse the whole sequence every time
                 if (module == null) {
                     logger.debug("Could not find module matching the source target")
                     return@forEach
