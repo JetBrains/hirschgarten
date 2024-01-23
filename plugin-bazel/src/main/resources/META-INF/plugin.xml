@@ -19,6 +19,9 @@
         <buildTargetClassifierExtension
                 implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
 
+        <buildToolWindowTargetActionProviderExtension
+                implementation="org.jetbrains.bazel.extension.BazelTargetActionProviderExtension"/>
+
         <bspProjectAwareExtension
                 implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
     </extensions>
