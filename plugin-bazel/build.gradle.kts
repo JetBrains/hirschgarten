@@ -68,6 +68,14 @@ intellij {
     plugins.set(Platform.plugins + bspPlugin)
 }
 
+protobuf {
+    // Configure the protoc executable
+    protoc {
+        // Download from repositories
+        artifact = "com.google.protobuf:protoc:3.25.0"
+    }
+}
+
 fun findLatestCompatibleBspPlugin(): String {
     val pluginId = "org.jetbrains.bsp"
     val buildVersion = "${Platform.type}-${Platform.version}"
