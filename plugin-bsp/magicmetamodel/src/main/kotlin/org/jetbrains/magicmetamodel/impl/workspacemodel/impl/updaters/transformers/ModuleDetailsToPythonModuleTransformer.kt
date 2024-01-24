@@ -43,6 +43,7 @@ internal class ModuleDetailsToPythonModuleTransformer(
       pythonOptions = inputEntity.pythonOptions,
       libraryDependencies = inputEntity.libraryDependencies,
       moduleDependencies = inputEntity.moduleDependencies,
+      scalacOptions = inputEntity.scalacOptions,
     )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)

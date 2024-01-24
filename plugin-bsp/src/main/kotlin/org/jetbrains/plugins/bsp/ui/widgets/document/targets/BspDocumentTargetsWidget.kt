@@ -24,7 +24,6 @@ import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
 import org.jetbrains.plugins.bsp.ui.actions.LoadTargetWithDependenciesAction
-import java.net.URI
 import javax.swing.Icon
 
 private const val ID = "BspDocumentTargetsWidget"
@@ -125,13 +124,11 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     group.addAll(actions)
   }
 
-  private fun getDocumentDetails(file: VirtualFile): DocumentTargetsDetails? {
-    return when (URI.create(file.url).scheme) {
-      // Could be also "jar"
-      "file" -> magicMetaModelService.value.getTargetsDetailsForDocument(TextDocumentIdentifier(file.url))
-      else -> null
-    }
-  }
+  private fun getDocumentDetails(file: VirtualFile): DocumentTargetsDetails? =
+    // Could be also "jar"
+    if (file.url.startsWith("file://"))
+      magicMetaModelService.value.getTargetsDetailsForDocument(TextDocumentIdentifier(file.url))
+    else null
 
   override fun createInstance(project: Project): StatusBarWidget =
     BspDocumentTargetsWidget(project)

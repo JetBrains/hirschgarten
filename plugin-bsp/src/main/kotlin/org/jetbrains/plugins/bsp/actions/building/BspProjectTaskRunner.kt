@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.actions.building
 
 import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
+import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.toPromise
@@ -26,7 +27,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   private val log = logger<BspProjectTaskRunner>()
 
   override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
-    project.isBspProject && canRun(projectTask)
+    project.isBspProject && project.isTrusted() && canRun(projectTask)
 
   override fun canRun(projectTask: ProjectTask): Boolean = projectTask is ModuleBuildTask
 

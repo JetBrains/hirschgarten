@@ -1,4 +1,4 @@
-Subject: [PATCH] update benchmark.patch
+Subject: [PATCH] add benchmark listener
 ---
 Index: src/main/resources/META-INF/plugin.xml
 IDEA additional info:
@@ -6,13 +6,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 diff --git a/src/main/resources/META-INF/plugin.xml b/src/main/resources/META-INF/plugin.xml
---- a/src/main/resources/META-INF/plugin.xml	(revision 38f151bf012ea8758b4f8b85e41c124c64cbb8ad)
-+++ b/src/main/resources/META-INF/plugin.xml	(date 1701601508226)
-@@ -44,6 +44,7 @@
+--- a/src/main/resources/META-INF/plugin.xml	(revision fee1da13f082896f96c9e95e81cd0332e4935c0b)
++++ b/src/main/resources/META-INF/plugin.xml	(date 1703172163600)
+@@ -47,6 +47,7 @@
      <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
- 
+
      <workspaceModel.fileIndexContributor implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
 +    <applicationInitializedListener implementation="org.jetbrains.plugins.bsp.utils.StartBenchmarkListener"/>
- 
-     <attachSourcesProvider implementation="org.jetbrains.plugins.bsp.ui.notifications.BazelAttachSourcesProvider"/>
+
+     <java.programPatcher implementation="org.jetbrains.plugins.bsp.runner.BspJvmEnvironmentProgramPatcher"/>
 

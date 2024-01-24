@@ -5,6 +5,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
@@ -51,10 +52,10 @@ internal class JavaModuleWithSourcesUpdater(
 
   private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> {
     val returnDependencies: MutableList<ModuleDependencyItem> = defaultDependencies.toMutableList()
-    entityToAdd.jvmJdkName?.let {
+    entityToAdd.jvmJdkName?.also {
       returnDependencies.add(ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkName, "JavaSDK"))
     }
-    entityToAdd.scalaAddendum?.let { addendum ->
+    entityToAdd.scalaAddendum?.also { addendum ->
       returnDependencies.add(
         toModuleDependencyItemLibraryDependency(
           LibraryDependency(addendum.scalaSdkName, true),
@@ -70,22 +71,20 @@ internal class JavaModuleWithSourcesUpdater(
     entityToAdd: JavaModule,
     moduleEntity: ModuleEntity,
   ) {
-    if (entityToAdd.compilerOutput != null) {
-      val compilerOutput =
-        entityToAdd.compilerOutput.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
-      builder.addEntity(
-        JavaModuleSettingsEntity(
-          inheritedCompilerOutput = false,
-          excludeOutput = true,
-          entitySource = BspEntitySource,
-        ) {
-          this.compilerOutput = compilerOutput
-          this.compilerOutputForTests = null
-          this.languageLevelId = null
-          this.module = moduleEntity
-        },
-      )
-    }
+    val compilerOutput =
+      entityToAdd.compilerOutput?.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+    builder.addEntity(
+      JavaModuleSettingsEntity(
+        inheritedCompilerOutput = false,
+        excludeOutput = true,
+        entitySource = BspEntitySource,
+      ) {
+        this.compilerOutput = compilerOutput
+        this.compilerOutputForTests = null
+        this.module = moduleEntity
+        this.languageLevelId = LanguageLevel.parse(entityToAdd.javaAddendum?.languageVersion)?.name
+      },
+    )
   }
 
   private companion object {

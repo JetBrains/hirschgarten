@@ -138,7 +138,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         "module2",
         "module3",
       ),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     // when
@@ -265,7 +265,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         buildTargetId2.uri,
         buildTargetId3.uri,
       ),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -321,7 +321,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = listOf(buildTargetId3.uri),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
@@ -409,7 +409,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         outputPathUris = emptyList(),
         libraryDependencies = null,
         moduleDependencies = emptyList(),
-        defaultJdkInfo = null,
+        defaultJdkName = null,
       )
 
     fun emptyExpectedModule(name: String, sdkInfo: PythonSdkInfo): PythonModule {

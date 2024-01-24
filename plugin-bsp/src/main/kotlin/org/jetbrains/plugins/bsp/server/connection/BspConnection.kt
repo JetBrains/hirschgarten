@@ -94,8 +94,8 @@ public interface ConnectionDetailsProviderExtension : WithBuildToolId {
   ): BspConnectionDetails?
 
   public companion object {
-    internal val ep = ExtensionPointName
-      .create<ConnectionDetailsProviderExtension>("org.jetbrains.bsp.connectionDetailsProviderExtension")
+    internal val ep: ExtensionPointName<ConnectionDetailsProviderExtension> =
+      ExtensionPointName.create("org.jetbrains.bsp.connectionDetailsProviderExtension")
   }
 }
 
@@ -116,7 +116,7 @@ private fun Project.createNewConnection(): BspConnection {
 internal class BspConnectionService {
   var connection: BspConnection? = null
 
-  companion object {
+  internal companion object {
     fun getInstance(project: Project): BspConnectionService =
       project.getService(BspConnectionService::class.java)
   }

@@ -21,6 +21,7 @@ import org.jetbrains.bsp.utils.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
@@ -153,7 +154,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         "module2",
         "module3",
       ),
-      defaultJdkInfo = null
+      defaultJdkName = null
     )
     // when
     val javaModule =
@@ -213,14 +214,17 @@ class ModuleDetailsToJavaModuleTransformerTest {
       classJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/"),
     )
 
+    val expectedJavaAddendum = JavaAddendum(languageVersion = javaVersion)
+
     val expectedJavaModule = JavaModule(
       genericModuleInfo = expectedModule,
       baseDirContentRoot = expectedBaseDirContentRoot,
       sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3),
       resourceRoots = listOf(expectedResourceRoot1),
       compilerOutput = Path("/compiler/output.jar"),
-      jvmJdkName = "${projectBasePath.name}-$javaVersion",
+      jvmJdkName = projectBasePath.name.projectNameToJdkName(javaHome),
       kotlinAddendum = null,
+      javaAddendum = expectedJavaAddendum,
       moduleLevelLibraries = listOf(
         expectedLibrary1,
         expectedLibrary2,
@@ -287,7 +291,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         "module2",
         "module3",
       ),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     // when
@@ -325,7 +329,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       resourceRoots = listOf(),
       moduleLevelLibraries = null,
       compilerOutput = Path("/compiler/output.jar"),
-      jvmJdkName = "${projectBasePath.name}-$javaVersion",
+      jvmJdkName = projectBasePath.name.projectNameToJdkName(javaHome),
       kotlinAddendum = KotlinAddendum(
         languageVersion = kotlinBuildTarget.languageVersion,
         apiVersion = kotlinBuildTarget.apiVersion,
@@ -427,7 +431,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         "module2",
         "module3",
       ),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -492,7 +496,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       moduleDependencies = listOf(
         "module3",
       ),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)

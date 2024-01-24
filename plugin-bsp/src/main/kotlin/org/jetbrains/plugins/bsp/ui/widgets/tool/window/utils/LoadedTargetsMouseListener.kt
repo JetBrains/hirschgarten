@@ -91,6 +91,7 @@ public class LoadedTargetsMouseListener(
       if (target.capabilities.canTest) {
         addAction(TestTargetAction(targetId = target.id))
       }
+      container.getTargetActions(project, target).map { addAction(it); addSeparator() }
     }
 
   private fun BuildTargetInfo.inferDebugType(): BspDebugType? =

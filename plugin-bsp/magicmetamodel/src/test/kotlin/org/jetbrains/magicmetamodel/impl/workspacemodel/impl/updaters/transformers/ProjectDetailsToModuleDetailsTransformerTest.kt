@@ -16,14 +16,9 @@ import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.URI
-import kotlin.io.path.toPath
 
 @DisplayName("ProjectDetailsToModuleDetailsTransformer.moduleDetailsForTargetId(projectDetails) tests")
 class ProjectDetailsToModuleDetailsTransformerTest {
-  private val projectBasePathURI = "file:///root"
-  private val projectBasePath = URI.create(projectBasePathURI).toPath()
-
   @Test
   fun `should return empty module details for singular module`() {
     // given
@@ -50,7 +45,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectBasePath, projectDetails)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
     val actualModuleDetails = transformer.moduleDetailsForTargetId(target.id)
 
     // then
@@ -65,7 +60,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = emptyList(),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     actualModuleDetails shouldBe expectedModuleDetails
@@ -121,7 +116,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectBasePath, projectDetails)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
     val actualModuleDetails = transformer.moduleDetailsForTargetId(target.id)
 
     // then
@@ -136,7 +131,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     actualModuleDetails shouldBe expectedModuleDetails
@@ -254,7 +249,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectBasePath, projectDetails)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
     val actualModuleDetails1 = transformer.moduleDetailsForTargetId(target1.id)
     val actualModuleDetails2 = transformer.moduleDetailsForTargetId(target2.id)
     val actualModuleDetails3 = transformer.moduleDetailsForTargetId(target3.id)
@@ -272,7 +267,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target2Id.uri),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
     val expectedModuleDetails2 = ModuleDetails(
       target = target2,
@@ -285,7 +280,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = emptyList(),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
     val expectedModuleDetails3 = ModuleDetails(
       target = target3,
@@ -298,7 +293,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target2Id.uri),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
     val expectedModuleDetails4 = ModuleDetails(
       target = target4,
@@ -311,7 +306,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(target1Id.uri),
-      defaultJdkInfo = null,
+      defaultJdkName = null,
     )
 
     actualModuleDetails1 shouldBe expectedModuleDetails1

@@ -3,7 +3,6 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
@@ -25,7 +24,7 @@ internal data class ModuleDetails(
   val outputPathUris: List<String>,
   val libraryDependencies: List<BuildTargetId>?,
   val moduleDependencies: List<BuildTargetId>,
-  val defaultJdkInfo: JvmBuildTarget?,
+  val defaultJdkName: String?,
 )
 
 internal data class ModuleName(

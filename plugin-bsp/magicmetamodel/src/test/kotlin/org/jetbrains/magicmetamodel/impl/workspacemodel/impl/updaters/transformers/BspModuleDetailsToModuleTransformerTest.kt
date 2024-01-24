@@ -78,6 +78,7 @@ class BspModuleDetailsToModuleTransformerTest {
         "//target3",
       ),
       libraryDependencies = null,
+      scalacOptions = null,
     )
 
     // when
@@ -143,6 +144,7 @@ class BspModuleDetailsToModuleTransformerTest {
       libraryDependencies = listOf(
         "@maven//:test",
       ),
+      scalacOptions = null,
     )
     // when
     val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
@@ -212,6 +214,7 @@ class BspModuleDetailsToModuleTransformerTest {
         "//target2",
         "//target3",
       ),
+      scalacOptions = null,
     )
 
     // when
@@ -282,6 +285,7 @@ class BspModuleDetailsToModuleTransformerTest {
         "//target3",
       ),
       libraryDependencies = null,
+      scalacOptions = null,
     )
 
     val target2Name = "//target2"
@@ -320,6 +324,7 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       libraryDependencies = null,
       pythonOptions = null,
+      scalacOptions = null,
     )
 
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
@@ -403,6 +408,7 @@ class BspModuleDetailsToModuleTransformerTest {
         "//target2",
         "//target3",
       ),
+      scalacOptions = null,
     )
 
     val target2Name = "//target2"
@@ -436,6 +442,7 @@ class BspModuleDetailsToModuleTransformerTest {
       moduleDependencies = listOf(
         "//target3",
       ),
+      scalacOptions = null,
     )
 
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
@@ -504,6 +511,7 @@ class BspModuleDetailsToModuleTransformerTest {
       moduleDependencies = emptyList(),
       libraryDependencies = emptyList(),
       pythonOptions = null,
+      scalacOptions = null,
     )
     // when
     val transformer = BspModuleDetailsToModuleTransformer(

@@ -34,6 +34,9 @@
     <extensionPoint name="connectionDetailsProviderExtension"
                     interface="org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension"
                     dynamic="true"/>
+    <extensionPoint name="buildToolWindowTargetActionProviderExtension"
+                    interface="org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension"
+                    dynamic="true"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bsp">
@@ -51,8 +54,6 @@
     <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
 
     <workspaceModel.fileIndexContributor implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
-
-    <attachSourcesProvider implementation="org.jetbrains.plugins.bsp.ui.notifications.BazelAttachSourcesProvider"/>
 
     <java.programPatcher implementation="org.jetbrains.plugins.bsp.runner.BspJvmEnvironmentProgramPatcher"/>
 

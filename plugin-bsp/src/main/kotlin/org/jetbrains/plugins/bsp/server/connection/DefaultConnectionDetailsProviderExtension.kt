@@ -29,11 +29,7 @@ public class DefaultConnectionDetailsProviderExtension : ConnectionDetailsProvid
     val wizardResult = withContext(Dispatchers.EDT) { wizard.showAndGet() }
 
     if (wizardResult) {
-      val selectedConnectionFile = wizard.connectionFile.get()
-
-      project.stateService.bspConnectionDetails = selectedConnectionFile.parseBspConnectionDetails()
-        ?: error("Cannot parse connection file: $selectedConnectionFile. Please create a correct connection file.")
-      project.stateService.connectionFile = selectedConnectionFile
+      project.stateService.connectionFile = wizard.connectionFile.get()
     }
 
     return wizardResult
@@ -44,10 +40,9 @@ public class DefaultConnectionDetailsProviderExtension : ConnectionDetailsProvid
     currentConnectionDetails: BspConnectionDetails?,
   ): BspConnectionDetails? {
     val connectionDetailsFromFile = project.stateService.connectionFile?.parseBspConnectionDetails()
+      ?: error("Cannot parse connection details from connection file. Please reimport the project.")
 
-    return connectionDetailsFromFile
-      ?.takeIf { it != currentConnectionDetails }
-      ?.also { project.stateService.bspConnectionDetails = it }
+    return connectionDetailsFromFile?.takeIf { it != currentConnectionDetails }
   }
 }
 
@@ -73,18 +68,15 @@ internal data class DefaultConnectionDetailsProviderState(
 internal class DefaultConnectionDetailsProviderExtensionService
 : PersistentStateComponent<DefaultConnectionDetailsProviderState>, Disposable {
   var connectionFile: VirtualFile? = null
-  var bspConnectionDetails: BspConnectionDetails? = null
 
   override fun getState(): DefaultConnectionDetailsProviderState =
     DefaultConnectionDetailsProviderState(
       connectionFile = connectionFile?.url,
-      bspConnectionDetails = bspConnectionDetails?.toState(),
     )
 
   override fun loadState(state: DefaultConnectionDetailsProviderState) {
     val virtualFileManager = VirtualFileManager.getInstance()
     connectionFile = state.connectionFile?.let { virtualFileManager.findFileByUrl(it) }
-    bspConnectionDetails = state.bspConnectionDetails?.toOriginal()
   }
 
   override fun dispose() {}
@@ -95,24 +87,6 @@ internal class DefaultConnectionDetailsProviderExtensionService
       project.getService(DefaultConnectionDetailsProviderExtensionService::class.java)
   }
 }
-
-private fun BspConnectionDetails.toState(): BspConnectionDetailsState =
-  BspConnectionDetailsState(
-    name = name,
-    argv = argv,
-    version = version,
-    bspVersion = bspVersion,
-    languages = languages,
-  )
-
-private fun BspConnectionDetailsState.toOriginal(): BspConnectionDetails =
-  BspConnectionDetails(
-    name,
-    argv,
-    version,
-    bspVersion,
-    languages
-  )
 
 private val Project.stateService: DefaultConnectionDetailsProviderExtensionService
   get() = DefaultConnectionDetailsProviderExtensionService.getInstance(this)

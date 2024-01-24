@@ -2,7 +2,6 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
-import ch.epfl.scala.bsp4j.JavacOptionsItem
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
@@ -14,7 +13,7 @@ class DependencySourcesItemToLibraryTransformerTest {
   @Test
   fun `should return no libraries for no dependency sources items`() {
     // given
-    val emptyDependencySourcesItems = listOf<DependencySourcesAndJavacOptions>()
+    val emptyDependencySourcesItems = listOf<DependencySourcesAndJvmClassPaths>()
 
     // when
     val libraries = DependencySourcesItemToLibraryTransformer.transform(emptyDependencySourcesItems)
@@ -26,22 +25,17 @@ class DependencySourcesItemToLibraryTransformerTest {
   @Test
   fun `should return single library for dependency sources item with one dependency`() {
     // given
-    val dependencySourcesAndJavacOptions =
-      DependencySourcesAndJavacOptions(
+    val dependencySourcesAndJvmClasspaths =
+      DependencySourcesAndJvmClassPaths(
         dependencySources = DependencySourcesItem(
           BuildTargetIdentifier("//target"),
           listOf("file:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0-sources.jar"),
         ),
-        javacOptions = JavacOptionsItem(
-          BuildTargetIdentifier("//target"),
-          listOf("opt1"),
-          listOf("file:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0.jar"),
-          "file:///compiler/output.jar",
-        ),
+        listOf("file:///m2/repo.maven.apache.org/test/1.0.0/test-1.0.0.jar"),
       )
 
     // when
-    val libraries = DependencySourcesItemToLibraryTransformer.transform(dependencySourcesAndJavacOptions)
+    val libraries = DependencySourcesItemToLibraryTransformer.transform(dependencySourcesAndJvmClasspaths)
 
     // then
     val expectedLibrary = Library(
@@ -55,8 +49,8 @@ class DependencySourcesItemToLibraryTransformerTest {
   @Test
   fun `should return multiple libraries for dependency sources item with multiple dependencies and multiple (including non-overlapping classes)`() {
     // given
-    val dependencySourcesAndJavacOptions =
-      DependencySourcesAndJavacOptions(
+    val dependencySourcesAndJvmClasspaths =
+      DependencySourcesAndJvmClassPaths(
         dependencySources = DependencySourcesItem(
           BuildTargetIdentifier("//target"),
           listOf(
@@ -64,19 +58,14 @@ class DependencySourcesItemToLibraryTransformerTest {
             "file:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar",
           ),
         ),
-        javacOptions = JavacOptionsItem(
-          BuildTargetIdentifier("//target"),
-          listOf(),
-          listOf(
-            "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-            "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-          ),
-          "file:///compiler/output.jar",
+        listOf(
+          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
+          "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
         ),
       )
 
     // when
-    val libraries = DependencySourcesItemToLibraryTransformer.transform(dependencySourcesAndJavacOptions)
+    val libraries = DependencySourcesItemToLibraryTransformer.transform(dependencySourcesAndJvmClasspaths)
 
     // then
     val expectedLibrary1 = Library(
@@ -98,42 +87,32 @@ class DependencySourcesItemToLibraryTransformerTest {
   @Test
   fun `should return multiple libraries for multiple dependency sources items`() {
     // given
-    val dependencySourcesAndJavacOptions1 =
-      DependencySourcesAndJavacOptions(
+    val dependencySourcesAndJvmClassPaths1 =
+      DependencySourcesAndJvmClassPaths(
         dependencySources = DependencySourcesItem(
           BuildTargetIdentifier("//target"),
           listOf(
             "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0-sources.jar",
           ),
         ),
-        javacOptions = JavacOptionsItem(
-          BuildTargetIdentifier("//target"),
-          listOf(),
-          listOf(
-            "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
-          ),
-          "file:///compiler/output.jar",
+        listOf(
+          "file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar",
         ),
       )
-    val dependencySourcesAndJavacOptions2 =
-      DependencySourcesAndJavacOptions(
+    val dependencySourcesAndJvmClassPaths2 =
+      DependencySourcesAndJvmClassPaths(
         dependencySources = DependencySourcesItem(
           BuildTargetIdentifier("//target"),
           listOf(
             "file:///m2/repo.maven.apache.org/test3/3.0.0/test3-3.0.0-sources.jar",
           ),
         ),
-        javacOptions = JavacOptionsItem(
-          BuildTargetIdentifier("//target"),
-          listOf(),
-          listOf(
-            "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
-          ),
-          "file:///compiler/output1.jar",
+        listOf(
+          "file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
         ),
       )
 
-    val dependencySourceItems = listOf(dependencySourcesAndJavacOptions1, dependencySourcesAndJavacOptions2)
+    val dependencySourceItems = listOf(dependencySourcesAndJvmClassPaths1, dependencySourcesAndJvmClassPaths2)
 
     // when
     val libraries = DependencySourcesItemToLibraryTransformer.transform(dependencySourceItems)

@@ -5,7 +5,6 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.OutputPathsParams
 import ch.epfl.scala.bsp4j.OutputPathsResult
 import ch.epfl.scala.bsp4j.PythonOptionsParams
@@ -18,11 +17,8 @@ import com.goide.sdk.GoSdkService
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.externalSystem.service.execution.ExternalSystemJdkProvider
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.projectRoots.ProjectJdkTable
-import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.indeterminateStep
 import com.intellij.platform.util.progress.progressStep
@@ -48,19 +44,22 @@ import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.javaVersionToJdkName
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesScala
+import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.goSdkExtension
 import org.jetbrains.plugins.bsp.extension.points.goSdkExtensionExists
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
@@ -70,14 +69,13 @@ import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
-import java.net.URI
+import org.jetbrains.plugins.bsp.utils.SdkUtils
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
 import kotlin.system.exitProcess
 
 public data class PythonSdk(
@@ -95,15 +93,13 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private var magicMetaModelDiff: MagicMetaModelDiff? = null
 
-  private var uniqueJdkInfos: Set<JvmBuildTarget>? = null
+  private var uniqueJavaHomes: Set<String>? = null
 
   private var pythonSdks: Set<PythonSdk>? = null
 
   private var scalaSdks: Set<ScalaSdk>? = null
 
   private var goSdks: Set<GoSdk>? = null
-
-  private val sdkTable = ProjectJdkTable.getInstance()
 
   private lateinit var coroutineJob: Job
 
@@ -137,7 +133,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     } ?: return
     indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
-      uniqueJdkInfos?.also { if (it.isNotEmpty()) projectDetails.defaultJdkInfo = it.first() }
+      uniqueJavaHomes.orEmpty().also {
+        if (it.isNotEmpty())
+          projectDetails.defaultJdkName = project.name.projectNameToJdkName(it.first())
+        else
+          projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
+      }
     }
     if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
       indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
@@ -155,11 +156,11 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       }
     }
 
-    progressStep(endFraction = 0.75, BspPluginBundle.message("progress.bar.update.mmm.diff")) {
-      updateMMMDiffSubtask(projectDetails)
+    progressStep(endFraction = 0.75, BspPluginBundle.message("progress.bar.update.internal.model")) {
+      updateInternalModelSubtask(projectDetails)
     }
-    progressStep(endFraction = 1.0, BspPluginBundle.message("progress.bar.post.processing.mmm")) {
-      postprocessingMMMSubtask()
+    progressStep(endFraction = 1.0, BspPluginBundle.message("progress.bar.post.processing")) {
+      postprocessingSubtask()
     }
   }
 
@@ -207,6 +208,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     val projectDetails =
       calculateProjectDetailsWithCapabilities(
+        project = project,
         server = server,
         buildServerCapabilities = capabilities,
         projectRootDir = project.rootDir.url,
@@ -233,13 +235,13 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     "calculate-all-unique-jdk-infos",
     BspPluginBundle.message("console.task.model.calculate.jdks.infos")
   ) {
-    uniqueJdkInfos = logPerformance(it) {
-      calculateAllUniqueJdkInfos(projectDetails)
+    uniqueJavaHomes = logPerformance(it) {
+      calculateAllUniqueJavaHomes(projectDetails)
     }
   }
 
-  private fun calculateAllUniqueJdkInfos(projectDetails: ProjectDetails): Set<JvmBuildTarget> =
-    projectDetails.targets.mapNotNull(::extractJvmBuildTarget).toSet()
+  private fun calculateAllUniqueJavaHomes(projectDetails: ProjectDetails): Set<String> =
+    projectDetails.targets.mapNotNull(::extractJvmBuildTarget).map { it.javaHome }.toSet()
 
   private suspend fun calculateAllScalaSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-scala-sdk-infos",
@@ -332,7 +334,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         }
       }
 
-  private suspend fun updateMMMDiffSubtask(projectDetails: ProjectDetails) {
+  private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
     withSubtask("calculate-project-structure", BspPluginBundle.message("console.task.model.calculate.structure")) {
       runInterruptible {
@@ -346,7 +348,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
-  private suspend fun postprocessingMMMSubtask() {
+  private suspend fun postprocessingSubtask() {
     addBspFetchedJdks()
     applyChangesOnWorkspaceModel()
 
@@ -367,23 +369,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     "add-bsp-fetched-jdks",
     BspPluginBundle.message("console.task.model.add.fetched.jdks")
   ) {
-    logPerformanceSuspend("add-bsp-fetched-jdks") { uniqueJdkInfos?.forEach { addJdk(it) } }
-  }
-
-  private suspend fun addJdk(jdkInfo: JvmBuildTarget) {
-    val jdk = ExternalSystemJdkProvider.getInstance().createJdk(
-      jdkInfo.javaVersion.javaVersionToJdkName(project.name),
-      URI.create(jdkInfo.javaHome).toPath().toString(),
-    )
-
-    addSdkIfNeeded(jdk)
-  }
-  private suspend fun addSdkIfNeeded(sdk: Sdk) {
-    val existingSdk = sdkTable.findJdk(sdk.name, sdk.sdkType.name)
-    if (existingSdk == null || existingSdk.homePath != sdk.homePath) {
-      writeAction {
-        existingSdk?.let { sdkTable.removeJdk(existingSdk) }
-        sdkTable.addJdk(sdk)
+    logPerformanceSuspend("add-bsp-fetched-jdks") {
+      uniqueJavaHomes?.forEach {
+        SdkUtils.addJdkIfNeeded(
+          projectName = project.name,
+          javaHomeUri = it
+        )
       }
     }
   }
@@ -418,7 +409,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
     val sdk = runInterruptible { pythonSdkGetterExtension.getPythonSdk(pythonSdk, virtualFileUrlManager) }
 
-    addSdkIfNeeded(sdk)
+    SdkUtils.addSdkIfNeeded(sdk)
   }
 
   private suspend fun addBspFetchedGoSdks() =
@@ -466,6 +457,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
 @Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")
 public fun calculateProjectDetailsWithCapabilities(
+  project: Project,
   server: BspServer,
   buildServerCapabilities: BazelBuildServerCapabilities,
   projectRootDir: String,
@@ -554,9 +546,10 @@ public fun calculateProjectDetailsWithCapabilities(
 
     val invalidTargets = invalidTargetsFuture?.get() ?: WorkspaceInvalidTargetsResult(emptyList())
     if (invalidTargets.targets.isNotEmpty()) {
+      val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
       BspBalloonNotifier.warn(
         BspPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
-        BspPluginBundle.message("widget.collect.targets.not.imported.properly.message")
+        BspPluginBundle.message("widget.collect.targets.not.imported.properly.message", assetsExtension.presentableName)
       )
     }
 

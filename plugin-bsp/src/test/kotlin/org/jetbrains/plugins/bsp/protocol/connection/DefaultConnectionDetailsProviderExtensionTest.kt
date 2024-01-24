@@ -5,7 +5,6 @@ import com.google.gson.Gson
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findOrCreateFile
 import com.intellij.openapi.vfs.writeText
-import com.intellij.testFramework.utils.vfs.createFile
 import io.kotest.assertions.throwables.shouldThrowAny
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.shouldBe
@@ -45,22 +44,6 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     @Test
     fun `onFirstOpening should fail if there is no connection file`() {
       // given
-
-      // when & then
-      shouldThrowAny {
-        runBlocking {
-          extension.onFirstOpening(project, projectRoot)
-        }
-      }
-    }
-
-    @Test
-    fun `onFirstOpening should fail if there connection file is not parsable`() {
-      // given
-      runWriteAction {
-        projectRoot.createFile(".bsp/invalid-connection-file.json")
-          .writeText("it is not parsable")
-      }
 
       // when & then
       shouldThrowAny {
@@ -153,6 +136,7 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
         listOf()
       )
       connectionFileName = "connection-file"
+
       runWriteAction {
         initConnectionDetails.saveInFile(connectionFileName)
       }
@@ -163,7 +147,7 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     }
 
     @Test
-    fun `should return false if connection file has not changed since init`() {
+    fun `should return null if connection file has not changed since init`() {
       // given
 
       // when
@@ -176,7 +160,22 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     }
 
     @Test
-    fun `should return true if connection file (version) has changed since init`() {
+    fun `should fail if connection file is not parsable`() {
+      // given
+      runWriteAction {
+        connectionFileName.toFile().writeText("it is not parsable")
+      }
+
+      // when & then
+      shouldThrowAny {
+        runBlocking {
+          extension.provideNewConnectionDetails(project, null)
+        }
+      }
+    }
+
+    @Test
+    fun `should return new connection details if connection file (version) has changed since init`() {
       // given
       val newConnectionDetails = BspConnectionDetails(
         "build-tool-id",
@@ -199,7 +198,7 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     }
 
     @Test
-    fun `should return true if connection file (command) has changed since init`() {
+    fun `should return new connection details if connection file (command) has changed since init`() {
       // given
       val newConnectionDetails = BspConnectionDetails(
         "build-tool-id",
@@ -222,7 +221,7 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     }
 
     @Test
-    fun `should return true if connection file has changed multiple times since init`() {
+    fun `should return new connection details if connection file has changed multiple times since init`() {
       // given
       val newConnectionDetails1 = BspConnectionDetails(
         "build-tool-id",
@@ -257,9 +256,11 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
   }
 
   private fun BspConnectionDetails.saveInFile(fileName: String) {
-    val connectionFile = projectRoot.findOrCreateFile(".bsp/$fileName.json")
-    connectionFile.writeText(this.toJson())
+    fileName.toFile().writeText(this.toJson())
   }
+
+  private fun String.toFile(): VirtualFile =
+    projectRoot.findOrCreateFile(".bsp/$this.json")
 
   private fun BspConnectionDetails.toJson(): String =
     Gson().toJson(this)

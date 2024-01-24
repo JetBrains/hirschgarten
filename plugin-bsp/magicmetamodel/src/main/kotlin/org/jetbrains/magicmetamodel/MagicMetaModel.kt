@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
@@ -68,35 +67,8 @@ public data class ProjectDetails(
   val libraries: List<LibraryItem>?,
   val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
   val invalidTargets: WorkspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
-  var defaultJdkInfo: JvmBuildTarget? = null,
-) {
-  public operator fun plus(old: ProjectDetails): ProjectDetails = ProjectDetails(
-    targetsId = targetsId + old.targetsId,
-    targets = targets + old.targets,
-    sources = sources + old.sources,
-    resources = resources + old.resources,
-    dependenciesSources = dependenciesSources + old.dependenciesSources,
-    javacOptions = javacOptions + old.javacOptions,
-    scalacOptions = scalacOptions + old.scalacOptions,
-    pythonOptions = pythonOptions + old.pythonOptions,
-    outputPathUris = outputPathUris + old.outputPathUris,
-    libraries = if (libraries == null && old.libraries == null) null else libraries.orEmpty() + old.libraries.orEmpty(),
-    directories = directories + old.directories,
-    invalidTargets = invalidTargets + old.invalidTargets,
-    defaultJdkInfo = defaultJdkInfo ?: old.defaultJdkInfo,
-  )
-
-  private operator fun WorkspaceDirectoriesResult.plus(old: WorkspaceDirectoriesResult): WorkspaceDirectoriesResult =
-    WorkspaceDirectoriesResult(
-      includedDirectories = includedDirectories + old.includedDirectories,
-      excludedDirectories = excludedDirectories + old.excludedDirectories,
-    )
-
-  private operator fun WorkspaceInvalidTargetsResult.plus(
-    old: WorkspaceInvalidTargetsResult,
-  ): WorkspaceInvalidTargetsResult =
-    WorkspaceInvalidTargetsResult(targets = targets + old.targets)
-}
+  var defaultJdkName: String? = null,
+)
 
 /**
  * Contains information about loaded target and not loaded targets for given document.

@@ -5,6 +5,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
@@ -184,6 +185,7 @@ public data class ModuleState(
   val sdkInfo: PythonSdkInfoState? = null,
   var kotlinAddendum: KotlinAddendumState? = null,
   var scalaAddendum: ScalaAddendumState? = null,
+  var javaAddendum: JavaAddendumState? = null,
 ) : ConvertableFromState<Module> {
   public fun toJavaModule(): JavaModule = JavaModule(
     genericModuleInfo = module.fromState(),
@@ -248,6 +250,14 @@ public data class ScalaAddendumState(
   )
 }
 
+public data class JavaAddendumState(
+  var languageVersion: String = "",
+) : ConvertableFromState<JavaAddendum> {
+  override fun fromState(): JavaAddendum = JavaAddendum(
+    languageVersion = languageVersion
+  )
+}
+
 public data class ModuleCapabilitiesState(
   var canRun: Boolean = false,
   var canTest: Boolean = false,
@@ -287,5 +297,5 @@ public data class DefaultMagicMetaModelState(
     TargetsDetailsForDocumentProviderState(),
   public var overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>> = emptyMap(),
   public var loadedTargetsStorageState: LoadedTargetsStorageState = LoadedTargetsStorageState(),
-  public var excludedPaths: List<String> = emptyList(),
+  public var outputPathUris: List<String> = emptyList(),
 )
