@@ -30,6 +30,9 @@
     <extensionPoint name="connectionDetailsProviderExtension"
                     interface="org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension"
                     dynamic="true"/>
+    <extensionPoint name="connectionDetailsProviderExtensionJavaShim"
+                    interface="org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtensionJavaShim"
+                    dynamic="true"/>
     <extensionPoint name="buildToolWindowTargetActionProviderExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension"
                     dynamic="true"/>
