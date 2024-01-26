@@ -12,7 +12,7 @@ class StarlarkDebuggerEvaluator(private val threadId: Long, private val eventHan
 
   private fun XEvaluationCallback.createEventCallback(threadId: Long): ((SDP.Value?) -> Unit) = { value ->
     if (value != null) {
-      val result = StarlarkValue.fromProto(value, threadId, eventHandler::computeValueChildren)
+      val result = StarlarkValue.fromProto(value, threadId, eventHandler.valueComputer)
       this.evaluated(result)
     } else {
       this.errorOccurred(StarlarkBundle.message("starlark.debug.value.obtain.failed"))

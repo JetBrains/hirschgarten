@@ -21,6 +21,8 @@ class ThreadAwareEventHandler(
 
   private val evaluatorProvider = StarlarkDebuggerEvaluator.Provider(this)
 
+  val valueComputer: StarlarkValueComputer = this.ValueComputer()
+
   fun reactTo(event: SDP.DebugEvent) {
     subscriptions.remove(event.sequenceNumber)?.let {
       it(event)
@@ -45,8 +47,7 @@ class ThreadAwareEventHandler(
 
     val suspendContext = StarlarkSuspendContext(
       threads = getPausedThreadList(),
-      frameListComputer = this::computeFramesForExecutionStack,
-      childrenComputer = this::computeValueChildren,
+      valueComputer = valueComputer,
       evaluatorProvider = evaluatorProvider,
       primaryThreadId = primaryThreadId
     )
@@ -75,25 +76,31 @@ class ThreadAwareEventHandler(
     this.send()
   }
 
-  private fun computeFramesForExecutionStack(threadId: Long, consumer: (List<SDP.Frame>) -> Unit) {
-    messenger.prepareListFrames(threadId).subscribeAndSend {
-      consumer(it.listFrames?.frameList ?: emptyList())
-    }
-  }
-
-  fun computeValueChildren(
-    threadId: Long,
-    valueId: Long,
-    consumer: (List<SDP.Value>) -> Unit,
-  ) {
-    messenger.prepareGetChildren(threadId, valueId).subscribeAndSend {
-      consumer(it.getChildren?.childrenList ?: emptyList())
-    }
-  }
-
   fun evaluate(threadId: Long, expression: String, consumer: (SDP.Value?) -> Unit) {
     messenger.prepareEvaluate(threadId, expression).subscribeAndSend {
       consumer(it.evaluate?.result)
+    }
+  }
+
+
+  private inner class ValueComputer : StarlarkValueComputer {
+    override fun computeFramesForExecutionStack(
+      threadId: Long,
+      callback: (List<SDP.Frame>) -> Unit,
+    ) {
+      messenger.prepareListFrames(threadId).subscribeAndSend {
+        callback(it.listFrames?.frameList ?: emptyList())
+      }
+    }
+
+    override fun computeValueChildren(
+      threadId: Long,
+      valueId: Long,
+      callback: (List<SDP.Value>) -> Unit,
+    ) {
+      messenger.prepareGetChildren(threadId, valueId).subscribeAndSend {
+        callback(it.getChildren?.childrenList ?: emptyList())
+      }
     }
   }
 }

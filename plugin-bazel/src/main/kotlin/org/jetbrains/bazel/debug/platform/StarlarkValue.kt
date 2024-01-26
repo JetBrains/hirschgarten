@@ -7,9 +7,10 @@ import com.intellij.xdebugger.frame.XNamedValue
 import com.intellij.xdebugger.frame.XValueChildrenList
 import com.intellij.xdebugger.frame.XValueNode
 import com.intellij.xdebugger.frame.XValuePlace
+import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
 import javax.swing.Icon
 
-class StarlarkValue(
+class StarlarkValue private constructor(
   name: String,
   private val type: String,
   private val valueAsString: String,
@@ -48,7 +49,9 @@ class StarlarkValue(
 
   override fun computeChildren(node: XCompositeNode) {
     computeYourChildrenPack?.let {
-      it.childrenComputer(it.threadId, it.valueId) { children -> node.addComputedChildren(children, it) }
+      it.valueComputer.computeValueChildren(it.threadId, it.valueId) {
+        children -> node.addComputedChildren(children, it)
+      }
     } ?: node.addChildren(XValueChildrenList(), true)
   }
 
@@ -64,24 +67,23 @@ class StarlarkValue(
   }
 
   private fun SDP.Value.toStarlarkValue(parentPack: ComputeYourChildrenPack): StarlarkValue =
-    fromProto(this, parentPack.threadId, parentPack.childrenComputer)
+    fromProto(this, parentPack.threadId, parentPack.valueComputer)
 
 
   companion object {
-    fun fromProto(value: SDP.Value, threadId: Long, childrenComputer: ChildrenComputer): StarlarkValue {
+    fun fromProto(value: SDP.Value, threadId: Long, valueComputer: StarlarkValueComputer): StarlarkValue {
       val pack = if (value.hasChildren) {
-        ComputeYourChildrenPack(threadId, value.id, childrenComputer)
+        ComputeYourChildrenPack(threadId, value.id, valueComputer)
       } else null
       return StarlarkValue(value.label, value.type, value.description, pack)
     }
   }
 
 
-  data class ComputeYourChildrenPack(
+  // everything a value needs to find its children
+  private data class ComputeYourChildrenPack(
     val threadId: Long,
     val valueId: Long,
-    val childrenComputer: (Long, Long, (List<SDP.Value>) -> Unit) -> Unit,
+    val valueComputer: StarlarkValueComputer,
   )
 }
-
-typealias ChildrenComputer = (Long, Long, (List<SDP.Value>) -> Unit) -> Unit

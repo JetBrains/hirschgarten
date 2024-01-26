@@ -1,18 +1,18 @@
 package org.jetbrains.bazel.debug.platform
 
+import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 import com.intellij.util.containers.toArray
 import com.intellij.xdebugger.frame.XExecutionStack
-import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 import com.intellij.xdebugger.frame.XSuspendContext
+import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
 
 class StarlarkSuspendContext(
   threads: List<SDP.PausedThread>,
-  private val frameListComputer: (Long, (List<SDP.Frame>) -> Unit) -> Unit,
-  private val childrenComputer: (Long, Long, (List<SDP.Value>) -> Unit) -> Unit,
+  private val valueComputer: StarlarkValueComputer,
   private val evaluatorProvider: StarlarkDebuggerEvaluator.Provider,
   primaryThreadId: Long? = null
 ) : XSuspendContext() {
-  private val executionStacks = threads.map { StarlarkExecutionStack(it, frameListComputer, childrenComputer, evaluatorProvider) }
+  private val executionStacks = threads.map { StarlarkExecutionStack(it, valueComputer, evaluatorProvider) }
   private val activeExecutionStack = primaryThreadId?.let { primary ->
     val index = threads.indexOfFirst { it.id == primary }
     executionStacks[index]

@@ -7,6 +7,7 @@ import com.intellij.xdebugger.evaluation.XDebuggerEvaluator
 import com.intellij.xdebugger.frame.XCompositeNode
 import com.intellij.xdebugger.frame.XStackFrame
 import com.intellij.xdebugger.frame.XValueChildrenList
+import org.jetbrains.bazel.debug.connector.StarlarkValueComputer
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import kotlin.io.path.Path
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
@@ -14,7 +15,7 @@ import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos a
 class StarlarkStackFrame(
   private val frame: SDP.Frame,
   val threadId: Long,
-  private val childrenComputer: ChildrenComputer,
+  private val valueComputer: StarlarkValueComputer,
   evaluatorProvider: StarlarkDebuggerEvaluator.Provider,
 ) : XStackFrame() {
   var isTopFrame: Boolean = false
@@ -30,7 +31,7 @@ class StarlarkStackFrame(
   private fun XValueChildrenList.addToplevelValues(frame: SDP.Frame) {
     frame.scopeList.forEach { scope ->
       scope.bindingList.forEach {
-        add(StarlarkValue.fromProto(it, threadId, childrenComputer))
+        add(StarlarkValue.fromProto(it, threadId, valueComputer))
       }
     }
   }
