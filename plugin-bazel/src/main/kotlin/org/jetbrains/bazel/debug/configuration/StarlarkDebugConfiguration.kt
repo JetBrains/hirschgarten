@@ -22,7 +22,6 @@ class StarlarkDebugConfiguration(
   RunConfigurationBase<StarlarkDebugConfiguration.Options>(project, configurationFactory, name),
   RunConfigurationWithSuppressedDefaultRunAction
 {
-
   private val options = Options()
 
   override fun getOptions(): Options = options
@@ -46,9 +45,8 @@ class StarlarkDebugConfiguration(
       .let { StarlarkDebugConfiguration(it.project, it.factory, it.name) }
       .also { it.options.starlarkDebugPort = this.options.starlarkDebugPort }
 
-  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
-    return StarlarkDebugConfigurationState(project, environment, getPort())
-  }
+  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
+    StarlarkDebugConfigurationState(project, environment, getPort())
 
   override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> = StarlarkDebugSettingsEditor()
 
@@ -57,6 +55,8 @@ class StarlarkDebugConfiguration(
     // example: com.intellij.execution.application.JvmMainMethodRunConfigurationOptions
     @com.intellij.configurationStore.Property(description = "Port to use")
     @get:Attribute("starlark_debug_port")
-    var starlarkDebugPort: Int by property(7300)
+    var starlarkDebugPort: Int by property(DEFAULT_PORT)
   }
 }
+
+private const val DEFAULT_PORT = 7300

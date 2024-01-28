@@ -16,8 +16,6 @@ class StarlarkValue private constructor(
   private val valueAsString: String,
   private val computeYourChildrenPack: ComputeYourChildrenPack?,
 ) : XNamedValue(name) {
-
-
   override fun computePresentation(node: XValueNode, place: XValuePlace) {
     val hasChildren = computeYourChildrenPack != null
     val icon = getValueIcon()
@@ -57,7 +55,7 @@ class StarlarkValue private constructor(
 
   private fun XCompositeNode.addComputedChildren(
     children: List<SDP.Value>,
-    computeYourChildrenPack: ComputeYourChildrenPack
+    computeYourChildrenPack: ComputeYourChildrenPack,
   ) {
     val xChildren = XValueChildrenList()
     children
@@ -69,7 +67,6 @@ class StarlarkValue private constructor(
   private fun SDP.Value.toStarlarkValue(parentPack: ComputeYourChildrenPack): StarlarkValue =
     fromProto(this, parentPack.threadId, parentPack.valueComputer)
 
-
   companion object {
     fun fromProto(value: SDP.Value, threadId: Long, valueComputer: StarlarkValueComputer): StarlarkValue {
       val pack = if (value.hasChildren) {
@@ -78,7 +75,6 @@ class StarlarkValue private constructor(
       return StarlarkValue(value.label, value.type, value.description, pack)
     }
   }
-
 
   // everything a value needs to find its children
   private data class ComputeYourChildrenPack(

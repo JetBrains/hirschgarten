@@ -60,7 +60,7 @@ class StarlarkDebugSettingsEditor : SettingsEditor<StarlarkDebugConfiguration>()
   }
 
   override fun applyEditorTo(config: StarlarkDebugConfiguration) {
-    portField.text.toIntOrNull()?.let{ config.setPort(it) }
+    portField.text.toIntOrNull()?.let { config.setPort(it) }
   }
 
   override fun createEditor(): JComponent {
@@ -109,11 +109,9 @@ class StarlarkDebugSettingsEditor : SettingsEditor<StarlarkDebugConfiguration>()
   }
 }
 
-
 private class NumberField(defaultText: String) : JTextField(defaultText) {
-  override fun createDefaultModel(): Document {
-    return NumberFieldDocument()
-  }
+  override fun createDefaultModel(): Document =
+    NumberFieldDocument()
 
   private class NumberFieldDocument : PlainDocument() {
     override fun insertString(offs: Int, str: String?, a: AttributeSet?) {
@@ -144,7 +142,7 @@ private class ValidationInfoSupplier(private val portField: JTextField) : Suppli
       true -> null
       false -> ValidationInfo(
         StarlarkBundle.message("starlark.debug.port.out.of.range", MIN_PORT_VALUE, MAX_PORT_VALUE),
-        portField
+        portField,
       )
     }
 }

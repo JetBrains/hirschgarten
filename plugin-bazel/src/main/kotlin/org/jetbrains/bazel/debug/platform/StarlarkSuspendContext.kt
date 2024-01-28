@@ -10,15 +10,13 @@ class StarlarkSuspendContext(
   threads: List<SDP.PausedThread>,
   private val valueComputer: StarlarkValueComputer,
   private val evaluatorProvider: StarlarkDebuggerEvaluator.Provider,
-  primaryThreadId: Long? = null
+  primaryThreadId: Long? = null,
 ) : XSuspendContext() {
   private val executionStacks = threads.map { StarlarkExecutionStack(it, valueComputer, evaluatorProvider) }
   private val activeExecutionStack = primaryThreadId?.let { primary ->
     val index = threads.indexOfFirst { it.id == primary }
     executionStacks[index]
   } ?: executionStacks.firstOrNull()
-
-
 
   override fun getActiveExecutionStack(): XExecutionStack? = activeExecutionStack
 

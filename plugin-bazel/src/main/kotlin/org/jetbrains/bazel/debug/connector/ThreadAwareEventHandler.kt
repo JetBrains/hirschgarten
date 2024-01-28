@@ -13,7 +13,7 @@ import java.util.Collections
 class ThreadAwareEventHandler(
   private val session: XDebugSession,
   private val messenger: StarlarkDebugMessenger,
-  private val breakpointResolver: (String, Int) -> XLineBreakpoint<StarlarkBreakpointProperties>?
+  private val breakpointResolver: (String, Int) -> XLineBreakpoint<StarlarkBreakpointProperties>?,
 ) {
   // maps thread IDs to PausedThreads
   private val pausedThreads = Collections.synchronizedMap(mutableMapOf<Long, SDP.PausedThread>())
@@ -35,7 +35,8 @@ class ThreadAwareEventHandler(
   }
 
   /** Creates an immutable snapshot of paused thread set */
-  private fun getPausedThreadList(): List<SDP.PausedThread> = synchronized(pausedThreads) { pausedThreads.values.toList() }
+  private fun getPausedThreadList(): List<SDP.PausedThread> =
+    synchronized(pausedThreads) { pausedThreads.values.toList() }
 
   private fun handleError(event: SDP.Error) {
     throw StarlarkDebuggerError(event)
@@ -49,7 +50,7 @@ class ThreadAwareEventHandler(
       threads = getPausedThreadList(),
       valueComputer = valueComputer,
       evaluatorProvider = evaluatorProvider,
-      primaryThreadId = primaryThreadId
+      primaryThreadId = primaryThreadId,
     )
 
     if (event.thread.pauseReason == SDP.PauseReason.HIT_BREAKPOINT) {
@@ -81,7 +82,6 @@ class ThreadAwareEventHandler(
       consumer(it.evaluate?.result)
     }
   }
-
 
   private inner class ValueComputer : StarlarkValueComputer {
     override fun computeFramesForExecutionStack(

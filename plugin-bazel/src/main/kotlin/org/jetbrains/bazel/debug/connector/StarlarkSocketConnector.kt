@@ -41,9 +41,8 @@ class StarlarkSocketConnector private constructor(
   fun isClosed(): Boolean = socket.isClosed
 
   companion object {
-    fun connectTo(port: Int, onSocketBreak: () -> Unit): StarlarkSocketConnector {
-      return StarlarkSocketConnector(Socket(HOST, port), onSocketBreak)
-    }
+    fun connectTo(port: Int, onSocketBreak: () -> Unit): StarlarkSocketConnector =
+      StarlarkSocketConnector(Socket(HOST, port), onSocketBreak)
   }
 }
 

@@ -7,7 +7,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 
 class StarlarkBreakpointType : XLineBreakpointType<StarlarkBreakpointProperties>(
   "starlark-line",
-  "Starlark Line Breakpoints"
+  "Starlark Line Breakpoints",
 ) {
   override fun createBreakpointProperties(file: VirtualFile, line: Int): StarlarkBreakpointProperties =
     StarlarkBreakpointProperties()

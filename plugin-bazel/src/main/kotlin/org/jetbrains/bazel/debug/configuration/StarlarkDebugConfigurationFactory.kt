@@ -7,13 +7,11 @@ import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.project.Project
 
 class StarlarkDebugConfigurationFactory(type: ConfigurationType) : ConfigurationFactory(type) {
-  override fun createTemplateConfiguration(project: Project): RunConfiguration {
-    return StarlarkDebugConfiguration(project, this, "")
-  }
+  override fun createTemplateConfiguration(project: Project): RunConfiguration =
+    StarlarkDebugConfiguration(project, this, "")
 
-  override fun getOptionsClass(): Class<out BaseState> {
-    return StarlarkDebugConfiguration.Options::class.java
-  }
+  override fun getOptionsClass(): Class<out BaseState> =
+    StarlarkDebugConfiguration.Options::class.java
 
   override fun getId(): String = "StarlarkDebugFactory"
 }

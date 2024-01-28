@@ -36,7 +36,7 @@ class StarlarkDebugRunner : GenericProgramRunner<StarlarkDebugRunner.Settings>()
           XDebuggerManager
             .getInstance(project)
             .startSession(environment, starter)
-            .runContentDescriptor
+            .runContentDescriptor,
         )
       } catch (_: ProcessCanceledException) {
         // ignore
@@ -46,7 +46,6 @@ class StarlarkDebugRunner : GenericProgramRunner<StarlarkDebugRunner.Settings>()
     }
     return ex.get()?.let { throw it } ?: result.get()
   }
-
 
   class Settings : RunnerSettings {
     override fun readExternal(element: Element?) {

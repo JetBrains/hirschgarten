@@ -20,7 +20,7 @@ class StarlarkExecutionStack(
   ) {
     // we don't want to answer to subsequent computeStackFrames calls, because we compute all frames at once
     if (container != null && startIndex == 0) {
-       valueComputer.computeFramesForExecutionStack(thread.id) { frames ->
+      valueComputer.computeFramesForExecutionStack(thread.id) { frames ->
         val xStackFrames = frames.map { it.toStackFrame() }
         topFrame = xStackFrames.firstOrNull()?.also { it.isTopFrame = true }
         container.addStackFrames(xStackFrames, true)

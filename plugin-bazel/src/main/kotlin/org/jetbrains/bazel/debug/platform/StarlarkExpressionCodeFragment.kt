@@ -15,8 +15,8 @@ class StarlarkExpressionCodeFragment(
 ) : StarlarkFile(
   PsiManagerEx.getInstanceEx(project).fileManager.createFileViewProvider(
     LightVirtualFile(extensionlessName.withExtension(), StarlarkFileType, content),
-    true
-  )
+    true,
+  ),
 ) {
   override fun getContext(): PsiElement? = if (context?.isValid == true) context else super.getContext()
 }

@@ -9,7 +9,8 @@ import javax.swing.Icon
 class StarlarkDebugConfigurationType : ConfigurationType {
   override fun getDisplayName(): String = StarlarkBundle.message("starlark.debug.config.type.name")
 
-  override fun getConfigurationTypeDescription(): String = StarlarkBundle.message("starlark.debug.config.type.description")
+  override fun getConfigurationTypeDescription(): String =
+    StarlarkBundle.message("starlark.debug.config.type.description")
 
   override fun getIcon(): Icon = BazelPluginIcons.bazel
 

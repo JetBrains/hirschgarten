@@ -24,7 +24,7 @@ class StarlarkDebuggerEditorsProvider : XDebuggerEditorsProviderBase() {
     project: Project,
     text: String,
     context: PsiElement?,
-    isPhysical: Boolean
+    isPhysical: Boolean,
   ): PsiFile {
     val content = text.trim()
     return StarlarkExpressionCodeFragment(project, "fragment", content, context)

@@ -7,9 +7,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugProcessStarter
 import com.intellij.xdebugger.XDebugSession
-import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointHandler
 import org.jetbrains.bazel.debug.platform.StarlarkDebugProcess
+import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import kotlin.concurrent.Volatile
 
 class StarlarkDebugManager(
@@ -28,7 +28,7 @@ class StarlarkDebugManager(
       LateinitDebugClasses(
         messenger = it,
         breakpointHandler = breakpointHandler,
-        eventHandler = eventHandler
+        eventHandler = eventHandler,
       )
     }
     classes = initializedClasses
@@ -45,11 +45,10 @@ class StarlarkDebugManager(
     }
   }
 
-
   private enum class State {
     READY,
     RUNNING,
-    DISPOSED
+    DISPOSED,
   }
 
   @Suppress("DialogTitleCapitalization")  // it triggers due to Starlark starting with a capital letter
