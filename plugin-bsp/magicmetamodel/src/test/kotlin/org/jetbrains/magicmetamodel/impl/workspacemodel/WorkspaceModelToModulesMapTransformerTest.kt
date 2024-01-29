@@ -205,7 +205,7 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
       val workspaceModelEntityUpdaterConfig =
         WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
       runTestWriteAction {
-        JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, projectBasePath).addEntries(listOf(javaModule1, javaModule2, rootJavaModule))
+        JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, false).addEntries(listOf(javaModule1, javaModule2, rootJavaModule))
         JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule3))
       }
       val loadedModules = loadedEntries(ModuleEntity::class.java)

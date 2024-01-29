@@ -1,5 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel
 
+import org.jetbrains.bsp.AndroidTargetType
 import org.jetbrains.magicmetamodel.impl.ModuleState
 import org.jetbrains.magicmetamodel.impl.toState
 import java.nio.file.Path
@@ -25,6 +26,7 @@ public data class JavaModule(
   val kotlinAddendum: KotlinAddendum? = null,
   val scalaAddendum: ScalaAddendum? = null,
   val javaAddendum: JavaAddendum? = null,
+  val androidAddendum: AndroidAddendum? = null,
 ) : WorkspaceModelEntity(), Module {
   override fun toState(): ModuleState = ModuleState(
     module = genericModuleInfo.toState(),
@@ -36,7 +38,7 @@ public data class JavaModule(
     jvmJdkName = jvmJdkName,
     kotlinAddendum = kotlinAddendum?.toState(),
     scalaAddendum = scalaAddendum?.toState(),
-
+    androidAddendum = androidAddendum?.toState(),
   )
 
   override fun getModuleName(): String = genericModuleInfo.name
@@ -55,3 +57,32 @@ public data class ScalaAddendum(
 public data class JavaAddendum(
   val languageVersion: String,
 )
+
+public data class AndroidAddendum(
+  val androidSdkName: String,
+  val androidTargetType: AndroidTargetType,
+) {
+  public companion object {
+    public fun create(map: Map<String, String>): AndroidAddendum? {
+      val androidSdkName = map[KEYS.ANDROID_SDK_NAME.name] ?: return null
+      val androidTargetType = map[KEYS.ANDROID_TARGET_TYPE.name]?.let { androidTargetType ->
+        AndroidTargetType.valueOf(androidTargetType)
+      } ?: return null
+      return AndroidAddendum(
+        androidSdkName = androidSdkName,
+        androidTargetType = androidTargetType,
+      )
+    }
+  }
+
+  public fun asMap(): Map<String, String> =
+    mapOf(
+      KEYS.ANDROID_SDK_NAME.name to androidSdkName,
+      KEYS.ANDROID_TARGET_TYPE.name to androidTargetType.name,
+    )
+
+  private enum class KEYS {
+    ANDROID_SDK_NAME,
+    ANDROID_TARGET_TYPE,
+  }
+}

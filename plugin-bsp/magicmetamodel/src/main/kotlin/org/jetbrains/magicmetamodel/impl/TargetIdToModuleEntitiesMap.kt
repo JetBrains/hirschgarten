@@ -16,10 +16,12 @@ public object TargetIdToModuleEntitiesMap {
     projectBasePath: Path,
     moduleNameProvider: ModuleNameProvider,
     hasDefaultPythonInterpreter: Boolean,
+    isAndroidSupportEnabled: Boolean,
   ): Map<BuildTargetId, Module> {
     val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(
       moduleNameProvider,
       projectBasePath,
+      isAndroidSupportEnabled,
     )
     val moduleDetailsToPythonModuleTransformer = ModuleDetailsToPythonModuleTransformer(
       moduleNameProvider,

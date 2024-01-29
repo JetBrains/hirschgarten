@@ -29,13 +29,15 @@ internal class WorkspaceModelUpdaterImpl(
   val virtualFileUrlManager: VirtualFileUrlManager,
   projectBasePath: Path,
   isPythonSupportEnabled: Boolean,
+  isAndroidSupportEnabled: Boolean,
 ) : WorkspaceModelUpdater {
   private val workspaceModelEntityUpdaterConfig = WorkspaceModelEntityUpdaterConfig(
     workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
     virtualFileUrlManager = virtualFileUrlManager,
     projectBasePath = projectBasePath,
   )
-  private val javaModuleUpdater = JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
+  private val javaModuleUpdater =
+    JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
   private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled)
 
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)

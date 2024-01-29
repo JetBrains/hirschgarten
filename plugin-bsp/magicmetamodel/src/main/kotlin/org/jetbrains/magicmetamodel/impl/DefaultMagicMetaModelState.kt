@@ -1,5 +1,7 @@
 package org.jetbrains.magicmetamodel.impl
 
+import org.jetbrains.bsp.AndroidTargetType
+import org.jetbrains.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
@@ -186,6 +188,7 @@ public data class ModuleState(
   var kotlinAddendum: KotlinAddendumState? = null,
   var scalaAddendum: ScalaAddendumState? = null,
   var javaAddendum: JavaAddendumState? = null,
+  var androidAddendum: AndroidAddendumState? = null,
 ) : ConvertableFromState<Module> {
   public fun toJavaModule(): JavaModule = JavaModule(
     genericModuleInfo = module.fromState(),
@@ -196,7 +199,8 @@ public data class ModuleState(
     compilerOutput = compilerOutput?.let { Path(it) },
     jvmJdkName = jvmJdkName,
     kotlinAddendum = kotlinAddendum?.fromState(),
-    scalaAddendum = scalaAddendum?.fromState()
+    scalaAddendum = scalaAddendum?.fromState(),
+    androidAddendum = androidAddendum?.fromState(),
   )
 
   public fun toPythonModule(): PythonModule = PythonModule(
@@ -258,6 +262,16 @@ public data class JavaAddendumState(
   )
 }
 
+public data class AndroidAddendumState(
+  var androidSdkName: String = "",
+  var androidTargetType: AndroidTargetType = AndroidTargetType.LIBRARY,
+) : ConvertableFromState<AndroidAddendum> {
+  override fun fromState(): AndroidAddendum = AndroidAddendum(
+    androidSdkName = androidSdkName,
+    androidTargetType = androidTargetType,
+  )
+}
+
 public data class ModuleCapabilitiesState(
   var canRun: Boolean = false,
   var canTest: Boolean = false,
@@ -280,6 +294,11 @@ public fun KotlinAddendum.toState(): KotlinAddendumState = KotlinAddendumState(
 
 public fun ScalaAddendum.toState(): ScalaAddendumState = ScalaAddendumState(
   scalaSdkName = scalaSdkName,
+)
+
+public fun AndroidAddendum.toState(): AndroidAddendumState = AndroidAddendumState(
+  androidSdkName = androidSdkName,
+  androidTargetType = androidTargetType,
 )
 
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(

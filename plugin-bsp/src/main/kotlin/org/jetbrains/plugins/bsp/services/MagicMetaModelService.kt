@@ -15,6 +15,7 @@ import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
+import org.jetbrains.plugins.bsp.android.androidSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
@@ -85,13 +86,16 @@ public class MagicMetaModelService(private val project: Project) :
 
     val hasDefaultPythonInterpreter = pythonSdkGetterExtension()?.hasDetectedPythonSdk() == true
 
+    val isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()
+
     return MagicMetaModelProjectConfig(
       workspaceModel,
       virtualFileUrlManager,
       moduleNameProvider,
       projectBasePath,
       isPythonSupportEnabled,
-      hasDefaultPythonInterpreter
+      hasDefaultPythonInterpreter,
+      isAndroidSupportEnabled,
     )
   }
 

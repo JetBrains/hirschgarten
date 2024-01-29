@@ -101,7 +101,8 @@ public object WorkspaceModelToModulesMapTransformer {
           moduleLevelLibraries = libraries.toList(),
           jvmJdkName = entity.getSdkName(),
           kotlinAddendum = kotlinConfiguration?.toKotlinAddendum(),
-          javaAddendum = entity.toJavaAddendum()
+          javaAddendum = entity.toJavaAddendum(),
+          androidAddendum = entity.toAndroidAddendum(),
         )
       }
       moduleName to module
@@ -132,6 +133,9 @@ public object WorkspaceModelToModulesMapTransformer {
     )
 
   private fun ModuleEntity.toJavaAddendum() = javaSettings?.languageLevelId?.let { JavaAddendum(it) }
+
+  private fun ModuleEntity.toAndroidAddendum(): AndroidAddendum? =
+    customImlData?.customModuleOptions?.let { AndroidAddendum.create(it) }
 
   private fun ModuleEntity.getBaseDir() =
     // TODO: in `ModuleDetailsToJavaModuleTransformer` we are assuming there will be one or we are providing a fake one
