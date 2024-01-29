@@ -30,6 +30,7 @@ public data class MagicMetaModelProjectConfig(
   val moduleNameProvider: ModuleNameProvider,
   val isPythonSupportEnabled: Boolean,
   val hasDefaultPythonInterpreter: Boolean,
+  val isAndroidSupportEnabled: Boolean,
 ) {
   public constructor(
     workspaceModel: WorkspaceModel,
@@ -38,13 +39,15 @@ public data class MagicMetaModelProjectConfig(
     projectBasePath: Path,
     isPythonSupportEnabled: Boolean = false,
     hasDefaultPythonInterpreter: Boolean = false,
+    isAndroidSupportEnabled: Boolean = false,
   ) : this(
     workspaceModel,
     virtualFileUrlManager,
     projectBasePath,
     moduleNameProvider ?: DefaultModuleNameProvider,
     isPythonSupportEnabled,
-    hasDefaultPythonInterpreter
+    hasDefaultPythonInterpreter,
+    isAndroidSupportEnabled
   )
 }
 

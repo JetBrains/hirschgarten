@@ -7,6 +7,7 @@
   <depends>com.intellij.java</depends>
   <depends>org.jetbrains.kotlin</depends>
   <depends optional="true" config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
+  <depends optional="true" config-file="bsp-withAndroid.xml">org.jetbrains.android</depends>
 
   <extensionPoints>
     <extensionPoint name="buildTargetClassifierExtension"
@@ -17,6 +18,12 @@
                     dynamic="true"/>
     <extensionPoint name="scalaSdkExtension"
                     interface="org.jetbrains.plugins.bsp.scala.sdk.ScalaSdkExtension"
+                    dynamic="true"/>
+    <extensionPoint name="androidSdkGetterExtension"
+                    interface="org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension"
+                    dynamic="true"/>
+    <extensionPoint name="androidFacetEntityUpdaterExtension"
+                    interface="org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
                     dynamic="true"/>
     <extensionPoint name="bspProjectOpenProcessorExtension"
                     interface="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension"
@@ -81,6 +88,7 @@
     <registryKey defaultValue="false" description="Build project on initial project sync" key="bsp.build.project.on.sync"/>
     <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
     <registryKey defaultValue="false" description="Scala modules support" key="bsp.scala.support"/>
+    <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
 

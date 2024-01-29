@@ -1,0 +1,8 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="org.jetbrains.bsp">
+    <androidSdkGetterExtension
+      implementation="org.jetbrains.plugins.bsp.android.AndroidSdkGetter" />
+    <androidFacetEntityUpdaterExtension
+      implementation="org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtensionImpl" />
+  </extensions>
+</idea-plugin>

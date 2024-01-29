@@ -90,6 +90,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
         magicMetaModelProjectConfig.projectBasePath,
         magicMetaModelProjectConfig.moduleNameProvider,
         magicMetaModelProjectConfig.hasDefaultPythonInterpreter,
+        magicMetaModelProjectConfig.isAndroidSupportEnabled,
       )
     }
 
@@ -156,7 +157,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
       magicMetaModelProjectConfig.projectBasePath,
-      magicMetaModelProjectConfig.isPythonSupportEnabled
+      magicMetaModelProjectConfig.isPythonSupportEnabled,
+      magicMetaModelProjectConfig.isAndroidSupportEnabled,
     )
 
     workspaceModelUpdater.clear()
@@ -300,7 +302,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
       magicMetaModelProjectConfig.projectBasePath,
-      magicMetaModelProjectConfig.isPythonSupportEnabled
+      magicMetaModelProjectConfig.isPythonSupportEnabled,
+      magicMetaModelProjectConfig.isAndroidSupportEnabled,
     )
     val newStorage = loadedTargetsStorage.copy()
     action(newStorage, workspaceModelUpdater)
@@ -341,7 +344,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       builderSnapshot.builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
       magicMetaModelProjectConfig.projectBasePath,
-      magicMetaModelProjectConfig.isPythonSupportEnabled
+      magicMetaModelProjectConfig.isPythonSupportEnabled,
+      magicMetaModelProjectConfig.isAndroidSupportEnabled,
     )
 
     workspaceModelUpdater.clear()
