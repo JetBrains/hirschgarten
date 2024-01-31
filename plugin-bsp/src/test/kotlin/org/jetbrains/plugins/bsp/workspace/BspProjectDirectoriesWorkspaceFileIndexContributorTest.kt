@@ -8,9 +8,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import com.intellij.testFramework.utils.io.createFile
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.util.io.createDirectories
-import com.intellij.util.io.createFile
 import com.intellij.workspaceModel.ide.toPath
 import io.kotest.inspectors.shouldForAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -62,7 +62,7 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
     toPath().resolve(name).createDirectories().toVirtualFileUrl(virtualFileUrlManager)
 
   private fun VirtualFileUrl.createFile(name: String): VirtualFileUrl =
-    toPath().resolve(name).createFile().toVirtualFileUrl(virtualFileUrlManager)
+    toPath().createFile(name).toVirtualFileUrl(virtualFileUrlManager)
 
   @Test
   fun `should exclude all the files in the project if no files are included`() {
