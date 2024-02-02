@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.actions.building
+package org.jetbrains.plugins.bsp.building.task
 
 import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.StatusCode
@@ -12,6 +12,7 @@ import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.jetbrains.bsp.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
@@ -27,9 +28,16 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   private val log = logger<BspProjectTaskRunner>()
 
   override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
-    project.isBspProject && project.isTrusted() && canRun(projectTask)
+    project.isBspProject &&
+      project.isTrusted() &&
+      canRun(projectTask)
 
-  override fun canRun(projectTask: ProjectTask): Boolean = projectTask is ModuleBuildTask
+  override fun canRun(projectTask: ProjectTask): Boolean = when (projectTask) {
+    is JpsOnlyModuleBuildTask -> false
+    is BspOnlyModuleBuildTask -> true
+    is ModuleBuildTask -> !JpsFeatureFlags.isCompileProjectWithJpsEnabled
+    else -> false
+  }
 
   override fun run(
     project: Project,

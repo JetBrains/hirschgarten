@@ -26,7 +26,7 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
     javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
   }
 
@@ -34,7 +34,7 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
   fun `should add one java resource root to the workspace model`() {
     // given
     val resourcePath = URI.create("file:///root/dir/example/resource/File.txt").toPath()
-    val javaResourceRoot = ResourceRoot(resourcePath)
+    val javaResourceRoot = ResourceRoot(resourcePath, "java-resource")
 
     // when
     val returnedJavaResourceRootEntity = runTestWriteAction {
@@ -72,16 +72,57 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
   }
 
   @Test
+  fun `should add one java test resource root to the workspace model`() {
+    // given
+    val resourcePath = URI.create("file:///root/dir/example/resource/File.txt").toPath()
+    val javaResourceRoot = ResourceRoot(resourcePath, "java-test-resource")
+
+    // when
+    val returnedJavaResourceRootEntity = runTestWriteAction {
+      javaResourceEntityUpdater.addEntity(javaResourceRoot, parentModuleEntity)
+    }
+
+    // then
+    val virtualResourceUrl = resourcePath.toVirtualFileUrl(virtualFileUrlManager)
+    val expectedJavaResourceRootEntity = ExpectedSourceRootEntity(
+      contentRootEntity = ContentRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        url = virtualResourceUrl,
+        excludedPatterns = emptyList(),
+      ),
+      sourceRootEntity = SourceRootEntity(
+        entitySource = parentModuleEntity.entitySource,
+        url = virtualResourceUrl,
+        rootType = "java-test-resource",
+      ) {
+        javaResourceRoots = listOf(
+          JavaResourceRootPropertiesEntity(
+            entitySource = parentModuleEntity.entitySource,
+            generated = false,
+            relativeOutputPath = "",
+          ),
+        )
+      },
+      parentModuleEntity = parentModuleEntity,
+    )
+
+    returnedJavaResourceRootEntity.sourceRoot shouldBeEqual expectedJavaResourceRootEntity
+    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
+      expectedJavaResourceRootEntity,
+    )
+  }
+
+  @Test
   fun `should add multiple java resource roots to the workspace model`() {
     // given
     val resourcePath1 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
-    val javaResourceRoot1 = ResourceRoot(resourcePath1)
+    val javaResourceRoot1 = ResourceRoot(resourcePath1, "java-resource")
 
     val resourcePath2 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
-    val javaResourceRoot2 = ResourceRoot(resourcePath2)
+    val javaResourceRoot2 = ResourceRoot(resourcePath2, "java-resource")
 
     val resourcePath3 = URI.create("file:///root/dir/example/another/resource/File3.txt").toPath()
-    val javaResourceRoot3 = ResourceRoot(resourcePath3)
+    val javaResourceRoot3 = ResourceRoot(resourcePath3, "java-resource")
 
     val javaResourceRoots = listOf(javaResourceRoot1, javaResourceRoot2, javaResourceRoot3)
 

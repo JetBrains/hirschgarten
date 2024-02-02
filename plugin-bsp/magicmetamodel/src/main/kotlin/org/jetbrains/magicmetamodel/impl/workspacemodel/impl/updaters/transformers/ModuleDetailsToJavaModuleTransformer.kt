@@ -51,13 +51,17 @@ internal class ModuleDetailsToJavaModuleTransformer(
           it,
         )
       }),
-      resourceRoots = resourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources),
+      resourceRoots = resourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources.map {
+        BuildTargetAndResourcesItem(
+          inputEntity.target,
+          it,
+        )
+      }),
       moduleLevelLibraries = if (inputEntity.libraryDependencies == null)
         DependencySourcesItemToLibraryTransformer
           .transform(inputEntity.dependenciesSources.map {
             DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
           }) else null,
-      compilerOutput = toCompilerOutput(inputEntity),
       // Any java module must be assigned a jdk if there is any available.
       jvmJdkName = inputEntity.toJdkNameOrDefault(),
       kotlinAddendum = toKotlinAddendum(inputEntity),
@@ -95,9 +99,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun ModuleDetails.calculateDummyJavaSourceRoots(): List<Path> =
     sources.mapNotNull { it.roots }.flatten().map { URI.create(it) }.map { it.toPath() }
-
-  private fun toCompilerOutput(inputEntity: ModuleDetails): Path? =
-    inputEntity.javacOptions?.classDirectory?.let { URI(it).toPath() }
 
   private fun ModuleDetails.toJdkNameOrDefault(): String? =
     toJdkName() ?: defaultJdkName

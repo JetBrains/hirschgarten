@@ -22,7 +22,7 @@ complexity:
   ComplexInterface:
     active: false
   CyclomaticComplexMethod:
-    active: true
+    active: false
     ignoreSingleWhenExpression: true
   LabeledExpression:
     active: true

@@ -11,18 +11,23 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.LocalJvmRunnerAc
 public class BspJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
   override fun patchJavaParameters(executor: Executor, configuration: RunProfile, javaParameters: JavaParameters) {
     configuration.getEnvironment()?.let {
-      javaParameters.applyJavaParametersFromItem(it)
+      val prioritizeIdeClasspath = configuration.prioritizeIdeClasspath() ?: false
+      javaParameters.applyJavaParametersFromItem(it, prioritizeIdeClasspath)
     }
   }
 
   private fun RunProfile.getEnvironment() =
     (this as? UserDataHolderBase)?.getUserData(LocalJvmRunnerAction.jvmEnvironment)
 
-  private fun JavaParameters.applyJavaParametersFromItem(item: JvmEnvironmentItem) {
+  private fun RunProfile.prioritizeIdeClasspath() =
+    (this as? UserDataHolderBase)?.getUserData(LocalJvmRunnerAction.prioritizeIdeClasspath)
+
+  private fun JavaParameters.applyJavaParametersFromItem(item: JvmEnvironmentItem, prioritizeIdeClassPath: Boolean) {
     val newEnvironmentVariables = env + item.environmentVariables
 
-    val oldClassPath = classPath.pathList
-    val newClassPath = item.classpath + oldClassPath
+    val newClassPath =
+      if (prioritizeIdeClassPath) classPath.pathList + item.classpath
+      else item.classpath + classPath.pathList
 
     apply {
       env = newEnvironmentVariables

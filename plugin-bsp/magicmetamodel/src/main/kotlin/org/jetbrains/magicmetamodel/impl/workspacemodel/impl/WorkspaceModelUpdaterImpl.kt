@@ -1,5 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl
 
+import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
@@ -9,6 +10,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
@@ -20,14 +22,15 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModu
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.JavaModuleToDummyJavaModulesTransformerHACK
+import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
-import org.jetbrains.workspacemodel.storage.BspEntitySource
 import java.nio.file.Path
 
 internal class WorkspaceModelUpdaterImpl(
   workspaceEntityStorageBuilder: MutableEntityStorage,
   val virtualFileUrlManager: VirtualFileUrlManager,
   projectBasePath: Path,
+  project: Project,
   isPythonSupportEnabled: Boolean,
   isAndroidSupportEnabled: Boolean,
 ) : WorkspaceModelUpdater {
@@ -35,6 +38,7 @@ internal class WorkspaceModelUpdaterImpl(
     workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
     virtualFileUrlManager = virtualFileUrlManager,
     projectBasePath = projectBasePath,
+    project = project,
   )
   private val javaModuleUpdater =
     JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
@@ -62,7 +66,10 @@ internal class WorkspaceModelUpdaterImpl(
           name = entityToAdd.displayName,
           tableId = LibraryTableId.ProjectLibraryTableId,
           roots = entityToAdd.classJars.toLibraryRootsOfType(LibraryRootTypeId.COMPILED),
-          entitySource = BspEntitySource,
+          entitySource = LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
+            project = workspaceModelEntityUpdaterConfig.project,
+            externalSource = null,
+          ),
         ) {
           this.excludedRoots = arrayListOf()
         },
@@ -72,7 +79,7 @@ internal class WorkspaceModelUpdaterImpl(
 
   private fun List<String>.toLibraryRootsOfType(type: LibraryRootTypeId) = map {
     LibraryRoot(
-      url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(Library.formatJarString(it)),
+      url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUri(Library.formatJarString(it)),
       type = type,
     )
   }

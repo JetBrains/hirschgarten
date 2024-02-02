@@ -7,6 +7,7 @@ import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.SdkId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
@@ -14,7 +15,7 @@ import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.workspacemodel.storage.BspEntitySource
+import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -22,7 +23,7 @@ import org.junit.jupiter.api.Test
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
   private val defaultDependencies = listOf(
-    ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
+    ModuleDependencyItem.SdkDependency(SdkId("11", "JavaSDK")),
     ModuleDependencyItem.ModuleSourceDependency,
   )
 
@@ -34,7 +35,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
     moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies)
   }
 
@@ -100,7 +101,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
             exported = true,
             scope = ModuleDependencyItem.DependencyScope.COMPILE,
           ),
-          ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
+          ModuleDependencyItem.SdkDependency(SdkId("11", "JavaSDK")),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
         entitySource = BspEntitySource,
@@ -192,7 +193,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
             exported = true,
             scope = ModuleDependencyItem.DependencyScope.COMPILE,
           ),
-          ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
+          ModuleDependencyItem.SdkDependency(SdkId("11", "JavaSDK")),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
         entitySource = BspEntitySource,
@@ -218,7 +219,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
             exported = true,
             scope = ModuleDependencyItem.DependencyScope.COMPILE,
           ),
-          ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
+          ModuleDependencyItem.SdkDependency(SdkId("11", "JavaSDK")),
           ModuleDependencyItem.ModuleSourceDependency,
         ),
         entitySource = BspEntitySource,

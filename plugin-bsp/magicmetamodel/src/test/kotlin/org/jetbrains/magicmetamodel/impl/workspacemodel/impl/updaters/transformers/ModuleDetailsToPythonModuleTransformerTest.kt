@@ -167,6 +167,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val expectedResourceRoot1 = ResourceRoot(
       resourcePath = resourceFilePath.parent,
+      rootType = "",
     )
 
     val expectedPythonSdkInfo = PythonSdkInfo(version = version, originalName = buildTargetId.uri)
@@ -352,6 +353,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val expectedResourceRoot11 = ResourceRoot(
       resourcePath = resourceFilePath11.parent,
+      rootType = "",
     )
 
     val expectedPythonSdk1 = PythonSdkInfo(version = defaultPythonVersion, originalName = "${buildTargetId1.uri}-detected")
@@ -378,6 +380,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val expectedResourceRoot21 = ResourceRoot(
       resourcePath = resourceDirPath21,
+      rootType = "",
     )
 
     val expectedPythonSdk2 = PythonSdkInfo(version = defaultPythonVersion, originalName = "${buildTargetId2.uri}-detected")

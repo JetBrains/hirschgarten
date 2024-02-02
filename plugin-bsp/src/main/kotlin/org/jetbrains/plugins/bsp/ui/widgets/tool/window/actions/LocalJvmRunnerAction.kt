@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.BspProjectModuleBuildTasksTracker
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.orDefault
@@ -58,6 +59,7 @@ internal abstract class LocalJvmRunnerAction(
           mainClassName = mainClass.className
           programParameters = mainClass.arguments.joinToString(" ")
           putUserData(jvmEnvironment, environment)
+          putUserData(prioritizeIdeClasspath, BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
         }
         val runManager = RunManagerImpl.getInstanceImpl(project)
         val settings = RunnerAndConfigurationSettingsImpl(runManager, applicationConfiguration)
@@ -76,5 +78,6 @@ internal abstract class LocalJvmRunnerAction(
 
   companion object {
     val jvmEnvironment = Key<JvmEnvironmentItem>("jvmEnvironment")
+    val prioritizeIdeClasspath = Key<Boolean>("prioritizeIdeClasspath")
   }
 }

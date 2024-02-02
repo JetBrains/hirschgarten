@@ -2,6 +2,7 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.SdkId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.PYTHON_SDK_ID
 
@@ -26,7 +27,7 @@ internal class PythonModuleWithSourcesUpdater(
 
   private fun calculateModuleDefaultDependencies(entityToAdd: PythonModule): List<ModuleDependencyItem> =
     if (isPythonSupportEnabled && entityToAdd.sdkInfo != null)
-      defaultDependencies + ModuleDependencyItem.SdkDependency(entityToAdd.sdkInfo.toString(), PYTHON_SDK_ID)
+      defaultDependencies + ModuleDependencyItem.SdkDependency(SdkId(entityToAdd.sdkInfo.toString(), PYTHON_SDK_ID))
     else
       defaultDependencies
 

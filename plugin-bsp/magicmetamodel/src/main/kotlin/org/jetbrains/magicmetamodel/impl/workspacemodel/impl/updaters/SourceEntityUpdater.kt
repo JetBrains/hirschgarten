@@ -7,7 +7,6 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
-import org.jetbrains.workspacemodel.storage.BspEntitySource
 
 internal open class SourceEntityUpdater(
   val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -45,7 +44,7 @@ internal open class SourceEntityUpdater(
       SourceRootEntity(
         url = entityToAdd.sourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         rootType = entityToAdd.rootType,
-        entitySource = BspEntitySource,
+        entitySource = contentRootEntity.entitySource,
       ) {
         this.contentRoot = contentRootEntity
       },

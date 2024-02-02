@@ -3,8 +3,6 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
-import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import com.intellij.workspaceModel.ide.toPath
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleWithSourcesUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleWithoutSourcesUpdater
@@ -14,7 +12,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.net.URI
-import kotlin.io.path.Path
 import kotlin.io.path.toPath
 
 @DisplayName("WorkspaceModelToProjectDetailsTransformer tests")
@@ -44,7 +41,6 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
             libraryName = "lib2",
           ),
         ),
-        ModuleCapabilities(canRun = true, canTest = true, canCompile = false, canDebug = false),
       )
 
       val baseDirContentRoot1 = ContentRoot(
@@ -75,9 +71,11 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
       val resourceRoots1 = listOf(
         ResourceRoot(
           resourcePath = resourcePath11,
+          rootType = "",
         ),
         ResourceRoot(
           resourcePath = resourcePath12,
+          rootType = "",
         ),
       )
 
@@ -96,7 +94,6 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         library1,
         library2,
       )
-      val compilerOutput1 = Path("compiler/output1").toVirtualFileUrl(virtualFileUrlManager).toPath()
 
       val javaModule1 = JavaModule(
         genericModuleInfo = module1,
@@ -104,7 +101,6 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         resourceRoots = resourceRoots1,
         moduleLevelLibraries = libraries1,
         baseDirContentRoot = baseDirContentRoot1,
-        compilerOutput = compilerOutput1,
         jvmJdkName = "11",
       )
 
@@ -121,7 +117,6 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
             libraryName = "lib1",
           ),
         ),
-        ModuleCapabilities(canRun = true, canTest = false, canCompile = true, canDebug = false),
       )
 
       val baseDirContentRoot2 = ContentRoot(
@@ -143,13 +138,13 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
       val resourceRoots2 = listOf(
         ResourceRoot(
           resourcePath = resourcePath21,
+          rootType = "",
         ),
       )
 
       val libraries2 = listOf(
         library1,
       )
-      val compilerOutput2 = Path("compiler/output2").toVirtualFileUrl(virtualFileUrlManager).toPath()
 
       val javaModule2 = JavaModule(
         genericModuleInfo = module2,
@@ -157,7 +152,6 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         sourceRoots = sourceRoots2,
         resourceRoots = resourceRoots2,
         moduleLevelLibraries = libraries2,
-        compilerOutput = compilerOutput2,
         jvmJdkName = null,
       )
 
@@ -166,12 +160,10 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         type = "JAVA_MODULE",
         modulesDependencies = emptyList(),
         librariesDependencies = emptyList(),
-        ModuleCapabilities(canRun = true, canTest = true, canCompile = true, canDebug = true),
       )
       val baseDirContentRoot3 = ContentRoot(
         path = URI.create("file:///another/root/dir/example3/").toPath(),
       )
-      val compilerOutput3 = Path("compiler/output3")
 
       val javaModule3 = JavaModule(
         genericModuleInfo = module3,
@@ -179,7 +171,6 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         sourceRoots = emptyList(),
         resourceRoots = emptyList(),
         moduleLevelLibraries = emptyList(),
-        compilerOutput = compilerOutput3,
       )
 
       val rootModule = GenericModuleInfo(
@@ -187,7 +178,6 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         type = "JAVA_MODULE",
         modulesDependencies = emptyList(),
         librariesDependencies = emptyList(),
-        ModuleCapabilities(),
       )
 
       val rootJavaModule = JavaModule(
@@ -196,14 +186,13 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         sourceRoots = emptyList(),
         resourceRoots = emptyList(),
         moduleLevelLibraries = emptyList(),
-        compilerOutput = null,
         jvmJdkName = null,
       )
 
       // when
 
       val workspaceModelEntityUpdaterConfig =
-        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+        WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
       runTestWriteAction {
         JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, false).addEntries(listOf(javaModule1, javaModule2, rootJavaModule))
         JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig).addEntries(listOf(javaModule3))
@@ -236,7 +225,6 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         // not a root module, so baseDirContentRoot won't be serialized
         baseDirContentRoot = null,
         // no sources, so compiler output won't be serialized
-        compilerOutput = null,
       )
 
       val expectedMap = mapOf(

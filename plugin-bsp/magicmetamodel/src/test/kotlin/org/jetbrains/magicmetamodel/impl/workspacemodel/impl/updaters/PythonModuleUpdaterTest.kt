@@ -6,6 +6,7 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
@@ -19,7 +20,7 @@ import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.workspacemodel.storage.BspEntitySource
+import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -71,9 +72,11 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val resourceRoots = listOf(
           ResourceRoot(
             resourcePath = resourcePath1,
+            rootType = "",
           ),
           ResourceRoot(
             resourcePath = resourcePath2,
+            rootType = "",
           ),
         )
 
@@ -111,7 +114,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
                 productionOnTest = true,
               ),
               ModuleDependencyItem.ModuleSourceDependency,
-              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
+              ModuleDependencyItem.SdkDependency(SdkId("fake-interpreter-name-3", "PythonSDK")),
             ),
           ) {
             type = "PYTHON_MODULE"
@@ -230,9 +233,11 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val resourceRoots1 = listOf(
           ResourceRoot(
             resourcePath = resourcePath11,
+            rootType = "",
           ),
           ResourceRoot(
             resourcePath = resourcePath12,
+            rootType = "",
           ),
         )
 
@@ -269,6 +274,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val resourceRoots2 = listOf(
           ResourceRoot(
             resourcePath = resourcePath21,
+            rootType = "",
           ),
         )
 
@@ -307,7 +313,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
                 scope = ModuleDependencyItem.DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
+              ModuleDependencyItem.SdkDependency(SdkId("fake-interpreter-name-3", "PythonSDK")),
               ModuleDependencyItem.ModuleSourceDependency,
             ),
           ) {
@@ -326,7 +332,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
                 scope = ModuleDependencyItem.DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
+              ModuleDependencyItem.SdkDependency(SdkId("fake-interpreter-name-3", "PythonSDK")),
               ModuleDependencyItem.ModuleSourceDependency,
             ),
           ) {
@@ -628,7 +634,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
     beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
 
     if (updaterConstructor.parameters.size == 1)
       test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))

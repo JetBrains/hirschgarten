@@ -80,7 +80,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = listOf(Library(displayName = "lib1")),
-      compilerOutput = Path("file:///compiler/output.jar"),
       jvmJdkName = javaVersion,
       kotlinAddendum = null,
     )
@@ -109,7 +108,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = emptyList(),
-      compilerOutput = null,
       jvmJdkName = null,
       kotlinAddendum = null,
     )
@@ -150,7 +148,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = listOf(),
-      compilerOutput = null,
       jvmJdkName = null,
       kotlinAddendum = null,
     )
@@ -175,7 +172,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = listOf(),
-      compilerOutput = null,
       jvmJdkName = null,
       kotlinAddendum = null,
     )
@@ -206,7 +202,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = emptyList(),
-      compilerOutput = null,
       jvmJdkName = null,
       kotlinAddendum = null,
     )
@@ -231,7 +226,6 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = emptyList(),
-      compilerOutput = null,
       jvmJdkName = null,
       kotlinAddendum = null,
     )

@@ -35,7 +35,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     super.beforeEach()
 
     testMagicMetaModelProjectConfig =
-      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath)
+      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath, project)
   }
 
   private fun createBuildTargetInfo(target: BuildTarget) = with(target) {
