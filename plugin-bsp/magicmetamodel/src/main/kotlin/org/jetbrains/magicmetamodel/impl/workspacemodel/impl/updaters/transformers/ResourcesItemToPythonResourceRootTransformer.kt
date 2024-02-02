@@ -15,5 +15,6 @@ internal class ResourcesItemToPythonResourceRootTransformer(private val projectB
   private fun toResourceRoot(resourcePath: String) =
     ResourceRoot(
       resourcePath = RawUriToDirectoryPathTransformer.transform(resourcePath),
+      rootType = "",
     )
 }

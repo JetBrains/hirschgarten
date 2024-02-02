@@ -18,6 +18,7 @@ public class BspWorkspace(public val project: Project) : Disposable {
   public fun initialize() {
     if (!initialized) {
       BspProjectAware.initialize(this)
+      BspProjectModuleBuildTasksTracker.initialize(this)
       bspWorkspaceWatcher.listenForConfigChanges()
       initialized = true
     }

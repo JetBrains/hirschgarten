@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+  implementation(project(":jps-compilation"))
   implementation(project(":protocol"))
   implementation(libs.bsp4j)
   implementation(project(":workspacemodel"))

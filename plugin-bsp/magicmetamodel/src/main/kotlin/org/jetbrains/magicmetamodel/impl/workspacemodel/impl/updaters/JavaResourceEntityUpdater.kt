@@ -8,7 +8,6 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
-import org.jetbrains.workspacemodel.storage.BspEntitySource
 
 internal class JavaResourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -25,6 +24,7 @@ internal class JavaResourceEntityUpdater(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       contentRootEntity,
       entityToAdd,
+      parentModuleEntity,
     )
     return addJavaResourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, sourceRoot)
   }
@@ -44,12 +44,13 @@ internal class JavaResourceEntityUpdater(
     builder: MutableEntityStorage,
     contentRootEntity: ContentRootEntity,
     entityToAdd: ResourceRoot,
+    parentModuleEntity: ModuleEntity,
   ): SourceRootEntity =
     builder.addEntity(
       SourceRootEntity(
         url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-        rootType = ROOT_TYPE,
-        entitySource = BspEntitySource,
+        rootType = entityToAdd.rootType,
+        entitySource = parentModuleEntity.entitySource,
       ) {
         this.contentRoot = contentRootEntity
       },
@@ -72,7 +73,5 @@ internal class JavaResourceEntityUpdater(
   private companion object {
     private const val DEFAULT_GENERATED = false
     private const val DEFAULT_RELATIVE_OUTPUT_PATH = ""
-
-    private const val ROOT_TYPE = "java-resource"
   }
 }

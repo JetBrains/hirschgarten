@@ -45,6 +45,7 @@ public data class GenericSourceRoot(
 
 public data class ResourceRoot(
   val resourcePath: Path,
+  val rootType: String,
 ) : WorkspaceModelEntity(), ResourceRootEntity
 
 public data class Library(
@@ -78,6 +79,7 @@ public data class GenericModuleInfo(
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
   val languageIds: LanguageIds = listOf(),
   val associates: List<ModuleDependency> = listOf(),
+  val isDummy: Boolean = false,
 ) : WorkspaceModelEntity() {
   internal constructor(
     name: String,

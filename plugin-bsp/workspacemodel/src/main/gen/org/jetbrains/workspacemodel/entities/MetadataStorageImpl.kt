@@ -8,11 +8,50 @@ import com.intellij.platform.workspace.storage.metadata.model.StorageTypeMetadat
 import com.intellij.platform.workspace.storage.metadata.model.ValueTypeMetadata
 
 public object MetadataStorageImpl : MetadataStorageBase() {
-  init {
-
+  override fun initializeMetadata() {
     val primitiveTypeListNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "List")
 
     var typeMetadata: StorageTypeMetadata
+
+    typeMetadata = FinalClassMetadata.ObjectMetadata(
+      fqName = "org.jetbrains.workspacemodel.entities.BspEntitySource",
+      properties = listOf(
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
+          name = "virtualFileUrl",
+          valueType = ValueTypeMetadata.SimpleType.CustomType(
+            isNullable = true,
+            typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")
+          ),
+          withDefault = false
+        )
+      ),
+      supertypes = listOf("com.intellij.platform.workspace.storage.EntitySource")
+    )
+
+    addMetadata(typeMetadata)
+
+    typeMetadata = FinalClassMetadata.ObjectMetadata(
+      fqName = "org.jetbrains.workspacemodel.entities.BspDummyEntitySource",
+      properties = listOf(
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
+          name = "virtualFileUrl",
+          valueType = ValueTypeMetadata.SimpleType.CustomType(
+            isNullable = true,
+            typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")
+          ),
+          withDefault = false
+        )
+      ),
+      supertypes = listOf("com.intellij.platform.workspace.storage.EntitySource")
+    )
+
+    addMetadata(typeMetadata)
 
     typeMetadata = EntityMetadata(
       fqName = "org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity",
@@ -78,4 +117,15 @@ public object MetadataStorageImpl : MetadataStorageBase() {
 
     addMetadata(typeMetadata)
   }
+
+  override fun initializeMetadataHash() {
+    addMetadataHash(
+      typeFqn = "org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity",
+      metadataHash = -565268675
+    )
+    addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.EntitySource", metadataHash = -27777658)
+    addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.BspDummyEntitySource", metadataHash = 124279478)
+    addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.BspEntitySource", metadataHash = 2092063924)
+  }
+
 }

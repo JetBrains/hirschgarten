@@ -116,7 +116,17 @@ public fun JavaSourceRoot.toState(): SourceRootState = SourceRootState(
   excludedPaths = excludedPaths.map { it.toString() },
 )
 
-internal fun String.toResourceRoot() = ResourceRoot(Path(this))
+public data class ResourceRootState(
+  var resourcePath: String = "",
+  var rootType: String = "",
+) {
+  public fun toResourceRoot(): ResourceRoot = ResourceRoot(Path(resourcePath), rootType)
+}
+
+public fun ResourceRoot.toState(): ResourceRootState = ResourceRootState(
+  resourcePath = resourcePath.toString(),
+  rootType = rootType,
+)
 
 public fun GenericSourceRoot.toState(): SourceRootState = SourceRootState(
   sourcePath = sourcePath.toString(),
@@ -180,9 +190,8 @@ public data class ModuleState(
   var module: GenericModuleInfoState = GenericModuleInfoState(),
   var baseDirContentRoot: ContentRootState? = null,
   var sourceRoots: List<SourceRootState> = emptyList(),
-  var resourceRoots: List<String> = emptyList(),
+  var resourceRoots: List<ResourceRootState> = emptyList(),
   var libraries: List<LibraryState>? = null,
-  var compilerOutput: String? = null,
   var jvmJdkName: String? = null,
   val sdkInfo: PythonSdkInfoState? = null,
   var kotlinAddendum: KotlinAddendumState? = null,
@@ -196,7 +205,6 @@ public data class ModuleState(
     sourceRoots = sourceRoots.map { it.toJavaSourceRoot() },
     resourceRoots = resourceRoots.map { it.toResourceRoot() },
     moduleLevelLibraries = libraries?.map { it.fromState() },
-    compilerOutput = compilerOutput?.let { Path(it) },
     jvmJdkName = jvmJdkName,
     kotlinAddendum = kotlinAddendum?.fromState(),
     scalaAddendum = scalaAddendum?.fromState(),

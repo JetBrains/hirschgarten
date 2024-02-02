@@ -8,18 +8,18 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import com.intellij.testFramework.utils.io.createFile
 import com.intellij.testFramework.workspaceModel.updateProjectModel
-import com.intellij.util.io.createDirectories
 import com.intellij.workspaceModel.ide.toPath
 import io.kotest.inspectors.shouldForAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
-import org.jetbrains.workspacemodel.storage.BspEntitySource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
 
 class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBaseTest() {
   private lateinit var fileIndex: FileIndex
@@ -62,7 +62,7 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
     toPath().resolve(name).createDirectories().toVirtualFileUrl(virtualFileUrlManager)
 
   private fun VirtualFileUrl.createFile(name: String): VirtualFileUrl =
-    toPath().createFile(name).toVirtualFileUrl(virtualFileUrlManager)
+    toPath().resolve(name).createFile().toVirtualFileUrl(virtualFileUrlManager)
 
   @Test
   fun `should exclude all the files in the project if no files are included`() {

@@ -11,6 +11,7 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bsp.LibraryItem
@@ -27,6 +28,7 @@ public data class MagicMetaModelProjectConfig(
   val workspaceModel: WorkspaceModel,
   val virtualFileUrlManager: VirtualFileUrlManager,
   val projectBasePath: Path,
+  val project: Project,
   val moduleNameProvider: ModuleNameProvider,
   val isPythonSupportEnabled: Boolean,
   val hasDefaultPythonInterpreter: Boolean,
@@ -37,6 +39,7 @@ public data class MagicMetaModelProjectConfig(
     virtualFileUrlManager: VirtualFileUrlManager,
     moduleNameProvider: ModuleNameProvider?,
     projectBasePath: Path,
+    project: Project,
     isPythonSupportEnabled: Boolean = false,
     hasDefaultPythonInterpreter: Boolean = false,
     isAndroidSupportEnabled: Boolean = false,
@@ -44,6 +47,7 @@ public data class MagicMetaModelProjectConfig(
     workspaceModel,
     virtualFileUrlManager,
     projectBasePath,
+    project,
     moduleNameProvider ?: DefaultModuleNameProvider,
     isPythonSupportEnabled,
     hasDefaultPythonInterpreter,

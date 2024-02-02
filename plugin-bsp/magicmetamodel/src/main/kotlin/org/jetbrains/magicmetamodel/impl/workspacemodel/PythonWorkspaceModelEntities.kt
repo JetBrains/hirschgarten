@@ -31,7 +31,7 @@ public data class PythonModule(
     module = module.toState(),
     baseDirContentRoot = null,
     sourceRoots = sourceRoots.map { it.toState() },
-    resourceRoots = resourceRoots.map { it.toString() },
+    resourceRoots = resourceRoots.map { it.toState() },
     libraries = libraries.map { it.toState() },
     sdkInfo = sdkInfo?.toState(),
   )

@@ -1,10 +1,8 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel
 
-import com.intellij.facet.impl.FacetUtil
 import com.intellij.java.workspace.entities.javaResourceRoots
 import com.intellij.java.workspace.entities.javaSettings
 import com.intellij.java.workspace.entities.javaSourceRoots
-import com.intellij.openapi.util.JDOMUtil
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryId
@@ -12,9 +10,13 @@ import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.jps.entities.customImlData
 import com.intellij.workspaceModel.ide.toPath
-import org.jetbrains.kotlin.idea.facet.KotlinFacetConfiguration
-import org.jetbrains.kotlin.idea.facet.KotlinFacetType
+import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
+import org.jetbrains.kotlin.config.deserializeTargetPlatformByComponentPlatforms
+import org.jetbrains.kotlin.idea.workspaceModel.CompilerArgumentsSerializer
+import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
+import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
 import org.jetbrains.kotlin.platform.jvm.JdkPlatform
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.LoadedTargetsStorage
@@ -72,7 +74,6 @@ public object WorkspaceModelToModulesMapTransformer {
   ): Pair<BuildTargetId, Module>? {
     val (entity, sources) = this
     return loadedTargetsIndex[entity.name]?.let { moduleName ->
-      val kotlinConfiguration = entity.getKotlinConfiguration()
       val genericModuleInfo = GenericModuleInfo(
         name = entity.name,
         type = entity.type.orEmpty(),
@@ -80,7 +81,7 @@ public object WorkspaceModelToModulesMapTransformer {
         librariesDependencies = entity.dependencies.filterLibraryDependencies(),
         capabilities = ModuleCapabilities(entity.customImlData?.customModuleOptions.orEmpty()),
         languageIds = entity.customImlData?.customModuleOptions.orEmpty(),
-        associates = kotlinConfiguration?.getAssociates().orEmpty(),
+        associates = entity.getKotlinSettings()?.getAssociates().orEmpty(),
       )
       val module = if (genericModuleInfo.languageIds.includesPython()) {
         PythonModule(
@@ -97,10 +98,9 @@ public object WorkspaceModelToModulesMapTransformer {
           baseDirContentRoot = baseDirContentRoot,
           sourceRoots = sources.map { it.toJavaSourceRoot() }.flatten(),
           resourceRoots = sources.map { it.toResourceRoot() }.flatten(),
-          compilerOutput = entity.javaSettings?.compilerOutput?.toPath(),
           moduleLevelLibraries = libraries.toList(),
           jvmJdkName = entity.getSdkName(),
-          kotlinAddendum = kotlinConfiguration?.toKotlinAddendum(),
+          kotlinAddendum = entity.getKotlinSettings()?.toKotlinAddendum(),
           javaAddendum = entity.toJavaAddendum(),
           androidAddendum = entity.toAndroidAddendum(),
         )
@@ -109,28 +109,26 @@ public object WorkspaceModelToModulesMapTransformer {
     }
   }
 
-  private fun ModuleEntity.getKotlinConfiguration() =
-    facets.firstOrNull { it.facetType == KotlinFacetType.INSTANCE.id.toString() }
-      ?.configurationXmlTag
-      ?.let { createKotlinConfiguration(it) }
+  private fun ModuleEntity.getKotlinSettings() =
+    kotlinSettings.firstOrNull()
 
-  private fun createKotlinConfiguration(configuration: String) =
-    KotlinFacetType.INSTANCE.createDefaultConfiguration().apply {
-      val element = JDOMUtil.load(configuration)
-      FacetUtil.loadFacetConfiguration(this, element)
-    }
+  private fun KotlinSettingsEntity.getAssociates() =
+    additionalVisibleModuleNames.map { ModuleDependency(it) }
 
-  private fun KotlinFacetConfiguration.getAssociates() =
-    settings.additionalVisibleModuleNames.map { ModuleDependency(it) }
-
-  private fun KotlinFacetConfiguration.toKotlinAddendum() =
-    KotlinAddendum(
-      languageVersion = settings.languageLevel?.versionString.orEmpty(),
-      apiVersion = settings.apiLevel?.toString().orEmpty(),
-      kotlincOptions = settings
-        .compilerArguments
-        ?.toKotlincOptions(settings.targetPlatform?.singleOrNull() as? JdkPlatform) ?: emptyList(),
+  private fun KotlinSettingsEntity.toKotlinAddendum(): KotlinAddendum? {
+    val deserializedCompilerArgs =
+      CompilerArgumentsSerializer.deserializeFromString(compilerArguments) as? K2JVMCompilerArguments ?: return null
+    val languageVersion = deserializedCompilerArgs.languageVersion ?: return null
+    val apiVersion = deserializedCompilerArgs.apiVersion ?: return null
+    return KotlinAddendum(
+      languageVersion = languageVersion,
+      apiVersion = apiVersion,
+      kotlincOptions = deserializedCompilerArgs
+        .toKotlincOptions(
+          targetPlatform.deserializeTargetPlatformByComponentPlatforms()?.singleOrNull() as? JdkPlatform
+        ),
     )
+  }
 
   private fun ModuleEntity.toJavaAddendum() = javaSettings?.languageLevelId?.let { JavaAddendum(it) }
 
@@ -173,7 +171,8 @@ public object WorkspaceModelToModulesMapTransformer {
 
 private fun SourceRootEntity.toResourceRoot() = javaResourceRoots.map { entity ->
   ResourceRoot(
-    entity.sourceRoot.contentRoot.url.toPath(),
+    resourcePath = entity.sourceRoot.contentRoot.url.toPath(),
+    rootType = entity.sourceRoot.rootType,
   )
 }
 
@@ -183,12 +182,12 @@ private fun Map<LibraryId, Library>.librariesForModule(module: ModuleEntity): Se
     .asSequence()
 
 private fun ModuleEntity.getSdkName(): String? =
-  dependencies.filterIsInstance<ModuleDependencyItem.SdkDependency>().firstOrNull()?.sdkName
+  dependencies.filterIsInstance<ModuleDependencyItem.SdkDependency>().firstOrNull()?.sdk?.name
 
 private fun ModuleEntity.getPythonSdk(): PythonSdkInfo? =
   dependencies.filterIsInstance<ModuleDependencyItem.SdkDependency>()
-    .firstOrNull { it.sdkType == PYTHON_SDK_ID }
-    ?.let { PythonSdkInfo.fromString(it.sdkName) }
+    .firstOrNull { it.sdk.type == PYTHON_SDK_ID }
+    ?.let { PythonSdkInfo.fromString(it.sdk.name) }
 
 private fun LibraryEntity.filterRoots(type: LibraryRootTypeId) =
   roots.filter { it.type == type }.map { it.url.url }

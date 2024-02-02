@@ -15,9 +15,7 @@ import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.VersionedStorageChange
-import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.util.text.nullize
-import com.intellij.workspaceModel.ide.getInstance
 
 /**
  * Provides single file source information to the IntelliJ platform.
@@ -27,8 +25,8 @@ import com.intellij.workspaceModel.ide.getInstance
 internal class SingleFileSourcesTrackerImpl(private val project: Project) : SingleFileSourcesTracker {
   private val singleFileSourceData = SingleFileSourceData()
   private val moduleManager = ModuleManager.getInstance(project)
-  private val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
   private val workspaceModel = WorkspaceModel.getInstance(project)
+  private val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
   private val supportedFileExtensions = listOf("java", "kt", "kts")
 
   private val lock = Any()
@@ -40,8 +38,7 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
 
   private fun populateSingleFileSourceData() {
     workspaceModel
-      .entityStorage
-      .current
+      .currentSnapshot
       .entities(SourceRootEntity::class.java)
       .forEach { handleSingleFileSourceEntity(it, true) }
   }
@@ -107,8 +104,7 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
   private fun findSourceRootEntity(file: VirtualFile): SourceRootEntity? {
     if (!file.isFileSupported()) return null
     val entityCandidates = workspaceModel
-      .entityStorage
-      .current
+      .currentSnapshot
       .getVirtualFileUrlIndex()
       .findEntitiesByUrl(file.toVirtualFileUrl(virtualFileUrlManager))
 

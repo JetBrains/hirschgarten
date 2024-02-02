@@ -3,16 +3,17 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.android.sdk.AndroidSdkType
+import org.jetbrains.bsp.jpsCompilation.utils.JpsPaths
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
-import org.jetbrains.workspacemodel.storage.BspEntitySource
 import java.nio.file.Path
 
 internal class JavaModuleWithSourcesUpdater(
@@ -47,7 +48,7 @@ internal class JavaModuleWithSourcesUpdater(
     }
 
     if (entityToAdd.genericModuleInfo.languageIds.includesKotlin()) {
-      val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
+      val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
       kotlinFacetEntityUpdater.addEntity(entityToAdd, moduleEntity)
     }
 
@@ -64,10 +65,17 @@ internal class JavaModuleWithSourcesUpdater(
   private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> {
     val returnDependencies: MutableList<ModuleDependencyItem> = defaultDependencies.toMutableList()
     entityToAdd.androidAddendum?.also { addendum ->
-      returnDependencies.add(ModuleDependencyItem.SdkDependency(addendum.androidSdkName, AndroidSdkType.SDK_NAME))
+      returnDependencies.add(
+        ModuleDependencyItem.SdkDependency(
+          SdkId(
+            addendum.androidSdkName,
+            AndroidSdkType.SDK_NAME
+          )
+        )
+      )
     }
     entityToAdd.jvmJdkName?.also {
-      returnDependencies.add(ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkName, "JavaSDK"))
+      returnDependencies.add(ModuleDependencyItem.SdkDependency(SdkId(entityToAdd.jvmJdkName, "JavaSDK")))
     }
     entityToAdd.scalaAddendum?.also { addendum ->
       returnDependencies.add(
@@ -94,15 +102,19 @@ internal class JavaModuleWithSourcesUpdater(
     moduleEntity: ModuleEntity,
   ) {
     val compilerOutput =
-      entityToAdd.compilerOutput?.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+      JpsPaths.getJpsCompiledProductionDirectory(projectBasePath, entityToAdd.genericModuleInfo.name)
+        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+    val testCompilerOutput =
+      JpsPaths.getJpsCompiledTestDirectory(projectBasePath, entityToAdd.genericModuleInfo.name)
+        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
     builder.addEntity(
       JavaModuleSettingsEntity(
         inheritedCompilerOutput = false,
         excludeOutput = true,
-        entitySource = BspEntitySource,
+        entitySource = moduleEntity.entitySource,
       ) {
         this.compilerOutput = compilerOutput
-        this.compilerOutputForTests = null
+        this.compilerOutputForTests = testCompilerOutput
         this.module = moduleEntity
         this.languageLevelId = LanguageLevel.parse(entityToAdd.javaAddendum?.languageVersion)?.name
       },
@@ -132,7 +144,7 @@ internal class JavaModuleWithoutSourcesUpdater(
   private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
     entityToAdd.jvmJdkName
       ?.let {
-        listOf(ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkName, "JavaSDK"))
+        listOf(ModuleDependencyItem.SdkDependency(SdkId(entityToAdd.jvmJdkName, "JavaSDK")))
       } ?: listOf()
 }
 

@@ -17,11 +17,10 @@ import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.indeterminateStep
-import com.intellij.platform.util.progress.progressStep
-import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.intellij.workspaceModel.ide.getInstance
+import com.intellij.platform.util.progress.reportSequentialProgress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -126,41 +125,47 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun doExecute() {
-    val projectDetails = progressStep(
-      endFraction = 0.5,
-      text = BspPluginBundle.message("progress.bar.collect.project.details")
-    ) {
-      runInterruptible { calculateProjectDetailsSubtask() }
-    } ?: return
-    indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
-      calculateAllUniqueJdkInfosSubtask(projectDetails)
-      uniqueJavaHomes.orEmpty().also {
-        if (it.isNotEmpty())
-          projectDetails.defaultJdkName = project.name.projectNameToJdkName(it.first())
-        else
-          projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
+    reportSequentialProgress { reporter ->
+      val projectDetails =
+        reporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
+          runInterruptible { calculateProjectDetailsSubtask() }
+        } ?: return
+
+      reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
+        calculateAllUniqueJdkInfosSubtask(projectDetails)
+        uniqueJavaHomes.orEmpty().also {
+          if (it.isNotEmpty())
+            projectDetails.defaultJdkName = project.name.projectNameToJdkName(it.first())
+          else
+            projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
+        }
       }
-    }
-    if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
-      indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
-        calculateAllPythonSdkInfosSubtask(projectDetails)
+
+      if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
+        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
+          calculateAllPythonSdkInfosSubtask(projectDetails)
+        }
       }
-    }
-    if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkExtensionExists()) {
-      indeterminateStep(text = "Calculating all unique scala sdk infos") {
-        calculateAllScalaSdkInfosSubtask(projectDetails)
+
+      if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkExtensionExists()) {
+        reporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
+          calculateAllScalaSdkInfosSubtask(projectDetails)
+        }
       }
-    }
-    if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
-      indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
-        calculateAllAndroidSdkInfosSubtask(projectDetails)
+
+      if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
+        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
+          calculateAllAndroidSdkInfosSubtask(projectDetails)
+        }
       }
-    }
-    progressStep(endFraction = 0.75, BspPluginBundle.message("progress.bar.update.internal.model")) {
-      updateInternalModelSubtask(projectDetails)
-    }
-    progressStep(endFraction = 1.0, BspPluginBundle.message("progress.bar.post.processing")) {
-      postprocessingSubtask()
+
+      reporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.update.internal.model")) {
+        updateInternalModelSubtask(projectDetails)
+      }
+
+      reporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.post.processing")) {
+        postprocessingSubtask()
+      }
     }
   }
 
@@ -401,8 +406,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk, pythonSdkGetterExtension: PythonSdkGetterExtension) {
-    val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
-    val sdk = runInterruptible { pythonSdkGetterExtension.getPythonSdk(pythonSdk, virtualFileUrlManager) }
+    val sdk = runInterruptible {
+      pythonSdkGetterExtension.getPythonSdk(
+        pythonSdk,
+        WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
+      )
+    }
 
     SdkUtils.addSdkIfNeeded(sdk)
   }

@@ -14,6 +14,7 @@ import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
@@ -29,7 +30,7 @@ import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.workspacemodel.storage.BspEntitySource
+import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -100,9 +101,11 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val resourceRoots = listOf(
           ResourceRoot(
             resourcePath = resourcePath1,
+            rootType = "java-resource",
           ),
           ResourceRoot(
             resourcePath = resourcePath2,
+            rootType = "java-resource",
           ),
         )
 
@@ -118,7 +121,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             classJars = listOf("jar:///lib2/1.0.0/lib2-2.0.0.jar!/"),
           ),
         )
-        val compilerOutput = Path("compiler/output")
 
         val javaModule = JavaModule(
           genericModuleInfo = module,
@@ -126,7 +128,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRoots = sourceRoots,
           resourceRoots = resourceRoots,
           moduleLevelLibraries = libraries,
-          compilerOutput = compilerOutput,
           jvmJdkName = "test-proj-11",
         )
 
@@ -169,7 +170,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                 exported = true,
                 scope = ModuleDependencyItem.DependencyScope.COMPILE,
               ),
-              ModuleDependencyItem.SdkDependency("test-proj-11", "JavaSDK"),
+              ModuleDependencyItem.SdkDependency(SdkId("test-proj-11", "JavaSDK")),
               ModuleDependencyItem.ModuleSourceDependency,
             ),
           ) {
@@ -341,9 +342,11 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val resourceRoots1 = listOf(
           ResourceRoot(
             resourcePath = resourcePath11,
+            rootType = "java-resource",
           ),
           ResourceRoot(
             resourcePath = resourcePath12,
+            rootType = "java-resource",
           ),
         )
 
@@ -359,7 +362,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             classJars = listOf("jar:///lib2/1.0.0/lib2-2.0.0.jar!/"),
           ),
         )
-        val compilerOutput1 = Path("compiler/output1")
 
         val javaModule1 = JavaModule(
           genericModuleInfo = module1,
@@ -367,7 +369,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           resourceRoots = resourceRoots1,
           moduleLevelLibraries = libraries1,
           baseDirContentRoot = baseDirContentRoot1,
-          compilerOutput = compilerOutput1,
           jvmJdkName = "test-proj-11",
           kotlinAddendum = null,
         )
@@ -407,6 +408,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
         val resourceRoots2 = listOf(
           ResourceRoot(
             resourcePath = resourcePath21,
+            rootType = "java-test-resource",
           ),
         )
 
@@ -417,7 +419,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             classJars = listOf("jar:///lib1/1.0.0/lib1-1.0.0.jar!/"),
           ),
         )
-        val compilerOutput2 = Path("compiler/output2")
 
         val javaModule2 = JavaModule(
           genericModuleInfo = module2,
@@ -425,7 +426,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRoots = sourceRoots2,
           resourceRoots = resourceRoots2,
           moduleLevelLibraries = libraries2,
-          compilerOutput = compilerOutput2,
           jvmJdkName = "test-proj-11",
           kotlinAddendum = null,
         )
@@ -471,7 +471,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                 exported = true,
                 scope = ModuleDependencyItem.DependencyScope.COMPILE,
               ),
-              ModuleDependencyItem.SdkDependency("test-proj-11", "JavaSDK"),
+              ModuleDependencyItem.SdkDependency(SdkId("test-proj-11", "JavaSDK")),
               ModuleDependencyItem.ModuleSourceDependency,
             ),
           ) {
@@ -505,7 +505,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                 exported = true,
                 scope = ModuleDependencyItem.DependencyScope.COMPILE,
               ),
-              ModuleDependencyItem.SdkDependency("test-proj-11", "JavaSDK"),
+              ModuleDependencyItem.SdkDependency(SdkId("test-proj-11", "JavaSDK")),
               ModuleDependencyItem.ModuleSourceDependency,
             ),
           ) {
@@ -646,7 +646,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRootEntity = SourceRootEntity(
             entitySource = expectedModuleEntity2.moduleEntity.entitySource,
             url = virtualResourceUrl21,
-            rootType = "java-resource",
+            rootType = "java-test-resource",
           ) {
             javaResourceRoots = listOf(
               JavaResourceRootPropertiesEntity(
@@ -697,7 +697,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
           moduleLevelLibraries = emptyList(),
-          compilerOutput = null,
           jvmJdkName = null,
           kotlinAddendum = null,
         )
@@ -746,7 +745,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
           moduleLevelLibraries = emptyList(),
-          compilerOutput = null,
           jvmJdkName = null,
           kotlinAddendum = null,
         )
@@ -770,7 +768,6 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
           moduleLevelLibraries = emptyList(),
-          compilerOutput = null,
           jvmJdkName = null,
           kotlinAddendum = null,
         )
@@ -825,7 +822,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
     beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
 
     if (updaterConstructor.parameters.size == 1)
       test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))

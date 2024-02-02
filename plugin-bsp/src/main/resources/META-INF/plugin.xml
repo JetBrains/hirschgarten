@@ -72,7 +72,7 @@
     <treeStructureProvider implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspTreeStructureProvider"/>
     <projectViewNodeDecorator implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspProjectViewNodeDecorator"/>
     <projectTaskRunner
-      implementation="org.jetbrains.plugins.bsp.actions.building.BspProjectTaskRunner"/>
+      implementation="org.jetbrains.plugins.bsp.building.task.BspProjectTaskRunner"/>
     <programRunner implementation="org.jetbrains.plugins.bsp.runner.BspDebugRunner"/>
 
 <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
@@ -88,6 +88,7 @@
     <registryKey defaultValue="false" description="Build project on initial project sync" key="bsp.build.project.on.sync"/>
     <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
     <registryKey defaultValue="false" description="Scala modules support" key="bsp.scala.support"/>
+    <registryKey defaultValue="false" description="Default to use JPS to build project instead of BSP" key="bsp.jps.project.compilation"/>
     <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
@@ -109,6 +110,12 @@
             icon="/icons/buildAndResync.svg"/>
     <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.ConnectAction"
             icon="/icons/connect.svg"/>
+    <action id="Bsp.Compile.CompileProjectWithBspAction"
+            class="org.jetbrains.plugins.bsp.building.action.CompileProjectWithBspAction"
+            icon="AllIcons.Actions.Compile"/>
+    <action id="Bsp.Compile.CompileProjectWithJpsAction"
+            class="org.jetbrains.plugins.bsp.building.action.CompileProjectWithJpsAction"
+            icon="AllIcons.Actions.Compile"/>
 
     <group id="Bsp.ActionsToolbar">
       <reference id="Bsp.ConnectAction"/>

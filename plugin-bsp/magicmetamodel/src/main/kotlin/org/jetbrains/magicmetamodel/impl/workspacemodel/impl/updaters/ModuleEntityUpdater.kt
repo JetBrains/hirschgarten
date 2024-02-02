@@ -1,5 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
+import com.intellij.openapi.module.impl.ModuleManagerEx
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
@@ -7,15 +8,22 @@ import com.intellij.platform.workspace.jps.entities.ModuleCustomImlDataEntity
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.customImlData
 import com.intellij.platform.workspace.jps.entities.modifyEntity
+import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
+import org.jetbrains.bsp.jpsCompilation.utils.JpsConstants
+import org.jetbrains.bsp.jpsCompilation.utils.JpsPaths
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
+import org.jetbrains.workspacemodel.entities.BspDummyEntitySource
+import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
-import org.jetbrains.workspacemodel.storage.BspEntitySource
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -43,7 +51,7 @@ internal class ModuleEntityUpdater(
       ModuleEntity(
         name = entityToAdd.name,
         dependencies = defaultDependencies + modulesDependencies + associatesDependencies + librariesDependencies,
-        entitySource = BspEntitySource,
+        entitySource = toEntitySource(entityToAdd),
       ) {
         this.type = entityToAdd.type
       },
@@ -52,7 +60,7 @@ internal class ModuleEntityUpdater(
     val imlData = builder.addEntity(
       ModuleCustomImlDataEntity(
         customModuleOptions = customModuleOptions + basicCustomModuleOptions,
-        entitySource = BspEntitySource,
+        entitySource = moduleEntity.entitySource,
       ) {
         this.rootManagerTagCustomData = null
         this.module = moduleEntity
@@ -62,6 +70,18 @@ internal class ModuleEntityUpdater(
       this.customImlData = imlData
     }
     return moduleEntity
+  }
+
+  private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource = when {
+    entityToAdd.isDummy -> BspDummyEntitySource
+    entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspEntitySource
+    else -> LegacyBridgeJpsEntitySourceFactory.createEntitySourceForModule(
+      project = workspaceModelEntityUpdaterConfig.project,
+      baseModuleDir = JpsPaths.getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)
+        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+      externalSource = null,
+      moduleFileName = entityToAdd.name + ModuleManagerEx.IML_EXTENSION
+    )
   }
 
   private fun toModuleDependencyItemModuleDependency(

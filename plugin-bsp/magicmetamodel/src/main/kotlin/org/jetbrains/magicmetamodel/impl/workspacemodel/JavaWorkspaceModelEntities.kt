@@ -21,7 +21,6 @@ public data class JavaModule(
   // we will calculate this value only if there are no libraries in MagicMetamodelImpl.libraries,
   // otherwise it will be null
   val moduleLevelLibraries: List<Library>?,
-  val compilerOutput: Path?,
   val jvmJdkName: String? = null,
   val kotlinAddendum: KotlinAddendum? = null,
   val scalaAddendum: ScalaAddendum? = null,
@@ -32,9 +31,8 @@ public data class JavaModule(
     module = genericModuleInfo.toState(),
     baseDirContentRoot = baseDirContentRoot?.let(ContentRoot::toState),
     sourceRoots = sourceRoots.map { it.toState() },
-    resourceRoots = resourceRoots.map { it.toString() },
+    resourceRoots = resourceRoots.map { it.toState() },
     libraries = moduleLevelLibraries?.map { it.toState() },
-    compilerOutput = compilerOutput?.toString(),
     jvmJdkName = jvmJdkName,
     kotlinAddendum = kotlinAddendum?.toState(),
     scalaAddendum = scalaAddendum?.toState(),
