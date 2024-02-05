@@ -33,18 +33,11 @@ internal class ModuleEntityUpdater(
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
   override fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
-    addEntity(entityToAdd, emptyMap())
-
-  fun addEntity(
-    entityToAdd: GenericModuleInfo,
-    customModuleOptions: Map<String, String>,
-  ): ModuleEntity =
-    addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd, customModuleOptions)
+    addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
   private fun addModuleEntity(
     builder: MutableEntityStorage,
     entityToAdd: GenericModuleInfo,
-    customModuleOptions: Map<String, String>,
   ): ModuleEntity {
     val modulesDependencies = entityToAdd.modulesDependencies.map { toModuleDependencyItemModuleDependency(it) }
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
@@ -59,10 +52,9 @@ internal class ModuleEntityUpdater(
         this.type = entityToAdd.type
       },
     )
-    val basicCustomModuleOptions = entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap
     val imlData = builder.addEntity(
       ModuleCustomImlDataEntity(
-        customModuleOptions = customModuleOptions + basicCustomModuleOptions,
+        customModuleOptions = entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap,
         entitySource = moduleEntity.entitySource,
       ) {
         this.rootManagerTagCustomData = null

@@ -27,8 +27,7 @@ internal class JavaModuleWithSourcesUpdater(
     val moduleEntityUpdater =
       ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
 
-    val customModuleOptions = calculateCustomModuleOptions(entityToAdd)
-    val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo, customModuleOptions)
+    val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
 
     addJavaModuleSettingsEntity(
       builder = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
@@ -52,6 +51,11 @@ internal class JavaModuleWithSourcesUpdater(
     if (entityToAdd.genericModuleInfo.languageIds.includesKotlin()) {
       val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
       kotlinFacetEntityUpdater.addEntity(entityToAdd, moduleEntity)
+    }
+
+    if (isAndroidSupportEnabled) {
+      val androidAddendumEntityUpdater = AndroidAddendumEntityUpdater(workspaceModelEntityUpdaterConfig)
+      androidAddendumEntityUpdater.addEntity(entityToAdd, moduleEntity)
     }
 
     if (isAndroidSupportEnabled && entityToAdd.genericModuleInfo.languageIds.includesAndroid()) {
@@ -88,14 +92,6 @@ internal class JavaModuleWithSourcesUpdater(
       )
     }
     return returnDependencies
-  }
-
-  private fun calculateCustomModuleOptions(entityToAdd: JavaModule): Map<String, String> {
-    val customModuleOptions = mutableMapOf<String, String>()
-    if (isAndroidSupportEnabled && entityToAdd.androidAddendum != null) {
-      customModuleOptions += entityToAdd.androidAddendum.asMap()
-    }
-    return customModuleOptions
   }
 
   private fun addJavaModuleSettingsEntity(

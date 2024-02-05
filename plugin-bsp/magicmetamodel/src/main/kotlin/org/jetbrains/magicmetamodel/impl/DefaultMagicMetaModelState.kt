@@ -22,6 +22,7 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
+import java.net.URI
 import kotlin.io.path.Path
 
 // TODO, we can do it better, but for now it should be good enough:
@@ -273,10 +274,14 @@ public data class JavaAddendumState(
 public data class AndroidAddendumState(
   var androidSdkName: String = "",
   var androidTargetType: AndroidTargetType = AndroidTargetType.LIBRARY,
+  val manifest: URI? = null,
+  val resourceFolders: List<URI> = emptyList(),
 ) : ConvertableFromState<AndroidAddendum> {
   override fun fromState(): AndroidAddendum = AndroidAddendum(
     androidSdkName = androidSdkName,
     androidTargetType = androidTargetType,
+    manifest = manifest,
+    resourceFolders = resourceFolders,
   )
 }
 
@@ -307,6 +312,8 @@ public fun ScalaAddendum.toState(): ScalaAddendumState = ScalaAddendumState(
 public fun AndroidAddendum.toState(): AndroidAddendumState = AndroidAddendumState(
   androidSdkName = androidSdkName,
   androidTargetType = androidTargetType,
+  manifest = manifest,
+  resourceFolders = resourceFolders,
 )
 
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(
