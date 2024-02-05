@@ -138,6 +138,8 @@ internal class ModuleDetailsToJavaModuleTransformer(
       AndroidAddendum(
         androidSdkName = androidJar.androidJarToAndroidSdkName(),
         androidTargetType = androidTargetType,
+        manifest = manifest,
+        resourceFolders = resourceFolders,
       )
     }
   }

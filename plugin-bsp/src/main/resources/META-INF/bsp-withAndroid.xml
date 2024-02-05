@@ -5,4 +5,12 @@
     <androidFacetEntityUpdaterExtension
       implementation="org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtensionImpl" />
   </extensions>
+  <extensions defaultExtensionNs="com.android.project">
+    <projectsystem implementation="org.jetbrains.plugins.bsp.android.BspAndroidProjectSystemProvider"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <postStartupActivity implementation="org.jetbrains.plugins.bsp.android.AndroidInMemoryStateUpdater" />
+    <projectService serviceImplementation="org.jetbrains.plugins.bsp.android.BspLightResourceClassService" />
+    <xml.schemaProvider implementation="org.jetbrains.plugins.bsp.android.SingleFileAndroidXmlSchemaProvider" />
+  </extensions>
 </idea-plugin>

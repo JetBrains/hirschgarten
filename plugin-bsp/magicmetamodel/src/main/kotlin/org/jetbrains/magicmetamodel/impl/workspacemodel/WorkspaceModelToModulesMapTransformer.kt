@@ -14,7 +14,9 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.customImlData
+import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.ide.toPath
+import org.jetbrains.bsp.AndroidTargetType
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.compilerRunner.toArgumentStrings
 import org.jetbrains.kotlin.idea.workspaceModel.CompilerArgumentsSerializer
@@ -23,6 +25,11 @@ import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.LoadedTargetsStorage
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.PYTHON_SDK_ID
+import org.jetbrains.workspacemodel.entities.AndroidTargetType.APP
+import org.jetbrains.workspacemodel.entities.AndroidTargetType.LIBRARY
+import org.jetbrains.workspacemodel.entities.AndroidTargetType.TEST
+import org.jetbrains.workspacemodel.entities.androidAddendumEntity
+import java.net.URI
 
 public object WorkspaceModelToModulesMapTransformer {
   public operator fun invoke(
@@ -130,8 +137,26 @@ public object WorkspaceModelToModulesMapTransformer {
 
   private fun ModuleEntity.toJavaAddendum() = javaSettings?.languageLevelId?.let { JavaAddendum(it) }
 
-  private fun ModuleEntity.toAndroidAddendum(): AndroidAddendum? =
-    customImlData?.customModuleOptions?.let { AndroidAddendum.create(it) }
+  private fun ModuleEntity.toAndroidAddendum(): AndroidAddendum? {
+    val androidAddendumEntity = this.androidAddendumEntity ?: return null
+
+    val androidTargetType = when (androidAddendumEntity.androidTargetType) {
+      APP -> AndroidTargetType.APP
+      LIBRARY -> AndroidTargetType.LIBRARY
+      TEST -> AndroidTargetType.TEST
+    }
+
+    return with(androidAddendumEntity) {
+      AndroidAddendum(
+        androidSdkName = androidSdkName,
+        androidTargetType = androidTargetType,
+        manifest = manifest?.toURI(),
+        resourceFolders = resourceFolders.map { it.toURI() },
+      )
+    }
+  }
+
+  private fun VirtualFileUrl.toURI(): URI = URI.create(this.url)
 
   private fun ModuleEntity.getBaseDir() =
     // TODO: in `ModuleDetailsToJavaModuleTransformer` we are assuming there will be one or we are providing a fake one
