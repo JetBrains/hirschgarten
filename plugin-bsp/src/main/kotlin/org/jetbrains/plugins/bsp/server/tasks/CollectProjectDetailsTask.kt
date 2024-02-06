@@ -19,7 +19,6 @@ import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsPr
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.ide.progress.withBackgroundProgress
-import com.intellij.platform.util.progress.indeterminateStep
 import com.intellij.platform.util.progress.reportSequentialProgress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -349,8 +348,13 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun postprocessingSubtask() {
-    addBspFetchedJdks()
+    // This order is strict as now SDKs also use the workspace model,
+    // updating jdks before applying the project model will render the action to fail.
+    // This will be handled properly after this ticket:
+    // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
     applyChangesOnWorkspaceModel()
+
+    addBspFetchedJdks()
 
     if (BspFeatureFlags.isPythonSupportEnabled) {
       addBspFetchedPythonSdks()
