@@ -3,22 +3,22 @@
 object Plugin {
   const val group = "org.jetbrains"
   const val name = "intellij-bazel"
-  const val version = "2023.3.0-EAP"
+  const val version = "2024.1.0-EAP"
 
 // See https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html
 // for insight into build numbers and IntelliJ Platform versions.
-  const val sinceBuild = "233.11799.6"
-  const val untilBuild = "233.*"
+  const val sinceBuild = "241.10840"
+  const val untilBuild = "241.*"
 }
 
 // Plugin Verifier integration -> https://github.com/JetBrains/gradle-intellij-plugin//plugin-verifier-dsl
 // See https://jb.gg/intellij-platform-builds-list for available build versions.
-const val pluginVerifierIdeVersions = "233.11799.241"
+const val pluginVerifierIdeVersions = "241.10840"
 
 object Platform {
   const val type = "IC"
-  const val version = "233.11799.241"
-  const val snapshotVersion = "233.11799.241"
+  const val version = "241.10840"
+  const val snapshotVersion = "241.10840.26-EAP-SNAPSHOT"
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
   // Example: platformPlugins =" com.intellij.java, com.jetbrains.php:203.4449.22"
@@ -27,3 +27,6 @@ object Platform {
 
 const val javaVersion = "17"
 const val kotlinVersion = "1.9"
+
+// Probe dependencies
+const val scalaPluginVersion = "2024.1.3"

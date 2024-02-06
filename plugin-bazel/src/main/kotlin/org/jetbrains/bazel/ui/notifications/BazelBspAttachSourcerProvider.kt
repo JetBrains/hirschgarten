@@ -11,9 +11,9 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.ui.configuration.LibrarySourceRootDetectorUtil
 import com.intellij.openapi.util.ActionCallback
 import com.intellij.platform.backend.workspace.virtualFile
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.psi.PsiFile
-import com.intellij.workspaceModel.ide.getInstance
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.net.URI
@@ -29,7 +29,7 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
     override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback {
       val mmmLibraries = getAllMMMLibraries(orderEntries)
       val project = orderEntries.firstNotNullOf { it.ownerModule.project }
-      val fileManager = VirtualFileUrlManager.getInstance(project)
+      val fileManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
       val libraries = orderEntries.mapNotNull { it.library }.distinct()
       val modelsToCommit = libraries.mapNotNull { library ->
         val bazelLibrarySources = library.pickSourcesFromBazel(mmmLibraries)
@@ -75,7 +75,7 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
 
     private fun Library.ModifiableModel.addSource(sourceUri: String, fileManager: VirtualFileUrlManager) {
       val path = MMMLibrary.formatJarString(sourceUri)
-      val candidate = fileManager.fromUrl(path).virtualFile
+      val candidate = fileManager.getOrCreateFromUri(path).virtualFile
       val sourceRoots = LibrarySourceRootDetectorUtil.scanAndSelectDetectedJavaSourceRoots(null, arrayOf(candidate))
       sourceRoots.forEach { source ->
         addRoot(source.url, OrderRootType.SOURCES)
