@@ -41,6 +41,13 @@ internal class DefaultMagicMetaModelDiff(
       if (workspaceModel.internal.replaceProjectModel(storageReplacement)) {
         mmmInstance.loadStorage(mmmStorageReplacement)
         targetLoadListeners.forEach { it() }
+      } else {
+        error(
+          """
+            |Project model is not updated successfully.
+            |Try `reload` action to recalculate the project model.
+          """.trimMargin()
+        )
       }
     }
   }
