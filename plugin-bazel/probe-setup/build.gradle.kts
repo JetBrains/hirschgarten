@@ -21,6 +21,7 @@ tasks.processResources {
     expand(
       ("plugin_version" to Plugin.version),
       ("platform_version" to Platform.version),
+      ("scala_plugin_version" to scalaPluginVersion),
       ("bsp_id") to findLatestCompatibleBspPluginVersion(),
     )
   }

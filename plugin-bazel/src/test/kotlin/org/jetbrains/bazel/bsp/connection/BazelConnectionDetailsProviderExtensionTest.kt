@@ -228,8 +228,7 @@ class BazelConnectionDetailsProviderExtensionTest: MockProjectBaseTest() {
     @Test
     fun `should return new connection details if selected java has changed`() {
       // given
-      val selectedJdk = ProjectJdkImpl("New Jdk", JavaSdk.getInstance())
-      selectedJdk.homePath = "test/home/path"
+      val selectedJdk = ProjectJdkImpl("New Jdk", JavaSdk.getInstance(), "test/home/path", null)
       val bazelApplicationSettings = BazelApplicationSettings(
         serverSettings = BazelApplicationServerSettings(
           selectedJdk = selectedJdk
