@@ -13,15 +13,13 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.customImlData
 import com.intellij.workspaceModel.ide.toPath
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
-import org.jetbrains.kotlin.config.deserializeTargetPlatformByComponentPlatforms
+import org.jetbrains.kotlin.compilerRunner.toArgumentStrings
 import org.jetbrains.kotlin.idea.workspaceModel.CompilerArgumentsSerializer
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
 import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
-import org.jetbrains.kotlin.platform.jvm.JdkPlatform
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.LoadedTargetsStorage
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.PYTHON_SDK_ID
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.toKotlincOptions
 
 public object WorkspaceModelToModulesMapTransformer {
   public operator fun invoke(
@@ -123,10 +121,7 @@ public object WorkspaceModelToModulesMapTransformer {
     return KotlinAddendum(
       languageVersion = languageVersion,
       apiVersion = apiVersion,
-      kotlincOptions = deserializedCompilerArgs
-        .toKotlincOptions(
-          targetPlatform.deserializeTargetPlatformByComponentPlatforms()?.singleOrNull() as? JdkPlatform
-        ),
+      kotlincOptions = deserializedCompilerArgs.toArgumentStrings(),
     )
   }
 
