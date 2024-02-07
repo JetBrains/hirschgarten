@@ -63,7 +63,7 @@ class SingleProbeTests {
   fun `open fresh instance of bazel project and check build console output for errors`() {
     with(IdeProbeTestRunner()) {
       val fixture = fixtureWithWorkspaceFromGit(
-        "https://github.com/bazelbuild/bazel.git", "6.0.0",
+        "https://github.com/bazelbuild/bazel.git", "7.0.2",
       )
       runAfterOpen(fixture, Option.apply(null)) { probe, robot, _ ->
         probe.screenshot("_bazel-on-open")
