@@ -118,10 +118,8 @@
             icon="AllIcons.Actions.Compile"/>
 
     <group id="Bsp.ActionsToolbar">
-      <reference id="Bsp.ConnectAction"/>
       <reference id="Bsp.ReloadAction"/>
       <reference id="Bsp.BuildAndResyncAction"/>
-      <reference id="Bsp.DisconnectAction"/>
     </group>
 
   </actions>
