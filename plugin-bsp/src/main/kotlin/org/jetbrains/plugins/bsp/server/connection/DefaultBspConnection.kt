@@ -14,6 +14,7 @@ import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.bsp.BSP_CLIENT_NAME
+import org.jetbrains.bsp.BSP_CLIENT_VERSION
 import org.jetbrains.bsp.BSP_VERSION
 import org.jetbrains.bsp.BazelBuildServerCapabilities
 import org.jetbrains.bsp.CLIENT_CAPABILITIES
@@ -304,7 +305,7 @@ internal class DefaultBspConnection(
     val projectBaseDir = project.rootDir
     val params = InitializeBuildParams(
       BSP_CLIENT_NAME,
-      "2023.3-EAP",
+      BSP_CLIENT_VERSION,
       BSP_VERSION,
       projectBaseDir.toString(),
       CLIENT_CAPABILITIES,
