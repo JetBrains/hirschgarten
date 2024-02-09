@@ -3,14 +3,16 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
+import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.android.sdk.AndroidSdkType
 import org.jetbrains.bsp.jpsCompilation.utils.JpsPaths
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
@@ -66,7 +68,7 @@ internal class JavaModuleWithSourcesUpdater(
     val returnDependencies: MutableList<ModuleDependencyItem> = defaultDependencies.toMutableList()
     entityToAdd.androidAddendum?.also { addendum ->
       returnDependencies.add(
-        ModuleDependencyItem.SdkDependency(
+        SdkDependency(
           SdkId(
             addendum.androidSdkName,
             AndroidSdkType.SDK_NAME
@@ -75,12 +77,12 @@ internal class JavaModuleWithSourcesUpdater(
       )
     }
     entityToAdd.jvmJdkName?.also {
-      returnDependencies.add(ModuleDependencyItem.SdkDependency(SdkId(entityToAdd.jvmJdkName, "JavaSDK")))
+      returnDependencies.add(SdkDependency(SdkId(entityToAdd.jvmJdkName, "JavaSDK")))
     }
     entityToAdd.scalaAddendum?.also { addendum ->
       returnDependencies.add(
         toModuleDependencyItemLibraryDependency(
-          LibraryDependency(addendum.scalaSdkName, true),
+          IntermediateLibraryDependency(addendum.scalaSdkName, true),
           entityToAdd.genericModuleInfo.name
         )
       )
@@ -123,7 +125,7 @@ internal class JavaModuleWithSourcesUpdater(
 
   private companion object {
     val defaultDependencies = listOf(
-      ModuleDependencyItem.ModuleSourceDependency,
+      ModuleSourceDependency,
     )
   }
 }
@@ -144,7 +146,7 @@ internal class JavaModuleWithoutSourcesUpdater(
   private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
     entityToAdd.jvmJdkName
       ?.let {
-        listOf(ModuleDependencyItem.SdkDependency(SdkId(entityToAdd.jvmJdkName, "JavaSDK")))
+        listOf(SdkDependency(SdkId(entityToAdd.jvmJdkName, "JavaSDK")))
       } ?: listOf()
 }
 

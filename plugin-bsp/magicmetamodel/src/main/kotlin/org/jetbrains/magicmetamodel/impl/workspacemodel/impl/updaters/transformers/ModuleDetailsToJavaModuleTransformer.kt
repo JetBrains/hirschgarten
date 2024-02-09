@@ -11,10 +11,10 @@ import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import java.net.URI
@@ -93,7 +93,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
     val dummyJavaModuleDependencies =
       calculateDummyJavaModuleNames(inputEntity.calculateDummyJavaSourceRoots(), projectBasePath)
         .filter { it.isNotEmpty() }
-        .map { ModuleDependency(it) }
+        .map { IntermediateModuleDependency(it) }
     return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
   }
 

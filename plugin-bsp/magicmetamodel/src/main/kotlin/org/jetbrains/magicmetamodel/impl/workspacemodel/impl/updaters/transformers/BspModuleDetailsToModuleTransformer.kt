@@ -8,9 +8,9 @@ import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJavaOrScala
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toModuleCapabilities
 
@@ -34,15 +34,15 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
       name = moduleNameProvider(inputEntity.target.id.uri),
       type = inputEntity.type,
       modulesDependencies = inputEntity.moduleDependencies
-        .map { ModuleDependency(moduleName = moduleNameProvider(it)) },
+        .map { IntermediateModuleDependency(moduleName = moduleNameProvider(it)) },
       librariesDependencies = calculateLibrariesDependencies(inputEntity),
       capabilities = inputEntity.target.capabilities.toModuleCapabilities(),
       languageIds = inputEntity.target.languageIds,
       associates = inputEntity.associates.map { it.toModuleDependency(moduleNameProvider) },
     )
 
-  private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<LibraryDependency> =
-    inputEntity.libraryDependencies?.map { LibraryDependency(it, true) }
+  private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<IntermediateLibraryDependency> =
+    inputEntity.libraryDependencies?.map { IntermediateLibraryDependency(it, true) }
       ?: if (inputEntity.target.languageIds.includesJavaOrScala())
         DependencySourcesItemToLibraryDependencyTransformer
           .transform(inputEntity.dependencySources.map {
@@ -55,13 +55,13 @@ internal class BspModuleDetailsToModuleTransformer(private val moduleNameProvide
 }
 
 internal object DependencySourcesItemToLibraryDependencyTransformer :
-  WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJvmClassPaths, LibraryDependency> {
-  override fun transform(inputEntity: DependencySourcesAndJvmClassPaths): List<LibraryDependency> =
+  WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJvmClassPaths, IntermediateLibraryDependency> {
+  override fun transform(inputEntity: DependencySourcesAndJvmClassPaths): List<IntermediateLibraryDependency> =
     DependencySourcesItemToLibraryTransformer.transform(inputEntity)
       .map { toLibraryDependency(it) }
 
-  private fun toLibraryDependency(library: Library): LibraryDependency =
-    LibraryDependency(
+  private fun toLibraryDependency(library: Library): IntermediateLibraryDependency =
+    IntermediateLibraryDependency(
       libraryName = library.displayName,
       isProjectLevelLibrary = false,
     )
@@ -70,15 +70,15 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
 internal class BuildTargetToModuleDependencyTransformer(
   private val allTargetsIds: Set<BuildTargetId>,
   private val moduleNameProvider: ModuleNameProvider,
-) : WorkspaceModelEntityPartitionTransformer<BuildTarget, ModuleDependency> {
-  override fun transform(inputEntity: BuildTarget): List<ModuleDependency> =
+) : WorkspaceModelEntityPartitionTransformer<BuildTarget, IntermediateModuleDependency> {
+  override fun transform(inputEntity: BuildTarget): List<IntermediateModuleDependency> =
     inputEntity
       .dependencies
       .filter { allTargetsIds.contains(it.uri) }
       .map { it.uri.toModuleDependency(moduleNameProvider) }
 }
 
-internal fun BuildTargetId.toModuleDependency(moduleNameProvider: ModuleNameProvider): ModuleDependency =
-  ModuleDependency(
+internal fun BuildTargetId.toModuleDependency(moduleNameProvider: ModuleNameProvider): IntermediateModuleDependency =
+  IntermediateModuleDependency(
     moduleName = moduleNameProvider(this),
   )

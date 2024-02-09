@@ -9,8 +9,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.internal
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
-import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
+import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.EntitySource
@@ -72,8 +73,8 @@ public open class WorkspaceModelBaseTest {
       ModuleEntity(
         name = name,
         dependencies = listOf(
-          ModuleDependencyItem.SdkDependency(SdkId(JAVA_SDK_NAME, JAVA_SDK_TYPE)),
-          ModuleDependencyItem.ModuleSourceDependency,
+          SdkDependency(SdkId(JAVA_SDK_NAME, JAVA_SDK_TYPE)),
+          ModuleSourceDependency,
         ),
         entitySource = object : EntitySource {},
       ) {

@@ -8,11 +8,11 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
@@ -45,10 +45,10 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       name = projectRootName,
       type = ModuleTypeId.JAVA_MODULE,
       modulesDependencies = listOf(
-        ModuleDependency("module2"),
-        ModuleDependency("module3"),
+        IntermediateModuleDependency("module2"),
+        IntermediateModuleDependency("module3"),
       ),
-      librariesDependencies = listOf(LibraryDependency("@maven//:lib1")),
+      librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
     )
 
     val packageA1Path = createTempDirectory(projectRoot, "packageA1")

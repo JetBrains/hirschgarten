@@ -4,12 +4,12 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 @DisplayName("DependencySourcesItemToLibraryDependencyTransformer.transformer(library) tests")
-class DependencySourcesItemToLibraryDependencyTransformerTest {
+class DependencySourcesItemToIntermediateLibraryDependencyTransformerTest {
   @Test
   fun `should return no library dependencies for no dependency sources`() {
     // given
@@ -40,11 +40,11 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     val librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItem)
 
     // then
-    val expectedLibraryDependency = LibraryDependency(
+    val expectedIntermediateLibraryDependency = IntermediateLibraryDependency(
       libraryName = "BSP: file:///dependency/test/test-1.0.0.jar",
     )
 
-    librariesDependencies shouldContainExactlyInAnyOrder listOf(expectedLibraryDependency)
+    librariesDependencies shouldContainExactlyInAnyOrder listOf(expectedIntermediateLibraryDependency)
   }
 
   @Test
@@ -70,20 +70,20 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     val librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItem)
 
     // then
-    val expectedLibraryDependency1 = LibraryDependency(
+    val expectedIntermediateLibraryDependency1 = IntermediateLibraryDependency(
       libraryName = "BSP: file:///dependency/test1/test1-1.0.0.jar",
     )
-    val expectedLibraryDependency2 = LibraryDependency(
+    val expectedIntermediateLibraryDependency2 = IntermediateLibraryDependency(
       libraryName = "BSP: file:///dependency/test2/test2-1.0.0.jar",
     )
-    val expectedLibraryDependency3 = LibraryDependency(
+    val expectedIntermediateLibraryDependency3 = IntermediateLibraryDependency(
       libraryName = "BSP: file:///dependency/test3/test3-1.0.0.jar",
     )
 
     librariesDependencies shouldContainExactlyInAnyOrder listOf(
-      expectedLibraryDependency1,
-      expectedLibraryDependency2,
-      expectedLibraryDependency3,
+      expectedIntermediateLibraryDependency1,
+      expectedIntermediateLibraryDependency2,
+      expectedIntermediateLibraryDependency3,
     )
   }
 
@@ -121,20 +121,20 @@ class DependencySourcesItemToLibraryDependencyTransformerTest {
     val librariesDependencies = DependencySourcesItemToLibraryDependencyTransformer.transform(dependencySourceItems)
 
     // then
-    val expectedLibraryDependency1 = LibraryDependency(
+    val expectedIntermediateLibraryDependency1 = IntermediateLibraryDependency(
       libraryName = "BSP: file:///dependency/test1/test1-1.0.0.jar",
     )
-    val expectedLibraryDependency2 = LibraryDependency(
+    val expectedIntermediateLibraryDependency2 = IntermediateLibraryDependency(
       libraryName = "BSP: file:///dependency/test2/test2-1.0.0.jar",
     )
-    val expectedLibraryDependency3 = LibraryDependency(
+    val expectedIntermediateLibraryDependency3 = IntermediateLibraryDependency(
       libraryName = "BSP: file:///dependency/test3/test3-1.0.0.jar",
     )
 
     librariesDependencies shouldContainExactlyInAnyOrder listOf(
-      expectedLibraryDependency1,
-      expectedLibraryDependency2,
-      expectedLibraryDependency3,
+      expectedIntermediateLibraryDependency1,
+      expectedIntermediateLibraryDependency2,
+      expectedIntermediateLibraryDependency3,
     )
   }
 }

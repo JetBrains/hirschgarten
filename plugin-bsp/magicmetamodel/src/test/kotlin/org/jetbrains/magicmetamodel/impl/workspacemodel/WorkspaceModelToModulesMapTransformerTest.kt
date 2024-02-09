@@ -26,18 +26,18 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         name = "module1",
         type = "JAVA_MODULE",
         modulesDependencies = listOf(
-          ModuleDependency(
+          IntermediateModuleDependency(
             moduleName = "module2",
           ),
-          ModuleDependency(
+          IntermediateModuleDependency(
             moduleName = "module3",
           ),
         ),
         librariesDependencies = listOf(
-          LibraryDependency(
+          IntermediateLibraryDependency(
             libraryName = "lib1",
           ),
-          LibraryDependency(
+          IntermediateLibraryDependency(
             libraryName = "lib2",
           ),
         ),
@@ -108,12 +108,12 @@ class WorkspaceModelToModulesMapTransformerTest : WorkspaceModelBaseTest() {
         name = "module2",
         type = "JAVA_MODULE",
         modulesDependencies = listOf(
-          ModuleDependency(
+          IntermediateModuleDependency(
             moduleName = "module3",
           ),
         ),
         librariesDependencies = listOf(
-          LibraryDependency(
+          IntermediateLibraryDependency(
             libraryName = "lib1",
           ),
         ),
