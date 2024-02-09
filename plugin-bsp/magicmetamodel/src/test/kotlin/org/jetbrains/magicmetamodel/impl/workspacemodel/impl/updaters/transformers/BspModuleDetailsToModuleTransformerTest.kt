@@ -13,8 +13,8 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -89,19 +89,19 @@ class BspModuleDetailsToModuleTransformerTest {
       name = targetName,
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target2",
         ),
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target3",
         ),
       ),
       librariesDependencies = listOf(
-        LibraryDependency(
+        IntermediateLibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
           false,
         ),
-        LibraryDependency(
+        IntermediateLibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
           false,
         ),
@@ -154,21 +154,21 @@ class BspModuleDetailsToModuleTransformerTest {
       name = targetName,
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target2",
         ),
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target3",
         ),
       ),
       librariesDependencies = listOf(
-        LibraryDependency("@maven//:test", true),
+        IntermediateLibraryDependency("@maven//:test", true),
       ),
       associates = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target4",
         ),
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target5",
         ),
       ),
@@ -225,10 +225,10 @@ class BspModuleDetailsToModuleTransformerTest {
       name = targetName,
       type = "PYTHON_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target2",
         ),
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target3",
         ),
       ),
@@ -336,18 +336,18 @@ class BspModuleDetailsToModuleTransformerTest {
       name = target1Name,
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target2",
         ),
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target3",
         ),
       ),
       librariesDependencies = listOf(
-        LibraryDependency(
+        IntermediateLibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
         ),
-        LibraryDependency(
+        IntermediateLibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test2/1.0.0/test2-1.0.0.jar",
         ),
       ),
@@ -357,12 +357,12 @@ class BspModuleDetailsToModuleTransformerTest {
       name = target2Name,
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target3",
         ),
       ),
       librariesDependencies = listOf(
-        LibraryDependency(
+        IntermediateLibraryDependency(
           libraryName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
         ),
       ),
@@ -455,10 +455,10 @@ class BspModuleDetailsToModuleTransformerTest {
       name = target1Name,
       type = "PYTHON_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target2",
         ),
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target3",
         ),
       ),
@@ -469,7 +469,7 @@ class BspModuleDetailsToModuleTransformerTest {
       name = target2Name,
       type = "PYTHON_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "//target3",
         ),
       ),

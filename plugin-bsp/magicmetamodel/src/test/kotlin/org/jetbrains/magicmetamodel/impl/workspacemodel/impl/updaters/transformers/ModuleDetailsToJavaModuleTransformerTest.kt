@@ -21,13 +21,13 @@ import org.jetbrains.bsp.utils.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.workspace.model.constructors.SourceItem
@@ -165,13 +165,13 @@ class ModuleDetailsToJavaModuleTransformerTest {
       name = "module1",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency("module2"),
-        ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath)),
+        IntermediateModuleDependency("module2"),
+        IntermediateModuleDependency("module3"),
+        IntermediateModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath)),
       ),
       librariesDependencies = listOf(
-        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
-        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
+        IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
+        IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
       ),
     )
 
@@ -305,15 +305,15 @@ class ModuleDetailsToJavaModuleTransformerTest {
       name = "module1",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency("module2"),
-        ModuleDependency("module3"),
+        IntermediateModuleDependency("module2"),
+        IntermediateModuleDependency("module3"),
       ),
       librariesDependencies = listOf(
-        LibraryDependency("@maven//:lib1", true),
+        IntermediateLibraryDependency("@maven//:lib1", true),
       ),
       associates = listOf(
-        ModuleDependency("//target4"),
-        ModuleDependency("//target5"),
+        IntermediateModuleDependency("//target4"),
+        IntermediateModuleDependency("//target5"),
       ),
     )
 
@@ -508,13 +508,13 @@ class ModuleDetailsToJavaModuleTransformerTest {
       name = "module1",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency("module2"),
-        ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath)),
+        IntermediateModuleDependency("module2"),
+        IntermediateModuleDependency("module3"),
+        IntermediateModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath)),
       ),
       librariesDependencies = listOf(
-        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
-        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
+        IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
+        IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
       ),
     )
 
@@ -575,11 +575,11 @@ class ModuleDetailsToJavaModuleTransformerTest {
       name = "module2",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath)),
+        IntermediateModuleDependency("module3"),
+        IntermediateModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath)),
       ),
       librariesDependencies = listOf(
-        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
+        IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
       ),
     )
 

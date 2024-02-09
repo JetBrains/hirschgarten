@@ -4,11 +4,14 @@ import com.intellij.java.workspace.entities.javaResourceRoots
 import com.intellij.java.workspace.entities.javaSettings
 import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
+import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.customImlData
 import com.intellij.workspaceModel.ide.toPath
@@ -111,7 +114,7 @@ public object WorkspaceModelToModulesMapTransformer {
     kotlinSettings.firstOrNull()
 
   private fun KotlinSettingsEntity.getAssociates() =
-    additionalVisibleModuleNames.map { ModuleDependency(it) }
+    additionalVisibleModuleNames.map { IntermediateModuleDependency(it) }
 
   private fun KotlinSettingsEntity.toKotlinAddendum(): KotlinAddendum? {
     val deserializedCompilerArgs =
@@ -140,12 +143,12 @@ public object WorkspaceModelToModulesMapTransformer {
     }
 
   private fun List<ModuleDependencyItem>.filterModuleDependencies() =
-    filterIsInstance<ModuleDependencyItem.Exportable.ModuleDependency>()
-      .map { ModuleDependency(it.module.name) }
+    filterIsInstance<ModuleDependency>()
+      .map { IntermediateModuleDependency(it.module.name) }
 
   private fun List<ModuleDependencyItem>.filterLibraryDependencies() =
-    filterIsInstance<ModuleDependencyItem.Exportable.LibraryDependency>()
-      .map { LibraryDependency(it.library.name) }
+    filterIsInstance<LibraryDependency>()
+      .map { IntermediateLibraryDependency(it.library.name) }
 
   private fun SourceRootEntity.toJavaSourceRoot() = javaSourceRoots.map { entity ->
     JavaSourceRoot(
@@ -172,15 +175,15 @@ private fun SourceRootEntity.toResourceRoot() = javaResourceRoots.map { entity -
 }
 
 private fun Map<LibraryId, Library>.librariesForModule(module: ModuleEntity): Sequence<Library> =
-  module.dependencies.filterIsInstance<ModuleDependencyItem.Exportable.LibraryDependency>()
+  module.dependencies.filterIsInstance<LibraryDependency>()
     .mapNotNull { this[it.library] }
     .asSequence()
 
 private fun ModuleEntity.getSdkName(): String? =
-  dependencies.filterIsInstance<ModuleDependencyItem.SdkDependency>().firstOrNull()?.sdk?.name
+  dependencies.filterIsInstance<SdkDependency>().firstOrNull()?.sdk?.name
 
 private fun ModuleEntity.getPythonSdk(): PythonSdkInfo? =
-  dependencies.filterIsInstance<ModuleDependencyItem.SdkDependency>()
+  dependencies.filterIsInstance<SdkDependency>()
     .firstOrNull { it.sdk.type == PYTHON_SDK_ID }
     ?.let { PythonSdkInfo.fromString(it.sdk.name) }
 

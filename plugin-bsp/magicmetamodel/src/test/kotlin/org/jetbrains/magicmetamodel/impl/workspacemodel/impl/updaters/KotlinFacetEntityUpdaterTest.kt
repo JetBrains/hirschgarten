@@ -14,9 +14,9 @@ import org.jetbrains.kotlin.idea.facet.KotlinFacetType
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -48,11 +48,11 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         name = "module1",
         type = "JAVA_MODULE",
         modulesDependencies = listOf(
-          ModuleDependency("module2"),
-          ModuleDependency("module3"),
+          IntermediateModuleDependency("module2"),
+          IntermediateModuleDependency("module3"),
         ),
         librariesDependencies = listOf(),
-        associates = associates.map { ModuleDependency(it) },
+        associates = associates.map { IntermediateModuleDependency(it) },
       )
 
       val baseDirContentRoot = ContentRoot(

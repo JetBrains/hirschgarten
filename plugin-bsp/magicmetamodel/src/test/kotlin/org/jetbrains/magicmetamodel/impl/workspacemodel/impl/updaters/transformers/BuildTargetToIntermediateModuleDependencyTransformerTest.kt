@@ -6,12 +6,12 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 @DisplayName("buildTargetToModuleDependencyTransformer.transform(buildTarget) tests")
-class BuildTargetToModuleDependencyTransformerTest {
+class BuildTargetToIntermediateModuleDependencyTransformerTest {
   @Test
   fun `should return no module dependencies for no dependencies`() {
     // given
@@ -76,11 +76,11 @@ class BuildTargetToModuleDependencyTransformerTest {
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
-    val expectedModuleDependency = ModuleDependency(
+    val expectedIntermediateModuleDependency = IntermediateModuleDependency(
       moduleName = "//target2",
     )
 
-    moduleDependencies shouldBe listOf(expectedModuleDependency)
+    moduleDependencies shouldBe listOf(expectedIntermediateModuleDependency)
   }
 
   @Test
@@ -113,17 +113,17 @@ class BuildTargetToModuleDependencyTransformerTest {
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
-    val expectedModuleDependency1 = ModuleDependency(
+    val expectedIntermediateModuleDependency1 = IntermediateModuleDependency(
       moduleName = "//target2",
     )
-    val expectedModuleDependency2 = ModuleDependency(
+    val expectedIntermediateModuleDependency2 = IntermediateModuleDependency(
       moduleName = "//target3",
     )
-    val expectedModuleDependency3 = ModuleDependency(
+    val expectedIntermediateModuleDependency3 = IntermediateModuleDependency(
       moduleName = "//target4",
     )
 
-    moduleDependencies shouldBe listOf(expectedModuleDependency1, expectedModuleDependency2, expectedModuleDependency3)
+    moduleDependencies shouldBe listOf(expectedIntermediateModuleDependency1, expectedIntermediateModuleDependency2, expectedIntermediateModuleDependency3)
   }
 
   @Test
@@ -169,16 +169,16 @@ class BuildTargetToModuleDependencyTransformerTest {
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTargets)
 
     // then
-    val expectedModuleDependency1 = ModuleDependency(
+    val expectedIntermediateModuleDependency1 = IntermediateModuleDependency(
       moduleName = "//target2",
     )
-    val expectedModuleDependency2 = ModuleDependency(
+    val expectedIntermediateModuleDependency2 = IntermediateModuleDependency(
       moduleName = "//target3",
     )
-    val expectedModuleDependency3 = ModuleDependency(
+    val expectedIntermediateModuleDependency3 = IntermediateModuleDependency(
       moduleName = "//target4",
     )
 
-    moduleDependencies shouldBe listOf(expectedModuleDependency1, expectedModuleDependency2, expectedModuleDependency3)
+    moduleDependencies shouldBe listOf(expectedIntermediateModuleDependency1, expectedIntermediateModuleDependency2, expectedIntermediateModuleDependency3)
   }
 }

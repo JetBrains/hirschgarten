@@ -23,7 +23,7 @@ import org.jetbrains.bsp.utils.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonLibrary
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
@@ -148,7 +148,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val expectedModule = GenericModuleInfo(
       name = "module1",
       type = "PYTHON_MODULE",
-      modulesDependencies = listOf(ModuleDependency("module2"), ModuleDependency("module3")),
+      modulesDependencies = listOf(IntermediateModuleDependency("module2"), IntermediateModuleDependency("module3")),
       librariesDependencies = emptyList(),
     )
 
@@ -334,7 +334,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val expectedModule1 = GenericModuleInfo(
       name = "module1",
       type = "PYTHON_MODULE",
-      modulesDependencies = listOf(ModuleDependency("module2"), ModuleDependency("module3")),
+      modulesDependencies = listOf(IntermediateModuleDependency("module2"), IntermediateModuleDependency("module3")),
       librariesDependencies = emptyList(),
     )
 
@@ -369,7 +369,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val expectedModule2 = GenericModuleInfo(
       name = "module2",
       type = "PYTHON_MODULE",
-      modulesDependencies = listOf(ModuleDependency("module3")),
+      modulesDependencies = listOf(IntermediateModuleDependency("module3")),
       librariesDependencies = emptyList(),
     )
 

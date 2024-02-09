@@ -7,15 +7,15 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleCapabilities
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonLibrary
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
@@ -169,8 +169,8 @@ public data class GenericModuleInfoState(
   override fun fromState(): GenericModuleInfo = GenericModuleInfo(
     name = name,
     type = type,
-    modulesDependencies = modulesDependencies.map { ModuleDependency(it) },
-    librariesDependencies = librariesDependencies.map { LibraryDependency(it) },
+    modulesDependencies = modulesDependencies.map { IntermediateModuleDependency(it) },
+    librariesDependencies = librariesDependencies.map { IntermediateLibraryDependency(it) },
     capabilities = capabilities.fromState(),
     languageIds = languageIds,
   )

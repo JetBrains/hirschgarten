@@ -1,10 +1,13 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.openapi.module.impl.ModuleManagerEx
+import com.intellij.platform.workspace.jps.entities.DependencyScope
+import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleCustomImlDataEntity
+import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
@@ -18,8 +21,8 @@ import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bsp.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bsp.jpsCompilation.utils.JpsPaths
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.workspacemodel.entities.BspEntitySource
@@ -85,29 +88,29 @@ internal class ModuleEntityUpdater(
   }
 
   private fun toModuleDependencyItemModuleDependency(
-    moduleDependency: ModuleDependency,
-  ): ModuleDependencyItem.Exportable.ModuleDependency =
-    ModuleDependencyItem.Exportable.ModuleDependency(
-      module = ModuleId(moduleDependency.moduleName),
+    intermediateModuleDependency: IntermediateModuleDependency,
+  ): ModuleDependency =
+    ModuleDependency(
+      module = ModuleId(intermediateModuleDependency.moduleName),
       exported = true,
-      scope = ModuleDependencyItem.DependencyScope.COMPILE,
+      scope = DependencyScope.COMPILE,
       productionOnTest = true,
     )
 }
 
 internal fun toModuleDependencyItemLibraryDependency(
-  libraryDependency: LibraryDependency,
+  intermediateLibraryDependency: IntermediateLibraryDependency,
   moduleName: String,
-): ModuleDependencyItem.Exportable.LibraryDependency {
-  val libraryTableId = if (libraryDependency.isProjectLevelLibrary)
+): LibraryDependency {
+  val libraryTableId = if (intermediateLibraryDependency.isProjectLevelLibrary)
     LibraryTableId.ProjectLibraryTableId else LibraryTableId.ModuleLibraryTableId(ModuleId(moduleName))
-  return ModuleDependencyItem.Exportable.LibraryDependency(
+  return LibraryDependency(
     library = LibraryId(
-      name = libraryDependency.libraryName,
+      name = intermediateLibraryDependency.libraryName,
       tableId = libraryTableId,
     ),
     exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
-    scope = ModuleDependencyItem.DependencyScope.COMPILE,
+    scope = DependencyScope.COMPILE,
   )
 }
 
