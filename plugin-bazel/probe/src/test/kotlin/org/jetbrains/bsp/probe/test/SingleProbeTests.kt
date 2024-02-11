@@ -44,14 +44,14 @@ class SingleProbeTests {
         probe.screenshot("_bazel-bsp-project-on-reopen")
 
         val newBuildPanel = robot.findElement(Query.className("BspToolWindowPanel"))
-        val reconnect =
-          newBuildPanel.findElement(Query.className("ActionButton", "myaction.key" to "connect.action.text"))
-        probe.screenshot("_bazel-bsp-before-reconnect-click")
-        reconnect.click()
+        val reload =
+          newBuildPanel.findElement(Query.className("ActionButton", "myaction.key" to "reload.action.text"))
+        probe.screenshot("_bazel-bsp-before-reload-click")
+        reload.click()
         probe.await(emptyBackgroundTaskWithoutTimeouts {
           robot.findElement(Query.className("StripeButton", "text" to "Bazel"))
         })
-        probe.screenshot("_bazel-bsp-after-reconnect-click")
+        probe.screenshot("_bazel-bsp-after-reload-click")
         testTargetsTree(newBuildPanel)
         probe.screenshot("_bazel-bsp-before-end-of-test")
         BoxedUnit.UNIT
