@@ -4,9 +4,12 @@ import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.platform.backend.workspace.BuilderSnapshot
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.internal
+import com.intellij.platform.workspace.jps.JpsFileDependentEntitySource
+import com.intellij.platform.workspace.jps.JpsFileEntitySource
+import com.intellij.platform.workspace.storage.EntitySource
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.bsp.DirectoryItem
 import org.jetbrains.bsp.LibraryItem
@@ -28,18 +31,21 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelToModulesM
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.toPair
+import org.jetbrains.workspacemodel.entities.BspDummyEntitySource
+import org.jetbrains.workspacemodel.entities.BspEntitySource
 
 internal class DefaultMagicMetaModelDiff(
   private val workspaceModel: WorkspaceModel,
-  private val builderSnapshot: BuilderSnapshot,
+  private val builder: MutableEntityStorage,
   private val mmmStorageReplacement: LoadedTargetsStorage,
   private val mmmInstance: MagicMetaModelImpl,
   private val targetLoadListeners: Set<() -> Unit>,
 ) : MagicMetaModelDiff {
   override suspend fun applyOnWorkspaceModel() {
-    val storageReplacement = builderSnapshot.getStorageReplacement()
+    val snapshot = workspaceModel.internal.getBuilderSnapshot()
+    snapshot.builder.replaceBySource({ it.isBspRelevant() }, builder)
     writeAction {
-      if (workspaceModel.internal.replaceProjectModel(storageReplacement)) {
+      if (workspaceModel.internal.replaceProjectModel(snapshot.getStorageReplacement())) {
         mmmInstance.loadStorage(mmmStorageReplacement)
         targetLoadListeners.forEach { it() }
       } else {
@@ -52,6 +58,17 @@ internal class DefaultMagicMetaModelDiff(
       }
     }
   }
+
+  private fun EntitySource.isBspRelevant() =
+    when (this) {
+      is JpsFileEntitySource,
+      is JpsFileDependentEntitySource,
+      is BspEntitySource,
+      is BspDummyEntitySource,
+      -> true
+
+      else -> false
+    }
 }
 
 // TODO - get rid of *Impl - we should name it 'DefaultMagicMetaModel' or something like that
@@ -151,16 +168,15 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   override fun loadDefaultTargets(): MagicMetaModelDiff {
     log.debug { "Calculating default targets to load..." }
-
     val nonOverlappingTargetsToLoad = logPerformance("compute-non-overlapping-targets") {
       NonOverlappingTargets(targets.values.toHashSet(), overlappingTargetsGraph)
     }
 
     log.debug { "Calculating default targets to load done! Targets to load: $nonOverlappingTargetsToLoad" }
 
-    val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.internal.getBuilderSnapshot()
+    val builder = MutableEntityStorage.create()
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
-      builderSnapshot.builder,
+      builder,
       magicMetaModelProjectConfig.virtualFileUrlManager,
       magicMetaModelProjectConfig.projectBasePath,
       magicMetaModelProjectConfig.project,
@@ -168,7 +184,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       magicMetaModelProjectConfig.isAndroidSupportEnabled,
     )
 
-    workspaceModelUpdater.clear()
     val newStorage = loadedTargetsStorage.copy()
     newStorage.clear()
 
@@ -183,7 +198,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
     return DefaultMagicMetaModelDiff(
       workspaceModel = magicMetaModelProjectConfig.workspaceModel,
-      builderSnapshot = builderSnapshot,
+      builder = builder,
       mmmStorageReplacement = newStorage,
       mmmInstance = this,
       targetLoadListeners = targetLoadListeners,
@@ -317,7 +332,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     action(newStorage, workspaceModelUpdater)
     return DefaultMagicMetaModelDiff(
       workspaceModel = magicMetaModelProjectConfig.workspaceModel,
-      builderSnapshot = builderSnapshot,
+      builder = builderSnapshot.builder,
       mmmStorageReplacement = newStorage,
       mmmInstance = this,
       targetLoadListeners = targetLoadListeners,

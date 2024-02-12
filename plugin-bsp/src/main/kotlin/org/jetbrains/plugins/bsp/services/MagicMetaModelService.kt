@@ -60,7 +60,6 @@ public class MagicMetaModelService(private val project: Project) :
     value.copyAllTargetLoadListenersTo(newMMM)
 
     // TODO it should be init!
-    value.clear()
     value = newMMM
   }
 
