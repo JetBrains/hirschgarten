@@ -2,19 +2,26 @@ package org.jetbrains.magicmetamodel.impl
 
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
+import org.jetbrains.magicmetamodel.MagicMetaModelTemporaryFacade
 import org.jetbrains.magicmetamodel.extensions.reduceSets
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 
 public object OverlappingTargetsGraph {
   private val log = logger<OverlappingTargetsGraph>()
 
+  // only for tests, in the following PRs will be removed
   public operator fun invoke(
     targetsDetailsForDocumentProvider: TargetsDetailsForDocumentProvider,
+  ): Map<BuildTargetId, Set<BuildTargetId>> =
+    invoke(MagicMetaModelTemporaryFacade(targetsDetailsForDocumentProvider))
+
+  public operator fun invoke(
+    facade: MagicMetaModelTemporaryFacade,
   ): Map<BuildTargetId, Set<BuildTargetId>> {
     log.trace { "Calculating overlapping targets graph..." }
 
-    return targetsDetailsForDocumentProvider.getAllDocuments().asSequence()
-      .map { targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(it) }
+    return facade.allDocuments().asSequence()
+      .map { facade.getTargetsForFile(it) }
       .flatMap { generateEdgesForOverlappingTargetsForAllTargets(it) }
       .groupBy({ it.first }, { it.second })
       .mapValues { it.value.reduceSets().toSet() }

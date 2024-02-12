@@ -1,6 +1,7 @@
 package org.jetbrains.magicmetamodel.impl
 
 import org.jetbrains.bsp.AndroidTargetType
+import org.jetbrains.magicmetamodel.MagicMetaModelTemporaryFacadeState
 import org.jetbrains.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
@@ -324,6 +325,7 @@ public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabil
 )
 
 public data class DefaultMagicMetaModelState(
+  public var facadeState: MagicMetaModelTemporaryFacadeState = MagicMetaModelTemporaryFacadeState(),
   public var targets: List<BuildTargetInfoState> = emptyList(),
   public var libraries: List<LibraryState>? = null,
   public var unloadedTargets: Map<BuildTargetId, ModuleState> = emptyMap(),
