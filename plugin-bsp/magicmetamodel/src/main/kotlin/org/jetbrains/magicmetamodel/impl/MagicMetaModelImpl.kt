@@ -16,6 +16,7 @@ import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
+import org.jetbrains.magicmetamodel.MagicMetaModelTemporaryFacade
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
@@ -60,20 +61,20 @@ internal class DefaultMagicMetaModelDiff(
  */
 public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagicMetaModelState> {
   private val magicMetaModelProjectConfig: MagicMetaModelProjectConfig
+  private val facade: MagicMetaModelTemporaryFacade
+
+  private val overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>>
+  private var loadedTargetsStorage: LoadedTargetsStorage
+
+  private val targetLoadListeners = mutableSetOf<() -> Unit>()
+
+  // TODO (BAZEL-831): prob all the following fields should be removed from MMM
   private val targets: Map<BuildTargetId, BuildTargetInfo>
   private val libraries: List<Library>?
   private val directories: WorkspaceDirectoriesResult?
   private val invalidTargets: WorkspaceInvalidTargetsResult
   private val outputPathUris: List<String>
-
-  private val targetsDetailsForDocumentProvider: TargetsDetailsForDocumentProvider
-  private val overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>>
-
   private val targetIdToModule: Map<BuildTargetId, Module>
-
-  private var loadedTargetsStorage: LoadedTargetsStorage
-
-  private val targetLoadListeners = mutableSetOf<() -> Unit>()
 
   internal constructor(
     magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
@@ -82,14 +83,12 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     log.debug { "Initializing MagicMetaModelImpl with: $magicMetaModelProjectConfig and $projectDetails..." }
 
     this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
+    this.facade = MagicMetaModelTemporaryFacade(projectDetails)
 
     targets = projectDetails.targets.associate { it.toBuildTargetInfo().toPair() }
 
-    this.targetsDetailsForDocumentProvider = logPerformance("create-target-details-for-document-provider") {
-      TargetsDetailsForDocumentProvider(projectDetails.sources)
-    }
     this.overlappingTargetsGraph = logPerformance("create-overlapping-targets-graph") {
-      OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+      OverlappingTargetsGraph(facade)
     }
 
     this.targetIdToModule = logPerformance("create-target-id-to-module-entities-map") {
@@ -131,8 +130,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     this.loadedTargetsStorage =
       LoadedTargetsStorage(state.loadedTargetsStorageState)
 
-    this.targetsDetailsForDocumentProvider =
-      TargetsDetailsForDocumentProvider(state.targetsDetailsForDocumentProviderState)
+    this.facade = MagicMetaModelTemporaryFacade(state.facadeState)
     this.overlappingTargetsGraph = state.overlappingTargetsGraph
 
     this.targets = state.targets.associate { it.fromState().toPair() }
@@ -327,7 +325,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   }
 
   override fun getTargetsDetailsForDocument(documentId: TextDocumentIdentifier): DocumentTargetsDetails {
-    val documentTargets = targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(documentId)
+    val documentTargets = facade.getTargetsForFile(documentId)
 
     // TODO maybe wo should check is there only 1 loaded? what if 2 are loaded - it means that we have a bug
     val loadedTarget = loadedTargetsStorage.getLoadedTargets().firstOrNull { documentTargets.contains(it) }
@@ -370,12 +368,12 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   // TODO - test
   override fun toState(): DefaultMagicMetaModelState =
     DefaultMagicMetaModelState(
+      facadeState = facade.toState(),
       targets = targets.values.map { it.toState() },
       // TODO: add serialization for more languages
       libraries = libraries?.map { it.toState() },
       unloadedTargets = targetIdToModule.filterNot { it.key.isTargetLoaded() }
         .mapValues { it.value.toState() },
-      targetsDetailsForDocumentProviderState = targetsDetailsForDocumentProvider.toState(),
       overlappingTargetsGraph = overlappingTargetsGraph,
       loadedTargetsStorageState = loadedTargetsStorage.toState(),
     )
