@@ -75,6 +75,9 @@
       implementation="org.jetbrains.plugins.bsp.building.task.BspProjectTaskRunner"/>
     <programRunner implementation="org.jetbrains.plugins.bsp.runner.BspDebugRunner"/>
 
+    <directoryProjectConfigurator implementation="org.jetbrains.plugins.bsp.flow.open.CounterPlatformProjectConfigurator"
+                                  order="after PlatformProjectConfigurator"/>
+
 <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
 <!--                    serviceImplementation="org.jetbrains.plugins.bsp.services.SingleFileSourcesTrackerImpl"-->
 <!--                    overrides="true"/>-->
