@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaAddendum
@@ -32,10 +33,11 @@ public data class KotlinBuildTarget(
 )
 
 internal class ModuleDetailsToJavaModuleTransformer(
+  targetsMap: Map<BuildTargetId, BuildTargetInfo>,
   moduleNameProvider: ModuleNameProvider,
   private val projectBasePath: Path,
   private val isAndroidSupportEnabled: Boolean = false,
-) : ModuleDetailsToModuleTransformer<JavaModule>(moduleNameProvider) {
+) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, moduleNameProvider) {
   override val type = "JAVA_MODULE"
 
   private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(projectBasePath)

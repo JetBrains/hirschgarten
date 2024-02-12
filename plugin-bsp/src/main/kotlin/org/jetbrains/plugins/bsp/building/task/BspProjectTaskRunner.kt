@@ -77,7 +77,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
 
   private fun BuildTargetInfo.belongsToModules(project: Project, moduleNames: List<String>): Boolean {
     val moduleNameProvider = project.findModuleNameProvider().orDefault()
-    val targetModuleName = moduleNameProvider(this.id)
+    val targetModuleName = moduleNameProvider(this)
     return moduleNames.any {
       it == targetModuleName || targetModuleName isSubmoduleOf it
     }

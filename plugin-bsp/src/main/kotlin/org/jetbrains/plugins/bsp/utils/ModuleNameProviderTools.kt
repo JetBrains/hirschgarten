@@ -13,7 +13,6 @@ public fun Project.findModuleNameProvider(): ModuleNameProvider? =
 
 private fun createModuleNameProvider(buildToolId: BuildToolId): ModuleNameProvider {
   val bspBuildTargetClassifier = BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
-
   return {
     val sanitizedName = bspBuildTargetClassifier.calculateBuildTargetName(it).replaceDots()
     bspBuildTargetClassifier.calculateBuildTargetPath(it)

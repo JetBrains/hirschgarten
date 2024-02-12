@@ -21,6 +21,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.utils.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
+import org.jetbrains.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
@@ -48,7 +49,12 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath, hasDefaultPythonInterpreter).transform(emptyModulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(
+      mapOf(),
+      DefaultModuleNameProvider,
+      projectBasePath,
+      hasDefaultPythonInterpreter
+    ).transform(emptyModulesDetails)
 
     // then
     pythonModules shouldBe emptyList()
@@ -141,8 +147,15 @@ class ModuleDetailsToPythonModuleTransformerTest {
       defaultJdkName = null,
     )
 
+    val targetsMap = listOf("module1", "module2", "module3").toDefaultTargetsMap()
+
     // when
-    val pythonModule = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath, hasDefaultPythonInterpreter).transform(moduleDetails)
+    val pythonModule = ModuleDetailsToPythonModuleTransformer(
+      targetsMap,
+      DefaultModuleNameProvider,
+      projectBasePath,
+      hasDefaultPythonInterpreter
+    ).transform(moduleDetails)
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -327,8 +340,15 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
+    val targetsMap = listOf(buildTargetId1.uri, buildTargetId2.uri, buildTargetId3.uri).toDefaultTargetsMap()
+
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath, hasDefaultPythonInterpreter).transform(modulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(
+      targetsMap,
+      DefaultModuleNameProvider,
+      projectBasePath,
+      hasDefaultPythonInterpreter
+    ).transform(modulesDetails)
 
     // then
     val expectedModule1 = GenericModuleInfo(
@@ -356,7 +376,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
       rootType = "",
     )
 
-    val expectedPythonSdk1 = PythonSdkInfo(version = defaultPythonVersion, originalName = "${buildTargetId1.uri}-detected")
+    val expectedPythonSdk1 =
+      PythonSdkInfo(version = defaultPythonVersion, originalName = "${buildTargetId1.uri}-detected")
 
     val expectedPythonModule1 = PythonModule(
       module = expectedModule1,
@@ -383,7 +404,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
       rootType = "",
     )
 
-    val expectedPythonSdk2 = PythonSdkInfo(version = defaultPythonVersion, originalName = "${buildTargetId2.uri}-detected")
+    val expectedPythonSdk2 =
+      PythonSdkInfo(version = defaultPythonVersion, originalName = "${buildTargetId2.uri}-detected")
 
     val expectedPythonModule2 = PythonModule(
       module = expectedModule2,
@@ -497,7 +519,12 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2, moduleDetails3)
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(DefaultModuleNameProvider, projectBasePath, hasDefaultPythonInterpreter).transform(modulesDetails)
+    val pythonModules = ModuleDetailsToPythonModuleTransformer(
+      mapOf(),
+      DefaultModuleNameProvider,
+      projectBasePath,
+      hasDefaultPythonInterpreter
+    ).transform(modulesDetails)
 
     // then
     val expectedSdkInfo1 = PythonSdkInfo(version = version1, "${buildTarget1.id.uri}-detected")
