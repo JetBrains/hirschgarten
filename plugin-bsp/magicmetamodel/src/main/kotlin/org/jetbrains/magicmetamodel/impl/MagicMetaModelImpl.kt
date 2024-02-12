@@ -11,6 +11,7 @@ import com.intellij.platform.workspace.jps.JpsFileEntitySource
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bsp.DirectoryItem
 import org.jetbrains.bsp.LibraryItem
 import org.jetbrains.bsp.WorkspaceDirectoriesResult
@@ -86,7 +87,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   private val targetLoadListeners = mutableSetOf<() -> Unit>()
 
   // TODO (BAZEL-831): prob all the following fields should be removed from MMM
-  private val targets: Map<BuildTargetId, BuildTargetInfo>
+  public val targets: Map<BuildTargetId, BuildTargetInfo>
   private val libraries: List<Library>?
   private val directories: WorkspaceDirectoriesResult?
   private val invalidTargets: WorkspaceInvalidTargetsResult
@@ -112,6 +113,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       TargetIdToModuleEntitiesMap(
         projectDetails,
         magicMetaModelProjectConfig.projectBasePath,
+        targets,
         magicMetaModelProjectConfig.moduleNameProvider,
         magicMetaModelProjectConfig.hasDefaultPythonInterpreter,
         magicMetaModelProjectConfig.isAndroidSupportEnabled,
@@ -160,6 +162,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     this.targetIdToModule = WorkspaceModelToModulesMapTransformer(
       magicMetaModelProjectConfig.workspaceModel,
       loadedTargetsStorage,
+      this.targets,
       magicMetaModelProjectConfig.moduleNameProvider,
     ) + unloadedTargets
 
@@ -281,8 +284,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val targetsToLoad = targets.filter { it.isTargetNotLoaded() }
     val loadedTargetsToRemove = conflicts.filter { it.isTargetLoaded() }
 
-    val modulesToRemove = loadedTargetsToRemove.map {
-      ModuleName(magicMetaModelProjectConfig.moduleNameProvider(it))
+    val modulesToRemove = loadedTargetsToRemove.mapNotNull { loadTargetToRemove ->
+      this.targets[loadTargetToRemove]?.let { ModuleName(magicMetaModelProjectConfig.moduleNameProvider(it)) }
     }
     val modulesToAdd = targetsToLoad.mapNotNull { targetIdToModule[it] }
 
@@ -301,8 +304,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     // TODO test it!
     val loadedTargetsToRemove = targetsToRemove.filter { it.isTargetLoaded() }
 
-    val modulesToRemove = loadedTargetsToRemove.map {
-      ModuleName(magicMetaModelProjectConfig.moduleNameProvider(it))
+    val modulesToRemove = loadedTargetsToRemove.mapNotNull { loadedTargetToRemove ->
+      this.targets[loadedTargetToRemove]?.let { ModuleName(magicMetaModelProjectConfig.moduleNameProvider(it)) }
     }
     // TODO null!!!
     val moduleToAdd = targetIdToModule[targetId]!!
@@ -474,3 +477,10 @@ public class LoadedTargetsStorage private constructor(
       notLoadedTargets = notLoadedTargets.toMutableSet(),
     )
 }
+
+@TestOnly
+public fun Collection<String>.toDefaultTargetsMap(): Map<BuildTargetId, BuildTargetInfo> =
+  associateBy(
+    keySelector = { it },
+    valueTransform = { BuildTargetInfo(id = it) }
+  )

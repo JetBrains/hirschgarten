@@ -16,7 +16,7 @@ import com.intellij.openapi.project.modules
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspProjectModuleBuildTasksTracker
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
@@ -25,7 +25,7 @@ import org.jetbrains.plugins.bsp.utils.orDefault
 import javax.swing.Icon
 
 internal abstract class LocalJvmRunnerAction(
-  protected val targetId: BuildTargetId,
+  protected val targetInfo: BuildTargetInfo,
   text: () -> String,
   icon: Icon? = null,
 ) : SuspendableAction(text, icon) {
@@ -35,12 +35,12 @@ internal abstract class LocalJvmRunnerAction(
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val moduleNameProvider = project.findModuleNameProvider().orDefault()
-    val module = project.modules.find { it.name == moduleNameProvider(targetId) } ?: return
+    val module = project.modules.find { it.name == moduleNameProvider(targetInfo) } ?: return
 
     withContext(Dispatchers.EDT) {
       getEnvironment(project)
     }?.let {
-      runWithEnvironment(it, targetId, module, project)
+      runWithEnvironment(it, targetInfo.id, module, project)
     }
   }
 

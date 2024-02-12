@@ -19,6 +19,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.KotlinBuildTarget
 import org.jetbrains.bsp.utils.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
+import org.jetbrains.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
@@ -53,7 +54,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     // when
     val javaModules =
-      ModuleDetailsToJavaModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(emptyModulesDetails)
+      ModuleDetailsToJavaModuleTransformer(mapOf(), DefaultModuleNameProvider, projectBasePath).transform(
+        emptyModulesDetails
+      )
 
     // then
     javaModules shouldBe emptyList()
@@ -156,9 +159,11 @@ class ModuleDetailsToJavaModuleTransformerTest {
       ),
       defaultJdkName = null
     )
+
+    val targetsMap = listOf(buildTargetId.uri, "module2", "module3").toDefaultTargetsMap()
     // when
     val javaModule =
-      ModuleDetailsToJavaModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
+      ModuleDetailsToJavaModuleTransformer(targetsMap, DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -294,8 +299,11 @@ class ModuleDetailsToJavaModuleTransformerTest {
       defaultJdkName = null,
     )
 
+    val targetsMap = listOf(buildTargetId.uri, "module2", "module3").toDefaultTargetsMap()
+
     // when
     val javaModule = ModuleDetailsToJavaModuleTransformer(
+      targetsMap,
       DefaultModuleNameProvider,
       projectBasePath,
     ).transform(moduleDetails)
@@ -499,9 +507,11 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
+
+    val targetsMap = listOf("module1", "module2", "module3").toDefaultTargetsMap()
     // when
     val javaModules =
-      ModuleDetailsToJavaModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
+      ModuleDetailsToJavaModuleTransformer(targetsMap, DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
 
     // then
     val expectedModule1 = GenericModuleInfo(

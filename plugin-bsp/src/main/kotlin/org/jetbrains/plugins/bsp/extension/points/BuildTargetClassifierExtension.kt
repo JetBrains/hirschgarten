@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.extension.points
 
 import com.intellij.openapi.extensions.ExtensionPointName
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 public interface BuildTargetClassifierExtension : WithBuildToolId {
   /**
@@ -26,7 +26,7 @@ public interface BuildTargetClassifierExtension : WithBuildToolId {
   public val separator: String?
 
   /**
-   * @param buildTargetIdentifier a build target
+   * @param buildTargetInfo an intermediate representation of a BSP build target in `intellij-bsp`
    * @return list of directories corresponding to a desired path of the given build target in the tree.
    * For example, path `["aaa", "bbb"]` will render as:
    * ```
@@ -36,13 +36,13 @@ public interface BuildTargetClassifierExtension : WithBuildToolId {
    * ```
    * If an empty list is returned, the build target will be rendered in the tree's top level
    */
-  public fun calculateBuildTargetPath(buildTargetIdentifier: BuildTargetId): List<String>
+  public fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String>
 
   /**
-   * @param buildTargetIdentifier a build target
+   * @param buildTargetInfo an intermediate representation of a BSP build target in `intellij-bsp`
    * @return the name under which the given build target will be rendered in the tree
    */
-  public fun calculateBuildTargetName(buildTargetIdentifier: BuildTargetId): String
+  public fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String
 
   public companion object {
     internal val ep =
@@ -59,7 +59,7 @@ internal class DefaultBuildTargetClassifierExtension : BuildTargetClassifierExte
 
   override val separator: String? = null
 
-  override fun calculateBuildTargetPath(buildTargetIdentifier: BuildTargetId): List<String> = emptyList()
+  override fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String> = emptyList()
 
-  override fun calculateBuildTargetName(buildTargetIdentifier: BuildTargetId): String = buildTargetIdentifier
+  override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = buildTargetInfo.id
 }

@@ -35,6 +35,7 @@ public object WorkspaceModelToModulesMapTransformer {
   public operator fun invoke(
     workspaceModel: WorkspaceModel,
     loadedTargetsStorage: LoadedTargetsStorage,
+    targetsMap: Map<BuildTargetId, BuildTargetInfo>,
     moduleNameProvider: ModuleNameProvider,
   ): Map<BuildTargetId, Module> =
     with(workspaceModel.currentSnapshot) {
@@ -42,7 +43,10 @@ public object WorkspaceModelToModulesMapTransformer {
         entities(ModuleEntity::class.java),
         entities(SourceRootEntity::class.java),
         entities(LibraryEntity::class.java),
-        loadedTargetsStorage.getLoadedTargets().associateBy { id -> moduleNameProvider(id) },
+        loadedTargetsStorage.getLoadedTargets().mapNotNull { targetsMap[it] }.associateBy(
+          keySelector = { it.id },
+          valueTransform = { moduleNameProvider(it) }
+        ),
       )
     }
 

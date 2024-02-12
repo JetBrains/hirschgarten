@@ -59,20 +59,23 @@ public class BuildTargetTree(
         BuildTargetTreeIdentifier(
           it.id,
           it,
-          bspBuildTargetClassifier.calculateBuildTargetPath(it.id),
-          bspBuildTargetClassifier.calculateBuildTargetName(it.id),
+          bspBuildTargetClassifier.calculateBuildTargetPath(it),
+          bspBuildTargetClassifier.calculateBuildTargetName(it),
         )
       } + invalidTargets.map {
         BuildTargetTreeIdentifier(
           it,
           null,
-          bspBuildTargetClassifier.calculateBuildTargetPath(it),
-          bspBuildTargetClassifier.calculateBuildTargetName(it),
+          bspBuildTargetClassifier.calculateBuildTargetPath(it.toFakeBuildTargetInfo()),
+          bspBuildTargetClassifier.calculateBuildTargetName(it.toFakeBuildTargetInfo()),
         )
       },
       bspBuildTargetClassifier.separator,
     )
   }
+
+  // only used with Bazel projects
+  private fun BuildTargetId.toFakeBuildTargetInfo() = BuildTargetInfo(id = this)
 
   private fun generateTreeFromIdentifiers(targets: List<BuildTargetTreeIdentifier>, separator: String?) {
     val pathToIdentifierMap = targets.groupBy { it.path.firstOrNull() }

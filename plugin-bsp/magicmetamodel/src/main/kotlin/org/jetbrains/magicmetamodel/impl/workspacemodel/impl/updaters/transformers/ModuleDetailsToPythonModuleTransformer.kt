@@ -3,6 +3,8 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 import ch.epfl.scala.bsp4j.PythonBuildTarget
 import org.jetbrains.bsp.utils.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.ModuleNameProvider
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
@@ -10,10 +12,11 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
 import java.nio.file.Path
 
 internal class ModuleDetailsToPythonModuleTransformer(
+  targetsMap: Map<BuildTargetId, BuildTargetInfo>,
   moduleNameProvider: ModuleNameProvider,
   projectBasePath: Path,
   private val hasDefaultPythonInterpreter: Boolean,
-) : ModuleDetailsToModuleTransformer<PythonModule>(moduleNameProvider) {
+) : ModuleDetailsToModuleTransformer<PythonModule>(targetsMap, moduleNameProvider) {
   override val type = "PYTHON_MODULE"
 
   private val sourcesItemToPythonSourceRootTransformer = SourcesItemToPythonSourceRootTransformer(projectBasePath)

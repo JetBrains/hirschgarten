@@ -12,6 +12,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
+import org.jetbrains.magicmetamodel.ModuleNameProvider
+import org.jetbrains.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
@@ -26,7 +28,8 @@ class BspModuleDetailsToModuleTransformerTest {
     val emptyBspModuleDetails = listOf<BspModuleDetails>()
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(emptyBspModuleDetails)
+    val modules =
+      BspModuleDetailsToModuleTransformer(mapOf(), DefaultModuleNameProvider).transform(emptyBspModuleDetails)
 
     // then
     modules shouldBe emptyList()
@@ -81,8 +84,10 @@ class BspModuleDetailsToModuleTransformerTest {
       scalacOptions = null,
     )
 
+    val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
+
     // when
-    val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
+    val module = BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -146,8 +151,11 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
       scalacOptions = null,
     )
+
+    val targetsMap = listOf("//target1", "//target2", "//target3", "//target4", "//target5").toDefaultTargetsMap()
+
     // when
-    val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
+    val module = BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -217,8 +225,10 @@ class BspModuleDetailsToModuleTransformerTest {
       scalacOptions = null,
     )
 
+    val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
+
     // when
-    val module = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
+    val module = BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -327,9 +337,11 @@ class BspModuleDetailsToModuleTransformerTest {
       scalacOptions = null,
     )
 
+    val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
+
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
     // when
-    val modules = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
+    val modules = BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule1 = GenericModuleInfo(
@@ -368,7 +380,10 @@ class BspModuleDetailsToModuleTransformerTest {
       ),
     )
 
-    modules shouldContainExactlyInAnyOrder (listOf(expectedModule1, expectedModule2) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
+    modules shouldContainExactlyInAnyOrder (listOf(
+      expectedModule1,
+      expectedModule2
+    ) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
   }
 
   @Test
@@ -445,10 +460,12 @@ class BspModuleDetailsToModuleTransformerTest {
       scalacOptions = null,
     )
 
+    val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
+
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer(DefaultModuleNameProvider).transform(bspModuleDetails)
+    val modules = BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider).transform(bspModuleDetails)
 
     // then
     val expectedModule1 = GenericModuleInfo(
@@ -476,7 +493,10 @@ class BspModuleDetailsToModuleTransformerTest {
       librariesDependencies = emptyList(),
     )
 
-    modules shouldContainExactlyInAnyOrder (listOf(expectedModule1, expectedModule2) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
+    modules shouldContainExactlyInAnyOrder (listOf(
+      expectedModule1,
+      expectedModule2
+    ) to { actual, expected -> shouldBeIgnoringDependenciesOrder(actual, expected) })
   }
 
   @Test
@@ -513,9 +533,14 @@ class BspModuleDetailsToModuleTransformerTest {
       pythonOptions = null,
       scalacOptions = null,
     )
+
+    val targetsMap = listOf("//target1").toDefaultTargetsMap()
+
     // when
+    val moduleNameProvider: ModuleNameProvider = { "${it.id}${it.id}" }
     val transformer = BspModuleDetailsToModuleTransformer(
-      moduleNameProvider = { "$it$it" },
+      targetsMap,
+      moduleNameProvider = moduleNameProvider,
     )
     val module = transformer.transform(bspModuleDetails)
 
