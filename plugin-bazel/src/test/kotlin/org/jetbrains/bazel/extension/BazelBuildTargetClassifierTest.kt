@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.extension
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.junit.jupiter.api.Test
 
 class BazelBuildTargetClassifierTest {
@@ -8,37 +9,39 @@ class BazelBuildTargetClassifierTest {
 
   @Test
   fun mainRepoTest() {
-    val targetId = "@//a/b/c:label"
-    classifier.calculateBuildTargetName(targetId) shouldBe "label"
-    classifier.calculateBuildTargetPath(targetId) shouldBe listOf("a", "b", "c")
+    val targetInfo = "@//a/b/c:label".toBuildTargetInfo()
+    classifier.calculateBuildTargetName(targetInfo) shouldBe "label"
+    classifier.calculateBuildTargetPath(targetInfo) shouldBe listOf("a", "b", "c")
   }
 
   @Test
   fun mainRepoTestOldSyntax() { // pre-bazel 6 syntax
-    val targetId = "//a/b/c:label"
-    classifier.calculateBuildTargetName(targetId) shouldBe "label"
-    classifier.calculateBuildTargetPath(targetId) shouldBe listOf("a", "b", "c")
+    val targetInfo = "//a/b/c:label".toBuildTargetInfo()
+    classifier.calculateBuildTargetName(targetInfo) shouldBe "label"
+    classifier.calculateBuildTargetPath(targetInfo) shouldBe listOf("a", "b", "c")
   }
 
   @Test
   fun emptyPath() { // pre-bazel 6 syntax
-    val targetId = "//:label"
-    classifier.calculateBuildTargetName(targetId) shouldBe "label"
-    classifier.calculateBuildTargetPath(targetId) shouldBe listOf()
+    val targetInfo = "//:label".toBuildTargetInfo()
+    classifier.calculateBuildTargetName(targetInfo) shouldBe "label"
+    classifier.calculateBuildTargetPath(targetInfo) shouldBe listOf()
   }
 
   @Test
   fun labelNotMatchingBazelPattern() {
-    val targetId = "foo"
-    classifier.calculateBuildTargetName(targetId) shouldBe "foo"
-    classifier.calculateBuildTargetPath(targetId) shouldBe listOf()
+    val targetInfo = "foo".toBuildTargetInfo()
+    classifier.calculateBuildTargetName(targetInfo) shouldBe "foo"
+    classifier.calculateBuildTargetPath(targetInfo) shouldBe listOf()
   }
 
   @Test
   fun labelNotMatchingBazelPatternWithSlash() {
     // this test documents behavior, it is unclear what should be the result for this kind of label
-    val targetId = "foo/bar"
-    classifier.calculateBuildTargetName(targetId) shouldBe "foo/bar"
-    classifier.calculateBuildTargetPath(targetId) shouldBe listOf()
+    val targetInfo = "foo/bar".toBuildTargetInfo()
+    classifier.calculateBuildTargetName(targetInfo) shouldBe "foo/bar"
+    classifier.calculateBuildTargetPath(targetInfo) shouldBe listOf()
   }
 }
+
+private fun String.toBuildTargetInfo() = BuildTargetInfo(id = this)
