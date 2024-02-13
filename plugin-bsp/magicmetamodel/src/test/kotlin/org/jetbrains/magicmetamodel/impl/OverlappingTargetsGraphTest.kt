@@ -4,9 +4,12 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.SourceItemKind
 import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.workspace.model.constructors.BuildTargetId
 import org.jetbrains.workspace.model.constructors.SourceItem
 import org.jetbrains.workspace.model.constructors.SourcesItem
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -15,14 +18,22 @@ import java.util.concurrent.TimeUnit
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId as WMBuildTargetId
 
 @DisplayName("OverlappingTargetsGraph(targetsDetailsForDocumentProvider) tests")
-class OverlappingTargetsGraphTest {
+class OverlappingTargetsGraphTest : WorkspaceModelBaseTest() {
+  private lateinit var testMagicMetaModelProjectConfig: MagicMetaModelProjectConfig
+
+  @BeforeEach
+  override fun beforeEach() {
+    // given
+    super.beforeEach()
+
+    testMagicMetaModelProjectConfig =
+      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath, project)
+  }
+
   @Test
   fun `should return empty graph for no targets`() {
-    // given
-    val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(emptyList())
-
-    // when
-    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+    // given & when
+    val overlappingTargetsGraph = OverlappingTargetsGraph(emptyList(), testMagicMetaModelProjectConfig)
 
     // then
     overlappingTargetsGraph shouldBe mapOf()
@@ -73,10 +84,8 @@ class OverlappingTargetsGraphTest {
 
     val sources = listOf(targetA1Sources, targetB1Sources, targetC1Sources, targetD1Sources)
 
-    val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
-
     // when
-    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(sources, testMagicMetaModelProjectConfig)
 
     // then
     val expectedGraph = mapOf<WMBuildTargetId, Set<WMBuildTargetId>>(
@@ -117,10 +126,8 @@ class OverlappingTargetsGraphTest {
 
     val sources = listOf(targetA1Sources, target2Sources)
 
-    val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
-
     // when
-    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(sources, testMagicMetaModelProjectConfig)
 
     // then
     val expectedGraph = mapOf(
@@ -154,10 +161,8 @@ class OverlappingTargetsGraphTest {
 
     val sources = listOf(targetA1Sources, target2Sources)
 
-    val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
-
     // when
-    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(sources, testMagicMetaModelProjectConfig)
 
     // then
     val expectedGraph = mapOf<WMBuildTargetId, Set<WMBuildTargetId>>(
@@ -191,10 +196,8 @@ class OverlappingTargetsGraphTest {
 
     val sources = listOf(targetA1Sources, targetB1Sources)
 
-    val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
-
     // when
-    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(sources, testMagicMetaModelProjectConfig)
 
     // then
     val expectedGraph = mapOf<WMBuildTargetId, Set<WMBuildTargetId>>(
@@ -326,10 +329,8 @@ class OverlappingTargetsGraphTest {
       targetD3Sources,
     )
 
-    val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
-
     // when
-    val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+    val overlappingTargetsGraph = OverlappingTargetsGraph(sources, testMagicMetaModelProjectConfig)
 
     // then
     val expectedGraph = mapOf(
@@ -368,10 +369,8 @@ class OverlappingTargetsGraphTest {
         )
       }
 
-      val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
-
       // when
-      val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+      val overlappingTargetsGraph = OverlappingTargetsGraph(sources, testMagicMetaModelProjectConfig)
 
       // then
       val expectedOverlappingTargetsGraph =
@@ -403,10 +402,8 @@ class OverlappingTargetsGraphTest {
         )
       }
 
-      val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
-
       // when
-      val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+      val overlappingTargetsGraph = OverlappingTargetsGraph(sources, testMagicMetaModelProjectConfig)
 
       // then
       val expectedOverlappingTargetsGraph =
@@ -438,10 +435,8 @@ class OverlappingTargetsGraphTest {
         )
       }
 
-      val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
-
       // when
-      val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+      val overlappingTargetsGraph = OverlappingTargetsGraph(sources, testMagicMetaModelProjectConfig)
 
       // then
       val expectedOverlappingTargetsGraph =
@@ -476,10 +471,8 @@ class OverlappingTargetsGraphTest {
         )
       }
 
-      val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
-
       // when
-      val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+      val overlappingTargetsGraph = OverlappingTargetsGraph(sources, testMagicMetaModelProjectConfig)
 
       // then
       val expectedOverlappingTargetsGraph =
@@ -508,10 +501,8 @@ class OverlappingTargetsGraphTest {
         )
       }
 
-      val targetsDetailsForDocumentProvider = TargetsDetailsForDocumentProvider(sources)
-
       // when
-      val overlappingTargetsGraph = OverlappingTargetsGraph(targetsDetailsForDocumentProvider)
+      val overlappingTargetsGraph = OverlappingTargetsGraph(sources, testMagicMetaModelProjectConfig)
 
       // then
       val expectedOverlappingTargetsGraph =
