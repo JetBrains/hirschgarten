@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.idea.workspaceModel.CompilerArgumentsSerializer
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
 import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
 import org.jetbrains.magicmetamodel.ModuleNameProvider
-import org.jetbrains.magicmetamodel.impl.LoadedTargetsStorage
+import org.jetbrains.magicmetamodel.impl.TargetsStatusStorage
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.PYTHON_SDK_ID
 import org.jetbrains.workspacemodel.entities.AndroidTargetType.APP
 import org.jetbrains.workspacemodel.entities.AndroidTargetType.LIBRARY
@@ -34,7 +34,7 @@ import java.net.URI
 public object WorkspaceModelToModulesMapTransformer {
   public operator fun invoke(
     workspaceModel: WorkspaceModel,
-    loadedTargetsStorage: LoadedTargetsStorage,
+    targetsStatusStorage: TargetsStatusStorage,
     targetsMap: Map<BuildTargetId, BuildTargetInfo>,
     moduleNameProvider: ModuleNameProvider,
   ): Map<BuildTargetId, Module> =
@@ -43,7 +43,7 @@ public object WorkspaceModelToModulesMapTransformer {
         entities(ModuleEntity::class.java),
         entities(SourceRootEntity::class.java),
         entities(LibraryEntity::class.java),
-        loadedTargetsStorage.getLoadedTargets().mapNotNull { targetsMap[it] }.associateBy(
+        targetsStatusStorage.getLoadedTargets().mapNotNull { targetsMap[it] }.associateBy(
           keySelector = { it.id },
           valueTransform = { moduleNameProvider(it) }
         ),

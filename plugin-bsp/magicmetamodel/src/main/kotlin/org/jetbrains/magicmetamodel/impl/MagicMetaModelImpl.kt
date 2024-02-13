@@ -28,17 +28,14 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleName
-import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelToModulesMapTransformer
 import org.jetbrains.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
-import org.jetbrains.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.toPair
 import org.jetbrains.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.workspacemodel.entities.BspEntitySource
 
 internal class DefaultMagicMetaModelDiff(
   private val workspaceModel: WorkspaceModel,
   private val builder: MutableEntityStorage,
-  private val mmmStorageReplacement: LoadedTargetsStorage,
+  private val mmmStorageReplacement: TargetsStatusStorage,
   private val mmmInstance: MagicMetaModelImpl,
   private val targetLoadListeners: Set<() -> Unit>,
 ) : MagicMetaModelDiff {
@@ -82,17 +79,15 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   private val facade: MagicMetaModelTemporaryFacade
 
   private val overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>>
-  private var loadedTargetsStorage: LoadedTargetsStorage
+  private var targetsStatusStorage: TargetsStatusStorage
 
   private val targetLoadListeners = mutableSetOf<() -> Unit>()
 
   // TODO (BAZEL-831): prob all the following fields should be removed from MMM
-  public val targets: Map<BuildTargetId, BuildTargetInfo>
   private val libraries: List<Library>?
   private val directories: WorkspaceDirectoriesResult?
   private val invalidTargets: WorkspaceInvalidTargetsResult
   private val outputPathUris: List<String>
-  private val targetIdToModule: Map<BuildTargetId, Module>
 
   internal constructor(
     magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
@@ -101,23 +96,15 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     log.debug { "Initializing MagicMetaModelImpl with: $magicMetaModelProjectConfig and $projectDetails..." }
 
     this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
-    this.facade = MagicMetaModelTemporaryFacade(projectDetails)
 
-    targets = projectDetails.targets.associate { it.toBuildTargetInfo().toPair() }
+    this.targetsStatusStorage = logPerformance("create-loaded-targets-storage") {
+      TargetsStatusStorage(projectDetails.targetsId.map { it.uri })
+    }
+
+    this.facade = MagicMetaModelTemporaryFacade(projectDetails, magicMetaModelProjectConfig, targetsStatusStorage)
 
     this.overlappingTargetsGraph = logPerformance("create-overlapping-targets-graph") {
       OverlappingTargetsGraph(facade)
-    }
-
-    this.targetIdToModule = logPerformance("create-target-id-to-module-entities-map") {
-      TargetIdToModuleEntitiesMap(
-        projectDetails,
-        magicMetaModelProjectConfig.projectBasePath,
-        targets,
-        magicMetaModelProjectConfig.moduleNameProvider,
-        magicMetaModelProjectConfig.hasDefaultPythonInterpreter,
-        magicMetaModelProjectConfig.isAndroidSupportEnabled,
-      )
     }
 
     this.libraries = logPerformance("create-libraries") {
@@ -126,10 +113,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
     this.directories = projectDetails.directories
     this.invalidTargets = projectDetails.invalidTargets
-
-    this.loadedTargetsStorage = logPerformance("create-loaded-targets-storage") {
-      LoadedTargetsStorage(targetIdToModule.keys)
-    }
 
     this.outputPathUris = projectDetails.outputPathUris
 
@@ -146,33 +129,24 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   internal constructor(state: DefaultMagicMetaModelState, magicMetaModelProjectConfig: MagicMetaModelProjectConfig) {
     this.magicMetaModelProjectConfig = magicMetaModelProjectConfig
-    this.loadedTargetsStorage =
-      LoadedTargetsStorage(state.loadedTargetsStorageState)
+    this.targetsStatusStorage =
+      TargetsStatusStorage(state.targetsStatusStorageState)
 
-    this.facade = MagicMetaModelTemporaryFacade(state.facadeState)
+    this.facade = MagicMetaModelTemporaryFacade(state.facadeState, magicMetaModelProjectConfig, targetsStatusStorage)
     this.overlappingTargetsGraph = state.overlappingTargetsGraph
-
-    this.targets = state.targets.associate { it.fromState().toPair() }
 
     this.libraries = state.libraries?.map { it.fromState() }
     this.directories = null // workspace model keeps info about them
     this.invalidTargets = WorkspaceInvalidTargetsResult(emptyList())
-
-    val unloadedTargets = state.unloadedTargets.mapValues { it.value.fromState() }
-    this.targetIdToModule = WorkspaceModelToModulesMapTransformer(
-      magicMetaModelProjectConfig.workspaceModel,
-      loadedTargetsStorage,
-      this.targets,
-      magicMetaModelProjectConfig.moduleNameProvider,
-    ) + unloadedTargets
 
     this.outputPathUris = state.outputPathUris
   }
 
   override fun loadDefaultTargets(): MagicMetaModelDiff {
     log.debug { "Calculating default targets to load..." }
+
     val nonOverlappingTargetsToLoad = logPerformance("compute-non-overlapping-targets") {
-      NonOverlappingTargets(targets.values.toHashSet(), overlappingTargetsGraph)
+      NonOverlappingTargets(facade.getAllTargets().toHashSet(), overlappingTargetsGraph)
     }
 
     log.debug { "Calculating default targets to load done! Targets to load: $nonOverlappingTargetsToLoad" }
@@ -187,7 +161,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       magicMetaModelProjectConfig.isAndroidSupportEnabled,
     )
 
-    val newStorage = loadedTargetsStorage.copy()
+    val newStorage = targetsStatusStorage.copy()
     newStorage.clear()
 
     val modulesToLoad = getModulesForTargetsToLoad(nonOverlappingTargetsToLoad)
@@ -210,7 +184,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   // TODO what if null?
   private fun getModulesForTargetsToLoad(targetsToLoad: Collection<BuildTargetId>): List<Module> =
-    targetsToLoad.map { targetIdToModule[it]!! }
+    targetsToLoad.mapNotNull { facade.getModuleForTargetId(it) }
 
   private fun WorkspaceModelUpdater.loadDirectories() {
     if (directories != null) {
@@ -234,13 +208,13 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   }
 
   override fun loadTarget(targetId: BuildTargetId): MagicMetaModelDiff? = when {
-    loadedTargetsStorage.isTargetNotLoaded(targetId) -> doLoadTarget(targetId)
+    targetsStatusStorage.isTargetNotLoaded(targetId) -> doLoadTarget(targetId)
     else -> null
   }
 
-  private fun BuildTargetId.isTargetLoaded() = loadedTargetsStorage.isTargetLoaded(this)
+  private fun BuildTargetId.isTargetLoaded() = targetsStatusStorage.isTargetLoaded(this)
 
-  private fun BuildTargetId.isTargetNotLoaded() = loadedTargetsStorage.isTargetNotLoaded(this)
+  private fun BuildTargetId.isTargetNotLoaded() = targetsStatusStorage.isTargetNotLoaded(this)
 
   private fun BuildTargetId.getConflicts() = overlappingTargetsGraph[this] ?: emptySet()
 
@@ -264,15 +238,13 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
     val nonConflictingDependencies = fun(target: BuildTargetInfo) =
       target.dependencies.filter { el ->
-        targets.contains(el) && !toProcess.contains(el) && !processed.contains(el) && !conflicts.contains(el)
+        facade.isTargetRegistered(el) && !toProcess.contains(el) && !processed.contains(el) && !conflicts.contains(el)
       }
 
     do {
       processFirst()
-        ?.let { targets[it] }
-        ?.let {
-          toProcess.addAll(nonConflictingDependencies(it))
-        }
+        ?.let { facade.getTargetInfoForTargetId(it) }
+        ?.let { toProcess.addAll(nonConflictingDependencies(it)) }
     } while (toProcess.isNotEmpty())
     return doLoadTargets(processed, conflicts)
   }
@@ -285,9 +257,10 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val loadedTargetsToRemove = conflicts.filter { it.isTargetLoaded() }
 
     val modulesToRemove = loadedTargetsToRemove.mapNotNull { loadTargetToRemove ->
-      this.targets[loadTargetToRemove]?.let { ModuleName(magicMetaModelProjectConfig.moduleNameProvider(it)) }
+      facade.getTargetInfoForTargetId(loadTargetToRemove)
+        ?.let { ModuleName(magicMetaModelProjectConfig.moduleNameProvider(it)) }
     }
-    val modulesToAdd = targetsToLoad.mapNotNull { targetIdToModule[it] }
+    val modulesToAdd = targetsToLoad.mapNotNull { facade.getModuleForTargetId(it) }
 
     return modifyModel { newStorage, workspaceModelUpdater ->
       workspaceModelUpdater.removeModules(modulesToRemove)
@@ -305,10 +278,11 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val loadedTargetsToRemove = targetsToRemove.filter { it.isTargetLoaded() }
 
     val modulesToRemove = loadedTargetsToRemove.mapNotNull { loadedTargetToRemove ->
-      this.targets[loadedTargetToRemove]?.let { ModuleName(magicMetaModelProjectConfig.moduleNameProvider(it)) }
+      facade.getTargetInfoForTargetId(loadedTargetToRemove)
+        ?.let { ModuleName(magicMetaModelProjectConfig.moduleNameProvider(it)) }
     }
     // TODO null!!!
-    val moduleToAdd = targetIdToModule[targetId]!!
+    val moduleToAdd = facade.getModuleForTargetId(targetId)!!
 
     return modifyModel { newStorage, workspaceModelUpdater ->
       workspaceModelUpdater.removeModules(modulesToRemove)
@@ -320,7 +294,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   }
 
   private fun modifyModel(
-    action: (targetStorage: LoadedTargetsStorage, updater: WorkspaceModelUpdater) -> Unit,
+    action: (targetStorage: TargetsStatusStorage, updater: WorkspaceModelUpdater) -> Unit,
   ): DefaultMagicMetaModelDiff {
     val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.internal.getBuilderSnapshot()
     val workspaceModelUpdater = WorkspaceModelUpdater.create(
@@ -331,7 +305,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       magicMetaModelProjectConfig.isPythonSupportEnabled,
       magicMetaModelProjectConfig.isAndroidSupportEnabled,
     )
-    val newStorage = loadedTargetsStorage.copy()
+    val newStorage = targetsStatusStorage.copy()
     action(newStorage, workspaceModelUpdater)
     return DefaultMagicMetaModelDiff(
       workspaceModel = magicMetaModelProjectConfig.workspaceModel,
@@ -346,8 +320,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     val documentTargets = facade.getTargetsForFile(documentId)
 
     // TODO maybe wo should check is there only 1 loaded? what if 2 are loaded - it means that we have a bug
-    val loadedTarget = loadedTargetsStorage.getLoadedTargets().firstOrNull { documentTargets.contains(it) }
-    val notLoadedTargets = loadedTargetsStorage.getNotLoadedTargets().filter { documentTargets.contains(it) }
+    val loadedTarget = targetsStatusStorage.getLoadedTargets().firstOrNull { documentTargets.contains(it) }
+    val notLoadedTargets = targetsStatusStorage.getNotLoadedTargets().filter { documentTargets.contains(it) }
 
     return DocumentTargetsDetails(
       loadedTargetId = loadedTarget,
@@ -356,10 +330,10 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   }
 
   override fun getAllLoadedTargets(): List<BuildTargetInfo> =
-    targets.values.filter { it.id.isTargetLoaded() }
+    targetsStatusStorage.getLoadedTargets().mapNotNull { facade.getTargetInfoForTargetId(it) }
 
   override fun getAllNotLoadedTargets(): List<BuildTargetInfo> =
-    targets.values.filter { loadedTargetsStorage.isTargetNotLoaded(it.id) }
+    targetsStatusStorage.getNotLoadedTargets().mapNotNull { facade.getTargetInfoForTargetId(it) }
 
   override fun getAllInvalidTargets(): List<BuildTargetId> =
     invalidTargets.targets.map { it.uri }
@@ -376,28 +350,25 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     )
 
     workspaceModelUpdater.clear()
-    loadedTargetsStorage.clear()
+    targetsStatusStorage.clear()
   }
 
   override fun getLibraries(): List<Library> = libraries.orEmpty()
 
-  override fun getDetailsForTargetId(targetId: BuildTargetId): Module? = targetIdToModule[targetId]
+  override fun getDetailsForTargetId(targetId: BuildTargetId): Module? = facade.getModuleForTargetId(targetId)
 
   // TODO - test
   override fun toState(): DefaultMagicMetaModelState =
     DefaultMagicMetaModelState(
       facadeState = facade.toState(),
-      targets = targets.values.map { it.toState() },
       // TODO: add serialization for more languages
       libraries = libraries?.map { it.toState() },
-      unloadedTargets = targetIdToModule.filterNot { it.key.isTargetLoaded() }
-        .mapValues { it.value.toState() },
       overlappingTargetsGraph = overlappingTargetsGraph,
-      loadedTargetsStorageState = loadedTargetsStorage.toState(),
+      targetsStatusStorageState = targetsStatusStorage.toState(),
     )
 
-  internal fun loadStorage(storage: LoadedTargetsStorage) {
-    loadedTargetsStorage = storage
+  internal fun loadStorage(storage: TargetsStatusStorage) {
+    targetsStatusStorage = storage
   }
 
   public fun isPythonSupportEnabled(): Boolean = magicMetaModelProjectConfig.isPythonSupportEnabled
@@ -407,13 +378,13 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
   }
 }
 
-public data class LoadedTargetsStorageState(
+public data class TargetsStatusStorageState(
   public var allTargets: Collection<BuildTargetId> = emptyList(),
   public var loadedTargets: List<BuildTargetId> = emptyList(),
   public var notLoadedTargets: List<BuildTargetId> = emptyList(),
 )
 
-public class LoadedTargetsStorage private constructor(
+public class TargetsStatusStorage private constructor(
   private val allTargets: Collection<BuildTargetId>,
   private val loadedTargets: MutableSet<BuildTargetId>,
   private val notLoadedTargets: MutableSet<BuildTargetId>,
@@ -424,7 +395,7 @@ public class LoadedTargetsStorage private constructor(
     notLoadedTargets = allTargets.toMutableSet(),
   )
 
-  public constructor(state: LoadedTargetsStorageState) : this(
+  public constructor(state: TargetsStatusStorageState) : this(
     allTargets = state.allTargets,
     loadedTargets = state.loadedTargets.toMutableSet(),
     notLoadedTargets = state.notLoadedTargets.toMutableSet(),
@@ -463,15 +434,15 @@ public class LoadedTargetsStorage private constructor(
   public fun getNotLoadedTargets(): List<BuildTargetId> =
     notLoadedTargets.toList()
 
-  public fun toState(): LoadedTargetsStorageState =
-    LoadedTargetsStorageState(
+  public fun toState(): TargetsStatusStorageState =
+    TargetsStatusStorageState(
       allTargets,
       loadedTargets.toMutableList(),
       notLoadedTargets.toMutableList(),
     )
 
-  public fun copy(): LoadedTargetsStorage =
-    LoadedTargetsStorage(
+  public fun copy(): TargetsStatusStorage =
+    TargetsStatusStorage(
       allTargets = allTargets.toList(),
       loadedTargets = loadedTargets.toMutableSet(),
       notLoadedTargets = notLoadedTargets.toMutableSet(),

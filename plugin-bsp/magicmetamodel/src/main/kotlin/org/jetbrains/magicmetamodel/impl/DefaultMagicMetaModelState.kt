@@ -326,12 +326,10 @@ public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabil
 
 public data class DefaultMagicMetaModelState(
   public var facadeState: MagicMetaModelTemporaryFacadeState = MagicMetaModelTemporaryFacadeState(),
-  public var targets: List<BuildTargetInfoState> = emptyList(),
   public var libraries: List<LibraryState>? = null,
-  public var unloadedTargets: Map<BuildTargetId, ModuleState> = emptyMap(),
   public var targetsDetailsForDocumentProviderState: TargetsDetailsForDocumentProviderState =
     TargetsDetailsForDocumentProviderState(),
   public var overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>> = emptyMap(),
-  public var loadedTargetsStorageState: LoadedTargetsStorageState = LoadedTargetsStorageState(),
+  public var targetsStatusStorageState: TargetsStatusStorageState = TargetsStatusStorageState(),
   public var outputPathUris: List<String> = emptyList(),
 )
