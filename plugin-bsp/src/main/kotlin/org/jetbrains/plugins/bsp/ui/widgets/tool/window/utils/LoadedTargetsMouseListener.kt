@@ -15,11 +15,13 @@ import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DebugTestWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DebugWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.SideMenuRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
 import java.awt.Point
@@ -60,6 +62,7 @@ public class LoadedTargetsMouseListener(
     }
   }
 
+  @Suppress("CognitiveComplexMethod")
   private fun calculatePopupGroup(target: BuildTargetInfo): ActionGroup =
     DefaultActionGroup().apply {
       val debugType = target.inferDebugType()
@@ -70,24 +73,35 @@ public class LoadedTargetsMouseListener(
         addAction(BuildTargetAction(target.id))
       }
       if (target.capabilities.canRun) {
-        addAction(RunTargetAction(
-          targetId = target.id,
-          debugType = debugType,
-        ))
+        addAction(
+          RunTargetAction(
+            targetId = target.id,
+            debugType = debugType,
+          )
+        )
       }
       if (debugType != null) {
-        addAction(RunTargetAction(
-          targetId = target.id,
-          text = { BspPluginBundle.message("widget.debug.target.popup.message") },
-          icon = AllIcons.Actions.StartDebugger,
-          debugType = debugType,
-          useDebugMode = true,
-        ))
+        addAction(
+          RunTargetAction(
+            targetId = target.id,
+            text = { BspPluginBundle.message("widget.debug.target.popup.message") },
+            icon = AllIcons.Actions.StartDebugger,
+            debugType = debugType,
+            useDebugMode = true,
+          )
+        )
       }
-      if (target.capabilities.canRun && target.isJvmTarget()) {
-        addAction(RunWithLocalJvmRunnerAction(target))
-        addAction(DebugWithLocalJvmRunnerAction(target))
+      if (target.isJvmTarget()) {
+        if (target.capabilities.canRun) {
+          addAction(RunWithLocalJvmRunnerAction(target))
+          addAction(DebugWithLocalJvmRunnerAction(target))
+        }
+        if (target.capabilities.canTest) {
+          addAction(TestWithLocalJvmRunnerAction(target))
+          addAction(DebugTestWithLocalJvmRunnerAction(target))
+        }
       }
+
       if (target.capabilities.canTest) {
         addAction(TestTargetAction(targetId = target.id))
       }
@@ -115,6 +129,7 @@ public class LoadedTargetsMouseListener(
           targetId = it.id,
           debugType = it.inferDebugType(),
         ).prepareAndPerform(project, it.id)
+
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
