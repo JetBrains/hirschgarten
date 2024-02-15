@@ -10,25 +10,26 @@ import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.ui.configuration.LibrarySourceRootDetectorUtil
 import com.intellij.openapi.util.ActionCallback
-import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bazel.config.BazelPluginConstants
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.net.URI
 import kotlin.io.path.toPath
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library as MMMLibrary
 
 internal class BazelAttachSourcesProvider : AttachSourcesProvider {
-  private class BazelAttachSourcesAction : AttachSourcesProvider.AttachSourcesAction {
+  private class BazelAttachSourcesAction(private val project: Project) : AttachSourcesProvider.AttachSourcesAction {
     override fun getName(): String = BazelPluginBundle.message("sources.attach.action.text")
 
     override fun getBusyText(): String = BazelPluginBundle.message("sources.pending.text")
 
     override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback {
-      val mmmLibraries = getAllMMMLibraries(orderEntries)
-      val project = orderEntries.firstNotNullOf { it.ownerModule.project }
+      val mmmLibraries = getAllMMMLibraries(project)
       val fileManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
       val libraries = orderEntries.mapNotNull { it.library }.distinct()
       val modelsToCommit = libraries.mapNotNull { library ->
@@ -86,12 +87,18 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
   override fun getActions(
     orderEntries: MutableList<out LibraryOrderEntry>,
     psiFile: PsiFile,
-  ): List<AttachSourcesProvider.AttachSourcesAction> =
-    if (isApplicableForEntries(orderEntries)) listOf(BazelAttachSourcesAction())
+  ): List<AttachSourcesProvider.AttachSourcesAction> {
+    val project = orderEntries.firstNotNullOf { it.ownerModule.project }
+    return if (project.isBazelProject() && project.containsBazelSourcesForEntries(orderEntries))
+      listOf(BazelAttachSourcesAction(project))
     else emptyList()
+  }
 
-  private fun isApplicableForEntries(orderEntries: List<LibraryOrderEntry>): Boolean {
-    val mmmLibraries = getAllMMMLibraries(orderEntries)
+  private fun Project.isBazelProject() =
+    buildToolId == BazelPluginConstants.bazelBspBuildToolId
+
+  private fun Project.containsBazelSourcesForEntries(orderEntries: List<LibraryOrderEntry>): Boolean {
+    val mmmLibraries = getAllMMMLibraries(this)
     return orderEntries.any { it.library?.pickSourcesFromBazel(mmmLibraries)?.isNotEmpty() ?: false }
   }
 
@@ -100,11 +107,8 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
   }
 }
 
-private fun getAllMMMLibraries(orderEntries: List<LibraryOrderEntry>): List<org.jetbrains.magicmetamodel.impl.workspacemodel.Library> {
-  val project = orderEntries.firstNotNullOf { it.ownerModule.project }
-  val magicMetaModel = MagicMetaModelService.getInstance(project).value
-  return magicMetaModel.getLibraries()
-}
+private fun getAllMMMLibraries(project: Project): List<org.jetbrains.magicmetamodel.impl.workspacemodel.Library> =
+  MagicMetaModelService.getInstance(project).value.getLibraries()
 
 private fun Library.pickSourcesFromBazel(mmmLibraries: List<org.jetbrains.magicmetamodel.impl.workspacemodel.Library>) =
   mmmLibraries.filter { it.displayName == name }
