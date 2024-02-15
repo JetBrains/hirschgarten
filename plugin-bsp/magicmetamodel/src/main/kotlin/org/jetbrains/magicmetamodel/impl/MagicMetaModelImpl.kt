@@ -43,12 +43,14 @@ internal class DefaultMagicMetaModelDiff(
     val snapshot = workspaceModel.internal.getBuilderSnapshot()
     snapshot.builder.replaceBySource({ it.isBspRelevant() }, builder)
     val storageReplacement = snapshot.getStorageReplacement()
-    val success = writeAction { workspaceModel.internal.replaceProjectModel(storageReplacement) }
-    if (success) {
-      mmmInstance.loadStorage(mmmStorageReplacement)
-      targetLoadListeners.forEach { it() }
-    } else {
-      error("Project model is not updated successfully. Try `reload` action to recalculate the project model.")
+    writeAction {
+      if (workspaceModel.internal.replaceProjectModel(storageReplacement)) {
+        mmmInstance.loadStorage(mmmStorageReplacement)
+        // all the listeners do UI things so they must be invoked under EDT
+        targetLoadListeners.forEach { it() }
+      } else {
+        error("Project model is not updated successfully. Try `reload` action to recalculate the project model.")
+      }
     }
   }
 
