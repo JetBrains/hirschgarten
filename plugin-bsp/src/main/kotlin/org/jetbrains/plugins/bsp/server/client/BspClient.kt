@@ -32,6 +32,8 @@ public class BspClient(
   private val bspTestConsole: BspTargetTestConsole,
   private val timeoutHandler: TimeoutHandler,
 ) : BuildClient {
+  private val bspLogger = bspLogger<BspClient>()
+
   override fun onBuildShowMessage(params: ShowMessageParams) {
     onBuildEvent()
     addMessageToConsole(params.originId, params.message)
@@ -50,6 +52,7 @@ public class BspClient(
         val testStart = gson.fromJson(params.data as JsonObject, TestStart::class.java)
         val isSuite = if (params.message.isNullOrBlank()) false else params.message.take(3) == "<S>"
         bspTestConsole.startTest(isSuite, testStart.displayName)
+        bspLogger.info("Test ${testStart.displayName} started")
       }
 
       TaskStartDataKind.TEST_TASK -> {
@@ -70,9 +73,20 @@ public class BspClient(
         val testFinish = gson.fromJson(params.data as JsonObject, TestFinish::class.java)
         val isSuite = if (params.message.isNullOrBlank()) false else params.message.take(3) == "<S>"
         when (testFinish.status) {
-          TestStatus.FAILED -> bspTestConsole.failTest(testFinish.displayName, testFinish.message.orEmpty())
-          TestStatus.PASSED -> bspTestConsole.passTest(isSuite, testFinish.displayName)
-          else -> bspTestConsole.ignoreTest(testFinish.displayName)
+          TestStatus.FAILED -> {
+            bspTestConsole.failTest(testFinish.displayName, testFinish.message.orEmpty())
+            bspLogger.info("Test ${testFinish.displayName} failed with message: ${testFinish.message}")
+          }
+
+          TestStatus.PASSED -> {
+            bspTestConsole.passTest(isSuite, testFinish.displayName)
+            bspLogger.info("Test ${testFinish.displayName} passed")
+          }
+
+          else -> {
+            bspTestConsole.ignoreTest(testFinish.displayName)
+            bspLogger.info("Test ${testFinish.displayName} ignored")
+          }
         }
       }
 
@@ -111,6 +125,7 @@ public class BspClient(
     } else {
       bspSyncConsole.addMessage(originId ?: importSubtaskId, message)
     }
+    bspLogger.info(message)
   }
 
   private fun addDiagnosticToConsole(params: PublishDiagnosticsParams) {
@@ -125,6 +140,7 @@ public class BspClient(
           it.message,
           getMessageEventKind(it.severity),
         )
+        logDiagnosticBySeverity(it.severity, it.message)
       }
     }
   }
@@ -137,4 +153,13 @@ public class BspClient(
       DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
       null -> MessageEvent.Kind.SIMPLE
     }
+
+  private fun logDiagnosticBySeverity(severity: DiagnosticSeverity?, message: String) {
+    when (severity) {
+      DiagnosticSeverity.ERROR -> bspLogger.error(message)
+      DiagnosticSeverity.WARNING -> bspLogger.warn(message)
+      DiagnosticSeverity.INFORMATION -> bspLogger.info(message)
+      else -> bspLogger.trace(message)
+    }
+  }
 }
