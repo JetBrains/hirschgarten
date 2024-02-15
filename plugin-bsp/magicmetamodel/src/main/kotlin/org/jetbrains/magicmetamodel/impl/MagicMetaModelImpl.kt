@@ -42,18 +42,13 @@ internal class DefaultMagicMetaModelDiff(
   override suspend fun applyOnWorkspaceModel() {
     val snapshot = workspaceModel.internal.getBuilderSnapshot()
     snapshot.builder.replaceBySource({ it.isBspRelevant() }, builder)
-    writeAction {
-      if (workspaceModel.internal.replaceProjectModel(snapshot.getStorageReplacement())) {
-        mmmInstance.loadStorage(mmmStorageReplacement)
-        targetLoadListeners.forEach { it() }
-      } else {
-        error(
-          """
-            |Project model is not updated successfully.
-            |Try `reload` action to recalculate the project model.
-          """.trimMargin()
-        )
-      }
+    val storageReplacement = snapshot.getStorageReplacement()
+    val success = writeAction { workspaceModel.internal.replaceProjectModel(storageReplacement) }
+    if (success) {
+      mmmInstance.loadStorage(mmmStorageReplacement)
+      targetLoadListeners.forEach { it() }
+    } else {
+      error("Project model is not updated successfully. Try `reload` action to recalculate the project model.")
     }
   }
 
