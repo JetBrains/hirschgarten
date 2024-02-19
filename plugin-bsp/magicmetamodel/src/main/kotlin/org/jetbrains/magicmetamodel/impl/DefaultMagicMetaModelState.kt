@@ -275,14 +275,14 @@ public data class JavaAddendumState(
 public data class AndroidAddendumState(
   var androidSdkName: String = "",
   var androidTargetType: AndroidTargetType = AndroidTargetType.LIBRARY,
-  val manifest: URI? = null,
-  val resourceFolders: List<URI> = emptyList(),
+  var manifest: String? = null,
+  var resourceFolders: List<String> = emptyList(),
 ) : ConvertableFromState<AndroidAddendum> {
   override fun fromState(): AndroidAddendum = AndroidAddendum(
     androidSdkName = androidSdkName,
     androidTargetType = androidTargetType,
-    manifest = manifest,
-    resourceFolders = resourceFolders,
+    manifest = manifest?.let { URI.create(it) },
+    resourceFolders = resourceFolders.map { URI.create(it) },
   )
 }
 
@@ -313,8 +313,8 @@ public fun ScalaAddendum.toState(): ScalaAddendumState = ScalaAddendumState(
 public fun AndroidAddendum.toState(): AndroidAddendumState = AndroidAddendumState(
   androidSdkName = androidSdkName,
   androidTargetType = androidTargetType,
-  manifest = manifest,
-  resourceFolders = resourceFolders,
+  manifest = manifest?.toString(),
+  resourceFolders = resourceFolders.map { it.toString() },
 )
 
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(
