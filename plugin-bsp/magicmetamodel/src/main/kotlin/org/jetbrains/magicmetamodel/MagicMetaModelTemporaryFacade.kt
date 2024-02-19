@@ -30,7 +30,7 @@ public class MagicMetaModelTemporaryFacade {
   // it's here only temporarily, will be removed in the following PRs
   private val targetsStatusStorage: TargetsStatusStorage
 
-  private val targets: Map<BuildTargetId, BuildTargetInfo>
+  public val targets: Map<BuildTargetId, BuildTargetInfo>
   private val targetIdToModule: Map<BuildTargetId, Module>
 
   public constructor(

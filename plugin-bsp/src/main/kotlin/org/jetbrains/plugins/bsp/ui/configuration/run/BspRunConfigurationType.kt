@@ -10,7 +10,6 @@ import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
@@ -22,6 +21,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.server.tasks.RunTargetTask
+import org.jetbrains.plugins.bsp.ui.configuration.BspBaseRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import javax.swing.Icon
@@ -58,13 +58,12 @@ public class BspRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
     BspRunConfigurationType.ID
 }
 
-public class BspRunConfiguration(
+internal class BspRunConfiguration(
   project: Project,
   configurationFactory: ConfigurationFactory,
   name: String,
-) : RunConfigurationBase<String>(project, configurationFactory, name) {
-  public var debugType: BspDebugType? = null
-  public var targetUri: String? = null
+) : BspBaseRunConfiguration(project, configurationFactory, name) {
+  var debugType: BspDebugType? = null
 
   internal class BspCommandLineState(
     val project: Project,
