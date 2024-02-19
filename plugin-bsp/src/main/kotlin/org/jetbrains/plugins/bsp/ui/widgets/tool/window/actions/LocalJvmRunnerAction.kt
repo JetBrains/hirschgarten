@@ -2,15 +2,10 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
 import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.execution.Executor
-import com.intellij.execution.RunManager
+import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.application.ApplicationConfiguration
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
-import com.intellij.execution.runners.ExecutionEnvironmentBuilder
-import com.intellij.execution.runners.ProgramRunner
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
@@ -22,9 +17,9 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspProjectModuleBuildTasksTracker
-import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.orDefault
 import javax.swing.Icon
@@ -34,17 +29,50 @@ internal abstract class LocalJvmRunnerAction(
   protected val targetInfo: BuildTargetInfo,
   text: () -> String,
   icon: Icon? = null,
-) : SuspendableAction(text, icon) {
+  private val isDebugMode: Boolean = false,
+) : BaseRunnerAction(targetInfo, text, icon, isDebugMode) {
   abstract fun getEnvironment(project: Project): JvmEnvironmentItem?
 
-  abstract fun getExecutor(): Executor
-
-  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+  override suspend fun getRunnerSettings(
+    project: Project,
+    buildTargetInfo: BuildTargetInfo,
+  ): RunnerAndConfigurationSettings? {
     val moduleNameProvider = project.findModuleNameProvider().orDefault()
-    val module = project.modules.find { it.name == moduleNameProvider(targetInfo) } ?: return
+    val module = project.modules.find { it.name == moduleNameProvider(targetInfo) } ?: return null
 
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    queryJvmEnvironment(project, bspSyncConsole)?.let { runWithEnvironment(it, targetInfo.id, module, project) }
+    val environment = queryJvmEnvironment(project, bspSyncConsole) ?: return null
+    return calculateConfigurationSettings(environment, module, project)
+  }
+
+  private fun calculateConfigurationSettings(
+    environment: JvmEnvironmentItem,
+    module: Module,
+    project: Project,
+  ): RunnerAndConfigurationSettings? {
+    val mainClass =
+      environment.mainClasses?.firstOrNull() ?: return null // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
+    val applicationConfiguration = ApplicationConfiguration(
+      calculateConfigurationName(targetInfo), project
+    ).apply {
+      setModule(module)
+      mainClassName = mainClass.className
+      programParameters = mainClass.arguments.joinToString(" ")
+      putUserData(jvmEnvironment, environment)
+      putUserData(prioritizeIdeClasspath, BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
+    }
+    val runManager = RunManagerImpl.getInstanceImpl(project)
+    return RunnerAndConfigurationSettingsImpl(runManager, applicationConfiguration)
+  }
+
+  private fun calculateConfigurationName(targetInfo: BuildTargetInfo): String {
+    val targetDisplayName = targetInfo.getBuildTargetName()
+    val actionNameKey = when {
+      isDebugMode -> "target.debug.with.jvm.runner.config.name"
+      this is TestWithLocalJvmRunnerAction -> "target.test.with.jvm.runner.config.name"
+      else -> "target.run.with.jvm.runner.config.name"
+    }
+    return BspPluginBundle.message(actionNameKey, targetDisplayName)
   }
 
   private suspend fun queryJvmEnvironment(
@@ -82,39 +110,6 @@ internal abstract class LocalJvmRunnerAction(
         )
       null
     }
-
-  protected open suspend fun runWithEnvironment(
-    environment: JvmEnvironmentItem,
-    uri: String,
-    module: Module,
-    project: Project,
-  ) {
-    environment.mainClasses
-      ?.firstOrNull() // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
-      ?.let { mainClass ->
-        val applicationConfiguration = ApplicationConfiguration(
-          BspPluginBundle.message("console.task.run.with.jvm.env.config.name", uri), project
-        ).apply {
-          setModule(module)
-          mainClassName = mainClass.className
-          programParameters = mainClass.arguments.joinToString(" ")
-          putUserData(jvmEnvironment, environment)
-          putUserData(prioritizeIdeClasspath, BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
-        }
-        val runManager = RunManagerImpl.getInstanceImpl(project)
-        val settings = RunnerAndConfigurationSettingsImpl(runManager, applicationConfiguration)
-        RunManager.getInstance(project).setTemporaryConfiguration(settings)
-        val runExecutor = getExecutor()
-        withContext(Dispatchers.EDT) {
-          ProgramRunner.getRunner(runExecutor.id, settings.configuration)?.let { runner ->
-            val executionEnvironment = ExecutionEnvironmentBuilder(project, runExecutor)
-              .runnerAndSettings(runner, settings)
-              .build()
-            runner.execute(executionEnvironment)
-          }
-        }
-      }
-  }
 
   companion object {
     val jvmEnvironment = Key<JvmEnvironmentItem>("jvmEnvironment")

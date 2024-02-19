@@ -2,10 +2,9 @@ package org.jetbrains.plugins.bsp.ui.gutters
 
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.Separator
-import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
@@ -13,15 +12,10 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
-import org.jetbrains.magicmetamodel.DocumentTargetsDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
-import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 
 private class BspLineMakerInfo(text: String, actions: List<AnAction>) :
   RunLineMarkerContributor.Info(null, actions.toTypedArray(), { text }) {
@@ -50,47 +44,29 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
       val magicMetaModel = MagicMetaModelService.getInstance(project).value
       val documentId = TextDocumentIdentifier(url)
       val documentTargetDetails = magicMetaModel.getTargetsDetailsForDocument(documentId)
-      val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
-
-      return if (isTest()) documentTargetDetails.calculateTestLineMarkerInfo(assetsExtension.presentableName)
-      else documentTargetDetails.calculateRunLineMarkerInfo(assetsExtension.presentableName)
+      val targetsMap = magicMetaModel.facade.targets
+      val loadedTargetInfo = documentTargetDetails.loadedTargetId?.let { targetsMap[it] }
+      val notLoadedTargetInfos = documentTargetDetails.notLoadedTargetsIds.mapNotNull { targetsMap[it] }
+      calculateLineMarkerInfo(loadedTargetInfo, notLoadedTargetInfos)
     }
 
-  private fun PsiElement.isTest(): Boolean {
-    val fileIndex = ProjectRootManager.getInstance(project).fileIndex
-
-    return fileIndex.isInTestSourceContent(containingFile.virtualFile)
-  }
-
-  private fun DocumentTargetsDetails.calculateTestLineMarkerInfo(buildToolPresentableName: String): BspLineMakerInfo =
-    BspLineMakerInfo(
-      text = "Run Test",
-      actions = this.calculateActions { toTestTargetAction(it, buildToolPresentableName) }
-    )
-
-  private fun toTestTargetAction(targetId: BuildTargetId, buildToolPresentableName: String): TestTargetAction =
-    TestTargetAction(
-      targetId = targetId,
-      text = { "Run '$targetId' using $buildToolPresentableName" },
-      icon = AllIcons.RunConfigurations.TestState.Run
-    )
-
-  private fun DocumentTargetsDetails.calculateRunLineMarkerInfo(buildToolPresentableName: String): BspLineMakerInfo =
+  private fun calculateLineMarkerInfo(
+    loadedTargetInfo: BuildTargetInfo?,
+    notLoadedTargetInfos: List<BuildTargetInfo>,
+  ): Info =
     BspLineMakerInfo(
       text = "Run",
-      actions = this.calculateActions { toRunTargetAction(it, buildToolPresentableName) }
+      actions = calculateEligibleActionsForTargets(loadedTargetInfo, notLoadedTargetInfos)
     )
 
-  private fun toRunTargetAction(targetId: BuildTargetId, buildToolPresentableName: String): RunTargetAction =
-    RunTargetAction(
-      targetId = targetId,
-      text = { "Run '$targetId' using $buildToolPresentableName" },
-      icon = AllIcons.RunConfigurations.TestState.Run
-    )
+  private fun calculateEligibleActionsForTargets(
+    loadedTargetInfo: BuildTargetInfo?,
+    notLoadedTargetInfos: List<BuildTargetInfo>,
+  ) = loadedTargetInfo.calculateEligibleActions() +
+    Separator() +
+    notLoadedTargetInfos.flatMap { it.calculateEligibleActions() }
 
-  private fun DocumentTargetsDetails.calculateActions(mapping: (BuildTargetId) -> AnAction): List<AnAction> =
-    listOfNotNull(
-      loadedTargetId?.let { mapping(it) },
-      Separator(),
-    ) + notLoadedTargetsIds.map { mapping(it) }
+  private fun BuildTargetInfo?.calculateEligibleActions(): List<AnAction> =
+    if (this == null) emptyList()
+    else DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList()
 }

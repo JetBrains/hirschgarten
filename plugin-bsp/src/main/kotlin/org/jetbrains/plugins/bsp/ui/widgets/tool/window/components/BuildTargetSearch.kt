@@ -26,7 +26,7 @@ import javax.swing.SwingConstants
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-private fun BuildTargetInfo.getBuildTargetName(): String =
+internal fun BuildTargetInfo.getBuildTargetName(): String =
   this.displayName ?: this.id
 
 public class BuildTargetSearch(

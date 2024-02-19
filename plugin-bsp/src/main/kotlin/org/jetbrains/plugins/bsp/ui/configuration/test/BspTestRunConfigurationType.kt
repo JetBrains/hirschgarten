@@ -6,7 +6,6 @@ import com.intellij.execution.Executor
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
@@ -17,11 +16,12 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.server.tasks.TestTargetTask
+import org.jetbrains.plugins.bsp.ui.configuration.BspBaseRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import javax.swing.Icon
 
-public class BspTestRunConfigurationType(project: Project) : ConfigurationType {
+internal class BspTestRunConfigurationType(project: Project) : ConfigurationType {
   private val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
 
   override fun getDisplayName(): String =
@@ -37,12 +37,12 @@ public class BspTestRunConfigurationType(project: Project) : ConfigurationType {
   override fun getConfigurationFactories(): Array<ConfigurationFactory> =
     arrayOf(BspTestRunFactory(this))
 
-  public companion object {
-    public const val ID: String = "BspTestRunConfiguration"
+  companion object {
+    const val ID: String = "BspTestRunConfiguration"
   }
 }
 
-public class BspTestRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
+internal class BspTestRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
   override fun createTemplateConfiguration(project: Project): RunConfiguration {
     val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
     return BspTestRunConfiguration(project, this, BspPluginBundle.message("test.config.name", assetsExtension.presentableName))
@@ -52,10 +52,8 @@ public class BspTestRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
     BspTestRunConfigurationType.ID
 }
 
-public class BspTestRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :
-  RunConfigurationBase<String>(project, configurationFactory, name) {
-  public var targetUri: String? = null
-
+internal class BspTestRunConfiguration(project: Project, configurationFactory: ConfigurationFactory, name: String) :
+  BspBaseRunConfiguration(project, configurationFactory, name) {
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     return RunProfileState { executor2, _ ->
 

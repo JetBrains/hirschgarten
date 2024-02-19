@@ -2,32 +2,42 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.execution.configurations.RunConfiguration
-import com.intellij.icons.AllIcons
 import com.intellij.openapi.project.Project
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationType
-import javax.swing.Icon
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 
 internal class RunTargetAction(
-  targetId: BuildTargetId,
-  text: () -> String = { BspPluginBundle.message("widget.run.target.popup.message") },
-  icon: Icon = AllIcons.Actions.Execute,
+  targetInfo: BuildTargetInfo,
+  text: (() -> String)? = null,
   private val debugType: BspDebugType? = null,
-  private val useDebugMode: Boolean = false,
-) : SideMenuRunnerAction(targetId, text, icon, useDebugExecutor = useDebugMode) {
+  isDebugAction: Boolean = false,
+  verboseText: Boolean = false,
+) : BspRunnerAction(
+  targetInfo = targetInfo,
+  text = {
+    if (text != null) text()
+    else if (isDebugAction) BspPluginBundle.messageVerbose(
+      "target.debug.action.text",
+      verboseText,
+      targetInfo.getBuildTargetName()
+    )
+    else BspPluginBundle.messageVerbose(
+      "target.run.action.text",
+      verboseText,
+      targetInfo.getBuildTargetName()
+    )
+  },
+  isDebugAction = isDebugAction,
+) {
   override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType(project)
 
-  override fun prepareRunConfiguration(configuration: RunConfiguration) {
-    (configuration as? BspRunConfiguration)?.let {
+  override fun prepareRunConfiguration(runConfiguration: RunConfiguration) {
+    (runConfiguration as? BspRunConfiguration)?.let {
       it.debugType = this.debugType
     }
-  }
-
-  override fun getName(target: BuildTargetId): String {
-    val messageKey = if (useDebugMode) "console.task.debug.config.name" else "console.task.run.config.name"
-    return BspPluginBundle.message(messageKey, target)
   }
 }

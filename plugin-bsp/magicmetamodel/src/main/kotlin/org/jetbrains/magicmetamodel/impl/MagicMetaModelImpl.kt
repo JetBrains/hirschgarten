@@ -73,7 +73,7 @@ internal class DefaultMagicMetaModelDiff(
  */
 public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagicMetaModelState> {
   private val magicMetaModelProjectConfig: MagicMetaModelProjectConfig
-  private val facade: MagicMetaModelTemporaryFacade
+  public val facade: MagicMetaModelTemporaryFacade
 
   private val overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>>
   private var targetsStatusStorage: TargetsStatusStorage
