@@ -102,8 +102,6 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
   target: BuildTargetInfo,
   verboseText: Boolean,
 ): DefaultActionGroup {
-  // TODO: update logic to enable/disable debug action after this ticket:
-  // https://youtrack.jetbrains.com/issue/BAZEL-862/Correct-canDebug-capability-on-the-server-side
   val debugType = target.inferDebugType()
 
   if (target.capabilities.canRun) {
@@ -120,7 +118,7 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
     addAction(TestTargetAction(target, verboseText = verboseText))
   }
 
-  if (debugType != null) {
+  if (target.capabilities.canDebug && debugType != null) {
     addAction(
       RunTargetAction(
         targetInfo = target,
@@ -134,11 +132,13 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
   if (target.isJvmTarget()) {
     if (target.capabilities.canRun) {
       addAction(RunWithLocalJvmRunnerAction(target, verboseText = verboseText))
-      addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
+      if (target.capabilities.canDebug)
+        addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
     }
     if (target.capabilities.canTest) {
       addAction(TestWithLocalJvmRunnerAction(target, verboseText = verboseText))
-      addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
+      if (target.capabilities.canDebug)
+        addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
     }
   }
   return this
