@@ -9,7 +9,9 @@ import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
+import org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.StickyTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
@@ -39,6 +41,8 @@ private class ListsUpdater(
   init {
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
     val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
+    val invalidTargets =
+      InvalidTargetsProviderExtension.ep.withBuildToolId(project.buildToolId)?.provideInvalidTargets(project).orEmpty()
 
     loadedTargetsPanel =
       BspPanelComponent(
@@ -47,7 +51,7 @@ private class ListsUpdater(
         buildToolId = project.buildToolId,
         toolName = assetsExtension.presentableName,
         targets = magicMetaModel.getAllLoadedTargets(),
-        invalidTargets = magicMetaModel.getAllInvalidTargets(),
+        invalidTargets = invalidTargets,
         searchBarPanel = searchBarPanel,
       )
     loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it, project) }

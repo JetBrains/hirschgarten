@@ -1,7 +1,6 @@
 package org.jetbrains.magicmetamodel
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
@@ -30,7 +29,6 @@ class MagicMetaModelTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList())
       )
 
       // when

@@ -1,10 +1,10 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
@@ -46,12 +46,12 @@ public class BspPanelComponent private constructor(
     buildToolId: BuildToolId,
     toolName: String,
     targets: Collection<BuildTargetInfo>,
-    invalidTargets: Collection<BuildTargetId>,
+    invalidTargets: List<BuildTargetIdentifier>,
     searchBarPanel: SearchBarPanel,
   ) : this(
     targetIcon = targetIcon,
     toolName = toolName,
-    targetTree = BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, targets, invalidTargets),
+    targetTree = BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, targets, invalidTargets.map { it.uri }),
     targetSearch = BuildTargetSearch(targetIcon, buildToolId, toolName, targets, searchBarPanel),
   )
 

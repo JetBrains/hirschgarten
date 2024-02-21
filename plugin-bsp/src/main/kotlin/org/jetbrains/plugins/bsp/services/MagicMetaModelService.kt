@@ -7,7 +7,6 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -46,7 +45,6 @@ public class MagicMetaModelService(private val project: Project) :
       outputPathUris = emptyList(),
       libraries = emptyList(),
       scalacOptions = emptyList(),
-      invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       defaultJdkName = null,
     )
 
