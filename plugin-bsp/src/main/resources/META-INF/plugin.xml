@@ -43,6 +43,12 @@
     <extensionPoint name="buildToolWindowTargetActionProviderExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension"
                     dynamic="true"/>
+    <extensionPoint name="invalidTargetsProviderExtension"
+                    interface="org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension"
+                    dynamic="true"/>
+    <extensionPoint name="projectSyncHook"
+                    interface="org.jetbrains.plugins.bsp.flow.open.ProjectSyncHook"
+                    dynamic="true"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bsp">

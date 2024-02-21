@@ -16,7 +16,6 @@ import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bsp.LibraryItem
 import org.jetbrains.bsp.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
@@ -74,7 +73,6 @@ public data class ProjectDetails(
   val outputPathUris: List<String>,
   val libraries: List<LibraryItem>?,
   val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
-  val invalidTargets: WorkspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
   var defaultJdkName: String? = null,
 )
 
@@ -164,11 +162,6 @@ public interface MagicMetaModel {
    * Get all currently not loaded targets.
    */
   public fun getAllNotLoadedTargets(): List<BuildTargetInfo>
-
-  /**
-   * Get ids of all currently invalid targets.
-   */
-  public fun getAllInvalidTargets(): List<BuildTargetId>
 
   public fun clear()
 

@@ -15,7 +15,6 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bsp.DirectoryItem
 import org.jetbrains.bsp.LibraryItem
 import org.jetbrains.bsp.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff
@@ -82,8 +81,10 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   // TODO (BAZEL-831): prob all the following fields should be removed from MMM
   private val libraries: List<Library>?
+
+  // out of mmm
   private val directories: WorkspaceDirectoriesResult?
-  private val invalidTargets: WorkspaceInvalidTargetsResult
+
   private val outputPathUris: List<String>
 
   internal constructor(
@@ -109,7 +110,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
     }
 
     this.directories = projectDetails.directories
-    this.invalidTargets = projectDetails.invalidTargets
 
     this.outputPathUris = projectDetails.outputPathUris
 
@@ -134,7 +134,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
     this.libraries = state.libraries?.map { it.fromState() }
     this.directories = null // workspace model keeps info about them
-    this.invalidTargets = WorkspaceInvalidTargetsResult(emptyList())
 
     this.outputPathUris = state.outputPathUris
   }
@@ -331,9 +330,6 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   override fun getAllNotLoadedTargets(): List<BuildTargetInfo> =
     targetsStatusStorage.getNotLoadedTargets().mapNotNull { facade.getTargetInfoForTargetId(it) }
-
-  override fun getAllInvalidTargets(): List<BuildTargetId> =
-    invalidTargets.targets.map { it.uri }
 
   override fun clear() {
     val builderSnapshot = magicMetaModelProjectConfig.workspaceModel.internal.getBuilderSnapshot()

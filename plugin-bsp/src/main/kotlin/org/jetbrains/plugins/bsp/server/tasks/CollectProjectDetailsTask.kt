@@ -28,7 +28,6 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.BazelBuildServerCapabilities
 import org.jetbrains.bsp.DirectoryItem
 import org.jetbrains.bsp.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.WorkspaceLibrariesResult
 import org.jetbrains.bsp.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.utils.extractJvmBuildTarget
@@ -50,15 +49,13 @@ import org.jetbrains.plugins.bsp.android.AndroidSdk
 import org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension
 import org.jetbrains.plugins.bsp.android.androidSdkGetterExtension
 import org.jetbrains.plugins.bsp.android.androidSdkGetterExtensionExists
-import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
-import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
+import org.jetbrains.plugins.bsp.flow.open.projectSyncHook
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
@@ -67,7 +64,6 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import org.jetbrains.plugins.bsp.utils.SdkUtils
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
@@ -517,11 +513,6 @@ public fun calculateProjectDetailsWithCapabilities(
       server.workspaceDirectories()
     }
 
-    val invalidTargetsFuture =
-      query(buildServerCapabilities.workspaceInvalidTargetsProvider, "workspace/invalidTargets") {
-        server.workspaceInvalidTargets()
-      }
-
     // We use javacOptions only do build dependency tree based on classpath
     // If workspace/libraries endpoint is available (like in bazel-bsp)
     // we don't need javacOptions at all. For other servers (like SBT)
@@ -550,14 +541,7 @@ public fun calculateProjectDetailsWithCapabilities(
       server.buildTargetOutputPaths(OutputPathsParams(allTargetsIds))
     }
 
-    val invalidTargets = invalidTargetsFuture?.get() ?: WorkspaceInvalidTargetsResult(emptyList())
-    if (invalidTargets.targets.isNotEmpty()) {
-      val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
-      BspBalloonNotifier.warn(
-        BspPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
-        BspPluginBundle.message("widget.collect.targets.not.imported.properly.message", assetsExtension.presentableName)
-      )
-    }
+    project.projectSyncHook?.onSync(project, server)
 
     return ProjectDetails(
       targetsId = allTargetsIds,
@@ -572,7 +556,6 @@ public fun calculateProjectDetailsWithCapabilities(
       libraries = libraries?.libraries,
       directories = directoriesFuture?.get()
         ?: WorkspaceDirectoriesResult(listOf(DirectoryItem(projectRootDir)), emptyList()),
-      invalidTargets = invalidTargets,
     )
   } catch (e: Exception) {
     // TODO the type xd

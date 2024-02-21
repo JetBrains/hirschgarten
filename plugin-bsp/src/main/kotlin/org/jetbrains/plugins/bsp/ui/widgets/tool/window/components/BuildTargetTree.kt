@@ -32,7 +32,7 @@ public class BuildTargetTree(
   private val invalidTargetIcon: Icon,
   private val buildToolId: BuildToolId,
   private val targets: Collection<BuildTargetInfo>,
-  private val invalidTargets: Collection<BuildTargetId>,
+  private val invalidTargets: List<BuildTargetId>,
   private val labelHighlighter: (String) -> String = { it },
 ) : BuildTargetContainer {
   private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
