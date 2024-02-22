@@ -12,6 +12,7 @@ import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import com.goide.project.GoModuleSettings
 import com.goide.sdk.GoSdk
 import com.goide.sdk.GoSdkService
 import com.intellij.build.events.impl.FailureResultImpl
@@ -21,8 +22,9 @@ import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsPr
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.ide.progress.withBackgroundProgress
-import com.intellij.platform.util.progress.indeterminateStep
 import com.intellij.platform.util.progress.reportSequentialProgress
+import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -162,11 +164,11 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         }
       }
 
-        if (BspFeatureFlags.isGoSupportEnabled && goSdkExtensionExists()) {
-            indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
-                calculateAllGoSdkInfosSubtask(projectDetails)
-            }
-        }
+      if (BspFeatureFlags.isGoSupportEnabled && goSdkExtensionExists()) {
+          reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
+              calculateAllGoSdkInfosSubtask(projectDetails)
+          }
+      }
 
       reporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.update.internal.model")) {
         updateInternalModelSubtask(projectDetails)
@@ -407,6 +409,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     if (BspFeatureFlags.isGoSupportEnabled) {
       addBspFetchedGoSdks()
+      enableGoSupportInTargets()
     }
   }
 
@@ -487,17 +490,23 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       withSubtask("add-bsp-fetched-go-sdks", BspPluginBundle.message("console.task.model.add.go.fetched.sdks")) {
         logPerformanceSuspend("add-bsp-fetched-go-sdks") {
           val goSdkService = GoSdkService.getInstance(project)
-//          TODO: service should add only one sdk
-          goSdks?.forEach { extension.addGoSdk(it, goSdkService) }
-//          TODO: Access is allowed from Event Dispatch Thread (EDT) only
-//          val workspaceModel = WorkspaceModel.getInstance(project)
-//          workspaceModel.currentSnapshot.entities(ModuleEntity::class.java).forEach { moduleEntity ->
-//              moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
-//                writeAction {
-//                  GoModuleSettings.getInstance(module).isGoSupportEnabled = true
-//                }
-//            }
-//          }
+          goSdks?.forEach { writeAction { extension.addGoSdk(it, goSdkService) } }
+        }
+      }
+    }
+
+  private suspend fun enableGoSupportInTargets() =
+    goSdkExtension()?.let { extension ->
+      withSubtask("enable-go-support-in-targets", BspPluginBundle.message("console.task.model.add.go.support.in.targets")) {
+        logPerformanceSuspend("enable-go-support-in-targets") {
+          val workspaceModel = WorkspaceModel.getInstance(project)
+          workspaceModel.currentSnapshot.entities(ModuleEntity::class.java).forEach { moduleEntity ->
+            moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
+              writeAction {
+                GoModuleSettings.getInstance(module).isGoSupportEnabled = true
+              }
+            }
+          }
         }
       }
     }
