@@ -6,19 +6,15 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.intellij.workspaceModel.ide.getInstance
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
+import org.jetbrains.plugins.bsp.android.androidSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
-import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 
 @State(
@@ -49,7 +45,6 @@ public class MagicMetaModelService(private val project: Project) :
       outputPathUris = emptyList(),
       libraries = emptyList(),
       scalacOptions = emptyList(),
-      invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       defaultJdkName = null,
     )
 
@@ -63,7 +58,6 @@ public class MagicMetaModelService(private val project: Project) :
     value.copyAllTargetLoadListenersTo(newMMM)
 
     // TODO it should be init!
-    value.clear()
     value = newMMM
   }
 
@@ -76,22 +70,26 @@ public class MagicMetaModelService(private val project: Project) :
 
   private fun calculateProjectConfig(project: Project): MagicMetaModelProjectConfig {
     val workspaceModel = WorkspaceModel.getInstance(project)
-    val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
+    val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
     val moduleNameProvider = project.findModuleNameProvider()
     val projectBasePath = project.rootDir.toNioPath()
 
-    val isPythonSupportEnabled = BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()
+    val isPythonSupportEnabled = BspFeatureFlags.isPythonSupportEnabled
 
-    val hasDefaultPythonInterpreter = pythonSdkGetterExtension()?.hasDetectedPythonSdk() == true
+    val hasDefaultPythonInterpreter = false
+
+    val isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()
 
     return MagicMetaModelProjectConfig(
       workspaceModel,
       virtualFileUrlManager,
       moduleNameProvider,
       projectBasePath,
+      project,
       isPythonSupportEnabled,
-      hasDefaultPythonInterpreter
+      hasDefaultPythonInterpreter,
+      isAndroidSupportEnabled,
     )
   }
 

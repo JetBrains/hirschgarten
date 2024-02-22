@@ -2,19 +2,24 @@
 
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
+import com.intellij.platform.workspace.jps.entities.DependencyScope
+import com.intellij.platform.workspace.jps.entities.LibraryDependency
 import com.intellij.platform.workspace.jps.entities.LibraryId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
-import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
+import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
+import com.intellij.platform.workspace.jps.entities.SdkDependency
+import com.intellij.platform.workspace.jps.entities.SdkId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.workspacemodel.storage.BspEntitySource
+import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -22,8 +27,8 @@ import org.junit.jupiter.api.Test
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
   private val defaultDependencies = listOf(
-    ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
-    ModuleDependencyItem.ModuleSourceDependency,
+    SdkDependency(SdkId("11", "JavaSDK")),
+    ModuleSourceDependency,
   )
 
   private lateinit var moduleEntityUpdater: ModuleEntityUpdater
@@ -34,7 +39,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
     moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, defaultDependencies)
   }
 
@@ -45,18 +50,18 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
       name = "module1",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "module2",
         ),
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "module3",
         ),
       ),
       librariesDependencies = listOf(
-        LibraryDependency(
+        IntermediateLibraryDependency(
           libraryName = "lib1",
         ),
-        LibraryDependency(
+        IntermediateLibraryDependency(
           libraryName = "lib2",
         ),
       ),
@@ -72,36 +77,36 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
       moduleEntity = ModuleEntity(
         name = "module1",
         dependencies = listOf(
-          ModuleDependencyItem.Exportable.ModuleDependency(
+          ModuleDependency(
             module = ModuleId("module2"),
             exported = true,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+            scope = DependencyScope.COMPILE,
             productionOnTest = true,
           ),
-          ModuleDependencyItem.Exportable.ModuleDependency(
+          ModuleDependency(
             module = ModuleId("module3"),
             exported = true,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+            scope = DependencyScope.COMPILE,
             productionOnTest = true,
           ),
-          ModuleDependencyItem.Exportable.LibraryDependency(
+          LibraryDependency(
             library = LibraryId(
               name = "lib1",
               tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
             ),
             exported = true,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+            scope = DependencyScope.COMPILE,
           ),
-          ModuleDependencyItem.Exportable.LibraryDependency(
+          LibraryDependency(
             library = LibraryId(
               name = "lib2",
               tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
             ),
             exported = true,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+            scope = DependencyScope.COMPILE,
           ),
-          ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
-          ModuleDependencyItem.ModuleSourceDependency,
+          SdkDependency(SdkId("11", "JavaSDK")),
+          ModuleSourceDependency,
         ),
         entitySource = BspEntitySource,
       ) {
@@ -120,18 +125,18 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
       name = "module1",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "module2",
         ),
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "module3",
         ),
       ),
       librariesDependencies = listOf(
-        LibraryDependency(
+        IntermediateLibraryDependency(
           libraryName = "lib1",
         ),
-        LibraryDependency(
+        IntermediateLibraryDependency(
           libraryName = "lib2",
         ),
       ),
@@ -141,12 +146,12 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
       name = "module2",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency(
+        IntermediateModuleDependency(
           moduleName = "module3",
         ),
       ),
       librariesDependencies = listOf(
-        LibraryDependency(
+        IntermediateLibraryDependency(
           libraryName = "lib1",
         ),
       ),
@@ -164,36 +169,36 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
       moduleEntity = ModuleEntity(
         name = "module1",
         dependencies = listOf(
-          ModuleDependencyItem.Exportable.ModuleDependency(
+          ModuleDependency(
             module = ModuleId("module2"),
             exported = true,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+            scope = DependencyScope.COMPILE,
             productionOnTest = true,
           ),
-          ModuleDependencyItem.Exportable.ModuleDependency(
+          ModuleDependency(
             module = ModuleId("module3"),
             exported = true,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+            scope = DependencyScope.COMPILE,
             productionOnTest = true,
           ),
-          ModuleDependencyItem.Exportable.LibraryDependency(
+          LibraryDependency(
             library = LibraryId(
               name = "lib1",
               tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
             ),
             exported = true,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+            scope = DependencyScope.COMPILE,
           ),
-          ModuleDependencyItem.Exportable.LibraryDependency(
+          LibraryDependency(
             library = LibraryId(
               name = "lib2",
               tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
             ),
             exported = true,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+            scope = DependencyScope.COMPILE,
           ),
-          ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
-          ModuleDependencyItem.ModuleSourceDependency,
+          SdkDependency(SdkId("11", "JavaSDK")),
+          ModuleSourceDependency,
         ),
         entitySource = BspEntitySource,
       ) {
@@ -204,22 +209,22 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
       moduleEntity = ModuleEntity(
         name = "module2",
         dependencies = listOf(
-          ModuleDependencyItem.Exportable.ModuleDependency(
+          ModuleDependency(
             module = ModuleId("module3"),
             exported = true,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+            scope = DependencyScope.COMPILE,
             productionOnTest = true,
           ),
-          ModuleDependencyItem.Exportable.LibraryDependency(
+          LibraryDependency(
             library = LibraryId(
               name = "lib1",
               tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module2")),
             ),
             exported = true,
-            scope = ModuleDependencyItem.DependencyScope.COMPILE,
+            scope = DependencyScope.COMPILE,
           ),
-          ModuleDependencyItem.SdkDependency("11", "JavaSDK"),
-          ModuleDependencyItem.ModuleSourceDependency,
+          SdkDependency(SdkId("11", "JavaSDK")),
+          ModuleSourceDependency,
         ),
         entitySource = BspEntitySource,
       ) {

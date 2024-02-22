@@ -3,14 +3,18 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
-import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
+import com.intellij.platform.workspace.jps.entities.DependencyScope
+import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
+import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
+import com.intellij.platform.workspace.jps.entities.SdkDependency
+import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
@@ -19,7 +23,7 @@ import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.workspacemodel.storage.BspEntitySource
+import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -41,10 +45,10 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           name = "module1",
           type = "PYTHON_MODULE",
           modulesDependencies = listOf(
-            ModuleDependency(
+            IntermediateModuleDependency(
               moduleName = "module2",
             ),
-            ModuleDependency(
+            IntermediateModuleDependency(
               moduleName = "module3",
             ),
           ),
@@ -71,9 +75,11 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val resourceRoots = listOf(
           ResourceRoot(
             resourcePath = resourcePath1,
+            rootType = "",
           ),
           ResourceRoot(
             resourcePath = resourcePath2,
+            rootType = "",
           ),
         )
 
@@ -98,20 +104,20 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             name = "module1",
             entitySource = BspEntitySource,
             dependencies = listOf(
-              ModuleDependencyItem.Exportable.ModuleDependency(
+              ModuleDependency(
                 module = ModuleId("module2"),
                 exported = true,
-                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                scope = DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.Exportable.ModuleDependency(
+              ModuleDependency(
                 module = ModuleId("module3"),
                 exported = true,
-                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                scope = DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.ModuleSourceDependency,
-              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
+              ModuleSourceDependency,
+              SdkDependency(SdkId("fake-interpreter-name-3", "PythonSDK")),
             ),
           ) {
             type = "PYTHON_MODULE"
@@ -202,10 +208,10 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           name = "module1",
           type = "PYTHON_MODULE",
           modulesDependencies = listOf(
-            ModuleDependency(
+            IntermediateModuleDependency(
               moduleName = "module2",
             ),
-            ModuleDependency(
+            IntermediateModuleDependency(
               moduleName = "module3",
             ),
           ),
@@ -230,9 +236,11 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val resourceRoots1 = listOf(
           ResourceRoot(
             resourcePath = resourcePath11,
+            rootType = "",
           ),
           ResourceRoot(
             resourcePath = resourcePath12,
+            rootType = "",
           ),
         )
 
@@ -250,7 +258,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           name = "module2",
           type = "PYTHON_MODULE",
           modulesDependencies = listOf(
-            ModuleDependency(
+            IntermediateModuleDependency(
               moduleName = "module3",
             ),
           ),
@@ -269,6 +277,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
         val resourceRoots2 = listOf(
           ResourceRoot(
             resourcePath = resourcePath21,
+            rootType = "",
           ),
         )
 
@@ -295,20 +304,20 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             name = "module1",
             entitySource = BspEntitySource,
             dependencies = listOf(
-              ModuleDependencyItem.Exportable.ModuleDependency(
+              ModuleDependency(
                 module = ModuleId("module2"),
                 exported = true,
-                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                scope = DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.Exportable.ModuleDependency(
+              ModuleDependency(
                 module = ModuleId("module3"),
                 exported = true,
-                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                scope = DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
-              ModuleDependencyItem.ModuleSourceDependency,
+              SdkDependency(SdkId("fake-interpreter-name-3", "PythonSDK")),
+              ModuleSourceDependency,
             ),
           ) {
             type = "PYTHON_MODULE"
@@ -320,14 +329,14 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             name = "module2",
             entitySource = BspEntitySource,
             dependencies = listOf(
-              ModuleDependencyItem.Exportable.ModuleDependency(
+              ModuleDependency(
                 module = ModuleId("module3"),
                 exported = true,
-                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                scope = DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.SdkDependency("fake-interpreter-name-3", "PythonSDK"),
-              ModuleDependencyItem.ModuleSourceDependency,
+              SdkDependency(SdkId("fake-interpreter-name-3", "PythonSDK")),
+              ModuleSourceDependency,
             ),
           ) {
             type = "PYTHON_MODULE"
@@ -444,7 +453,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
           name = "module1",
           type = "PYTHON_MODULE",
           modulesDependencies = listOf(
-            ModuleDependency(
+            IntermediateModuleDependency(
               moduleName = "module2",
             ),
           ),
@@ -479,13 +488,13 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             name = "module1",
             entitySource = BspEntitySource,
             dependencies = listOf(
-              ModuleDependencyItem.Exportable.ModuleDependency(
+              ModuleDependency(
                 module = ModuleId("module2"),
                 exported = true,
-                scope = ModuleDependencyItem.DependencyScope.COMPILE,
+                scope = DependencyScope.COMPILE,
                 productionOnTest = true,
               ),
-              ModuleDependencyItem.ModuleSourceDependency,
+              ModuleSourceDependency,
             ),
           ) {
             type = "PYTHON_MODULE"
@@ -628,7 +637,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
     beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
 
     if (updaterConstructor.parameters.size == 1)
       test(updaterConstructor.call(workspaceModelEntityUpdaterConfig))

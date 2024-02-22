@@ -19,15 +19,16 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.KotlinBuildTarget
 import org.jetbrains.bsp.utils.extractJvmBuildTarget
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
+import org.jetbrains.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.workspace.model.constructors.SourceItem
@@ -53,7 +54,9 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     // when
     val javaModules =
-      ModuleDetailsToJavaModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(emptyModulesDetails)
+      ModuleDetailsToJavaModuleTransformer(mapOf(), DefaultModuleNameProvider, projectBasePath).transform(
+        emptyModulesDetails
+      )
 
     // then
     javaModules shouldBe emptyList()
@@ -156,22 +159,24 @@ class ModuleDetailsToJavaModuleTransformerTest {
       ),
       defaultJdkName = null
     )
+
+    val targetsMap = listOf(buildTargetId.uri, "module2", "module3").toDefaultTargetsMap()
     // when
     val javaModule =
-      ModuleDetailsToJavaModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
+      ModuleDetailsToJavaModuleTransformer(targetsMap, DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
 
     // then
     val expectedModule = GenericModuleInfo(
       name = "module1",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency("module2"),
-        ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath)),
+        IntermediateModuleDependency("module2"),
+        IntermediateModuleDependency("module3"),
+        IntermediateModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath)),
       ),
       librariesDependencies = listOf(
-        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
-        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
+        IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
+        IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
       ),
     )
 
@@ -201,6 +206,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val expectedResourceRoot1 = ResourceRoot(
       resourcePath = resourceFilePath,
+      rootType = "java-resource",
     )
 
     val expectedLibrary1 = Library(
@@ -221,7 +227,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
       baseDirContentRoot = expectedBaseDirContentRoot,
       sourceRoots = listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3),
       resourceRoots = listOf(expectedResourceRoot1),
-      compilerOutput = Path("/compiler/output.jar"),
       jvmJdkName = projectBasePath.name.projectNameToJdkName(javaHome),
       kotlinAddendum = null,
       javaAddendum = expectedJavaAddendum,
@@ -294,8 +299,11 @@ class ModuleDetailsToJavaModuleTransformerTest {
       defaultJdkName = null,
     )
 
+    val targetsMap = listOf(buildTargetId.uri, "module2", "module3").toDefaultTargetsMap()
+
     // when
     val javaModule = ModuleDetailsToJavaModuleTransformer(
+      targetsMap,
       DefaultModuleNameProvider,
       projectBasePath,
     ).transform(moduleDetails)
@@ -305,15 +313,15 @@ class ModuleDetailsToJavaModuleTransformerTest {
       name = "module1",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency("module2"),
-        ModuleDependency("module3"),
+        IntermediateModuleDependency("module2"),
+        IntermediateModuleDependency("module3"),
       ),
       librariesDependencies = listOf(
-        LibraryDependency("@maven//:lib1", true),
+        IntermediateLibraryDependency("@maven//:lib1", true),
       ),
       associates = listOf(
-        ModuleDependency("//target4"),
-        ModuleDependency("//target5"),
+        IntermediateModuleDependency("//target4"),
+        IntermediateModuleDependency("//target5"),
       ),
     )
 
@@ -328,7 +336,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
       sourceRoots = listOf(),
       resourceRoots = listOf(),
       moduleLevelLibraries = null,
-      compilerOutput = Path("/compiler/output.jar"),
       jvmJdkName = projectBasePath.name.projectNameToJdkName(javaHome),
       kotlinAddendum = KotlinAddendum(
         languageVersion = kotlinBuildTarget.languageVersion,
@@ -500,22 +507,24 @@ class ModuleDetailsToJavaModuleTransformerTest {
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
+
+    val targetsMap = listOf("module1", "module2", "module3").toDefaultTargetsMap()
     // when
     val javaModules =
-      ModuleDetailsToJavaModuleTransformer(DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
+      ModuleDetailsToJavaModuleTransformer(targetsMap, DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
 
     // then
     val expectedModule1 = GenericModuleInfo(
       name = "module1",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency("module2"),
-        ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath)),
+        IntermediateModuleDependency("module2"),
+        IntermediateModuleDependency("module3"),
+        IntermediateModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath)),
       ),
       librariesDependencies = listOf(
-        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
-        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
+        IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
+        IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar"),
       ),
     )
 
@@ -545,9 +554,11 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val expectedResourceRoot11 = ResourceRoot(
       resourcePath = resourceFilePath11,
+      rootType = "java-resource",
     )
     val expectedResourceRoot12 = ResourceRoot(
       resourcePath = resourceFilePath12,
+      rootType = "java-resource",
     )
     val expectedLibrary1 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
@@ -565,7 +576,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
       baseDirContentRoot = expectedBaseDirContentRoot1,
       sourceRoots = listOf(expectedJavaSourceRoot11, expectedJavaSourceRoot12, expectedJavaSourceRoot13),
       resourceRoots = listOf(expectedResourceRoot11, expectedResourceRoot12),
-      compilerOutput = Path("/compiler/output1.jar"),
       jvmJdkName = null,
       kotlinAddendum = null,
       moduleLevelLibraries = listOf(expectedLibrary1, expectedLibrary2),
@@ -575,11 +585,11 @@ class ModuleDetailsToJavaModuleTransformerTest {
       name = "module2",
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
-        ModuleDependency("module3"),
-        ModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath)),
+        IntermediateModuleDependency("module3"),
+        IntermediateModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath)),
       ),
       librariesDependencies = listOf(
-        LibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
+        IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
       ),
     )
 
@@ -597,6 +607,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val expectedResourceRoot21 = ResourceRoot(
       resourcePath = resourceDirPath21,
+      rootType = "java-test-resource",
     )
 
     val expectedJavaModule2 = JavaModule(
@@ -604,7 +615,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
       baseDirContentRoot = expectedBaseDirContentRoot2,
       sourceRoots = listOf(expectedJavaSourceRoot21),
       resourceRoots = listOf(expectedResourceRoot21),
-      compilerOutput = Path("/compiler/output2.jar"),
       jvmJdkName = null,
       kotlinAddendum = null,
       moduleLevelLibraries = listOf(expectedLibrary1),

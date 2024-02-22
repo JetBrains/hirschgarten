@@ -11,47 +11,54 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.bsp.LibraryItem
 import org.jetbrains.bsp.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
+import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
 import java.nio.file.Path
 
 public data class MagicMetaModelProjectConfig(
   val workspaceModel: WorkspaceModel,
   val virtualFileUrlManager: VirtualFileUrlManager,
   val projectBasePath: Path,
+  val project: Project,
   val moduleNameProvider: ModuleNameProvider,
   val isPythonSupportEnabled: Boolean,
   val hasDefaultPythonInterpreter: Boolean,
+  val isAndroidSupportEnabled: Boolean,
 ) {
   public constructor(
     workspaceModel: WorkspaceModel,
     virtualFileUrlManager: VirtualFileUrlManager,
     moduleNameProvider: ModuleNameProvider?,
     projectBasePath: Path,
+    project: Project,
     isPythonSupportEnabled: Boolean = false,
     hasDefaultPythonInterpreter: Boolean = false,
+    isAndroidSupportEnabled: Boolean = false,
   ) : this(
     workspaceModel,
     virtualFileUrlManager,
     projectBasePath,
+    project,
     moduleNameProvider ?: DefaultModuleNameProvider,
     isPythonSupportEnabled,
-    hasDefaultPythonInterpreter
+    hasDefaultPythonInterpreter,
+    isAndroidSupportEnabled
   )
 }
 
-public typealias ModuleNameProvider = (BuildTargetId) -> String
+public typealias ModuleNameProvider = (BuildTargetInfo) -> String
 
 public object DefaultModuleNameProvider : ModuleNameProvider {
-  override fun invoke(id: BuildTargetId): String = id
+  override fun invoke(targetInfo: BuildTargetInfo): String = targetInfo.id
 }
 
 public data class ProjectDetails(
@@ -66,7 +73,6 @@ public data class ProjectDetails(
   val outputPathUris: List<String>,
   val libraries: List<LibraryItem>?,
   val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
-  val invalidTargets: WorkspaceInvalidTargetsResult = WorkspaceInvalidTargetsResult(emptyList()),
   var defaultJdkName: String? = null,
 )
 
@@ -157,14 +163,11 @@ public interface MagicMetaModel {
    */
   public fun getAllNotLoadedTargets(): List<BuildTargetInfo>
 
-  /**
-   * Get ids of all currently invalid targets.
-   */
-  public fun getAllInvalidTargets(): List<BuildTargetId>
-
   public fun clear()
 
   public fun getLibraries(): List<Library>
+
+  public fun getDetailsForTargetId(targetId: BuildTargetId): Module?
 
   public companion object {
     private val log = logger<MagicMetaModel>()

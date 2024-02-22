@@ -1,25 +1,29 @@
 package org.jetbrains.magicmetamodel.impl
 
+import org.jetbrains.bsp.AndroidTargetType
+import org.jetbrains.magicmetamodel.MagicMetaModelTemporaryFacadeState
+import org.jetbrains.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericSourceRoot
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleCapabilities
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonLibrary
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.PythonSdkInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
+import java.net.URI
 import kotlin.io.path.Path
 
 // TODO, we can do it better, but for now it should be good enough:
@@ -114,7 +118,17 @@ public fun JavaSourceRoot.toState(): SourceRootState = SourceRootState(
   excludedPaths = excludedPaths.map { it.toString() },
 )
 
-internal fun String.toResourceRoot() = ResourceRoot(Path(this))
+public data class ResourceRootState(
+  var resourcePath: String = "",
+  var rootType: String = "",
+) {
+  public fun toResourceRoot(): ResourceRoot = ResourceRoot(Path(resourcePath), rootType)
+}
+
+public fun ResourceRoot.toState(): ResourceRootState = ResourceRootState(
+  resourcePath = resourcePath.toString(),
+  rootType = rootType,
+)
 
 public fun GenericSourceRoot.toState(): SourceRootState = SourceRootState(
   sourcePath = sourcePath.toString(),
@@ -157,8 +171,8 @@ public data class GenericModuleInfoState(
   override fun fromState(): GenericModuleInfo = GenericModuleInfo(
     name = name,
     type = type,
-    modulesDependencies = modulesDependencies.map { ModuleDependency(it) },
-    librariesDependencies = librariesDependencies.map { LibraryDependency(it) },
+    modulesDependencies = modulesDependencies.map { IntermediateModuleDependency(it) },
+    librariesDependencies = librariesDependencies.map { IntermediateLibraryDependency(it) },
     capabilities = capabilities.fromState(),
     languageIds = languageIds,
   )
@@ -178,14 +192,14 @@ public data class ModuleState(
   var module: GenericModuleInfoState = GenericModuleInfoState(),
   var baseDirContentRoot: ContentRootState? = null,
   var sourceRoots: List<SourceRootState> = emptyList(),
-  var resourceRoots: List<String> = emptyList(),
+  var resourceRoots: List<ResourceRootState> = emptyList(),
   var libraries: List<LibraryState>? = null,
-  var compilerOutput: String? = null,
   var jvmJdkName: String? = null,
   val sdkInfo: PythonSdkInfoState? = null,
   var kotlinAddendum: KotlinAddendumState? = null,
   var scalaAddendum: ScalaAddendumState? = null,
   var javaAddendum: JavaAddendumState? = null,
+  var androidAddendum: AndroidAddendumState? = null,
 ) : ConvertableFromState<Module> {
   public fun toJavaModule(): JavaModule = JavaModule(
     genericModuleInfo = module.fromState(),
@@ -193,10 +207,10 @@ public data class ModuleState(
     sourceRoots = sourceRoots.map { it.toJavaSourceRoot() },
     resourceRoots = resourceRoots.map { it.toResourceRoot() },
     moduleLevelLibraries = libraries?.map { it.fromState() },
-    compilerOutput = compilerOutput?.let { Path(it) },
     jvmJdkName = jvmJdkName,
     kotlinAddendum = kotlinAddendum?.fromState(),
-    scalaAddendum = scalaAddendum?.fromState()
+    scalaAddendum = scalaAddendum?.fromState(),
+    androidAddendum = androidAddendum?.fromState(),
   )
 
   public fun toPythonModule(): PythonModule = PythonModule(
@@ -258,6 +272,20 @@ public data class JavaAddendumState(
   )
 }
 
+public data class AndroidAddendumState(
+  var androidSdkName: String = "",
+  var androidTargetType: AndroidTargetType = AndroidTargetType.LIBRARY,
+  var manifest: String? = null,
+  var resourceFolders: List<String> = emptyList(),
+) : ConvertableFromState<AndroidAddendum> {
+  override fun fromState(): AndroidAddendum = AndroidAddendum(
+    androidSdkName = androidSdkName,
+    androidTargetType = androidTargetType,
+    manifest = manifest?.let { URI.create(it) },
+    resourceFolders = resourceFolders.map { URI.create(it) },
+  )
+}
+
 public data class ModuleCapabilitiesState(
   var canRun: Boolean = false,
   var canTest: Boolean = false,
@@ -282,6 +310,13 @@ public fun ScalaAddendum.toState(): ScalaAddendumState = ScalaAddendumState(
   scalaSdkName = scalaSdkName,
 )
 
+public fun AndroidAddendum.toState(): AndroidAddendumState = AndroidAddendumState(
+  androidSdkName = androidSdkName,
+  androidTargetType = androidTargetType,
+  manifest = manifest?.toString(),
+  resourceFolders = resourceFolders.map { it.toString() },
+)
+
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(
   canRun = canRun,
   canTest = canTest,
@@ -290,12 +325,11 @@ public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabil
 )
 
 public data class DefaultMagicMetaModelState(
-  public var targets: List<BuildTargetInfoState> = emptyList(),
+  public var facadeState: MagicMetaModelTemporaryFacadeState = MagicMetaModelTemporaryFacadeState(),
   public var libraries: List<LibraryState>? = null,
-  public var unloadedTargets: Map<BuildTargetId, ModuleState> = emptyMap(),
   public var targetsDetailsForDocumentProviderState: TargetsDetailsForDocumentProviderState =
     TargetsDetailsForDocumentProviderState(),
   public var overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>> = emptyMap(),
-  public var loadedTargetsStorageState: LoadedTargetsStorageState = LoadedTargetsStorageState(),
+  public var targetsStatusStorageState: TargetsStatusStorageState = TargetsStatusStorageState(),
   public var outputPathUris: List<String> = emptyList(),
 )

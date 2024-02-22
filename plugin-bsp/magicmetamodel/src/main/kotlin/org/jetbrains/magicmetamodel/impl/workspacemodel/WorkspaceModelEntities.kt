@@ -45,6 +45,7 @@ public data class GenericSourceRoot(
 
 public data class ResourceRoot(
   val resourcePath: Path,
+  val rootType: String,
 ) : WorkspaceModelEntity(), ResourceRootEntity
 
 public data class Library(
@@ -58,11 +59,11 @@ public data class Library(
   }
 }
 
-public data class ModuleDependency(
+public data class IntermediateModuleDependency(
   val moduleName: String,
 ) : WorkspaceModelEntity(), EntityDependency
 
-public data class LibraryDependency(
+public data class IntermediateLibraryDependency(
   val libraryName: String,
   val isProjectLevelLibrary: Boolean = false,
 ) : WorkspaceModelEntity(), EntityDependency
@@ -73,20 +74,21 @@ This class holds basic module data that are not language-specific
 public data class GenericModuleInfo(
   val name: String,
   val type: String,
-  val modulesDependencies: List<ModuleDependency>,
-  val librariesDependencies: List<LibraryDependency>,
+  val modulesDependencies: List<IntermediateModuleDependency>,
+  val librariesDependencies: List<IntermediateLibraryDependency>,
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
   val languageIds: LanguageIds = listOf(),
-  val associates: List<ModuleDependency> = listOf(),
+  val associates: List<IntermediateModuleDependency> = listOf(),
+  val isDummy: Boolean = false,
 ) : WorkspaceModelEntity() {
   internal constructor(
     name: String,
     type: String,
-    modulesDependencies: List<ModuleDependency>,
-    librariesDependencies: List<LibraryDependency>,
+    modulesDependencies: List<IntermediateModuleDependency>,
+    librariesDependencies: List<IntermediateLibraryDependency>,
     capabilities: ModuleCapabilities = ModuleCapabilities(),
     languageIds: Map<String, String>,
-    associates: List<ModuleDependency> = listOf(),
+    associates: List<IntermediateModuleDependency> = listOf(),
   ) : this(
     name,
     type,

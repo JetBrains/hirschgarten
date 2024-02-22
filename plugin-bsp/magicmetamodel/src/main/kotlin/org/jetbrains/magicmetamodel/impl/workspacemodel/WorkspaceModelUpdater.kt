@@ -7,6 +7,7 @@ import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
+import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
@@ -53,13 +54,17 @@ internal interface WorkspaceModelUpdater {
       workspaceEntityStorageBuilder: MutableEntityStorage,
       virtualFileUrlManager: VirtualFileUrlManager,
       projectBasePath: Path,
+      project: Project,
       isPythonSupportEnabled: Boolean = false,
+      isAndroidSupportEnabled: Boolean = false,
     ): WorkspaceModelUpdater =
       WorkspaceModelUpdaterImpl(
         workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
         virtualFileUrlManager = virtualFileUrlManager,
         projectBasePath = projectBasePath,
+        project = project,
         isPythonSupportEnabled = isPythonSupportEnabled,
+        isAndroidSupportEnabled = isAndroidSupportEnabled,
       )
   }
 }

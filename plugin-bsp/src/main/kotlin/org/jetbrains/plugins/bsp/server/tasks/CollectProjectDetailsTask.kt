@@ -19,11 +19,10 @@ import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.platform.util.progress.indeterminateStep
-import com.intellij.platform.util.progress.progressStep
-import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.intellij.workspaceModel.ide.getInstance
+import com.intellij.platform.util.progress.reportSequentialProgress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -32,8 +31,8 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.BazelBuildServerCapabilities
 import org.jetbrains.bsp.DirectoryItem
 import org.jetbrains.bsp.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.WorkspaceLibrariesResult
+import org.jetbrains.bsp.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.utils.extractGoBuildTarget
 import org.jetbrains.bsp.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.utils.extractPythonBuildTarget
@@ -44,22 +43,25 @@ import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
+import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesScala
-import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
+import org.jetbrains.plugins.bsp.android.AndroidSdk
+import org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension
+import org.jetbrains.plugins.bsp.android.androidSdkGetterExtension
+import org.jetbrains.plugins.bsp.android.androidSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.PythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.goSdkExtension
 import org.jetbrains.plugins.bsp.extension.points.goSdkExtensionExists
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
-import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
+import org.jetbrains.plugins.bsp.flow.open.projectSyncHook
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
@@ -68,7 +70,6 @@ import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import org.jetbrains.plugins.bsp.utils.SdkUtils
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
@@ -76,6 +77,7 @@ import java.util.concurrent.CompletionException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.Path
+import kotlin.io.path.toPath
 import kotlin.system.exitProcess
 
 public data class PythonSdk(
@@ -83,7 +85,6 @@ public data class PythonSdk(
   val interpreterUri: String,
   val dependencies: List<DependencySourcesItem>,
 )
-
 
 public class CollectProjectDetailsTask(project: Project, private val taskId: Any) :
   BspServerTask<ProjectDetails>("collect project details", project) {
@@ -98,6 +99,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private var pythonSdks: Set<PythonSdk>? = null
 
   private var scalaSdks: Set<ScalaSdk>? = null
+
+  private var androidSdks: Set<AndroidSdk>? = null
 
   private var goSdks: Set<GoSdk>? = null
 
@@ -125,42 +128,53 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun doExecute() {
-    val projectDetails = progressStep(
-      endFraction = 0.5,
-      text = BspPluginBundle.message("progress.bar.collect.project.details")
-    ) {
-      runInterruptible { calculateProjectDetailsSubtask() }
-    } ?: return
-    indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
-      calculateAllUniqueJdkInfosSubtask(projectDetails)
-      uniqueJavaHomes.orEmpty().also {
-        if (it.isNotEmpty())
-          projectDetails.defaultJdkName = project.name.projectNameToJdkName(it.first())
-        else
-          projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
-      }
-    }
-    if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
-      indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
-        calculateAllPythonSdkInfosSubtask(projectDetails)
-      }
-    }
-    if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkExtensionExists()) {
-      indeterminateStep(text = "Calculating all unique scala sdk infos") {
-        calculateAllScalaSdkInfosSubtask(projectDetails)
-      }
-    }
-    if (BspFeatureFlags.isGoSupportEnabled && goSdkExtensionExists()) {
-      indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
-        calculateAllGoSdkInfosSubtask(projectDetails)
-      }
-    }
+    reportSequentialProgress { reporter ->
+      val projectDetails =
+        reporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
+          runInterruptible { calculateProjectDetailsSubtask() }
+        } ?: return
 
-    progressStep(endFraction = 0.75, BspPluginBundle.message("progress.bar.update.internal.model")) {
-      updateInternalModelSubtask(projectDetails)
-    }
-    progressStep(endFraction = 1.0, BspPluginBundle.message("progress.bar.post.processing")) {
-      postprocessingSubtask()
+      reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
+        calculateAllUniqueJdkInfosSubtask(projectDetails)
+        uniqueJavaHomes.orEmpty().also {
+          if (it.isNotEmpty())
+            projectDetails.defaultJdkName = project.name.projectNameToJdkName(it.first())
+          else
+            projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
+        }
+      }
+
+      if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
+        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
+          calculateAllPythonSdkInfosSubtask(projectDetails)
+        }
+      }
+
+      if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkExtensionExists()) {
+        reporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
+          calculateAllScalaSdkInfosSubtask(projectDetails)
+        }
+      }
+
+      if (BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists()) {
+        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.android.sdk.infos")) {
+          calculateAllAndroidSdkInfosSubtask(projectDetails)
+        }
+      }
+
+        if (BspFeatureFlags.isGoSupportEnabled && goSdkExtensionExists()) {
+            indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
+                calculateAllGoSdkInfosSubtask(projectDetails)
+            }
+        }
+
+      reporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.update.internal.model")) {
+        updateInternalModelSubtask(projectDetails)
+      }
+
+      reporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.post.processing")) {
+        postprocessingSubtask()
+      }
     }
   }
 
@@ -307,6 +321,28 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       .toSet()
   }
 
+  private suspend fun calculateAllAndroidSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
+    "calculate-all-android-sdk-infos",
+    BspPluginBundle.message("progress.bar.calculate.android.sdk.infos"),
+  ) {
+    androidSdks = logPerformance(it) {
+      calculateAllAndroidSdkInfos(projectDetails)
+    }
+  }
+
+  private fun calculateAllAndroidSdkInfos(projectDetails: ProjectDetails): Set<AndroidSdk> =
+    projectDetails.targets
+      .mapNotNull { createAndroidSdk(it) }
+      .toSet()
+
+  private fun createAndroidSdk(target: BuildTarget): AndroidSdk? =
+    extractAndroidBuildTarget(target)?.androidJar?.let { androidJar ->
+      AndroidSdk(
+        name = androidJar.androidJarToAndroidSdkName(),
+        androidJar = androidJar.toPath(),
+      )
+    }
+
   private suspend fun calculateAllGoSdkInfosSubtask(projectDetails: ProjectDetails) = withSubtask(
     "calculate-all-go-sdk-infos",
     BspPluginBundle.message("console.task.model.calculate.go.sdk.infos")
@@ -349,8 +385,13 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun postprocessingSubtask() {
-    addBspFetchedJdks()
+    // This order is strict as now SDKs also use the workspace model,
+    // updating jdks before applying the project model will render the action to fail.
+    // This will be handled properly after this ticket:
+    // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
     applyChangesOnWorkspaceModel()
+
+    addBspFetchedJdks()
 
     if (BspFeatureFlags.isPythonSupportEnabled) {
       addBspFetchedPythonSdks()
@@ -358,6 +399,10 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     if (BspFeatureFlags.isScalaSupportEnabled) {
       addBspFetchedScalaSdks()
+    }
+
+    if (BspFeatureFlags.isAndroidSupportEnabled) {
+      addBspFetchedAndroidSdks()
     }
 
     if (BspFeatureFlags.isGoSupportEnabled) {
@@ -406,9 +451,34 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk, pythonSdkGetterExtension: PythonSdkGetterExtension) {
-    val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
-    val sdk = runInterruptible { pythonSdkGetterExtension.getPythonSdk(pythonSdk, virtualFileUrlManager) }
+    val sdk = runInterruptible {
+      pythonSdkGetterExtension.getPythonSdk(
+        pythonSdk,
+        WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
+      )
+    }
 
+    SdkUtils.addSdkIfNeeded(sdk)
+  }
+
+  private suspend fun addBspFetchedAndroidSdks() {
+    androidSdkGetterExtension()?.let { extension ->
+      withSubtask(
+        "add-bsp-fetched-android-sdks",
+        BspPluginBundle.message("console.task.model.add.android.fetched.sdks"),
+      ) {
+        logPerformanceSuspend("add-bsp-fetched-android-sdks") {
+          androidSdks?.forEach { addAndroidSdkIfNeeded(it, extension) }
+        }
+      }
+    }
+  }
+
+  private suspend fun addAndroidSdkIfNeeded(
+    androidSdk: AndroidSdk,
+    androidSdkGetterExtension: AndroidSdkGetterExtension,
+  ) {
+    val sdk = writeAction { androidSdkGetterExtension.getAndroidSdk(androidSdk) } ?: return
     SdkUtils.addSdkIfNeeded(sdk)
   }
 
@@ -511,11 +581,6 @@ public fun calculateProjectDetailsWithCapabilities(
       server.workspaceDirectories()
     }
 
-    val invalidTargetsFuture =
-      query(buildServerCapabilities.workspaceInvalidTargetsProvider, "workspace/invalidTargets") {
-        server.workspaceInvalidTargets()
-      }
-
     // We use javacOptions only do build dependency tree based on classpath
     // If workspace/libraries endpoint is available (like in bazel-bsp)
     // we don't need javacOptions at all. For other servers (like SBT)
@@ -544,14 +609,7 @@ public fun calculateProjectDetailsWithCapabilities(
       server.buildTargetOutputPaths(OutputPathsParams(allTargetsIds))
     }
 
-    val invalidTargets = invalidTargetsFuture?.get() ?: WorkspaceInvalidTargetsResult(emptyList())
-    if (invalidTargets.targets.isNotEmpty()) {
-      val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
-      BspBalloonNotifier.warn(
-        BspPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
-        BspPluginBundle.message("widget.collect.targets.not.imported.properly.message", assetsExtension.presentableName)
-      )
-    }
+    project.projectSyncHook?.onSync(project, server)
 
     return ProjectDetails(
       targetsId = allTargetsIds,
@@ -566,7 +624,6 @@ public fun calculateProjectDetailsWithCapabilities(
       libraries = libraries?.libraries,
       directories = directoriesFuture?.get()
         ?: WorkspaceDirectoriesResult(listOf(DirectoryItem(projectRootDir)), emptyList()),
-      invalidTargets = invalidTargets,
     )
   } catch (e: Exception) {
     // TODO the type xd

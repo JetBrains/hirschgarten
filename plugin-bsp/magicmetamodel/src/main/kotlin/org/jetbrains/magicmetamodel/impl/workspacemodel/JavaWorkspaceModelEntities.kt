@@ -1,7 +1,9 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel
 
+import org.jetbrains.bsp.AndroidTargetType
 import org.jetbrains.magicmetamodel.impl.ModuleState
 import org.jetbrains.magicmetamodel.impl.toState
+import java.net.URI
 import java.nio.file.Path
 
 public data class JavaSourceRoot(
@@ -20,23 +22,22 @@ public data class JavaModule(
   // we will calculate this value only if there are no libraries in MagicMetamodelImpl.libraries,
   // otherwise it will be null
   val moduleLevelLibraries: List<Library>?,
-  val compilerOutput: Path?,
   val jvmJdkName: String? = null,
   val kotlinAddendum: KotlinAddendum? = null,
   val scalaAddendum: ScalaAddendum? = null,
   val javaAddendum: JavaAddendum? = null,
+  val androidAddendum: AndroidAddendum? = null,
 ) : WorkspaceModelEntity(), Module {
   override fun toState(): ModuleState = ModuleState(
     module = genericModuleInfo.toState(),
     baseDirContentRoot = baseDirContentRoot?.let(ContentRoot::toState),
     sourceRoots = sourceRoots.map { it.toState() },
-    resourceRoots = resourceRoots.map { it.toString() },
+    resourceRoots = resourceRoots.map { it.toState() },
     libraries = moduleLevelLibraries?.map { it.toState() },
-    compilerOutput = compilerOutput?.toString(),
     jvmJdkName = jvmJdkName,
     kotlinAddendum = kotlinAddendum?.toState(),
     scalaAddendum = scalaAddendum?.toState(),
-
+    androidAddendum = androidAddendum?.toState(),
   )
 
   override fun getModuleName(): String = genericModuleInfo.name
@@ -54,4 +55,11 @@ public data class ScalaAddendum(
 
 public data class JavaAddendum(
   val languageVersion: String,
+)
+
+public data class AndroidAddendum(
+  val androidSdkName: String,
+  val androidTargetType: AndroidTargetType,
+  val manifest: URI?,
+  val resourceFolders: List<URI>,
 )

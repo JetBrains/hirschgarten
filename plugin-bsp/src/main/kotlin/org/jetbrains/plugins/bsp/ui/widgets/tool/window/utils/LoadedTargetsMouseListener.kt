@@ -2,24 +2,22 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
 import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
-import com.intellij.icons.AllIcons
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
-import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BspRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.DebugWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunWithLocalJvmRunnerAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.SideMenuRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
 import java.awt.Point
@@ -62,47 +60,14 @@ public class LoadedTargetsMouseListener(
 
   private fun calculatePopupGroup(target: BuildTargetInfo): ActionGroup =
     DefaultActionGroup().apply {
-      val debugType = target.inferDebugType()
-
       addAction(container.copyTargetIdAction)
       addSeparator()
       if (target.capabilities.canCompile) {
         addAction(BuildTargetAction(target.id))
       }
-      if (target.capabilities.canRun) {
-        addAction(RunTargetAction(
-          targetId = target.id,
-          debugType = debugType,
-        ))
-      }
-      if (debugType != null) {
-        addAction(RunTargetAction(
-          targetId = target.id,
-          text = { BspPluginBundle.message("widget.debug.target.popup.message") },
-          icon = AllIcons.Actions.StartDebugger,
-          debugType = debugType,
-          useDebugMode = true,
-        ))
-      }
-      if (target.capabilities.canRun && target.isJvmTarget()) {
-        addAction(RunWithLocalJvmRunnerAction(target.id))
-        addAction(DebugWithLocalJvmRunnerAction(target.id))
-      }
-      if (target.capabilities.canTest) {
-        addAction(TestTargetAction(targetId = target.id))
-      }
+      fillWithEligibleActions(target, false)
       container.getTargetActions(project, target).map { addAction(it); addSeparator() }
     }
-
-  private fun BuildTargetInfo.inferDebugType(): BspDebugType? =
-    when {
-      isJvmTarget() -> BspDebugType.JDWP
-      else -> null
-    }
-
-  private fun BuildTargetInfo.isJvmTarget(): Boolean = with(languageIds) {
-    includesJava() or includesKotlin()
-  }
 
   private fun MouseEvent.isDoubleClick(): Boolean =
     this.mouseButton == MouseButton.Left && this.clickCount == 2
@@ -110,11 +75,8 @@ public class LoadedTargetsMouseListener(
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
       when {
-        it.capabilities.canTest -> TestTargetAction(targetId = it.id).prepareAndPerform(project, it.id)
-        it.capabilities.canRun -> RunTargetAction(
-          targetId = it.id,
-          debugType = it.inferDebugType(),
-        ).prepareAndPerform(project, it.id)
+        it.capabilities.canTest -> TestTargetAction(targetInfo = it).prepareAndPerform(project)
+        it.capabilities.canRun -> RunTargetAction(targetInfo = it).prepareAndPerform(project)
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
@@ -129,6 +91,65 @@ public class LoadedTargetsMouseListener(
   override fun mouseExited(e: MouseEvent?) { /* nothing to do */ }
 }
 
-private fun SideMenuRunnerAction.prepareAndPerform(project: Project, targetId: BuildTargetId) {
-  doPerformAction(project, targetId)
+private fun BspRunnerAction.prepareAndPerform(project: Project) {
+  BspCoroutineService.getInstance(project).start {
+    doPerformAction(project)
+  }
 }
+
+@Suppress("CognitiveComplexMethod")
+internal fun DefaultActionGroup.fillWithEligibleActions(
+  target: BuildTargetInfo,
+  verboseText: Boolean,
+): DefaultActionGroup {
+  val debugType = target.inferDebugType()
+
+  if (target.capabilities.canRun) {
+    addAction(
+      RunTargetAction(
+        targetInfo = target,
+        debugType = debugType,
+        verboseText = verboseText,
+      )
+    )
+  }
+
+  if (target.capabilities.canTest) {
+    addAction(TestTargetAction(target, verboseText = verboseText))
+  }
+
+  if (target.capabilities.canDebug && debugType != null) {
+    addAction(
+      RunTargetAction(
+        targetInfo = target,
+        debugType = debugType,
+        isDebugAction = true,
+        verboseText = verboseText,
+      )
+    )
+  }
+
+  if (target.isJvmTarget()) {
+    if (target.capabilities.canRun) {
+      addAction(RunWithLocalJvmRunnerAction(target, verboseText = verboseText))
+      if (target.capabilities.canDebug)
+        addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
+    }
+    if (target.capabilities.canTest) {
+      addAction(TestWithLocalJvmRunnerAction(target, verboseText = verboseText))
+      if (target.capabilities.canDebug)
+        addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
+    }
+  }
+  return this
+}
+
+internal fun BuildTargetInfo.isJvmTarget(): Boolean = with(languageIds) {
+  includesJava() or includesKotlin()
+}
+
+internal fun BuildTargetInfo.inferDebugType(): BspDebugType? =
+  when {
+    isJvmTarget() -> BspDebugType.JDWP
+    else -> null
+  }

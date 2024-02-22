@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import com.intellij.facet.FacetManager
 import com.intellij.openapi.module.ModuleManager
-import com.intellij.platform.workspace.jps.entities.FacetEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.testFramework.runInEdtAndWait
@@ -12,15 +11,15 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.KotlinBuildTarget
 import org.jetbrains.kotlin.idea.facet.KotlinFacetType
+import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import kotlin.io.path.Path
 import kotlin.io.path.name
 
 @DisplayName("kotlinFacetEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
@@ -49,11 +48,11 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         name = "module1",
         type = "JAVA_MODULE",
         modulesDependencies = listOf(
-          ModuleDependency("module2"),
-          ModuleDependency("module3"),
+          IntermediateModuleDependency("module2"),
+          IntermediateModuleDependency("module3"),
         ),
         librariesDependencies = listOf(),
-        associates = associates.map { ModuleDependency(it) },
+        associates = associates.map { IntermediateModuleDependency(it) },
       )
 
       val baseDirContentRoot = ContentRoot(
@@ -66,7 +65,6 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         sourceRoots = listOf(),
         resourceRoots = listOf(),
         moduleLevelLibraries = listOf(),
-        compilerOutput = Path("/compiler/output.jar"),
         jvmJdkName = "${projectBasePath.name}-$javaVersion",
         kotlinAddendum = KotlinAddendum(
           languageVersion = kotlinBuildTarget.languageVersion,
@@ -97,14 +95,15 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
     javaModule: JavaModule,
     parentEntity: ModuleEntity,
     builder: MutableEntityStorage,
-  ): FacetEntity {
+  ): KotlinSettingsEntity {
     val workspaceModelEntityUpdaterConfig =
       WorkspaceModelEntityUpdaterConfig(
         builder,
         virtualFileUrlManager,
         projectBasePath,
+        project
       )
-    val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
+    val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
     return kotlinFacetEntityUpdater.addEntity(javaModule, parentEntity)
   }
 }

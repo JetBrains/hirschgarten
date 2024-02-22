@@ -22,6 +22,7 @@ group = Plugin.group
 version = Plugin.version
 
 dependencies {
+  implementation(project(":jps-compilation"))
   implementation(project(":magicmetamodel"))
   implementation(project(":protocol"))
   implementation(project(":workspacemodel"))

@@ -8,6 +8,7 @@
   <depends>org.jetbrains.kotlin</depends>
   <depends optional="true" config-file="bsp-withGo.xml">org.jetbrains.plugins.go</depends>
   <depends optional="true" config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
+  <depends optional="true" config-file="bsp-withAndroid.xml">org.jetbrains.android</depends>
 
   <extensionPoints>
     <extensionPoint name="buildTargetClassifierExtension"
@@ -18,6 +19,12 @@
                     dynamic="true"/>
     <extensionPoint name="scalaSdkExtension"
                     interface="org.jetbrains.plugins.bsp.scala.sdk.ScalaSdkExtension"
+                    dynamic="true"/>
+    <extensionPoint name="androidSdkGetterExtension"
+                    interface="org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension"
+                    dynamic="true"/>
+    <extensionPoint name="androidFacetEntityUpdaterExtension"
+                    interface="org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
                     dynamic="true"/>
     <extensionPoint name="GoSdkExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.GoSdkExtension"
@@ -34,8 +41,17 @@
     <extensionPoint name="connectionDetailsProviderExtension"
                     interface="org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension"
                     dynamic="true"/>
+    <extensionPoint name="connectionDetailsProviderExtensionJavaShim"
+                    interface="org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtensionJavaShim"
+                    dynamic="true"/>
     <extensionPoint name="buildToolWindowTargetActionProviderExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension"
+                    dynamic="true"/>
+    <extensionPoint name="invalidTargetsProviderExtension"
+                    interface="org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension"
+                    dynamic="true"/>
+    <extensionPoint name="projectSyncHook"
+                    interface="org.jetbrains.plugins.bsp.flow.open.ProjectSyncHook"
                     dynamic="true"/>
   </extensionPoints>
 
@@ -66,8 +82,11 @@
     <treeStructureProvider implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspTreeStructureProvider"/>
     <projectViewNodeDecorator implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspProjectViewNodeDecorator"/>
     <projectTaskRunner
-      implementation="org.jetbrains.plugins.bsp.actions.building.BspProjectTaskRunner"/>
+      implementation="org.jetbrains.plugins.bsp.building.task.BspProjectTaskRunner"/>
     <programRunner implementation="org.jetbrains.plugins.bsp.runner.BspDebugRunner"/>
+
+    <directoryProjectConfigurator implementation="org.jetbrains.plugins.bsp.flow.open.CounterPlatformProjectConfigurator"
+                                  order="after PlatformProjectConfigurator"/>
 
 <!--    <projectService serviceInterface="com.intellij.openapi.roots.SingleFileSourcesTracker"-->
 <!--                    serviceImplementation="org.jetbrains.plugins.bsp.services.SingleFileSourcesTrackerImpl"-->
@@ -82,8 +101,9 @@
     <registryKey defaultValue="false" description="Build project on initial project sync" key="bsp.build.project.on.sync"/>
     <registryKey defaultValue="false" description="Python modules support" key="bsp.python.support"/>
     <registryKey defaultValue="false" description="Scala modules support" key="bsp.scala.support"/>
+    <registryKey defaultValue="false" description="Default to use JPS to build project instead of BSP" key="bsp.jps.project.compilation"/>
+    <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
     <registryKey defaultValue="false" description="Go modules support" key="bsp.go.support"/>
-
 
     <statusBarWidgetFactory id="BspDocumentTargetsWidget" implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory" />
 
@@ -104,12 +124,16 @@
             icon="/icons/buildAndResync.svg"/>
     <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.ConnectAction"
             icon="/icons/connect.svg"/>
+    <action id="Bsp.Compile.CompileProjectWithBspAction"
+            class="org.jetbrains.plugins.bsp.building.action.CompileProjectWithBspAction"
+            icon="AllIcons.Actions.Compile"/>
+    <action id="Bsp.Compile.CompileProjectWithJpsAction"
+            class="org.jetbrains.plugins.bsp.building.action.CompileProjectWithJpsAction"
+            icon="AllIcons.Actions.Compile"/>
 
     <group id="Bsp.ActionsToolbar">
-      <reference id="Bsp.ConnectAction"/>
       <reference id="Bsp.ReloadAction"/>
       <reference id="Bsp.BuildAndResyncAction"/>
-      <reference id="Bsp.DisconnectAction"/>
     </group>
 
   </actions>

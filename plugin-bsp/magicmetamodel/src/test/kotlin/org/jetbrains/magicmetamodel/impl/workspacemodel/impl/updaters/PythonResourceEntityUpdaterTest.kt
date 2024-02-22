@@ -23,7 +23,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath)
+      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
     pythonResourceEntityUpdater = PythonResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
   }
 
@@ -31,7 +31,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
   fun `should add one python resource root to the workspace model`() {
     // given
     val resourcePath = URI.create("file:///root/dir/example/resource/File.txt").toPath()
-    val pythonResourceRoot = ResourceRoot(resourcePath)
+    val pythonResourceRoot = ResourceRoot(resourcePath, "")
 
     // when
     val returnedResourceRootEntity = runTestWriteAction {
@@ -65,13 +65,13 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
   fun `shoulde add multiple python resource roots to the workspace model`() {
     // given
     val resourcePath1 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
-    val pythonResourceRoot1 = ResourceRoot(resourcePath1)
+    val pythonResourceRoot1 = ResourceRoot(resourcePath1, "")
 
     val resourcePath2 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
-    val pythonResourceRoot2 = ResourceRoot(resourcePath2)
+    val pythonResourceRoot2 = ResourceRoot(resourcePath2, "")
 
     val resourcePath3 = URI.create("file:///root/dir/example/resource/File3.txt").toPath()
-    val pythonResourceRoot3 = ResourceRoot(resourcePath2)
+    val pythonResourceRoot3 = ResourceRoot(resourcePath2, "")
 
     val pythonResourceRoots = listOf(pythonResourceRoot1, pythonResourceRoot2, pythonResourceRoot3)
 

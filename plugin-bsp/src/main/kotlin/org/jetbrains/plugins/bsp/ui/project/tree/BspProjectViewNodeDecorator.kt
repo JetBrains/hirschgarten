@@ -6,10 +6,9 @@ import com.intellij.ide.projectView.ProjectViewNodeDecorator
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.virtualFile
-import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.ui.SimpleTextAttributes
-import com.intellij.workspaceModel.ide.getInstance
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
@@ -38,11 +37,11 @@ public class BspProjectViewNodeDecorator(private val project: Project) : Project
 
   private fun calculateAllTargetsBaseDirectories(): Set<VirtualFile> {
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
-    val virtualFileUrlManager = VirtualFileUrlManager.getInstance(project)
+    val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
     return magicMetaModel.getAllLoadedTargets()
       .mapNotNull { it.baseDirectory }
-      .map { virtualFileUrlManager.fromUrl(it) }
+      .map { virtualFileUrlManager.getOrCreateFromUri(it) }
       .mapNotNull { it.virtualFile }
       .toSet()
   }

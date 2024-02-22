@@ -7,15 +7,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.projectImport.ProjectOpenProcessor
-import com.intellij.projectImport.ProjectOpenedCallback
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
-import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.nio.file.Path
 
 public abstract class BaseBspProjectOpenProcessor(private val buildToolId: BuildToolId) : ProjectOpenProcessor() {
@@ -44,32 +39,6 @@ public abstract class BaseBspProjectOpenProcessor(private val buildToolId: Build
     this.projectToClose = projectToClose
 
     beforeOpen = { it.initProperties(virtualFile, buildToolId); true }
-    callback = ProjectOpenedCallback { project, _ -> project.initializeEmptyMagicMetaModel(virtualFile) }
-  }
-}
-
-public fun Project.initializeEmptyMagicMetaModel(projectRootDir: VirtualFile) {
-  this.rootDir = projectRootDir
-  val magicMetaModelService = MagicMetaModelService.getInstance(this)
-  magicMetaModelService.initializeMagicModel(
-    ProjectDetails(
-      targetsId = emptyList(),
-      targets = emptySet(),
-      sources = emptyList(),
-      resources = emptyList(),
-      dependenciesSources = emptyList(),
-      javacOptions = emptyList(),
-      scalacOptions = emptyList(),
-      pythonOptions = emptyList(),
-      outputPathUris = emptyList(),
-      libraries = emptyList(),
-      invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
-      defaultJdkName = null,
-    ),
-  )
-
-  BspCoroutineService.getInstance(this).start {
-    magicMetaModelService.value.loadDefaultTargets().applyOnWorkspaceModel()
   }
 }
 

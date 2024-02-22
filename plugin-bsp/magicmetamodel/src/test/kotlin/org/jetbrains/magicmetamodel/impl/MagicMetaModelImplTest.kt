@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.SourceItemKind
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.magicmetamodel.ProjectDetails
@@ -35,7 +34,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     super.beforeEach()
 
     testMagicMetaModelProjectConfig =
-      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath)
+      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath, project)
   }
 
   private fun createBuildTargetInfo(target: BuildTarget) = with(target) {
@@ -72,7 +71,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -206,7 +204,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -442,7 +439,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -724,7 +720,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
       outputPathUris = emptyList(),
       libraries = emptyList(),
       scalacOptions = emptyList(),
-      invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
     )
 
     val expectedTargetA1 = createBuildTargetInfo(targetA1)
@@ -769,7 +764,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -847,7 +841,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -960,7 +953,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1064,7 +1056,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1169,7 +1160,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -1252,7 +1242,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1327,7 +1316,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1406,7 +1394,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -1491,7 +1478,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -1613,7 +1599,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when 1
@@ -1681,7 +1666,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1729,7 +1713,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1807,7 +1790,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when
@@ -1888,7 +1870,6 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
         outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
-        invalidTargets = WorkspaceInvalidTargetsResult(emptyList()),
       )
 
       // when

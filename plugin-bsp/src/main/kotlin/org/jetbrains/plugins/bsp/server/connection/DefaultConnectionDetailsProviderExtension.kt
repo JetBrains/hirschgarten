@@ -42,7 +42,7 @@ public class DefaultConnectionDetailsProviderExtension : ConnectionDetailsProvid
     val connectionDetailsFromFile = project.stateService.connectionFile?.parseBspConnectionDetails()
       ?: error("Cannot parse connection details from connection file. Please reimport the project.")
 
-    return connectionDetailsFromFile?.takeIf { it != currentConnectionDetails }
+    return connectionDetailsFromFile.takeIf { it != currentConnectionDetails }
   }
 }
 

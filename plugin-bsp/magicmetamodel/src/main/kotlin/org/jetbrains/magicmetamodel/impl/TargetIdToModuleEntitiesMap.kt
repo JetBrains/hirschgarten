@@ -3,6 +3,7 @@ package org.jetbrains.magicmetamodel.impl
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
@@ -14,14 +15,19 @@ public object TargetIdToModuleEntitiesMap {
   public operator fun invoke(
     projectDetails: ProjectDetails,
     projectBasePath: Path,
+    targetsMap: Map<BuildTargetId, BuildTargetInfo>,
     moduleNameProvider: ModuleNameProvider,
     hasDefaultPythonInterpreter: Boolean,
+    isAndroidSupportEnabled: Boolean,
   ): Map<BuildTargetId, Module> {
     val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(
+      targetsMap,
       moduleNameProvider,
       projectBasePath,
+      isAndroidSupportEnabled,
     )
     val moduleDetailsToPythonModuleTransformer = ModuleDetailsToPythonModuleTransformer(
+      targetsMap,
       moduleNameProvider,
       projectBasePath,
       hasDefaultPythonInterpreter,

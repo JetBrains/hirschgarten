@@ -7,9 +7,12 @@ import com.intellij.openapi.module.ModuleTypeId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.backend.workspace.impl.internal
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
-import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
+import com.intellij.platform.workspace.jps.entities.SdkDependency
+import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -18,7 +21,6 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.workspaceModel.updateProjectModel
-import com.intellij.workspaceModel.ide.getInstance
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
@@ -37,7 +39,7 @@ public open class WorkspaceModelBaseTest {
 
   @BeforeEach
   protected open fun beforeEach() {
-    workspaceEntityStorageBuilder = workspaceModel.getBuilderSnapshot().builder
+    workspaceEntityStorageBuilder = workspaceModel.internal.getBuilderSnapshot().builder
   }
 
   protected val project: Project
@@ -50,7 +52,7 @@ public open class WorkspaceModelBaseTest {
     get() = WorkspaceModel.getInstance(project)
 
   protected val virtualFileUrlManager: VirtualFileUrlManager
-    get() = VirtualFileUrlManager.getInstance(project)
+    get() = workspaceModel.getVirtualFileUrlManager()
 
   protected fun <T : Any> runTestWriteAction(action: () -> T): T {
     lateinit var result: T
@@ -71,8 +73,8 @@ public open class WorkspaceModelBaseTest {
       ModuleEntity(
         name = name,
         dependencies = listOf(
-          ModuleDependencyItem.SdkDependency(JAVA_SDK_NAME, JAVA_SDK_TYPE),
-          ModuleDependencyItem.ModuleSourceDependency,
+          SdkDependency(SdkId(JAVA_SDK_NAME, JAVA_SDK_TYPE)),
+          ModuleSourceDependency,
         ),
         entitySource = object : EntitySource {},
       ) {
@@ -89,7 +91,7 @@ public open class WorkspaceModelBaseTest {
     files.map {
       entityStorage.addEntity(
         ContentRootEntity(
-          url = virtualFileUrlManager.fromUrl(it.url),
+          url = virtualFileUrlManager.findByUri(it.url)!!,
           excludedPatterns = emptyList(),
           entitySource = module.entitySource,
         ) { this.module = module },

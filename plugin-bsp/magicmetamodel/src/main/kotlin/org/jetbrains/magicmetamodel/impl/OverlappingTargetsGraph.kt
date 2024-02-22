@@ -1,20 +1,53 @@
 package org.jetbrains.magicmetamodel.impl
 
+import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.diagnostic.trace
+import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
+import org.jetbrains.magicmetamodel.MagicMetaModelTemporaryFacade
+import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.extensions.reduceSets
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 
 public object OverlappingTargetsGraph {
   private val log = logger<OverlappingTargetsGraph>()
 
+  // only for tests, in the following PRs will be removed
   public operator fun invoke(
-    targetsDetailsForDocumentProvider: TargetsDetailsForDocumentProvider,
+    sources: List<SourcesItem>,
+    magicMetaModelProjectConfig: MagicMetaModelProjectConfig,
+  ): Map<BuildTargetId, Set<BuildTargetId>> {
+    // ONLY FOR TESTS, IT WILL BE REMOVED SOON
+    val mockProjectDetails = ProjectDetails(
+      targetsId = emptyList(),
+      targets = emptySet(),
+      sources = sources,
+      resources = emptyList(),
+      dependenciesSources = emptyList(),
+      javacOptions = emptyList(),
+      scalacOptions = emptyList(),
+      pythonOptions = emptyList(),
+      outputPathUris = emptyList(),
+      libraries = null,
+    )
+    // ONLY FOR TESTS, IT WILL BE REMOVED SOON
+    val mockTargetsStatusStorage = TargetsStatusStorage(emptyList())
+    val facade = MagicMetaModelTemporaryFacade(
+      projectDetails = mockProjectDetails,
+      magicMetaModelProjectConfig = magicMetaModelProjectConfig,
+      targetsStatusStorage = mockTargetsStatusStorage
+    )
+
+    return invoke(facade)
+  }
+
+  public operator fun invoke(
+    facade: MagicMetaModelTemporaryFacade,
   ): Map<BuildTargetId, Set<BuildTargetId>> {
     log.trace { "Calculating overlapping targets graph..." }
 
-    return targetsDetailsForDocumentProvider.getAllDocuments().asSequence()
-      .map { targetsDetailsForDocumentProvider.getTargetsDetailsForDocument(it) }
+    return facade.allDocuments().asSequence()
+      .map { facade.getTargetsForFile(it) }
       .flatMap { generateEdgesForOverlappingTargetsForAllTargets(it) }
       .groupBy({ it.first }, { it.second })
       .mapValues { it.value.reduceSets().toSet() }

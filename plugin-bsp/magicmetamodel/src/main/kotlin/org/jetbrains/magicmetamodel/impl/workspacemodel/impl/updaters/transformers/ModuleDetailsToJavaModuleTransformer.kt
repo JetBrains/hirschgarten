@@ -2,17 +2,20 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
+import org.jetbrains.bsp.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.utils.extractScalaBuildTarget
 import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.magicmetamodel.ModuleNameProvider
+import org.jetbrains.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.KotlinAddendum
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import java.net.URI
@@ -30,9 +33,11 @@ public data class KotlinBuildTarget(
 )
 
 internal class ModuleDetailsToJavaModuleTransformer(
+  targetsMap: Map<BuildTargetId, BuildTargetInfo>,
   moduleNameProvider: ModuleNameProvider,
   private val projectBasePath: Path,
-) : ModuleDetailsToModuleTransformer<JavaModule>(moduleNameProvider) {
+  private val isAndroidSupportEnabled: Boolean = false,
+) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, moduleNameProvider) {
   override val type = "JAVA_MODULE"
 
   private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(projectBasePath)
@@ -48,18 +53,23 @@ internal class ModuleDetailsToJavaModuleTransformer(
           it,
         )
       }),
-      resourceRoots = resourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources),
+      resourceRoots = resourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources.map {
+        BuildTargetAndResourcesItem(
+          inputEntity.target,
+          it,
+        )
+      }),
       moduleLevelLibraries = if (inputEntity.libraryDependencies == null)
         DependencySourcesItemToLibraryTransformer
           .transform(inputEntity.dependenciesSources.map {
             DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
           }) else null,
-      compilerOutput = toCompilerOutput(inputEntity),
       // Any java module must be assigned a jdk if there is any available.
       jvmJdkName = inputEntity.toJdkNameOrDefault(),
       kotlinAddendum = toKotlinAddendum(inputEntity),
       scalaAddendum = toScalaAddendum(inputEntity),
       javaAddendum = toJavaAddendum(inputEntity),
+      androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
     )
 
   private fun ModuleDetails.toJvmClassPaths() =
@@ -85,15 +95,12 @@ internal class ModuleDetailsToJavaModuleTransformer(
     val dummyJavaModuleDependencies =
       calculateDummyJavaModuleNames(inputEntity.calculateDummyJavaSourceRoots(), projectBasePath)
         .filter { it.isNotEmpty() }
-        .map { ModuleDependency(it) }
+        .map { IntermediateModuleDependency(it) }
     return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
   }
 
   private fun ModuleDetails.calculateDummyJavaSourceRoots(): List<Path> =
     sources.mapNotNull { it.roots }.flatten().map { URI.create(it) }.map { it.toPath() }
-
-  private fun toCompilerOutput(inputEntity: ModuleDetails): Path? =
-    inputEntity.javacOptions?.classDirectory?.let { URI(it).toPath() }
 
   private fun ModuleDetails.toJdkNameOrDefault(): String? =
     toJdkName() ?: defaultJdkName
@@ -127,6 +134,18 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private fun toJavaAddendum(inputEntity: ModuleDetails): JavaAddendum? =
     extractJvmBuildTarget(inputEntity.target)?.javaVersion?.let { JavaAddendum(languageVersion = it) }
 
+  private fun toAndroidAddendum(inputEntity: ModuleDetails): AndroidAddendum? {
+    val androidBuildTarget = extractAndroidBuildTarget(inputEntity.target) ?: return null
+    return with(androidBuildTarget) {
+      AndroidAddendum(
+        androidSdkName = androidJar.androidJarToAndroidSdkName(),
+        androidTargetType = androidTargetType,
+        manifest = manifest,
+        resourceFolders = resourceFolders,
+      )
+    }
+  }
+
   private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetId> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
     return kotlinBuildTarget?.associates?.map { it.uri } ?: emptyList()
@@ -140,9 +159,11 @@ public fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
 public fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 
 public fun String.projectNameToJdkName(javaHomeUri: String): String =
-  projectNameToBaseJdkName() + "-" + javaHomeUri.createJavaHomeHash()
+  projectNameToBaseJdkName() + "-" + javaHomeUri.md5Hash()
 
-private fun String.createJavaHomeHash(): String {
+public fun URI.androidJarToAndroidSdkName(): String = "android-sdk-" + this.toString().md5Hash()
+
+private fun String.md5Hash(): String {
   val md = MessageDigest.getInstance("MD5")
   val hash = md.digest(this.toByteArray())
   return hash.toHexString().substring(0, 5)

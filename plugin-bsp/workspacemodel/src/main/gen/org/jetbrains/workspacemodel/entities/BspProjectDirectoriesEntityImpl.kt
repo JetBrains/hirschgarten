@@ -2,7 +2,7 @@ package org.jetbrains.workspacemodel.entities
 
 import com.intellij.platform.workspace.storage.EntityInformation
 import com.intellij.platform.workspace.storage.EntitySource
-import com.intellij.platform.workspace.storage.EntityStorage
+import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -13,6 +13,8 @@ import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityData
 import com.intellij.platform.workspace.storage.impl.containers.MutableWorkspaceList
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
+import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentation
+import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 
@@ -30,16 +32,28 @@ public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspPro
   }
 
   override val projectRoot: VirtualFileUrl
-    get() = dataSource.projectRoot
+    get() {
+      readField("projectRoot")
+      return dataSource.projectRoot
+    }
 
   override val includedRoots: List<VirtualFileUrl>
-    get() = dataSource.includedRoots
+    get() {
+      readField("includedRoots")
+      return dataSource.includedRoots
+    }
 
   override val excludedRoots: List<VirtualFileUrl>
-    get() = dataSource.excludedRoots
+    get() {
+      readField("excludedRoots")
+      return dataSource.excludedRoots
+    }
 
   override val entitySource: EntitySource
-    get() = dataSource.entitySource
+    get() {
+      readField("entitySource")
+      return dataSource.entitySource
+    }
 
   override fun connectionIdList(): List<ConnectionId> {
     return connections
@@ -203,11 +217,13 @@ public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDir
     return modifiable
   }
 
-  override fun createEntity(snapshot: EntityStorage): BspProjectDirectoriesEntity {
-    return getCached(snapshot) {
+  @OptIn(EntityStorageInstrumentationApi::class)
+  override fun createEntity(snapshot: EntityStorageInstrumentation): BspProjectDirectoriesEntity {
+    val entityId = createEntityId()
+    return snapshot.initializeEntity(entityId) {
       val entity = BspProjectDirectoriesEntityImpl(this)
       entity.snapshot = snapshot
-      entity.id = createEntityId()
+      entity.id = entityId
       entity
     }
   }

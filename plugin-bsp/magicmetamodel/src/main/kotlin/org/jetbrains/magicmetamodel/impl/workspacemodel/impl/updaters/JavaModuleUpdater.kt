@@ -3,19 +3,25 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.java.workspace.entities.JavaModuleSettingsEntity
 import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
+import com.intellij.platform.workspace.jps.entities.SdkDependency
+import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
+import org.jetbrains.android.sdk.AndroidSdkType
+import org.jetbrains.bsp.jpsCompilation.utils.JpsPaths
+import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.LibraryDependency
+import org.jetbrains.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
-import org.jetbrains.workspacemodel.storage.BspEntitySource
 import java.nio.file.Path
 
 internal class JavaModuleWithSourcesUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   private val projectBasePath: Path,
+  private val isAndroidSupportEnabled: Boolean,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
@@ -43,8 +49,20 @@ internal class JavaModuleWithSourcesUpdater(
     }
 
     if (entityToAdd.genericModuleInfo.languageIds.includesKotlin()) {
-      val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
+      val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
       kotlinFacetEntityUpdater.addEntity(entityToAdd, moduleEntity)
+    }
+
+    if (isAndroidSupportEnabled) {
+      val androidAddendumEntityUpdater = AndroidAddendumEntityUpdater(workspaceModelEntityUpdaterConfig)
+      androidAddendumEntityUpdater.addEntity(entityToAdd, moduleEntity)
+    }
+
+    if (isAndroidSupportEnabled && entityToAdd.genericModuleInfo.languageIds.includesAndroid()) {
+      androidFacetEntityUpdaterExtension()?.let { extension ->
+        val androidFacetEntityUpdater = extension.createAndroidFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
+        androidFacetEntityUpdater.addEntity(entityToAdd, moduleEntity)
+      }
     }
 
     return moduleEntity
@@ -52,13 +70,23 @@ internal class JavaModuleWithSourcesUpdater(
 
   private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> {
     val returnDependencies: MutableList<ModuleDependencyItem> = defaultDependencies.toMutableList()
+    entityToAdd.androidAddendum?.also { addendum ->
+      returnDependencies.add(
+        SdkDependency(
+          SdkId(
+            addendum.androidSdkName,
+            AndroidSdkType.SDK_NAME
+          )
+        )
+      )
+    }
     entityToAdd.jvmJdkName?.also {
-      returnDependencies.add(ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkName, "JavaSDK"))
+      returnDependencies.add(SdkDependency(SdkId(entityToAdd.jvmJdkName, "JavaSDK")))
     }
     entityToAdd.scalaAddendum?.also { addendum ->
       returnDependencies.add(
         toModuleDependencyItemLibraryDependency(
-          LibraryDependency(addendum.scalaSdkName, true),
+          IntermediateLibraryDependency(addendum.scalaSdkName, true),
           entityToAdd.genericModuleInfo.name
         )
       )
@@ -72,15 +100,19 @@ internal class JavaModuleWithSourcesUpdater(
     moduleEntity: ModuleEntity,
   ) {
     val compilerOutput =
-      entityToAdd.compilerOutput?.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+      JpsPaths.getJpsCompiledProductionDirectory(projectBasePath, entityToAdd.genericModuleInfo.name)
+        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+    val testCompilerOutput =
+      JpsPaths.getJpsCompiledTestDirectory(projectBasePath, entityToAdd.genericModuleInfo.name)
+        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
     builder.addEntity(
       JavaModuleSettingsEntity(
         inheritedCompilerOutput = false,
         excludeOutput = true,
-        entitySource = BspEntitySource,
+        entitySource = moduleEntity.entitySource,
       ) {
         this.compilerOutput = compilerOutput
-        this.compilerOutputForTests = null
+        this.compilerOutputForTests = testCompilerOutput
         this.module = moduleEntity
         this.languageLevelId = LanguageLevel.parse(entityToAdd.javaAddendum?.languageVersion)?.name
       },
@@ -89,7 +121,7 @@ internal class JavaModuleWithSourcesUpdater(
 
   private companion object {
     val defaultDependencies = listOf(
-      ModuleDependencyItem.ModuleSourceDependency,
+      ModuleSourceDependency,
     )
   }
 }
@@ -110,16 +142,17 @@ internal class JavaModuleWithoutSourcesUpdater(
   private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
     entityToAdd.jvmJdkName
       ?.let {
-        listOf(ModuleDependencyItem.SdkDependency(entityToAdd.jvmJdkName, "JavaSDK"))
+        listOf(SdkDependency(SdkId(entityToAdd.jvmJdkName, "JavaSDK")))
       } ?: listOf()
 }
 
 internal class JavaModuleUpdater(
   workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   projectBasePath: Path,
+  isAndroidSupportEnabled: Boolean,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   private val javaModuleWithSourcesUpdater =
-    JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
+    JavaModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
   private val javaModuleWithoutSourcesUpdater = JavaModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity =

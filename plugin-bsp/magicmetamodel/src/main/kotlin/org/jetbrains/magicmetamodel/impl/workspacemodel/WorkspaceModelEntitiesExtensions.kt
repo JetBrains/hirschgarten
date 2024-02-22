@@ -10,6 +10,7 @@ public fun LanguageIds.includesPython(): Boolean = contains("python")
 public fun LanguageIds.includesKotlin(): Boolean = contains("kotlin")
 public fun LanguageIds.includesJava(): Boolean = contains("java")
 public fun LanguageIds.includesScala(): Boolean = contains("scala")
+public fun LanguageIds.includesAndroid(): Boolean = contains("android")
 
 public fun LanguageIds.includesJavaOrScala(): Boolean = includesJava() || includesScala()
 

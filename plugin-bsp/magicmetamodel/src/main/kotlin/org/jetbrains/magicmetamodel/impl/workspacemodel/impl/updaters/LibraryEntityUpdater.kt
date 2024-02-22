@@ -7,8 +7,8 @@ import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.workspacemodel.storage.BspEntitySource
 
 internal class LibraryEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -26,7 +26,10 @@ internal class LibraryEntityUpdater(
         name = entityToAdd.displayName,
         tableId = LibraryTableId.ModuleLibraryTableId(ModuleId(parentModuleEntity.name)),
         roots = toLibrarySourcesRoots(entityToAdd) + toLibraryClassesRoots(entityToAdd),
-        entitySource = BspEntitySource,
+        entitySource = LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
+          workspaceModelEntityUpdaterConfig.project,
+          null
+        ),
       ) {
         this.excludedRoots = arrayListOf()
       },
@@ -35,7 +38,7 @@ internal class LibraryEntityUpdater(
   private fun toLibrarySourcesRoots(entityToAdd: Library): List<LibraryRoot> =
     entityToAdd.sourceJars.map {
       LibraryRoot(
-        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(it),
+        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUri(it),
         type = LibraryRootTypeId.SOURCES,
       )
     }
@@ -43,7 +46,7 @@ internal class LibraryEntityUpdater(
   private fun toLibraryClassesRoots(entityToAdd: Library): List<LibraryRoot> =
     entityToAdd.classJars.map {
       LibraryRoot(
-        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.fromUrl(it),
+        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUri(it),
         type = LibraryRootTypeId.COMPILED,
       )
     }

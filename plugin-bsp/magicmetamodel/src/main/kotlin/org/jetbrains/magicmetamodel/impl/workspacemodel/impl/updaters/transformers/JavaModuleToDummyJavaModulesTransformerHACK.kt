@@ -42,6 +42,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
         type = ModuleTypeId.JAVA_MODULE,
         modulesDependencies = listOf(),
         librariesDependencies = listOf(),
+        isDummy = true,
       ),
       baseDirContentRoot = ContentRoot(path = sourceRoot),
       sourceRoots = listOf(
@@ -54,7 +55,6 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
       ),
       resourceRoots = listOf(),
       moduleLevelLibraries = listOf(),
-      compilerOutput = null,
       jvmJdkName = jdkName,
       kotlinAddendum = null,
     )
