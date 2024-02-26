@@ -56,7 +56,9 @@ internal abstract class BaseRunnerAction(
         withContext(Dispatchers.EDT) { runner.execute(executionEnvironment) }
       }
     } catch (e: Exception) {
-      Messages.showErrorDialog(project, e.message, BspPluginBundle.message("widget.side.menu.error.title"))
+      withContext(Dispatchers.EDT) {
+        Messages.showErrorDialog(project, e.message, BspPluginBundle.message("widget.side.menu.error.title"))
+      }
     }
   }
 
