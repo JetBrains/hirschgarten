@@ -6,7 +6,7 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.dsl.builder.bind
 import com.intellij.ui.dsl.builder.panel
-import org.jetbrains.bsp.BSP_CONNECTION_DIR
+import org.jetbrains.bsp.protocol.BSP_CONNECTION_DIR
 
 internal open class ChooseConnectionFileStep(
   projectPath: VirtualFile,

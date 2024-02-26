@@ -1,6 +1,6 @@
 package org.jetbrains.magicmetamodel.impl
 
-import org.jetbrains.bsp.AndroidTargetType
+import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.magicmetamodel.MagicMetaModelTemporaryFacadeState
 import org.jetbrains.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId

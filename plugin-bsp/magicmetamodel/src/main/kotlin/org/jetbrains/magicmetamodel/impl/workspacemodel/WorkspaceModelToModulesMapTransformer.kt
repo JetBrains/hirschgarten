@@ -16,7 +16,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.customImlData
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.ide.toPath
-import org.jetbrains.bsp.AndroidTargetType
+import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.compilerRunner.toArgumentStrings
 import org.jetbrains.kotlin.idea.workspaceModel.CompilerArgumentsSerializer

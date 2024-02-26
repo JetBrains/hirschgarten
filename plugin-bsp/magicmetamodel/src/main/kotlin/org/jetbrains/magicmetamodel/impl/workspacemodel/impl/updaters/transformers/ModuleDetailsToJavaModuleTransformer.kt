@@ -2,10 +2,10 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transform
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
-import org.jetbrains.bsp.utils.extractAndroidBuildTarget
-import org.jetbrains.bsp.utils.extractJvmBuildTarget
-import org.jetbrains.bsp.utils.extractKotlinBuildTarget
-import org.jetbrains.bsp.utils.extractScalaBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import org.jetbrains.kotlin.daemon.common.toHexString
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.AndroidAddendum

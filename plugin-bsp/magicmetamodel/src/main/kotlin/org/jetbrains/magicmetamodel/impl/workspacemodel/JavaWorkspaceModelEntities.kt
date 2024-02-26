@@ -1,6 +1,6 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel
 
-import org.jetbrains.bsp.AndroidTargetType
+import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.magicmetamodel.impl.ModuleState
 import org.jetbrains.magicmetamodel.impl.toState
 import java.net.URI

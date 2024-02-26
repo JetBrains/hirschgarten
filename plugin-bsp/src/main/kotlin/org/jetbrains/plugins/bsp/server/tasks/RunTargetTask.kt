@@ -5,8 +5,9 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RunParams
 import ch.epfl.scala.bsp4j.RunResult
 import com.intellij.openapi.project.Project
-import org.jetbrains.bsp.RemoteDebugData
-import org.jetbrains.bsp.RunWithDebugParams
+import org.jetbrains.bsp.protocol.BazelBuildServer
+import org.jetbrains.bsp.protocol.RemoteDebugData
+import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
 import java.util.UUID
@@ -27,7 +28,7 @@ public class RunTargetTask(
       server.buildTargetRun(runParams).get()
     } else {
       val debugParams = createDebugParams(targetId, debugType, port)
-      server.buildTargetRunWithDebug(debugParams).get()
+      (server as BazelBuildServer).buildTargetRunWithDebug(debugParams).get()
     }
   }
 

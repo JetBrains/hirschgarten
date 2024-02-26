@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.server.tasks
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.project.Project
-import org.jetbrains.bsp.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.connection
 

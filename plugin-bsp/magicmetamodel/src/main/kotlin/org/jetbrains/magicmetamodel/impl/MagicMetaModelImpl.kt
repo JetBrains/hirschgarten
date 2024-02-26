@@ -12,9 +12,9 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.annotations.TestOnly
-import org.jetbrains.bsp.DirectoryItem
-import org.jetbrains.bsp.LibraryItem
-import org.jetbrains.bsp.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.magicmetamodel.MagicMetaModelDiff

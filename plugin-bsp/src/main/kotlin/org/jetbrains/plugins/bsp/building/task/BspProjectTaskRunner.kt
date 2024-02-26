@@ -12,7 +12,7 @@ import com.intellij.task.ProjectTaskContext
 import com.intellij.task.ProjectTaskRunner
 import com.intellij.task.TaskRunnerResults
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.jetbrains.bsp.jpsCompilation.utils.JpsFeatureFlags
+import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo

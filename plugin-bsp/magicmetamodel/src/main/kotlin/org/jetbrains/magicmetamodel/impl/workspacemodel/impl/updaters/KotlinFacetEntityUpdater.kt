@@ -1,7 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import org.jetbrains.bsp.jpsCompilation.utils.JpsPaths
+import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.arguments.parseCommandLineArguments
 import org.jetbrains.kotlin.config.JvmTarget

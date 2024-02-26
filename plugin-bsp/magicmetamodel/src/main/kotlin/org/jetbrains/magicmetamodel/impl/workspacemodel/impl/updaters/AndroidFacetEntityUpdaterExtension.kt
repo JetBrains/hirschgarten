@@ -9,7 +9,7 @@ import com.intellij.platform.workspace.jps.entities.FacetEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.AndroidFacetConfiguration
-import org.jetbrains.bsp.AndroidTargetType
+import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 
 internal interface AndroidFacetEntityUpdaterExtension {

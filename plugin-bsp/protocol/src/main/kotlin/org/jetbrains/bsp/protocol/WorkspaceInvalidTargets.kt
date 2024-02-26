@@ -1,6 +1,6 @@
 @file:Suppress("MatchingDeclarationName")
 
-package org.jetbrains.bsp
+package org.jetbrains.bsp.protocol
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 

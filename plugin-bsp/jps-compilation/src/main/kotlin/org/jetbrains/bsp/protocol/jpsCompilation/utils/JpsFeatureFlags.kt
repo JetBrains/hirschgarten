@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.jpsCompilation.utils
+package org.jetbrains.bsp.protocol.jpsCompilation.utils
 
 import com.intellij.openapi.util.registry.Registry
 

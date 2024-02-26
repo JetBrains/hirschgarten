@@ -1,7 +1,7 @@
 package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.PythonBuildTarget
-import org.jetbrains.bsp.utils.extractPythonBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.ModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
