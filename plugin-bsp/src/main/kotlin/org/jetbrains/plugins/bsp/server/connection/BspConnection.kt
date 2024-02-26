@@ -7,8 +7,8 @@ import ch.epfl.scala.bsp4j.PythonBuildServer
 import ch.epfl.scala.bsp4j.ScalaBuildServer
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import org.jetbrains.bsp.BazelBuildServer
-import org.jetbrains.bsp.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BazelBuildServer
+import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 
 public interface BspServer :
   BuildServer,

@@ -2,8 +2,8 @@ package org.jetbrains.plugins.bsp.flow.open
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.bsp.BSP_CONNECTION_DIR
-import org.jetbrains.bsp.utils.parseBspConnectionDetails
+import org.jetbrains.bsp.protocol.BSP_CONNECTION_DIR
+import org.jetbrains.bsp.protocol.utils.parseBspConnectionDetails
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId

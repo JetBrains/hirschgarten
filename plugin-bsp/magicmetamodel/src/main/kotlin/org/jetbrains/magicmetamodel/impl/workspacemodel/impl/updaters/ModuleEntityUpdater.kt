@@ -18,8 +18,8 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
-import org.jetbrains.bsp.jpsCompilation.utils.JpsConstants
-import org.jetbrains.bsp.jpsCompilation.utils.JpsPaths
+import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsConstants
+import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency

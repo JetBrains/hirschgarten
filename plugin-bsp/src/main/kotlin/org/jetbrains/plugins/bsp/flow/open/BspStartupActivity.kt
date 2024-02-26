@@ -10,7 +10,7 @@ import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
-import org.jetbrains.bsp.utils.parseBspConnectionDetails
+import org.jetbrains.bsp.protocol.utils.parseBspConnectionDetails
 import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle

@@ -10,7 +10,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.android.sdk.AndroidSdkType
-import org.jetbrains.bsp.jpsCompilation.utils.JpsPaths
+import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import org.jetbrains.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.magicmetamodel.impl.workspacemodel.includesAndroid

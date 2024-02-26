@@ -14,7 +14,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bsp.utils.parseBspConnectionDetails
+import org.jetbrains.bsp.protocol.utils.parseBspConnectionDetails
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.bspBuildToolId
 import org.jetbrains.plugins.bsp.flow.open.wizard.ImportProjectWizard

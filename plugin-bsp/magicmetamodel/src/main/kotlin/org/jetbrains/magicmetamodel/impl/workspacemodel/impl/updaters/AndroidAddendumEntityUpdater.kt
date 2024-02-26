@@ -3,9 +3,9 @@ package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.bsp.AndroidTargetType.APP
-import org.jetbrains.bsp.AndroidTargetType.LIBRARY
-import org.jetbrains.bsp.AndroidTargetType.TEST
+import org.jetbrains.bsp.protocol.AndroidTargetType.APP
+import org.jetbrains.bsp.protocol.AndroidTargetType.LIBRARY
+import org.jetbrains.bsp.protocol.AndroidTargetType.TEST
 import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.workspacemodel.entities.AndroidAddendumEntity
 import org.jetbrains.workspacemodel.entities.AndroidTargetType

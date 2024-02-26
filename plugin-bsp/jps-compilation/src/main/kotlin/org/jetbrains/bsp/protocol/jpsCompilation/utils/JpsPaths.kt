@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.jpsCompilation.utils
+package org.jetbrains.bsp.protocol.jpsCompilation.utils
 
 import java.nio.file.Path
 

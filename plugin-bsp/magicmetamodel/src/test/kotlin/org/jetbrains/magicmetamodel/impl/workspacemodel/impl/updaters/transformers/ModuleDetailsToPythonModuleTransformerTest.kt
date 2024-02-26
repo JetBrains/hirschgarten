@@ -19,7 +19,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.utils.extractPythonBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import org.jetbrains.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.magicmetamodel.impl.workspacemodel.GenericModuleInfo

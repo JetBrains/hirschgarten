@@ -1,11 +1,11 @@
-package org.jetbrains.bsp.utils
+package org.jetbrains.bsp.protocol.utils
 
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import com.google.gson.Gson
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
-import org.jetbrains.bsp.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 
 public class BazelBuildServerCapabilitiesTypeAdapter : TypeAdapter<BuildServerCapabilities>() {
   private companion object {
