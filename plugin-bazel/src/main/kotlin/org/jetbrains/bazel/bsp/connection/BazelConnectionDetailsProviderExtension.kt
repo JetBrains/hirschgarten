@@ -27,7 +27,7 @@ import org.jetbrains.bsp.bazel.install.EnvironmentCreator
 import org.jetbrains.bsp.bazel.installationcontext.InstallationContext
 import org.jetbrains.bsp.bazel.installationcontext.InstallationContextJavaPathEntity
 import org.jetbrains.bsp.bazel.installationcontext.InstallationContextJavaPathEntityMapper
-import org.jetbrains.bsp.utils.parseBspConnectionDetails
+import org.jetbrains.bsp.protocol.utils.parseBspConnectionDetails
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
 import java.io.File
