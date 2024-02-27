@@ -1,5 +1,5 @@
 [versions]
-ideProbe = "0.52.0"
+ideProbe = "0.53.0"
 detekt = "1.23.1"
 kotlin-gradle-version = "1.9.10"
 
