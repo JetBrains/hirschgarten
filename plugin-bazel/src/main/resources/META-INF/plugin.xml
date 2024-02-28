@@ -24,6 +24,11 @@
 
         <bspProjectAwareExtension
                 implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
+
+        <projectSyncHook
+                implementation="org.jetbrains.bazel.flow.open.BazelProjectSyncHook"/>
+        <invalidTargetsProviderExtension
+                implementation="org.jetbrains.bazel.flow.open.BazelInvalidTargetsProviderExtension"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

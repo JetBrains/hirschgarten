@@ -149,6 +149,10 @@ tasks {
                 )
             )
         )
+
+        runtimeClasspathFiles.set(
+            runtimeConfiguration.exclude("org.jetbrains.bsp.protocol", null)
+        )
     }
 
     runPluginVerifier {
