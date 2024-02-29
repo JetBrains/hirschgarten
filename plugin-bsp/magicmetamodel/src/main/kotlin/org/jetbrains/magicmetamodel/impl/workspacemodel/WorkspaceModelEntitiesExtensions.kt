@@ -13,6 +13,7 @@ public fun LanguageIds.includesScala(): Boolean = contains("scala")
 public fun LanguageIds.includesAndroid(): Boolean = contains("android")
 
 public fun LanguageIds.includesJavaOrScala(): Boolean = includesJava() || includesScala()
+public fun LanguageIds.isJvmTarget(): Boolean = (includesJava() || includesKotlin()) && !includesAndroid()
 
 public fun List<BuildTargetId>.toBsp4JTargetIdentifiers(): List<BuildTargetIdentifier> =
   this.map { it.toBsp4JTargetIdentifier() }

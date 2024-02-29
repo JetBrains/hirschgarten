@@ -116,7 +116,7 @@ public class BspClient(
   }
 
   private fun addMessageToConsole(originId: String?, message: String) {
-    if (originId?.startsWith("build") == true) {
+    if (originId?.startsWith("build") == true || originId?.startsWith("mobile-install") == true) {
       bspBuildConsole.addMessage(originId, message)
     } else if (originId?.startsWith("test") == true) {
       bspTestConsole.print(message)

@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.runner
+package org.jetbrains.plugins.bsp.jvm
 
 import com.intellij.debugger.DebuggerManagerEx
 import com.intellij.debugger.DefaultDebugEnvironment
@@ -25,20 +25,20 @@ import org.jdom.Element
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
 import java.util.concurrent.atomic.AtomicReference
 
-public class BspDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
+public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
   override fun getRunnerId(): String = "BspDebugRunner"
 
-  override fun canRun(executorId: String, profile: RunProfile): Boolean =
-    executorId == DefaultDebugExecutor.EXECUTOR_ID &&
-      profile is BspRunConfiguration &&
-      profile.debugType != null // if target cannot be debugged, do not offer debugging it
+  override fun canRun(executorId: String, profile: RunProfile): Boolean {
+    // if target cannot be debugged, do not offer debugging it
+    if (executorId != DefaultDebugExecutor.EXECUTOR_ID) return false
+    if (profile !is BspRunConfiguration) return false
+    return profile.runHandler is JvmBspRunHandler
+  }
 
   override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
-    // cast should always succeed, because canRun(...) makes sure only BspRunConfiguration is run with this runner
-    val debugState = state as BspRunConfiguration.BspCommandLineState
-
+    // cast should always succeed, because canRun(...) checks for it
+    val debugState = state as JvmBspRunHandler.JvmBspRunHandlerState
     val connection = debugState.remoteConnection
-      ?: error("Run configuration has no remote connection data, but it was run with debug runner")
     return attachVM(state, environment, connection)
   }
 

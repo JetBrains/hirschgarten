@@ -61,7 +61,7 @@ internal class BspTestRunConfiguration(project: Project, configurationFactory: C
 
       val processHandler = BspProcessHandler()
       val testConsole = BspTestConsolePrinter(processHandler, SMTRunnerConsoleProperties(this, "BSP", executor2))
-      targetUri?.let { uri ->
+      target?.id?.let { uri ->
         bspTestConsole.registerPrinter(testConsole)
         processHandler.execute {
           try {
