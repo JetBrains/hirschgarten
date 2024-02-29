@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.runner
+package org.jetbrains.plugins.bsp.jvm
 
 import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.execution.Executor

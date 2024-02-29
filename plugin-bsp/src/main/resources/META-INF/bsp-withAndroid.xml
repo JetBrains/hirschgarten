@@ -4,6 +4,7 @@
       implementation="org.jetbrains.plugins.bsp.android.AndroidSdkGetter" />
     <androidFacetEntityUpdaterExtension
       implementation="org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtensionImpl" />
+    <bspRunHandler implementation="org.jetbrains.plugins.bsp.android.run.AndroidBspRunHandler" />
   </extensions>
   <extensions defaultExtensionNs="com.android.project">
     <projectsystem implementation="org.jetbrains.plugins.bsp.android.BspAndroidProjectSystemProvider"/>
@@ -12,5 +13,7 @@
     <postStartupActivity implementation="org.jetbrains.plugins.bsp.android.AndroidInMemoryStateUpdater" />
     <projectService serviceImplementation="org.jetbrains.plugins.bsp.android.BspLightResourceClassService" />
     <xml.schemaProvider implementation="org.jetbrains.plugins.bsp.android.SingleFileAndroidXmlSchemaProvider" />
+    <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.android.run.MobileInstallBeforeRunTaskProvider" />
+    <programRunner implementation="org.jetbrains.plugins.bsp.android.run.BspAndroidProgramRunner" />
   </extensions>
 </idea-plugin>

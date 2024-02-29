@@ -6,7 +6,9 @@ plugins {
 dependencies {
   implementation(project(":jps-compilation"))
   implementation(project(":protocol"))
-  implementation(libs.bsp4j)
+  implementation(libs.bsp4j) {
+    exclude(group = "com.google.guava", "guava")
+  }
   implementation(project(":workspacemodel"))
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)

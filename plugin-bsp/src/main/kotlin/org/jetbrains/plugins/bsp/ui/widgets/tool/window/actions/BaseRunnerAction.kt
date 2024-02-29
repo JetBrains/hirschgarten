@@ -3,7 +3,6 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManagerEx
 import com.intellij.execution.RunnerAndConfigurationSettings
-import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.executors.DefaultRunExecutor
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder
@@ -34,11 +33,6 @@ internal abstract class BaseRunnerAction(
     buildTargetInfo: BuildTargetInfo,
   ): RunnerAndConfigurationSettings?
 
-  /** This function is called after a run configuration instance is created
-   * (it is passed as this function's argument), but before it's executed.
-   */
-  open fun prepareRunConfiguration(runConfiguration: RunConfiguration) {}
-
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     doPerformAction(project)
   }
@@ -46,7 +40,6 @@ internal abstract class BaseRunnerAction(
   suspend fun doPerformAction(project: Project) {
     try {
       val settings = getRunnerSettings(project, buildTargetInfo) ?: return
-      prepareRunConfiguration(settings.configuration)
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
       val executor = getExecutor()
       ProgramRunner.getRunner(executor.id, settings.configuration)?.let { runner ->
