@@ -11,11 +11,11 @@ public abstract class LazySearchDisplay {
 
   protected var targets: List<BuildTargetInfo> = emptyList()
   protected var invalidTargets: List<BuildTargetId> = emptyList()
-  protected var query: String = ""
+  protected var query: Regex = "".toRegex()
 
   private var isOutdated = true
 
-  public fun updateSearch(newTargets: List<BuildTargetInfo>, newQuery: String) {
+  public fun updateSearch(newTargets: List<BuildTargetInfo>, newQuery: Regex) {
     targets = newTargets
     query = newQuery
     isOutdated = true
@@ -49,26 +49,23 @@ public abstract class LazySearchDisplay {
   }
 
   protected object QueryHighlighter {
-    public fun highlight(text: String, query: String): String =
-      if (query.isNotEmpty() && text.contains(query, true)) {
+    public fun highlight(text: String, query: Regex): String =
+      if (query.pattern.isNotEmpty() && query.containsMatchIn(text)) {
         "<html>${highlightAllOccurrences(text, query)}</html>"
       } else text
 
     private tailrec fun highlightAllOccurrences(
       text: String,
-      query: String,
+      query: Regex,
       builtText: String = "",
       startIndex: Int = 0,
     ): String {
-      val foundIndex = text.indexOf(query, startIndex, true)
-      if (foundIndex < 0) {
-        return builtText + text.substring(startIndex)
-      }
-      val endFoundIndex = foundIndex + query.length
+      val foundRange = query.find(text, startIndex)?.range
+        ?: return builtText + text.substring(startIndex)
       val updatedText = builtText +
-        text.substring(startIndex, foundIndex) +
-        "<b><u>${text.substring(foundIndex, endFoundIndex)}</u></b>"
-      return highlightAllOccurrences(text, query, updatedText, endFoundIndex)
+        text.substring(startIndex, foundRange.first) +
+        "<b><u>${text.substring(foundRange.first, foundRange.last + 1)}</u></b>"
+      return highlightAllOccurrences(text, query, updatedText, foundRange.last + 1)
     }
   }
 }
