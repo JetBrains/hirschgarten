@@ -1,20 +1,24 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
 import com.intellij.ui.components.fields.ExtendableTextComponent
-import java.awt.Component
 import javax.swing.Icon
+import javax.swing.JComponent
 
 public sealed class TextComponentExtension(
+  private val tooltip: String?,
   private val beforeText: Boolean,
 ) : ExtendableTextComponent.Extension {
   override fun isIconBeforeText(): Boolean = beforeText
+
+  override fun getTooltip(): String? = tooltip
 
   public class Indicator(
     private val trueIcon: Icon,
     private val falseIcon: Icon,
     private val predicate: () -> Boolean,
+    tooltip: String? = null,
     beforeText: Boolean = false,
-  ) : TextComponentExtension(beforeText) {
+  ) : TextComponentExtension(tooltip, beforeText) {
     override fun getIcon(hovered: Boolean): Icon =
       if (predicate()) trueIcon else falseIcon
 
@@ -27,9 +31,10 @@ public sealed class TextComponentExtension(
     private val icon: Icon,
     private val valueGetter: () -> Boolean,
     private val valueSetter: (Boolean) -> Unit,
-    private val parentComponent: Component,
+    private val parentComponent: JComponent,
+    tooltip: String? = null,
     beforeText: Boolean = false,
-  ) : TextComponentExtension(beforeText) {
+  ) : TextComponentExtension(tooltip, beforeText) {
     override fun getIcon(hovered: Boolean): Icon = icon
 
     override fun getActionOnClick(): Runnable =
