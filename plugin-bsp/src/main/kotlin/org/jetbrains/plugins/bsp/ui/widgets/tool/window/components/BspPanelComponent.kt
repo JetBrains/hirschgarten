@@ -93,9 +93,11 @@ public class BspPanelComponent private constructor(
 
   public fun wrappedInScrollPane(): JBScrollPane {
     val scrollPane = JBScrollPane(this)
-    val headerComponent = targetSearch.searchBarPanel
-    headerComponent.isEnabled = !targetTree.isEmpty()
-    scrollPane.setColumnHeaderView(headerComponent)
+    targetSearch.searchBarPanel.let {
+      it.isEnabled = true
+      it.registerShortcutsOn(scrollPane)
+      scrollPane.setColumnHeaderView(it)
+    }
     return scrollPane
   }
 

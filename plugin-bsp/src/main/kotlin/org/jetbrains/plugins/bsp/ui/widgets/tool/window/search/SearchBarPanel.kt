@@ -1,12 +1,21 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonShortcuts
+import com.intellij.openapi.actionSystem.CustomShortcutSet
 import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.fields.ExtendableTextField
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.TextComponentExtension
 import java.awt.BorderLayout
+import java.awt.event.ActionEvent
+import java.awt.event.KeyEvent
+import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.KeyStroke
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import kotlin.properties.Delegates
@@ -44,12 +53,14 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
       valueGetter = { regexMode },
       valueSetter = { regexMode = it },
       parentComponent = newField,
+      tooltip = BspPluginBundle.message("widget.target.search.regex"),
     )
     val treeExtension = TextComponentExtension.Switch(
       icon = AllIcons.Actions.ShowAsTree,
       valueGetter = { displayAsTree },
       valueSetter = { displayAsTree = it },
       parentComponent = newField,
+      tooltip = BspPluginBundle.message("widget.target.search.display.as.tree")
     )
     return newField.apply {
       addExtension(searchLoadingExtension)
@@ -94,6 +105,17 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
     queryChangeListeners.clear()
   }
 
+  public fun registerShortcutsOn(component: JComponent) {
+    val focusFindAction = SimpleAction { textField.requestFocus() }
+    val findKeySet = CommonShortcuts.getFind()
+    focusFindAction.registerCustomShortcutSet(findKeySet, component)
+
+    val toggleRegexAction = SimpleAction { regexMode = !regexMode }
+    // hardcoded - couldn't find this shortcut defined anywhere in the platform
+    val regexKeySet = CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK))
+    toggleRegexAction.registerCustomShortcutSet(regexKeySet, component)
+  }
+
   public fun getCurrentSearchQuery(): Regex =
     if (regexMode) {
       textField.text.toRegex()
@@ -118,4 +140,8 @@ private class SimpleTextChangeListener(val onUpdate: () -> Unit) : DocumentListe
   override fun changedUpdate(e: DocumentEvent?) {
     onUpdate()
   }
+}
+
+private class SimpleAction(private val action: () -> Unit) : AnAction() {
+  override fun actionPerformed(e: AnActionEvent) { action() }
 }
