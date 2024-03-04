@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonShortcuts
 import com.intellij.openapi.actionSystem.CustomShortcutSet
+import com.intellij.openapi.observable.properties.AtomicProperty
 import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.fields.ExtendableTextField
@@ -18,21 +19,27 @@ import javax.swing.JPanel
 import javax.swing.KeyStroke
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
-import kotlin.properties.Delegates
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 public class SearchBarPanel : JPanel(BorderLayout()) {
+  public var inProgress: Boolean by AtomicBoolean {
+    repaintLoading()
+  }
+
+  private val searchLoadingExtension: TextComponentExtension.Indicator = TextComponentExtension.Indicator(
+    trueIcon = AnimatedIcon.Default.INSTANCE,
+    falseIcon = AllIcons.Actions.Find,
+    predicate = { inProgress },
+    beforeText = true,
+  )
+
   private val textField = prepareTextField()
   private val displayChangeListeners = mutableListOf<() -> Unit>()
   private val queryChangeListeners = mutableListOf<(Regex) -> Unit>()
 
-  public var displayAsTree: Boolean by Delegates.observable(false) { _, _, _ ->
-    displayAsTreeChanged()
-  }
-    private set
-
-  private var regexMode: Boolean by Delegates.observable(false) { _, _, _ ->
-    onQueryChange()
-  }
+  private var displayAsTree: Boolean by AtomicBoolean(::displayAsTreeChanged)
+  private var regexMode: Boolean by AtomicBoolean(::onQueryChange)
 
   private val textFieldComponent = JBTextField()
 
@@ -40,14 +47,15 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
     add(textField)
   }
 
+  private fun repaintLoading() {
+    // without removing and adding the extension, the icon does not repaint for some reason
+    textField.removeExtension(searchLoadingExtension)
+    textField.addExtension(searchLoadingExtension)
+    textField.repaint()
+  }
+
   private fun prepareTextField(): ExtendableTextField {
     val newField = ExtendableTextField()
-    val searchLoadingExtension = TextComponentExtension.Indicator(
-      trueIcon = AnimatedIcon.Default.INSTANCE,
-      falseIcon = AllIcons.Actions.Find,
-      predicate = ::isLoading,
-      beforeText = true,
-    )
     val regexExtension = TextComponentExtension.Switch(
       icon = AllIcons.Actions.Regex,
       valueGetter = { regexMode },
@@ -69,14 +77,6 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
       this.document.addDocumentListener(SimpleTextChangeListener(::onQueryChange))
     }
   }
-
-  private fun isLoading(): Boolean {
-    return try {
-      textField.text.isNotEmpty()
-    } catch (_: NullPointerException) {
-      false
-    }
-  } // todo - implement real logic, this one is just for testing
 
   private fun displayAsTreeChanged() {
     displayChangeListeners.forEach { it() }
@@ -126,6 +126,19 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
   public fun isDisplayAsTreeChosen(): Boolean = displayAsTree
 
   public fun isEmpty(): Boolean = textField.text.isEmpty()
+}
+
+private class AtomicBoolean(
+  private val changeListener: (() -> Unit)?
+) : ReadWriteProperty<SearchBarPanel, Boolean> {
+  var theValue: Boolean by AtomicProperty(false)
+
+  override fun getValue(thisRef: SearchBarPanel, property: KProperty<*>): Boolean = theValue
+
+  override fun setValue(thisRef: SearchBarPanel, property: KProperty<*>, value: Boolean) {
+    theValue = value
+    changeListener?.invoke()
+  }
 }
 
 private class SimpleTextChangeListener(val onUpdate: () -> Unit) : DocumentListener {

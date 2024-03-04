@@ -42,10 +42,6 @@ public class BuildTargetSearch(
   private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, buildToolId)
 
   private var displayedSearchPanel: JPanel? = null
-  private val inProgressInfoComponent = JBLabel(
-    BspPluginBundle.message("widget.loading.targets"),
-    SwingConstants.CENTER,
-  )
   private val noResultsInfoComponent = JBLabel(
     BspPluginBundle.message("widget.target.search.no.results"),
     SwingConstants.CENTER,
@@ -59,8 +55,7 @@ public class BuildTargetSearch(
   init {
     searchBarPanel.registerQueryChangeListener(::onSearchQueryChange)
     searchBarPanel.registerDisplayChangeListener { reloadPanels() }
-    inProgressInfoComponent.isVisible = false
-    targetSearchPanel.add(inProgressInfoComponent)
+    searchBarPanel.inProgress = false
     noResultsInfoComponent.isVisible = false
     targetSearchPanel.add(noResultsInfoComponent)
     onSearchQueryChange(getCurrentSearchQuery())
@@ -82,7 +77,7 @@ public class BuildTargetSearch(
   private fun conductSearch(query: Regex) {
     if (isSearchActive()) {
       noResultsInfoComponent.isVisible = false
-      inProgressInfoComponent.isVisible = true
+      searchBarPanel.inProgress = true
       ReadAction
         .nonBlocking(SearchCallable(query, targets))
         .finishOnUiThread(ModalityState.defaultModalityState()) { displaySearchResultsUnlessOutdated(it) }
@@ -96,7 +91,7 @@ public class BuildTargetSearch(
       searchListDisplay.updateSearch(results.targets, results.query)
       searchTreeDisplay.updateSearch(results.targets, results.query)
       reloadPanels()
-      inProgressInfoComponent.isVisible = false
+      searchBarPanel.inProgress = false
       noResultsInfoComponent.isVisible = results.targets.isEmpty()
     }
   }
