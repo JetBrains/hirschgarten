@@ -4,9 +4,6 @@ import configurations.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildSteps
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.ScriptBuildStep
-
 
 open class IntellijTestsBuildType(
         name: String,
@@ -28,6 +25,7 @@ open class IntellijTestsBuildType(
 
 object UnitTests : IntellijTestsBuildType(
     name = "unit tests",
+    artifactRules = "+:**/build/reports/**/* => reports.zip",
     steps = {
         gradle {
             this.name = "run unit tests"
