@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
+import com.intellij.icons.AllIcons
 import com.intellij.ui.components.fields.ExtendableTextComponent
 import javax.swing.Icon
 import javax.swing.JComponent
@@ -44,5 +45,20 @@ public sealed class TextComponentExtension(
       }
 
     override fun isSelected(): Boolean = valueGetter()
+  }
+
+  public class Clear(
+    private val isEmpty: () -> Boolean,
+    private val clearAction: () -> Unit,
+    tooltip: String,
+  ) : TextComponentExtension(tooltip, false) {
+    override fun getIcon(hovered: Boolean): Icon? =
+      when {
+        isEmpty() -> null
+        hovered -> AllIcons.Actions.CloseHovered
+        else -> AllIcons.Actions.Close
+      }
+
+    override fun getActionOnClick(): Runnable = Runnable(clearAction)
   }
 }
