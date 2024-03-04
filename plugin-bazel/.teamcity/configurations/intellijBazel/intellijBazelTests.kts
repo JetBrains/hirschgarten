@@ -28,6 +28,7 @@ open class IntellijTestsBuildType(
 
 object UnitTests : IntellijTestsBuildType(
     name = "unit tests",
+    artifactRules = "+:**/build/reports/**/* => reports.zip",
     steps = {
         gradle {
             this.name = "run unit tests"
@@ -41,7 +42,10 @@ object UnitTests : IntellijTestsBuildType(
 object IdeProbeTests : IntellijTestsBuildType(
     name = "ide-probe tests",
     setupSteps = true,
-    artifactRules = "+:%system.teamcity.build.checkoutDir%/probe/build/reports => reports.zip",
+    artifactRules = """
+        +:%system.teamcity.build.checkoutDir%/probe/build/reports => reports.zip
+        +:/mnt/agent/temp/buildTmp/ide-probe/screenshots => screenshots.zip
+    """.trimIndent(),
     steps = {
         script {
         this.name = "install ide-probe dependencies"
