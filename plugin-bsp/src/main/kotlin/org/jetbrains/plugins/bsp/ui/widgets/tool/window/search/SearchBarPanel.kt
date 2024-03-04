@@ -57,7 +57,8 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
   private fun prepareTextField(): ExtendableTextField {
     val newField = ExtendableTextField()
     val regexExtension = TextComponentExtension.Switch(
-      icon = AllIcons.Actions.Regex,
+      // RegexHovered icon matches the ShowAsTree icon better than the normal Regex; on new UI both icons look the same
+      icon = AllIcons.Actions.RegexHovered,
       valueGetter = { regexMode },
       valueSetter = { regexMode = it },
       parentComponent = newField,
@@ -70,10 +71,16 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
       parentComponent = newField,
       tooltip = BspPluginBundle.message("widget.target.search.display.as.tree")
     )
+    val clearExtension = TextComponentExtension.Clear(
+      isEmpty = { newField.text.isEmpty() },
+      clearAction = ::clearQuery,
+      tooltip = BspPluginBundle.message("widget.target.search.clear"),
+    )
     return newField.apply {
       addExtension(searchLoadingExtension)
       addExtension(treeExtension)
       addExtension(regexExtension)
+      addExtension(clearExtension)
       this.document.addDocumentListener(SimpleTextChangeListener(::onQueryChange))
     }
   }
@@ -84,6 +91,7 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
 
   private fun onQueryChange() {
     queryChangeListeners.forEach { it(getCurrentSearchQuery()) }
+    if (textField.text.isEmpty()) inProgress = false
   }
 
   override fun setEnabled(enabled: Boolean) {
@@ -122,6 +130,11 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
     } else {
       textField.text.toRegex(RegexOption.LITERAL)
     }
+
+  private fun clearQuery() {
+    textField.text = ""
+    onQueryChange()
+  }
 
   public fun isDisplayAsTreeChosen(): Boolean = displayAsTree
 
