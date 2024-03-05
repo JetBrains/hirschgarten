@@ -55,7 +55,12 @@ public data class Library(
 ) : WorkspaceModelEntity(), ResourceRootEntity {
   public companion object {
     public fun formatJarString(jar: String): String =
-      "jar://${URI.create(jar).path}!/"
+      if (jar.endsWith(".jar")) {
+        "jar://${URI.create(jar).path}!/"
+      } else {
+        // There can be other library roots except for jars, e.g., Android resources. Use the file:// scheme then.
+        jar
+      }
   }
 }
 
