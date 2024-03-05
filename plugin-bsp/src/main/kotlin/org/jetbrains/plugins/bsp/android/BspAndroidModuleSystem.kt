@@ -16,9 +16,11 @@ import com.android.tools.idea.projectsystem.ManifestOverrides
 import com.android.tools.idea.projectsystem.NamedModuleTemplate
 import com.android.tools.idea.projectsystem.SampleDataDirectoryProvider
 import com.android.tools.idea.projectsystem.ScopeType
+import com.android.tools.idea.res.AndroidDependenciesCache
 import com.android.tools.idea.res.MainContentRootSampleDataDirectoryProvider
 import com.android.tools.idea.util.toPathString
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
@@ -76,9 +78,11 @@ public class BspAndroidModuleSystem(override val module: Module) : AndroidModule
     )
   }
 
-  override fun getResourceModuleDependencies(): List<Module> = emptyList()
+  override fun getResourceModuleDependencies(): List<Module> =
+    AndroidDependenciesCache.getAllAndroidDependencies(module, true).map { it.module }
 
-  override fun getDirectResourceModuleDependents(): List<Module> = emptyList()
+  override fun getDirectResourceModuleDependents(): List<Module> =
+    ModuleManager.getInstance(module.project).getModuleDependentModules(module)
 
   override fun canGeneratePngFromVectorGraphics(): CapabilityStatus = CapabilityNotSupported()
 
