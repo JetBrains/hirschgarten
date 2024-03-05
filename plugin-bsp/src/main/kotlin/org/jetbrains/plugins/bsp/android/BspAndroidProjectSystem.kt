@@ -2,7 +2,6 @@ package org.jetbrains.plugins.bsp.android
 
 import com.android.tools.idea.model.ClassJarProvider
 import com.android.tools.idea.project.DefaultBuildManager
-import com.android.tools.idea.project.DefaultModuleSystem
 import com.android.tools.idea.projectsystem.AndroidModuleSystem
 import com.android.tools.idea.projectsystem.AndroidProjectSystem
 import com.android.tools.idea.projectsystem.LightResourceClassService
@@ -46,7 +45,7 @@ public class BspAndroidProjectSystem(private val project: Project) : AndroidProj
   override fun getLightResourceClassService(): LightResourceClassService =
     ProjectLightResourceClassService.getInstance(project)
 
-  override fun getModuleSystem(module: Module): AndroidModuleSystem = DefaultModuleSystem(module)
+  override fun getModuleSystem(module: Module): AndroidModuleSystem = BspAndroidModuleSystem(module)
 
   override fun getPathToAapt(): Path = TODO("Not implemented")
 
