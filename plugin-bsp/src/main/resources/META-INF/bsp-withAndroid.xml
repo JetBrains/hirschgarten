@@ -10,8 +10,6 @@
     <projectsystem implementation="org.jetbrains.plugins.bsp.android.BspAndroidProjectSystemProvider"/>
   </extensions>
   <extensions defaultExtensionNs="com.intellij">
-    <postStartupActivity implementation="org.jetbrains.plugins.bsp.android.AndroidInMemoryStateUpdater" />
-    <projectService serviceImplementation="org.jetbrains.plugins.bsp.android.BspLightResourceClassService" />
     <xml.schemaProvider implementation="org.jetbrains.plugins.bsp.android.SingleFileAndroidXmlSchemaProvider" />
     <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.android.run.MobileInstallBeforeRunTaskProvider" />
     <programRunner implementation="org.jetbrains.plugins.bsp.android.run.BspAndroidProgramRunner" />
