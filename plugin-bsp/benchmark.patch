@@ -6,13 +6,13 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 <+>UTF-8
 ===================================================================
 diff --git a/src/main/resources/META-INF/plugin.xml b/src/main/resources/META-INF/plugin.xml
---- a/src/main/resources/META-INF/plugin.xml	(revision fee1da13f082896f96c9e95e81cd0332e4935c0b)
-+++ b/src/main/resources/META-INF/plugin.xml	(date 1703172163600)
-@@ -47,6 +47,7 @@
+--- a/src/main/resources/META-INF/plugin.xml	(revision 8fe1bd295fac0fa579f42c32a209d60c827d78a2)
++++ b/src/main/resources/META-INF/plugin.xml	(date 1709630694223)
+@@ -71,6 +71,7 @@
      <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
 
      <workspaceModel.fileIndexContributor implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
 +    <applicationInitializedListener implementation="org.jetbrains.plugins.bsp.utils.StartBenchmarkListener"/>
 
-     <java.programPatcher implementation="org.jetbrains.plugins.bsp.runner.BspJvmEnvironmentProgramPatcher"/>
+     <java.programPatcher implementation="org.jetbrains.plugins.bsp.jvm.BspJvmEnvironmentProgramPatcher"/>
 
