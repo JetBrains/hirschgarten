@@ -13,6 +13,15 @@ public sealed class TextComponentExtension(
 
   override fun getTooltip(): String? = tooltip
 
+  /**
+   * Non-clickable extension, showing one of two icons based on the given predicate.
+   *
+   * @property trueIcon The icon to display when the predicate evaluates to `true`
+   * @property falseIcon The icon to display when the predicate evaluates to `false`
+   * @property predicate The predicate function to determine the icon to display
+   * @property tooltip The tooltip text to display when hovering over the indicator
+   * @property beforeText `true` if the extension should appear before the text
+   */
   public class Indicator(
     private val trueIcon: Icon,
     private val falseIcon: Icon,
@@ -28,6 +37,16 @@ public sealed class TextComponentExtension(
     override fun isSelected(): Boolean = false
   }
 
+  /**
+   * Clickable extension toggling a boolean variable.
+   *
+   * @property icon The icon to display in the switch component
+   * @property valueGetter A function that retrieves the current value of the boolean
+   * @property valueSetter A function that sets the value of the boolean
+   * @property parentComponent The parent component of the switch (will be repainted after every value change)
+   * @property tooltip The tooltip text to display when hovering over the switch
+   * @property beforeText `true` if the extension should appear before the text
+   */
   public class Switch(
     private val icon: Icon,
     private val valueGetter: () -> Boolean,
@@ -47,6 +66,13 @@ public sealed class TextComponentExtension(
     override fun isSelected(): Boolean = valueGetter()
   }
 
+  /**
+   * Clickable extension clearing a text component.
+   *
+   * @property isEmpty A function that checks if the text component is empty
+   * @property clearAction A function to be executed when the clear button is clicked
+   * @property tooltip The tooltip text to display when hovering over the clear button
+   */
   public class Clear(
     private val isEmpty: () -> Boolean,
     private val clearAction: () -> Unit,

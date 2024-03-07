@@ -9,7 +9,8 @@ comments:
   KDocReferencesNonPublicProperty:
     active: true
   OutdatedDocumentation:
-    active: true
+    # triggers false positives
+    active: false
 
 # https://detekt.dev/docs/rules/complexity/#complexcondition
 complexity:

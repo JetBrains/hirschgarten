@@ -102,19 +102,19 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     actionGroup.addSeparator()
     actionGroup.add(
       StickyTargetAction(
-      hintText = notLoadedTargetsActionName,
-      icon = BspPluginIcons.unloadedTargetsFilterIcon,
-      onPerform = { listsUpdater.showNotLoadedTargets() },
-      selectionProvider = { panelShown == PanelShown.NOTLOADED },
-    )
+        hintText = notLoadedTargetsActionName,
+        icon = BspPluginIcons.unloadedTargetsFilterIcon,
+        onPerform = { listsUpdater.showNotLoadedTargets() },
+        selectionProvider = { panelShown == PanelShown.NOTLOADED },
+      )
     )
     actionGroup.add(
       StickyTargetAction(
-      hintText = loadedTargetsActionName,
-      icon = BspPluginIcons.loadedTargetsFilterIcon,
-      onPerform = { listsUpdater.showLoadedTargets() },
-      selectionProvider = { panelShown == PanelShown.LOADED },
-    )
+        hintText = loadedTargetsActionName,
+        icon = BspPluginIcons.loadedTargetsFilterIcon,
+        onPerform = { listsUpdater.showLoadedTargets() },
+        selectionProvider = { panelShown == PanelShown.LOADED },
+      )
     )
 
     actionGroup.addSeparator()
