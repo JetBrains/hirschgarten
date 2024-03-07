@@ -10,6 +10,7 @@ import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.fields.ExtendableTextField
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.SimpleDocumentListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.TextComponentExtension
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
@@ -17,8 +18,6 @@ import java.awt.event.KeyEvent
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.KeyStroke
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -48,7 +47,7 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
   }
 
   private fun repaintLoading() {
-    // without removing and adding the extension, the icon does not repaint for some reason
+    // without removing and adding the extension back, the icon does not repaint for some reason
     textField.removeExtension(searchLoadingExtension)
     textField.addExtension(searchLoadingExtension)
     textField.repaint()
@@ -69,7 +68,7 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
       valueGetter = { displayAsTree },
       valueSetter = { displayAsTree = it },
       parentComponent = newField,
-      tooltip = BspPluginBundle.message("widget.target.search.display.as.tree")
+      tooltip = BspPluginBundle.message("widget.target.search.display.as.tree"),
     )
     val clearExtension = TextComponentExtension.Clear(
       isEmpty = { newField.text.isEmpty() },
@@ -81,8 +80,13 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
       addExtension(treeExtension)
       addExtension(regexExtension)
       addExtension(clearExtension)
-      this.document.addDocumentListener(SimpleTextChangeListener(::onQueryChange))
+      this.document.addDocumentListener(SimpleDocumentListener(::onQueryChange))
     }
+  }
+
+  private fun clearQuery() {
+    textField.text = ""
+    onQueryChange()
   }
 
   private fun displayAsTreeChanged() {
@@ -115,13 +119,10 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
 
   public fun registerShortcutsOn(component: JComponent) {
     val focusFindAction = SimpleAction { textField.requestFocus() }
-    val findKeySet = CommonShortcuts.getFind()
-    focusFindAction.registerCustomShortcutSet(findKeySet, component)
+    focusFindAction.registerCustomShortcutSet(FIND_SHORTCUT_SET, component)
 
     val toggleRegexAction = SimpleAction { regexMode = !regexMode }
-    // hardcoded - couldn't find this shortcut defined anywhere in the platform
-    val regexKeySet = CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK))
-    toggleRegexAction.registerCustomShortcutSet(regexKeySet, component)
+    toggleRegexAction.registerCustomShortcutSet(REGEX_SHORTCUT_SET, component)
   }
 
   public fun getCurrentSearchQuery(): Regex =
@@ -131,18 +132,13 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
       textField.text.toRegex(RegexOption.LITERAL)
     }
 
-  private fun clearQuery() {
-    textField.text = ""
-    onQueryChange()
-  }
-
   public fun isDisplayAsTreeChosen(): Boolean = displayAsTree
 
   public fun isEmpty(): Boolean = textField.text.isEmpty()
 }
 
 private class AtomicBoolean(
-  private val changeListener: (() -> Unit)?
+  private val changeListener: (() -> Unit)?,
 ) : ReadWriteProperty<SearchBarPanel, Boolean> {
   var theValue: Boolean by AtomicProperty(false)
 
@@ -154,20 +150,11 @@ private class AtomicBoolean(
   }
 }
 
-private class SimpleTextChangeListener(val onUpdate: () -> Unit) : DocumentListener {
-  override fun insertUpdate(e: DocumentEvent?) {
-    onUpdate()
-  }
-
-  override fun removeUpdate(e: DocumentEvent?) {
-    onUpdate()
-  }
-
-  override fun changedUpdate(e: DocumentEvent?) {
-    onUpdate()
-  }
-}
-
 private class SimpleAction(private val action: () -> Unit) : AnAction() {
   override fun actionPerformed(e: AnActionEvent) { action() }
 }
+
+private val FIND_SHORTCUT_SET = CommonShortcuts.getFind()
+
+// regex shortcut is hardcoded - couldn't find this shortcut defined anywhere in the platform
+private val REGEX_SHORTCUT_SET = CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK))
