@@ -8,19 +8,17 @@ import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
-import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.magicmetamodel.ProjectDetails
 import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 
 internal class ProjectDetailsToModuleDetailsTransformer(
   private val projectDetails: ProjectDetails,
 ) {
-  private val targetsIndex = projectDetails.targets.associateBy { it.id }
-  private val librariesIndex = projectDetails.libraries?.associateBy { it.id }
+  private val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())
 
   fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
     val target = calculateTarget(projectDetails, targetId)
-    val allDependencies = allDependencies(target, librariesIndex)
+    val allDependencies = libraryGraph.findAllTransitiveDependencies(target)
     val sources = calculateSources(projectDetails, targetId)
     val resources = calculateResources(projectDetails, targetId)
     return ModuleDetails(
@@ -32,31 +30,12 @@ internal class ProjectDetailsToModuleDetailsTransformer(
       scalacOptions = calculateScalacOptions(projectDetails, targetId),
       pythonOptions = calculatePythonOptions(projectDetails, targetId),
       outputPathUris = emptyList(),
-      libraryDependencies = librariesIndex?.keys?.intersect(allDependencies)?.map { it.uri },
-      moduleDependencies = targetsIndex.keys.intersect(allDependencies).map { it.uri },
+      libraryDependencies = allDependencies.libraryDependencies.map { it.uri }
+        .takeIf { projectDetails.libraries != null },
+      moduleDependencies = allDependencies.targetDependencies.map { it.uri },
       defaultJdkName = projectDetails.defaultJdkName,
     )
   }
-
-  private fun allDependencies(
-    target: BuildTarget,
-    librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?,
-  ): Set<BuildTargetIdentifier> {
-    var librariesToVisit = target.dependencies
-    var visited = emptySet<BuildTargetIdentifier>()
-    while (librariesToVisit.isNotEmpty()) {
-      val currentLib = librariesToVisit.first()
-      librariesToVisit = librariesToVisit - currentLib
-      visited = visited + currentLib
-      librariesToVisit = librariesToVisit + (findLibrary(currentLib, librariesIndex) - visited)
-    }
-    return visited
-  }
-
-  private fun findLibrary(
-    currentLib: BuildTargetIdentifier,
-    librariesIndex: Map<BuildTargetIdentifier, LibraryItem>?,
-  ) = librariesIndex?.get(currentLib)?.dependencies.orEmpty()
 
   private fun calculateTarget(projectDetails: ProjectDetails, targetId: BuildTargetIdentifier): BuildTarget =
     projectDetails.targets.first { it.id == targetId }
