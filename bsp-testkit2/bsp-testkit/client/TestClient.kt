@@ -209,6 +209,18 @@ open class TestClient(
     }
   }
 
+  fun testDependencyModule(
+      timeout: Duration,
+      params: DependencyModulesParams,
+      expectedResult: DependencyModulesResult,
+  ) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session, _ ->
+      val result = session.server.buildTargetDependencyModules(transformedParams).await()
+      assertJsonEquals(expectedResult, result)
+    }
+  }
+
   /**
    * Simulates a typical workflow
    */
