@@ -72,7 +72,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       targetId,
       emptyList(),
       emptyList(),
-      listOf(BuildTargetIdentifier("@maven//:test")),
+      emptyList(),
       BuildTargetCapabilities(),
     )
     val targetSources = SourcesItem(
@@ -143,7 +143,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       target1Id,
       emptyList(),
       emptyList(),
-      listOf(target2Id, BuildTargetIdentifier("@maven//:test")),
+      listOf(target2Id),
       BuildTargetCapabilities(),
     )
     val target1Sources = SourcesItem(
@@ -169,7 +169,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       target2Id,
       emptyList(),
       emptyList(),
-      listOf(BuildTargetIdentifier("@maven//:test")),
+      emptyList(),
       BuildTargetCapabilities(),
     )
     val target2Sources1 = SourcesItem(
