@@ -4,8 +4,8 @@ import com.intellij.ide.ApplicationInitializedListener
 import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.vfs.VfsUtil
 import kotlinx.coroutines.CoroutineScope
-import org.jetbrains.magicmetamodel.impl.BenchmarkFlags
 import org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.BenchmarkFlags
 import kotlin.system.exitProcess
 
 public class StartBenchmarkListener : ApplicationInitializedListener {

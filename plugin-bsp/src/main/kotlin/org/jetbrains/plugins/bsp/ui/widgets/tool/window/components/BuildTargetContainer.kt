@@ -2,7 +2,7 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import java.awt.event.MouseListener
 

@@ -10,8 +10,8 @@ import com.android.tools.idea.projectsystem.emptySourceProvider
 import com.intellij.openapi.module.Module
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.createSourceProvidersForLegacyModule
-import org.jetbrains.magicmetamodel.impl.workspacemodel.AndroidAddendum
-import org.jetbrains.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.AndroidAddendum
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.net.URI
 

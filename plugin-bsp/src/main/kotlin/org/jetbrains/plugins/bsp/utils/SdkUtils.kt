@@ -7,7 +7,7 @@ import com.intellij.openapi.projectRoots.JavaSdk
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ProjectRootManager
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import java.net.URI
 import kotlin.io.path.toPath
 
