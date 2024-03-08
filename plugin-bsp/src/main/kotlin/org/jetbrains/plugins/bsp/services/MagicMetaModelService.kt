@@ -7,14 +7,14 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import org.jetbrains.annotations.ApiStatus
-import org.jetbrains.magicmetamodel.MagicMetaModel
-import org.jetbrains.magicmetamodel.MagicMetaModelProjectConfig
-import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.magicmetamodel.impl.DefaultMagicMetaModelState
-import org.jetbrains.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.plugins.bsp.android.androidSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.magicmetamodel.MagicMetaModel
+import org.jetbrains.plugins.bsp.magicmetamodel.MagicMetaModelProjectConfig
+import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.DefaultMagicMetaModelState
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 
 @State(

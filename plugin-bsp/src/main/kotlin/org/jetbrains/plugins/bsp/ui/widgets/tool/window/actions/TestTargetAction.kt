@@ -1,8 +1,8 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.configuration.test.BspTestRunConfigurationType
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 

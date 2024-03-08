@@ -12,8 +12,8 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bsp.protocol.MobileInstallStartType
-import org.jetbrains.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
 
 private val PROVIDER_ID = Key.create<MobileInstallBeforeRunTaskProvider.Task>("MobileInstallBeforeRunTaskProvider")

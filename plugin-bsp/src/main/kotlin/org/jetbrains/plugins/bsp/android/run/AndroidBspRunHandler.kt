@@ -12,10 +12,10 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 

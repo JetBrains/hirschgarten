@@ -1,0 +1,41 @@
+package org.jetbrains.plugins.bsp.magicmetamodel
+
+import io.kotest.matchers.shouldBe
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.MagicMetaModelImpl
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+
+@DisplayName("MagicMetaModel tests")
+class MagicMetaModelTest : WorkspaceModelBaseTest() {
+  @Nested
+  @DisplayName("MagicMetaModel.create(magicMetaModelProjectConfig, projectDetails) tests")
+  inner class MagicMetaModelCreateTest {
+    @Test
+    fun `should return MagicMetaModelImpl`() {
+      // given
+      val testMagicMetaModelProjectConfig =
+        MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath, project)
+
+      val projectDetails = ProjectDetails(
+        targetsId = emptyList(),
+        targets = emptySet(),
+        sources = emptyList(),
+        resources = emptyList(),
+        dependenciesSources = emptyList(),
+        javacOptions = emptyList(),
+        pythonOptions = emptyList(),
+        outputPathUris = emptyList(),
+        libraries = emptyList(),
+        scalacOptions = emptyList(),
+      )
+
+      // when
+      val magicMetaModel = MagicMetaModel.create(testMagicMetaModelProjectConfig, projectDetails)
+
+      // then
+      magicMetaModel::class shouldBe MagicMetaModelImpl::class
+    }
+  }
+}
