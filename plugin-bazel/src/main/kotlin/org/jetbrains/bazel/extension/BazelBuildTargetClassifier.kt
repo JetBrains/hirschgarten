@@ -1,9 +1,9 @@
 package org.jetbrains.bazel.extension
 
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 internal class BazelBuildTargetClassifier : BuildTargetClassifierExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId

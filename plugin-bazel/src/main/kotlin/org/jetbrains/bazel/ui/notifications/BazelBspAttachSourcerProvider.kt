@@ -20,7 +20,7 @@ import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.net.URI
 import kotlin.io.path.toPath
-import org.jetbrains.magicmetamodel.impl.workspacemodel.Library as MMMLibrary
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library as MMMLibrary
 
 internal class BazelAttachSourcesProvider : AttachSourcesProvider {
   private class BazelAttachSourcesAction(private val project: Project) : AttachSourcesProvider.AttachSourcesAction {
@@ -107,9 +107,9 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
   }
 }
 
-private fun getAllMMMLibraries(project: Project): List<org.jetbrains.magicmetamodel.impl.workspacemodel.Library> =
+private fun getAllMMMLibraries(project: Project): List<MMMLibrary> =
   MagicMetaModelService.getInstance(project).value.getLibraries()
 
-private fun Library.pickSourcesFromBazel(mmmLibraries: List<org.jetbrains.magicmetamodel.impl.workspacemodel.Library>) =
+private fun Library.pickSourcesFromBazel(mmmLibraries: List<MMMLibrary>) =
   mmmLibraries.filter { it.displayName == name }
     .flatMap { it.sourceJars }

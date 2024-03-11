@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.extension
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.junit.jupiter.api.Test
 
 class BazelBuildTargetClassifierTest {
