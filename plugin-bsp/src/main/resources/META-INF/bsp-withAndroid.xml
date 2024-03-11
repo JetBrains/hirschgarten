@@ -3,7 +3,7 @@
     <androidSdkGetterExtension
       implementation="org.jetbrains.plugins.bsp.android.AndroidSdkGetter" />
     <androidFacetEntityUpdaterExtension
-      implementation="org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtensionImpl" />
+      implementation="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtensionImpl" />
     <bspRunHandler implementation="org.jetbrains.plugins.bsp.android.run.AndroidBspRunHandler" />
   </extensions>
   <extensions defaultExtensionNs="com.android.project">
