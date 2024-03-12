@@ -26,6 +26,7 @@ internal data class ModuleDetails(
   val libraryDependencies: List<BuildTargetId>?,
   val moduleDependencies: List<BuildTargetId>,
   val defaultJdkName: String?,
+  val importPath: String? = null,
 )
 
 internal data class ModuleName(
