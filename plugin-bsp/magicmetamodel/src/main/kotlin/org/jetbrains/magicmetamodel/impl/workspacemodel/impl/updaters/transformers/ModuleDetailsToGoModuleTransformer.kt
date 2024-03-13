@@ -17,13 +17,16 @@ internal class ModuleDetailsToGoModuleTransformer(
 ) : ModuleDetailsToModuleTransformer<GoModule>(targetsMap, moduleNameProvider) {
     override val type = "GO_MODULE"
 
-    override fun transform(inputEntity: ModuleDetails): GoModule =
-        GoModule(
+    override fun transform(inputEntity: ModuleDetails): GoModule {
+        val goBuildInfo = extractGoBuildTarget(inputEntity.target) ?: error("extract nie działa")
+
+        return GoModule(
             module = toGenericModuleInfo(inputEntity),
-            importPath = inputEntity.importPath ?: error("cos nie dziala"),
+            importPath = goBuildInfo.importPath ?: error("cos nie dziala"),
             root = URI.create(inputEntity.target.baseDirectory).toPath(),
             goDependencies = inputEntity.moduleDependencies.mapNotNull { targetsMap[it] }.map { buildTargetInfo ->
-                val buildTarget = projectDetails.targets.find { it.id == buildTargetInfo.id.toBsp4JTargetIdentifier() } ?: error("find nie działa")
+                val buildTarget = projectDetails.targets.find { it.id == buildTargetInfo.id.toBsp4JTargetIdentifier() }
+                    ?: error("find nie działa")
                 val goBuildInfo = extractGoBuildTarget(buildTarget) ?: error("extract nie działa")
                 GoModuleDependency(
                     importPath = goBuildInfo.importPath ?: error("nie ma importPatha"),
@@ -31,6 +34,7 @@ internal class ModuleDetailsToGoModuleTransformer(
                 )
             }
         )
+    }
 
     override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
         val bspModuleDetails = BspModuleDetails(

@@ -48,46 +48,16 @@ internal class WorkspaceModelUpdaterImpl(
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath)
 
     override fun loadModule(module: Module) {
-
-        // TODO: just for testing, add root
-        // server/core/lib
-        val goModuleInfoLib = GenericModuleInfo(
-            name = "CORE LIB",
-            type = "GO_MODULE",
-            modulesDependencies = emptyList(),
-            librariesDependencies = emptyList(),
-        )
-        val goModuleLib = GoModule(
-            module = goModuleInfoLib,
-            importPath = "github.com/maclick/basic-go-project/server/core/lib",
-            root = "",
-            goDependencies = emptyList()
-        )
-
-        // server/parser
-        val goModuleInfo = GenericModuleInfo(
-            name = "SIEMA SIEMA",
-            type = "GO_MODULE",
-            modulesDependencies = listOf(IntermediateModuleDependency(goModuleLib.module.name)),
-            librariesDependencies = emptyList(),
-        )
-        val goModule = GoModule(
-            module = goModuleInfo,
-            importPath = "github.com/maclick/basic-go-project/server/parser",
-            root = "",
-            goDependencies = emptyList()
-        )
-
-    when (module) {
-      is JavaModule -> {
-        val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
-        javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.isAlreadyAdded() })
-        javaModuleUpdater.addEntity(module)
+      when (module) {
+        is JavaModule -> {
+          val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
+          javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.isAlreadyAdded() })
+          javaModuleUpdater.addEntity(module)
+        }
+        is PythonModule -> pythonModuleUpdater.addEntity(module)
+        is GoModule -> goModuleUpdater.addEntity(module)
       }
-      is PythonModule -> pythonModuleUpdater.addEntity(module)
-      is GoModule -> goModuleUpdater.addEntity(module)
     }
-  }
 
   override fun loadLibraries(libraries: List<Library>) {
     libraries.forEach { entityToAdd ->

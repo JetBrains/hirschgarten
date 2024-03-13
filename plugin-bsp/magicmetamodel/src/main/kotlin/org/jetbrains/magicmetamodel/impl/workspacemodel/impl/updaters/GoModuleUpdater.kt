@@ -13,6 +13,9 @@ internal class GoModuleUpdater(
         val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig)
         val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
+        val sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+
+
         val vgoModule = VgoStandaloneModuleEntity(
             moduleId = moduleEntity.symbolicId,
             entitySource = BspEntitySource,

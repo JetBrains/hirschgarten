@@ -15,6 +15,7 @@ import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.goide.project.GoModuleSettings
 import com.goide.sdk.GoSdk
 import com.goide.sdk.GoSdkService
+import com.goide.vgo.project.workspaceModel.VgoWorkspaceModelUpdater
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
@@ -409,6 +410,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     if (BspFeatureFlags.isGoSupportEnabled) {
       addBspFetchedGoSdks()
+      VgoWorkspaceModelUpdater(project).restoreModulesRegistry()
       enableGoSupportInTargets()
     }
   }
