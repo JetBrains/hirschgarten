@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark.fixtures
+package org.jetbrains.bazel.languages.fixtures
 
 import com.intellij.lexer.Lexer
 import com.intellij.testFramework.PlatformLiteFixture
@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-abstract class StarlarkLexerTestCase : PlatformLiteFixture() {
+abstract class LexerTestCase : PlatformLiteFixture() {
   override fun setUp() {
     super.setUp()
     initApplication()

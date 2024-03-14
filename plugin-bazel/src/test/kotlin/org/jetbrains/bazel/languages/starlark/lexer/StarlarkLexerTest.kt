@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.languages.starlark.lexer
 
-import org.jetbrains.bazel.languages.starlark.fixtures.StarlarkLexerTestCase
+import org.jetbrains.bazel.languages.fixtures.LexerTestCase
 import org.junit.Test
 
 private const val TRIPLE_QUOTE = "\"\"\""
 
-class StarlarkLexerTest : StarlarkLexerTestCase() {
+class StarlarkLexerTest : LexerTestCase() {
   @Test
   fun `should lex simple expression`() {
     // given
