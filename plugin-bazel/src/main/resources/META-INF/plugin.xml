@@ -56,7 +56,6 @@
                 language="Starlark"
                 fileNames="BUILD;WORKSPACE"
                 extensions="bzl;bazel;bzlmod"/>
-
         <lang.parserDefinition
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserDefinition"/>
@@ -92,6 +91,17 @@
         <completion.contributor
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkParamsCompletionContributor"/>
+
+        <fileType
+                name="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType"
+                fieldName="INSTANCE"
+                language="ProjectView"
+                extensions="bazelproject"/>
+        <lang.syntaxHighlighterFactory
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
+
     </extensions>
 
     <actions>
