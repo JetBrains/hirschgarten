@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import javax.swing.Icon
 
@@ -32,13 +33,20 @@ public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) 
     val project = e.project
 
     if (project != null) {
-      if (project.isTrusted()) {
-        update(project, e)
-      } else {
-        e.presentation.isEnabled = false
-      }
+      doUpdate(project, e)
     } else {
       log.warn("`update` for action '${e.presentation.text}' cannot be performed. Project is missing.")
+    }
+  }
+
+  private fun doUpdate(project: Project, e: AnActionEvent) {
+    if (project.isTrusted()) {
+      e.presentation.isVisible = project.isBspProject
+      if (project.isBspProject) {
+        update(project, e)
+      }
+    } else {
+      e.presentation.isEnabled = false
     }
   }
 
