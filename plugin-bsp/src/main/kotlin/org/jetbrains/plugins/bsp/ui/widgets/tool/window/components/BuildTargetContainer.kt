@@ -1,10 +1,10 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.TargetNode
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.Tristate
 import java.awt.event.MouseListener
+import javax.swing.JComponent
 
 /**
  * Represents a container, which contains build targets and shows them in its UI representation
@@ -28,11 +28,11 @@ public interface BuildTargetContainer {
   public fun addMouseListener(listenerBuilder: (BuildTargetContainer) -> MouseListener)
 
   /**
-   * Obtains the selected build target, if any
+   * Obtains the selected directory or build target node, if any
    *
-   * @return selected build target, or `null` if nothing is selected
+   * @return selected node, or `null` if nothing is selected
    */
-  public fun getSelectedBuildTarget(): BuildTargetInfo?
+  public fun getSelectedNode(): TargetNode?
 
   /**
    * Creates a new instance of this container. The new instance will have similar mouse listeners
@@ -40,13 +40,10 @@ public interface BuildTargetContainer {
    * @param newTargets collection of build targets the new container will contain
    * @return the newly created container
    */
-  public fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetContainer
+  public fun createNewWithTargets(newTargets: Tristate.Targets): BuildTargetContainer
 
   /**
-   * Returns actions available for a target.
-   *
-   * @param project this project
-   * @param buildTargetInfo information about the target
+   * @return the component associated with this build target container
    */
-  public fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction>
+  public fun getComponent(): JComponent
 }

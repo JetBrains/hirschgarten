@@ -3,11 +3,16 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetTree
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.TargetNode
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.Tristate
 import java.awt.event.MouseListener
 import javax.swing.Icon
 
-public class LazySearchTreeDisplay(icon: Icon, buildToolId: BuildToolId) : LazySearchDisplay() {
-  private var targetTree: BuildTargetTree = BuildTargetTree(icon, icon, buildToolId, targets, emptyList())
+public class LazySearchTreeDisplay(
+  iconProvider: Tristate<Icon>,
+  buildToolId: BuildToolId,
+) : LazySearchDisplay() {
+  private var targetTree: BuildTargetTree = BuildTargetTree(iconProvider, buildToolId, targets)
 
   override fun rerender() {
     component.remove(targetTree.treeComponent)
@@ -19,6 +24,6 @@ public class LazySearchTreeDisplay(icon: Icon, buildToolId: BuildToolId) : LazyS
     targetTree.addMouseListener { _ -> mouseListener }
   }
 
-  override fun getSelectedBuildTarget(): BuildTargetInfo? =
-    targetTree.getSelectedBuildTarget()
+  override fun getSelectedNode(): TargetNode? =
+    targetTree.getSelectedNode()
 }

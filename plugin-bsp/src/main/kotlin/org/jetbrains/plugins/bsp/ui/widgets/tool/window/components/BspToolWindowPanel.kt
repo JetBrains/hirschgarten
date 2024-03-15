@@ -5,9 +5,8 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import org.jetbrains.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
-import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
@@ -16,82 +15,77 @@ import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.NotLoadedTargetsMouseListener
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.StickyTargetAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.Tristate
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.TargetMouseListener
+import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.SwingConstants
 
-private enum class PanelShown {
-  LOADED,
-  NOTLOADED,
-}
-
 private class ListsUpdater(
   private val project: Project,
-  private val targetPanelUpdater: (ListsUpdater) -> Unit,
+  private val updatePanelContent: (JComponent) -> Unit,
 ) {
-  var loadedTargetsPanel: BspPanelComponent
-    private set
-  var notLoadedTargetsPanel: BspPanelComponent
+  var targetPanel: BspPanelComponent
     private set
   val targetFilter = TargetFilter { rerenderComponents() }
   val searchBarPanel = SearchBarPanel()
 
   init {
+    val assetExtension =
+      BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
     val magicMetaModel = MagicMetaModelService.getInstance(project).value
-    val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
-    val invalidTargets =
-      InvalidTargetsProviderExtension.ep.withBuildToolId(project.buildToolId)?.provideInvalidTargets(project).orEmpty()
 
-    loadedTargetsPanel =
+    targetPanel =
       BspPanelComponent(
-        targetIcon = assetsExtension.loadedTargetIcon,
-        invalidTargetIcon = assetsExtension.invalidTargetIcon,
+        iconProvider = assetExtension.obtainIconProvider(),
         buildToolId = project.buildToolId,
-        toolName = assetsExtension.presentableName,
-        targets = magicMetaModel.getAllLoadedTargets(),
-        invalidTargets = invalidTargets,
+        toolName = assetExtension.presentableName,
+        targets = magicMetaModel.getAllTargets(),
         searchBarPanel = searchBarPanel,
-      )
-    loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it, project) }
+      ).also {
+        it.addMouseListener { panel -> TargetMouseListener(panel, project) }
+      }
 
-    notLoadedTargetsPanel =
-      BspPanelComponent(
-        targetIcon = assetsExtension.unloadedTargetIcon,
-        invalidTargetIcon = assetsExtension.invalidTargetIcon,
-        buildToolId = project.buildToolId,
-        toolName = assetsExtension.presentableName,
-        targets = magicMetaModel.getAllNotLoadedTargets(),
-        invalidTargets = emptyList(),
-        searchBarPanel = searchBarPanel,
-      )
-    notLoadedTargetsPanel.addMouseListener { NotLoadedTargetsMouseListener(it, project) }
     magicMetaModel.registerTargetLoadListener { rerenderComponents() }
   }
 
+  private fun BuildToolAssetsExtension.obtainIconProvider(): Tristate<Icon> {
+    return Tristate(
+      loaded = loadedTargetIcon,
+      unloaded = unloadedTargetIcon,
+      invalid = invalidTargetIcon,
+    )
+  }
+
+  private fun MagicMetaModel.getAllTargets(): Tristate.Targets {
+    val invalidTargets =
+      InvalidTargetsProviderExtension.ep.withBuildToolId(project.buildToolId)?.provideInvalidTargets(project).orEmpty()
+    return Tristate.Targets(
+      loaded = this.getAllLoadedTargets(),
+      unloaded = this.getAllNotLoadedTargets(),
+      invalid = invalidTargets.map { it.uri },
+    )
+  }
+
   fun rerenderComponents() {
-    val magicMetaModel = MagicMetaModelService.getInstance(project).value
+    val allTargets = MagicMetaModelService.getInstance(project).value.getAllTargets()
+    val filtered = targetFilter.filterTargets(allTargets)
     searchBarPanel.clearAllListeners()
-    loadedTargetsPanel = loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(magicMetaModel))
-    notLoadedTargetsPanel = notLoadedTargetsPanel.createNewWithTargets(
-      targetFilter.getMatchingNotLoadedTargets(magicMetaModel))
-    targetPanelUpdater(this@ListsUpdater)
+    targetPanel = targetPanel.createNewWithTargets(
+      targets = filtered,
+      targetsFilteredOut = allTargets.size - filtered.size,
+    )
+    updatePanelContent(targetPanel.wrappedInScrollPane())
   }
 }
 
 public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
-  private var panelShown = PanelShown.LOADED
-
   public constructor(project: Project) : this() {
     val actionManager = ActionManager.getInstance()
-    val listsUpdater = ListsUpdater(project, this::showCurrentPanel)
+    val listsUpdater = ListsUpdater(project, this::setToolWindowContent)
 
     val actionGroup = actionManager
       .getAction("Bsp.ActionsToolbar") as DefaultActionGroup
-
-    val notLoadedTargetsActionName = BspPluginBundle.message("widget.not.loaded.targets.tab.name")
-    val loadedTargetsActionName = BspPluginBundle.message("widget.loaded.targets.tab.name")
 
     actionGroup.childActionsOrStubs.iterator().forEach {
       if (it.shouldBeDisposedAfterReload()) {
@@ -100,61 +94,18 @@ public class BspToolWindowPanel() : SimpleToolWindowPanel(true, true) {
     }
 
     actionGroup.addSeparator()
-    actionGroup.add(
-      StickyTargetAction(
-        hintText = notLoadedTargetsActionName,
-        icon = BspPluginIcons.unloadedTargetsFilterIcon,
-        onPerform = { listsUpdater.showNotLoadedTargets() },
-        selectionProvider = { panelShown == PanelShown.NOTLOADED },
-      )
-    )
-    actionGroup.add(
-      StickyTargetAction(
-        hintText = loadedTargetsActionName,
-        icon = BspPluginIcons.loadedTargetsFilterIcon,
-        onPerform = { listsUpdater.showLoadedTargets() },
-        selectionProvider = { panelShown == PanelShown.LOADED },
-      )
-    )
-
-    actionGroup.addSeparator()
     actionGroup.add(FilterActionGroup(listsUpdater.targetFilter))
 
     val actionToolbar = actionManager.createActionToolbar("Bsp Toolbar", actionGroup, true)
     actionToolbar.targetComponent = this.component
-    actionToolbar.setOrientation(SwingConstants.HORIZONTAL)
+    actionToolbar.orientation = SwingConstants.HORIZONTAL
     this.toolbar = actionToolbar.component
 
-    showCurrentPanel(listsUpdater)
+    setToolWindowContent(listsUpdater.targetPanel.wrappedInScrollPane())
   }
 
-  private fun AnAction.shouldBeDisposedAfterReload(): Boolean {
-    val notLoadedTargetsActionName = BspPluginBundle.message("widget.not.loaded.targets.tab.name")
-    val loadedTargetsActionName = BspPluginBundle.message("widget.loaded.targets.tab.name")
-    val restartActionName = BspPluginBundle.message("restart.action.text")
-
-    return this.templateText == notLoadedTargetsActionName ||
-      this.templateText == loadedTargetsActionName ||
-      this.templateText == restartActionName ||
-      this is FilterActionGroup
-  }
-
-  private fun ListsUpdater.showLoadedTargets() {
-    panelShown = PanelShown.LOADED
-    showCurrentPanel(this)
-  }
-
-  private fun ListsUpdater.showNotLoadedTargets() {
-    panelShown = PanelShown.NOTLOADED
-    showCurrentPanel(this)
-  }
-
-  private fun showCurrentPanel(listsUpdater: ListsUpdater) {
-    when (panelShown) {
-      PanelShown.LOADED -> listsUpdater.loadedTargetsPanel
-      PanelShown.NOTLOADED -> listsUpdater.notLoadedTargetsPanel
-    }.let { setToolWindowContent(it.wrappedInScrollPane()) }
-  }
+  private fun AnAction.shouldBeDisposedAfterReload(): Boolean =
+    this is FilterActionGroup
 
   private fun setToolWindowContent(component: JComponent) {
     this.setContent(component)

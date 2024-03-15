@@ -1,26 +1,25 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.TargetNode
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.Tristate
 import java.awt.Point
 import java.awt.event.MouseListener
 import java.util.concurrent.Callable
 import javax.swing.Icon
+import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
@@ -28,26 +27,24 @@ internal fun BuildTargetInfo.getBuildTargetName(): String =
   this.displayName ?: this.id
 
 public class BuildTargetSearch(
-  private val targetIcon: Icon,
+  private val iconProvider: Tristate<Icon>,
   private val buildToolId: BuildToolId,
   private val toolName: String,
-  targets: Collection<BuildTargetInfo>,
+  private val targets: Tristate.Targets,
   public val searchBarPanel: SearchBarPanel,
 ) : BuildTargetContainer {
   public val targetSearchPanel: JPanel = JPanel(VerticalLayout(0))
 
   override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction(this, targetSearchPanel)
 
-  private val searchListDisplay = LazySearchListDisplay(targetIcon)
-  private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, buildToolId)
+  private val searchListDisplay = LazySearchListDisplay(iconProvider)
+  private val searchTreeDisplay = LazySearchTreeDisplay(iconProvider, buildToolId)
 
   private var displayedSearchPanel: JPanel? = null
   private val noResultsInfoComponent = JBLabel(
     BspPluginBundle.message("widget.target.search.no.results"),
     SwingConstants.CENTER,
   )
-
-  private val targets = targets.sortedBy { it.getBuildTargetName() }
 
   private val mouseListenerBuilders = mutableSetOf<(BuildTargetContainer) -> MouseListener>()
   private val queryChangeListeners = mutableSetOf<() -> Unit>()
@@ -131,11 +128,11 @@ public class BuildTargetSearch(
     queryChangeListeners.add(listener)
   }
 
-  override fun getSelectedBuildTarget(): BuildTargetInfo? =
-    chooseTargetSearchPanel().getSelectedBuildTarget()
+  override fun getSelectedNode(): TargetNode? =
+    chooseTargetSearchPanel().getSelectedNode()
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetSearch {
-    val new = BuildTargetSearch(targetIcon, buildToolId, toolName, newTargets, searchBarPanel)
+  override fun createNewWithTargets(newTargets: Tristate.Targets): BuildTargetSearch {
+    val new = BuildTargetSearch(iconProvider, buildToolId, toolName, newTargets, searchBarPanel)
     for (listenerBuilder in this.mouseListenerBuilders) {
       new.addMouseListener(listenerBuilder)
     }
@@ -149,23 +146,21 @@ public class BuildTargetSearch(
     }
   }
 
-  override fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction> =
-    BuildToolWindowTargetActionProviderExtension.ep.withBuildToolId(project.buildToolId)
-      ?.getTargetActions(targetSearchPanel, project, buildTargetInfo) ?: emptyList()
+  override fun getComponent(): JComponent = targetSearchPanel
 
   private class SearchCallable(
     private val query: Regex,
-    private val targets: Collection<BuildTargetInfo>,
+    private val targets: Tristate.Targets,
   ) : Callable<SearchResults> {
     override fun call(): SearchResults =
       SearchResults(
         query,
-        targets.filter { query.containsMatchIn(it.getBuildTargetName()) },
+        targets.filterByIds { query.containsMatchIn(it.getBuildTargetName()) },
       )
   }
 }
 
 private data class SearchResults(
   val query: Regex,
-  val targets: List<BuildTargetInfo>,
+  val targets: Tristate.Targets,
 )

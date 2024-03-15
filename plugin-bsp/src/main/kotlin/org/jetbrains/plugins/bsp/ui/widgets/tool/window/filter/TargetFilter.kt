@@ -1,33 +1,65 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter
 
-import org.jetbrains.plugins.bsp.magicmetamodel.MagicMetaModel
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.Tristate.Targets
 
 public class TargetFilter(
   private val onFilterChange: () -> Unit,
 ) {
-  public var currentFilter: FILTER = FILTER.OFF
-    set(value) {
-      if (field != value) {
-        field = value
-        onFilterChange()
-      }
+  public var currentCapabilityFilter: ByCapability = ByCapability.OFF
+    private set
+
+  public var currentStateFilter: ByState = ByState.OFF
+    private set
+
+  public fun updateFilter(newFilter: FilterType) {
+    when (newFilter) {
+      is ByCapability -> currentCapabilityFilter = newFilter
+      is ByState -> currentStateFilter = newFilter
+    }
+    onFilterChange()
+  }
+
+  public fun filterTargets(targets: Targets): Targets =
+    targets
+      .filterByCapabilities(currentCapabilityFilter)
+      .filterByState(currentStateFilter)
+
+  private fun Targets.filterByCapabilities(capabilityFilter: ByCapability) =
+    when (capabilityFilter) {
+      ByCapability.OFF -> this
+      ByCapability.CAN_RUN -> this.filterByCapabilities { it.canRun }
+      ByCapability.CAN_TEST -> this.filterByCapabilities { it.canTest }
     }
 
-  public fun isFilterOn(): Boolean = currentFilter != FILTER.OFF
+  private fun Targets.filterByState(stateFilter: ByState) =
+    when (stateFilter) {
+      ByState.OFF -> this
+      ByState.LOADED -> Targets(loaded = this.loaded)
+      ByState.UNLOADED -> Targets(unloaded = this.unloaded)
+      ByState.INVALID -> Targets(invalid = this.invalid)
+    }
 
-  public fun getMatchingLoadedTargets(magicMetaModel: MagicMetaModel): List<BuildTargetInfo> =
-    magicMetaModel.getAllLoadedTargets().filterTargets()
+  public fun clearFilters() {
+    currentCapabilityFilter = ByCapability.OFF
+    currentStateFilter = ByState.OFF
+    onFilterChange()
+  }
 
-  public fun getMatchingNotLoadedTargets(magicMetaModel: MagicMetaModel): List<BuildTargetInfo> =
-    magicMetaModel.getAllNotLoadedTargets().filterTargets()
+  public fun areFiltersEnabled(): Boolean =
+    currentCapabilityFilter != ByCapability.OFF || currentStateFilter != ByState.OFF
 
-  private fun List<BuildTargetInfo>.filterTargets(): List<BuildTargetInfo> =
-    this.filter(currentFilter.predicate)
+  public interface FilterType
 
-  public enum class FILTER(public val predicate: (BuildTargetInfo) -> Boolean) {
-    OFF({ true }),
-    CAN_RUN({ it.capabilities.canRun }),
-    CAN_TEST({ it.capabilities.canTest }),
+  public enum class ByCapability : FilterType {
+    OFF,
+    CAN_RUN,
+    CAN_TEST,
+  }
+
+  public enum class ByState : FilterType {
+    OFF,
+    LOADED,
+    UNLOADED,
+    INVALID,
   }
 }

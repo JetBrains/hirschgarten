@@ -4,19 +4,20 @@ import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.codeInsight.hints.presentation.mouseButton
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
-import org.jetbrains.plugins.bsp.ui.actions.LoadTargetWithDependenciesAction
+import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
+import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
 import java.awt.Point
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 
-public class NotLoadedTargetsMouseListener(
+public class TargetMouseListener(
   private val container: BuildTargetContainer,
   private val project: Project,
 ) : MouseListener {
@@ -33,7 +34,7 @@ public class NotLoadedTargetsMouseListener(
     }
   }
 
-  // https://youtrack.jetbrains.com/issue/BAZEL-522
+  // Fixes https://youtrack.jetbrains.com/issue/BAZEL-522
   private fun selectTargetIfSearchListIsDisplayed(point: Point) {
     if (container is BuildTargetSearch) {
       container.selectAtLocationIfListDisplayed(point)
@@ -41,7 +42,10 @@ public class NotLoadedTargetsMouseListener(
   }
 
   private fun showPopup(mouseEvent: MouseEvent) {
-    val actionGroup = calculatePopupGroup()
+    val actionGroup = container.getSelectedNode()?.let{
+      if (it is TargetNode.Target) calculateTargetPopupGroup(it)
+      else null // if target tree directory context actions are desired in the future, they should be obtained here
+    }
     if (actionGroup != null) {
       val context = DataManager.getInstance().getDataContext(mouseEvent.component)
       val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
@@ -51,50 +55,44 @@ public class NotLoadedTargetsMouseListener(
     }
   }
 
-  private fun calculatePopupGroup(): ActionGroup? {
-    val target = container.getSelectedBuildTarget()
+  private fun calculateTargetPopupGroup(node: TargetNode.Target): ActionGroup {
+    val copyAction = container.copyTargetIdAction
+    val standardActions = TargetActions.getStandardContextActions(node, inGutter = false)
+    val buildToolActions = node.getBuildToolSpecificActions(container)
 
-    return if (target != null) {
-      val copyTargetIdAction = container.copyTargetIdAction
-      val loadTargetAction = LoadTargetAction(
-        targetId = target.id,
-        text = { org.jetbrains.plugins.bsp.config.BspPluginBundle.message("widget.load.target.popup.message") },
-      )
-      val loadTargetWithDepsAction = LoadTargetWithDependenciesAction(
-        targetId = target.id,
-        text = {
-          org.jetbrains.plugins.bsp.config.BspPluginBundle.message("widget.load.target.with.deps.popup.message")
-        },
-      )
-      DefaultActionGroup().apply {
-        addAction(copyTargetIdAction)
+    return DefaultActionGroup().apply {
+      add(copyAction)
+      if (standardActions.isNotEmpty()) {
         addSeparator()
-        container.getTargetActions(project, target).map { addAction(it); addSeparator() }
-        addAction(loadTargetAction)
-        addSeparator()
-        addAction(loadTargetWithDepsAction)
+        addAll(standardActions)
       }
-    } else null
+      if (buildToolActions.isNotEmpty()) {
+        addSeparator()
+        addAll(buildToolActions)
+      }
+    }
   }
+
+  private fun TargetNode.getBuildToolSpecificActions(container: BuildTargetContainer): List<AnAction> =
+    (this as? TargetNode.ValidTarget)?.let {
+      BuildToolWindowTargetActionProviderExtension.ep.withBuildToolId(project.buildToolId)
+        ?.getTargetActions(container.getComponent(), project, this.target)
+    } ?: emptyList()
 
   private fun MouseEvent.isDoubleClick(): Boolean =
     this.mouseButton == MouseButton.Left && this.clickCount == 2
 
   private fun onDoubleClick() {
-    container.getSelectedBuildTarget()?.let {
-      BspCoroutineService.getInstance(project).start { LoadTargetAction.loadTarget(project, it.id) }
+    container.getSelectedNode()?.let {
+      TargetActions.performDefaultAction(it, project)
     }
   }
 
-  override fun mousePressed(e: MouseEvent?) { // nothing to do
-  }
+  override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
 
-  override fun mouseReleased(e: MouseEvent?) { // nothing to do
-  }
+  override fun mouseReleased(e: MouseEvent?) { /* nothing to do */ }
 
-  override fun mouseEntered(e: MouseEvent?) { // nothing to do
-  }
+  override fun mouseEntered(e: MouseEvent?) { /* nothing to do */ }
 
-  override fun mouseExited(e: MouseEvent?) { // nothing to do
-  }
+  override fun mouseExited(e: MouseEvent?) { /* nothing to do */ }
 }

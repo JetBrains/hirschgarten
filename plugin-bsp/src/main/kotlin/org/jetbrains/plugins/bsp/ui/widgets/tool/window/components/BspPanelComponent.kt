@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -9,6 +8,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.Tristate
 import java.awt.Component
 import java.awt.event.MouseListener
 import javax.swing.Icon
@@ -21,38 +21,40 @@ import javax.swing.SwingConstants
  * `BspPanelComponent` extends [JPanel], which makes it possible to use it directly as a UI component
  */
 public class BspPanelComponent private constructor(
-  private val targetIcon: Icon,
+  private val iconProvider: Tristate<Icon>,
   private val toolName: String,
   private val targetTree: BuildTargetTree,
   private val targetSearch: BuildTargetSearch,
+  private val targetsFilteredOut: Int,
 ) : JPanel(VerticalLayout(0)) {
   private val emptyTreeMessage = JBLabel(
     BspPluginBundle.message("widget.no.targets.message"),
     SwingConstants.CENTER,
   )
+  private val hiddenTargetsMessage = JBLabel(
+    BspPluginBundle.message("widget.filter.hidden.targets", targetsFilteredOut),
+    SwingConstants.CENTER,
+  ).apply { isEnabled = false }
 
   /**
-   * @param targetIcon icon which will be shown next to valid build targets in this panel
-   * @param invalidTargetIcon icon which will be shown next to invalid build targets in this panel
+   * @param iconProvider provider for icons to be shown next to targets in this panel
    * @param buildToolId id of the build tool
    * @param toolName name of the tool providing the build targets
-   * @param targets collection of build targets this panel will contain
-   * @param invalidTargets collection of invalid targets this panel will contain
+   * @param targets all targets to be shown
    * @param searchBarPanel searchbar panel responsible for providing user's search queries
    */
   public constructor(
-    targetIcon: Icon,
-    invalidTargetIcon: Icon,
+    iconProvider: Tristate<Icon>,
     buildToolId: BuildToolId,
     toolName: String,
-    targets: Collection<BuildTargetInfo>,
-    invalidTargets: List<BuildTargetIdentifier>,
+    targets: Tristate.Targets,
     searchBarPanel: SearchBarPanel,
   ) : this(
-    targetIcon = targetIcon,
+    iconProvider = iconProvider,
     toolName = toolName,
-    targetTree = BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, targets, invalidTargets.map { it.uri }),
-    targetSearch = BuildTargetSearch(targetIcon, buildToolId, toolName, targets, searchBarPanel),
+    targetTree = BuildTargetTree(iconProvider, buildToolId, targets),
+    targetSearch = BuildTargetSearch(iconProvider, buildToolId, toolName, targets, searchBarPanel),
+    targetsFilteredOut = 0,
   )
 
   init {
@@ -87,6 +89,7 @@ public class BspPanelComponent private constructor(
   private fun replacePanelContent(oldContent: Component?, newContent: JComponent) {
     oldContent?.let { this.remove(it) }
     this.add(newContent)
+    if (targetsFilteredOut > 0) this.add(hiddenTargetsMessage)
     this.revalidate()
     this.repaint()
   }
@@ -116,14 +119,19 @@ public class BspPanelComponent private constructor(
    * will be copied using [BuildTargetContainer.createNewWithTargets]
    *
    * @param targets collection of build targets which the new panel will contain
+   * @param targetsFilteredOut number of targets which were removed when applying filters
    * @return newly created panel
    */
-  public fun createNewWithTargets(targets: Collection<BuildTargetInfo>): BspPanelComponent =
+  public fun createNewWithTargets(
+    targets: Tristate.Targets,
+    targetsFilteredOut: Int,
+  ): BspPanelComponent =
     BspPanelComponent(
-      targetIcon,
+      iconProvider,
       toolName,
       targetTree.createNewWithTargets(targets),
       targetSearch.createNewWithTargets(targets),
+      targetsFilteredOut,
     )
 
   private companion object {

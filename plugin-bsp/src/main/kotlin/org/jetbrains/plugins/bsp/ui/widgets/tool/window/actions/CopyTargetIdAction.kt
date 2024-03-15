@@ -20,12 +20,12 @@ public class CopyTargetIdAction(
   }
 
   override fun actionPerformed(e: AnActionEvent) {
-    container.getSelectedBuildTarget()?.copyIdToClipboard()
+    container.getSelectedNode()?.idToCopy()?.copyToClipboard()
   }
 
-  private fun BuildTargetInfo.copyIdToClipboard() {
+  private fun String.copyToClipboard() {
     val clipboard = CopyPasteManager.getInstance()
-    val transferable = TextTransferable(this.id as CharSequence)
+    val transferable = TextTransferable(this as CharSequence)
     clipboard.setContents(transferable)
   }
 }

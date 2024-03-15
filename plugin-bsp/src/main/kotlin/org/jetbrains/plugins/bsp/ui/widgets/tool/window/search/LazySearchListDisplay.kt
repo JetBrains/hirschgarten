@@ -1,10 +1,12 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.panels.VerticalLayout
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.TargetNode
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.Tristate
 import java.awt.Point
 import java.awt.event.MouseListener
 import javax.swing.DefaultListModel
@@ -12,14 +14,18 @@ import javax.swing.Icon
 import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.ListSelectionModel
-import javax.swing.SwingConstants
 
-private const val TARGETS_TO_HIGHLIGHT: Int = 50
+private const val MAX_TARGETS_TO_HIGHLIGHT: Int = 50
 
-public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay() {
-  private val searchListModel = DefaultListModel<PrintableBuildTarget>()
+public class LazySearchListDisplay(
+  private val iconProvider: Tristate<Icon>,
+) : LazySearchDisplay() {
+  private val searchListModel = DefaultListModel<TargetNode.Target>()
   private val searchListComponent = JBList(searchListModel)
   private var showMoreButton = JButton("")
+
+  private val queryHighlighter: (String) -> String = { QueryHighlighter.highlight(it, query) }
+  private val noHighlighter: (String) -> String = { it }
 
   init {
     component.add(searchListComponent)
@@ -27,42 +33,50 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     searchListComponent.installCellRenderer { renderSearchListCell(it) }
   }
 
-  private fun renderSearchListCell(printableBuildTarget: PrintableBuildTarget): JPanel {
+  private fun renderSearchListCell(targetNode: TargetNode.Target): JPanel {
     val renderedCell = JPanel(VerticalLayout(0))
-    renderedCell.add(
-      JBLabel(
-        printableBuildTarget.displayName,
-        icon,
-        SwingConstants.LEFT,
-      ),
-    )
+    val chosenHighlighter: (String) -> String =
+      if (searchListModel.size() <= MAX_TARGETS_TO_HIGHLIGHT) {
+        queryHighlighter
+      } else {
+        noHighlighter
+      }
+    renderedCell.add(targetNode.asComponent(iconProvider, chosenHighlighter))
     return renderedCell
   }
 
   override fun rerender() {
-    replaceSearchListElementsWith(takeSomeTargetsAndHighlight(targets))
-    maybeAddShowMoreButton(targets)
+    val nodes = targets.prepareTargetNodes()
+    replaceSearchListElementsWith(nodes)
+    maybeAddShowMoreButton(nodes)
   }
 
-  private fun replaceSearchListElementsWith(printableTargets: Collection<PrintableBuildTarget>) {
+  private fun Tristate.Targets.prepareTargetNodes(): List<TargetNode.Target> =
+    this.toTargetNodes()
+      .reduce { a, b -> a + b }
+      .sortedBy(TargetNode.Target::displayName)
+
+  private fun Tristate.Targets.toTargetNodes(): Tristate<List<TargetNode.Target>> {
+    val loadedNodes = loaded.map { it.toValidTargetNode(true) }
+    val unloadedNodes = unloaded.map { it.toValidTargetNode(false) }
+    val invalidNodes = invalid.map { it.toInvalidTargetNode() }
+    return Tristate(loadedNodes, unloadedNodes, invalidNodes)
+  }
+
+  private fun BuildTargetInfo.toValidTargetNode(loaded: Boolean = true): TargetNode.Target =
+    TargetNode.ValidTarget(this, this.id, loaded)
+
+  private fun BuildTargetId.toInvalidTargetNode(): TargetNode.Target =
+    TargetNode.InvalidTarget(this, this)
+
+  private fun replaceSearchListElementsWith(printableTargets: Collection<TargetNode.Target>) {
     component.remove(showMoreButton)
     searchListModel.removeAllElements()
     searchListModel.addAll(printableTargets)
   }
 
-  private fun takeSomeTargetsAndHighlight(targets: Collection<BuildTargetInfo>): List<PrintableBuildTarget> =
-    targets.take(TARGETS_TO_HIGHLIGHT).map {
-      PrintableBuildTarget(
-        it,
-        QueryHighlighter.highlight(it.getBuildTargetName(), query),
-      )
-    }
-
-  private fun BuildTargetInfo.getBuildTargetName(): String =
-    this.displayName ?: this.id
-
-  private fun maybeAddShowMoreButton(targets: Collection<BuildTargetInfo>) {
-    val remainingTargets = targets.size - TARGETS_TO_HIGHLIGHT
+  private fun maybeAddShowMoreButton(targets: Collection<TargetNode.Target>) {
+    val remainingTargets = targets.size - MAX_TARGETS_TO_HIGHLIGHT
     if (remainingTargets > 0) {
       showMoreButton = JButton(BspPluginBundle.message("widget.show.more.targets.button", remainingTargets))
       showMoreButton.addActionListener {
@@ -72,19 +86,19 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     }
   }
 
-  private fun showMoreTargets(targets: Collection<BuildTargetInfo>) {
+  private fun showMoreTargets(targets: Collection<TargetNode.Target>) {
     component.remove(showMoreButton)
-    replaceSearchListElementsWith(targets.map { PrintableBuildTarget(it) })
+    replaceSearchListElementsWith(targets)
   }
 
   override fun addMouseListener(mouseListener: MouseListener) {
     searchListComponent.addMouseListener(mouseListener)
   }
 
-  override fun getSelectedBuildTarget(): BuildTargetInfo? =
-    searchListComponent.selectedValue?.buildTarget
+  override fun getSelectedNode(): TargetNode? =
+    searchListComponent.selectedValue
 
-  // https://youtrack.jetbrains.com/issue/BAZEL-522
+  // Fixes https://youtrack.jetbrains.com/issue/BAZEL-522
   public fun selectAtLocation(location: Point) {
     val index = searchListComponent.locationToIndex(location)
     if (index >= 0 && !searchListComponent.isSelectedIndex(index)) {
