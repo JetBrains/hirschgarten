@@ -167,9 +167,9 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       }
 
       if (BspFeatureFlags.isGoSupportEnabled && goSdkExtensionExists()) {
-          reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
-              calculateAllGoSdkInfosSubtask(projectDetails)
-          }
+        reporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.go.sdk.infos")) {
+          calculateAllGoSdkInfosSubtask(projectDetails)
+        }
       }
 
       reporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.update.internal.model")) {
@@ -367,12 +367,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private fun createGoSdk(target: BuildTarget): GoSdk? =
     extractGoBuildTarget(target)?.let {
-        if (it.sdkHomePath == null) {
-          GoSdk.NULL
-        } else {
-          GoSdk.fromHomePath(it.sdkHomePath?.path)
-        }
+      if (it.sdkHomePath == null) {
+        GoSdk.NULL
+      } else {
+        GoSdk.fromHomePath(it.sdkHomePath?.path)
       }
+    }
 
   private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
@@ -513,9 +513,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         }
       }
     }
-
-
-
 
   private suspend fun applyChangesOnWorkspaceModel() = withSubtask(
     "apply-changes-on-workspace-model",
