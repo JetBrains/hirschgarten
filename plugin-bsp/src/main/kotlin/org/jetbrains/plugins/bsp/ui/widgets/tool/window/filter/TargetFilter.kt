@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter
 
-import org.jetbrains.magicmetamodel.MagicMetaModel
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.MagicMetaModel
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 public class TargetFilter(
   private val onFilterChange: () -> Unit,

@@ -1,8 +1,8 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 
 import com.intellij.ui.components.panels.VerticalLayout
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import java.awt.event.MouseListener
 import javax.swing.JPanel
 

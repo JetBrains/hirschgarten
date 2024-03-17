@@ -31,27 +31,16 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
-import org.jetbrains.bsp.BazelBuildServerCapabilities
-import org.jetbrains.bsp.DirectoryItem
-import org.jetbrains.bsp.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.WorkspaceLibrariesResult
-import org.jetbrains.bsp.utils.extractAndroidBuildTarget
+import org.jetbrains.bsp.protocol.BazelBuildServer
+import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
+import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.utils.extractGoBuildTarget
-import org.jetbrains.bsp.utils.extractJvmBuildTarget
-import org.jetbrains.bsp.utils.extractPythonBuildTarget
-import org.jetbrains.bsp.utils.extractScalaBuildTarget
-import org.jetbrains.magicmetamodel.MagicMetaModelDiff
-import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.magicmetamodel.impl.BenchmarkFlags.isBenchmark
-import org.jetbrains.magicmetamodel.impl.PerformanceLogger
-import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformance
-import org.jetbrains.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
-import org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
-import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
-import org.jetbrains.magicmetamodel.impl.workspacemodel.includesPython
-import org.jetbrains.magicmetamodel.impl.workspacemodel.includesScala
+import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import org.jetbrains.plugins.bsp.android.AndroidSdk
 import org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension
 import org.jetbrains.plugins.bsp.android.androidSdkGetterExtension
@@ -65,6 +54,18 @@ import org.jetbrains.plugins.bsp.extension.points.goSdkExtensionExists
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.flow.open.projectSyncHook
+import org.jetbrains.plugins.bsp.magicmetamodel.MagicMetaModelDiff
+import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.BenchmarkFlags.isBenchmark
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger.logPerformance
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesJava
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesScala
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
@@ -585,11 +586,11 @@ public fun calculateProjectDetailsWithCapabilities(
     val scalaTargetIds = calculateScalaTargetIds(workspaceBuildTargetsResult)
     val libraries: WorkspaceLibrariesResult? =
       query(buildServerCapabilities.workspaceLibrariesProvider, "workspace/libraries") {
-        server.workspaceLibraries()
+        (server as BazelBuildServer).workspaceLibraries()
       }?.get()
 
     val directoriesFuture = query(buildServerCapabilities.workspaceDirectoriesProvider, "workspace/directories") {
-      server.workspaceDirectories()
+      (server as BazelBuildServer).workspaceDirectories()
     }
 
     // We use javacOptions only do build dependency tree based on classpath

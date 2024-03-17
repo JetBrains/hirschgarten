@@ -4,8 +4,8 @@ import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.project.Project
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.configuration.BspBaseRunConfiguration
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 import javax.swing.Icon
@@ -25,7 +25,7 @@ internal abstract class BspRunnerAction(
     val factory = getConfigurationType(project).configurationFactories.first()
     val settings =
       RunManager.getInstance(project).createConfiguration(calculateConfigurationName(buildTargetInfo), factory)
-    (settings.configuration as? BspBaseRunConfiguration)?.apply { targetUri = buildTargetInfo.id }
+    (settings.configuration as? BspBaseRunConfiguration)?.apply { target = buildTargetInfo }
     return settings
   }
 

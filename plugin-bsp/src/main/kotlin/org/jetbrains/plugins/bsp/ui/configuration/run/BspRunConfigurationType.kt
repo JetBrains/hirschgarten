@@ -1,29 +1,20 @@
 package org.jetbrains.plugins.bsp.ui.configuration.run
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.StatusCode
-import com.intellij.execution.DefaultExecutionResult
-import com.intellij.execution.ExecutionResult
+import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.configurations.ConfigurationFactory
 import com.intellij.execution.configurations.ConfigurationType
-import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.RunProfileState
-import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.execution.runners.ProgramRunner
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
-import org.jetbrains.plugins.bsp.server.tasks.RunTargetTask
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.configuration.BspBaseRunConfiguration
-import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
-import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import javax.swing.Icon
 
 internal class BspRunConfigurationType(project: Project) : ConfigurationType {
@@ -58,68 +49,33 @@ public class BspRunFactory(t: ConfigurationType) : ConfigurationFactory(t) {
     BspRunConfigurationType.ID
 }
 
-internal class BspRunConfiguration(
-  project: Project,
+public class BspRunConfiguration(
+  private val project: Project,
   configurationFactory: ConfigurationFactory,
   name: String,
 ) : BspBaseRunConfiguration(project, configurationFactory, name) {
-  var debugType: BspDebugType? = null
-
-  internal class BspCommandLineState(
-    val project: Project,
-    environment: ExecutionEnvironment,
-    private val targetUri: String?,
-    private val debugType: BspDebugType?,
-  ) : CommandLineState(environment) {
-    val remoteConnection: RemoteConnection? = createRemoteConnection()
-
-    private fun createRemoteConnection(): RemoteConnection? =
-      when (debugType) {
-        BspDebugType.JDWP -> RemoteConnection(true, "localhost", "0", true)
-        else -> null
-      }
-
-    override fun startProcess(): BspProcessHandler = BspProcessHandler().apply {
-      startNotify()
+  override var target: BuildTargetInfo? = null
+    set(target) {
+      field = target
+      createRunHandlerFromTarget()
     }
 
-    override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
-      val bspRunConsole = BspConsoleService.getInstance(project).bspRunConsole
-      val processHandler = startProcess()
-      val console = createConsole(executor)?.apply {
-        attachToProcess(processHandler)
-      }
-      targetUri?.let { uri ->
-        bspRunConsole.registerPrinter(processHandler)
-        processHandler.execute {
-          processHandler.printOutput(BspPluginBundle.message("console.task.run.start", uri))
-          try {
-            val portForDebugIfApplicable = if (executor.id == DefaultDebugExecutor.EXECUTOR_ID) {
-              remoteConnection?.debuggerAddress?.toInt()
-            } else null
-            RunTargetTask(project, debugType, portForDebugIfApplicable)
-              .connectAndExecute(BuildTargetIdentifier(uri))
-              ?.apply {
-                when (statusCode) {
-                  StatusCode.OK -> processHandler.printOutput(BspPluginBundle.message("console.task.status.ok"))
-                  StatusCode.CANCELLED -> processHandler.printOutput(
-                    BspPluginBundle.message("console.task.status.cancelled"))
-                  StatusCode.ERROR -> processHandler.printOutput(BspPluginBundle.message("console.task.status.error"))
-                  else -> processHandler.printOutput(BspPluginBundle.message("console.task.status.other"))
-                }
-              }
-          } finally {
-            bspRunConsole.deregisterPrinter(processHandler)
-            processHandler.shutdown()
-          }
-        }
-      } ?: processHandler.shutdown()
-      return DefaultExecutionResult(console, processHandler)
+  public var runHandler: BspRunHandler? = null
+
+  private fun createRunHandlerFromTarget() {
+    val target = target ?: return
+    runHandler = BspRunHandler.getRunHandler(target).apply {
+      prepareRunConfiguration(this@BspRunConfiguration)
     }
   }
 
-  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
-    BspCommandLineState(project, environment, targetUri, debugType)
+  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState? {
+    val target = target ?: return null
+    return runHandler?.getRunProfileState(project, executor, environment, target)
+  }
+
+  override fun getBeforeRunTasks(): List<BeforeRunTask<*>> =
+    runHandler?.getBeforeRunTasks(this) ?: emptyList()
 
   override fun getConfigurationEditor(): SettingsEditor<out RunConfiguration> {
     // TODO https://youtrack.jetbrains.com/issue/BAZEL-627

@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.extension.points
 
 import com.intellij.openapi.extensions.ExtensionPointName
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 public interface BuildTargetClassifierExtension : WithBuildToolId {
   /**

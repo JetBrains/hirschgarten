@@ -7,11 +7,10 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.includesJava
-import org.jetbrains.magicmetamodel.impl.workspacemodel.includesKotlin
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
+import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BspRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
@@ -102,13 +101,10 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
   target: BuildTargetInfo,
   verboseText: Boolean,
 ): DefaultActionGroup {
-  val debugType = target.inferDebugType()
-
   if (target.capabilities.canRun) {
     addAction(
       RunTargetAction(
         targetInfo = target,
-        debugType = debugType,
         verboseText = verboseText,
       )
     )
@@ -118,18 +114,17 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
     addAction(TestTargetAction(target, verboseText = verboseText))
   }
 
-  if (target.capabilities.canDebug && debugType != null) {
+  if (target.capabilities.canDebug && BspRunHandler.getRunHandler(target).canDebug(target)) {
     addAction(
       RunTargetAction(
         targetInfo = target,
-        debugType = debugType,
         isDebugAction = true,
         verboseText = verboseText,
       )
     )
   }
 
-  if (target.isJvmTarget()) {
+  if (target.languageIds.isJvmTarget()) {
     if (target.capabilities.canRun) {
       addAction(RunWithLocalJvmRunnerAction(target, verboseText = verboseText))
       if (target.capabilities.canDebug)
@@ -143,13 +138,3 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
   }
   return this
 }
-
-internal fun BuildTargetInfo.isJvmTarget(): Boolean = with(languageIds) {
-  includesJava() or includesKotlin()
-}
-
-internal fun BuildTargetInfo.inferDebugType(): BspDebugType? =
-  when {
-    isJvmTarget() -> BspDebugType.JDWP
-    else -> null
-  }

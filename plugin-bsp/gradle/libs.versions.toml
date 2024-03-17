@@ -1,9 +1,9 @@
 [versions]
-detekt = "1.23.4"
-kotlin-gradle-version = "1.9.20"
+detekt = "1.23.5"
+kotlin-gradle-version = "1.9.23"
 
 [libraries]
-junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.1" }
+junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.2" }
 bsp4j = { module = "ch.epfl.scala:bsp4j", version = "2.2.0-M1" }
 kotest = { module = "io.kotest:kotest-assertions-core", version = "5.8.0" }
 scala = { module = "org.scala-lang:scala-library", version = "2.13.12" }
@@ -13,5 +13,5 @@ detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", ve
 kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
 
 [plugins]
-intellij = { id = "org.jetbrains.intellij", version = "1.16.0" }
+intellij = { id = "org.jetbrains.intellij", version = "1.17.2" }
 changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }

@@ -24,7 +24,10 @@
                     interface="org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension"
                     dynamic="true"/>
     <extensionPoint name="androidFacetEntityUpdaterExtension"
-                    interface="org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
+                    interface="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
+                    dynamic="true"/>
+    <extensionPoint name="bspRunHandler"
+                    interface="org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler"
                     dynamic="true"/>
     <extensionPoint name="GoSdkExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.GoSdkExtension"
@@ -64,6 +67,8 @@
 
     <connectionDetailsProviderExtension
       implementation="org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension"/>
+
+    <bspRunHandler implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler"/>
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -71,7 +76,7 @@
 
     <workspaceModel.fileIndexContributor implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
 
-    <java.programPatcher implementation="org.jetbrains.plugins.bsp.runner.BspJvmEnvironmentProgramPatcher"/>
+    <java.programPatcher implementation="org.jetbrains.plugins.bsp.jvm.BspJvmEnvironmentProgramPatcher"/>
 
     <projectOpenProcessor
       implementation="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessor"/>
@@ -83,7 +88,7 @@
     <projectViewNodeDecorator implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspProjectViewNodeDecorator"/>
     <projectTaskRunner
       implementation="org.jetbrains.plugins.bsp.building.task.BspProjectTaskRunner"/>
-    <programRunner implementation="org.jetbrains.plugins.bsp.runner.BspDebugRunner"/>
+    <programRunner implementation="org.jetbrains.plugins.bsp.jvm.BspJvmDebugRunner"/>
 
     <directoryProjectConfigurator implementation="org.jetbrains.plugins.bsp.flow.open.CounterPlatformProjectConfigurator"
                                   order="after PlatformProjectConfigurator"/>

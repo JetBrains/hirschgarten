@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.server.tasks.SyncProjectTask
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -19,12 +18,8 @@ public class ReloadAction : SuspendableAction({ BspPluginBundle.message("reload.
   }
 
   override fun update(project: Project, e: AnActionEvent) {
-    e.presentation.isVisible = project.isBspProject
-    e.presentation.isEnabled = shouldBeEnabled(project)
+    e.presentation.isEnabled = !project.isSyncInProgress()
   }
-
-  private fun shouldBeEnabled(project: Project): Boolean =
-    project.isBspProject && !project.isSyncInProgress()
 
   private fun Project.isSyncInProgress() =
     BspConsoleService.getInstance(this).bspSyncConsole.hasTasksInProgress()

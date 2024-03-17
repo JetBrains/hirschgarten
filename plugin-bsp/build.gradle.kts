@@ -23,11 +23,12 @@ version = Plugin.version
 
 dependencies {
   implementation(project(":jps-compilation"))
-  implementation(project(":magicmetamodel"))
   implementation(project(":protocol"))
   implementation(project(":workspacemodel"))
   testImplementation(project(":test-utils"))
-  implementation(libs.bsp4j)
+  implementation(libs.bsp4j) {
+    exclude(group = "com.google.guava", "guava")
+  }
   implementation(libs.gson)
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
