@@ -16,7 +16,7 @@ object Plugin {
 const val pluginVerifierIdeVersions = "241.14494.17"
 
 object Platform {
-  const val type = "IC"
+  const val type = "IU"
   const val version = "241.14494.17-EAP-SNAPSHOT"
   const val downloadSources = true
 

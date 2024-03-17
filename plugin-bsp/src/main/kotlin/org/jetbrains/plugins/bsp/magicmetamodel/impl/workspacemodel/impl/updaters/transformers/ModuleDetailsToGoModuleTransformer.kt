@@ -1,10 +1,15 @@
-package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
+package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import org.jetbrains.bsp.utils.extractGoBuildTarget
-import org.jetbrains.magicmetamodel.ModuleNameProvider
-import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.*
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
+import org.jetbrains.plugins.bsp.magicmetamodel.ModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModuleDependency
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.toPath
@@ -27,9 +32,9 @@ internal class ModuleDetailsToGoModuleTransformer(
             goDependencies = inputEntity.moduleDependencies.mapNotNull { targetsMap[it] }.map { buildTargetInfo ->
                 val buildTarget = projectDetails.targets.find { it.id == buildTargetInfo.id.toBsp4JTargetIdentifier() }
                     ?: error("find nie działa")
-                val goBuildInfo = extractGoBuildTarget(buildTarget) ?: error("extract nie działa")
+                val goBuildInfoo = extractGoBuildTarget(buildTarget) ?: error("extract nie działa")
                 GoModuleDependency(
-                    importPath = goBuildInfo.importPath ?: error("nie ma importPatha"),
+                    importPath = goBuildInfoo.importPath ?: error("nie ma importPatha"),
                     root = URI.create(buildTarget.baseDirectory).toPath()
                 )
             }

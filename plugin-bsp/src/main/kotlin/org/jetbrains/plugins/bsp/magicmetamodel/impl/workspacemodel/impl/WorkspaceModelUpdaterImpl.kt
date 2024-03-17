@@ -11,12 +11,10 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.*
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleName
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.GoModuleUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModuleUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig

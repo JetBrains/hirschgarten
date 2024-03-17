@@ -1,9 +1,9 @@
-package org.jetbrains.magicmetamodel.impl.workspacemodel.impl.updaters
+package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.goide.vgo.project.workspaceModel.entities.VgoDependencyEntity
 import com.goide.vgo.project.workspaceModel.entities.VgoStandaloneModuleEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import org.jetbrains.magicmetamodel.impl.workspacemodel.GoModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModule
 import org.jetbrains.workspacemodel.entities.BspEntitySource
 
 internal class GoModuleUpdater(

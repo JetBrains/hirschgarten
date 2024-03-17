@@ -1,7 +1,7 @@
-package org.jetbrains.magicmetamodel.impl.workspacemodel
+package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
 
-import org.jetbrains.magicmetamodel.impl.ModuleState
-import org.jetbrains.magicmetamodel.impl.toState
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.ModuleState
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.toState
 import java.nio.file.Path
 
 public data class GoModuleDependency(

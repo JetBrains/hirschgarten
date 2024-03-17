@@ -37,7 +37,7 @@ import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
-import org.jetbrains.bsp.utils.extractGoBuildTarget
+import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget

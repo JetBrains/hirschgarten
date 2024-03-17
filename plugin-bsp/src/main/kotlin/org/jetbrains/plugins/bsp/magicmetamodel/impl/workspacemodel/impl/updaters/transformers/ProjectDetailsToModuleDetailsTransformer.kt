@@ -10,10 +10,6 @@ import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.bsp.LibraryItem
-import org.jetbrains.bsp.utils.extractGoBuildTarget
-import org.jetbrains.magicmetamodel.ProjectDetails
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleDetails
 
 internal class ProjectDetailsToModuleDetailsTransformer(
   private val projectDetails: ProjectDetails,
