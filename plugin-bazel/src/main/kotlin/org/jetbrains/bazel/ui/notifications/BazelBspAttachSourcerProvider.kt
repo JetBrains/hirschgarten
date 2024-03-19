@@ -17,6 +17,8 @@ import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.config.buildToolIdOrNull
+import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.net.URI
 import kotlin.io.path.toPath
@@ -95,7 +97,7 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
   }
 
   private fun Project.isBazelProject() =
-    buildToolId == BazelPluginConstants.bazelBspBuildToolId
+    buildToolIdOrNull == BazelPluginConstants.bazelBspBuildToolId
 
   private fun Project.containsBazelSourcesForEntries(orderEntries: List<LibraryOrderEntry>): Boolean {
     val mmmLibraries = getAllMMMLibraries(this)
