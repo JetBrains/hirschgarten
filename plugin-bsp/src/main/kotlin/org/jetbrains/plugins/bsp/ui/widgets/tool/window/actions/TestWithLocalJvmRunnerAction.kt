@@ -17,15 +17,13 @@ internal class TestWithLocalJvmRunnerAction(
   targetInfo = targetInfo,
   text = {
     if (text != null) text()
-    else if (isDebugMode) BspPluginBundle.messageVerbose(
+    else if (isDebugMode) BspPluginBundle.message(
       "target.debug.with.jvm.runner.action.text",
-      verboseText,
-      targetInfo.getBuildTargetName()
+      if (verboseText) targetInfo.getBuildTargetName() else ""
     )
-    else BspPluginBundle.messageVerbose(
+    else BspPluginBundle.message(
       "target.test.with.jvm.runner.action.text",
-      verboseText,
-      targetInfo.getBuildTargetName()
+      if (verboseText) targetInfo.getBuildTargetName() else ""
     )
   },
   isDebugMode = isDebugMode,

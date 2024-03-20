@@ -15,15 +15,13 @@ internal class TestTargetAction(
   targetInfo = targetInfo,
   text = {
     if (text != null) text()
-    else if (isDebugAction) BspPluginBundle.messageVerbose(
+    else if (isDebugAction) BspPluginBundle.message(
       "target.debug.action.text",
-      verboseText,
-      targetInfo.getBuildTargetName()
+      if (verboseText) targetInfo.getBuildTargetName() else ""
     )
-    else BspPluginBundle.messageVerbose(
+    else BspPluginBundle.message(
       "target.test.action.text",
-      verboseText,
-      targetInfo.getBuildTargetName()
+      if (verboseText) targetInfo.getBuildTargetName() else ""
     )
   },
   isDebugAction = isDebugAction) {
