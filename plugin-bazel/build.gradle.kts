@@ -24,6 +24,9 @@ dependencies {
     testImplementation(libs.junit5)
     testRuntimeOnly(libs.junitVintage)
     testImplementation(libs.kotest)
+    // This is a fix for failing Intellij tests, needs to be adjusted to versions currently used by the platform
+    testRuntimeOnly(libs.guava)
+    testRuntimeOnly(libs.kotlinxCoroutinesDebug)
 }
 
 group = Plugin.group
