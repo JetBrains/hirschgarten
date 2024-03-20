@@ -50,6 +50,7 @@ public data class ResourceRoot(
 
 public data class Library(
   val displayName: String,
+  val iJars: List<String> = listOf(),
   val sourceJars: List<String> = listOf(),
   val classJars: List<String> = listOf(),
 ) : WorkspaceModelEntity(), ResourceRootEntity {

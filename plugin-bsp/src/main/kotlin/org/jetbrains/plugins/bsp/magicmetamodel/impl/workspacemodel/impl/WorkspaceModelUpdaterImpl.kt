@@ -65,7 +65,7 @@ internal class WorkspaceModelUpdaterImpl(
         LibraryEntity(
           name = entityToAdd.displayName,
           tableId = LibraryTableId.ProjectLibraryTableId,
-          roots = entityToAdd.classJars.toLibraryRootsOfType(LibraryRootTypeId.COMPILED),
+          roots = entityToAdd.toJarOrIJar(),
           entitySource = LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
             project = workspaceModelEntityUpdaterConfig.project,
             externalSource = null,
@@ -76,6 +76,9 @@ internal class WorkspaceModelUpdaterImpl(
       )
     }
   }
+
+  private fun Library.toJarOrIJar(): List<LibraryRoot> =
+    classJars.ifEmpty { iJars }.toLibraryRootsOfType(LibraryRootTypeId.COMPILED)
 
   private fun List<String>.toLibraryRootsOfType(type: LibraryRootTypeId) = map {
     LibraryRoot(
