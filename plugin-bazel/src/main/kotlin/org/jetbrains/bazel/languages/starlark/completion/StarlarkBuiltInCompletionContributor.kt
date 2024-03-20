@@ -13,6 +13,7 @@ import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.StarlarkBuiltIn
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceExpression
 
@@ -55,7 +56,7 @@ private object StarlarkBuiltInStringCompletionProvider : CompletionProvider<Comp
 }
 
 private fun functionLookupElement(name: String) =
-  builtInLookupElement(name).withInsertHandler(ParenthesesInsertHandler.WITH_PARAMETERS)
+  builtInLookupElement(name).withInsertHandler(ParenthesesInsertHandler.NO_PARAMETERS)
 
 private fun builtInLookupElement(name: String) =
   LookupElementBuilder.create(name).withTypeText(StarlarkBundle.message("completion.builtin"))
@@ -64,6 +65,7 @@ private val nameCompletionElement = psiElement()
   .withLanguage(StarlarkLanguage)
   .withParent(StarlarkReferenceExpression::class.java)
   .andNot(psiComment())
+  .andNot(psiElement().afterLeaf(psiElement().withElementType(StarlarkTokenSets.NUMERIC)))
   .andNot(psiElement().afterLeaf(psiElement(StarlarkTokenTypes.DOT)))
 
 private val stringCompletionElement = psiElement()

@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.completion
 
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixture4TestCase
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.equals.shouldBeEqual
 import org.junit.Test
 
 class StarlarkBuiltInCompletionContributorTest : LightPlatformCodeInsightFixture4TestCase() {
@@ -33,7 +34,7 @@ class StarlarkBuiltInCompletionContributorTest : LightPlatformCodeInsightFixture
 
   @Test
   fun `should complete buildIn string method`() {
-    //given
+    // given
     myFixture.configureByText("string.bzl", "")
     myFixture.type(
       """
@@ -46,5 +47,22 @@ class StarlarkBuiltInCompletionContributorTest : LightPlatformCodeInsightFixture
 
     // then
     lookups shouldContainExactlyInAnyOrder listOf("capitalize", "count", "isspace", "replace")
+  }
+
+  @Test
+  fun `should not complete buildIns for numerics`() {
+    // given
+    myFixture.configureByText("numeric.bzl", "")
+    myFixture.type(
+      """
+        |x = 5
+      """.trimMargin()
+    )
+
+    // when
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+
+    // then
+    lookups shouldBeEqual emptyList()
   }
 }
