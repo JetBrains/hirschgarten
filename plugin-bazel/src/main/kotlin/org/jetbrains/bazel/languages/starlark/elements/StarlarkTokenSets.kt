@@ -50,6 +50,11 @@ object StarlarkTokenSets {
     StarlarkTokenTypes.BYTES,
   )
 
+  val NUMERIC = TokenSet.create(
+    StarlarkTokenTypes.INT,
+    StarlarkTokenTypes.FLOAT,
+  )
+
   val ENDS_OF_STATEMENT = TokenSet.create(StarlarkTokenTypes.STATEMENT_BREAK, StarlarkTokenTypes.SEMICOLON)
 
   val COMPOUND_ASSIGN_OPERATIONS = TokenSet.create(
