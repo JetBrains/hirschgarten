@@ -32,6 +32,7 @@ import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
 import java.io.File
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.writeText
@@ -51,7 +52,7 @@ private const val BSP_PLUGIN_ID = "org.jetbrains.bsp"
 private const val BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX = 0
 private const val BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX = 2
 
-internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProviderExtension {
+internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProviderExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
 
   override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean {
@@ -118,7 +119,8 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
     homePath?.let { Path(it) }?.resolve("bin")?.resolve("java") ?: error("Cannot obtain jdk home path for $name")
 
   private fun BspConnectionDetails.hasNotChanged(javaBin: Path): Boolean =
-    version == Constants.VERSION && argv[BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX] == javaBin.toAbsolutePath().toString()
+    version == Constants.VERSION && argv[BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX] == javaBin.toAbsolutePath()
+      .toString()
 
   private fun calculateNewConnectionDetails(project: Project, javaBin: Path): BspConnectionDetails {
     val projectPath = project.stateService.projectPath ?: error("Cannot obtain project path. Please reopen the project")
@@ -126,7 +128,7 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
       javaPath = InstallationContextJavaPathEntity(javaBin),
       debuggerAddress = null,
       bazelWorkspaceRootDir = projectPath.toNioPath(),
-      projectViewFilePath =  projectPath.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
+      projectViewFilePath = projectPath.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
     )
     val dotBazelBspCreator = DotBazelBspCreator(projectPath)
 
@@ -144,7 +146,7 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
   }
 
   private fun BspConnectionDetails.calculateNewClasspath(): String {
-    val oldClasspath = argv[BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX]
+    val oldClasspath = argv[BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX].shortenClasspath()
 
     val bazelPluginClasspath = calculatePluginClasspath(BAZEL_PLUGIN_ID)
     val bspPluginClasspath = calculatePluginClasspath(BSP_PLUGIN_ID)
@@ -154,16 +156,19 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
 
   private fun calculatePluginClasspath(pluginIdString: String): String {
     val pluginId = PluginId.findId(pluginIdString) ?: error("Cannot find $pluginIdString plugin")
-    val pluginDescriptor = PluginManager.getInstance().findEnabledPlugin(pluginId) ?: error("Cannot find $pluginId plugin descriptor")
+    val pluginDescriptor =
+      PluginManager.getInstance().findEnabledPlugin(pluginId) ?: error("Cannot find $pluginId plugin descriptor")
     val pluginJarsDir = pluginDescriptor.pluginPath.resolve("lib")
 
     return pluginJarsDir.mapJarDirToClasspath()
   }
 
+  private fun String.shortenClasspath() =
+    split(":").mapNotNull { Paths.get(it).parent }.distinct()
+      .joinToString(separator = File.pathSeparator) { it.resolve("*").toString() }
+
   private fun Path.mapJarDirToClasspath(): String =
-    toFile().listFiles()?.toList().orEmpty()
-      .map { it.toPath().toAbsolutePath().normalize() }
-      .joinToString(separator = File.pathSeparator, transform = { it.toString() })
+    resolve("*").toString()
 }
 
 internal data class BazelConnectionDetailsProviderExtensionState(
