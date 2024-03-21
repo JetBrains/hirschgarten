@@ -2,8 +2,8 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.PlatformIcons
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import javax.swing.Icon
 import javax.swing.SwingConstants
 import javax.swing.tree.DefaultMutableTreeNode

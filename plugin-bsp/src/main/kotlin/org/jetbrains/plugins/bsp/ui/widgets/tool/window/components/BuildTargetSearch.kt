@@ -7,8 +7,7 @@ import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
-import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
-import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
@@ -155,7 +154,7 @@ public class BuildTargetSearch(
     override fun call(): SearchResults =
       SearchResults(
         query,
-        targets.filterByIds { query.containsMatchIn(it.getBuildTargetName()) },
+        targets.filterByIds { query.containsMatchIn(it) },
       )
   }
 }

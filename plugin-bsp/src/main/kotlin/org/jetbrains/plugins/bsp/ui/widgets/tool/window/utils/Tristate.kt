@@ -1,8 +1,8 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.ModuleCapabilities
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleCapabilities
 
 /** Holds *something* for three possible target states - loaded, unloaded and invalid */
 public data class Tristate<T>(

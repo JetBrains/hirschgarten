@@ -2,8 +2,8 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
-import org.jetbrains.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.magicmetamodel.impl.workspacemodel.isJvmTarget
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
 import org.jetbrains.plugins.bsp.ui.actions.LoadTargetWithDependenciesAction
