@@ -119,8 +119,8 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
     homePath?.let { Path(it) }?.resolve("bin")?.resolve("java") ?: error("Cannot obtain jdk home path for $name")
 
   private fun BspConnectionDetails.hasNotChanged(javaBin: Path): Boolean =
-    version == Constants.VERSION && argv[BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX] == javaBin.toAbsolutePath()
-      .toString()
+    version == Constants.VERSION &&
+      argv[BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX] == javaBin.toAbsolutePath().toString()
 
   private fun calculateNewConnectionDetails(project: Project, javaBin: Path): BspConnectionDetails {
     val projectPath = project.stateService.projectPath ?: error("Cannot obtain project path. Please reopen the project")
@@ -164,7 +164,7 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
   }
 
   private fun String.shortenClasspath() =
-    split(":").mapNotNull { Paths.get(it).parent }.distinct()
+    split(File.pathSeparator).mapNotNull { Paths.get(it).parent }.distinct()
       .joinToString(separator = File.pathSeparator) { it.resolve("*").toString() }
 
   private fun Path.mapJarDirToClasspath(): String =
