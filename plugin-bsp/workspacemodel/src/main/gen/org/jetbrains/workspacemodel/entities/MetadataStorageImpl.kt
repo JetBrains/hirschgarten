@@ -226,6 +226,71 @@ public object MetadataStorageImpl : MetadataStorageBase() {
     )
 
     addMetadata(typeMetadata)
+
+    typeMetadata = EntityMetadata(
+      fqName = "org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity",
+      entityDataFqName = "org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntityData",
+      supertypes = listOf("com.intellij.platform.workspace.storage.WorkspaceEntity"),
+      properties = listOf(
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
+          name = "entitySource",
+          valueType = ValueTypeMetadata.SimpleType.CustomType(
+            isNullable = false,
+            typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.EntitySource")
+          ),
+          withDefault = false
+        ),
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
+          name = "jars",
+          valueType = ValueTypeMetadata.ParameterizedType(
+            generics = listOf(
+              ValueTypeMetadata.SimpleType.CustomType(
+                isNullable = false,
+                typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")
+              )
+            ), primitive = primitiveTypeListNotNullable
+          ),
+          withDefault = false
+        ),
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
+          name = "module",
+          valueType = ValueTypeMetadata.EntityReference(
+            connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
+            entityFqName = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+            isChild = false,
+            isNullable = false
+          ),
+          withDefault = false
+        )
+      ),
+      extProperties = listOf(
+        ExtPropertyMetadata(
+          isComputable = false,
+          isOpen = false,
+          name = "jvmBinaryJarsEntity",
+          receiverFqn = "com.intellij.platform.workspace.jps.entities.ModuleEntity",
+          valueType = ValueTypeMetadata.EntityReference(
+            connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
+            entityFqName = "org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity",
+            isChild = true,
+            isNullable = true
+          ),
+          withDefault = false
+        )
+      ),
+      isAbstract = false
+    )
+
+    addMetadata(typeMetadata)
   }
 
   override fun initializeMetadataHash() {
@@ -234,6 +299,7 @@ public object MetadataStorageImpl : MetadataStorageBase() {
       typeFqn = "org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity",
       metadataHash = -565268675
     )
+    addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity", metadataHash = -25691589)
     addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.AndroidTargetType", metadataHash = -2099175823)
     addMetadataHash(typeFqn = "com.intellij.platform.workspace.storage.EntitySource", metadataHash = -27777658)
     addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.BspDummyEntitySource", metadataHash = 124279478)

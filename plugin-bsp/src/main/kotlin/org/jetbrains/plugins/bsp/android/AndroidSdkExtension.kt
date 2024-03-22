@@ -6,6 +6,8 @@ import com.android.tools.sdk.AndroidSdkData
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
+import java.net.URI
+import kotlin.io.path.toPath
 
 public interface AndroidSdkGetterExtension {
   public fun getAndroidSdk(androidSdk: AndroidSdk): Sdk?
@@ -32,7 +34,7 @@ public class AndroidSdkGetter : AndroidSdkGetterExtension {
     }
 
     // The android.jar is located at <sdkPath>/platforms/android-<versionNumber>/android.jar, so we go 3 levels up
-    val androidJar = androidSdk.androidJar
+    val androidJar = URI.create(androidSdk.androidJar).toPath()
     val sdkPath = androidJar.parent?.parent?.parent ?: return null
     val sdkData = AndroidSdkData.getSdkData(sdkPath.toFile()) ?: return null
 

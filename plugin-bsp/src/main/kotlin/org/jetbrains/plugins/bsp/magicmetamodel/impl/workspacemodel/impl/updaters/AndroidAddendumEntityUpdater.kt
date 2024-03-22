@@ -6,38 +6,35 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.bsp.protocol.AndroidTargetType.APP
 import org.jetbrains.bsp.protocol.AndroidTargetType.LIBRARY
 import org.jetbrains.bsp.protocol.AndroidTargetType.TEST
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.workspacemodel.entities.AndroidAddendumEntity
 import org.jetbrains.workspacemodel.entities.AndroidTargetType
-import java.net.URI
-import kotlin.io.path.toPath
+import java.nio.file.Path
 
 internal class AndroidAddendumEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) {
-  fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): AndroidAddendumEntity? {
-    val androidAddendum = entityToAdd.androidAddendum ?: return null
-
-    val androidTargetType = when (androidAddendum.androidTargetType) {
+) : WorkspaceModelEntityWithParentModuleUpdater<AndroidAddendum, AndroidAddendumEntity> {
+  override fun addEntity(entityToAdd: AndroidAddendum, parentModuleEntity: ModuleEntity): AndroidAddendumEntity {
+    val androidTargetType = when (entityToAdd.androidTargetType) {
       APP -> AndroidTargetType.APP
       LIBRARY -> AndroidTargetType.LIBRARY
       TEST -> AndroidTargetType.TEST
     }
 
-    val entity = with(androidAddendum) {
+    val entity = with(entityToAdd) {
       AndroidAddendumEntity(
         entitySource = parentModuleEntity.entitySource,
         androidSdkName = androidSdkName,
         androidTargetType = androidTargetType,
-        resourceFolders = androidAddendum.resourceFolders.map { it.toVirtualFileUrl() },
+        resourceFolders = entityToAdd.resourceFolders.map { it.toVirtualFileUrl() },
       ) {
-        this.manifest = androidAddendum.manifest?.toVirtualFileUrl()
+        this.manifest = entityToAdd.manifest?.toVirtualFileUrl()
         this.module = parentModuleEntity
       }
     }
     return workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(entity)
   }
 
-  private fun URI.toVirtualFileUrl(): VirtualFileUrl =
-    this.toPath().toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+  private fun Path.toVirtualFileUrl(): VirtualFileUrl =
+    this.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
 }

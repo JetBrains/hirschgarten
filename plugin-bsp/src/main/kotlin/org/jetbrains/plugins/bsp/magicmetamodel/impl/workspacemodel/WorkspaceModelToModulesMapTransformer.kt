@@ -14,7 +14,6 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.customImlData
-import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.ide.toPath
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
@@ -29,7 +28,8 @@ import org.jetbrains.workspacemodel.entities.AndroidTargetType.APP
 import org.jetbrains.workspacemodel.entities.AndroidTargetType.LIBRARY
 import org.jetbrains.workspacemodel.entities.AndroidTargetType.TEST
 import org.jetbrains.workspacemodel.entities.androidAddendumEntity
-import java.net.URI
+import org.jetbrains.workspacemodel.entities.jvmBinaryJarsEntity
+import java.nio.file.Path
 
 public object WorkspaceModelToModulesMapTransformer {
   public operator fun invoke(
@@ -112,6 +112,7 @@ public object WorkspaceModelToModulesMapTransformer {
           resourceRoots = sources.map { it.toResourceRoot() }.flatten(),
           moduleLevelLibraries = libraries.toList(),
           jvmJdkName = entity.getSdkName(),
+          jvmBinaryJars = entity.getJvmBinaryJars(),
           kotlinAddendum = entity.getKotlinSettings()?.toKotlinAddendum(),
           javaAddendum = entity.toJavaAddendum(),
           androidAddendum = entity.toAndroidAddendum(),
@@ -154,13 +155,11 @@ public object WorkspaceModelToModulesMapTransformer {
       AndroidAddendum(
         androidSdkName = androidSdkName,
         androidTargetType = androidTargetType,
-        manifest = manifest?.toURI(),
-        resourceFolders = resourceFolders.map { it.toURI() },
+        manifest = manifest?.toPath(),
+        resourceFolders = resourceFolders.map { it.toPath() },
       )
     }
   }
-
-  private fun VirtualFileUrl.toURI(): URI = URI.create(this.url)
 
   private fun ModuleEntity.getBaseDir() =
     // TODO: in `ModuleDetailsToJavaModuleTransformer` we are assuming there will be one or we are providing a fake one
@@ -210,6 +209,9 @@ private fun Map<LibraryId, Library>.librariesForModule(module: ModuleEntity): Se
 
 private fun ModuleEntity.getSdkName(): String? =
   dependencies.filterIsInstance<SdkDependency>().firstOrNull()?.sdk?.name
+
+private fun ModuleEntity.getJvmBinaryJars(): List<Path> =
+  jvmBinaryJarsEntity?.jars?.map { it.toPath() }.orEmpty()
 
 private fun ModuleEntity.getPythonSdk(): PythonSdkInfo? =
   dependencies.filterIsInstance<SdkDependency>()

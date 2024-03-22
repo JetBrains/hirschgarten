@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
 import java.nio.file.Path
 
@@ -26,6 +27,7 @@ internal data class ModuleDetails(
   val libraryDependencies: List<BuildTargetId>?,
   val moduleDependencies: List<BuildTargetId>,
   val defaultJdkName: String?,
+  val jvmBinaryJars: List<JvmBinaryJarsItem>,
 )
 
 internal data class ModuleName(
