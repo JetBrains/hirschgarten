@@ -42,7 +42,7 @@ public class TargetMouseListener(
   }
 
   private fun showPopup(mouseEvent: MouseEvent) {
-    val actionGroup = container.getSelectedNode()?.let{
+    val actionGroup = container.getSelectedNode()?.let {
       if (it is TargetNode.Target) calculateTargetPopupGroup(it)
       else null // if target tree directory context actions are desired in the future, they should be obtained here
     }

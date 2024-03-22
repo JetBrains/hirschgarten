@@ -42,8 +42,8 @@ private class ListsUpdater(
         toolName = assetExtension.presentableName,
         targets = magicMetaModel.getAllTargets(),
         searchBarPanel = searchBarPanel,
-      ).also {
-        it.addMouseListener { panel -> TargetMouseListener(panel, project) }
+      ).apply {
+        addMouseListener { panel -> TargetMouseListener(panel, project) }
       }
 
     magicMetaModel.registerTargetLoadListener { rerenderComponents() }

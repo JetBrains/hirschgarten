@@ -32,16 +32,12 @@ public sealed class TargetNode {
 
   override fun toString(): String = this.idToCopy()
 
-
-  public data class Directory(
-    override val displayName: String
-  ) : TargetNode() {
+  public data class Directory(override val displayName: String) : TargetNode() {
     override fun icon(iconProvider: Tristate<Icon>): Icon =
       PlatformIcons.FOLDER_ICON
 
     override fun idToCopy(): String = displayName
   }
-
 
   public abstract class Target : TargetNode()
 
