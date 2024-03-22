@@ -23,7 +23,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonSdkInf
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
-import java.net.URI
 import kotlin.io.path.Path
 
 // TODO, we can do it better, but for now it should be good enough:
@@ -195,6 +194,7 @@ public data class ModuleState(
   var resourceRoots: List<ResourceRootState> = emptyList(),
   var libraries: List<LibraryState>? = null,
   var jvmJdkName: String? = null,
+  var jvmBinaryJars: List<String> = emptyList(),
   val sdkInfo: PythonSdkInfoState? = null,
   var kotlinAddendum: KotlinAddendumState? = null,
   var scalaAddendum: ScalaAddendumState? = null,
@@ -208,6 +208,7 @@ public data class ModuleState(
     resourceRoots = resourceRoots.map { it.toResourceRoot() },
     moduleLevelLibraries = libraries?.map { it.fromState() },
     jvmJdkName = jvmJdkName,
+    jvmBinaryJars = jvmBinaryJars.map { Path(it) },
     kotlinAddendum = kotlinAddendum?.fromState(),
     scalaAddendum = scalaAddendum?.fromState(),
     androidAddendum = androidAddendum?.fromState(),
@@ -281,8 +282,8 @@ public data class AndroidAddendumState(
   override fun fromState(): AndroidAddendum = AndroidAddendum(
     androidSdkName = androidSdkName,
     androidTargetType = androidTargetType,
-    manifest = manifest?.let { URI.create(it) },
-    resourceFolders = resourceFolders.map { URI.create(it) },
+    manifest = manifest?.let { Path(it) },
+    resourceFolders = resourceFolders.map { Path(it) },
   )
 }
 

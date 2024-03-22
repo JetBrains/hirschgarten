@@ -145,6 +145,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         "module3",
       ),
       defaultJdkName = null,
+      jvmBinaryJars = emptyList(),
     )
 
     val targetsMap = listOf("module1", "module2", "module3").toDefaultTargetsMap()
@@ -280,6 +281,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         buildTargetId3.uri,
       ),
       defaultJdkName = null,
+      jvmBinaryJars = emptyList(),
     )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
@@ -336,6 +338,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       libraryDependencies = null,
       moduleDependencies = listOf(buildTargetId3.uri),
       defaultJdkName = null,
+      jvmBinaryJars = emptyList(),
     )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
@@ -435,6 +438,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
         libraryDependencies = null,
         moduleDependencies = emptyList(),
         defaultJdkName = null,
+        jvmBinaryJars = emptyList(),
       )
 
     fun emptyExpectedModule(name: String, sdkInfo: PythonSdkInfo): PythonModule {

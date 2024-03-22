@@ -14,6 +14,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.DefaultMagicMetaModelState
@@ -74,6 +75,7 @@ public data class ProjectDetails(
   val libraries: List<LibraryItem>?,
   val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
   var defaultJdkName: String? = null,
+  var jvmBinaryJars: List<JvmBinaryJarsItem> = emptyList(),
 )
 
 /**

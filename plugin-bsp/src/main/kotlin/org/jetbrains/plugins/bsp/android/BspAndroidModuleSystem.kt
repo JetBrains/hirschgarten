@@ -4,7 +4,6 @@ import com.android.ide.common.repository.GradleCoordinate
 import com.android.projectmodel.ExternalAndroidLibrary
 import com.android.projectmodel.ExternalLibraryImpl
 import com.android.projectmodel.RecursiveResourceFolder
-import com.android.tools.idea.project.ModuleBasedClassFileFinder
 import com.android.tools.idea.project.getPackageName
 import com.android.tools.idea.projectsystem.AndroidModuleSystem
 import com.android.tools.idea.projectsystem.CapabilityNotSupported
@@ -30,7 +29,7 @@ import java.nio.file.Path
 
 public class BspAndroidModuleSystem(override val module: Module) : AndroidModuleSystem,
   SampleDataDirectoryProvider by MainContentRootSampleDataDirectoryProvider(module) {
-  override val moduleClassFileFinder: ClassFileFinder = ModuleBasedClassFileFinder(module)
+  override val moduleClassFileFinder: ClassFileFinder = BspClassFileFinder(module)
 
   override fun getModuleTemplates(targetDirectory: VirtualFile?): List<NamedModuleTemplate> = emptyList()
 
@@ -92,4 +91,7 @@ public class BspAndroidModuleSystem(override val module: Module) : AndroidModule
 
   override fun getResolveScope(scopeType: ScopeType): GlobalSearchScope =
     module.getModuleWithDependenciesAndLibrariesScope(false)
+
+  override val usesCompose: Boolean
+    get() = true
 }

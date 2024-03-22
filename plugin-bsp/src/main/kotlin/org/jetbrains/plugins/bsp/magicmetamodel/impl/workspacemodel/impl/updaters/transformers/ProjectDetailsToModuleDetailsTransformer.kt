@@ -16,6 +16,7 @@ internal class ProjectDetailsToModuleDetailsTransformer(
   private val javacOptionsIndex = projectDetails.javacOptions.associateBy { it.target }
   private val scalacOptionsIndex = projectDetails.scalacOptions.associateBy { it.target }
   private val pythonOptionsIndex = projectDetails.pythonOptions.associateBy { it.target }
+  private val jvmBinaryJarsIndex = projectDetails.jvmBinaryJars.groupBy { it.target }
 
   fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
     val target = targetsIndex[targetId] ?: error("Cannot find target for target id: $targetId.")
@@ -33,6 +34,7 @@ internal class ProjectDetailsToModuleDetailsTransformer(
         .takeIf { projectDetails.libraries != null },
       moduleDependencies = allDependencies.targetDependencies.map { it.uri },
       defaultJdkName = projectDetails.defaultJdkName,
+      jvmBinaryJars = jvmBinaryJarsIndex[targetId].orEmpty(),
     )
   }
 }

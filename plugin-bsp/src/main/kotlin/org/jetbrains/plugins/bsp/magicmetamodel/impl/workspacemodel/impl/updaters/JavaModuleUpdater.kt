@@ -46,6 +46,11 @@ internal class JavaModuleWithSourcesUpdater(
 
       val javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
       javaResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
+
+      if (entityToAdd.jvmBinaryJars.isNotEmpty()) {
+        val jvmBinaryJarsEntityUpdater = JvmBinaryJarsEntityUpdater(workspaceModelEntityUpdaterConfig)
+        jvmBinaryJarsEntityUpdater.addEntity(entityToAdd, moduleEntity)
+      }
     }
 
     if (entityToAdd.genericModuleInfo.languageIds.includesKotlin()) {
@@ -53,9 +58,9 @@ internal class JavaModuleWithSourcesUpdater(
       kotlinFacetEntityUpdater.addEntity(entityToAdd, moduleEntity)
     }
 
-    if (isAndroidSupportEnabled) {
+    if (isAndroidSupportEnabled && entityToAdd.androidAddendum != null) {
       val androidAddendumEntityUpdater = AndroidAddendumEntityUpdater(workspaceModelEntityUpdaterConfig)
-      androidAddendumEntityUpdater.addEntity(entityToAdd, moduleEntity)
+      androidAddendumEntityUpdater.addEntity(entityToAdd.androidAddendum, moduleEntity)
     }
 
     if (isAndroidSupportEnabled && entityToAdd.genericModuleInfo.languageIds.includesAndroid()) {

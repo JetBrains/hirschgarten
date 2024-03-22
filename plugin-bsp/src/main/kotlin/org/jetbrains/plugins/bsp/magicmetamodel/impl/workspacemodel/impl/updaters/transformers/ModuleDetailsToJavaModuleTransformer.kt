@@ -66,6 +66,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
           }) else null,
       // Any java module must be assigned a jdk if there is any available.
       jvmJdkName = inputEntity.toJdkNameOrDefault(),
+      jvmBinaryJars = inputEntity.jvmBinaryJars.flatMap { it.jars }.map { URI.create(it).toPath() },
       kotlinAddendum = toKotlinAddendum(inputEntity),
       scalaAddendum = toScalaAddendum(inputEntity),
       javaAddendum = toJavaAddendum(inputEntity),
@@ -140,8 +141,8 @@ internal class ModuleDetailsToJavaModuleTransformer(
       AndroidAddendum(
         androidSdkName = androidJar.androidJarToAndroidSdkName(),
         androidTargetType = androidTargetType,
-        manifest = manifest,
-        resourceFolders = resourceFolders,
+        manifest = manifest?.let { URI.create(it).toPath() },
+        resourceFolders = resourceFolders.map { URI.create(it).toPath() },
       )
     }
   }
@@ -161,7 +162,7 @@ public fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 public fun String.projectNameToJdkName(javaHomeUri: String): String =
   projectNameToBaseJdkName() + "-" + javaHomeUri.md5Hash()
 
-public fun URI.androidJarToAndroidSdkName(): String = "android-sdk-" + this.toString().md5Hash()
+public fun String.androidJarToAndroidSdkName(): String = "android-sdk-" + this.md5Hash()
 
 private fun String.md5Hash(): String {
   val md = MessageDigest.getInstance("MD5")
