@@ -17,9 +17,13 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.building.action.isBuildInProgress
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.ui.actions.registered.ReloadAction
+import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import org.jetbrains.plugins.bsp.ui.actions.registered.ResyncAction
+import org.jetbrains.plugins.bsp.ui.actions.registered.isSyncInProgress
 import java.io.File
 import java.net.URI
 
@@ -326,17 +330,14 @@ public class SyncTaskConsole(
   buildToolName: String,
 ) : TaskConsole(taskView, basePath, buildToolName) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
-    object : AnAction({ BspPluginBundle.message("reload.action.text") }, BspPluginIcons.reload) {
-      override fun actionPerformed(e: AnActionEvent) {
-        redoAction?.invoke() ?: ReloadAction().actionPerformed(e)
+    object : SuspendableAction({ BspPluginBundle.message("resync.action.text") }, BspPluginIcons.reload) {
+      override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+        redoAction?.invoke() ?: ResyncAction().actionPerformed(e)
       }
 
-      override fun update(e: AnActionEvent) {
-        e.presentation.isEnabled = tasksInProgress.isEmpty()
+      override fun update(project: Project, e: AnActionEvent) {
+        e.presentation.isEnabled = !project.isSyncInProgress() && !project.isBuildInProgress()
       }
-
-      override fun getActionUpdateThread(): ActionUpdateThread =
-        ActionUpdateThread.BGT
     }
 }
 

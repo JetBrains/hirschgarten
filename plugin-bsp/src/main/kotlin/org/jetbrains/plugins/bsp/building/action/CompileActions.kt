@@ -10,11 +10,12 @@ import org.jetbrains.plugins.bsp.building.task.createAllJpsOnlyModuleBuildTasks
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 
 internal abstract class CustomCompileProjectAction(text: String) : SuspendableAction(text) {
   override fun update(project: Project, e: AnActionEvent) {
     e.presentation.isVisible = project.isBspProject
-    e.presentation.isEnabled = !CompilerManager.getInstance(project).isCompilationActive
+    e.presentation.isEnabled = !project.isBuildInProgress()
   }
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -25,6 +26,10 @@ internal abstract class CustomCompileProjectAction(text: String) : SuspendableAc
 
   public abstract fun getProjectTask(project: Project): ProjectTask
 }
+
+internal fun Project.isBuildInProgress() =
+  CompilerManager.getInstance(this).isCompilationActive ||
+    BspConsoleService.getInstance(this).bspBuildConsole.hasTasksInProgress()
 
 internal class CompileProjectWithBspAction :
   CustomCompileProjectAction(BspPluginBundle.message("project.task.action.name.build.project.bsp")) {
