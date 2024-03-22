@@ -1,8 +1,8 @@
 package org.jetbrains.bazel.bsp.connection
 
-import com.intellij.openapi.application.EDT
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.intellij.ide.plugins.PluginManager
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -35,6 +35,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
 import kotlin.io.path.exists
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.writeText
 
 private class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectPath.toNioPath()) {
@@ -154,6 +155,13 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
     return listOf(bazelPluginClasspath, bspPluginClasspath, oldClasspath).joinToString(File.pathSeparator)
   }
 
+  private fun String.shortenClasspath(): String {
+    val (fileClasspaths, otherClasspaths) =
+      split(File.pathSeparator).mapNotNull { Paths.get(it) }.partition { it.isRegularFile() }
+    val wildcardClasspaths = fileClasspaths.map { it.parent.resolve("*") }
+    return (wildcardClasspaths + otherClasspaths).distinct().joinToString(separator = File.pathSeparator)
+  }
+
   private fun calculatePluginClasspath(pluginIdString: String): String {
     val pluginId = PluginId.findId(pluginIdString) ?: error("Cannot find $pluginIdString plugin")
     val pluginDescriptor =
@@ -163,12 +171,7 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
     return pluginJarsDir.mapJarDirToClasspath()
   }
 
-  private fun String.shortenClasspath() =
-    split(File.pathSeparator).mapNotNull { Paths.get(it).parent }.distinct()
-      .joinToString(separator = File.pathSeparator) { it.resolve("*").toString() }
-
-  private fun Path.mapJarDirToClasspath(): String =
-    resolve("*").toString()
+  private fun Path.mapJarDirToClasspath() = resolve("*").toString()
 }
 
 internal data class BazelConnectionDetailsProviderExtensionState(
