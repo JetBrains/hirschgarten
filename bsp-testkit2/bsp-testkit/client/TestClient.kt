@@ -208,6 +208,18 @@ open class TestClient(
       assertJsonEquals(expectedResult, result)
     }
   }
+  
+  fun testJvmCompileClasspath(
+      timeout: Duration,
+      params: JvmCompileClasspathParams,
+      expectedResult: JvmCompileClasspathResult,
+  ) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session, _ ->
+      val result = session.server.buildTargetJvmCompileClasspath(transformedParams).await()
+      assertJsonEquals(expectedResult, result)
+    }
+  }
 
   fun testDependencyModule(
       timeout: Duration,
