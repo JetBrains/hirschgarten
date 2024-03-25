@@ -37,8 +37,7 @@ public object TargetIdToModuleEntitiesMap {
     val moduleDetailsToGoModuleTransformer = ModuleDetailsToGoModuleTransformer(
       targetsMap,
       projectDetails,
-      moduleNameProvider,
-      projectBasePath
+      moduleNameProvider
     )
 
     val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
