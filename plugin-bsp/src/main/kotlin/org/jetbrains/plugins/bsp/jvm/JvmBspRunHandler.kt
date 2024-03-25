@@ -6,13 +6,16 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspDebugType
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.configuration.run.GenericBspRunHandlerState
 
 public class JvmBspRunHandler : BspRunHandler {
-  override fun canRun(target: BuildTargetInfo): Boolean = target.languageIds.isJvmTarget()
+  override fun canRun(target: BuildTargetInfo): Boolean =
+    target.languageIds.isJvmTarget() ||
+      target.languageIds.includesAndroid() && target.capabilities.canTest
 
   override fun canDebug(target: BuildTargetInfo): Boolean = canRun(target)
 

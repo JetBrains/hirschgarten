@@ -7,13 +7,10 @@ import com.android.tools.idea.projectsystem.SourceProviders
 import com.android.tools.idea.projectsystem.SourceProvidersFactory
 import com.android.tools.idea.projectsystem.SourceProvidersImpl
 import com.android.tools.idea.projectsystem.emptySourceProvider
-import com.intellij.openapi.module.Module
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.createSourceProvidersForLegacyModule
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.AndroidAddendum
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import java.net.URI
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.androidAddendum
+import java.nio.file.Path
 
 public class BspSourceProvidersFactory : SourceProvidersFactory {
   override fun createSourceProvidersFor(facet: AndroidFacet): SourceProviders {
@@ -39,17 +36,11 @@ public class BspSourceProvidersFactory : SourceProvidersFactory {
     val androidAddendum = module.androidAddendum ?: return null
     val manifest = androidAddendum.manifest ?: return null
     return NamedIdeaSourceProviderBuilder
-      .create(module.name, manifest.toString())
+      .create(module.name, manifest.toUriString())
       .withScopeType(ScopeType.MAIN)
-      .withResDirectoryUrls(androidAddendum.resourceFolders.map(URI::toString))
+      .withResDirectoryUrls(androidAddendum.resourceFolders.map { it.toUriString() })
       .build()
   }
-}
 
-public val Module.androidAddendum: AndroidAddendum?
-  get() {
-    val magicMetaModel = MagicMetaModelService.getInstance(this.project).value
-    val moduleDetails = magicMetaModel.getDetailsForTargetId(this.name)
-    if (moduleDetails !is JavaModule) return null
-    return moduleDetails.androidAddendum
-  }
+  private fun Path.toUriString() = toUri().toString()
+}

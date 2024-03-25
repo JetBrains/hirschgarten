@@ -159,6 +159,7 @@ class LibraryGraphTest {
     LibraryItem(
       id = BuildTargetIdentifier(id),
       dependencies = dependencies.map { BuildTargetIdentifier(it) },
+      ijars = emptyList(),
       jars = emptyList(),
       sourceJars = emptyList(),
     )

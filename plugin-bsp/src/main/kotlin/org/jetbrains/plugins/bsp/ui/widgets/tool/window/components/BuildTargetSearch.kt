@@ -23,8 +23,6 @@ import java.util.concurrent.Callable
 import javax.swing.Icon
 import javax.swing.JPanel
 import javax.swing.SwingConstants
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
 
 internal fun BuildTargetInfo.getBuildTargetName(): String =
   this.displayName ?: this.id
@@ -44,10 +42,6 @@ public class BuildTargetSearch(
   private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, buildToolId)
 
   private var displayedSearchPanel: JPanel? = null
-  private val inProgressInfoComponent = JBLabel(
-    BspPluginBundle.message("widget.loading.targets"),
-    SwingConstants.CENTER,
-  )
   private val noResultsInfoComponent = JBLabel(
     BspPluginBundle.message("widget.target.search.no.results"),
     SwingConstants.CENTER,
@@ -59,37 +53,31 @@ public class BuildTargetSearch(
   private val queryChangeListeners = mutableSetOf<() -> Unit>()
 
   init {
-    attachSearchBarTextChangeListener { onSearchQueryChange() }
+    searchBarPanel.registerQueryChangeListener(::onSearchQueryChange)
     searchBarPanel.registerDisplayChangeListener { reloadPanels() }
-    inProgressInfoComponent.isVisible = false
-    targetSearchPanel.add(inProgressInfoComponent)
+    searchBarPanel.inProgress = false
     noResultsInfoComponent.isVisible = false
     targetSearchPanel.add(noResultsInfoComponent)
-    onSearchQueryChange()
+    onSearchQueryChange(getCurrentSearchQuery())
   }
 
-  private fun attachSearchBarTextChangeListener(onUpdate: () -> Unit) {
-    searchBarPanel.addTextFieldDocumentListener(TextChangeListener(onUpdate))
-  }
-
-  private fun onSearchQueryChange() {
-    val currentQuery = getCurrentSearchQuery()
-    maybeConductSearch(currentQuery)
+  private fun onSearchQueryChange(newQuery: Regex) {
+    conductSearch(newQuery)
     queryChangeListeners.forEach { it() }
   }
 
-  private fun getCurrentSearchQuery(): String = searchBarPanel.getCurrentSearchQuery()
+  private fun getCurrentSearchQuery(): Regex = searchBarPanel.getCurrentSearchQuery()
 
   /**
-   * @return `true` if search is in progress or its results are ready,
+   * @return `true` if search is in progress, or its results are ready,
    * `false` if nothing is currently being searched for
    */
-  public fun isSearchActive(): Boolean = getCurrentSearchQuery().isNotEmpty()
+  public fun isSearchActive(): Boolean = !searchBarPanel.isEmpty()
 
-  private fun maybeConductSearch(query: String) {
+  private fun conductSearch(query: Regex) {
     if (isSearchActive()) {
       noResultsInfoComponent.isVisible = false
-      inProgressInfoComponent.isVisible = true
+      searchBarPanel.inProgress = true
       ReadAction
         .nonBlocking(SearchCallable(query, targets))
         .finishOnUiThread(ModalityState.defaultModalityState()) { displaySearchResultsUnlessOutdated(it) }
@@ -99,17 +87,17 @@ public class BuildTargetSearch(
   }
 
   private fun displaySearchResultsUnlessOutdated(results: SearchResults) {
-    if (results.query == getCurrentSearchQuery()) {
+    if (results.query.pattern == getCurrentSearchQuery().pattern) {
       searchListDisplay.updateSearch(results.targets, results.query)
       searchTreeDisplay.updateSearch(results.targets, results.query)
       reloadPanels()
-      inProgressInfoComponent.isVisible = false
+      searchBarPanel.inProgress = false
       noResultsInfoComponent.isVisible = results.targets.isEmpty()
     }
   }
 
   private fun reloadPanels() {
-    if (getCurrentSearchQuery().isNotEmpty()) {
+    if (getCurrentSearchQuery().pattern.isNotEmpty()) {
       displayedSearchPanel?.let { targetSearchPanel.remove(it) }
       displayedSearchPanel = targetSearchPanel.addLazySearchDisplayUnlessEmpty()
       targetSearchPanel.revalidate()
@@ -154,7 +142,7 @@ public class BuildTargetSearch(
     return new
   }
 
-  // https://youtrack.jetbrains.com/issue/BAZEL-522
+  // Fixes https://youtrack.jetbrains.com/issue/BAZEL-522
   public fun selectAtLocationIfListDisplayed(location: Point) {
     if (!searchBarPanel.isDisplayAsTreeChosen()) {
       searchListDisplay.selectAtLocation(location)
@@ -166,32 +154,18 @@ public class BuildTargetSearch(
       ?.getTargetActions(targetSearchPanel, project, buildTargetInfo) ?: emptyList()
 
   private class SearchCallable(
-    private val query: String,
+    private val query: Regex,
     private val targets: Collection<BuildTargetInfo>,
   ) : Callable<SearchResults> {
     override fun call(): SearchResults =
       SearchResults(
         query,
-        targets.filter { it.getBuildTargetName().contains(query, true) },
+        targets.filter { query.containsMatchIn(it.getBuildTargetName()) },
       )
   }
 }
 
-private class TextChangeListener(val onUpdate: () -> Unit) : DocumentListener {
-  override fun insertUpdate(e: DocumentEvent?) {
-    onUpdate()
-  }
-
-  override fun removeUpdate(e: DocumentEvent?) {
-    onUpdate()
-  }
-
-  override fun changedUpdate(e: DocumentEvent?) {
-    onUpdate()
-  }
-}
-
 private data class SearchResults(
-  val query: String,
+  val query: Regex,
   val targets: List<BuildTargetInfo>,
 )

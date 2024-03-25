@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets
+package org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction

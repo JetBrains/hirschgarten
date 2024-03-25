@@ -34,6 +34,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.protocol.BazelBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
@@ -81,7 +82,6 @@ import java.util.concurrent.CompletionException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
 import kotlin.system.exitProcess
 
 public data class PythonSdk(
@@ -343,7 +343,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     extractAndroidBuildTarget(target)?.androidJar?.let { androidJar ->
       AndroidSdk(
         name = androidJar.androidJarToAndroidSdkName(),
-        androidJar = androidJar.toPath(),
+        androidJar = androidJar,
       )
     }
 
@@ -590,6 +590,15 @@ public fun calculateProjectDetailsWithCapabilities(
       (server as BazelBuildServer).workspaceDirectories()
     }
 
+    val jvmBinaryJarsFuture = query(
+      BspFeatureFlags.isAndroidSupportEnabled &&
+        buildServerCapabilities.jvmBinaryJarsProvider &&
+        javaTargetIds.isNotEmpty(),
+      "buildTarget/jvmBinaryJars",
+    ) {
+      server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))
+    }
+
     // We use javacOptions only do build dependency tree based on classpath
     // If workspace/libraries endpoint is available (like in bazel-bsp)
     // we don't need javacOptions at all. For other servers (like SBT)
@@ -633,6 +642,7 @@ public fun calculateProjectDetailsWithCapabilities(
       libraries = libraries?.libraries,
       directories = directoriesFuture?.get()
         ?: WorkspaceDirectoriesResult(listOf(DirectoryItem(projectRootDir)), emptyList()),
+      jvmBinaryJars = jvmBinaryJarsFuture?.get()?.items ?: emptyList(),
     )
   } catch (e: Exception) {
     // TODO the type xd

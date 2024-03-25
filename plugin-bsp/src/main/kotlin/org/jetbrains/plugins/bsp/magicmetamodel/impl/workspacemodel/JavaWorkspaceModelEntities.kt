@@ -3,8 +3,9 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.ModuleState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toState
-import java.net.URI
+import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import java.nio.file.Path
+import com.intellij.openapi.module.Module as IdeaModule
 
 public data class JavaSourceRoot(
   val sourcePath: Path,
@@ -23,6 +24,7 @@ public data class JavaModule(
   // otherwise it will be null
   val moduleLevelLibraries: List<Library>?,
   val jvmJdkName: String? = null,
+  val jvmBinaryJars: List<Path> = emptyList(),
   val kotlinAddendum: KotlinAddendum? = null,
   val scalaAddendum: ScalaAddendum? = null,
   val javaAddendum: JavaAddendum? = null,
@@ -35,6 +37,7 @@ public data class JavaModule(
     resourceRoots = resourceRoots.map { it.toState() },
     libraries = moduleLevelLibraries?.map { it.toState() },
     jvmJdkName = jvmJdkName,
+    jvmBinaryJars = jvmBinaryJars.map { it.toString() },
     kotlinAddendum = kotlinAddendum?.toState(),
     scalaAddendum = scalaAddendum?.toState(),
     androidAddendum = androidAddendum?.toState(),
@@ -60,9 +63,20 @@ public data class JavaAddendum(
 public data class AndroidAddendum(
   val androidSdkName: String,
   val androidTargetType: AndroidTargetType,
-  val manifest: URI?,
-  val resourceFolders: List<URI>,
-)
+  val manifest: Path?,
+  val resourceFolders: List<Path>,
+) : WorkspaceModelEntity()
+
+public val IdeaModule.javaModule: JavaModule?
+  get() {
+    val magicMetaModel = MagicMetaModelService.getInstance(this.project).value
+    val module = magicMetaModel.getDetailsForTargetId(this.name)
+    if (module !is JavaModule) return null
+    return module
+  }
+
+public val IdeaModule.androidAddendum: AndroidAddendum?
+  get() = javaModule?.androidAddendum
 
 public data class GoAddendum(
   var importPath: String? = null,

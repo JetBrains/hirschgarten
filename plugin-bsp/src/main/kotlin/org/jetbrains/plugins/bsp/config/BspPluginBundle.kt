@@ -9,16 +9,13 @@ private const val BUNDLE = "messages.BspPluginBundle"
 
 internal object BspPluginBundle : DynamicBundle(BUNDLE) {
   @JvmStatic
-  fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any) =
-    getMessage(key, *params)
-
-  @JvmStatic
-  fun messageVerbose(
+  fun message(
     @PropertyKey(resourceBundle = BUNDLE) key: String,
-    isVerbose: Boolean = false,
     vararg params: Any,
+    trimMultipleSpaces: Boolean = true,
   ): String {
-    val updatedKey = if (isVerbose && !key.endsWith(".verbose")) "$key.verbose" else key
-    return getMessage(updatedKey, *params)
+    val originalMessage = getMessage(key, *params)
+    return if (trimMultipleSpaces) originalMessage.replace("\\s+".toRegex(), " ")
+    else originalMessage
   }
 }

@@ -123,7 +123,7 @@
   <actions>
     <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.DisconnectAction"
             icon="/icons/disconnect.svg"/>
-    <action id="Bsp.ReloadAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.ReloadAction"
+    <action id="Bsp.ResyncAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.ResyncAction"
             icon="/icons/reload.svg"/>
     <action id="Bsp.BuildAndResyncAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.BuildAndResyncAction"
             icon="/icons/buildAndResync.svg"/>
@@ -137,7 +137,7 @@
             icon="AllIcons.Actions.Compile"/>
 
     <group id="Bsp.ActionsToolbar">
-      <reference id="Bsp.ReloadAction"/>
+      <reference id="Bsp.ResyncAction"/>
       <reference id="Bsp.BuildAndResyncAction"/>
     </group>
 

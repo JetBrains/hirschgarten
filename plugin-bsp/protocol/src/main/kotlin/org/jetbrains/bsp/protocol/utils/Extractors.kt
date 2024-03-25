@@ -31,6 +31,7 @@ public fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? =
 
 public fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? =
   extractData(target, "kotlin")
+    ?: extractAndroidBuildTarget(target)?.kotlinBuildTarget
 
 public fun extractGoBuildTarget(target: BuildTarget): GoBuildTarget? =
   extractData(target, "go")
