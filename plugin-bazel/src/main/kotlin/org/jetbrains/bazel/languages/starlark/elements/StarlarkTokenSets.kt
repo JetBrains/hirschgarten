@@ -10,6 +10,8 @@ object StarlarkTokenSets {
     StarlarkTokenTypes.LINE_CONTINUATION
   )
 
+  val IDENTIFIER = TokenSet.create(StarlarkTokenTypes.IDENTIFIER)
+
   val COMMENT = TokenSet.create(StarlarkTokenTypes.COMMENT)
 
   val STRINGS = TokenSet.create(StarlarkTokenTypes.STRING, StarlarkTokenTypes.BYTES)

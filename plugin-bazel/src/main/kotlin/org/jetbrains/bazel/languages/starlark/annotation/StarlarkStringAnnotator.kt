@@ -5,7 +5,7 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkStringLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 
 private const val TRIPLE_QUOTE = "\"\"\""
 private const val TRIPLE_APOSTROPHE = "\'\'\'"

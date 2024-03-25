@@ -71,6 +71,9 @@
         <lang.quoteHandler
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkQuoteHandler"/>
+        <lang.findUsagesProvider
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesProvider"/>
         <colorSettingsPage
                 implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage"/>
         <additionalTextAttributes
@@ -85,6 +88,9 @@
         <annotator
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkStringAnnotator"/>
+        <completion.confidence
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionConfidence"/>
         <completion.contributor
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkBuiltInCompletionContributor"/>

@@ -15,7 +15,7 @@ import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
 
 class StarlarkBuiltInCompletionContributor : CompletionContributor() {
   init {
