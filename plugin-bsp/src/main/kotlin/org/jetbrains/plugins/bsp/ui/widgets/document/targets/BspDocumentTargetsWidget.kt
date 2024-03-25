@@ -23,7 +23,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
-import org.jetbrains.plugins.bsp.ui.actions.LoadTargetWithDependenciesAction
 import javax.swing.Icon
 
 private const val ID = "BspDocumentTargetsWidget"
@@ -97,13 +96,6 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
     if (loadedTarget != null) {
       group.addAction(
         LoadTargetAction(
-          targetId = loadedTarget,
-          text = { loadedTarget },
-        ) { update() }
-      )
-      group.addSeparator()
-      group.addAction(
-        LoadTargetWithDependenciesAction(
           targetId = loadedTarget,
           text = { loadedTarget },
         ) { update() }
