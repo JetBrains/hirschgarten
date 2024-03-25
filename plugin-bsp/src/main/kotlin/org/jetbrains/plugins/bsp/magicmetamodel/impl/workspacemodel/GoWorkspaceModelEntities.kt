@@ -17,7 +17,7 @@ public data class GoModule(
 ) : WorkspaceModelEntity(), Module {
   override fun toState(): ModuleState = ModuleState(
     module = module.toState(),
-    // TODO: add the rest
+    goAddendum = GoAddendum(importPath, root, goDependencies).toState(),
   )
 
   override fun getModuleName(): String = module.name

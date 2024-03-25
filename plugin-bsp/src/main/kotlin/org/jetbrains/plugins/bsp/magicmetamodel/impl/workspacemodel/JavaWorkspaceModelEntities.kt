@@ -63,3 +63,10 @@ public data class AndroidAddendum(
   val manifest: URI?,
   val resourceFolders: List<URI>,
 )
+
+public data class GoAddendum(
+  var importPath: String? = null,
+  var root: Path? = null,
+  val goDependencies: List<GoModuleDependency>,
+)
+

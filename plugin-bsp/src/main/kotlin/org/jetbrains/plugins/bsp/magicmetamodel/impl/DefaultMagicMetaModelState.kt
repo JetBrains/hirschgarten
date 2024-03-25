@@ -8,6 +8,9 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetI
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoAddendum
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModuleDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaAddendum
@@ -24,6 +27,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
 import java.net.URI
+import java.nio.file.Path
 import kotlin.io.path.Path
 
 // TODO, we can do it better, but for now it should be good enough:
@@ -200,6 +204,7 @@ public data class ModuleState(
   var scalaAddendum: ScalaAddendumState? = null,
   var javaAddendum: JavaAddendumState? = null,
   var androidAddendum: AndroidAddendumState? = null,
+  var goAddendum : GoAddendumState? = null,
 ) : ConvertableFromState<Module> {
   public fun toJavaModule(): JavaModule = JavaModule(
     genericModuleInfo = module.fromState(),
@@ -219,6 +224,13 @@ public data class ModuleState(
     libraries = libraries?.map { it.toPythonLibrary() }.orEmpty(),
     resourceRoots = resourceRoots.map { it.toResourceRoot() },
     sdkInfo = sdkInfo?.fromState(),
+  )
+
+  public fun toGoModule(): GoModule = GoModule(
+    module = module.fromState(),
+    importPath = goAddendum?.importPath ?: "",
+    root = goAddendum?.root ?: Path(""),
+    goDependencies = goAddendum?.goDependencies ?: emptyList(),
   )
 
   override fun fromState(): Module =
@@ -286,6 +298,18 @@ public data class AndroidAddendumState(
   )
 }
 
+public data class GoAddendumState(
+  var importPath: String? = null,
+  var root: Path? = null,
+  var goDependencies: List<GoModuleDependency> = emptyList(),
+) : ConvertableFromState<GoAddendum> {
+  override fun fromState(): GoAddendum = GoAddendum(
+    importPath = importPath,
+    root = root,
+    goDependencies = goDependencies,
+  )
+}
+
 public data class ModuleCapabilitiesState(
   var canRun: Boolean = false,
   var canTest: Boolean = false,
@@ -315,6 +339,12 @@ public fun AndroidAddendum.toState(): AndroidAddendumState = AndroidAddendumStat
   androidTargetType = androidTargetType,
   manifest = manifest?.toString(),
   resourceFolders = resourceFolders.map { it.toString() },
+)
+
+public fun GoAddendum.toState() : GoAddendumState = GoAddendumState(
+  importPath = importPath,
+  root = root,
+  goDependencies = goDependencies,
 )
 
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(
