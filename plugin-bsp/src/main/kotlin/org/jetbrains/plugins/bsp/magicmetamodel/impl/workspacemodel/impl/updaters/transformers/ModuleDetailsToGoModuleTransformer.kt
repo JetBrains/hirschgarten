@@ -47,7 +47,7 @@ internal class ModuleDetailsToGoModuleTransformer(
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
 
-  private fun toGoDependencies(inputEntity: ModuleDetails): List<GoModuleDependency>? {
+  private fun toGoDependencies(inputEntity: ModuleDetails): List<GoModuleDependency> {
     val result = inputEntity.moduleDependencies.mapNotNull { targetsMap[it] }.mapNotNull { buildTargetInfo ->
       val buildTarget = projectDetails.targets.find { it.id == buildTargetInfo.id.toBsp4JTargetIdentifier() }
         ?: return@mapNotNull null
@@ -57,6 +57,6 @@ internal class ModuleDetailsToGoModuleTransformer(
           root = URI.create(buildTarget.baseDirectory).toPath()
         )
     }
-    return result.ifEmpty { null }
+    return result
   }
 }

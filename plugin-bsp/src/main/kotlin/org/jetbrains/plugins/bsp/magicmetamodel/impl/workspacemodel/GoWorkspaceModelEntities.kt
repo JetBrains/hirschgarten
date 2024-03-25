@@ -13,7 +13,7 @@ public data class GoModule(
   val module: GenericModuleInfo,
   val importPath: String,
   val root: Path,
-  val goDependencies: List<GoModuleDependency>?,
+  val goDependencies: List<GoModuleDependency>,
 ) : WorkspaceModelEntity(), Module {
   override fun toState(): ModuleState = ModuleState(
     module = module.toState(),

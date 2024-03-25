@@ -26,6 +26,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonSdkInf
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
+import java.nio.file.Path
 import kotlin.io.path.Path
 
 // TODO, we can do it better, but for now it should be good enough:

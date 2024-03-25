@@ -21,7 +21,7 @@ internal class GoModuleUpdater(
     )
     val builtVgoModule = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(vgoModule)
 
-    entityToAdd.goDependencies?.forEach {
+    entityToAdd.goDependencies.forEach {
       val vgoModuleDeps = VgoDependencyEntity(
         importPath = it.importPath,
         entitySource = BspEntitySource,
