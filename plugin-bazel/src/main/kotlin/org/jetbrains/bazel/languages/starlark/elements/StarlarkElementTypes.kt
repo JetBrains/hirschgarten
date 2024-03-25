@@ -4,50 +4,9 @@ package org.jetbrains.bazel.languages.starlark.elements
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkArgumentList
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkAssignmentStatement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkAugAssignmentStatement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkBinaryExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkBreakStatement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkCallExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkConditionalExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkContinueStatement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkDictCompExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkDictLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkDoubleStarExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkEmptyExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkExpressionStatement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkFloatLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkForStatement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkFunctionDeclaration
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkGeneratorExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkIfStatement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkIntegerLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkKeyValueExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkLambdaExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkListCompExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkListLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkLoadStatement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkLoadValueList
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedArgumentExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedLoadValue
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedParameter
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkParameterList
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkParenthesizedExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkPrefixExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkReferenceExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkReturnStatement
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkSingleStarParameter
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkSliceExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkSliceItem
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkStarArgumentExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkStarExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkStatementList
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkStringLiteralExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkSubscriptionExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkTargetExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkTupleExpression
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkTupleParameter
+import org.jetbrains.bazel.languages.starlark.psi.expressions.*
+import org.jetbrains.bazel.languages.starlark.psi.functions.*
+import org.jetbrains.bazel.languages.starlark.psi.statements.*
 
 object StarlarkElementTypes {
   val ASSIGNMENT_STATEMENT = StarlarkElementType("ASSIGNMENT_STATEMENT")

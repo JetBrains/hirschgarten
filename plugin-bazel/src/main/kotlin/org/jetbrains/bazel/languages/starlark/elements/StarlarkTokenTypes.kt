@@ -22,7 +22,7 @@ object StarlarkTokenTypes {
   val DEDENT = StarlarkTokenType("DEDENT")
 
   @JvmField
-  val INCONSISTENT_DEDENT = StarlarkTokenType("UNCONSISTENT_DEDENT")
+  val INCONSISTENT_DEDENT = StarlarkTokenType("INCONSISTENT_DEDENT")
 
   @JvmField
   val STATEMENT_BREAK = StarlarkTokenType("STATEMENT_BREAK")

@@ -26,7 +26,7 @@ class StarlarkColorSettingsPage : ColorSettingsPage {
       StarlarkBundle.message("highlighter.descriptor.text.brackets") to StarlarkHighlightingColors.BRACKETS,
       StarlarkBundle.message("highlighter.descriptor.text.identifier") to StarlarkHighlightingColors.IDENTIFIER,
       StarlarkBundle.message("highlighter.descriptor.text.functionDeclaration")
-        to StarlarkHighlightingColors.FUNCTION_DECLARATION,
+              to StarlarkHighlightingColors.FUNCTION_DECLARATION,
       StarlarkBundle.message("highlighter.descriptor.text.namedArgument") to StarlarkHighlightingColors.NAMED_ARGUMENT,
     )
   }

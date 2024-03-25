@@ -1,5 +1,5 @@
 FILE
-  StarlarkFunctionDeclaration(FUNCTION_DECLARATION)
+  StarlarkFunctionDeclaration(FUNCTION_DECLARATION)('name')
     PsiElement(Starlark:def)('def')
     PsiWhiteSpace(' ')
     PsiElement(Starlark:IDENTIFIER)('name')
@@ -13,7 +13,7 @@ FILE
         StarlarkIntegerLiteralExpression(INTEGER_LITERAL_EXPRESSION)
           PsiElement(Starlark:INT)('0')
   PsiWhiteSpace('\n')
-  StarlarkFunctionDeclaration(FUNCTION_DECLARATION)
+  StarlarkFunctionDeclaration(FUNCTION_DECLARATION)('name')
     PsiElement(Starlark:def)('def')
     PsiWhiteSpace(' ')
     PsiElement(Starlark:IDENTIFIER)('name')

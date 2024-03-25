@@ -1,10 +1,13 @@
 package org.jetbrains.bazel.languages.starlark.completion
 
-import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixture4TestCase
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import io.kotest.matchers.shouldBe
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 
-class StarlarkParamsCompletionContributorTest : LightPlatformCodeInsightFixture4TestCase() {
+@RunWith(JUnit4::class)
+class StarlarkParamsCompletionContributorTest : BasePlatformTestCase() {
   @Test
   fun `should complete args`() {
     // given
