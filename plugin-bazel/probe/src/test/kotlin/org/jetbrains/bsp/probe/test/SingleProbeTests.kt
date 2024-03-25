@@ -7,19 +7,19 @@ import org.virtuslab.ideprobe.RunningIntelliJFixture
 import org.virtuslab.ideprobe.WaitLogic
 import org.virtuslab.ideprobe.robot.RobotProbeDriver
 import org.virtuslab.ideprobe.robot.RobotSyntax.SearchableOps
-import scala.Option
 import scala.runtime.BoxedUnit
 
 class SingleProbeTests {
 
   @Test
   fun `open fresh instance of bazel-bsp project and check imported targets`() {
-    with(IdeProbeTestRunner()) {
-      val fixture = fixtureWithWorkspaceFromGit(
+    with(
+      IdeProbeTestRunner(
         "https://github.com/JetBrains/bazel-bsp.git",
         "3.1.0",
       )
-      runAfterOpen(fixture, Option.apply(null)) { probe, robot, intellij ->
+    ) {
+      runIntellijAndOpenProject { probe, robot, intellij ->
         fun testTargetsTree(buildPanel: SearchableOps) {
           val loaded =
             buildPanel.findElement(Query.className("ActionButton", "myaction.key" to "widget.loaded.targets.tab.name"))
@@ -36,11 +36,11 @@ class SingleProbeTests {
         val buildPanel = robot.findElement(Query.className("BspToolWindowPanel"))
         probe.screenshot("_bazel-bsp-button-after-click")
         testTargetsTree(buildPanel)
-
         robot.assertNoProblems(probe)
         probe.screenshot("_bazel-bsp-project-before-closing")
         closeProject(probe)
-        robot.reopenProject(probe, intellij)
+        probe.screenshot("_bazel-bsp-before-reopen")
+        reopenProject(probe, intellij)
         probe.screenshot("_bazel-bsp-project-on-reopen")
 
         val newBuildPanel = robot.findElement(Query.className("BspToolWindowPanel"))
@@ -61,11 +61,12 @@ class SingleProbeTests {
 
   @Test
   fun `open fresh instance of bazel project and check build console output for errors`() {
-    with(IdeProbeTestRunner()) {
-      val fixture = fixtureWithWorkspaceFromGit(
+    with(
+      IdeProbeTestRunner(
         "https://github.com/bazelbuild/bazel.git", "7.0.2",
       )
-      runAfterOpen(fixture, Option.apply(null)) { probe, robot, _ ->
+    ) {
+      runIntellijAndOpenProject { probe, robot, _ ->
         probe.screenshot("_bazel-on-open")
         robot.assertNoProblems(probe)
         probe.screenshot("_bazel-before-end-of-test")
@@ -75,7 +76,7 @@ class SingleProbeTests {
     }
   }
 
-  private fun RobotProbeDriver.reopenProject(probe: ProbeDriver, intellij: RunningIntelliJFixture) {
+  private fun reopenProject(probe: ProbeDriver, intellij: RunningIntelliJFixture) {
     probe.tryUntilSuccessful {
       probe.screenshot("_bazel-bsp-before-reopen")
       probe.openProject(intellij.workspace(), WaitLogic.Default())

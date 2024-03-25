@@ -1,17 +1,18 @@
 package org.jetbrains.bsp.probe.test
 
+import com.intellij.codeInsight.hints.presentation.MouseButton
 import com.intellij.remoterobot.fixtures.CommonContainerFixture
+import com.intellij.remoterobot.stepsProcessing.step
 import org.virtuslab.ideprobe.IntelliJFixture
-import org.virtuslab.ideprobe.OS
 import org.virtuslab.ideprobe.ProbeDriver
 import org.virtuslab.ideprobe.WaitDecision
 import org.virtuslab.ideprobe.WaitLogic
-import org.virtuslab.ideprobe.dependencies.IntelliJVersion
 import org.virtuslab.ideprobe.robot.RobotProbeDriver
 import org.virtuslab.ideprobe.robot.SearchableComponent
 import org.virtuslab.ideprobe.wait.BasicWaiting
 import org.virtuslab.ideprobe.wait.DoOnlyOnce
 import scala.Option
+import scala.Tuple2
 import scala.concurrent.duration.FiniteDuration
 import scala.runtime.BoxedUnit
 import java.io.InvalidClassException
@@ -44,6 +45,35 @@ fun SearchableComponent.fullTexts(): List<String> = fixture().findAllText().map 
 
 fun SearchableComponent.doClick(): Unit = fixture().runJs("component.doClick();", true)
 
+fun SearchableComponent.doubleClick(): Unit = fixture().runJs("robot.doubleClick(component);", true)
+
+fun SearchableComponent.clickElementNamed(
+  name: String,
+  type: MouseButton,
+  count: Int = 1,
+  sameNamedInstance: Int = 0
+) = with(fixture()) {
+  val button = when (type) {
+    MouseButton.Left -> "MouseButton.LEFT_BUTTON"
+    MouseButton.Right -> "MouseButton.RIGHT_BUTTON"
+    else -> return@with
+  }
+  extractData().filter { it.text == name }.getOrNull(sameNamedInstance)?.run {
+    step("clicking $count time(s) with $type at ${point.x}:${point.y}") {
+      runJs(
+        """
+        const point = new java.awt.Point(${point.x}, ${point.y}); 
+        robot.click(component, point, $button, $count);
+      """.trimIndent()
+      )
+    }
+  }
+}
+
+// Probably not ideal selector, but without changes to dialog won't be better
+fun RobotProbeDriver.findContextMenu() =
+  findElement(Query.div("class" to "MyList"))
+
 fun SearchableComponent.click(): Unit = fixture().runJs("component.click();", true)
 
 fun SearchableComponent.setText(text: String): Unit = fixture().runJs("component.setText('$text');", true)
@@ -72,6 +102,8 @@ fun ProbeDriver.tryUntilSuccessful(action: () -> Unit) {
   }
   return await(waitLogic)
 }
+
+fun <A, B> Tuple2<A, B>.toKotlin() = Pair(this._1, this._2)
 
 object Query {
   fun dialog(title: String): String = dialog("title" to title)

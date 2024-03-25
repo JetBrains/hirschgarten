@@ -7,7 +7,6 @@ import org.virtuslab.ideprobe.config.WorkspaceConfig
 import org.virtuslab.ideprobe.dependencies.{IntelliJVersion, Resource}
 import org.virtuslab.ideprobe.ide.intellij.InstalledIntelliJ
 import org.virtuslab.ideprobe.protocol.Endpoints
-import org.virtuslab.ideprobe.reporting.AfterTestChecks
 import org.virtuslab.ideprobe.robot.{RobotPluginExtension, RobotProbeDriver}
 import org.virtuslab.ideprobe.wait.{BasicWaiting, DoOnlyOnce}
 
@@ -25,30 +24,26 @@ object IdeProbeTestRunner {
 
 }
 
-class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
+class IdeProbeTestRunner(workspaceConfig: WorkspaceConfig) extends IdeProbeFixture with RobotPluginExtension {
 
-  private val fixture: IntelliJFixture = {
+  def this(uri: String, tag: String) = {
+    this(WorkspaceConfig.GitTag(Resource.from(uri), tag))
+  }
+
+  val fixture: IntelliJFixture = {
     val wrongVersion = fixtureFromConfig("ideprobe.conf")
     fixtureFromConfig("ideprobe.conf").withVersion(
       version(wrongVersion.version.build, Option.empty)
+    ).copy(workspaceProvider =
+      WorkspaceProvider.from(workspaceConfig)
     )
-  }
-
-  def fixtureWithWorkspaceFromGit(uri: String, tag: String): IntelliJFixture = {
-    fixture.copy(workspaceProvider = WorkspaceProvider.from(
-      WorkspaceConfig.GitTag(Resource.from(uri), tag)
-    ))
-  }
-
-  private def tryRunning(action: => Unit): Unit = {
-    new DoOnlyOnce(action).attempt()
   }
 
   def closeProject(probe: ProbeDriver): Unit = {
     probe.closeProject(probe.listOpenProjects().head)
   }
 
-  def openProject(intellij: RunningIntelliJFixture, configuration: Option[String] = None): (ProbeDriver, RobotProbeDriver) = {
+  def openProject(intellij: RunningIntelliJFixture): (ProbeDriver, RobotProbeDriver) = {
     val probe = intellij.probe
     val robot = probe.withRobot
 
@@ -70,39 +65,53 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
     (probe, robot)
   }
 
-  def runAfterOpen(updateFixture: IntelliJFixture, configuration: Option[String] = None, action: (ProbeDriver, RobotProbeDriver, RunningIntelliJFixture) => Unit): Unit = {
-    updateFixture.run { intellij =>
-      val (probe, robot) = openProject(intellij, configuration)
+  def runIntellijAndOpenProject(action: (ProbeDriver, RobotProbeDriver, RunningIntelliJFixture) => Unit): Unit = {
+    fixture.run { intellij =>
+      val (probe, robot) = openProject(intellij)
       action(probe, robot, intellij)
+      closeProject(probe)
     }
   }
 
-  def prepareInstance(baseFixture: IntelliJFixture) = {
-    val workspace = baseFixture.setupWorkspace()
-    val installed = baseFixture.installIntelliJ()
-    (baseFixture, workspace, installed)
+  def installIntelliJ(action: RunnableIntelliJFixture => Unit): Unit = {
+    fixture.withWorkspace(action)
   }
 
-  def runIntellij[A](data: (IntelliJFixture, Path, InstalledIntelliJ), action: RunningIntelliJFixture => A): A = {
-    val (baseFixture, workspace, installed) = data
-    val running = baseFixture.startIntelliJ(workspace, installed)
-    val runningData = new RunningIntelliJFixture(workspace, running.probe, baseFixture.config, installed.paths)
+  def prepareInstance() = {
+    val workspace = fixture.setupWorkspace()
+    val installed = fixture.installIntelliJ()
+    (workspace, installed)
+  }
+
+  def runIntellij[A](data: (Path, InstalledIntelliJ), action: RunningIntelliJFixture => A): A = {
+    val (workspace, installed) = data
+    val running = fixture.startIntelliJ(workspace, installed)
+    val runningData = new RunningIntelliJFixture(workspace, running.probe, fixture.config, installed.paths)
     try action(runningData)
     finally {
-      AfterTestChecks(baseFixture.intelliJProvider.config.check, runningData.probe)
-      baseFixture.closeIntellij(running)
+      fixture.closeIntellij(running)
     }
   }
 
-  def cleanInstance(data: (IntelliJFixture, Path, InstalledIntelliJ)): Unit = {
-    val (baseFixture, workspace, installed) = data
-    baseFixture.cleanupIntelliJ(installed)
-    baseFixture.deleteWorkspace(workspace)
+  def cleanInstance(data: (Path, InstalledIntelliJ)): Unit = {
+    val (workspace, installed) = data
+    fixture.cleanupIntelliJ(installed)
+    fixture.deleteWorkspace(workspace)
   }
 
-  def openProjectAsync(driver: ProbeDriver, path: Path) = {
+  private def openProjectAsync(driver: ProbeDriver, path: Path) = {
     driver.sendAsync(Endpoints.OpenProject, path)
   }
+
+  private def tryRunning(action: => Unit): Unit = {
+    new DoOnlyOnce(action).attempt()
+  }
+
+  private def waitForAnySuccess(actions: DoOnlyOnce*) = new BasicWaiting(5.seconds, 10.minutes, { _ =>
+    actions.foreach(_.attempt())
+    if (actions.exists(_.isSuccessful)) Done
+    else KeepWaiting()
+  })
 
   implicit class RobotOpts(p: RobotProbeDriver) {
     def clickDialogButton(dialogTitle: String, buttonTitle: String, timeout: FiniteDuration = 10.second) = {
@@ -115,12 +124,6 @@ class IdeProbeTestRunner extends IdeProbeFixture with RobotPluginExtension {
       p.findWithTimeout(query, 60.second).setText(text)
     }
   }
-
-  private def waitForAnySuccess(actions: DoOnlyOnce*) = new BasicWaiting(5.seconds, 10.minutes, { _ =>
-    actions.foreach(_.attempt())
-    if (actions.exists(_.isSuccessful)) Done
-    else KeepWaiting()
-  })
 
   private implicit class BspImportOps(r: RobotProbeDriver) {
 
