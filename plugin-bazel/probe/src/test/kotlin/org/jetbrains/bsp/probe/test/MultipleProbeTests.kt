@@ -4,9 +4,8 @@ package org.jetbrains.bsp.probe.test
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.virtuslab.ideprobe.IntelliJFixture
 import org.virtuslab.ideprobe.ide.intellij.InstalledIntelliJ
-import scala.Tuple3
+import scala.Tuple2
 import java.nio.file.Path
 
 /**
@@ -27,16 +26,12 @@ import java.nio.file.Path
  *     }
  *   }
  */
+
 class MultipleProbeTests {
-  private val runData by lazy {
-    Tuple3(fixture, path, intellij)
-  }
 
   companion object {
-    private lateinit var fixture: IntelliJFixture
     private lateinit var runner: IdeProbeTestRunner
-    private lateinit var path: Path
-    private lateinit var intellij: InstalledIntelliJ
+    private lateinit var installedIntellij: Tuple2<Path, InstalledIntelliJ>
 
     /**
      * Replaces repository and branch values with correct ones
@@ -44,14 +39,11 @@ class MultipleProbeTests {
     @BeforeAll
     @JvmStatic
     fun setupIntellij() {
-      runner = IdeProbeTestRunner()
-      fixture = runner.fixtureWithWorkspaceFromGit(
-        "repository",
-        "branch",
+      runner = IdeProbeTestRunner(
+        "https://github.com/JetBrains/bazel-bsp.git",
+        "3.1.0"
       )
-      val data = runner.prepareInstance(fixture)
-      path = data._2()
-      intellij = data._3()
+      installedIntellij = runner.prepareInstance()
     }
 
     /**
@@ -60,7 +52,23 @@ class MultipleProbeTests {
     @AfterAll
     @JvmStatic
     fun teardownIntellij() {
-      runner.cleanInstance(Tuple3(fixture, path, intellij))
+      runner.cleanInstance(installedIntellij)
     }
   }
+
+  /*@Test
+  fun `open project twice`() {
+    with(runner) {
+      runIntellij(installedIntellij) {
+        openProject(it)
+        BoxedUnit.UNIT
+      }
+
+      runIntellij(installedIntellij) {
+        openProject(it)
+        BoxedUnit.UNIT
+      }
+    }
+  }*/
 }
+
