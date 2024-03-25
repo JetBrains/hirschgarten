@@ -35,10 +35,10 @@ class StarlarkFindUsagesProvider : FindUsagesProvider {
 
   override fun getNodeText(element: PsiElement, useFullName: Boolean): String = getDescriptiveName(element)
 
-  override fun getWordsScanner(): WordsScanner = StarlarkWordsScanner
+  override fun getWordsScanner(): WordsScanner = StarlarkWordsScanner()
 }
 
-object StarlarkWordsScanner : DefaultWordsScanner(
+class StarlarkWordsScanner : DefaultWordsScanner(
   StarlarkHighlightingLexer(),
   StarlarkTokenSets.IDENTIFIER,
   StarlarkTokenSets.COMMENT,
