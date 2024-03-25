@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.intellij)
     alias(libs.plugins.changelog)
     id("intellijbazel.kotlin-conventions")
+    id("com.google.protobuf") version "0.9.4"
 }
 
 val myToken: String by project
@@ -21,6 +22,7 @@ dependencies {
         exclude(group = "org.jetbrains.kotlinx")
         exclude(group = "ch.epfl.scala")
     }
+    implementation("com.google.protobuf:protobuf-java:3.25.2")
     testImplementation(libs.junit5)
     testRuntimeOnly(libs.junitVintage)
     testImplementation(libs.kotest)
@@ -67,6 +69,14 @@ intellij {
 
     val bspPlugin = findLatestCompatibleBspPlugin()
     plugins.set(Platform.plugins + bspPlugin)
+}
+
+protobuf {
+    // Configure the protoc executable
+    protoc {
+        // Download from repositories
+        artifact = "com.google.protobuf:protoc:3.25.0"
+    }
 }
 
 fun findLatestCompatibleBspPlugin(): String {

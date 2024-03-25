@@ -108,6 +108,10 @@
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
 
+
+        <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType"/>
+        <configurationType implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugConfigurationType"/>
+        <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner"/>
     </extensions>
 
     <actions>
