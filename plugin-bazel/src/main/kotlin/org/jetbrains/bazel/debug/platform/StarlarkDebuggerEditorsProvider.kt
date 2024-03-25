@@ -14,8 +14,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProviderBase
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
-import org.jetbrains.bazel.languages.starlark.psi.StarlarkStatementList
-import org.jetbrains.bazel.languages.starlark.psi.base.StarlarkElement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 
 class StarlarkDebuggerEditorsProvider : XDebuggerEditorsProviderBase() {
   override fun getFileType(): FileType = StarlarkFileType
