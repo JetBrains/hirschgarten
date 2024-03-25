@@ -44,24 +44,24 @@ internal class WorkspaceModelUpdaterImpl(
   )
   private val javaModuleUpdater =
     JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
-    private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled)
-    private val goModuleUpdater = GoModuleUpdater(workspaceModelEntityUpdaterConfig)
+  private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled)
+  private val goModuleUpdater = GoModuleUpdater(workspaceModelEntityUpdaterConfig)
 
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
   private val javaModuleToDummyJavaModulesTransformerHACK =
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath)
 
-    override fun loadModule(module: Module) {
-      when (module) {
-        is JavaModule -> {
-          val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
-          javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.isAlreadyAdded() })
-          javaModuleUpdater.addEntity(module)
-        }
-        is PythonModule -> pythonModuleUpdater.addEntity(module)
-        is GoModule -> goModuleUpdater.addEntity(module)
+  override fun loadModule(module: Module) {
+    when (module) {
+      is JavaModule -> {
+        val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
+        javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.isAlreadyAdded() })
+        javaModuleUpdater.addEntity(module)
       }
+      is PythonModule -> pythonModuleUpdater.addEntity(module)
+      is GoModule -> goModuleUpdater.addEntity(module)
     }
+  }
 
   override fun loadLibraries(libraries: List<Library>) {
     libraries.forEach { entityToAdd ->

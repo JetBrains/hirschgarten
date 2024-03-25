@@ -131,6 +131,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
   }
 
+  @Suppress("CognitiveComplexMethod")
   private suspend fun doExecute() {
     reportSequentialProgress { reporter ->
       val projectDetails =
@@ -499,19 +500,20 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
 
   private suspend fun enableGoSupportInTargets() =
-    goSdkExtension()?.let { extension ->
-      withSubtask("enable-go-support-in-targets", BspPluginBundle.message("console.task.model.add.go.support.in.targets")) {
-        logPerformanceSuspend("enable-go-support-in-targets") {
-          val workspaceModel = WorkspaceModel.getInstance(project)
-          workspaceModel.currentSnapshot.entities(ModuleEntity::class.java).forEach { moduleEntity ->
-            moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
-              writeAction {
-                GoModuleSettings.getInstance(module).isGoSupportEnabled = true
-              }
+    goSdkExtension()?.let { withSubtask(
+      "enable-go-support-in-targets",
+      BspPluginBundle.message("console.task.model.add.go.support.in.targets")) {
+      logPerformanceSuspend("enable-go-support-in-targets") {
+        val workspaceModel = WorkspaceModel.getInstance(project)
+        workspaceModel.currentSnapshot.entities(ModuleEntity::class.java).forEach { moduleEntity ->
+          moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
+            writeAction {
+              GoModuleSettings.getInstance(module).isGoSupportEnabled = true
             }
           }
         }
       }
+    }
     }
 
   private suspend fun applyChangesOnWorkspaceModel() = withSubtask(

@@ -83,4 +83,3 @@ public data class GoAddendum(
   var root: Path? = null,
   val goDependencies: List<GoModuleDependency>,
 )
-

@@ -204,7 +204,7 @@ public data class ModuleState(
   var scalaAddendum: ScalaAddendumState? = null,
   var javaAddendum: JavaAddendumState? = null,
   var androidAddendum: AndroidAddendumState? = null,
-  var goAddendum : GoAddendumState? = null,
+  var goAddendum: GoAddendumState? = null,
 ) : ConvertableFromState<Module> {
   public fun toJavaModule(): JavaModule = JavaModule(
     genericModuleInfo = module.fromState(),
@@ -342,7 +342,7 @@ public fun AndroidAddendum.toState(): AndroidAddendumState = AndroidAddendumStat
   resourceFolders = resourceFolders.map { it.toString() },
 )
 
-public fun GoAddendum.toState() : GoAddendumState = GoAddendumState(
+public fun GoAddendum.toState(): GoAddendumState = GoAddendumState(
   importPath = importPath,
   root = root,
   goDependencies = goDependencies,

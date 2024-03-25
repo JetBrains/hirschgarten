@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
+import ch.epfl.scala.bsp4j.BuildTarget
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import org.jetbrains.plugins.bsp.magicmetamodel.ModuleNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
@@ -13,8 +14,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTarge
 import java.net.URI
 import kotlin.io.path.toPath
 
-private const val NO_IMPORT_PATH = "No importPath for module"
-
 internal class ModuleDetailsToGoModuleTransformer(
   private val targetsMap: Map<BuildTargetId, BuildTargetInfo>,
   private val projectDetails: ProjectDetails,
@@ -27,7 +26,7 @@ internal class ModuleDetailsToGoModuleTransformer(
 
     return GoModule(
       module = toGenericModuleInfo(inputEntity),
-      importPath = goBuildInfo.importPath ?: NO_IMPORT_PATH,
+      importPath = goBuildInfo.importPath,
       root = URI.create(inputEntity.target.baseDirectory).toPath(),
       goDependencies = toGoDependencies(inputEntity)
     )
@@ -47,16 +46,20 @@ internal class ModuleDetailsToGoModuleTransformer(
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
 
-  private fun toGoDependencies(inputEntity: ModuleDetails): List<GoModuleDependency> {
-    val result = inputEntity.moduleDependencies.mapNotNull { targetsMap[it] }.mapNotNull { buildTargetInfo ->
-      val buildTarget = projectDetails.targets.find { it.id == buildTargetInfo.id.toBsp4JTargetIdentifier() }
-        ?: return@mapNotNull null
-      val dependencyGoBuildInfo = extractGoBuildTarget(buildTarget) ?: return@mapNotNull null
-        GoModuleDependency(
-          importPath = dependencyGoBuildInfo.importPath ?: NO_IMPORT_PATH,
-          root = URI.create(buildTarget.baseDirectory).toPath()
-        )
+  private fun toGoDependencies(inputEntity: ModuleDetails): List<GoModuleDependency> =
+    inputEntity.moduleDependencies
+      .asSequence()
+      .mapNotNull { targetsMap[it] }
+      .map { it.id.toBsp4JTargetIdentifier() }
+      .mapNotNull { buildTargetIdentifier -> projectDetails.targets.find { it.id == buildTargetIdentifier } }
+      .mapNotNull { buildTargetToGoModuleDependency(it) }
+      .toList()
+
+  private fun buildTargetToGoModuleDependency(buildTarget: BuildTarget): GoModuleDependency? =
+    extractGoBuildTarget(buildTarget)?.let {
+      GoModuleDependency(
+        importPath = it.importPath,
+        root = URI.create(buildTarget.baseDirectory).toPath()
+      )
     }
-    return result
-  }
 }
