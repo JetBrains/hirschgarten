@@ -102,9 +102,7 @@ public class BspStartupActivity : ProjectActivity {
     if (wasFirstOpeningSuccessful) {
       if (project.isTrusted())
         SyncProjectTask(project).execute(
-          shouldRunInitialSync = true,
           shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
-          shouldRunResync = BspFeatureFlags.isBuildProjectOnSyncEnabled,
         )
     } else {
       // TODO https://youtrack.jetbrains.com/issue/BAZEL-623

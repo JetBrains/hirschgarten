@@ -12,9 +12,7 @@ public class BuildAndResyncAction
 : SuspendableAction({ BspPluginBundle.message("build.and.resync.action.text") }), DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     SyncProjectTask(project).execute(
-      shouldRunInitialSync = false,
       shouldBuildProject = true,
-      shouldRunResync = true,
     )
   }
 

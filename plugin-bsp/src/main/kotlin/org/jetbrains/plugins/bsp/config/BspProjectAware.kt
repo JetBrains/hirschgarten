@@ -33,9 +33,7 @@ public abstract class BspProjectAware(private val workspace: BspWorkspace) :
     if (context.isExplicitReload) {
       BspCoroutineService.getInstance(workspace.project).start {
         SyncProjectTask(workspace.project).execute(
-          shouldRunInitialSync = true,
           shouldBuildProject = false,
-          shouldRunResync = false,
         )
       }
     }

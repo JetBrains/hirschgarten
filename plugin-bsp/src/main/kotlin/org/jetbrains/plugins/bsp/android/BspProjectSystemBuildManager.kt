@@ -36,9 +36,7 @@ public class BspProjectSystemBuildManager(private val project: Project) : Projec
   override fun compileProject() {
     BspCoroutineService.getInstance(project).start {
       SyncProjectTask(project).execute(
-        shouldRunInitialSync = false,
         shouldBuildProject = true,
-        shouldRunResync = true,
       )
     }
   }

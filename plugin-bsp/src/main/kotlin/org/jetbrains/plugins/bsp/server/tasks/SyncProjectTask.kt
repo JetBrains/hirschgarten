@@ -13,29 +13,14 @@ import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 
 private const val SYNC_TASK_ID = "bsp-sync-project"
-private const val RESYNC_TASK_ID = "bsp-resync-project"
 
 private val log = logger<SyncProjectTask>()
 
 public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Project", project) {
-  public suspend fun execute(
-    shouldRunInitialSync: Boolean,
-    shouldBuildProject: Boolean,
-    shouldRunResync: Boolean,
-  ) {
+  public suspend fun execute(shouldBuildProject: Boolean) {
     try {
       preSync()
-      if (shouldRunInitialSync) {
-        collectProject(SYNC_TASK_ID)
-      }
-
-      if (shouldBuildProject) {
-        buildProject()
-      }
-
-      if (shouldRunResync) {
-        collectProject(RESYNC_TASK_ID)
-      }
+      collectProject(SYNC_TASK_ID, shouldBuildProject)
     } finally {
       BspSyncStatusService.getInstance(project).finishSync()
     }
@@ -46,7 +31,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
     saveAllFiles()
   }
 
-  private suspend fun collectProject(taskId: String) {
+  private suspend fun collectProject(taskId: String, buildProject: Boolean) {
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, taskId)
 
     val syncConsole = BspConsoleService.getInstance(project).bspSyncConsole
@@ -61,6 +46,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
       collectProjectDetailsTask.execute(
         name = "Syncing...",
         cancelable = true,
+        buildProject = buildProject
       )
       syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.success"))
     } catch (e: Exception) {
