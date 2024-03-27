@@ -4,7 +4,7 @@ kotlin-gradle-version = "1.9.23"
 
 [libraries]
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.2" }
-bsp4j = { module = "ch.epfl.scala:bsp4j", version = "2.2.0-M1" }
+bsp4j = { module = "ch.epfl.scala:bsp4j", version = "2.2.0-M2" }
 kotest = { module = "io.kotest:kotest-assertions-core", version = "5.8.0" }
 scala = { module = "org.scala-lang:scala-library", version = "2.13.12" }
 gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
