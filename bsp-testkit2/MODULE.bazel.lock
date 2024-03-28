@@ -1,6 +1,6 @@
 {
   "lockFileVersion": 6,
-  "moduleFileHash": "31a6b41ec5a3670b8a4a66054e60687079f20d8fba284aa276e406a93728c4c6",
+  "moduleFileHash": "11f61100c711d420376ca2001a2bc85bab2ec7b0044fad2797069f1169ece013",
   "flags": {
     "cmdRegistries": [
       "https://bcr.bazel.build/"
@@ -44,9 +44,9 @@
                 "name": "maven",
                 "artifacts": [
                   "com.google.code.gson:gson:2.10.1",
-                  "com.google.guava:guava:31.0.1-jre",
+                  "com.google.guava:guava:31.1-jre",
                   "ch.epfl.scala:bsp4j:2.2.0-M2",
-                  "org.junit.jupiter:junit-jupiter:5.10.1",
+                  "org.junit.jupiter:junit-jupiter:5.10.2",
                   "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0",
                   "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0"
                 ],
@@ -3171,9 +3171,9 @@
               ],
               "artifacts": [
                 "{ \"group\": \"com.google.code.gson\", \"artifact\": \"gson\", \"version\": \"2.10.1\" }",
-                "{ \"group\": \"com.google.guava\", \"artifact\": \"guava\", \"version\": \"31.0.1-jre\" }",
+                "{ \"group\": \"com.google.guava\", \"artifact\": \"guava\", \"version\": \"31.1-jre\" }",
                 "{ \"group\": \"ch.epfl.scala\", \"artifact\": \"bsp4j\", \"version\": \"2.2.0-M2\" }",
-                "{ \"group\": \"org.junit.jupiter\", \"artifact\": \"junit-jupiter\", \"version\": \"5.10.1\" }",
+                "{ \"group\": \"org.junit.jupiter\", \"artifact\": \"junit-jupiter\", \"version\": \"5.10.2\" }",
                 "{ \"group\": \"org.jetbrains.kotlinx\", \"artifact\": \"kotlinx-coroutines-core\", \"version\": \"1.8.0\" }",
                 "{ \"group\": \"org.jetbrains.kotlinx\", \"artifact\": \"kotlinx-coroutines-test\", \"version\": \"1.8.0\" }",
                 "{ \"group\": \"com.google.code.findbugs\", \"artifact\": \"jsr305\", \"version\": \"3.0.2\" }",
