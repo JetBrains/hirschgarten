@@ -18,7 +18,7 @@ import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.xdebugger.impl.XDebugSessionImpl
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 
 public class BspAndroidConfigurationExecutor(
   private val environment: ExecutionEnvironment,
@@ -80,7 +80,7 @@ public class BspAndroidConfigurationExecutor(
 
   private fun getPackageName(): String? {
     val bspRunConfiguration = environment.runProfile as? BspRunConfiguration ?: return null
-    val target = bspRunConfiguration.target ?: return null
+    val target = bspRunConfiguration.targets.singleOrNull() ?: return null
     val module = ModuleManager.getInstance(environment.project).findModuleByName(target.id) ?: return null
     return module.getModuleSystem().getPackageName()
   }

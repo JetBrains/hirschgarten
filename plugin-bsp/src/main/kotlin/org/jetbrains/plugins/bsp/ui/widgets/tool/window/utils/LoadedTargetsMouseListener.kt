@@ -114,7 +114,7 @@ internal fun DefaultActionGroup.fillWithEligibleActions(
     addAction(TestTargetAction(target, verboseText = verboseText))
   }
 
-  if (target.capabilities.canDebug && BspRunHandler.getRunHandler(target).canDebug(target)) {
+  if (target.capabilities.canDebug && BspRunHandler.getRunHandler(listOf(target)).canDebug(listOf(target))) {
     addAction(
       RunTargetAction(
         targetInfo = target,

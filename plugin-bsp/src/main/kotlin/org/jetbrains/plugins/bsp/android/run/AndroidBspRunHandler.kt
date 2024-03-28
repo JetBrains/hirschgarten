@@ -16,7 +16,7 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfiguration
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 
 /**
@@ -25,12 +25,14 @@ import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 public val DEVICE_FUTURE_KEY: Key<ListenableFuture<IDevice>> = Key.create("DEVICE_FUTURE_KEY")
 
 public class AndroidBspRunHandler : BspRunHandler {
-  override fun canRun(target: BuildTargetInfo): Boolean =
-    BspFeatureFlags.isAndroidSupportEnabled && target.languageIds.includesAndroid() && !target.capabilities.canTest
+  override fun canRun(targets: List<BuildTargetInfo>): Boolean =
+    BspFeatureFlags.isAndroidSupportEnabled && targets.size == 1 && targets.all {
+      it.languageIds.includesAndroid() && !it.capabilities.canTest
+    }
 
-  override fun canDebug(target: BuildTargetInfo): Boolean = canRun(target)
+  override fun canDebug(targets: List<BuildTargetInfo>): Boolean = canRun(targets)
 
-  override fun prepareRunConfiguration(configuration: BspRunConfiguration) {
+  override fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {
     configuration.putUserData(DeployableToDevice.KEY, true)
   }
 
@@ -38,7 +40,7 @@ public class AndroidBspRunHandler : BspRunHandler {
     project: Project,
     executor: Executor,
     environment: ExecutionEnvironment,
-    target: BuildTargetInfo,
+    configuration: BspRunConfigurationBase,
   ): RunProfileState {
     val deployTargetContext = DeployTargetContext()
     val deployTarget = deployTargetContext.currentDeployTargetProvider.getDeployTarget(project)
@@ -58,7 +60,7 @@ public class AndroidBspRunHandler : BspRunHandler {
     return AndroidConfigurationExecutorRunProfileState(androidConfigurationExecutor)
   }
 
-  override fun getBeforeRunTasks(configuration: BspRunConfiguration): List<BeforeRunTask<*>> {
+  override fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> {
     val provider = MobileInstallBeforeRunTaskProvider()
     val mobileInstallTask = provider.createTask(configuration) ?: return emptyList()
     return listOf(mobileInstallTask)
