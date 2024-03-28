@@ -15,19 +15,17 @@ import java.util.concurrent.Executors
  * A session is a "physical" connection to a BSP server. It must be closed when it is no longer
  * needed. The user is responsible for maintaining the correct BSP life-cycle.
  */
-class Session(val workspacePath: Path) : AutoCloseable {
+class Session<T: MockServer>(val workspacePath: Path, val client: MockClient, serverClass: Class<T>) : AutoCloseable {
   private val workspaceFile = workspacePath.toFile()
   private val connectionDetails = readBspConnectionDetails(workspaceFile)
 
-  public val process: Process = ProcessBuilder(connectionDetails.argv)
+  val process: Process = ProcessBuilder(connectionDetails.argv)
     .directory(workspaceFile)
     .start()
 
-  val client: MockClient = MockClient()
-
   private val executor = Executors.newCachedThreadPool()
-  private val launcher = Launcher.Builder<MockServer>()
-    .setRemoteInterface(MockServer::class.java)
+  private val launcher = Launcher.Builder<T>()
+    .setRemoteInterface(serverClass)
     .setExecutorService(executor)
     .setInput(process.inputStream)
     .setOutput(process.outputStream)
@@ -38,7 +36,7 @@ class Session(val workspacePath: Path) : AutoCloseable {
     launcher.startListening()
   }
 
-  val server: MockServer = launcher.remoteProxy
+  val server: T = launcher.remoteProxy
 
   val serverClosed: Deferred<SessionResult> = process.onExit().thenApply {
     SessionResult(process.exitValue(), process.errorStream.bufferedReader().readText())
@@ -53,7 +51,6 @@ class Session(val workspacePath: Path) : AutoCloseable {
   }
 
   companion object {
-    const val bspVersion = "2.0.0"
     private const val BspWorkspaceConfigDirName = ".bsp"
     private const val BspWorkspaceConfigFileExtension = ".json"
     private val gson = Gson()
@@ -63,7 +60,8 @@ class Session(val workspacePath: Path) : AutoCloseable {
       require(bspDir.exists() && bspDir.isDirectory)
 
       val configFiles = bspDir.listFiles { _, name -> name.endsWith(BspWorkspaceConfigFileExtension) }
-      require(configFiles?.size == 1)
+      require(configFiles != null)
+      require(configFiles.size == 1)
 
       val configFile = configFiles.first()
       require(configFile.isFile && configFile.canRead())

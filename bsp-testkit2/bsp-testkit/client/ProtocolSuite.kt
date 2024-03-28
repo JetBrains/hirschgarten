@@ -1,6 +1,17 @@
 package org.jetbrains.bsp.testkit.client
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.CleanCacheParams
+import ch.epfl.scala.bsp4j.CompileParams
+import ch.epfl.scala.bsp4j.DependencyModulesParams
+import ch.epfl.scala.bsp4j.DependencySourcesParams
+import ch.epfl.scala.bsp4j.InitializeBuildParams
+import ch.epfl.scala.bsp4j.OutputPathsParams
+import ch.epfl.scala.bsp4j.ResourcesParams
+import ch.epfl.scala.bsp4j.RunParams
+import ch.epfl.scala.bsp4j.SourcesParams
+import ch.epfl.scala.bsp4j.TestParams
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.test.runTest
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException
@@ -10,15 +21,12 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.time.Duration
-import java.util.concurrent.ExecutionException
 import kotlin.time.Duration.Companion.seconds
 
 /**
  * This file contains test which are not specific to any language or build tool.
  */
 class ProtocolSuite(private val workspacePath: Path) {
-  private val executionContext = java.util.concurrent.Executors.newCachedThreadPool()
   private val bspVersion = "2.0.0"
   private val originId = "TestOriginId"
 
@@ -47,14 +55,14 @@ class ProtocolSuite(private val workspacePath: Path) {
   }
 
   private suspend fun testCompileRequest(
-    session: Session,
+    session: Session<MockServer>,
     capabilities: BuildServerCapabilities,
     testType: ExecutionTestType,
   ) {
     val targets = session.server.workspaceBuildTargets().await().targets
     val compileCapabilities = capabilities.compileProvider.languageIds
-    val buildTargetToCompile = targets.firstOrNull {
-      t -> t.languageIds.all { it in compileCapabilities } && t.capabilities.canCompile
+    val buildTargetToCompile = targets.firstOrNull { t ->
+      t.languageIds.all { it in compileCapabilities } && t.capabilities.canCompile
     }
     if (buildTargetToCompile != null) {
       val compileParams = CompileParams(listOf(buildTargetToCompile.id))
@@ -66,14 +74,14 @@ class ProtocolSuite(private val workspacePath: Path) {
   }
 
   private suspend fun testRunRequest(
-    session: Session,
+    session: Session<MockServer>,
     capabilities: BuildServerCapabilities,
     testType: ExecutionTestType,
   ) {
     val targets = session.server.workspaceBuildTargets().await().targets
     val runCapabilities = capabilities.runProvider.languageIds
-    val buildTargetToRun = targets.firstOrNull {
-      t -> t.languageIds.all { it in runCapabilities } && t.capabilities.canRun
+    val buildTargetToRun = targets.firstOrNull { t ->
+      t.languageIds.all { it in runCapabilities } && t.capabilities.canRun
     }
     if (buildTargetToRun != null) {
       val runParams = RunParams(buildTargetToRun.id)
@@ -85,14 +93,14 @@ class ProtocolSuite(private val workspacePath: Path) {
   }
 
   private suspend fun testTestRequest(
-    session: Session,
+    session: Session<MockServer>,
     capabilities: BuildServerCapabilities,
     testType: ExecutionTestType,
   ) {
     val targets = session.server.workspaceBuildTargets().await().targets
     val testCapabilities = capabilities.testProvider.languageIds
-    val buildTargetToTest = targets.firstOrNull {
-      t -> t.languageIds.all { it in testCapabilities } && t.capabilities.canTest
+    val buildTargetToTest = targets.firstOrNull { t ->
+      t.languageIds.all { it in testCapabilities } && t.capabilities.canTest
     }
     if (buildTargetToTest != null) {
       val testParams = TestParams(listOf(buildTargetToTest.id))
@@ -104,7 +112,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   }
 
   private fun checkExecutionAssertions(
-    session: Session,
+    session: Session<MockServer>,
     resultOriginId: String,
     testType: ExecutionTestType,
   ) {
@@ -113,9 +121,14 @@ class ProtocolSuite(private val workspacePath: Path) {
     val progress = session.client.taskProgressNotifications
     val diagnosticsOriginIds = session.client.publishDiagnosticsNotifications.map { it.originId }
 
-    when(testType) {
+    when (testType) {
       ExecutionTestType.ORIGIN_ID_MATCH -> assertEquals(originId, resultOriginId)
-      ExecutionTestType.TASK_MATCH -> assertTrue(started.size == finished.size && started.containsAll(finished) && finished.containsAll(started))
+      ExecutionTestType.TASK_MATCH -> assertTrue(
+        started.size == finished.size && started.containsAll(finished) && finished.containsAll(
+          started
+        )
+      )
+
       ExecutionTestType.DIAGNOSTICS -> assertTrue(diagnosticsOriginIds.all { it == originId })
       ExecutionTestType.PROGRESS -> assertTrue(progress.map { it.taskId }.all { started.contains(it) })
       ExecutionTestType.PROGRESS_TOTAL -> assertTrue(progress.all { it.progress <= it.total })
@@ -126,7 +139,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Before initialization server responds with an error")
   fun errorBeforeInitialization() = runTest(timeout = 20.seconds) {
     println("Before initialization server responds with an error")
-    withSession(workspacePath, true, false) { session ->
+    withSession(workspacePath, true, false, MockClient(), MockServer::class.java) { session ->
       try {
         session.server.workspaceReload().await()
       } catch (e: ResponseErrorException) {
@@ -142,7 +155,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Initialization succeeds")
   fun initializationSucceeds() = runTest(timeout = 20.seconds) {
     println("Initialization succeeds")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       val initializationResult = session.server.buildInitialize(initializeParamsNoCapabilities).await()
       session.server.onBuildInitialized()
       session.server.buildShutdown().await()
@@ -155,7 +168,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Server exits with 0 after a shutdown request")
   fun exitAfterShutdown() = runTest(timeout = 20.seconds) {
     println("Server exits with 0 after a shutdown request")
-    withSession(workspacePath, true) { session ->
+    withSession(workspacePath, true, serverClass = MockServer::class.java) { session ->
       session.server.buildInitialize(initializeParamsNoCapabilities).await()
       session.server.onBuildInitialized()
       session.server.buildShutdown().await()
@@ -169,7 +182,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Server exits with 1 without a shutdown request")
   fun exitNoShutdown() = runTest(timeout = 20.seconds) {
     println("Server exits with 1 without a shutdown request")
-    withSession(workspacePath, true) { session ->
+    withSession(workspacePath, true, serverClass = MockServer::class.java) { session ->
       session.server.buildInitialize(initializeParamsNoCapabilities).await()
       session.server.onBuildInitialized()
       session.server.onBuildExit()
@@ -182,7 +195,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Server exits with 0 without initialization")
   fun exitNoInitialization() = runTest(timeout = 20.seconds) {
     println("Server exits with 0 without initialization")
-    withSession(workspacePath, true) { session ->
+    withSession(workspacePath, true, serverClass = MockServer::class.java) { session ->
       session.server.onBuildExit()
       val sessionResult = session.serverClosed.await()
       assertEquals(0, sessionResult.exitCode)
@@ -193,7 +206,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("No build targets are returned if the client has no capabilities")
   fun buildTargets() = runTest(timeout = 20.seconds) {
     println("No build targets are returned if the client has no capabilities")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsNoCapabilities, session) {
         val result = session.server.workspaceBuildTargets().await()
         assertTrue(result.targets.all { it.languageIds.isEmpty() })
@@ -205,7 +218,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Reload request works if is supported")
   fun reload() = runTest(timeout = 20.seconds) {
     println("Reload request works if is supported")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         if (capabilities.canReload == true) {
           session.server.workspaceReload()
@@ -218,7 +231,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Target sources list is empty if given no targets")
   fun sources() = runTest(timeout = 20.seconds) {
     println("Target sources list is empty if given no targets")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) {
         val result = session.server.buildTargetSources(SourcesParams(ArrayList())).await()
         assertTrue(result.items.isEmpty())
@@ -230,7 +243,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Dependency sources list is empty if given no targets (if supported)")
   fun dependencySources() = runTest(timeout = 20.seconds) {
     println("Dependency sources list is empty if given no targets (if supported)")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         if (capabilities.dependencySourcesProvider == true) {
           val result = session.server.buildTargetDependencySources(DependencySourcesParams(ArrayList())).await()
@@ -244,7 +257,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Dependency modules list is empty if given no targets (if supported)")
   fun dependencyModules() = runTest(timeout = 20.seconds) {
     println("Dependency modules list is empty if given no targets (if supported)")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         if (capabilities.dependencyModulesProvider == true) {
           val result = session.server.buildTargetDependencyModules(DependencyModulesParams(ArrayList())).await()
@@ -258,7 +271,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Resources list is empty if given no targets (if supported)")
   fun resources() = runTest(timeout = 20.seconds) {
     println("Resources list is empty if given no targets (if supported)")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         if (capabilities.resourcesProvider == true) {
           val result = session.server.buildTargetResources(ResourcesParams(ArrayList())).await()
@@ -272,7 +285,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Output paths list is empty if given no targets (if supported)")
   fun outputPaths() = runTest(timeout = 20.seconds) {
     println("Output paths list is empty if given no targets (if supported)")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         if (capabilities.outputPathsProvider == true) {
           val result = session.server.buildTargetOutputPaths(OutputPathsParams(ArrayList())).await()
@@ -286,7 +299,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Clean cache method works")
   fun cleanCache() = runTest(timeout = 20.seconds) {
     println("Clean cache method works")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) {
         session.server.buildTargetCleanCache(CleanCacheParams(ArrayList())).await()
       }
@@ -297,7 +310,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("OriginId should match in CompileParams and CompileResult")
   fun compileMatchingOriginId() = runTest(timeout = 40.seconds) {
     println("OriginId should match in CompileParams and CompileResult")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testCompileRequest(session, capabilities, ExecutionTestType.ORIGIN_ID_MATCH)
       }
@@ -308,7 +321,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("OriginId should match in RunParams and RunResult")
   fun runMatchingOriginId() = runTest(timeout = 40.seconds) {
     println("OriginId should match in RunParams and RunResult")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testRunRequest(session, capabilities, ExecutionTestType.ORIGIN_ID_MATCH)
       }
@@ -319,7 +332,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("OriginId should match in TestParams and TesteResult")
   fun testMatchingOriginId() = runTest(timeout = 40.seconds) {
     println("OriginId should match in TestParams and TestResult")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testTestRequest(session, capabilities, ExecutionTestType.ORIGIN_ID_MATCH)
       }
@@ -330,7 +343,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("For each TaskStart there should be TaskFinish for compile request")
   fun compileTaskMatching() = runTest(timeout = 40.seconds) {
     println("For each TaskStart there should be TaskFinish for compile request")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testCompileRequest(session, capabilities, ExecutionTestType.TASK_MATCH)
       }
@@ -341,7 +354,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("For each TaskStart there should be TaskFinish for run request")
   fun runTaskMatching() = runTest(timeout = 40.seconds) {
     println("For each TaskStart there should be TaskFinish for run request")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testRunRequest(session, capabilities, ExecutionTestType.TASK_MATCH)
       }
@@ -352,7 +365,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("For each TaskStart there should be TaskFinish for test request")
   fun testTaskMatching() = runTest(timeout = 40.seconds) {
     println("For each TaskStart there should be TaskFinish for test request")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testTestRequest(session, capabilities, ExecutionTestType.TASK_MATCH)
       }
@@ -363,7 +376,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("OriginId should match in CompileParams and publish diagnostic notifications")
   fun diagnosticsMatchingOriginId() = runTest(timeout = 40.seconds) {
     println("OriginId should match in CompileParams and publish diagnostic notifications")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testCompileRequest(session, capabilities, ExecutionTestType.DIAGNOSTICS)
       }
@@ -374,7 +387,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Task progress refers to started task for compile request")
   fun compileProgressTaskFromStarted() = runTest(timeout = 40.seconds) {
     println("Task progress refers to started task for compile request")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testCompileRequest(session, capabilities, ExecutionTestType.PROGRESS)
       }
@@ -385,7 +398,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Task progress refers to started task for run request")
   fun runProgressTaskFromStarted() = runTest(timeout = 40.seconds) {
     println("Task progress refers to started task for run request")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testRunRequest(session, capabilities, ExecutionTestType.PROGRESS)
       }
@@ -396,7 +409,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Task progress refers to started task for test request")
   fun testProgressTaskFromStarted() = runTest(timeout = 40.seconds) {
     println("Task progress refers to started task for test request")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testTestRequest(session, capabilities, ExecutionTestType.PROGRESS)
       }
@@ -407,7 +420,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Completed amount of work from task progress is smaller than total for compile request")
   fun compileProgressSmallerThanTotal() = runTest(timeout = 40.seconds) {
     println("Completed amount of work from task progress is smaller than total for compile request")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testCompileRequest(session, capabilities, ExecutionTestType.PROGRESS_TOTAL)
       }
@@ -418,7 +431,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Completed amount of work from task progress is smaller than total for run request")
   fun runProgressSmallerThanTotal() = runTest(timeout = 40.seconds) {
     println("Completed amount of work from task progress is smaller than total for run request")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testRunRequest(session, capabilities, ExecutionTestType.PROGRESS_TOTAL)
       }
@@ -429,7 +442,7 @@ class ProtocolSuite(private val workspacePath: Path) {
   @DisplayName("Completed amount of work from task progress is smaller than total for test request")
   fun testProgressSmallerThanTotal() = runTest(timeout = 40.seconds) {
     println("Completed amount of work from task progress is smaller than total for test request")
-    withSession(workspacePath) { session ->
+    withSession(workspacePath, serverClass = MockServer::class.java) { session ->
       withLifetime(initializeParamsFullCapabilities, session) { capabilities ->
         testTestRequest(session, capabilities, ExecutionTestType.PROGRESS_TOTAL)
       }
