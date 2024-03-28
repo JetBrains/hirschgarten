@@ -15,10 +15,6 @@ public class BspConsoleService(project: Project) {
 
   public val bspSyncConsole: TaskConsole
 
-  public val bspTestConsole: BspTargetTestConsole = BspTargetTestConsole()
-
-  public val bspRunConsole: BspTargetRunConsole = BspTargetRunConsole()
-
   init {
     val basePath = project.rootDir.path
     val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)

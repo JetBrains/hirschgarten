@@ -46,12 +46,15 @@
     <extensionPoint name="buildToolWindowTargetActionProviderExtension"
                     interface="org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension"
                     dynamic="true"/>
-    <extensionPoint name="invalidTargetsProviderExtension"
-                    interface="org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension"
+    <extensionPoint name="bspRunConfigurationExtension"
+                    interface="org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationExtensionManager"
                     dynamic="true"/>
-    <extensionPoint name="projectSyncHook"
-                    interface="org.jetbrains.plugins.bsp.flow.open.ProjectSyncHook"
-                    dynamic="true"/>
+      <extensionPoint name="invalidTargetsProviderExtension"
+                      interface="org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension"
+                      dynamic="true"/>
+      <extensionPoint name="projectSyncHook"
+                      interface="org.jetbrains.plugins.bsp.flow.open.ProjectSyncHook"
+                      dynamic="true"/>
   </extensionPoints>
 
   <extensions defaultExtensionNs="org.jetbrains.bsp">
@@ -68,6 +71,10 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
+    <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType" />
+    <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType" />
+    <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspBuildConfigurationType" />
+
     <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
 
     <workspaceModel.fileIndexContributor implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
