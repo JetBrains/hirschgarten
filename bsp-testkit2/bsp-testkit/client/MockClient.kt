@@ -10,7 +10,7 @@ import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 
-class MockClient : BuildClient {
+open class MockClient : BuildClient {
   private val showMessage = ArrayList<ShowMessageParams>()
   private val logMessage = ArrayList<LogMessageParams>()
   private val taskStart = ArrayList<TaskStartParams>()

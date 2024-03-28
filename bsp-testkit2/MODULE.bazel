@@ -1,16 +1,9 @@
 module(name = "bsp-testkit2", version = "")
 
-bazel_dep(name = "bazel_skylib", version = "1.4.2")
-bazel_dep(name = "rules_java", version = "7.0.6")
-bazel_dep(name = "rules_kotlin", version = "1.9.0")
-bazel_dep(name = "rules_jvm_external", version = "5.3")
-
-# Required until there's a new release
-git_override(
-    module_name = "rules_jvm_external",
-    remote = "https://github.com/bazelbuild/rules_jvm_external.git",
-    commit = "679348a8da17a9f3954fb2cab10a95d5a5848c85",
-)
+bazel_dep(name = "bazel_skylib", version = "1.5.0")
+bazel_dep(name = "rules_java", version = "7.5.0")
+bazel_dep(name = "rules_kotlin", version = "1.9.1")
+bazel_dep(name = "rules_jvm_external", version = "6.0")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
@@ -20,8 +13,8 @@ maven.install(
         "com.google.guava:guava:31.0.1-jre",
         "ch.epfl.scala:bsp4j:2.2.0-M2",
         "org.junit.jupiter:junit-jupiter:5.10.1",
-        "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3",
-        "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0",
     ],
     fetch_sources = True,
     repositories = [

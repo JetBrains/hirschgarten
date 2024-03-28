@@ -9,13 +9,15 @@ import org.jetbrains.bsp.testkit.JsonComparator
 import java.nio.file.Path
 import kotlin.time.Duration
 
-suspend fun withSession(
+suspend fun <T: MockServer> withSession(
     workspace: Path,
     ignoreEarlyExit: Boolean = false,
     withShutdown: Boolean = true,
-    test: suspend (Session) -> Unit,
+    client: MockClient = MockClient(),
+    serverClass: Class<T>,
+    test: suspend (Session<T>) -> Unit,
 ) = coroutineScope {
-    val session = Session(workspace)
+    val session = Session(workspace, client, serverClass)
     session.use {
       val testResult = this.async { test(session) }
 
@@ -34,9 +36,9 @@ suspend fun withSession(
   }
 
 
-suspend fun withLifetime(
+suspend fun <T: MockServer> withLifetime(
     initializeParams: InitializeBuildParams,
-    session: Session,
+    session: Session<T>,
     f: suspend (BuildServerCapabilities) -> Unit,
 ) {
   val initializeResult = session.server.buildInitialize(initializeParams).await()
@@ -46,28 +48,30 @@ suspend fun withLifetime(
   session.server.onBuildExit()
 }
 
-open class TestClient(
-    open val workspacePath: Path,
-    open val initializeParams: InitializeBuildParams,
+open class TestClient<Server: MockServer>(
+    val workspacePath: Path,
+    val initializeParams: InitializeBuildParams,
     val transformJson: (String) -> String,
+    val client: MockClient = MockClient(),
+    val serverClass: Class<Server>,
 ) {
   val gson = Gson()
 
-  private inline fun <reified T> applyJsonTransform(element: T): T {
+  inline fun <reified T> applyJsonTransform(element: T): T {
     val json = gson.toJson(element)
     val transformed = transformJson(json)
     return gson.fromJson(transformed, T::class.java)
   }
 
-  private inline fun <reified T> assertJsonEquals(expected: T, actual: T) {
+  inline fun <reified T> assertJsonEquals(expected: T, actual: T) {
     val transformedExpected = applyJsonTransform(expected)
     val transformedActual = applyJsonTransform(actual)
     JsonComparator.assertJsonEquals(transformedExpected, transformedActual, T::class.java)
   }
 
-  private fun test(timeout: Duration, ignoreEarlyExit: Boolean = false, doTest: suspend (Session, BuildServerCapabilities) -> Unit) {
+  fun test(timeout: Duration, ignoreEarlyExit: Boolean = false, doTest: suspend (Session<Server>, BuildServerCapabilities) -> Unit) {
     runTest(timeout = timeout) {
-      withSession(workspacePath, ignoreEarlyExit) { session ->
+      withSession(workspacePath, ignoreEarlyExit, true, client, serverClass) { session ->
         withLifetime(initializeParams, session) { capabilities ->
           doTest(session, capabilities)
         }
