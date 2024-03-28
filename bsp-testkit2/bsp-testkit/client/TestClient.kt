@@ -1,45 +1,81 @@
 package org.jetbrains.bsp.testkit.client
 
-import ch.epfl.scala.bsp4j.*
+import ch.epfl.scala.bsp4j.BuildClient
+import ch.epfl.scala.bsp4j.BuildServer
+import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.CppOptionsParams
+import ch.epfl.scala.bsp4j.CppOptionsResult
+import ch.epfl.scala.bsp4j.DependencyModulesParams
+import ch.epfl.scala.bsp4j.DependencyModulesResult
+import ch.epfl.scala.bsp4j.DependencySourcesParams
+import ch.epfl.scala.bsp4j.DependencySourcesResult
+import ch.epfl.scala.bsp4j.InitializeBuildParams
+import ch.epfl.scala.bsp4j.InverseSourcesParams
+import ch.epfl.scala.bsp4j.InverseSourcesResult
+import ch.epfl.scala.bsp4j.JavacOptionsParams
+import ch.epfl.scala.bsp4j.JavacOptionsResult
+import ch.epfl.scala.bsp4j.JvmCompileClasspathParams
+import ch.epfl.scala.bsp4j.JvmCompileClasspathResult
+import ch.epfl.scala.bsp4j.JvmRunEnvironmentParams
+import ch.epfl.scala.bsp4j.JvmRunEnvironmentResult
+import ch.epfl.scala.bsp4j.JvmTestEnvironmentParams
+import ch.epfl.scala.bsp4j.JvmTestEnvironmentResult
+import ch.epfl.scala.bsp4j.PythonOptionsParams
+import ch.epfl.scala.bsp4j.PythonOptionsResult
+import ch.epfl.scala.bsp4j.ResourcesParams
+import ch.epfl.scala.bsp4j.ResourcesResult
+import ch.epfl.scala.bsp4j.RustWorkspaceParams
+import ch.epfl.scala.bsp4j.RustWorkspaceResult
+import ch.epfl.scala.bsp4j.ScalaMainClassesParams
+import ch.epfl.scala.bsp4j.ScalaMainClassesResult
+import ch.epfl.scala.bsp4j.ScalaTestClassesParams
+import ch.epfl.scala.bsp4j.ScalaTestClassesResult
+import ch.epfl.scala.bsp4j.ScalacOptionsParams
+import ch.epfl.scala.bsp4j.ScalacOptionsResult
+import ch.epfl.scala.bsp4j.SourcesParams
+import ch.epfl.scala.bsp4j.SourcesResult
+import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.Gson
-import kotlinx.coroutines.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.bsp.testkit.JsonComparator
 import java.nio.file.Path
 import kotlin.time.Duration
 
-suspend fun <T: MockServer> withSession(
-    workspace: Path,
-    ignoreEarlyExit: Boolean = false,
-    withShutdown: Boolean = true,
-    client: MockClient = MockClient(),
-    serverClass: Class<T>,
-    test: suspend (Session<T>) -> Unit,
+suspend fun <Server : BuildServer, Client : BuildClient> withSession(
+  workspace: Path,
+  ignoreEarlyExit: Boolean = false,
+  withShutdown: Boolean = true,
+  client: Client,
+  serverClass: Class<Server>,
+  test: suspend (Session<Server, Client>) -> Unit,
 ) = coroutineScope {
-    val session = Session(workspace, client, serverClass)
-    session.use {
-      val testResult = this.async { test(session) }
+  val session = Session(workspace, client, serverClass)
+  session.use {
+    val testResult = this.async { test(session) }
 
-      if (ignoreEarlyExit) {
-        testResult.await()
-      } else {
-        awaitAll(testResult, session.serverClosed)
-        println("selected")
-      }
-    }
-
-    if (withShutdown) {
-      val result = session.serverClosed.await()
-      println("Server exited with code ${result.exitCode} and stderr:\n${result.stderr}")
+    if (ignoreEarlyExit) {
+      testResult.await()
+    } else {
+      awaitAll(testResult, session.serverClosed)
+      println("selected")
     }
   }
 
+  if (withShutdown) {
+    val result = session.serverClosed.await()
+    println("Server exited with code ${result.exitCode} and stderr:\n${result.stderr}")
+  }
+}
 
-suspend fun <T: MockServer> withLifetime(
-    initializeParams: InitializeBuildParams,
-    session: Session<T>,
-    f: suspend (BuildServerCapabilities) -> Unit,
+
+suspend fun <Server : BuildServer, Client : BuildClient> withLifetime(
+  initializeParams: InitializeBuildParams,
+  session: Session<Server, Client>,
+  f: suspend (BuildServerCapabilities) -> Unit,
 ) {
   val initializeResult = session.server.buildInitialize(initializeParams).await()
   session.server.onBuildInitialized()
@@ -48,12 +84,12 @@ suspend fun <T: MockServer> withLifetime(
   session.server.onBuildExit()
 }
 
-open class TestClient<Server: MockServer>(
-    val workspacePath: Path,
-    val initializeParams: InitializeBuildParams,
-    val transformJson: (String) -> String,
-    val client: MockClient = MockClient(),
-    val serverClass: Class<Server>,
+open class BasicTestClient<Server : BuildServer, Client : BuildClient>(
+  val workspacePath: Path,
+  val initializeParams: InitializeBuildParams,
+  val transformJson: (String) -> String,
+  val client: Client,
+  val serverClass: Class<Server>,
 ) {
   val gson = Gson()
 
@@ -69,7 +105,11 @@ open class TestClient<Server: MockServer>(
     JsonComparator.assertJsonEquals(transformedExpected, transformedActual, T::class.java)
   }
 
-  fun test(timeout: Duration, ignoreEarlyExit: Boolean = false, doTest: suspend (Session<Server>, BuildServerCapabilities) -> Unit) {
+  fun test(
+    timeout: Duration,
+    ignoreEarlyExit: Boolean = false,
+    doTest: suspend (Session<Server, Client>, BuildServerCapabilities) -> Unit
+  ) {
     runTest(timeout = timeout) {
       withSession(workspacePath, ignoreEarlyExit, true, client, serverClass) { session ->
         withLifetime(initializeParams, session) { capabilities ->
@@ -78,7 +118,19 @@ open class TestClient<Server: MockServer>(
       }
     }
   }
+}
 
+class TestClient(
+  workspacePath: Path,
+  initializeParams: InitializeBuildParams,
+  transformJson: (String) -> String,
+) : BasicTestClient<MockServer, MockClient>(
+  workspacePath,
+  initializeParams,
+  transformJson,
+  MockClient(),
+  MockServer::class.java
+) {
   fun testJavacOptions(timeout: Duration, params: JavacOptionsParams, expectedResult: JavacOptionsResult) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
@@ -143,9 +195,9 @@ open class TestClient<Server: MockServer>(
   }
 
   fun testInverseSources(
-      timeout: Duration,
-      params: InverseSourcesParams,
-      expectedResult: InverseSourcesResult,
+    timeout: Duration,
+    params: InverseSourcesParams,
+    expectedResult: InverseSourcesResult,
   ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
@@ -156,9 +208,9 @@ open class TestClient<Server: MockServer>(
 
   @Suppress("DEPRECATION")
   fun testScalaMainClasses(
-      timeout: Duration,
-      params: ScalaMainClassesParams,
-      expectedResult: ScalaMainClassesResult,
+    timeout: Duration,
+    params: ScalaMainClassesParams,
+    expectedResult: ScalaMainClassesResult,
   ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
@@ -169,9 +221,9 @@ open class TestClient<Server: MockServer>(
 
   @Suppress("DEPRECATION")
   fun testScalaTestClasses(
-      timeout: Duration,
-      params: ScalaTestClassesParams,
-      expectedResult: ScalaTestClassesResult,
+    timeout: Duration,
+    params: ScalaTestClassesParams,
+    expectedResult: ScalaTestClassesResult,
   ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
@@ -181,9 +233,9 @@ open class TestClient<Server: MockServer>(
   }
 
   fun testDependencySources(
-      timeout: Duration,
-      params: DependencySourcesParams,
-      expectedResult: DependencySourcesResult,
+    timeout: Duration,
+    params: DependencySourcesParams,
+    expectedResult: DependencySourcesResult,
   ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
@@ -193,9 +245,9 @@ open class TestClient<Server: MockServer>(
   }
 
   fun testJvmRunEnvironment(
-      timeout: Duration,
-      params: JvmRunEnvironmentParams,
-      expectedResult: JvmRunEnvironmentResult,
+    timeout: Duration,
+    params: JvmRunEnvironmentParams,
+    expectedResult: JvmRunEnvironmentResult,
   ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
@@ -205,9 +257,9 @@ open class TestClient<Server: MockServer>(
   }
 
   fun testJvmTestEnvironment(
-      timeout: Duration,
-      params: JvmTestEnvironmentParams,
-      expectedResult: JvmTestEnvironmentResult,
+    timeout: Duration,
+    params: JvmTestEnvironmentParams,
+    expectedResult: JvmTestEnvironmentResult,
   ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
@@ -215,11 +267,11 @@ open class TestClient<Server: MockServer>(
       assertJsonEquals(expectedResult, result)
     }
   }
-  
+
   fun testJvmCompileClasspath(
-      timeout: Duration,
-      params: JvmCompileClasspathParams,
-      expectedResult: JvmCompileClasspathResult,
+    timeout: Duration,
+    params: JvmCompileClasspathParams,
+    expectedResult: JvmCompileClasspathResult,
   ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
@@ -229,9 +281,9 @@ open class TestClient<Server: MockServer>(
   }
 
   fun testDependencyModule(
-      timeout: Duration,
-      params: DependencyModulesParams,
-      expectedResult: DependencyModulesResult,
+    timeout: Duration,
+    params: DependencyModulesParams,
+    expectedResult: DependencyModulesResult,
   ) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
@@ -251,7 +303,7 @@ open class TestClient<Server: MockServer>(
         val targetIds = targets.map { it.id }
         session.server.buildTargetSources(SourcesParams(targetIds)).await()
         if (capabilities.resourcesProvider == true) {
-         session.server.buildTargetResources(ResourcesParams(targetIds)).await()
+          session.server.buildTargetResources(ResourcesParams(targetIds)).await()
         }
         val javaTargetIds = targets.filter { it.languageIds.contains("java") }.map { it.id }
         session.server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds)).await()

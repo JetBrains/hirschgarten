@@ -1,18 +1,20 @@
 package org.jetbrains.bsp.testkit.client.bazel
 
+import ch.epfl.scala.bsp4j.BuildClient
+import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.InitializeBuildParams
-import org.jetbrains.bsp.testkit.client.MockServer
-import org.jetbrains.bsp.testkit.client.TestClient
+import org.jetbrains.bsp.testkit.client.BasicTestClient
 import java.nio.file.Path
 import java.util.Locale
 
-class BazelTestClient<Server: MockServer>(
+class BazelTestClient<Server : BuildServer, Client : BuildClient>(
   workspacePath: Path,
   initializeParams: InitializeBuildParams,
   private val bazelCache: Path,
   private val bazelOutputBase: Path,
+  client: Client,
   serverClass: Class<Server>
-) : TestClient<Server>(
+) : BasicTestClient<Server, Client>(
   workspacePath,
   initializeParams,
   { s: String ->
@@ -21,6 +23,7 @@ class BazelTestClient<Server: MockServer>(
       .replace("\$BAZEL_OUTPUT_BASE_PATH", bazelOutputBase.toString())
       .replace("\$OS", osFamily)
   },
+  client = client,
   serverClass = serverClass
 ) {
   companion object {

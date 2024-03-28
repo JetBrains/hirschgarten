@@ -8,7 +8,7 @@ import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import org.junit.jupiter.api.Assertions.assertTrue
 import java.lang.reflect.Type
-import java.util.*
+import java.util.TreeSet
 
 object JsonComparator {
   private val gson = GsonBuilder().create()
@@ -28,10 +28,10 @@ object JsonComparator {
 
     assertTrue(difference.areEqual()) {
       "Expected: $sortedExpected\n\n" +
-        "Actual: $sortedActual\n\n" +
-        "Entries only in expected \n${difference.entriesOnlyOnLeft()}\n\n" +
-        "Entries only in actual\n${difference.entriesOnlyOnRight()}\n\n" +
-        "Entries differing\n${difference.entriesDiffering()}"
+          "Actual: $sortedActual\n\n" +
+          "Entries only in expected \n${difference.entriesOnlyOnLeft()}\n\n" +
+          "Entries only in actual\n${difference.entriesOnlyOnRight()}\n\n" +
+          "Entries differing\n${difference.entriesDiffering()}"
     }
   }
 

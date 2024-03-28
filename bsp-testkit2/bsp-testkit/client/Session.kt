@@ -1,8 +1,9 @@
 package org.jetbrains.bsp.testkit.client
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
+import ch.epfl.scala.bsp4j.BuildClient
+import ch.epfl.scala.bsp4j.BuildServer
 import com.google.gson.Gson
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.future.asDeferred
 import org.eclipse.lsp4j.jsonrpc.Launcher
@@ -15,7 +16,11 @@ import java.util.concurrent.Executors
  * A session is a "physical" connection to a BSP server. It must be closed when it is no longer
  * needed. The user is responsible for maintaining the correct BSP life-cycle.
  */
-class Session<T: MockServer>(val workspacePath: Path, val client: MockClient, serverClass: Class<T>) : AutoCloseable {
+class Session<Server : BuildServer, Client : BuildClient>(
+  val workspacePath: Path,
+  val client: Client,
+  serverClass: Class<Server>
+) : AutoCloseable {
   private val workspaceFile = workspacePath.toFile()
   private val connectionDetails = readBspConnectionDetails(workspaceFile)
 
@@ -24,7 +29,7 @@ class Session<T: MockServer>(val workspacePath: Path, val client: MockClient, se
     .start()
 
   private val executor = Executors.newCachedThreadPool()
-  private val launcher = Launcher.Builder<T>()
+  private val launcher = Launcher.Builder<Server>()
     .setRemoteInterface(serverClass)
     .setExecutorService(executor)
     .setInput(process.inputStream)
@@ -36,7 +41,7 @@ class Session<T: MockServer>(val workspacePath: Path, val client: MockClient, se
     launcher.startListening()
   }
 
-  val server: T = launcher.remoteProxy
+  val server: Server = launcher.remoteProxy
 
   val serverClosed: Deferred<SessionResult> = process.onExit().thenApply {
     SessionResult(process.exitValue(), process.errorStream.bufferedReader().readText())
