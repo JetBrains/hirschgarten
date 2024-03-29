@@ -3,6 +3,8 @@ package org.jetbrains.bsp.testkit.client
 import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
+import ch.epfl.scala.bsp4j.CompileParams
+import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.CppOptionsParams
 import ch.epfl.scala.bsp4j.CppOptionsResult
 import ch.epfl.scala.bsp4j.DependencyModulesParams
@@ -20,6 +22,7 @@ import ch.epfl.scala.bsp4j.JvmRunEnvironmentParams
 import ch.epfl.scala.bsp4j.JvmRunEnvironmentResult
 import ch.epfl.scala.bsp4j.JvmTestEnvironmentParams
 import ch.epfl.scala.bsp4j.JvmTestEnvironmentResult
+import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import ch.epfl.scala.bsp4j.PythonOptionsParams
 import ch.epfl.scala.bsp4j.PythonOptionsResult
 import ch.epfl.scala.bsp4j.ResourcesParams
@@ -42,6 +45,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.bsp.testkit.JsonComparator
+import org.junit.jupiter.api.Assertions.assertIterableEquals
 import java.nio.file.Path
 import kotlin.time.Duration
 
@@ -143,6 +147,15 @@ class TestClient(
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
       val result = session.server.buildTargetScalacOptions(transformedParams).await()
+      assertJsonEquals(expectedResult, result)
+    }
+  }
+
+  fun testCompile(timeout: Duration, params: CompileParams, expectedResult: CompileResult, expectedDiagnostics: List<PublishDiagnosticsParams>) {
+    val transformedParams = applyJsonTransform(params)
+    test(timeout) { session, _ ->
+      val result = session.server.buildTargetCompile(transformedParams).await()
+      assertIterableEquals(expectedDiagnostics, session.client.publishDiagnosticsNotifications)
       assertJsonEquals(expectedResult, result)
     }
   }
