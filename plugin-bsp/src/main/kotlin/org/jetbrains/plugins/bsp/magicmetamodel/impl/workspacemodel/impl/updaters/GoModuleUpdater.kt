@@ -34,6 +34,13 @@ internal class GoModuleUpdater(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(vgoModuleDeps)
     }
 
+    val sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+    sourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)
+
+    val goResourceEntityUpdater = GoResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+    goResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
+
+
     return builtVgoModule
   }
 }

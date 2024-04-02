@@ -4,28 +4,37 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import org.jetbrains.plugins.bsp.magicmetamodel.ModuleNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModule
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModuleDependency
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.*
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import java.net.URI
+import java.nio.file.Path
 import kotlin.io.path.toPath
+
 
 internal class ModuleDetailsToGoModuleTransformer(
   private val targetsMap: Map<BuildTargetId, BuildTargetInfo>,
   private val projectDetails: ProjectDetails,
   moduleNameProvider: ModuleNameProvider,
+  projectBasePath: Path,
 ) : ModuleDetailsToModuleTransformer<GoModule>(targetsMap, moduleNameProvider) {
-  override val type = "GO_MODULE"
+  override val type = "WEB_MODULE"
 
-  override fun transform(inputEntity: ModuleDetails): GoModule {
+  private val sourcesItemToGoSourceRootTransformer = SourcesItemToGoSourceRootTransformer(projectBasePath)
+  private val resourcesItemToGoResourceRootTransformer =
+    ResourcesItemToGoResourceRootTransformer(projectBasePath)
+
+  override fun transform(inputEntity: ModuleDetails): GoModule{
     val goBuildInfo = extractGoBuildTarget(inputEntity.target) ?: error("Transform error, cannot extract GoBuildTarget")
 
     return GoModule(
       module = toGenericModuleInfo(inputEntity),
+      sourceRoots = sourcesItemToGoSourceRootTransformer.transform(inputEntity.sources.map {
+        BuildTargetAndSourceItem(
+          inputEntity.target,
+          it,
+        )
+      }),
+      resourceRoots = resourcesItemToGoResourceRootTransformer.transform(inputEntity.resources),
       importPath = goBuildInfo.importPath,
       root = URI.create(inputEntity.target.baseDirectory).toPath(),
       goDependencies = toGoDependencies(inputEntity)

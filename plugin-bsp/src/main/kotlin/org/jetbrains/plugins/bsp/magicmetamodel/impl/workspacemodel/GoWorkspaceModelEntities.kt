@@ -11,12 +11,16 @@ public data class GoModuleDependency(
 
 public data class GoModule(
   val module: GenericModuleInfo,
+  val sourceRoots: List<GenericSourceRoot>,
+  val resourceRoots: List<ResourceRoot>,
   val importPath: String,
   val root: Path,
   val goDependencies: List<GoModuleDependency>,
 ) : WorkspaceModelEntity(), Module {
   override fun toState(): ModuleState = ModuleState(
     module = module.toState(),
+    sourceRoots = sourceRoots.map { it.toState() },
+    resourceRoots = resourceRoots.map { it.toState() },
     goAddendum = GoAddendum(importPath, root, goDependencies).toState(),
   )
 

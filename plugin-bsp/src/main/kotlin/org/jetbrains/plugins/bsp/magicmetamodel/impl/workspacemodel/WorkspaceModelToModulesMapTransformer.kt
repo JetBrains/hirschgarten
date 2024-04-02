@@ -30,6 +30,7 @@ import org.jetbrains.workspacemodel.entities.AndroidTargetType.TEST
 import org.jetbrains.workspacemodel.entities.androidAddendumEntity
 import org.jetbrains.workspacemodel.entities.jvmBinaryJarsEntity
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 public object WorkspaceModelToModulesMapTransformer {
   public operator fun invoke(
@@ -103,7 +104,8 @@ public object WorkspaceModelToModulesMapTransformer {
           libraries = libraries.map { PythonLibrary(it.sourceJars) }.toList(),
           sdkInfo = entity.getPythonSdk(),
         )
-      } else {
+      // TODO: add support for Go
+      } else{
         val baseDirContentRoot = entity.getBaseDir()
         JavaModule(
           genericModuleInfo = genericModuleInfo,

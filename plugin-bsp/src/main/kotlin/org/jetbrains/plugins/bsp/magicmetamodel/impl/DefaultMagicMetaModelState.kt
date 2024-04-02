@@ -229,6 +229,8 @@ public data class ModuleState(
 
   public fun toGoModule(): GoModule = GoModule(
     module = module.fromState(),
+    sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
+    resourceRoots = resourceRoots.map { it.toResourceRoot() },
     importPath = goAddendum?.importPath ?: "",
     root = goAddendum?.root ?: Path(""),
     goDependencies = goAddendum?.goDependencies ?: emptyList(),
