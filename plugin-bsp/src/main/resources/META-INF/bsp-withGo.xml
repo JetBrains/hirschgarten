@@ -1,6 +1,8 @@
 <idea-plugin>
-    <extensions defaultExtensionNs="org.jetbrains.bsp">
-        <GoSdkExtension
-                implementation="org.jetbrains.plugins.bsp.extension.points.GoSdkGetter" />
-    </extensions>
+  <extensions defaultExtensionNs="org.jetbrains.bsp">
+    <goSdkGetterExtension
+      implementation="org.jetbrains.plugins.bsp.extension.points.GoSdkGetter" />
+    <goEntitiesExtension
+      implementation="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.GoEntitiesExtensionImpl" />
+  </extensions>
 </idea-plugin>

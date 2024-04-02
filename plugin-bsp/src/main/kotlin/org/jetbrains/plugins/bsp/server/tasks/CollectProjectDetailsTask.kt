@@ -12,10 +12,6 @@ import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import com.goide.project.GoModuleSettings
-import com.goide.sdk.GoSdk
-import com.goide.sdk.GoSdkService
-import com.goide.vgo.project.workspaceModel.VgoWorkspaceModelUpdater
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
@@ -38,7 +34,6 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
@@ -105,8 +100,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private var scalaSdks: Set<ScalaSdk>? = null
 
   private var androidSdks: Set<AndroidSdk>? = null
-
-  private var goSdks: Set<GoSdk>? = null
 
   private lateinit var coroutineJob: Job
 
@@ -353,27 +346,11 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     BspPluginBundle.message("console.task.model.calculate.go.sdk.infos")
   ) {
     runInterruptible {
-      goSdks = logPerformance(it) {
-        calculateAllGoSdkInfos(projectDetails)
+      logPerformance(it) {
+        goSdkExtension()?.calculateAllGoSdkInfos(projectDetails)
       }
     }
   }
-
-  private fun calculateAllGoSdkInfos(projectDetails: ProjectDetails): Set<GoSdk> =
-    projectDetails.targets
-      .mapNotNull {
-        createGoSdk(it)
-      }
-      .toSet()
-
-  private fun createGoSdk(target: BuildTarget): GoSdk? =
-    extractGoBuildTarget(target)?.let {
-      if (it.sdkHomePath == null) {
-        GoSdk.NULL
-      } else {
-        GoSdk.fromHomePath(it.sdkHomePath?.path)
-      }
-    }
 
   private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails) {
     val magicMetaModelService = MagicMetaModelService.getInstance(project)
@@ -412,7 +389,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
     if (BspFeatureFlags.isGoSupportEnabled) {
       addBspFetchedGoSdks()
-      VgoWorkspaceModelUpdater(project).restoreModulesRegistry()
+      goSdkExtension()?.restoreGoModulesRegistry(project)
       enableGoSupportInTargets()
     }
   }
@@ -493,27 +470,27 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     goSdkExtension()?.let { extension ->
       withSubtask("add-bsp-fetched-go-sdks", BspPluginBundle.message("console.task.model.add.go.fetched.sdks")) {
         logPerformanceSuspend("add-bsp-fetched-go-sdks") {
-          val goSdkService = GoSdkService.getInstance(project)
-          goSdks?.forEach { writeAction { extension.addGoSdk(it, goSdkService) } }
+          extension.addGoSdks(project)
         }
       }
     }
 
   private suspend fun enableGoSupportInTargets() =
-    goSdkExtension()?.let { withSubtask(
-      "enable-go-support-in-targets",
-      BspPluginBundle.message("console.task.model.add.go.support.in.targets")) {
-      logPerformanceSuspend("enable-go-support-in-targets") {
-        val workspaceModel = WorkspaceModel.getInstance(project)
-        workspaceModel.currentSnapshot.entities(ModuleEntity::class.java).forEach { moduleEntity ->
-          moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
-            writeAction {
-              GoModuleSettings.getInstance(module).isGoSupportEnabled = true
+    goSdkExtension()?.let { extension ->
+      withSubtask(
+        "enable-go-support-in-targets",
+        BspPluginBundle.message("console.task.model.add.go.support.in.targets")) {
+        logPerformanceSuspend("enable-go-support-in-targets") {
+          val workspaceModel = WorkspaceModel.getInstance(project)
+          workspaceModel.currentSnapshot.entities(ModuleEntity::class.java).forEach { moduleEntity ->
+            moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
+              writeAction {
+                extension.enableGoSupportForModule(module)
+              }
             }
           }
         }
       }
-    }
     }
 
   private suspend fun applyChangesOnWorkspaceModel() = withSubtask(

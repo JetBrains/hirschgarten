@@ -29,8 +29,11 @@
     <extensionPoint name="bspRunHandler"
                     interface="org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler"
                     dynamic="true"/>
-    <extensionPoint name="GoSdkExtension"
-                    interface="org.jetbrains.plugins.bsp.extension.points.GoSdkExtension"
+    <extensionPoint name="goSdkGetterExtension"
+                    interface="org.jetbrains.plugins.bsp.extension.points.GoSdkGetterExtension"
+                    dynamic="true"/>
+    <extensionPoint name="goEntitiesExtension"
+                    interface="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.GoEntitiesExtension"
                     dynamic="true"/>
     <extensionPoint name="bspProjectOpenProcessorExtension"
                     interface="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension"
