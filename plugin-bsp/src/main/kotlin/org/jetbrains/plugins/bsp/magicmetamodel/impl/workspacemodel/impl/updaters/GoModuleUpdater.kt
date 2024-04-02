@@ -16,7 +16,6 @@ internal class GoModuleUpdater(
     val goResourceEntityUpdater = GoResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
     goResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
 
-
     if (!goEntitiesExtensionExists()) {
       error("Go entities extension does not exist.")
     }

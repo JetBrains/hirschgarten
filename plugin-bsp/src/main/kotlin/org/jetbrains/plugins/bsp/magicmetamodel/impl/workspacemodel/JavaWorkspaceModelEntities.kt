@@ -77,9 +77,3 @@ public val IdeaModule.javaModule: JavaModule?
 
 public val IdeaModule.androidAddendum: AndroidAddendum?
   get() = javaModule?.androidAddendum
-
-public data class GoAddendum(
-  var importPath: String? = null,
-  var root: Path? = null,
-  val goDependencies: List<GoModuleDependency>,
-)

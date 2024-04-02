@@ -26,3 +26,9 @@ public data class GoModule(
 
   override fun getModuleName(): String = module.name
 }
+
+public data class GoAddendum(
+  var importPath: String,
+  var root: Path,
+  val goDependencies: List<GoModuleDependency>,
+)

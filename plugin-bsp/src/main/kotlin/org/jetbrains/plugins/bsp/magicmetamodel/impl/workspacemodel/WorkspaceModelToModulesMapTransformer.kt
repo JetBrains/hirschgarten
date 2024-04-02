@@ -96,6 +96,7 @@ public object WorkspaceModelToModulesMapTransformer {
         languageIds = entity.customImlData?.customModuleOptions.orEmpty(),
         associates = entity.getKotlinSettings()?.getAssociates().orEmpty(),
       )
+      // TODO: add support for GoModule
       val module = if (genericModuleInfo.languageIds.includesPython()) {
         PythonModule(
           module = genericModuleInfo,
@@ -104,8 +105,7 @@ public object WorkspaceModelToModulesMapTransformer {
           libraries = libraries.map { PythonLibrary(it.sourceJars) }.toList(),
           sdkInfo = entity.getPythonSdk(),
         )
-      // TODO: add support for Go
-      } else{
+      } else {
         val baseDirContentRoot = entity.getBaseDir()
         JavaModule(
           genericModuleInfo = genericModuleInfo,

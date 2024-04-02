@@ -26,7 +26,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonSdkInf
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
-import java.nio.file.Path
 import kotlin.io.path.Path
 
 // TODO, we can do it better, but for now it should be good enough:
@@ -206,7 +205,7 @@ public data class ModuleState(
   var androidAddendum: AndroidAddendumState? = null,
   var goAddendum: GoAddendumState? = null,
 ) : ConvertableFromState<Module> {
-  public fun toJavaModule(): JavaModule = JavaModule(
+  private fun toJavaModule(): JavaModule = JavaModule(
     genericModuleInfo = module.fromState(),
     baseDirContentRoot = baseDirContentRoot?.fromState(),
     sourceRoots = sourceRoots.map { it.toJavaSourceRoot() },
@@ -219,7 +218,7 @@ public data class ModuleState(
     androidAddendum = androidAddendum?.fromState(),
   )
 
-  public fun toPythonModule(): PythonModule = PythonModule(
+  private fun toPythonModule(): PythonModule = PythonModule(
     module = module.fromState(),
     sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
     libraries = libraries?.map { it.toPythonLibrary() }.orEmpty(),
@@ -227,18 +226,21 @@ public data class ModuleState(
     sdkInfo = sdkInfo?.fromState(),
   )
 
-  public fun toGoModule(): GoModule = GoModule(
-    module = module.fromState(),
-    sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
-    resourceRoots = resourceRoots.map { it.toResourceRoot() },
-    importPath = goAddendum?.importPath ?: "",
-    root = goAddendum?.root ?: Path(""),
-    goDependencies = goAddendum?.goDependencies ?: emptyList(),
-  )
+  private fun toGoModule(): GoModule =
+    GoModule(
+      module = module.fromState(),
+      importPath = goAddendum?.importPath ?: "",
+      root = Path(goAddendum?.root ?: ""),
+      sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
+      resourceRoots = resourceRoots.map { it.toResourceRoot() },
+      goDependencies = goAddendum?.goDependencies?.map { it.fromState() }.orEmpty()
+    )
 
   override fun fromState(): Module =
     if (module.languageIds.includesPython())
       toPythonModule()
+    else if (module.languageIds.contains("go"))
+      toGoModule()
     else
       toJavaModule()
 }
@@ -302,14 +304,24 @@ public data class AndroidAddendumState(
 }
 
 public data class GoAddendumState(
-  var importPath: String? = null,
-  var root: Path? = null,
-  var goDependencies: List<GoModuleDependency> = emptyList(),
+  var importPath: String = "",
+  var root: String = "",
+  var goDependencies: List<GoModuleDependencyState> = emptyList(),
 ) : ConvertableFromState<GoAddendum> {
   override fun fromState(): GoAddendum = GoAddendum(
     importPath = importPath,
-    root = root,
-    goDependencies = goDependencies,
+    root = Path(root),
+    goDependencies = goDependencies.map { it.fromState() },
+  )
+}
+
+public data class GoModuleDependencyState(
+  var importPath: String = "",
+  var root: String = "",
+) : ConvertableFromState<GoModuleDependency> {
+  override fun fromState(): GoModuleDependency = GoModuleDependency(
+    importPath = importPath,
+    root = Path(root),
   )
 }
 
@@ -346,8 +358,13 @@ public fun AndroidAddendum.toState(): AndroidAddendumState = AndroidAddendumStat
 
 public fun GoAddendum.toState(): GoAddendumState = GoAddendumState(
   importPath = importPath,
-  root = root,
-  goDependencies = goDependencies,
+  root = root.toString(),
+  goDependencies = goDependencies.map { it.toState() },
+)
+
+public fun GoModuleDependency.toState(): GoModuleDependencyState = GoModuleDependencyState(
+  importPath = importPath,
+  root = root.toString(),
 )
 
 public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(
