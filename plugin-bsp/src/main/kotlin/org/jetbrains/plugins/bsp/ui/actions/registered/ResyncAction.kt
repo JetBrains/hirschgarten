@@ -12,9 +12,7 @@ import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 public class ResyncAction : SuspendableAction({ BspPluginBundle.message("resync.action.text") }), DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     SyncProjectTask(project).execute(
-      shouldRunInitialSync = true,
       shouldBuildProject = false,
-      shouldRunResync = false,
     )
   }
 
