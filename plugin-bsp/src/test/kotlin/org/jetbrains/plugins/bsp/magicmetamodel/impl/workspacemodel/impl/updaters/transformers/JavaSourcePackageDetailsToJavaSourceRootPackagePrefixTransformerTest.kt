@@ -76,7 +76,7 @@ class JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformerTest {
   }
 
   @Test
-  fun `should return full path as package for source dir being parent for roots`() {
+  fun `should return no package for source dir being parent for roots`() {
     // given
     val sourceDir = URI.create("file:///example/package/")
     val roots = listOf(
@@ -91,11 +91,11 @@ class JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformerTest {
       JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer.transform(javaSourcePackageDetails)
 
     // then
-    packagePrefix shouldBe JavaSourceRootPackagePrefix("example.package")
+    packagePrefix shouldBe JavaSourceRootPackagePrefix("")
   }
 
   @Test
-  fun `should return full path as package for no matching roots`() {
+  fun `should return no package for no matching roots`() {
     // given
     val sourceDir = URI.create("file:///root/dir/example/package/")
     val roots = listOf(
@@ -110,6 +110,6 @@ class JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformerTest {
       JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer.transform(javaSourcePackageDetails)
 
     // then
-    packagePrefix shouldBe JavaSourceRootPackagePrefix("root.dir.example.package")
+    packagePrefix shouldBe JavaSourceRootPackagePrefix("")
   }
 }

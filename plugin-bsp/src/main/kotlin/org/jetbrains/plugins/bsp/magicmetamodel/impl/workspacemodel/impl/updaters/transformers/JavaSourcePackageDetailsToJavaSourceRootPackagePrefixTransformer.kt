@@ -44,6 +44,8 @@ internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer
   private fun removeRootRawPathFromSourceRawPath(sourceDirRawPath: String, sourceRootRawPath: String?): String {
     val rootRawPathToRemove = sourceRootRawPath ?: ""
 
+    if (rootRawPathToRemove.isEmpty()) return ""
+
     return sourceDirRawPath.removePrefix(rootRawPathToRemove)
   }
 
