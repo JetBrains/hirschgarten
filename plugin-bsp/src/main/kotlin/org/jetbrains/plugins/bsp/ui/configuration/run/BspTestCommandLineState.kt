@@ -39,6 +39,8 @@ public class BspTestCommandLineState(
     )
 
     handler.notifyTextAvailable(ServiceMessageBuilder.testsStarted().toString(), ProcessOutputType.STDOUT)
+    // OutputToGeneralTestEventsConverter.MyServiceMessageVisitor.visitServiceMessage ignores the first testingStarted event
+    handler.notifyTextAvailable("\n##teamcity[testingStarted]\n", ProcessOutputType.STDOUT)
     handler.notifyTextAvailable("\n##teamcity[testingStarted]\n", ProcessOutputType.STDOUT)
 
     val actions = createActions(console, handler, executor)
