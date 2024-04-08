@@ -12,6 +12,7 @@ import com.intellij.ui.SimpleTextAttributes
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import javax.swing.Icon
@@ -60,17 +61,21 @@ public class BspProjectViewNodeDecorator(private val project: Project) : Project
   }
 
   private fun decorateIfBspTarget(node: PsiDirectoryNode, data: PresentationData) {
-    if (node.isBspModule()) {
-      data.addIconAndHighlight()
+    when {
+      node.isRootModule() -> data.addIconAndHighlight(node.virtualFile?.name)
+      node.isBspModule() -> data.addIconAndHighlight(data.presentableText)
     }
   }
+
+  private fun PsiDirectoryNode.isRootModule(): Boolean =
+    project.rootDir == virtualFile
 
   private fun PsiDirectoryNode.isBspModule(): Boolean =
     loadedModulesBaseDirectories.contains(virtualFile)
 
-  private fun PresentationData.addIconAndHighlight() {
+  private fun PresentationData.addIconAndHighlight(text: String?) {
     setIcon(buildToolIcon)
-    addText(presentableText, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
+    addText(text, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
   }
 
   private fun PresentationData.removeJavaHackSourceRoot() {
