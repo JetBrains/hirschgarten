@@ -19,59 +19,41 @@ object SearchUtils {
     else -> {
       val parent = currentElement.parent
       val stopAt = fromFunction.ifFalse { currentElement }
-      val (keepSearching, inFunction) = searchInParent(parent, stopAt, processor)
+      val keepSearching = searchInParent(parent, stopAt, processor)
+      val inFunction = parent is StarlarkFunctionDeclaration
       if (keepSearching) searchInFile(parent, processor, inFunction || fromFunction) else Unit
     }
   }
 
   private fun searchInParent(
     parent: PsiElement, stopAt: PsiElement?, processor: Processor<StarlarkElement>
-  ): Pair<Boolean, Boolean> {
-    val keepSearching = when (parent) {
-      is StarlarkFile -> parent.searchInTopLevel(processor, stopAt)
-      is StarlarkFunctionDeclaration -> parent.searchInParameters(processor)
-      is StarlarkForStatement -> parent.searchInLoopVariables(processor)
-      is StarlarkStatementList -> parent.searchInAssignments(processor)
-      else -> true
-    }
-    return Pair(keepSearching, parent is StarlarkFunctionDeclaration)
+  ): Boolean = when (parent) {
+    is StarlarkFile -> parent.searchInTopLevel(processor, stopAt)
+    is StarlarkFunctionDeclaration -> parent.searchInParameters(processor)
+    is StarlarkForStatement -> parent.searchInLoopVariables(processor)
+    is StarlarkStatementList -> parent.searchInAssignments(processor)
+    else -> true
   }
 
   private fun StarlarkFile.searchInTopLevel(
     processor: Processor<StarlarkElement>, stopAt: PsiElement?
-  ): Boolean {
-    for (child in findChildrenByClass(StarlarkElement::class.java)) {
-      val keepSearching = when (child) {
-        stopAt -> break
-        is StarlarkAssignmentStatement -> child.check(processor)
-        is StarlarkFunctionDeclaration -> processor.process(child)
-        else -> true
-      }
-      if (!keepSearching) return false
+  ): Boolean = findChildrenByClass(StarlarkElement::class.java).all {
+    when (it) {
+      stopAt -> false
+      is StarlarkAssignmentStatement -> it.check(processor)
+      is StarlarkFunctionDeclaration -> processor.process(it)
+      else -> true
     }
-    return true
   }
 
-  private fun StarlarkStatementList.searchInAssignments(processor: Processor<StarlarkElement>): Boolean {
-    for (assignment in getAssignments()) {
-      if (!assignment.check(processor)) return false
-    }
-    return true
-  }
+  private fun StarlarkStatementList.searchInAssignments(processor: Processor<StarlarkElement>): Boolean =
+    getAssignments().all { it.check(processor) }
 
-  private fun StarlarkFunctionDeclaration.searchInParameters(processor: Processor<StarlarkElement>): Boolean {
-    for (parameter in getParameters()) {
-      if (!processor.process(parameter)) return false
-    }
-    return true
-  }
+  private fun StarlarkFunctionDeclaration.searchInParameters(processor: Processor<StarlarkElement>): Boolean =
+    getParameters().all { processor.process(it) }
 
-  private fun StarlarkForStatement.searchInLoopVariables(processor: Processor<StarlarkElement>): Boolean {
-    for (loopVariable in getLoopVariables()) {
-      if (!processor.process(loopVariable)) return false
-    }
-    return true
-  }
+  private fun StarlarkForStatement.searchInLoopVariables(processor: Processor<StarlarkElement>): Boolean =
+    getLoopVariables().all { processor.process(it) }
 
   private fun StarlarkAssignmentStatement.check(processor: Processor<StarlarkElement>): Boolean =
     getTargetExpression()?.let { processor.process(it) } ?: true

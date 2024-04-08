@@ -10,7 +10,7 @@ class StarlarkCompletionProcessor(
 ) : Processor<StarlarkElement> {
   override fun process(currentElement: StarlarkElement): Boolean {
     if (currentElement is StarlarkNamedElement && currentElement != inputElement) {
-      currentElement.name?.let { results.put(it, StarlarkLookupElement(currentElement)) }
+      currentElement.name?.let { results[it] = StarlarkLookupElement(currentElement) }
     }
     return true
   }

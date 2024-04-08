@@ -20,7 +20,7 @@ abstract class StarlarkNamedElement(node: ASTNode) : StarlarkBaseElement(node), 
 
   override fun getTextOffset(): Int = getNameNode()?.startOffset ?: super.getTextOffset()
 
-  override fun toString(): String = super.toString() + "('" + getName() + "')"
+  override fun toString(): String = "${super.toString()}('${getName()}')"
 
   fun getNameNode(): ASTNode? = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)
 }
