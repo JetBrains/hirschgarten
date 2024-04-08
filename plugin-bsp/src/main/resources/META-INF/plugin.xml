@@ -71,6 +71,11 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
+
+    <projectService serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"
+                    serviceImplementation="org.jetbrains.plugins.bsp.services.BspBaseProjectDirectories"
+                    overrides="true"/>
+
     <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType" />
     <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType" />
     <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspBuildConfigurationType" />
