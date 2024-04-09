@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.SourcesItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
+import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.net.URI
 import java.nio.file.Path
 
@@ -27,7 +28,7 @@ internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePat
   }
 
   private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> =
-    sourcesItem.roots.orEmpty().map { URI.create(it) }
+    sourcesItem.roots.orEmpty().map { it.safeCastToURI() }
 
   private fun inferRootType(buildTarget: BuildTarget): String =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType

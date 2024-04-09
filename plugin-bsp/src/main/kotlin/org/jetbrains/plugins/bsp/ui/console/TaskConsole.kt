@@ -5,6 +5,7 @@ import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.FilePosition
 import com.intellij.build.events.EventResult
 import com.intellij.build.events.MessageEvent
+import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.FileMessageEventImpl
 import com.intellij.build.events.impl.FinishBuildEventImpl
 import com.intellij.build.events.impl.FinishEventImpl
@@ -16,6 +17,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.building.action.isBuildInProgress
@@ -31,6 +33,8 @@ private data class SubtaskParents(
   val rootTask: Any,
   val parentTask: Any,
 )
+
+private val log = logger<TaskConsole>()
 
 public abstract class TaskConsole(
   private val taskView: BuildProgressListener,
@@ -120,6 +124,9 @@ public abstract class TaskConsole(
     }
 
   private fun doFinishTask(taskId: Any, message: String, result: EventResult) {
+    if (result is FailureResultImpl) {
+      result.failures.forEach { log.error(it.message, it.error) }
+    }
     tasksInProgress.remove(taskId)
     subtaskParentMap.entries.removeAll { it.value.rootTask == taskId }
     val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, result)

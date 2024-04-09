@@ -8,13 +8,12 @@ import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ProjectRootManager
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
-import java.net.URI
 import kotlin.io.path.toPath
 
 internal object SdkUtils {
   suspend fun addJdkIfNeeded(projectName: String, javaHomeUri: String) {
     val jdkName = projectName.projectNameToJdkName(javaHomeUri)
-    val path = URI.create(javaHomeUri).toPath().toString()
+    val path = javaHomeUri.safeCastToURI().toPath().toString()
     val jdk = ExternalSystemJdkProvider.getInstance().createJdk(jdkName, path)
     addSdkIfNeeded(jdk)
   }
