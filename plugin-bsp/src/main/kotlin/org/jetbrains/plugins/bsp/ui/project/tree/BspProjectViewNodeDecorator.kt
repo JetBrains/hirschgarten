@@ -9,30 +9,33 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.ui.SimpleTextAttributes
-import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
-import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import javax.swing.Icon
 
 public class BspProjectViewNodeDecorator(private val project: Project) : ProjectViewNodeDecorator {
-  private var loadedModulesBaseDirectories: Set<VirtualFile> = emptySet()
+  private var loadedModulesBaseDirectories: Set<VirtualFile>? = null
 
-  private lateinit var buildToolIcon: Icon
-
-  init {
+  override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
     if (project.isBspProject) {
+      initStateIfNeeded()
+      decorateForBsp(node, data)
+    }
+  }
+
+  private fun initStateIfNeeded() {
+    if (loadedModulesBaseDirectories == null) {
+      initState()
+    }
+  }
+
+  private fun initState() {
+    loadedModulesBaseDirectories = calculateAllTargetsBaseDirectories()
+
+    val magicMetaModel = MagicMetaModelService.getInstance(project).value
+    magicMetaModel.registerTargetLoadListener {
       loadedModulesBaseDirectories = calculateAllTargetsBaseDirectories()
-
-      val magicMetaModel = MagicMetaModelService.getInstance(project).value
-      magicMetaModel.registerTargetLoadListener {
-        loadedModulesBaseDirectories = calculateAllTargetsBaseDirectories()
-      }
-
-      val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
-      buildToolIcon = assetsExtension.icon
     }
   }
 
@@ -45,12 +48,6 @@ public class BspProjectViewNodeDecorator(private val project: Project) : Project
       .map { virtualFileUrlManager.getOrCreateFromUri(it) }
       .mapNotNull { it.virtualFile }
       .toSet()
-  }
-
-  override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
-    if (project.isBspProject) {
-      decorateForBsp(node, data)
-    }
   }
 
   private fun decorateForBsp(node: ProjectViewNode<*>, data: PresentationData) {
@@ -71,10 +68,10 @@ public class BspProjectViewNodeDecorator(private val project: Project) : Project
     project.rootDir == virtualFile
 
   private fun PsiDirectoryNode.isBspModule(): Boolean =
-    loadedModulesBaseDirectories.contains(virtualFile)
+    loadedModulesBaseDirectories?.contains(virtualFile) == true
 
   private fun PresentationData.addIconAndHighlight(text: String?) {
-    setIcon(buildToolIcon)
+    setIcon(project.assets.icon)
     addText(text, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
   }
 
