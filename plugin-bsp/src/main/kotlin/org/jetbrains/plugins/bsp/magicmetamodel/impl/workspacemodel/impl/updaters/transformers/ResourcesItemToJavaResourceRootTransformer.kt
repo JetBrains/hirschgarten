@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.ResourcesItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
-import java.net.URI
+import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
 import kotlin.io.path.toPath
 
@@ -24,7 +24,7 @@ internal class ResourcesItemToJavaResourceRootTransformer(private val projectBas
 
   private fun toJavaResourceRoot(resourcePath: String, rootType: String) =
     ResourceRoot(
-      resourcePath = URI.create(resourcePath).toPath(),
+      resourcePath = resourcePath.safeCastToURI().toPath(),
       rootType = rootType,
     )
 

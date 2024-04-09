@@ -12,7 +12,7 @@ import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
 import org.jetbrains.plugins.bsp.server.tasks.PythonSdk
-import java.net.URI
+import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import kotlin.io.path.toPath
 
 public interface PythonSdkGetterExtension {
@@ -48,13 +48,13 @@ public class PythonSdkGetter : PythonSdkGetterExtension {
       pythonSdk.name,
       PythonSdkType.getInstance(),
     )
-    sdk.homePath = URI(pythonSdk.interpreterUri).toPath().toString()
+    sdk.homePath = pythonSdk.interpreterUri.safeCastToURI().toPath().toString()
     sdk.versionString // needs to be invoked in order to fetch the version and cache it
     val additionalData = PythonSdkAdditionalData()
     val virtualFiles = pythonSdk.dependencies
       .flatMap { it.sources }
       .mapNotNull {
-        URI.create(it)
+        it.safeCastToURI()
           .toPath()
           .toVirtualFileUrl(virtualFileUrlManager)
           .virtualFile

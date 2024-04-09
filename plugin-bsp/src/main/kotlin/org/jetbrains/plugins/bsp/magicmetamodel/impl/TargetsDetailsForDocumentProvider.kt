@@ -8,7 +8,7 @@ import com.intellij.openapi.diagnostic.trace
 import org.jetbrains.plugins.bsp.magicmetamodel.extensions.allSubdirectoriesSequence
 import org.jetbrains.plugins.bsp.magicmetamodel.extensions.toAbsolutePath
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
-import java.net.URI
+import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -55,7 +55,7 @@ public class TargetsDetailsForDocumentProvider {
   }
 
   private fun mapDocumentIdToAbsolutePath(documentId: TextDocumentIdentifier): Path =
-    URI.create(documentId.uri).toAbsolutePath()
+    documentId.uri.safeCastToURI().toAbsolutePath()
 
   public fun toState(): TargetsDetailsForDocumentProviderState =
     TargetsDetailsForDocumentProviderState(
@@ -91,5 +91,5 @@ private object DocumentIdToTargetsIdsMap {
       .map { Pair(it, sourceItem.target.uri) }
 
   private fun mapSourceItemToPath(sourceItem: SourceItem): Path =
-    URI.create(sourceItem.uri).toAbsolutePath()
+    sourceItem.uri.safeCastToURI().toAbsolutePath()
 }

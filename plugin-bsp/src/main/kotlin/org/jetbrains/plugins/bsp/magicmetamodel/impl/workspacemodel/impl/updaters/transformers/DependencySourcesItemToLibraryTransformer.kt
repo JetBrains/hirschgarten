@@ -2,7 +2,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
-import java.net.URI
+import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import kotlin.io.path.toPath
 
 internal data class DependencySourcesAndJvmClassPaths(
@@ -84,5 +84,5 @@ internal object DependencySourcesItemToLibraryTransformer :
     Library.formatJarString(removeUriFilePrefix(dependencyUri))
 
   private fun removeUriFilePrefix(uri: String): String =
-    URI.create(uri).toPath().toString()
+    uri.safeCastToURI().toPath().toString()
 }
