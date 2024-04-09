@@ -22,7 +22,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.MagicMetaModelImpl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
 import java.nio.file.Path
 
 public data class MagicMetaModelProjectConfig(
@@ -168,8 +167,6 @@ public interface MagicMetaModel {
   public fun clear()
 
   public fun getLibraries(): List<Library>
-
-  public fun getDetailsForTargetId(targetId: BuildTargetId): Module?
 
   public companion object {
     private val log = logger<MagicMetaModel>()
