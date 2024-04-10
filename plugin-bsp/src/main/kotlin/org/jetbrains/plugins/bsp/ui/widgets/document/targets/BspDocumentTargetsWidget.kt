@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
@@ -14,6 +15,7 @@ import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
+import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
@@ -144,4 +146,9 @@ public class BspDocumentTargetsWidgetFactory : StatusBarWidgetFactory {
 
   override fun canBeEnabledOn(statusBar: StatusBar): Boolean =
     true
+}
+
+internal fun Project.updateBspDocumentTargetsWidget() {
+  val statusBarWidgetsManager = service<StatusBarWidgetsManager>()
+  statusBarWidgetsManager.updateWidget(BspDocumentTargetsWidgetFactory())
 }
