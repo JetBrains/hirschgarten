@@ -25,6 +25,7 @@ import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.server.connection.connectionDetailsProvider
 import org.jetbrains.plugins.bsp.server.tasks.SyncProjectTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.ui.widgets.document.targets.updateBspDocumentTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 import kotlin.system.exitProcess
@@ -68,6 +69,7 @@ public class BspStartupActivity : ProjectActivity {
 
   private suspend fun Project.executeEveryTime() {
     registerBspToolWindow(this)
+    updateBspDocumentTargetsWidget()
     RunConfigurationProducersDisabler(this)
   }
 

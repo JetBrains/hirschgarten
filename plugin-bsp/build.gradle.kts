@@ -34,7 +34,7 @@ dependencies {
   testImplementation(libs.kotest)
 }
 
-tasks.runIde{
+tasks.runIde {
   jvmArgs("-Didea.log.trace.categories=" +
     "#org.jetbrains.plugins.bsp," +
     "#org.jetbrains.magicmetamodel.impl.PerformanceLogger")
