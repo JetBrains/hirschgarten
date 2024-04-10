@@ -30,6 +30,10 @@ class IdeProbeTestRunner(workspaceConfig: WorkspaceConfig) extends IdeProbeFixtu
     this(WorkspaceConfig.GitTag(Resource.from(uri), tag))
   }
 
+  def this(path: Path) = {
+    this(WorkspaceConfig.Existing(path))
+  }
+
   val fixture: IntelliJFixture = {
     val wrongVersion = fixtureFromConfig("ideprobe.conf")
     fixtureFromConfig("ideprobe.conf").withVersion(

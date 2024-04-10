@@ -31,7 +31,7 @@ tasks {
       maxFailures.set(2) // Number of failed tests allowed before stopping retries
       failOnPassedAfterRetry.set(false) // If true, the build will fail if tests pass after a retry
       filter {
-        includeClasses.add("*SingleProbeTests")
+        includeClasses.add("*ProbeTests")
       }
     }
   }

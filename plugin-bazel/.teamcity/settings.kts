@@ -5,7 +5,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project
 
 
-version = "2023.11"
+version = "2024.03"
 
 project(IntellijBazel)
 
