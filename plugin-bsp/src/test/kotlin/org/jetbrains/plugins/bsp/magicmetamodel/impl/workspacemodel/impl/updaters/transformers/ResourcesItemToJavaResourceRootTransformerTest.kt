@@ -16,7 +16,7 @@ import kotlin.io.path.Path
 class ResourcesItemToJavaResourceRootTransformerTest {
   private val projectBasePath = Path("").toAbsolutePath()
 
-  private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer(projectBasePath)
+  private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
 
   @Test
   fun `should return no resources roots for no resources items`() {
@@ -290,54 +290,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
   }
 
   @Test
-  fun `should return no resource root if resource items are not in project base path`() {
-    // given
-    val buildTarget = BuildTarget(
-      BuildTargetIdentifier("//target"),
-      emptyList(),
-      emptyList(),
-      listOf(),
-      BuildTargetCapabilities(),
-    )
-
-    val resourceFilePath1 = Files.createTempFile("resource", "File1.txt")
-    resourceFilePath1.toFile().deleteOnExit()
-    val resourceRawUri1 = resourceFilePath1.toUri().toString()
-
-    val resourceFilePath2 = Files.createTempFile("resource", "File2.txt")
-    resourceFilePath2.toFile().deleteOnExit()
-    val resourceRawUri2 = resourceFilePath2.toUri().toString()
-
-    val resourceDirPath3 = Files.createTempDirectory("resourcedir")
-    resourceDirPath3.toFile().deleteOnExit()
-    val resourceDirRawUri3 = resourceDirPath3.toUri().toString()
-
-    val resourcesItem1 = BuildTargetAndResourcesItem(
-      buildTarget = buildTarget,
-      resourcesItem = ResourcesItem(
-        buildTarget.id,
-        listOf(resourceRawUri1, resourceRawUri2),
-      )
-    )
-    val resourcesItem2 = BuildTargetAndResourcesItem(
-      buildTarget = buildTarget,
-      resourcesItem = ResourcesItem(
-        buildTarget.id,
-        listOf(resourceRawUri2, resourceDirRawUri3),
-      )
-    )
-
-    val resourcesItems = listOf(resourcesItem1, resourcesItem2)
-
-    // when
-    val javaResources = resourcesItemToJavaResourceRootTransformer.transform(resourcesItems)
-
-    // then
-    javaResources shouldBe emptyList()
-  }
-
-  @Test
-  fun `should return only resource roots that have resource items in project base path`() {
+  fun `should return resource roots regardless they have resource items in project base path or not`() {
     // given
     val buildTarget = BuildTarget(
       BuildTargetIdentifier("//target"),
@@ -385,6 +338,10 @@ class ResourcesItemToJavaResourceRootTransformerTest {
       rootType = "java-resource",
     )
     val expectedJavaResource2 = ResourceRoot(
+      resourcePath = resourceFilePath2,
+      rootType = "java-resource",
+    )
+    val expectedJavaResource3 = ResourceRoot(
       resourcePath = resourceDirPath3,
       rootType = "java-resource",
     )
@@ -392,6 +349,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     javaResources shouldContainExactlyInAnyOrder listOf(
       expectedJavaResource1,
       expectedJavaResource2,
+      expectedJavaResource3,
     )
   }
 }

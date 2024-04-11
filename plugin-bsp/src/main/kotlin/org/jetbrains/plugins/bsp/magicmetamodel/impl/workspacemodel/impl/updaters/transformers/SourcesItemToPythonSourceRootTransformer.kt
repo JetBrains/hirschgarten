@@ -2,9 +2,8 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
-import java.nio.file.Path
 
-internal class SourcesItemToPythonSourceRootTransformer(private val projectBasePath: Path) :
+internal class SourcesItemToPythonSourceRootTransformer :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, GenericSourceRoot> {
   private val sourceRootType = "python-source"
   private val testSourceRootType = "python-test"
@@ -27,7 +26,6 @@ internal class SourcesItemToPythonSourceRootTransformer(private val projectBaseP
     return SourceItemToSourceRootTransformer
       .transform(inputEntity.sourcesItem.sources)
       .map { toPythonSourceRoot(it, rootType) }
-      .filter { it.sourcePath.isPathInProjectBasePath(projectBasePath) }
   }
 
   private fun inferRootType(buildTarget: BuildTarget): String =

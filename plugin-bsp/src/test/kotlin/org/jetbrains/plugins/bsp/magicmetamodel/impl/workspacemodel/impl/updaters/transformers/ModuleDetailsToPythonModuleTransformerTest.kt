@@ -52,7 +52,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModules = ModuleDetailsToPythonModuleTransformer(
       mapOf(),
       DefaultModuleNameProvider,
-      projectBasePath,
       hasDefaultPythonInterpreter
     ).transform(emptyModulesDetails)
 
@@ -154,7 +153,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModule = ModuleDetailsToPythonModuleTransformer(
       targetsMap,
       DefaultModuleNameProvider,
-      projectBasePath,
       hasDefaultPythonInterpreter
     ).transform(moduleDetails)
 
@@ -349,7 +347,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModules = ModuleDetailsToPythonModuleTransformer(
       targetsMap,
       DefaultModuleNameProvider,
-      projectBasePath,
       hasDefaultPythonInterpreter
     ).transform(modulesDetails)
 
@@ -526,7 +523,6 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModules = ModuleDetailsToPythonModuleTransformer(
       mapOf(),
       DefaultModuleNameProvider,
-      projectBasePath,
       hasDefaultPythonInterpreter
     ).transform(modulesDetails)
 
