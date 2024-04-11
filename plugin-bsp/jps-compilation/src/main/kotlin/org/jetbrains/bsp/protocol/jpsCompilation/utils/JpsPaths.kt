@@ -19,5 +19,5 @@ public object JpsPaths {
       .resolve(moduleName)
 
   public fun getJpsImlModulesPath(projectBasePath: Path): Path =
-    projectBasePath.resolve(".jps-project-model").resolve("modules")
+    projectBasePath.resolve(".idea").resolve("modules")
 }
