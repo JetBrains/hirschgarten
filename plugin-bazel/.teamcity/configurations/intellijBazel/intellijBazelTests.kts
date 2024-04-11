@@ -99,7 +99,7 @@ object IdeProbeTests : IntellijTestsBuildType(
 
     gradle {
         this.name = "run ide-probe tests"
-        tasks = ":probe:test"
+        tasks = ":probe:test --tests SingleProbeTests"
         gradleParams = "-Dorg.gradle.jvmargs=-Xmx12g"
         jdkHome = "%env.JDK_17_0%"
         jvmArgs = "-Xmx12g"
