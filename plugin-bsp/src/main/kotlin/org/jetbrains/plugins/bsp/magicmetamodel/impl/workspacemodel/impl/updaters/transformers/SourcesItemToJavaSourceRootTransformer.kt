@@ -5,14 +5,13 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.net.URI
-import java.nio.file.Path
 
 internal data class BuildTargetAndSourceItem(
   val buildTarget: BuildTarget,
   val sourcesItem: SourcesItem,
 )
 
-internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePath: Path) :
+internal class SourcesItemToJavaSourceRootTransformer :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
   private val sourceRootType = "java-source"
   private val testSourceRootType = "java-test"
@@ -24,7 +23,6 @@ internal class SourcesItemToJavaSourceRootTransformer(private val projectBasePat
     return SourceItemToSourceRootTransformer
       .transform(inputEntity.sourcesItem.sources)
       .map { toJavaSourceRoot(it, sourceRoots, rootType) }
-      .filter { it.sourcePath.isPathInProjectBasePath(projectBasePath) }
   }
 
   private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> =

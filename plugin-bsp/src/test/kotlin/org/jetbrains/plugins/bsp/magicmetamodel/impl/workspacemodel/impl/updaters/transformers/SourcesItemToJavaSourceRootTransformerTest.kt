@@ -20,7 +20,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
   private val projectBasePath = Path("")
   private val projectBasePathURIStr = projectBasePath.toUri().toString()
 
-  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer(projectBasePath)
+  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer()
 
   @Test
   fun `should return no sources roots for no sources items`() {
@@ -309,73 +309,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
   }
 
   @Test
-  fun `should return sources root if source items are not in project base path`() {
-    // given
-    val rootDir = "file:///var/tmp/root/dir"
-    val anotherRootDir = "file:///var/tmp/another/root/dir"
-
-    val sourceItem1 = SourceItem(
-      "$rootDir/example/package/File1.java",
-      SourceItemKind.FILE,
-      false,
-    )
-    val sourceItem2 = SourceItem(
-      "$rootDir/example/package/File2.java",
-      SourceItemKind.FILE,
-      false,
-    )
-    val sourceItem3 = SourceItem(
-      "$anotherRootDir/another/example/package/",
-      SourceItemKind.DIRECTORY,
-      false,
-    )
-    val sourceRoots = listOf(
-      rootDir,
-      anotherRootDir,
-    )
-
-    val buildTargetAndSourceItem1 = BuildTargetAndSourceItem(
-      buildTarget = BuildTarget(
-        BuildTargetIdentifier("target"),
-        listOf("library"),
-        listOf("java"),
-        emptyList(),
-        BuildTargetCapabilities(),
-      ),
-      sourcesItem = SourcesItem(
-        BuildTargetIdentifier("target"),
-        listOf(sourceItem1),
-      ).also {
-        it.roots = sourceRoots
-      },
-    )
-    val buildTargetAndSourceItem2 = BuildTargetAndSourceItem(
-      buildTarget = BuildTarget(
-        BuildTargetIdentifier("target"),
-        listOf("library"),
-        listOf("java"),
-        emptyList(),
-        BuildTargetCapabilities(),
-      ),
-      sourcesItem = SourcesItem(
-        BuildTargetIdentifier("target"),
-        listOf(sourceItem2, sourceItem3),
-      ).also {
-        it.roots = sourceRoots
-      },
-    )
-
-    val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
-
-    // when
-    val javaSources = sourcesItemToJavaSourceRootTransformer.transform(buildTargetAndSourceItems)
-
-    // then
-    javaSources shouldBe emptyList()
-  }
-
-  @Test
-  fun `should return only source roots that have source items in project base path`() {
+  fun `should return source roots regardless they have source items in project base path or not`() {
     // given
     val rootDir = "${projectBasePathURIStr}root/dir"
     val anotherRootDir = "file:///var/tmp/another/root/dir"
@@ -444,11 +378,17 @@ class SourcesItemToJavaSourceRootTransformerTest {
       rootType = "java-source",
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
+      sourcePath = URI.create("$anotherRootDir/example/package/File2.java").toPath(),
+      generated = false,
+      packagePrefix = "example.package",
+      rootType = "java-source",
+    )
+    val expectedJavaSourceRoot3 = JavaSourceRoot(
       sourcePath = URI.create("$rootDir/another/example/package/").toPath(),
       generated = false,
       packagePrefix = "another.example.package",
       rootType = "java-source",
     )
-    javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2)
+    javaSources shouldContainExactlyInAnyOrder listOf(expectedJavaSourceRoot1, expectedJavaSourceRoot2, expectedJavaSourceRoot3)
   }
 }

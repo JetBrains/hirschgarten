@@ -9,19 +9,17 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModul
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonSdkInfo
-import java.nio.file.Path
 
 internal class ModuleDetailsToPythonModuleTransformer(
   targetsMap: Map<BuildTargetId, BuildTargetInfo>,
   moduleNameProvider: ModuleNameProvider,
-  projectBasePath: Path,
   private val hasDefaultPythonInterpreter: Boolean,
 ) : ModuleDetailsToModuleTransformer<PythonModule>(targetsMap, moduleNameProvider) {
   override val type = "PYTHON_MODULE"
 
-  private val sourcesItemToPythonSourceRootTransformer = SourcesItemToPythonSourceRootTransformer(projectBasePath)
+  private val sourcesItemToPythonSourceRootTransformer = SourcesItemToPythonSourceRootTransformer()
   private val resourcesItemToPythonResourceRootTransformer =
-    ResourcesItemToPythonResourceRootTransformer(projectBasePath)
+    ResourcesItemToPythonResourceRootTransformer()
 
   override fun transform(inputEntity: ModuleDetails): PythonModule =
     PythonModule(
