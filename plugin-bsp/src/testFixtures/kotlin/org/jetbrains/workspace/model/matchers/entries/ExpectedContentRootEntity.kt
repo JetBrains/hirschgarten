@@ -19,11 +19,12 @@ public infix fun ContentRootEntity.shouldBeEqual(expected: ExpectedContentRootEn
 
 public infix fun Collection<ContentRootEntity>.shouldContainExactlyInAnyOrder(
   expectedValues: Collection<ExpectedContentRootEntity>,
-): Unit =
+): Unit {
   this.shouldContainExactlyInAnyOrder(
     assertion = { actual, expected -> validateContentRootEntity(actual, expected) },
     expectedValues = expectedValues,
   )
+}
 
 private fun validateContentRootEntity(
   actual: ContentRootEntity,

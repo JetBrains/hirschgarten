@@ -1,17 +1,15 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.intellij.tasks.BuildSearchableOptionsTask
-import org.jetbrains.intellij.tasks.PublishPluginTask
-import org.jetbrains.intellij.tasks.RunIdeTask
-import org.jetbrains.intellij.tasks.RunPluginVerifierTask.FailureLevel
-import org.jetbrains.intellij.tasks.VerifyPluginTask
+import org.jetbrains.intellij.platform.gradle.Constants
+import org.jetbrains.intellij.platform.gradle.extensions.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 
 plugins {
   // gradle-intellij-plugin - read more: https://github.com/JetBrains/gradle-intellij-plugin
   alias(libs.plugins.intellij)
   // gradle-changelog-plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
   alias(libs.plugins.changelog)
-
+  id("java-test-fixtures")
   id("intellijbsp.kotlin-conventions")
 }
 
@@ -25,13 +23,24 @@ dependencies {
   implementation(project(":jps-compilation"))
   implementation(project(":protocol"))
   implementation(project(":workspacemodel"))
-  testImplementation(project(":test-utils"))
   implementation(libs.bsp4j) {
     exclude(group = "com.google.guava", "guava")
   }
   implementation(libs.gson)
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
+  testFixturesImplementation(libs.junitJupiter)
+  testFixturesImplementation(libs.kotest)
+
+  intellijPlatform {
+    intellijIdeaCommunity(Platform.version)
+    plugins(Platform.plugins)
+    bundledPlugins(Platform.bundledPlugins)
+
+    instrumentationTools()
+    testFramework(TestFrameworkType.Plugin.Java)
+    testFramework(TestFrameworkType.Platform.JUnit5)
+  }
 }
 
 tasks.runIde {
@@ -42,13 +51,55 @@ tasks.runIde {
 
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
-intellij {
-  pluginName.set(Plugin.name)
-  version.set(Platform.version)
-  type.set(Platform.type)
-  downloadSources.set(Platform.downloadSources)
-  updateSinceUntilBuild.set(true)
-  plugins.set(Platform.plugins)
+intellijPlatform {
+  pluginConfiguration {
+    name = Plugin.name
+    ideaVersion {
+      sinceBuild = Plugin.sinceBuild
+      untilBuild = Plugin.untilBuild
+    }
+
+    // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
+    description = File(projectDir, "README.md").readText().lines().run {
+      val start = "<!-- Plugin description -->"
+      val end = "<!-- Plugin description end -->"
+
+      if (!containsAll(listOf(start, end))) {
+        throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
+      }
+      subList(indexOf(start) + 1, indexOf(end))
+    }.joinToString("\n").run { markdownToHTML(this) }
+
+    // Get the latest available change notes from the changelog file
+    changeNotes = provider { changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML) }
+  }
+
+  publishing {
+    token = provider { myToken }
+    // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
+    // Specify pre-release label to publish the plugin in a custom Release Channel. Read more:
+    // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
+    // Release channel is set via command-line param "releaseChannel"
+    // Marketplace token is set via command-line parm "myToken"
+    // Example command "./gradlew publishPlugin -PmyToken="perm:YOUR_TOKEN -PreleaseChannel=nightly"
+    channels = provider { listOf(releaseChannel) }
+  }
+
+  verifyPlugin {
+    ides {
+      recommended()
+    }
+    failureLevel = setOf(
+      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+      VerifyPluginTask.FailureLevel.NOT_DYNAMIC
+    )
+  }
+}
+
+configurations {
+  getByName(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME) {
+    extendsFrom(getByName(Constants.Configurations.INTELLIJ_PLATFORM_TEST_DEPENDENCIES))
+  }
 }
 
 // Configure gradle-changelog-plugin plugin.
@@ -69,74 +120,10 @@ allprojects {
   }
 }
 
-subprojects {
-  apply(plugin = "org.jetbrains.intellij")
-
-  intellij {
-    version.set(Platform.version)
-  }
-
-  tasks.withType(PublishPluginTask::class.java) {
-    enabled = false
-  }
-
-  tasks.withType(VerifyPluginTask::class.java) {
-    enabled = false
-  }
-
-  tasks.withType(BuildSearchableOptionsTask::class.java) {
-    enabled = false
-  }
-
-  tasks.withType(RunIdeTask::class.java) {
-    enabled = false
-  }
-}
 repositories {
   mavenCentral()
-}
-
-tasks {
-  patchPluginXml {
-    version.set(Plugin.version)
-    sinceBuild.set(Plugin.sinceBuild)
-    untilBuild.set(Plugin.untilBuild)
-
-    // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
-    pluginDescription.set(
-      File(projectDir, "README.md").readText().lines().run {
-        val start = "<!-- Plugin description -->"
-        val end = "<!-- Plugin description end -->"
-
-        if (!containsAll(listOf(start, end))) {
-          throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
-        }
-        subList(indexOf(start) + 1, indexOf(end))
-      }.joinToString("\n").run { markdownToHTML(this) }
-    )
-
-    // Get the latest available change notes from the changelog file
-    changeNotes.set(provider { changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML) })
-  }
-
-  runPluginVerifier {
-    ideVersions.set(pluginVerifierIdeVersions.split(',').map(String::trim).filter(String::isNotEmpty))
-    failureLevel.set(setOf(
-      FailureLevel.COMPATIBILITY_PROBLEMS,
-      FailureLevel.NOT_DYNAMIC
-    ))
-  }
-
-  publishPlugin {
-    dependsOn("patchChangelog")
-    token.set(provider { myToken })
-    // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
-    // Specify pre-release label to publish the plugin in a custom Release Channel. Read more:
-    // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-    // Release channel is set via command-line param "releaseChannel"
-    // Marketplace token is set via command-line parm "myToken"
-    // Example command "./gradlew publishPlugin -PmyToken="perm:YOUR_TOKEN -PreleaseChannel=nightly"
-    channels.set(provider { listOf(releaseChannel) })
+  intellijPlatform {
+    defaultRepositories()
   }
 }
 
