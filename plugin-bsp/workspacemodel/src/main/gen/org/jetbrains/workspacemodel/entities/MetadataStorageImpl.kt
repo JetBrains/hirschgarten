@@ -13,6 +13,7 @@ public object MetadataStorageImpl : MetadataStorageBase() {
   override fun initializeMetadata() {
     val primitiveTypeStringNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "String")
     val primitiveTypeListNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "List")
+    val primitiveTypeStringNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = true, type = "String")
 
     var typeMetadata: StorageTypeMetadata
 
@@ -127,6 +128,14 @@ public object MetadataStorageImpl : MetadataStorageBase() {
               )
             ), primitive = primitiveTypeListNotNullable
           ),
+          withDefault = false
+        ),
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
+          name = "resourceJavaPackage",
+          valueType = primitiveTypeStringNullable,
           withDefault = false
         ),
         OwnPropertyMetadata(
@@ -294,7 +303,7 @@ public object MetadataStorageImpl : MetadataStorageBase() {
   }
 
   override fun initializeMetadataHash() {
-    addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.AndroidAddendumEntity", metadataHash = 2118321023)
+    addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.AndroidAddendumEntity", metadataHash = -1752932543)
     addMetadataHash(
       typeFqn = "org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity",
       metadataHash = -565268675

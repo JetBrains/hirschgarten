@@ -29,6 +29,7 @@ internal class AndroidAddendumEntityUpdater(
         resourceFolders = entityToAdd.resourceFolders.map { it.toVirtualFileUrl() },
       ) {
         this.manifest = entityToAdd.manifest?.toVirtualFileUrl()
+        this.resourceJavaPackage = entityToAdd.resourceJavaPackage
         this.module = parentModuleEntity
       }
     }

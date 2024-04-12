@@ -64,6 +64,12 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
       return dataSource.resourceFolders
     }
 
+  override val resourceJavaPackage: String?
+    get() {
+      readField("resourceJavaPackage")
+      return dataSource.resourceJavaPackage
+    }
+
   override val module: ModuleEntity
     get() = snapshot.extractOneToOneParent(MODULE_CONNECTION_ID, this)!!
 
@@ -153,6 +159,8 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
       if (this.manifest != dataSource?.manifest) this.manifest = dataSource.manifest
       if (this.resourceFolders != dataSource.resourceFolders) this.resourceFolders =
         dataSource.resourceFolders.toMutableList()
+      if (this.resourceJavaPackage != dataSource?.resourceJavaPackage) this.resourceJavaPackage =
+        dataSource.resourceJavaPackage
       updateChildToParentReferences(parents)
     }
 
@@ -215,6 +223,14 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
         resourceFoldersUpdater.invoke(value)
       }
 
+    override var resourceJavaPackage: String?
+      get() = getEntityData().resourceJavaPackage
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).resourceJavaPackage = value
+        changedProperty.add("resourceJavaPackage")
+      }
+
     override var module: ModuleEntity
       get() {
         val _diff = diff
@@ -259,6 +275,7 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
   public lateinit var androidTargetType: AndroidTargetType
   public var manifest: VirtualFileUrl? = null
   public lateinit var resourceFolders: MutableList<VirtualFileUrl>
+  public var resourceJavaPackage: String? = null
 
   internal fun isAndroidSdkNameInitialized(): Boolean = ::androidSdkName.isInitialized
   internal fun isAndroidTargetTypeInitialized(): Boolean = ::androidTargetType.isInitialized
@@ -307,6 +324,7 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
   override fun createDetachedEntity(parents: List<WorkspaceEntity>): WorkspaceEntity {
     return AndroidAddendumEntity(androidSdkName, androidTargetType, resourceFolders, entitySource) {
       this.manifest = this@AndroidAddendumEntityData.manifest
+      this.resourceJavaPackage = this@AndroidAddendumEntityData.resourceJavaPackage
       parents.filterIsInstance<ModuleEntity>().singleOrNull()?.let { this.module = it }
     }
   }
@@ -328,6 +346,7 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     if (this.androidTargetType != other.androidTargetType) return false
     if (this.manifest != other.manifest) return false
     if (this.resourceFolders != other.resourceFolders) return false
+    if (this.resourceJavaPackage != other.resourceJavaPackage) return false
     return true
   }
 
@@ -341,6 +360,7 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     if (this.androidTargetType != other.androidTargetType) return false
     if (this.manifest != other.manifest) return false
     if (this.resourceFolders != other.resourceFolders) return false
+    if (this.resourceJavaPackage != other.resourceJavaPackage) return false
     return true
   }
 
@@ -350,6 +370,7 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     result = 31 * result + androidTargetType.hashCode()
     result = 31 * result + manifest.hashCode()
     result = 31 * result + resourceFolders.hashCode()
+    result = 31 * result + resourceJavaPackage.hashCode()
     return result
   }
 
@@ -359,6 +380,7 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     result = 31 * result + androidTargetType.hashCode()
     result = 31 * result + manifest.hashCode()
     result = 31 * result + resourceFolders.hashCode()
+    result = 31 * result + resourceJavaPackage.hashCode()
     return result
   }
 }

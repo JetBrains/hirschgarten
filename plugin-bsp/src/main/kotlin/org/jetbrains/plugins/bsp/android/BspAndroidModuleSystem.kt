@@ -25,6 +25,7 @@ import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
+import org.jetbrains.workspacemodel.entities.androidAddendumEntity
 import java.nio.file.Path
 
 public class BspAndroidModuleSystem(override val module: Module) : AndroidModuleSystem,
@@ -87,7 +88,9 @@ public class BspAndroidModuleSystem(override val module: Module) : AndroidModule
 
   override fun getManifestOverrides(): ManifestOverrides = ManifestOverrides()
 
-  override fun getPackageName(): String? = getPackageName(module)
+  // Get the resource package from BSP, fallback to parsing the manifest otherwise.
+  override fun getPackageName(): String? =
+    module.moduleEntity?.androidAddendumEntity?.resourceJavaPackage ?: getPackageName(module)
 
   override fun getResolveScope(scopeType: ScopeType): GlobalSearchScope =
     module.getModuleWithDependenciesAndLibrariesScope(false)
