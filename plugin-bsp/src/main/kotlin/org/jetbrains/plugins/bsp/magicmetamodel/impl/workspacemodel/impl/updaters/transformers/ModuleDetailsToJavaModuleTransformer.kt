@@ -143,6 +143,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         androidTargetType = androidTargetType,
         manifest = manifest?.safeCastToURI()?.toPath(),
         resourceFolders = resourceFolders.map { it.safeCastToURI().toPath() },
+        resourceJavaPackage = resourceJavaPackage,
       )
     }
   }

@@ -21,6 +21,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
   public val androidTargetType: AndroidTargetType
   public val manifest: VirtualFileUrl?
   public val resourceFolders: List<VirtualFileUrl>
+  public val resourceJavaPackage: String?
   public val module: ModuleEntity
 
   //region generated code
@@ -31,6 +32,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
     override var androidTargetType: AndroidTargetType
     override var manifest: VirtualFileUrl?
     override var resourceFolders: MutableList<VirtualFileUrl>
+    override var resourceJavaPackage: String?
     override var module: ModuleEntity
   }
 

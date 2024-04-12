@@ -157,6 +157,7 @@ public object WorkspaceModelToModulesMapTransformer {
         androidTargetType = androidTargetType,
         manifest = manifest?.toPath(),
         resourceFolders = resourceFolders.map { it.toPath() },
+        resourceJavaPackage = resourceJavaPackage,
       )
     }
   }
