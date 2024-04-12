@@ -1,6 +1,6 @@
 plugins {
   id("intellijbsp.kotlin-conventions")
-  alias(libs.plugins.intellij)
+  id("org.jetbrains.intellij.platform.base")
 }
 
 tasks {
@@ -9,8 +9,20 @@ tasks {
   }
 }
 
-intellij {
-  plugins.set(Platform.plugins)
+dependencies {
+  intellijPlatform {
+    intellijIdeaCommunity(Platform.version)
+
+    plugins(Platform.plugins)
+    bundledPlugins(Platform.bundledPlugins)
+    instrumentationTools()
+  }
+}
+
+repositories {
+  intellijPlatform {
+    defaultRepositories()
+  }
 }
 
 kotlin {

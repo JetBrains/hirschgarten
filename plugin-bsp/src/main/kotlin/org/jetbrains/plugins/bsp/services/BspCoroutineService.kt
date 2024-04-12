@@ -12,12 +12,12 @@ import org.jetbrains.annotations.ApiStatus
 
 @Service(Service.Level.PROJECT)
 @ApiStatus.Internal
-internal class BspCoroutineService(private val cs: CoroutineScope) {
-  fun start(callable: suspend () -> Unit): Job = cs.launch { callable() }
-  fun <T> startAsync(callable: suspend () -> T): Deferred<T> = cs.async { callable() }
+public class BspCoroutineService(private val cs: CoroutineScope) {
+  public fun start(callable: suspend () -> Unit): Job = cs.launch { callable() }
+  public fun <T> startAsync(callable: suspend () -> T): Deferred<T> = cs.async { callable() }
 
-  companion object {
+  public companion object {
     @JvmStatic
-    fun getInstance(project: Project) = project.service<BspCoroutineService>()
+    public fun getInstance(project: Project): BspCoroutineService = project.service<BspCoroutineService>()
   }
 }
