@@ -42,6 +42,9 @@ open class MockClient : BuildClient {
   val didChangeBuildTargetNotifications: List<DidChangeBuildTarget>
     get() = didChangeBuildTarget
 
+  fun clearDiagnostics() {
+    publishDiagnostics.clear()
+  }
   override fun onBuildShowMessage(params: ShowMessageParams) {
     showMessage.add(params)
   }

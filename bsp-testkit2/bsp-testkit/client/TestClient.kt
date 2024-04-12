@@ -154,6 +154,7 @@ class TestClient(
   fun testCompile(timeout: Duration, params: CompileParams, expectedResult: CompileResult, expectedDiagnostics: List<PublishDiagnosticsParams>) {
     val transformedParams = applyJsonTransform(params)
     test(timeout) { session, _ ->
+      session.client.clearDiagnostics()
       val result = session.server.buildTargetCompile(transformedParams).await()
       assertIterableEquals(expectedDiagnostics, session.client.publishDiagnosticsNotifications)
       assertJsonEquals(expectedResult, result)
