@@ -39,7 +39,9 @@ internal class JavaModuleWithSourcesUpdater(
       // TODO https://youtrack.jetbrains.com/issue/BAZEL-664
     } else {
       val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
-      entityToAdd.moduleLevelLibraries?.let { libraryEntityUpdater.addEntries(it, moduleEntity) }
+
+      // all module-level libraries are treated as project-level libraries for memory efficiency
+      entityToAdd.moduleLevelLibraries?.let { libraryEntityUpdater.addEntries(it) }
 
       val javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
       javaSourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)
@@ -90,9 +92,8 @@ internal class JavaModuleWithSourcesUpdater(
     }
     entityToAdd.scalaAddendum?.also { addendum ->
       returnDependencies.add(
-        toModuleDependencyItemLibraryDependency(
-          IntermediateLibraryDependency(addendum.scalaSdkName, true),
-          entityToAdd.genericModuleInfo.name
+        toLibraryDependency(
+          IntermediateLibraryDependency(addendum.scalaSdkName, true)
         )
       )
     }

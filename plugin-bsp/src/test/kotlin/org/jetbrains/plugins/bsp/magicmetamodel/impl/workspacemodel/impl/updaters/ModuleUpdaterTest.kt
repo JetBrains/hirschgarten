@@ -92,7 +92,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
           LibraryDependency(
             library = LibraryId(
               name = "lib1",
-              tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+              tableId = LibraryTableId.ProjectLibraryTableId,
             ),
             exported = true,
             scope = DependencyScope.COMPILE,
@@ -100,7 +100,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
           LibraryDependency(
             library = LibraryId(
               name = "lib2",
-              tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+              tableId = LibraryTableId.ProjectLibraryTableId,
             ),
             exported = true,
             scope = DependencyScope.COMPILE,
@@ -184,7 +184,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
           LibraryDependency(
             library = LibraryId(
               name = "lib1",
-              tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+              tableId = LibraryTableId.ProjectLibraryTableId,
             ),
             exported = true,
             scope = DependencyScope.COMPILE,
@@ -192,7 +192,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
           LibraryDependency(
             library = LibraryId(
               name = "lib2",
-              tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module1")),
+              tableId = LibraryTableId.ProjectLibraryTableId,
             ),
             exported = true,
             scope = DependencyScope.COMPILE,
@@ -218,7 +218,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
           LibraryDependency(
             library = LibraryId(
               name = "lib1",
-              tableId = LibraryTableId.ModuleLibraryTableId(ModuleId("module2")),
+              tableId = LibraryTableId.ProjectLibraryTableId,
             ),
             exported = true,
             scope = DependencyScope.COMPILE,

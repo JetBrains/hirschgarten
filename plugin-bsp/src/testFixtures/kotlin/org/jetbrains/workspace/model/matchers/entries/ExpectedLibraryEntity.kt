@@ -25,4 +25,5 @@ private fun validateLibraryEntity(
   actual.name shouldBe expected.libraryEntity.name
   actual.roots shouldContainExactlyInAnyOrder expected.libraryEntity.roots
   actual.excludedRoots shouldContainExactlyInAnyOrder expected.libraryEntity.excludedRoots
+  actual.entitySource.virtualFileUrl shouldBe expected.libraryEntity.entitySource.virtualFileUrl
 }
