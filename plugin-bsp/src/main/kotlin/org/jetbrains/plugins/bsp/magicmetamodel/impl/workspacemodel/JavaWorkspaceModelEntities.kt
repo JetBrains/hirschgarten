@@ -64,4 +64,5 @@ public data class AndroidAddendum(
   val manifest: Path?,
   val resourceFolders: List<Path>,
   val resourceJavaPackage: String?,
+  val assetFolders: List<Path>,
 ) : WorkspaceModelEntity()

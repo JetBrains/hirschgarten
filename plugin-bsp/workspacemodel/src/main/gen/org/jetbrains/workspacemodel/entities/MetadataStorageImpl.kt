@@ -142,6 +142,21 @@ public object MetadataStorageImpl : MetadataStorageBase() {
           isComputable = false,
           isKey = false,
           isOpen = false,
+          name = "assetFolders",
+          valueType = ValueTypeMetadata.ParameterizedType(
+            generics = listOf(
+              ValueTypeMetadata.SimpleType.CustomType(
+                isNullable = false,
+                typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl")
+              )
+            ), primitive = primitiveTypeListNotNullable
+          ),
+          withDefault = false
+        ),
+        OwnPropertyMetadata(
+          isComputable = false,
+          isKey = false,
+          isOpen = false,
           name = "module",
           valueType = ValueTypeMetadata.EntityReference(
             connectionType = ConnectionId.ConnectionType.ONE_TO_ONE,
@@ -303,7 +318,7 @@ public object MetadataStorageImpl : MetadataStorageBase() {
   }
 
   override fun initializeMetadataHash() {
-    addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.AndroidAddendumEntity", metadataHash = -1752932543)
+    addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.AndroidAddendumEntity", metadataHash = -462884073)
     addMetadataHash(
       typeFqn = "org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity",
       metadataHash = -565268675

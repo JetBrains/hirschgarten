@@ -22,6 +22,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
   public val manifest: VirtualFileUrl?
   public val resourceFolders: List<VirtualFileUrl>
   public val resourceJavaPackage: String?
+  public val assetFolders: List<VirtualFileUrl>
   public val module: ModuleEntity
 
   //region generated code
@@ -33,6 +34,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
     override var manifest: VirtualFileUrl?
     override var resourceFolders: MutableList<VirtualFileUrl>
     override var resourceJavaPackage: String?
+    override var assetFolders: MutableList<VirtualFileUrl>
     override var module: ModuleEntity
   }
 
@@ -44,6 +46,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
       androidSdkName: String,
       androidTargetType: AndroidTargetType,
       resourceFolders: List<VirtualFileUrl>,
+      assetFolders: List<VirtualFileUrl>,
       entitySource: EntitySource,
       init: (Builder.() -> Unit)? = null,
     ): AndroidAddendumEntity {
@@ -51,6 +54,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
       builder.androidSdkName = androidSdkName
       builder.androidTargetType = androidTargetType
       builder.resourceFolders = resourceFolders.toMutableWorkspaceList()
+      builder.assetFolders = assetFolders.toMutableWorkspaceList()
       builder.entitySource = entitySource
       init?.invoke(builder)
       return builder
