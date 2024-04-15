@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.flow.open
 
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bsp.protocol.BSP_CONNECTION_DIR
@@ -35,6 +36,8 @@ public interface BspProjectOpenProcessorExtension : WithBuildToolId {
   }
 }
 
+private val log = logger<BspProjectOpenProcessor>()
+
 internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(bspBuildToolId) {
   override val name: String = BspPluginBundle.message("plugin.name")
 
@@ -42,8 +45,10 @@ internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(bspBuildToo
 
   override fun canOpenProject(file: VirtualFile): Boolean {
     val buildToolIds = file.collectBuildToolIdsFromConnectionFiles()
+    log.debug("Detected build tool ids: $buildToolIds")
 
     return buildToolIds.any { it.shouldBspProjectOpenProcessorBeAvailable() }
+      .also { log.debug("Will BspProjectOpenProcessor be available: $it") }
   }
 
   private fun VirtualFile.collectBuildToolIdsFromConnectionFiles(): List<BuildToolId> =

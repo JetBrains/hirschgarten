@@ -4,6 +4,8 @@ import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.application.AppUIExecutor
+import com.intellij.openapi.diagnostic.debug
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.util.io.toNioPathOrNull
@@ -44,6 +46,8 @@ private class BspBenchmarkConnectionFileProvider(
     bspConnectionDetails
 }
 
+private val log = logger<BspStartupActivity>()
+
 /**
  * Runs actions after the project has started up and the index is up-to-date.
  *
@@ -58,6 +62,7 @@ public class BspStartupActivity : ProjectActivity {
   }
 
   private suspend fun Project.executeForBspProject() {
+    log.info("Executing BSP startup activity for project: $this")
     executeEveryTime()
 
     if (!isBspProjectInitialized) {
@@ -68,17 +73,20 @@ public class BspStartupActivity : ProjectActivity {
   }
 
   private suspend fun Project.executeEveryTime() {
+    log.debug("Executing BSP startup activities for every opening")
     registerBspToolWindow(this)
     updateBspDocumentTargetsWidget()
     RunConfigurationProducersDisabler(this)
   }
 
   private suspend fun Project.executeForNewProject() {
+    log.debug("Executing BSP startup activities only for new project")
     try {
       runSync(this)
       isBspProjectInitialized = true
     } catch (e: Exception) {
       val bspSyncConsole = BspConsoleService.getInstance(this).bspSyncConsole
+      log.info("BSP sync has failed", e)
       bspSyncConsole.startTask(
         taskId = "bsp-pre-import",
         title = BspPluginBundle.message("console.task.pre.import.title"),
@@ -93,6 +101,7 @@ public class BspStartupActivity : ProjectActivity {
   }
 
   private suspend fun runSync(project: Project) {
+    log.info("Running BSP sync")
     val connectionDetailsProviderExtension =
       if (isBenchmark()) benchmarkConnectionFileProvider(project)
       else project.connectionDetailsProvider
@@ -100,13 +109,17 @@ public class BspStartupActivity : ProjectActivity {
     project.connection = DefaultBspConnection(project, connectionDetailsProviderExtension)
 
     val wasFirstOpeningSuccessful = connectionDetailsProviderExtension.onFirstOpening(project, project.rootDir)
+    log.debug("Was onFirstOpening successful: $wasFirstOpeningSuccessful")
 
     if (wasFirstOpeningSuccessful) {
-      if (project.isTrusted())
+      if (project.isTrusted()) {
+        log.info("Running BSP sync task")
         SyncProjectTask(project).execute(
           shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
         )
+      }
     } else {
+      log.info("Cancelling BSP sync. Closing the project window")
       // TODO https://youtrack.jetbrains.com/issue/BAZEL-623
       AppUIExecutor.onUiThread().execute {
         CloseProjectWindowHelper().windowClosing(project)
@@ -128,6 +141,7 @@ public class BspStartupActivity : ProjectActivity {
   }
 
   private fun Project.postActivity() {
+    log.info("Executing BSP startup activity")
     BspWorkspace.getInstance(this).initialize()
   }
 }
