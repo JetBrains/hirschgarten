@@ -1,14 +1,11 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspSyncStatusService
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.server.connection.connection
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 
@@ -19,6 +16,7 @@ private val log = logger<SyncProjectTask>()
 public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Project", project) {
   public suspend fun execute(shouldBuildProject: Boolean) {
     try {
+      log.debug("Starting sync project task")
       preSync()
       collectProject(SYNC_TASK_ID, shouldBuildProject)
     } finally {
@@ -27,11 +25,13 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
   }
 
   private fun preSync() {
+    log.debug("Running pre sync tasks")
     BspSyncStatusService.getInstance(project).startSync()
     saveAllFiles()
   }
 
   private suspend fun collectProject(taskId: String, buildProject: Boolean) {
+    log.debug("Collecting project details")
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, taskId)
 
     val syncConsole = BspConsoleService.getInstance(project).bspSyncConsole
@@ -41,8 +41,10 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
       message = BspPluginBundle.message("console.task.sync.in.progress"),
       cancelAction = { collectProjectDetailsTask.onCancel() },
     )
+    log.debug("Connecting to the server")
     project.connection.connect(taskId) { collectProjectDetailsTask.cancelExecution() }
     try {
+      log.debug("Running CollectProjectDetailsTask")
       collectProjectDetailsTask.execute(
         name = "Syncing...",
         cancelable = true,
@@ -50,6 +52,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
       )
       syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.success"))
     } catch (e: Exception) {
+      log.debug("BSP sync failed")
       syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.failed"), FailureResultImpl(e))
     }
 
@@ -57,20 +60,8 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
   }
 
   private fun CollectProjectDetailsTask.onCancel() {
+    log.debug("Cancelling BSP sync")
     BspSyncStatusService.getInstance(project).cancel()
     this.cancelExecution()
-  }
-
-  private suspend fun buildProject() {
-    val targetsToBuild = calculateAllTargetsToBuild()
-    runBuildTargetTask(targetsToBuild, project, log)
-  }
-
-  private fun calculateAllTargetsToBuild(): List<BuildTargetIdentifier> {
-    val magicMetaModel = MagicMetaModelService.getInstance(project).value
-    val allTargets = magicMetaModel.getAllLoadedTargets() + magicMetaModel.getAllNotLoadedTargets()
-    val compilableTargets = allTargets.filter { it.capabilities.canCompile }
-
-    return compilableTargets.map { it.id.toBsp4JTargetIdentifier() }
   }
 }
