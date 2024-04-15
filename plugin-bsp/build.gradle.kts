@@ -36,6 +36,7 @@ dependencies {
     intellijIdeaCommunity(Platform.version)
     plugins(Platform.plugins)
     bundledPlugins(Platform.bundledPlugins)
+    zipSigner()
 
     instrumentationTools()
     testFramework(TestFrameworkType.Plugin.Java)
