@@ -158,6 +158,7 @@ public object WorkspaceModelToModulesMapTransformer {
         manifest = manifest?.toPath(),
         resourceFolders = resourceFolders.map { it.toPath() },
         resourceJavaPackage = resourceJavaPackage,
+        assetFolders = assetFolders.map { it.toPath() },
       )
     }
   }

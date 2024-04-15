@@ -144,6 +144,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         manifest = manifest?.safeCastToURI()?.toPath(),
         resourceFolders = resourceFolders.map { it.safeCastToURI().toPath() },
         resourceJavaPackage = resourceJavaPackage,
+        assetFolders = assetFolders.map { it.safeCastToURI().toPath() },
       )
     }
   }

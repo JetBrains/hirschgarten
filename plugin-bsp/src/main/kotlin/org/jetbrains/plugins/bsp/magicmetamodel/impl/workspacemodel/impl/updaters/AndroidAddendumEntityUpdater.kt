@@ -27,6 +27,7 @@ internal class AndroidAddendumEntityUpdater(
         androidSdkName = androidSdkName,
         androidTargetType = androidTargetType,
         resourceFolders = entityToAdd.resourceFolders.map { it.toVirtualFileUrl() },
+        assetFolders = entityToAdd.assetFolders.map { it.toVirtualFileUrl() },
       ) {
         this.manifest = entityToAdd.manifest?.toVirtualFileUrl()
         this.resourceJavaPackage = entityToAdd.resourceJavaPackage
