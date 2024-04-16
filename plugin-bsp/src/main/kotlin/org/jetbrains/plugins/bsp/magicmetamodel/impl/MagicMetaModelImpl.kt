@@ -365,6 +365,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   internal fun loadStorage(storage: TargetsStatusStorage) {
     targetsStatusStorage = storage
+    facade.loadStorage(storage)
   }
 
   public fun isPythonSupportEnabled(): Boolean = magicMetaModelProjectConfig.isPythonSupportEnabled
