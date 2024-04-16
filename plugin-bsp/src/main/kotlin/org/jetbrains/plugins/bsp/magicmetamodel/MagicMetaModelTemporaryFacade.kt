@@ -28,7 +28,7 @@ public class MagicMetaModelTemporaryFacade {
   private val magicMetaModelProjectConfig: MagicMetaModelProjectConfig
 
   // it's here only temporarily, will be removed in the following PRs
-  private val targetsStatusStorage: TargetsStatusStorage
+  private var targetsStatusStorage: TargetsStatusStorage
 
   public val targets: Map<BuildTargetId, BuildTargetInfo>
   private val targetIdToModule: Map<BuildTargetId, Module>
@@ -77,6 +77,10 @@ public class MagicMetaModelTemporaryFacade {
       targetsMap = targets,
       moduleNameProvider = magicMetaModelProjectConfig.moduleNameProvider,
     ) + unloadedTargets
+  }
+
+  internal fun loadStorage(storage: TargetsStatusStorage) {
+    targetsStatusStorage = storage
   }
 
   // will be removed in the following PRs
