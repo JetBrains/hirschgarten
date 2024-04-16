@@ -37,6 +37,7 @@ dependencies {
     plugins(Platform.plugins)
     bundledPlugins(Platform.bundledPlugins)
     zipSigner()
+    pluginVerifier()
 
     instrumentationTools()
     testFramework(TestFrameworkType.Plugin.Java)
@@ -94,6 +95,7 @@ intellijPlatform {
       VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
       VerifyPluginTask.FailureLevel.NOT_DYNAMIC
     )
+    teamCityOutputFormat = true
   }
 }
 
