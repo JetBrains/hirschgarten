@@ -108,6 +108,8 @@
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
 
+        <formattingService implementation="org.jetbrains.bazel.languages.starlark.services.StarlarkFormattingService"/>
+
     </extensions>
 
     <actions>
