@@ -53,7 +53,9 @@ public data class Library(
   val iJars: List<String> = listOf(),
   val sourceJars: List<String> = listOf(),
   val classJars: List<String> = listOf(),
-) : WorkspaceModelEntity(), ResourceRootEntity {
+  val goImportPath: String? = "",
+  val goRoot: String? = "",
+  ) : WorkspaceModelEntity(), ResourceRootEntity {
   public companion object {
     public fun formatJarString(jar: String): String =
       if (jar.endsWith(".jar")) {

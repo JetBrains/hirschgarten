@@ -126,6 +126,8 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
       iJars = it.ijars,
       classJars = it.jars,
       sourceJars = it.sourceJars,
+      goImportPath = it.goImportPath,
+      goRoot = it.goRoot,
     )
   }
 

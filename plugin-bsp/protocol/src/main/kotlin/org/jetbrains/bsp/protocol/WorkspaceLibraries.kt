@@ -8,7 +8,9 @@ public data class LibraryItem(
   val ijars: List<String>,
   val jars: List<String>,
   val sourceJars: List<String>,
-)
+  val goImportPath: String? = "",
+  val goRoot: String? = "",
+  )
 
 public data class WorkspaceLibrariesResult(
   val libraries: List<LibraryItem>,

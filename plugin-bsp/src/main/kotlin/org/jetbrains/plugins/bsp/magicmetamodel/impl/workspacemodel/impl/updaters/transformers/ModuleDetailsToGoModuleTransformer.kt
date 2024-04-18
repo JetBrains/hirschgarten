@@ -41,7 +41,8 @@ internal class ModuleDetailsToGoModuleTransformer(
       resourceRoots = resourcesItemToGoResourceRootTransformer.transform(inputEntity.resources),
       importPath = goBuildInfo.importPath,
       root = URI.create(inputEntity.target.baseDirectory).toPath(),
-      goDependencies = toGoDependencies(inputEntity)
+      goDependencies = toGoDependencies(inputEntity),
+      goLibraries = inputEntity.goLibraries ?: emptyList(),
     )
   }
 

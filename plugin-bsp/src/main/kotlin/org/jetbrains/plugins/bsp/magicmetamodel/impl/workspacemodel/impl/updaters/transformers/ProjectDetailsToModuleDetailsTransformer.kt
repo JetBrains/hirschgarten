@@ -35,6 +35,7 @@ internal class ProjectDetailsToModuleDetailsTransformer(
       moduleDependencies = allDependencies.targetDependencies.map { it.uri },
       defaultJdkName = projectDetails.defaultJdkName,
       jvmBinaryJars = jvmBinaryJarsIndex[targetId].orEmpty(),
+      goLibraries = projectDetails.libraries.orEmpty()
     )
   }
 }
