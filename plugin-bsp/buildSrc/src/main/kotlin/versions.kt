@@ -7,17 +7,17 @@ object Plugin {
 
   // See https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html
   // for insight into build numbers and IntelliJ Platform versions.
-  const val sinceBuild = "241.14494.17"
+  const val sinceBuild = "241.15989.21"
   const val untilBuild = "241.*"
 }
 
 object Platform {
-  const val version = "241.14494.17-EAP-SNAPSHOT"
+  const val version = "241.15989.21-EAP-SNAPSHOT"
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
   // Example: platformPlugins =" com.intellij.java, com.jetbrains.php:203.4449.22"
   val plugins =
-    listOf("PythonCore:241.14494.17", "org.jetbrains.android:241.14494.17")
+    listOf("PythonCore:241.15989.21", "org.jetbrains.android:241.15989.21")
   val bundledPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 
 }
