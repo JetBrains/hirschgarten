@@ -22,7 +22,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
   }
 
   override fun transform(inputEntity: JavaModule): List<JavaModule> {
-    val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity)
+    val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity.sourceRoots)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
     return dummyJavaModuleSourceRoots.zip(dummyJavaModuleNames)
       .mapNotNull {
@@ -58,20 +58,19 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
       jvmJdkName = jdkName,
       kotlinAddendum = null,
     )
+}
 
-  private fun calculateDummyJavaSourceRoots(inputEntity: JavaModule): List<Path> =
-    inputEntity.sourceRoots.map {
-      restoreSourceRootFromPackagePrefix(it)
-    }.distinct()
+internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<Path> =
+  sourceRoots.mapNotNull {
+    restoreSourceRootFromPackagePrefix(it)
+  }.distinct()
 
-  private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): Path {
-    val packagePrefixPath = sourceRoot.packagePrefix.replace('.', File.separatorChar)
-    val directory =
-      if (sourceRoot.sourcePath.isDirectory()) sourceRoot.sourcePath
-      else sourceRoot.sourcePath.parent
-    val sourceRootString = directory.pathString.removeSuffix(packagePrefixPath)
-    return Path(sourceRootString)
-  }
+private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): Path? {
+  if (sourceRoot.sourcePath.isDirectory()) return null
+  val packagePrefixPath = sourceRoot.packagePrefix.replace('.', File.separatorChar)
+  val directory = sourceRoot.sourcePath.parent
+  val sourceRootString = directory.pathString.removeSuffix(packagePrefixPath)
+  return Path(sourceRootString)
 }
 
 internal fun calculateDummyJavaModuleNames(

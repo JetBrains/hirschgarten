@@ -590,7 +590,6 @@ class ModuleDetailsToJavaModuleTransformerTest {
       type = "JAVA_MODULE",
       modulesDependencies = listOf(
         IntermediateModuleDependency("module3"),
-        IntermediateModuleDependency(calculateDummyJavaModuleName(module2Root, projectBasePath)),
       ),
       librariesDependencies = listOf(
         IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
