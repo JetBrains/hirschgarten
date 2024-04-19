@@ -15,8 +15,10 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModul
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ScalaAddendum
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
@@ -47,18 +49,8 @@ internal class ModuleDetailsToJavaModuleTransformer(
     JavaModule(
       genericModuleInfo = toGenericModuleInfo(inputEntity),
       baseDirContentRoot = toBaseDirContentRoot(inputEntity),
-      sourceRoots = sourcesItemToJavaSourceRootTransformer.transform(inputEntity.sources.map {
-        BuildTargetAndSourceItem(
-          inputEntity.target,
-          it,
-        )
-      }),
-      resourceRoots = resourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources.map {
-        BuildTargetAndResourcesItem(
-          inputEntity.target,
-          it,
-        )
-      }),
+      sourceRoots = toJavaSourceRoots(inputEntity),
+      resourceRoots = toResourceRoots(inputEntity),
       moduleLevelLibraries = if (inputEntity.libraryDependencies == null)
         DependencySourcesItemToLibraryTransformer
           .transform(inputEntity.dependenciesSources.map {
@@ -72,6 +64,22 @@ internal class ModuleDetailsToJavaModuleTransformer(
       javaAddendum = toJavaAddendum(inputEntity),
       androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
     )
+
+  private fun toJavaSourceRoots(inputEntity: ModuleDetails): List<JavaSourceRoot> =
+    sourcesItemToJavaSourceRootTransformer.transform(inputEntity.sources.map {
+      BuildTargetAndSourceItem(
+        buildTarget = inputEntity.target,
+        sourcesItem = it,
+      )
+    })
+
+  private fun toResourceRoots(inputEntity: ModuleDetails): List<ResourceRoot> =
+    resourcesItemToJavaResourceRootTransformer.transform(inputEntity.resources.map {
+      BuildTargetAndResourcesItem(
+        buildTarget = inputEntity.target,
+        resourcesItem = it,
+      )
+    })
 
   private fun ModuleDetails.toJvmClassPaths() =
     (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
@@ -94,14 +102,11 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun GenericModuleInfo.applyHACK(inputEntity: ModuleDetails, projectBasePath: Path): GenericModuleInfo {
     val dummyJavaModuleDependencies =
-      calculateDummyJavaModuleNames(inputEntity.calculateDummyJavaSourceRoots(), projectBasePath)
+      calculateDummyJavaModuleNames(calculateDummyJavaSourceRoots(toJavaSourceRoots(inputEntity)), projectBasePath)
         .filter { it.isNotEmpty() }
         .map { IntermediateModuleDependency(it) }
     return this.copy(modulesDependencies = modulesDependencies + dummyJavaModuleDependencies)
   }
-
-  private fun ModuleDetails.calculateDummyJavaSourceRoots(): List<Path> =
-    sources.mapNotNull { it.roots }.flatten().map { it.safeCastToURI().toPath() }
 
   private fun ModuleDetails.toJdkNameOrDefault(): String? =
     toJdkName() ?: defaultJdkName
