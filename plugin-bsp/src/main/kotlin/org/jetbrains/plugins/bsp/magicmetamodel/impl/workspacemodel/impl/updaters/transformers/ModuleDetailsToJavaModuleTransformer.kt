@@ -142,9 +142,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
         androidSdkName = androidJar.androidJarToAndroidSdkName(),
         androidTargetType = androidTargetType,
         manifest = manifest?.safeCastToURI()?.toPath(),
-        resourceFolders = resourceFolders.map { it.safeCastToURI().toPath() },
+        resourceDirectories = resourceDirectories.map { it.safeCastToURI().toPath() },
         resourceJavaPackage = resourceJavaPackage,
-        assetFolders = assetFolders.map { it.safeCastToURI().toPath() },
+        assetsDirectories = assetsDirectories.map { it.safeCastToURI().toPath() },
       )
     }
   }

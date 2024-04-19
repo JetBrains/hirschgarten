@@ -20,9 +20,9 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
   public val androidSdkName: String
   public val androidTargetType: AndroidTargetType
   public val manifest: VirtualFileUrl?
-  public val resourceFolders: List<VirtualFileUrl>
+  public val resourceDirectories: List<VirtualFileUrl>
   public val resourceJavaPackage: String?
-  public val assetFolders: List<VirtualFileUrl>
+  public val assetsDirectories: List<VirtualFileUrl>
   public val module: ModuleEntity
 
   //region generated code
@@ -32,9 +32,9 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
     override var androidSdkName: String
     override var androidTargetType: AndroidTargetType
     override var manifest: VirtualFileUrl?
-    override var resourceFolders: MutableList<VirtualFileUrl>
+    override var resourceDirectories: MutableList<VirtualFileUrl>
     override var resourceJavaPackage: String?
-    override var assetFolders: MutableList<VirtualFileUrl>
+    override var assetsDirectories: MutableList<VirtualFileUrl>
     override var module: ModuleEntity
   }
 
@@ -45,16 +45,16 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
     public operator fun invoke(
       androidSdkName: String,
       androidTargetType: AndroidTargetType,
-      resourceFolders: List<VirtualFileUrl>,
-      assetFolders: List<VirtualFileUrl>,
+      resourceDirectories: List<VirtualFileUrl>,
+      assetsDirectories: List<VirtualFileUrl>,
       entitySource: EntitySource,
       init: (Builder.() -> Unit)? = null,
     ): AndroidAddendumEntity {
       val builder = builder()
       builder.androidSdkName = androidSdkName
       builder.androidTargetType = androidTargetType
-      builder.resourceFolders = resourceFolders.toMutableWorkspaceList()
-      builder.assetFolders = assetFolders.toMutableWorkspaceList()
+      builder.resourceDirectories = resourceDirectories.toMutableWorkspaceList()
+      builder.assetsDirectories = assetsDirectories.toMutableWorkspaceList()
       builder.entitySource = entitySource
       init?.invoke(builder)
       return builder

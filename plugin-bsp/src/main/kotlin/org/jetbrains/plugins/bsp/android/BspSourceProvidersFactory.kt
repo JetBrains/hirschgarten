@@ -37,8 +37,8 @@ public class BspSourceProvidersFactory : SourceProvidersFactory {
     return NamedIdeaSourceProviderBuilder
       .create(module.name, manifest.url)
       .withScopeType(ScopeType.MAIN)
-      .withResDirectoryUrls(androidAddendum.resourceFolders.map { it.url })
-      .withAssetsDirectoryUrls(androidAddendum.assetFolders.map { it.url })
+      .withResDirectoryUrls(androidAddendum.resourceDirectories.map { it.url })
+      .withAssetsDirectoryUrls(androidAddendum.assetsDirectories.map { it.url })
       .build()
   }
 }
