@@ -119,7 +119,7 @@ public object MetadataStorageImpl : MetadataStorageBase() {
           isComputable = false,
           isKey = false,
           isOpen = false,
-          name = "resourceFolders",
+          name = "resourceDirectories",
           valueType = ValueTypeMetadata.ParameterizedType(
             generics = listOf(
               ValueTypeMetadata.SimpleType.CustomType(
@@ -142,7 +142,7 @@ public object MetadataStorageImpl : MetadataStorageBase() {
           isComputable = false,
           isKey = false,
           isOpen = false,
-          name = "assetFolders",
+          name = "assetsDirectories",
           valueType = ValueTypeMetadata.ParameterizedType(
             generics = listOf(
               ValueTypeMetadata.SimpleType.CustomType(
@@ -318,7 +318,7 @@ public object MetadataStorageImpl : MetadataStorageBase() {
   }
 
   override fun initializeMetadataHash() {
-    addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.AndroidAddendumEntity", metadataHash = -462884073)
+    addMetadataHash(typeFqn = "org.jetbrains.workspacemodel.entities.AndroidAddendumEntity", metadataHash = 267156412)
     addMetadataHash(
       typeFqn = "org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity",
       metadataHash = -565268675
