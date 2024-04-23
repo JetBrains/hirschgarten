@@ -10,7 +10,7 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class StarlarkBuiltInCompletionContributorTest : BasePlatformTestCase() {
   @Test
-  fun `should complete buildIn const`() {
+  fun `should complete builtIn const`() {
     // given
     myFixture.configureByText("const.bzl", "")
     myFixture.type("E")
@@ -23,7 +23,7 @@ class StarlarkBuiltInCompletionContributorTest : BasePlatformTestCase() {
   }
 
   @Test
-  fun `should complete buildIn function`() {
+  fun `should complete builtIn function`() {
     // given
     myFixture.configureByText("function.bzl", "")
     myFixture.type("o")
@@ -55,12 +55,13 @@ class StarlarkBuiltInCompletionContributorTest : BasePlatformTestCase() {
 //  }
 
   @Test
-  fun `should not complete buildIns for numerics`() {
+  fun `should complete builtIn after numerics in previous line`() {
     // given
     myFixture.configureByText("numeric.bzl", "")
     myFixture.type(
       """
-        |x += 5
+        |FOO = 5
+        |o
       """.trimMargin()
     )
 
@@ -68,6 +69,6 @@ class StarlarkBuiltInCompletionContributorTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldBeEqual emptyList()
+    lookups shouldContainExactlyInAnyOrder listOf("bool", "float", "sorted")
   }
 }
