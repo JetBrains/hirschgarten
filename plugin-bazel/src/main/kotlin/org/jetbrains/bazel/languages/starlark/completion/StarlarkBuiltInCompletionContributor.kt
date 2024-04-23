@@ -65,7 +65,6 @@ private val nameCompletionElement = psiElement()
   .withLanguage(StarlarkLanguage)
   .withParent(StarlarkReferenceExpression::class.java)
   .andNot(psiComment())
-  .andNot(psiElement().afterLeaf(psiElement().withElementType(StarlarkTokenSets.NUMERIC)))
   .andNot(psiElement().afterLeaf(psiElement(StarlarkTokenTypes.DOT)))
 
 private val stringCompletionElement = psiElement()
