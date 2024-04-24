@@ -28,7 +28,7 @@ internal class ModuleDetailsToGoModuleTransformer(
     ResourcesItemToGoResourceRootTransformer(projectBasePath)
 
   override fun transform(inputEntity: ModuleDetails): GoModule {
-    val goBuildInfo = extractGoBuildTarget(inputEntity.target) ?: error("Transform error, cannot extract GoBuildTarget")
+    val goBuildInfo = extractGoBuildTarget(inputEntity.target)
 
     return GoModule(
       module = toGenericModuleInfo(inputEntity),
@@ -39,7 +39,7 @@ internal class ModuleDetailsToGoModuleTransformer(
         )
       }),
       resourceRoots = resourcesItemToGoResourceRootTransformer.transform(inputEntity.resources),
-      importPath = goBuildInfo.importPath,
+      importPath = goBuildInfo?.importPath ?: "",
       root = URI.create(inputEntity.target.baseDirectory).toPath(),
       goDependencies = toGoDependencies(inputEntity),
       goLibraries = inputEntity.goLibraries ?: emptyList(),

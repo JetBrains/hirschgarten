@@ -9,7 +9,7 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GoModule
 import org.jetbrains.workspacemodel.entities.BspEntitySource
-import kotlin.io.path.Path
+import java.nio.file.Paths
 
 public interface GoEntitiesExtension {
   public fun prepareAllEntitiesForGoModule(
@@ -66,7 +66,7 @@ public class GoEntitiesExtensionImpl: GoEntitiesExtension {
         internal = false,
       ) {
         this.module = vgoModule
-        this.root = Path("").toVirtualFileUrl(virtualFileUrlManager) // TODO: path
+        this.root = it.goRoot?.let { it1 -> Paths.get(it1).toVirtualFileUrl(virtualFileUrlManager) }
       }
     }
 

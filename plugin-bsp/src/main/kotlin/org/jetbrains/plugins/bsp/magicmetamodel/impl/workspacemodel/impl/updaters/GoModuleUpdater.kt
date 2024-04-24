@@ -30,6 +30,11 @@ internal class GoModuleUpdater(
     goModuleEntities.goDependenciesWorkspaceEntity.forEach {
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(it)
     }
+
+    goModuleEntities.goLibrariesWorkspaceEntity.forEach {
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(it)
+    }
+
     return goModuleEntities.goModuleWorkspaceEntity
   }
 }
