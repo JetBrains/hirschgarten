@@ -54,7 +54,7 @@ public data class Library(
   val sourceJars: List<String> = listOf(),
   val classJars: List<String> = listOf(),
   val goImportPath: String? = "",
-  val goRoot: String? = "",
+  val goRoot: URI? = URI(""),
   ) : WorkspaceModelEntity(), ResourceRootEntity {
   public companion object {
     public fun formatJarString(jar: String): String =
