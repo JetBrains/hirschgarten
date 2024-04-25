@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
@@ -25,14 +24,6 @@ import java.nio.file.Path
 import java.security.MessageDigest
 import kotlin.io.path.name
 import kotlin.io.path.toPath
-
-public data class KotlinBuildTarget(
-  val languageVersion: String,
-  val apiVersion: String,
-  val kotlincOptions: List<String>,
-  val associates: List<BuildTargetIdentifier>,
-  var jvmBuildTarget: JvmBuildTarget? = null,
-)
 
 internal class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<BuildTargetId, BuildTargetInfo>,

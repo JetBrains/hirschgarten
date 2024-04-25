@@ -260,7 +260,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       jvmBuildTarget = JvmBuildTarget().also {
         it.javaHome = javaHome
         it.javaVersion = javaVersion
-      }
+      },
     )
 
     val buildTargetId = BuildTargetIdentifier("module1")

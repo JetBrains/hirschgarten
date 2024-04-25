@@ -23,4 +23,4 @@ internal object BspURLEncoder {
 /**
  * This helper util accepts a (maybe malformed) URI and returns the corresponding URI object
  */
-internal fun String.safeCastToURI() = URI.create(BspURLEncoder.encode(this))
+internal fun String.safeCastToURI(): URI = URI.create(BspURLEncoder.encode(this))
