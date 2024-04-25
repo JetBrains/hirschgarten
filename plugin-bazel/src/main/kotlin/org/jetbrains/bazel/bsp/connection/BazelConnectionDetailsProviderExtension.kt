@@ -1,14 +1,12 @@
 package org.jetbrains.bazel.bsp.connection
 
-import com.intellij.openapi.application.EDT
 import ch.epfl.scala.bsp4j.BspConnectionDetails
-import com.intellij.ide.plugins.PluginManager
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
-import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.vfs.VirtualFile
@@ -30,7 +28,6 @@ import org.jetbrains.bsp.bazel.installationcontext.InstallationContextJavaPathEn
 import org.jetbrains.bsp.protocol.utils.parseBspConnectionDetails
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
-import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
@@ -45,11 +42,7 @@ private class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(
 private const val DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 private const val BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH = ".bsp/bazelbsp.json"
 
-private const val BAZEL_PLUGIN_ID = "org.jetbrains.bazel"
-private const val BSP_PLUGIN_ID = "org.jetbrains.bsp"
-
 private const val BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX = 0
-private const val BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX = 2
 
 internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProviderExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
@@ -138,32 +131,6 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
 
     return BspConnectionDetailsCreator(installationContext, false).create().also { it.updateClasspath() }
   }
-
-  private fun BspConnectionDetails.updateClasspath() {
-    argv[BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX] = calculateNewClasspath()
-  }
-
-  private fun BspConnectionDetails.calculateNewClasspath(): String {
-    val oldClasspath = argv[BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX]
-
-    val bazelPluginClasspath = calculatePluginClasspath(BAZEL_PLUGIN_ID)
-    val bspPluginClasspath = calculatePluginClasspath(BSP_PLUGIN_ID)
-
-    return listOf(bazelPluginClasspath, bspPluginClasspath, oldClasspath).joinToString(File.pathSeparator)
-  }
-
-  private fun calculatePluginClasspath(pluginIdString: String): String {
-    val pluginId = PluginId.findId(pluginIdString) ?: error("Cannot find $pluginIdString plugin")
-    val pluginDescriptor = PluginManager.getInstance().findEnabledPlugin(pluginId) ?: error("Cannot find $pluginId plugin descriptor")
-    val pluginJarsDir = pluginDescriptor.pluginPath.resolve("lib")
-
-    return pluginJarsDir.mapJarDirToClasspath()
-  }
-
-  private fun Path.mapJarDirToClasspath(): String =
-    toFile().listFiles()?.toList().orEmpty()
-      .map { it.toPath().toAbsolutePath().normalize() }
-      .joinToString(separator = File.pathSeparator, transform = { it.toString() })
 }
 
 internal data class BazelConnectionDetailsProviderExtensionState(
