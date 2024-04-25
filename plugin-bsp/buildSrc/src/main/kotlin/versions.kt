@@ -12,12 +12,12 @@ object Plugin {
 }
 
 object Platform {
-  const val version = "241.15989.21-EAP-SNAPSHOT"
+  const val version = "241.15989.69-EAP-SNAPSHOT"
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
   // Example: platformPlugins =" com.intellij.java, com.jetbrains.php:203.4449.22"
   val plugins =
-    listOf("PythonCore:241.15989.21", "org.jetbrains.android:241.15989.21")
+    listOf("PythonCore:241.15989.69", "org.jetbrains.android:241.15989.69")
   val bundledPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
 
 }
