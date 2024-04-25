@@ -1,12 +1,13 @@
-package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
+package org.jetbrains.plugins.bsp.ui.actions.target
 
+import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType
+import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 
-internal class TestTargetAction(
+public class RunTargetAction(
   targetInfo: BuildTargetInfo,
   text: (() -> String)? = null,
   isDebugAction: Boolean = false,
@@ -20,10 +21,11 @@ internal class TestTargetAction(
       if (verboseText) targetInfo.getBuildTargetName() else ""
     )
     else BspPluginBundle.message(
-      "target.test.action.text",
+      "target.run.action.text",
       if (verboseText) targetInfo.getBuildTargetName() else ""
     )
   },
-  isDebugAction = isDebugAction) {
-  override fun getConfigurationType(project: Project) = BspTestConfigurationType()
+  isDebugAction = isDebugAction,
+) {
+  override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType()
 }

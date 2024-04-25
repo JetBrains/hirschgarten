@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.actions
+package org.jetbrains.plugins.bsp.ui.actions.target
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware
@@ -9,29 +9,30 @@ import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
-public class LoadTargetWithDependenciesAction(
+public class LoadTargetAction(
   private val targetId: BuildTargetId,
   text: () -> String,
   private val updateWidget: () -> Unit = {},
 ) : SuspendableAction(text), DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    loadTargetWithDependencies(project, targetId)
+    loadTarget(project, targetId)
     updateWidget()
   }
 
   public companion object {
-    public suspend fun loadTargetWithDependencies(project: Project, targetId: BuildTargetId) {
+    public suspend fun loadTarget(project: Project, targetId: BuildTargetId) {
       val magicMetaModel = MagicMetaModelService.getInstance(project).value
-      val diff = magicMetaModel.loadTargetWithDependencies(targetId)
+      val diff = magicMetaModel.loadTarget(targetId)
       diff?.applyOnWorkspaceModel()
 
       val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
       BspBalloonNotifier.info(
         title = assetsExtension.presentableName,
         content = BspPluginBundle.message("widget.load.target.notification", targetId),
-        subtitle = BspPluginBundle.message("widget.load.target.with.deps"),
+        subtitle = BspPluginBundle.message("widget.load.target"),
         customIcon = assetsExtension.icon
       )
     }

@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
+package org.jetbrains.plugins.bsp.ui.actions.target
 
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
@@ -10,13 +10,13 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 import javax.swing.Icon
 
-internal abstract class BspRunnerAction(
+public abstract class BspRunnerAction(
   targetInfo: BuildTargetInfo,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugAction: Boolean = false,
 ) : BaseRunnerAction(targetInfo, text, icon, isDebugAction) {
-  abstract fun getConfigurationType(project: Project): ConfigurationType
+  public abstract fun getConfigurationType(project: Project): ConfigurationType
 
   override suspend fun getRunnerSettings(
     project: Project,

@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
+package org.jetbrains.plugins.bsp.ui.actions.target
 
 import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.openapi.project.Project
@@ -8,7 +8,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTarge
 import org.jetbrains.plugins.bsp.server.tasks.JvmTestEnvironmentTask
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 
-internal class TestWithLocalJvmRunnerAction(
+public class TestWithLocalJvmRunnerAction(
   targetInfo: BuildTargetInfo,
   text: (() -> String)? = null,
   isDebugMode: Boolean = false,

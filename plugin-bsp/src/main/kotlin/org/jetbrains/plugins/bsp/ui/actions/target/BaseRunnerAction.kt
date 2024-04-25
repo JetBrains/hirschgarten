@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
+package org.jetbrains.plugins.bsp.ui.actions.target
 
 import com.intellij.execution.Executor
 import com.intellij.execution.RunManagerEx
@@ -19,7 +19,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetI
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import javax.swing.Icon
 
-internal abstract class BaseRunnerAction(
+public abstract class BaseRunnerAction(
   private val buildTargetInfo: BuildTargetInfo,
   text: () -> String,
   icon: Icon? = null,
@@ -28,7 +28,7 @@ internal abstract class BaseRunnerAction(
   text = text,
   icon = icon ?: if (isDebugAction) AllIcons.Actions.StartDebugger else AllIcons.Actions.Execute
 ) {
-  abstract suspend fun getRunnerSettings(
+  protected abstract suspend fun getRunnerSettings(
     project: Project,
     buildTargetInfo: BuildTargetInfo,
   ): RunnerAndConfigurationSettings?
@@ -37,7 +37,7 @@ internal abstract class BaseRunnerAction(
     doPerformAction(project)
   }
 
-  suspend fun doPerformAction(project: Project) {
+  internal suspend fun doPerformAction(project: Project) {
     try {
       val settings = getRunnerSettings(project, buildTargetInfo) ?: return
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)

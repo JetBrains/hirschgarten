@@ -24,7 +24,7 @@ import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.magicmetamodel.DocumentTargetsDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.ui.actions.LoadTargetAction
+import org.jetbrains.plugins.bsp.ui.actions.target.LoadTargetAction
 import javax.swing.Icon
 
 private const val ID = "BspDocumentTargetsWidget"

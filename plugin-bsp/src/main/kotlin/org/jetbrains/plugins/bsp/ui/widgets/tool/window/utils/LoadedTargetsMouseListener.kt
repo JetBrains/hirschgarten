@@ -10,13 +10,13 @@ import com.intellij.openapi.ui.popup.JBPopupFactory
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
+import org.jetbrains.plugins.bsp.ui.actions.target.BspRunnerAction
+import org.jetbrains.plugins.bsp.ui.actions.target.BuildTargetAction
+import org.jetbrains.plugins.bsp.ui.actions.target.RunTargetAction
+import org.jetbrains.plugins.bsp.ui.actions.target.RunWithLocalJvmRunnerAction
+import org.jetbrains.plugins.bsp.ui.actions.target.TestTargetAction
+import org.jetbrains.plugins.bsp.ui.actions.target.TestWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BspRunnerAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.BuildTargetAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunTargetAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.RunWithLocalJvmRunnerAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestTargetAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.TestWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
 import java.awt.Point
@@ -97,7 +97,7 @@ private fun BspRunnerAction.prepareAndPerform(project: Project) {
 }
 
 @Suppress("CognitiveComplexMethod")
-internal fun DefaultActionGroup.fillWithEligibleActions(
+public fun DefaultActionGroup.fillWithEligibleActions(
   target: BuildTargetInfo,
   verboseText: Boolean,
 ): DefaultActionGroup {
