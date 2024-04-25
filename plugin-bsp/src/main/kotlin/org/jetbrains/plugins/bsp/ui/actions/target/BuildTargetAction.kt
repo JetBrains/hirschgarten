@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
+package org.jetbrains.plugins.bsp.ui.actions.target
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent

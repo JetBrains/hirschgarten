@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions
+package org.jetbrains.plugins.bsp.ui.actions.target
 
 import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.build.events.impl.FailureResultImpl
@@ -25,13 +25,13 @@ import org.jetbrains.plugins.bsp.utils.orDefault
 import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
 
-internal abstract class LocalJvmRunnerAction(
+public abstract class LocalJvmRunnerAction(
   protected val targetInfo: BuildTargetInfo,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugMode: Boolean = false,
 ) : BaseRunnerAction(targetInfo, text, icon, isDebugMode) {
-  abstract fun getEnvironment(project: Project): JvmEnvironmentItem?
+  public abstract fun getEnvironment(project: Project): JvmEnvironmentItem?
 
   override suspend fun getRunnerSettings(
     project: Project,
@@ -111,9 +111,9 @@ internal abstract class LocalJvmRunnerAction(
       null
     }
 
-  companion object {
-    val jvmEnvironment = Key<JvmEnvironmentItem>("jvmEnvironment")
-    val prioritizeIdeClasspath = Key<Boolean>("prioritizeIdeClasspath")
+  public companion object {
+    public val jvmEnvironment: Key<JvmEnvironmentItem> = Key<JvmEnvironmentItem>("jvmEnvironment")
+    public val prioritizeIdeClasspath: Key<Boolean> = Key<Boolean>("prioritizeIdeClasspath")
   }
 }
 

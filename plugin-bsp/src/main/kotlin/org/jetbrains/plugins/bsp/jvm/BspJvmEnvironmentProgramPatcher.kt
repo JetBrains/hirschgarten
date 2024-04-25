@@ -6,7 +6,7 @@ import com.intellij.execution.configurations.JavaParameters
 import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.runners.JavaProgramPatcher
 import com.intellij.openapi.util.UserDataHolderBase
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.LocalJvmRunnerAction
+import org.jetbrains.plugins.bsp.ui.actions.target.LocalJvmRunnerAction
 
 public class BspJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
   override fun patchJavaParameters(executor: Executor, configuration: RunProfile, javaParameters: JavaParameters) {
