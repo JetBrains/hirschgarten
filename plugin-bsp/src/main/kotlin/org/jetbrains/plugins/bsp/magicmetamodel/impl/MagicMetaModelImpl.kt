@@ -41,10 +41,15 @@ internal class DefaultMagicMetaModelDiff(
 ) : MagicMetaModelDiff {
   override suspend fun applyOnWorkspaceModel() {
     val snapshot = workspaceModel.internal.getBuilderSnapshot()
-    snapshot.builder.replaceBySource({ it.isBspRelevant() }, builder)
+    logPerformance("replaceBySource-in-apply-on-workspace-model") {
+      snapshot.builder.replaceBySource({ it.isBspRelevant() }, builder)
+    }
     val storageReplacement = snapshot.getStorageReplacement()
     writeAction {
-      if (workspaceModel.internal.replaceProjectModel(storageReplacement)) {
+      val workspaceModelUpdated = logPerformance("replaceProjectModel-in-apply-on-workspace-model") {
+        workspaceModel.internal.replaceProjectModel(storageReplacement)
+      }
+      if (workspaceModelUpdated) {
         mmmInstance.loadStorage(mmmStorageReplacement)
         // all the listeners do UI things so they must be invoked under EDT
         targetLoadListeners.forEach { it() }
