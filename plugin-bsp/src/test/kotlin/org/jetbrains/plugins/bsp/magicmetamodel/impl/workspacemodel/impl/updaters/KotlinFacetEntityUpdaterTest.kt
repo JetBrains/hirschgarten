@@ -41,7 +41,7 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         jvmBuildTarget = JvmBuildTarget().also {
           it.javaHome = javaHome
           it.javaVersion = javaVersion
-        }
+        },
       )
 
       val module = GenericModuleInfo(

@@ -23,24 +23,26 @@ internal class KotlinFacetEntityUpdater(
 ) : WorkspaceModelEntityWithParentModuleUpdater<JavaModule, KotlinSettingsEntity> {
   override fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): KotlinSettingsEntity {
     val kotlinAddendum = entityToAdd.kotlinAddendum
-    val compilerArguments = kotlinAddendum?.kotlincOptions?.toK2JVMCompilerArguments(kotlinAddendum)
+    val compilerArguments = kotlinAddendum?.kotlincOptions?.toK2JVMCompilerArguments(entityToAdd, kotlinAddendum)
     val kotlinSettingsEntity =
-      calculateKotlinSettingsEntity(entityToAdd, compilerArguments, parentModuleEntity)
+      calculateKotlinSettingsEntity(entityToAdd, compilerArguments, parentModuleEntity, kotlinAddendum?.kotlincOptions)
     return addKotlinSettingsEntity(kotlinSettingsEntity)
   }
 
-  private fun List<String>.toK2JVMCompilerArguments(kotlinAddendum: KotlinAddendum) =
+  private fun List<String>.toK2JVMCompilerArguments(entityToAdd: JavaModule, kotlinAddendum: KotlinAddendum) =
     parseCommandLineArguments(K2JVMCompilerArguments::class, this).apply {
       languageVersion = kotlinAddendum.languageVersion
       apiVersion = kotlinAddendum.apiVersion
       autoAdvanceLanguageVersion = false
       autoAdvanceApiVersion = false
+      friendPaths = entityToAdd.toJpsFriendPaths(projectBasePath).toTypedArray()
     }
 
   private fun calculateKotlinSettingsEntity(
     entityToAdd: JavaModule,
     compilerArguments: K2JVMCompilerArguments?,
     parentModuleEntity: ModuleEntity,
+    kotlincOpts: List<String>?,
   ) = KotlinSettingsEntity(
     name = KotlinFacetType.NAME,
     moduleId = parentModuleEntity.symbolicId,
@@ -62,7 +64,7 @@ internal class KotlinFacetEntityUpdater(
       CompilerArgumentsSerializer.serializeToString(it)
     } ?: "",
     compilerSettings = CompilerSettingsData(
-      additionalArguments = entityToAdd.toFriendPaths(projectBasePath),
+      additionalArguments = kotlincOpts?.joinToString(" ") ?: "",
       scriptTemplates = "",
       scriptTemplatesClasspath = "",
       copyJsLibraryFiles = false,
@@ -82,16 +84,14 @@ internal class KotlinFacetEntityUpdater(
     module = parentModuleEntity
   }
 
-  private fun JavaModule.toFriendPaths(projectBasePath: Path): String {
+  private fun JavaModule.toJpsFriendPaths(projectBasePath: Path): List<String> {
     val associateModules = toAssociateModules()
 
-    if (associateModules.isEmpty()) return ""
+    if (associateModules.isEmpty()) return listOf()
 
-    val friendPaths = associateModules.map { module ->
-      JpsPaths.getJpsCompiledProductionDirectory(projectBasePath, module)
+    return associateModules.map { module ->
+      JpsPaths.getJpsCompiledProductionDirectory(projectBasePath, module).toString()
     }
-
-    return "-Xfriend-paths=${friendPaths.joinToString(",")}"
   }
 
   private fun JavaModule.toAssociateModules(): Set<String> =

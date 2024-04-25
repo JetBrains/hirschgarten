@@ -136,7 +136,7 @@ public object WorkspaceModelToModulesMapTransformer {
     return KotlinAddendum(
       languageVersion = languageVersion,
       apiVersion = apiVersion,
-      kotlincOptions = deserializedCompilerArgs.toArgumentStrings(),
+      kotlincOptions = deserializedCompilerArgs.toArgumentStrings()
     )
   }
 

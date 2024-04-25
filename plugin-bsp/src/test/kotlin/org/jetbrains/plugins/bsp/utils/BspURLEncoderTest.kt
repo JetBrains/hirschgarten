@@ -1,11 +1,11 @@
 package org.jetbrains.plugins.bsp.utils
 
 import io.kotest.matchers.shouldBe
-import org.jetbrains.plugins.bsp.magicmetamodel.extensions.toAbsolutePath
 import org.junit.jupiter.api.Test
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import kotlin.io.path.createTempDirectory
+import kotlin.io.path.toPath
 
 class BspURLEncoderTest {
   @Test
@@ -53,6 +53,6 @@ class BspURLEncoderTest {
     val malformedURI = URLDecoder.decode(tempDir.toUri().toString(), StandardCharsets.UTF_8.name())
 
     // when and then
-    tempDir shouldBe malformedURI.safeCastToURI().toAbsolutePath()
+    tempDir shouldBe malformedURI.safeCastToURI().toPath()
   }
 }
