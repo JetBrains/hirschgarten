@@ -156,7 +156,9 @@ class TestClient(
     test(timeout) { session, _ ->
       session.client.clearDiagnostics()
       val result = session.server.buildTargetCompile(transformedParams).await()
-      assertIterableEquals(expectedDiagnostics, session.client.publishDiagnosticsNotifications)
+      expectedDiagnostics.zip(session.client.publishDiagnosticsNotifications).forEach{
+        assertJsonEquals(it.first, it.second)
+      }
       assertJsonEquals(expectedResult, result)
     }
   }
