@@ -2,10 +2,12 @@ package org.jetbrains.bazel.bsp.connection
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.google.gson.Gson
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.JavaSdk
 import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
@@ -31,7 +33,7 @@ import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 
 @TestApplication
-open class MockProjectBaseTest {
+open class MockProjectBaseTest: Disposable {
   @JvmField
   @RegisterExtension
   protected val projectModel: ProjectModelExtension = ProjectModelExtension()
@@ -54,6 +56,10 @@ open class MockProjectBaseTest {
     }
 
     return result!!
+  }
+
+  override fun dispose() {
+    Disposer.dispose(project)
   }
 }
 
