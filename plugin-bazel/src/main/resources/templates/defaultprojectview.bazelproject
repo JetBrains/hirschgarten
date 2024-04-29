@@ -48,9 +48,6 @@ derive_targets_from_directories: false
 # You can use negative value to import all transitive dependencies.
 import_depth: 0
 
-# A flag specifying if `./bazelbsp/bazelbsp.trace.log` should be created and used to store trace logs.
-produce_trace_log: false
-
 # A set of bazel flags added to **all** bazel command invocations.
 #
 # Example:
