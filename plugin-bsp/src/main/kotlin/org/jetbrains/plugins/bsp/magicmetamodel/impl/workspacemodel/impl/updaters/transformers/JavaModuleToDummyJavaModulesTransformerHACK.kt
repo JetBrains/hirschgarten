@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 import com.intellij.openapi.module.ModuleTypeId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import java.io.File
@@ -29,12 +30,18 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
         calculateDummyJavaSourceModule(
           name = it.second,
           sourceRoot = it.first,
-          jdkName = inputEntity.jvmJdkName
+          jdkName = inputEntity.jvmJdkName,
+          javaAddendum = inputEntity.javaAddendum,
         )
       }
   }
 
-  private fun calculateDummyJavaSourceModule(name: String, sourceRoot: Path, jdkName: String?) =
+  private fun calculateDummyJavaSourceModule(
+    name: String,
+    sourceRoot: Path,
+    jdkName: String?,
+    javaAddendum: JavaAddendum?,
+  ) =
     if (name.isEmpty()) null
     else JavaModule(
       genericModuleInfo = GenericModuleInfo(
@@ -57,6 +64,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
       moduleLevelLibraries = listOf(),
       jvmJdkName = jdkName,
       kotlinAddendum = null,
+      javaAddendum = javaAddendum,
     )
 }
 
