@@ -13,12 +13,12 @@ object Plugin {
 
 // Plugin Verifier integration -> https://github.com/JetBrains/gradle-intellij-plugin//plugin-verifier-dsl
 // See https://jb.gg/intellij-platform-builds-list for available build versions.
-const val pluginVerifierIdeVersions = "241.15989.69"
+const val pluginVerifierIdeVersions = "241.15989.150"
 
 object Platform {
   const val type = "IC"
-  const val version = "241.15989.69"
-  const val snapshotVersion = "241.15989.69-EAP-SNAPSHOT"
+  const val version = "241.15989.150"
+  const val snapshotVersion = "241.15989.150"
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
   // Example: platformPlugins =" com.intellij.java, com.jetbrains.php:203.4449.22"
