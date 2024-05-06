@@ -93,7 +93,7 @@
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionConfidence"/>
         <completion.contributor
                 language="Starlark"
-                implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkBuiltInCompletionContributor"/>
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelGlobalFunctionCompletionContributor"/>
         <completion.contributor
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkParamsCompletionContributor"/>
