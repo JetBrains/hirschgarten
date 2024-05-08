@@ -29,7 +29,8 @@ public data class MagicMetaModelProjectConfig(
   val virtualFileUrlManager: VirtualFileUrlManager,
   val projectBasePath: Path,
   val project: Project,
-  val moduleNameProvider: ModuleNameProvider,
+  val moduleNameProvider: TargetNameReformatProvider,
+  val libraryNameProvider: TargetNameReformatProvider,
   val isPythonSupportEnabled: Boolean,
   val hasDefaultPythonInterpreter: Boolean,
   val isAndroidSupportEnabled: Boolean,
@@ -37,7 +38,8 @@ public data class MagicMetaModelProjectConfig(
   public constructor(
     workspaceModel: WorkspaceModel,
     virtualFileUrlManager: VirtualFileUrlManager,
-    moduleNameProvider: ModuleNameProvider?,
+    moduleNameProvider: TargetNameReformatProvider?,
+    libraryNameProvider: TargetNameReformatProvider?,
     projectBasePath: Path,
     project: Project,
     isPythonSupportEnabled: Boolean = false,
@@ -49,15 +51,20 @@ public data class MagicMetaModelProjectConfig(
     projectBasePath,
     project,
     moduleNameProvider ?: DefaultModuleNameProvider,
+    libraryNameProvider ?: DefaultLibraryNameProvider,
     isPythonSupportEnabled,
     hasDefaultPythonInterpreter,
     isAndroidSupportEnabled
   )
 }
 
-public typealias ModuleNameProvider = (BuildTargetInfo) -> String
+public typealias TargetNameReformatProvider = (BuildTargetInfo) -> String
 
-public object DefaultModuleNameProvider : ModuleNameProvider {
+public object DefaultModuleNameProvider : TargetNameReformatProvider {
+  override fun invoke(targetInfo: BuildTargetInfo): String = targetInfo.id
+}
+
+public object DefaultLibraryNameProvider : TargetNameReformatProvider {
   override fun invoke(targetInfo: BuildTargetInfo): String = targetInfo.id
 }
 

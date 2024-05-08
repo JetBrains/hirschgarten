@@ -21,7 +21,7 @@ import org.jetbrains.kotlin.compilerRunner.toArgumentStrings
 import org.jetbrains.kotlin.idea.workspaceModel.CompilerArgumentsSerializer
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
 import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
-import org.jetbrains.plugins.bsp.magicmetamodel.ModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.TargetsStatusStorage
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.PYTHON_SDK_ID
 import org.jetbrains.workspacemodel.entities.AndroidTargetType.APP
@@ -36,7 +36,7 @@ public object WorkspaceModelToModulesMapTransformer {
     workspaceModel: WorkspaceModel,
     targetsStatusStorage: TargetsStatusStorage,
     targetsMap: Map<BuildTargetId, BuildTargetInfo>,
-    moduleNameProvider: ModuleNameProvider,
+    moduleNameProvider: TargetNameReformatProvider,
   ): Map<BuildTargetId, Module> =
     with(workspaceModel.currentSnapshot) {
       WorkspaceModelToMagicMetamodelTransformer(

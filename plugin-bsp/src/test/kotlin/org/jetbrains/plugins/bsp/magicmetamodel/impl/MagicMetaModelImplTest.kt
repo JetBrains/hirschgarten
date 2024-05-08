@@ -34,7 +34,7 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     super.beforeEach()
 
     testMagicMetaModelProjectConfig =
-      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath, project)
+      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, null, projectBasePath, project)
   }
 
   private fun createBuildTargetInfo(target: BuildTarget) = with(target) {
@@ -735,7 +735,8 @@ class MagicMetaModelImplTest : WorkspaceModelBaseTest() {
     runBlocking { diff.applyOnWorkspaceModel() }
 
     magicMetaModel.getAllLoadedTargets() shouldContainExactlyInAnyOrder listOf(
-      expectedTargetA1, expectedTargetB1, expectedTargetC1, expectedTargetD1)
+      expectedTargetA1, expectedTargetB1, expectedTargetC1, expectedTargetD1
+    )
 
     val diff2 = magicMetaModel.loadTargetWithDependencies(targetA2.id.uri)
 

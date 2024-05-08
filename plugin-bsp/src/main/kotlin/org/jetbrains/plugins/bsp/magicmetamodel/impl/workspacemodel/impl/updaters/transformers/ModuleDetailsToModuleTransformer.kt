@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import org.jetbrains.plugins.bsp.magicmetamodel.ModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
@@ -12,12 +12,14 @@ import kotlin.io.path.toPath
 
 internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelEntity>(
   targetsMap: Map<BuildTargetId, BuildTargetInfo>,
-  moduleNameProvider: ModuleNameProvider,
+  moduleNameProvider: TargetNameReformatProvider,
+  libraryNameProvider: TargetNameReformatProvider,
 ) :
   WorkspaceModelEntityTransformer<ModuleDetails, T> {
   protected abstract val type: String
 
-  val bspModuleDetailsToModuleTransformer = BspModuleDetailsToModuleTransformer(targetsMap, moduleNameProvider)
+  val bspModuleDetailsToModuleTransformer =
+    BspModuleDetailsToModuleTransformer(targetsMap, moduleNameProvider, libraryNameProvider)
 
   abstract override fun transform(inputEntity: ModuleDetails): T
 

@@ -20,6 +20,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
+import org.jetbrains.plugins.bsp.magicmetamodel.DefaultLibraryNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
@@ -52,6 +53,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModules = ModuleDetailsToPythonModuleTransformer(
       mapOf(),
       DefaultModuleNameProvider,
+      DefaultLibraryNameProvider,
       hasDefaultPythonInterpreter
     ).transform(emptyModulesDetails)
 
@@ -153,6 +155,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModule = ModuleDetailsToPythonModuleTransformer(
       targetsMap,
       DefaultModuleNameProvider,
+      DefaultLibraryNameProvider,
       hasDefaultPythonInterpreter
     ).transform(moduleDetails)
 
@@ -347,6 +350,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModules = ModuleDetailsToPythonModuleTransformer(
       targetsMap,
       DefaultModuleNameProvider,
+      DefaultLibraryNameProvider,
       hasDefaultPythonInterpreter
     ).transform(modulesDetails)
 
@@ -523,6 +527,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModules = ModuleDetailsToPythonModuleTransformer(
       mapOf(),
       DefaultModuleNameProvider,
+      DefaultLibraryNameProvider,
       hasDefaultPythonInterpreter
     ).transform(modulesDetails)
 
