@@ -128,7 +128,8 @@
         <registryKey defaultValue="false" description="Default to use JPS to build project instead of BSP"
                      key="bsp.jps.project.compilation"/>
         <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
-        <registryKey defaultValue="false" description="Shorten module/library names by hashing the names' parts"
+        <registryKey defaultValue="false"
+                     description="Shorten module/library names by hashing the first parts and retaining the others"
                      key="bsp.shorten.module.library.names"/>
 
         <statusBarWidgetFactory id="BspDocumentTargetsWidget"

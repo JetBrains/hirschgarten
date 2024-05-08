@@ -34,11 +34,14 @@ private fun createNameReformatProvider(buildToolId: BuildToolId): (BuildTargetIn
 
 private fun List<String>.shortenTargetPath(): List<String> =
   if (BspFeatureFlags.isShortenModuleLibraryNamesEnabled) {
-    val minChar = 3
-    this.map {
-      if (it.length <= minChar) it
-      else it.take(minChar) + StringUtils.md5Hash(it, 2)
+    val maxLength = 200
+    var runningLength = 0
+    val (subPath, remaining) = asReversed().partition {
+      runningLength += it.length
+      runningLength <= maxLength
     }
+    if (remaining.isEmpty()) subPath.asReversed()
+    else listOf(StringUtils.md5Hash(remaining.joinToString(""), 5)) + subPath.asReversed()
   } else this
 
 internal fun String.replaceDots(): String = this.replace('.', '-')
