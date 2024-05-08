@@ -157,6 +157,7 @@ internal class DefaultBspConnection(
   }
 
   private fun BspConnectionDetails.connect(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) {
+    log.info("Connecting to server with connection details: $this")
     val client = createBspClient()
     val process = createAndStartProcessAndAddDisconnectActions(this)
 
