@@ -15,6 +15,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.MagicMetaModelProjectConfig
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.DefaultMagicMetaModelState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.MagicMetaModelImpl
+import org.jetbrains.plugins.bsp.utils.findLibraryNameProvider
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 
 @State(
@@ -73,6 +74,7 @@ public class MagicMetaModelService(private val project: Project) :
     val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
     val moduleNameProvider = project.findModuleNameProvider()
+    val libraryNameProvider = project.findLibraryNameProvider()
     val projectBasePath = project.rootDir.toNioPath()
 
     val isPythonSupportEnabled = BspFeatureFlags.isPythonSupportEnabled
@@ -85,6 +87,7 @@ public class MagicMetaModelService(private val project: Project) :
       workspaceModel,
       virtualFileUrlManager,
       moduleNameProvider,
+      libraryNameProvider,
       projectBasePath,
       project,
       isPythonSupportEnabled,

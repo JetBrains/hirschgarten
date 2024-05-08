@@ -5,7 +5,7 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
-import org.jetbrains.plugins.bsp.magicmetamodel.ModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
@@ -31,7 +31,8 @@ internal data class BspModuleDetails(
 
 internal class BspModuleDetailsToModuleTransformer(
   private val targetsMap: Map<BuildTargetId, BuildTargetInfo>,
-  private val moduleNameProvider: ModuleNameProvider,
+  private val moduleNameProvider: TargetNameReformatProvider,
+  private val libraryNameProvider: TargetNameReformatProvider,
 ) :
   WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
@@ -47,7 +48,7 @@ internal class BspModuleDetailsToModuleTransformer(
     )
 
   private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<IntermediateLibraryDependency> =
-    inputEntity.libraryDependencies?.map { IntermediateLibraryDependency(it, true) }
+    inputEntity.libraryDependencies?.map { it.toLibraryDependency(libraryNameProvider, true) }
       ?: if (inputEntity.target.languageIds.includesJavaOrScala())
         DependencySourcesItemToLibraryDependencyTransformer
           .transform(inputEntity.dependencySources.map {
@@ -75,7 +76,7 @@ internal object DependencySourcesItemToLibraryDependencyTransformer :
 internal class BuildTargetToModuleDependencyTransformer(
   private val allTargetsIds: Set<BuildTargetId>,
   private val targetsMap: Map<BuildTargetId, BuildTargetInfo>,
-  private val moduleNameProvider: ModuleNameProvider,
+  private val moduleNameProvider: TargetNameReformatProvider,
 ) : WorkspaceModelEntityPartitionTransformer<BuildTarget, IntermediateModuleDependency> {
   override fun transform(inputEntity: BuildTarget): List<IntermediateModuleDependency> =
     inputEntity
@@ -84,7 +85,17 @@ internal class BuildTargetToModuleDependencyTransformer(
       .mapNotNull { targetsMap[it.uri]?.toModuleDependency(moduleNameProvider) }
 }
 
-internal fun BuildTargetInfo.toModuleDependency(moduleNameProvider: ModuleNameProvider): IntermediateModuleDependency =
+internal fun BuildTargetInfo.toModuleDependency(moduleNameProvider: TargetNameReformatProvider):
+  IntermediateModuleDependency =
   IntermediateModuleDependency(
     moduleName = moduleNameProvider(this),
+  )
+
+internal fun BuildTargetId.toLibraryDependency(
+  libraryNameProvider: TargetNameReformatProvider,
+  isProjectLevelLibrary: Boolean,
+): IntermediateLibraryDependency =
+  IntermediateLibraryDependency(
+    libraryName = libraryNameProvider(BuildTargetInfo(id = this)),
+    isProjectLevelLibrary = isProjectLevelLibrary,
   )

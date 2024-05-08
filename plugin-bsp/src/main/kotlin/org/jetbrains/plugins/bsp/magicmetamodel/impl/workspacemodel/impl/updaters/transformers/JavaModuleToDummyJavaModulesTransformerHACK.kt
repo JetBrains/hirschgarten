@@ -6,6 +6,8 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModul
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
+import org.jetbrains.plugins.bsp.utils.replaceDots
+import org.jetbrains.plugins.bsp.utils.shortenTargetPath
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -93,5 +95,7 @@ internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Pat
   return absoluteSourceRoot
     .substringAfter(absoluteProjectBasePath)
     .trim { it == File.separatorChar }
+    .replaceDots()
     .replace(File.separator, ".")
+    .shortenTargetPath()
 }

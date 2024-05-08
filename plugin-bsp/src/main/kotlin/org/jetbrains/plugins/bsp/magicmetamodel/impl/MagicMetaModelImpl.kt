@@ -127,7 +127,7 @@ public class MagicMetaModelImpl : MagicMetaModel, ConvertableToState<DefaultMagi
 
   private fun createLibraries(libraries: List<LibraryItem>?) = libraries?.map {
     Library(
-      displayName = it.id.uri,
+      displayName = magicMetaModelProjectConfig.libraryNameProvider(BuildTargetInfo(id = it.id.uri)),
       iJars = it.ijars,
       classJars = it.jars,
       sourceJars = it.sourceJars,

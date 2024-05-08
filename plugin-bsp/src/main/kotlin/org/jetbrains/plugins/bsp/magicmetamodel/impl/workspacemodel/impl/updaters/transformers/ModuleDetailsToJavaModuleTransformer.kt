@@ -5,8 +5,7 @@ import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
-import org.jetbrains.kotlin.daemon.common.toHexString
-import org.jetbrains.plugins.bsp.magicmetamodel.ModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
@@ -19,18 +18,19 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.KotlinAddend
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ScalaAddendum
+import org.jetbrains.plugins.bsp.utils.StringUtils
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
-import java.security.MessageDigest
 import kotlin.io.path.name
 import kotlin.io.path.toPath
 
 internal class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<BuildTargetId, BuildTargetInfo>,
-  moduleNameProvider: ModuleNameProvider,
+  moduleNameProvider: TargetNameReformatProvider,
+  libraryNameProvider: TargetNameReformatProvider,
   private val projectBasePath: Path,
   private val isAndroidSupportEnabled: Boolean = false,
-) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, moduleNameProvider) {
+) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, moduleNameProvider, libraryNameProvider) {
   override val type = "JAVA_MODULE"
 
   private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer()
@@ -158,12 +158,6 @@ public fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
 public fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 
 public fun String.projectNameToJdkName(javaHomeUri: String): String =
-  projectNameToBaseJdkName() + "-" + javaHomeUri.md5Hash()
+  projectNameToBaseJdkName() + "-" + StringUtils.md5Hash(javaHomeUri, 5)
 
-public fun String.androidJarToAndroidSdkName(): String = "android-sdk-" + this.md5Hash()
-
-private fun String.md5Hash(): String {
-  val md = MessageDigest.getInstance("MD5")
-  val hash = md.digest(this.toByteArray())
-  return hash.toHexString().substring(0, 5)
-}
+public fun String.androidJarToAndroidSdkName(): String = "android-sdk-" + StringUtils.md5Hash(this, 5)

@@ -52,6 +52,7 @@ public class MagicMetaModelTemporaryFacade {
         projectBasePath = magicMetaModelProjectConfig.projectBasePath,
         targetsMap = targets,
         moduleNameProvider = magicMetaModelProjectConfig.moduleNameProvider,
+        libraryNameProvider = magicMetaModelProjectConfig.libraryNameProvider,
         hasDefaultPythonInterpreter = magicMetaModelProjectConfig.hasDefaultPythonInterpreter,
         isAndroidSupportEnabled = magicMetaModelProjectConfig.isAndroidSupportEnabled,
       )

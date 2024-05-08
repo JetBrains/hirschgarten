@@ -11,8 +11,9 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.plugins.bsp.magicmetamodel.DefaultLibraryNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.ModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
@@ -29,7 +30,9 @@ class BspModuleDetailsToModuleTransformerTest {
 
     // when
     val modules =
-      BspModuleDetailsToModuleTransformer(mapOf(), DefaultModuleNameProvider).transform(emptyBspModuleDetails)
+      BspModuleDetailsToModuleTransformer(mapOf(), DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+        emptyBspModuleDetails
+      )
 
     // then
     modules shouldBe emptyList()
@@ -87,7 +90,10 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
 
     // when
-    val module = BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider).transform(bspModuleDetails)
+    val module =
+      BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+        bspModuleDetails
+      )
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -155,7 +161,10 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1", "//target2", "//target3", "//target4", "//target5").toDefaultTargetsMap()
 
     // when
-    val module = BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider).transform(bspModuleDetails)
+    val module =
+      BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+        bspModuleDetails
+      )
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -228,7 +237,10 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1", "//target2", "//target3").toDefaultTargetsMap()
 
     // when
-    val module = BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider).transform(bspModuleDetails)
+    val module =
+      BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+        bspModuleDetails
+      )
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -341,7 +353,10 @@ class BspModuleDetailsToModuleTransformerTest {
 
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
     // when
-    val modules = BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider).transform(bspModuleDetails)
+    val modules =
+      BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+        bspModuleDetails
+      )
 
     // then
     val expectedModule1 = GenericModuleInfo(
@@ -465,7 +480,10 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
 
     // when
-    val modules = BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider).transform(bspModuleDetails)
+    val modules =
+      BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+        bspModuleDetails
+      )
 
     // then
     val expectedModule1 = GenericModuleInfo(
@@ -537,10 +555,12 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1").toDefaultTargetsMap()
 
     // when
-    val moduleNameProvider: ModuleNameProvider = { "${it.id}${it.id}" }
+    val moduleNameProvider: TargetNameReformatProvider = { "${it.id}${it.id}" }
+    val libraryNameProvider: TargetNameReformatProvider = { "${it.id}${it.id}" }
     val transformer = BspModuleDetailsToModuleTransformer(
       targetsMap,
       moduleNameProvider = moduleNameProvider,
+      libraryNameProvider = libraryNameProvider,
     )
     val module = transformer.transform(bspModuleDetails)
 

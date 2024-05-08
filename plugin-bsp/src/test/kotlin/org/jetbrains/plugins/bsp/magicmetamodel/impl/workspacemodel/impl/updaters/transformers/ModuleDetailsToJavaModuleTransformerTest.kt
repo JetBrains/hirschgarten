@@ -18,6 +18,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
+import org.jetbrains.plugins.bsp.magicmetamodel.DefaultLibraryNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
@@ -54,7 +55,12 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     // when
     val javaModules =
-      ModuleDetailsToJavaModuleTransformer(mapOf(), DefaultModuleNameProvider, projectBasePath).transform(
+      ModuleDetailsToJavaModuleTransformer(
+        mapOf(),
+        DefaultModuleNameProvider,
+        DefaultLibraryNameProvider,
+        projectBasePath
+      ).transform(
         emptyModulesDetails
       )
 
@@ -164,7 +170,14 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val targetsMap = listOf(buildTargetId.uri, "module2", "module3").toDefaultTargetsMap()
     // when
     val javaModule =
-      ModuleDetailsToJavaModuleTransformer(targetsMap, DefaultModuleNameProvider, projectBasePath).transform(moduleDetails)
+      ModuleDetailsToJavaModuleTransformer(
+        targetsMap,
+        DefaultModuleNameProvider,
+        DefaultLibraryNameProvider,
+        projectBasePath
+      ).transform(
+        moduleDetails
+      )
 
     // then
     val expectedModule = GenericModuleInfo(
@@ -307,6 +320,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val javaModule = ModuleDetailsToJavaModuleTransformer(
       targetsMap,
       DefaultModuleNameProvider,
+      DefaultLibraryNameProvider,
       projectBasePath,
     ).transform(moduleDetails)
 
@@ -515,7 +529,14 @@ class ModuleDetailsToJavaModuleTransformerTest {
     val targetsMap = listOf("module1", "module2", "module3").toDefaultTargetsMap()
     // when
     val javaModules =
-      ModuleDetailsToJavaModuleTransformer(targetsMap, DefaultModuleNameProvider, projectBasePath).transform(modulesDetails)
+      ModuleDetailsToJavaModuleTransformer(
+        targetsMap,
+        DefaultModuleNameProvider,
+        DefaultLibraryNameProvider,
+        projectBasePath
+      ).transform(
+        modulesDetails
+      )
 
     // then
     val expectedModule1 = GenericModuleInfo(

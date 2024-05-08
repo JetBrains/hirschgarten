@@ -27,7 +27,7 @@ class OverlappingTargetsGraphTest : WorkspaceModelBaseTest() {
     super.beforeEach()
 
     testMagicMetaModelProjectConfig =
-      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, projectBasePath, project)
+      MagicMetaModelProjectConfig(workspaceModel, virtualFileUrlManager, null, null, projectBasePath, project)
   }
 
   @Test
@@ -441,7 +441,9 @@ class OverlappingTargetsGraphTest : WorkspaceModelBaseTest() {
       // then
       val expectedOverlappingTargetsGraph =
         sources.zipWithNext().zipWithNext()
-          .associateBy({ it.first.second.target.uri }, { setOf(it.first.first.target.uri, it.second.second.target.uri) }) +
+          .associateBy(
+            { it.first.second.target.uri },
+            { setOf(it.first.first.target.uri, it.second.second.target.uri) }) +
           setOf(
             sources[0].target.uri to setOf(sources[1].target.uri),
             sources[sources.lastIndex].target.uri to setOf(sources[sources.lastIndex - 1].target.uri),
