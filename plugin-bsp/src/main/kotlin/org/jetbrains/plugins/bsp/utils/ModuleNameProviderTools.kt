@@ -47,6 +47,8 @@ private fun List<String>.shortenTargetPath(): List<String> =
 internal fun String.replaceDots(): String = this.replace('.', '-')
 
 internal fun String.shortenTargetPath(): String =
-  split(".").shortenTargetPath().joinToString(".")
+  if (BspFeatureFlags.isShortenModuleLibraryNamesEnabled)
+    split(".").shortenTargetPath().joinToString(".")
+  else this
 
 public fun TargetNameReformatProvider?.orDefault(): TargetNameReformatProvider = this ?: DefaultModuleNameProvider
