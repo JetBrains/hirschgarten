@@ -56,6 +56,9 @@
                 language="Starlark"
                 fileNames="BUILD;WORKSPACE"
                 extensions="bzl;bazel;bzlmod"/>
+        <enterBetweenBracesDelegate
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.indentation.StarlarkEnterBetweenBracesHandler"/>
         <lang.parserDefinition
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserDefinition"/>
