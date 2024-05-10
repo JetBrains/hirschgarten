@@ -27,14 +27,14 @@ private fun createNameReformatProvider(buildToolId: BuildToolId): (BuildTargetIn
   return { buildTargetInfo ->
     val sanitizedName = bspBuildTargetClassifier.calculateBuildTargetName(buildTargetInfo).replaceDots()
     bspBuildTargetClassifier.calculateBuildTargetPath(buildTargetInfo)
-      .shortenTargetPath()
+      .shortenTargetPath(sanitizedName.length)
       .joinToString(".", postfix = ".$sanitizedName") { pathElement -> pathElement.replaceDots() }
   }
 }
 
-private fun List<String>.shortenTargetPath(): List<String> =
+private fun List<String>.shortenTargetPath(targetNameLength: Int = 0): List<String> =
   if (BspFeatureFlags.isShortenModuleLibraryNamesEnabled) {
-    val maxLength = 200
+    val maxLength = 200 - targetNameLength
     var runningLength = 0
     val (subPath, remaining) = asReversed().partition {
       runningLength += it.length
