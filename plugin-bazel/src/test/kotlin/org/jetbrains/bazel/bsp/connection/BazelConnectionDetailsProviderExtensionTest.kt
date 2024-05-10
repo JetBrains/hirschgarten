@@ -16,6 +16,9 @@ import com.intellij.openapi.vfs.writeText
 import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.utils.vfs.createFile
+import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldNotContainAll
+import io.kotest.matchers.collections.shouldNotContainAnyOf
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
@@ -188,6 +191,8 @@ class BazelConnectionDetailsProviderExtensionTest: MockProjectBaseTest() {
     @BeforeEach
     fun beforeEach() {
       // given
+      BazelApplicationSettingsService.getInstance().settings = BazelApplicationSettings()
+
       runBlocking {
         extension.onFirstOpening(project, projectRoot)
       }
@@ -250,6 +255,61 @@ class BazelConnectionDetailsProviderExtensionTest: MockProjectBaseTest() {
       // then
       newConnectionDetails shouldNotBe null
       newConnectionDetails?.argv?.get(0) shouldBe "test/home/path/bin/java"
+    }
+
+    @Test
+    fun `should return new connection details if server custom jvm options have changed`() {
+      // given
+      val selectedJdk = ProjectJdkImpl("New Jdk", JavaSdk.getInstance(), "test/home/path", null)
+      val customJvmOptions = listOf("-XCustomOption", "-XAnotherCustomOption")
+
+      val bazelApplicationSettings = BazelApplicationSettings(
+        serverSettings = BazelApplicationServerSettings(
+          selectedJdk = selectedJdk,
+          customJvmOptions = customJvmOptions
+        )
+      )
+      val bazelApplicationSettingsService = BazelApplicationSettingsService.getInstance()
+
+      // when
+      val connectionDetails = extension.provideNewConnectionDetails(project, null)
+      bazelApplicationSettingsService.settings = bazelApplicationSettings
+      val newConnectionDetails = extension.provideNewConnectionDetails(project, connectionDetails)
+
+      // then
+      newConnectionDetails shouldNotBe null
+      newConnectionDetails?.argv!! shouldContainAll customJvmOptions
+    }
+
+    @Test
+    fun `should return new connection details if server custom jvm options have changed to empty list`() {
+      // given
+      val selectedJdk = ProjectJdkImpl("New Jdk", JavaSdk.getInstance(), "test/home/path", null)
+      val initCustomJvmOptions = listOf("-XCustomOption", "-XAnotherCustomOption")
+
+      val initBazelApplicationSettings = BazelApplicationSettings(
+        serverSettings = BazelApplicationServerSettings(
+          selectedJdk = selectedJdk,
+          customJvmOptions = initCustomJvmOptions
+        )
+      )
+      val bazelApplicationSettingsService = BazelApplicationSettingsService.getInstance()
+      bazelApplicationSettingsService.settings = initBazelApplicationSettings
+      val connectionDetails = extension.provideNewConnectionDetails(project, null)
+
+      // when
+      val bazelApplicationSettings = BazelApplicationSettings(
+        serverSettings = BazelApplicationServerSettings(
+          selectedJdk = selectedJdk,
+          customJvmOptions = emptyList()
+        )
+      )
+      bazelApplicationSettingsService.settings = bazelApplicationSettings
+      val newConnectionDetails = extension.provideNewConnectionDetails(project, connectionDetails)
+
+      // then
+      newConnectionDetails shouldNotBe null
+      newConnectionDetails?.argv!! shouldNotContainAnyOf initCustomJvmOptions
     }
   }
 }
