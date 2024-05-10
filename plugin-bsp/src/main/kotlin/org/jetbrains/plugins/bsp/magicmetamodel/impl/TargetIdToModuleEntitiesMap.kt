@@ -1,5 +1,9 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
@@ -37,14 +41,18 @@ public object TargetIdToModuleEntitiesMap {
 
     val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
 
-    return projectDetails.targetsId.associate {
-      val moduleDetails = transformer.moduleDetailsForTargetId(it)
-      val module = if (moduleDetails.target.languageIds.includesPython()) {
-        moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
-      } else {
-        moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
-      }
-      it.uri to module
+    return runBlocking(Dispatchers.Default) {
+      projectDetails.targetsId.map {
+        async {
+          val moduleDetails = transformer.moduleDetailsForTargetId(it)
+          val module = if (moduleDetails.target.languageIds.includesPython()) {
+            moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
+          } else {
+            moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
+          }
+          it.uri to module
+        }
+      }.awaitAll().toMap()
     }
   }
 }
