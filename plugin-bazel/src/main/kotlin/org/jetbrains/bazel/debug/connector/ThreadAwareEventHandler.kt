@@ -53,17 +53,25 @@ class ThreadAwareEventHandler(
       primaryThreadId = primaryThreadId,
     )
 
-    if (event.thread.pauseReason == SDP.PauseReason.HIT_BREAKPOINT) {
-      val breakpoint =
-        breakpointResolver(event.thread.location.path, event.thread.location.lineNumber)
-      val shouldStop = breakpoint?.let {
-        session.breakpointReached(it, null, suspendContext)
-      }
-      if (shouldStop != true) {
-        messenger.resumeThread(primaryThreadId)
-      }
-    } else {
-      session.positionReached(suspendContext)
+    when (event.thread.pauseReason) {
+      SDP.PauseReason.HIT_BREAKPOINT -> handleBreakpointHit(event, suspendContext, primaryThreadId)
+      SDP.PauseReason.INITIALIZING -> { /* ignore */ }
+      else -> session.positionReached(suspendContext)
+    }
+  }
+
+  private fun handleBreakpointHit(
+    event: SDP.ThreadPausedEvent,
+    suspendContext: StarlarkSuspendContext,
+    primaryThreadId: Long,
+  ) {
+    val breakpoint =
+      breakpointResolver(event.thread.location.path, event.thread.location.lineNumber)
+    val shouldStop = breakpoint?.let {
+      session.breakpointReached(it, null, suspendContext)
+    }
+    if (shouldStop != true) {
+      messenger.resumeThread(primaryThreadId)
     }
   }
 
