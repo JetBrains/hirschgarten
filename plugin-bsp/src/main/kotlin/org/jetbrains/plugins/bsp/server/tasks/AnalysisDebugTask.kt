@@ -15,17 +15,15 @@ public class AnalysisDebugTask(
   private val port: Int,
   private val taskListener: BspTaskListener,
 ) {
-  public fun connectAndExecute(
-    targetsIds: List<BuildTargetIdentifier>
-  ): CompletableFuture<AnalysisDebugResult> {
+  public fun connectAndExecute(targetsIds: List<BuildTargetIdentifier>): CompletableFuture<AnalysisDebugResult> {
     val originId = "analysis-debug-" + UUID.randomUUID().toString()
 
     BspTaskEventsService.getInstance(project).saveListener(originId, taskListener)
 
     val params = AnalysisDebugParams(originId, port, targetsIds)
 
-    return doExecute(params).also {
-      it.handle { _, _ -> BspTaskEventsService.getInstance(project).removeListener(originId) }
+    return doExecute(params).apply {
+      handle { _, _ -> BspTaskEventsService.getInstance(project).removeListener(originId) }
     }
   }
 
