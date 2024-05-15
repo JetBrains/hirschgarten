@@ -113,6 +113,7 @@
 
         <formattingService implementation="org.jetbrains.bazel.languages.starlark.services.StarlarkFormattingService"/>
 
+        <runLineMarkerContributor implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor" language="Starlark" />
     </extensions>
 
     <actions>
