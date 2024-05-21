@@ -43,10 +43,15 @@ internal class ModuleEntityUpdater(
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val librariesDependencies =
       entityToAdd.librariesDependencies.map { toLibraryDependency(it) }
+
+    // library dependencies should be included before module dependencies
+    // to handle the case of overridden library versions
+    val dependencies = defaultDependencies + librariesDependencies + modulesDependencies + associatesDependencies
+
     val moduleEntity = builder.addEntity(
       ModuleEntity(
         name = entityToAdd.name,
-        dependencies = defaultDependencies + modulesDependencies + associatesDependencies + librariesDependencies,
+        dependencies = dependencies,
         entitySource = toEntitySource(entityToAdd),
       ) {
         this.type = entityToAdd.type
