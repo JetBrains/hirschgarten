@@ -16,10 +16,8 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.buildToolIdOrNull
-import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import java.net.URI
 import kotlin.io.path.toPath
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library as MMMLibrary
@@ -110,7 +108,7 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
 }
 
 private fun getAllMMMLibraries(project: Project): List<MMMLibrary> =
-  MagicMetaModelService.getInstance(project).value.getLibraries()
+  project.temporaryTargetUtils.getAllLibraries()
 
 private fun Library.pickSourcesFromBazel(mmmLibraries: List<MMMLibrary>) =
   mmmLibraries.filter { it.displayName == name }
