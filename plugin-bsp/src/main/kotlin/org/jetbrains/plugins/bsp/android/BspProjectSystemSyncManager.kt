@@ -7,14 +7,11 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 
 public class BspProjectSystemSyncManager(private val project: Project) : ProjectSystemSyncManager {
   init {
-    val magicMetaModel = MagicMetaModelService.getInstance(project).value
-    magicMetaModel.registerTargetLoadListener {
-      notifySyncEnded(project)
-    }
+    project.temporaryTargetUtils.registerListener { notifySyncEnded(project) }
     initialNotifySyncEnded(project)
   }
 

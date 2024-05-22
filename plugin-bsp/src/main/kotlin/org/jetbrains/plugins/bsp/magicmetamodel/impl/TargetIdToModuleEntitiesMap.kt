@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
@@ -24,6 +25,7 @@ public object TargetIdToModuleEntitiesMap {
     libraryNameProvider: TargetNameReformatProvider,
     hasDefaultPythonInterpreter: Boolean,
     isAndroidSupportEnabled: Boolean,
+    transformer: ProjectDetailsToModuleDetailsTransformer,
   ): Map<BuildTargetId, Module> {
     val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(
       targetsMap,
@@ -38,8 +40,6 @@ public object TargetIdToModuleEntitiesMap {
       libraryNameProvider,
       hasDefaultPythonInterpreter,
     )
-
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
 
     return runBlocking(Dispatchers.Default) {
       projectDetails.targetsId.map {
@@ -56,3 +56,10 @@ public object TargetIdToModuleEntitiesMap {
     }
   }
 }
+
+@TestOnly
+public fun Collection<String>.toDefaultTargetsMap(): Map<BuildTargetId, BuildTargetInfo> =
+  associateBy(
+    keySelector = { it },
+    valueTransform = { BuildTargetInfo(id = it) }
+  )

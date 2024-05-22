@@ -7,10 +7,6 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
-import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.ui.actions.target.LoadTargetAction
-import org.jetbrains.plugins.bsp.ui.actions.target.LoadTargetWithDependenciesAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
 import java.awt.Point
@@ -29,8 +25,6 @@ public class NotLoadedTargetsMouseListener(
     if (mouseEvent.mouseButton == MouseButton.Right) {
       selectTargetIfSearchListIsDisplayed(mouseEvent.point)
       showPopup(mouseEvent)
-    } else if (mouseEvent.isDoubleClick()) {
-      onDoubleClick()
     }
   }
 
@@ -57,34 +51,12 @@ public class NotLoadedTargetsMouseListener(
 
     return if (target != null) {
       val copyTargetIdAction = container.copyTargetIdAction
-      val loadTargetAction = LoadTargetAction(
-        targetId = target.id,
-        text = { BspPluginBundle.message("widget.load.target.popup.message") },
-      )
-      val loadTargetWithDepsAction = LoadTargetWithDependenciesAction(
-        targetId = target.id,
-        text = {
-          BspPluginBundle.message("widget.load.target.with.deps.popup.message")
-        },
-      )
       DefaultActionGroup().apply {
         addAction(copyTargetIdAction)
         addSeparator()
         container.getTargetActions(project, target).map { addAction(it); addSeparator() }
-        addAction(loadTargetAction)
-        addSeparator()
-        addAction(loadTargetWithDepsAction)
       }
     } else null
-  }
-
-  private fun MouseEvent.isDoubleClick(): Boolean =
-    this.mouseButton == MouseButton.Left && this.clickCount == 2
-
-  private fun onDoubleClick() {
-    container.getSelectedBuildTarget()?.let {
-      BspCoroutineService.getInstance(project).start { LoadTargetAction.loadTarget(project, it.id) }
-    }
   }
 
   override fun mousePressed(e: MouseEvent?) { // nothing to do

@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter
 
-import org.jetbrains.plugins.bsp.magicmetamodel.MagicMetaModel
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 
 public class TargetFilter(
   private val onFilterChange: () -> Unit,
@@ -16,11 +16,8 @@ public class TargetFilter(
 
   public fun isFilterOn(): Boolean = currentFilter != FILTER.OFF
 
-  public fun getMatchingLoadedTargets(magicMetaModel: MagicMetaModel): List<BuildTargetInfo> =
-    magicMetaModel.getAllLoadedTargets().filterTargets()
-
-  public fun getMatchingNotLoadedTargets(magicMetaModel: MagicMetaModel): List<BuildTargetInfo> =
-    magicMetaModel.getAllNotLoadedTargets().filterTargets()
+  public fun getMatchingLoadedTargets(xd: TemporaryTargetUtils): List<BuildTargetInfo> =
+    xd.allTargetIds().mapNotNull { xd.getBuildTargetInfoForId(it) }.filterTargets()
 
   private fun List<BuildTargetInfo>.filterTargets(): List<BuildTargetInfo> =
     this.filter(currentFilter.predicate)
