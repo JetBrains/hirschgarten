@@ -15,7 +15,7 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
 import java.nio.file.Path
 
-internal data class ModuleDetails(
+public data class ModuleDetails(
   val target: BuildTarget,
   val sources: List<SourcesItem>,
   val resources: List<ResourcesItem>,

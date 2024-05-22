@@ -1,7 +1,6 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl
 
 import org.jetbrains.bsp.protocol.AndroidTargetType
-import org.jetbrains.plugins.bsp.magicmetamodel.MagicMetaModelTemporaryFacadeState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.AndroidAddendum
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
@@ -329,14 +328,4 @@ public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabil
   canTest = canTest,
   canCompile = canCompile,
   canDebug = canDebug,
-)
-
-public data class DefaultMagicMetaModelState(
-  public var facadeState: MagicMetaModelTemporaryFacadeState = MagicMetaModelTemporaryFacadeState(),
-  public var libraries: List<LibraryState>? = null,
-  public var targetsDetailsForDocumentProviderState: TargetsDetailsForDocumentProviderState =
-    TargetsDetailsForDocumentProviderState(),
-  public var overlappingTargetsGraph: Map<BuildTargetId, Set<BuildTargetId>> = emptyMap(),
-  public var targetsStatusStorageState: TargetsStatusStorageState = TargetsStatusStorageState(),
-  public var outputPathUris: List<String> = emptyList(),
 )

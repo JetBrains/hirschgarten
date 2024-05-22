@@ -20,9 +20,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetI
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifiers
 import org.jetbrains.plugins.bsp.server.tasks.runBuildTargetTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
-import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
-import org.jetbrains.plugins.bsp.utils.orDefault
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 
 public class BspProjectTaskRunner : ProjectTaskRunner() {
   private val log = logger<BspProjectTaskRunner>()
@@ -61,30 +59,11 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   }
 
   private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTargetInfo> {
-    val magicMetaModel = MagicMetaModelService.getInstance(project).value
-    return when {
-      tasks.isEmpty() -> emptyList()
-      tasks.size >= magicMetaModel.getAllLoadedTargets().size ->
-        magicMetaModel.getAllLoadedTargets() + magicMetaModel.getAllNotLoadedTargets()
-
-      else -> {
-        val moduleNames = tasks.map { it.module.name }
-        magicMetaModel.getAllLoadedTargets()
-          .filter { it.belongsToModules(project, moduleNames) }
-      }
-    }
+    val temporaryTargetUtils = project.temporaryTargetUtils
+    return tasks.map { it.module.name }
+      .mapNotNull { temporaryTargetUtils.getTargetIdForModuleId(it) }
+      .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
   }
-
-  private fun BuildTargetInfo.belongsToModules(project: Project, moduleNames: List<String>): Boolean {
-    val moduleNameProvider = project.findModuleNameProvider().orDefault()
-    val targetModuleName = moduleNameProvider(this)
-    return moduleNames.any {
-      it == targetModuleName || targetModuleName isSubmoduleOf it
-    }
-  }
-
-  private infix fun String.isSubmoduleOf(module: String): Boolean =
-    this.startsWith("$module.", false)
 
   @OptIn(ExperimentalCoroutinesApi::class)
   private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTargetInfo>): Promise<Result> {
