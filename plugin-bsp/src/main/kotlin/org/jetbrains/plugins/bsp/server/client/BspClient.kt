@@ -43,7 +43,7 @@ public class BspClient(
   override fun onBuildShowMessage(params: ShowMessageParams) {
     onBuildEvent()
 
-    log.warn("Got show message: $params")
+    log.debug("Got show message: $params")
 
     val originId = params.originId ?: return // TODO
     val message = params.message ?: return // TODO
@@ -56,7 +56,7 @@ public class BspClient(
   override fun onBuildLogMessage(params: LogMessageParams) {
     onBuildEvent()
 
-    log.warn("Got log message: $params")
+    log.debug("Got log message: $params")
 
     // Legacy task handling
     if (params.originId == null || !BspTaskEventsService.getInstance(project).existsListener(params.originId)) {
@@ -77,7 +77,7 @@ public class BspClient(
 
     val taskId = params.taskId.id
 
-    log.warn("Got task start: $params")
+    log.debug("Got task start: $params")
     val originId = params.originId ?: return // TODO
     val maybeParent = params.taskId.parents?.firstOrNull()
 
@@ -105,7 +105,7 @@ public class BspClient(
   override fun onBuildTaskProgress(params: TaskProgressParams) {
     onBuildEvent()
 
-    log.warn("Got task progress: $params")
+    log.debug("Got task progress: $params")
 
     val taskId = params.taskId.id
     val originId = params.originId ?: return // TODO
@@ -118,7 +118,7 @@ public class BspClient(
   override fun onBuildTaskFinish(params: TaskFinishParams) {
     onBuildEvent()
     val taskId = params.taskId.id
-    log.warn("Got task finish: $params")
+    log.debug("Got task finish: $params")
     val originId = params.originId ?: return // TODO
 
     val data: Any? = when (params.dataKind) {
@@ -146,7 +146,7 @@ public class BspClient(
 
   override fun onRunPrintStdout(params: PrintParams) {
     onBuildEvent()
-    log.warn("Got print stdout: $params")
+    log.debug("Got print stdout: $params")
     val originId = params.originId ?: return // TODO
     val taskId = params.task.id
     val message = params.message ?: return // TODO
@@ -158,7 +158,7 @@ public class BspClient(
 
   override fun onRunPrintStderr(params: PrintParams) {
     onBuildEvent()
-    log.warn("Got print stderr: $params")
+    log.debug("Got print stderr: $params")
     val originId = params.originId ?: return // TODO
     val taskId = params.task.id
     val message = params.message ?: return // TODO
@@ -173,7 +173,7 @@ public class BspClient(
 
     // Legacy task handling
     if (params.originId == null || !BspTaskEventsService.getInstance(project).existsListener(params.originId)) {
-      log.warn("Got diagnostics without listener: $params")
+      log.debug("Got diagnostics without listener: $params")
       addDiagnosticToConsole(params)
       return
     }
