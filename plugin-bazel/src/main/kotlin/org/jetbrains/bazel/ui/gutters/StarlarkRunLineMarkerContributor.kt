@@ -12,7 +12,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionS
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.services.MagicMetaModelService
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 import java.net.URI
@@ -39,12 +39,10 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     containingFile.virtualFile?.url?.let { url ->
       val targetId = calculateTargetId(url) ?: return null
 
-      val magicMetaModel = MagicMetaModelService.getInstance(project).value
-      val targetInfo = (magicMetaModel.getAllLoadedTargets() + magicMetaModel.getAllNotLoadedTargets())
-        .firstOrNull { it.id.endsWith(targetId) }
+      val realTargetId = project.temporaryTargetUtils.allTargetIds().firstOrNull { it.uri.endsWith(targetId) }
+      val targetInfo = realTargetId?.let { project.temporaryTargetUtils.getBuildTargetInfoForId(it) }
       calculateLineMarkerInfo(targetInfo).takeIf { it.actions.isNotEmpty() }
     }
-
 
   private fun PsiElement.calculateTargetId(buildFileUrl: String): String? {
     val targetName = getTargetName() ?: return null
