@@ -4,10 +4,8 @@ import com.intellij.build.BuildViewManager
 import com.intellij.build.SyncViewManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
-import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 
 @Service(Service.Level.PROJECT)
 public class BspConsoleService(project: Project) {
@@ -17,12 +15,11 @@ public class BspConsoleService(project: Project) {
 
   init {
     val basePath = project.rootDir.path
-    val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
 
     bspBuildConsole =
-      BuildTaskConsole(project.getService(BuildViewManager::class.java), basePath, assetsExtension.presentableName)
+      BuildTaskConsole(project.getService(BuildViewManager::class.java), basePath, project.assets.presentableName)
     bspSyncConsole =
-      SyncTaskConsole(project.getService(SyncViewManager::class.java), basePath, assetsExtension.presentableName)
+      SyncTaskConsole(project.getService(SyncViewManager::class.java), basePath, project.assets.presentableName)
   }
 
   public companion object {

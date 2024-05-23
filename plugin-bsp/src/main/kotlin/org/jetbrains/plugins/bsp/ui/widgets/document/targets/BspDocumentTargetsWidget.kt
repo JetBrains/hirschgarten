@@ -16,11 +16,9 @@ import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager
-import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
+import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import javax.swing.Icon
 
@@ -33,11 +31,9 @@ public class BspDocumentTargetsWidget(project: Project) : EditorBasedStatusBarPo
 
   override fun ID(): String = ID
 
-  override fun getWidgetState(file: VirtualFile?): WidgetState {
-    val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
-    return if (file == null) inactiveWidgetState(assetsExtension.icon)
-    else activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, assetsExtension.icon)
-  }
+  override fun getWidgetState(file: VirtualFile?): WidgetState =
+    if (file == null) inactiveWidgetState(project.assets.icon)
+    else activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, project.assets.icon)
 
   private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
     val targets = project.temporaryTargetUtils.getTargetsForFile(file)

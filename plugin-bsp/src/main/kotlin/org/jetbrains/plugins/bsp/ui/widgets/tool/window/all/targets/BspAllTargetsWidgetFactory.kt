@@ -10,15 +10,14 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.ContentFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
-import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowPanel
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 
 public class BspAllTargetsWidgetFactory : ToolWindowFactory, DumbAware {
   override suspend fun isApplicableAsync(project: Project): Boolean = project.isBspProject
+
   override fun shouldBeAvailable(project: Project): Boolean =
     project.isBspProject
 
@@ -37,12 +36,11 @@ public class BspAllTargetsWidgetFactory : ToolWindowFactory, DumbAware {
 
 public suspend fun registerBspToolWindow(project: Project) {
   val toolWindowManager = ToolWindowManager.getInstance(project)
-  val assetsExtension = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(project.buildToolId)
-  val currentToolWindow = toolWindowManager.getToolWindow(assetsExtension.presentableName)
+  val currentToolWindow = toolWindowManager.getToolWindow(project.assets.presentableName)
   if (currentToolWindow == null) {
     withContext(Dispatchers.EDT) {
-      toolWindowManager.registerToolWindow(assetsExtension.presentableName) {
-        this.icon = assetsExtension.icon
+      toolWindowManager.registerToolWindow(project.assets.presentableName) {
+        this.icon = project.assets.icon
         this.anchor = ToolWindowAnchor.RIGHT
         this.canCloseContent = false
         this.contentFactory = BspAllTargetsWidgetFactory()
