@@ -13,7 +13,6 @@ internal class BazelAssetsExtension : BuildToolAssetsExtension {
 
   override val icon: Icon = BazelPluginIcons.bazel
 
-  override val loadedTargetIcon: Icon = IconLoader.getIcon("/icons/bazel.svg", javaClass)
-  override val unloadedTargetIcon: Icon = IconLoader.getIcon("/icons/grayBazel.svg", javaClass)
+  override val targetIcon: Icon = IconLoader.getIcon("/icons/bazel.svg", javaClass)
   override val invalidTargetIcon: Icon = IconLoader.getIcon("/icons/redBazel.svg", javaClass)
 }
