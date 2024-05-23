@@ -12,8 +12,7 @@ public interface BuildToolAssetsExtension : WithBuildToolId {
 
   public val icon: Icon
 
-  public val loadedTargetIcon: Icon
-  public val unloadedTargetIcon: Icon
+  public val targetIcon: Icon
 
   public val invalidTargetIcon: Icon
 
