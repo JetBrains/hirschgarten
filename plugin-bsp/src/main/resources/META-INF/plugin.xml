@@ -133,7 +133,7 @@
                      key="bsp.shorten.module.library.names"/>
 
         <statusBarWidgetFactory id="BspDocumentTargetsWidget"
-                                implementation="org.jetbrains.plugins.bsp.ui.widgets.document.targets.BspDocumentTargetsWidgetFactory"/>
+                                implementation="org.jetbrains.plugins.bsp.ui.widgets.file.targets.BspFileTargetsWidgetFactory"/>
 
         <toolWindowAllowlist id="BSP"/>
 

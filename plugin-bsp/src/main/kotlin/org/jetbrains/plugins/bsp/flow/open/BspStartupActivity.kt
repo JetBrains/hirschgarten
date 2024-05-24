@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.application.AppUIExecutor
-import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
@@ -27,7 +26,7 @@ import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.server.connection.connectionDetailsProvider
 import org.jetbrains.plugins.bsp.server.tasks.SyncProjectTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.widgets.document.targets.updateBspDocumentTargetsWidget
+import org.jetbrains.plugins.bsp.ui.widgets.file.targets.updateBspFileTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 import kotlin.system.exitProcess
@@ -75,7 +74,7 @@ public class BspStartupActivity : ProjectActivity {
   private suspend fun Project.executeEveryTime() {
     log.debug("Executing BSP startup activities for every opening")
     registerBspToolWindow(this)
-    updateBspDocumentTargetsWidget()
+    updateBspFileTargetsWidget()
     RunConfigurationProducersDisabler(this)
   }
 
