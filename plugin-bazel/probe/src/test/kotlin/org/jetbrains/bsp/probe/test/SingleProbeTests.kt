@@ -21,9 +21,6 @@ class SingleProbeTests {
     ) {
       runIntellijAndOpenProject { probe, robot, intellij ->
         fun testTargetsTree(buildPanel: SearchableOps) {
-          val loaded =
-            buildPanel.findElement(Query.className("ActionButton", "myaction.key" to "widget.loaded.targets.tab.name"))
-          loaded.click()
           val targetsTree = buildPanel.findElement(Query.className("Tree"))
           probe.screenshot("_bazel-bsp-build-panel")
           Assertions.assertEquals(8, targetsTree.fullTexts().size)
