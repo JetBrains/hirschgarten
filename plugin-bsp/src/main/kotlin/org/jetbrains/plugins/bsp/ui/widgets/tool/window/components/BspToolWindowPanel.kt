@@ -57,9 +57,10 @@ public class BspToolWindowPanel(project: Project) : SimpleToolWindowPanel(true, 
     val actionManager = ActionManager.getInstance()
     val listsUpdater = ListsUpdater(project, this::showCurrentPanel)
 
-    val actionGroup = actionManager
-      .getAction("Bsp.ActionsToolbar") as DefaultActionGroup
+    val defaultActions = actionManager.getAction("Bsp.ActionsToolbar")
 
+    val actionGroup = DefaultActionGroup()
+    actionGroup.addAll(defaultActions)
     actionGroup.addSeparator()
     actionGroup.add(FilterActionGroup(listsUpdater.targetFilter))
 
