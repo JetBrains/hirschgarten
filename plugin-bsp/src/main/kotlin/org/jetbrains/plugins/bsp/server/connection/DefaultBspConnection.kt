@@ -114,13 +114,13 @@ internal class DefaultBspConnection(
   private var disconnectActions: MutableList<() -> Unit> = mutableListOf()
   private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
 
-  override fun connect(taskId: Any, errorCallback: () -> Unit) {
+  override fun connect(taskId: Any, errorCallback: (String) -> Unit) {
     if (!isConnected()) {
       doConnect(taskId, errorCallback)
     }
   }
 
-  private fun doConnect(taskId: Any, errorCallback: () -> Unit) {
+  private fun doConnect(taskId: Any, errorCallback: (String) -> Unit) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
     bspSyncConsole.startSubtask(
@@ -140,7 +140,7 @@ internal class DefaultBspConnection(
     }
   }
 
-  private fun connectOrThrowIfFailed(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) {
+  private fun connectOrThrowIfFailed(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: (String) -> Unit) {
     bspSyncConsole.addMessage(
       taskId = connectSubtaskId,
       message = BspPluginBundle.message("console.task.connect.message.in.progress"),
@@ -156,7 +156,7 @@ internal class DefaultBspConnection(
     }
   }
 
-  private fun BspConnectionDetails.connect(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) {
+  private fun BspConnectionDetails.connect(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: (String) -> Unit) {
     log.info("Connecting to server with connection details: $this")
     val client = createBspClient()
     val process = createAndStartProcessAndAddDisconnectActions(this)
@@ -222,13 +222,13 @@ internal class DefaultBspConnection(
     }
   }
 
-  private fun Process.handleErrorOnExit(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: () -> Unit) =
+  private fun Process.handleErrorOnExit(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: (String) -> Unit) =
     this.onExit().whenComplete { completedProcess, _ ->
       val exitValue = completedProcess.exitValue()
       if (exitValue != OK_EXIT_CODE && exitValue != TERMINATED_EXIT_CODE) {
         val errorMessage = BspPluginBundle.message("console.server.exited", exitValue)
         bspSyncConsole.finishTask(taskId, errorMessage, FailureResultImpl(errorMessage))
-        errorCallback()
+        errorCallback(errorMessage)
       }
     }
 

@@ -27,7 +27,7 @@ public interface BspConnection {
    * Establish a connection with the server, and initialize server.
    * If the connection is already established no actions should be performed.
    */
-  public fun connect(taskId: Any, errorCallback: () -> Unit = {})
+  public fun connect(taskId: Any, errorCallback: (String) -> Unit = {})
 
   /**
    * Disconnect from the server,

@@ -3,11 +3,15 @@ package org.jetbrains.plugins.bsp.server.tasks
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.job
+import kotlinx.coroutines.runInterruptible
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspSyncStatusService
 import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
+import java.util.concurrent.CancellationException
 
 private const val SYNC_TASK_ID = "bsp-sync-project"
 
@@ -30,7 +34,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
     saveAllFiles()
   }
 
-  private suspend fun collectProject(taskId: String, buildProject: Boolean) {
+  private suspend fun collectProject(taskId: String, buildProject: Boolean) = coroutineScope {
     log.debug("Collecting project details")
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, taskId)
 
@@ -42,7 +46,12 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
       cancelAction = { collectProjectDetailsTask.onCancel() },
     )
     log.debug("Connecting to the server")
-    project.connection.connect(taskId) { collectProjectDetailsTask.cancelExecution() }
+    runInterruptible {
+      project.connection.connect(taskId) { errorMessage ->
+        collectProjectDetailsTask.cancelExecution()
+        coroutineContext.job.cancel(cause = CancellationException(errorMessage))
+      }
+    }
     try {
       log.debug("Running CollectProjectDetailsTask")
       collectProjectDetailsTask.execute(
