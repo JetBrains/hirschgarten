@@ -8,7 +8,9 @@ import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
+import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
+import org.jetbrains.workspacemodel.entities.BspEntitySource
 
 internal class LibraryEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
@@ -31,10 +33,7 @@ internal class LibraryEntityUpdater(
     entityToAdd: Library,
   ): LibraryEntity {
     val tableId = LibraryTableId.ProjectLibraryTableId
-    val entitySource = LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
-      workspaceModelEntityUpdaterConfig.project,
-      null
-    )
+    val entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig)
     return addLibraryEntity(builder, entityToAdd, tableId, entitySource)
   }
 
@@ -73,4 +72,13 @@ internal class LibraryEntityUpdater(
         type = LibraryRootTypeId.COMPILED,
       )
     }
+}
+
+internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig):
+  EntitySource = when {
+  !JpsFeatureFlags.isJpsCompilationEnabled -> BspEntitySource
+  else -> LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
+    workspaceModelEntityUpdaterConfig.project,
+    null
+  )
 }

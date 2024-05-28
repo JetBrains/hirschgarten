@@ -127,6 +127,7 @@
         <registryKey defaultValue="false" description="Scala modules support" key="bsp.scala.support"/>
         <registryKey defaultValue="false" description="Default to use JPS to build project instead of BSP"
                      key="bsp.jps.project.compilation"/>
+        <registryKey defaultValue="false" description="Enable JPS compilation" key="bsp.jps.enable"/>
         <registryKey defaultValue="false" description="Android modules support" key="bsp.android.support"/>
         <registryKey defaultValue="false"
                      description="Shorten module/library names by hashing the first parts and retaining the others"
