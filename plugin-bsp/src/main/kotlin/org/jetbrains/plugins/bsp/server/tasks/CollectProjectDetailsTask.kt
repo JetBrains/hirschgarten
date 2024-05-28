@@ -118,7 +118,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   private var androidSdks: Set<AndroidSdk>? = null
 
-  private lateinit var coroutineJob: Job
+  private var coroutineJob: Job? = null
 
   public suspend fun execute(name: String, cancelable: Boolean, buildProject: Boolean = false) {
     saveAllFiles()
@@ -137,7 +137,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
           }
         }
       }
-      coroutineJob.join()
+      coroutineJob?.join()
     }
   }
 
@@ -578,7 +578,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
   public fun cancelExecution() {
     cancelOnFuture.cancel(true)
-    coroutineJob.cancel()
+    coroutineJob?.cancel()
   }
 }
 
