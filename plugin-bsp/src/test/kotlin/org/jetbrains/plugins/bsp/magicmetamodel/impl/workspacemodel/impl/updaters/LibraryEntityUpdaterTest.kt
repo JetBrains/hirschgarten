@@ -4,7 +4,6 @@ import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
-import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.workspace.model.matchers.entries.ExpectedLibraryEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -57,10 +56,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
         tableId = LibraryTableId.ProjectLibraryTableId,
         name = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
         roots = listOf(expectedLibrarySourcesRoot, expectedLibraryClassesRoot),
-        entitySource = LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
-          workspaceModelEntityUpdaterConfig.project,
-          null
-        ),
+        entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig),
       ),
     )
 
@@ -104,10 +100,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
         tableId = LibraryTableId.ProjectLibraryTableId,
         name = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
         roots = listOf(expectedLibrarySourcesRoot1, expectedLibraryClassesRoot1),
-        entitySource = LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
-          workspaceModelEntityUpdaterConfig.project,
-          null
-        ),
+        entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig),
       ),
     )
 
@@ -124,10 +117,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
         tableId = LibraryTableId.ProjectLibraryTableId,
         name = "BSP: file:///dependency/test2/2.0.0/test2-2.0.0.jar",
         roots = listOf(expectedLibrarySourcesRoot2, expectedLibraryClassesRoot2),
-        entitySource = LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
-          workspaceModelEntityUpdaterConfig.project,
-          null
-        ),
+        entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig),
       ),
     )
 
@@ -165,10 +155,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
         tableId = LibraryTableId.ProjectLibraryTableId,
         name = "BSP: file:///dependency/test/1.0.0/test-1.0.0.jar",
         roots = listOf(expectedLibrarySourcesRoot, expectedLibraryClassesRoot),
-        entitySource = LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
-          workspaceModelEntityUpdaterConfig.project,
-          null
-        ),
+        entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig),
       ),
     )
 

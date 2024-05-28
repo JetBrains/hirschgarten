@@ -19,6 +19,7 @@ import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsConstants
+import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
@@ -74,7 +75,9 @@ internal class ModuleEntityUpdater(
 
   private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource = when {
     entityToAdd.isDummy -> BspDummyEntitySource
-    entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspEntitySource
+    !JpsFeatureFlags.isJpsCompilationEnabled ||
+      entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspEntitySource
+
     else -> LegacyBridgeJpsEntitySourceFactory.createEntitySourceForModule(
       project = workspaceModelEntityUpdaterConfig.project,
       baseModuleDir = JpsPaths.getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)

@@ -5,6 +5,7 @@ import com.intellij.openapi.compiler.CompilerManager
 import com.intellij.openapi.project.Project
 import com.intellij.task.ProjectTask
 import com.intellij.task.ProjectTaskManager
+import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.plugins.bsp.building.task.createAllBspOnlyModuleBuildTasks
 import org.jetbrains.plugins.bsp.building.task.createAllJpsOnlyModuleBuildTasks
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
@@ -39,4 +40,8 @@ internal class CompileProjectWithBspAction :
 internal class CompileProjectWithJpsAction :
   CustomCompileProjectAction(BspPluginBundle.message("project.task.action.name.build.project.jps")) {
   override fun getProjectTask(project: Project): ProjectTask = createAllJpsOnlyModuleBuildTasks(project)
+  override fun update(project: Project, e: AnActionEvent) {
+    super.update(project, e)
+    e.presentation.isEnabled = JpsFeatureFlags.isJpsCompilationEnabled && e.presentation.isEnabled
+  }
 }
