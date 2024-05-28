@@ -33,7 +33,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   override fun canRun(projectTask: ProjectTask): Boolean = when (projectTask) {
     is JpsOnlyModuleBuildTask -> false
     is BspOnlyModuleBuildTask -> true
-    is ModuleBuildTask -> !JpsFeatureFlags.isCompileProjectWithJpsEnabled
+    is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationAsDefaultEnabled
     else -> false
   }
 
