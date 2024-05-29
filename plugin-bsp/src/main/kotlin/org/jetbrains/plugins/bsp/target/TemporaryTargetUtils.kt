@@ -21,6 +21,8 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
+import org.jetbrains.plugins.bsp.utils.safeCastToURI
+import java.net.URI
 
 public data class TemporaryTargetUtilsState(
   var idToTargetInfo: Map<String, BuildTargetInfoState> = emptyMap(),
@@ -39,7 +41,10 @@ public data class TemporaryTargetUtilsState(
 public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState> {
   private var idToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
   private var moduleIdToBuildTargetId: Map<String, BuildTargetIdentifier> = emptyMap()
-  private var fileToId: Map<String, List<BuildTargetIdentifier>> = emptyMap()
+
+  // we must use URI as comparing URI path strings is susceptible to errors.
+  // e.g., file:/test and file:///test should be similar in the URI world
+  private var fileToId: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
   private var targetsBaseDir: Set<VirtualFile> = emptySet()
   private var libraries: List<Library> = emptyList()
 
@@ -70,8 +75,12 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
     }
   }
 
-  private fun ModuleDetails.toPairsUrlToId(): List<Pair<String, BuildTargetIdentifier>> =
-    sources.flatMap { sources -> sources.sources.mapNotNull { it.uri }.map { it to target.id } }
+  private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, BuildTargetIdentifier>> =
+    sources.flatMap { sources ->
+      sources.sources.mapNotNull { it.uri.processUriString().safeCastToURI() }.map { it to target.id }
+    }
+
+  private fun String.processUriString() = this.trimEnd('/')
 
   private fun createLibraries(
     libraries: List<LibraryItem>?,
@@ -96,7 +105,9 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
 
   public fun allTargetIds(): List<BuildTargetIdentifier> = idToTargetInfo.keys.toList()
 
-  public fun getTargetsForFile(file: VirtualFile): List<BuildTargetIdentifier> = fileToId[file.url].orEmpty()
+  public fun getTargetsForFile(file: VirtualFile): List<BuildTargetIdentifier> =
+    fileToId[file.url.processUriString().safeCastToURI()]
+      ?: fileToId[file.parent.url.processUriString().safeCastToURI()].orEmpty()
 
   public fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? = moduleIdToBuildTargetId[moduleId]
 
@@ -112,7 +123,7 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
     TemporaryTargetUtilsState(
       idToTargetInfo = idToTargetInfo.mapKeys { it.key.uri }.mapValues { it.value.toState() },
       moduleIdToBuildTargetId = moduleIdToBuildTargetId.mapValues { it.value.uri },
-      fileToId = fileToId.mapValues { o -> o.value.map { it.uri } },
+      fileToId = fileToId.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.uri } },
       targetsBaseDir = targetsBaseDir.map { it.url }.toList(),
       libraries = libraries.map { it.toState() },
     )
@@ -122,7 +133,8 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
 
     idToTargetInfo = state.idToTargetInfo.mapKeys { BuildTargetIdentifier(it.key) }.mapValues { it.value.fromState() }
     moduleIdToBuildTargetId = state.moduleIdToBuildTargetId.mapValues { BuildTargetIdentifier(it.value) }
-    fileToId = state.fileToId.mapValues { o -> o.value.map { BuildTargetIdentifier(it) } }
+    fileToId =
+      state.fileToId.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { BuildTargetIdentifier(it) } }
     targetsBaseDir = state.targetsBaseDir.mapNotNull { virtualFileUrlManager.findFileByUrl(it) }.toSet()
     libraries = state.libraries.map { it.fromState() }
   }
