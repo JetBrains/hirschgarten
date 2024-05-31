@@ -132,6 +132,9 @@
         <registryKey defaultValue="false"
                      description="Shorten module/library names by hashing the first parts and retaining the others"
                      key="bsp.shorten.module.library.names"/>
+        <registryKey defaultValue="false"
+                     description="Retrieve targets for file from its ancestors"
+                     key="bsp.retrieve.targets.for.file.from.ancestors"/>
 
         <statusBarWidgetFactory id="BspDocumentTargetsWidget"
                                 implementation="org.jetbrains.plugins.bsp.ui.widgets.file.targets.BspFileTargetsWidgetFactory"/>

@@ -7,6 +7,7 @@ private const val SCALA_SUPPORT = "bsp.scala.support"
 private const val ANDROID_SUPPORT = "bsp.android.support"
 private const val BUILD_PROJECT_ON_SYNC = "bsp.build.project.on.sync"
 private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
+private const val RETRIEVE_TARGETS_FOR_FILE_FROM_ANCESTORS = "bsp.retrieve.targets.for.file.from.ancestors"
 
 public object BspFeatureFlags {
   public val isPythonSupportEnabled: Boolean
@@ -23,4 +24,7 @@ public object BspFeatureFlags {
 
   public val isShortenModuleLibraryNamesEnabled: Boolean
     get() = Registry.`is`(SHORTEN_MODULE_LIBRARY_NAMES)
+
+  public val isRetrieveTargetsForFileFromAncestorsEnabled: Boolean
+    get() = Registry.`is`(RETRIEVE_TARGETS_FOR_FILE_FROM_ANCESTORS)
 }

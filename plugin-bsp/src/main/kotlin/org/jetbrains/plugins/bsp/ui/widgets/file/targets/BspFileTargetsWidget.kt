@@ -40,7 +40,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
     else activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, project.assets.icon)
 
   private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
-    val targets = project.temporaryTargetUtils.getTargetsForFile(file)
+    val targets = project.temporaryTargetUtils.getTargetsForFile(file, project)
     return if (targets.isEmpty()) inactiveWidgetState(icon)
     else activeWidgetState(targets.firstOrNull(), icon)
   }
@@ -71,7 +71,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
   }
 
   private fun calculatePopupGroup(file: VirtualFile): ActionGroup {
-    val targetIds = project.temporaryTargetUtils.getTargetsForFile(file)
+    val targetIds = project.temporaryTargetUtils.getTargetsForFile(file, project)
     val targets = targetIds.mapNotNull { project.temporaryTargetUtils.getBuildTargetInfoForId(it) }
     val groups = targets.map { it.calculatePopupGroup() }
 
