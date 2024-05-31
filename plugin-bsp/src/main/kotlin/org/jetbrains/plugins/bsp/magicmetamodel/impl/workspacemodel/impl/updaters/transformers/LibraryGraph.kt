@@ -24,7 +24,9 @@ internal class LibraryGraph(libraries: List<LibraryItem>) {
       toVisit -= currentNode
 
       if (currentNode !in visited) {
-        toVisit += graph[currentNode].orEmpty()
+        // don't traverse further when hitting modules
+        if (currentNode.isCurrentNodeLibrary())
+          toVisit += graph[currentNode].orEmpty()
         visited += currentNode
 
         currentNode.addToCorrectResultSet(resultLibraries, resultTargets)
@@ -37,12 +39,13 @@ internal class LibraryGraph(libraries: List<LibraryItem>) {
     )
   }
 
+  private fun BuildTargetIdentifier.isCurrentNodeLibrary() = this in graph
+
   private fun BuildTargetIdentifier.addToCorrectResultSet(
     resultLibraries: MutableSet<BuildTargetIdentifier>,
     resultTargets: MutableSet<BuildTargetIdentifier>,
   ) {
-    val isCurrentNodeLibrary = this in graph
-    if (isCurrentNodeLibrary) {
+    if (isCurrentNodeLibrary()) {
       resultLibraries += this
     } else {
       resultTargets += this
