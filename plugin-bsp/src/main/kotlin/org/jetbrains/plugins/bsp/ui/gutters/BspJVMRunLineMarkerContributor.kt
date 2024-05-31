@@ -40,7 +40,7 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
   private fun PsiElement.calculateLineMarkerInfo(): Info? =
     containingFile.virtualFile?.let { url ->
       val temporaryTargetUtils = project.temporaryTargetUtils
-      val targetInfos = temporaryTargetUtils.getTargetsForFile(url)
+      val targetInfos = temporaryTargetUtils.getTargetsForFile(url, project)
         .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
       calculateLineMarkerInfo(targetInfos)
     }

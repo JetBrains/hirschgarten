@@ -8,9 +8,12 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.plugins.bsp.config.BspFeatureFlags
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.BuildTargetInfoState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.LibraryState
@@ -105,9 +108,22 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
 
   public fun allTargetIds(): List<BuildTargetIdentifier> = idToTargetInfo.keys.toList()
 
-  public fun getTargetsForFile(file: VirtualFile): List<BuildTargetIdentifier> =
+  public fun getTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> =
     fileToId[file.url.processUriString().safeCastToURI()]
-      ?: fileToId[file.parent.url.processUriString().safeCastToURI()].orEmpty()
+      ?: getTargetsFromAncestorsForFile(file, project)
+
+  private fun getTargetsFromAncestorsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> {
+    return if (BspFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
+      val rootDir = project.rootDir
+      var iter = file.parent
+      while (VfsUtil.isAncestor(rootDir, iter, false)) {
+        val key = iter.url.processUriString().safeCastToURI()
+        if (key in fileToId) return fileToId[key]!!
+        iter = iter.parent
+      }
+      emptyList()
+    } else emptyList()
+  }
 
   public fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? = moduleIdToBuildTargetId[moduleId]
 
