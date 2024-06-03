@@ -37,7 +37,6 @@ import org.jetbrains.bsp.protocol.BazelBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
-import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
@@ -56,14 +55,11 @@ import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtension
 import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.flow.open.projectSyncHook
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
-import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.BenchmarkFlags.isBenchmark
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger.logPerformanceSuspend
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.TargetIdToModuleEntitiesMap
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
@@ -383,10 +379,6 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
           )
         }
 
-        val libraries = logPerformance("create-libraries") {
-          createLibraries(projectDetails.libraries, libraryNameProvider)
-        }
-
         logPerformance("load-modules") {
           val workspaceModel = WorkspaceModel.getInstance(project)
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
@@ -404,23 +396,13 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
           val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
 
           workspaceModelUpdater.loadModules(modulesToLoad)
-          workspaceModelUpdater.loadLibraries(libraries.orEmpty())
+          workspaceModelUpdater.loadLibraries(project.temporaryTargetUtils.getAllLibraries())
           workspaceModelUpdater
             .loadDirectories(projectDetails.directories, projectDetails.outputPathUris, virtualFileUrlManager)
         }
       }
     }
   }
-
-  private fun createLibraries(libraries: List<LibraryItem>?, libraryNameProvider: TargetNameReformatProvider) =
-    libraries?.map {
-      Library(
-        displayName = libraryNameProvider(BuildTargetInfo(id = it.id.uri)),
-        iJars = it.ijars,
-        classJars = it.jars,
-        sourceJars = it.sourceJars,
-      )
-    }
 
   private fun WorkspaceModelUpdater.loadDirectories(
     directories: WorkspaceDirectoriesResult,
