@@ -73,12 +73,3 @@ public class BspTestConfiguration(
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =
     SMTRunnerConsoleProperties(this, "BSP", executor)
 }
-
-public class BspBuildConfiguration(
-  project: Project,
-  configurationFactory: BspBuildConfigurationType,
-  name: String,
-) : BspRunConfigurationBase(project, configurationFactory, name) {
-  override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
-    runHandler.getRunProfileState(project, executor, environment, this)
-}

@@ -42,18 +42,3 @@ public class BspTestConfigurationType : BspRunConfigurationTypeBase(
     public const val ID: String = "BspTestConfiguration"
   }
 }
-
-public class BspBuildConfigurationType : BspRunConfigurationTypeBase(
-  id = ID,
-  name = BspPluginBundle.message("runconfig.build.name"),
-  description = BspPluginBundle.message("runconfig.build.description"),
-  icon = NotNullLazyValue.createValue { BspPluginIcons.bsp },
-) {
-  override fun createTemplateConfiguration(project: Project): RunConfiguration {
-    TODO()
-  }
-
-  public companion object {
-    public const val ID: String = "BspBuildConfiguration"
-  }
-}
