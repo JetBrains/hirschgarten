@@ -78,7 +78,6 @@
 
         <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType"/>
         <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType"/>
-        <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspBuildConfigurationType"/>
 
         <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
 
