@@ -13,5 +13,5 @@ detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", ve
 kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
 
 [plugins]
-intellij = { id = "org.jetbrains.intellij.platform", version = "2.0.0-beta1" }
+intellij = { id = "org.jetbrains.intellij.platform", version = "2.0.0-beta5" }
 changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }
