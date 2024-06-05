@@ -185,7 +185,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private fun calculateProjectDetailsSubtask(buildProject: Boolean) =
     logPerformance("collect-project-details") {
       connectAndExecuteWithServer { server, capabilities ->
-        collectModel(server, capabilities, cancelOnFuture, buildProject) }
+        collectModel(server, capabilities, cancelOnFuture, buildProject)
+      }
     }
 
   private fun collectModel(
@@ -365,7 +366,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
             transformer = transformer,
             libraries = projectDetails.libraries,
             moduleNameProvider = moduleNameProvider,
-            libraryNameProvider = libraryNameProvider
+            libraryNameProvider = libraryNameProvider,
+            defaultJdkName = projectDetails.defaultJdkName,
           )
           TargetIdToModuleEntitiesMap(
             projectDetails = projectDetails,
@@ -395,7 +397,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 
           val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
 
-          workspaceModelUpdater.loadModules(modulesToLoad)
+          workspaceModelUpdater.loadModules(modulesToLoad + project.temporaryTargetUtils.getAllLibraryModules())
           workspaceModelUpdater.loadLibraries(project.temporaryTargetUtils.getAllLibraries())
           workspaceModelUpdater
             .loadDirectories(projectDetails.directories, projectDetails.outputPathUris, virtualFileUrlManager)

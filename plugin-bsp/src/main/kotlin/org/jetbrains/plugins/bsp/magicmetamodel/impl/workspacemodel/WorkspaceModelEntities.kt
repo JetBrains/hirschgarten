@@ -86,6 +86,7 @@ public data class GenericModuleInfo(
   val languageIds: LanguageIds = listOf(),
   val associates: List<IntermediateModuleDependency> = listOf(),
   val isDummy: Boolean = false,
+  val isLibraryModule: Boolean = false,
 ) : WorkspaceModelEntity() {
   internal constructor(
     name: String,

@@ -134,6 +134,9 @@
         <registryKey defaultValue="false"
                      description="Retrieve targets for file from its ancestors"
                      key="bsp.retrieve.targets.for.file.from.ancestors"/>
+        <registryKey defaultValue="false"
+                     description="Wrap libraries inside modules to form a proper dependency graph between libraries"
+                     key="bsp.wrap.libraries.inside.modules"/>
 
         <statusBarWidgetFactory id="BspDocumentTargetsWidget"
                                 implementation="org.jetbrains.plugins.bsp.ui.widgets.file.targets.BspFileTargetsWidgetFactory"/>

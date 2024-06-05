@@ -25,6 +25,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModul
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleName
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
@@ -40,14 +41,25 @@ internal class ModuleEntityUpdater(
     builder: MutableEntityStorage,
     entityToAdd: GenericModuleInfo,
   ): ModuleEntity {
-    val modulesDependencies = entityToAdd.modulesDependencies.map { toModuleDependencyItemModuleDependency(it) }
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
-    val librariesDependencies =
-      entityToAdd.librariesDependencies.map { toLibraryDependency(it) }
+    val (libraryModulesDependencies, librariesDependencies) =
+      entityToAdd.librariesDependencies.partition {
+        !entityToAdd.isLibraryModule &&
+          workspaceModelEntityUpdaterConfig.project.temporaryTargetUtils.isLibraryModule(it.libraryName)
+      }
+
+    val modulesDependencies =
+      (entityToAdd.modulesDependencies + libraryModulesDependencies.toLibraryModuleDependencies()).map {
+        toModuleDependencyItemModuleDependency(it)
+      }
 
     // library dependencies should be included before module dependencies
     // to handle the case of overridden library versions
-    val dependencies = defaultDependencies + librariesDependencies + modulesDependencies + associatesDependencies
+    val dependencies =
+      defaultDependencies +
+        librariesDependencies.map { toLibraryDependency(it) } +
+        modulesDependencies +
+        associatesDependencies
 
     val moduleEntity = builder.addEntity(
       ModuleEntity(
@@ -72,6 +84,9 @@ internal class ModuleEntityUpdater(
     }
     return moduleEntity
   }
+
+  private fun List<IntermediateLibraryDependency>.toLibraryModuleDependencies() =
+    this.map { IntermediateModuleDependency(it.libraryName) }
 
   private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource = when {
     entityToAdd.isDummy -> BspDummyEntitySource

@@ -7,6 +7,7 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.components.service
+import com.intellij.openapi.module.ModuleTypeId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -20,6 +21,10 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.LibraryState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
@@ -50,6 +55,8 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
   private var fileToId: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
   private var targetsBaseDir: Set<VirtualFile> = emptySet()
   private var libraries: List<Library> = emptyList()
+  private var libraryModules: List<JavaModule> = emptyList()
+  private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
   private var listeners: List<() -> Unit> = emptyList()
 
@@ -59,6 +66,7 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
     libraries: List<LibraryItem>?,
     moduleNameProvider: TargetNameReformatProvider,
     libraryNameProvider: TargetNameReformatProvider,
+    defaultJdkName: String?,
   ) {
     val modulesDetails = targetIds.map { transformer.moduleDetailsForTargetId(it) }
     val virtualFileUrlManager = VirtualFileManager.getInstance()
@@ -76,6 +84,12 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
     this.libraries = logPerformance("create-libraries") {
       createLibraries(libraries, libraryNameProvider)
     }
+    this.libraryModules = logPerformance("create-library-modules") {
+      if (BspFeatureFlags.isWrapLibrariesInsideModulesEnabled)
+        createLibraryModules(libraries, libraryNameProvider, defaultJdkName)
+      else emptyList()
+    }
+    this.libraryModulesLookupTable = createLibraryModulesLookupTable()
   }
 
   private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, BuildTargetIdentifier>> =
@@ -97,6 +111,39 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
         sourceJars = it.sourceJars,
       )
     }.orEmpty()
+
+  private fun createLibraryModules(
+    libraries: List<LibraryItem>?,
+    libraryNameProvider: TargetNameReformatProvider,
+    defaultJdkName: String?,
+  ) =
+    libraries?.map { library ->
+      val libraryName = libraryNameProvider(BuildTargetInfo(id = library.id.uri))
+      JavaModule(
+        genericModuleInfo = GenericModuleInfo(
+          name = libraryName,
+          type = ModuleTypeId.JAVA_MODULE,
+          librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
+          modulesDependencies = library.dependencies.map {
+            IntermediateModuleDependency(
+              libraryNameProvider(
+                BuildTargetInfo(id = it.uri)
+              )
+            )
+          },
+          isLibraryModule = true,
+          languageIds = listOf("java"),
+        ),
+        jvmJdkName = defaultJdkName,
+        baseDirContentRoot = null,
+        moduleLevelLibraries = null,
+        sourceRoots = emptyList(),
+        resourceRoots = emptyList(),
+      )
+    }.orEmpty()
+
+  private fun createLibraryModulesLookupTable() =
+    libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
   public fun fireListeners() {
     listeners.forEach { it() }
@@ -134,6 +181,10 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
     targetsBaseDir.contains(virtualFile)
 
   public fun getAllLibraries(): List<Library> = libraries
+
+  public fun isLibraryModule(name: String): Boolean = name in libraryModulesLookupTable
+
+  public fun getAllLibraryModules(): List<JavaModule> = libraryModules
 
   override fun getState(): TemporaryTargetUtilsState =
     TemporaryTargetUtilsState(
