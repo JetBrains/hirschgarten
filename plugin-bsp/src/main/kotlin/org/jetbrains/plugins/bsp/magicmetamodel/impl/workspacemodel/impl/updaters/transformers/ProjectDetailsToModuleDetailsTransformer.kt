@@ -20,7 +20,7 @@ public class ProjectDetailsToModuleDetailsTransformer(
 
   public fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
     val target = targetsIndex[targetId] ?: error("Cannot find target for target id: $targetId.")
-    val allDependencies = libraryGraph.findAllTransitiveDependencies(target)
+    val allDependencies = libraryGraph.calculateAllDependencies(target)
     return ModuleDetails(
       target = target,
       sources = sourcesIndex[target.id].orEmpty(),
@@ -32,7 +32,7 @@ public class ProjectDetailsToModuleDetailsTransformer(
       outputPathUris = emptyList(),
       libraryDependencies = allDependencies.libraryDependencies.map { it.uri }
         .takeIf { projectDetails.libraries != null },
-      moduleDependencies = allDependencies.targetDependencies.map { it.uri },
+      moduleDependencies = allDependencies.moduleDependencies.map { it.uri },
       defaultJdkName = projectDetails.defaultJdkName,
       jvmBinaryJars = jvmBinaryJarsIndex[targetId].orEmpty(),
     )
