@@ -8,11 +8,14 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.util.messages.Topic
+import org.jetbrains.kotlin.tooling.core.Interner
+import org.jetbrains.kotlin.tooling.core.WeakInterner
 
 @Service(Service.Level.PROJECT)
 public class BspWorkspace(public val project: Project) : Disposable {
   private var initialized = false
   private val bspWorkspaceWatcher = BspWorkspaceWatcher(project)
+  public val interner: Interner = WeakInterner()
 
   @Synchronized
   public fun initialize() {
