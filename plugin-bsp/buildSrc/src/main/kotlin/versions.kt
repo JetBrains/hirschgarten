@@ -12,7 +12,7 @@ object Plugin {
 }
 
 object Platform {
-  const val version = "2024.1.1"
+  const val version = "241.15989.150"
 
   // Plugin Dependencies -> https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
   // Example: platformPlugins =" com.intellij.java, com.jetbrains.php:203.4449.22"
