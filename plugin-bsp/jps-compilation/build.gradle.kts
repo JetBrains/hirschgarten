@@ -1,7 +1,7 @@
 
 plugins {
     id("intellijbsp.kotlin-conventions")
-    id("org.jetbrains.intellij.platform.module")
+    id("org.jetbrains.intellij.platform.base")
 }
 
 dependencies {
