@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.server.tasks.saveAllFiles
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import javax.swing.Icon
 
@@ -19,6 +20,7 @@ public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) 
     val project = e.project
 
     if (project != null) {
+      saveAllFiles()
       BspCoroutineService.getInstance(project).start {
         actionPerformed(project, e)
       }
