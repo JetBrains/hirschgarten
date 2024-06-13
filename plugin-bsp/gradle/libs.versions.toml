@@ -1,6 +1,8 @@
 [versions]
 detekt = "1.23.5"
 kotlin-gradle-version = "1.9.23"
+ide-starter-version = "242.15523-EAP-CANDIDATE-SNAPSHOT"
+jackson-version = "2.17.1"
 
 [libraries]
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.2" }
@@ -11,6 +13,14 @@ gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
 detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
 kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
+ideStarterSquashed = { module = "com.jetbrains.intellij.tools:ide-starter-squashed", version.ref = "ide-starter-version" }
+ideMetricsCollector = { module = "com.jetbrains.intellij.tools:ide-metrics-collector", version.ref = "ide-starter-version" }
+ideMetricsCollectorStarter = { module = "com.jetbrains.intellij.tools:ide-metrics-collector-starter", version.ref = "ide-starter-version" }
+ideStarterJunit5 = { module = "com.jetbrains.intellij.tools:ide-starter-junit5", version.ref = "ide-starter-version" }
+jackson = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson-version" }
+jacksonKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-version" }
+kodeIn = { module = "org.kodein.di:kodein-di", version = "7.22.0" }
+apacheHttpClient = { module = "org.apache.httpcomponents:httpclient", version = "4.5.14" }
 
 [plugins]
 intellij = { id = "org.jetbrains.intellij.platform", version = "2.0.0-beta1" }

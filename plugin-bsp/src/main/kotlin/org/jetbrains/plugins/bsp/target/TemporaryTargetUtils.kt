@@ -12,13 +12,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.platform.diagnostic.telemetry.helpers.use
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.BuildTargetInfoState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.LibraryState
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.PerformanceLogger.logPerformance
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
@@ -29,6 +29,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
+import org.jetbrains.plugins.bsp.performance.testing.bspTracer
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.net.URI
 
@@ -81,10 +82,10 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
       .mapNotNull { it.baseDirectory }
       .mapNotNull { virtualFileUrlManager.findFileByUrl(it) }
       .toSet()
-    this.libraries = logPerformance("create-libraries") {
+    this.libraries = bspTracer.spanBuilder("create.libraries.ms").use {
       createLibraries(libraries, libraryNameProvider)
     }
-    this.libraryModules = logPerformance("create-library-modules") {
+    this.libraryModules = bspTracer.spanBuilder("create.library.modules.ms").use {
       if (BspFeatureFlags.isWrapLibrariesInsideModulesEnabled)
         createLibraryModules(libraries, libraryNameProvider, defaultJdkName)
       else emptyList()

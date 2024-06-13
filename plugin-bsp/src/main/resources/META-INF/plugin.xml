@@ -8,6 +8,7 @@
     <depends>org.jetbrains.kotlin</depends>
     <depends optional="true" config-file="bsp-withPython.xml">com.intellij.modules.python</depends>
     <depends optional="true" config-file="bsp-withAndroid.xml">org.jetbrains.android</depends>
+    <depends optional="true" config-file="bsp-performanceTesting.xml">com.jetbrains.performancePlugin</depends>
 
     <extensionPoints>
         <extensionPoint name="buildTargetClassifierExtension"

@@ -3,11 +3,13 @@ package org.jetbrains.plugins.bsp.server.tasks
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runInterruptible
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspSyncStatusService
+import org.jetbrains.plugins.bsp.performance.testing.bspTracer
 import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
@@ -18,7 +20,9 @@ private const val SYNC_TASK_ID = "bsp-sync-project"
 private val log = logger<SyncProjectTask>()
 
 public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Project", project) {
-  public suspend fun execute(shouldBuildProject: Boolean) {
+  public suspend fun execute(
+    shouldBuildProject: Boolean,
+  ): Unit = bspTracer.spanBuilder("bsp.sync.project.ms").useWithScope {
     try {
       log.debug("Starting sync project task")
       preSync()
