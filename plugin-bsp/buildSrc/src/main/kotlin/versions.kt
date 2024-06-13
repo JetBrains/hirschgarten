@@ -18,7 +18,7 @@ object Platform {
   // Example: platformPlugins =" com.intellij.java, com.jetbrains.php:203.4449.22"
   val plugins =
     listOf("PythonCore:241.15989.150", "org.jetbrains.android:241.15989.150")
-  val bundledPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin")
+  val bundledPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin", "com.jetbrains.performancePlugin")
 
 }
 

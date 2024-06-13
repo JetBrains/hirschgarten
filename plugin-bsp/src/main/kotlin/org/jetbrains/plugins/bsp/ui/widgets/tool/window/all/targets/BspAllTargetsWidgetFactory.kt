@@ -36,10 +36,10 @@ public class BspAllTargetsWidgetFactory : ToolWindowFactory, DumbAware {
 
 public suspend fun registerBspToolWindow(project: Project) {
   val toolWindowManager = ToolWindowManager.getInstance(project)
-  val currentToolWindow = toolWindowManager.getToolWindow(project.assets.presentableName)
+  val currentToolWindow = toolWindowManager.getToolWindow(project.bspToolWindowId)
   if (currentToolWindow == null) {
     withContext(Dispatchers.EDT) {
-      toolWindowManager.registerToolWindow(project.assets.presentableName) {
+      toolWindowManager.registerToolWindow(project.bspToolWindowId) {
         this.icon = project.assets.icon
         this.anchor = ToolWindowAnchor.RIGHT
         this.canCloseContent = false
@@ -48,3 +48,6 @@ public suspend fun registerBspToolWindow(project: Project) {
     }
   }
 }
+
+public val Project.bspToolWindowId: String
+  get() = this.assets.presentableName

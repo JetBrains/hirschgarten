@@ -1,26 +1,18 @@
 package org.jetbrains.plugins.bsp.flow.open
 
-import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
-import com.intellij.openapi.util.io.toNioPathOrNull
-import com.intellij.openapi.vfs.VfsUtil
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
-import org.jetbrains.bsp.protocol.utils.parseBspConnectionDetails
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspWorkspace
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.extension.points.BuildToolId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.BenchmarkFlags.isBenchmark
-import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
 import org.jetbrains.plugins.bsp.server.connection.DefaultBspConnection
 import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.server.connection.connectionDetailsProvider
@@ -29,21 +21,6 @@ import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.file.targets.updateBspFileTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
-import kotlin.system.exitProcess
-
-private class BspBenchmarkConnectionFileProvider(
-  private val bspConnectionDetails: BspConnectionDetails,
-) : ConnectionDetailsProviderExtension {
-  override val buildToolId: BuildToolId = BuildToolId("bsp benchmark")
-
-  override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean = true
-
-  override fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?,
-  ): BspConnectionDetails =
-    bspConnectionDetails
-}
 
 private val log = logger<BspStartupActivity>()
 
@@ -101,13 +78,10 @@ public class BspStartupActivity : ProjectActivity {
 
   private suspend fun runSync(project: Project) {
     log.info("Running BSP sync")
-    val connectionDetailsProviderExtension =
-      if (isBenchmark()) benchmarkConnectionFileProvider(project)
-      else project.connectionDetailsProvider
 
-    project.connection = DefaultBspConnection(project, connectionDetailsProviderExtension)
+    project.connection = DefaultBspConnection(project, project.connectionDetailsProvider)
 
-    val wasFirstOpeningSuccessful = connectionDetailsProviderExtension.onFirstOpening(project, project.rootDir)
+    val wasFirstOpeningSuccessful = project.connectionDetailsProvider.onFirstOpening(project, project.rootDir)
     log.debug("Was onFirstOpening successful: $wasFirstOpeningSuccessful")
 
     if (wasFirstOpeningSuccessful) {
@@ -123,19 +97,6 @@ public class BspStartupActivity : ProjectActivity {
       AppUIExecutor.onUiThread().execute {
         CloseProjectWindowHelper().windowClosing(project)
       }
-    }
-  }
-
-  private fun benchmarkConnectionFileProvider(project: Project): ConnectionDetailsProviderExtension {
-    try {
-      val connectionFilePath = project.basePath?.toNioPathOrNull()?.resolve(".bsp/bazelbsp.json")
-      val connectionFile = VfsUtil.findFileByIoFile(connectionFilePath?.toFile()!!, false)!!
-      val connectionDetails = connectionFile.parseBspConnectionDetails()!!
-      return BspBenchmarkConnectionFileProvider(connectionDetails)
-    } catch (e: Throwable) {
-      e.printStackTrace(System.out)
-      println("BENCHMARK: Could not create benchmark connection file")
-      exitProcess(1)
     }
   }
 

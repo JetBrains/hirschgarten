@@ -1,5 +1,5 @@
 rootProject.name = "intellij-bsp"
-include("protocol", "workspacemodel", "jps-compilation")
+include("protocol", "workspacemodel", "jps-compilation", "performance-testing")
 
 pluginManagement {
   repositories {
