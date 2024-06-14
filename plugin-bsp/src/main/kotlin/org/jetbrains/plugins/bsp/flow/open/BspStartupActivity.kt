@@ -39,6 +39,7 @@ public class BspStartupActivity : ProjectActivity {
 
   private suspend fun Project.executeForBspProject() {
     log.info("Executing BSP startup activity for project: $this")
+    BspStartupActivityTracker.startConfigurationPhase(this)
     executeEveryTime()
 
     if (!isBspProjectInitialized) {
@@ -46,17 +47,18 @@ public class BspStartupActivity : ProjectActivity {
     }
 
     postActivity()
+    BspStartupActivityTracker.stopConfigurationPhase(this)
   }
 
   private suspend fun Project.executeEveryTime() {
-    log.debug("Executing BSP startup activities for every opening")
+    log.info("Executing BSP startup activities for every opening")
     registerBspToolWindow(this)
     updateBspFileTargetsWidget()
     RunConfigurationProducersDisabler(this)
   }
 
   private suspend fun Project.executeForNewProject() {
-    log.debug("Executing BSP startup activities only for new project")
+    log.info("Executing BSP startup activities only for new project")
     try {
       runSync(this)
       isBspProjectInitialized = true
