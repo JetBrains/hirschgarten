@@ -24,7 +24,7 @@ open class Aggregator (
         id(("GitHub_" + name).toExtId())
         features {
             pullRequests {
-                vcsRootExtId = "${BaseConfiguration.GitHubVcs.id}"
+                vcsRootExtId = "${vcsRoot.id}"
                 provider = github {
                     authType = token {
                         token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
