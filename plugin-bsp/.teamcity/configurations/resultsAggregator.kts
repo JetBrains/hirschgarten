@@ -14,7 +14,7 @@ open class Aggregator (
     name = "results"
 
     vcs {
-        root(BaseConfiguration.GitHubVcs)
+        root(vcsRoot)
         showDependenciesChanges = false
     }
 
