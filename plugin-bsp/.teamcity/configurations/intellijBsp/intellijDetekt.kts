@@ -20,9 +20,9 @@ open class Detekt (
 )
 
 object GitHub : Detekt(
-    vcsRoot = BaseConfiguration.intellijBspGitHubVcs,
+    vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object Space : Detekt(
-    vcsRoot = BaseConfiguration.intellijBspSpaceVcs
+    vcsRoot = BaseConfiguration.SpaceVcs
 )

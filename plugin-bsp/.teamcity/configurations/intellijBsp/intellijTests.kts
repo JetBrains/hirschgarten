@@ -22,9 +22,9 @@ open class UnitTests(
 )
 
 object GitHub : UnitTests(
-    vcsRoot = BaseConfiguration.intellijBspGitHubVcs,
+    vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object Space : UnitTests(
-    vcsRoot = BaseConfiguration.intellijBspSpaceVcs
+    vcsRoot = BaseConfiguration.SpaceVcs
 )

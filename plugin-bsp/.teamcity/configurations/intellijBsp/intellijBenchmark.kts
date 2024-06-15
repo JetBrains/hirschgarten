@@ -36,9 +36,9 @@ open class Benchmark (
 
 
 object GitHub : Benchmark(
-    vcsRoot = BaseConfiguration.intellijBspGitHubVcs
+    vcsRoot = BaseConfiguration.GitHubVcs
 )
 
 object Space : Benchmark(
-    vcsRoot = BaseConfiguration.intellijBspSpaceVcs
+    vcsRoot = BaseConfiguration.SpaceVcs
 )

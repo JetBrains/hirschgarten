@@ -19,9 +19,9 @@ open class Build (
 )
 
 object GitHub : Build(
-    vcsRoot = BaseConfiguration.intellijBspGitHubVcs,
+    vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object Space : Build(
-    vcsRoot = BaseConfiguration.intellijBspSpaceVcs
+    vcsRoot = BaseConfiguration.SpaceVcs
 )

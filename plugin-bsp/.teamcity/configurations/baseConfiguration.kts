@@ -70,7 +70,7 @@ open class BaseBuildType(
             }
         } else {
             commitStatusPublisher {
-                vcsRootExtId = "${BaseConfiguration.intellijBspSpaceVcs.id}"
+                vcsRootExtId = "${BaseConfiguration.SpaceVcs.id}"
                 publisher = space {
                     authType = connection {
                         connectionId = "PROJECT_EXT_12"
@@ -85,7 +85,7 @@ open class BaseBuildType(
 })
 
 
-object intellijBspGitHubVcs : GitVcsRoot({
+object GitHubVcs : GitVcsRoot({
     name = "intellij-bsp-github"
     url = "https://github.com/JetBrains/intellij-bsp.git"
     branch = "main"
@@ -102,7 +102,7 @@ object intellijBspGitHubVcs : GitVcsRoot({
     param("tokenType", "permanent")
 })
 
-object intellijBspSpaceVcs : GitVcsRoot({
+object SpaceVcs : GitVcsRoot({
     name = "intellij-bsp-space"
     url = "https://git.jetbrains.team/bazel/intellij-bsp.git"
     branch = "refs/heads/main"

@@ -17,7 +17,7 @@ object IntellijBspGitHub : Project({
 
     name = "Intellij-BSP GH"
     id("GitHub".toExtId())
-    vcsRoot(BaseConfiguration.intellijBspGitHubVcs)
+    vcsRoot(BaseConfiguration.GitHubVcs)
 
 
     // setup pipeline chain for intellij-bsp
@@ -66,7 +66,7 @@ object IntellijBspSpace : Project({
 
     name = "Intellij-BSP Space"
     id("Space".toExtId())
-    vcsRoot(BaseConfiguration.intellijBspSpaceVcs)
+    vcsRoot(BaseConfiguration.SpaceVcs)
 
     // setup pipeline chain for intellij-bsp
     val allSteps = sequential {
