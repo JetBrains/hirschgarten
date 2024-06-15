@@ -1,17 +1,24 @@
 import configurations.intellijBsp.*
 import configurations.*
+import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project
 
 
-version = "2023.11"
+version = "2024.03"
 
-project(IntellijBsp)
+project {
+    subProject(IntellijBspGitHub)
+    subProject(IntellijBspSpace)
+}
 
-object IntellijBsp : Project({
+object IntellijBspGitHub : Project({
 
-    vcsRoot(BaseConfiguration.IntellijBspVcs)
+    name = "Intellij-BSP GH"
+    id("GitHub".toExtId())
+    vcsRoot(BaseConfiguration.GitHubVcs)
+
 
     // setup pipeline chain for intellij-bsp
     val allSteps = sequential {
@@ -21,13 +28,13 @@ object IntellijBsp : Project({
             onDependencyCancel = FailureAction.CANCEL
 
         }) {
-            buildType(IntellijDetekt.IntellijDetekt)
-            buildType(IntellijBuild.BuildTheProject)
-            buildType(IntellijTests.UnitTests)
-            buildType(IntellijPluginVerifier.VerifyPlugin)
+            buildType(IntellijDetekt.GitHub)
+            buildType(IntellijBuild.GitHub)
+            buildType(IntellijTests.GitHub)
+            buildType(IntellijBenchmark.GitHub)
         }
 
-        buildType(ResultsAggregator.IntellijBspAggregator) {
+        buildType(ResultsAggregator.GitHub) {
             onDependencyFailure = FailureAction.ADD_PROBLEM
             onDependencyCancel = FailureAction.ADD_PROBLEM
         }
@@ -40,7 +47,6 @@ object IntellijBsp : Project({
     allSteps.last().triggers {
         vcs {
             branchFilter = """
-                +:<default>
                 +:pull/*
             """.trimIndent()
         }
@@ -48,10 +54,59 @@ object IntellijBsp : Project({
 
     // setup display order for intellij-bsp pipeline
     buildTypesOrderIds = arrayListOf(
-            RelativeId("BuildBuildIntellijBsp"),
-            RelativeId("FormatDetekt"),
-            RelativeId("TestsUnitTests"),
-            RelativeId("VerifyPluginVerifier"),
-            RelativeId("IntellijBspResults")
+            RelativeId("GitHubFormatDetekt"),
+            RelativeId("GitHubBuildBuildIntellijBsp"),
+            RelativeId("GitHubTestsUnitTests"),
+            RelativeId("GitHubBenchmark10Targets"),
+            RelativeId("GitHubResults")
     )
 })
+
+object IntellijBspSpace : Project({
+
+    name = "Intellij-BSP Space"
+    id("Space".toExtId())
+    vcsRoot(BaseConfiguration.SpaceVcs)
+
+    // setup pipeline chain for intellij-bsp
+    val allSteps = sequential {
+
+        parallel(options = {
+            onDependencyFailure = FailureAction.CANCEL
+            onDependencyCancel = FailureAction.CANCEL
+
+        }) {
+            buildType(IntellijDetekt.Space)
+            buildType(IntellijBuild.Space)
+            buildType(IntellijTests.Space)
+            buildType(IntellijBenchmark.Space)
+        }
+
+        buildType(ResultsAggregator.Space) {
+            onDependencyFailure = FailureAction.ADD_PROBLEM
+            onDependencyCancel = FailureAction.ADD_PROBLEM
+        }
+    }.buildTypes()
+
+    // initialize all build steps for intellij-bsp
+    allSteps.forEach { buildType(it) }
+
+    // setup trigger for intellij-bsp pipeline
+    allSteps.last().triggers {
+        vcs {
+            branchFilter = """
+                +:*
+            """.trimIndent()
+        }
+    }
+
+    // setup display order for intellij-bsp pipeline
+    buildTypesOrderIds = arrayListOf(
+        RelativeId("SpaceFormatDetekt"),
+        RelativeId("SpaceBuildBuildIntellijBsp"),
+        RelativeId("SpaceTestsUnitTests"),
+        RelativeId("SpaceBenchmark10Targets"),
+        RelativeId("SpaceResults")
+    )
+  }
+)
