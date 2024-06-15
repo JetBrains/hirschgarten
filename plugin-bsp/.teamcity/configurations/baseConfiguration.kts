@@ -7,7 +7,6 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.perfmon
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.PullRequests
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.pullRequests
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 
 
 open class BaseBuildType(
@@ -16,10 +15,7 @@ open class BaseBuildType(
     steps: BuildSteps.() -> Unit,
     failureConditions: FailureConditions.() -> Unit = {},
     artifactRules: String = "",
-    setupSteps: Boolean = false,
-    requirements: Requirements.() -> Unit = {}
 ) : BuildType({
-    id(name.toExtId())
     this.name = name
     this.artifactRules = artifactRules
 
@@ -27,7 +23,19 @@ open class BaseBuildType(
         executionTimeoutMin = 60
     }
 
-    this.requirements(requirements)
+    if (vcsRoot.name == "intellij-bsp-github" ) {
+        id(("GitHub_" + name).toExtId())
+        requirements {
+            endsWith("cloud.amazon.agent-name-prefix", "Medium")
+            equals("container.engine.osType", "linux")
+        }
+    } else {
+        id(("Space_" + name).toExtId())
+        requirements {
+            endsWith("cloud.amazon.agent-name-prefix", "-XLarge")
+            equals("container.engine.osType", "linux")
+        }
+    }
 
     this.failureConditions(failureConditions)
 
@@ -40,52 +48,45 @@ open class BaseBuildType(
     features {
         perfmon {
         }
+        if (vcsRoot.name == "intellij-bsp-github" ) {
+            commitStatusPublisher {
+                publisher = github {
+                    githubUrl = "https://api.github.com"
+                    authType = personalToken {
+                        token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+                    }
+                }
+                param("github_oauth_user", "hb-man")
+            }
 
-        commitStatusPublisher {
-            publisher = github {
-                githubUrl = "https://api.github.com"
-                authType = personalToken {
-                    token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+            pullRequests {
+                vcsRootExtId = "${vcsRoot.id}"
+                provider = github {
+                    authType = token {
+                        token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+                    }
+                    filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
                 }
             }
-            param("github_oauth_user", "hb-man")
-        }
-
-        pullRequests {
-            vcsRootExtId = "${BaseConfiguration.IntellijBspVcs.id}"
-            provider = github {
-                authType = token {
-                    token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+        } else {
+            commitStatusPublisher {
+                vcsRootExtId = "${BaseConfiguration.intellijBspSpaceVcs.id}"
+                publisher = space {
+                    authType = connection {
+                        connectionId = "PROJECT_EXT_10"
+                    }
+                    displayName = "BazelTeamCityCloud"
                 }
-                filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
             }
         }
     }
 
-    if (setupSteps) {
-        steps {
-            script {
-                this.name = "Coursier"
-
-                scriptContent = """
-                    #!/bin/bash
-                    set -euxo pipefail
-                                        
-                    #install coursier
-                    curl -fL "https://github.com/coursier/coursier/releases/download/v2.1.5/cs-x86_64-pc-linux.gz" | gzip -d > cs 
-                    sudo mv cs /usr/bin/cs
-                    
-                    sudo chmod +x "/usr/bin/cs"
-            """.trimIndent()
-            }
-        }
-    }
     this.steps(steps)
 })
 
 
-object IntellijBspVcs : GitVcsRoot({
-    name = "intellij-bsp-github-repo"
+object intellijBspGitHubVcs : GitVcsRoot({
+    name = "intellij-bsp-github"
     url = "https://github.com/JetBrains/intellij-bsp.git"
     branch = "main"
     branchSpec = """
@@ -99,4 +100,15 @@ object IntellijBspVcs : GitVcsRoot({
     checkoutPolicy = AgentCheckoutPolicy.USE_MIRRORS
     param("oauthProviderId", "tc-cloud-github-connection")
     param("tokenType", "permanent")
+})
+
+object intellijBspSpaceVcs : GitVcsRoot({
+    name = "intellij-bsp-space"
+    url = "https://git.jetbrains.team/bazel/intellij-bsp.git"
+    branch = "refs/heads/main"
+    branchSpec = "+:*"
+    authMethod = token {
+        userName = "x-oauth-basic"
+        tokenId = "tc_token_id:CID_ac3a89d197637e484363e81dc1e184a9:-1:c2e949f9-aeb3-4ad5-8854-8b4174d7456c"
+    }
 })

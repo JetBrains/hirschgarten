@@ -2,10 +2,13 @@ package configurations.intellijBsp
 
 import configurations.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
+import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-object IntellijDetekt : BaseConfiguration.BaseBuildType(
+open class Detekt (
+    vcsRoot: GitVcsRoot
+): BaseConfiguration.BaseBuildType(
     name = "[format] detekt",
-    vcsRoot = BaseConfiguration.IntellijBspVcs,
+    vcsRoot = vcsRoot,
   	artifactRules = "+:%system.teamcity.build.checkoutDir%/**/reports/detekt/* => detekt_report.zip",
     steps = {
         gradle {
@@ -14,4 +17,12 @@ object IntellijDetekt : BaseConfiguration.BaseBuildType(
             jdkHome = "%env.JDK_17_0%"
         }
     }
+)
+
+object GitHub : Detekt(
+    vcsRoot = BaseConfiguration.intellijBspGitHubVcs,
+)
+
+object Space : Detekt(
+    vcsRoot = BaseConfiguration.intellijBspSpaceVcs
 )
