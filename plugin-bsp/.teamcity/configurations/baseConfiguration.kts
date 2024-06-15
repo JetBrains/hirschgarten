@@ -73,7 +73,7 @@ open class BaseBuildType(
                 vcsRootExtId = "${BaseConfiguration.intellijBspSpaceVcs.id}"
                 publisher = space {
                     authType = connection {
-                        connectionId = "PROJECT_EXT_10"
+                        connectionId = "PROJECT_EXT_12"
                     }
                     displayName = "BazelTeamCityCloud"
                 }
