@@ -17,17 +17,14 @@ open class BaseBuildType(
     failureConditions: FailureConditions.() -> Unit = {},
     artifactRules: String = "",
     setupSteps: Boolean = false,
-    requirements: Requirements.() -> Unit = {}
+    requirements: (Requirements.() -> Unit)? = null
 ) : BuildType({
-    id(name.toExtId())
     this.name = name
     this.artifactRules = artifactRules
 
     failureConditions {
         executionTimeoutMin = 60
     }
-
-    this.requirements(requirements)
 
     this.failureConditions(failureConditions)
 
@@ -36,28 +33,57 @@ open class BaseBuildType(
         root(vcsRoot)
     }
 
+    if (vcsRoot.name == "intellij-bazel-github" ) {
+        id("GitHub$name".toExtId())
+        if (requirements == null) {
+            requirements {
+                endsWith("cloud.amazon.agent-name-prefix", "Medium")
+                equals("container.engine.osType", "linux")
+            }
+        } else {
+            this.requirements(requirements)
+        }
+    } else {
+        id("Space$name".toExtId())
+        requirements {
+            endsWith("cloud.amazon.agent-name-prefix", "-XLarge")
+            equals("container.engine.osType", "linux")
+        }
+    }
+
 
     features {
         perfmon {
         }
+        if (vcsRoot.name == "intellij-bazel-github") {
+            commitStatusPublisher {
+                publisher = github {
+                    githubUrl = "https://api.github.com"
+                    authType = personalToken {
+                        token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+                    }
+                }
+                param("github_oauth_user", "hb-man")
+            }
 
-        commitStatusPublisher {
-            publisher = github {
-                githubUrl = "https://api.github.com"
-                authType = personalToken {
-                    token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+            pullRequests {
+                vcsRootExtId = "${vcsRoot.id}"
+                provider = github {
+                    authType = token {
+                        token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+                    }
+                    filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
                 }
             }
-            param("github_oauth_user", "hb-man")
-        }
-
-        pullRequests {
-            vcsRootExtId = "${BaseConfiguration.IntellijBazelVcs.id}"
-            provider = github {
-                authType = token {
-                    token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+        } else {
+            commitStatusPublisher {
+                vcsRootExtId = "${vcsRoot.id}"
+                publisher = space {
+                    authType = connection {
+                        connectionId = "PROJECT_EXT_12"
+                    }
+                    displayName = "BazelTeamCityCloud"
                 }
-                filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
             }
         }
     }
@@ -84,19 +110,28 @@ open class BaseBuildType(
 })
 
 
-object IntellijBazelVcs : GitVcsRoot({
-    name = "intellij-bazel-github-repo"
+object GitHubVcs : GitVcsRoot({
+    name = "intellij-bazel-github"
     url = "https://github.com/JetBrains/intellij-bazel.git"
     branch = "main"
-    branchSpec = """
-        +:refs/heads/*
-    """.trimIndent()
-
+    branchSpec = "+:refs/heads/*"
     authMethod = password {
         userName = "hb-man"
         password = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
     }
-    checkoutPolicy = AgentCheckoutPolicy.USE_MIRRORS
     param("oauthProviderId", "tc-cloud-github-connection")
+    param("tokenType", "permanent")
+})
+
+object SpaceVcs : GitVcsRoot({
+    name = "intellij-bazel-space"
+    url = "https://git.jetbrains.team/bazel/intellij-bazel.git"
+    branch = "main"
+    branchSpec = "+:refs/heads/*"
+    authMethod = password {
+        userName = "x-oauth-basic"
+        password = "credentialsJSON:4efcb75d-2f9b-47fd-a63b-fc2969a334f5"
+    }
+    param("oauthProviderId", "PROJECT_EXT_15")
     param("tokenType", "permanent")
 })
