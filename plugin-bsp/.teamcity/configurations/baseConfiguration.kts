@@ -107,8 +107,10 @@ object SpaceVcs : GitVcsRoot({
     url = "https://git.jetbrains.team/bazel/intellij-bsp.git"
     branch = "main"
     branchSpec = "+:refs/heads/*"
-    authMethod = token {
+    authMethod = password {
         userName = "x-oauth-basic"
-        tokenId = "tc_token_id:CID_ee3bac3e4aa54bdf48fee3b7b53cbc31:-1:8560ad34-1d4a-46f4-b15c-f3e2e7f3b874"
+        password = "credentialsJSON:4efcb75d-2f9b-47fd-a63b-fc2969a334f5"
     }
+    param("oauthProviderId", "PROJECT_EXT_15")
+    param("tokenType", "permanent")
 })
