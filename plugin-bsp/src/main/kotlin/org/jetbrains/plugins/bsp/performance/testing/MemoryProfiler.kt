@@ -62,18 +62,23 @@ internal object MemoryProfiler : NotificationListener {
     if (notification.type != GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION) return
     val gcInfo = GarbageCollectionNotificationInfo.from(notification.userData as CompositeData)
     if (gcInfo.gcAction != "end of major GC") return
-    val usedMb = gcInfo.gcInfo.memoryUsageAfterGc.values.sumOf { it.used } / MB
+    val usedMb = getUsedMemoryMb()
     maxUsedMb.getAndUpdate { max(it, usedMb) }
   }
 
   fun stopRecording() {
     GCUtil.tryGcSoftlyReachableObjects()
-    val runtime = Runtime.getRuntime()
-    val usedMemory = runtime.totalMemory() - runtime.freeMemory()
-    usedAtExitMb.set(usedMemory / MB)
+    val usedAtExitMb = getUsedMemoryMb()
+    this.usedAtExitMb.set(usedAtExitMb)
+    maxUsedMb.getAndUpdate { max(it, usedAtExitMb) }
 
     for (bean in ManagementFactory.getGarbageCollectorMXBeans()) {
       (bean as? NotificationEmitter)?.removeNotificationListener(this)
     }
+  }
+
+  private fun getUsedMemoryMb(): Long {
+    val runtime = Runtime.getRuntime()
+    return (runtime.totalMemory() - runtime.freeMemory()) / MB
   }
 }
