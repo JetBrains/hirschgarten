@@ -2,6 +2,7 @@ package org.jetbrains.bazel.debug.connector
 
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.DebugEvent
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.DebugRequest
+import org.jetbrains.annotations.TestOnly
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -68,6 +69,13 @@ class StarlarkSocketConnector private constructor(
       // this is the last attempt, throw every exception
       return Socket(HOST, port)
     }
+
+    @TestOnly
+    fun simpleSocketConnection(socket: Socket): StarlarkSocketConnector =
+      StarlarkSocketConnector(
+        socket = socket,
+        onSocketBreak = {}
+      )
   }
 }
 
