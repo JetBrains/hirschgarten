@@ -10,14 +10,13 @@ import com.intellij.platform.diagnostic.telemetry.belongsToScope
 import com.intellij.platform.diagnostic.telemetry.impl.CsvMetricsExporter
 import com.intellij.platform.diagnostic.telemetry.impl.RollingFileSupplier
 import com.intellij.util.concurrency.SynchronizedClearableLazy
-import com.intellij.util.ref.GCUtil
 import com.sun.management.GarbageCollectionNotificationInfo
+import java.lang.Thread.sleep
 import java.lang.management.ManagementFactory
 import java.util.concurrent.atomic.AtomicLong
 import javax.management.Notification
 import javax.management.NotificationEmitter
 import javax.management.NotificationListener
-import javax.management.openmbean.CompositeData
 import kotlin.io.path.div
 import kotlin.math.max
 import kotlin.time.Duration
@@ -25,8 +24,8 @@ import kotlin.time.Duration
 private const val MB = 1024 * 1024
 
 internal object MemoryProfiler : NotificationListener {
-  private var maxUsedMb = AtomicLong()
-  private var usedAtExitMb = AtomicLong()
+  private val maxUsedMb = AtomicLong()
+  private val usedAtExitMb = AtomicLong()
 
   fun startRecording() {
     createOpenTelemetryMemoryGauges()
@@ -60,25 +59,32 @@ internal object MemoryProfiler : NotificationListener {
 
   override fun handleNotification(notification: Notification, handback: Any?) {
     if (notification.type != GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION) return
-    val gcInfo = GarbageCollectionNotificationInfo.from(notification.userData as CompositeData)
-    if (gcInfo.gcAction != "end of major GC") return
     val usedMb = getUsedMemoryMb()
     maxUsedMb.getAndUpdate { max(it, usedMb) }
   }
 
   fun stopRecording() {
-    GCUtil.tryGcSoftlyReachableObjects()
-    val usedAtExitMb = getUsedMemoryMb()
-    this.usedAtExitMb.set(usedAtExitMb)
-    maxUsedMb.getAndUpdate { max(it, usedAtExitMb) }
-
     for (bean in ManagementFactory.getGarbageCollectorMXBeans()) {
       (bean as? NotificationEmitter)?.removeNotificationListener(this)
     }
+    forceGc()
+    val usedAtExitMb = getUsedMemoryMb()
+    this.usedAtExitMb.set(usedAtExitMb)
+    maxUsedMb.getAndUpdate { max(it, usedAtExitMb) }
   }
 
   private fun getUsedMemoryMb(): Long {
     val runtime = Runtime.getRuntime()
     return (runtime.totalMemory() - runtime.freeMemory()) / MB
   }
+
+  private fun forceGc() {
+    val oldGcCount = getGcCount()
+    System.gc()
+    while (oldGcCount == getGcCount()) sleep(1)
+  }
+
+  private fun getGcCount(): Long = ManagementFactory.getGarbageCollectorMXBeans().mapNotNull {
+    it.collectionCount.takeIf { count -> count != -1L }
+  }.sum()
 }
