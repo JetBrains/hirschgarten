@@ -53,6 +53,7 @@ class BazelTest {
     val testCase = TestCase(IdeProductProvider.IC, projectInfo)
       .withBuildNumber(System.getProperty("bsp.benchmark.platform.version"))
     val context = Starter.newContext(projectName, testCase)
+      .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
     installBazelPlugin(context)
 
     val commands = CommandChain()
@@ -136,6 +137,14 @@ class BazelTest {
     val bspPluginZip = javaClass.classLoader.getResource(System.getProperty("bsp.benchmark.plugin.zip"))!!
     context.pluginConfigurator.installPluginFromPath(bspPluginZip.toURI().toPath())
     context.pluginConfigurator.installPluginFromPluginManager("org.jetbrains.bazel", context.ide, "nightly")
+  }
+
+  private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
+    val value = System.getProperty(key) ?: return this
+    applyVMOptionsPatch {
+      addSystemProperty(key, value)
+    }
+    return this
   }
 }
 

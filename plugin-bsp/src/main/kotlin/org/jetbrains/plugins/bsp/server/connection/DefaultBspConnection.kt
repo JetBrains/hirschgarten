@@ -10,6 +10,7 @@ import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.platform.diagnostic.telemetry.impl.getOtlpEndPoint
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
@@ -273,7 +274,7 @@ internal class DefaultBspConnection(
   }
 
   private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<BspServer> =
-    Launcher.Builder<BspServer>()
+    TelemetryContextPropagatingLauncherBuilder<BspServer>()
       .setRemoteInterface(BspServer::class.java)
       .setExecutorService(AppExecutorUtil.getAppExecutorService())
       .setInput(bspIn)
@@ -312,6 +313,9 @@ internal class DefaultBspConnection(
     )
     val dataJson = JsonObject()
     dataJson.addProperty("clientClassesRootDir", "$projectBaseDir/out")
+    getOtlpEndPoint()?.let {
+      dataJson.addProperty("openTelemetryEndpoint", it)
+    }
     params.data = dataJson
 
     return params
