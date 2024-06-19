@@ -38,7 +38,7 @@ class StarlarkDebugProcess(
   override fun getBreakpointHandlers(): Array<XBreakpointHandler<*>> = breakpointHandler
 
   override fun stop() {
-    onStop()
+    messenger.close()
   }
 
   override fun resume(context: XSuspendContext?) {

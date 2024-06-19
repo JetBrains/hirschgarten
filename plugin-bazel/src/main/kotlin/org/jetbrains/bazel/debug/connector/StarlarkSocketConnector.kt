@@ -7,7 +7,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.Socket
-import java.net.SocketException
 
 class StarlarkSocketConnector private constructor(
   private val socket: Socket,
@@ -16,22 +15,18 @@ class StarlarkSocketConnector private constructor(
   private val ins: InputStream = socket.getInputStream()
   private val outs: OutputStream = socket.getOutputStream()
 
+  @Throws(IOException::class)
   fun write(request: DebugRequest) {
-    try {
-      request.writeDelimitedTo(outs)
-    } catch (_: SocketException) {
-      this.onSocketBreak()
-    }
+    request.writeDelimitedTo(outs)
   }
 
-  fun read(): DebugEvent? {
-    val ret = try {
-      DebugEvent.parseDelimitedFrom(ins)
-    } catch (_: IOException) {
-      null
+  @Throws(IOException::class)
+  fun read(): DebugEvent {
+    if (socket.isClosed) {
+      throw IOException("Socket closed")
     }
-    if (ret == null) this.onSocketBreak()
-    return ret
+    return DebugEvent.parseDelimitedFrom(ins)  // will be null when EOF is reached
+      .also { if (it == null) throw IOException("Socket stream is closed") }
   }
 
   /** This function needs to be safe to call multiple times */

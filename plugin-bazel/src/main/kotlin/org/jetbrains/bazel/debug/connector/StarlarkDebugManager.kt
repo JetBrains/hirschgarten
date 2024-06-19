@@ -8,6 +8,8 @@ import com.intellij.openapi.util.registry.Registry
 import com.intellij.xdebugger.XDebugProcess
 import com.intellij.xdebugger.XDebugProcessStarter
 import com.intellij.xdebugger.XDebugSession
+import org.jetbrains.annotations.TestOnly
+import org.jetbrains.annotations.VisibleForTesting
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.debug.console.StarlarkDebugTaskListener
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointHandler
@@ -71,21 +73,35 @@ class StarlarkDebugManager(private val project: Project) {
     futureToCancelOnStop = future
   }
 
+  @TestOnly
+  internal fun startDryAndGetLoopIteration(
+    messenger: StarlarkDebugMessenger,
+    breakpointHandler: StarlarkBreakpointHandler,
+    eventHandler: ThreadAwareEventHandler,
+  ): () -> Unit {
+    this.classes = LateinitDebugClasses(messenger, breakpointHandler, eventHandler)
+    return this.loop::performEventLoopIteration
+  }
+
   private enum class State {
     READY,
     RUNNING,
     DISPOSED,
   }
 
-  @Suppress("DialogTitleCapitalization")  // it triggers due to Starlark starting with a capital letter
   private inner class Loop : Task.Backgroundable(project, BazelPluginBundle.message("starlark.debug.task.title")) {
     override fun run(indicator: ProgressIndicator) {
       while (state == State.RUNNING) {
-        classes?.let {
-          if (!it.messenger.isClosed()) {
-            it.messenger.readEventAndHandle(it.eventHandler)
-          }
-        }
+        performEventLoopIteration()
+      }
+    }
+
+    @VisibleForTesting
+    fun performEventLoopIteration() {
+      try {
+        classes?.apply { messenger.readEventAndHandle(eventHandler) }
+      } catch (_: Exception) {
+        stop()
       }
     }
   }

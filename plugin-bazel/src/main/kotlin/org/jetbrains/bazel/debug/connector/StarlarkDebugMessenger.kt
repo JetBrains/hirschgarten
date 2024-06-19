@@ -19,11 +19,9 @@ class StarlarkDebugMessenger(
     session.stop()
   }
 
-  fun isClosed(): Boolean = connector.isClosed()
-
   fun readEventAndHandle(handler: ThreadAwareEventHandler) {
     val event = connector.read()
-    event?.let { handler.reactTo(it) }
+    handler.reactTo(event)
   }
 
   private fun debugRequestTemplate(): SDP.DebugRequest.Builder =
@@ -94,14 +92,18 @@ class StarlarkDebugMessenger(
     return debugRequestTemplate().setStartDebugging(request).send()
   }
 
+  private infix fun SDP.DebugRequest.sendThrough(connector: StarlarkSocketConnector): Long {
+    try {
+      connector.write(this)
+    } catch (_: Exception) {
+      close()
+    }
+    return this.sequenceNumber
+  }
+
   /** Allows other classes to send requests without showing implementation details */
   inner class RequestReadyToSend(private val request: SDP.DebugRequest) {
     fun send(): Long = request sendThrough connector
     fun getSequenceNumber(): Long = request.sequenceNumber
   }
-}
-
-private infix fun SDP.DebugRequest.sendThrough(connector: StarlarkSocketConnector): Long {
-  connector.write(this)
-  return this.sequenceNumber
 }

@@ -10,10 +10,10 @@ import org.junit.jupiter.api.BeforeEach
 
 abstract class StarlarkDebugClientTestBase {
   @BeforeEach
-  fun establishMockConnection() {
+  open fun establishMockConnection() {
     socket = MockSocket()
     session = MockDebugSession()
-    val connector = StarlarkSocketConnector.simpleSocketConnection(socket)
+    connector = StarlarkSocketConnector.simpleSocketConnection(socket)
 
     messenger = StarlarkDebugMessenger(connector, session)
     breakpointHandler = StarlarkBreakpointHandler(messenger)
@@ -22,6 +22,7 @@ abstract class StarlarkDebugClientTestBase {
 
   protected lateinit var socket: MockSocket
   protected lateinit var session: MockDebugSession
+  protected lateinit var connector: StarlarkSocketConnector
   protected lateinit var messenger: StarlarkDebugMessenger
   protected lateinit var breakpointHandler: StarlarkBreakpointHandler
   protected lateinit var eventHandler: ThreadAwareEventHandler
