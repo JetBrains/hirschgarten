@@ -16,7 +16,6 @@ class StarlarkDebugProcess(
   session: XDebugSession,
   breakpointHandler: XBreakpointHandler<*>,
   private val console: ExecutionConsole,
-  private val onStop: () -> Unit,
 ) : XDebugProcess(session) {
   init {
     session.setPauseActionSupported(true)

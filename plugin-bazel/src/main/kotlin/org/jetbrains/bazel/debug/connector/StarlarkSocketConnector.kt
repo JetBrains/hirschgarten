@@ -10,7 +10,6 @@ import java.net.Socket
 
 class StarlarkSocketConnector private constructor(
   private val socket: Socket,
-  private val onSocketBreak: () -> Unit,
 ) {
   private val ins: InputStream = socket.getInputStream()
   private val outs: OutputStream = socket.getOutputStream()
@@ -34,19 +33,13 @@ class StarlarkSocketConnector private constructor(
     if (!socket.isClosed) socket.close()
   }
 
-  fun isClosed(): Boolean = socket.isClosed
-
   companion object {
     fun tryConnectTo(
       port: Int,
-      onSocketBreak: () -> Unit,
       attempts: Int,
       intervalMillis: Long,
     ): StarlarkSocketConnector =
-      StarlarkSocketConnector(
-        socket = establishSocket(port, attempts, intervalMillis),
-        onSocketBreak = onSocketBreak,
-      )
+      StarlarkSocketConnector(establishSocket(port, attempts, intervalMillis))
 
     private fun establishSocket(
       port: Int,
@@ -67,10 +60,7 @@ class StarlarkSocketConnector private constructor(
 
     @TestOnly
     fun simpleSocketConnection(socket: Socket): StarlarkSocketConnector =
-      StarlarkSocketConnector(
-        socket = socket,
-        onSocketBreak = {}
-      )
+      StarlarkSocketConnector(socket)
   }
 }
 

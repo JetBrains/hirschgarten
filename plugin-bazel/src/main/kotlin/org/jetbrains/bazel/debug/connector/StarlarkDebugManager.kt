@@ -29,7 +29,6 @@ class StarlarkDebugManager(private val project: Project) {
   private fun startDebuggingProcess(session: XDebugSession, debugPort: Int): StarlarkDebugProcess {
     val connector = StarlarkSocketConnector.tryConnectTo(
       debugPort,
-      this::stop,
       Registry.intValue("bazel.starlark.debug.socket.attempts"),
       Registry.intValue("bazel.starlark.debug.socket.interval").toLong(),
     )
@@ -46,7 +45,7 @@ class StarlarkDebugManager(private val project: Project) {
     state = State.RUNNING
     ProgressManager.getInstance().run(loop)
     val debugProcess =
-      StarlarkDebugProcess(connector, session, initializedClasses.breakpointHandler, taskListener.console, this::stop)
+      StarlarkDebugProcess(connector, session, initializedClasses.breakpointHandler, taskListener.console)
     taskListener.replaceSuspendChecker { debugProcess.isSuspended() }
     return debugProcess
   }

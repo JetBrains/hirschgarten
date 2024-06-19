@@ -48,7 +48,6 @@ class StarlarkDebugStopTest : StarlarkDebugClientTestBase() {
       session = session,
       breakpointHandler = breakpointHandler,
       console = NullExecutionConsole,
-      onStop = {},
     )
     process.stop()
     managerLoopIteration()
