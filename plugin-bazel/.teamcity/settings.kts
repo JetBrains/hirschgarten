@@ -43,6 +43,12 @@ object IntellijBazelGitHub : Project({
     // setup trigger for intellij-bsp pipeline
     allSteps.last().triggers {
         vcs {
+            triggerRules = """
+                -:**.md
+                -:**.yml
+                -:/LICENSE
+                -:/.teamcity/**
+            """.trimIndent()
             branchFilter = """
                 +:pull/*
             """.trimIndent()
@@ -88,6 +94,12 @@ object IntellijBazelSpace : Project({
     // setup trigger for intellij-bsp pipeline
     allSteps.last().triggers {
         vcs {
+            triggerRules = """
+                -:**.md
+                -:**.yml
+                -:/LICENSE
+                -:/.teamcity/**
+            """.trimIndent()    
             branchFilter = """
                 +:<default>
                 +:*
