@@ -6,48 +6,49 @@ import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.configurations.RunnerSettings
 import com.intellij.execution.executors.DefaultDebugExecutor
+import com.intellij.execution.runners.AsyncProgramRunner
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.execution.runners.GenericProgramRunner
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.util.net.NetUtils
 import com.intellij.xdebugger.XDebuggerManager
 import org.jdom.Element
-import org.jetbrains.bazel.debug.connector.StarlarkDebugManager
+import org.jetbrains.bazel.debug.connector.StarlarkDebugSessionManager
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.concurrency.AsyncPromise
+import org.jetbrains.concurrency.Promise
 import org.jetbrains.plugins.bsp.server.tasks.AnalysisDebugTask
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.atomic.AtomicReference
 
-class StarlarkDebugRunner : GenericProgramRunner<StarlarkDebugRunner.Settings>() {
+class StarlarkDebugRunner : AsyncProgramRunner<StarlarkDebugRunner.Settings>() {
   override fun getRunnerId(): String = "StarlarkDebugRunner"
 
   override fun canRun(executorId: String, profile: RunProfile): Boolean =
     executorId == DefaultDebugExecutor.EXECUTOR_ID &&
       profile is StarlarkDebugConfiguration
 
-  override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor? {
+  override fun execute(environment: ExecutionEnvironment, state: RunProfileState): Promise<RunContentDescriptor?> {
     // cast will always succeed - canRun(...) makes sure only StarlarkDebugConfiguration is run with this runner
     val starlarkState = state as StarlarkDebugConfigurationState
     val project = environment.project
     val port = choosePort()
-    val starlarkManager = StarlarkDebugManager(project)
+    val starlarkManager = StarlarkDebugSessionManager(project)
     val starter = starlarkManager.ProcessStarter(port)
-    val ex = AtomicReference<ExecutionException>()
-    val result = AtomicReference<RunContentDescriptor>()
     val target = BuildTargetIdentifier(starlarkState.target)
 
     val taskListener = starlarkManager.taskListener
     val task = AnalysisDebugTask(project, port, taskListener)
 
-    ApplicationManager.getApplication().invokeAndWait {
+    val promise = AsyncPromise<RunContentDescriptor?>()
+
+    ApplicationManager.getApplication().invokeLater {
       try {
         task.connectAndExecute(listOf(target)).apply {
-          this relayToProxy starlarkState
+          this relayResultTo starlarkState.futureProxy
           starlarkManager.registerFutureToStop(this)
         }
-        result.set(
+        promise.setResult(
           XDebuggerManager
             .getInstance(project)
             .startSession(environment, starter)
@@ -56,10 +57,10 @@ class StarlarkDebugRunner : GenericProgramRunner<StarlarkDebugRunner.Settings>()
       } catch (_: ProcessCanceledException) {
         // ignore
       } catch (e: ExecutionException) {
-        ex.set(e)
+        promise.setError(e)
       }
     }
-    return ex.get()?.let { throw it } ?: result.get()
+    return promise
   }
 
   class Settings : RunnerSettings {
@@ -75,12 +76,12 @@ class StarlarkDebugRunner : GenericProgramRunner<StarlarkDebugRunner.Settings>()
 
 private fun choosePort(): Int = NetUtils.findAvailableSocketPort()
 
-private infix fun CompletableFuture<AnalysisDebugResult>.relayToProxy(state: StarlarkDebugConfigurationState) {
-  whenComplete { result, exception ->
+private infix fun CompletableFuture<AnalysisDebugResult>.relayResultTo(other: CompletableFuture<AnalysisDebugResult>) {
+  this.whenComplete { result, exception ->
     if (exception != null) {
-      state.futureProxy.completeExceptionally(exception)
+      other.completeExceptionally(exception)
     } else {
-      state.futureProxy.complete(result)
+      other.complete(result)
     }
   }
 }

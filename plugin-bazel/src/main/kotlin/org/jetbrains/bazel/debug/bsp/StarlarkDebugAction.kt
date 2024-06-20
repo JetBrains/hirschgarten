@@ -23,12 +23,12 @@ class StarlarkDebugAction(
   icon = AllIcons.Actions.StartDebugger,
 ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val config = summonConfigSettings(project)
+    val config = createConfigSettings(project)
     config.save(project)
     config.execute()
   }
 
-  private fun summonConfigSettings(project: Project): RunnerAndConfigurationSettings {
+  private fun createConfigSettings(project: Project): RunnerAndConfigurationSettings {
     val runManager = RunManager.getInstance(project)
     val configName =
       runManager.suggestUniqueName(

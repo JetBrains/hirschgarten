@@ -2,73 +2,79 @@ package org.jetbrains.bazel.debug
 
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
-import org.jetbrains.bazel.debug.error.StarlarkDebuggerError
 import org.jetbrains.bazel.debug.utils.MockLineBreakpoint
 import org.junit.jupiter.api.Test
 
 class StarlarkDebugEventHandlingTest : StarlarkDebugClientTestBase() {
   @Test
   fun `debug error handling`() {
-    val error = SDP.Error.newBuilder().setMessage("An error").build()
+    val conn = establishMockConnection()
+    val errorMessage = "An error"
+    val error = SDP.Error.newBuilder().setMessage(errorMessage).build()
     val event = SDP.DebugEvent.newBuilder().setError(error).build()
-    socket.sendMockEvent(event)
+    conn.socket.sendMockEvent(event)
 
-    shouldThrow<StarlarkDebuggerError> {
-      messenger.readEventAndHandle(eventHandler)
+    conn.session.lastError.shouldBeNull()
+    conn.messenger.readEventAndHandle(conn.eventHandler)
+    conn.session.lastError.let {
+      it.shouldNotBeNull()
+      it shouldBeEqual errorMessage
     }
   }
 
   @Test
   fun `enabled breakpoint event handling`() {
-    registerExampleBreakpoint()
-    createPauseEvent(SDP.PauseReason.HIT_BREAKPOINT).sendEventAndReact()
+    val conn = establishMockConnection()
+    conn.registerExampleBreakpoint()
+    createPauseEvent(SDP.PauseReason.HIT_BREAKPOINT).sendEventAndReact(conn)
 
-    (session.breakpointReached as XLineBreakpoint<*>).let {
+    (conn.session.breakpointReached as XLineBreakpoint<*>).let {
       it.line shouldBeEqual BREAKPOINT_LINE
       it.presentableFilePath shouldBeEqual BREAKPOINT_PATH
     }
-    socket.readRequests()
+    conn.socket.readRequests()
       .any { it.payloadCase == SDP.DebugRequest.PayloadCase.CONTINUE_EXECUTION }
       .shouldBeFalse()
   }
 
   @Test
   fun `disabled breakpoint event handling`() {
-    registerExampleBreakpoint()
-    session.ignoreBreakpoints = true
-    createPauseEvent(SDP.PauseReason.HIT_BREAKPOINT).sendEventAndReact()
+    val conn = establishMockConnection()
+    conn.registerExampleBreakpoint()
+    conn.session.ignoreBreakpoints = true
+    createPauseEvent(SDP.PauseReason.HIT_BREAKPOINT).sendEventAndReact(conn)
 
-    session.breakpointReached.shouldNotBeNull()
-    socket.readRequests()
+    conn.session.breakpointReached.shouldNotBeNull()
+    conn.socket.readRequests()
       .any { it.payloadCase == SDP.DebugRequest.PayloadCase.CONTINUE_EXECUTION }
       .shouldBeTrue()
   }
 
   @Test
   fun `initial execution pause handling`() {
-    createPauseEvent(SDP.PauseReason.INITIALIZING).sendEventAndReact()
+    val conn = establishMockConnection()
+    createPauseEvent(SDP.PauseReason.INITIALIZING).sendEventAndReact(conn)
 
-    session.breakpointReached.shouldBeNull()
-    socket.readRequests()
+    conn.session.breakpointReached.shouldBeNull()
+    conn.socket.readRequests()
       .any { it.payloadCase == SDP.DebugRequest.PayloadCase.CONTINUE_EXECUTION }
       .shouldBeFalse()
   }
 
-  private fun registerExampleBreakpoint() {
+  private fun MockConnectionPack.registerExampleBreakpoint() {
     val breakpoint = MockLineBreakpoint(BREAKPOINT_PATH, BREAKPOINT_LINE)
     breakpointHandler.registerBreakpoint(breakpoint)
     socket.clearBuffers()
   }
 
-  private fun SDP.DebugEvent.sendEventAndReact() {
-    socket.sendMockEvent(this)
-    messenger.readEventAndHandle(eventHandler)
+  private fun SDP.DebugEvent.sendEventAndReact(conn: MockConnectionPack) {
+    conn.socket.sendMockEvent(this)
+    conn.messenger.readEventAndHandle(conn.eventHandler)
   }
 }
 

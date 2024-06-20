@@ -3,79 +3,56 @@ package org.jetbrains.bazel.debug
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 import com.intellij.execution.ui.ExecutionConsole
 import io.kotest.matchers.booleans.shouldBeFalse
-import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.equals.shouldBeEqual
-import org.jetbrains.bazel.debug.connector.StarlarkDebugManager
+import org.jetbrains.bazel.debug.connector.StarlarkDebugSessionManager
 import org.jetbrains.bazel.debug.platform.StarlarkDebugProcess
 import org.jetbrains.bazel.debug.utils.TestProjectGenerator
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture
 import javax.swing.JComponent
 import javax.swing.JPanel
 
 class StarlarkDebugStopTest : StarlarkDebugClientTestBase() {
-  private lateinit var managerLoopIteration: () -> Unit
-  private lateinit var future: CompletableFuture<AnalysisDebugResult>
-
-  @BeforeEach
-  override fun establishMockConnection() {
-    super.establishMockConnection()
-
-    val project = TestProjectGenerator.createProject()
-
-    val manager = StarlarkDebugManager(project)
-    managerLoopIteration = manager.startDryAndGetLoopIteration(
-      messenger = messenger,
-      breakpointHandler = breakpointHandler,
-      eventHandler = eventHandler,
-    )
-
-    future = CompletableFuture()
-    manager.registerFutureToStop(future)
-  }
-
   @Test
   fun `stop button pressed should stop debugging`() {
-//  fun testStopButton() {
-    sendFiveEventsToStream()
-    socket.isClosed.shouldBeFalse()
-    future.isDone.shouldBeFalse()
+    val conn = establishMockConnection()
 
-    val process = StarlarkDebugProcess(
-      connector = connector,
-      session = session,
-      breakpointHandler = breakpointHandler,
-      console = NullExecutionConsole,
-    )
-    process.stop()
-    managerLoopIteration()
-
-    socket.isClosed.shouldBeTrue()
-    future.isDone.shouldBeTrue()
+    conn.sendFiveEventsToStream()
+    conn.shouldStopDebugging {
+      val process = StarlarkDebugProcess(
+        connector = connector,
+        session = session,
+        breakpointHandler = breakpointHandler,
+        console = NullExecutionConsole,
+      )
+      process.stop()
+    }
   }
 
   @Test
   fun `socket EOF reached should stop debugging`() {
-    sendFiveEventsToStream()
-    shouldStopDebugging {
+    val conn = establishMockConnection()
+    conn.sendFiveEventsToStream()
+    conn.shouldStopDebugging {
       socket.clearBuffers()
     }
   }
 
   @Test
   fun `exception while reading should stop debugging`() {
-    sendFiveEventsToStream()
-    shouldStopDebugging {
+    val conn = establishMockConnection()
+    conn.sendFiveEventsToStream()
+    conn.shouldStopDebugging {
       socket.simulateException(MockException())
     }
   }
 
   @Test
   fun `exception while writing should stop debugging`() {
-    sendFiveEventsToStream()
-    shouldStopDebugging {
+    val conn = establishMockConnection()
+    conn.sendFiveEventsToStream()
+    conn.shouldStopDebugging {
       socket.simulateException(MockException())
       messenger.startDebugging()
       socket.simulateException(null)
@@ -85,22 +62,28 @@ class StarlarkDebugStopTest : StarlarkDebugClientTestBase() {
 
   @Test
   fun `normal operation should not stop debugging`() {
-    sendFiveEventsToStream()
-    shouldNotStopDebugging {
-      messenger.readEventAndHandle(eventHandler)
+    val conn = establishMockConnection()
+    conn.sendFiveEventsToStream()
+    conn.shouldNotStopDebugging {
+      messenger.readEventAndHandle(conn.eventHandler)
       messenger.startDebugging()
     }
   }
 
-  private fun shouldStopDebugging(operation: () -> Unit) {
+  private fun MockConnectionPack.shouldStopDebugging(operation: MockConnectionPack.() -> Unit) {
     assertDebuggerStopped(true, operation)
   }
 
-  private fun shouldNotStopDebugging(operation: () -> Unit) {
+  private fun MockConnectionPack.shouldNotStopDebugging(operation: MockConnectionPack.() -> Unit) {
     assertDebuggerStopped(false, operation)
   }
 
-  private fun assertDebuggerStopped(shouldBeStopped: Boolean, operation: () -> Unit) {
+  private fun MockConnectionPack.assertDebuggerStopped(
+    shouldBeStopped: Boolean,
+    operation: MockConnectionPack.() -> Unit,
+  ) {
+    val (future, managerLoopIteration) =
+      getFutureAndLoopIteration()
     managerLoopIteration()
 
     // debugging should be running before the operation
@@ -115,7 +98,20 @@ class StarlarkDebugStopTest : StarlarkDebugClientTestBase() {
     future.isDone shouldBeEqual shouldBeStopped
   }
 
-  private fun sendFiveEventsToStream() {
+  private fun MockConnectionPack.getFutureAndLoopIteration(): Pair<CompletableFuture<AnalysisDebugResult>, () -> Unit> {
+    val project = TestProjectGenerator.createProject()
+    val manager = StarlarkDebugSessionManager(project)
+    val managerLoopIteration = manager.startDryAndGetLoopIteration(
+      messenger = messenger,
+      eventHandler = eventHandler,
+    )
+    val future = CompletableFuture<AnalysisDebugResult>()
+    manager.registerFutureToStop(future)
+
+    return future to managerLoopIteration
+  }
+
+  private fun MockConnectionPack.sendFiveEventsToStream() {
     val threadContinuedBuilder = SDP.ThreadContinuedEvent.newBuilder()
     repeat(5) {
       val threadId = 1000L + it

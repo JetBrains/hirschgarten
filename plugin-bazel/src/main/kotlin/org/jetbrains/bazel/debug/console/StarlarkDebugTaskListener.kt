@@ -31,8 +31,4 @@ class StarlarkDebugTaskListener(
   fun replaceSuspendChecker(newSuspendChecker: () -> Boolean) {
     suspendChecker = newSuspendChecker
   }
-
-  fun clearSuspendChecker() {
-    suspendChecker = null
-  }
 }

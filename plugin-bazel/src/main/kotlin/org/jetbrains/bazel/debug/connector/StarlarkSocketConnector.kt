@@ -3,6 +3,7 @@ package org.jetbrains.bazel.debug.connector
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.DebugEvent
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.DebugRequest
 import org.jetbrains.annotations.TestOnly
+import java.io.Closeable
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -10,7 +11,7 @@ import java.net.Socket
 
 class StarlarkSocketConnector private constructor(
   private val socket: Socket,
-) {
+) : Closeable {
   private val ins: InputStream = socket.getInputStream()
   private val outs: OutputStream = socket.getOutputStream()
 
@@ -29,11 +30,12 @@ class StarlarkSocketConnector private constructor(
   }
 
   /** This function needs to be safe to call multiple times */
-  fun close() {
+  override fun close() {
     if (!socket.isClosed) socket.close()
   }
 
   companion object {
+    /** This function might block for a moment, should not be used on the main thread */
     fun tryConnectTo(
       port: Int,
       attempts: Int,

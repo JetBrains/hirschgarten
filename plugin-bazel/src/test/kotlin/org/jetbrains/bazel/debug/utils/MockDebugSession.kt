@@ -25,6 +25,7 @@ class MockDebugSession : XDebugSession {
   var ignoreBreakpoints: Boolean = false
   var breakpointReached: XBreakpoint<*>? = null
     private set
+  var lastError: String? = null
 
   override fun isStopped(): Boolean {
     unavailableInMock()
@@ -152,7 +153,7 @@ class MockDebugSession : XDebugSession {
   }
 
   override fun reportError(message: String) {
-    /* no operation */
+    lastError = message
   }
 
   override fun reportMessage(message: String, type: MessageType) {

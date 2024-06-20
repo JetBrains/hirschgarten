@@ -15,12 +15,12 @@ class StarlarkExecutionStack(
   override fun getTopFrame(): XStackFrame? = topFrame
 
   override fun computeStackFrames(
-    startIndex: Int, // index of the frame to start from (0 = top frame)
+    startIndex: Int, // index of the frame to start from (0 = the topmost frame)
     container: XStackFrameContainer?,
   ) {
-    // we don't want to answer to subsequent computeStackFrames calls, because we compute all frames at once
+    // we don't want to react to any following computeStackFrames calls, because we compute all frames at once
     if (container != null && startIndex == 0) {
-      valueComputer.computeFramesForExecutionStack(thread.id) { frames ->
+      valueComputer.computeFramesForExecutionStack(thread.id).thenAccept { frames ->
         val xStackFrames = frames.map { it.toStackFrame() }
         topFrame = xStackFrames.firstOrNull()?.also { it.isTopFrame = true }
         container.addStackFrames(xStackFrames, true)

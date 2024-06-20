@@ -4,11 +4,10 @@ import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos a
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos.DebugEvent.PayloadCase
 import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint
-import org.jetbrains.bazel.debug.error.StarlarkDebuggerError
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointProperties
 import org.jetbrains.bazel.debug.platform.StarlarkDebuggerEvaluator
 import org.jetbrains.bazel.debug.platform.StarlarkSuspendContext
-import java.util.Collections
+import java.util.concurrent.CompletableFuture
 
 class ThreadAwareEventHandler(
   private val session: XDebugSession,
@@ -16,17 +15,12 @@ class ThreadAwareEventHandler(
   private val breakpointResolver: (String, Int) -> XLineBreakpoint<StarlarkBreakpointProperties>?,
 ) {
   // maps thread IDs to PausedThreads
-  private val pausedThreads = Collections.synchronizedMap(mutableMapOf<Long, SDP.PausedThread>())
-  private val subscriptions = Collections.synchronizedMap(mutableMapOf<Long, (SDP.DebugEvent) -> Unit>())
-
-  private val evaluatorProvider = StarlarkDebuggerEvaluator.Provider(this)
-
-  val valueComputer: StarlarkValueComputer = this.ValueComputer()
+  private val pausedThreads = mutableMapOf<Long, SDP.PausedThread>()
+  private val valueComputer: StarlarkValueComputer = getValueComputer()
+  private val evaluatorProvider = StarlarkDebuggerEvaluator.Provider(valueComputer, messenger)
 
   fun reactTo(event: SDP.DebugEvent) {
-    subscriptions.remove(event.sequenceNumber)?.let {
-      it(event)
-    } ?: when (event.payloadCase) {
+    when (event.payloadCase) {
       PayloadCase.ERROR -> handleError(event.error)
       PayloadCase.THREAD_PAUSED -> handleThreadPaused(event.threadPaused)
       PayloadCase.THREAD_CONTINUED -> handleThreadContinued(event.threadContinued)
@@ -36,10 +30,10 @@ class ThreadAwareEventHandler(
 
   /** Creates an immutable snapshot of paused thread set */
   private fun getPausedThreadList(): List<SDP.PausedThread> =
-    synchronized(pausedThreads) { pausedThreads.values.toList() }
+    pausedThreads.values.toList()
 
   private fun handleError(event: SDP.Error) {
-    throw StarlarkDebuggerError(event)
+    session.reportError(event.message)
   }
 
   private fun handleThreadPaused(event: SDP.ThreadPausedEvent) {
@@ -80,35 +74,14 @@ class ThreadAwareEventHandler(
     pausedThreads.remove(threadId)
   }
 
-  private fun StarlarkDebugMessenger.RequestReadyToSend.subscribeAndSend(callback: (SDP.DebugEvent) -> Unit) {
-    subscriptions[this.getSequenceNumber()] = callback
-    this.send()
-  }
-
-  fun evaluate(threadId: Long, expression: String, consumer: (SDP.Value?) -> Unit) {
-    messenger.prepareEvaluate(threadId, expression).subscribeAndSend {
-      consumer(it.evaluate?.result)
-    }
-  }
-
-  private inner class ValueComputer : StarlarkValueComputer {
-    override fun computeFramesForExecutionStack(
-      threadId: Long,
-      callback: (List<SDP.Frame>) -> Unit,
-    ) {
-      messenger.prepareListFrames(threadId).subscribeAndSend {
-        callback(it.listFrames?.frameList ?: emptyList())
-      }
-    }
+  private fun getValueComputer() = object : StarlarkValueComputer {
+    override fun computeFramesForExecutionStack(threadId: Long): CompletableFuture<List<SDP.Frame>> =
+      messenger.listFrames(threadId).thenApply { it?.frameList ?: emptyList() }
 
     override fun computeValueChildren(
       threadId: Long,
       valueId: Long,
-      callback: (List<SDP.Value>) -> Unit,
-    ) {
-      messenger.prepareGetChildren(threadId, valueId).subscribeAndSend {
-        callback(it.getChildren?.childrenList ?: emptyList())
-      }
-    }
+    ): CompletableFuture<List<SDP.Value>> =
+      messenger.getChildren(threadId, valueId).thenApply { it?.childrenList ?: emptyList() }
   }
 }

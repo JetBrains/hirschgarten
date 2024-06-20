@@ -12,6 +12,7 @@ class StarlarkDebugConfigurationState(
   val target: String,
   environment: ExecutionEnvironment,
 ) : CommandLineState(environment) {
+  // allows passing execution results (both successful and exceptional) to BspProcessHandler from outside
   val futureProxy = CompletableFuture<AnalysisDebugResult>()
 
   override fun startProcess(): BspProcessHandler<AnalysisDebugResult> =

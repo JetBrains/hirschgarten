@@ -44,17 +44,21 @@ Expression evaluation is performed entirely by Bazel, so some issues cannot be f
 ## Paused execution
 When execution is paused (either by a breakpoint or the pause functionality of IntelliJ debugging interface),
 the user is given a list of threads (usually one), each having an execution stack, each having a list of values.
-Compound values (lists, dictionaries etc.) can be expanded, but children are computed lazily
+Compound values (lists, dictionaries, etc.) can be expanded, but children are computed lazily
 ([`platform.StarlarkStackFrame::computeChildren`](platform/StarlarkStackFrame.kt)).
 
-## Terminating
-Debugging can be terminated from two sides:
+## Termination
+### Socket break
+The socket will break in many situations, most commonly when Bazel process finishes
 
-* **Debugging is terminated through IntelliJ interface** - IntelliJ executes `stop()` in [`platform.StarlarkDebugProcess`](platform/StarlarkDebugProcess.kt)
-* **Bazel build ends or is stopped** *(for instance the process is killed)* -[`connector.StarlarkSocketConnector`](connector/StarlarkSocketConnector.kt) detects broken data stream and executes `onSocketBreak()`
+1. This causes an exception in loop defined in [`connector.StarlarkDebugManager`](connector/StarlarkDebugSessionManager.kt)
+2. ...which executes the manager's `stop()`, terminating the debug task
+3. ...and executes `close()` on [`connector.StarlarkDebugMessenger`](connector/StarlarkDebugMessenger.kt)
 
-Both cause the same chain of events:
+### UI termination
+The user can also terminate debugging manually through IntelliJ interface
 
-1. Executing `stop()` in [`connector.StarlarkDebugManager`](connector/StarlarkDebugManager.kt)
+1. IntelliJ executes `stop()` in [`platform.StarlarkDebugProcess`](platform/StarlarkDebugProcess.kt)
 2. ...which executes `close()` on [`connector.StarlarkDebugMessenger`](connector/StarlarkDebugMessenger.kt)
-3. ...which stops the debug session and executes `close()` on [`connector.StarlarkSocketConnector`](connector/StarlarkSocketConnector.kt)
+3. ...which executes `close()` on [`connector.StarlarkSocketConnector`](connector/StarlarkSocketConnector.kt), thus breaking the socket
+4. ...which causes the chain of events mentioned above

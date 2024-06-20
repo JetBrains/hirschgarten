@@ -3,37 +3,39 @@ package org.jetbrains.bazel.debug
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.nulls.shouldNotBeNull
+import org.jetbrains.bazel.debug.connector.StarlarkDebugMessenger
+import org.jetbrains.bazel.debug.utils.MockSocket
 import org.junit.jupiter.api.Test
 
 class StarlarkDebugRequestTest : StarlarkDebugClientTestBase() {
   @Test
   fun `start debugging request`() {
-    val seq = messenger.startDebugging()
+    val (socket, messenger) = getSocketAndMessenger()
+    messenger.startDebugging()
     val singleRequest = socket.readRequests().singleOrNull()
 
     singleRequest.shouldNotBeNull()
-    seq shouldBeEqual singleRequest.sequenceNumber
     singleRequest.payloadCase shouldBeEqual SDP.DebugRequest.PayloadCase.START_DEBUGGING
   }
 
   @Test
   fun `list frames request`() {
-    val seq = messenger.prepareListFrames(THREAD_ID).send()
+    val (socket, messenger) = getSocketAndMessenger()
+    messenger.listFrames(THREAD_ID)
     val singleRequest = socket.readRequests().singleOrNull()
 
     singleRequest.shouldNotBeNull()
-    seq shouldBeEqual singleRequest.sequenceNumber
     singleRequest.payloadCase shouldBeEqual SDP.DebugRequest.PayloadCase.LIST_FRAMES
     singleRequest.listFrames.threadId shouldBeEqual THREAD_ID
   }
 
   @Test
   fun `get children request`() {
-    val seq = messenger.prepareGetChildren(THREAD_ID, VALUE_ID).send()
+    val (socket, messenger) = getSocketAndMessenger()
+    messenger.getChildren(THREAD_ID, VALUE_ID)
     val singleRequest = socket.readRequests().singleOrNull()
 
     singleRequest.shouldNotBeNull()
-    seq shouldBeEqual singleRequest.sequenceNumber
     singleRequest.payloadCase shouldBeEqual SDP.DebugRequest.PayloadCase.GET_CHILDREN
     singleRequest.getChildren.threadId shouldBeEqual THREAD_ID
     singleRequest.getChildren.valueId shouldBeEqual VALUE_ID
@@ -41,11 +43,11 @@ class StarlarkDebugRequestTest : StarlarkDebugClientTestBase() {
 
   @Test
   fun `evaluate request`() {
-    val seq = messenger.prepareEvaluate(THREAD_ID, EXPRESSION).send()
+    val (socket, messenger) = getSocketAndMessenger()
+    messenger.evaluate(THREAD_ID, EXPRESSION)
     val singleRequest = socket.readRequests().singleOrNull()
 
     singleRequest.shouldNotBeNull()
-    seq shouldBeEqual singleRequest.sequenceNumber
     singleRequest.payloadCase shouldBeEqual SDP.DebugRequest.PayloadCase.EVALUATE
     singleRequest.evaluate.threadId shouldBeEqual THREAD_ID
     singleRequest.evaluate.statement shouldBeEqual EXPRESSION
@@ -53,22 +55,22 @@ class StarlarkDebugRequestTest : StarlarkDebugClientTestBase() {
 
   @Test
   fun `pause all threads request`() {
-    val seq = messenger.pauseAllThreads()
+    val (socket, messenger) = getSocketAndMessenger()
+    messenger.pauseAllThreads()
     val singleRequest = socket.readRequests().singleOrNull()
 
     singleRequest.shouldNotBeNull()
-    seq shouldBeEqual singleRequest.sequenceNumber
     singleRequest.payloadCase shouldBeEqual SDP.DebugRequest.PayloadCase.PAUSE_THREAD
     singleRequest.pauseThread.threadId shouldBeEqual 0
   }
 
   @Test
   fun `resume all threads request`() {
-    val seq = messenger.resumeAllThreads()
+    val (socket, messenger) = getSocketAndMessenger()
+    messenger.resumeAllThreads()
     val singleRequest = socket.readRequests().singleOrNull()
 
     singleRequest.shouldNotBeNull()
-    seq shouldBeEqual singleRequest.sequenceNumber
     singleRequest.payloadCase shouldBeEqual SDP.DebugRequest.PayloadCase.CONTINUE_EXECUTION
     singleRequest.continueExecution.threadId shouldBeEqual 0
     singleRequest.continueExecution.stepping shouldBeEqual SDP.Stepping.NONE
@@ -76,11 +78,11 @@ class StarlarkDebugRequestTest : StarlarkDebugClientTestBase() {
 
   @Test
   fun `resume a single thread request`() {
-    val seq = messenger.resumeThread(THREAD_ID)
+    val (socket, messenger) = getSocketAndMessenger()
+    messenger.resumeThread(THREAD_ID)
     val singleRequest = socket.readRequests().singleOrNull()
 
     singleRequest.shouldNotBeNull()
-    seq shouldBeEqual singleRequest.sequenceNumber
     singleRequest.payloadCase shouldBeEqual SDP.DebugRequest.PayloadCase.CONTINUE_EXECUTION
     singleRequest.continueExecution.threadId shouldBeEqual THREAD_ID
     singleRequest.continueExecution.stepping shouldBeEqual SDP.Stepping.NONE
@@ -88,15 +90,18 @@ class StarlarkDebugRequestTest : StarlarkDebugClientTestBase() {
 
   @Test
   fun `step over request`() {
-    val seq = messenger.resumeThread(THREAD_ID, SDP.Stepping.OVER)
+    val (socket, messenger) = getSocketAndMessenger()
+    messenger.resumeThread(THREAD_ID, SDP.Stepping.OVER)
     val singleRequest = socket.readRequests().singleOrNull()
 
     singleRequest.shouldNotBeNull()
-    seq shouldBeEqual singleRequest.sequenceNumber
     singleRequest.payloadCase shouldBeEqual SDP.DebugRequest.PayloadCase.CONTINUE_EXECUTION
     singleRequest.continueExecution.threadId shouldBeEqual THREAD_ID
     singleRequest.continueExecution.stepping shouldBeEqual SDP.Stepping.OVER
   }
+
+  private fun getSocketAndMessenger(): Pair<MockSocket, StarlarkDebugMessenger> =
+    establishMockConnection().let { it.socket to it.messenger }
 }
 
 private const val THREAD_ID = 12345L

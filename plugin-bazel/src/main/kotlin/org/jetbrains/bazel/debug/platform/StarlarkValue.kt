@@ -46,10 +46,9 @@ class StarlarkValue private constructor(
   override fun canNavigateToSource(): Boolean = false
 
   override fun computeChildren(node: XCompositeNode) {
-    computeYourChildrenPack?.let {
-      it.valueComputer.computeValueChildren(it.threadId, it.valueId) {
-        children -> node.addComputedChildren(children, it)
-      }
+    computeYourChildrenPack?.let { pack ->
+      pack.valueComputer.computeValueChildren(pack.threadId, pack.valueId)
+        .thenAccept { node.addComputedChildren(it, pack) }
     } ?: node.addChildren(XValueChildrenList(), true)
   }
 

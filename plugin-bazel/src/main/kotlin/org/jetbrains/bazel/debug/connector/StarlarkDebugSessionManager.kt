@@ -16,15 +16,14 @@ import org.jetbrains.bazel.debug.platform.StarlarkBreakpointHandler
 import org.jetbrains.bazel.debug.platform.StarlarkDebugProcess
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import java.util.concurrent.CompletableFuture
-import kotlin.concurrent.Volatile
 
-class StarlarkDebugManager(private val project: Project) {
+class StarlarkDebugSessionManager(private val project: Project) {
   val taskListener = StarlarkDebugTaskListener(project)
   private var futureToCancelOnStop: CompletableFuture<AnalysisDebugResult>? = null
+  private var messenger: StarlarkDebugMessenger? = null
+  private var eventHandler: ThreadAwareEventHandler? = null
 
-  @Volatile private var state = State.READY
-  private var classes: LateinitDebugClasses? = null
-  private var loop = Loop()
+  private val loop = createLoop()
 
   private fun startDebuggingProcess(session: XDebugSession, debugPort: Int): StarlarkDebugProcess {
     val connector = StarlarkSocketConnector.tryConnectTo(
@@ -32,32 +31,23 @@ class StarlarkDebugManager(private val project: Project) {
       Registry.intValue("bazel.starlark.debug.socket.attempts"),
       Registry.intValue("bazel.starlark.debug.socket.interval").toLong(),
     )
-    val initializedClasses = StarlarkDebugMessenger(connector, session).let {
+
+    return StarlarkDebugMessenger(connector, session).let {
+      messenger = it
       val breakpointHandler = StarlarkBreakpointHandler(it)
-      val eventHandler = ThreadAwareEventHandler(session, it, breakpointHandler::getBreakpointByPathAndLine)
-      LateinitDebugClasses(
-        messenger = it,
-        breakpointHandler = breakpointHandler,
-        eventHandler = eventHandler,
-      )
+      eventHandler = ThreadAwareEventHandler(session, it, breakpointHandler::getBreakpointByPathAndLine)
+      ProgressManager.getInstance().run(loop)
+      val debugProcess =
+        StarlarkDebugProcess(connector, session, breakpointHandler, taskListener.console)
+      taskListener.replaceSuspendChecker { debugProcess.isSuspended() }
+      return@let debugProcess
     }
-    classes = initializedClasses
-    state = State.RUNNING
-    ProgressManager.getInstance().run(loop)
-    val debugProcess =
-      StarlarkDebugProcess(connector, session, initializedClasses.breakpointHandler, taskListener.console)
-    taskListener.replaceSuspendChecker { debugProcess.isSuspended() }
-    return debugProcess
   }
 
   /** This function needs to be safe to call multiple times */
   private fun stop() {
-    if (state != State.DISPOSED) {
-      futureToCancelOnStop?.cancel(true)
-      classes?.messenger?.close()
-      state = State.DISPOSED
-    }
-    taskListener.clearSuspendChecker()
+    futureToCancelOnStop?.cancel(true)
+    messenger?.close()
   }
 
   private fun XDebugProcess.isSuspended(): Boolean =
@@ -75,10 +65,10 @@ class StarlarkDebugManager(private val project: Project) {
   @TestOnly
   internal fun startDryAndGetLoopIteration(
     messenger: StarlarkDebugMessenger,
-    breakpointHandler: StarlarkBreakpointHandler,
     eventHandler: ThreadAwareEventHandler,
   ): () -> Unit {
-    this.classes = LateinitDebugClasses(messenger, breakpointHandler, eventHandler)
+    this.messenger = messenger
+    this.eventHandler = eventHandler
     return this.loop::performEventLoopIteration
   }
 
@@ -88,31 +78,44 @@ class StarlarkDebugManager(private val project: Project) {
     DISPOSED,
   }
 
-  private inner class Loop : Task.Backgroundable(project, BazelPluginBundle.message("starlark.debug.task.title")) {
-    override fun run(indicator: ProgressIndicator) {
-      while (state == State.RUNNING) {
-        performEventLoopIteration()
-      }
-    }
+  private fun createLoop() =
+    object : Task.Backgroundable(project, BazelPluginBundle.message("starlark.debug.task.title")) {
+      private var state = State.READY
 
-    @VisibleForTesting
-    fun performEventLoopIteration() {
-      try {
-        classes?.apply { messenger.readEventAndHandle(eventHandler) }
-      } catch (_: Exception) {
-        stop()
+      override fun run(indicator: ProgressIndicator) {
+        state = State.RUNNING
+        while (state == State.RUNNING) {
+          performEventLoopIteration()
+        }
+      }
+
+      override fun onCancel() {
+        stopLoop()
+        super.onCancel()
+      }
+
+      @VisibleForTesting
+      fun performEventLoopIteration() {
+        try {
+          eventHandler?.let {
+            messenger?.readEventAndHandle(it)
+          }
+        } catch (_: Exception) {
+          stopLoop()
+        }
+      }
+
+      /** This function needs to be safe to call multiple times */
+      fun stopLoop() {
+        if (state != State.DISPOSED) {
+          state = State.DISPOSED
+          this@StarlarkDebugSessionManager.stop()
+        }
       }
     }
-  }
 
   inner class ProcessStarter(private val port: Int) : XDebugProcessStarter() {
     override fun start(session: XDebugSession): XDebugProcess =
       startDebuggingProcess(session, port)
   }
 }
-
-private data class LateinitDebugClasses(
-  val messenger: StarlarkDebugMessenger,
-  val breakpointHandler: StarlarkBreakpointHandler,
-  val eventHandler: ThreadAwareEventHandler,
-)
