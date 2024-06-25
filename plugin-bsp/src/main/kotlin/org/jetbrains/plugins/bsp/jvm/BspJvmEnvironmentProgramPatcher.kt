@@ -27,7 +27,7 @@ public class BspJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
 
     val newClassPath =
       if (prioritizeIdeClassPath) classPath.pathList + item.classpath
-      else item.classpath
+      else item.classpath + classPath.pathList
 
     apply {
       env = newEnvironmentVariables
