@@ -7,7 +7,6 @@ import com.intellij.xdebugger.breakpoints.XLineBreakpoint
 import org.jetbrains.bazel.debug.platform.StarlarkBreakpointProperties
 import org.jetbrains.bazel.debug.platform.StarlarkDebuggerEvaluator
 import org.jetbrains.bazel.debug.platform.StarlarkSuspendContext
-import java.util.concurrent.CompletableFuture
 
 class ThreadAwareEventHandler(
   private val session: XDebugSession,
@@ -16,7 +15,7 @@ class ThreadAwareEventHandler(
 ) {
   // maps thread IDs to PausedThreads
   private val pausedThreads = mutableMapOf<Long, SDP.PausedThread>()
-  private val valueComputer: StarlarkValueComputer = getValueComputer()
+  private val valueComputer: StarlarkValueComputer = StarlarkValueComputer(messenger)
   private val evaluatorProvider = StarlarkDebuggerEvaluator.Provider(valueComputer, messenger)
 
   fun reactTo(event: SDP.DebugEvent) {
@@ -72,16 +71,5 @@ class ThreadAwareEventHandler(
   private fun handleThreadContinued(event: SDP.ThreadContinuedEvent) {
     val threadId = event.threadId
     pausedThreads.remove(threadId)
-  }
-
-  private fun getValueComputer() = object : StarlarkValueComputer {
-    override fun computeFramesForExecutionStack(threadId: Long): CompletableFuture<List<SDP.Frame>> =
-      messenger.listFrames(threadId).thenApply { it?.frameList ?: emptyList() }
-
-    override fun computeValueChildren(
-      threadId: Long,
-      valueId: Long,
-    ): CompletableFuture<List<SDP.Value>> =
-      messenger.getChildren(threadId, valueId).thenApply { it?.childrenList ?: emptyList() }
   }
 }
