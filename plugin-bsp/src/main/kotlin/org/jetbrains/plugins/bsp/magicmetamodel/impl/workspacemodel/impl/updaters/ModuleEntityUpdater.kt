@@ -49,18 +49,14 @@ internal class ModuleEntityUpdater(
         !entityToAdd.isLibraryModule &&
           workspaceModelEntityUpdaterConfig.project.temporaryTargetUtils.isLibraryModule(it.libraryName)
       }
-
     val modulesDependencies =
       (entityToAdd.modulesDependencies + libraryModulesDependencies.toLibraryModuleDependencies()).map {
         toModuleDependencyItemModuleDependency(it)
       }
-
-    // library dependencies should be included before module dependencies
-    // to handle the case of overridden library versions
     val dependencies =
       defaultDependencies +
-        librariesDependencies.map { toLibraryDependency(it, workspaceModelEntityUpdaterConfig.project) } +
         modulesDependencies +
+        librariesDependencies.map { toLibraryDependency(it, workspaceModelEntityUpdaterConfig.project) } +
         associatesDependencies
 
     val moduleEntity = builder.addEntity(
