@@ -90,7 +90,7 @@ internal class KotlinFacetEntityUpdater(
     if (associateModules.isEmpty()) return listOf()
 
     return associateModules.map { module ->
-      JpsPaths.getJpsCompiledProductionDirectory(projectBasePath, module).toString()
+      JpsPaths.getJpsCompiledProductionPath(projectBasePath, module).toString()
     }
   }
 
