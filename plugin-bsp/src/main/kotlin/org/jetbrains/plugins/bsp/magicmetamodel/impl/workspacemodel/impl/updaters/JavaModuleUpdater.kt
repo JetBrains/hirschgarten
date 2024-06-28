@@ -107,10 +107,10 @@ internal class JavaModuleWithSourcesUpdater(
     moduleEntity: ModuleEntity,
   ) {
     val compilerOutput =
-      JpsPaths.getJpsCompiledProductionDirectory(projectBasePath, entityToAdd.genericModuleInfo.name)
+      JpsPaths.getJpsCompiledProductionPath(projectBasePath, entityToAdd.genericModuleInfo.name)
         .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
     val testCompilerOutput =
-      JpsPaths.getJpsCompiledTestDirectory(projectBasePath, entityToAdd.genericModuleInfo.name)
+      JpsPaths.getJpsCompiledTestPath(projectBasePath, entityToAdd.genericModuleInfo.name)
         .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
     builder.addEntity(
       JavaModuleSettingsEntity(

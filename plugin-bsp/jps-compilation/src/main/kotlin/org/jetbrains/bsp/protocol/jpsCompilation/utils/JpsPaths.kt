@@ -2,18 +2,20 @@ package org.jetbrains.bsp.protocol.jpsCompilation.utils
 
 import java.nio.file.Path
 
-public object JpsPaths {
-  private fun getJpsCompiledBaseDirectory(projectBasePath: Path): Path =
-    projectBasePath.resolve(".jps-compiled")
+public const val JPS_COMPILED_BASE_DIRECTORY: String = ".jps-compiled"
 
-  public fun getJpsCompiledProductionDirectory(projectBasePath: Path, moduleName: String): Path =
-    getJpsCompiledBaseDirectory(projectBasePath)
+public object JpsPaths {
+  private fun getJpsCompiledBasePath(projectBasePath: Path): Path =
+    projectBasePath.resolve(JPS_COMPILED_BASE_DIRECTORY)
+
+  public fun getJpsCompiledProductionPath(projectBasePath: Path, moduleName: String): Path =
+    getJpsCompiledBasePath(projectBasePath)
       .resolve("production")
       .resolve("classes")
       .resolve(moduleName)
 
-  public fun getJpsCompiledTestDirectory(projectBasePath: Path, moduleName: String): Path =
-    getJpsCompiledBaseDirectory(projectBasePath)
+  public fun getJpsCompiledTestPath(projectBasePath: Path, moduleName: String): Path =
+    getJpsCompiledBasePath(projectBasePath)
       .resolve("test")
       .resolve("classes")
       .resolve(moduleName)

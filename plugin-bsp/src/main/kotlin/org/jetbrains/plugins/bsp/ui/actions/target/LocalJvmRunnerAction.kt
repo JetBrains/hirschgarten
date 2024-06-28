@@ -59,7 +59,7 @@ public abstract class LocalJvmRunnerAction(
       mainClassName = mainClass.className
       programParameters = mainClass.arguments.joinToString(" ")
       putUserData(jvmEnvironment, environment)
-      putUserData(prioritizeIdeClasspath, BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
+      putUserData(includeJpsClassPaths, BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
     }
     val runManager = RunManagerImpl.getInstanceImpl(project)
     return RunnerAndConfigurationSettingsImpl(runManager, applicationConfiguration)
@@ -113,7 +113,7 @@ public abstract class LocalJvmRunnerAction(
 
   public companion object {
     public val jvmEnvironment: Key<JvmEnvironmentItem> = Key<JvmEnvironmentItem>("jvmEnvironment")
-    public val prioritizeIdeClasspath: Key<Boolean> = Key<Boolean>("prioritizeIdeClasspath")
+    public val includeJpsClassPaths: Key<Boolean> = Key<Boolean>("includeJpsClassPaths")
   }
 }
 
