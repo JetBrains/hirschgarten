@@ -150,6 +150,11 @@
 
     </extensions>
 
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <!--suppress PluginXmlValidity -->
+        <supportsKotlinK2Mode/>
+    </extensions>
+
     <actions>
         <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.DisconnectAction"
                 icon="/icons/disconnect.svg"/>
