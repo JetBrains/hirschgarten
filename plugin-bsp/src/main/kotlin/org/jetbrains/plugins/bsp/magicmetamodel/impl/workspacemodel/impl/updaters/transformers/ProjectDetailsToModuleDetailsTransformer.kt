@@ -4,11 +4,10 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 
-public class ProjectDetailsToModuleDetailsTransformer(
+internal class ProjectDetailsToModuleDetailsTransformer(
   private val projectDetails: ProjectDetails,
+  private val libraryGraph: LibraryGraph,
 ) {
-  private val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())
-
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
   private val sourcesIndex = projectDetails.sources.groupBy { it.target }
   private val resourcesIndex = projectDetails.resources.groupBy { it.target }
@@ -18,7 +17,7 @@ public class ProjectDetailsToModuleDetailsTransformer(
   private val pythonOptionsIndex = projectDetails.pythonOptions.associateBy { it.target }
   private val jvmBinaryJarsIndex = projectDetails.jvmBinaryJars.groupBy { it.target }
 
-  public fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
+  fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
     val target = targetsIndex[targetId] ?: error("Cannot find target for target id: $targetId.")
     val allDependencies = libraryGraph.calculateAllDependencies(target)
     return ModuleDetails(

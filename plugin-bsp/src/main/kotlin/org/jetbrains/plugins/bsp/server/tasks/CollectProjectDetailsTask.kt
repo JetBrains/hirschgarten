@@ -59,6 +59,7 @@ import org.jetbrains.plugins.bsp.flow.open.projectSyncHook
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
@@ -67,7 +68,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesJava
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesScala
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBuildTargetInfo
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toPair
 import org.jetbrains.plugins.bsp.performance.testing.bspTracer
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
@@ -350,28 +350,43 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
         val projectBasePath = project.rootDir.toNioPath()
         val moduleNameProvider = project.findModuleNameProvider().orDefault()
         val libraryNameProvider = project.findLibraryNameProvider().orDefault()
+        val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())
+
+        val libraries = bspTracer.spanBuilder("create.libraries.ms").use {
+          libraryGraph.createLibraries(libraryNameProvider)
+        }
+
+        val libraryModules = bspTracer.spanBuilder("create.library.modules.ms").use {
+          libraryGraph.createLibraryModules(libraryNameProvider, projectDetails.defaultJdkName)
+        }
+
+        val targetIdToModuleDetails = bspTracer.spanBuilder("create.module.details.ms").use {
+          val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, libraryGraph)
+          projectDetails.targetIds.associateWith { transformer.moduleDetailsForTargetId(it) }
+        }
 
         val targetIdToModuleEntitiesMap = bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
-          val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
-
-          project.temporaryTargetUtils.saveTargets(
-            targetIds = projectDetails.targetsId,
-            transformer = transformer,
-            libraries = projectDetails.libraries,
-            moduleNameProvider = moduleNameProvider,
-            libraryNameProvider = libraryNameProvider,
-            defaultJdkName = projectDetails.defaultJdkName,
-          )
-          TargetIdToModuleEntitiesMap(
+          val targetIdToTargetInfo = projectDetails.targets.associate { it.id to it.toBuildTargetInfo() }
+          val targetIdToModuleEntityMap = TargetIdToModuleEntitiesMap(
             projectDetails = projectDetails,
+            targetIdToModuleDetails = targetIdToModuleDetails,
+            targetIdToTargetInfo = targetIdToTargetInfo,
             projectBasePath = projectBasePath,
-            targetsMap = projectDetails.targets.associate { it.toBuildTargetInfo().toPair() },
             moduleNameProvider = moduleNameProvider,
             libraryNameProvider = libraryNameProvider,
             hasDefaultPythonInterpreter = BspFeatureFlags.isPythonSupportEnabled,
             isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
-            transformer = transformer,
           )
+
+          project.temporaryTargetUtils.saveTargets(
+            targetIdToTargetInfo,
+            targetIdToModuleEntityMap,
+            targetIdToModuleDetails,
+            libraries,
+            libraryModules,
+          )
+
+          targetIdToModuleEntityMap
         }
 
         bspTracer.spanBuilder("load.modules.ms").use {
@@ -658,7 +673,7 @@ public fun calculateProjectDetailsWithCapabilities(
     project.projectSyncHook?.onSync(project, server)
 
     return ProjectDetails(
-      targetsId = allTargetsIds,
+      targetIds = allTargetsIds,
       targets = workspaceBuildTargetsResult.targets.toSet(),
       sources = sourcesFuture.get().items,
       resources = resourcesFuture?.get()?.items ?: emptyList(),
