@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.flow.open
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.config.BazelPluginConstants
@@ -13,6 +14,9 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
   override val icon: Icon = BazelPluginIcons.bazel
 
   override val name: String = "Bazel"
+
+  override val isStrongProjectInfoHolder: Boolean
+    get() = ApplicationManager.getApplication().isHeadlessEnvironment
 
   override fun canOpenProject(file: VirtualFile): Boolean =
     file.children.any { it.name in BazelPluginConstants.WORKSPACE_FILE_NAMES }
