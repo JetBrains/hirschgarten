@@ -30,7 +30,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       BuildTargetCapabilities(),
     )
     val projectDetails = ProjectDetails(
-      targetsId = listOf(targetId),
+      targetIds = listOf(targetId),
       targets = setOf(target),
       sources = emptyList(),
       resources = emptyList(),
@@ -43,7 +43,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList()))
     val actualModuleDetails = transformer.moduleDetailsForTargetId(target.id)
 
     // then
@@ -101,7 +101,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
 
     val projectDetails = ProjectDetails(
-      targetsId = listOf(targetId),
+      targetIds = listOf(targetId),
       targets = setOf(target),
       sources = listOf(targetSources),
       resources = listOf(targetResources),
@@ -114,7 +114,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList()))
     val actualModuleDetails = transformer.moduleDetailsForTargetId(target.id)
 
     // then
@@ -234,7 +234,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
 
     val projectDetails = ProjectDetails(
-      targetsId = listOf(target1Id, target3Id, target2Id, target4Id),
+      targetIds = listOf(target1Id, target3Id, target2Id, target4Id),
       targets = setOf(target2, target1, target3, target4),
       sources = listOf(target3Sources, target2Sources1, target1Sources, target2Sources2, target4Sources),
       resources = listOf(target1Resources, target2Resources),
@@ -247,7 +247,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     )
 
     // when
-    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails)
+    val transformer = ProjectDetailsToModuleDetailsTransformer(projectDetails, LibraryGraph(emptyList()))
     val actualModuleDetails1 = transformer.moduleDetailsForTargetId(target1.id)
     val actualModuleDetails2 = transformer.moduleDetailsForTargetId(target2.id)
     val actualModuleDetails3 = transformer.moduleDetailsForTargetId(target3.id)

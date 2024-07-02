@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -7,50 +8,50 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import java.nio.file.Path
 
-public object TargetIdToModuleEntitiesMap {
-  public operator fun invoke(
+internal object TargetIdToModuleEntitiesMap {
+  operator fun invoke(
     projectDetails: ProjectDetails,
+    targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
+    targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
     projectBasePath: Path,
-    targetsMap: Map<BuildTargetId, BuildTargetInfo>,
     moduleNameProvider: TargetNameReformatProvider,
     libraryNameProvider: TargetNameReformatProvider,
     hasDefaultPythonInterpreter: Boolean,
     isAndroidSupportEnabled: Boolean,
-    transformer: ProjectDetailsToModuleDetailsTransformer,
-  ): Map<BuildTargetId, Module> {
+  ): Map<BuildTargetIdentifier, Module> {
     val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(
-      targetsMap,
+      targetIdToTargetInfo,
       moduleNameProvider,
       libraryNameProvider,
       projectBasePath,
       isAndroidSupportEnabled,
     )
     val moduleDetailsToPythonModuleTransformer = ModuleDetailsToPythonModuleTransformer(
-      targetsMap,
+      targetIdToTargetInfo,
       moduleNameProvider,
       libraryNameProvider,
       hasDefaultPythonInterpreter,
     )
 
     return runBlocking(Dispatchers.Default) {
-      projectDetails.targetsId.map {
+      projectDetails.targetIds.map {
         async {
-          val moduleDetails = transformer.moduleDetailsForTargetId(it)
+          val moduleDetails = targetIdToModuleDetails.getValue(it)
           val module = if (moduleDetails.target.languageIds.includesPython()) {
             moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
           } else {
             moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
           }
-          it.uri to module
+          it to module
         }
       }.awaitAll().toMap()
     }
@@ -58,8 +59,8 @@ public object TargetIdToModuleEntitiesMap {
 }
 
 @TestOnly
-public fun Collection<String>.toDefaultTargetsMap(): Map<BuildTargetId, BuildTargetInfo> =
+public fun Collection<String>.toDefaultTargetsMap(): Map<BuildTargetIdentifier, BuildTargetInfo> =
   associateBy(
-    keySelector = { it },
+    keySelector = { it.toBsp4JTargetIdentifier() },
     valueTransform = { BuildTargetInfo(id = it) }
   )

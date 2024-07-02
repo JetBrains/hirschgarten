@@ -62,7 +62,7 @@ public object DefaultLibraryNameProvider : TargetNameReformatProvider {
 }
 
 public data class ProjectDetails(
-  val targetsId: List<BuildTargetIdentifier>,
+  val targetIds: List<BuildTargetIdentifier>,
   val targets: Set<BuildTarget>,
   val sources: List<SourcesItem>,
   val resources: List<ResourcesItem>,

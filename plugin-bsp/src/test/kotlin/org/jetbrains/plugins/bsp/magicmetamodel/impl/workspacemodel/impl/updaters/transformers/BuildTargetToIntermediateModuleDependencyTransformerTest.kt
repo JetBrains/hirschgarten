@@ -6,8 +6,8 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toDefaultTargetsMap
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -17,7 +17,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
   fun `should return no module dependencies for no dependencies`() {
     // given
     val emptyBuildTargets = listOf<BuildTarget>()
-    val allTargets = setOf<BuildTargetId>()
+    val allTargets = setOf<BuildTargetIdentifier>()
 
     // when
     val buildTargetToModuleDependencyTransformer =
@@ -42,7 +42,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
       ),
       BuildTargetCapabilities(),
     )
-    val allTargets = setOf<BuildTargetId>()
+    val allTargets = setOf<BuildTargetIdentifier>()
 
     // when
     val buildTargetToModuleDependencyTransformer =
@@ -75,7 +75,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
 
     // when
     val buildTargetToModuleDependencyTransformer =
-      BuildTargetToModuleDependencyTransformer(allTargets, targetsMap, DefaultModuleNameProvider)
+      BuildTargetToModuleDependencyTransformer(allTargets.toTargetIds(), targetsMap, DefaultModuleNameProvider)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
@@ -114,7 +114,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
 
     // when
     val buildTargetToModuleDependencyTransformer =
-      BuildTargetToModuleDependencyTransformer(allTargets, targetsMap, DefaultModuleNameProvider)
+      BuildTargetToModuleDependencyTransformer(allTargets.toTargetIds(), targetsMap, DefaultModuleNameProvider)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
@@ -172,7 +172,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
 
     // when
     val buildTargetToModuleDependencyTransformer =
-      BuildTargetToModuleDependencyTransformer(allTargets, targetsMap, DefaultModuleNameProvider)
+      BuildTargetToModuleDependencyTransformer(allTargets.toTargetIds(), targetsMap, DefaultModuleNameProvider)
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTargets)
 
     // then
@@ -188,4 +188,7 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
 
     moduleDependencies shouldBe listOf(expectedIntermediateModuleDependency1, expectedIntermediateModuleDependency2, expectedIntermediateModuleDependency3)
   }
+
+  private fun Set<String>.toTargetIds(): Set<BuildTargetIdentifier> =
+    mapTo(mutableSetOf()) { it.toBsp4JTargetIdentifier() }
 }

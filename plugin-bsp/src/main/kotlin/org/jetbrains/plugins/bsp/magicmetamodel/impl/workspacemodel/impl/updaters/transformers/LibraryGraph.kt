@@ -2,15 +2,23 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import com.intellij.openapi.module.ModuleTypeId
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
+import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 
 internal data class LibraryGraphDependencies(
   val libraryDependencies: Set<BuildTargetIdentifier>,
   val moduleDependencies: Set<BuildTargetIdentifier>,
 )
 
-internal class LibraryGraph(libraries: List<LibraryItem>) {
+internal class LibraryGraph(private val libraries: List<LibraryItem>) {
   private val graph = libraries.associate { it.id to it.dependencies }
 
   fun calculateAllDependencies(
@@ -69,5 +77,49 @@ internal class LibraryGraph(libraries: List<LibraryItem>) {
     } else {
       resultModules += this
     }
+  }
+
+  fun createLibraries(
+    libraryNameProvider: TargetNameReformatProvider,
+  ): List<Library> =
+    libraries.map {
+      Library(
+        displayName = libraryNameProvider(BuildTargetInfo(id = it.id.uri)),
+        iJars = it.ijars,
+        classJars = it.jars,
+        sourceJars = it.sourceJars,
+      )
+    }.orEmpty()
+
+  fun createLibraryModules(
+    libraryNameProvider: TargetNameReformatProvider,
+    defaultJdkName: String?,
+  ): List<JavaModule> {
+    if (!BspFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
+
+    return libraries.map { library ->
+      val libraryName = libraryNameProvider(BuildTargetInfo(id = library.id.uri))
+      JavaModule(
+        genericModuleInfo = GenericModuleInfo(
+          name = libraryName,
+          type = ModuleTypeId.JAVA_MODULE,
+          librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
+          modulesDependencies = library.dependencies.map {
+            IntermediateModuleDependency(
+              libraryNameProvider(
+                BuildTargetInfo(id = it.uri)
+              )
+            )
+          },
+          isLibraryModule = true,
+          languageIds = listOf("java"),
+        ),
+        jvmJdkName = defaultJdkName,
+        baseDirContentRoot = null,
+        moduleLevelLibraries = null,
+        sourceRoots = emptyList(),
+        resourceRoots = emptyList(),
+      )
+    }.orEmpty()
   }
 }
