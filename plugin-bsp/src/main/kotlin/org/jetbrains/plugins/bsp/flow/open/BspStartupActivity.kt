@@ -39,6 +39,7 @@ public class BspStartupActivity : ProjectActivity {
 
   private suspend fun Project.executeForBspProject() {
     log.info("Executing BSP startup activity for project: $this")
+    BspStartupActivityTracker.startConfigurationPhase(this)
     executeEveryTime()
 
     if (!isBspProjectInitialized) {
@@ -46,6 +47,7 @@ public class BspStartupActivity : ProjectActivity {
     }
 
     postActivity()
+    BspStartupActivityTracker.stopConfigurationPhase(this)
   }
 
   private suspend fun Project.executeEveryTime() {

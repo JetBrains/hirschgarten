@@ -73,10 +73,14 @@
 
     <extensions defaultExtensionNs="com.intellij">
 
+        <activityTracker implementation="org.jetbrains.plugins.bsp.flow.open.BspStartupActivityTracker"/>
+
         <projectService serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"
                         serviceImplementation="org.jetbrains.plugins.bsp.services.BspBaseProjectDirectories"
                         overrides="true"/>
 
+        <commandLineInspectionProjectConfigurator
+                implementation="org.jetbrains.plugins.bsp.flow.open.BspCommandLineInspectionConfigurator"/>
         <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType"/>
         <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType"/>
 
