@@ -87,13 +87,15 @@ internal fun calculateDummyJavaModuleNames(
   dummyJavaModuleSourceRoots: List<Path>,
   projectBasePath: Path,
 ): List<String> =
-  dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it, projectBasePath) }
+  dummyJavaModuleSourceRoots.mapNotNull { calculateDummyJavaModuleName(it, projectBasePath) }
 
-internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
-  val absoluteSourceRoot = sourceRoot.toAbsolutePath().toString()
-  val absoluteProjectBasePath = projectBasePath.toAbsolutePath().toString()
-  return absoluteSourceRoot
-    .substringAfter(absoluteProjectBasePath)
+internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String? {
+  val absoluteSourceRoot = sourceRoot.toAbsolutePath()
+  val absoluteProjectBasePath = projectBasePath.toAbsolutePath()
+  // Don't create dummy Java modules for source roots outside the project directory so that they aren't indexed
+  if (!absoluteSourceRoot.startsWith(absoluteProjectBasePath)) return null
+  return absoluteSourceRoot.toString()
+    .substringAfter(absoluteProjectBasePath.toString())
     .trim { it == File.separatorChar }
     .replaceDots()
     .replace(File.separator, ".")
