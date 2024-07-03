@@ -16,6 +16,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultLibraryNameProvider
@@ -711,6 +712,19 @@ class ExtractJvmBuildTargetTest {
 
     // then
     extractedJvmBuildTarget shouldBe null
+  }
+
+  @Test
+  fun `should not create a dummy module for out-of-project dirs`() {
+    calculateDummyJavaModuleName(
+      Path.of("/private/var/tmp/_bazel_User/f2d068fab4daa/execroot/_main"),
+      Path.of("/Users/User/IdeaProjects/example"),
+    ) shouldBe null
+
+    calculateDummyJavaModuleName(
+      Path.of("/Users/User/IdeaProjects/example/src/com/java"),
+      Path.of("/Users/User/IdeaProjects/example"),
+    ) shouldNotBe null
   }
 
   private fun buildDummyTarget(): BuildTarget {
