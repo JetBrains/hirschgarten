@@ -186,7 +186,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       modulesDependencies = listOf(
         IntermediateModuleDependency("module2"),
         IntermediateModuleDependency("module3"),
-        IntermediateModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath)),
+        IntermediateModuleDependency(calculateDummyJavaModuleName(projectRoot, projectBasePath)!!),
       ),
       librariesDependencies = listOf(
         IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
@@ -545,7 +545,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       modulesDependencies = listOf(
         IntermediateModuleDependency("module2"),
         IntermediateModuleDependency("module3"),
-        IntermediateModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath)),
+        IntermediateModuleDependency(calculateDummyJavaModuleName(module1Root, projectBasePath)!!),
       ),
       librariesDependencies = listOf(
         IntermediateLibraryDependency("BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar"),
