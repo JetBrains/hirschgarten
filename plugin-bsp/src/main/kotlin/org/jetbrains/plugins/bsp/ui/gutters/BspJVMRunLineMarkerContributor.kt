@@ -1,6 +1,8 @@
 package org.jetbrains.plugins.bsp.ui.gutters
 
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
+import com.goide.psi.GoFile
+import com.goide.psi.impl.GoFunctionDeclarationImpl
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -30,8 +32,12 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
     else null
 
   private fun PsiElement.shouldAddMarker(): Boolean =
-    !isInsideJar() && getStrictParentOfType<PsiNameIdentifierOwner>()
-      ?.isClassOrMethod() ?: false
+    (!isInsideJar() && getStrictParentOfType<PsiNameIdentifierOwner>()
+      ?.isClassOrMethod() ?: false) || isGoTopLevelFunction()
+
+  private fun PsiElement.isGoTopLevelFunction() =
+      getStrictParentOfType<PsiNameIdentifierOwner>() is GoFunctionDeclarationImpl
+        && getStrictParentOfType<PsiNameIdentifierOwner>()?.parent is GoFile
 
   private fun PsiElement.isInsideJar() =
     containingFile.virtualFile?.url?.startsWith("jar://") ?: false
