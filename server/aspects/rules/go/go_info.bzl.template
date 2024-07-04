@@ -1,9 +1,18 @@
 load("//aspects:utils/utils.bzl", "create_proto", "create_struct", "file_location")
-load("@${ruleName}//go:def.bzl", "go_context", "GoArchive")
+load("@${ruleName}//go:def.bzl", "go_context", "GoArchive", "GoSource")
 
 def extract_go_info(target, ctx, **kwargs):
+    if GoSource in target:
+        all_sources = [
+            file_location(t)
+            for t in target[GoSource].orig_srcs
+        ]
+        new_sources = dict(srcs = all_sources)
+    else:
+        new_sources = None
+
     if GoArchive not in target:
-        return None, None
+        return None, new_sources
     go_archive = target[GoArchive]
     importpath = go_archive.data.importpath
     sdk_home_path = _extract_sdk(ctx)
@@ -13,7 +22,7 @@ def extract_go_info(target, ctx, **kwargs):
         sdk_home_path = sdk_home_path,
     )
 
-    return create_proto(target, ctx, go_target_info, "go_target_info"), None
+    return create_proto(target, ctx, go_target_info, "go_target_info"), new_sources
 
 def _extract_sdk(ctx):
     go = go_context(ctx)

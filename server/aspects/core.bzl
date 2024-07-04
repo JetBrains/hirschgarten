@@ -171,6 +171,18 @@ def _bsp_target_info_aspect_impl(target, ctx):
     extension_exported_properties = dict()
     for (_, data) in extension_info:
         if data != None:
+            if data.get("srcs", default=None) != None:
+                result = dict(
+                    id = str(target.label),
+                    kind = ctx.rule.kind,
+                    tags = rule_attrs.tags,
+                    dependencies = list(all_deps),
+                    sources = data["srcs"],
+                    generated_sources = generated_sources,
+                    resources = resources,
+                    env = getattr(rule_attrs, "env", {}),
+                    env_inherit = getattr(rule_attrs, "env_inherit", []),
+                )
             extension_exported_properties.update(data)
 
     info_files = [file for (file, _) in extension_info]
