@@ -5,6 +5,7 @@ load(
     "stamped_plugin_xml",
     "repackaged_files",
     "plugin_deploy_zip",
+    "optional_plugin_dep",
 )
 load(
     "@rules_intellij//intellij_platform_sdk:build_defs.bzl",
@@ -32,10 +33,37 @@ define_kt_toolchain(
     language_version = "1.9",  # "1.1", "1.2", "1.3", "1.4", "1.5" "1.6", "1.7", "1.8", or "1.9"
 )
 
+optional_plugin_dep(
+    name = "bsp_with_python",
+    plugin_xml = "//src:main/xml/bsp-withPython.xml",
+    module = ["com.intellij.modules.python"],
+)
+
+optional_plugin_dep(
+    name = "bsp_with_android",
+    plugin_xml = "//src:main/xml/bsp-withAndroid.xml",
+    module = ["org.jetbrains.android"],
+)
+
+optional_plugin_dep(
+    name = "bsp_performance_testing",
+    plugin_xml = "//src:main/xml/bsp-performanceTesting.xml",
+    module = ["com.jetbrains.performancePlugin"],
+)
+
 intellij_plugin_library(
     name = "plugin_library",
-    optional_plugin_deps = [],
-    plugin_xmls = ["//src:main/resources/META-INF/base.xml"],
+    plugin_deps = [
+        "com.intellij.modules.platform",
+        "com.intellij.java",
+        "org.jetbrains.kotlin",
+    ],
+    optional_plugin_deps = [
+        ":bsp_with_python",
+        ":bsp_with_android",
+        ":bsp_performance_testing",
+    ],
+    plugin_xmls = ["//src:main/xml/base.xml"],
     visibility = ["//visibility:public"],
     deps = [
         "//workspacemodel/src:workspacemodel",
@@ -62,10 +90,7 @@ intellij_plugin(
     tags = [],
     deps = [
         ":plugin_library",
-    ] + select_for_ide(
-        intellij = [],
-        intellij_ue = [],
-    ),
+    ],
     visibility = ["//visibility:public"],
 )
 
