@@ -2,6 +2,7 @@ package org.jetbrains.bazel.bsp.connection
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.google.gson.Gson
+import com.google.idea.testing.BazelTestApplication
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
@@ -13,11 +14,9 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
 import com.intellij.openapi.vfs.readText
 import com.intellij.openapi.vfs.writeText
-import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.utils.vfs.createFile
 import io.kotest.matchers.collections.shouldContainAll
-import io.kotest.matchers.collections.shouldNotContainAll
 import io.kotest.matchers.collections.shouldNotContainAnyOf
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -35,7 +34,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 
-@TestApplication
+@BazelTestApplication
 open class MockProjectBaseTest: Disposable {
   @JvmField
   @RegisterExtension
