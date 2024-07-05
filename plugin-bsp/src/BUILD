@@ -2,7 +2,7 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test")
 load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 load("//rules/kotlin:junit5.bzl", "kt_test")
 
-exports_files(["main/resources/META-INF/base.xml"])
+exports_files(glob(["main/xml/*.xml"]))
 
 kt_jvm_library(
     name = "intellij-bsp",
