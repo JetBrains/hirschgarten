@@ -7,7 +7,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 open class Build (
     vcsRoot: GitVcsRoot,
 ): BaseConfiguration.BaseBuildType(
-        name = "[build] build intellij-bsp",
+        name = "[build] build intellij-bazel",
         artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-bin/intellij-bazel.zip",
         vcsRoot = vcsRoot,
         steps = {
