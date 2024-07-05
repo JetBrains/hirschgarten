@@ -1,10 +1,5 @@
 <idea-plugin require-restart="false">
-    <id>org.jetbrains.bazel</id>
-    <name>Bazel by JetBrains (experimental)</name>
     <vendor>JetBrains</vendor>
-
-    <depends>com.intellij.modules.platform</depends>
-    <depends>org.jetbrains.bsp</depends>
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">
         <bspProjectOpenProcessorExtension

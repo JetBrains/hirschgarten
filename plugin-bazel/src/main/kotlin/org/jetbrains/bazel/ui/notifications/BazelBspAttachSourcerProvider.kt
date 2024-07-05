@@ -76,7 +76,7 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
 
     private fun Library.ModifiableModel.addSource(sourceUri: String, fileManager: VirtualFileUrlManager) {
       val path = MMMLibrary.formatJarString(sourceUri)
-      val candidate = fileManager.getOrCreateFromUri(path).virtualFile
+      val candidate = fileManager.getOrCreateFromUrl(path).virtualFile
       val sourceRoots = LibrarySourceRootDetectorUtil.scanAndSelectDetectedJavaSourceRoots(null, arrayOf(candidate))
       sourceRoots.forEach { source ->
         addRoot(source.url, OrderRootType.SOURCES)
