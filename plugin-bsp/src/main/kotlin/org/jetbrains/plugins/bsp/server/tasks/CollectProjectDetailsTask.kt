@@ -18,7 +18,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.impl.internal
+import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.ide.progress.withBackgroundProgress
@@ -421,13 +421,13 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   ) {
     val includedDirectories = directories.includedDirectories.map { it.toVirtualFileUrl(virtualFileUrlManager) }
     val excludedDirectories = directories.excludedDirectories.map { it.toVirtualFileUrl(virtualFileUrlManager) }
-    val outputPaths = outputPathUris.map { virtualFileUrlManager.getOrCreateFromUri(it) }
+    val outputPaths = outputPathUris.map { virtualFileUrlManager.getOrCreateFromUrl(it) }
 
     loadDirectories(includedDirectories, excludedDirectories + outputPaths)
   }
 
   private fun DirectoryItem.toVirtualFileUrl(virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl =
-    virtualFileUrlManager.getOrCreateFromUri(uri)
+    virtualFileUrlManager.getOrCreateFromUrl(uri)
 
   private suspend fun postprocessingSubtask() {
     // This order is strict as now SDKs also use the workspace model,
@@ -533,15 +533,15 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   }
 
   private suspend fun applyOnWorkspaceModel() {
-    val workspaceModel = WorkspaceModel.getInstance(project)
-    val snapshot = workspaceModel.internal.getBuilderSnapshot()
+    val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
+    val snapshot = workspaceModel.getBuilderSnapshot()
     bspTracer.spanBuilder("replacebysource.in.apply.on.workspace.model.ms").use {
       snapshot.builder.replaceBySource({ it.isBspRelevant() }, builder!!)
     }
     val storageReplacement = snapshot.getStorageReplacement()
     writeAction {
       val workspaceModelUpdated = bspTracer.spanBuilder("replaceprojectmodel.in.apply.on.workspace.model.ms").use {
-        workspaceModel.internal.replaceProjectModel(storageReplacement)
+        workspaceModel.replaceProjectModel(storageReplacement)
       }
       if (!workspaceModelUpdated) {
         error("Project model is not updated successfully. Try `reload` action to recalculate the project model.")

@@ -1,8 +1,10 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters
 
 import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
+import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.jps.entities.modifySourceRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
@@ -35,14 +37,17 @@ internal class JavaSourceEntityUpdater(
     builder: MutableEntityStorage,
     sourceRoot: SourceRootEntity,
     entityToAdd: JavaSourceRoot,
-  ): JavaSourceRootPropertiesEntity =
-    builder.addEntity(
-      JavaSourceRootPropertiesEntity(
-        generated = entityToAdd.generated,
-        packagePrefix = entityToAdd.packagePrefix,
-        entitySource = sourceRoot.entitySource,
-      ) {
-        this.sourceRoot = sourceRoot
-      },
+  ): JavaSourceRootPropertiesEntity {
+    val entity = JavaSourceRootPropertiesEntity(
+      generated = entityToAdd.generated,
+      packagePrefix = entityToAdd.packagePrefix,
+      entitySource = sourceRoot.entitySource,
     )
+
+    val updatedSourceRoot = builder.modifySourceRootEntity(sourceRoot) {
+      this.javaSourceRoots += entity
+    }
+
+    return updatedSourceRoot.javaSourceRoots.last()
+  }
 }

@@ -11,6 +11,8 @@ import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.JsonObject
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -183,7 +185,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     // then
     val expectedModule = GenericModuleInfo(
       name = "module1",
-      type = "JAVA_MODULE",
+      type = ModuleTypeId("JAVA_MODULE"),
       modulesDependencies = listOf(
         IntermediateModuleDependency("module2"),
         IntermediateModuleDependency("module3"),
@@ -204,24 +206,24 @@ class ModuleDetailsToJavaModuleTransformerTest {
       sourcePath = file1APath,
       generated = false,
       packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-      rootType = "java-source",
+      rootType = SourceRootTypeId("java-source"),
     )
     val expectedJavaSourceRoot2 = JavaSourceRoot(
       sourcePath = file2APath,
       generated = false,
       packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-      rootType = "java-source",
+      rootType = SourceRootTypeId("java-source"),
     )
     val expectedJavaSourceRoot3 = JavaSourceRoot(
       sourcePath = dir1BPath,
       generated = false,
       packagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
-      rootType = "java-source",
+      rootType = SourceRootTypeId("java-source"),
     )
 
     val expectedResourceRoot1 = ResourceRoot(
       resourcePath = resourceFilePath,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
 
     val expectedLibrary1 = Library(
@@ -328,7 +330,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     // then
     val expectedModule = GenericModuleInfo(
       name = "module1",
-      type = "JAVA_MODULE",
+      type = ModuleTypeId("JAVA_MODULE"),
       modulesDependencies = listOf(
         IntermediateModuleDependency("module2"),
         IntermediateModuleDependency("module3"),
@@ -542,7 +544,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
     // then
     val expectedModule1 = GenericModuleInfo(
       name = "module1",
-      type = "JAVA_MODULE",
+      type = ModuleTypeId("JAVA_MODULE"),
       modulesDependencies = listOf(
         IntermediateModuleDependency("module2"),
         IntermediateModuleDependency("module3"),
@@ -563,28 +565,28 @@ class ModuleDetailsToJavaModuleTransformerTest {
       sourcePath = file1APath,
       generated = false,
       packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-      rootType = "java-source",
+      rootType = SourceRootTypeId("java-source"),
     )
     val expectedJavaSourceRoot12 = JavaSourceRoot(
       sourcePath = file2APath,
       generated = false,
       packagePrefix = "${packageA1Path.name}.${packageA2Path.name}",
-      rootType = "java-source",
+      rootType = SourceRootTypeId("java-source"),
     )
     val expectedJavaSourceRoot13 = JavaSourceRoot(
       sourcePath = dir1BPath,
       generated = false,
       packagePrefix = "${packageB1Path.name}.${packageB2Path.name}.${dir1BPath.name}",
-      rootType = "java-source",
+      rootType = SourceRootTypeId("java-source"),
     )
 
     val expectedResourceRoot11 = ResourceRoot(
       resourcePath = resourceFilePath11,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
     val expectedResourceRoot12 = ResourceRoot(
       resourcePath = resourceFilePath12,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
     val expectedLibrary1 = Library(
       displayName = "BSP: file:///m2/repo.maven.apache.org/test1/1.0.0/test1-1.0.0.jar",
@@ -609,7 +611,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
 
     val expectedModule2 = GenericModuleInfo(
       name = "module2",
-      type = "JAVA_MODULE",
+      type = ModuleTypeId("JAVA_MODULE"),
       modulesDependencies = listOf(
         IntermediateModuleDependency("module3"),
       ),
@@ -627,12 +629,12 @@ class ModuleDetailsToJavaModuleTransformerTest {
       sourcePath = dir1CPath,
       generated = false,
       packagePrefix = "${packageC1Path.name}.${packageC2Path.name}.${dir1CPath.name}",
-      rootType = "java-test",
+      rootType = SourceRootTypeId("java-test"),
     )
 
     val expectedResourceRoot21 = ResourceRoot(
       resourcePath = resourceDirPath21,
-      rootType = "java-test-resource",
+      rootType = SourceRootTypeId("java-test-resource"),
     )
 
     val expectedJavaModule2 = JavaModule(

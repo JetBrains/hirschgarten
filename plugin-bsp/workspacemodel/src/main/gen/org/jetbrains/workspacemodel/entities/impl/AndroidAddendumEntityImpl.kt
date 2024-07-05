@@ -1,13 +1,15 @@
-package org.jetbrains.workspacemodel.entities
+package org.jetbrains.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
-import com.intellij.platform.workspace.storage.EntityInformation
+import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
+import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
-import com.intellij.platform.workspace.storage.impl.ConnectionId
+import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
+import com.intellij.platform.workspace.storage.annotations.Child
 import com.intellij.platform.workspace.storage.impl.EntityLink
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
@@ -18,12 +20,16 @@ import com.intellij.platform.workspace.storage.impl.extractOneToOneParent
 import com.intellij.platform.workspace.storage.impl.updateOneToOneParentOfChild
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
+import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.workspacemodel.entities.AndroidAddendumEntity
+import org.jetbrains.workspacemodel.entities.AndroidTargetType
 
-@GeneratedCodeApiVersion(2)
-@GeneratedCodeImplVersion(3)
-public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendumEntityData) : AndroidAddendumEntity,
+@GeneratedCodeApiVersion(3)
+@GeneratedCodeImplVersion(6)
+@OptIn(WorkspaceEntityInternalApi::class)
+internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendumEntityData) : AndroidAddendumEntity,
   WorkspaceEntityBase(dataSource) {
 
   private companion object {
@@ -90,10 +96,10 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
   }
 
 
-  public class Builder(result: AndroidAddendumEntityData?) :
+  internal class Builder(result: AndroidAddendumEntityData?) :
     ModifiableWorkspaceEntityBase<AndroidAddendumEntity, AndroidAddendumEntityData>(result),
     AndroidAddendumEntity.Builder {
-    public constructor() : this(AndroidAddendumEntityData())
+    internal constructor() : this(AndroidAddendumEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
       if (this.diff != null) {
@@ -106,7 +112,6 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
       }
 
       this.diff = builder
-      this.snapshot = builder
       addToBuilder()
       this.id = getEntityData().createEntityId()
       // After adding entity data to the builder, we need to unbind it and move the control over entity data to builder
@@ -269,16 +274,18 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
         assetsDirectoriesUpdater.invoke(value)
       }
 
-    override var module: ModuleEntity
+    override var module: ModuleEntity.Builder
       get() {
         val _diff = diff
         return if (_diff != null) {
-          _diff.extractOneToOneParent(MODULE_CONNECTION_ID, this) ?: this.entityLinks[EntityLink(
-            false,
-            MODULE_CONNECTION_ID
-          )]!! as ModuleEntity
+          @OptIn(EntityStorageInstrumentationApi::class)
+          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(
+            MODULE_CONNECTION_ID,
+            this
+          ) as? ModuleEntity.Builder)
+            ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
         } else {
-          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity
+          this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
         }
       }
       set(value) {
@@ -289,7 +296,7 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
           }
           // else you're attaching a new entity to an existing entity that is not modifiable
-          _diff.addEntity(value)
+          _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
           _diff.updateOneToOneParentOfChild(MODULE_CONNECTION_ID, this, value)
@@ -308,7 +315,8 @@ public open class AndroidAddendumEntityImpl(private val dataSource: AndroidAdden
   }
 }
 
-public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEntity>() {
+@OptIn(WorkspaceEntityInternalApi::class)
+internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEntity>() {
   public lateinit var androidSdkName: String
   public lateinit var androidTargetType: AndroidTargetType
   public var manifest: VirtualFileUrl? = null
@@ -324,7 +332,6 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<AndroidAddendumEntity> {
     val modifiable = AndroidAddendumEntityImpl.Builder(null)
     modifiable.diff = diff
-    modifiable.snapshot = diff
     modifiable.id = createEntityId()
     return modifiable
   }
@@ -356,23 +363,17 @@ public class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEnti
     return AndroidAddendumEntity::class.java
   }
 
-  override fun serialize(ser: EntityInformation.Serializer) {
-  }
-
-  override fun deserialize(de: EntityInformation.Deserializer) {
-  }
-
-  override fun createDetachedEntity(parents: List<WorkspaceEntity>): WorkspaceEntity {
+  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
     return AndroidAddendumEntity(
       androidSdkName,
       androidTargetType,
       resourceDirectories,
       assetsDirectories,
-      entitySource,
+      entitySource
     ) {
       this.manifest = this@AndroidAddendumEntityData.manifest
       this.resourceJavaPackage = this@AndroidAddendumEntityData.resourceJavaPackage
-      parents.filterIsInstance<ModuleEntity>().singleOrNull()?.let { this.module = it }
+      parents.filterIsInstance<ModuleEntity.Builder>().singleOrNull()?.let { this.module = it }
     }
   }
 

@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.ResourcesItem
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
@@ -58,7 +59,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // then
     val expectedJavaResource = ResourceRoot(
       resourcePath = resourceFilePath,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
@@ -92,7 +93,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // then
     val expectedJavaResource = ResourceRoot(
       resourcePath = resourceFilePath,
-      rootType = "java-test-resource",
+      rootType = SourceRootTypeId("java-test-resource"),
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
@@ -126,7 +127,7 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // then
     val expectedJavaResource = ResourceRoot(
       resourcePath = resourceDirPath,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource)
@@ -166,17 +167,17 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // then
     val expectedJavaResource1 = ResourceRoot(
       resourcePath = resourceFilePath1,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
 
     val expectedJavaResource2 = ResourceRoot(
       resourcePath = resourceFilePath2,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
 
     val expectedJavaResource3 = ResourceRoot(
       resourcePath = resourceFilePath3,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
 
     val expectedJavaResources = listOf(expectedJavaResource1, expectedJavaResource2, expectedJavaResource3)
@@ -215,11 +216,11 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // then
     val expectedJavaResource1 = ResourceRoot(
       resourcePath = resourceFilePath,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
     val expectedJavaResource2 = ResourceRoot(
       resourcePath = resourceDirPath,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(expectedJavaResource1, expectedJavaResource2)
@@ -271,15 +272,15 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // then
     val expectedJavaResource1 = ResourceRoot(
       resourcePath = resourceFilePath1,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
     val expectedJavaResource2 = ResourceRoot(
       resourcePath = resourceFilePath2,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
     val expectedJavaResource3 = ResourceRoot(
       resourcePath = resourceDirPath3,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(
@@ -335,15 +336,15 @@ class ResourcesItemToJavaResourceRootTransformerTest {
     // then
     val expectedJavaResource1 = ResourceRoot(
       resourcePath = resourceFilePath1,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
     val expectedJavaResource2 = ResourceRoot(
       resourcePath = resourceFilePath2,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
     val expectedJavaResource3 = ResourceRoot(
       resourcePath = resourceDirPath3,
-      rootType = "java-resource",
+      rootType = SourceRootTypeId("java-resource"),
     )
 
     javaResources shouldContainExactlyInAnyOrder listOf(

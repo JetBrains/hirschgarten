@@ -6,6 +6,7 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
@@ -25,7 +26,7 @@ internal data class BspModuleDetails(
   // TODO: determine if pythonOptions has a purpose here (it's not used anywhere)
   val pythonOptions: PythonOptionsItem?,
   val scalacOptions: ScalacOptionsItem?,
-  val type: String,
+  val type: ModuleTypeId,
   val associates: List<BuildTargetId> = listOf(),
   val moduleDependencies: List<BuildTargetId>,
   val libraryDependencies: List<BuildTargetId>?,

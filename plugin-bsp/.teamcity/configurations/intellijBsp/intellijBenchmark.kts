@@ -2,7 +2,7 @@ package configurations.intellijBsp
 
 import configurations.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 
 open class Benchmark (
@@ -11,6 +11,7 @@ open class Benchmark (
 
     name = "[benchmark] 10 targets",
     vcsRoot = vcsRoot,
+    artifactRules = "+:%/home/teamcity/.cache/bazel/_bazel_teamcity/*/execroot/_main/bazel-out/k8-fastbuild/testlogs/** => testlogs.zip",
     steps = {
         val sysArgs = "-DDO_NOT_REPORT_ERRORS=true  -Dbsp.benchmark.project.path=/tmp/project_10 -Dbsp.benchmark.teamcity.url=https://bazel.teamcity.com"
         script {
@@ -28,11 +29,13 @@ open class Benchmark (
                         bazel run //bspcli:generator -- /tmp/project_10 10 --targetssize 1
                     """.trimIndent()
         }
-        gradle {
+        bazel {
             name = "run benchmark"
             id = "run_benchmark"
-            tasks = ":performance-testing:test --tests org.jetbrains.bsp.performance.testing.BazelTest"
-            gradleParams = "-Dorg.gradle.jvmargs=-Xmx12g $sysArgs"
+            command = "test"
+            targets = "//performance-testing"
+            arguments = """"--jvmopt=-Dorg.gradle.jvmargs=-Xmx12g $sysArgs""""
+            param("toolPath", "/usr/local/bin")
         }
     }
 )

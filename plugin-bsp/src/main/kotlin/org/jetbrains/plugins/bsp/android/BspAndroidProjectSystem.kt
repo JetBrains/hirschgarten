@@ -19,11 +19,13 @@ import com.intellij.psi.PsiElementFinder
 import org.jetbrains.android.facet.AndroidFacet
 import java.nio.file.Path
 
-public class BspAndroidProjectSystem(private val project: Project) : AndroidProjectSystem {
+public class BspAndroidProjectSystem(override val project: Project) : AndroidProjectSystem {
   private val psiElementFinders =
     listOf(AndroidInnerClassFinder.INSTANCE, AndroidResourceClassPsiElementFinder(getLightResourceClassService()))
 
   private val syncManager = BspProjectSystemSyncManager(project)
+
+  override fun getKnownApplicationIds(): Set<String> = emptySet()
 
   override fun allowsFileCreation(): Boolean = true
 
@@ -55,4 +57,8 @@ public class BspAndroidProjectSystem(private val project: Project) : AndroidProj
   override fun getSyncManager(): ProjectSystemSyncManager = syncManager
 
   override fun isNamespaceOrParentPackage(packageName: String): Boolean = false
+
+  override fun findModulesWithApplicationId(applicationId: String): Collection<Module> = emptyList()
+
+  override fun isAndroidProject(): Boolean = true
 }

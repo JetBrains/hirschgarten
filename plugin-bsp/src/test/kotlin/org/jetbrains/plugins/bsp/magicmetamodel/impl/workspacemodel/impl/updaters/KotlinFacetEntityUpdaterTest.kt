@@ -5,6 +5,7 @@ import ch.epfl.scala.bsp4j.JvmBuildTarget
 import com.intellij.facet.FacetManager
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.testFramework.runInEdtAndWait
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -46,7 +47,7 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
 
       val module = GenericModuleInfo(
         name = "module1",
-        type = "JAVA_MODULE",
+        type = ModuleTypeId("JAVA_MODULE"),
         modulesDependencies = listOf(
           IntermediateModuleDependency("module2"),
           IntermediateModuleDependency("module3"),

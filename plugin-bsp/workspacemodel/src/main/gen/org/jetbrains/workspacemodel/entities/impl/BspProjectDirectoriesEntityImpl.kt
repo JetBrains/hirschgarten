@@ -1,13 +1,13 @@
-package org.jetbrains.workspacemodel.entities
+package org.jetbrains.workspacemodel.entities.impl
 
-import com.intellij.platform.workspace.storage.EntityInformation
+import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
-import com.intellij.platform.workspace.storage.impl.ConnectionId
+import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityData
@@ -17,10 +17,12 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInstrumentationApi
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
+import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
 
-@GeneratedCodeApiVersion(2)
-@GeneratedCodeImplVersion(3)
-public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) :
+@GeneratedCodeApiVersion(3)
+@GeneratedCodeImplVersion(6)
+@OptIn(WorkspaceEntityInternalApi::class)
+internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) :
   BspProjectDirectoriesEntity, WorkspaceEntityBase(dataSource) {
 
   private companion object {
@@ -60,10 +62,10 @@ public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspPro
   }
 
 
-  public class Builder(result: BspProjectDirectoriesEntityData?) :
+  internal class Builder(result: BspProjectDirectoriesEntityData?) :
     ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(result),
     BspProjectDirectoriesEntity.Builder {
-    public constructor() : this(BspProjectDirectoriesEntityData())
+    internal constructor() : this(BspProjectDirectoriesEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
       if (this.diff != null) {
@@ -76,7 +78,6 @@ public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspPro
       }
 
       this.diff = builder
-      this.snapshot = builder
       addToBuilder()
       this.id = getEntityData().createEntityId()
       // After adding entity data to the builder, we need to unbind it and move the control over entity data to builder
@@ -200,7 +201,8 @@ public open class BspProjectDirectoriesEntityImpl(private val dataSource: BspPro
   }
 }
 
-public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDirectoriesEntity>() {
+@OptIn(WorkspaceEntityInternalApi::class)
+internal class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDirectoriesEntity>() {
   public lateinit var projectRoot: VirtualFileUrl
   public lateinit var includedRoots: MutableList<VirtualFileUrl>
   public lateinit var excludedRoots: MutableList<VirtualFileUrl>
@@ -212,7 +214,6 @@ public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDir
   override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
     val modifiable = BspProjectDirectoriesEntityImpl.Builder(null)
     modifiable.diff = diff
-    modifiable.snapshot = diff
     modifiable.id = createEntityId()
     return modifiable
   }
@@ -244,13 +245,7 @@ public class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDir
     return BspProjectDirectoriesEntity::class.java
   }
 
-  override fun serialize(ser: EntityInformation.Serializer) {
-  }
-
-  override fun deserialize(de: EntityInformation.Deserializer) {
-  }
-
-  override fun createDetachedEntity(parents: List<WorkspaceEntity>): WorkspaceEntity {
+  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
     return BspProjectDirectoriesEntity(projectRoot, includedRoots, excludedRoots, entitySource) {
     }
   }

@@ -2,21 +2,21 @@ package configurations.intellijBsp
 
 import configurations.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 
 open class UnitTests(
     vcsRoot: GitVcsRoot
 ) : BaseConfiguration.BaseBuildType(
     name = "[tests] unit tests",
-    artifactRules = "+:**/build/reports/**/* => reports.zip",
+    artifactRules = "+:/home/teamcity/.cache/bazel/_bazel_teamcity/*/execroot/_main/bazel-out/k8-fastbuild/testlogs/** => testlogs.zip",
     vcsRoot = vcsRoot,
     steps = {
-        gradle {
+        bazel {
             this.name = "run unit tests"
             id = "run_unit_tests"
-            tasks = "test"
-            jdkHome = "%env.JDK_17_0%"
-            gradleParams = "-x :performance-testing:test"
+            command = "test"
+            targets = "//..."
+            param("toolPath", "/usr/local/bin")
         }
     }
 )

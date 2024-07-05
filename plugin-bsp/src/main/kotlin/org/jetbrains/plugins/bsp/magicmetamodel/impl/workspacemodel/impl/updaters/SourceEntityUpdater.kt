@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.jps.entities.modifyContentRootEntity
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
@@ -39,14 +40,17 @@ internal open class SourceEntityUpdater(
     builder: MutableEntityStorage,
     contentRootEntity: ContentRootEntity,
     entityToAdd: GenericSourceRoot,
-  ): SourceRootEntity =
-    builder.addEntity(
-      SourceRootEntity(
+  ): SourceRootEntity {
+      val entity = SourceRootEntity(
         url = entityToAdd.sourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-        rootType = entityToAdd.rootType,
+        rootTypeId = entityToAdd.rootType,
         entitySource = contentRootEntity.entitySource,
-      ) {
-        this.contentRoot = contentRootEntity
-      },
-    )
+      )
+
+    val updatedContentRootEntity = builder.modifyContentRootEntity(contentRootEntity) {
+      this.sourceRoots += entity
+    }
+
+    return updatedContentRootEntity.sourceRoots.last()
+  }
 }

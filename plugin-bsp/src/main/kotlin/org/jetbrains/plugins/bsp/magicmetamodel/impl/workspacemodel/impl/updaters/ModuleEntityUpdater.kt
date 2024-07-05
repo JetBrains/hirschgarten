@@ -13,7 +13,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleDependencyItem
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.customImlData
-import com.intellij.platform.workspace.jps.entities.modifyEntity
+import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
@@ -59,28 +59,30 @@ internal class ModuleEntityUpdater(
         librariesDependencies.map { toLibraryDependency(it, workspaceModelEntityUpdaterConfig.project) } +
         associatesDependencies
 
-    val moduleEntity = builder.addEntity(
-      ModuleEntity(
-        name = entityToAdd.name,
-        dependencies = dependencies,
-        entitySource = toEntitySource(entityToAdd),
-      ) {
-        this.type = entityToAdd.type
-      },
-    )
-    val imlData = builder.addEntity(
+
+    val moduleEntityBuilder = ModuleEntity(
+      name = entityToAdd.name,
+      dependencies = dependencies,
+      entitySource = toEntitySource(entityToAdd),
+    ) {
+      this.type = entityToAdd.type
+    }
+
+    val moduleEntity = builder.addEntity(moduleEntityBuilder)
+
+    val imlData =
       ModuleCustomImlDataEntity(
         customModuleOptions = entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap,
         entitySource = moduleEntity.entitySource,
       ) {
         this.rootManagerTagCustomData = null
-        this.module = moduleEntity
-      },
-    )
-    builder.modifyEntity(moduleEntity) {
+        this.module = moduleEntityBuilder
+      }
+
+    // TODO: use a separate entity instead of imlData
+    return builder.modifyModuleEntity(moduleEntity) {
       this.customImlData = imlData
     }
-    return moduleEntity
   }
 
   private fun List<IntermediateLibraryDependency>.toLibraryModuleDependencies() =

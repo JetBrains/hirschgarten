@@ -7,7 +7,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.DirectoryProjectConfigurator
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.impl.internal
+import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
@@ -25,9 +25,9 @@ internal class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator
   ) {
     if (!project.isBspProject) return
 
-    val workspaceModel = WorkspaceModel.getInstance(project)
+    val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
     val fakeModules =
-      workspaceModel.internal.entityStorage.current.entities(ModuleEntity::class.java)
+      workspaceModel.entityStorage.current.entities(ModuleEntity::class.java)
 
     BspCoroutineService.getInstance(project).start {
       writeAction {

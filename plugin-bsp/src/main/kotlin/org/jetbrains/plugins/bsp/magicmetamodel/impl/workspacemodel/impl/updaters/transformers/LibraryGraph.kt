@@ -2,7 +2,8 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.intellij.openapi.module.ModuleTypeId
+import com.intellij.openapi.module.StdModuleTypes
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
@@ -102,7 +103,7 @@ internal class LibraryGraph(private val libraries: List<LibraryItem>) {
       JavaModule(
         genericModuleInfo = GenericModuleInfo(
           name = libraryName,
-          type = ModuleTypeId.JAVA_MODULE,
+          type = ModuleTypeId(StdModuleTypes.JAVA.id),
           librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
           modulesDependencies = library.dependencies.map {
             IntermediateModuleDependency(

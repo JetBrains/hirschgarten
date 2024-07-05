@@ -14,6 +14,8 @@ import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.JsonObject
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -162,27 +164,27 @@ class ModuleDetailsToPythonModuleTransformerTest {
     // then
     val expectedModule = GenericModuleInfo(
       name = "module1",
-      type = "PYTHON_MODULE",
+      type = ModuleTypeId("PYTHON_MODULE"),
       modulesDependencies = listOf(IntermediateModuleDependency("module2"), IntermediateModuleDependency("module3")),
       librariesDependencies = emptyList(),
     )
 
     val expectedGenericSourceRoot1 = GenericSourceRoot(
       sourcePath = file1APath,
-      rootType = "python-source",
+      rootType = SourceRootTypeId("python-source"),
     )
     val expectedGenericSourceRoot2 = GenericSourceRoot(
       sourcePath = file2APath,
-      rootType = "python-source",
+      rootType = SourceRootTypeId("python-source"),
     )
     val expectedGenericSourceRoot3 = GenericSourceRoot(
       sourcePath = dir1BPath,
-      rootType = "python-source",
+      rootType = SourceRootTypeId("python-source"),
     )
 
     val expectedResourceRoot1 = ResourceRoot(
       resourcePath = resourceFilePath.parent,
-      rootType = "",
+      rootType = SourceRootTypeId(""),
     )
 
     val expectedPythonSdkInfo = PythonSdkInfo(version = version, originalName = buildTargetId.uri)
@@ -357,27 +359,27 @@ class ModuleDetailsToPythonModuleTransformerTest {
     // then
     val expectedModule1 = GenericModuleInfo(
       name = "module1",
-      type = "PYTHON_MODULE",
+      type = ModuleTypeId("PYTHON_MODULE"),
       modulesDependencies = listOf(IntermediateModuleDependency("module2"), IntermediateModuleDependency("module3")),
       librariesDependencies = emptyList(),
     )
 
     val expectedGenericSourceRoot11 = GenericSourceRoot(
       sourcePath = file1APath,
-      rootType = "python-source",
+      rootType = SourceRootTypeId("python-source"),
     )
     val expectedGenericSourceRoot12 = GenericSourceRoot(
       sourcePath = file2APath,
-      rootType = "python-source",
+      rootType = SourceRootTypeId("python-source"),
     )
     val expectedGenericSourceRoot13 = GenericSourceRoot(
       sourcePath = dir1BPath,
-      rootType = "python-source",
+      rootType = SourceRootTypeId("python-source"),
     )
 
     val expectedResourceRoot11 = ResourceRoot(
       resourcePath = resourceFilePath11.parent,
-      rootType = "",
+      rootType = SourceRootTypeId(""),
     )
 
     val expectedPythonSdk1 =
@@ -393,19 +395,19 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val expectedModule2 = GenericModuleInfo(
       name = "module2",
-      type = "PYTHON_MODULE",
+      type = ModuleTypeId("PYTHON_MODULE"),
       modulesDependencies = listOf(IntermediateModuleDependency("module3")),
       librariesDependencies = emptyList(),
     )
 
     val expectedGenericSourceRoot21 = GenericSourceRoot(
       sourcePath = dir1CPath,
-      rootType = "python-test",
+      rootType = SourceRootTypeId("python-test"),
     )
 
     val expectedResourceRoot21 = ResourceRoot(
       resourcePath = resourceDirPath21,
-      rootType = "",
+      rootType = SourceRootTypeId(""),
     )
 
     val expectedPythonSdk2 =
@@ -445,7 +447,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
     fun emptyExpectedModule(name: String, sdkInfo: PythonSdkInfo): PythonModule {
       val expectedModule = GenericModuleInfo(
         name = name,
-        type = "PYTHON_MODULE",
+        type = ModuleTypeId("PYTHON_MODULE"),
         modulesDependencies = emptyList(),
         librariesDependencies = emptyList(),
       )

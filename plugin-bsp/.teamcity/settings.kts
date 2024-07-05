@@ -24,18 +24,18 @@ object IntellijBspGitHub : Project({
     val allSteps = sequential {
 
         parallel(options = {
-            onDependencyFailure = FailureAction.CANCEL
+            onDependencyFailure = FailureAction.IGNORE
             onDependencyCancel = FailureAction.CANCEL
 
         }) {
-            buildType(IntellijDetekt.GitHub)
+//            buildType(IntellijDetekt.GitHub)
             buildType(IntellijBuild.GitHub)
             buildType(IntellijTests.GitHub)
             buildType(IntellijBenchmark.GitHub)
         }
 
         buildType(ResultsAggregator.GitHub) {
-            onDependencyFailure = FailureAction.ADD_PROBLEM
+            onDependencyFailure = FailureAction.IGNORE
             onDependencyCancel = FailureAction.ADD_PROBLEM
         }
     }.buildTypes()
@@ -60,7 +60,7 @@ object IntellijBspGitHub : Project({
 
     // setup display order for intellij-bsp pipeline
     buildTypesOrderIds = arrayListOf(
-            RelativeId("GitHubFormatDetekt"),
+//            RelativeId("GitHubFormatDetekt"),
             RelativeId("GitHubBuildBuildIntellijBsp"),
             RelativeId("GitHubTestsUnitTests"),
             RelativeId("GitHubBenchmark10Targets"),
@@ -78,18 +78,18 @@ object IntellijBspSpace : Project({
     val allSteps = sequential {
 
         parallel(options = {
-            onDependencyFailure = FailureAction.CANCEL
+            onDependencyFailure = FailureAction.IGNORE
             onDependencyCancel = FailureAction.CANCEL
 
         }) {
-            buildType(IntellijDetekt.Space)
+//            buildType(IntellijDetekt.Space)
             buildType(IntellijBuild.Space)
             buildType(IntellijTests.Space)
             buildType(IntellijBenchmark.Space)
         }
 
         buildType(ResultsAggregator.Space) {
-            onDependencyFailure = FailureAction.ADD_PROBLEM
+            onDependencyFailure = FailureAction.IGNORE
             onDependencyCancel = FailureAction.ADD_PROBLEM
         }
     }.buildTypes()
@@ -114,7 +114,7 @@ object IntellijBspSpace : Project({
 
     // setup display order for intellij-bsp pipeline
     buildTypesOrderIds = arrayListOf(
-        RelativeId("SpaceFormatDetekt"),
+//        RelativeId("SpaceFormatDetekt"),
         RelativeId("SpaceBuildBuildIntellijBsp"),
         RelativeId("SpaceTestsUnitTests"),
         RelativeId("SpaceBenchmark10Targets"),

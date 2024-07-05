@@ -14,12 +14,12 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
   public val excludedRoots: List<VirtualFileUrl>
 
   //region generated code
-  @GeneratedCodeApiVersion(2)
-  public interface Builder : BspProjectDirectoriesEntity, WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
+  @GeneratedCodeApiVersion(3)
+  public interface Builder : WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
     override var entitySource: EntitySource
-    override var projectRoot: VirtualFileUrl
-    override var includedRoots: MutableList<VirtualFileUrl>
-    override var excludedRoots: MutableList<VirtualFileUrl>
+    var projectRoot: VirtualFileUrl
+    var includedRoots: MutableList<VirtualFileUrl>
+    var excludedRoots: MutableList<VirtualFileUrl>
   }
 
   public companion object : EntityType<BspProjectDirectoriesEntity, Builder>() {
@@ -32,7 +32,7 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
       excludedRoots: List<VirtualFileUrl>,
       entitySource: EntitySource,
       init: (Builder.() -> Unit)? = null,
-    ): BspProjectDirectoriesEntity {
+    ): Builder {
       val builder = builder()
       builder.projectRoot = projectRoot
       builder.includedRoots = includedRoots.toMutableWorkspaceList()
@@ -46,8 +46,10 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
 }
 
 //region generated code
-public fun MutableEntityStorage.modifyEntity(
+public fun MutableEntityStorage.modifyBspProjectDirectoriesEntity(
   entity: BspProjectDirectoriesEntity,
   modification: BspProjectDirectoriesEntity.Builder.() -> Unit,
-): BspProjectDirectoriesEntity = modifyEntity(BspProjectDirectoriesEntity.Builder::class.java, entity, modification)
+): BspProjectDirectoriesEntity {
+  return modifyEntity(BspProjectDirectoriesEntity.Builder::class.java, entity, modification)
+}
 //endregion

@@ -7,8 +7,8 @@ import com.intellij.platform.diagnostic.telemetry.FilteredMetricsExporter
 import com.intellij.platform.diagnostic.telemetry.MetricsExporterEntry
 import com.intellij.platform.diagnostic.telemetry.TelemetryManager
 import com.intellij.platform.diagnostic.telemetry.belongsToScope
-import com.intellij.platform.diagnostic.telemetry.impl.CsvMetricsExporter
-import com.intellij.platform.diagnostic.telemetry.impl.RollingFileSupplier
+import com.intellij.platform.diagnostic.telemetry.exporters.RollingFileSupplier
+import com.intellij.platform.diagnostic.telemetry.exporters.meters.TelemetryMeterJsonExporter
 import com.intellij.util.concurrency.SynchronizedClearableLazy
 import com.sun.management.GarbageCollectionNotificationInfo
 import java.lang.Thread.sleep
@@ -47,8 +47,7 @@ internal object MemoryProfiler : NotificationListener {
 
   private fun registerMetricsExporter() {
     val basePath = PathManager.getLogDir() / "open-telemetry-metrics.bsp.csv"
-    // TODO replace with TelemetryMeterJsonExporter after IJ platform update to 242
-    val metricsExporter = CsvMetricsExporter(RollingFileSupplier(basePath))
+    val metricsExporter = TelemetryMeterJsonExporter(RollingFileSupplier(basePath))
     val filteredMetricsExporter =
       FilteredMetricsExporter(SynchronizedClearableLazy { metricsExporter }) { metric ->
         metric.belongsToScope(bspScope)

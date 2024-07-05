@@ -15,9 +15,11 @@ import com.android.tools.idea.projectsystem.ManifestOverrides
 import com.android.tools.idea.projectsystem.NamedModuleTemplate
 import com.android.tools.idea.projectsystem.SampleDataDirectoryProvider
 import com.android.tools.idea.projectsystem.ScopeType
+import com.android.tools.idea.rendering.StudioModuleDependencies
 import com.android.tools.idea.res.AndroidDependenciesCache
 import com.android.tools.idea.res.MainContentRootSampleDataDirectoryProvider
 import com.android.tools.idea.util.toPathString
+import com.android.tools.module.ModuleDependencies
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.roots.OrderEnumerator
@@ -26,7 +28,6 @@ import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.workspacemodel.entities.androidAddendumEntity
-import java.nio.file.Path
 
 public class BspAndroidModuleSystem(override val module: Module) : AndroidModuleSystem,
   SampleDataDirectoryProvider by MainContentRootSampleDataDirectoryProvider(module) {
@@ -41,8 +42,6 @@ public class BspAndroidModuleSystem(override val module: Module) : AndroidModule
   override fun getRegisteredDependency(coordinate: GradleCoordinate): GradleCoordinate? = null
 
   override fun getResolvedDependency(coordinate: GradleCoordinate, scope: DependencyScopeType): GradleCoordinate? = null
-
-  override fun getDependencyPath(coordinate: GradleCoordinate): Path? = null
 
   override fun canRegisterDependency(type: DependencyType): CapabilityStatus = CapabilityNotSupported()
 
@@ -97,4 +96,6 @@ public class BspAndroidModuleSystem(override val module: Module) : AndroidModule
 
   override val usesCompose: Boolean
     get() = true
+
+  override val moduleDependencies: ModuleDependencies get() = StudioModuleDependencies(module)
 }

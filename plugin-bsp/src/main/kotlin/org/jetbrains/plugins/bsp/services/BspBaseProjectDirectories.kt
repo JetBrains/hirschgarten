@@ -9,7 +9,7 @@ import com.intellij.platform.workspace.storage.VersionedStorageChange
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
 
-internal class BspBaseProjectDirectories(project: Project, scope: CoroutineScope) :
+public class BspBaseProjectDirectories(project: Project, scope: CoroutineScope) :
   BaseProjectDirectoriesImpl(project, scope) {
   override fun collectRoots(snapshot: ImmutableEntityStorage): Sequence<VirtualFile> {
     return super.collectRoots(snapshot) +

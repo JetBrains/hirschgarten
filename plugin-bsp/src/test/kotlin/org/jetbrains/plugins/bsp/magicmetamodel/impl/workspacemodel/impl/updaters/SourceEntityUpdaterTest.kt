@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
@@ -35,7 +36,7 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
 
     val genericSourceRoot = GenericSourceRoot(
       sourcePath = sourceDir,
-      rootType = "python-source",
+      rootType = SourceRootTypeId("python-source"),
     )
 
     // when
@@ -55,7 +56,7 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir,
-        rootType = "python-source",
+        rootTypeId = SourceRootTypeId("python-source"),
       ) {},
       parentModuleEntity = parentModuleEntity,
     )
@@ -71,14 +72,14 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
 
     val genericSourceRoot1 = GenericSourceRoot(
       sourcePath = sourceDir1,
-      rootType = "python-source",
+      rootType = SourceRootTypeId("python-source"),
     )
 
     val sourceDir2 = URI.create("file:///another/root/dir/another/example/package/").toPath()
 
     val genericSourceRoot2 = GenericSourceRoot(
       sourcePath = sourceDir2,
-      rootType = "python-test",
+      rootType = SourceRootTypeId("python-test"),
     )
 
     val pythonSourceRoots = listOf(genericSourceRoot1, genericSourceRoot2)
@@ -100,7 +101,7 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir1,
-        rootType = "python-source",
+        rootTypeId = SourceRootTypeId("python-source"),
       ) {},
       parentModuleEntity = parentModuleEntity,
     )
@@ -116,7 +117,7 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir2,
-        rootType = "python-test",
+        rootTypeId = SourceRootTypeId("python-test"),
       ) {},
       parentModuleEntity = parentModuleEntity,
     )

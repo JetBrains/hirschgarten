@@ -192,6 +192,10 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
     val actualIncludedFiles = mutableListOf<VirtualFile>()
 
     runReadAction {
+      // FIXME: this doesn't work because the rootFile is not marked as a content root.
+      //  However marking it as a content root manually causes tests to fail too.
+      //  While building with gradle it works fine. I suspect it's because some part of the testing framework
+      //  doesn't kick in.
       fileIndex.iterateContentUnderDirectory(rootFile) {
         actualIncludedFiles.add(it)
         true

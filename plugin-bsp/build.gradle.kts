@@ -1,7 +1,9 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.Constants
-import org.jetbrains.intellij.platform.gradle.extensions.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.models.ProductRelease
 import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask
 
 plugins {
@@ -41,7 +43,7 @@ dependencies {
 
     instrumentationTools()
     testFramework(TestFrameworkType.Plugin.Java)
-    testFramework(TestFrameworkType.Platform.JUnit5)
+    testFramework(TestFrameworkType.JUnit5)
   }
 }
 
@@ -54,6 +56,18 @@ tasks.runIde {
 // Configure gradle-intellij-plugin plugin.
 // Read more: https://github.com/JetBrains/gradle-intellij-plugin
 intellijPlatform {
+  tasks {
+    printProductsReleases {
+      channels = listOf(ProductRelease.Channel.EAP)
+      types = listOf(IntelliJPlatformType.IntellijIdeaCommunity)
+      untilBuild = provider { null }
+
+      doLast {
+        val latestEap = productsReleases.get().max()
+      }
+    }
+  }
+
   pluginConfiguration {
     name = Plugin.name
     ideaVersion {

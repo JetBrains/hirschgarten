@@ -1,13 +1,16 @@
 package org.jetbrains.workspace.model.matchers.entries
 
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
 public data class ExpectedLibraryEntity(
   val libraryEntity: LibraryEntity,
-)
+) {
+  constructor(libraryEntity: LibraryEntity.Builder) : this(MutableEntityStorage.create().addEntity(libraryEntity))
+}
 
 public infix fun LibraryEntity.shouldBeEqual(expected: ExpectedLibraryEntity): Unit =
   validateLibraryEntity(this, expected)

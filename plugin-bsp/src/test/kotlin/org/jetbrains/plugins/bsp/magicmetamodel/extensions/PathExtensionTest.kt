@@ -40,7 +40,6 @@ class PathExtensionTest {
     val sequence = path.allSubdirectoriesSequence()
 
     // then
-    print(sequence.toList())
     sequence shouldContainExactly sequenceOf(
       Paths.get("/path/to/dir/"),
       Paths.get("/path/to/"),

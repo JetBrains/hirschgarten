@@ -1,0 +1,69 @@
+module(
+    name = "intellij-bsp",
+)
+
+bazel_dep(
+    name = "rules_intellij",
+)
+
+git_override(
+    module_name = "rules_intellij",
+    remote = "https://github.com/agluszak/rules_intellij.git",
+    commit = "7eda83d73b45fb67fc6e8a1032623660e1034a8b",
+)
+
+bazel_dep(name = "rules_kotlin", version = "1.9.6")
+
+register_toolchains(
+    "//:kotlin_toolchain",
+)
+
+bazel_dep(name = "rules_java", version = "7.6.5")
+
+bazel_dep(name = "rules_jvm_external", version = "6.1")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+
+maven.install(
+    artifacts = [
+        "ch.epfl.scala:bsp4j:2.2.0-M2",
+        "org.junit.jupiter:junit-jupiter:5.10.2",
+        "org.junit.platform:junit-platform-console:1.10.2",
+        # todo: this should not be required, use @rules_intellij_maven in the generated source
+        "org.junit.platform:junit-platform-suite-engine:1.10.2",
+        "org.junit.platform:junit-platform-suite-api:1.10.2",
+        # Usually, we'd get this from the JetBrains SDK, but the bundled one not aware of Bazel platforms,
+        # so it fails on certain setups.
+        "net.java.dev.jna:jna:5.14.0",
+        "io.kotest:kotest-assertions-api-jvm:5.9.1",
+        "io.kotest:kotest-assertions-core-jvm:5.9.1",
+        "io.kotest:kotest-assertions-shared-jvm:5.9.1",
+        "io.kotest:kotest-common-jvm:5.9.1",
+        "org.scala-lang:scala-library:2.13.12",
+        "com.google.code.gson:gson:2.10.1",
+        "com.jetbrains.intellij.tools:ide-starter-squashed:242.18071.24-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-metrics-collector:242.18071.24-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-metrics-collector-starter:242.18071.24-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-starter-junit5:242.18071.24-EAP-SNAPSHOT",
+        "com.fasterxml.jackson.core:jackson-databind:2.17.1",
+        "com.fasterxml.jackson.module:jackson-module-kotlin:2.17.1",
+        "org.kodein.di:kodein-di:7.22.0",
+        "org.apache.httpcomponents:httpclient:4.5.14",
+    ],
+    repositories = [
+        "https://cache-redirector.jetbrains.com/maven-central",
+        "https://cache-redirector.jetbrains.com/intellij-dependencies",
+        "https://www.jetbrains.com/intellij-repository/releases",
+        "https://www.jetbrains.com/intellij-repository/snapshots",
+    ],
+    generate_compat_repositories = True,
+    fail_if_repin_required = True,
+    lock_file = "//:maven_install.json",
+)
+
+use_repo(
+    maven,
+    "maven",
+    # TODO: also should not be required
+    jna = "net_java_dev_jna_jna",
+)

@@ -1,6 +1,6 @@
 plugins {
   id("intellijbsp.kotlin-conventions")
-  id("org.jetbrains.intellij.platform.base")
+  id("org.jetbrains.intellij.platform.module")
 }
 
 tasks {
@@ -14,7 +14,7 @@ dependencies {
     intellijIdeaCommunity(Platform.version)
 
     plugins(Platform.plugins)
-    bundledPlugins(Platform.bundledPlugins)
+//    bundledPlugins(Platform.bundledPlugins)
     instrumentationTools()
   }
 }

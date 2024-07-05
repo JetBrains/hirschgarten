@@ -1,8 +1,9 @@
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package org.jetbrains.plugins.bsp.flow.open
 
 import com.intellij.ide.CommandLineInspectionProjectConfigurator
 import com.intellij.openapi.project.Project
-import com.intellij.platform.backend.observation.ActivityTracker
+import com.intellij.platform.backend.observation.EP_NAME
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import org.jetbrains.plugins.bsp.config.isBspProject
@@ -18,7 +19,7 @@ public class BspCommandLineInspectionConfigurator : CommandLineInspectionProject
   ) {
     runBlocking {
       if (project.isBspProject) {
-        ActivityTracker.EP_NAME.extensionList
+        EP_NAME.extensionList
           .firstIsInstanceOrNull<BspStartupActivityTracker>()
           ?.awaitConfiguration(project)
       }

@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import com.intellij.openapi.module.ModuleTypeId
+import com.intellij.openapi.module.StdModuleTypes
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -43,7 +44,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val givenModule = GenericModuleInfo(
       name = projectRootName,
-      type = ModuleTypeId.JAVA_MODULE,
+      type = ModuleTypeId(StdModuleTypes.JAVA.id),
       modulesDependencies = listOf(
         IntermediateModuleDependency("module2"),
         IntermediateModuleDependency("module3"),
@@ -90,7 +91,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     // then
     val expectedModule = GenericModuleInfo(
       name = projectRootName,
-      type = ModuleTypeId.JAVA_MODULE,
+      type = ModuleTypeId(StdModuleTypes.JAVA.id),
       modulesDependencies = listOf(),
       librariesDependencies = listOf(),
     )
@@ -135,7 +136,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val givenModule1 = GenericModuleInfo(
       name = projectRoot1Name,
-      type = ModuleTypeId.JAVA_MODULE,
+      type = ModuleTypeId(StdModuleTypes.JAVA.id),
       modulesDependencies = listOf(),
       librariesDependencies = listOf(),
     )
@@ -159,7 +160,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val givenModule2 = GenericModuleInfo(
       name = projectRoot2Name,
-      type = ModuleTypeId.JAVA_MODULE,
+      type = ModuleTypeId(StdModuleTypes.JAVA.id),
       modulesDependencies = listOf(),
       librariesDependencies = listOf(),
     )
@@ -189,7 +190,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     // then
     val expectedModule1 = GenericModuleInfo(
       name = projectRoot1Name,
-      type = ModuleTypeId.JAVA_MODULE,
+      type = ModuleTypeId(StdModuleTypes.JAVA.id),
       modulesDependencies = listOf(),
       librariesDependencies = listOf(),
     )
@@ -213,7 +214,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val expectedModule2 = GenericModuleInfo(
       name = projectRoot2Name,
-      type = ModuleTypeId.JAVA_MODULE,
+      type = ModuleTypeId(StdModuleTypes.JAVA.id),
       modulesDependencies = listOf(),
       librariesDependencies = listOf(),
     )
@@ -251,7 +252,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val givenModule1 = GenericModuleInfo(
       name = projectRoot1Name,
-      type = ModuleTypeId.JAVA_MODULE,
+      type = ModuleTypeId(StdModuleTypes.JAVA.id),
       modulesDependencies = listOf(),
       librariesDependencies = listOf(),
     )
@@ -275,7 +276,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val givenModule2 = GenericModuleInfo(
       name = projectRoot2Name,
-      type = ModuleTypeId.JAVA_MODULE,
+      type = ModuleTypeId(StdModuleTypes.JAVA.id),
       modulesDependencies = listOf(),
       librariesDependencies = listOf(),
     )
