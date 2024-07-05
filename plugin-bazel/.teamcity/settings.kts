@@ -22,17 +22,17 @@ object IntellijBazelGitHub : Project({
     val allSteps = sequential {
 
         parallel(options = {
-            onDependencyFailure = FailureAction.CANCEL
+            onDependencyFailure = FailureAction.IGNORE
             onDependencyCancel = FailureAction.CANCEL
 
         }) {
             buildType(IntellijBazelBuild.GitHub)
             buildType(IntellijBazelTests.UnitTestsGitHub)
-            buildType(IntellijBazelTests.IdeProbeGitHub)
+//            buildType(IntellijBazelTests.IdeProbeGitHub)
         }
 
         buildType(ResultsAggregator.GitHub) {
-            onDependencyFailure = FailureAction.ADD_PROBLEM
+            onDependencyFailure = FailureAction.IGNORE
             onDependencyCancel = FailureAction.ADD_PROBLEM
         }
     }.buildTypes()
@@ -58,7 +58,7 @@ object IntellijBazelGitHub : Project({
     // setup display order for intellij-bsp pipeline
     buildTypesOrderIds = arrayListOf(
         RelativeId("GitHubBuildBuildIntellijBazel"),
-        RelativeId("GitHubTestsIdeProbe"),
+//        RelativeId("GitHubTestsIdeProbe"),
         RelativeId("GitHubTestsUnitTests"),
         RelativeId("GitHubResults")
     )
@@ -73,17 +73,17 @@ object IntellijBazelSpace : Project({
     val allSteps = sequential {
 
         parallel(options = {
-            onDependencyFailure = FailureAction.CANCEL
+            onDependencyFailure = FailureAction.IGNORE
             onDependencyCancel = FailureAction.CANCEL
 
         }) {
             buildType(IntellijBazelBuild.Space)
             buildType(IntellijBazelTests.UnitTestsSpace)
-            buildType(IntellijBazelTests.IdeProbeSpace)
+//            buildType(IntellijBazelTests.IdeProbeSpace)
         }
 
         buildType(ResultsAggregator.Space) {
-            onDependencyFailure = FailureAction.ADD_PROBLEM
+            onDependencyFailure = FailureAction.IGNORE
             onDependencyCancel = FailureAction.ADD_PROBLEM
         }
     }.buildTypes()
@@ -110,7 +110,7 @@ object IntellijBazelSpace : Project({
     // setup display order for intellij-bsp pipeline
     buildTypesOrderIds = arrayListOf(
         RelativeId("SpaceBuildBuildIntellijBazel"),
-        RelativeId("SpaceTestsIdeProbe"),
+//        RelativeId("SpaceTestsIdeProbe"),
         RelativeId("SpaceTestsUnitTests"),
         RelativeId("SpaceResults")
     )

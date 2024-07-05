@@ -13,3 +13,6 @@ build/
 # flex
 idea-flex.skeleton
 jflex-*.jar
+
+.ijwb
+bazel-*
