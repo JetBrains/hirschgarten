@@ -5,6 +5,7 @@ import com.android.tools.idea.execution.common.AndroidConfigurationExecutor
 import com.android.tools.idea.execution.common.debug.DebugSessionStarter
 import com.android.tools.idea.execution.common.debug.impl.java.AndroidJavaDebugger
 import com.android.tools.idea.execution.common.processhandler.AndroidProcessHandler
+import com.android.tools.idea.projectsystem.ApplicationProjectContext
 import com.android.tools.idea.run.ShowLogcatListener
 import com.android.tools.idea.run.configuration.execution.createRunContentDescriptor
 import com.intellij.execution.ExecutionException
@@ -62,7 +63,9 @@ public class BspAndroidConfigurationExecutor(
 
     return DebugSessionStarter.attachDebuggerToStartedProcess(
       device,
-      applicationId,
+      object : ApplicationProjectContext {
+        override val applicationId: String = applicationId
+      },
       environment,
       debugger,
       debuggerState,

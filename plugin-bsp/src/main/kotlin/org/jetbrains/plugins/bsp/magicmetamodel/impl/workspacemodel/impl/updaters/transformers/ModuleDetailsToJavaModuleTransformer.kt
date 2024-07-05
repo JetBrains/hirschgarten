@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
@@ -32,7 +33,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   private val projectBasePath: Path,
   private val isAndroidSupportEnabled: Boolean = false,
 ) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, moduleNameProvider, libraryNameProvider) {
-  override val type = "JAVA_MODULE"
+  override val type = ModuleTypeId("JAVA_MODULE")
 
   private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer()
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()

@@ -7,12 +7,13 @@ import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.storage.MutableEntityStorage
 import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
 public data class ExpectedSourceRootEntity(
-  val sourceRootEntity: SourceRootEntity,
-  val contentRootEntity: ContentRootEntity,
+  val sourceRootEntity: SourceRootEntity.Builder,
+  val contentRootEntity: ContentRootEntity.Builder,
   val parentModuleEntity: ModuleEntity,
 )
 
@@ -32,7 +33,7 @@ private fun validateSourceRootEntity(
   expected: ExpectedSourceRootEntity,
 ) {
   actual.url shouldBe expected.sourceRootEntity.url
-  actual.rootType shouldBe expected.sourceRootEntity.rootType
+  actual.rootTypeId shouldBe expected.sourceRootEntity.rootTypeId
 
   actual.javaSourceRoots.shouldContainExactlyInAnyOrder(
     { actualEntity, expectedEntity -> validateJavaSourceRootEntity(actualEntity, expectedEntity) },
@@ -48,7 +49,7 @@ private fun validateSourceRootEntity(
 
 private fun validateJavaSourceRootEntity(
   actual: JavaSourceRootPropertiesEntity,
-  expected: JavaSourceRootPropertiesEntity,
+  expected: JavaSourceRootPropertiesEntity.Builder,
 ) {
   actual.generated shouldBe expected.generated
   actual.packagePrefix shouldBe expected.packagePrefix
@@ -56,7 +57,7 @@ private fun validateJavaSourceRootEntity(
 
 private fun validateJavaResourceRootEntity(
   actual: JavaResourceRootPropertiesEntity,
-  expected: JavaResourceRootPropertiesEntity,
+  expected: JavaResourceRootPropertiesEntity.Builder,
 ) {
   actual.generated shouldBe expected.generated
   actual.relativeOutputPath shouldBe expected.relativeOutputPath

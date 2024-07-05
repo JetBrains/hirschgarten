@@ -1,7 +1,7 @@
 [versions]
 detekt = "1.23.5"
 kotlin-gradle-version = "1.9.23"
-ide-starter-version = "242.15523-EAP-CANDIDATE-SNAPSHOT"
+ide-starter-version = "242.18071.24-EAP-SNAPSHOT"
 jackson-version = "2.17.1"
 
 [libraries]
@@ -23,5 +23,5 @@ kodeIn = { module = "org.kodein.di:kodein-di", version = "7.22.0" }
 apacheHttpClient = { module = "org.apache.httpcomponents:httpclient", version = "4.5.14" }
 
 [plugins]
-intellij = { id = "org.jetbrains.intellij.platform", version = "2.0.0-beta1" }
+intellij = { id = "org.jetbrains.intellij.platform", version = "2.0.0-beta7" }
 changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }

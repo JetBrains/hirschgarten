@@ -10,6 +10,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleDependency
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
@@ -48,7 +49,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
     // given
     val module = GenericModuleInfo(
       name = "module1",
-      type = "JAVA_MODULE",
+      type = ModuleTypeId("JAVA_MODULE"),
       modulesDependencies = listOf(
         IntermediateModuleDependency(
           moduleName = "module2",
@@ -110,7 +111,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         ),
         entitySource = BspEntitySource,
       ) {
-        type = "JAVA_MODULE"
+        type = ModuleTypeId("JAVA_MODULE")
       },
     )
 
@@ -123,7 +124,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
     // given
     val module1 = GenericModuleInfo(
       name = "module1",
-      type = "JAVA_MODULE",
+      type = ModuleTypeId("JAVA_MODULE"),
       modulesDependencies = listOf(
         IntermediateModuleDependency(
           moduleName = "module2",
@@ -144,7 +145,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
 
     val module2 = GenericModuleInfo(
       name = "module2",
-      type = "JAVA_MODULE",
+      type = ModuleTypeId("JAVA_MODULE"),
       modulesDependencies = listOf(
         IntermediateModuleDependency(
           moduleName = "module3",
@@ -202,7 +203,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         ),
         entitySource = BspEntitySource,
       ) {
-        type = "JAVA_MODULE"
+        type = ModuleTypeId("JAVA_MODULE")
       },
     )
     val expectedModule2 = ExpectedModuleEntity(
@@ -228,7 +229,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
         ),
         entitySource = BspEntitySource,
       ) {
-        type = "JAVA_MODULE"
+        type = ModuleTypeId("JAVA_MODULE")
       },
     )
 

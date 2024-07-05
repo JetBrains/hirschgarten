@@ -44,11 +44,11 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
 
     // then
     val expectedLibrarySourcesRoot = LibraryRoot(
-      url = virtualFileUrlManager.getOrCreateFromUri("jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/"),
+      url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/"),
       type = LibraryRootTypeId.SOURCES,
     )
     val expectedLibraryClassesRoot = LibraryRoot(
-      url = virtualFileUrlManager.getOrCreateFromUri("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
+      url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
       type = LibraryRootTypeId.COMPILED,
     )
     val expectedLibraryEntity = ExpectedLibraryEntity(
@@ -88,11 +88,11 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
 
     // then
     val expectedLibrarySourcesRoot1 = LibraryRoot(
-      url = virtualFileUrlManager.getOrCreateFromUri("jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/"),
+      url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test1/1.0.0/test1-1.0.0-sources.jar!/"),
       type = LibraryRootTypeId.SOURCES,
     )
     val expectedLibraryClassesRoot1 = LibraryRoot(
-      url = virtualFileUrlManager.getOrCreateFromUri("jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/"),
+      url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test1/1.0.0/test1-1.0.0.jar!/"),
       type = LibraryRootTypeId.COMPILED,
     )
     val expectedLibraryEntity1 = ExpectedLibraryEntity(
@@ -105,11 +105,11 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
     )
 
     val expectedLibrarySourcesRoot2 = LibraryRoot(
-      url = virtualFileUrlManager.getOrCreateFromUri("jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/"),
+      url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test2/2.0.0/test2-2.0.0-sources.jar!/"),
       type = LibraryRootTypeId.SOURCES,
     )
     val expectedLibraryClassesRoot2 = LibraryRoot(
-      url = virtualFileUrlManager.getOrCreateFromUri("jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/"),
+      url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test2/2.0.0/test2-2.0.0.jar!/"),
       type = LibraryRootTypeId.COMPILED,
     )
     val expectedLibraryEntity2 = ExpectedLibraryEntity(
@@ -143,11 +143,11 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
 
     // then
     val expectedLibrarySourcesRoot = LibraryRoot(
-      url = virtualFileUrlManager.getOrCreateFromUri("jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/"),
+      url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/1.0.0/test-1.0.0-sources.jar!/"),
       type = LibraryRootTypeId.SOURCES,
     )
     val expectedLibraryClassesRoot = LibraryRoot(
-      url = virtualFileUrlManager.getOrCreateFromUri("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
+      url = virtualFileUrlManager.getOrCreateFromUrl("jar:///dependency/test/1.0.0/test-1.0.0.jar!/"),
       type = LibraryRootTypeId.COMPILED,
     )
     val expectedLibraryEntity = ExpectedLibraryEntity(

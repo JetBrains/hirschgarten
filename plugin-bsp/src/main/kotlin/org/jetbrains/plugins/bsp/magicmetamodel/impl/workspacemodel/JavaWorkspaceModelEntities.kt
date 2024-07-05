@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
 
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.ModuleState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toState
@@ -9,7 +10,7 @@ public data class JavaSourceRoot(
   val sourcePath: Path,
   val generated: Boolean,
   val packagePrefix: String,
-  val rootType: String,
+  val rootType: SourceRootTypeId,
   val excludedPaths: List<Path> = ArrayList(),
 ) : WorkspaceModelEntity()
 

@@ -1,35 +1,33 @@
 package org.jetbrains.workspace.model.test.framework
 
-import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
+import com.google.idea.testing.BazelTestApplication
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.module.ModuleTypeId
+import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.impl.internal
-import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
-import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.intellij.testFramework.junit5.TestApplication
 import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.workspaceModel.updateProjectModel
+import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
 
-private const val JAVA_ROOT_TYPE = "java-source"
+private val JAVA_ROOT_TYPE = SourceRootTypeId("java-source")
 private const val JAVA_SDK_NAME = "11"
 private const val JAVA_SDK_TYPE = "JavaSDK"
 
-@TestApplication
+@BazelTestApplication
 public open class WorkspaceModelBaseTest {
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
 
@@ -39,7 +37,7 @@ public open class WorkspaceModelBaseTest {
 
   @BeforeEach
   protected open fun beforeEach() {
-    workspaceEntityStorageBuilder = workspaceModel.internal.getBuilderSnapshot().builder
+    workspaceEntityStorageBuilder = (workspaceModel as WorkspaceModelImpl).getBuilderSnapshot().builder
   }
 
   protected val project: Project
@@ -78,48 +76,16 @@ public open class WorkspaceModelBaseTest {
         ),
         entitySource = object : EntitySource {},
       ) {
-        this.type = ModuleTypeId.JAVA_MODULE
+        this.type = ModuleTypeId(StdModuleTypes.JAVA.id)
       },
     )
-
-  public fun addJavaSourceRootEntities(
-    files: List<VirtualFile>,
-    packagePrefix: String,
-    module: ModuleEntity,
-    entityStorage: MutableEntityStorage,
-  ): List<JavaSourceRootPropertiesEntity> =
-    files.map {
-      entityStorage.addEntity(
-        ContentRootEntity(
-          url = virtualFileUrlManager.findByUri(it.url)!!,
-          excludedPatterns = emptyList(),
-          entitySource = module.entitySource,
-        ) { this.module = module },
-      )
-    }.map {
-      entityStorage.addEntity(
-        SourceRootEntity(
-          url = it.url,
-          rootType = JAVA_ROOT_TYPE,
-          entitySource = it.entitySource,
-        ) { this.contentRoot = it },
-      )
-    }.map {
-      entityStorage.addEntity(
-        JavaSourceRootPropertiesEntity(
-          generated = false,
-          packagePrefix = packagePrefix,
-          entitySource = it.entitySource,
-        ) { this.sourceRoot = it },
-      )
-    }
 }
 
 public abstract class WorkspaceModelWithParentModuleBaseTest : WorkspaceModelBaseTest() {
   protected lateinit var parentModuleEntity: ModuleEntity
 
   private val parentModuleName = "test-module-root"
-  public abstract val parentModuleType: String
+  public abstract val parentModuleType: ModuleTypeId
 
   @BeforeEach
   override fun beforeEach() {
@@ -145,9 +111,9 @@ public abstract class WorkspaceModelWithParentModuleBaseTest : WorkspaceModelBas
 }
 
 public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
-  override val parentModuleType: String = "JAVA_MODULE"
+  override val parentModuleType = ModuleTypeId("JAVA_MODULE")
 }
 
 public abstract class WorkspaceModelWithParentPythonModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
-  override val parentModuleType: String = "PYTHON_MODULE"
+  override val parentModuleType = ModuleTypeId("PYTHON_MODULE")
 }

@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.SourcesItem
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.net.URI
@@ -13,8 +14,8 @@ internal data class BuildTargetAndSourceItem(
 
 internal class SourcesItemToJavaSourceRootTransformer :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
-  private val sourceRootType = "java-source"
-  private val testSourceRootType = "java-test"
+  private val sourceRootType = SourceRootTypeId("java-source")
+  private val testSourceRootType = SourceRootTypeId("java-test")
 
   override fun transform(inputEntity: BuildTargetAndSourceItem): List<JavaSourceRoot> {
     val sourceRoots = getSourceRootsAsURIs(inputEntity.sourcesItem)
@@ -28,13 +29,13 @@ internal class SourcesItemToJavaSourceRootTransformer :
   private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> =
     sourcesItem.roots.orEmpty().map { it.safeCastToURI() }
 
-  private fun inferRootType(buildTarget: BuildTarget): String =
+  private fun inferRootType(buildTarget: BuildTarget): SourceRootTypeId =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
 
   private fun toJavaSourceRoot(
     sourceRoot: SourceRoot,
     sourceRoots: List<URI>,
-    rootType: String,
+    rootType: SourceRootTypeId,
   ): JavaSourceRoot {
     val packagePrefix = calculatePackagePrefix(sourceRoot, sourceRoots)
 

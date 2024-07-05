@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
@@ -31,7 +32,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
   fun `should add one python resource root to the workspace model`() {
     // given
     val resourcePath = URI.create("file:///root/dir/example/resource/File.txt").toPath()
-    val pythonResourceRoot = ResourceRoot(resourcePath, "")
+    val pythonResourceRoot = ResourceRoot(resourcePath, SourceRootTypeId(""))
 
     // when
     val returnedResourceRootEntity = runTestWriteAction {
@@ -50,7 +51,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl,
-        rootType = "python-resource",
+        rootTypeId = SourceRootTypeId("python-resource"),
       ) {},
       parentModuleEntity = parentModuleEntity,
     )
@@ -65,13 +66,13 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
   fun `shoulde add multiple python resource roots to the workspace model`() {
     // given
     val resourcePath1 = URI.create("file:///root/dir/example/resource/File1.txt").toPath()
-    val pythonResourceRoot1 = ResourceRoot(resourcePath1, "")
+    val pythonResourceRoot1 = ResourceRoot(resourcePath1, SourceRootTypeId(""))
 
     val resourcePath2 = URI.create("file:///root/dir/example/resource/File2.txt").toPath()
-    val pythonResourceRoot2 = ResourceRoot(resourcePath2, "")
+    val pythonResourceRoot2 = ResourceRoot(resourcePath2, SourceRootTypeId(""))
 
     val resourcePath3 = URI.create("file:///root/dir/example/resource/File3.txt").toPath()
-    val pythonResourceRoot3 = ResourceRoot(resourcePath2, "")
+    val pythonResourceRoot3 = ResourceRoot(resourcePath2, SourceRootTypeId(""))
 
     val pythonResourceRoots = listOf(pythonResourceRoot1, pythonResourceRoot2, pythonResourceRoot3)
 
@@ -92,7 +93,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl1,
-        rootType = "python-resource",
+        rootTypeId = SourceRootTypeId("python-resource"),
       ) {},
       parentModuleEntity = parentModuleEntity,
     )
@@ -108,7 +109,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl2,
-        rootType = "python-resource",
+        rootTypeId = SourceRootTypeId("python-resource"),
       ) {},
       parentModuleEntity = parentModuleEntity,
     )
@@ -124,7 +125,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualResourceUrl3,
-        rootType = "python-resource",
+        rootTypeId = SourceRootTypeId("python-resource"),
       ) {},
       parentModuleEntity = parentModuleEntity,
     )

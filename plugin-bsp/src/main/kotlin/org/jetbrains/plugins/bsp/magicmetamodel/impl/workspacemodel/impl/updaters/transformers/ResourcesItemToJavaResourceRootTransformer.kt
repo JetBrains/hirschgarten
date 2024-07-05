@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.ResourcesItem
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import kotlin.io.path.toPath
@@ -20,17 +21,17 @@ internal class ResourcesItemToJavaResourceRootTransformer :
       .distinct()
   }
 
-  private fun toJavaResourceRoot(resourcePath: String, rootType: String) =
+  private fun toJavaResourceRoot(resourcePath: String, rootType: SourceRootTypeId) =
     ResourceRoot(
       resourcePath = resourcePath.safeCastToURI().toPath(),
       rootType = rootType,
     )
 
-  private fun BuildTarget.inferRootType(): String =
+  private fun BuildTarget.inferRootType(): SourceRootTypeId =
     if (tags.contains("test")) JAVA_TEST_RESOURCE_ROOT_TYPE else JAVA_RESOURCE_ROOT_TYPE
 
   companion object {
-    private const val JAVA_RESOURCE_ROOT_TYPE = "java-resource"
-    private const val JAVA_TEST_RESOURCE_ROOT_TYPE = "java-test-resource"
+    private val JAVA_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-resource")
+    private val JAVA_TEST_RESOURCE_ROOT_TYPE = SourceRootTypeId("java-test-resource")
   }
 }

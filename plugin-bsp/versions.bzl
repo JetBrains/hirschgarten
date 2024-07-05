@@ -1,0 +1,6 @@
+"""Versions of plugins."""
+
+INTELLIJ_BSP_VERSION = "2024.2.0-EAP"
+
+PLATFORM_VERSION = "242"
+SINCE_VERSION = "242.18071.24"

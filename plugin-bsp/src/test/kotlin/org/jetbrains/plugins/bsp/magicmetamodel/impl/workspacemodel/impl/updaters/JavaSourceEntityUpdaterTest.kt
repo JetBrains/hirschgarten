@@ -4,6 +4,7 @@ import com.intellij.java.workspace.entities.JavaSourceRootPropertiesEntity
 import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
@@ -40,7 +41,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     val javaSourceRoot = JavaSourceRoot(
       sourcePath = sourceDir,
       generated = generated,
-      rootType = "java-source",
+      rootType = SourceRootTypeId("java-source"),
       packagePrefix = packagePrefix,
     )
 
@@ -60,7 +61,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir,
-        rootType = "java-source",
+        rootTypeId = SourceRootTypeId("java-source"),
       ) {
         javaSourceRoots = listOf(
           JavaSourceRootPropertiesEntity(
@@ -87,7 +88,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     val javaSourceRoot1 = JavaSourceRoot(
       sourcePath = sourceDir1,
       generated = generated1,
-      rootType = "java-source",
+      rootType = SourceRootTypeId("java-source"),
       packagePrefix = packagePrefix1,
     )
 
@@ -98,7 +99,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
     val javaSourceRoot2 = JavaSourceRoot(
       sourcePath = sourceDir2,
       generated = generated2,
-      rootType = "java-test",
+      rootType = SourceRootTypeId("java-test"),
       packagePrefix = packagePrefix2,
     )
 
@@ -120,7 +121,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir1,
-        rootType = "java-source",
+        rootTypeId = SourceRootTypeId("java-source"),
       ) {
         this.javaSourceRoots = listOf(
           JavaSourceRootPropertiesEntity(
@@ -143,7 +144,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
       sourceRootEntity = SourceRootEntity(
         entitySource = parentModuleEntity.entitySource,
         url = virtualSourceDir2,
-        rootType = "java-test",
+        rootTypeId = SourceRootTypeId("java-test"),
       ) {
         this.javaSourceRoots = listOf(
           JavaSourceRootPropertiesEntity(

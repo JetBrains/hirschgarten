@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.PythonBuildTarget
+import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
@@ -16,7 +17,7 @@ internal class ModuleDetailsToPythonModuleTransformer(
   libraryNameProvider: TargetNameReformatProvider,
   private val hasDefaultPythonInterpreter: Boolean,
 ) : ModuleDetailsToModuleTransformer<PythonModule>(targetsMap, moduleNameProvider, libraryNameProvider) {
-  override val type = "PYTHON_MODULE"
+  override val type = ModuleTypeId("PYTHON_MODULE")
 
   private val sourcesItemToPythonSourceRootTransformer = SourcesItemToPythonSourceRootTransformer()
   private val resourcesItemToPythonResourceRootTransformer =

@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.annotations.ApiStatus
 
 @Service(Service.Level.PROJECT)
-@ApiStatus.Internal
+//@ApiStatus.Internal
 public class BspToolWindowService {
   private var deepPanelReload: (() -> Unit)? = null
 

@@ -1,12 +1,13 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
+import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 
 internal class SourcesItemToPythonSourceRootTransformer :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, GenericSourceRoot> {
-  private val sourceRootType = "python-source"
-  private val testSourceRootType = "python-test"
+  private val sourceRootType = SourceRootTypeId("python-source")
+  private val testSourceRootType = SourceRootTypeId("python-test")
 
   override fun transform(inputEntities: List<BuildTargetAndSourceItem>): List<GenericSourceRoot> {
     val allSourceRoots = super.transform(inputEntities)
@@ -28,12 +29,12 @@ internal class SourcesItemToPythonSourceRootTransformer :
       .map { toPythonSourceRoot(it, rootType) }
   }
 
-  private fun inferRootType(buildTarget: BuildTarget): String =
+  private fun inferRootType(buildTarget: BuildTarget): SourceRootTypeId =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
 
   private fun toPythonSourceRoot(
     sourceRoot: SourceRoot,
-    rootType: String,
+    rootType: SourceRootTypeId,
   ): GenericSourceRoot {
     return GenericSourceRoot(
       sourcePath = sourceRoot.sourcePath,

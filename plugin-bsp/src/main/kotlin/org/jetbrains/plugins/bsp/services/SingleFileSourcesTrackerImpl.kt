@@ -109,7 +109,6 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
       .findEntitiesByUrl(file.toVirtualFileUrl(virtualFileUrlManager))
 
     return entityCandidates
-      .map { it.first }
       .filterIsInstance<SourceRootEntity>()
       .firstOrNull()
   }
