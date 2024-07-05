@@ -13,7 +13,7 @@ private const val BAZEL_PLUGIN_ID = "org.jetbrains.bazel"
 private const val BSP_PLUGIN_ID = "org.jetbrains.bsp"
 
 /**
-  * We need to update bazel-bsp connection details classpath:
+ * We need to update bazel-bsp connection details classpath:
  * the "default" (inside bazel-bsp) mechanism just takes a process classpath,
  * what works nicely for the installer in bazel-bsp since it contains all the things we need.
  * Unfortunately, when we do that here (in intellij-bazel) it doesn't work:
@@ -36,15 +36,14 @@ private fun BspConnectionDetails.calculateNewClasspath(): String {
   val bspPluginClasspath = calculatePluginClasspath(BSP_PLUGIN_ID)
   val util8Jar = getUtil8Jar()
 
-  return listOf(bazelPluginClasspath, bspPluginClasspath, util8Jar).joinToString(File.pathSeparator)
+  return listOfNotNull(bazelPluginClasspath, bspPluginClasspath, util8Jar).joinToString(File.pathSeparator)
 }
 
-private fun calculatePluginClasspath(pluginIdString: String): String {
-  val pluginId = PluginId.findId(pluginIdString) ?: error("Cannot find $pluginIdString plugin")
-  val pluginDescriptor = PluginManager.getInstance().findEnabledPlugin(pluginId) ?: error("Cannot find $pluginId plugin descriptor")
-  val pluginJarsDir = pluginDescriptor.pluginPath.resolve("lib")
+private fun calculatePluginClasspath(pluginIdString: String): String? {
+  val pluginId = PluginId.findId(pluginIdString) ?: return null
+  val pluginDescriptor = PluginManager.getInstance().findEnabledPlugin(pluginId) ?: return null
 
-  return pluginJarsDir.resolve("*").toString()
+  return pluginDescriptor.pluginPath.toString()
 }
 
 private fun BspConnectionDetails.getUtil8Jar(): String =
