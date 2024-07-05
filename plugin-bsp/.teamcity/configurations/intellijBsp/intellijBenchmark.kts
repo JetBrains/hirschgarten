@@ -11,7 +11,7 @@ open class Benchmark (
 
     name = "[benchmark] 10 targets",
     vcsRoot = vcsRoot,
-    artifactRules = "+:%/home/teamcity/.cache/bazel/_bazel_teamcity/*/execroot/_main/bazel-out/k8-fastbuild/testlogs/** => testlogs.zip",
+    artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-testlogs/** => testlogs.zip",
     steps = {
         val sysArgs = "-DDO_NOT_REPORT_ERRORS=true  -Dbsp.benchmark.project.path=/tmp/project_10 -Dbsp.benchmark.teamcity.url=https://bazel.teamcity.com"
         script {
