@@ -8,8 +8,8 @@ kt_jvm_library(
     ]),
     visibility = ["//server/logger:__subpackages__"],
     deps = [
+        "//protocol",
         "//server/commons",
-        "//server/protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

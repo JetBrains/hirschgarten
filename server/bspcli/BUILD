@@ -20,9 +20,9 @@ kt_jvm_binary(
     resources = [":bspcli_resources"],
     visibility = ["//visibility:public"],
     deps = [
+        "//protocol",
         "//server/executioncontext/workspacecontext",
         "//server/install/src/main/kotlin/org/jetbrains/bsp/bazel/install",
-        "//server/protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/benchmark",
         "@maven//:ch_epfl_scala_bsp4j",

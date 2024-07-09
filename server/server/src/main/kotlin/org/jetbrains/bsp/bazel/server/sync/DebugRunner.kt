@@ -3,8 +3,8 @@ package org.jetbrains.bsp.bazel.server.sync
 import ch.epfl.scala.bsp4j.RunResult
 import ch.epfl.scala.bsp4j.StatusCode
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bsp.RemoteDebugData
-import org.jetbrains.bsp.RunWithDebugParams
+import org.jetbrains.bsp.protocol.RemoteDebugData
+import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.server.model.BspMappings

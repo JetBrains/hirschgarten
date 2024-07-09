@@ -14,10 +14,10 @@ kt_jvm_library(
     resources = ["//server/log4j_config"],
     visibility = ["//server/server:__subpackages__"],
     deps = [
+        "//protocol",
         "//server/bazelrunner",
         "//server/commons",
         "//server/logger",
-        "//server/protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/diagnostics",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/paths",
