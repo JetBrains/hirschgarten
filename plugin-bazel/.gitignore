@@ -1,0 +1,18 @@
+# mac OS
+.DS_Store
+
+# .idea
+.idea/
+!.idea/icon.svg
+
+
+# gradle
+.gradle/
+build/
+
+# flex
+idea-flex.skeleton
+jflex-*.jar
+
+.ijwb
+bazel-*

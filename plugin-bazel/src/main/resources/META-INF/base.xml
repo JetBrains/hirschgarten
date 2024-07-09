@@ -1,0 +1,122 @@
+<idea-plugin require-restart="false">
+    <vendor>JetBrains</vendor>
+
+    <extensions defaultExtensionNs="org.jetbrains.bsp">
+        <bspProjectOpenProcessorExtension
+                implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessorExtension"/>
+
+        <buildToolAssetsExtension
+                implementation="org.jetbrains.bazel.assets.BazelAssetsExtension"/>
+
+        <connectionDetailsProviderExtension
+                implementation="org.jetbrains.bazel.bsp.connection.BazelConnectionDetailsProviderExtension"/>
+
+        <buildTargetClassifierExtension
+                implementation="org.jetbrains.bazel.extension.BazelBuildTargetClassifier"/>
+
+        <buildToolWindowTargetActionProviderExtension
+                implementation="org.jetbrains.bazel.extension.BazelTargetActionProviderExtension"/>
+
+        <bspProjectAwareExtension
+                implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
+
+        <projectSyncHook
+                implementation="org.jetbrains.bazel.flow.open.BazelProjectSyncHook"/>
+        <invalidTargetsProviderExtension
+                implementation="org.jetbrains.bazel.flow.open.BazelInvalidTargetsProviderExtension"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
+        <projectOpenProcessor
+                implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
+
+        <externalSystemUnlinkedProjectAware
+                id="Bazel BSP"
+                implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
+        <externalIconProvider
+                key="bazelbsp"
+                implementationClass="org.jetbrains.bazel.config.BazelExternalSystemIconProvider"/>
+
+        <applicationConfigurable
+                parentId="tools"
+                instance="org.jetbrains.bazel.settings.BazelApplicationSettingsPanel"
+                id="org.jetbrains.bazel.settings.BazelApplicationSettingsPanel"
+                displayName="Bazel"/>
+
+        <fileType
+                name="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.StarlarkFileType"
+                fieldName="INSTANCE"
+                language="Starlark"
+                fileNames="BUILD;WORKSPACE"
+                extensions="bzl;bazel;bzlmod"/>
+        <enterBetweenBracesDelegate
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.indentation.StarlarkEnterBetweenBracesHandler"/>
+        <lang.parserDefinition
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.parser.StarlarkParserDefinition"/>
+        <lang.syntaxHighlighterFactory
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkSyntaxHighlighterFactory"/>
+        <lang.commenter
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.commenter.StarlarkCommenter"/>
+        <lang.braceMatcher
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkBraceMatcher"/>
+        <lang.quoteHandler
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.matching.StarlarkQuoteHandler"/>
+        <lang.findUsagesProvider
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesProvider"/>
+        <colorSettingsPage
+                implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage"/>
+        <additionalTextAttributes
+                scheme="Default"
+                file="colorSchemes/StarlarkDefault.xml"/>
+        <additionalTextAttributes
+                scheme="Darcula"
+                file="colorSchemes/StarlarkDarcula.xml"/>
+        <annotator
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkFunctionAnnotator"/>
+        <annotator
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkStringAnnotator"/>
+        <completion.confidence
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionConfidence"/>
+        <completion.contributor
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelGlobalFunctionCompletionContributor"/>
+        <completion.contributor
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkParamsCompletionContributor"/>
+
+        <fileType
+                name="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType"
+                fieldName="INSTANCE"
+                language="ProjectView"
+                extensions="bazelproject"/>
+        <lang.syntaxHighlighterFactory
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
+
+        <formattingService implementation="org.jetbrains.bazel.languages.starlark.services.StarlarkFormattingService"/>
+
+        <runLineMarkerContributor implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor" language="Starlark" />
+    </extensions>
+
+    <actions>
+        <action class="org.jetbrains.bazel.flow.open.OpenBazelProjectViaBspPluginAction"
+                icon="/icons/bazel.svg">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+
+    </actions>
+</idea-plugin>

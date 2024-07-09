@@ -1,0 +1,3 @@
+FILE
+  StarlarkAugAssignmentStatement(PASS_STATEMENT)
+    PsiElement(Starlark:pass)('pass')
