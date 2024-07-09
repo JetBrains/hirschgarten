@@ -19,7 +19,7 @@ open class Aggregator (
         showDependenciesChanges = false
     }
 
-    if (vcsRoot.name == "bazel-bsp-github") {
+    if (vcsRoot.name == "hirschgarten-github") {
         id("GitHub$name".toExtId())
         features {
             pullRequests {

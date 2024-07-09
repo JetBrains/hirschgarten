@@ -8,7 +8,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 open class Buildifier (
     vcsRoot: GitVcsRoot,
 ) : BaseConfiguration.BaseBuildType(
-    name = "[format] buildifier",
+    name = "[format] server buildifier",
     steps = {
         script {
             name = "checking formatting with buildifier"

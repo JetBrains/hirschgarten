@@ -4,26 +4,28 @@ import configurations.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-open class Build (
-    vcsRoot: GitVcsRoot
+open class UnitTests(
+    vcsRoot: GitVcsRoot,
 ): BaseConfiguration.BaseBuildType(
-    name = "[build] build bazel-bsp",
+    name = "[unit tests] server unit tests",
     setupSteps = true,
-    vcsRoot = vcsRoot,
+    artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-testlogs/** => testlogs.zip",
     steps = {
         bazel {
-            name = "build //..."
-            command = "build"
-            targets = "//..."
+            name = "bazel test //..."
+            command = "test"
+            targets = "//server/..."
+            arguments = "--test_output=errors"
             param("toolPath", "/usr/local/bin")
         }
-    }
+    },
+    vcsRoot = vcsRoot
 )
 
-object GitHub : Build(
+object GitHub : UnitTests(
     vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object Space : Build(
+object Space : UnitTests(
     vcsRoot = BaseConfiguration.SpaceVcs
 )

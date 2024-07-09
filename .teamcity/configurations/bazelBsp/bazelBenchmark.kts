@@ -9,7 +9,7 @@ open class Benchmark(
     vcsRoot: GitVcsRoot
     ) : BaseConfiguration.BaseBuildType(
     artifactRules = "+:%system.teamcity.build.checkoutDir%/metrics.txt",
-    name = "[benchmark] 10 targets",
+    name = "[benchmark] server 10 targets",
     vcsRoot = vcsRoot,
     setupSteps = true,
     steps = {
@@ -17,14 +17,14 @@ open class Benchmark(
             name = "generate 10 project for benchmark"
             id = "generate_project_for_benchmark"
             command = "run"
-            targets = "//bspcli:generator /tmp/project_10 10"
+            targets = "//server/bspcli:generator /tmp/project_10 10"
             param("toolPath", "/usr/local/bin")
         }
         bazel {
             name = "run benchmark 10 targets"
             id = "run_benchmark"
             command = "run"
-            targets = "//bspcli:bspcli /tmp/project_10 %system.teamcity.build.checkoutDir%/metrics.txt"
+            targets = "//server/bspcli:bspcli /tmp/project_10 %system.teamcity.build.checkoutDir%/metrics.txt"
             param("toolPath", "/usr/local/bin")
         }
     }

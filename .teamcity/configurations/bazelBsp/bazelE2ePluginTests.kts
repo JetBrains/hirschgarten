@@ -11,7 +11,7 @@ open class PluginRun(
     vcsRoot: GitVcsRoot,
     requirements: (Requirements.() -> Unit)? = null
 ) : BaseConfiguration.BaseBuildType(
-    name = "[e2e tests] plugin run",
+    name = "[e2e tests] server plugin run",
     vcsRoot = vcsRoot,
     failureConditions = {
         supportTestRetry = true
