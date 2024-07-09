@@ -32,11 +32,11 @@ intellij_plugin_library(
     optional_plugin_deps = [],
     plugin_deps = ["com.intellij.modules.platform"],
     plugin_xmls = [
-        "//src:main/resources/META-INF/base.xml"
+        "//plugin-bazel/src:main/resources/META-INF/base.xml"
         ],
     visibility = ["//visibility:public"],
     deps = [
-        "//src:intellij-bazel",
+        "//plugin-bazel/src:intellij-bazel",
     ],
 )
 
@@ -65,7 +65,7 @@ intellij_plugin(
     name = "intellij-bazel_merged",
     plugin_xml = ":stamped_plugin_xml",
     deps = [
-        "@intellij-bsp//:plugin_library",
+        "//plugin-bsp:plugin_library",
         ":plugin_library",
     ],
 )

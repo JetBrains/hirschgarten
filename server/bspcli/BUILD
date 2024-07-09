@@ -20,11 +20,11 @@ kt_jvm_binary(
     resources = [":bspcli_resources"],
     visibility = ["//visibility:public"],
     deps = [
-        "//executioncontext/workspacecontext",
-        "//install/src/main/kotlin/org/jetbrains/bsp/bazel/install",
-        "//protocol",
-        "//server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
-        "//server/src/main/kotlin/org/jetbrains/bsp/bazel/server/benchmark",
+        "//server/executioncontext/workspacecontext",
+        "//server/install/src/main/kotlin/org/jetbrains/bsp/bazel/install",
+        "//server/protocol",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/benchmark",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -45,6 +45,6 @@ synthetic_bazel_project(
 
 bsp_cli_on_large_project(
     name = "benchmark_medium",
-    bspcli = "//bspcli:bspcli",
+    bspcli = "//server/bspcli:bspcli",
     project = ":synthetic_project_medium",
 )

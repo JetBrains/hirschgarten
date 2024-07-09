@@ -26,28 +26,21 @@ filegroup(
     srcs = ["CHANGELOG.md"]
 )
 
-define_kt_toolchain(
-    name = "kotlin_toolchain",
-    api_version = "1.9",  # "1.1", "1.2", "1.3", "1.4", "1.5" "1.6", "1.7", "1.8", or "1.9"
-    jvm_target = "17", # "1.6", "1.8", "9", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20" or "21"
-    language_version = "1.9",  # "1.1", "1.2", "1.3", "1.4", "1.5" "1.6", "1.7", "1.8", or "1.9"
-)
-
 optional_plugin_dep(
     name = "bsp_with_python",
-    plugin_xml = "//src:main/xml/bsp-withPython.xml",
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withPython.xml",
     module = ["com.intellij.modules.python"],
 )
 
 optional_plugin_dep(
     name = "bsp_with_android",
-    plugin_xml = "//src:main/xml/bsp-withAndroid.xml",
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withAndroid.xml",
     module = ["org.jetbrains.android"],
 )
 
 optional_plugin_dep(
     name = "bsp_performance_testing",
-    plugin_xml = "//src:main/xml/bsp-performanceTesting.xml",
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-performanceTesting.xml",
     module = ["com.jetbrains.performancePlugin"],
 )
 
@@ -63,13 +56,13 @@ intellij_plugin_library(
         ":bsp_with_android",
         ":bsp_performance_testing",
     ],
-    plugin_xmls = ["//src:main/xml/base.xml"],
+    plugin_xmls = ["//plugin-bsp/src:main/xml/base.xml"],
     visibility = ["//visibility:public"],
     deps = [
-        "//workspacemodel/src:workspacemodel",
-        "//protocol/src:protocol",
-        "//src:intellij-bsp",
-        "//jps-compilation/src:jps-compilation",
+        "//plugin-bsp/workspacemodel/src:workspacemodel",
+        "//plugin-bsp/protocol/src:protocol",
+        "//plugin-bsp/src:intellij-bsp",
+        "//plugin-bsp/jps-compilation/src:jps-compilation",
     ],
 )
 

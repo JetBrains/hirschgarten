@@ -1,0 +1,6 @@
+.idea
+
+bazel-bin
+bazel-hirschgarten
+bazel-out
+bazel-testlogs

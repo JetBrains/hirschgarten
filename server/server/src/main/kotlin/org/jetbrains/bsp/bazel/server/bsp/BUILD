@@ -6,10 +6,10 @@ kt_jvm_library(
         "*.java",
         "*.kt",
     ]),
-    visibility = ["//server:__subpackages__"],
+    visibility = ["//server/server:__subpackages__"],
     deps = [
-        "//bazelrunner",
-        "//server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
+        "//server/bazelrunner",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
         "@bazel_bep//jar",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_protobuf_protobuf_java",
