@@ -1,9 +1,8 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
-import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bsp.JoinedBuildClient
+import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.server.bep.BepServer
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
@@ -15,11 +14,11 @@ import java.nio.file.Path
 // TODO: remove this file once we untangle the spaghetti and use the method from ExecuteService
 
 class BazelBspCompilationManager(
-    private val bazelRunner: BazelRunner,
-    private val bazelPathsResolver: BazelPathsResolver,
-    private val hasAnyProblems: MutableMap<Label, Set<TextDocumentIdentifier>>,
-    val client: JoinedBuildClient,
-    val workspaceRoot: Path,
+  private val bazelRunner: BazelRunner,
+  private val bazelPathsResolver: BazelPathsResolver,
+  private val hasAnyProblems: MutableMap<Label, Set<TextDocumentIdentifier>>,
+  val client: JoinedBuildClient,
+  val workspaceRoot: Path,
 ) {
     fun buildTargetsWithBep(
         cancelChecker: CancelChecker,

@@ -53,9 +53,9 @@ intellij_plugin_library(
     visibility = ["//visibility:public"],
     deps = [
         "//plugin-bsp/jps-compilation/src:jps-compilation",
-        "//plugin-bsp/protocol/src:protocol",
         "//plugin-bsp/src:intellij-bsp",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
+        "//protocol",
     ],
 )
 
