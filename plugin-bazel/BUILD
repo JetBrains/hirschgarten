@@ -44,8 +44,22 @@ stamped_plugin_xml(
     version = INTELLIJ_BAZEL_VERSION,
 )
 
+java_binary(
+    name = "intellij-bazel_exclude",
+    srcs = ["//plugin-bazel:DummySourceForExclude.java"],
+    main_class = "DummySourceForExclude",
+    deps = [
+        "@maven//:ch_epfl_scala_bsp4j",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
+    ],
+)
+
 intellij_plugin(
     name = "intellij-bazel",
+    deploy_env = [
+        "intellij-bazel_exclude",
+    ],
     plugin_deps = ["org.jetbrains.bsp"],
     plugin_xml = ":stamped_plugin_xml",
     visibility = ["//visibility:public"],

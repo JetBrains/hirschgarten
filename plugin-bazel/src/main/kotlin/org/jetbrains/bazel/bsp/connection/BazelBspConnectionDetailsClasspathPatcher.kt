@@ -42,8 +42,9 @@ private fun BspConnectionDetails.calculateNewClasspath(): String {
 private fun calculatePluginClasspath(pluginIdString: String): String? {
   val pluginId = PluginId.findId(pluginIdString) ?: return null
   val pluginDescriptor = PluginManager.getInstance().findEnabledPlugin(pluginId) ?: return null
+  val pluginJarsDir = pluginDescriptor.pluginPath.resolve("lib")
 
-  return pluginDescriptor.pluginPath.toString()
+  return pluginJarsDir.resolve("*").toString()
 }
 
 private fun BspConnectionDetails.getUtil8Jar(): String =
