@@ -40,8 +40,8 @@ kt_jvm_library(
         "@rules_intellij//third_party/performance",
         "@maven//:com_google_code_gson_gson",
         "@maven//:ch_epfl_scala_bsp4j",
-        "@maven//:org_jetbrains_bsp_bazel_bsp",
-        "@intellij-bsp//src:intellij-bsp",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp",
+        "//plugin-bsp/src:intellij-bsp",
         ":starlark_annotations",
     ],
 )

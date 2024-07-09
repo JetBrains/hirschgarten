@@ -4,16 +4,16 @@ kt_jvm_library(
     name = "model",
     srcs = glob(["*.kt"]),
     visibility = [
-        "//executioncontext/projectview:__pkg__",
-        "//executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview:__subpackages__",
-        "//executioncontext/projectview/src/test/kotlin/org/jetbrains/bsp/bazel/projectview/model:__pkg__",
+        "//server/executioncontext/projectview:__pkg__",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview:__subpackages__",
+        "//server/executioncontext/projectview/src/test/kotlin/org/jetbrains/bsp/bazel/projectview/model:__pkg__",
     ],
     exports = [
-        "//executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/model/sections",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/model/sections",
     ],
     deps = [
-        "//commons",
-        "//executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/model/sections",
+        "//server/commons",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/model/sections",
         "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_apache_logging_log4j_log4j_core",
     ],

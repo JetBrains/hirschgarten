@@ -6,10 +6,10 @@ kt_jvm_library(
         "*.java",
         "*.kt",
     ]),
-    visibility = ["//logger:__subpackages__"],
+    visibility = ["//server/logger:__subpackages__"],
     deps = [
-        "//commons",
-        "//protocol",
+        "//server/commons",
+        "//server/protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

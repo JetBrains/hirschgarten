@@ -4,14 +4,14 @@ kt_jvm_library(
     name = "installationcontext",
     srcs = glob(["*.kt"]),
     visibility = [
-        "//executioncontext/installationcontext:__pkg__",
-        "//executioncontext/installationcontext/src/test/kotlin/org/jetbrains/bsp/bazel/installationcontext:__pkg__",
+        "//server/executioncontext/installationcontext:__pkg__",
+        "//server/executioncontext/installationcontext/src/test/kotlin/org/jetbrains/bsp/bazel/installationcontext:__pkg__",
     ],
     exports = [
-        "//executioncontext/api",
+        "//server/executioncontext/api",
     ],
     deps = [
-        "//executioncontext/api",
-        "//executioncontext/projectview:parser",
+        "//server/executioncontext/api",
+        "//server/executioncontext/projectview:parser",
     ],
 )

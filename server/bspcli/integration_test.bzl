@@ -21,7 +21,7 @@ synthetic_bazel_project = rule(
     implementation = _generate_synthetic_project_impl,
     attrs = {
         "_generator": attr.label(
-            default = Label("//bspcli:generator"),
+            default = Label("//server/bspcli:generator"),
             executable = True,
             cfg = "exec",
         ),

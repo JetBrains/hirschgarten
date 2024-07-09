@@ -1,6 +1,6 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test")
 load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
-load("//rules/kotlin:junit5.bzl", "kt_test")
+load("//server/rules/kotlin:junit5.bzl", "kt_test")
 
 exports_files(glob(["main/xml/*.xml"]))
 
@@ -21,9 +21,9 @@ kt_jvm_library(
         "@rules_intellij//third_party/performance",
         "@maven//:com_google_code_gson_gson",
         "@maven//:ch_epfl_scala_bsp4j",
-        "//protocol/src:protocol",
-        "//workspacemodel/src:workspacemodel",
-        "//jps-compilation/src:jps-compilation",
+        "//plugin-bsp/protocol/src:protocol",
+        "//plugin-bsp/workspacemodel/src:workspacemodel",
+        "//plugin-bsp/jps-compilation/src:jps-compilation",
     ],
 )
 
@@ -61,7 +61,7 @@ intellij_integration_test_suite(
         "@maven//:ch_epfl_scala_bsp4j",
     ],
     runtime_deps = [
-        "//:intellij-bsp",
+        ":intellij-bsp",
     ],
 )
 

@@ -4,13 +4,13 @@ kt_jvm_library(
     name = "sections",
     srcs = glob(["*.kt"]),
     visibility = [
-        "//executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/generator:__pkg__",
-        "//executioncontext/projectview/src/test/kotlin/org/jetbrains/bsp/bazel/projectview/generator/sections:__pkg__",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/generator:__pkg__",
+        "//server/executioncontext/projectview/src/test/kotlin/org/jetbrains/bsp/bazel/projectview/generator/sections:__pkg__",
     ],
     exports = [
-        "//executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/model",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/model",
     ],
     deps = [
-        "//executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/model",
+        "//server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/model",
     ],
 )

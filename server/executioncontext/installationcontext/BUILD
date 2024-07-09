@@ -4,6 +4,6 @@ kt_jvm_library(
     name = "installationcontext",
     visibility = ["//visibility:public"],
     exports = [
-        "//executioncontext/installationcontext/src/main/kotlin/org/jetbrains/bsp/bazel/installationcontext",
+        "//server/executioncontext/installationcontext/src/main/kotlin/org/jetbrains/bsp/bazel/installationcontext",
     ],
 )

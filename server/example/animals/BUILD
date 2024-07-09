@@ -8,5 +8,5 @@ java_library(
 # even if it is directly referred in projectview's targets section.
 java_library(
     name = "animals_lib",
-    srcs = ["//example/animals2:animals"],
+    srcs = ["//server/example/animals2:animals"],
 )

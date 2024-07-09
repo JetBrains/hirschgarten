@@ -3,11 +3,11 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 kt_jvm_library(
     name = "api",
     srcs = glob(["*.kt"]),
-    visibility = ["//executioncontext/api:__pkg__"],
+    visibility = ["//server/executioncontext/api:__pkg__"],
     exports = [
-        "//executioncontext/projectview:model",
+        "//server/executioncontext/projectview:model",
     ],
     deps = [
-        "//executioncontext/projectview:model",
+        "//server/executioncontext/projectview:model",
     ],
 )
