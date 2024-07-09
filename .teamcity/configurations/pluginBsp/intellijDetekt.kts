@@ -1,4 +1,4 @@
-package configurations.intellijBsp
+package configurations.pluginBsp
 
 import configurations.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle

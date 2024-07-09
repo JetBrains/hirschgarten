@@ -7,7 +7,8 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.PullRequests
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 open class Aggregator (
-    vcsRoot: GitVcsRoot
+    vcsRoot: GitVcsRoot,
+    component: String
 ): BuildType({
 
     name = "Results"
@@ -20,7 +21,7 @@ open class Aggregator (
     }
 
     if (vcsRoot.name == "hirschgarten-github") {
-        id("GitHub$name".toExtId())
+        id("GitHub$component$name".toExtId())
         features {
             pullRequests {
                 vcsRootExtId = "${vcsRoot.id}"
@@ -33,16 +34,38 @@ open class Aggregator (
             }
         }
     } else {
-        id("Space$name".toExtId())
+        id("Space$component$name".toExtId())
     }
 
     type = Type.COMPOSITE
 })
 
-object GitHub : Aggregator(
-    vcsRoot = BaseConfiguration.GitHubVcs,
+object ServerGitHub : Aggregator(
+    component = "Server",
+    vcsRoot = BaseConfiguration.GitHubVcs
 )
 
-object Space : Aggregator(
+object ServerSpace : Aggregator(
+    component = "Server",
+    vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object PluginBspGitHub : Aggregator(
+    component = "Plugin BSP",
+    vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object PluginBspSpace : Aggregator(
+    component = "Plugin BSP",
+    vcsRoot = BaseConfiguration.SpaceVcs
+)
+
+object PluginBazelGitHub : Aggregator(
+    component = "Plugin Bazel",
+    vcsRoot = BaseConfiguration.GitHubVcs
+)
+
+object PluginBazelSpace : Aggregator(
+    component = "Plugin Bazel",
     vcsRoot = BaseConfiguration.SpaceVcs
 )

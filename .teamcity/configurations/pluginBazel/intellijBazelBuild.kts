@@ -1,4 +1,4 @@
-package configurations.intellijBazel
+package configurations.pluginBazel
 
 import configurations.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
@@ -7,7 +7,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 open class Build (
     vcsRoot: GitVcsRoot,
 ): BaseConfiguration.BaseBuildType(
-        name = "[build] build intellij-bazel",
+        name = "[build] build Plugin Bazel",
         artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-bin/intellij-bazel.zip",
         vcsRoot = vcsRoot,
         steps = {
@@ -15,7 +15,7 @@ open class Build (
                 id = "build_plugin"
                 name = "build plugin"
                 command = "build"
-                targets = "//..."
+                targets = "//plugin-bazel/..."
                 param("toolPath", "/usr/local/bin")
             }
         },

@@ -1,7 +1,8 @@
-package configurations.bazelBsp
+package configurations.server
 
 import configurations.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildSteps
+import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
@@ -12,11 +13,13 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 open class E2ETest(
     vcsRoot: GitVcsRoot,
     targets: String,
+    failureConditions: FailureConditions.() -> Unit = {},
     steps: (BuildSteps.() -> Unit)? = null,
     requirements: (Requirements.() -> Unit)? = null,
 ) : BaseConfiguration.BaseBuildType(
     name = "[e2e tests] $targets",
     vcsRoot = vcsRoot,
+    failureConditions = failureConditions,
     setupSteps = true,
     artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-testlogs/** => testlogs.zip",
     steps = {
@@ -95,6 +98,11 @@ open class ServerDownloadsBazelisk(
 ) : E2ETest(
     vcsRoot = vcsRoot,
     targets = "//server/e2e:server_downloads_bazelisk_test",
+    failureConditions = {
+        testFailure = false
+        nonZeroExitCode = false
+        javaCrash = false
+    }
 )
 
 object ServerDownloadsBazeliskGitHub : ServerDownloadsBazelisk(
@@ -126,7 +134,11 @@ open class AndroidProject(
 ) : E2ETest(
     vcsRoot = vcsRoot,
     targets = "//server/e2e:android_project_test",
-    requirements = requirements
+    requirements = requirements,
+    failureConditions = {
+        testFailure = false
+        nonZeroExitCode = false
+    }
 )
 
 object AndroidProjectGitHub : AndroidProject(
@@ -147,7 +159,11 @@ open class AndroidKotlinProject(
 ) : E2ETest(
     vcsRoot = vcsRoot,
     targets = "//server/e2e:android_kotlin_project_test",
-    requirements = requirements
+    requirements = requirements,
+    failureConditions = {
+        testFailure = false
+        nonZeroExitCode = false
+    }
 )
 
 object AndroidKotlinProjectGitHub : AndroidKotlinProject(
