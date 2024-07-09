@@ -2,67 +2,60 @@ load(
     "@rules_intellij//build_defs:build_defs.bzl",
     "intellij_plugin",
     "intellij_plugin_library",
-    "stamped_plugin_xml",
-    "repackaged_files",
-    "plugin_deploy_zip",
     "optional_plugin_dep",
-)
-load(
-    "@rules_intellij//intellij_platform_sdk:build_defs.bzl",
-    "select_for_ide",
-    "select_from_plugin_api_directory",
+    "plugin_deploy_zip",
+    "repackaged_files",
+    "stamped_plugin_xml",
 )
 load(
     "@rules_intellij//build_defs:intellij_plugin_debug_target.bzl",
     "intellij_plugin_debug_target",
 )
-load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
-
 load("//:versions.bzl", "INTELLIJ_BSP_VERSION")
 
 # Changelog file
 filegroup(
     name = "changelog",
-    srcs = ["CHANGELOG.md"]
+    srcs = ["CHANGELOG.md"],
 )
 
 optional_plugin_dep(
     name = "bsp_with_python",
-    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withPython.xml",
     module = ["com.intellij.modules.python"],
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withPython.xml",
 )
 
 optional_plugin_dep(
     name = "bsp_with_android",
-    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withAndroid.xml",
     module = ["org.jetbrains.android"],
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withAndroid.xml",
 )
 
 optional_plugin_dep(
     name = "bsp_performance_testing",
-    plugin_xml = "//plugin-bsp/src:main/xml/bsp-performanceTesting.xml",
     module = ["com.jetbrains.performancePlugin"],
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-performanceTesting.xml",
 )
 
 intellij_plugin_library(
     name = "plugin_library",
-    plugin_deps = [
-        "com.intellij.modules.platform",
-        "com.intellij.java",
-        "org.jetbrains.kotlin",
-    ],
     optional_plugin_deps = [
         ":bsp_with_python",
         ":bsp_with_android",
         ":bsp_performance_testing",
     ],
+    plugin_deps = [
+        "com.intellij.modules.platform",
+        "com.intellij.java",
+        "org.jetbrains.kotlin",
+    ],
     plugin_xmls = ["//plugin-bsp/src:main/xml/base.xml"],
     visibility = ["//visibility:public"],
     deps = [
-        "//plugin-bsp/workspacemodel/src:workspacemodel",
+        "//plugin-bsp/jps-compilation/src:jps-compilation",
         "//plugin-bsp/protocol/src:protocol",
         "//plugin-bsp/src:intellij-bsp",
-        "//plugin-bsp/jps-compilation/src:jps-compilation",
+        "//plugin-bsp/workspacemodel/src:workspacemodel",
     ],
 )
 
@@ -81,18 +74,18 @@ intellij_plugin(
     name = "intellij-bsp",
     plugin_xml = ":stamped_plugin_xml",
     tags = [],
+    visibility = ["//visibility:public"],
     deps = [
         ":plugin_library",
     ],
-    visibility = ["//visibility:public"],
 )
 
 intellij_plugin_debug_target(
     name = "ijwb_bazel_dev",
+    visibility = ["//visibility:public"],
     deps = [
         ":intellij-bsp_jar",
     ],
-    visibility = ["//visibility:public"],
 )
 
 repackaged_files(
@@ -107,6 +100,6 @@ plugin_deploy_zip(
     srcs = [
         ":intellij-bsp_jar",
     ],
-    zip_filename = "intellij-bsp.zip",
     visibility = ["//visibility:public"],
+    zip_filename = "intellij-bsp.zip",
 )

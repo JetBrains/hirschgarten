@@ -2,28 +2,21 @@ load(
     "@rules_intellij//build_defs:build_defs.bzl",
     "intellij_plugin",
     "intellij_plugin_library",
-    "stamped_plugin_xml",
-    "repackaged_files",
     "plugin_deploy_zip",
-)
-load(
-    "@rules_intellij//intellij_platform_sdk:build_defs.bzl",
-    "select_for_ide",
-    "select_from_plugin_api_directory",
+    "repackaged_files",
+    "stamped_plugin_xml",
 )
 load(
     "@rules_intellij//build_defs:intellij_plugin_debug_target.bzl",
     "intellij_plugin_debug_target",
 )
-
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
-
 load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION")
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
     api_version = "1.9",  # "1.1", "1.2", "1.3", "1.4", "1.5" "1.6", "1.7", "1.8", or "1.9"
-    jvm_target = "17", # "1.6", "1.8", "9", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20" or "21"
+    jvm_target = "17",  # "1.6", "1.8", "9", "10", "11", "12", "13", "15", "16", "17", "18", "19", "20" or "21"
     language_version = "1.9",  # "1.1", "1.2", "1.3", "1.4", "1.5" "1.6", "1.7", "1.8", or "1.9"
 )
 
@@ -32,8 +25,8 @@ intellij_plugin_library(
     optional_plugin_deps = [],
     plugin_deps = ["com.intellij.modules.platform"],
     plugin_xmls = [
-        "//plugin-bazel/src:main/resources/META-INF/base.xml"
-        ],
+        "//plugin-bazel/src:main/resources/META-INF/base.xml",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         "//plugin-bazel/src:intellij-bazel",
@@ -53,20 +46,20 @@ stamped_plugin_xml(
 
 intellij_plugin(
     name = "intellij-bazel",
-    plugin_xml = ":stamped_plugin_xml",
     plugin_deps = ["org.jetbrains.bsp"],
+    plugin_xml = ":stamped_plugin_xml",
+    visibility = ["//visibility:public"],
     deps = [
         ":plugin_library",
     ],
-    visibility = ["//visibility:public"],
 )
 
 intellij_plugin(
     name = "intellij-bazel_merged",
     plugin_xml = ":stamped_plugin_xml",
     deps = [
-        "//plugin-bsp:plugin_library",
         ":plugin_library",
+        "//plugin-bsp:plugin_library",
     ],
 )
 
@@ -88,6 +81,6 @@ plugin_deploy_zip(
     srcs = [
         ":intellij-bazel_jar",
     ],
-    zip_filename = "intellij-bazel.zip",
     visibility = ["//visibility:public"],
+    zip_filename = "intellij-bazel.zip",
 )

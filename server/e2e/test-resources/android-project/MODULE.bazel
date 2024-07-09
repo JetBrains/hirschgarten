@@ -1,11 +1,8 @@
 bazel_dep(name = "rules_java", version = "7.5.0")
-
 bazel_dep(name = "rules_robolectric", version = "4.11.1")
-
 bazel_dep(name = "rules_jvm_external", version = "6.0")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
-
 maven.install(
     artifacts = [
         "androidx.appcompat:appcompat:1.4.1",
@@ -18,9 +15,7 @@ maven.install(
         "https://repo1.maven.org/maven2",
     ],
 )
-
 use_repo(maven, "maven")
 
 remote_android_extensions = use_extension("@bazel_tools//tools/android:android_extensions.bzl", "remote_android_tools_extensions")
-
-use_repo(remote_android_extensions, "android_tools", "android_gmaven_r8")
+use_repo(remote_android_extensions, "android_gmaven_r8", "android_tools")

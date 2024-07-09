@@ -1,6 +1,5 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test")
 load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
-load("//server/rules/kotlin:junit5.bzl", "kt_test")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 exports_files(glob(["main/xml/*.xml"]))
 
@@ -15,15 +14,15 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
-        "@rules_intellij//third_party/android",
-        "@rules_intellij//third_party/python",
-        "@rules_intellij//third_party/performance",
-        "@maven//:com_google_code_gson_gson",
-        "@maven//:ch_epfl_scala_bsp4j",
+        "//plugin-bsp/jps-compilation/src:jps-compilation",
         "//plugin-bsp/protocol/src:protocol",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
-        "//plugin-bsp/jps-compilation/src:jps-compilation",
+        "@maven//:ch_epfl_scala_bsp4j",
+        "@maven//:com_google_code_gson_gson",
+        "@rules_intellij//intellij_platform_sdk:plugin_api",
+        "@rules_intellij//third_party/android",
+        "@rules_intellij//third_party/performance",
+        "@rules_intellij//third_party/python",
     ],
 )
 
@@ -35,13 +34,13 @@ kt_jvm_library(
     ]),
     deps = [
         ":intellij-bsp",
-        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
         "@maven//:io_kotest_kotest_common_jvm",
-        "@maven//:ch_epfl_scala_bsp4j",
-        "@rules_intellij//testing:lib"
+        "@maven//:org_junit_jupiter_junit_jupiter",
+        "@rules_intellij//testing:lib",
     ],
 )
 
@@ -52,16 +51,16 @@ intellij_integration_test_suite(
     ]),
     associates = [":intellij-bsp"],
     test_package_root = "org.jetbrains",
+    runtime_deps = [
+        ":intellij-bsp",
+    ],
     deps = [
         ":test_fixtures",
+        "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
         "@maven//:io_kotest_kotest_common_jvm",
-        "@maven//:ch_epfl_scala_bsp4j",
-    ],
-    runtime_deps = [
-        ":intellij-bsp",
     ],
 )
 

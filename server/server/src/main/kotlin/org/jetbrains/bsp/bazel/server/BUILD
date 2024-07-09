@@ -7,10 +7,10 @@ kt_jvm_library(
         "**/*.kt",
     ]),
     visibility = [
-#         "//server/bspcli:__subpackages__",
-#         "//server/install:__subpackages__",
-#         "//server/server:__subpackages__",
-        "//visibility:public"
+        #         "//server/bspcli:__subpackages__",
+        #         "//server/install:__subpackages__",
+        #         "//server/server:__subpackages__",
+        "//visibility:public",
     ],
     deps = [
         "//server/bazelrunner",

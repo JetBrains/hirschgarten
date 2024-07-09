@@ -1,1 +1,2 @@
-for elem in list: elem * 2
+for elem in list:
+    elem * 2

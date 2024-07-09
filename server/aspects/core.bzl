@@ -1,5 +1,5 @@
-load("//aspects:utils/utils.bzl", "abs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups")
 load("//aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS")
+load("//aspects:utils/utils.bzl", "abs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
     all_info = [create_extension_info(target = target, ctx = ctx, output_groups = output_groups, dep_targets = dep_targets) for create_extension_info in EXTENSIONS]
