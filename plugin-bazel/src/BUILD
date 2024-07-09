@@ -15,6 +15,14 @@ java_proto_library(
 )
 
 kt_jvm_library(
+    name = "intellij-bsp",
+    neverlink = True,
+    exports = [
+        "//plugin-bsp/src:intellij-bsp",
+    ],
+)
+
+kt_jvm_library(
     name = "intellij-bazel",
     srcs = glob([
         "main/kotlin/**/*.java",
@@ -26,10 +34,9 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
+        ":intellij-bsp",
         ":starlark_annotations",
-        "//plugin-bsp/src:intellij-bsp",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp",
-        "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
         "@rules_intellij//third_party/android",
@@ -47,9 +54,9 @@ intellij_integration_test_suite(
     test_package_root = "org.jetbrains",
     runtime_deps = [
         ":intellij-bazel",
+        "//plugin-bsp/src:intellij-bsp",
     ],
     deps = [
-        "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
