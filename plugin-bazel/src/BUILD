@@ -1,13 +1,5 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test")
-load(
-    "@rules_intellij//build_defs:build_defs.bzl",
-    "intellij_plugin",
-    "intellij_plugin_library",
-    "stamped_plugin_xml",
-    "repackaged_files",
-    "plugin_deploy_zip",
-)
 load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 
 exports_files(["main/resources/META-INF/base.xml"])
@@ -34,15 +26,15 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
+        ":starlark_annotations",
+        "//plugin-bsp/src:intellij-bsp",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp",
+        "@maven//:ch_epfl_scala_bsp4j",
+        "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
         "@rules_intellij//third_party/android",
-        "@rules_intellij//third_party/python",
         "@rules_intellij//third_party/performance",
-        "@maven//:com_google_code_gson_gson",
-        "@maven//:ch_epfl_scala_bsp4j",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp",
-        "//plugin-bsp/src:intellij-bsp",
-        ":starlark_annotations",
+        "@rules_intellij//third_party/python",
     ],
 )
 
@@ -53,14 +45,14 @@ intellij_integration_test_suite(
     ]),
     associates = [":intellij-bazel"],
     test_package_root = "org.jetbrains",
+    runtime_deps = [
+        ":intellij-bazel",
+    ],
     deps = [
+        "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:io_kotest_kotest_assertions_api_jvm",
         "@maven//:io_kotest_kotest_assertions_core_jvm",
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
         "@maven//:io_kotest_kotest_common_jvm",
-        "@maven//:ch_epfl_scala_bsp4j",
-    ],
-    runtime_deps = [
-        ":intellij-bazel",
     ],
 )
