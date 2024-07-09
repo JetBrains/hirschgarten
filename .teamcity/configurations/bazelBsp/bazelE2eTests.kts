@@ -38,7 +38,7 @@ open class SampleRepo(
     vcsRoot: GitVcsRoot,
 ) : E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//e2e:sample_repo_test"
+    targets = "//server/e2e:sample_repo_test"
 )
 
 object SampleRepoGitHub : SampleRepo(
@@ -53,7 +53,7 @@ open class LocalJdk(
     vcsRoot: GitVcsRoot,
 ) : E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//e2e:local_jdk_test",
+    targets = "//server/e2e:local_jdk_test",
     steps = {
         script {
             this.name = "set JDK to 17"
@@ -79,7 +79,7 @@ open class RemoteJdk(
     vcsRoot: GitVcsRoot
 ): E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//e2e:remote_jdk_test"
+    targets = "//server/e2e:remote_jdk_test"
 )
 
 object RemoteJdkGitHub : RemoteJdk(
@@ -94,7 +94,7 @@ open class ServerDownloadsBazelisk(
     vcsRoot: GitVcsRoot
 ) : E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//e2e:server_downloads_bazelisk_test",
+    targets = "//server/e2e:server_downloads_bazelisk_test",
 )
 
 object ServerDownloadsBazeliskGitHub : ServerDownloadsBazelisk(
@@ -109,7 +109,7 @@ open class KotlinProject(
     vcsRoot: GitVcsRoot
 ) : E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//e2e:kotlin_project_test",
+    targets = "//server/e2e:kotlin_project_test",
 )
 
 object KotlinProjectGitHub : KotlinProject(
@@ -125,7 +125,7 @@ open class AndroidProject(
     requirements: (Requirements.() -> Unit)? = null
 ) : E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//e2e:android_project_test",
+    targets = "//server/e2e:android_project_test",
     requirements = requirements
 )
 
@@ -146,7 +146,7 @@ open class AndroidKotlinProject(
     requirements: (Requirements.() -> Unit)? = null
 ) : E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//e2e:android_kotlin_project_test",
+    targets = "//server/e2e:android_kotlin_project_test",
     requirements = requirements
 )
 
@@ -166,7 +166,7 @@ open class ScalaProject(
     vcsRoot: GitVcsRoot
 ) : E2ETest(
     vcsRoot = vcsRoot,
-    targets = "//e2e:enabled_rules_test",
+    targets = "//server/e2e:enabled_rules_test",
 )
 
 object ScalaProjectGitHub : ScalaProject(

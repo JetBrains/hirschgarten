@@ -1,6 +1,7 @@
 package configurations
 
 import jetbrains.buildServer.configs.kotlin.v10.toExtId
+import jetbrains.buildServer.configs.kotlin.v2017_2.ui.createTrigger
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildSteps
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
@@ -32,7 +33,7 @@ open class BaseBuildType(
         root(vcsRoot)
     }
 
-    if (vcsRoot.name == "bazel-bsp-github" ) {
+    if (vcsRoot.name == "hirschgarten-github" ) {
         id("GitHub$name".toExtId())
         if (requirements == null) {
             requirements {
@@ -107,9 +108,9 @@ open class BaseBuildType(
 })
 
 object GitHubVcs : GitVcsRoot({
-    name = "bazel-bsp-github"
-    url = "https://github.com/JetBrains/bazel-bsp.git"
-    branch = "master"
+    name = "hirschgarten-github"
+    url = "https://github.com/JetBrains/hirschgarten.git"
+    branch = "main"
     branchSpec = "+:refs/heads/*"
     authMethod = password {
         userName = "hb-man"
@@ -120,9 +121,9 @@ object GitHubVcs : GitVcsRoot({
 })
 
 object SpaceVcs : GitVcsRoot({
-    name = "bazel-bsp-space"
-    url = "https://git.jetbrains.team/bazel/bazel-bsp.git"
-    branch = "master"
+    name = "hirschgarten-space"
+    url = "https://git.jetbrains.team/bazel/hirschgarten.git"
+    branch = "main"
     branchSpec = "+:refs/heads/*"
     authMethod = password {
         userName = "x-oauth-basic"
