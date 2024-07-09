@@ -52,7 +52,7 @@ intellij_integration_test_suite(
     associates = [":intellij-bsp"],
     test_package_root = "org.jetbrains",
     runtime_deps = [
-        ":intellij-bsp",
+        "//plugin-bsp:intellij-bsp",
     ],
     deps = [
         ":test_fixtures",
