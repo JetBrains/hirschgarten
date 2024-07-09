@@ -8,10 +8,6 @@ build --noexperimental_check_output_files
 build --noexperimental_check_external_repository_files
 build --experimental_reuse_sandbox_directories
 
-# build --java_language_version=11
-# build --tool_java_language_version=11
-# build --javacopt="-Xep:WildcardImport:ERROR"
-
 # To update these lines, execute
 # `bazel run @rules_bazel_integration_test//tools:update_deleted_packages`
 build --deleted_packages=server/e2e/test-resources/android-kotlin-project/src/main,server/e2e/test-resources/android-kotlin-project/src/main/java/com/example/myapplication,server/e2e/test-resources/android-kotlin-project/src/test/java/com/example/myapplication,server/e2e/test-resources/android-project/src/main,server/e2e/test-resources/android-project/src/main/java/com/example/myapplication,server/e2e/test-resources/android-project/src/test/java/com/example/myapplication,server/e2e/test-resources/cpp-project/example,server/e2e/test-resources/enabled-rules-project/langs,server/e2e/test-resources/enabled-rules-project/scala_targets,server/e2e/test-resources/kotlin-project,server/e2e/test-resources/kotlin-project/kotlinc_test,server/e2e/test-resources/kotlin-project/plugin_allopen_test,server/e2e/test-resources/local-jdk-project/example,server/e2e/test-resources/python-project/example,server/e2e/test-resources/python-project/lib,server/e2e/test-resources/python-project/test,server/e2e/test-resources/remote-jdk-project/example,server/e2e/test-resources/rust-project,server/e2e/test-resources/rust-project/example,server/e2e/test-resources/rust-project/example-lib,server/e2e/test-resources/sample-repo/environment_variables,server/e2e/test-resources/sample-repo/java_targets,server/e2e/test-resources/sample-repo/java_targets/subpackage,server/e2e/test-resources/sample-repo/manual_target,server/e2e/test-resources/sample-repo/scala_targets,server/e2e/test-resources/sample-repo/target_with_dependency,server/e2e/test-resources/sample-repo/target_with_resources,server/e2e/test-resources/sample-repo/target_without_args,server/e2e/test-resources/sample-repo/target_without_jvm_flags,server/e2e/test-resources/sample-repo/target_without_main_class
