@@ -1,12 +1,12 @@
-package configurations.intellijBazel
+package configurations.pluginBazel
 
 import configurations.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildSteps
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
@@ -19,7 +19,7 @@ open class Tests(
     artifactRules: String = "",
     requirements: (Requirements.() -> Unit)? = null
 ) : BaseConfiguration.BaseBuildType(
-    name = "[tests] $name",
+    name = "[tests] Plugin Bazel $name",
     vcsRoot = vcsRoot,
     failureConditions = failureConditions,
     artifactRules = artifactRules,
@@ -39,7 +39,7 @@ open class UnitTests(
             this.name = "run unit tests"
             id = "run_unit_tests"
             command = "test"
-            targets = "//..."
+            targets = "//plugin-bazel/..."
             param("toolPath", "/usr/local/bin")
         }
     }

@@ -1,4 +1,4 @@
-package configurations.bazelBsp
+package configurations.server
 
 import configurations.BaseConfiguration
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
