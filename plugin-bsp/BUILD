@@ -64,10 +64,7 @@ stamped_plugin_xml(
     changelog_file = "CHANGELOG.md",
     description_file = "description.html",
     plugin_id = "org.jetbrains.bsp",
-    plugin_name = "Build Server Protocol (BSP)",
-    stamp_since_build = True,
-    stamp_until_build = True,
-    version = INTELLIJ_BSP_VERSION,
+    plugin_name = "Build Server Protocol (BSP)"
 )
 
 intellij_plugin(
