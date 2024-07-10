@@ -8,12 +8,12 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "//protocol",
         "//server/bazelrunner",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bsp/bazel/bazelrunner/utils",
         "//server/commons",
         "//server/executioncontext/workspacecontext",
         "//server/logger",
+        "//server/protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/benchmark",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bep",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/info",

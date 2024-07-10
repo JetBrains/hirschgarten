@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.protocol
+package org.jetbrains.bsp
 
 import ch.epfl.scala.bsp4j.BuildServer
 import ch.epfl.scala.bsp4j.CppBuildServer

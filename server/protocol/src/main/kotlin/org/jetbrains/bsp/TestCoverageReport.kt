@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.protocol
+package org.jetbrains.bsp
 
 public data class TestCoverageReport (
         val lcovReportUri: String
