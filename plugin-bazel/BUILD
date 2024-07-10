@@ -38,10 +38,7 @@ stamped_plugin_xml(
     changelog_file = "CHANGELOG.md",
     description_file = "description.html",
     plugin_id = "org.jetbrains.bazel",
-    plugin_name = "Bazel by JetBrains (experimental)",
-    stamp_since_build = True,
-    stamp_until_build = True,
-    version = INTELLIJ_BAZEL_VERSION,
+    plugin_name = "Bazel by JetBrains (experimental)"
 )
 
 java_binary(
