@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.server.bep
 
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
-import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
+import org.jetbrains.bsp.JUnitStyleTestCaseData
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper

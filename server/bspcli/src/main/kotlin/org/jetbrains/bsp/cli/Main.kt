@@ -18,9 +18,9 @@ import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.eclipse.lsp4j.jsonrpc.Launcher.Builder
-import org.jetbrains.bsp.protocol.BazelBuildServer
-import org.jetbrains.bsp.protocol.JoinedBuildClient
-import org.jetbrains.bsp.protocol.PublishOutputParams
+import org.jetbrains.bsp.BazelBuildServer
+import org.jetbrains.bsp.JoinedBuildClient
+import org.jetbrains.bsp.PublishOutputParams
 import org.jetbrains.bsp.bazel.install.Install
 import org.jetbrains.bsp.bazel.server.BazelBspServer
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig

@@ -21,9 +21,9 @@ import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import org.jetbrains.bsp.protocol.JoinedBuildClient
-import org.jetbrains.bsp.protocol.PublishOutputParams
-import org.jetbrains.bsp.protocol.TestCoverageReport
+import org.jetbrains.bsp.JoinedBuildClient
+import org.jetbrains.bsp.PublishOutputParams
+import org.jetbrains.bsp.TestCoverageReport
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.commons.ExitCodeMapper
 import org.jetbrains.bsp.bazel.logger.BspClientLogger

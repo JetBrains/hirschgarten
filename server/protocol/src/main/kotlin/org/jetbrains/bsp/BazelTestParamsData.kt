@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.protocol
+package org.jetbrains.bsp
 
 public data class BazelTestParamsData(
         val coverage: Boolean?,

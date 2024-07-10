@@ -2,7 +2,7 @@ package org.jetbrains.bsp.bazel.server.sync.languages.kotlin
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
+import org.jetbrains.bsp.KotlinBuildTarget
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.KotlinTargetInfo
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
