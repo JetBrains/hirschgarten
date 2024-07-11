@@ -5,6 +5,7 @@ import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.TestCase
+import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.GitProjectInfo
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
@@ -24,10 +25,10 @@ import org.kodein.di.DI
 import org.kodein.di.bindSingleton
 import java.io.FileOutputStream
 import java.net.URI
-import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.util.jar.JarFile
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.createParentDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.deleteRecursively
@@ -48,6 +49,11 @@ class BazelTest {
         URI(teamcityUrl).normalize()
       }
       bindSingleton<CIServer>(overrides = true) { TeamCityCIServer() }
+      System.getProperty("bsp.benchmark.cache.directory")?.let { intellijBspRoot ->
+        bindSingleton<GlobalPaths>(overrides = true) {
+          object : GlobalPaths(Path.of(intellijBspRoot)) {}
+        }
+      }
     }
   }
 
@@ -60,7 +66,8 @@ class BazelTest {
       .useEAP()
     val context = Starter.newContext(projectName, testCase)
       .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
-    installBazelPlugin(context)
+    installPlugin(context, System.getProperty("bsp.benchmark.bsp.plugin.zip"))
+    installPlugin(context, System.getProperty("bsp.benchmark.bazel.plugin.zip"))
 
     val commands = CommandChain()
       .startMemoryProfiling()
@@ -150,9 +157,8 @@ class BazelTest {
     }
   }
 
-  private fun installBazelPlugin(context: IDETestContext) {
-    val pluginZipFilename = System.getProperty("bsp.benchmark.plugin.zip")
-    val zipUrl = javaClass.classLoader.getResource(pluginZipFilename)!!
+  private fun installPlugin(context: IDETestContext, pluginZipLocation: String) {
+    val zipUrl = javaClass.classLoader.getResource(pluginZipLocation)!!
     // check if the zip is inside a jar
     // if it is, it will look something like this: jar:file:/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/e06fcdf30b05e14cf4fddcd75b67a39c/execroot/_main/bazel-out/k8-fastbuild/bin/performance-testing/performance-testing.jar!/plugin.zip
     // we need to extract it to a temporary file then
@@ -161,15 +167,14 @@ class BazelTest {
       val jarPath = zipUrl.path.substringAfter("file:").substringBefore("!/")
       // extract the jar (which is a zip) to a temporary directory
       val tempDir = createTempDirectory("bsp-plugin")
-      val targetPath = tempDir / pluginZipFilename
+      val targetPath = (tempDir / pluginZipLocation).also { it.createParentDirectories() }
 
-      extractFileFromJar(jarPath, pluginZipFilename, targetPath.toString())
+      extractFileFromJar(jarPath, pluginZipLocation, targetPath.toString())
       context.pluginConfigurator.installPluginFromPath(targetPath)
       tempDir.deleteRecursively()
     } else {
       context.pluginConfigurator.installPluginFromPath(zipUrl.toURI().toPath())
     }
-    context.pluginConfigurator.installPluginFromPluginManager("org.jetbrains.bazel", context.ide, "nightly")
   }
 
   private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
