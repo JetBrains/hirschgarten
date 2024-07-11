@@ -49,7 +49,8 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       },
       dependencies = listOf(
         BuildTargetIdentifier("$targetPrefix//lib:go_default_library")
-      )
+      ),
+      importPath = "example/hello"
     )
 
   private fun libBuildTarget(): BuildTarget =
@@ -70,7 +71,8 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       tags = listOf("test"),
       capabilities = BuildTargetCapabilities().also {
         it.canCompile = true; it.canTest = true; it.canRun = false; it.canDebug = true
-      }
+      },
+      importPath = "testmain"
     )
 
   private fun createGoBuildTarget(
@@ -78,7 +80,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
     targetName: String,
     tags: List<String>,
     capabilities: BuildTargetCapabilities,
-    importPath: String = "",
+    importPath: String,
     sdkHomePath: URI = defaultSdkHomePath,
     dependencies: List<BuildTargetIdentifier> = listOf(),
   ): BuildTarget {
