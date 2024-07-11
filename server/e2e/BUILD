@@ -1,4 +1,4 @@
-load("@//rules/bazel_integration_test:defs.bzl", "bazel_integration_test_all_versions", "bazel_integration_test_current_version")
+load("@//server/rules/bazel_integration_test:defs.bzl", "bazel_integration_test_all_versions", "bazel_integration_test_current_version")
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "bazel_integration_test", "integration_test_utils")
 
 bazel_integration_test_all_versions(
@@ -9,32 +9,32 @@ bazel_integration_test_all_versions(
         "foo3": "val3",
         "foo4": "val4",
     },
-    test_runner = "//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspSampleRepoTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspSampleRepoTest",
     workspace_path = "test-resources/sample-repo",
 )
 
 bazel_integration_test_all_versions(
     name = "local_jdk_test",
     additional_env_inherit = ["JAVA_HOME"],
-    test_runner = "//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspLocalJdkTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspLocalJdkTest",
     workspace_path = "test-resources/local-jdk-project",
 )
 
 bazel_integration_test_all_versions(
     name = "remote_jdk_test",
-    test_runner = "@//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspRemoteJdkTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspRemoteJdkTest",
     workspace_path = "test-resources/remote-jdk-project",
 )
 
 bazel_integration_test_all_versions(
     name = "cpp_project_test",
-    test_runner = "//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspCppProjectTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspCppProjectTest",
     workspace_path = "test-resources/cpp-project",
 )
 
 bazel_integration_test_all_versions(
     name = "python_project_test",
-    test_runner = "//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspPythonProjectTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspPythonProjectTest",
     workspace_path = "test-resources/python-project",
 )
 
@@ -42,13 +42,13 @@ bazel_integration_test(
     name = "kotlin_project_test",
     timeout = "eternal",
     bazel_version = "6.4.0",
-    test_runner = "//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspKotlinProjectTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspKotlinProjectTest",
     workspace_path = "test-resources/kotlin-project",
 )
 
 bazel_integration_test_all_versions(
     name = "enabled_rules_test",
-    test_runner = "//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspScalaProjectTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspScalaProjectTest",
     workspace_path = "test-resources/enabled-rules-project",
 )
 
@@ -59,25 +59,25 @@ bazel_integration_test(
     env = {
         "PATH": "",  # To ensure that the server won't find Bazel in PATH
     },
-    test_runner = "//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:ServerDownloadsBazeliskTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:ServerDownloadsBazeliskTest",
     workspace_path = "test-resources/sample-repo",
 )
 
 bazel_integration_test_all_versions(
     name = "rust_project_test",
-    test_runner = "//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspRustProjectTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspRustProjectTest",
     workspace_path = "test-resources/rust-project",
 )
 
 bazel_integration_test_current_version(
     name = "android_project_test",
-    test_runner = "//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspAndroidProjectTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspAndroidProjectTest",
     workspace_path = "test-resources/android-project",
 )
 
 bazel_integration_test_current_version(
     name = "android_kotlin_project_test",
-    test_runner = "//e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspAndroidKotlinProjectTest",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspAndroidKotlinProjectTest",
     workspace_path = "test-resources/android-kotlin-project",
 )
 

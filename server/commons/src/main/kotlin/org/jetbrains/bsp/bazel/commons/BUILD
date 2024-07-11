@@ -6,7 +6,7 @@ kt_jvm_library(
         "*.java",
         "*.kt",
     ]),
-    visibility = ["//commons:__subpackages__"],
+    visibility = ["//server/commons:__subpackages__"],
     deps = [
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_guava_guava",

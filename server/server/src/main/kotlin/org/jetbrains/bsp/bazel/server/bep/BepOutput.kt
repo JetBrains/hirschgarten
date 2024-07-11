@@ -1,14 +1,15 @@
 package org.jetbrains.bsp.bazel.server.bep
 
+import org.jetbrains.bsp.bazel.server.model.Label
 import com.google.common.collect.Queues
 import java.nio.file.Path
 
 class BepOutput(
     private val outputGroups: Map<String, Set<String>> = emptyMap(),
     private val textProtoFileSets: Map<String, TextProtoDepSet> = emptyMap(),
-    private val rootTargets: Set<String> = emptySet()
+    private val rootTargets: Set<Label> = emptySet()
 ) {
-    fun rootTargets(): Set<String> {
+    fun rootTargets(): Set<Label> {
         return rootTargets
     }
 
@@ -19,15 +20,15 @@ class BepOutput(
         }
         val result = HashSet<Path>(rootIds.size)
         val toVisit = Queues.newArrayDeque(rootIds)
-        val visited = HashSet<String>(rootIds.size)
+        val visited = HashSet<String>(rootIds)
         while (!toVisit.isEmpty()) {
             val fileSetId = toVisit.remove()
             val fileSet = textProtoFileSets[fileSetId]
             result.addAll(fileSet!!.files)
-            visited.add(fileSetId)
             val children = fileSet.children
-            children.filter { child: String -> !visited.contains(child) }
-                .forEach { e: String -> toVisit.add(e) }
+            children.asSequence()
+                .filter { child: String -> !visited.contains(child) }
+                .forEach { e: String -> visited.add(e); toVisit.add(e) }
         }
         return result
     }

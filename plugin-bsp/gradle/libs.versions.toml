@@ -1,0 +1,27 @@
+[versions]
+detekt = "1.23.5"
+kotlin-gradle-version = "1.9.23"
+ide-starter-version = "242.18071.24-EAP-SNAPSHOT"
+jackson-version = "2.17.1"
+
+[libraries]
+junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.10.2" }
+bsp4j = { module = "ch.epfl.scala:bsp4j", version = "2.2.0-M2" }
+kotest = { module = "io.kotest:kotest-assertions-core", version = "5.8.0" }
+scala = { module = "org.scala-lang:scala-library", version = "2.13.12" }
+gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
+detektFormatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+detektGradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+kotlinGradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-gradle-version" }
+ideStarterSquashed = { module = "com.jetbrains.intellij.tools:ide-starter-squashed", version.ref = "ide-starter-version" }
+ideMetricsCollector = { module = "com.jetbrains.intellij.tools:ide-metrics-collector", version.ref = "ide-starter-version" }
+ideMetricsCollectorStarter = { module = "com.jetbrains.intellij.tools:ide-metrics-collector-starter", version.ref = "ide-starter-version" }
+ideStarterJunit5 = { module = "com.jetbrains.intellij.tools:ide-starter-junit5", version.ref = "ide-starter-version" }
+jackson = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson-version" }
+jacksonKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson-version" }
+kodeIn = { module = "org.kodein.di:kodein-di", version = "7.22.0" }
+apacheHttpClient = { module = "org.apache.httpcomponents:httpclient", version = "4.5.14" }
+
+[plugins]
+intellij = { id = "org.jetbrains.intellij.platform", version = "2.0.0-beta7" }
+changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }

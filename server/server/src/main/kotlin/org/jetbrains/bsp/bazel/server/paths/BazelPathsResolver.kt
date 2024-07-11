@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.server.paths
 
-import org.jetbrains.bsp.bazel.bazelrunner.BazelInfo
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
 import java.net.URI
 import java.nio.file.Files
@@ -112,5 +112,10 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
         val parts = labelWithoutPrefix.split(":".toRegex()).toTypedArray()
         require(parts.size == 2) { "Label $label didn't contain exactly one ':'" }
         return parts[0]
+    }
+
+    fun clear() {
+        uris.clear()
+        paths.clear()
     }
 }

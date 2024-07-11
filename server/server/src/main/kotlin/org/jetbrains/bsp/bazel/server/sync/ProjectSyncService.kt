@@ -1,11 +1,13 @@
 package org.jetbrains.bsp.bazel.server.sync
 
+import ch.epfl.scala.bsp4j.BuildClientCapabilities
 import ch.epfl.scala.bsp4j.CppOptionsParams
 import ch.epfl.scala.bsp4j.CppOptionsResult
 import ch.epfl.scala.bsp4j.DependencyModulesParams
 import ch.epfl.scala.bsp4j.DependencyModulesResult
 import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.DependencySourcesResult
+import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.InitializeBuildResult
 import ch.epfl.scala.bsp4j.InverseSourcesParams
 import ch.epfl.scala.bsp4j.InverseSourcesResult
@@ -34,19 +36,38 @@ import ch.epfl.scala.bsp4j.ScalacOptionsResult
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import com.google.gson.JsonObject
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.JvmBinaryJarsParams
 import org.jetbrains.bsp.JvmBinaryJarsResult
 import org.jetbrains.bsp.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.WorkspaceLibrariesResult
-import org.jetbrains.bsp.bazel.server.sync.model.Language
+import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
+import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
+import org.jetbrains.bsp.bazel.server.model.Language
 
 /** A facade for all project sync related methods  */
-class ProjectSyncService(private val bspMapper: BspProjectMapper, private val projectProvider: ProjectProvider) {
+class ProjectSyncService(
+  private val bspMapper: BspProjectMapper,
+  private val projectProvider: ProjectProvider,
+  private val telemetryConfig: TelemetryConfig,
+) {
 
-  fun initialize(cancelChecker: CancelChecker): InitializeBuildResult =
-    bspMapper.initializeServer(Language.all())
+  private lateinit var clientCapabilities: BuildClientCapabilities
+
+  fun initialize(cancelChecker: CancelChecker, initializeBuildParams: InitializeBuildParams): InitializeBuildResult {
+    this.clientCapabilities = initializeBuildParams.capabilities
+    setupTelemetry(initializeBuildParams)
+    return bspMapper.initializeServer(Language.all())
+  }
+
+  private fun setupTelemetry(initializeBuildParams: InitializeBuildParams) {
+    val openTelemetryEndpoint =
+      (initializeBuildParams.data as? JsonObject)?.get("openTelemetryEndpoint")?.asString
+    val telemetryConfigWithHttp = telemetryConfig.copy(openTelemetryEndpoint = openTelemetryEndpoint)
+    setupTelemetry(telemetryConfigWithHttp)
+  }
 
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-639
@@ -129,7 +150,8 @@ class ProjectSyncService(private val bspMapper: BspProjectMapper, private val pr
 
   fun buildTargetJavacOptions(cancelChecker: CancelChecker, params: JavacOptionsParams): JavacOptionsResult {
     val project = projectProvider.get(cancelChecker)
-    return bspMapper.buildTargetJavacOptions(project, params, cancelChecker)
+    val includeClasspath = clientCapabilities.jvmCompileClasspathReceiver == false
+    return bspMapper.buildTargetJavacOptions(project, params, includeClasspath, cancelChecker)
   }
 
   fun buildTargetCppOptions(cancelChecker: CancelChecker, params: CppOptionsParams): CppOptionsResult {
@@ -144,7 +166,8 @@ class ProjectSyncService(private val bspMapper: BspProjectMapper, private val pr
 
   fun buildTargetScalacOptions(cancelChecker: CancelChecker, params: ScalacOptionsParams): ScalacOptionsResult {
     val project = projectProvider.get(cancelChecker)
-    return bspMapper.buildTargetScalacOptions(project, params, cancelChecker)
+    val includeClasspath = clientCapabilities.jvmCompileClasspathReceiver == false
+    return bspMapper.buildTargetScalacOptions(project, params, includeClasspath, cancelChecker)
   }
 
   fun buildTargetScalaTestClasses(
@@ -179,3 +202,4 @@ class ProjectSyncService(private val bspMapper: BspProjectMapper, private val pr
     return bspMapper.rustWorkspace(project, params)
   }
 }
+

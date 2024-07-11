@@ -1,0 +1,16 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="org.jetbrains.bsp">
+    <androidSdkGetterExtension
+      implementation="org.jetbrains.plugins.bsp.android.AndroidSdkGetter" />
+    <androidFacetEntityUpdaterExtension
+      implementation="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtensionImpl" />
+    <bspRunHandler implementation="org.jetbrains.plugins.bsp.android.run.AndroidBspRunHandler" />
+  </extensions>
+  <extensions defaultExtensionNs="com.android.project">
+    <projectsystem implementation="org.jetbrains.plugins.bsp.android.BspAndroidProjectSystemProvider"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.android.run.MobileInstallBeforeRunTaskProvider" />
+    <programRunner implementation="org.jetbrains.plugins.bsp.android.run.BspAndroidProgramRunner" />
+  </extensions>
+</idea-plugin>

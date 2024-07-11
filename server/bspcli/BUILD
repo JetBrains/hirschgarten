@@ -1,6 +1,6 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
 load("@rules_python//python:defs.bzl", "py_binary")
 load(":integration_test.bzl", "bsp_cli_on_large_project", "synthetic_bazel_project")
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
 
 LOG4J_CONFIG = "log4j2_bspcli.xml"
 
@@ -20,10 +20,11 @@ kt_jvm_binary(
     resources = [":bspcli_resources"],
     visibility = ["//visibility:public"],
     deps = [
-        "//executioncontext/workspacecontext",
-        "//install/src/main/kotlin/org/jetbrains/bsp/bazel/install",
-        "//protocol",
-        "//server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
+        "//server/executioncontext/workspacecontext",
+        "//server/install/src/main/kotlin/org/jetbrains/bsp/bazel/install",
+        "//server/protocol",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/benchmark",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -44,6 +45,6 @@ synthetic_bazel_project(
 
 bsp_cli_on_large_project(
     name = "benchmark_medium",
-    bspcli = "//bspcli:bspcli",
+    bspcli = "//server/bspcli:bspcli",
     project = ":synthetic_project_medium",
 )

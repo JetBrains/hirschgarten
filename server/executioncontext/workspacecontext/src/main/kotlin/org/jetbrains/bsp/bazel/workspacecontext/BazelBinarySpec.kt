@@ -74,7 +74,7 @@ internal object BazelBinarySpecExtractor : ExecutionContextEntityExtractor<Bazel
     // TODO: https://youtrack.jetbrains.com/issue/BAZEL-743
     // Currently updates are checked on CI daily and automatic PR created on new version.
     // Permanent solution should be done later.
-    val base = "https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-"
+    val base = "https://github.com/bazelbuild/bazelisk/releases/download/v1.20.0/bazelisk-"
     val os = System.getProperty("os.name").lowercase()
     val arch = System.getProperty("os.arch").lowercase()
     val suffix = when {
@@ -86,6 +86,7 @@ internal object BazelBinarySpecExtractor : ExecutionContextEntityExtractor<Bazel
     }
     if (suffix == null) {
       log.error("Could not calculate bazelisk download link (your OS should be one of: windows-amd64, linux-amd64, linux-arm64, darwin)")
+      return null
     }
     return base + suffix
   }

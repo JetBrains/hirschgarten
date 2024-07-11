@@ -1,11 +1,11 @@
-load("@//rules/kotlin:junit5.bzl", "kt_test")
+load("@//server/rules/kotlin:junit5.bzl", "kt_test")
 
 kt_test(
     name = "WorkspaceContextConstructorTest",
     size = "small",
     src = "WorkspaceContextConstructorTest.kt",
     associates = [
-        "//executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
 )
 
@@ -14,7 +14,7 @@ kt_test(
     size = "small",
     src = "BazelBinarySpecMapperTest.kt",
     associates = [
-        "//executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
 )
 
@@ -23,7 +23,7 @@ kt_test(
     size = "small",
     src = "BuildFlagsSpecMapperTest.kt",
     associates = [
-        "//executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
 )
 
@@ -32,7 +32,7 @@ kt_test(
     size = "small",
     src = "BuildManualTargetsSpecMapperTest.kt",
     associates = [
-        "//executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
 )
 
@@ -41,7 +41,7 @@ kt_test(
     size = "small",
     src = "TargetsSpecMapperTest.kt",
     associates = [
-        "//executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
 )
 
@@ -50,7 +50,7 @@ kt_test(
     size = "small",
     src = "DotBazelBspDirPathSpecMapperTest.kt",
     associates = [
-        "//executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
 )
 
@@ -59,7 +59,7 @@ kt_test(
     size = "small",
     src = "ImportDepthSpecMapperTest.kt",
     associates = [
-        "//executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
 )
 
@@ -68,7 +68,7 @@ kt_test(
     size = "small",
     src = "DirectoriesSpecExtractorTest.kt",
     associates = [
-        "//executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
 )
 
@@ -77,6 +77,6 @@ kt_test(
     size = "small",
     src = "DefaultWorkspaceContextProviderTest.kt",
     associates = [
-        "//executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
+        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
 )
