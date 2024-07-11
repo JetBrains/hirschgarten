@@ -2,35 +2,35 @@ package org.jetbrains.bsp.bazel.server.sync
 
 import com.google.common.hash.Hashing
 import com.google.devtools.build.lib.view.proto.Deps
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bsp.bazel.bazelrunner.BazelInfo
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.bazel.server.benchmark.tracer
+import org.jetbrains.bsp.bazel.server.benchmark.use
+import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
+import org.jetbrains.bsp.bazel.server.model.*
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bsp.bazel.server.sync.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustModule
-import org.jetbrains.bsp.bazel.server.sync.model.Label
-import org.jetbrains.bsp.bazel.server.sync.model.Language
-import org.jetbrains.bsp.bazel.server.sync.model.Library
-import org.jetbrains.bsp.bazel.server.sync.model.Module
-import org.jetbrains.bsp.bazel.server.sync.model.Project
-import org.jetbrains.bsp.bazel.server.sync.model.SourceSet
-import org.jetbrains.bsp.bazel.server.sync.model.Tag
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.bazel.workspacecontext.isRustEnabled
 import java.net.URI
 import java.nio.charset.StandardCharsets
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.exists
+import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 
@@ -571,7 +571,7 @@ class BazelProjectMapper(
       .map { bazelPathsResolver.resolve(it) }
 
   private fun getGoRootUri(targetInfo: TargetInfo): URI =
-    Label(
+    Label.parse(
       if (targetInfo.id.take(2) == "@@") targetInfo.id.drop(1) else targetInfo.id
     ).toDirectoryUri()
 

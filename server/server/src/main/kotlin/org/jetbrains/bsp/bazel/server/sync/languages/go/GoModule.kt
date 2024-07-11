@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.go
 
-import org.jetbrains.bsp.bazel.server.sync.languages.LanguageData
+import org.jetbrains.bsp.bazel.server.model.LanguageData
 import java.net.URI
 
 data class GoModule (
