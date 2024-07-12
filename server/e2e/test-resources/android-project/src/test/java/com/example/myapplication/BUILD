@@ -4,7 +4,7 @@ android_local_test(
     manifest = "AndroidManifest.xml",
     test_class = "com.example.myapplication.MainActivityTest",
     deps = [
-        "//server/src/main/java/com/example/myapplication:lib",
+        "//src/main/java/com/example/myapplication:lib",
         "@maven//:junit_junit",
         "@maven//:org_robolectric_robolectric",
         "@maven//:org_robolectric_shadows_framework",

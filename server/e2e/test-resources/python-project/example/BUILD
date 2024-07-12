@@ -5,7 +5,7 @@ py_binary(
     srcs = ["example.py"],
     python_version = "PY3",
     deps = [
-        "//server/lib:example_library",
+        "//lib:example_library",
         "@requests//:srcs",
     ],
 )
