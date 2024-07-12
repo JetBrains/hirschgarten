@@ -36,7 +36,7 @@ maven.install(
         "com.jetbrains.intellij.tools:ide-starter-squashed:242.18071.24-EAP-SNAPSHOT",
         "commons-cli:commons-cli:jar:1.8.0",
         "commons-io:commons-io:jar:2.16.1",
-        "io.grpc:grpc-protobuf:1.65.0",
+        "io.grpc:grpc-protobuf:1.65.1",
         "io.grpc:grpc-stub:1.65.0",
         "io.kotest:kotest-assertions-api-jvm:5.9.1",
         "io.kotest:kotest-assertions-core-jvm:5.9.1",
