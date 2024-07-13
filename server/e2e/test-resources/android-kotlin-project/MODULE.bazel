@@ -1,9 +1,9 @@
-bazel_dep(name = "rules_java", version = "7.5.0")
-bazel_dep(name = "bazel_skylib", version = "1.5.0")
-bazel_dep(name = "rules_kotlin", version = "1.9.1")
+bazel_dep(name = "rules_java", version = "7.7.0")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_kotlin", version = "1.9.5")
 bazel_dep(name = "rules_android", version = "0.2.0")
 
-RULES_ANDROID_COMMIT = "f6c3cb4edd98b3fe56a37fbbd2ede3d5c67b4edb"
+RULES_ANDROID_COMMIT = "9de4f9773f8c9984e1fb6e92ea70fbefeeace7a0"
 
 git_override(
     module_name = "rules_android",
@@ -16,7 +16,7 @@ register_toolchains(
     "@rules_android//toolchains/android_sdk:android_sdk_tools",
 )
 
-bazel_dep(name = "rules_robolectric", version = "4.11.1")
+bazel_dep(name = "rules_robolectric", version = "4.13")
 bazel_dep(name = "rules_jvm_external", version = "6.2")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")

@@ -60,7 +60,7 @@ class BazelTest {
   @Test
   fun openBazelProject() {
     val projectInfo = getProjectInfoFromSystemProperties()
-    val projectName = System.getProperty("bsp.benchmark.project.name") ?: "bazel"
+    val projectName = System.getProperty("bsp.benchmark.project.name") ?: "hirschgarten"
     val testCase = TestCase(IdeProductProvider.IC, projectInfo)
       .withBuildNumber(System.getProperty("bsp.benchmark.platform.version"))
       .useEAP()
@@ -98,10 +98,9 @@ class BazelTest {
         configureProjectBeforeUse = ::configureProjectBeforeUse,
       )
     }
-
-    val projectUrl = System.getProperty("bsp.benchmark.project.url") ?: "https://github.com/JetBrains/bazel-bsp.git"
+    val projectUrl = System.getProperty("bsp.benchmark.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
     val commitHash = System.getProperty("bsp.benchmark.commit.hash").orEmpty()
-    val branchName = System.getProperty("bsp.benchmark.branch.name") ?: "master"
+    val branchName = System.getProperty("bsp.benchmark.branch.name") ?: "main"
     val projectHomeRelativePath: String? = System.getProperty("bsp.benchmark.project.home.relative.path")
 
     return GitProjectInfo(

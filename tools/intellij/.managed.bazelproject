@@ -6,7 +6,7 @@ derive_targets_from_directories: true
 workspace_type: intellij_plugin
 
 targets:
-  //:ijwb_bazel_dev
+  //plugin-bazel:ijwb_bazel_dev
 
 build_flags:
   --define=ij_product=intellij-2024.2
@@ -14,3 +14,4 @@ build_flags:
 additional_languages:
   kotlin
   python
+
