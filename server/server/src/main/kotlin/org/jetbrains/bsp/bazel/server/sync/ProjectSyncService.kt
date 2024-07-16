@@ -38,11 +38,11 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.JsonObject
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bsp.JvmBinaryJarsParams
-import org.jetbrains.bsp.JvmBinaryJarsResult
-import org.jetbrains.bsp.WorkspaceDirectoriesResult
-import org.jetbrains.bsp.WorkspaceInvalidTargetsResult
-import org.jetbrains.bsp.WorkspaceLibrariesResult
+import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
+import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
+import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
+import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
 import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
 import org.jetbrains.bsp.bazel.server.model.Language

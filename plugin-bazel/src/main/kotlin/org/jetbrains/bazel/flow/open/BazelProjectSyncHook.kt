@@ -10,16 +10,16 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.flow.open.ProjectSyncHook
-import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
 internal class BazelProjectSyncHook : ProjectSyncHook {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
 
-  override fun onSync(project: Project, server: BspServer) {
+  override fun onSync(project: Project, server: JoinedBuildServer) {
     val bazelInvalidTargetsService = BazelInvalidTargetsService.getInstance(project)
     bazelInvalidTargetsService.invalidTargets = server.workspaceInvalidTargets().get().targets
 

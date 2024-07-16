@@ -1,7 +1,6 @@
-package org.jetbrains.bsp
+package org.jetbrains.bsp.protocol
 
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification
-import org.jetbrains.bsp.PublishOutputParams
 
 interface BazelBuildClient {
     @JsonNotification("build/publishOutput")

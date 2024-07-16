@@ -36,7 +36,7 @@ kt_jvm_library(
     deps = [
         ":intellij-bsp",
         ":starlark_annotations",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
         "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
         "@rules_intellij//third_party/android",

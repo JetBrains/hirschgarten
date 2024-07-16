@@ -5,7 +5,7 @@ kt_jvm_library(
     srcs = glob(["**/*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//server/protocol",
+        "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/dependencygraph",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/paths",

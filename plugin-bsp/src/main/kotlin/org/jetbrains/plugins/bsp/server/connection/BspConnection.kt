@@ -1,22 +1,9 @@
 package org.jetbrains.plugins.bsp.server.connection
 
-import ch.epfl.scala.bsp4j.BuildServer
-import ch.epfl.scala.bsp4j.JavaBuildServer
-import ch.epfl.scala.bsp4j.JvmBuildServer
-import ch.epfl.scala.bsp4j.PythonBuildServer
-import ch.epfl.scala.bsp4j.ScalaBuildServer
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import org.jetbrains.bsp.protocol.BazelBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
-
-public interface BspServer :
-  BuildServer,
-  JavaBuildServer,
-  JvmBuildServer,
-  BazelBuildServer,
-  PythonBuildServer,
-  ScalaBuildServer
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 
 /**
  * The BSP connection, implementation should keep all the information
@@ -39,7 +26,7 @@ public interface BspConnection {
    * Executes a task on server, taking care of the connection to the server and
    * making sure that the newest available server is used (by calling [ConnectionDetailsProviderExtension.provideNewConnectionDetails])
    */
-  public fun <T> runWithServer(task: (server: BspServer, capabilities: BazelBuildServerCapabilities) -> T): T
+  public fun <T> runWithServer(task: (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T): T
 
   /**
    * Returns *true* if connection is active ([connect] was called, but [disconnect] wasn't)

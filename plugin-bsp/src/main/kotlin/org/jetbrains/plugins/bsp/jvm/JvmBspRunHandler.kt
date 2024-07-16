@@ -10,12 +10,12 @@ import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
-import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.services.BspTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
@@ -91,7 +91,7 @@ public class JvmBspRunHandler : BspRunHandler {
     override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
       BspRunTaskListener(handler)
 
-    override fun startBsp(server: BspServer): CompletableFuture<*> {
+    override fun startBsp(server: JoinedBuildServer): CompletableFuture<*> {
       // SAFETY: safe to unwrap because we checked in checkRunCapabilities
       val targetId = BuildTargetIdentifier(configuration.targets.single().id)
       val runParams = RunParams(targetId)

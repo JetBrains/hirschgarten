@@ -14,6 +14,7 @@ import com.intellij.platform.diagnostic.telemetry.impl.getOtlpEndPoint
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import org.eclipse.lsp4j.jsonrpc.Launcher
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.BSP_CLIENT_NAME
 import org.jetbrains.bsp.protocol.BSP_CLIENT_VERSION
 import org.jetbrains.bsp.protocol.BSP_VERSION
@@ -44,7 +45,7 @@ private const val TERMINATED_EXIT_CODE = 130
 private val TERMINATION_TIMEOUT = 10.seconds
 
 private class CancelableInvocationHandlerWithTimeout(
-  private val remoteProxy: BspServer,
+  private val remoteProxy: JoinedBuildServer,
   private val cancelOnFuture: CompletableFuture<Void>,
   private val timeoutHandler: TimeoutHandler,
 ) : InvocationHandler {
@@ -108,7 +109,7 @@ internal class DefaultBspConnection(
 ) : BspConnection {
   private var connectionDetails: BspConnectionDetails? = null
 
-  private var server: BspServer? = null
+  private var server: JoinedBuildServer? = null
   private var capabilities: BazelBuildServerCapabilities? = null
 
   private var bspProcess: Process? = null
@@ -251,7 +252,7 @@ internal class DefaultBspConnection(
     bspSyncConsole.finishSubtask(connectSubtaskId, BspPluginBundle.message("console.subtask.connect.success"))
   }
 
-  private fun startServerAndAddDisconnectActions(process: Process, client: BuildClient): BspServer {
+  private fun startServerAndAddDisconnectActions(process: Process, client: BuildClient): JoinedBuildServer {
     val bspIn = process.inputStream
     disconnectActions.add { bspIn.close() }
 
@@ -268,14 +269,14 @@ internal class DefaultBspConnection(
     val remoteProxy = launcher.remoteProxy
     return Proxy.newProxyInstance(
       javaClass.classLoader,
-      arrayOf(BspServer::class.java),
+      arrayOf(JoinedBuildServer::class.java),
       CancelableInvocationHandlerWithTimeout(remoteProxy, cancelOnFuture, timeoutHandler),
-    ) as BspServer
+    ) as JoinedBuildServer
   }
 
-  private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<BspServer> =
-    TelemetryContextPropagatingLauncherBuilder<BspServer>()
-      .setRemoteInterface(BspServer::class.java)
+  private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<JoinedBuildServer> =
+    TelemetryContextPropagatingLauncherBuilder<JoinedBuildServer>()
+      .setRemoteInterface(JoinedBuildServer::class.java)
       .setExecutorService(AppExecutorUtil.getAppExecutorService())
       .setInput(bspIn)
       .setOutput(bspOut)
@@ -289,13 +290,13 @@ internal class DefaultBspConnection(
       }
       .create()
 
-  private fun BspServer.wrapInChunkingServerIfRequired(): BspServer =
+  private fun JoinedBuildServer.wrapInChunkingServerIfRequired(): JoinedBuildServer =
     if (Registry.`is`("bsp.request.chunking.enable")) {
       val minChunkSize = Registry.intValue("bsp.request.chunking.size.min")
       ChunkingBuildServer(this, minChunkSize)
     } else this
 
-  private fun BspServer.initializeAndObtainCapabilities(): BazelBuildServerCapabilities {
+  private fun JoinedBuildServer.initializeAndObtainCapabilities(): BazelBuildServerCapabilities {
     val buildInitializeResults = buildInitialize(createInitializeBuildParams()).get()
     onBuildInitialized()
     // cast is safe because we registered a custom type adapter
@@ -321,7 +322,7 @@ internal class DefaultBspConnection(
     return params
   }
 
-  override fun <T> runWithServer(task: (server: BspServer, capabilities: BazelBuildServerCapabilities) -> T): T {
+  override fun <T> runWithServer(task: (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T): T {
     val currentConnectionDetails =
       connectionDetailsProviderExtension.provideNewConnectionDetails(project, connectionDetails)
 

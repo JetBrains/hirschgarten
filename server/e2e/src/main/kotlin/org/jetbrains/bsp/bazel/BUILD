@@ -85,9 +85,9 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
+        "//protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -125,10 +125,10 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
+        "//protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/android",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -140,10 +140,10 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
+        "//protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/android",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/protocol",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

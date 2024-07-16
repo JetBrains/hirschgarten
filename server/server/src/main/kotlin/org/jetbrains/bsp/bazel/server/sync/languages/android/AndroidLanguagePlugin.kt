@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.android
 
 import ch.epfl.scala.bsp4j.BuildTarget
-import org.jetbrains.bsp.AndroidBuildTarget
-import org.jetbrains.bsp.AndroidTargetType
+import org.jetbrains.bsp.protocol.AndroidBuildTarget
+import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
