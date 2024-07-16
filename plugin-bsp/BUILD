@@ -11,6 +11,7 @@ load(
     "@rules_intellij//build_defs:intellij_plugin_debug_target.bzl",
     "intellij_plugin_debug_target",
 )
+load("//:versions.bzl", "SINCE_VERSION", "PLATFORM_VERSION", "INTELLIJ_BSP_VERSION")
 
 # Changelog file
 filegroup(
@@ -64,6 +65,9 @@ stamped_plugin_xml(
     description_file = "description.html",
     plugin_id = "org.jetbrains.bsp",
     plugin_name = "Build Server Protocol (BSP)",
+    stamp_since_build = True,
+    since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
+    version = INTELLIJ_BSP_VERSION
 )
 
 intellij_plugin(

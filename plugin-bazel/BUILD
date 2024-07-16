@@ -11,6 +11,7 @@ load(
     "intellij_plugin_debug_target",
 )
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
+load("//:versions.bzl", "SINCE_VERSION", "PLATFORM_VERSION", "INTELLIJ_BAZEL_VERSION")
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
@@ -38,6 +39,9 @@ stamped_plugin_xml(
     description_file = "description.html",
     plugin_id = "org.jetbrains.bazel",
     plugin_name = "Bazel by JetBrains (experimental)",
+    stamp_since_build = True,
+    since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
+    version = INTELLIJ_BAZEL_VERSION
 )
 
 java_binary(
