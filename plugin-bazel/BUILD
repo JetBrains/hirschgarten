@@ -71,10 +71,29 @@ intellij_plugin(
 
 intellij_plugin(
     name = "intellij-bazel_merged",
+    deploy_env = [
+        "intellij-bazel_exclude_debug",
+    ],
     plugin_xml = ":stamped_plugin_xml",
     deps = [
         ":plugin_library",
         "//plugin-bsp:plugin_library",
+    ],
+)
+
+java_binary(
+    name = "intellij-bazel_exclude_debug",
+    srcs = ["//plugin-bazel:DummySourceForExclude.java"],
+    main_class = "DummySourceForExclude",
+    deps = [
+        "@maven//:io_opentelemetry_opentelemetry_api",
+        "@maven//:io_opentelemetry_opentelemetry_exporter_otlp",
+        "@maven//:io_opentelemetry_opentelemetry_extension_kotlin",
+        "@maven//:io_opentelemetry_opentelemetry_sdk",
+        "@maven//:io_opentelemetry_opentelemetry_sdk_trace",
+        "@maven//:io_opentelemetry_semconv_opentelemetry_semconv",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
     ],
 )
 
