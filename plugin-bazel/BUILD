@@ -45,6 +45,7 @@ java_binary(
     srcs = ["//plugin-bazel:DummySourceForExclude.java"],
     main_class = "DummySourceForExclude",
     deps = [
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",

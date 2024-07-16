@@ -9,11 +9,11 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.tasks.BspServerSingleTargetTask
 import org.jetbrains.plugins.bsp.server.tasks.BspTaskStatusLogger
 import org.jetbrains.plugins.bsp.server.tasks.doesCompletableFutureGetThrowCancelledException
@@ -32,7 +32,7 @@ public class MobileInstallTargetTask(
   private val log = logger<MobileInstallTargetTask>()
 
   override fun executeWithServer(
-    server: BspServer,
+    server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetId: BuildTargetIdentifier,
   ): MobileInstallResult {

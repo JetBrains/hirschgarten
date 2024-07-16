@@ -5,12 +5,12 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmTestEnvironmentParams
 import ch.epfl.scala.bsp4j.JvmTestEnvironmentResult
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.server.connection.BspServer
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 
 public class JvmTestEnvironmentTask(project: Project) :
   BspServerSingleTargetTask<JvmTestEnvironmentResult>("jvmTestEnvironment", project) {
   override fun executeWithServer(
-    server: BspServer,
+    server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetId: BuildTargetIdentifier,
   ): JvmTestEnvironmentResult {

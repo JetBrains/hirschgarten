@@ -2,7 +2,7 @@ package org.jetbrains.bsp.bazel.server
 
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import org.eclipse.lsp4j.jsonrpc.Launcher
-import org.jetbrains.bsp.JoinedBuildClient
+import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo

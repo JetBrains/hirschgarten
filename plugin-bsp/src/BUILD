@@ -15,8 +15,9 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//plugin-bsp/jps-compilation/src:jps-compilation",
-        "//plugin-bsp/protocol/src:protocol",
+        "//plugin-bsp/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
