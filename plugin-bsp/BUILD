@@ -65,8 +65,8 @@ stamped_plugin_xml(
     description_file = "description.html",
     plugin_id = "org.jetbrains.bsp",
     plugin_name = "Build Server Protocol (BSP)",
-    stamp_since_build = True,
     since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
+    stamp_since_build = True,
     version = INTELLIJ_BSP_VERSION
 )
 

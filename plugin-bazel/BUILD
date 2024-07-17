@@ -39,8 +39,8 @@ stamped_plugin_xml(
     description_file = "description.html",
     plugin_id = "org.jetbrains.bazel",
     plugin_name = "Bazel by JetBrains (experimental)",
-    stamp_since_build = True,
     since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
+    stamp_since_build = True,
     version = INTELLIJ_BAZEL_VERSION
 )
 
