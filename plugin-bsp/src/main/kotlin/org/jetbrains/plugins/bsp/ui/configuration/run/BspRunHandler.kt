@@ -12,7 +12,7 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 public interface BspRunHandler {
   public fun canRun(targets: List<BuildTargetInfo>): Boolean
 
-  public fun canDebug(targets: List<BuildTargetInfo>): Boolean
+  public fun canDebug(targets: List<BuildTargetInfo>): Boolean = canRun(targets)
 
   public fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {}
 

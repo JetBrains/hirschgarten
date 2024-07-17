@@ -8,7 +8,6 @@ import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.modules
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -17,11 +16,10 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspProjectModuleBuildTasksTracker
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.getModule
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
-import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
-import org.jetbrains.plugins.bsp.utils.orDefault
 import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -37,8 +35,7 @@ public abstract class LocalJvmRunnerAction(
     project: Project,
     buildTargetInfo: BuildTargetInfo,
   ): RunnerAndConfigurationSettings? {
-    val moduleNameProvider = project.findModuleNameProvider().orDefault()
-    val module = project.modules.find { it.name == moduleNameProvider(targetInfo) } ?: return null
+    val module = targetInfo.getModule(project) ?: return null
 
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val environment = queryJvmEnvironment(project, bspSyncConsole) ?: return null

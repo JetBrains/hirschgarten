@@ -30,8 +30,6 @@ public class AndroidBspRunHandler : BspRunHandler {
       it.languageIds.includesAndroid() && !it.capabilities.canTest
     }
 
-  override fun canDebug(targets: List<BuildTargetInfo>): Boolean = canRun(targets)
-
   override fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {
     configuration.putUserData(DeployableToDevice.KEY, true)
   }

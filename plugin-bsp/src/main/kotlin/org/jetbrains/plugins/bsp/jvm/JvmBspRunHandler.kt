@@ -40,8 +40,6 @@ public class JvmBspRunHandler : BspRunHandler {
       it.languageIds.includesAndroid() && it.capabilities.canTest
   }
 
-  override fun canDebug(targets: List<BuildTargetInfo>): Boolean = canRun(targets)
-
   override fun getRunProfileState(
     project: Project,
     executor: Executor,

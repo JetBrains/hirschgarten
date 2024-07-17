@@ -12,7 +12,7 @@ class TargetKindResolver {
             return LIBRARY
         }
         val tag = ruleSuffixToTargetType.filterKeys {
-            targetInfo.kind.endsWith("_$it")
+            targetInfo.kind.endsWith("_$it") || targetInfo.kind == it
         }.values.firstOrNull() ?: NO_IDE
         return if (targetInfo.tagsList.contains("no-ide")) {
             tag + Tag.NO_IDE
@@ -22,13 +22,14 @@ class TargetKindResolver {
     }
 
     companion object {
-        private val LIBRARY: Set<Tag> = hashSetOf(Tag.LIBRARY)
-        private val ruleSuffixToTargetType = java.util.Map.of(
-            "library", LIBRARY,
-            "binary", hashSetOf(Tag.APPLICATION),
-            "test", hashSetOf(Tag.TEST),
-            "proc_macro", LIBRARY,
+        private val LIBRARY: Set<Tag> = setOf(Tag.LIBRARY)
+        private val ruleSuffixToTargetType = mapOf(
+            "library" to LIBRARY,
+            "binary" to setOf(Tag.APPLICATION),
+            "test" to setOf(Tag.TEST),
+            "proc_macro" to LIBRARY,
+            "intellij_plugin_debug_target" to setOf(Tag.INTELLIJ_PLUGIN, Tag.APPLICATION),
         )
-        private val NO_IDE: Set<Tag> = hashSetOf(Tag.NO_IDE)
+        private val NO_IDE: Set<Tag> = setOf(Tag.NO_IDE)
     }
 }

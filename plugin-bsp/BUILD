@@ -37,12 +37,19 @@ optional_plugin_dep(
     plugin_xml = "//plugin-bsp/src:main/xml/bsp-performanceTesting.xml",
 )
 
+optional_plugin_dep(
+    name = "bsp_devkit",
+    module = ["DevKit"],
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withDevKit.xml",
+)
+
 intellij_plugin_library(
     name = "plugin_library",
     optional_plugin_deps = [
         ":bsp_with_python",
         ":bsp_with_android",
         ":bsp_performance_testing",
+        ":bsp_devkit",
     ],
     plugin_deps = [
         "com.intellij.modules.platform",

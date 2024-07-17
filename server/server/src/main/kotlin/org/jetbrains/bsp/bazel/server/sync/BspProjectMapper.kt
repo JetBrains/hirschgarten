@@ -72,17 +72,17 @@ import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bsp.bazel.server.model.BspMappings
+import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.model.Language
+import org.jetbrains.bsp.bazel.server.model.Module
+import org.jetbrains.bsp.bazel.server.model.Project
+import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.java.IdeClasspathResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
-import org.jetbrains.bsp.bazel.server.model.Label
-import org.jetbrains.bsp.bazel.server.model.Language
-import org.jetbrains.bsp.bazel.server.model.Module
-import org.jetbrains.bsp.bazel.server.model.Project
-import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import java.io.IOException
 import java.net.URI
@@ -135,13 +135,26 @@ class BspProjectMapper(
 
     fun workspaceLibraries(project: Project): WorkspaceLibrariesResult {
         val libraries = project.libraries.values.map {
-            LibraryItem(
-                id = BuildTargetIdentifier(it.label.value),
-                dependencies = it.dependencies.map { dep -> BuildTargetIdentifier(dep.value) },
-                ijars = it.interfaceJars.filter { o -> o.toPath().exists() }.map { o -> o.toString() },
-                jars = it.outputs.filter { o -> o.toPath().exists() }.map { uri -> uri.toString() },
-                sourceJars = it.sources.filter { o -> o.toPath().exists() }.map { uri -> uri.toString() },
-            )
+            val id = BuildTargetIdentifier(it.label.value)
+            val dependencies = it.dependencies.map { dep -> BuildTargetIdentifier(dep.value) }
+
+            if (it.keepNonExistentJars) {
+                LibraryItem(
+                    id = id,
+                    dependencies = dependencies,
+                    ijars = it.interfaceJars.map { uri -> uri.toString() },
+                    jars = it.outputs.map { uri -> uri.toString() },
+                    sourceJars = it.sources.map { uri -> uri.toString() },
+                )
+            } else {
+                LibraryItem(
+                    id = id,
+                    dependencies = dependencies,
+                    ijars = it.interfaceJars.filter { o -> o.toPath().exists() }.map { o -> o.toString() },
+                    jars = it.outputs.filter { o -> o.toPath().exists() }.map { uri -> uri.toString() },
+                    sourceJars = it.sources.filter { o -> o.toPath().exists() }.map { uri -> uri.toString() },
+                )
+            }
         }
         return WorkspaceLibrariesResult(libraries)
     }

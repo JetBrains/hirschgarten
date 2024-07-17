@@ -461,14 +461,18 @@ class BazelProjectMapper(
       .filterValues { it.interfaceJars.isNotEmpty() || it.sources.isNotEmpty() || it.outputs.isNotEmpty() }
   }
 
-  private fun createLibrary(label: Label, targetInfo: TargetInfo): Library =
-    Library(
+  private fun createLibrary(label: Label, targetInfo: TargetInfo): Library {
+    val intellijPluginJars = getIntellijPluginJars(targetInfo)
+    return Library(
       label = label,
-      outputs = getTargetOutputJarUris(targetInfo) + getAndroidAarUris(targetInfo),
+      outputs = getTargetOutputJarUris(targetInfo) + getAndroidAarUris(targetInfo) + intellijPluginJars,
       sources = getSourceJarUris(targetInfo),
       dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
       interfaceJars = getTargetInterfaceJarsSet(targetInfo).map { it.toUri() }.toSet(),
+      // Even when those JARs don't exist yet because they aren't built yet, we still need to pass them.
+      keepNonExistentJars = intellijPluginJars.isNotEmpty(),
     )
+  }
 
   private fun createLibrariesFromTransitiveCompileTimeJars(
     targetsToImport: Sequence<TargetInfo>,
@@ -542,6 +546,12 @@ class BazelProjectMapper(
     return result
   }
 
+  private fun getIntellijPluginJars(targetInfo: TargetInfo): Set<URI> {
+    // _repackaged_files is created upon calling repackaged_files in rules_intellij
+    if (targetInfo.kind != "_repackaged_files") return emptySet()
+    return targetInfo.generatedSourcesList.resolveUris().filter { it.path.endsWith(".jar") }.toSet()
+  }
+
   private fun getSourceJarUris(targetInfo: TargetInfo) =
     targetInfo.jvmTargetInfo.jarsList
       .flatMap { it.sourceJarsList }
@@ -573,7 +583,7 @@ class BazelProjectMapper(
     workspaceContext: WorkspaceContext, rootTargets: Set<Label>, graph: DependencyGraph
   ): Sequence<TargetInfo> = graph.allTargetsAtDepth(
     workspaceContext.importDepth.value, rootTargets
-  ).asSequence().filter { isWorkspaceTarget(it) }
+  ).filter { isWorkspaceTarget(it) }.asSequence()
 
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
     targets
@@ -613,6 +623,7 @@ class BazelProjectMapper(
         "android_library",
         "android_binary",
         "android_local_test",
+        "intellij_plugin_debug_target",
       )
         )
 

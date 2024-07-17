@@ -16,6 +16,7 @@ object BspMappings {
             Tag.APPLICATION -> BuildTargetTag.APPLICATION
             Tag.TEST -> BuildTargetTag.TEST
             Tag.LIBRARY -> BuildTargetTag.LIBRARY
+            Tag.INTELLIJ_PLUGIN -> "intellij-plugin"
             Tag.NO_IDE -> BuildTargetTag.NO_IDE
             Tag.NO_BUILD, Tag.MANUAL -> null
         }
