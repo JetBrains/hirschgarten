@@ -109,6 +109,10 @@ git_override(
     remote = "https://github.com/build-server-protocol/bsp-testkit2.git",
 )
 
+bazel_dep(name = "aspect_rules_lint", version = "1.0.0-rc5",
+    dev_dependency = True,
+)
+
 bazel_dep(
     name = "rules_bazel_integration_test",
     version = "0.24.1",
