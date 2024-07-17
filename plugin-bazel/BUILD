@@ -97,13 +97,6 @@ java_binary(
     ],
 )
 
-intellij_plugin_debug_target(
-    name = "ijwb_bazel_dev",
-    deps = [
-        ":intellij-bazel_merged",
-    ],
-)
-
 repackaged_files(
     name = "intellij-bazel_jar",
     srcs = [":intellij-bazel"],
@@ -117,4 +110,12 @@ plugin_deploy_zip(
     ],
     visibility = ["//visibility:public"],
     zip_filename = "intellij-bazel.zip",
+)
+
+intellij_plugin_debug_target(
+    name = "ijwb_bazel_dev",
+    deps = [
+        ":intellij-bazel_jar",
+        "//plugin-bsp:intellij-bsp_jar",
+    ],
 )
