@@ -11,7 +11,7 @@ load(
     "@rules_intellij//build_defs:intellij_plugin_debug_target.bzl",
     "intellij_plugin_debug_target",
 )
-load("//:versions.bzl", "SINCE_VERSION", "PLATFORM_VERSION", "INTELLIJ_BSP_VERSION")
+load("//:versions.bzl", "INTELLIJ_BSP_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
 # Changelog file
 filegroup(

@@ -11,7 +11,7 @@ load(
     "intellij_plugin_debug_target",
 )
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
-load("//:versions.bzl", "SINCE_VERSION", "PLATFORM_VERSION", "INTELLIJ_BAZEL_VERSION")
+load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
