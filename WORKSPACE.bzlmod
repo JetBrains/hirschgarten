@@ -50,3 +50,7 @@ http_archive(
 load("@bazel_sonatype//:defs.bzl", "sonatype_dependencies")
 
 sonatype_dependencies()
+
+load("@aspect_rules_lint//lint:ktlint.bzl", "fetch_ktlint")
+
+fetch_ktlint()

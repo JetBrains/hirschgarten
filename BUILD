@@ -11,3 +11,5 @@ alias(
     name = "format",
     actual = "//tools/format",
 )
+
+exports_files([".editorconfig", "ktlint_baseline.xml"])
