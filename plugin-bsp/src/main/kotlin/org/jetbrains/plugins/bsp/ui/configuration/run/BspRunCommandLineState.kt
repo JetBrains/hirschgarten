@@ -6,9 +6,9 @@ import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.services.BspTaskEventsService
 import org.jetbrains.plugins.bsp.services.BspTaskListener
@@ -28,7 +28,7 @@ public abstract class BspCommandLineStateBase(
 
   protected abstract fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener
 
-  protected abstract fun startBsp(server: BspServer): CompletableFuture<*>
+  protected abstract fun startBsp(server: JoinedBuildServer): CompletableFuture<*>
 
   final override fun startProcess(): BspProcessHandler<out Any> {
     // We have to start runFuture later, because we need to register the listener first
@@ -75,7 +75,7 @@ internal class BspRunCommandLineState(
   override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
     BspRunTaskListener(handler)
 
-  override fun startBsp(server: BspServer): CompletableFuture<*> {
+  override fun startBsp(server: JoinedBuildServer): CompletableFuture<*> {
     // SAFETY: safe to unwrap because we checked in checkRunCapabilities
     val targetId = BuildTargetIdentifier(configuration.targets.single().id)
     val runParams = RunParams(targetId)

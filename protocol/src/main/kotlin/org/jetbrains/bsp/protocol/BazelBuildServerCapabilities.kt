@@ -1,4 +1,4 @@
-package org.jetbrains.bsp
+package org.jetbrains.bsp.protocol
 
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.CompileProvider
@@ -6,7 +6,6 @@ import ch.epfl.scala.bsp4j.DebugProvider
 import ch.epfl.scala.bsp4j.RunProvider
 import ch.epfl.scala.bsp4j.TestProvider
 
-// TODO: Move this to BSP repo
 /**
  * Use this instead of [BuildServerCapabilities] to enable Bazel-specific features.
  */

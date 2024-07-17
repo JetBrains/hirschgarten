@@ -11,6 +11,7 @@ load(
     "intellij_plugin_debug_target",
 )
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
+load("//:versions.bzl", "SINCE_VERSION", "PLATFORM_VERSION", "INTELLIJ_BAZEL_VERSION")
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
@@ -38,6 +39,9 @@ stamped_plugin_xml(
     description_file = "description.html",
     plugin_id = "org.jetbrains.bazel",
     plugin_name = "Bazel by JetBrains (experimental)",
+    stamp_since_build = True,
+    since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
+    version = INTELLIJ_BAZEL_VERSION
 )
 
 java_binary(
@@ -45,6 +49,7 @@ java_binary(
     srcs = ["//plugin-bazel:DummySourceForExclude.java"],
     main_class = "DummySourceForExclude",
     deps = [
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
@@ -66,10 +71,29 @@ intellij_plugin(
 
 intellij_plugin(
     name = "intellij-bazel_merged",
+    deploy_env = [
+        "intellij-bazel_exclude_debug",
+    ],
     plugin_xml = ":stamped_plugin_xml",
     deps = [
         ":plugin_library",
         "//plugin-bsp:plugin_library",
+    ],
+)
+
+java_binary(
+    name = "intellij-bazel_exclude_debug",
+    srcs = ["//plugin-bazel:DummySourceForExclude.java"],
+    main_class = "DummySourceForExclude",
+    deps = [
+        "@maven//:io_opentelemetry_opentelemetry_api",
+        "@maven//:io_opentelemetry_opentelemetry_exporter_otlp",
+        "@maven//:io_opentelemetry_opentelemetry_extension_kotlin",
+        "@maven//:io_opentelemetry_opentelemetry_sdk",
+        "@maven//:io_opentelemetry_opentelemetry_sdk_trace",
+        "@maven//:io_opentelemetry_semconv_opentelemetry_semconv",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
     ],
 )
 

@@ -3,12 +3,12 @@ package org.jetbrains.plugins.bsp.server.tasks
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.project.Project
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
-import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.connection
 
 public abstract class BspServerTask<T>(private val taskName: String, protected val project: Project) {
-  protected fun connectAndExecuteWithServer(task: (BspServer, BazelBuildServerCapabilities) -> T?): T? =
+  protected fun connectAndExecuteWithServer(task: (JoinedBuildServer, BazelBuildServerCapabilities) -> T?): T? =
     project.connection.runWithServer(task)
 }
 
@@ -18,7 +18,7 @@ public abstract class BspServerSingleTargetTask<T>(taskName: String, project: Pr
     connectAndExecuteWithServer { server, capabilities -> executeWithServer(server, capabilities, targetId) }
 
   protected abstract fun executeWithServer(
-    server: BspServer,
+    server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetId: BuildTargetIdentifier,
   ): T
@@ -27,7 +27,7 @@ public abstract class BspServerSingleTargetTask<T>(taskName: String, project: Pr
 public abstract class BspServerMultipleTargetsTask<T>(taskName: String, project: Project) :
   BspServerSingleTargetTask<T>(taskName, project) {
   protected override fun executeWithServer(
-    server: BspServer,
+    server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetId: BuildTargetIdentifier,
   ): T = executeWithServer(server, capabilities, listOf(targetId))
@@ -36,7 +36,7 @@ public abstract class BspServerMultipleTargetsTask<T>(taskName: String, project:
     connectAndExecuteWithServer { server, capabilities -> executeWithServer(server, capabilities, targetsIds) }
 
   protected abstract fun executeWithServer(
-    server: BspServer,
+    server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetsIds: List<BuildTargetIdentifier>,
   ): T

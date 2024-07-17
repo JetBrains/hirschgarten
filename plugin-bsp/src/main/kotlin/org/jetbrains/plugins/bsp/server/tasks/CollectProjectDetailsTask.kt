@@ -35,6 +35,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
@@ -73,7 +74,6 @@ import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.plugins.bsp.server.client.importSubtaskId
-import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.server.connection.reactToExceptionIn
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -183,7 +183,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     }
 
   private fun collectModel(
-    server: BspServer,
+    server: JoinedBuildServer,
     capabilities: BazelBuildServerCapabilities,
     cancelOn: CompletableFuture<Void>,
     buildProject: Boolean,
@@ -577,7 +577,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
 @Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")
 public fun calculateProjectDetailsWithCapabilities(
   project: Project,
-  server: BspServer,
+  server: JoinedBuildServer,
   buildServerCapabilities: BazelBuildServerCapabilities,
   projectRootDir: String,
   errorCallback: (Throwable) -> Unit,

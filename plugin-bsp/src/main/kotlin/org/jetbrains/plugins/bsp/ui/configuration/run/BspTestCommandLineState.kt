@@ -13,9 +13,9 @@ import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import com.intellij.openapi.project.Project
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.services.BspTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
@@ -57,7 +57,7 @@ public class BspTestCommandLineState(
   override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
     BspTestTaskListener(handler)
 
-  override fun startBsp(server: BspServer): CompletableFuture<*> {
+  override fun startBsp(server: JoinedBuildServer): CompletableFuture<*> {
     val targets = configuration.targets.map { BuildTargetIdentifier(it.id) }
     val runParams = TestParams(targets)
     runParams.originId = originId

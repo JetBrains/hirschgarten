@@ -16,8 +16,8 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.server.connection.BspServer
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.BspTaskEventsService
 import org.jetbrains.plugins.bsp.services.BspTaskListener
@@ -33,7 +33,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
   private val log = logger<BuildTargetTask>()
 
   protected override fun executeWithServer(
-    server: BspServer,
+    server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetsIds: List<BuildTargetIdentifier>,
   ): CompileResult {

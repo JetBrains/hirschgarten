@@ -15,16 +15,16 @@ import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
-import org.jetbrains.plugins.bsp.server.connection.BspServer
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import java.util.concurrent.CompletableFuture
 import kotlin.math.sqrt
 
 private typealias BTI = BuildTargetIdentifier
 
-public class ChunkingBuildServer<S : BspServer>(
+public class ChunkingBuildServer<S : JoinedBuildServer>(
   private val base: S,
   private val minChunkSize: Int,
-) : BspServer by base {
+) : JoinedBuildServer by base {
   override fun buildTargetSources(params: SourcesParams?): CompletableFuture<SourcesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },

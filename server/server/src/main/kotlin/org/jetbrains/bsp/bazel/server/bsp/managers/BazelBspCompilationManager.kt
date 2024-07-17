@@ -1,9 +1,8 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
-import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bsp.JoinedBuildClient
+import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.server.bep.BepServer
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService

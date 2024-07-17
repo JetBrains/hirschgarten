@@ -7,7 +7,7 @@ bazel_dep(
 )
 git_override(
     module_name = "rules_intellij",
-    commit = "6c2b21665c695da7d9cdc2a238479bdf960c761c",
+    commit = "6a5218b0f1fb842f41a03fa77fa5c921ceaf0a5c",
     remote = "https://github.com/gottagofaster236/rules_intellij.git",
 )
 

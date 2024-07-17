@@ -1,14 +1,14 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
-    name = "protocol",
+    name = "utils",
     srcs = glob([
-        "main/kotlin/**/*.kt",
+        "*.kt",
     ]),
     visibility = ["//visibility:public"],
     deps = [
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
-        "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )
