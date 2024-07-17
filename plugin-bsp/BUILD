@@ -67,7 +67,7 @@ stamped_plugin_xml(
     plugin_name = "Build Server Protocol (BSP)",
     since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
     stamp_since_build = True,
-    version = INTELLIJ_BSP_VERSION
+    version = INTELLIJ_BSP_VERSION,
 )
 
 intellij_plugin(

@@ -41,7 +41,7 @@ stamped_plugin_xml(
     plugin_name = "Bazel by JetBrains (experimental)",
     since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
     stamp_since_build = True,
-    version = INTELLIJ_BAZEL_VERSION
+    version = INTELLIJ_BAZEL_VERSION,
 )
 
 java_binary(
