@@ -46,7 +46,7 @@ internal object MemoryProfiler : NotificationListener {
   }
 
   private fun registerMetricsExporter() {
-    val basePath = PathManager.getLogDir() / "open-telemetry-metrics.bsp.csv"
+    val basePath = PathManager.getLogDir() / "open-telemetry-meters.bsp.json"
     val metricsExporter = TelemetryMeterJsonExporter(RollingFileSupplier(basePath))
     val filteredMetricsExporter =
       FilteredMetricsExporter(SynchronizedClearableLazy { metricsExporter }) { metric ->

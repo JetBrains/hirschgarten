@@ -13,7 +13,7 @@ import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryCsvMeterCollector
+import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
 import com.intellij.tools.ide.metrics.collector.starter.collector.getMetricsFromSpanAndChildren
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
@@ -80,8 +80,8 @@ class BazelTest {
 
     val spans = getMetricsFromSpanAndChildren(startResult, SpanFilter.nameEquals("bsp.sync.project.ms"))
 
-    val meters = StarterTelemetryCsvMeterCollector(MetricsSelectionStrategy.LATEST) {
-        (name, _) -> name.startsWith("bsp.")
+    val meters = StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.LATEST) {
+        it.name.startsWith("bsp.")
     }.collect(startResult.runContext).map {
       PerformanceMetrics.Metric.newCounter(it.id.name, it.value)
     }
