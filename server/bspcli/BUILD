@@ -1,4 +1,4 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary", "kt_jvm_library")
 load("@rules_python//python:defs.bzl", "py_binary")
 load(":integration_test.bzl", "bsp_cli_on_large_project", "synthetic_bazel_project")
 
@@ -20,11 +20,20 @@ kt_jvm_binary(
     resources = [":bspcli_resources"],
     visibility = ["//visibility:public"],
     deps = [
+        "in_memory_connection",
         "//protocol",
-        "//server/executioncontext/workspacecontext",
         "//server/install/src/main/kotlin/org/jetbrains/bsp/bazel/install",
+        "@maven//:ch_epfl_scala_bsp4j",
+    ],
+)
+
+kt_jvm_library(
+    name = "in_memory_connection",
+    srcs = ["src/main/kotlin/org/jetbrains/bsp/inmem/InMemoryConnection.kt"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/benchmark",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
