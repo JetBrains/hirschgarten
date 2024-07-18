@@ -11,7 +11,7 @@ load(
     "intellij_plugin_debug_target",
 )
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
-load("//:versions.bzl", "SINCE_VERSION", "PLATFORM_VERSION", "INTELLIJ_BAZEL_VERSION")
+load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
@@ -39,9 +39,9 @@ stamped_plugin_xml(
     description_file = "description.html",
     plugin_id = "org.jetbrains.bazel",
     plugin_name = "Bazel by JetBrains (experimental)",
-    stamp_since_build = True,
     since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
-    version = INTELLIJ_BAZEL_VERSION
+    stamp_since_build = True,
+    version = INTELLIJ_BAZEL_VERSION,
 )
 
 java_binary(
@@ -97,13 +97,6 @@ java_binary(
     ],
 )
 
-intellij_plugin_debug_target(
-    name = "ijwb_bazel_dev",
-    deps = [
-        ":intellij-bazel_merged",
-    ],
-)
-
 repackaged_files(
     name = "intellij-bazel_jar",
     srcs = [":intellij-bazel"],
@@ -117,4 +110,12 @@ plugin_deploy_zip(
     ],
     visibility = ["//visibility:public"],
     zip_filename = "intellij-bazel.zip",
+)
+
+intellij_plugin_debug_target(
+    name = "ijwb_bazel_dev",
+    deps = [
+        ":intellij-bazel_jar",
+        "//plugin-bsp:intellij-bsp_jar",
+    ],
 )

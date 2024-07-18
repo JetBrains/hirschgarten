@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.extensions.PluginId
 import java.io.File
+import kotlin.io.path.name
 
 internal const val BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX = 2
 
@@ -42,8 +43,11 @@ private fun BspConnectionDetails.calculateNewClasspath(): String {
 private fun calculatePluginClasspath(pluginIdString: String): String? {
   val pluginId = PluginId.findId(pluginIdString) ?: return null
   val pluginDescriptor = PluginManager.getInstance().findEnabledPlugin(pluginId) ?: return null
-  val pluginJarsDir = pluginDescriptor.pluginPath.resolve("lib")
+  val pluginPath = pluginDescriptor.pluginPath
 
+  if (pluginPath.name.endsWith(".jar")) return pluginPath.toString()
+
+  val pluginJarsDir = pluginPath.resolve("lib")
   return pluginJarsDir.resolve("*").toString()
 }
 

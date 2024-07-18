@@ -8,4 +8,5 @@ data class Library(
         val sources: Set<URI>,
         val dependencies: List<Label>,
         val interfaceJars: Set<URI> = emptySet(),
+        val keepNonExistentJars: Boolean = false,
 )

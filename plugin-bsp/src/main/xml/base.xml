@@ -60,7 +60,7 @@
         <connectionDetailsProviderExtension
                 implementation="org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
-        <bspRunHandler implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler"/>
+        <bspRunHandler implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler" order="last"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

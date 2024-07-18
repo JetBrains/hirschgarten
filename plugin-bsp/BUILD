@@ -11,7 +11,7 @@ load(
     "@rules_intellij//build_defs:intellij_plugin_debug_target.bzl",
     "intellij_plugin_debug_target",
 )
-load("//:versions.bzl", "SINCE_VERSION", "PLATFORM_VERSION", "INTELLIJ_BSP_VERSION")
+load("//:versions.bzl", "INTELLIJ_BSP_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
 # Changelog file
 filegroup(
@@ -37,12 +37,19 @@ optional_plugin_dep(
     plugin_xml = "//plugin-bsp/src:main/xml/bsp-performanceTesting.xml",
 )
 
+optional_plugin_dep(
+    name = "bsp_devkit",
+    module = ["DevKit"],
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withDevKit.xml",
+)
+
 intellij_plugin_library(
     name = "plugin_library",
     optional_plugin_deps = [
         ":bsp_with_python",
         ":bsp_with_android",
         ":bsp_performance_testing",
+        ":bsp_devkit",
     ],
     plugin_deps = [
         "com.intellij.modules.platform",
@@ -65,9 +72,9 @@ stamped_plugin_xml(
     description_file = "description.html",
     plugin_id = "org.jetbrains.bsp",
     plugin_name = "Build Server Protocol (BSP)",
-    stamp_since_build = True,
     since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
-    version = INTELLIJ_BSP_VERSION
+    stamp_since_build = True,
+    version = INTELLIJ_BSP_VERSION,
 )
 
 intellij_plugin(
