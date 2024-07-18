@@ -59,7 +59,7 @@ fun main(args0: Array<String>) {
             "--targets", args.target
     ))
 
-    val connection = Connection(installationDirectory, args.metricsFile, args.workspace, BuildClient0())
+    val connection = Connection(installationDirectory, args.metricsFile, args.workspace, BuildClient())
 
     val proxy = connection.clientLauncher.remoteProxy
     val buildInitializeResponse = proxy.buildInitialize(
@@ -76,7 +76,7 @@ fun main(args0: Array<String>) {
     shutdownTelemetry()
 }
 
-class BuildClient0 : JoinedBuildClient {
+class BuildClient : JoinedBuildClient {
     override fun onBuildShowMessage(params: ShowMessageParams?) {}
 
     override fun onBuildLogMessage(params: LogMessageParams?) {}
