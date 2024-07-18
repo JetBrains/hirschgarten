@@ -78,7 +78,7 @@ class PythonResourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBase
 
     // when
     val returnedResourceRootEntities = runTestWriteAction {
-      pythonResourceEntityUpdater.addEntries(pythonResourceRoots, parentModuleEntity)
+      pythonResourceEntityUpdater.addEntities(pythonResourceRoots, parentModuleEntity)
     }
 
     // then

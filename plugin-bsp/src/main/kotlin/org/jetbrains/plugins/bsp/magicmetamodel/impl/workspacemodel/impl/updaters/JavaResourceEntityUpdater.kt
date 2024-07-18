@@ -17,30 +17,36 @@ internal class JavaResourceEntityUpdater(
 ) : WorkspaceModelEntityWithParentModuleUpdater<ResourceRoot, JavaResourceRootPropertiesEntity> {
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntity(
-    entityToAdd: ResourceRoot,
-    parentModuleEntity: ModuleEntity,
-  ): JavaResourceRootPropertiesEntity {
-    val contentRootEntity = addContentRootEntity(entityToAdd, parentModuleEntity)
+  override fun addEntities(
+    entitiesToAdd: List<ResourceRoot>,
+    parentModuleEntity: ModuleEntity
+  ): List<JavaResourceRootPropertiesEntity> {
+    val contentRootEntities = addContentRootEntities(entitiesToAdd, parentModuleEntity)
 
-    val sourceRoot = addSourceRootEntity(
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
-      contentRootEntity,
-      entityToAdd,
-      parentModuleEntity,
-    )
-    return addJavaResourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, sourceRoot)
+    val sourceRoots = (entitiesToAdd zip contentRootEntities).map { (entityToAdd, contentRootEntity) ->
+      addSourceRootEntity(
+        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
+        contentRootEntity,
+        entityToAdd,
+        parentModuleEntity,
+      )
+    }
+    return sourceRoots.map { sourceRoot ->
+      addJavaResourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, sourceRoot)
+    }
   }
 
-  private fun addContentRootEntity(
-    entityToAdd: ResourceRoot,
+  private fun addContentRootEntities(
+    entitiesToAdd: List<ResourceRoot>,
     parentModuleEntity: ModuleEntity,
-  ): ContentRootEntity {
-    val contentRoot = ContentRoot(
-      path = entityToAdd.resourcePath,
-    )
+  ): List<ContentRootEntity> {
+    val contentRoots = entitiesToAdd.map { entityToAdd ->
+      ContentRoot(
+        path = entityToAdd.resourcePath,
+      )
+    }
 
-    return contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)
+    return contentRootEntityUpdater.addEntities(contentRoots, parentModuleEntity)
   }
 
   private fun addSourceRootEntity(
@@ -77,6 +83,13 @@ internal class JavaResourceEntityUpdater(
     }
 
     return updatedSourceRoot.javaResourceRoots.last()
+  }
+
+  override fun addEntity(
+    entityToAdd: ResourceRoot,
+    parentModuleEntity: ModuleEntity
+  ): JavaResourceRootPropertiesEntity {
+    return addEntities(listOf(entityToAdd), parentModuleEntity).single()
   }
 
   private companion object {

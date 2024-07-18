@@ -129,7 +129,7 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
 
     // when
     val returnedJavaResourceRootEntries = runTestWriteAction {
-      javaResourceEntityUpdater.addEntries(javaResourceRoots, parentModuleEntity)
+      javaResourceEntityUpdater.addEntities(javaResourceRoots, parentModuleEntity)
     }
 
     // then

@@ -107,7 +107,7 @@ class JavaSourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest()
 
     // when
     val returnedJavaSourceRootEntries = runTestWriteAction {
-      javaSourceEntityUpdater.addEntries(javaSourceRoots, parentModuleEntity)
+      javaSourceEntityUpdater.addEntities(javaSourceRoots, parentModuleEntity)
     }
 
     // then

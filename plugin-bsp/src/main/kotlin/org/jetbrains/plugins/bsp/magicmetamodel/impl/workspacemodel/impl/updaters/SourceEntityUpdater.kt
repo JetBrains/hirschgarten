@@ -14,26 +14,33 @@ internal open class SourceEntityUpdater(
 ) : WorkspaceModelEntityWithParentModuleUpdater<GenericSourceRoot, SourceRootEntity> {
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntity(entityToAdd: GenericSourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity {
-    val contentRootEntity = addContentRootEntity(entityToAdd, parentModuleEntity)
+  override fun addEntities(
+    entitiesToAdd: List<GenericSourceRoot>,
+    parentModuleEntity: ModuleEntity,
+  ): List<SourceRootEntity> {
+    val contentRootEntities = addContentRootEntities(entitiesToAdd, parentModuleEntity)
 
-    return addSourceRootEntity(
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
-      contentRootEntity,
-      entityToAdd,
-    )
+    return (contentRootEntities zip entitiesToAdd).map { (contentRootEntity, entryToAdd) ->
+      addSourceRootEntity(
+        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
+        contentRootEntity,
+        entryToAdd,
+      )
+    }
   }
 
-  private fun addContentRootEntity(
-    entityToAdd: GenericSourceRoot,
+  private fun addContentRootEntities(
+    entitiesToAdd: List<GenericSourceRoot>,
     parentModuleEntity: ModuleEntity,
-  ): ContentRootEntity {
-    val contentRoot = ContentRoot(
-      path = entityToAdd.sourcePath,
-      excludedPaths = entityToAdd.excludedPaths,
-    )
+  ): List<ContentRootEntity> {
+    val contentRoots = entitiesToAdd.map { entityToAdd ->
+      ContentRoot(
+        path = entityToAdd.sourcePath,
+        excludedPaths = entityToAdd.excludedPaths,
+      )
+    }
 
-    return contentRootEntityUpdater.addEntity(contentRoot, parentModuleEntity)
+    return contentRootEntityUpdater.addEntities(contentRoots, parentModuleEntity)
   }
 
   private fun addSourceRootEntity(
@@ -52,5 +59,9 @@ internal open class SourceEntityUpdater(
     }
 
     return updatedContentRootEntity.sourceRoots.last()
+  }
+
+  override fun addEntity(entityToAdd: GenericSourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity {
+    return addEntities(listOf(entityToAdd), parentModuleEntity).single()
   }
 }

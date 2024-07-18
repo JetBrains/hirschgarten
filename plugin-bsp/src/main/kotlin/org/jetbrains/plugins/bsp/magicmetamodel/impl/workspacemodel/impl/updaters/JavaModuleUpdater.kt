@@ -46,10 +46,10 @@ internal class JavaModuleWithSourcesUpdater(
       entityToAdd.moduleLevelLibraries?.let { libraryEntityUpdater.addEntries(it) }
 
       val javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
-      javaSourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)
+      javaSourceEntityUpdater.addEntities(entityToAdd.sourceRoots, moduleEntity)
 
       val javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
-      javaResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
+      javaResourceEntityUpdater.addEntities(entityToAdd.resourceRoots, moduleEntity)
 
       if (entityToAdd.jvmBinaryJars.isNotEmpty()) {
         val jvmBinaryJarsEntityUpdater = JvmBinaryJarsEntityUpdater(workspaceModelEntityUpdaterConfig)
