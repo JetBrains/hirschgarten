@@ -77,7 +77,7 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
 
     // when
     runTestWriteAction {
-      contentRootEntityUpdater.addEntries(contentRoots, parentModuleEntity)
+      contentRootEntityUpdater.addEntities(contentRoots, parentModuleEntity)
     }
 
     // then

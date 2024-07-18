@@ -11,18 +11,34 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 internal class ContentRootEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithParentModuleUpdater<ContentRoot, ContentRootEntity> {
-  override fun addEntity(entityToAdd: ContentRoot, parentModuleEntity: ModuleEntity): ContentRootEntity =
-    addContentRootEntity(
+  override fun addEntities(entitiesToAdd: List<ContentRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> {
+    return addContentRootEntities(
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       parentModuleEntity,
-      entityToAdd,
+      entitiesToAdd,
     )
+  }
 
-  private fun addContentRootEntity(
+  private fun addContentRootEntities(
     builder: MutableEntityStorage,
     moduleEntity: ModuleEntity,
+    entitiesToAdd: List<ContentRoot>,
+  ): List<ContentRootEntity> {
+    val contentRootEntities = entitiesToAdd.map { entityToAdd ->
+      createContentRootEntity(moduleEntity, entityToAdd)
+    }
+
+    val updatedModuleEntity = builder.modifyModuleEntity(moduleEntity) {
+      contentRoots += contentRootEntities
+    }
+
+    return updatedModuleEntity.contentRoots.takeLast(contentRootEntities.size)
+  }
+
+  private fun createContentRootEntity(
+    moduleEntity: ModuleEntity,
     entityToAdd: ContentRoot,
-  ): ContentRootEntity {
+  ): ContentRootEntity.Builder {
     val url = entityToAdd.path.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
     val excludedUrls =
       entityToAdd.excludedPaths.map { it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager) }
@@ -32,18 +48,15 @@ internal class ContentRootEntityUpdater(
         entitySource = moduleEntity.entitySource,
       )
     }
-    val entity = ContentRootEntity(
+    return ContentRootEntity(
       url = url,
       excludedPatterns = ArrayList(),
       entitySource = moduleEntity.entitySource,
     ) {
       this.excludedUrls = excludes
     }
-
-    val updatedModuleEntity = builder.modifyModuleEntity(moduleEntity) {
-      contentRoots += entity
-    }
-
-    return updatedModuleEntity.contentRoots.last()
   }
+
+  override fun addEntity(entityToAdd: ContentRoot, parentModuleEntity: ModuleEntity): ContentRootEntity =
+    addEntities(listOf(entityToAdd), parentModuleEntity).single()
 }

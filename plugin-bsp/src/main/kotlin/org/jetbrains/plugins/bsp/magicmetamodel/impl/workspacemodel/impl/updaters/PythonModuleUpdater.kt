@@ -19,10 +19,10 @@ internal class PythonModuleWithSourcesUpdater(
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.module)
 
     val sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig)
-    sourceEntityUpdater.addEntries(entityToAdd.sourceRoots, moduleEntity)
+    sourceEntityUpdater.addEntities(entityToAdd.sourceRoots, moduleEntity)
 
     val pythonResourceEntityUpdater = PythonResourceEntityUpdater(workspaceModelEntityUpdaterConfig)
-    pythonResourceEntityUpdater.addEntries(entityToAdd.resourceRoots, moduleEntity)
+    pythonResourceEntityUpdater.addEntities(entityToAdd.resourceRoots, moduleEntity)
 
     return moduleEntity
   }

@@ -86,7 +86,7 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
 
     // when
     val returnedPythonSourceRootEntities = runTestWriteAction {
-      sourceEntityUpdater.addEntries(pythonSourceRoots, parentModuleEntity)
+      sourceEntityUpdater.addEntities(pythonSourceRoots, parentModuleEntity)
     }
 
     // then
