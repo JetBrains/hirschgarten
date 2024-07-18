@@ -48,6 +48,7 @@ public data class BuildTargetInfoState(
   var displayName: String? = null,
   var dependencies: List<BuildTargetId> = emptyList(),
   var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState(),
+  var tags: List<String> = emptyList(),
   var languageIds: List<String> = emptyList(),
   var baseDirectory: String? = null,
 ) : ConvertableFromState<BuildTargetInfo> {
@@ -57,6 +58,7 @@ public data class BuildTargetInfoState(
       displayName = displayName,
       dependencies = dependencies,
       capabilities = capabilities.fromState(),
+      tags = tags,
       languageIds = languageIds,
       baseDirectory = baseDirectory,
     )
@@ -67,6 +69,7 @@ public fun BuildTargetInfo.toState(): BuildTargetInfoState = BuildTargetInfoStat
   displayName = displayName,
   dependencies = dependencies,
   capabilities = capabilities.toState(),
+  tags = tags,
   languageIds = languageIds,
   baseDirectory = baseDirectory,
 )

@@ -13,6 +13,7 @@ public data class BuildTargetInfo(
   val displayName: String? = null,
   val dependencies: List<BuildTargetId> = emptyList(),
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
+  val tags: List<String> = emptyList(),
   val languageIds: LanguageIds = emptyList(),
   val baseDirectory: String? = null,
 )
@@ -23,6 +24,7 @@ public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
     displayName = displayName,
     dependencies = dependencies.map { it.uri },
     capabilities = capabilities.toModuleCapabilities(),
+    tags = tags,
     languageIds = languageIds,
     baseDirectory = baseDirectory,
   )
