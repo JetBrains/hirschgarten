@@ -2,8 +2,4 @@
     <extensions defaultExtensionNs="org.jetbrains.bsp">
         <startBuiltInServerExtension implementation="org.jetbrains.plugins.bsp.inmemserver.InMemServerProviderImpl"/>
     </extensions>
-    <extensions defaultExtensionNs="com.intellij">
-        <registryKey defaultValue="false" description="Use in-memory Bazel BSP server"
-                     key="bsp.connection.use.inmem.server"/>
-    </extensions>
 </idea-plugin>
