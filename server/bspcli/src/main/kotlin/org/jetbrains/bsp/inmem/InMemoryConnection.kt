@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.eclipse.lsp4j.jsonrpc.Launcher
-import org.eclipse.lsp4j.jsonrpc.Launcher.Builder
 import org.jetbrains.bsp.bazel.server.BazelBspServer
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
 import org.jetbrains.bsp.bazel.server.bsp.BspIntegrationData
@@ -13,6 +12,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
+import org.jetbrains.plugins.bsp.server.connection.TelemetryContextPropagatingLauncherBuilder
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
@@ -102,7 +102,7 @@ private fun threadFactory(nameFormat: String): ThreadFactory =
 private fun startClient(
     serverOut: PipedInputStream, clientIn: OutputStream, clientExecutor: ExecutorService?, buildClient: BuildClient
 ): Launcher<JoinedBuildServer> =
-    Builder<JoinedBuildServer>()
+    TelemetryContextPropagatingLauncherBuilder<JoinedBuildServer>()
         .setInput(serverOut)
         .setOutput(clientIn)
         .setRemoteInterface(JoinedBuildServer::class.java)
