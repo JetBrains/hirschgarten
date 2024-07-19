@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 import ch.epfl.scala.bsp4j.BuildTarget
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
+import java.nio.file.Path
 
 internal class SourcesItemToPythonSourceRootTransformer :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, GenericSourceRoot> {
@@ -11,15 +12,22 @@ internal class SourcesItemToPythonSourceRootTransformer :
 
   override fun transform(inputEntities: List<BuildTargetAndSourceItem>): List<GenericSourceRoot> {
     val allSourceRoots = super.transform(inputEntities)
+    val allSourceRootsPaths = allSourceRoots.mapTo(hashSetOf()) { it.sourcePath }
 
-    return allSourceRoots.filter { isNotAChildOfAnySourceDir(it, allSourceRoots) }
+    return allSourceRoots.filter { isNotAChildOfAnySourceDir(it, allSourceRootsPaths) }
   }
 
   private fun isNotAChildOfAnySourceDir(
     sourceRoot: GenericSourceRoot,
-    allSourceRoots: List<GenericSourceRoot>,
-  ): Boolean =
-    allSourceRoots.none { sourceRoot.sourcePath.parent.startsWith(it.sourcePath) }
+    allSourceRootsPaths: Set<Path>,
+  ): Boolean {
+    var sourcePathParent = sourceRoot.sourcePath.parent
+    while (sourcePathParent != null) {
+      if (sourcePathParent in allSourceRootsPaths) return false
+      sourcePathParent = sourcePathParent.parent
+    }
+    return true
+  }
 
   override fun transform(inputEntity: BuildTargetAndSourceItem): List<GenericSourceRoot> {
     val rootType = inferRootType(inputEntity.buildTarget)
