@@ -151,7 +151,7 @@ internal class DefaultBspConnection(
       message = BspPluginBundle.message("console.task.connect.message.in.progress"),
     )
     val inMemoryConnection = BspServerProvider.getBspServer()?.getConnection(
-      project.rootDir.toNioPath(), null, project.rootDir.toNioPath(), bspClient
+      project, null, bspClient
     )
     if (inMemoryConnection != null) {
       val console = BspConsoleService.getInstance(project).bspSyncConsole
@@ -354,7 +354,7 @@ internal class DefaultBspConnection(
   override fun <T> runWithServer(task: (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T): T {
     val bspClient = createBspClient()
     val inMemoryConnection = BspServerProvider.getBspServer()?.getConnection(
-      project.rootDir.toNioPath(), null, project.rootDir.toNioPath(), bspClient
+      project, null, bspClient
     )
 
     if (inMemoryConnection != null) {

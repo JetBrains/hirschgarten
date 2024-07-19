@@ -18,9 +18,10 @@ intellij_plugin_library(
 )
 
 kt_jvm_library(
-    name = "intellij-bsp",
+    name = "intellij-plugins",
     neverlink = True,
     exports = [
+        "//plugin-bazel/src:intellij-bazel",
         "//plugin-bsp/src:intellij-bsp",
     ],
 )
@@ -32,7 +33,7 @@ kt_jvm_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        ":intellij-bsp",
+        ":intellij-plugins",
         "//server/bspcli:in_memory_connection",
     ],
 )

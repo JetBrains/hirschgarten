@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.extension.points
 
 import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.project.Project
 
 import org.jetbrains.plugins.bsp.server.client.BspClient
 import java.nio.file.Path
@@ -12,9 +13,8 @@ interface BspServerProvider {
     }
 
     fun getConnection(
-        installationDirectory: Path,
+        project: Project,
         metricsFile: Path?,
-        workspace: Path,
         bspClient: BspClient
     ): GenericConnection?
 }
