@@ -7,7 +7,6 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
@@ -190,5 +189,5 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
   }
 
   private fun Set<String>.toTargetIds(): Set<BuildTargetIdentifier> =
-    mapTo(mutableSetOf()) { it.toBsp4JTargetIdentifier() }
+    mapTo(mutableSetOf()) { BuildTargetIdentifier(it) }
 }

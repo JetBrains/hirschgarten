@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.ModuleState
@@ -9,9 +10,9 @@ import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
 
 public data class BuildTargetInfo(
-  val id: BuildTargetId,
+  val id: BuildTargetIdentifier,
   val displayName: String? = null,
-  val dependencies: List<BuildTargetId> = emptyList(),
+  val dependencies: List<BuildTargetIdentifier> = emptyList(),
   val capabilities: ModuleCapabilities = ModuleCapabilities(),
   val tags: List<String> = emptyList(),
   val languageIds: LanguageIds = emptyList(),
@@ -20,9 +21,9 @@ public data class BuildTargetInfo(
 
 public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
   BuildTargetInfo(
-    id = id.uri,
+    id = id,
     displayName = displayName,
-    dependencies = dependencies.map { it.uri },
+    dependencies = dependencies,
     capabilities = capabilities.toModuleCapabilities(),
     tags = tags,
     languageIds = languageIds,

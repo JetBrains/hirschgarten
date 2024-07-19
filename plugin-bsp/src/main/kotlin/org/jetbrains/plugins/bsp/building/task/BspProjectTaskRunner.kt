@@ -17,7 +17,6 @@ import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifiers
 import org.jetbrains.plugins.bsp.server.tasks.runBuildTargetTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
@@ -69,7 +68,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTargetInfo>): Promise<Result> {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
     val result = BspCoroutineService.getInstance(project).startAsync {
-      runBuildTargetTask(targetIdentifiers.toBsp4JTargetIdentifiers(), project, log)
+      runBuildTargetTask(targetIdentifiers, project, log)
     }
     return result
       .toPromise()

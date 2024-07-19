@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.jvm
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RunParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
@@ -91,7 +90,7 @@ public class JvmBspRunHandler : BspRunHandler {
 
     override fun startBsp(server: JoinedBuildServer): CompletableFuture<*> {
       // SAFETY: safe to unwrap because we checked in checkRunCapabilities
-      val targetId = BuildTargetIdentifier(configuration.targets.single().id)
+      val targetId = configuration.targets.single().id
       val runParams = RunParams(targetId)
       runParams.originId = originId
       val remoteDebugData = RemoteDebugData("jdwp", portForDebug!!)

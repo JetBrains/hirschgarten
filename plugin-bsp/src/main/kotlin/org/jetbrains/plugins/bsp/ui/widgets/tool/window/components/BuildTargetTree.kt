@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
@@ -12,7 +13,6 @@ import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import java.awt.Component
@@ -32,7 +32,7 @@ public class BuildTargetTree(
   private val invalidTargetIcon: Icon,
   private val buildToolId: BuildToolId,
   private val targets: Collection<BuildTargetInfo>,
-  private val invalidTargets: List<BuildTargetId>,
+  private val invalidTargets: List<BuildTargetIdentifier>,
   private val labelHighlighter: (String) -> String = { it },
 ) : BuildTargetContainer {
   private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
@@ -75,7 +75,7 @@ public class BuildTargetTree(
   }
 
   // only used with Bazel projects
-  private fun BuildTargetId.toFakeBuildTargetInfo() = BuildTargetInfo(id = this)
+  private fun BuildTargetIdentifier.toFakeBuildTargetInfo() = BuildTargetInfo(id = this)
 
   private fun generateTreeFromIdentifiers(targets: List<BuildTargetTreeIdentifier>, separator: String?) {
     val pathToIdentifierMap = targets.groupBy { it.path.firstOrNull() }
@@ -209,16 +209,16 @@ private data class DirectoryNodeData(val name: String) : NodeData {
 }
 
 private data class TargetNodeData(
-  val id: BuildTargetId,
+  val id: BuildTargetIdentifier,
   val target: BuildTargetInfo?,
   val displayName: String,
   val isValid: Boolean,
 ) : NodeData {
-  override fun toString(): String = target?.displayName ?: id
+  override fun toString(): String = target?.displayName ?: id.uri
 }
 
 private data class BuildTargetTreeIdentifier(
-  val id: BuildTargetId,
+  val id: BuildTargetIdentifier,
   val target: BuildTargetInfo?,
   val path: List<String>,
   val displayName: String,

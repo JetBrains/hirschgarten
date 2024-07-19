@@ -85,7 +85,7 @@ internal class LibraryGraph(private val libraries: List<LibraryItem>) {
   ): List<Library> =
     libraries.map {
       Library(
-        displayName = libraryNameProvider(BuildTargetInfo(id = it.id.uri)),
+        displayName = libraryNameProvider(BuildTargetInfo(id = it.id)),
         iJars = it.ijars,
         classJars = it.jars,
         sourceJars = it.sourceJars,
@@ -99,7 +99,7 @@ internal class LibraryGraph(private val libraries: List<LibraryItem>) {
     if (!BspFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
 
     return libraries.map { library ->
-      val libraryName = libraryNameProvider(BuildTargetInfo(id = library.id.uri))
+      val libraryName = libraryNameProvider(BuildTargetInfo(id = library.id))
       JavaModule(
         genericModuleInfo = GenericModuleInfo(
           name = libraryName,
@@ -108,7 +108,7 @@ internal class LibraryGraph(private val libraries: List<LibraryItem>) {
           modulesDependencies = library.dependencies.map {
             IntermediateModuleDependency(
               libraryNameProvider(
-                BuildTargetInfo(id = it.uri)
+                BuildTargetInfo(id = it)
               )
             )
           },

@@ -79,7 +79,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
   }
 
   private fun BuildTargetInfo.calculatePopupGroup(): ActionGroup =
-    DefaultActionGroup(id, true).also {
+    DefaultActionGroup(id.uri, true).also {
       if (capabilities.canCompile) {
         it.add(BuildTargetAction(id))
       }

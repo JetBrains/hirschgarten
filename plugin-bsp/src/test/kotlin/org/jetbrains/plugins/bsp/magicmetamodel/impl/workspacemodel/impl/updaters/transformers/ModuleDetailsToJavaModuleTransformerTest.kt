@@ -163,8 +163,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
       outputPathUris = outputPathUris,
       libraryDependencies = null,
       moduleDependencies = listOf(
-        "module2",
-        "module3",
+        BuildTargetIdentifier("module2"),
+        BuildTargetIdentifier("module3"),
       ),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
@@ -307,11 +307,11 @@ class ModuleDetailsToJavaModuleTransformerTest {
       pythonOptions = null,
       outputPathUris = listOf(),
       libraryDependencies = listOf(
-        "@maven//:lib1",
+        BuildTargetIdentifier("@maven//:lib1"),
       ),
       moduleDependencies = listOf(
-        "module2",
-        "module3",
+        BuildTargetIdentifier("module2"),
+        BuildTargetIdentifier("module3"),
       ),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
@@ -454,8 +454,8 @@ class ModuleDetailsToJavaModuleTransformerTest {
       outputPathUris = target1OutputPathUris,
       libraryDependencies = null,
       moduleDependencies = listOf(
-        "module2",
-        "module3",
+        BuildTargetIdentifier("module2"),
+        BuildTargetIdentifier("module3"),
       ),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
@@ -521,7 +521,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
       outputPathUris = target2OutputPathUris,
       libraryDependencies = null,
       moduleDependencies = listOf(
-        "module3",
+        BuildTargetIdentifier("module3"),
       ),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),

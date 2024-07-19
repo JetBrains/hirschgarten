@@ -1,10 +1,10 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.AndroidAddendum
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
@@ -44,9 +44,9 @@ public interface ConvertableToState<out T> {
 }
 
 public data class BuildTargetInfoState(
-  var id: BuildTargetId = "",
+  var id: String = "",
   var displayName: String? = null,
-  var dependencies: List<BuildTargetId> = emptyList(),
+  var dependencies: List<String> = emptyList(),
   var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState(),
   var tags: List<String> = emptyList(),
   var languageIds: List<String> = emptyList(),
@@ -54,9 +54,9 @@ public data class BuildTargetInfoState(
 ) : ConvertableFromState<BuildTargetInfo> {
   override fun fromState(): BuildTargetInfo =
     BuildTargetInfo(
-      id = id,
+      id = BuildTargetIdentifier(id),
       displayName = displayName,
-      dependencies = dependencies,
+      dependencies = dependencies.map { BuildTargetIdentifier(it) },
       capabilities = capabilities.fromState(),
       tags = tags,
       languageIds = languageIds,
@@ -65,9 +65,9 @@ public data class BuildTargetInfoState(
 }
 
 public fun BuildTargetInfo.toState(): BuildTargetInfoState = BuildTargetInfoState(
-  id = id,
+  id = id.uri,
   displayName = displayName,
-  dependencies = dependencies,
+  dependencies = dependencies.map { it.uri },
   capabilities = capabilities.toState(),
   tags = tags,
   languageIds = languageIds,

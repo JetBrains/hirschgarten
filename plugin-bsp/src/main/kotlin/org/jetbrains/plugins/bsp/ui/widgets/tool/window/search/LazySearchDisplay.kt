@@ -1,7 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 
 import com.intellij.ui.components.panels.VerticalLayout
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import java.awt.event.MouseListener
 import javax.swing.JPanel
@@ -10,7 +9,6 @@ public abstract class LazySearchDisplay {
   protected val component: JPanel = JPanel(VerticalLayout(0))
 
   protected var targets: List<BuildTargetInfo> = emptyList()
-  protected var invalidTargets: List<BuildTargetId> = emptyList()
   protected var query: Regex = "".toRegex()
 
   private var isOutdated = true
@@ -43,9 +41,9 @@ public abstract class LazySearchDisplay {
 
   protected data class PrintableBuildTarget(
     val buildTarget: BuildTargetInfo,
-    var displayName: String = buildTarget.let { it.displayName ?: it.id },
+    var displayName: String = buildTarget.let { it.displayName ?: it.id.uri },
   ) {
-    override fun toString(): String = buildTarget.displayName ?: buildTarget.id
+    override fun toString(): String = buildTarget.displayName ?: buildTarget.id.uri
   }
 
   protected object QueryHighlighter {

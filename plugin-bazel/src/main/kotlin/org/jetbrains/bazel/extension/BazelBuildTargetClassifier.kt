@@ -16,16 +16,16 @@ internal class BazelBuildTargetClassifier : BuildTargetClassifierExtension {
   override val separator: String = "/"
 
   override fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String> =
-    extractTargetIdComponents(buildTargetInfo.id)
+    extractTargetIdComponents(buildTargetInfo.id.uri)
       ?.packagePath
       ?.split("/")
       ?.filter { it.isNotEmpty() }
       .orEmpty()
 
   override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String =
-    extractTargetIdComponents(buildTargetInfo.id)
+    extractTargetIdComponents(buildTargetInfo.id.uri)
       ?.targetName
-      ?: buildTargetInfo.id
+      ?: buildTargetInfo.id.uri
 
   /**
    * This method uses string manipulation to extract useful components from Bazel target id,

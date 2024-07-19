@@ -1,13 +1,12 @@
 package org.jetbrains.plugins.bsp.ui.configuration.run
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RunParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
-import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.services.BspTaskEventsService
@@ -77,7 +76,7 @@ internal class BspRunCommandLineState(
 
   override fun startBsp(server: JoinedBuildServer): CompletableFuture<*> {
     // SAFETY: safe to unwrap because we checked in checkRunCapabilities
-    val targetId = BuildTargetIdentifier(configuration.targets.single().id)
+    val targetId = configuration.targets.single().id
     val runParams = RunParams(targetId)
     runParams.originId = originId
     return server.buildTargetRun(runParams)

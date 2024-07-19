@@ -51,7 +51,7 @@ public class BspPanelComponent private constructor(
   ) : this(
     targetIcon = targetIcon,
     toolName = toolName,
-    targetTree = BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, targets, invalidTargets.map { it.uri }),
+    targetTree = BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, targets, invalidTargets),
     targetSearch = BuildTargetSearch(targetIcon, buildToolId, toolName, targets, searchBarPanel),
   )
 

@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
 
 import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
@@ -24,8 +25,8 @@ public data class ModuleDetails(
   val scalacOptions: ScalacOptionsItem?,
   val pythonOptions: PythonOptionsItem?,
   val outputPathUris: List<String>,
-  val libraryDependencies: List<BuildTargetId>?,
-  val moduleDependencies: List<BuildTargetId>,
+  val libraryDependencies: List<BuildTargetIdentifier>?,
+  val moduleDependencies: List<BuildTargetIdentifier>,
   val defaultJdkName: String?,
   val jvmBinaryJars: List<JvmBinaryJarsItem>,
 )

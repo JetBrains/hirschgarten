@@ -81,8 +81,8 @@ class BspModuleDetailsToModuleTransformerTest {
       pythonOptions = null,
       type = ModuleTypeId("JAVA_MODULE"),
       moduleDependencies = listOf(
-        "//target2",
-        "//target3",
+        BuildTargetIdentifier("//target2"),
+        BuildTargetIdentifier("//target3"),
       ),
       libraryDependencies = null,
       scalacOptions = null,
@@ -146,15 +146,15 @@ class BspModuleDetailsToModuleTransformerTest {
       javacOptions = null,
       pythonOptions = null,
       associates = listOf(
-        "//target4",
-        "//target5",
+        BuildTargetIdentifier("//target4"),
+        BuildTargetIdentifier("//target5"),
       ),
       moduleDependencies = listOf(
-        "//target2",
-        "//target3",
+        BuildTargetIdentifier("//target2"),
+          BuildTargetIdentifier("//target3"),
       ),
       libraryDependencies = listOf(
-        "@maven//:test",
+        BuildTargetIdentifier("@maven//:test"),
       ),
       scalacOptions = null,
     )
@@ -229,8 +229,8 @@ class BspModuleDetailsToModuleTransformerTest {
       pythonOptions = pythonOptions,
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(
-        "//target2",
-        "//target3",
+        BuildTargetIdentifier("//target2"),
+          BuildTargetIdentifier("//target3"),
       ),
       scalacOptions = null,
     )
@@ -304,8 +304,8 @@ class BspModuleDetailsToModuleTransformerTest {
       type = ModuleTypeId("JAVA_MODULE"),
       pythonOptions = null,
       moduleDependencies = listOf(
-        "//target2",
-        "//target3",
+        BuildTargetIdentifier("//target2"),
+          BuildTargetIdentifier("//target3"),
       ),
       libraryDependencies = null,
       scalacOptions = null,
@@ -343,7 +343,7 @@ class BspModuleDetailsToModuleTransformerTest {
       javacOptions = javacOptionsItem2,
       type = ModuleTypeId("JAVA_MODULE"),
       moduleDependencies = listOf(
-        "//target3",
+        BuildTargetIdentifier("//target3"),
       ),
       libraryDependencies = null,
       pythonOptions = null,
@@ -436,8 +436,8 @@ class BspModuleDetailsToModuleTransformerTest {
       pythonOptions = pythonOptionsItem1,
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(
-        "//target2",
-        "//target3",
+        BuildTargetIdentifier("//target2"),
+          BuildTargetIdentifier("//target3"),
       ),
       scalacOptions = null,
     )
@@ -471,7 +471,7 @@ class BspModuleDetailsToModuleTransformerTest {
       pythonOptions = pythonOptionsItem2,
       libraryDependencies = emptyList(),
       moduleDependencies = listOf(
-        "//target3",
+        BuildTargetIdentifier("//target3"),
       ),
       scalacOptions = null,
     )
@@ -556,8 +556,8 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1").toDefaultTargetsMap()
 
     // when
-    val moduleNameProvider: TargetNameReformatProvider = { "${it.id}${it.id}" }
-    val libraryNameProvider: TargetNameReformatProvider = { "${it.id}${it.id}" }
+    val moduleNameProvider: TargetNameReformatProvider = { "${it.id.uri}${it.id.uri}" }
+    val libraryNameProvider: TargetNameReformatProvider = { "${it.id.uri}${it.id.uri}" }
     val transformer = BspModuleDetailsToModuleTransformer(
       targetsMap,
       moduleNameProvider = moduleNameProvider,

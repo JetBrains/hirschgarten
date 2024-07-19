@@ -25,7 +25,7 @@ import javax.swing.JPanel
 import javax.swing.SwingConstants
 
 internal fun BuildTargetInfo.getBuildTargetName(): String =
-  this.displayName ?: this.id
+  this.displayName ?: this.id.uri
 
 public class BuildTargetSearch(
   private val targetIcon: Icon,

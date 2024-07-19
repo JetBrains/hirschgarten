@@ -144,8 +144,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = listOf(
-        "module2",
-        "module3",
+        BuildTargetIdentifier("module2"),
+        BuildTargetIdentifier("module3"),
       ),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
@@ -280,8 +280,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
       outputPathUris = emptyList(),
       libraryDependencies = null,
       moduleDependencies = listOf(
-        buildTargetId2.uri,
-        buildTargetId3.uri,
+        buildTargetId2,
+        buildTargetId3,
       ),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
@@ -339,7 +339,7 @@ class ModuleDetailsToPythonModuleTransformerTest {
       pythonOptions = target2PythonOptionsItem,
       outputPathUris = emptyList(),
       libraryDependencies = null,
-      moduleDependencies = listOf(buildTargetId3.uri),
+      moduleDependencies = listOf(buildTargetId3),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
     )
