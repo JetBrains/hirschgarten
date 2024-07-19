@@ -9,16 +9,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.PsiManager
 import com.intellij.remoteDev.util.addPathSuffix
-import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import java.net.URI
 import javax.swing.JComponent
 import kotlin.io.path.toPath
+import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 class BazelBspJumpToBuildFileAction(
-  component: JComponent,
-  private val project: Project,
-  private val buildTargetInfo: BuildTargetInfo,
+    component: JComponent,
+    private val project: Project,
+    private val buildTargetInfo: BuildTargetInfo,
 ) : AnAction({ BazelPluginBundle.message("widget.open.build.file") }, AllIcons.Actions.OpenNewTab) {
   init {
     registerCustomShortcutSet(CommonShortcuts.getEditSource(), component)
@@ -31,13 +31,10 @@ class BazelBspJumpToBuildFileAction(
       val buildBazelFilePath = baseDirectoryPath.addPathSuffix("BUILD.bazel").toPath()
       val virtualFileManager = VirtualFileManager.getInstance()
 
-      (virtualFileManager.findFileByNioPath(buildFilePath) ?: virtualFileManager.findFileByNioPath(buildBazelFilePath))
-        ?.let {
-          PsiManager.getInstance(project).findFile(it)
-        }
-        ?.let {
-          EditorHelper.openInEditor(it, true, true)
-        }
+      (virtualFileManager.findFileByNioPath(buildFilePath)
+              ?: virtualFileManager.findFileByNioPath(buildBazelFilePath))
+          ?.let { PsiManager.getInstance(project).findFile(it) }
+          ?.let { EditorHelper.openInEditor(it, true, true) }
     }
   }
 }

@@ -9,6 +9,8 @@ import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import javax.swing.Icon
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runInterruptible
@@ -20,20 +22,18 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.getModule
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
-import javax.swing.Icon
-import kotlin.coroutines.cancellation.CancellationException
 
 public abstract class LocalJvmRunnerAction(
-  protected val targetInfo: BuildTargetInfo,
-  text: () -> String,
-  icon: Icon? = null,
-  private val isDebugMode: Boolean = false,
+    protected val targetInfo: BuildTargetInfo,
+    text: () -> String,
+    icon: Icon? = null,
+    private val isDebugMode: Boolean = false,
 ) : BaseRunnerAction(targetInfo, text, icon, isDebugMode) {
   public abstract fun getEnvironment(project: Project): JvmEnvironmentItem?
 
   override suspend fun getRunnerSettings(
-    project: Project,
-    buildTargetInfo: BuildTargetInfo,
+      project: Project,
+      buildTargetInfo: BuildTargetInfo,
   ): RunnerAndConfigurationSettings? {
     val module = targetInfo.getModule(project) ?: return null
 
@@ -43,70 +43,70 @@ public abstract class LocalJvmRunnerAction(
   }
 
   private fun calculateConfigurationSettings(
-    environment: JvmEnvironmentItem,
-    module: Module,
-    project: Project,
+      environment: JvmEnvironmentItem,
+      module: Module,
+      project: Project,
   ): RunnerAndConfigurationSettings? {
     val mainClass =
-      environment.mainClasses?.firstOrNull() ?: return null // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
-    val applicationConfiguration = ApplicationConfiguration(
-      calculateConfigurationName(targetInfo), project
-    ).apply {
-      setModule(module)
-      mainClassName = mainClass.className
-      programParameters = mainClass.arguments.joinToString(" ")
-      putUserData(jvmEnvironment, environment)
-      putUserData(includeJpsClassPaths, BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
-    }
+        environment.mainClasses?.firstOrNull()
+            ?: return null // TODO https://youtrack.jetbrains.com/issue/BAZEL-626
+    val applicationConfiguration =
+        ApplicationConfiguration(calculateConfigurationName(targetInfo), project).apply {
+          setModule(module)
+          mainClassName = mainClass.className
+          programParameters = mainClass.arguments.joinToString(" ")
+          putUserData(jvmEnvironment, environment)
+          putUserData(
+              includeJpsClassPaths,
+              BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
+        }
     val runManager = RunManagerImpl.getInstanceImpl(project)
     return RunnerAndConfigurationSettingsImpl(runManager, applicationConfiguration)
   }
 
   private fun calculateConfigurationName(targetInfo: BuildTargetInfo): String {
     val targetDisplayName = targetInfo.getBuildTargetName()
-    val actionNameKey = when {
-      isDebugMode -> "target.debug.with.jvm.runner.config.name"
-      this is TestWithLocalJvmRunnerAction -> "target.test.with.jvm.runner.config.name"
-      else -> "target.run.with.jvm.runner.config.name"
-    }
+    val actionNameKey =
+        when {
+          isDebugMode -> "target.debug.with.jvm.runner.config.name"
+          this is TestWithLocalJvmRunnerAction -> "target.test.with.jvm.runner.config.name"
+          else -> "target.run.with.jvm.runner.config.name"
+        }
     return BspPluginBundle.message(actionNameKey, targetDisplayName)
   }
 
   private suspend fun queryJvmEnvironment(
-    project: Project,
-    bspSyncConsole: TaskConsole,
+      project: Project,
+      bspSyncConsole: TaskConsole,
   ) =
-    try {
-      withContext(Dispatchers.IO) {
-        val job = async { runInterruptible { getEnvironment(project) } }
-        bspSyncConsole.startTask(
-          RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.title"),
-          BspPluginBundle.message("console.task.query.jvm.environment.in.progress"),
-          { job.cancel() }
-        )
-        val env = job.await()
-        bspSyncConsole.finishTask(
-          RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.success")
-        )
-        env
+      try {
+        withContext(Dispatchers.IO) {
+          val job = async { runInterruptible { getEnvironment(project) } }
+          bspSyncConsole.startTask(
+              RETRIEVE_JVM_ENVIRONMENT_ID,
+              BspPluginBundle.message("console.task.query.jvm.environment.title"),
+              BspPluginBundle.message("console.task.query.jvm.environment.in.progress"),
+              { job.cancel() })
+          val env = job.await()
+          bspSyncConsole.finishTask(
+              RETRIEVE_JVM_ENVIRONMENT_ID,
+              BspPluginBundle.message("console.task.query.jvm.environment.success"))
+          env
+        }
+      } catch (e: Exception) {
+        if (e is CancellationException)
+            bspSyncConsole.finishTask(
+                RETRIEVE_JVM_ENVIRONMENT_ID,
+                BspPluginBundle.message("console.task.query.jvm.environment.cancel"),
+                FailureResultImpl(
+                    BspPluginBundle.message("console.task.query.jvm.environment.cancel")))
+        else
+            bspSyncConsole.finishTask(
+                RETRIEVE_JVM_ENVIRONMENT_ID,
+                BspPluginBundle.message("console.task.query.jvm.environment.failure"),
+                FailureResultImpl(e))
+        null
       }
-    } catch (e: Exception) {
-      if (e is CancellationException)
-        bspSyncConsole.finishTask(
-          RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.cancel"),
-          FailureResultImpl(BspPluginBundle.message("console.task.query.jvm.environment.cancel"))
-        )
-      else
-        bspSyncConsole.finishTask(
-          RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.failure"),
-          FailureResultImpl(e)
-        )
-      null
-    }
 
   public companion object {
     public val jvmEnvironment: Key<JvmEnvironmentItem> = Key<JvmEnvironmentItem>("jvmEnvironment")

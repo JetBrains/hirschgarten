@@ -8,61 +8,63 @@ import org.junit.jupiter.api.Test
 
 class ProjectViewListSectionGeneratorTest {
 
-    @Nested
-    @DisplayName("ProjectViewBuildFlagsSectionGenerator tests")
-    inner class ProjectViewBuildFlagsSectionGeneratorTest {
-        
-        @Test
-        fun `should return null for null section`() {
-            // given
-            val section = null
+  @Nested
+  @DisplayName("ProjectViewBuildFlagsSectionGenerator tests")
+  inner class ProjectViewBuildFlagsSectionGeneratorTest {
 
-            // when
-            val generatedString = ProjectViewBuildFlagsSectionGenerator.generatePrettyString(section)
+    @Test
+    fun `should return null for null section`() {
+      // given
+      val section = null
 
-            // then
-            generatedString shouldBe null
-        }
+      // when
+      val generatedString = ProjectViewBuildFlagsSectionGenerator.generatePrettyString(section)
 
-        @Test
-        fun `should return pretty string for empty section`() {
-            // given
-            val section = ProjectViewBuildFlagsSection(emptyList())
+      // then
+      generatedString shouldBe null
+    }
 
-            // when
-            val generatedString = ProjectViewBuildFlagsSectionGenerator.generatePrettyString(section)
+    @Test
+    fun `should return pretty string for empty section`() {
+      // given
+      val section = ProjectViewBuildFlagsSection(emptyList())
 
-            // then
-            val expectedGeneratedString =
-                """
+      // when
+      val generatedString = ProjectViewBuildFlagsSectionGenerator.generatePrettyString(section)
+
+      // then
+      val expectedGeneratedString =
+          """
                 build_flags:
-                """.trimIndent()
-            generatedString shouldBe expectedGeneratedString
-        }
-
-        @Test
-        fun `should return pretty string for non null section`() {
-            // given
-            val section = ProjectViewBuildFlagsSection(
-                listOf(
-                    "--build_flag1=value1",
-                    "--build_flag2=value2",
-                    "--build_flag3=value3",
-                )
-            )
-
-            // when
-            val generatedString = ProjectViewBuildFlagsSectionGenerator.generatePrettyString(section)
-
-            // then
-            val expectedGeneratedString =
                 """
+              .trimIndent()
+      generatedString shouldBe expectedGeneratedString
+    }
+
+    @Test
+    fun `should return pretty string for non null section`() {
+      // given
+      val section =
+          ProjectViewBuildFlagsSection(
+              listOf(
+                  "--build_flag1=value1",
+                  "--build_flag2=value2",
+                  "--build_flag3=value3",
+              ))
+
+      // when
+      val generatedString = ProjectViewBuildFlagsSectionGenerator.generatePrettyString(section)
+
+      // then
+      val expectedGeneratedString =
+          """
                 build_flags:
                     --build_flag1=value1
                     --build_flag2=value2
                     --build_flag3=value3
-                """.trimIndent()
-            generatedString shouldBe expectedGeneratedString
-        }
+                """
+              .trimIndent()
+      generatedString shouldBe expectedGeneratedString
     }
+  }
 }

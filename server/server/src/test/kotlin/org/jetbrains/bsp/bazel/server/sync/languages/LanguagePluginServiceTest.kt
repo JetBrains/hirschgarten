@@ -2,9 +2,15 @@ package org.jetbrains.bsp.bazel.server.sync.languages
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.createTempDirectory
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BasicBazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.cpp.CppLanguagePlugin
@@ -16,18 +22,12 @@ import org.jetbrains.bsp.bazel.server.sync.languages.python.PythonLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
-import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.workspacecontext.DefaultWorkspaceContextProvider
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import kotlin.io.path.createTempDirectory
 
 class LanguagePluginServiceTest {
 
@@ -39,13 +39,13 @@ class LanguagePluginServiceTest {
   fun beforeEach() {
     workspaceRoot = createTempDirectory("workspaceRoot")
     projectViewFile = workspaceRoot.resolve("projectview.bazelproject")
-    val bazelInfo = BasicBazelInfo(
-      execRoot = "",
-      outputBase = Paths.get(""),
-      workspaceRoot = Paths.get(""),
-      release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
-      false
-    )
+    val bazelInfo =
+        BasicBazelInfo(
+            execRoot = "",
+            outputBase = Paths.get(""),
+            workspaceRoot = Paths.get(""),
+            release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
+            false)
     val provider = DefaultWorkspaceContextProvider(Paths.get(""), projectViewFile)
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
     val jdkResolver = JdkResolver(bazelPathsResolver, JdkVersionResolver())
@@ -56,17 +56,18 @@ class LanguagePluginServiceTest {
     val thriftLanguagePlugin = ThriftLanguagePlugin(bazelPathsResolver)
     val pythonLanguagePlugin = PythonLanguagePlugin(bazelPathsResolver)
     val rustLanguagePlugin = RustLanguagePlugin(bazelPathsResolver)
-    val androidLanguagePlugin = AndroidLanguagePlugin(javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
-    languagePluginsService = LanguagePluginsService(
-        scalaLanguagePlugin,
-        javaLanguagePlugin,
-        cppLanguagePlugin,
-        kotlinLanguagePlugin,
-        thriftLanguagePlugin,
-        pythonLanguagePlugin,
-        rustLanguagePlugin,
-        androidLanguagePlugin
-    )
+    val androidLanguagePlugin =
+        AndroidLanguagePlugin(javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
+    languagePluginsService =
+        LanguagePluginsService(
+            scalaLanguagePlugin,
+            javaLanguagePlugin,
+            cppLanguagePlugin,
+            kotlinLanguagePlugin,
+            thriftLanguagePlugin,
+            pythonLanguagePlugin,
+            rustLanguagePlugin,
+            androidLanguagePlugin)
   }
 
   @Nested
@@ -188,7 +189,8 @@ class LanguagePluginServiceTest {
       // given
       val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/java/"
       val filename = "JavaPackageTest.java"
-      val content = """
+      val content =
+          """
                 |package org.jetbrains.bsp.bazel.server.sync.languages.java;
                 |
                 |            public class JavaPackageTest{
@@ -196,7 +198,8 @@ class LanguagePluginServiceTest {
                 |                return;
                 |              }
                 |            }
-                """.trimMargin()
+                """
+              .trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.JAVA))
 
@@ -229,7 +232,8 @@ class LanguagePluginServiceTest {
       // given
       val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/java/"
       val filename = "JavaPackageTest.java"
-      val content = """
+      val content =
+          """
                 |package org.jetbrains.bsp.bazel.server.sync.languages;
                 |package java;
                 |public class JavaPackageTest{
@@ -237,7 +241,8 @@ class LanguagePluginServiceTest {
                 |    return;
                 |  }
                 |}
-                """.trimMargin()
+                """
+              .trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.JAVA))
 
@@ -254,7 +259,8 @@ class LanguagePluginServiceTest {
       // given
       val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/"
       val filename = "ScalaPackageTest.java"
-      val content = """
+      val content =
+          """
                 |package org.jetbrains.bsp.bazel.server.sync.languages;
                 |
                 |   class ScalaPackageTest{
@@ -262,7 +268,8 @@ class LanguagePluginServiceTest {
                 |                return null;
                 |              }
                 |            }
-                """.trimMargin()
+                """
+              .trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
 
@@ -278,7 +285,8 @@ class LanguagePluginServiceTest {
       // given
       val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/scala/"
       val filename = "ScalaPackageTest.java"
-      val content = """
+      val content =
+          """
                 |package org.jetbrains.bsp.bazel.server.sync.languages;
                 |package scala;
                 |
@@ -287,7 +295,8 @@ class LanguagePluginServiceTest {
                 |    return null;
                 |  }
                 |}
-                """.trimMargin()
+                """
+              .trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
 
@@ -303,7 +312,8 @@ class LanguagePluginServiceTest {
       // given
       val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/scala/"
       val filename = "ScalaPackageTest.java"
-      val content = """
+      val content =
+          """
                 |package org.jetbrains.bsp.bazel;
                 |package server.sync.languages;
                 |
@@ -315,7 +325,8 @@ class LanguagePluginServiceTest {
                 |    return null;
                 |  }
                 |}
-                """.trimMargin()
+                """
+              .trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.SCALA))
 
@@ -348,13 +359,15 @@ class LanguagePluginServiceTest {
       // given
       val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/kotlin/"
       val filename = "KotlinPackageTest.kt"
-      val content = """
+      val content =
+          """
                 |package org.jetbrains.bsp.bazel.server.sync.languages.kotlin
                 |
                 |fun main() {
                 |    println("Hello, World!")
                 |}
-                """.trimMargin()
+                """
+              .trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.KOTLIN))
 
@@ -387,10 +400,12 @@ class LanguagePluginServiceTest {
       // given
       val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/"
       val filename = "EmptyPackageTest.java"
-      val content = """
+      val content =
+          """
                 |package org.jetbrains.bsp.bazel.server.sync.languages
                 |
-                """.trimMargin()
+                """
+              .trimMargin()
 
       val filePath = createFileAndWrite(dirString, filename, content)
       val plugin = languagePluginsService.getPlugin(hashSetOf())
@@ -407,7 +422,8 @@ class LanguagePluginServiceTest {
       // given
       val dirString = "org/jetbrains/bsp/bazel/server/sync/languages/"
       val filename = "ThriftPackageTest.java"
-      val content = """
+      val content =
+          """
                 |package org.jetbrains.bsp.bazel.server.sync.languages
                 |
                 |public class HelloWorldNative
@@ -428,7 +444,8 @@ class LanguagePluginServiceTest {
                 |                System.out.println((end-start)+" ms");
                 |        }
                 |}
-                """.trimMargin()
+                """
+              .trimMargin()
       val filePath = createFileAndWrite(dirString, filename, content)
       val plugin = languagePluginsService.getPlugin(hashSetOf(Language.THRIFT))
 

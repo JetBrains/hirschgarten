@@ -7,9 +7,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.readText
 
 public fun VirtualFile.parseBspConnectionDetails(): BspConnectionDetails? =
-  try {
-    Gson().fromJson(this.readText(), BspConnectionDetails::class.java)
-  } catch (e: Exception) {
-    thisLogger().warn("Parsing file '$this' to BspConnectionDetails failed!", e)
-    null
-  }
+    try {
+      Gson().fromJson(this.readText(), BspConnectionDetails::class.java)
+    } catch (e: Exception) {
+      thisLogger().warn("Parsing file '$this' to BspConnectionDetails failed!", e)
+      null
+    }

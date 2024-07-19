@@ -15,43 +15,48 @@ import org.jetbrains.plugins.bsp.services.BspCoroutineService
 
 public interface BspProjectAwareExtension {
   public fun getProjectId(projectPath: VirtualFile): ExternalSystemProjectId
+
   public val eligibleConfigFileNames: List<String>
   public val eligibleConfigFileExtensions: List<String>
 
   public companion object {
     public val ep: ExtensionPointName<BspProjectAwareExtension> =
-      ExtensionPointName.create("org.jetbrains.bsp.bspProjectAwareExtension")
+        ExtensionPointName.create("org.jetbrains.bsp.bspProjectAwareExtension")
   }
 }
 
 public abstract class BspProjectAware(private val workspace: BspWorkspace) :
-  ExternalSystemProjectAware {
+    ExternalSystemProjectAware {
   override val settingsFiles: Set<String>
     get() = emptySet()
 
   override fun reloadProject(context: ExternalSystemProjectReloadContext) {
     if (context.isExplicitReload) {
       BspCoroutineService.getInstance(workspace.project).start {
-        SyncProjectTask(workspace.project).execute(
-          shouldBuildProject = false,
-        )
+        SyncProjectTask(workspace.project)
+            .execute(
+                shouldBuildProject = false,
+            )
       }
     }
   }
 
   override fun subscribe(listener: ExternalSystemProjectListener, parentDisposable: Disposable) {
-    workspace.project.messageBus.connect().subscribe(BspWorkspaceListener.TOPIC, object : BspWorkspaceListener {
-      override fun syncStarted() {
-        listener.onProjectReloadStart()
-      }
+    workspace.project.messageBus
+        .connect()
+        .subscribe(
+            BspWorkspaceListener.TOPIC,
+            object : BspWorkspaceListener {
+              override fun syncStarted() {
+                listener.onProjectReloadStart()
+              }
 
-      override fun syncFinished(canceled: Boolean) {
-        listener.onProjectReloadFinish(
-          if (canceled) ExternalSystemRefreshStatus.CANCEL
-          else ExternalSystemRefreshStatus.SUCCESS
-        )
-      }
-    })
+              override fun syncFinished(canceled: Boolean) {
+                listener.onProjectReloadFinish(
+                    if (canceled) ExternalSystemRefreshStatus.CANCEL
+                    else ExternalSystemRefreshStatus.SUCCESS)
+              }
+            })
   }
 
   public companion object {
@@ -60,10 +65,11 @@ public abstract class BspProjectAware(private val workspace: BspWorkspace) :
       val projectAwareExtension = BspProjectAwareExtension.ep.extensionList.firstOrNull()
       projectAwareExtension?.also {
         val project = workspace.project
-        val projectAware = object : BspProjectAware(workspace) {
-          override val projectId: ExternalSystemProjectId
-            get() = it.getProjectId(project.rootDir)
-        }
+        val projectAware =
+            object : BspProjectAware(workspace) {
+              override val projectId: ExternalSystemProjectId
+                get() = it.getProjectId(project.rootDir)
+            }
         val projectTracker = ExternalSystemProjectTracker.getInstance(project)
         projectTracker.register(projectAware)
         projectTracker.activate(projectAware.projectId)

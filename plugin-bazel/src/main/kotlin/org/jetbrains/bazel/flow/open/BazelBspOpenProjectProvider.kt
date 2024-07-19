@@ -14,13 +14,11 @@ internal class BazelBspOpenProjectProvider : AbstractOpenProjectProvider() {
   override val systemId = BazelPluginConstants.SYSTEM_ID
 
   override fun isProjectFile(file: VirtualFile): Boolean =
-    file.isFile && file.name in BazelPluginConstants.WORKSPACE_FILE_NAMES
+      file.isFile && file.name in BazelPluginConstants.WORKSPACE_FILE_NAMES
 
   @Deprecated("it is still here because it is still being used by the platform")
   override fun linkToExistingProject(projectFile: VirtualFile, project: Project) {
-    CoroutineService.getInstance(project).start {
-      linkToExistingProjectAsync(projectFile, project)
-    }
+    CoroutineService.getInstance(project).start { linkToExistingProjectAsync(projectFile, project) }
   }
 
   override suspend fun linkToExistingProjectAsync(projectFile: VirtualFile, project: Project) {

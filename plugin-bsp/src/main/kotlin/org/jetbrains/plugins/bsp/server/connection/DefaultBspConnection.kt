@@ -13,22 +13,6 @@ import com.intellij.openapi.util.registry.Registry
 import com.intellij.platform.diagnostic.telemetry.impl.getOtlpEndPoint
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
-import org.eclipse.lsp4j.jsonrpc.Launcher
-import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.BSP_CLIENT_NAME
-import org.jetbrains.bsp.protocol.BSP_CLIENT_VERSION
-import org.jetbrains.bsp.protocol.BSP_VERSION
-import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
-import org.jetbrains.bsp.protocol.CLIENT_CAPABILITIES
-import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
-import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.server.ChunkingBuildServer
-import org.jetbrains.plugins.bsp.server.client.BspClient
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
-import org.jetbrains.plugins.bsp.ui.console.TaskConsole
-import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.InputStream
 import java.io.OutputStream
 import java.lang.System.currentTimeMillis
@@ -39,15 +23,31 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.time.Duration.Companion.seconds
+import org.eclipse.lsp4j.jsonrpc.Launcher
+import org.jetbrains.bsp.protocol.BSP_CLIENT_NAME
+import org.jetbrains.bsp.protocol.BSP_CLIENT_VERSION
+import org.jetbrains.bsp.protocol.BSP_VERSION
+import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.CLIENT_CAPABILITIES
+import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.server.ChunkingBuildServer
+import org.jetbrains.plugins.bsp.server.client.BspClient
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
+import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
+import org.jetbrains.plugins.bsp.ui.console.TaskConsole
+import org.jetbrains.plugins.bsp.utils.withRealEnvs
 
 private const val OK_EXIT_CODE = 0
 private const val TERMINATED_EXIT_CODE = 130
 private val TERMINATION_TIMEOUT = 10.seconds
 
 private class CancelableInvocationHandlerWithTimeout(
-  private val remoteProxy: JoinedBuildServer,
-  private val cancelOnFuture: CompletableFuture<Void>,
-  private val timeoutHandler: TimeoutHandler,
+    private val remoteProxy: JoinedBuildServer,
+    private val cancelOnFuture: CompletableFuture<Void>,
+    private val timeoutHandler: TimeoutHandler,
 ) : InvocationHandler {
   override fun invoke(proxy: Any, method: Method, args: Array<out Any>?): Any? {
     val startTime = currentTimeMillis()
@@ -60,24 +60,23 @@ private class CancelableInvocationHandlerWithTimeout(
   }
 
   private fun invokeMethod(method: Method, args: Array<out Any>?): Any? =
-    method.invoke(remoteProxy, *args ?: emptyArray())
+      method.invoke(remoteProxy, *args ?: emptyArray())
 
   private fun addTimeoutAndHandler(
-    result: CompletableFuture<*>,
-    startTime: Long,
-    methodName: String,
+      result: CompletableFuture<*>,
+      startTime: Long,
+      methodName: String,
   ): CompletableFuture<Any?> =
-    CancellableFuture.from(result)
-      .reactToExceptionIn(cancelOnFuture)
-      .reactToExceptionIn(timeoutHandler.getUnfinishedTimeoutFuture())
-      .handle { value, error -> doHandle(value, error, startTime, methodName) }
+      CancellableFuture.from(result)
+          .reactToExceptionIn(cancelOnFuture)
+          .reactToExceptionIn(timeoutHandler.getUnfinishedTimeoutFuture())
+          .handle { value, error -> doHandle(value, error, startTime, methodName) }
 
   private fun doHandle(value: Any?, error: Throwable?, startTime: Long, methodName: String): Any? {
     val elapsedTime = calculateElapsedTime(startTime)
     log.debug(
-      "BSP method '$methodName' call took ${elapsedTime}ms. " +
-        "Result: ${if (error == null) "SUCCESS" else "FAILURE"}"
-    )
+        "BSP method '$methodName' call took ${elapsedTime}ms. " +
+            "Result: ${if (error == null) "SUCCESS" else "FAILURE"}")
 
     return when (error) {
       null -> value
@@ -85,12 +84,12 @@ private class CancelableInvocationHandlerWithTimeout(
     }
   }
 
-  private fun calculateElapsedTime(startTime: Long): Long =
-    currentTimeMillis() - startTime
+  private fun calculateElapsedTime(startTime: Long): Long = currentTimeMillis() - startTime
 
   private fun handleError(error: Throwable, methodName: String, elapsedTime: Long): Nothing {
     when (error) {
-      is TimeoutException -> log.error("BSP request '$methodName' timed out after ${elapsedTime}ms", error)
+      is TimeoutException ->
+          log.error("BSP request '$methodName' timed out after ${elapsedTime}ms", error)
     }
     throw error
   }
@@ -104,8 +103,8 @@ private val log = logger<DefaultBspConnection>()
 private const val connectSubtaskId = "bsp-file-connection-connect"
 
 internal class DefaultBspConnection(
-  private val project: Project,
-  private val connectionDetailsProviderExtension: ConnectionDetailsProviderExtension,
+    private val project: Project,
+    private val connectionDetailsProviderExtension: ConnectionDetailsProviderExtension,
 ) : BspConnection {
   private var connectionDetails: BspConnectionDetails? = null
 
@@ -114,7 +113,9 @@ internal class DefaultBspConnection(
 
   private var bspProcess: Process? = null
   private var disconnectActions: MutableList<() -> Unit> = mutableListOf()
-  private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
+  private val timeoutHandler = TimeoutHandler {
+    Registry.intValue("bsp.request.timeout.seconds").seconds
+  }
 
   override fun connect(taskId: Any, errorCallback: (String) -> Unit) {
     if (!isConnected()) {
@@ -126,29 +127,34 @@ internal class DefaultBspConnection(
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
     bspSyncConsole.startSubtask(
-      parentTaskId = taskId,
-      subtaskId = connectSubtaskId,
-      message = BspPluginBundle.message("console.subtask.connect.in.progress"),
+        parentTaskId = taskId,
+        subtaskId = connectSubtaskId,
+        message = BspPluginBundle.message("console.subtask.connect.in.progress"),
     )
 
     try {
       connectOrThrowIfFailed(bspSyncConsole, taskId, errorCallback)
     } catch (e: Exception) {
       bspSyncConsole.finishTask(
-        taskId = taskId,
-        message = BspPluginBundle.message("console.task.connect.message.failed"),
-        result = FailureResultImpl(e),
+          taskId = taskId,
+          message = BspPluginBundle.message("console.task.connect.message.failed"),
+          result = FailureResultImpl(e),
       )
     }
   }
 
-  private fun connectOrThrowIfFailed(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: (String) -> Unit) {
+  private fun connectOrThrowIfFailed(
+      bspSyncConsole: TaskConsole,
+      taskId: Any,
+      errorCallback: (String) -> Unit
+  ) {
     bspSyncConsole.addMessage(
-      taskId = connectSubtaskId,
-      message = BspPluginBundle.message("console.task.connect.message.in.progress"),
+        taskId = connectSubtaskId,
+        message = BspPluginBundle.message("console.task.connect.message.in.progress"),
     )
 
-    val newConnectionDetails = connectionDetailsProviderExtension.provideNewConnectionDetails(project, null)
+    val newConnectionDetails =
+        connectionDetailsProviderExtension.provideNewConnectionDetails(project, null)
 
     if (newConnectionDetails != null) {
       this.connectionDetails = newConnectionDetails
@@ -158,7 +164,11 @@ internal class DefaultBspConnection(
     }
   }
 
-  private fun BspConnectionDetails.connect(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: (String) -> Unit) {
+  private fun BspConnectionDetails.connect(
+      bspSyncConsole: TaskConsole,
+      taskId: Any,
+      errorCallback: (String) -> Unit
+  ) {
     log.info("Connecting to server with connection details: $this")
     val client = createBspClient()
     val process = createAndStartProcessAndAddDisconnectActions(this)
@@ -166,7 +176,8 @@ internal class DefaultBspConnection(
     process.handleErrorOnExit(bspSyncConsole, taskId, errorCallback)
 
     bspProcess = process
-    bspSyncConsole.addMessage(connectSubtaskId, BspPluginBundle.message("console.task.connect.message.success"))
+    bspSyncConsole.addMessage(
+        connectSubtaskId, BspPluginBundle.message("console.task.connect.message.success"))
 
     initializeServer(process, client, bspSyncConsole)
   }
@@ -175,17 +186,20 @@ internal class DefaultBspConnection(
     val bspConsoleService = BspConsoleService.getInstance(project)
 
     return BspClient(
-      bspConsoleService.bspSyncConsole,
-      bspConsoleService.bspBuildConsole,
-      timeoutHandler,
-      project
-    )
+        bspConsoleService.bspSyncConsole,
+        bspConsoleService.bspBuildConsole,
+        timeoutHandler,
+        project)
   }
 
-  private fun createAndStartProcessAndAddDisconnectActions(bspConnectionDetails: BspConnectionDetails): Process {
+  private fun createAndStartProcessAndAddDisconnectActions(
+      bspConnectionDetails: BspConnectionDetails
+  ): Process {
     val process = bspConnectionDetails.createAndStartProcess()
     process.logErrorOutputs(project)
-    disconnectActions.add { server?.buildShutdown()?.get(TERMINATION_TIMEOUT.inWholeSeconds, TimeUnit.SECONDS) }
+    disconnectActions.add {
+      server?.buildShutdown()?.get(TERMINATION_TIMEOUT.inWholeSeconds, TimeUnit.SECONDS)
+    }
     disconnectActions.add { server?.onBuildExit() }
 
     disconnectActions.add { process.terminateDescendants() }
@@ -198,24 +212,25 @@ internal class DefaultBspConnection(
   }
 
   private fun BspConnectionDetails.createAndStartProcess(): Process =
-    ProcessBuilder(argv)
-      .directory(project.stateStore.projectBasePath.toFile())
-      .withRealEnvs()
-      .redirectError(ProcessBuilder.Redirect.PIPE)
-      .start()
+      ProcessBuilder(argv)
+          .directory(project.stateStore.projectBasePath.toFile())
+          .withRealEnvs()
+          .redirectError(ProcessBuilder.Redirect.PIPE)
+          .start()
 
   private fun ProcessHandle.terminateGracefully() {
     try {
       OSProcessUtil.terminateProcessGracefully(this.pid().toInt())
     } catch (e: Exception) {
-      log.debug("OSProcessUtil.terminateProcessGracefully not supported! Fallback to '.destroy()'", e)
+      log.debug(
+          "OSProcessUtil.terminateProcessGracefully not supported! Fallback to '.destroy()'", e)
       this.destroy()
     }
     this.onExit().get(TERMINATION_TIMEOUT.inWholeSeconds, TimeUnit.SECONDS)
   }
 
   private fun Process.terminateDescendants() =
-    this.descendants().forEach { it.terminateGracefully() }
+      this.descendants().forEach { it.terminateGracefully() }
 
   private fun Process.checkExitValueAndThrowIfError() {
     val exitValue = this.exitValue()
@@ -224,35 +239,42 @@ internal class DefaultBspConnection(
     }
   }
 
-  private fun Process.handleErrorOnExit(bspSyncConsole: TaskConsole, taskId: Any, errorCallback: (String) -> Unit) =
-    this.onExit().whenComplete { completedProcess, _ ->
-      val exitValue = completedProcess.exitValue()
-      if (exitValue != OK_EXIT_CODE && exitValue != TERMINATED_EXIT_CODE) {
-        val errorMessage = BspPluginBundle.message("console.server.exited", exitValue)
-        bspSyncConsole.finishTask(taskId, errorMessage, FailureResultImpl(errorMessage))
-        errorCallback(errorMessage)
+  private fun Process.handleErrorOnExit(
+      bspSyncConsole: TaskConsole,
+      taskId: Any,
+      errorCallback: (String) -> Unit
+  ) =
+      this.onExit().whenComplete { completedProcess, _ ->
+        val exitValue = completedProcess.exitValue()
+        if (exitValue != OK_EXIT_CODE && exitValue != TERMINATED_EXIT_CODE) {
+          val errorMessage = BspPluginBundle.message("console.server.exited", exitValue)
+          bspSyncConsole.finishTask(taskId, errorMessage, FailureResultImpl(errorMessage))
+          errorCallback(errorMessage)
+        }
       }
-    }
 
   private fun initializeServer(
-    process: Process,
-    client: BspClient,
-    bspSyncConsole: TaskConsole,
+      process: Process,
+      client: BspClient,
+      bspSyncConsole: TaskConsole,
   ) {
     bspSyncConsole.addMessage(
-      connectSubtaskId,
-      BspPluginBundle.message("console.message.initialize.server.in.progress")
-    )
+        connectSubtaskId, BspPluginBundle.message("console.message.initialize.server.in.progress"))
 
     val newServer = startServerAndAddDisconnectActions(process, client)
     server = newServer.wrapInChunkingServerIfRequired()
     capabilities = server?.initializeAndObtainCapabilities()
 
-    bspSyncConsole.addMessage(connectSubtaskId, BspPluginBundle.message("console.message.initialize.server.success"))
-    bspSyncConsole.finishSubtask(connectSubtaskId, BspPluginBundle.message("console.subtask.connect.success"))
+    bspSyncConsole.addMessage(
+        connectSubtaskId, BspPluginBundle.message("console.message.initialize.server.success"))
+    bspSyncConsole.finishSubtask(
+        connectSubtaskId, BspPluginBundle.message("console.subtask.connect.success"))
   }
 
-  private fun startServerAndAddDisconnectActions(process: Process, client: BuildClient): JoinedBuildServer {
+  private fun startServerAndAddDisconnectActions(
+      process: Process,
+      client: BuildClient
+  ): JoinedBuildServer {
     val bspIn = process.inputStream
     disconnectActions.add { bspIn.close() }
 
@@ -268,33 +290,37 @@ internal class DefaultBspConnection(
 
     val remoteProxy = launcher.remoteProxy
     return Proxy.newProxyInstance(
-      javaClass.classLoader,
-      arrayOf(JoinedBuildServer::class.java),
-      CancelableInvocationHandlerWithTimeout(remoteProxy, cancelOnFuture, timeoutHandler),
+        javaClass.classLoader,
+        arrayOf(JoinedBuildServer::class.java),
+        CancelableInvocationHandlerWithTimeout(remoteProxy, cancelOnFuture, timeoutHandler),
     ) as JoinedBuildServer
   }
 
-  private fun createLauncher(bspIn: InputStream, bspOut: OutputStream, client: BuildClient): Launcher<JoinedBuildServer> =
-    TelemetryContextPropagatingLauncherBuilder<JoinedBuildServer>()
-      .setRemoteInterface(JoinedBuildServer::class.java)
-      .setExecutorService(AppExecutorUtil.getAppExecutorService())
-      .setInput(bspIn)
-      .setOutput(bspOut)
-      .setLocalService(client)
-      // Allows us to deserialize our custom capabilities
-      .configureGson { builder ->
-        builder.registerTypeAdapter(
-          BuildServerCapabilities::class.java,
-          BazelBuildServerCapabilitiesTypeAdapter(),
-        )
-      }
-      .create()
+  private fun createLauncher(
+      bspIn: InputStream,
+      bspOut: OutputStream,
+      client: BuildClient
+  ): Launcher<JoinedBuildServer> =
+      TelemetryContextPropagatingLauncherBuilder<JoinedBuildServer>()
+          .setRemoteInterface(JoinedBuildServer::class.java)
+          .setExecutorService(AppExecutorUtil.getAppExecutorService())
+          .setInput(bspIn)
+          .setOutput(bspOut)
+          .setLocalService(client)
+          // Allows us to deserialize our custom capabilities
+          .configureGson { builder ->
+            builder.registerTypeAdapter(
+                BuildServerCapabilities::class.java,
+                BazelBuildServerCapabilitiesTypeAdapter(),
+            )
+          }
+          .create()
 
   private fun JoinedBuildServer.wrapInChunkingServerIfRequired(): JoinedBuildServer =
-    if (Registry.`is`("bsp.request.chunking.enable")) {
-      val minChunkSize = Registry.intValue("bsp.request.chunking.size.min")
-      ChunkingBuildServer(this, minChunkSize)
-    } else this
+      if (Registry.`is`("bsp.request.chunking.enable")) {
+        val minChunkSize = Registry.intValue("bsp.request.chunking.size.min")
+        ChunkingBuildServer(this, minChunkSize)
+      } else this
 
   private fun JoinedBuildServer.initializeAndObtainCapabilities(): BazelBuildServerCapabilities {
     val buildInitializeResults = buildInitialize(createInitializeBuildParams()).get()
@@ -305,26 +331,27 @@ internal class DefaultBspConnection(
 
   private fun createInitializeBuildParams(): InitializeBuildParams {
     val projectBaseDir = project.rootDir
-    val params = InitializeBuildParams(
-      BSP_CLIENT_NAME,
-      BSP_CLIENT_VERSION,
-      BSP_VERSION,
-      projectBaseDir.toString(),
-      CLIENT_CAPABILITIES,
-    )
+    val params =
+        InitializeBuildParams(
+            BSP_CLIENT_NAME,
+            BSP_CLIENT_VERSION,
+            BSP_VERSION,
+            projectBaseDir.toString(),
+            CLIENT_CAPABILITIES,
+        )
     val dataJson = JsonObject()
     dataJson.addProperty("clientClassesRootDir", "$projectBaseDir/out")
-    getOtlpEndPoint()?.let {
-      dataJson.addProperty("openTelemetryEndpoint", it)
-    }
+    getOtlpEndPoint()?.let { dataJson.addProperty("openTelemetryEndpoint", it) }
     params.data = dataJson
 
     return params
   }
 
-  override fun <T> runWithServer(task: (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T): T {
+  override fun <T> runWithServer(
+      task: (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T
+  ): T {
     val currentConnectionDetails =
-      connectionDetailsProviderExtension.provideNewConnectionDetails(project, connectionDetails)
+        connectionDetailsProviderExtension.provideNewConnectionDetails(project, connectionDetails)
 
     if (currentConnectionDetails != null) {
       currentConnectionDetails.autoConnect()
@@ -342,23 +369,23 @@ internal class DefaultBspConnection(
   private fun BspConnectionDetails.autoConnect() {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     bspSyncConsole.startTask(
-      taskId = "bsp-autoconnect",
-      title = BspPluginBundle.message("console.task.auto.connect.title"),
-      message = BspPluginBundle.message("console.task.auto.connect.in.progress"),
+        taskId = "bsp-autoconnect",
+        title = BspPluginBundle.message("console.task.auto.connect.title"),
+        message = BspPluginBundle.message("console.task.auto.connect.in.progress"),
     )
 
     try {
       disconnect()
       this.connect(bspSyncConsole, "bsp-autoconnect") {}
       bspSyncConsole.finishTask(
-        taskId = "bsp-autoconnect",
-        message = BspPluginBundle.message("console.task.auto.connect.success"),
+          taskId = "bsp-autoconnect",
+          message = BspPluginBundle.message("console.task.auto.connect.success"),
       )
     } catch (e: Exception) {
       bspSyncConsole.finishTask(
-        taskId = "bsp-autoconnect",
-        message = BspPluginBundle.message("console.task.auto.connect.failed"),
-        result = FailureResultImpl(e),
+          taskId = "bsp-autoconnect",
+          message = BspPluginBundle.message("console.task.auto.connect.failed"),
+          result = FailureResultImpl(e),
       )
       error("Auto connect has failed.")
     }
@@ -375,37 +402,37 @@ internal class DefaultBspConnection(
     capabilities = null
   }
 
-  private fun executeDisconnectActionsAndCollectExceptions(disconnectActions: List<() -> Unit>): List<Throwable> =
-    disconnectActions.mapNotNull { executeDisconnectActionAndReturnThrowableIfFailed(it) }
+  private fun executeDisconnectActionsAndCollectExceptions(
+      disconnectActions: List<() -> Unit>
+  ): List<Throwable> =
+      disconnectActions.mapNotNull { executeDisconnectActionAndReturnThrowableIfFailed(it) }
 
-  private fun executeDisconnectActionAndReturnThrowableIfFailed(disconnectAction: () -> Unit): Throwable? =
-    try {
-      disconnectAction()
-      null
-    } catch (e: Exception) {
-      e
-    }
+  private fun executeDisconnectActionAndReturnThrowableIfFailed(
+      disconnectAction: () -> Unit
+  ): Throwable? =
+      try {
+        disconnectAction()
+        null
+      } catch (e: Exception) {
+        e
+      }
 
   private fun throwExceptionWithSuppressedIfOccurred(exceptions: List<Throwable>) {
     val firstException = exceptions.firstOrNull()
 
     if (firstException != null) {
-      exceptions
-        .drop(1)
-        .forEach { firstException.addSuppressed(it) }
+      exceptions.drop(1).forEach { firstException.addSuppressed(it) }
 
       throw firstException
     }
   }
 
-  override fun isConnected(): Boolean =
-    bspProcess?.isAlive == true
+  override fun isConnected(): Boolean = bspProcess?.isAlive == true
 }
 
 private fun Process.logErrorOutputs(project: Project) {
   if (!Registry.`is`("bsp.log.error.outputs")) return
-  @Suppress("DeferredResultUnused")
-  val bspConsoleService = BspConsoleService.getInstance(project)
+  @Suppress("DeferredResultUnused") val bspConsoleService = BspConsoleService.getInstance(project)
   BspCoroutineService.getInstance(project).startAsync {
     val bufferedReader = this.errorReader()
     bufferedReader.forEachLine { doLogErrorOutputLine(it, bspConsoleService) }
@@ -418,6 +445,5 @@ private fun doLogErrorOutputLine(line: String, bspConsoleService: BspConsoleServ
 }
 
 private fun BspConsoleService.getActiveConsole(): TaskConsole? =
-  if (this.bspBuildConsole.hasTasksInProgress()) this.bspBuildConsole
-  else if (this.bspSyncConsole.hasTasksInProgress()) this.bspSyncConsole
-  else null
+    if (this.bspBuildConsole.hasTasksInProgress()) this.bspBuildConsole
+    else if (this.bspSyncConsole.hasTasksInProgress()) this.bspSyncConsole else null

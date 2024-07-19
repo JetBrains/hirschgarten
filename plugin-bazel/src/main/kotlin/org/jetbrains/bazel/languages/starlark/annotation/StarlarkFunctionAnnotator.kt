@@ -14,30 +14,34 @@ import org.jetbrains.bazel.languages.starlark.highlighting.StarlarkHighlightingC
 class StarlarkFunctionAnnotator : Annotator {
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
     when {
-      isFunctionDeclaration(element) -> holder.mark(element, StarlarkHighlightingColors.FUNCTION_DECLARATION)
+      isFunctionDeclaration(element) ->
+          holder.mark(element, StarlarkHighlightingColors.FUNCTION_DECLARATION)
       isNamedArgument(element) -> holder.mark(element, StarlarkHighlightingColors.NAMED_ARGUMENT)
       else -> {}
     }
   }
 
-  private fun isFunctionDeclaration(element: PsiElement): Boolean = checkElementAndParentType(
-    element = element,
-    expectedElementTypes = listOf(StarlarkTokenTypes.IDENTIFIER),
-    expectedParentType = listOf(StarlarkElementTypes.FUNCTION_DECLARATION),
-  )
+  private fun isFunctionDeclaration(element: PsiElement): Boolean =
+      checkElementAndParentType(
+          element = element,
+          expectedElementTypes = listOf(StarlarkTokenTypes.IDENTIFIER),
+          expectedParentType = listOf(StarlarkElementTypes.FUNCTION_DECLARATION),
+      )
 
-  private fun isNamedArgument(element: PsiElement): Boolean = checkElementAndParentType(
-    element = element,
-    expectedElementTypes = listOf(StarlarkTokenTypes.IDENTIFIER, StarlarkTokenTypes.EQ),
-    expectedParentType = listOf(StarlarkElementTypes.NAMED_ARGUMENT_EXPRESSION),
-  )
+  private fun isNamedArgument(element: PsiElement): Boolean =
+      checkElementAndParentType(
+          element = element,
+          expectedElementTypes = listOf(StarlarkTokenTypes.IDENTIFIER, StarlarkTokenTypes.EQ),
+          expectedParentType = listOf(StarlarkElementTypes.NAMED_ARGUMENT_EXPRESSION),
+      )
 
   private fun checkElementAndParentType(
-    element: PsiElement,
-    expectedElementTypes: List<IElementType>,
-    expectedParentType: List<IElementType>,
+      element: PsiElement,
+      expectedElementTypes: List<IElementType>,
+      expectedParentType: List<IElementType>,
   ): Boolean =
-    expectedElementTypes.contains(element.elementType) && expectedParentType.contains(element.parent.elementType)
+      expectedElementTypes.contains(element.elementType) &&
+          expectedParentType.contains(element.parent.elementType)
 }
 
 private fun AnnotationHolder.mark(element: PsiElement, attr: TextAttributesKey) {

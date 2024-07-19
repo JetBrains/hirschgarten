@@ -6,7 +6,8 @@ import com.intellij.psi.PsiNameIdentifierOwner
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.rename.RenameUtils
 
-abstract class StarlarkNamedElement(node: ASTNode) : StarlarkBaseElement(node), PsiNameIdentifierOwner {
+abstract class StarlarkNamedElement(node: ASTNode) :
+    StarlarkBaseElement(node), PsiNameIdentifierOwner {
   override fun getName(): String? = getNameNode()?.text
 
   override fun setName(name: String): PsiElement {

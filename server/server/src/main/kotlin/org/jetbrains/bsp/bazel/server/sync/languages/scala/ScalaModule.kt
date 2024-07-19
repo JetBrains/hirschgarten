@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.scala
 
+import java.net.URI
 import org.jetbrains.bsp.bazel.server.model.LanguageData
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaModule
-import java.net.URI
 
 data class ScalaSdk(
     val organization: String,

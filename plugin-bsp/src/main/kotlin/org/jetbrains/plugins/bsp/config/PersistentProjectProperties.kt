@@ -37,8 +37,10 @@ private val Project.properties: PropertiesComponent
   get() = PropertiesComponent.getInstance(this)
 
 private fun PropertiesComponent.getVirtualFileOrThrow(key: String): VirtualFile =
-  getValueOrThrow(key)
-    .let { VirtualFileManager.getInstance().findFileByUrl(it) ?: error("Cannot find file by url (url: $it)") }
+    getValueOrThrow(key).let {
+      VirtualFileManager.getInstance().findFileByUrl(it)
+          ?: error("Cannot find file by url (url: $it)")
+    }
 
 private fun PropertiesComponent.getValueOrThrow(key: String): String =
-  getValue(key) ?: error("$key value not set")
+    getValue(key) ?: error("$key value not set")

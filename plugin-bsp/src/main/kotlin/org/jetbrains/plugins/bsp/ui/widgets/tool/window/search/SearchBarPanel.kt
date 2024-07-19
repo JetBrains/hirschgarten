@@ -9,9 +9,6 @@ import com.intellij.openapi.observable.properties.AtomicProperty
 import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.fields.ExtendableTextField
-import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.SimpleDocumentListener
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.TextComponentExtension
 import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
@@ -20,18 +17,20 @@ import javax.swing.JPanel
 import javax.swing.KeyStroke
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.SimpleDocumentListener
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.TextComponentExtension
 
 public class SearchBarPanel : JPanel(BorderLayout()) {
-  public var inProgress: Boolean by AtomicBoolean {
-    repaintLoading()
-  }
+  public var inProgress: Boolean by AtomicBoolean { repaintLoading() }
 
-  private val searchLoadingExtension: TextComponentExtension.Indicator = TextComponentExtension.Indicator(
-    trueIcon = AnimatedIcon.Default.INSTANCE,
-    falseIcon = AllIcons.Actions.Find,
-    predicate = { inProgress },
-    beforeText = true,
-  )
+  private val searchLoadingExtension: TextComponentExtension.Indicator =
+      TextComponentExtension.Indicator(
+          trueIcon = AnimatedIcon.Default.INSTANCE,
+          falseIcon = AllIcons.Actions.Find,
+          predicate = { inProgress },
+          beforeText = true,
+      )
 
   private val textField = prepareTextField()
   private val displayChangeListeners = mutableListOf<() -> Unit>()
@@ -55,26 +54,30 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
 
   private fun prepareTextField(): ExtendableTextField {
     val newField = ExtendableTextField()
-    val regexExtension = TextComponentExtension.Switch(
-      // RegexHovered icon matches the ShowAsTree icon better than the normal Regex; on new UI both icons look the same
-      icon = AllIcons.Actions.RegexHovered,
-      valueGetter = { regexMode },
-      valueSetter = { regexMode = it },
-      parentComponent = newField,
-      tooltip = BspPluginBundle.message("widget.target.search.regex"),
-    )
-    val treeExtension = TextComponentExtension.Switch(
-      icon = AllIcons.Actions.ShowAsTree,
-      valueGetter = { displayAsTree },
-      valueSetter = { displayAsTree = it },
-      parentComponent = newField,
-      tooltip = BspPluginBundle.message("widget.target.search.display.as.tree"),
-    )
-    val clearExtension = TextComponentExtension.Clear(
-      isEmpty = { newField.text.isEmpty() },
-      clearAction = ::clearQuery,
-      tooltip = BspPluginBundle.message("widget.target.search.clear"),
-    )
+    val regexExtension =
+        TextComponentExtension.Switch(
+            // RegexHovered icon matches the ShowAsTree icon better than the normal Regex; on new UI
+            // both icons look the same
+            icon = AllIcons.Actions.RegexHovered,
+            valueGetter = { regexMode },
+            valueSetter = { regexMode = it },
+            parentComponent = newField,
+            tooltip = BspPluginBundle.message("widget.target.search.regex"),
+        )
+    val treeExtension =
+        TextComponentExtension.Switch(
+            icon = AllIcons.Actions.ShowAsTree,
+            valueGetter = { displayAsTree },
+            valueSetter = { displayAsTree = it },
+            parentComponent = newField,
+            tooltip = BspPluginBundle.message("widget.target.search.display.as.tree"),
+        )
+    val clearExtension =
+        TextComponentExtension.Clear(
+            isEmpty = { newField.text.isEmpty() },
+            clearAction = ::clearQuery,
+            tooltip = BspPluginBundle.message("widget.target.search.clear"),
+        )
     return newField.apply {
       addExtension(searchLoadingExtension)
       addExtension(treeExtension)
@@ -126,11 +129,11 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
   }
 
   public fun getCurrentSearchQuery(): Regex =
-    if (regexMode) {
-      textField.text.toRegex()
-    } else {
-      textField.text.toRegex(RegexOption.LITERAL)
-    }
+      if (regexMode) {
+        textField.text.toRegex()
+      } else {
+        textField.text.toRegex(RegexOption.LITERAL)
+      }
 
   public fun isDisplayAsTreeChosen(): Boolean = displayAsTree
 
@@ -138,7 +141,7 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
 }
 
 private class AtomicBoolean(
-  private val changeListener: (() -> Unit)?,
+    private val changeListener: (() -> Unit)?,
 ) : ReadWriteProperty<SearchBarPanel, Boolean> {
   var theValue: Boolean by AtomicProperty(false)
 
@@ -151,10 +154,13 @@ private class AtomicBoolean(
 }
 
 private class SimpleAction(private val action: () -> Unit) : AnAction() {
-  override fun actionPerformed(e: AnActionEvent) { action() }
+  override fun actionPerformed(e: AnActionEvent) {
+    action()
+  }
 }
 
 private val FIND_SHORTCUT_SET = CommonShortcuts.getFind()
 
 // regex shortcut is hardcoded - couldn't find this shortcut defined anywhere in the platform
-private val REGEX_SHORTCUT_SET = CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK))
+private val REGEX_SHORTCUT_SET =
+    CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK))

@@ -11,7 +11,7 @@ class BazelGlobalFunctionCompletionContributorTest : BasePlatformTestCase() {
   @Test
   fun `should complete extension functions`() {
     // given
-    myFixture.configureByText("dummy.bzl", "")
+    myFixture.configureByText("dummy.bzlmock", "")
     myFixture.type("x")
 
     // when
@@ -31,7 +31,8 @@ class BazelGlobalFunctionCompletionContributorTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainExactlyInAnyOrder listOf("max", "existing_rule", "existing_rules", "exports_files")
+    lookups shouldContainExactlyInAnyOrder
+        listOf("max", "existing_rule", "existing_rules", "exports_files")
   }
 
   @Test
@@ -57,6 +58,7 @@ class BazelGlobalFunctionCompletionContributorTest : BasePlatformTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainExactlyInAnyOrder listOf("max", "register_execution_platforms", "use_extension")
+    lookups shouldContainExactlyInAnyOrder
+        listOf("max", "register_execution_platforms", "use_extension")
   }
 }

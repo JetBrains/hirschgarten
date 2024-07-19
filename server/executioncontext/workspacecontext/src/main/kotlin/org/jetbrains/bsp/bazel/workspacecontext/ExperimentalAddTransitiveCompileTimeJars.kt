@@ -5,11 +5,12 @@ import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextSingletonEnt
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 
 data class ExperimentalAddTransitiveCompileTimeJars(
-  override val value: Boolean,
+    override val value: Boolean,
 ) : ExecutionContextSingletonEntity<Boolean>()
 
 internal object ExperimentalAddTransitiveCompileTimeJarsExtractor :
-  ExecutionContextEntityExtractor<ExperimentalAddTransitiveCompileTimeJars> {
+    ExecutionContextEntityExtractor<ExperimentalAddTransitiveCompileTimeJars> {
   override fun fromProjectView(projectView: ProjectView): ExperimentalAddTransitiveCompileTimeJars =
-    ExperimentalAddTransitiveCompileTimeJars(projectView.addTransitiveCompileTimeJars?.value ?: false)
+      ExperimentalAddTransitiveCompileTimeJars(
+          projectView.addTransitiveCompileTimeJars?.value ?: false)
 }

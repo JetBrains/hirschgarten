@@ -19,6 +19,9 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.util.SlowOperations
+import java.io.File
+import java.io.IOException
+import java.nio.file.Path
 import org.jetbrains.idea.devkit.DevKitBundle
 import org.jetbrains.idea.devkit.projectRoots.IdeaJdk
 import org.jetbrains.idea.devkit.projectRoots.Sandbox
@@ -28,36 +31,37 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
-import java.io.File
-import java.io.IOException
-import java.nio.file.Path
 
 internal val INTELLIJ_PLUGIN_SANDBOX_KEY: Key<Path> = Key.create("INTELLIJ_PLUGIN_SANDBOX_KEY")
 private const val INTELLIJ_PLUGIN_TAG = "intellij-plugin"
 
 public class IntellijPluginRunHandler : BspRunHandler {
   override fun canRun(targets: List<BuildTargetInfo>): Boolean =
-    targets.all { it.tags.contains(INTELLIJ_PLUGIN_TAG) }
+      targets.all { it.tags.contains(INTELLIJ_PLUGIN_TAG) }
 
   override fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> {
     return listOf(
-      BuildPluginBeforeRunTaskProvider().createTask(configuration),
-      CopyPluginToSandboxBeforeRunTaskProvider().createTask(configuration),
-    ).map { checkNotNull(it) { "Couldn't create before run task" } }
+            BuildPluginBeforeRunTaskProvider().createTask(configuration),
+            CopyPluginToSandboxBeforeRunTaskProvider().createTask(configuration),
+        )
+        .map { checkNotNull(it) { "Couldn't create before run task" } }
   }
 
   // Mostly copied from org.jetbrains.idea.devkit.run.PluginRunConfiguration
   override fun getRunProfileState(
-    project: Project,
-    executor: Executor,
-    environment: ExecutionEnvironment,
-    configuration: BspRunConfigurationBase,
+      project: Project,
+      executor: Executor,
+      environment: ExecutionEnvironment,
+      configuration: BspRunConfigurationBase,
   ): RunProfileState {
-    val ideaJdk = findNewestIdeaJdk()
-      ?: throw ExecutionException(BspPluginBundle.message("console.task.exception.no.intellij.platform.plugin.sdk"))
+    val ideaJdk =
+        findNewestIdeaJdk()
+            ?: throw ExecutionException(
+                BspPluginBundle.message("console.task.exception.no.intellij.platform.plugin.sdk"))
 
-    var sandboxHome = (ideaJdk.sdkAdditionalData as Sandbox).sandboxHome
-      ?: throw ExecutionException(DevKitBundle.message("sandbox.no.configured"))
+    var sandboxHome =
+        (ideaJdk.sdkAdditionalData as Sandbox).sandboxHome
+            ?: throw ExecutionException(DevKitBundle.message("sandbox.no.configured"))
 
     try {
       sandboxHome = File(sandboxHome).canonicalPath
@@ -66,9 +70,10 @@ public class IntellijPluginRunHandler : BspRunHandler {
     }
     val canonicalSandbox = sandboxHome
 
-    environment.putUserData(INTELLIJ_PLUGIN_SANDBOX_KEY, Path.of(canonicalSandbox).resolve("plugins"))
+    environment.putUserData(
+        INTELLIJ_PLUGIN_SANDBOX_KEY, Path.of(canonicalSandbox).resolve("plugins"))
 
-    //copy license from running instance of idea
+    // copy license from running instance of idea
     IdeaLicenseHelper.copyIDEALicense(sandboxHome)
 
     return object : JavaCommandLineState(environment) {
@@ -81,16 +86,20 @@ public class IntellijPluginRunHandler : BspRunHandler {
 
         // TODO add parameters from run config UI here
 
-        vm.defineProperty(PathManager.PROPERTY_CONFIG_PATH, canonicalSandbox + File.separator + "config")
-        vm.defineProperty(PathManager.PROPERTY_SYSTEM_PATH, canonicalSandbox + File.separator + "system")
-        vm.defineProperty(PathManager.PROPERTY_PLUGINS_PATH, canonicalSandbox + File.separator + "plugins")
+        vm.defineProperty(
+            PathManager.PROPERTY_CONFIG_PATH, canonicalSandbox + File.separator + "config")
+        vm.defineProperty(
+            PathManager.PROPERTY_SYSTEM_PATH, canonicalSandbox + File.separator + "system")
+        vm.defineProperty(
+            PathManager.PROPERTY_PLUGINS_PATH, canonicalSandbox + File.separator + "plugins")
 
         if (!vm.hasProperty("jdk.module.illegalAccess.silent")) {
           vm.defineProperty("jdk.module.illegalAccess.silent", "true")
         }
 
         // use product-info.json values if found, otherwise fallback to defaults
-        val productInfo = loadProductInfo(ideaJdkHome) ?: throw ExecutionException("IDEA product info is null")
+        val productInfo =
+            loadProductInfo(ideaJdkHome) ?: throw ExecutionException("IDEA product info is null")
         productInfo.additionalJvmArguments.forEach(vm::add)
 
         if (SystemInfo.isMac) {

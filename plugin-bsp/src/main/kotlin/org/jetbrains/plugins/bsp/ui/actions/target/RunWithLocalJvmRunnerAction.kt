@@ -8,25 +8,25 @@ import org.jetbrains.plugins.bsp.server.tasks.JvmRunEnvironmentTask
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 
 public class RunWithLocalJvmRunnerAction(
-  targetInfo: BuildTargetInfo,
-  text: (() -> String)? = null,
-  isDebugMode: Boolean = false,
-  verboseText: Boolean = false,
-) : LocalJvmRunnerAction(
-  targetInfo = targetInfo,
-  text = {
-    if (text != null) text()
-    else if (isDebugMode) BspPluginBundle.message(
-      "target.debug.with.jvm.runner.action.text",
-      if (verboseText) targetInfo.getBuildTargetName() else ""
-    )
-    else BspPluginBundle.message(
-      "target.run.with.jvm.runner.action.text",
-      if (verboseText) targetInfo.getBuildTargetName() else ""
-    )
-  },
-  isDebugMode = isDebugMode
-) {
+    targetInfo: BuildTargetInfo,
+    text: (() -> String)? = null,
+    isDebugMode: Boolean = false,
+    verboseText: Boolean = false,
+) :
+    LocalJvmRunnerAction(
+        targetInfo = targetInfo,
+        text = {
+          if (text != null) text()
+          else if (isDebugMode)
+              BspPluginBundle.message(
+                  "target.debug.with.jvm.runner.action.text",
+                  if (verboseText) targetInfo.getBuildTargetName() else "")
+          else
+              BspPluginBundle.message(
+                  "target.run.with.jvm.runner.action.text",
+                  if (verboseText) targetInfo.getBuildTargetName() else "")
+        },
+        isDebugMode = isDebugMode) {
   override fun getEnvironment(project: Project): JvmEnvironmentItem? =
-    JvmRunEnvironmentTask(project).connectAndExecute(targetInfo.id)?.items?.first()
+      JvmRunEnvironmentTask(project).connectAndExecute(targetInfo.id)?.items?.first()
 }

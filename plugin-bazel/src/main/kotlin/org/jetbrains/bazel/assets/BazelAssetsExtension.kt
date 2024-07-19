@@ -1,10 +1,10 @@
 package org.jetbrains.bazel.assets
 
 import com.intellij.openapi.util.IconLoader
+import javax.swing.Icon
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
-import javax.swing.Icon
 
 internal class BazelAssetsExtension : BuildToolAssetsExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId

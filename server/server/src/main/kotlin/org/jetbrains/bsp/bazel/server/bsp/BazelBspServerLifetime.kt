@@ -1,11 +1,11 @@
 package org.jetbrains.bsp.bazel.server.bsp
 
-import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.system.exitProcess
+import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 
 class BazelBspServerLifetime(private val workspaceContextProvider: WorkspaceContextProvider) {
   private val initializedStatus = CompletableFuture<Any?>()

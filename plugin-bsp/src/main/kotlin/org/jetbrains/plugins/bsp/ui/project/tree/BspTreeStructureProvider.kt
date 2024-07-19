@@ -19,19 +19,21 @@ public class BspTreeStructureProvider : TreeStructureProvider {
   // in rare cases with complicated project (modules) structure IJ
   // doesn't know how to render the project tree,
   // what causes flat directory structure.
-  // Instead we use the root directory node as the root of the project view tree and ignore modules altogether.
+  // Instead we use the root directory node as the root of the project view tree and ignore modules
+  // altogether.
   // This results in displaying the folder structure of the project as it is on the file system.
   override fun modify(
-    parent: AbstractTreeNode<*>,
-    children: Collection<AbstractTreeNode<*>>,
-    settings: ViewSettings,
+      parent: AbstractTreeNode<*>,
+      children: Collection<AbstractTreeNode<*>>,
+      settings: ViewSettings,
   ): Collection<AbstractTreeNode<*>> {
     val project = parent.project ?: return children
     if (!project.isBspProject) return children
 
     if (parent is ProjectViewProjectNode) {
       val rootDirectory =
-        project.service<PsiManager>().findDirectory(project.rootDir) ?: return children // should never happen
+          project.service<PsiManager>().findDirectory(project.rootDir)
+              ?: return children // should never happen
       val rootDirectoryNode = PsiDirectoryNode(project, rootDirectory, settings)
       val externalLibrariesNode = children.firstIsInstanceOrNull<ExternalLibrariesNode>()
       return listOfNotNull(rootDirectoryNode, externalLibrariesNode)
@@ -40,8 +42,7 @@ public class BspTreeStructureProvider : TreeStructureProvider {
     return children.removeModuleAndModuleGroupNodes()
   }
 
-  private fun Collection<AbstractTreeNode<*>>.removeModuleAndModuleGroupNodes(): Collection<AbstractTreeNode<*>> =
-    this
-      .filterNot { it is ProjectViewModuleGroupNode }
-      .filterNot { it is ProjectViewModuleNode }
+  private fun Collection<AbstractTreeNode<*>>.removeModuleAndModuleGroupNodes():
+      Collection<AbstractTreeNode<*>> =
+      this.filterNot { it is ProjectViewModuleGroupNode }.filterNot { it is ProjectViewModuleNode }
 }

@@ -7,22 +7,25 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
 public data class ExpectedLibraryEntity(
-  val libraryEntity: LibraryEntity,
+    val libraryEntity: LibraryEntity,
 ) {
-  constructor(libraryEntity: LibraryEntity.Builder) : this(MutableEntityStorage.create().addEntity(libraryEntity))
+  constructor(
+      libraryEntity: LibraryEntity.Builder
+  ) : this(MutableEntityStorage.create().addEntity(libraryEntity))
 }
 
 public infix fun LibraryEntity.shouldBeEqual(expected: ExpectedLibraryEntity): Unit =
-  validateLibraryEntity(this, expected)
+    validateLibraryEntity(this, expected)
 
 public infix fun Collection<LibraryEntity>.shouldContainExactlyInAnyOrder(
-  expectedValues: Collection<ExpectedLibraryEntity>,
+    expectedValues: Collection<ExpectedLibraryEntity>,
 ): Unit =
-  this.shouldContainExactlyInAnyOrder({ actual, expected -> validateLibraryEntity(actual, expected) }, expectedValues)
+    this.shouldContainExactlyInAnyOrder(
+        { actual, expected -> validateLibraryEntity(actual, expected) }, expectedValues)
 
 private fun validateLibraryEntity(
-  actual: LibraryEntity,
-  expected: ExpectedLibraryEntity,
+    actual: LibraryEntity,
+    expected: ExpectedLibraryEntity,
 ) {
   actual.tableId shouldBe expected.libraryEntity.tableId
   actual.name shouldBe expected.libraryEntity.name

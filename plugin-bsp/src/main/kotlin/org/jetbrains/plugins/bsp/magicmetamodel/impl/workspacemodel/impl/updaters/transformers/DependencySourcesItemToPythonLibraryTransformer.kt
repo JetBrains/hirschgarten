@@ -4,7 +4,7 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.PythonLibrary
 
 internal object DependencySourcesItemToPythonLibraryTransformer :
-  WorkspaceModelEntityPartitionTransformer<DependencySourcesItem, PythonLibrary> {
+    WorkspaceModelEntityPartitionTransformer<DependencySourcesItem, PythonLibrary> {
   override fun transform(inputEntity: DependencySourcesItem): List<PythonLibrary> =
-    inputEntity.sources.mapNotNull { PythonLibrary(listOf(it)) }
+      inputEntity.sources.mapNotNull { PythonLibrary(listOf(it)) }
 }

@@ -15,32 +15,38 @@ import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDecl
 
 class StarlarkFindUsagesProvider : FindUsagesProvider {
   override fun canFindUsagesFor(psiElement: PsiElement): Boolean =
-    psiElement is StarlarkNamedElement || psiElement is StarlarkReferenceExpression
+      psiElement is StarlarkNamedElement || psiElement is StarlarkReferenceExpression
 
-  override fun getHelpId(psiElement: PsiElement): String = when (psiElement) {
-    is StarlarkTargetExpression, is StarlarkReferenceExpression -> "reference.dialogs.findUsages.variable"
-    else -> HelpID.FIND_OTHER_USAGES
-  }
+  override fun getHelpId(psiElement: PsiElement): String =
+      when (psiElement) {
+        is StarlarkTargetExpression,
+        is StarlarkReferenceExpression -> "reference.dialogs.findUsages.variable"
+        else -> HelpID.FIND_OTHER_USAGES
+      }
 
-  override fun getType(element: PsiElement): String = when (element) {
-    is StarlarkFunctionDeclaration -> "function"
-    is StarlarkTargetExpression, is StarlarkReferenceExpression -> "variable"
-    else -> ""
-  }
+  override fun getType(element: PsiElement): String =
+      when (element) {
+        is StarlarkFunctionDeclaration -> "function"
+        is StarlarkTargetExpression,
+        is StarlarkReferenceExpression -> "variable"
+        else -> ""
+      }
 
-  override fun getDescriptiveName(element: PsiElement): String = when (element) {
-    is StarlarkElement -> element.name ?: "<anonymous>"
-    else -> element.toString()
-  }
+  override fun getDescriptiveName(element: PsiElement): String =
+      when (element) {
+        is StarlarkElement -> element.name ?: "<anonymous>"
+        else -> element.toString()
+      }
 
-  override fun getNodeText(element: PsiElement, useFullName: Boolean): String = getDescriptiveName(element)
+  override fun getNodeText(element: PsiElement, useFullName: Boolean): String =
+      getDescriptiveName(element)
 
   override fun getWordsScanner(): WordsScanner = StarlarkWordsScanner()
 }
 
-class StarlarkWordsScanner : DefaultWordsScanner(
-  StarlarkHighlightingLexer(),
-  StarlarkTokenSets.IDENTIFIER,
-  StarlarkTokenSets.COMMENT,
-  StarlarkTokenSets.STRINGS
-)
+class StarlarkWordsScanner :
+    DefaultWordsScanner(
+        StarlarkHighlightingLexer(),
+        StarlarkTokenSets.IDENTIFIER,
+        StarlarkTokenSets.COMMENT,
+        StarlarkTokenSets.STRINGS)

@@ -1,13 +1,12 @@
 package org.jetbrains.bsp.probe.test
 
+import java.nio.file.Paths
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.virtuslab.ideprobe.ProbeDriver
 import org.virtuslab.ideprobe.robot.RobotProbeDriver
 import org.virtuslab.ideprobe.robot.RobotSyntax.SearchableOps
 import scala.runtime.BoxedUnit
-import java.nio.file.Paths
-
 
 class LocalProbeTests {
 
@@ -15,11 +14,7 @@ class LocalProbeTests {
   fun `open local instance of bazel-bsp project and check imported targets`() {
     val localBazelBspPath = Paths.get("/tmp/bazel-bsp")
 
-    with(
-      IdeProbeTestRunner(
-        localBazelBspPath
-      )
-    ) {
+    with(IdeProbeTestRunner(localBazelBspPath)) {
       runIntellijAndOpenProject { probe, robot, intellij ->
         fun testTargetsTree(buildPanel: SearchableOps) {
           val targetsTree = buildPanel.findElement(Query.className("Tree"))
@@ -47,8 +42,8 @@ class LocalProbeTests {
     var problemsText = ""
     probe.tryUntilSuccessful {
       errors.fixture().click()
-      val problemsTree = findElement(Query.className("ProblemsViewPanel"))
-        .findElement(Query.className("Tree"))
+      val problemsTree =
+          findElement(Query.className("ProblemsViewPanel")).findElement(Query.className("Tree"))
       problemsText = problemsTree.fullText().split("\n").firstOrNull().orEmpty()
     }
     Assertions.assertEquals("No errors found by the IDE", problemsText)

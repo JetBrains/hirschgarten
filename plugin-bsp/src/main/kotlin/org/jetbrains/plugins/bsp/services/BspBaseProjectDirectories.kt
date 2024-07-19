@@ -10,25 +10,23 @@ import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
 
 public class BspBaseProjectDirectories(project: Project, scope: CoroutineScope) :
-  BaseProjectDirectoriesImpl(project, scope) {
+    BaseProjectDirectoriesImpl(project, scope) {
   override fun collectRoots(snapshot: ImmutableEntityStorage): Sequence<VirtualFile> {
     return super.collectRoots(snapshot) +
-      snapshot.entities(BspProjectDirectoriesEntity::class.java).mapNotNull { it.projectRoot.virtualFile }
+        snapshot.entities(BspProjectDirectoriesEntity::class.java).mapNotNull {
+          it.projectRoot.virtualFile
+        }
   }
 
   override fun processChange(
-    change: VersionedStorageChange,
-    oldRoots: HashSet<VirtualFile>,
-    newRoots: HashSet<VirtualFile>,
+      change: VersionedStorageChange,
+      oldRoots: HashSet<VirtualFile>,
+      newRoots: HashSet<VirtualFile>,
   ) {
     super.processChange(change, oldRoots, newRoots)
     change.getChanges(BspProjectDirectoriesEntity::class.java).forEach {
-      it.oldEntity?.projectRoot?.virtualFile?.let { virtualFile ->
-        oldRoots.add(virtualFile)
-      }
-      it.newEntity?.projectRoot?.virtualFile?.let { virtualFile ->
-        newRoots.add(virtualFile)
-      }
+      it.oldEntity?.projectRoot?.virtualFile?.let { virtualFile -> oldRoots.add(virtualFile) }
+      it.newEntity?.projectRoot?.virtualFile?.let { virtualFile -> newRoots.add(virtualFile) }
     }
   }
 }

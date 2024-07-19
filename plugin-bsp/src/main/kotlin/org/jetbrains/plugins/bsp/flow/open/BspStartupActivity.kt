@@ -27,8 +27,8 @@ private val log = logger<BspStartupActivity>()
 /**
  * Runs actions after the project has started up and the index is up-to-date.
  *
- * @see BspProjectOpenProcessor for additional actions that
- * may run when a project is being imported for the first time.
+ * @see BspProjectOpenProcessor for additional actions that may run when a project is being imported
+ *   for the first time.
  */
 public class BspStartupActivity : ProjectActivity {
   override suspend fun execute(project: Project) {
@@ -66,14 +66,14 @@ public class BspStartupActivity : ProjectActivity {
       val bspSyncConsole = BspConsoleService.getInstance(this).bspSyncConsole
       log.info("BSP sync has failed", e)
       bspSyncConsole.startTask(
-        taskId = "bsp-pre-import",
-        title = BspPluginBundle.message("console.task.pre.import.title"),
-        message = BspPluginBundle.message("console.task.pre.import.in.progress"),
+          taskId = "bsp-pre-import",
+          title = BspPluginBundle.message("console.task.pre.import.title"),
+          message = BspPluginBundle.message("console.task.pre.import.in.progress"),
       )
       bspSyncConsole.finishTask(
-        taskId = "bsp-pre-import",
-        message = BspPluginBundle.message("console.task.pre.import.failed"),
-        result = FailureResultImpl(e),
+          taskId = "bsp-pre-import",
+          message = BspPluginBundle.message("console.task.pre.import.failed"),
+          result = FailureResultImpl(e),
       )
     }
   }
@@ -83,22 +83,22 @@ public class BspStartupActivity : ProjectActivity {
 
     project.connection = DefaultBspConnection(project, project.connectionDetailsProvider)
 
-    val wasFirstOpeningSuccessful = project.connectionDetailsProvider.onFirstOpening(project, project.rootDir)
+    val wasFirstOpeningSuccessful =
+        project.connectionDetailsProvider.onFirstOpening(project, project.rootDir)
     log.debug("Was onFirstOpening successful: $wasFirstOpeningSuccessful")
 
     if (wasFirstOpeningSuccessful) {
       if (project.isTrusted()) {
         log.info("Running BSP sync task")
-        SyncProjectTask(project).execute(
-          shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
-        )
+        SyncProjectTask(project)
+            .execute(
+                shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+            )
       }
     } else {
       log.info("Cancelling BSP sync. Closing the project window")
       // TODO https://youtrack.jetbrains.com/issue/BAZEL-623
-      AppUIExecutor.onUiThread().execute {
-        CloseProjectWindowHelper().windowClosing(project)
-      }
+      AppUIExecutor.onUiThread().execute { CloseProjectWindowHelper().windowClosing(project) }
     }
   }
 

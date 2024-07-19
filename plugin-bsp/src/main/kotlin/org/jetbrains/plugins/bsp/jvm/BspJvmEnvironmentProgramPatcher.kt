@@ -10,7 +10,11 @@ import org.jetbrains.bsp.protocol.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTO
 import org.jetbrains.plugins.bsp.ui.actions.target.LocalJvmRunnerAction
 
 public class BspJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
-  override fun patchJavaParameters(executor: Executor, configuration: RunProfile, javaParameters: JavaParameters) {
+  override fun patchJavaParameters(
+      executor: Executor,
+      configuration: RunProfile,
+      javaParameters: JavaParameters
+  ) {
     configuration.getEnvironment()?.let {
       val prioritizeIdeClasspath = configuration.includeJpsClassPaths() ?: false
       javaParameters.applyJavaParametersFromItem(it, prioritizeIdeClasspath)
@@ -18,19 +22,20 @@ public class BspJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
   }
 
   private fun RunProfile.getEnvironment() =
-    (this as? UserDataHolderBase)?.getUserData(LocalJvmRunnerAction.jvmEnvironment)
+      (this as? UserDataHolderBase)?.getUserData(LocalJvmRunnerAction.jvmEnvironment)
 
   private fun RunProfile.includeJpsClassPaths() =
-    (this as? UserDataHolderBase)?.getUserData(LocalJvmRunnerAction.includeJpsClassPaths)
+      (this as? UserDataHolderBase)?.getUserData(LocalJvmRunnerAction.includeJpsClassPaths)
 
-  private fun JavaParameters.applyJavaParametersFromItem(item: JvmEnvironmentItem, includeJpsClassPaths: Boolean) {
+  private fun JavaParameters.applyJavaParametersFromItem(
+      item: JvmEnvironmentItem,
+      includeJpsClassPaths: Boolean
+  ) {
     val newEnvironmentVariables = env + item.environmentVariables
 
     val jpsClassPaths = classPath.pathList.filter { it.contains(JPS_COMPILED_BASE_DIRECTORY) }
 
-    val newClassPath =
-      if (includeJpsClassPaths) jpsClassPaths + item.classpath
-      else item.classpath
+    val newClassPath = if (includeJpsClassPaths) jpsClassPaths + item.classpath else item.classpath
 
     apply {
       env = newEnvironmentVariables

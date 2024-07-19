@@ -13,7 +13,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.workspacemodel.entities.BspEntitySource
 
 internal class LibraryEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+    private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<Library, LibraryEntity> {
   //  a snippet of adding module library entity in case we want it back
   //  private fun addModuleLibraryEntity(
@@ -26,11 +26,12 @@ internal class LibraryEntityUpdater(
   //    return addLibraryEntity(builder, entityToAdd, tableId, entitySource)
   //  }
   override fun addEntity(entityToAdd: Library): LibraryEntity =
-    addProjectLibraryEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
+      addProjectLibraryEntity(
+          workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
   private fun addProjectLibraryEntity(
-    builder: MutableEntityStorage,
-    entityToAdd: Library,
+      builder: MutableEntityStorage,
+      entityToAdd: Library,
   ): LibraryEntity {
     val tableId = LibraryTableId.ProjectLibraryTableId
     val entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig)
@@ -38,19 +39,20 @@ internal class LibraryEntityUpdater(
   }
 
   private fun addLibraryEntity(
-    builder: MutableEntityStorage,
-    entityToAdd: Library,
-    tableId: LibraryTableId,
-    entitySource: EntitySource,
+      builder: MutableEntityStorage,
+      entityToAdd: Library,
+      tableId: LibraryTableId,
+      entitySource: EntitySource,
   ): LibraryEntity {
-    val libraryEntity = LibraryEntity(
-      name = entityToAdd.displayName,
-      tableId = tableId,
-      roots = toLibrarySourcesRoots(entityToAdd) + toLibraryClassesRoots(entityToAdd),
-      entitySource = entitySource,
-    ) {
-      this.excludedRoots = arrayListOf()
-    }
+    val libraryEntity =
+        LibraryEntity(
+            name = entityToAdd.displayName,
+            tableId = tableId,
+            roots = toLibrarySourcesRoots(entityToAdd) + toLibraryClassesRoots(entityToAdd),
+            entitySource = entitySource,
+        ) {
+          this.excludedRoots = arrayListOf()
+        }
 
     val foundLibrary = builder.resolve(LibraryId(entityToAdd.displayName, tableId))
     if (foundLibrary != null) return foundLibrary
@@ -59,27 +61,34 @@ internal class LibraryEntityUpdater(
   }
 
   private fun toLibrarySourcesRoots(entityToAdd: Library): List<LibraryRoot> =
-    entityToAdd.sourceJars.map {
-      LibraryRoot(
-        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUrl(Library.formatJarString(it)),
-        type = LibraryRootTypeId.SOURCES,
-      )
-    }
+      entityToAdd.sourceJars.map {
+        LibraryRoot(
+            url =
+                workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUrl(
+                    Library.formatJarString(it)),
+            type = LibraryRootTypeId.SOURCES,
+        )
+      }
 
   private fun toLibraryClassesRoots(entityToAdd: Library): List<LibraryRoot> =
-    entityToAdd.classJars.ifEmpty { entityToAdd.iJars }.map {
-      LibraryRoot(
-        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUrl(Library.formatJarString(it)),
-        type = LibraryRootTypeId.COMPILED,
-      )
-    }
+      entityToAdd.classJars
+          .ifEmpty { entityToAdd.iJars }
+          .map {
+            LibraryRoot(
+                url =
+                    workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUrl(
+                        Library.formatJarString(it)),
+                type = LibraryRootTypeId.COMPILED,
+            )
+          }
 }
 
-internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig):
-  EntitySource = when {
-  !JpsFeatureFlags.isJpsCompilationEnabled -> BspEntitySource
-  else -> LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
-    workspaceModelEntityUpdaterConfig.project,
-    null
-  )
-}
+internal fun calculateLibraryEntitySource(
+    workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig
+): EntitySource =
+    when {
+      !JpsFeatureFlags.isJpsCompilationEnabled -> BspEntitySource
+      else ->
+          LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
+              workspaceModelEntityUpdaterConfig.project, null)
+    }

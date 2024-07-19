@@ -6,5 +6,5 @@ data class CppModule(
     val copts: List<String>,
     val defines: List<String>,
     val linkOpts: List<String>,
-    val linkShared: Boolean) : LanguageData
-
+    val linkShared: Boolean
+) : LanguageData

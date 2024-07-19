@@ -20,33 +20,33 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
+import java.io.File
+import java.net.URI
 import org.jetbrains.plugins.bsp.building.action.isBuildInProgress
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.ui.actions.registered.ResyncAction
 import org.jetbrains.plugins.bsp.ui.actions.registered.isSyncInProgress
-import java.io.File
-import java.net.URI
 
 private data class SubtaskParents(
-  val rootTask: Any,
-  val parentTask: Any,
+    val rootTask: Any,
+    val parentTask: Any,
 )
 
 private val log = logger<TaskConsole>()
 
 public abstract class TaskConsole(
-  private val taskView: BuildProgressListener,
-  private val basePath: String,
-  private val buildToolName: String,
+    private val taskView: BuildProgressListener,
+    private val basePath: String,
+    private val buildToolName: String,
 ) {
   protected val tasksInProgress: MutableList<Any> = mutableListOf()
   private val subtaskParentMap: LinkedHashMap<Any, SubtaskParents> = linkedMapOf()
 
   /**
-   * Displays start of a task in this console.
-   * Will not display anything if a task with given `taskId` is already running
+   * Displays start of a task in this console. Will not display anything if a task with given
+   * `taskId` is already running
    *
    * @param taskId ID of the newly started task
    * @param title task title which will be displayed in the console
@@ -56,24 +56,28 @@ public abstract class TaskConsole(
    */
   @Synchronized
   public fun startTask(
-    taskId: Any,
-    title: String,
-    message: String,
-    cancelAction: () -> Unit = {},
-    redoAction: (() -> Unit)? = null,
+      taskId: Any,
+      title: String,
+      message: String,
+      cancelAction: () -> Unit = {},
+      redoAction: (() -> Unit)? = null,
   ): Unit =
-    doUnlessTaskInProgress(taskId) {
-      tasksInProgress.add(taskId)
-      doStartTask(taskId, BspPluginBundle.message("console.tasks.title", buildToolName, title),
-        message, cancelAction, redoAction)
-    }
+      doUnlessTaskInProgress(taskId) {
+        tasksInProgress.add(taskId)
+        doStartTask(
+            taskId,
+            BspPluginBundle.message("console.tasks.title", buildToolName, title),
+            message,
+            cancelAction,
+            redoAction)
+      }
 
   private fun doStartTask(
-    taskId: Any,
-    title: String,
-    message: String,
-    cancelAction: () -> Unit,
-    redoAction: (() -> Unit)?,
+      taskId: Any,
+      title: String,
+      message: String,
+      cancelAction: () -> Unit,
+      redoAction: (() -> Unit)?,
   ) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
     taskDescriptor.isActivateToolWindowWhenAdded = true
@@ -85,17 +89,17 @@ public abstract class TaskConsole(
   }
 
   private fun addCancelActionToTheDescriptor(
-    taskId: Any,
-    taskDescriptor: DefaultBuildDescriptor,
-    doCancelAction: () -> Unit,
+      taskId: Any,
+      taskDescriptor: DefaultBuildDescriptor,
+      doCancelAction: () -> Unit,
   ) {
     val cancelAction = CancelAction(doCancelAction, taskId)
     taskDescriptor.withAction(cancelAction)
   }
 
   private fun addRedoActionToTheDescriptor(
-    taskDescriptor: DefaultBuildDescriptor,
-    redoAction: (() -> Unit)? = null,
+      taskDescriptor: DefaultBuildDescriptor,
+      redoAction: (() -> Unit)? = null,
   ) {
     val action = calculateRedoAction(redoAction)
     taskDescriptor.withAction(action)
@@ -106,22 +110,19 @@ public abstract class TaskConsole(
   public fun hasTasksInProgress(): Boolean = tasksInProgress.isNotEmpty()
 
   /**
-   * Displays finish of a task (and all its children) in this console.
-   * Will not display anything if a task with given `taskId` is not running
-
+   * Displays finish of a task (and all its children) in this console. Will not display anything if
+   * a task with given `taskId` is not running
+   *
    * @param taskId ID of the finished task (last started task by default, if nothing passed)
    * @param message message informing about the start of the task
    * @param result result of the task execution (success by default, if nothing passed)
    */
   @Synchronized
   public fun finishTask(
-    taskId: Any,
-    message: String,
-    result: EventResult = SuccessResultImpl(),
-  ): Unit =
-    doIfTaskInProgress(taskId) {
-      doFinishTask(taskId, message, result)
-    }
+      taskId: Any,
+      message: String,
+      result: EventResult = SuccessResultImpl(),
+  ): Unit = doIfTaskInProgress(taskId) { doFinishTask(taskId, message, result) }
 
   private fun doFinishTask(taskId: Any, message: String, result: EventResult) {
     if (result is FailureResultImpl) {
@@ -137,41 +138,44 @@ public abstract class TaskConsole(
    * Displays start of a subtask in this console
    *
    * @param parentTaskId id of the task (or another subtask) being this subtask's direct parent
-   * @param subtaskId id of the newly created subtask. **Has to be unique among all running subtasks in
-   * this console - otherwise, unexpected behavior might occur**
+   * @param subtaskId id of the newly created subtask. **Has to be unique among all running subtasks
+   *   in this console - otherwise, unexpected behavior might occur**
    * @param message will be displayed as this subtask's title until it's finished
    */
   @Synchronized
   public fun startSubtask(parentTaskId: Any, subtaskId: Any, message: String) {
     val rootTaskId = subtaskParentMap[parentTaskId]?.rootTask ?: parentTaskId
-    doIfTaskInProgress(rootTaskId) {
-      doStartSubtask(rootTaskId, parentTaskId, subtaskId, message)
-    }
+    doIfTaskInProgress(rootTaskId) { doStartSubtask(rootTaskId, parentTaskId, subtaskId, message) }
   }
 
   private fun doStartSubtask(rootTaskId: Any, parentTaskId: Any, subtaskId: Any, message: String) {
-    subtaskParentMap[subtaskId] = SubtaskParents(
-      rootTask = rootTaskId,
-      parentTask = parentTaskId,
-    )
-    val event = ProgressBuildEventImpl(subtaskId, parentTaskId, System.currentTimeMillis(), message, -1, -1, "")
+    subtaskParentMap[subtaskId] =
+        SubtaskParents(
+            rootTask = rootTaskId,
+            parentTask = parentTaskId,
+        )
+    val event =
+        ProgressBuildEventImpl(
+            subtaskId, parentTaskId, System.currentTimeMillis(), message, -1, -1, "")
     taskView.onEvent(rootTaskId, event)
   }
 
   /**
    * Displays finishing of a subtask in this console
    *
-   * @param subtaskId id of the subtask to be finished.
-   * If there is no such subtask running, this method will not do anything
+   * @param subtaskId id of the subtask to be finished. If there is no such subtask running, this
+   *   method will not do anything
    * @param message will be displayed as this subtask's title after it is finished
    * @param result result type of the subtask, default [SuccessResultImpl]
    */
   @Synchronized
-  public fun finishSubtask(subtaskId: Any, message: String, result: EventResult = SuccessResultImpl()) {
+  public fun finishSubtask(
+      subtaskId: Any,
+      message: String,
+      result: EventResult = SuccessResultImpl()
+  ) {
     subtaskParentMap[subtaskId]?.let {
-      doIfTaskInProgress(it.rootTask) {
-        doFinishSubtask(it.rootTask, subtaskId, message, result)
-      }
+      doIfTaskInProgress(it.rootTask) { doFinishSubtask(it.rootTask, subtaskId, message, result) }
     }
   }
 
@@ -184,12 +188,12 @@ public abstract class TaskConsole(
 
   private fun finishAllDescendants(parentId: Any) {
     subtaskParentMap
-      .filterValues { it.parentTask == parentId }
-      .keys
-      .forEach {
-        subtaskParentMap.remove(it)
-        finishAllDescendants(it)
-      }
+        .filterValues { it.parentTask == parentId }
+        .keys
+        .forEach {
+          subtaskParentMap.remove(it)
+          finishAllDescendants(it)
+        }
   }
 
   /**
@@ -204,19 +208,18 @@ public abstract class TaskConsole(
    */
   @Synchronized
   public fun addDiagnosticMessage(
-    taskId: Any,
-    fileURI: String,
-    line: Int,
-    column: Int,
-    message: String,
-    severity: MessageEvent.Kind,
+      taskId: Any,
+      fileURI: String,
+      line: Int,
+      column: Int,
+      message: String,
+      severity: MessageEvent.Kind,
   ) {
     maybeGetRootTask(taskId)?.let {
       doIfTaskInProgress(it) {
         if (message.isNotBlank()) {
           val fullFileURI = if (fileURI.startsWith("file://")) fileURI else "file://$fileURI"
-          val subtaskId =
-            if (tasksInProgress.contains(taskId)) it else taskId
+          val subtaskId = if (tasksInProgress.contains(taskId)) it else taskId
           val filePosition = FilePosition(File(URI(fullFileURI)), line, column)
           doAddDiagnosticMessage(it, subtaskId, filePosition, message, severity)
         }
@@ -225,26 +228,25 @@ public abstract class TaskConsole(
   }
 
   private fun doAddDiagnosticMessage(
-    taskId: Any,
-    subtaskId: Any,
-    filePosition: FilePosition,
-    message: String,
-    severity: MessageEvent.Kind,
+      taskId: Any,
+      subtaskId: Any,
+      filePosition: FilePosition,
+      message: String,
+      severity: MessageEvent.Kind,
   ) {
-    val event = FileMessageEventImpl(
-      subtaskId,
-      severity,
-      null,
-      prepareTextToPrint(message),
-      null,
-      filePosition,
-    )
+    val event =
+        FileMessageEventImpl(
+            subtaskId,
+            severity,
+            null,
+            prepareTextToPrint(message),
+            null,
+            filePosition,
+        )
     taskView.onEvent(taskId, event)
   }
 
-  /**
-   * Adds a message to the latest task in this console.
-   */
+  /** Adds a message to the latest task in this console. */
   @Synchronized
   public fun addMessage(message: String) {
     val entry = subtaskParentMap.entries.lastOrNull()
@@ -253,11 +255,12 @@ public abstract class TaskConsole(
   }
 
   /**
-   * Adds a message to a particular task in this console. If the message is added to a subtask, it will also be
-   * added to the subtask's parent task.
+   * Adds a message to a particular task in this console. If the message is added to a subtask, it
+   * will also be added to the subtask's parent task.
    *
    * @param taskId id of the task (or a subtask), to which the message will be added
-   * @param message message to be added. New line will be inserted at its end if it's not present there already
+   * @param message message to be added. New line will be inserted at its end if it's not present
+   *   there already
    */
   @Synchronized
   public fun addMessage(taskId: Any, message: String) {
@@ -277,18 +280,17 @@ public abstract class TaskConsole(
   }
 
   private fun sendMessageToAncestors(taskId: Any, message: String): Unit =
-    doUnlessTaskInProgress(taskId) { // if taskID is a root task, it has no parents
-      maybeGetParentTask(taskId)?.let {
-        if (it != taskId) {
-          sendMessageEvent(it, message)
-          sendMessageToAncestors(it, message)
+      doUnlessTaskInProgress(taskId) { // if taskID is a root task, it has no parents
+        maybeGetParentTask(taskId)?.let {
+          if (it != taskId) {
+            sendMessageEvent(it, message)
+            sendMessageToAncestors(it, message)
+          }
         }
       }
-    }
 
   private fun sendMessageEvent(taskId: Any, message: String) {
-    val subtaskId =
-      if (tasksInProgress.contains(taskId)) null else taskId
+    val subtaskId = if (tasksInProgress.contains(taskId)) null else taskId
     val event = OutputBuildEventImpl(subtaskId, message, true)
     maybeGetRootTask(taskId)?.let { taskView.onEvent(it, event) }
   }
@@ -306,17 +308,17 @@ public abstract class TaskConsole(
   }
 
   private fun prepareTextToPrint(text: String): String =
-    if (text.endsWith("\n")) text else text + "\n"
+      if (text.endsWith("\n")) text else text + "\n"
 
   private fun maybeGetParentTask(taskId: Any): Any? =
-    if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.parentTask
+      if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.parentTask
 
   private fun maybeGetRootTask(taskId: Any): Any? =
-    if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.rootTask
+      if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.rootTask
 
   private inner class CancelAction(
-    private val doCancelAction: () -> Unit,
-    private val taskId: Any,
+      private val doCancelAction: () -> Unit,
+      private val taskId: Any,
   ) : DumbAwareAction({ "Stop" }, BspPluginIcons.disconnect) {
     override fun actionPerformed(e: AnActionEvent) {
       doCancelAction()
@@ -326,44 +328,45 @@ public abstract class TaskConsole(
       e.presentation.isEnabled = tasksInProgress.contains(taskId)
     }
 
-    override fun getActionUpdateThread(): ActionUpdateThread =
-      ActionUpdateThread.BGT
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
   }
 }
 
 public class SyncTaskConsole(
-  taskView: BuildProgressListener,
-  basePath: String,
-  buildToolName: String,
+    taskView: BuildProgressListener,
+    basePath: String,
+    buildToolName: String,
 ) : TaskConsole(taskView, basePath, buildToolName) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
-    object : SuspendableAction({ BspPluginBundle.message("resync.action.text") }, BspPluginIcons.reload) {
-      override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-        redoAction?.invoke() ?: ResyncAction().actionPerformed(e)
-      }
+      object :
+          SuspendableAction(
+              { BspPluginBundle.message("resync.action.text") }, BspPluginIcons.reload) {
+        override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+          redoAction?.invoke() ?: ResyncAction().actionPerformed(e)
+        }
 
-      override fun update(project: Project, e: AnActionEvent) {
-        e.presentation.isEnabled = !project.isSyncInProgress() && !project.isBuildInProgress()
+        override fun update(project: Project, e: AnActionEvent) {
+          e.presentation.isEnabled = !project.isSyncInProgress() && !project.isBuildInProgress()
+        }
       }
-    }
 }
 
 public class BuildTaskConsole(
-  taskView: BuildProgressListener,
-  basePath: String,
-  buildToolName: String,
+    taskView: BuildProgressListener,
+    basePath: String,
+    buildToolName: String,
 ) : TaskConsole(taskView, basePath, buildToolName) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
-    object : AnAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
-      override fun actionPerformed(e: AnActionEvent) {
-        redoAction?.invoke()
-      }
+      object :
+          AnAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
+        override fun actionPerformed(e: AnActionEvent) {
+          redoAction?.invoke()
+        }
 
-      override fun update(e: AnActionEvent) {
-        e.presentation.isEnabled = tasksInProgress.isEmpty()
-      }
+        override fun update(e: AnActionEvent) {
+          e.presentation.isEnabled = tasksInProgress.isEmpty()
+        }
 
-      override fun getActionUpdateThread(): ActionUpdateThread =
-        ActionUpdateThread.BGT
-    }
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+      }
 }

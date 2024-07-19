@@ -16,8 +16,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 private class TestableProjectOpenProcessorExtension(
-  override val buildToolId: BuildToolId,
-  override val shouldBspProjectOpenProcessorBeAvailable: Boolean,
+    override val buildToolId: BuildToolId,
+    override val shouldBspProjectOpenProcessorBeAvailable: Boolean,
 ) : BspProjectOpenProcessorExtension
 
 class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
@@ -43,7 +43,11 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
   private fun cleanupExtensionPoints() {
     val epName = BspProjectOpenProcessorExtension.ep.name
     application.extensionArea.unregisterExtensionPoint(epName)
-    application.extensionArea.registerExtensionPoint(epName, BspProjectOpenProcessorExtension::class.java.name, ExtensionPoint.Kind.INTERFACE, true)
+    application.extensionArea.registerExtensionPoint(
+        epName,
+        BspProjectOpenProcessorExtension::class.java.name,
+        ExtensionPoint.Kind.INTERFACE,
+        true)
   }
 
   @Nested
@@ -65,7 +69,7 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
       WriteCommandAction.runWriteCommandAction(project) {
         val connectionFile = projectRoot.createFile(".bsp/connection-file.json")
         connectionFile.writeText(
-          """
+            """
             |{
             | "name": "build-tool-id",
             | "argv": ["build-tool", "bsp"],
@@ -73,7 +77,8 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
             | "bspVersion": "2.0.0",
             | "languages": ["scala", "kotlin"]
             |}
-          """.trimMargin(),
+          """
+                .trimMargin(),
         )
       }
 
@@ -90,7 +95,7 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
       WriteCommandAction.runWriteCommandAction(project) {
         val connectionFile = projectRoot.createFile(".bsp/connection-file.json")
         connectionFile.writeText(
-          """
+            """
             |{
             | "name": "build-tool-id",
             | "argv": ["build-tool", "bsp"],
@@ -98,13 +103,15 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
             | "bspVersion": "2.0.0",
             | "languages": ["scala", "kotlin"]
             |}
-          """.trimMargin(),
+          """
+                .trimMargin(),
         )
 
         TestableProjectOpenProcessorExtension(
-          buildToolId = BuildToolId("build-tool-id"),
-          shouldBspProjectOpenProcessorBeAvailable = false,
-        ).register()
+                buildToolId = BuildToolId("build-tool-id"),
+                shouldBspProjectOpenProcessorBeAvailable = false,
+            )
+            .register()
       }
 
       // when
@@ -120,7 +127,7 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
       WriteCommandAction.runWriteCommandAction(project) {
         val connectionFile = projectRoot.createFile(".bsp/connection-file.json")
         connectionFile.writeText(
-          """
+            """
             |{
             | "name": "build-tool-id",
             | "argv": ["build-tool", "bsp"],
@@ -128,13 +135,15 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
             | "bspVersion": "2.0.0",
             | "languages": ["scala", "kotlin"]
             |}
-          """.trimMargin(),
+          """
+                .trimMargin(),
         )
 
         TestableProjectOpenProcessorExtension(
-          buildToolId = BuildToolId("build-tool-id"),
-          shouldBspProjectOpenProcessorBeAvailable = true,
-        ).register()
+                buildToolId = BuildToolId("build-tool-id"),
+                shouldBspProjectOpenProcessorBeAvailable = true,
+            )
+            .register()
       }
 
       // when
@@ -150,7 +159,7 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
       WriteCommandAction.runWriteCommandAction(project) {
         val connectionFile1 = projectRoot.createFile(".bsp/connection-file-1.json")
         connectionFile1.writeText(
-          """
+            """
             |{
             | "name": "build-tool-id-1",
             | "argv": ["build-tool", "bsp"],
@@ -158,12 +167,13 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
             | "bspVersion": "2.0.0",
             | "languages": ["scala", "kotlin"]
             |}
-          """.trimMargin(),
+          """
+                .trimMargin(),
         )
 
         val connectionFile2 = projectRoot.createFile(".bsp/connection-file-2.json")
         connectionFile2.writeText(
-          """
+            """
             |{
             | "name": "build-tool-id-2",
             | "argv": ["build-tool", "bsp"],
@@ -171,12 +181,13 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
             | "bspVersion": "2.0.0",
             | "languages": ["scala", "kotlin"]
             |}
-          """.trimMargin(),
+          """
+                .trimMargin(),
         )
 
         val connectionFile3 = projectRoot.createFile(".bsp/connection-file-3.json")
         connectionFile3.writeText(
-          """
+            """
             |{
             | "name": "build-tool-id-3",
             | "argv": ["build-tool", "bsp"],
@@ -184,13 +195,15 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
             | "bspVersion": "2.0.0",
             | "languages": ["scala", "kotlin"]
             |}
-          """.trimMargin(),
+          """
+                .trimMargin(),
         )
 
         TestableProjectOpenProcessorExtension(
-          buildToolId = BuildToolId("build-tool-id-1"),
-          shouldBspProjectOpenProcessorBeAvailable = false,
-        ).register()
+                buildToolId = BuildToolId("build-tool-id-1"),
+                shouldBspProjectOpenProcessorBeAvailable = false,
+            )
+            .register()
       }
 
       // when

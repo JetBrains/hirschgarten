@@ -5,29 +5,39 @@ import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.options.colors.AttributesDescriptor
 import com.intellij.openapi.options.colors.ColorDescriptor
 import com.intellij.openapi.options.colors.ColorSettingsPage
+import javax.swing.Icon
 import org.jetbrains.bazel.languages.starlark.StarlarkBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguageIcons
-import javax.swing.Icon
 
 class StarlarkColorSettingsPage : ColorSettingsPage {
   override fun getAttributeDescriptors(): Array<AttributesDescriptor> {
     infix fun String.to(key: TextAttributesKey) = AttributesDescriptor(this, key)
 
     return arrayOf(
-      StarlarkBundle.message("highlighter.descriptor.text.keyword") to StarlarkHighlightingColors.KEYWORD,
-      StarlarkBundle.message("highlighter.descriptor.text.string") to StarlarkHighlightingColors.STRING,
-      StarlarkBundle.message("highlighter.descriptor.text.number") to StarlarkHighlightingColors.NUMBER,
-      StarlarkBundle.message("highlighter.descriptor.text.lineComment") to StarlarkHighlightingColors.LINE_COMMENT,
-      StarlarkBundle.message("highlighter.descriptor.text.semicolon") to StarlarkHighlightingColors.SEMICOLON,
-      StarlarkBundle.message("highlighter.descriptor.text.comma") to StarlarkHighlightingColors.COMMA,
-      StarlarkBundle.message("highlighter.descriptor.text.dot") to StarlarkHighlightingColors.DOT,
-      StarlarkBundle.message("highlighter.descriptor.text.parentheses") to StarlarkHighlightingColors.PARENTHESES,
-      StarlarkBundle.message("highlighter.descriptor.text.brackets") to StarlarkHighlightingColors.BRACKETS,
-      StarlarkBundle.message("highlighter.descriptor.text.identifier") to StarlarkHighlightingColors.IDENTIFIER,
-      StarlarkBundle.message("highlighter.descriptor.text.functionDeclaration")
-              to StarlarkHighlightingColors.FUNCTION_DECLARATION,
-      StarlarkBundle.message("highlighter.descriptor.text.namedArgument") to StarlarkHighlightingColors.NAMED_ARGUMENT,
+        StarlarkBundle.message("highlighter.descriptor.text.keyword") to
+            StarlarkHighlightingColors.KEYWORD,
+        StarlarkBundle.message("highlighter.descriptor.text.string") to
+            StarlarkHighlightingColors.STRING,
+        StarlarkBundle.message("highlighter.descriptor.text.number") to
+            StarlarkHighlightingColors.NUMBER,
+        StarlarkBundle.message("highlighter.descriptor.text.lineComment") to
+            StarlarkHighlightingColors.LINE_COMMENT,
+        StarlarkBundle.message("highlighter.descriptor.text.semicolon") to
+            StarlarkHighlightingColors.SEMICOLON,
+        StarlarkBundle.message("highlighter.descriptor.text.comma") to
+            StarlarkHighlightingColors.COMMA,
+        StarlarkBundle.message("highlighter.descriptor.text.dot") to StarlarkHighlightingColors.DOT,
+        StarlarkBundle.message("highlighter.descriptor.text.parentheses") to
+            StarlarkHighlightingColors.PARENTHESES,
+        StarlarkBundle.message("highlighter.descriptor.text.brackets") to
+            StarlarkHighlightingColors.BRACKETS,
+        StarlarkBundle.message("highlighter.descriptor.text.identifier") to
+            StarlarkHighlightingColors.IDENTIFIER,
+        StarlarkBundle.message("highlighter.descriptor.text.functionDeclaration") to
+            StarlarkHighlightingColors.FUNCTION_DECLARATION,
+        StarlarkBundle.message("highlighter.descriptor.text.namedArgument") to
+            StarlarkHighlightingColors.NAMED_ARGUMENT,
     )
   }
 
@@ -39,7 +49,8 @@ class StarlarkColorSettingsPage : ColorSettingsPage {
 
   override fun getHighlighter(): SyntaxHighlighter = StarlarkSyntaxHighlighter
 
-  override fun getDemoText(): String = """
+  override fun getDemoText(): String =
+      """
     |# Line comment
     |
     |def fun(param, optional_param = "string", *varargs, **kwargs):
@@ -62,7 +73,9 @@ class StarlarkColorSettingsPage : ColorSettingsPage {
     |
     |"banana".count("a")
     |numbers = {"one": 1, "two": 2}
-  """.trimMargin()
+  """
+          .trimMargin()
 
-  override fun getAdditionalHighlightingTagToDescriptorMap(): MutableMap<String, TextAttributesKey>? = null
+  override fun getAdditionalHighlightingTagToDescriptorMap():
+      MutableMap<String, TextAttributesKey>? = null
 }

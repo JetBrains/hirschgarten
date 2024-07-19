@@ -26,14 +26,18 @@ internal object MemoryProfiler : NotificationListener {
   private fun createOpenTelemetryMemoryGauges() {
     val maxUsedMbGauge = meter.gaugeBuilder("max.used.memory.mb").ofLongs().buildObserver()
     val usedAtExistMbGauge = meter.gaugeBuilder("used.at.exit.mb").ofLongs().buildObserver()
-    meter.batchCallback({
-      maxUsedMbGauge.record(maxUsedMb.get())
-      usedAtExistMbGauge.record(usedAtExitMb.get())
-    }, maxUsedMbGauge, usedAtExistMbGauge)
+    meter.batchCallback(
+        {
+          maxUsedMbGauge.record(maxUsedMb.get())
+          usedAtExistMbGauge.record(usedAtExitMb.get())
+        },
+        maxUsedMbGauge,
+        usedAtExistMbGauge)
   }
 
   override fun handleNotification(notification: Notification, handback: Any?) {
-    if (notification.type != GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION) return
+    if (notification.type != GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION)
+        return
     val usedMb = getUsedMemoryMb()
     maxUsedMb.getAndUpdate { max(it, usedMb) }
   }
@@ -59,7 +63,8 @@ internal object MemoryProfiler : NotificationListener {
     while (oldGcCount == getGcCount()) sleep(1)
   }
 
-  private fun getGcCount(): Long = ManagementFactory.getGarbageCollectorMXBeans().mapNotNull {
-    it.collectionCount.takeIf { count -> count != -1L }
-  }.sum()
+  private fun getGcCount(): Long =
+      ManagementFactory.getGarbageCollectorMXBeans()
+          .mapNotNull { it.collectionCount.takeIf { count -> count != -1L } }
+          .sum()
 }

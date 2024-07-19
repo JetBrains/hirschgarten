@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.installationcontext
 
-import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContext
 import java.nio.file.Path
+import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContext
 
 data class InstallationContext(
     val javaPath: InstallationContextJavaPathEntity,

@@ -12,6 +12,10 @@ import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
+import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+import kotlin.io.path.writeText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.assets.BspPluginTemplates
@@ -28,12 +32,9 @@ import org.jetbrains.bsp.bazel.installationcontext.InstallationContextJavaPathEn
 import org.jetbrains.bsp.protocol.utils.parseBspConnectionDetails
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
-import java.nio.file.Path
-import kotlin.io.path.Path
-import kotlin.io.path.exists
-import kotlin.io.path.writeText
 
-private class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectPath.toNioPath()) {
+private class DotBazelBspCreator(projectPath: VirtualFile) :
+    EnvironmentCreator(projectPath.toNioPath()) {
   override fun create() {
     createDotBazelBsp()
   }
@@ -44,12 +45,13 @@ private const val BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH = ".bsp/bazelbsp.json"
 
 private const val BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX = 0
 
-internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProviderExtension {
+internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProviderExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
 
   override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean {
     project.stateService.projectPath = projectPath
-    project.stateService.connectionFile = projectPath.findFile(BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH)
+    project.stateService.connectionFile =
+        projectPath.findFile(BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH)
 
     if (project.stateService.connectionFile == null) {
       initializeProjectViewFile(projectPath)
@@ -64,7 +66,7 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
   }
 
   private fun calculateProjectViewFilePath(projectPath: VirtualFile): Path =
-    projectPath.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
+      projectPath.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
 
   private fun setDefaultProjectViewFilePathContentIfNotExists(projectViewFilePath: Path) {
     if (!projectViewFilePath.exists()) {
@@ -73,8 +75,8 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
   }
 
   override fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?
+      project: Project,
+      currentConnectionDetails: BspConnectionDetails?
   ): BspConnectionDetails? {
     val connectionFile = project.stateService.connectionFile
 
@@ -85,12 +87,13 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
     }
   }
 
-  private fun VirtualFile.doProvideNewConnectionDetails(currentConnectionDetails: BspConnectionDetails?): BspConnectionDetails? =
-    parseBspConnectionDetails()?.takeIf { it != currentConnectionDetails }
+  private fun VirtualFile.doProvideNewConnectionDetails(
+      currentConnectionDetails: BspConnectionDetails?
+  ): BspConnectionDetails? = parseBspConnectionDetails()?.takeIf { it != currentConnectionDetails }
 
   private fun doProvideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?
+      project: Project,
+      currentConnectionDetails: BspConnectionDetails?
   ): BspConnectionDetails? {
     val javaBin = calculateSelectedJavaBin()
     val customJvmOptions = bazelApplicationSettings.serverSettings.customJvmOptions
@@ -104,42 +107,57 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
 
   private fun calculateSelectedJavaBin(): Path {
     val selectedJdk = bazelApplicationSettings.serverSettings.selectedJdk
-    return if (selectedJdk.name == serverDetectedJdk.name) InstallationContextJavaPathEntityMapper.default().value
+    return if (selectedJdk.name == serverDetectedJdk.name)
+        InstallationContextJavaPathEntityMapper.default().value
     else selectedJdk.toJavaBin()
   }
 
   private fun Sdk.toJavaBin(): Path =
-    homePath?.let { Path(it) }?.resolve("bin")?.resolve("java") ?: error("Cannot obtain jdk home path for $name")
+      homePath?.let { Path(it) }?.resolve("bin")?.resolve("java")
+          ?: error("Cannot obtain jdk home path for $name")
 
-  private fun BspConnectionDetails.hasNotChanged(javaBin: Path, customJvmOptions: List<String>): Boolean =
-    version == Constants.VERSION
-        && argv[BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX] == javaBin.toAbsolutePath().toString()
-        && getOptions() == customJvmOptions
+  private fun BspConnectionDetails.hasNotChanged(
+      javaBin: Path,
+      customJvmOptions: List<String>
+  ): Boolean =
+      version == Constants.VERSION &&
+          argv[BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX] == javaBin.toAbsolutePath().toString() &&
+          getOptions() == customJvmOptions
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-972
   private fun BspConnectionDetails.getOptions(): List<String> =
-    argv.drop(BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX + 1) // all values before added jvm options
-      .dropLast(4) // remove mind class and options
+      argv
+          .drop(
+              BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX +
+                  1) // all values before added jvm options
+          .dropLast(4) // remove mind class and options
 
-  private fun calculateNewConnectionDetails(project: Project, javaBin: Path, customJvmOptions: List<String>): BspConnectionDetails {
-    val projectPath = project.stateService.projectPath ?: error("Cannot obtain project path. Please reopen the project")
-    val installationContext = InstallationContext(
-      javaPath = InstallationContextJavaPathEntity(javaBin),
-      debuggerAddress = null,
-      bazelWorkspaceRootDir = projectPath.toNioPath(),
-      projectViewFilePath =  projectPath.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
-    )
+  private fun calculateNewConnectionDetails(
+      project: Project,
+      javaBin: Path,
+      customJvmOptions: List<String>
+  ): BspConnectionDetails {
+    val projectPath =
+        project.stateService.projectPath
+            ?: error("Cannot obtain project path. Please reopen the project")
+    val installationContext =
+        InstallationContext(
+            javaPath = InstallationContextJavaPathEntity(javaBin),
+            debuggerAddress = null,
+            bazelWorkspaceRootDir = projectPath.toNioPath(),
+            projectViewFilePath =
+                projectPath.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME),
+        )
     val dotBazelBspCreator = DotBazelBspCreator(projectPath)
 
     CoroutineService.getInstance(project).start {
-      withContext(Dispatchers.EDT) {
-        dotBazelBspCreator.create()
-      }
+      withContext(Dispatchers.EDT) { dotBazelBspCreator.create() }
     }
 
-    return BspConnectionDetailsCreator(installationContext, false).create()
-      .apply { updateClasspath() }
-      .apply { addCustomJvmOptions(customJvmOptions) }
+    return BspConnectionDetailsCreator(installationContext, false)
+        .create()
+        .apply { updateClasspath() }
+        .apply { addCustomJvmOptions(customJvmOptions) }
   }
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-972
@@ -149,26 +167,26 @@ internal class BazelConnectionDetailsProviderExtension: ConnectionDetailsProvide
 }
 
 internal data class BazelConnectionDetailsProviderExtensionState(
-  var projectPath: String? = null,
-  var connectionFile: String? = null
+    var projectPath: String? = null,
+    var connectionFile: String? = null
 )
 
 @State(
-  name = "BazelConnectionDetailsProviderExtensionService",
-  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
-  reportStatistic = true,
+    name = "BazelConnectionDetailsProviderExtensionService",
+    storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
+    reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-internal class BazelConnectionDetailsProviderExtensionService
-  : PersistentStateComponent<BazelConnectionDetailsProviderExtensionState> {
+internal class BazelConnectionDetailsProviderExtensionService :
+    PersistentStateComponent<BazelConnectionDetailsProviderExtensionState> {
   var projectPath: VirtualFile? = null
   var connectionFile: VirtualFile? = null
 
   override fun getState(): BazelConnectionDetailsProviderExtensionState? =
-    BazelConnectionDetailsProviderExtensionState(
-      projectPath = projectPath?.url,
-      connectionFile = connectionFile?.url,
-    )
+      BazelConnectionDetailsProviderExtensionState(
+          projectPath = projectPath?.url,
+          connectionFile = connectionFile?.url,
+      )
 
   override fun loadState(state: BazelConnectionDetailsProviderExtensionState) {
     val virtualFileManager = VirtualFileManager.getInstance()

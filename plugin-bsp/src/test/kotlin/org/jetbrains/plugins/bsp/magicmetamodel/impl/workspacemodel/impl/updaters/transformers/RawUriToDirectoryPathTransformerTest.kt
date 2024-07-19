@@ -1,9 +1,9 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import io.kotest.matchers.shouldBe
+import java.nio.file.Files
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.nio.file.Files
 
 @DisplayName("RawUriToDirectoryPathTransformer.transform(rawUri) tests")
 class RawUriToDirectoryPathTransformerTest {

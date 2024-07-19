@@ -3,8 +3,8 @@ package org.jetbrains.bsp.bazel.server.benchmark
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.export.SpanExporter
-import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import java.time.Duration
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
 
 class LoggingSpanExporter(private val bspClientLogger: BspClientLogger) : SpanExporter {
   override fun export(spans: Collection<SpanData>): CompletableResultCode {

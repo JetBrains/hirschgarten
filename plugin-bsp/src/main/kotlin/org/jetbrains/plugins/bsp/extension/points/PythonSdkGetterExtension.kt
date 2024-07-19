@@ -11,14 +11,14 @@ import com.jetbrains.python.sdk.PythonSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
+import kotlin.io.path.toPath
 import org.jetbrains.plugins.bsp.server.tasks.PythonSdk
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
-import kotlin.io.path.toPath
 
 public interface PythonSdkGetterExtension {
   public fun getPythonSdk(
-    pythonSdk: PythonSdk,
-    virtualFileUrlManager: VirtualFileUrlManager,
+      pythonSdk: PythonSdk,
+      virtualFileUrlManager: VirtualFileUrlManager,
   ): Sdk
 
   public fun getSystemSdk(): PyDetectedSdk?
@@ -27,39 +27,36 @@ public interface PythonSdkGetterExtension {
 }
 
 private val ep =
-  ExtensionPointName.create<PythonSdkGetterExtension>(
-    "org.jetbrains.bsp.pythonSdkGetterExtension",
-  )
+    ExtensionPointName.create<PythonSdkGetterExtension>(
+        "org.jetbrains.bsp.pythonSdkGetterExtension",
+    )
 
-public fun pythonSdkGetterExtension(): PythonSdkGetterExtension? =
-  ep.extensionList.firstOrNull()
+public fun pythonSdkGetterExtension(): PythonSdkGetterExtension? = ep.extensionList.firstOrNull()
 
-public fun pythonSdkGetterExtensionExists(): Boolean =
-  ep.extensionList.isNotEmpty()
+public fun pythonSdkGetterExtensionExists(): Boolean = ep.extensionList.isNotEmpty()
 
 public class PythonSdkGetter : PythonSdkGetterExtension {
   private var defaultPythonSdk: PyDetectedSdk? = null
 
   override fun getPythonSdk(
-    pythonSdk: PythonSdk,
-    virtualFileUrlManager: VirtualFileUrlManager,
+      pythonSdk: PythonSdk,
+      virtualFileUrlManager: VirtualFileUrlManager,
   ): Sdk {
-    val sdk = ProjectJdkImpl(
-      pythonSdk.name,
-      PythonSdkType.getInstance(),
-    )
+    val sdk =
+        ProjectJdkImpl(
+            pythonSdk.name,
+            PythonSdkType.getInstance(),
+        )
     sdk.homePath = pythonSdk.interpreterUri.safeCastToURI().toPath().toString()
     sdk.versionString // needs to be invoked in order to fetch the version and cache it
     val additionalData = PythonSdkAdditionalData()
-    val virtualFiles = pythonSdk.dependencies
-      .flatMap { it.sources }
-      .mapNotNull {
-        it.safeCastToURI()
-          .toPath()
-          .toVirtualFileUrl(virtualFileUrlManager)
-          .virtualFile
-      }
-      .toSet()
+    val virtualFiles =
+        pythonSdk.dependencies
+            .flatMap { it.sources }
+            .mapNotNull {
+              it.safeCastToURI().toPath().toVirtualFileUrl(virtualFileUrlManager).virtualFile
+            }
+            .toSet()
     additionalData.setAddedPathsFromVirtualFiles(virtualFiles)
     sdk.sdkAdditionalData = additionalData
 
@@ -67,9 +64,10 @@ public class PythonSdkGetter : PythonSdkGetterExtension {
   }
 
   override fun getSystemSdk(): PyDetectedSdk? =
-    defaultPythonSdk ?: detectSystemWideSdks(null, emptyList()).firstOrNull {
-      it.homePath != null && it.guessedLanguageLevel?.isPy3K == true
-    }?.also { defaultPythonSdk = it }
+      defaultPythonSdk
+          ?: detectSystemWideSdks(null, emptyList())
+              .firstOrNull { it.homePath != null && it.guessedLanguageLevel?.isPy3K == true }
+              ?.also { defaultPythonSdk = it }
 
   override fun hasDetectedPythonSdk(): Boolean = defaultPythonSdk != null
 }

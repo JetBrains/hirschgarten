@@ -36,43 +36,45 @@ public class DefaultConnectionDetailsProviderExtension : ConnectionDetailsProvid
   }
 
   override fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?,
+      project: Project,
+      currentConnectionDetails: BspConnectionDetails?,
   ): BspConnectionDetails? {
-    val connectionDetailsFromFile = project.stateService.connectionFile?.parseBspConnectionDetails()
-      ?: error("Cannot parse connection details from connection file. Please reimport the project.")
+    val connectionDetailsFromFile =
+        project.stateService.connectionFile?.parseBspConnectionDetails()
+            ?: error(
+                "Cannot parse connection details from connection file. Please reimport the project.")
 
     return connectionDetailsFromFile.takeIf { it != currentConnectionDetails }
   }
 }
 
 internal data class BspConnectionDetailsState(
-  var name: String? = null,
-  var argv: List<String> = listOf(),
-  var version: String? = null,
-  var bspVersion: String? = null,
-  var languages: List<String> = listOf(),
+    var name: String? = null,
+    var argv: List<String> = listOf(),
+    var version: String? = null,
+    var bspVersion: String? = null,
+    var languages: List<String> = listOf(),
 )
 
 internal data class DefaultConnectionDetailsProviderState(
-  var connectionFile: String? = null,
-  var bspConnectionDetails: BspConnectionDetailsState? = null,
+    var connectionFile: String? = null,
+    var bspConnectionDetails: BspConnectionDetailsState? = null,
 )
 
 @State(
-  name = "DefaultConnectionDetailsProviderExtensionService",
-  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
-  reportStatistic = true,
+    name = "DefaultConnectionDetailsProviderExtensionService",
+    storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
+    reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-internal class DefaultConnectionDetailsProviderExtensionService
-: PersistentStateComponent<DefaultConnectionDetailsProviderState>, Disposable {
+internal class DefaultConnectionDetailsProviderExtensionService :
+    PersistentStateComponent<DefaultConnectionDetailsProviderState>, Disposable {
   var connectionFile: VirtualFile? = null
 
   override fun getState(): DefaultConnectionDetailsProviderState =
-    DefaultConnectionDetailsProviderState(
-      connectionFile = connectionFile?.url,
-    )
+      DefaultConnectionDetailsProviderState(
+          connectionFile = connectionFile?.url,
+      )
 
   override fun loadState(state: DefaultConnectionDetailsProviderState) {
     val virtualFileManager = VirtualFileManager.getInstance()
@@ -84,7 +86,7 @@ internal class DefaultConnectionDetailsProviderExtensionService
   companion object {
     @JvmStatic
     fun getInstance(project: Project): DefaultConnectionDetailsProviderExtensionService =
-      project.getService(DefaultConnectionDetailsProviderExtensionService::class.java)
+        project.getService(DefaultConnectionDetailsProviderExtensionService::class.java)
   }
 }
 

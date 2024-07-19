@@ -11,6 +11,7 @@ public interface InvalidTargetsProviderExtension : WithBuildToolId {
 
   public companion object {
     internal val ep =
-      ExtensionPointName.create<InvalidTargetsProviderExtension>("org.jetbrains.bsp.invalidTargetsProviderExtension")
+        ExtensionPointName.create<InvalidTargetsProviderExtension>(
+            "org.jetbrains.bsp.invalidTargetsProviderExtension")
   }
 }

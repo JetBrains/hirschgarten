@@ -13,13 +13,13 @@ import com.intellij.workspaceModel.ide.toPath
 import io.kotest.inspectors.shouldForAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createFile
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.io.path.createDirectories
-import kotlin.io.path.createFile
 
 class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBaseTest() {
   private lateinit var fileIndex: FileIndex
@@ -59,68 +59,66 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
   }
 
   private fun VirtualFileUrl.createDir(name: String): VirtualFileUrl =
-    toPath().resolve(name).createDirectories().toVirtualFileUrl(virtualFileUrlManager)
+      toPath().resolve(name).createDirectories().toVirtualFileUrl(virtualFileUrlManager)
 
   private fun VirtualFileUrl.createFile(name: String): VirtualFileUrl =
-    toPath().resolve(name).createFile().toVirtualFileUrl(virtualFileUrlManager)
+      toPath().resolve(name).createFile().toVirtualFileUrl(virtualFileUrlManager)
 
   @Test
   fun `should exclude all the files in the project if no files are included`() {
     // given
-    val entity = BspProjectDirectoriesEntity(
-      projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
-      includedRoots = emptyList(),
-      excludedRoots = emptyList(),
-      entitySource = BspEntitySource
-    )
+    val entity =
+        BspProjectDirectoriesEntity(
+            projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
+            includedRoots = emptyList(),
+            excludedRoots = emptyList(),
+            entitySource = BspEntitySource)
 
     // when
-    runTestWriteAction {
-      workspaceModel.updateProjectModel { it.addEntity(entity) }
-    }
+    runTestWriteAction { workspaceModel.updateProjectModel { it.addEntity(entity) } }
 
     // then
     emptyList<VirtualFileUrl>().shouldBeExactlyIncluded()
 
     listOf(
-      file,
-      dir1,
-      dir1Dir2,
-      dir1Dir2File,
-      dir1Dir3,
-      dir1Dir3File,
-      dir4,
-      dir4File,
-    ).shouldBeExcluded()
+            file,
+            dir1,
+            dir1Dir2,
+            dir1Dir2File,
+            dir1Dir3,
+            dir1Dir3File,
+            dir4,
+            dir4File,
+        )
+        .shouldBeExcluded()
   }
 
   @Test
   fun `should include all the files in the project if project root is included`() {
     // given
-    val entity = BspProjectDirectoriesEntity(
-      projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
-      includedRoots = listOf(projectRoot),
-      excludedRoots = emptyList(),
-      entitySource = BspEntitySource
-    )
+    val entity =
+        BspProjectDirectoriesEntity(
+            projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
+            includedRoots = listOf(projectRoot),
+            excludedRoots = emptyList(),
+            entitySource = BspEntitySource)
 
     // when
-    runTestWriteAction {
-      workspaceModel.updateProjectModel { it.addEntity(entity) }
-    }
+    runTestWriteAction { workspaceModel.updateProjectModel { it.addEntity(entity) } }
 
     // then
     listOf(
-      projectRoot,
-      file,
-      dir1,
-      dir1Dir2,
-      dir1Dir2File,
-      dir1Dir3,
-      dir1Dir3File,
-      dir4,
-      dir4File,
-    ).shouldBeExactlyIncluded()
+            projectRoot,
+            file,
+            dir1,
+            dir1Dir2,
+            dir1Dir2File,
+            dir1Dir3,
+            dir1Dir3File,
+            dir4,
+            dir4File,
+        )
+        .shouldBeExactlyIncluded()
 
     emptyList<VirtualFileUrl>().shouldBeExcluded()
   }
@@ -128,63 +126,63 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
   @Test
   fun `should include included directories in the project and exclude not included directories`() {
     // given
-    val entity = BspProjectDirectoriesEntity(
-      projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
-      includedRoots = listOf(dir1),
-      excludedRoots = emptyList(),
-      entitySource = BspEntitySource
-    )
+    val entity =
+        BspProjectDirectoriesEntity(
+            projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
+            includedRoots = listOf(dir1),
+            excludedRoots = emptyList(),
+            entitySource = BspEntitySource)
 
     // when
-    runTestWriteAction {
-      workspaceModel.updateProjectModel { it.addEntity(entity) }
-    }
+    runTestWriteAction { workspaceModel.updateProjectModel { it.addEntity(entity) } }
 
     // then
     listOf(
-      dir1,
-      dir1Dir2,
-      dir1Dir2File,
-      dir1Dir3,
-      dir1Dir3File,
-    ).shouldBeExactlyIncluded()
+            dir1,
+            dir1Dir2,
+            dir1Dir2File,
+            dir1Dir3,
+            dir1Dir3File,
+        )
+        .shouldBeExactlyIncluded()
 
     listOf(
-      file,
-      dir4,
-      dir4File,
-    ).shouldBeExcluded()
+            file,
+            dir4,
+            dir4File,
+        )
+        .shouldBeExcluded()
   }
 
   @Test
   fun `should include included directories in the project and exclude excluded (nested) directories`() {
     // given
-    val entity = BspProjectDirectoriesEntity(
-      projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
-      includedRoots = listOf(dir1),
-      excludedRoots = listOf(dir1Dir3, dir4),
-      entitySource = BspEntitySource
-    )
+    val entity =
+        BspProjectDirectoriesEntity(
+            projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
+            includedRoots = listOf(dir1),
+            excludedRoots = listOf(dir1Dir3, dir4),
+            entitySource = BspEntitySource)
 
     // when
-    runTestWriteAction {
-      workspaceModel.updateProjectModel { it.addEntity(entity) }
-    }
+    runTestWriteAction { workspaceModel.updateProjectModel { it.addEntity(entity) } }
 
     // then
     listOf(
-      dir1,
-      dir1Dir2,
-      dir1Dir2File,
-    ).shouldBeExactlyIncluded()
+            dir1,
+            dir1Dir2,
+            dir1Dir2File,
+        )
+        .shouldBeExactlyIncluded()
 
     listOf(
-      file,
-      dir1Dir3,
-      dir1Dir3File,
-      dir4,
-      dir4File,
-    ).shouldBeExcluded()
+            file,
+            dir1Dir3,
+            dir1Dir3File,
+            dir4,
+            dir4File,
+        )
+        .shouldBeExcluded()
   }
 
   private fun List<VirtualFileUrl>.shouldBeExactlyIncluded() {
@@ -194,7 +192,8 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
     runReadAction {
       // FIXME: this doesn't work because the rootFile is not marked as a content root.
       //  However marking it as a content root manually causes tests to fail too.
-      //  While building with gradle it works fine. I suspect it's because some part of the testing framework
+      //  While building with gradle it works fine. I suspect it's because some part of the testing
+      // framework
       //  doesn't kick in.
       fileIndex.iterateContentUnderDirectory(rootFile) {
         actualIncludedFiles.add(it)
@@ -207,7 +206,7 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
   }
 
   private fun List<VirtualFileUrl>.shouldBeExcluded() =
-    this.shouldForAll { it.isExcluded() shouldBe true }
+      this.shouldForAll { it.isExcluded() shouldBe true }
 
   private fun VirtualFileUrl.isExcluded(): Boolean {
     val file = this.toVirtualFile()
@@ -216,5 +215,5 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
   }
 
   private fun VirtualFileUrl.toVirtualFile(): VirtualFile =
-    VirtualFileManager.getInstance().refreshAndFindFileByUrl(url)!!
+      VirtualFileManager.getInstance().refreshAndFindFileByUrl(url)!!
 }

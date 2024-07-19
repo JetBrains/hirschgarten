@@ -10,9 +10,11 @@ class StarlarkForStatement(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitForStatement(this)
 
   fun getLoopVariables(): List<StarlarkTargetExpression> =
-    getLoopVariable()?.let(::listOf) ?: getLoopTuple()?.getTargetExpressions() ?: emptyList()
+      getLoopVariable()?.let(::listOf) ?: getLoopTuple()?.getTargetExpressions() ?: emptyList()
 
-  private fun getLoopVariable(): StarlarkTargetExpression? = findChildByClass(StarlarkTargetExpression::class.java)
+  private fun getLoopVariable(): StarlarkTargetExpression? =
+      findChildByClass(StarlarkTargetExpression::class.java)
 
-  private fun getLoopTuple(): StarlarkTupleExpression? = findChildByClass(StarlarkTupleExpression::class.java)
+  private fun getLoopTuple(): StarlarkTupleExpression? =
+      findChildByClass(StarlarkTupleExpression::class.java)
 }

@@ -12,14 +12,16 @@ import org.jetbrains.kotlin.idea.base.psi.relativeTo
 class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitCallExpression(this)
 
-  override fun getReference(): PsiReference? = getNameNode()?.let {
-    val range = it.textRange.relativeTo(this)
-    StarlarkFunctionCallReference(this, range)
-  }
+  override fun getReference(): PsiReference? =
+      getNameNode()?.let {
+        val range = it.textRange.relativeTo(this)
+        StarlarkFunctionCallReference(this, range)
+      }
 
   override fun getName(): String? = getNameNode()?.text
 
   fun getNameNode(): ASTNode? = node.findChildByType(StarlarkElementTypes.REFERENCE_EXPRESSION)
 
-  fun getArgumentList(): StarlarkArgumentList? = findChildrenByClass(StarlarkArgumentList::class.java).firstOrNull()
+  fun getArgumentList(): StarlarkArgumentList? =
+      findChildrenByClass(StarlarkArgumentList::class.java).firstOrNull()
 }

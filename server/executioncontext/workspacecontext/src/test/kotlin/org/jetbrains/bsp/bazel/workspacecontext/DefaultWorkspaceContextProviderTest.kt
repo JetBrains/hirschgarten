@@ -2,8 +2,6 @@ package org.jetbrains.bsp.bazel.workspacecontext
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.createFile
 import kotlin.io.path.createTempDirectory
@@ -11,6 +9,8 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class DefaultWorkspaceContextProviderTest {
   private lateinit var workspaceRoot: Path
@@ -26,10 +26,12 @@ class DefaultWorkspaceContextProviderTest {
   fun `should parse project view file and return workspace context`() {
     // given
     projectViewFile.createFile()
-    projectViewFile.writeText("""
+    projectViewFile.writeText(
+        """
       |targets:
       |  //...
-    """.trimMargin())
+    """
+            .trimMargin())
 
     val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile)
 
@@ -37,7 +39,8 @@ class DefaultWorkspaceContextProviderTest {
     val workspaceContext = provider.currentWorkspaceContext()
 
     // then
-    workspaceContext.targets shouldBe TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
+    workspaceContext.targets shouldBe
+        TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
   }
 
   @Test

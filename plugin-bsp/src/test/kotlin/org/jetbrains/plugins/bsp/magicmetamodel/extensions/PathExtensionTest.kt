@@ -1,9 +1,9 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.extensions
 
 import io.kotest.matchers.sequences.shouldContainExactly
+import java.nio.file.Paths
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.nio.file.Paths
 
 @DisplayName("uri.toAbsolutePath() tests")
 class PathExtensionTest {
@@ -40,11 +40,12 @@ class PathExtensionTest {
     val sequence = path.allSubdirectoriesSequence()
 
     // then
-    sequence shouldContainExactly sequenceOf(
-      Paths.get("/path/to/dir/"),
-      Paths.get("/path/to/"),
-      Paths.get("/path/"),
-      Paths.get("/"),
-    )
+    sequence shouldContainExactly
+        sequenceOf(
+            Paths.get("/path/to/dir/"),
+            Paths.get("/path/to/"),
+            Paths.get("/path/"),
+            Paths.get("/"),
+        )
   }
 }

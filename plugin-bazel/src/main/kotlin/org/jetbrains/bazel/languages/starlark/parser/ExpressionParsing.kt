@@ -10,20 +10,23 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
 class ExpressionParsing(context: ParsingContext) : Parsing(context) {
   private fun parsePrimaryExpression(isTarget: Boolean): Boolean =
-    if (builder.tokenType in StarlarkTokenSets.PRIMARY_EXPRESSION_STARTERS) {
-      when (builder.tokenType) {
-        StarlarkTokenTypes.IDENTIFIER -> buildTokenElement(getTargetOrReferenceExpression(isTarget), builder)
-        StarlarkTokenTypes.INT -> buildTokenElement(StarlarkElementTypes.INTEGER_LITERAL_EXPRESSION, builder)
-        StarlarkTokenTypes.FLOAT -> buildTokenElement(StarlarkElementTypes.FLOAT_LITERAL_EXPRESSION, builder)
-        StarlarkTokenTypes.LPAR -> parseParenthesizedExpression(isTarget)
-        StarlarkTokenTypes.LBRACKET -> parseListLiteralExpression(isTarget)
-        StarlarkTokenTypes.LBRACE -> parseDictDisplay()
-        else -> buildTokenElement(StarlarkElementTypes.STRING_LITERAL_EXPRESSION, builder)
+      if (builder.tokenType in StarlarkTokenSets.PRIMARY_EXPRESSION_STARTERS) {
+        when (builder.tokenType) {
+          StarlarkTokenTypes.IDENTIFIER ->
+              buildTokenElement(getTargetOrReferenceExpression(isTarget), builder)
+          StarlarkTokenTypes.INT ->
+              buildTokenElement(StarlarkElementTypes.INTEGER_LITERAL_EXPRESSION, builder)
+          StarlarkTokenTypes.FLOAT ->
+              buildTokenElement(StarlarkElementTypes.FLOAT_LITERAL_EXPRESSION, builder)
+          StarlarkTokenTypes.LPAR -> parseParenthesizedExpression(isTarget)
+          StarlarkTokenTypes.LBRACKET -> parseListLiteralExpression(isTarget)
+          StarlarkTokenTypes.LBRACE -> parseDictDisplay()
+          else -> buildTokenElement(StarlarkElementTypes.STRING_LITERAL_EXPRESSION, builder)
+        }
+        true
+      } else {
+        false
       }
-      true
-    } else {
-      false
-    }
 
   private fun parseListLiteralExpression(isTarget: Boolean) {
     assertCurrentToken(StarlarkTokenTypes.LBRACKET)
@@ -38,7 +41,8 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
       builder.error(StarlarkBundle.message("parser.expected.expression"))
     }
     if (atToken(StarlarkTokenTypes.FOR_KEYWORD)) {
-      parseComprehension(expr, StarlarkTokenTypes.RBRACKET, StarlarkElementTypes.LIST_COMP_EXPRESSION)
+      parseComprehension(
+          expr, StarlarkTokenTypes.RBRACKET, StarlarkElementTypes.LIST_COMP_EXPRESSION)
     } else {
       while (!atToken(StarlarkTokenTypes.RBRACKET)) {
         if (!matchToken(StarlarkTokenTypes.COMMA)) {
@@ -107,11 +111,12 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
 
   private fun parseComprehensionRange(generatorExpression: Boolean) {
     checkMatches(StarlarkTokenTypes.IN_KEYWORD, StarlarkBundle.message("parser.expected.in"))
-    val result = if (generatorExpression) {
-      parseORTestExpression(isTarget = false)
-    } else {
-      parseTupleExpression(isTarget = false, oldTest = true)
-    }
+    val result =
+        if (generatorExpression) {
+          parseORTestExpression(isTarget = false)
+        } else {
+          parseTupleExpression(isTarget = false, oldTest = true)
+        }
     if (!result) {
       builder.error(StarlarkBundle.message("parser.expected.expression"))
     }
@@ -139,7 +144,8 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
 
   private fun parseDictTail(expr: Marker, isDict: Boolean) {
     val firstExprMarker = builder.mark()
-    if (isDict && !parseSingleExpression(isTarget = false) || !isDict && !parseSingleExpression(isTarget = false)) {
+    if (isDict && !parseSingleExpression(isTarget = false) ||
+        !isDict && !parseSingleExpression(isTarget = false)) {
       builder.error(StarlarkBundle.message("parser.expected.expression"))
       firstExprMarker.drop()
       expr.done(StarlarkElementTypes.DICT_LITERAL_EXPRESSION)
@@ -171,7 +177,8 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
     }
     firstKeyValueMarker.done(StarlarkElementTypes.KEY_VALUE_EXPRESSION)
     if (atToken(StarlarkTokenTypes.FOR_KEYWORD)) {
-      parseComprehension(startMarker, StarlarkTokenTypes.RBRACE, StarlarkElementTypes.DICT_COMP_EXPRESSION)
+      parseComprehension(
+          startMarker, StarlarkTokenTypes.RBRACE, StarlarkElementTypes.DICT_COMP_EXPRESSION)
     } else {
       parseDictLiteralContentTail(startMarker)
     }
@@ -224,10 +231,13 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
       } else {
         val err = builder.mark()
         var empty = true
-        while (!builder.eof() && !atAnyOfTokens(
-            listOf(StarlarkTokenTypes.RPAR, StarlarkTokenTypes.LINE_BREAK, StarlarkTokenTypes.STATEMENT_BREAK),
-          )
-        ) {
+        while (!builder.eof() &&
+            !atAnyOfTokens(
+                listOf(
+                    StarlarkTokenTypes.RPAR,
+                    StarlarkTokenTypes.LINE_BREAK,
+                    StarlarkTokenTypes.STATEMENT_BREAK),
+            )) {
           builder.advanceLexer()
           empty = false
         }
@@ -243,7 +253,8 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
   }
 
   private fun parseMemberExpression(isTarget: Boolean): Boolean {
-    // in sequence a.b.... .c all members but last are always references, and the last may be target.
+    // in sequence a.b.... .c all members but last are always references, and the last may be
+    // target.
     var recastFirstIdentifier = false
     var recastQualifier = false
     do {
@@ -262,11 +273,15 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
             break
           }
           builder.advanceLexer()
-          checkMatches(StarlarkTokenTypes.IDENTIFIER, StarlarkBundle.message("parser.expected.name"))
-          if (isTarget && !recastQualifier && !atAnyOfTokens(
-              listOf(StarlarkTokenTypes.DOT, StarlarkTokenTypes.LPAR, StarlarkTokenTypes.LBRACKET)
-            )
-          ) {
+          checkMatches(
+              StarlarkTokenTypes.IDENTIFIER, StarlarkBundle.message("parser.expected.name"))
+          if (isTarget &&
+              !recastQualifier &&
+              !atAnyOfTokens(
+                  listOf(
+                      StarlarkTokenTypes.DOT,
+                      StarlarkTokenTypes.LPAR,
+                      StarlarkTokenTypes.LBRACKET))) {
             expr.done(StarlarkElementTypes.TARGET_EXPRESSION)
           } else {
             expr.done(StarlarkElementTypes.REFERENCE_EXPRESSION)
@@ -290,7 +305,8 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
           expr.drop()
           break
         }
-        recastFirstIdentifier = false // it is true only after a break; normal flow always unsets it.
+        recastFirstIdentifier =
+            false // it is true only after a break; normal flow always unsets it.
         // recastQualifier is untouched, it remembers whether qualifiers were already recast
       }
     } while (recastFirstIdentifier)
@@ -322,7 +338,8 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
           if (!parseTupleExpression(isTarget = false, oldTest = false)) {
             builder.error(StarlarkBundle.message("parser.tuple.expression.expected"))
           }
-          checkMatches(StarlarkTokenTypes.RBRACKET, StarlarkBundle.message("parser.expected.rbracket"))
+          checkMatches(
+              StarlarkTokenTypes.RBRACKET, StarlarkBundle.message("parser.expected.rbracket"))
           expr.done(StarlarkElementTypes.SUBSCRIPTION_EXPRESSION)
         }
       } else {
@@ -331,7 +348,8 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
         }
         sliceOrTupleStart.drop()
         sliceItemStart.drop()
-        checkMatches(StarlarkTokenTypes.RBRACKET, StarlarkBundle.message("parser.expected.rbracket"))
+        checkMatches(
+            StarlarkTokenTypes.RBRACKET, StarlarkBundle.message("parser.expected.rbracket"))
         expr.done(StarlarkElementTypes.SUBSCRIPTION_EXPRESSION)
       }
     }
@@ -444,7 +462,6 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
 
   fun parseExpressionOptional(): Boolean = parseTupleExpression(isTarget = false, oldTest = false)
 
-
   fun parseExpression() {
     if (!parseExpressionOptional()) {
       builder.error(StarlarkBundle.message("parser.expected.expression"))
@@ -459,7 +476,8 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
 
   private fun parseTupleExpression(isTarget: Boolean, oldTest: Boolean): Boolean {
     val expr = builder.mark()
-    var exprParseResult = if (oldTest) parseOldTestExpression(true) else parseTestExpression(isTarget)
+    var exprParseResult =
+        if (oldTest) parseOldTestExpression(true) else parseTestExpression(isTarget)
     if (!exprParseResult) {
       expr.drop()
       return false
@@ -468,7 +486,8 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
       while (atToken(StarlarkTokenTypes.COMMA)) {
         builder.advanceLexer()
         val expr2 = builder.mark()
-        exprParseResult = if (oldTest) parseOldTestExpression(true) else parseTestExpression(isTarget)
+        exprParseResult =
+            if (oldTest) parseOldTestExpression(true) else parseTestExpression(isTarget)
         if (!exprParseResult) {
           expr2.rollbackTo()
           break
@@ -502,7 +521,10 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
         builder.error(StarlarkBundle.message("parser.expected.expression"))
       } else {
         if (!atToken(StarlarkTokenTypes.ELSE_KEYWORD)) {
-          if (atToken(StarlarkTokenTypes.COLON)) {   // it's regular if statement. Bracket wasn't closed or new line was lost
+          if (atToken(
+              StarlarkTokenTypes
+                  .COLON)) { // it's regular if statement. Bracket wasn't closed or new line was
+            // lost
             conditionMarker.rollbackTo()
             condExpr.drop()
             return true
@@ -533,9 +555,11 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
   private fun parseLambdaExpression(oldTest: Boolean): Boolean {
     val expr = builder.mark()
     builder.advanceLexer()
-    context.functionParser.parseParameterListContents(StarlarkTokenTypes.COLON, advanceLexer = false)
+    context.functionParser.parseParameterListContents(
+        StarlarkTokenTypes.COLON, advanceLexer = false)
     val parseExpressionResult =
-      if (oldTest) parseOldTestExpression(oldTest = true) else parseSingleExpression(isTarget = false)
+        if (oldTest) parseOldTestExpression(oldTest = true)
+        else parseSingleExpression(isTarget = false)
     if (!parseExpressionResult) {
       builder.error(StarlarkBundle.message("parser.expected.expression"))
     }
@@ -784,12 +808,14 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
   }
 
   private fun getTargetOrReferenceExpression(isTarget: Boolean) =
-    if (isTarget) StarlarkElementTypes.TARGET_EXPRESSION else StarlarkElementTypes.REFERENCE_EXPRESSION
-
+      if (isTarget) StarlarkElementTypes.TARGET_EXPRESSION
+      else StarlarkElementTypes.REFERENCE_EXPRESSION
 
   companion object {
-    private val BRACKET_OR_COMMA = TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COMMA)
+    private val BRACKET_OR_COMMA =
+        TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COMMA)
     private val BRACKET_COLON_COMMA =
-      TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COLON, StarlarkTokenTypes.COMMA)
+        TokenSet.create(
+            StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COLON, StarlarkTokenTypes.COMMA)
   }
 }

@@ -28,14 +28,12 @@ class DiagnosticsParser {
 
     if (diagnostics.isEmpty() && !onlyKnownFiles) {
       diagnostics.add(
-        Diagnostic(
-          position = Position(0, 0),
-          message = output.fullOutput(),
-          level = Level.Error,
-          fileLocation = "<unknown>",
-          targetLabel = output.targetLabel
-        )
-      )
+          Diagnostic(
+              position = Position(0, 0),
+              message = output.fullOutput(),
+              level = Level.Error,
+              fileLocation = "<unknown>",
+              targetLabel = output.targetLabel))
     }
 
     return diagnostics.toList()
@@ -48,16 +46,15 @@ class DiagnosticsParser {
           .map { it.first() }
 
   companion object {
-    private val Parsers = listOf(
-        BazelRootMessageParser,
-        CompilerDiagnosticParser,
-        Scala3CompilerDiagnosticParser,
-        AllCatchParser
-    )
-    private val IgnoredLines = listOf(
-        "^$".toRegex(),
-        "Use --sandbox_debug to see verbose messages from the sandbox".toRegex()
-    )
+    private val Parsers =
+        listOf(
+            BazelRootMessageParser,
+            CompilerDiagnosticParser,
+            Scala3CompilerDiagnosticParser,
+            AllCatchParser)
+    private val IgnoredLines =
+        listOf(
+            "^$".toRegex(),
+            "Use --sandbox_debug to see verbose messages from the sandbox".toRegex())
   }
-
 }

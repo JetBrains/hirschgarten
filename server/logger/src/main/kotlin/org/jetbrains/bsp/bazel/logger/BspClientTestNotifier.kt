@@ -18,9 +18,9 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
   /**
    * Notifies the client about starting a single test or a test suite
    *
-   * @param isSuite     `true` if a test suite has been started, `false` if it was a single test instead
+   * @param isSuite `true` if a test suite has been started, `false` if it was a single test instead
    * @param displayName display name of the started test / test suite
-   * @param taskId      TaskId of the started test / test suite
+   * @param taskId TaskId of the started test / test suite
    */
   fun startTest(displayName: String?, taskId: TaskId) {
     val testStart = TestStart(displayName)
@@ -31,18 +31,24 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
     bspClient.onBuildTaskStart(taskStartParams)
   }
 
-
   /**
    * Notifies the client about finishing a single test or a test suite
    *
-   * @param isSuite     `true` if a test suite has been finished, `false` if it was a single
-   * test instead. **For test suites, using `finishTestSuite` is recommended**
+   * @param isSuite `true` if a test suite has been finished, `false` if it was a single test
+   *   instead. **For test suites, using `finishTestSuite` is recommended**
    * @param displayName display name of the finished test / test suite
-   * @param taskId      TaskId of the finished test / test suite
-   * @param status      status of the performed test (does not matter for test suites)
-   * @param message     additional message concerning the test execution
+   * @param taskId TaskId of the finished test / test suite
+   * @param status status of the performed test (does not matter for test suites)
+   * @param message additional message concerning the test execution
    */
-  fun finishTest(displayName: String?, taskId: TaskId, status: TestStatus?, message: String?, dataKind: String? = null, data: Any? = null) {
+  fun finishTest(
+      displayName: String?,
+      taskId: TaskId,
+      status: TestStatus?,
+      message: String?,
+      dataKind: String? = null,
+      data: Any? = null
+  ) {
     val testFinish = TestFinish(displayName, status)
     if (message != null) {
       testFinish.message = message
@@ -64,7 +70,7 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
    * Notifies the client about beginning the testing procedure
    *
    * @param targetIdentifier identifier of the testing target being executed
-   * @param taskId           TaskId of the testing target execution
+   * @param taskId TaskId of the testing target execution
    */
   fun beginTestTarget(targetIdentifier: BuildTargetIdentifier?, taskId: TaskId) {
     val testingBegin = TestTask(targetIdentifier)
@@ -79,7 +85,7 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
    * Notifies the client about ending the testing procedure
    *
    * @param testReport report concerning conducted tests
-   * @param taskId     TaskId of the testing target execution
+   * @param taskId TaskId of the testing target execution
    */
   fun endTestTarget(testReport: TestReport, taskId: TaskId) {
     val taskFinishParams = TaskFinishParams(taskId, StatusCode.OK)

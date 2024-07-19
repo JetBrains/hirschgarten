@@ -19,10 +19,6 @@ import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.kodein.di.DI
-import org.kodein.di.bindSingleton
 import java.io.FileOutputStream
 import java.net.URI
 import java.nio.file.Path
@@ -36,7 +32,10 @@ import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.toPath
 import kotlin.io.path.writeText
-
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.kodein.di.DI
+import org.kodein.di.bindSingleton
 
 @OptIn(ExperimentalPathApi::class)
 class BazelTest {
@@ -45,7 +44,9 @@ class BazelTest {
     di = DI {
       extend(di)
       bindSingleton(tag = "teamcity.uri", overrides = true) {
-        val teamcityUrl = System.getProperty("bsp.benchmark.teamcity.url") ?: "https://buildserver.labs.intellij.net"
+        val teamcityUrl =
+            System.getProperty("bsp.benchmark.teamcity.url")
+                ?: "https://buildserver.labs.intellij.net"
         URI(teamcityUrl).normalize()
       }
       bindSingleton<CIServer>(overrides = true) { TeamCityCIServer() }
@@ -61,30 +62,35 @@ class BazelTest {
   fun openBazelProject() {
     val projectInfo = getProjectInfoFromSystemProperties()
     val projectName = System.getProperty("bsp.benchmark.project.name") ?: "hirschgarten"
-    val testCase = TestCase(IdeProductProvider.IC, projectInfo)
-      .withBuildNumber(System.getProperty("bsp.benchmark.platform.version"))
-      .useEAP()
-    val context = Starter.newContext(projectName, testCase)
-      .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
+    val testCase =
+        TestCase(IdeProductProvider.IC, projectInfo)
+            .withBuildNumber(System.getProperty("bsp.benchmark.platform.version"))
+            .useEAP()
+    val context =
+        Starter.newContext(projectName, testCase)
+            .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
     installPlugin(context, System.getProperty("bsp.benchmark.bsp.plugin.zip"))
     installPlugin(context, System.getProperty("bsp.benchmark.bazel.plugin.zip"))
 
-    val commands = CommandChain()
-      .startMemoryProfiling()
-      .openBspToolWindow()
-      .takeScreenshot("startSync")
-      .waitForBazelSync()
-      .stopMemoryProfiling()
-      .exitApp()
+    val commands =
+        CommandChain()
+            .startMemoryProfiling()
+            .openBspToolWindow()
+            .takeScreenshot("startSync")
+            .waitForBazelSync()
+            .stopMemoryProfiling()
+            .exitApp()
     val startResult = context.runIDE(commands = commands)
 
-    val spans = getMetricsFromSpanAndChildren(startResult, SpanFilter.nameEquals("bsp.sync.project.ms"))
+    val spans =
+        getMetricsFromSpanAndChildren(startResult, SpanFilter.nameEquals("bsp.sync.project.ms"))
 
-    val meters = StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.LATEST) {
-        it.name.startsWith("bsp.")
-    }.collect(startResult.runContext).map {
-      PerformanceMetrics.Metric.newCounter(it.id.name, it.value)
-    }
+    val meters =
+        StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.LATEST) {
+              it.name.startsWith("bsp.")
+            }
+            .collect(startResult.runContext)
+            .map { PerformanceMetrics.Metric.newCounter(it.id.name, it.value) }
 
     startResult.publishPerformanceMetrics(metrics = spans + meters)
   }
@@ -93,23 +99,28 @@ class BazelTest {
     val localProjectPath = System.getProperty("bsp.benchmark.project.path")
     if (localProjectPath != null) {
       return LocalProjectInfo(
-        projectDir = Path.of(localProjectPath),
-        isReusable = true,
-        configureProjectBeforeUse = ::configureProjectBeforeUse,
+          projectDir = Path.of(localProjectPath),
+          isReusable = true,
+          configureProjectBeforeUse = ::configureProjectBeforeUse,
       )
     }
-    val projectUrl = System.getProperty("bsp.benchmark.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
+    val projectUrl =
+        System.getProperty("bsp.benchmark.project.url")
+            ?: "https://github.com/JetBrains/hirschgarten.git"
     val commitHash = System.getProperty("bsp.benchmark.commit.hash").orEmpty()
     val branchName = System.getProperty("bsp.benchmark.branch.name") ?: "main"
-    val projectHomeRelativePath: String? = System.getProperty("bsp.benchmark.project.home.relative.path")
+    val projectHomeRelativePath: String? =
+        System.getProperty("bsp.benchmark.project.home.relative.path")
 
     return GitProjectInfo(
-      repositoryUrl = projectUrl,
-      commitHash = commitHash,
-      branchName = branchName,
-      projectHomeRelativePath = { if (projectHomeRelativePath != null) it.resolve(projectHomeRelativePath) else it },
-      isReusable = true,
-      configureProjectBeforeUse = ::configureProjectBeforeUse,
+        repositoryUrl = projectUrl,
+        commitHash = commitHash,
+        branchName = branchName,
+        projectHomeRelativePath = {
+          if (projectHomeRelativePath != null) it.resolve(projectHomeRelativePath) else it
+        },
+        isReusable = true,
+        configureProjectBeforeUse = ::configureProjectBeforeUse,
     )
   }
 
@@ -127,10 +138,11 @@ class BazelTest {
   }
 
   private fun runBazelClean(context: IDETestContext) {
-    val exitCode = ProcessBuilder("bazel", "clean", "--expunge")
-      .directory(context.resolvedProjectHome.toFile())
-      .start()
-      .waitFor()
+    val exitCode =
+        ProcessBuilder("bazel", "clean", "--expunge")
+            .directory(context.resolvedProjectHome.toFile())
+            .start()
+            .waitFor()
     check(exitCode == 0) { "Bazel clean exited with code $exitCode" }
   }
 
@@ -138,20 +150,19 @@ class BazelTest {
     val projectView = context.resolvedProjectHome / "projectview.bazelproject"
     val targetsList = System.getProperty("bsp.benchmark.target.list")
     if (projectView.exists() && targetsList == null) return
-    projectView.writeText("""
+    projectView.writeText(
+        """
       targets:
         ${targetsList ?: "//..."}
     """
-      .trimIndent())
+            .trimIndent())
   }
 
   fun extractFileFromJar(jarFilePath: String, fileName: String, destFilePath: String) {
     JarFile(jarFilePath).use { jarFile ->
       val jarEntry = jarFile.getJarEntry(fileName)
       jarFile.getInputStream(jarEntry).use { input ->
-        FileOutputStream(destFilePath).use { output ->
-          input.copyTo(output)
-        }
+        FileOutputStream(destFilePath).use { output -> input.copyTo(output) }
       }
     }
   }
@@ -159,7 +170,8 @@ class BazelTest {
   private fun installPlugin(context: IDETestContext, pluginZipLocation: String) {
     val zipUrl = javaClass.classLoader.getResource(pluginZipLocation)!!
     // check if the zip is inside a jar
-    // if it is, it will look something like this: jar:file:/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/e06fcdf30b05e14cf4fddcd75b67a39c/execroot/_main/bazel-out/k8-fastbuild/bin/performance-testing/performance-testing.jar!/plugin.zip
+    // if it is, it will look something like this:
+    // jar:file:/home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/e06fcdf30b05e14cf4fddcd75b67a39c/execroot/_main/bazel-out/k8-fastbuild/bin/performance-testing/performance-testing.jar!/plugin.zip
     // we need to extract it to a temporary file then
     // This happens when the test is run through bazel
     if (zipUrl.protocol == "jar") {
@@ -178,9 +190,7 @@ class BazelTest {
 
   private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
     val value = System.getProperty(key) ?: return this
-    applyVMOptionsPatch {
-      addSystemProperty(key, value)
-    }
+    applyVMOptionsPatch { addSystemProperty(key, value) }
     return this
   }
 }

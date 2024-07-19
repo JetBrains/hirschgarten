@@ -3,11 +3,11 @@ package org.jetbrains.bsp.bazel.server.bep
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.OutputGroup
-import org.jetbrains.bsp.bazel.server.model.Label
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
+import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 
 data class TextProtoDepSet(val files: Collection<Path>, val children: Collection<String>)
 
@@ -17,13 +17,13 @@ class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolver) {
   private val rootTargets: MutableSet<Label> = HashSet()
 
   fun storeNamedSet(id: String, namedSetOfFiles: NamedSetOfFiles) {
-    val textProtoDepSet = TextProtoDepSet(
-      files = namedSetOfFiles
-        .filesList
-        .filter { it.name.endsWith("bsp-info.textproto") }
-        .map { it.toLocalPath() },
-      children = namedSetOfFiles.fileSetsList.map { it.id }
-    )
+    val textProtoDepSet =
+        TextProtoDepSet(
+            files =
+                namedSetOfFiles.filesList
+                    .filter { it.name.endsWith("bsp-info.textproto") }
+                    .map { it.toLocalPath() },
+            children = namedSetOfFiles.fileSetsList.map { it.id })
 
     textProtoFileSets[id] = textProtoDepSet
   }

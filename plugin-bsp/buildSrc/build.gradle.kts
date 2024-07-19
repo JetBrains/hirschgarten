@@ -1,6 +1,4 @@
-plugins {
-  `kotlin-dsl`
-}
+plugins { `kotlin-dsl` }
 
 repositories {
   maven("https://oss.sonatype.org/content/repositories/snapshots/")

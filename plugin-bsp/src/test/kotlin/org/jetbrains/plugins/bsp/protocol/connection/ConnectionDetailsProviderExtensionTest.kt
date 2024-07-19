@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import io.kotest.matchers.shouldBe
+import java.util.concurrent.CompletableFuture
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.bspBuildToolId
@@ -17,29 +18,31 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.concurrent.CompletableFuture
 
 private val testBuildToolId = BuildToolId("testBuildTool")
 
-private class TestBuildToolExtension: ConnectionDetailsProviderExtension {
+private class TestBuildToolExtension : ConnectionDetailsProviderExtension {
   override val buildToolId: BuildToolId = testBuildToolId
 
   override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean = true
 
   override fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?,
+      project: Project,
+      currentConnectionDetails: BspConnectionDetails?,
   ): BspConnectionDetails? = null
 }
 
-private class TestBuildToolExtensionJavaShim: ConnectionDetailsProviderExtensionJavaShim {
+private class TestBuildToolExtensionJavaShim : ConnectionDetailsProviderExtensionJavaShim {
   override val buildToolId: BuildToolId = testBuildToolId
-  override fun onFirstOpening(project: Project, projectPath: VirtualFile): CompletableFuture<Boolean> =
-    CompletableFuture.completedFuture(true)
+
+  override fun onFirstOpening(
+      project: Project,
+      projectPath: VirtualFile
+  ): CompletableFuture<Boolean> = CompletableFuture.completedFuture(true)
 
   override fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?,
+      project: Project,
+      currentConnectionDetails: BspConnectionDetails?,
   ): BspConnectionDetails? = null
 }
 
@@ -111,10 +114,12 @@ class ConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
   }
 
   private fun registerExtension(extension: ConnectionDetailsProviderExtension) {
-    ConnectionDetailsProviderExtension.ep.point.registerExtension(extension, projectModel.disposableRule.disposable)
+    ConnectionDetailsProviderExtension.ep.point.registerExtension(
+        extension, projectModel.disposableRule.disposable)
   }
 
   private fun registerExtensionJavaShim(extension: ConnectionDetailsProviderExtensionJavaShim) {
-    ConnectionDetailsProviderExtensionJavaShim.ep.point.registerExtension(extension, projectModel.disposableRule.disposable)
+    ConnectionDetailsProviderExtensionJavaShim.ep.point.registerExtension(
+        extension, projectModel.disposableRule.disposable)
   }
 }

@@ -39,25 +39,30 @@ internal object MemoryProfiler : NotificationListener {
   private fun createOpenTelemetryMemoryGauges() {
     val maxUsedMbGauge = bspMeter.gaugeBuilder("bsp.max.used.memory.mb").ofLongs().buildObserver()
     val usedAtExistMbGauge = bspMeter.gaugeBuilder("bsp.used.at.exit.mb").ofLongs().buildObserver()
-    bspMeter.batchCallback({
-      maxUsedMbGauge.record(maxUsedMb.get())
-      usedAtExistMbGauge.record(usedAtExitMb.get())
-    }, maxUsedMbGauge, usedAtExistMbGauge)
+    bspMeter.batchCallback(
+        {
+          maxUsedMbGauge.record(maxUsedMb.get())
+          usedAtExistMbGauge.record(usedAtExitMb.get())
+        },
+        maxUsedMbGauge,
+        usedAtExistMbGauge)
   }
 
   private fun registerMetricsExporter() {
     val basePath = PathManager.getLogDir() / "open-telemetry-meters.bsp.json"
     val metricsExporter = TelemetryMeterJsonExporter(RollingFileSupplier(basePath))
     val filteredMetricsExporter =
-      FilteredMetricsExporter(SynchronizedClearableLazy { metricsExporter }) { metric ->
-        metric.belongsToScope(bspScope)
-      }
+        FilteredMetricsExporter(SynchronizedClearableLazy { metricsExporter }) { metric ->
+          metric.belongsToScope(bspScope)
+        }
     TelemetryManager.getInstance()
-      .addMetricsExporters(listOf(MetricsExporterEntry(listOf(filteredMetricsExporter), Duration.INFINITE)))
+        .addMetricsExporters(
+            listOf(MetricsExporterEntry(listOf(filteredMetricsExporter), Duration.INFINITE)))
   }
 
   override fun handleNotification(notification: Notification, handback: Any?) {
-    if (notification.type != GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION) return
+    if (notification.type != GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION)
+        return
     val usedMb = getUsedMemoryMb()
     maxUsedMb.getAndUpdate { max(it, usedMb) }
   }
@@ -83,7 +88,8 @@ internal object MemoryProfiler : NotificationListener {
     while (oldGcCount == getGcCount()) sleep(1)
   }
 
-  private fun getGcCount(): Long = ManagementFactory.getGarbageCollectorMXBeans().mapNotNull {
-    it.collectionCount.takeIf { count -> count != -1L }
-  }.sum()
+  private fun getGcCount(): Long =
+      ManagementFactory.getGarbageCollectorMXBeans()
+          .mapNotNull { it.collectionCount.takeIf { count -> count != -1L } }
+          .sum()
 }

@@ -2,8 +2,8 @@ package org.jetbrains.bsp.protocol
 
 import ch.epfl.scala.bsp4j.RunResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
 import java.util.concurrent.CompletableFuture
+import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
 
 public interface BazelBuildServer {
   @JsonRequest("workspace/libraries")
@@ -19,10 +19,14 @@ public interface BazelBuildServer {
   public fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult>
 
   @JsonRequest("buildTarget/mobileInstall")
-  public fun buildTargetMobileInstall(params: MobileInstallParams): CompletableFuture<MobileInstallResult>
+  public fun buildTargetMobileInstall(
+      params: MobileInstallParams
+  ): CompletableFuture<MobileInstallResult>
 
   @JsonRequest("buildTarget/jvmBinaryJars")
-  public fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): CompletableFuture<JvmBinaryJarsResult>
+  public fun buildTargetJvmBinaryJars(
+      params: JvmBinaryJarsParams
+  ): CompletableFuture<JvmBinaryJarsResult>
 
   @JsonRequest("workspace/buildAndGetBuildTargets")
   public fun workspaceBuildAndGetBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult>

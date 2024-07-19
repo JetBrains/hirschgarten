@@ -26,7 +26,9 @@ public class BspRunTaskListener(private val handler: BspProcessHandler<out Any>)
   // TODO: Log messages in the correct place
   override fun onLogMessage(message: String) {
     val messageWithNewline = if (message.endsWith("\n")) message else "$message\n"
-    ansiEscapeDecoder.escapeText(messageWithNewline, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
+    ansiEscapeDecoder.escapeText(messageWithNewline, ProcessOutputType.STDOUT) {
+        s: String,
+        key: Key<Any> ->
       handler.notifyTextAvailable(s, key)
     }
   }

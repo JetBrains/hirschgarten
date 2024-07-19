@@ -25,9 +25,9 @@ public class BspAndroidProgramRunner : AndroidConfigurationProgramRunner() {
   override fun canRunWithMultipleDevices(executorId: String): Boolean = false
 
   override fun run(
-    environment: ExecutionEnvironment,
-    executor: AndroidConfigurationExecutor,
-    indicator: ProgressIndicator,
+      environment: ExecutionEnvironment,
+      executor: AndroidConfigurationExecutor,
+      indicator: ProgressIndicator,
   ): RunContentDescriptor {
     return when (environment.executor.id) {
       DefaultRunExecutor.EXECUTOR_ID -> executor.run(indicator)

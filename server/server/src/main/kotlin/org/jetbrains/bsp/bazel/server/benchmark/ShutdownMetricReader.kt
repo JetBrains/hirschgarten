@@ -11,14 +11,14 @@ class ShutdownMetricReader(private val exporter: MetricExporter) : MetricReader 
   private lateinit var registration: CollectionRegistration
 
   override fun getAggregationTemporality(instrumentType: InstrumentType): AggregationTemporality =
-    exporter.getAggregationTemporality(instrumentType)
+      exporter.getAggregationTemporality(instrumentType)
 
   override fun register(registration: CollectionRegistration) {
     this.registration = registration
   }
 
   override fun forceFlush(): CompletableResultCode =
-    exporter.export(registration.collectAllMetrics())
+      exporter.export(registration.collectAllMetrics())
 
   override fun shutdown(): CompletableResultCode {
     val result = forceFlush()

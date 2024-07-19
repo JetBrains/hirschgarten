@@ -18,7 +18,7 @@ public class BspClassFileFinder(private val module: Module) : ClassFileFinder {
     OrderEnumerator.orderEntries(module).recursively().forEachModule { module ->
       val classFile = findClassFileInModule(module, fqcn) ?: return@forEachModule true
       result = classFile
-      false  // Stop iteration when found
+      false // Stop iteration when found
     }
     return result
   }
@@ -29,12 +29,13 @@ public class BspClassFileFinder(private val module: Module) : ClassFileFinder {
     val classFilePath = getPathFromFqcn(fqcn)
 
     return binaryJars.jars
-      .asSequence()
-      .map { it.toPath() }
-      .mapNotNull { binaryJar ->
-        jarManager.loadFileFromJar(binaryJar, classFilePath)?.let { classFileContent ->
-          ClassContent.fromJarEntryContent(binaryJar.toFile(), classFileContent)
+        .asSequence()
+        .map { it.toPath() }
+        .mapNotNull { binaryJar ->
+          jarManager.loadFileFromJar(binaryJar, classFilePath)?.let { classFileContent ->
+            ClassContent.fromJarEntryContent(binaryJar.toFile(), classFileContent)
+          }
         }
-      }.firstOrNull()
+        .firstOrNull()
   }
 }

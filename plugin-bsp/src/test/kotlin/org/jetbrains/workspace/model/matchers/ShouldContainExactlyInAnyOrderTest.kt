@@ -16,7 +16,8 @@ class ShouldContainExactlyInAnyOrderTest {
 
     //  when & then
     shouldNotThrow<AssertionError> {
-      actualValues.shouldContainExactlyInAnyOrder({ actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
+      actualValues.shouldContainExactlyInAnyOrder(
+          { actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
     }
   }
 
@@ -28,7 +29,8 @@ class ShouldContainExactlyInAnyOrderTest {
 
     //  when & then
     shouldThrow<AssertionError> {
-      actualValues.shouldContainExactlyInAnyOrder({ actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
+      actualValues.shouldContainExactlyInAnyOrder(
+          { actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
     }
   }
 
@@ -40,7 +42,8 @@ class ShouldContainExactlyInAnyOrderTest {
 
     //  when & then
     shouldNotThrow<AssertionError> {
-      actualValues.shouldContainExactlyInAnyOrder({ actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
+      actualValues.shouldContainExactlyInAnyOrder(
+          { actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
     }
   }
 
@@ -52,10 +55,10 @@ class ShouldContainExactlyInAnyOrderTest {
 
     //  when & then
     shouldNotThrow<AssertionError> {
-      actualValues.shouldContainExactlyInAnyOrder({ actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
+      actualValues.shouldContainExactlyInAnyOrder(
+          { actual, expected -> shouldBeTheSame(actual, expected) }, expectedValues)
     }
   }
 
-  private fun shouldBeTheSame(actual: Int, expected: String) =
-    actual shouldBe expected.toInt()
+  private fun shouldBeTheSame(actual: Int, expected: String) = actual shouldBe expected.toInt()
 }

@@ -7,6 +7,9 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import java.awt.Point
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
@@ -19,13 +22,10 @@ import org.jetbrains.plugins.bsp.ui.actions.target.TestWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
-import java.awt.Point
-import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
 
 public class LoadedTargetsMouseListener(
-  private val container: BuildTargetContainer,
-  private val project: Project,
+    private val container: BuildTargetContainer,
+    private val project: Project,
 ) : MouseListener {
   override fun mouseClicked(e: MouseEvent?) {
     e?.let { mouseClickedNotNull(it) }
@@ -52,24 +52,27 @@ public class LoadedTargetsMouseListener(
       val context = DataManager.getInstance().getDataContext(mouseEvent.component)
       val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
       JBPopupFactory.getInstance()
-        .createActionGroupPopup(null, actionGroup, context, mnemonics, true)
-        .showInBestPositionFor(context)
+          .createActionGroupPopup(null, actionGroup, context, mnemonics, true)
+          .showInBestPositionFor(context)
     }
   }
 
   private fun calculatePopupGroup(target: BuildTargetInfo): ActionGroup =
-    DefaultActionGroup().apply {
-      addAction(container.copyTargetIdAction)
-      addSeparator()
-      if (target.capabilities.canCompile) {
-        addAction(BuildTargetAction(target.id))
+      DefaultActionGroup().apply {
+        addAction(container.copyTargetIdAction)
+        addSeparator()
+        if (target.capabilities.canCompile) {
+          addAction(BuildTargetAction(target.id))
+        }
+        fillWithEligibleActions(target, false)
+        container.getTargetActions(project, target).map {
+          addAction(it)
+          addSeparator()
+        }
       }
-      fillWithEligibleActions(target, false)
-      container.getTargetActions(project, target).map { addAction(it); addSeparator() }
-    }
 
   private fun MouseEvent.isDoubleClick(): Boolean =
-    this.mouseButton == MouseButton.Left && this.clickCount == 2
+      this.mouseButton == MouseButton.Left && this.clickCount == 2
 
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
@@ -81,59 +84,66 @@ public class LoadedTargetsMouseListener(
     }
   }
 
-  override fun mousePressed(e: MouseEvent?) { /* nothing to do */ }
+  override fun mousePressed(e: MouseEvent?) {
+    /* nothing to do */
+  }
 
-  override fun mouseReleased(e: MouseEvent?) { /* nothing to do */ }
+  override fun mouseReleased(e: MouseEvent?) {
+    /* nothing to do */
+  }
 
-  override fun mouseEntered(e: MouseEvent?) { /* nothing to do */ }
+  override fun mouseEntered(e: MouseEvent?) {
+    /* nothing to do */
+  }
 
-  override fun mouseExited(e: MouseEvent?) { /* nothing to do */ }
+  override fun mouseExited(e: MouseEvent?) {
+    /* nothing to do */
+  }
 }
 
 private fun BspRunnerAction.prepareAndPerform(project: Project) {
-  BspCoroutineService.getInstance(project).start {
-    doPerformAction(project)
-  }
+  BspCoroutineService.getInstance(project).start { doPerformAction(project) }
 }
 
 @Suppress("CognitiveComplexMethod")
 public fun DefaultActionGroup.fillWithEligibleActions(
-  target: BuildTargetInfo,
-  verboseText: Boolean,
+    target: BuildTargetInfo,
+    verboseText: Boolean,
 ): DefaultActionGroup {
   if (target.capabilities.canRun) {
     addAction(
-      RunTargetAction(
-        targetInfo = target,
-        verboseText = verboseText,
-      )
-    )
+        RunTargetAction(
+            targetInfo = target,
+            verboseText = verboseText,
+        ))
   }
 
   if (target.capabilities.canTest) {
     addAction(TestTargetAction(target, verboseText = verboseText))
   }
 
-  if (target.capabilities.canDebug && BspRunHandler.getRunHandler(listOf(target)).canDebug(listOf(target))) {
+  if (target.capabilities.canDebug &&
+      BspRunHandler.getRunHandler(listOf(target)).canDebug(listOf(target))) {
     addAction(
-      RunTargetAction(
-        targetInfo = target,
-        isDebugAction = true,
-        verboseText = verboseText,
-      )
-    )
+        RunTargetAction(
+            targetInfo = target,
+            isDebugAction = true,
+            verboseText = verboseText,
+        ))
   }
 
   if (target.languageIds.isJvmTarget()) {
     if (target.capabilities.canRun) {
       addAction(RunWithLocalJvmRunnerAction(target, verboseText = verboseText))
       if (target.capabilities.canDebug)
-        addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
+          addAction(
+              RunWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
     }
     if (target.capabilities.canTest) {
       addAction(TestWithLocalJvmRunnerAction(target, verboseText = verboseText))
       if (target.capabilities.canDebug)
-        addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
+          addAction(
+              TestWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
     }
   }
   return this

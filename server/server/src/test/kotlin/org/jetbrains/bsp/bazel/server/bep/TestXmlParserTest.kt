@@ -4,36 +4,44 @@ import ch.epfl.scala.bsp4j.*
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import java.nio.file.Path
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
-
 
 class TestXmlParserTest {
-    private class MockBuildClient : BuildClient {
-        val taskStartCalls = mutableListOf<TaskStartParams>()
-        val taskFinishCalls = mutableListOf<TaskFinishParams>()
+  private class MockBuildClient : BuildClient {
+    val taskStartCalls = mutableListOf<TaskStartParams>()
+    val taskFinishCalls = mutableListOf<TaskFinishParams>()
 
-        override fun onBuildShowMessage(p0: ShowMessageParams?) {}
-        override fun onBuildLogMessage(p0: LogMessageParams?) {}
-        override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams?) {}
-        override fun onBuildTargetDidChange(p0: DidChangeBuildTarget?) {}
-        override fun onBuildTaskStart(p0: TaskStartParams?) {
-            p0?.let { taskStartCalls.add(it) }
-        }
-        override fun onBuildTaskProgress(p0: TaskProgressParams?) {}
-        override fun onBuildTaskFinish(p0: TaskFinishParams?) {
-            p0?.let { taskFinishCalls.add(it) }
-        }
-        override fun onRunPrintStdout(p0: PrintParams?) {}
-        override fun onRunPrintStderr(p0: PrintParams?) {}
+    override fun onBuildShowMessage(p0: ShowMessageParams?) {}
+
+    override fun onBuildLogMessage(p0: LogMessageParams?) {}
+
+    override fun onBuildPublishDiagnostics(p0: PublishDiagnosticsParams?) {}
+
+    override fun onBuildTargetDidChange(p0: DidChangeBuildTarget?) {}
+
+    override fun onBuildTaskStart(p0: TaskStartParams?) {
+      p0?.let { taskStartCalls.add(it) }
     }
 
-    @Test
-    fun `pytest, all passing`(@TempDir tempDir: Path) {
-        // given
-        val samplePassingContents = """
+    override fun onBuildTaskProgress(p0: TaskProgressParams?) {}
+
+    override fun onBuildTaskFinish(p0: TaskFinishParams?) {
+      p0?.let { taskFinishCalls.add(it) }
+    }
+
+    override fun onRunPrintStdout(p0: PrintParams?) {}
+
+    override fun onRunPrintStderr(p0: PrintParams?) {}
+  }
+
+  @Test
+  fun `pytest, all passing`(@TempDir tempDir: Path) {
+    // given
+    val samplePassingContents =
+        """
             <?xml version="1.0" encoding="utf-8"?>
             <testsuites>
                 <testsuite name="test_suite" errors="0" failures="0" skipped="0" tests="4" time="0.080"
@@ -44,36 +52,36 @@ class TestXmlParserTest {
                     <testcase classname="com.example.tests.TestClass" name="test_method_4" time="0.012" />
                 </testsuite>
             </testsuites>
-        """.trimIndent()
+        """
+            .trimIndent()
 
-        val client = MockBuildClient()
-        val notifier = BspClientTestNotifier(client, "sample-origin")
-        val parentId = TaskId("sample-task")
+    val client = MockBuildClient()
+    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val parentId = TaskId("sample-task")
 
-        // when
-        TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    // when
+    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
-        // then
-        client.taskStartCalls.size shouldBe 5
-        client.taskFinishCalls.size shouldBe 5
+    // then
+    client.taskStartCalls.size shouldBe 5
+    client.taskFinishCalls.size shouldBe 5
 
-        val expectedNames = listOf(
-                "test_suite",
-                "test_method_1",
-                "test_method_2",
-                "test_method_3",
-                "test_method_4"
-        )
+    val expectedNames =
+        listOf("test_suite", "test_method_1", "test_method_2", "test_method_3", "test_method_4")
 
-        client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-        client.taskFinishCalls.map { (it.data as TestFinish).status shouldBe TestStatus.PASSED }
-        client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
-    }
+    client.taskFinishCalls.map {
+      (it.data as TestFinish).displayName
+    } shouldContainExactlyInAnyOrder expectedNames
+    client.taskFinishCalls.map { (it.data as TestFinish).status shouldBe TestStatus.PASSED }
+    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder
+        client.taskFinishCalls.map { it.taskId }
+  }
 
-    @Test
-    fun `pytest, with failures`(@TempDir tempDir: Path) {
-        // given
-        val samplePassingContents = """
+  @Test
+  fun `pytest, with failures`(@TempDir tempDir: Path) {
+    // given
+    val samplePassingContents =
+        """
             <?xml version="1.0" encoding="utf-8"?>
             <testsuites>
                     <testsuite name="mysuite" errors="0" failures="2" skipped="0" tests="22" time="0.163"
@@ -139,49 +147,68 @@ class TestXmlParserTest {
                                     name="test_sample_5" time="0.001" />
                     </testsuite>
             </testsuites>
-        """.trimIndent()
+        """
+            .trimIndent()
 
-        val client = MockBuildClient()
-        val notifier = BspClientTestNotifier(client, "sample-origin")
-        val parentId = TaskId("sample-task")
+    val client = MockBuildClient()
+    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val parentId = TaskId("sample-task")
 
-        // when
-        TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    // when
+    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
-        // then
-        client.taskStartCalls.size shouldBe 14
-        client.taskFinishCalls.size shouldBe 14
+    // then
+    client.taskStartCalls.size shouldBe 14
+    client.taskFinishCalls.size shouldBe 14
 
-        val expectedNames = listOf(
-                "test_config_1", "test_config_2", "test_config_3", "test_config_4", "test_config_5", "test_config_6", "test_config_incorrect_format", "test_other_file", "test_sample_file", "test_other_value", "test_sample_3", "test_sample_4", "test_sample_5", "mysuite"
-        )
+    val expectedNames =
+        listOf(
+            "test_config_1",
+            "test_config_2",
+            "test_config_3",
+            "test_config_4",
+            "test_config_5",
+            "test_config_6",
+            "test_config_incorrect_format",
+            "test_other_file",
+            "test_sample_file",
+            "test_other_value",
+            "test_sample_3",
+            "test_sample_4",
+            "test_sample_5",
+            "mysuite")
 
-        client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-        client.taskFinishCalls.map {
-            val data = (it.data as TestFinish)
-            when (data.displayName) {
-                "mysuite" -> {
-                    data.status shouldBe TestStatus.FAILED
-                }
-                "test_other_value", "test_config_incorrect_format" -> {
-                    data.status shouldBe TestStatus.FAILED
-                    data.message shouldContain "AssertionError"
-                }
-                "test_config_6" -> {
-                    data.status shouldBe TestStatus.SKIPPED
-                }
-                else -> {
-                    data.status shouldBe TestStatus.PASSED
-                }
-            }
+    client.taskFinishCalls.map {
+      (it.data as TestFinish).displayName
+    } shouldContainExactlyInAnyOrder expectedNames
+    client.taskFinishCalls.map {
+      val data = (it.data as TestFinish)
+      when (data.displayName) {
+        "mysuite" -> {
+          data.status shouldBe TestStatus.FAILED
         }
-        client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
+        "test_other_value",
+        "test_config_incorrect_format" -> {
+          data.status shouldBe TestStatus.FAILED
+          data.message shouldContain "AssertionError"
+        }
+        "test_config_6" -> {
+          data.status shouldBe TestStatus.SKIPPED
+        }
+        else -> {
+          data.status shouldBe TestStatus.PASSED
+        }
+      }
     }
+    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder
+        client.taskFinishCalls.map { it.taskId }
+  }
 
-    @Test
-    fun `junit, all passing`(@TempDir tempDir: Path) {
-        // given
-        val samplePassingContents = """
+  @Test
+  fun `junit, all passing`(@TempDir tempDir: Path) {
+    // given
+    val samplePassingContents =
+        """
             <?xml version='1.0' encoding='UTF-8'?>
             <testsuites>
               <testsuite name='com.example.testing.base.Tests' timestamp='2024-05-14T19:23:32.883Z' hostname='localhost' tests='20' failures='0' errors='0' time='13.695' package='' id='0'>
@@ -227,36 +254,55 @@ class TestXmlParserTest {
                 <system-err />
               </testsuite>
             </testsuites>
-        """.trimIndent()
+        """
+            .trimIndent()
 
-        val client = MockBuildClient()
-        val notifier = BspClientTestNotifier(client, "sample-origin")
-        val parentId = TaskId("sample-task")
+    val client = MockBuildClient()
+    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val parentId = TaskId("sample-task")
 
-        // when
-        TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    // when
+    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
-        // then
-        client.taskStartCalls.size shouldBe 18
-        client.taskFinishCalls.size shouldBe 18
+    // then
+    client.taskStartCalls.size shouldBe 18
+    client.taskFinishCalls.size shouldBe 18
 
-        val expectedNames = listOf(
-                "com.example.testing.base.Tests", "com.example.optimization.TestSuite1", "test1", "test2", "test3", "test4",
-                "com.example.optimization.TestSuite2", "test1", "test2", "test3", "test4", "test5",
-                "com.example.optimization.TestSuite3", "test1",
-                "com.example.optimization.TestSuite4", "test1",
-                "com.example.optimization.TestSuite5", "test1",
+    val expectedNames =
+        listOf(
+            "com.example.testing.base.Tests",
+            "com.example.optimization.TestSuite1",
+            "test1",
+            "test2",
+            "test3",
+            "test4",
+            "com.example.optimization.TestSuite2",
+            "test1",
+            "test2",
+            "test3",
+            "test4",
+            "test5",
+            "com.example.optimization.TestSuite3",
+            "test1",
+            "com.example.optimization.TestSuite4",
+            "test1",
+            "com.example.optimization.TestSuite5",
+            "test1",
         )
 
-        client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-        client.taskFinishCalls.map { (it.data as TestFinish).status shouldBe TestStatus.PASSED }
-        client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
-    }
+    client.taskFinishCalls.map {
+      (it.data as TestFinish).displayName
+    } shouldContainExactlyInAnyOrder expectedNames
+    client.taskFinishCalls.map { (it.data as TestFinish).status shouldBe TestStatus.PASSED }
+    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder
+        client.taskFinishCalls.map { it.taskId }
+  }
 
-    @Test
-    fun `junit, with skip and failures`(@TempDir tempDir: Path) {
-        // given
-        val samplePassingContents = """
+  @Test
+  fun `junit, with skip and failures`(@TempDir tempDir: Path) {
+    // given
+    val samplePassingContents =
+        """
             <?xml version='1.0' encoding='UTF-8'?>
             <testsuites>
               <testsuite name='com.example.testing.base.Tests' timestamp='2024-05-21T14:59:39.108Z' hostname='localhost' tests='20' failures='1' errors='0' time='13.06' package='' id='0'>
@@ -320,51 +366,69 @@ class TestXmlParserTest {
                 <system-err />
               </testsuite>
             </testsuites>
-        """.trimIndent()
+        """
+            .trimIndent()
 
-        val client = MockBuildClient()
-        val notifier = BspClientTestNotifier(client, "sample-origin")
-        val parentId = TaskId("sample-task")
+    val client = MockBuildClient()
+    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val parentId = TaskId("sample-task")
 
-        // when
-        TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    // when
+    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
-        // then
-        client.taskStartCalls.size shouldBe 17
-        client.taskFinishCalls.size shouldBe 17
+    // then
+    client.taskStartCalls.size shouldBe 17
+    client.taskFinishCalls.size shouldBe 17
 
-        val expectedNames = listOf(
-                "com.example.testing.base.Tests", "com.example.optimization.TestSuite1", "test1", "test2", "test3", "test4", "test5",
-                "com.example.optimization.TestSuite2", "test1", "sampleFailedTest", "test3", "test4", "sampleSkippedTest",
-                "com.example.optimization.TestSuite3", "test1",
-                "com.example.optimization.TestSuite4", "test1"
-        )
+    val expectedNames =
+        listOf(
+            "com.example.testing.base.Tests",
+            "com.example.optimization.TestSuite1",
+            "test1",
+            "test2",
+            "test3",
+            "test4",
+            "test5",
+            "com.example.optimization.TestSuite2",
+            "test1",
+            "sampleFailedTest",
+            "test3",
+            "test4",
+            "sampleSkippedTest",
+            "com.example.optimization.TestSuite3",
+            "test1",
+            "com.example.optimization.TestSuite4",
+            "test1")
 
-        client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-        client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
-        client.taskFinishCalls.map {
-            val data = (it.data as TestFinish)
-            when (data.displayName) {
-                "com.example.optimization.TestSuite1", "com.example.testing.base.Tests" -> {
-                    data.status shouldBe TestStatus.FAILED
-                }
-                "sampleFailedTest" -> {
-                    data.status shouldBe TestStatus.FAILED
-                    data.message shouldContain "expected:"
-                }
-                "sampleSkippedTest" -> {
-                    data.status shouldBe TestStatus.SKIPPED
-                }
-                else -> {
-                    data.status shouldBe TestStatus.PASSED
-                }
-            }
+    client.taskFinishCalls.map {
+      (it.data as TestFinish).displayName
+    } shouldContainExactlyInAnyOrder expectedNames
+    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder
+        client.taskFinishCalls.map { it.taskId }
+    client.taskFinishCalls.map {
+      val data = (it.data as TestFinish)
+      when (data.displayName) {
+        "com.example.optimization.TestSuite1",
+        "com.example.testing.base.Tests" -> {
+          data.status shouldBe TestStatus.FAILED
         }
+        "sampleFailedTest" -> {
+          data.status shouldBe TestStatus.FAILED
+          data.message shouldContain "expected:"
+        }
+        "sampleSkippedTest" -> {
+          data.status shouldBe TestStatus.SKIPPED
+        }
+        else -> {
+          data.status shouldBe TestStatus.PASSED
+        }
+      }
     }
+  }
 
-    private fun writeTempFile(tempDir: Path, contents: String): String {
-        val tempFile = tempDir.resolve("tempFile.xml").toFile()
-        tempFile.writeText(contents)
-        return tempFile.toURI().toString()
-    }
+  private fun writeTempFile(tempDir: Path, contents: String): String {
+    val tempFile = tempDir.resolve("tempFile.xml").toFile()
+    tempFile.writeText(contents)
+    return tempFile.toURI().toString()
+  }
 }

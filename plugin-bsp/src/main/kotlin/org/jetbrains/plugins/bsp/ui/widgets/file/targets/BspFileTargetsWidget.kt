@@ -16,6 +16,7 @@ import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.impl.status.EditorBasedStatusBarPopup
 import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager
+import javax.swing.Icon
 import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
@@ -24,7 +25,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetI
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
-import javax.swing.Icon
 
 private const val ID = "org.jetbrains.bsp.BspFileTargetsWidget"
 
@@ -36,10 +36,13 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
   override fun ID(): String = ID
 
   override fun getWidgetState(file: VirtualFile?): WidgetState =
-    if (file == null) inactiveWidgetState(project.assets.icon)
-    else activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, project.assets.icon)
+      if (file == null) inactiveWidgetState(project.assets.icon)
+      else activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, project.assets.icon)
 
-  private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
+  private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(
+      file: VirtualFile,
+      icon: Icon
+  ): WidgetState {
     val targets = project.temporaryTargetUtils.getTargetsForFile(file, project)
     return if (targets.isEmpty()) inactiveWidgetState(icon)
     else activeWidgetState(targets.firstOrNull(), icon)
@@ -67,7 +70,8 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
     val mnemonics = JBPopupFactory.ActionSelectionAid.MNEMONICS
     val title = BspPluginBundle.message("widget.title")
 
-    return JBPopupFactory.getInstance().createActionGroupPopup(title, group, context, mnemonics, true)
+    return JBPopupFactory.getInstance()
+        .createActionGroupPopup(title, group, context, mnemonics, true)
   }
 
   private fun calculatePopupGroup(file: VirtualFile): ActionGroup {
@@ -79,37 +83,33 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
   }
 
   private fun BuildTargetInfo.calculatePopupGroup(): ActionGroup =
-    DefaultActionGroup(id.uri, true).also {
-      if (capabilities.canCompile) {
-        it.add(BuildTargetAction(id))
+      DefaultActionGroup(id.uri, true).also {
+        if (capabilities.canCompile) {
+          it.add(BuildTargetAction(id))
+        }
+        it.fillWithEligibleActions(this, false)
+        it.addSeparator()
+        it.addAll(
+            project.targetActionProvider?.getTargetActions(component, project, this).orEmpty())
       }
-      it.fillWithEligibleActions(this, false)
-      it.addSeparator()
-      it.addAll(project.targetActionProvider?.getTargetActions(component, project, this).orEmpty())
-    }
 
-  override fun createInstance(project: Project): StatusBarWidget =
-    BspFileTargetsWidget(project)
+  override fun createInstance(project: Project): StatusBarWidget = BspFileTargetsWidget(project)
 }
 
 public class BspFileTargetsWidgetFactory : StatusBarWidgetFactory {
   override fun getId(): String = ID
 
-  override fun getDisplayName(): String =
-    BspPluginBundle.message("widget.factory.display.name")
+  override fun getDisplayName(): String = BspPluginBundle.message("widget.factory.display.name")
 
-  override fun isAvailable(project: Project): Boolean =
-    project.isBspProject
+  override fun isAvailable(project: Project): Boolean = project.isBspProject
 
-  override fun createWidget(project: Project): StatusBarWidget =
-    BspFileTargetsWidget(project)
+  override fun createWidget(project: Project): StatusBarWidget = BspFileTargetsWidget(project)
 
   override fun disposeWidget(widget: StatusBarWidget) {
     Disposer.dispose(widget)
   }
 
-  override fun canBeEnabledOn(statusBar: StatusBar): Boolean =
-    true
+  override fun canBeEnabledOn(statusBar: StatusBar): Boolean = true
 }
 
 internal fun Project.updateBspFileTargetsWidget() {

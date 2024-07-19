@@ -8,15 +8,15 @@ import org.jetbrains.plugins.bsp.extension.points.WithBuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
 
 /**
- * Will be called on each (re)sync after all default calls to the server.
- * This hook should be used to collect additional info from the server needed for other extension points.
+ * Will be called on each (re)sync after all default calls to the server. This hook should be used
+ * to collect additional info from the server needed for other extension points.
  */
 public interface ProjectSyncHook : WithBuildToolId {
   public fun onSync(project: Project, server: JoinedBuildServer)
 
   public companion object {
     internal val ep =
-      ExtensionPointName.create<ProjectSyncHook>("org.jetbrains.bsp.projectSyncHook")
+        ExtensionPointName.create<ProjectSyncHook>("org.jetbrains.bsp.projectSyncHook")
   }
 }
 

@@ -5,6 +5,7 @@ import java.security.MessageDigest
 internal object StringUtils {
   /**
    * Creates a md5 hashed string from an original string
+   *
    * @param s the original string
    * @param n the number of characters taken from the hashed string
    */

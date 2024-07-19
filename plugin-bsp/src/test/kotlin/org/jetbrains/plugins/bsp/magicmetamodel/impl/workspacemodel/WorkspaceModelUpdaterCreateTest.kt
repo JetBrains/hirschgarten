@@ -14,12 +14,8 @@ class WorkspaceModelUpdaterCreateTest : WorkspaceModelBaseTest() {
 
     // when
     val workspaceModelUpdater =
-      WorkspaceModelUpdater.create(
-        workspaceEntityStorageBuilder,
-        virtualFileUrlManager,
-        projectBasePath,
-        project
-      )
+        WorkspaceModelUpdater.create(
+            workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
 
     // then
     workspaceModelUpdater::class shouldBe WorkspaceModelUpdaterImpl::class

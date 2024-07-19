@@ -29,17 +29,22 @@ internal abstract class CustomCompileProjectAction(text: String) : SuspendableAc
 }
 
 internal fun Project.isBuildInProgress() =
-  CompilerManager.getInstance(this).isCompilationActive ||
-    BspConsoleService.getInstance(this).bspBuildConsole.hasTasksInProgress()
+    CompilerManager.getInstance(this).isCompilationActive ||
+        BspConsoleService.getInstance(this).bspBuildConsole.hasTasksInProgress()
 
 internal class CompileProjectWithBspAction :
-  CustomCompileProjectAction(BspPluginBundle.message("project.task.action.name.build.project.bsp")) {
-  override fun getProjectTask(project: Project): ProjectTask = createAllBspOnlyModuleBuildTasks(project)
+    CustomCompileProjectAction(
+        BspPluginBundle.message("project.task.action.name.build.project.bsp")) {
+  override fun getProjectTask(project: Project): ProjectTask =
+      createAllBspOnlyModuleBuildTasks(project)
 }
 
 internal class CompileProjectWithJpsAction :
-  CustomCompileProjectAction(BspPluginBundle.message("project.task.action.name.build.project.jps")) {
-  override fun getProjectTask(project: Project): ProjectTask = createAllJpsOnlyModuleBuildTasks(project)
+    CustomCompileProjectAction(
+        BspPluginBundle.message("project.task.action.name.build.project.jps")) {
+  override fun getProjectTask(project: Project): ProjectTask =
+      createAllJpsOnlyModuleBuildTasks(project)
+
   override fun update(project: Project, e: AnActionEvent) {
     super.update(project, e)
     e.presentation.isEnabled = JpsFeatureFlags.isJpsCompilationEnabled && e.presentation.isEnabled

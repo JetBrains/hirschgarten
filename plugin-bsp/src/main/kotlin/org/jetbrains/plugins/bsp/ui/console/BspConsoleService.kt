@@ -17,13 +17,19 @@ public class BspConsoleService(project: Project) {
     val basePath = project.rootDir.path
 
     bspBuildConsole =
-      BuildTaskConsole(project.getService(BuildViewManager::class.java), basePath, project.assets.presentableName)
+        BuildTaskConsole(
+            project.getService(BuildViewManager::class.java),
+            basePath,
+            project.assets.presentableName)
     bspSyncConsole =
-      SyncTaskConsole(project.getService(SyncViewManager::class.java), basePath, project.assets.presentableName)
+        SyncTaskConsole(
+            project.getService(SyncViewManager::class.java),
+            basePath,
+            project.assets.presentableName)
   }
 
   public companion object {
     public fun getInstance(project: Project): BspConsoleService =
-      project.getService(BspConsoleService::class.java)
+        project.getService(BspConsoleService::class.java)
   }
 }

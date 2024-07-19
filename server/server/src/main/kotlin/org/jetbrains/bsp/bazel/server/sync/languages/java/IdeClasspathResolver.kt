@@ -1,14 +1,14 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.java
 
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bsp.bazel.server.model.Label
 import java.net.URI
+import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 
 class IdeClasspathResolver(
-  private val label: Label,
-  private val bazelPathsResolver: BazelPathsResolver,
-  runtimeClasspath: Sequence<URI>,
-  compileClasspath: Sequence<URI>,
+    private val label: Label,
+    private val bazelPathsResolver: BazelPathsResolver,
+    runtimeClasspath: Sequence<URI>,
+    compileClasspath: Sequence<URI>,
 ) {
   private val runtimeJars: Set<String>
   private val runtimeMavenJarSuffixes: Set<String>
@@ -21,10 +21,10 @@ class IdeClasspathResolver(
   }
 
   fun resolve(): Sequence<URI> =
-    compileJars
-      .map(::findRuntimeEquivalent)
-      .filterNot { isItJarOfTheCurrentTarget(it) }
-      .map(URI::create)
+      compileJars
+          .map(::findRuntimeEquivalent)
+          .filterNot { isItJarOfTheCurrentTarget(it) }
+          .map(URI::create)
 
   private fun findRuntimeEquivalent(compileJar: String): String {
     val runtimeJar = compileJar.replace(JAR_PATTERN, ".jar")
@@ -32,12 +32,8 @@ class IdeClasspathResolver(
       return runtimeJar
     }
     val headerSuffix = toMavenSuffix(compileJar)
-    val mavenJarSuffix = headerSuffix?.let { s: String ->
-      s.replace(
-        "/header_([^/]+)\\.jar$".toRegex(),
-        "/$1.jar"
-      )
-    }
+    val mavenJarSuffix =
+        headerSuffix?.let { s: String -> s.replace("/header_([^/]+)\\.jar$".toRegex(), "/$1.jar") }
     return mavenJarSuffix?.takeIf(runtimeMavenJarSuffixes::contains)?.let { suffix ->
       runtimeJars.find { jar: String -> jar.endsWith(suffix) }
     } ?: compileJar
@@ -63,14 +59,18 @@ class IdeClasspathResolver(
   companion object {
     private val JAR_PATTERN = ("((-[hi]jar)|(\\.abi))\\.jar\$").toRegex()
 
-    fun resolveIdeClasspath(label: Label,
-                            bazelPathsResolver: BazelPathsResolver,
-                            runtimeClasspath: List<URI>,
-                            compileClasspath: List<URI>) =
-            IdeClasspathResolver(
-                    label,
-                    bazelPathsResolver,
-                    runtimeClasspath.asSequence(),
-                    compileClasspath.asSequence()).resolve().toList()
+    fun resolveIdeClasspath(
+        label: Label,
+        bazelPathsResolver: BazelPathsResolver,
+        runtimeClasspath: List<URI>,
+        compileClasspath: List<URI>
+    ) =
+        IdeClasspathResolver(
+                label,
+                bazelPathsResolver,
+                runtimeClasspath.asSequence(),
+                compileClasspath.asSequence())
+            .resolve()
+            .toList()
   }
 }

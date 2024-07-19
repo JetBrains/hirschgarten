@@ -1,4 +1,5 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package org.jetbrains.plugins.bsp.flow.open
 
 import com.intellij.ide.CommandLineInspectionProjectConfigurator
@@ -14,14 +15,14 @@ public class BspCommandLineInspectionConfigurator : CommandLineInspectionProject
   override fun getDescription(): String = "Bsp Command Line Inspection"
 
   override fun configureProject(
-    project: Project,
-    context: CommandLineInspectionProjectConfigurator.ConfiguratorContext,
+      project: Project,
+      context: CommandLineInspectionProjectConfigurator.ConfiguratorContext,
   ) {
     runBlocking {
       if (project.isBspProject) {
         EP_NAME.extensionList
-          .firstIsInstanceOrNull<BspStartupActivityTracker>()
-          ?.awaitConfiguration(project)
+            .firstIsInstanceOrNull<BspStartupActivityTracker>()
+            ?.awaitConfiguration(project)
       }
     }
   }

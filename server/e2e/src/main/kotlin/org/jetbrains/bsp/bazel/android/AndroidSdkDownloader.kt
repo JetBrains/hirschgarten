@@ -1,8 +1,5 @@
 package org.jetbrains.bsp.bazel.android
 
-import org.apache.commons.io.FileUtils.copyURLToFile
-import org.apache.logging.log4j.LogManager
-import org.jetbrains.bsp.bazel.commons.FileUtils
 import java.net.URI
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermission
@@ -14,13 +11,19 @@ import kotlin.io.path.deleteRecursively
 import kotlin.io.path.exists
 import kotlin.io.path.moveTo
 import kotlin.io.path.setPosixFilePermissions
+import org.apache.commons.io.FileUtils.copyURLToFile
+import org.apache.logging.log4j.LogManager
+import org.jetbrains.bsp.bazel.commons.FileUtils
 
 object AndroidSdkDownloader {
   private val log = LogManager.getLogger(AndroidSdkDownloader::class.java)
 
   private val androidHome: Path? = System.getenv("ANDROID_HOME")?.let { Path(it) }
-  val androidSdkPath: Path = androidHome ?:
-    checkNotNull(FileUtils.getCacheDirectory("bazel_android_sdk")?.toPath()) { "Couldn't get Android SDK cache dir" }
+  val androidSdkPath: Path =
+      androidHome
+          ?: checkNotNull(FileUtils.getCacheDirectory("bazel_android_sdk")?.toPath()) {
+            "Couldn't get Android SDK cache dir"
+          }
 
   fun downloadAndroidSdkIfNeeded() {
     if (androidHome != null) {
@@ -42,21 +45,24 @@ object AndroidSdkDownloader {
     log.info("Downloading $commandLineToolsDownloadLink")
     val commandLineToolsZip = androidSdkPath.resolve("command_line_tools.zip")
     copyURLToFile(
-      URI(commandLineToolsDownloadLink).toURL(),
-      commandLineToolsZip.toFile(),
-      60 * 1000,
-      300 * 1000,
+        URI(commandLineToolsDownloadLink).toURL(),
+        commandLineToolsZip.toFile(),
+        60 * 1000,
+        300 * 1000,
     )
     return commandLineToolsZip
   }
 
   private fun getCommandLineToolsDownloadLink(): String {
     val os = System.getProperty("os.name").lowercase()
-    val osPart = when {
-      os.startsWith("linux") -> "linux"
-      os.startsWith("mac") -> "mac"
-      else -> error("Can't download the Android SDK on OS $os. Set the \$ANDROID_HOME environment variable manually.")
-    }
+    val osPart =
+        when {
+          os.startsWith("linux") -> "linux"
+          os.startsWith("mac") -> "mac"
+          else ->
+              error(
+                  "Can't download the Android SDK on OS $os. Set the \$ANDROID_HOME environment variable manually.")
+        }
     return "https://dl.google.com/android/repository/commandlinetools-$osPart-11076708_latest.zip"
   }
 
@@ -71,21 +77,22 @@ object AndroidSdkDownloader {
   }
 
   private fun unzipArchive(zip: Path, outputDirectory: Path) =
-    runShellCommand("unzip '$zip' -d '$outputDirectory'")
+      runShellCommand("unzip '$zip' -d '$outputDirectory'")
 
   private fun downloadSdkWithSdkManager() {
     val sdkManager = androidSdkPath.resolve("cmdline-tools/latest/bin/sdkmanager")
     sdkManager.setPosixFilePermissions(
-      setOf(PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_EXECUTE))
+        setOf(
+            PosixFilePermission.OWNER_WRITE,
+            PosixFilePermission.OWNER_READ,
+            PosixFilePermission.OWNER_EXECUTE))
     runShellCommand("yes | '$sdkManager' --licenses")
     runShellCommand("'$sdkManager' 'platforms;android-34' 'build-tools;34.0.0'")
   }
 
   private fun runShellCommand(command: String) {
     log.info("Invoking $command")
-    val process = ProcessBuilder("/bin/sh", "-c", command)
-      .inheritIO()
-      .start()
+    val process = ProcessBuilder("/bin/sh", "-c", command).inheritIO().start()
     process.waitFor(5, TimeUnit.MINUTES)
     check(process.exitValue() == 0) { "$command exited with exit code ${process.exitValue()}" }
   }

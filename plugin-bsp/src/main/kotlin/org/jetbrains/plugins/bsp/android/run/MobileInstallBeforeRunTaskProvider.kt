@@ -15,9 +15,11 @@ import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 
-private val PROVIDER_ID = Key.create<MobileInstallBeforeRunTaskProvider.Task>("MobileInstallBeforeRunTaskProvider")
+private val PROVIDER_ID =
+    Key.create<MobileInstallBeforeRunTaskProvider.Task>("MobileInstallBeforeRunTaskProvider")
 
-public class MobileInstallBeforeRunTaskProvider : BeforeRunTaskProvider<MobileInstallBeforeRunTaskProvider.Task>() {
+public class MobileInstallBeforeRunTaskProvider :
+    BeforeRunTaskProvider<MobileInstallBeforeRunTaskProvider.Task>() {
   private val log = logger<MobileInstallBeforeRunTaskProvider>()
 
   public class Task : BeforeRunTask<Task>(PROVIDER_ID)
@@ -27,17 +29,17 @@ public class MobileInstallBeforeRunTaskProvider : BeforeRunTaskProvider<MobileIn
   override fun getName(): String = BspPluginBundle.message("console.task.build.title")
 
   override fun createTask(configuration: RunConfiguration): Task? =
-    if (configuration is BspRunConfiguration) {
-      Task()
-    } else {
-      null
-    }
+      if (configuration is BspRunConfiguration) {
+        Task()
+      } else {
+        null
+      }
 
   override fun executeTask(
-    context: DataContext,
-    configuration: RunConfiguration,
-    environment: ExecutionEnvironment,
-    task: Task,
+      context: DataContext,
+      configuration: RunConfiguration,
+      environment: ExecutionEnvironment,
+      task: Task,
   ): Boolean {
     val runConfiguration = environment.runProfile as? BspRunConfiguration ?: return false
     if (runConfiguration.runHandler !is AndroidBspRunHandler) return false
@@ -45,11 +47,12 @@ public class MobileInstallBeforeRunTaskProvider : BeforeRunTaskProvider<MobileIn
     val targetId = runConfiguration.targets.singleOrNull()?.id ?: return false
     val deviceFuture = environment.getCopyableUserData(DEVICE_FUTURE_KEY) ?: return false
 
-    val startType = when (environment.executor.id) {
-      DefaultRunExecutor.EXECUTOR_ID -> MobileInstallStartType.COLD
-      DefaultDebugExecutor.EXECUTOR_ID -> MobileInstallStartType.DEBUG
-      else -> return false
-    }
+    val startType =
+        when (environment.executor.id) {
+          DefaultRunExecutor.EXECUTOR_ID -> MobileInstallStartType.COLD
+          DefaultDebugExecutor.EXECUTOR_ID -> MobileInstallStartType.DEBUG
+          else -> return false
+        }
 
     val mobileInstallResult = runBlocking {
       runMobileInstallTargetTask(targetId, deviceFuture, startType, environment.project, log)

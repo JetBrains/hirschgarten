@@ -18,87 +18,95 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBuildTarge
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toModuleCapabilities
 
 internal data class BspModuleDetails(
-  val target: BuildTarget,
-  val dependencySources: List<DependencySourcesItem>,
-  val javacOptions: JavacOptionsItem?,
-  // TODO: determine if pythonOptions has a purpose here (it's not used anywhere)
-  val pythonOptions: PythonOptionsItem?,
-  val scalacOptions: ScalacOptionsItem?,
-  val type: ModuleTypeId,
-  val associates: List<BuildTargetIdentifier> = listOf(),
-  val moduleDependencies: List<BuildTargetIdentifier>,
-  val libraryDependencies: List<BuildTargetIdentifier>?,
+    val target: BuildTarget,
+    val dependencySources: List<DependencySourcesItem>,
+    val javacOptions: JavacOptionsItem?,
+    // TODO: determine if pythonOptions has a purpose here (it's not used anywhere)
+    val pythonOptions: PythonOptionsItem?,
+    val scalacOptions: ScalacOptionsItem?,
+    val type: ModuleTypeId,
+    val associates: List<BuildTargetIdentifier> = listOf(),
+    val moduleDependencies: List<BuildTargetIdentifier>,
+    val libraryDependencies: List<BuildTargetIdentifier>?,
 )
 
 internal class BspModuleDetailsToModuleTransformer(
-  private val targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
-  private val moduleNameProvider: TargetNameReformatProvider,
-  private val libraryNameProvider: TargetNameReformatProvider,
-) :
-  WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
+    private val targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
+    private val moduleNameProvider: TargetNameReformatProvider,
+    private val libraryNameProvider: TargetNameReformatProvider,
+) : WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
-    GenericModuleInfo(
-      name = moduleNameProvider(inputEntity.target.toBuildTargetInfo()),
-      type = inputEntity.type,
-      modulesDependencies = inputEntity.moduleDependencies.mapNotNull { targetsMap[it] }
-        .map { IntermediateModuleDependency(moduleName = moduleNameProvider(it)) },
-      librariesDependencies = calculateLibrariesDependencies(inputEntity),
-      capabilities = inputEntity.target.capabilities.toModuleCapabilities(),
-      languageIds = inputEntity.target.languageIds,
-      associates = inputEntity.associates.mapNotNull {
-        targetsMap[it]?.toModuleDependency(moduleNameProvider)
-      },
-    )
+      GenericModuleInfo(
+          name = moduleNameProvider(inputEntity.target.toBuildTargetInfo()),
+          type = inputEntity.type,
+          modulesDependencies =
+              inputEntity.moduleDependencies
+                  .mapNotNull { targetsMap[it] }
+                  .map { IntermediateModuleDependency(moduleName = moduleNameProvider(it)) },
+          librariesDependencies = calculateLibrariesDependencies(inputEntity),
+          capabilities = inputEntity.target.capabilities.toModuleCapabilities(),
+          languageIds = inputEntity.target.languageIds,
+          associates =
+              inputEntity.associates.mapNotNull {
+                targetsMap[it]?.toModuleDependency(moduleNameProvider)
+              },
+      )
 
-  private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<IntermediateLibraryDependency> =
-    inputEntity.libraryDependencies?.map { it.toLibraryDependency(libraryNameProvider, true) }
-      ?: if (inputEntity.target.languageIds.includesJavaOrScala())
-        DependencySourcesItemToLibraryDependencyTransformer
-          .transform(inputEntity.dependencySources.map {
-            DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
-          }) else
-        emptyList()
+  private fun calculateLibrariesDependencies(
+      inputEntity: BspModuleDetails
+  ): List<IntermediateLibraryDependency> =
+      inputEntity.libraryDependencies?.map { it.toLibraryDependency(libraryNameProvider, true) }
+          ?: if (inputEntity.target.languageIds.includesJavaOrScala())
+              DependencySourcesItemToLibraryDependencyTransformer.transform(
+                  inputEntity.dependencySources.map {
+                    DependencySourcesAndJvmClassPaths(it, inputEntity.toJvmClassPaths())
+                  })
+          else emptyList()
 
   private fun BspModuleDetails.toJvmClassPaths() =
-    (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
+      (this.javacOptions?.classpath.orEmpty() + this.scalacOptions?.classpath.orEmpty()).distinct()
 }
 
 internal object DependencySourcesItemToLibraryDependencyTransformer :
-  WorkspaceModelEntityPartitionTransformer<DependencySourcesAndJvmClassPaths, IntermediateLibraryDependency> {
-  override fun transform(inputEntity: DependencySourcesAndJvmClassPaths): List<IntermediateLibraryDependency> =
-    DependencySourcesItemToLibraryTransformer.transform(inputEntity)
-      .map { toLibraryDependency(it) }
+    WorkspaceModelEntityPartitionTransformer<
+        DependencySourcesAndJvmClassPaths, IntermediateLibraryDependency> {
+  override fun transform(
+      inputEntity: DependencySourcesAndJvmClassPaths
+  ): List<IntermediateLibraryDependency> =
+      DependencySourcesItemToLibraryTransformer.transform(inputEntity).map {
+        toLibraryDependency(it)
+      }
 
   private fun toLibraryDependency(library: Library): IntermediateLibraryDependency =
-    IntermediateLibraryDependency(
-      libraryName = library.displayName,
-      isProjectLevelLibrary = false,
-    )
+      IntermediateLibraryDependency(
+          libraryName = library.displayName,
+          isProjectLevelLibrary = false,
+      )
 }
 
 internal class BuildTargetToModuleDependencyTransformer(
-  private val allTargetsIds: Set<BuildTargetIdentifier>,
-  private val targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
-  private val moduleNameProvider: TargetNameReformatProvider,
+    private val allTargetsIds: Set<BuildTargetIdentifier>,
+    private val targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
+    private val moduleNameProvider: TargetNameReformatProvider,
 ) : WorkspaceModelEntityPartitionTransformer<BuildTarget, IntermediateModuleDependency> {
   override fun transform(inputEntity: BuildTarget): List<IntermediateModuleDependency> =
-    inputEntity
-      .dependencies
-      .filter { allTargetsIds.contains(it) }
-      .mapNotNull { targetsMap[it]?.toModuleDependency(moduleNameProvider) }
+      inputEntity.dependencies
+          .filter { allTargetsIds.contains(it) }
+          .mapNotNull { targetsMap[it]?.toModuleDependency(moduleNameProvider) }
 }
 
-internal fun BuildTargetInfo.toModuleDependency(moduleNameProvider: TargetNameReformatProvider):
-  IntermediateModuleDependency =
-  IntermediateModuleDependency(
-    moduleName = moduleNameProvider(this),
-  )
+internal fun BuildTargetInfo.toModuleDependency(
+    moduleNameProvider: TargetNameReformatProvider
+): IntermediateModuleDependency =
+    IntermediateModuleDependency(
+        moduleName = moduleNameProvider(this),
+    )
 
 internal fun BuildTargetIdentifier.toLibraryDependency(
-  libraryNameProvider: TargetNameReformatProvider,
-  isProjectLevelLibrary: Boolean,
+    libraryNameProvider: TargetNameReformatProvider,
+    isProjectLevelLibrary: Boolean,
 ): IntermediateLibraryDependency =
-  IntermediateLibraryDependency(
-    libraryName = libraryNameProvider(BuildTargetInfo(id = this)),
-    isProjectLevelLibrary = isProjectLevelLibrary,
-  )
+    IntermediateLibraryDependency(
+        libraryName = libraryNameProvider(BuildTargetInfo(id = this)),
+        isProjectLevelLibrary = isProjectLevelLibrary,
+    )

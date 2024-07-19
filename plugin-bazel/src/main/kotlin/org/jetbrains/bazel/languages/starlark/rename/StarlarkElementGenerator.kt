@@ -27,7 +27,9 @@ class StarlarkElementGenerator(val project: Project) {
   private fun createDummyFile(contents: String): PsiFile {
     val factory = PsiFileFactory.getInstance(project)
     val virtualFile = LightVirtualFile(DUMMY_FILENAME, StarlarkFileType, contents)
-    val psiFile = (factory as PsiFileFactoryImpl).trySetupPsiForFile(virtualFile, StarlarkLanguage, false, true)
+    val psiFile =
+        (factory as PsiFileFactoryImpl).trySetupPsiForFile(
+            virtualFile, StarlarkLanguage, false, true)
     return psiFile ?: error("Failed to create dummy file")
   }
 }

@@ -26,7 +26,7 @@ public class TimeoutHandler(private val timeProvider: () -> Duration) {
 
   private fun createTimerAndStart(): CompletableFuture<Void> {
     return CompletableFuture<Void>()
-      .completeOnTimeout(null, timeProvider().inWholeNanoseconds, TimeUnit.NANOSECONDS)
-      .thenRun { timeoutFuture.completeExceptionally(TimeoutException()) }
+        .completeOnTimeout(null, timeProvider().inWholeNanoseconds, TimeUnit.NANOSECONDS)
+        .thenRun { timeoutFuture.completeExceptionally(TimeoutException()) }
   }
 }

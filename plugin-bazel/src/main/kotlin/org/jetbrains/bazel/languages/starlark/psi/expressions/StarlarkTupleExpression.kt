@@ -8,5 +8,5 @@ class StarlarkTupleExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitTupleExpression(this)
 
   fun getTargetExpressions(): List<StarlarkTargetExpression> =
-    findChildrenByClass(StarlarkTargetExpression::class.java).toList()
+      findChildrenByClass(StarlarkTargetExpression::class.java).toList()
 }

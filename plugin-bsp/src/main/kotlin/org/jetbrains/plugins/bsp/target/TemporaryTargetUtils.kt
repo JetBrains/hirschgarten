@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import java.net.URI
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.BuildTargetInfoState
@@ -22,22 +23,18 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
-import java.net.URI
 
 public data class TemporaryTargetUtilsState(
-  var idToTargetInfo: Map<String, BuildTargetInfoState> = emptyMap(),
-  var moduleIdToBuildTargetId: Map<String, String> = emptyMap(),
-  var fileToId: Map<String, List<String>> = emptyMap(),
-  var targetsBaseDir: List<String> = emptyList(),
-  var libraries: List<LibraryState> = emptyList(),
+    var idToTargetInfo: Map<String, BuildTargetInfoState> = emptyMap(),
+    var moduleIdToBuildTargetId: Map<String, String> = emptyMap(),
+    var fileToId: Map<String, List<String>> = emptyMap(),
+    var targetsBaseDir: List<String> = emptyList(),
+    var libraries: List<LibraryState> = emptyList(),
 )
 
 // This whole service is very temporary, it will be removed in the following PR
 @Service(Service.Level.PROJECT)
-@State(
-  name = "TemporaryTargetUtils",
-  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)]
-)
+@State(name = "TemporaryTargetUtils", storages = [Storage(StoragePathMacros.WORKSPACE_FILE)])
 public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState> {
   private var targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
   private var moduleIdToBuildTargetId: Map<String, BuildTargetIdentifier> = emptyMap()
@@ -53,38 +50,44 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
   private var listeners: List<() -> Unit> = emptyList()
 
   public fun saveTargets(
-    targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
-    targetIdToModuleEntity: Map<BuildTargetIdentifier, Module>,
-    targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
-    libraries: List<Library>,
-    libraryModules: List<JavaModule>,
+      targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
+      targetIdToModuleEntity: Map<BuildTargetIdentifier, Module>,
+      targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
+      libraries: List<Library>,
+      libraryModules: List<JavaModule>,
   ) {
     this.targetIdToTargetInfo = targetIdToTargetInfo
-    moduleIdToBuildTargetId = targetIdToModuleEntity.entries.associate { (targetId, module) ->
-      module.getModuleName() to targetId
-    }
-    fileToTargetId = targetIdToModuleDetails.values.flatMap { it.toPairsUrlToId() }
-      .groupBy { it.first }
-      .mapValues { it.value.map { pair -> pair.second } }
+    moduleIdToBuildTargetId =
+        targetIdToModuleEntity.entries.associate { (targetId, module) ->
+          module.getModuleName() to targetId
+        }
+    fileToTargetId =
+        targetIdToModuleDetails.values
+            .flatMap { it.toPairsUrlToId() }
+            .groupBy { it.first }
+            .mapValues { it.value.map { pair -> pair.second } }
     val virtualFileUrlManager = VirtualFileManager.getInstance()
-    targetsBaseDir = this.targetIdToTargetInfo.values
-      .mapNotNull { it.baseDirectory }
-      .mapNotNull { virtualFileUrlManager.findFileByUrl(it) }
-      .toSet()
+    targetsBaseDir =
+        this.targetIdToTargetInfo.values
+            .mapNotNull { it.baseDirectory }
+            .mapNotNull { virtualFileUrlManager.findFileByUrl(it) }
+            .toSet()
     this.libraries = libraries
     this.libraryModules = libraryModules
     this.libraryModulesLookupTable = createLibraryModulesLookupTable()
   }
 
   private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, BuildTargetIdentifier>> =
-    sources.flatMap { sources ->
-      sources.sources.mapNotNull { it.uri.processUriString().safeCastToURI() }.map { it to target.id }
-    }
+      sources.flatMap { sources ->
+        sources.sources
+            .mapNotNull { it.uri.processUriString().safeCastToURI() }
+            .map { it to target.id }
+      }
 
   private fun String.processUriString() = this.trimEnd('/')
 
   private fun createLibraryModulesLookupTable() =
-    libraryModules.map { it.genericModuleInfo.name }.toHashSet()
+      libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
   public fun fireListeners() {
     listeners.forEach { it() }
@@ -97,10 +100,13 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
   public fun allTargetIds(): List<BuildTargetIdentifier> = targetIdToTargetInfo.keys.toList()
 
   public fun getTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> =
-    fileToTargetId[file.url.processUriString().safeCastToURI()]
-      ?: getTargetsFromAncestorsForFile(file, project)
+      fileToTargetId[file.url.processUriString().safeCastToURI()]
+          ?: getTargetsFromAncestorsForFile(file, project)
 
-  private fun getTargetsFromAncestorsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> {
+  private fun getTargetsFromAncestorsForFile(
+      file: VirtualFile,
+      project: Project
+  ): List<BuildTargetIdentifier> {
     return if (BspFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
       val rootDir = project.rootDir
       var iter = file.parent
@@ -113,13 +119,14 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
     } else emptyList()
   }
 
-  public fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? = moduleIdToBuildTargetId[moduleId]
+  public fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? =
+      moduleIdToBuildTargetId[moduleId]
 
-  public fun getBuildTargetInfoForId(buildTargetIdentifier: BuildTargetIdentifier): BuildTargetInfo? =
-    targetIdToTargetInfo[buildTargetIdentifier]
+  public fun getBuildTargetInfoForId(
+      buildTargetIdentifier: BuildTargetIdentifier
+  ): BuildTargetInfo? = targetIdToTargetInfo[buildTargetIdentifier]
 
-  public fun isBaseDir(virtualFile: VirtualFile): Boolean =
-    targetsBaseDir.contains(virtualFile)
+  public fun isBaseDir(virtualFile: VirtualFile): Boolean = targetsBaseDir.contains(virtualFile)
 
   public fun getAllLibraries(): List<Library> = libraries
 
@@ -128,24 +135,33 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
   public fun getAllLibraryModules(): List<JavaModule> = libraryModules
 
   override fun getState(): TemporaryTargetUtilsState =
-    TemporaryTargetUtilsState(
-      idToTargetInfo = targetIdToTargetInfo.mapKeys { it.key.uri }.mapValues { it.value.toState() },
-      moduleIdToBuildTargetId = moduleIdToBuildTargetId.mapValues { it.value.uri },
-      fileToId = fileToTargetId.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.uri } },
-      targetsBaseDir = targetsBaseDir.map { it.url }.toList(),
-      libraries = libraries.map { it.toState() },
-    )
+      TemporaryTargetUtilsState(
+          idToTargetInfo =
+              targetIdToTargetInfo.mapKeys { it.key.uri }.mapValues { it.value.toState() },
+          moduleIdToBuildTargetId = moduleIdToBuildTargetId.mapValues { it.value.uri },
+          fileToId =
+              fileToTargetId
+                  .mapKeys { o -> o.key.toString() }
+                  .mapValues { o -> o.value.map { it.uri } },
+          targetsBaseDir = targetsBaseDir.map { it.url }.toList(),
+          libraries = libraries.map { it.toState() },
+      )
 
   override fun loadState(state: TemporaryTargetUtilsState) {
     val virtualFileUrlManager = VirtualFileManager.getInstance()
 
-    targetIdToTargetInfo = state.idToTargetInfo
-      .mapKeys { BuildTargetIdentifier(it.key) }
-      .mapValues { it.value.fromState() }
-    moduleIdToBuildTargetId = state.moduleIdToBuildTargetId.mapValues { BuildTargetIdentifier(it.value) }
+    targetIdToTargetInfo =
+        state.idToTargetInfo
+            .mapKeys { BuildTargetIdentifier(it.key) }
+            .mapValues { it.value.fromState() }
+    moduleIdToBuildTargetId =
+        state.moduleIdToBuildTargetId.mapValues { BuildTargetIdentifier(it.value) }
     fileToTargetId =
-      state.fileToId.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { BuildTargetIdentifier(it) } }
-    targetsBaseDir = state.targetsBaseDir.mapNotNull { virtualFileUrlManager.findFileByUrl(it) }.toSet()
+        state.fileToId
+            .mapKeys { o -> o.key.safeCastToURI() }
+            .mapValues { o -> o.value.map { BuildTargetIdentifier(it) } }
+    targetsBaseDir =
+        state.targetsBaseDir.mapNotNull { virtualFileUrlManager.findFileByUrl(it) }.toSet()
     libraries = state.libraries.map { it.fromState() }
   }
 }

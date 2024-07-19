@@ -10,7 +10,7 @@ class StarlarkEnterBetweenBracesTest : BasePlatformTestCase() {
   @Test
   fun `should add empty line after enter between braces`() {
     // given
-    myFixture.configureByText("dummy.bzl", "[<caret>]")
+    myFixture.configureByText("dummy.bzlmock", "[<caret>]")
     val expected = "[\n<caret>\n]"
 
     // when

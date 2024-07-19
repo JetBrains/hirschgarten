@@ -13,24 +13,23 @@ import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
-import net.miginfocom.layout.AlignX
 import javax.swing.JComponent
 
 internal val serverDetectedJdk = ProjectJdkImpl("Server Detected Jdk", JavaSdk.getInstance())
 
 internal data class BazelApplicationServerSettings(
-  val selectedJdk: Sdk = serverDetectedJdk,
-  val customJvmOptions: List<String> = emptyList(),
+    val selectedJdk: Sdk = serverDetectedJdk,
+    val customJvmOptions: List<String> = emptyList(),
 )
 
 internal data class BazelApplicationSettings(
-  var serverSettings: BazelApplicationServerSettings = BazelApplicationServerSettings(),
+    var serverSettings: BazelApplicationServerSettings = BazelApplicationServerSettings(),
 ) {
   internal fun newWithSdk(sdk: Sdk?): BazelApplicationSettings? =
-    sdk?.let { copy(serverSettings = serverSettings.copy(selectedJdk = it)) }
+      sdk?.let { copy(serverSettings = serverSettings.copy(selectedJdk = it)) }
 
   internal fun newWithCustomJvmOptions(customJvmOptions: List<String>): BazelApplicationSettings =
-    copy(serverSettings = serverSettings.copy(customJvmOptions = customJvmOptions))
+      copy(serverSettings = serverSettings.copy(customJvmOptions = customJvmOptions))
 }
 
 internal class BazelApplicationSettingsPanel : Configurable {
@@ -50,18 +49,20 @@ internal class BazelApplicationSettingsPanel : Configurable {
   }
 
   private fun initServerJdkComboBox(): JdkComboBox =
-    JdkComboBox(null, serverJdkComboBoxModel, null, null, null, null).apply {
-      whenItemSelected {
-        currentBazelApplicationSettings = currentBazelApplicationSettings.newWithSdk(it.jdk) ?: currentBazelApplicationSettings
+      JdkComboBox(null, serverJdkComboBoxModel, null, null, null, null).apply {
+        whenItemSelected {
+          currentBazelApplicationSettings =
+              currentBazelApplicationSettings.newWithSdk(it.jdk) ?: currentBazelApplicationSettings
+        }
       }
-    }
 
   private fun initServerCustomJvmOptions(): RawCommandLineEditor =
-    RawCommandLineEditor().apply {
-      textField.whenTextChanged {
-        currentBazelApplicationSettings = currentBazelApplicationSettings.newWithCustomJvmOptions(text.toJvmOptions())
+      RawCommandLineEditor().apply {
+        textField.whenTextChanged {
+          currentBazelApplicationSettings =
+              currentBazelApplicationSettings.newWithCustomJvmOptions(text.toJvmOptions())
+        }
       }
-    }
 
   private fun String.toJvmOptions(): List<String> =
       split("\\s+".toRegex()).filter { it.isNotBlank() }
@@ -89,10 +90,11 @@ internal class BazelApplicationSettingsPanel : Configurable {
   }
 
   private fun savedJdkOrDefault(): Sdk =
-    serverJdkComboBoxModel.findSdk(bazelApplicationSettings.serverSettings.selectedJdk.name) ?: serverDetectedJdk
+      serverJdkComboBoxModel.findSdk(bazelApplicationSettings.serverSettings.selectedJdk.name)
+          ?: serverDetectedJdk
 
   private fun savedCustomJvmOptions(): String =
-    bazelApplicationSettings.serverSettings.customJvmOptions.joinToString("\n")
+      bazelApplicationSettings.serverSettings.customJvmOptions.joinToString("\n")
 
   override fun getDisplayName(): String = "Bazel"
 }
@@ -109,4 +111,6 @@ internal class BazelApplicationSettingsService {
 
 internal var bazelApplicationSettings: BazelApplicationSettings
   get() = BazelApplicationSettingsService.getInstance().settings
-  private set(value) { BazelApplicationSettingsService.getInstance().settings = value }
+  private set(value) {
+    BazelApplicationSettingsService.getInstance().settings = value
+  }

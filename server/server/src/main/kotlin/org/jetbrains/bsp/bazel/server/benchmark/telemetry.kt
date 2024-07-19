@@ -14,9 +14,9 @@ import io.opentelemetry.sdk.resources.Resource
 import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
+import java.nio.file.Path
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
-import java.nio.file.Path
 
 private const val INSTRUMENTATION_SCOPE_NAME = "bazel-bsp"
 
@@ -35,18 +35,18 @@ val meter: Meter
 private val shutdownRoutines = mutableListOf<() -> Unit>()
 
 data class TelemetryConfig(
-  val bspClientLogger: BspClientLogger? = null,
-  val metricsFile: Path? = null,
-  val openTelemetryEndpoint: String? = null,
+    val bspClientLogger: BspClientLogger? = null,
+    val metricsFile: Path? = null,
+    val openTelemetryEndpoint: String? = null,
 )
 
 fun setupTelemetry(config: TelemetryConfig) {
-  val resource = Resource.create(
-    Attributes.builder()
-      .put(AttributeKey.stringKey("service.name"), "Bazel-BSP")
-      .put(AttributeKey.stringKey("service.version"), Constants.VERSION)
-      .build()
-  )
+  val resource =
+      Resource.create(
+          Attributes.builder()
+              .put(AttributeKey.stringKey("service.name"), "Bazel-BSP")
+              .put(AttributeKey.stringKey("service.version"), Constants.VERSION)
+              .build())
   val sdkBuilder = OpenTelemetrySdk.builder()
   val fileExporter = config.metricsFile?.let { FileExporter(it) }
   setupTracing(sdkBuilder, resource, config, fileExporter)
@@ -61,26 +61,29 @@ fun setupTelemetry(config: TelemetryConfig) {
 }
 
 private fun setupTracing(
-  sdkBuilder: OpenTelemetrySdkBuilder,
-  resource: Resource,
-  config: TelemetryConfig,
-  fileExporter: FileExporter?,
+    sdkBuilder: OpenTelemetrySdkBuilder,
+    resource: Resource,
+    config: TelemetryConfig,
+    fileExporter: FileExporter?,
 ) {
   val tracerProviderBuilder = SdkTracerProvider.builder()
   tracerProviderBuilder.setResource(resource)
 
   if (fileExporter != null) {
-    tracerProviderBuilder.addSpanProcessor(BatchSpanProcessor.builder(fileExporter.spanExporter()).build())
+    tracerProviderBuilder.addSpanProcessor(
+        BatchSpanProcessor.builder(fileExporter.spanExporter()).build())
   }
 
   if (config.openTelemetryEndpoint != null) {
-    val httpSpanExporter = OtlpHttpSpanExporter.builder().setEndpoint(config.openTelemetryEndpoint).build()
+    val httpSpanExporter =
+        OtlpHttpSpanExporter.builder().setEndpoint(config.openTelemetryEndpoint).build()
     tracerProviderBuilder.addSpanProcessor(BatchSpanProcessor.builder(httpSpanExporter).build())
   }
 
   // Use SimpleSpanProcessor to log spans immediately
   if (config.bspClientLogger != null) {
-    tracerProviderBuilder.addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter(config.bspClientLogger)))
+    tracerProviderBuilder.addSpanProcessor(
+        SimpleSpanProcessor.create(LoggingSpanExporter(config.bspClientLogger)))
   }
 
   val sdkTracerProvider = tracerProviderBuilder.build()
@@ -89,9 +92,9 @@ private fun setupTracing(
 }
 
 private fun setupMetrics(
-  sdkBuilder: OpenTelemetrySdkBuilder,
-  resource: Resource,
-  fileExporter: FileExporter?,
+    sdkBuilder: OpenTelemetrySdkBuilder,
+    resource: Resource,
+    fileExporter: FileExporter?,
 ) {
   val meterProviderBuilder = SdkMeterProvider.builder().setResource(resource)
 

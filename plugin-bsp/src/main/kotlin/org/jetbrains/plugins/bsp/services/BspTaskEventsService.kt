@@ -14,23 +14,26 @@ internal typealias TaskId = String
 
 public interface BspTaskListener {
   public fun onDiagnostic(
-    textDocument: String,
-    buildTarget: String,
-    line: Int,
-    character: Int,
-    severity: MessageEvent.Kind,
-    message: String,
-  ) {
-  }
+      textDocument: String,
+      buildTarget: String,
+      line: Int,
+      character: Int,
+      severity: MessageEvent.Kind,
+      message: String,
+  ) {}
 
   public fun onOutputStream(taskId: TaskId?, text: String) {}
+
   public fun onErrorStream(taskId: TaskId?, text: String) {}
 
   public fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {}
+
   public fun onTaskProgress(taskId: TaskId, message: String, data: Any?) {}
+
   public fun onTaskFinish(taskId: TaskId, message: String, status: StatusCode, data: Any?) {}
 
   public fun onLogMessage(message: String) {}
+
   public fun onShowMessage(message: String) {}
 }
 
@@ -48,8 +51,7 @@ internal class BspTaskEventsService {
     return listener
   }
 
-  fun existsListener(id: OriginId): Boolean =
-    taskListeners.containsKey(id)
+  fun existsListener(id: OriginId): Boolean = taskListeners.containsKey(id)
 
   fun saveListener(id: OriginId, listener: BspTaskListener) {
     taskListeners[id] = listener
@@ -64,7 +66,6 @@ internal class BspTaskEventsService {
   }
 
   companion object {
-    @JvmStatic
-    fun getInstance(project: Project) = project.service<BspTaskEventsService>()
+    @JvmStatic fun getInstance(project: Project) = project.service<BspTaskEventsService>()
   }
 }

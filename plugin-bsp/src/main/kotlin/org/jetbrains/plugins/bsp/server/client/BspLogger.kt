@@ -5,9 +5,9 @@ import com.intellij.openapi.diagnostic.IdeaLogRecordFormatter
 import com.intellij.openapi.diagnostic.JulLogger
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.RollingFileHandler
-import kotlinx.datetime.Instant
 import java.util.logging.Level
 import java.util.logging.LogRecord
+import kotlinx.datetime.Instant
 
 public class BspLogger {
   private val logDir = PathManager.getLogDir().resolve("bsp-logs").resolve("bsp.log")
@@ -34,6 +34,7 @@ public class BspLogger {
     private val creationTime = System.currentTimeMillis()
 
     private val separator = System.lineSeparator()
+
     override fun format(record: LogRecord): String {
       val time = Instant.fromEpochMilliseconds(record.millis)
       val relativeTime = timeSinceStartup(record.millis)
@@ -44,9 +45,9 @@ public class BspLogger {
     }
 
     private fun timeSinceStartup(current: Long) =
-      (current - creationTime).takeUnless { it <= 0 }?.toString() ?: "-------"
+        (current - creationTime).takeUnless { it <= 0 }?.toString() ?: "-------"
   }
 }
 
 public inline fun <reified T : Any> bspLogger(): Logger =
-  BspLogger().getBspLoggerInstance("#${T::class.java}")
+    BspLogger().getBspLoggerInstance("#${T::class.java}")

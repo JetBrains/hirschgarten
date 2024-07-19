@@ -1,11 +1,11 @@
 package org.jetbrains.plugins.bsp.utils
 
 import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.Test
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.toPath
+import org.junit.jupiter.api.Test
 
 class BspURLEncoderTest {
   @Test
@@ -41,13 +41,15 @@ class BspURLEncoderTest {
     val encodedUri = BspURLEncoder.encode(uri)
 
     // then
-    encodedUri shouldBe "file:///path/to/weird/project/my-project%26*%26%27%5E%40*%26%5E%21%28*%23%5C%24%3E%3F%3E%3C"
+    encodedUri shouldBe
+        "file:///path/to/weird/project/my-project%26*%26%27%5E%40*%26%5E%21%28*%23%5C%24%3E%3F%3E%3C"
   }
 
   @Test
   fun `malformed URI of a valid directory should be fully functional`() {
     // given
-    val tempDir = createTempDirectory("my project&*&'^@*&^!(*#\\\$>?><").also { it.toFile().deleteOnExit() }
+    val tempDir =
+        createTempDirectory("my project&*&'^@*&^!(*#\\\$>?><").also { it.toFile().deleteOnExit() }
 
     // this malformedURI will have the format of file:///.../my project&*&'^@*&^!(*#%\$>?><.../
     val malformedURI = URLDecoder.decode(tempDir.toUri().toString(), StandardCharsets.UTF_8.name())

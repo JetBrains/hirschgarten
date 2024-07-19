@@ -4,6 +4,8 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
+import java.net.URI
+import kotlin.io.path.toPath
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
@@ -12,8 +14,6 @@ import org.jetbrains.workspace.model.test.framework.WorkspaceModelWithParentPyth
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.net.URI
-import kotlin.io.path.toPath
 
 @DisplayName("sourceEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
@@ -25,7 +25,8 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
     super.beforeEach()
 
     val workspaceModelEntityUpdaterConfig =
-      WorkspaceModelEntityUpdaterConfig(workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
+        WorkspaceModelEntityUpdaterConfig(
+            workspaceEntityStorageBuilder, virtualFileUrlManager, projectBasePath, project)
     sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig)
   }
 
@@ -34,10 +35,11 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
     // given
     val sourceDir = URI.create("file:///root/dir/example/package/").toPath()
 
-    val genericSourceRoot = GenericSourceRoot(
-      sourcePath = sourceDir,
-      rootType = SourceRootTypeId("python-source"),
-    )
+    val genericSourceRoot =
+        GenericSourceRoot(
+            sourcePath = sourceDir,
+            rootType = SourceRootTypeId("python-source"),
+        )
 
     // when
     val returnedPythonSourceRootEntity = runTestWriteAction {
@@ -47,22 +49,26 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
     // then
     val virtualSourceDir = sourceDir.toVirtualFileUrl(virtualFileUrlManager)
 
-    val expectedPythonSourceRootEntity = ExpectedSourceRootEntity(
-      contentRootEntity = ContentRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualSourceDir,
-        excludedPatterns = emptyList(),
-      ),
-      sourceRootEntity = SourceRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualSourceDir,
-        rootTypeId = SourceRootTypeId("python-source"),
-      ) {},
-      parentModuleEntity = parentModuleEntity,
-    )
+    val expectedPythonSourceRootEntity =
+        ExpectedSourceRootEntity(
+            contentRootEntity =
+                ContentRootEntity(
+                    entitySource = parentModuleEntity.entitySource,
+                    url = virtualSourceDir,
+                    excludedPatterns = emptyList(),
+                ),
+            sourceRootEntity =
+                SourceRootEntity(
+                    entitySource = parentModuleEntity.entitySource,
+                    url = virtualSourceDir,
+                    rootTypeId = SourceRootTypeId("python-source"),
+                ) {},
+            parentModuleEntity = parentModuleEntity,
+        )
 
     returnedPythonSourceRootEntity shouldBeEqual expectedPythonSourceRootEntity
-    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedPythonSourceRootEntity)
+    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder
+        listOf(expectedPythonSourceRootEntity)
   }
 
   @Test
@@ -70,17 +76,19 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
     // given
     val sourceDir1 = URI.create("file:///root/dir/example/package/").toPath()
 
-    val genericSourceRoot1 = GenericSourceRoot(
-      sourcePath = sourceDir1,
-      rootType = SourceRootTypeId("python-source"),
-    )
+    val genericSourceRoot1 =
+        GenericSourceRoot(
+            sourcePath = sourceDir1,
+            rootType = SourceRootTypeId("python-source"),
+        )
 
     val sourceDir2 = URI.create("file:///another/root/dir/another/example/package/").toPath()
 
-    val genericSourceRoot2 = GenericSourceRoot(
-      sourcePath = sourceDir2,
-      rootType = SourceRootTypeId("python-test"),
-    )
+    val genericSourceRoot2 =
+        GenericSourceRoot(
+            sourcePath = sourceDir2,
+            rootType = SourceRootTypeId("python-test"),
+        )
 
     val pythonSourceRoots = listOf(genericSourceRoot1, genericSourceRoot2)
 
@@ -92,39 +100,47 @@ class SourceEntityUpdaterTest : WorkspaceModelWithParentPythonModuleBaseTest() {
     // then
     val virtualSourceDir1 = sourceDir1.toVirtualFileUrl(virtualFileUrlManager)
 
-    val expectedPythonSourceRootEntity1 = ExpectedSourceRootEntity(
-      contentRootEntity = ContentRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualSourceDir1,
-        excludedPatterns = emptyList(),
-      ),
-      sourceRootEntity = SourceRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualSourceDir1,
-        rootTypeId = SourceRootTypeId("python-source"),
-      ) {},
-      parentModuleEntity = parentModuleEntity,
-    )
+    val expectedPythonSourceRootEntity1 =
+        ExpectedSourceRootEntity(
+            contentRootEntity =
+                ContentRootEntity(
+                    entitySource = parentModuleEntity.entitySource,
+                    url = virtualSourceDir1,
+                    excludedPatterns = emptyList(),
+                ),
+            sourceRootEntity =
+                SourceRootEntity(
+                    entitySource = parentModuleEntity.entitySource,
+                    url = virtualSourceDir1,
+                    rootTypeId = SourceRootTypeId("python-source"),
+                ) {},
+            parentModuleEntity = parentModuleEntity,
+        )
 
     val virtualSourceDir2 = sourceDir2.toVirtualFileUrl(virtualFileUrlManager)
 
-    val expectedPythonSourceRootEntity2 = ExpectedSourceRootEntity(
-      contentRootEntity = ContentRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualSourceDir2,
-        excludedPatterns = emptyList(),
-      ),
-      sourceRootEntity = SourceRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualSourceDir2,
-        rootTypeId = SourceRootTypeId("python-test"),
-      ) {},
-      parentModuleEntity = parentModuleEntity,
-    )
+    val expectedPythonSourceRootEntity2 =
+        ExpectedSourceRootEntity(
+            contentRootEntity =
+                ContentRootEntity(
+                    entitySource = parentModuleEntity.entitySource,
+                    url = virtualSourceDir2,
+                    excludedPatterns = emptyList(),
+                ),
+            sourceRootEntity =
+                SourceRootEntity(
+                    entitySource = parentModuleEntity.entitySource,
+                    url = virtualSourceDir2,
+                    rootTypeId = SourceRootTypeId("python-test"),
+                ) {},
+            parentModuleEntity = parentModuleEntity,
+        )
 
-    val expectedPythonSourceRootEntities = listOf(expectedPythonSourceRootEntity1, expectedPythonSourceRootEntity2)
+    val expectedPythonSourceRootEntities =
+        listOf(expectedPythonSourceRootEntity1, expectedPythonSourceRootEntity2)
 
     returnedPythonSourceRootEntities shouldContainExactlyInAnyOrder expectedPythonSourceRootEntities
-    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder expectedPythonSourceRootEntities
+    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder
+        expectedPythonSourceRootEntities
   }
 }

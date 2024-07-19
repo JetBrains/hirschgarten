@@ -19,26 +19,24 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndr
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 
-/**
- * Key for storing the target Android device inside an [ExecutionEnvironment]
- */
+/** Key for storing the target Android device inside an [ExecutionEnvironment] */
 public val DEVICE_FUTURE_KEY: Key<ListenableFuture<IDevice>> = Key.create("DEVICE_FUTURE_KEY")
 
 public class AndroidBspRunHandler : BspRunHandler {
   override fun canRun(targets: List<BuildTargetInfo>): Boolean =
-    BspFeatureFlags.isAndroidSupportEnabled && targets.size == 1 && targets.all {
-      it.languageIds.includesAndroid() && !it.capabilities.canTest
-    }
+      BspFeatureFlags.isAndroidSupportEnabled &&
+          targets.size == 1 &&
+          targets.all { it.languageIds.includesAndroid() && !it.capabilities.canTest }
 
   override fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {
     configuration.putUserData(DeployableToDevice.KEY, true)
   }
 
   override fun getRunProfileState(
-    project: Project,
-    executor: Executor,
-    environment: ExecutionEnvironment,
-    configuration: BspRunConfigurationBase,
+      project: Project,
+      executor: Executor,
+      environment: ExecutionEnvironment,
+      configuration: BspRunConfigurationBase,
   ): RunProfileState {
     val deployTargetContext = DeployTargetContext()
     val deployTarget = deployTargetContext.currentDeployTargetProvider.getDeployTarget(project)
@@ -47,10 +45,12 @@ public class AndroidBspRunHandler : BspRunHandler {
     if (deviceFutures.isEmpty()) {
       throw ExecutionException(BspPluginBundle.message("console.task.mobile.no.target.device"))
     } else if (deviceFutures.size > 1) {
-      throw ExecutionException(BspPluginBundle.message("console.task.mobile.cannot.run.on.multiple.devices"))
+      throw ExecutionException(
+          BspPluginBundle.message("console.task.mobile.cannot.run.on.multiple.devices"))
     }
 
-    // Store the device inside ExecutionEnvironment, so that MobileInstallBeforeRunTaskProvider can access it.
+    // Store the device inside ExecutionEnvironment, so that MobileInstallBeforeRunTaskProvider can
+    // access it.
     // Not sure why this has to by copyable, but the Android plugin does so as well.
     environment.putCopyableUserData(DEVICE_FUTURE_KEY, deviceFutures.first())
 

@@ -24,30 +24,30 @@ internal class BazelProjectSyncHook : ProjectSyncHook {
     bazelInvalidTargetsService.invalidTargets = server.workspaceInvalidTargets().get().targets
 
     if (bazelInvalidTargetsService.invalidTargets.isNotEmpty()) {
-        BspBalloonNotifier.warn(
+      BspBalloonNotifier.warn(
           BazelPluginBundle.message("widget.collect.targets.not.imported.properly.title"),
           BazelPluginBundle.message("widget.collect.targets.not.imported.properly.message"),
-        )
+      )
     }
   }
 }
 
-internal data class BazelInvalidTargetsServiceState(
-  var invalidTargets: List<String> = emptyList()
-)
+internal data class BazelInvalidTargetsServiceState(var invalidTargets: List<String> = emptyList())
 
 @State(
-  name = "BazelInvalidTargetsService",
-  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
-  reportStatistic = true,
+    name = "BazelInvalidTargetsService",
+    storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
+    reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-internal class BazelInvalidTargetsService: PersistentStateComponent<BazelInvalidTargetsServiceState> {
+internal class BazelInvalidTargetsService :
+    PersistentStateComponent<BazelInvalidTargetsServiceState> {
   internal var invalidTargets: List<BuildTargetIdentifier> = emptyList()
 
   override fun getState(): BazelInvalidTargetsServiceState? =
-    BazelInvalidTargetsServiceState(invalidTargets.map { it.uri })
-      .takeIf { it.invalidTargets.isNotEmpty() }
+      BazelInvalidTargetsServiceState(invalidTargets.map { it.uri }).takeIf {
+        it.invalidTargets.isNotEmpty()
+      }
 
   override fun loadState(state: BazelInvalidTargetsServiceState) {
     invalidTargets = state.invalidTargets.map { BuildTargetIdentifier(it) }
@@ -55,14 +55,14 @@ internal class BazelInvalidTargetsService: PersistentStateComponent<BazelInvalid
 
   companion object {
     internal fun getInstance(project: Project): BazelInvalidTargetsService =
-      project.service<BazelInvalidTargetsService>()
+        project.service<BazelInvalidTargetsService>()
   }
 }
 
 // quite temporary as well
-internal class BazelInvalidTargetsProviderExtension: InvalidTargetsProviderExtension {
+internal class BazelInvalidTargetsProviderExtension : InvalidTargetsProviderExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
 
   override fun provideInvalidTargets(project: Project): List<BuildTargetIdentifier> =
-    BazelInvalidTargetsService.getInstance(project).invalidTargets
+      BazelInvalidTargetsService.getInstance(project).invalidTargets
 }

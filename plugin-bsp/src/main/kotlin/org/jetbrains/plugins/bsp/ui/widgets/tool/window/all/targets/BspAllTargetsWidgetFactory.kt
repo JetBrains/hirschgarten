@@ -18,18 +18,20 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindow
 public class BspAllTargetsWidgetFactory : ToolWindowFactory, DumbAware {
   override suspend fun isApplicableAsync(project: Project): Boolean = project.isBspProject
 
-  override fun shouldBeAvailable(project: Project): Boolean =
-    project.isBspProject
+  override fun shouldBeAvailable(project: Project): Boolean = project.isBspProject
 
   override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-    BspToolWindowService.getInstance(project).setDeepPanelReload { doCreateToolWindowContent(project, toolWindow) }
+    BspToolWindowService.getInstance(project).setDeepPanelReload {
+      doCreateToolWindowContent(project, toolWindow)
+    }
     doCreateToolWindowContent(project, toolWindow)
   }
 
   private fun doCreateToolWindowContent(project: Project, toolWindow: ToolWindow) {
     val panel = BspToolWindowPanel(project)
     toolWindow.contentManager.removeAllContents(true)
-    toolWindow.contentManager.addContent(ContentFactory.getInstance().createContent(panel.component, "", false))
+    toolWindow.contentManager.addContent(
+        ContentFactory.getInstance().createContent(panel.component, "", false))
     toolWindow.show()
   }
 }

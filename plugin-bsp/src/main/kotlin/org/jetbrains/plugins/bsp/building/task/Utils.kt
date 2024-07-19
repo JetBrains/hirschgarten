@@ -7,13 +7,15 @@ import com.intellij.task.ProjectTask
 import com.intellij.task.impl.ProjectTaskList
 
 internal fun createAllBspOnlyModuleBuildTasks(project: Project): ProjectTask =
-  createAllCustomModuleBuildTasks(project, ::BspOnlyModuleBuildTask)
+    createAllCustomModuleBuildTasks(project, ::BspOnlyModuleBuildTask)
 
 internal fun createAllJpsOnlyModuleBuildTasks(project: Project): ProjectTask =
-  createAllCustomModuleBuildTasks(project, ::JpsOnlyModuleBuildTask)
+    createAllCustomModuleBuildTasks(project, ::JpsOnlyModuleBuildTask)
 
 private fun <T : CustomModuleBuildTask> createAllCustomModuleBuildTasks(
-  project: Project,
-  factory: (Module) -> T,
+    project: Project,
+    factory: (Module) -> T,
 ): ProjectTask =
-  ModuleManager.getInstance(project).modules.let { modules -> ProjectTaskList(modules.map { factory(it) }) }
+    ModuleManager.getInstance(project).modules.let { modules ->
+      ProjectTaskList(modules.map { factory(it) })
+    }

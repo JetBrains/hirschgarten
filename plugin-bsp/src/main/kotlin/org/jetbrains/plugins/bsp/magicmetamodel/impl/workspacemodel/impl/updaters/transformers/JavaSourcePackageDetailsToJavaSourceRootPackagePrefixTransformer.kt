@@ -1,22 +1,22 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import org.jetbrains.plugins.bsp.magicmetamodel.extensions.allSubdirectoriesSequence
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.pathString
 import kotlin.io.path.toPath
+import org.jetbrains.plugins.bsp.magicmetamodel.extensions.allSubdirectoriesSequence
 
 internal data class JavaSourcePackageDetails(
-  val sourceURI: URI,
-  val sourceRoots: List<URI>,
+    val sourceURI: URI,
+    val sourceRoots: List<URI>,
 )
 
 internal data class JavaSourceRootPackagePrefix(
-  val packagePrefix: String,
+    val packagePrefix: String,
 )
 
 internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer :
-  WorkspaceModelEntityBaseTransformer<JavaSourcePackageDetails, JavaSourceRootPackagePrefix> {
+    WorkspaceModelEntityBaseTransformer<JavaSourcePackageDetails, JavaSourceRootPackagePrefix> {
   private const val PACKAGE_DELIMITER = '.'
 
   override fun transform(inputEntity: JavaSourcePackageDetails): JavaSourceRootPackagePrefix {
@@ -29,19 +29,24 @@ internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer
     val sourceDirRawPath = sourceDir.toPath().pathString
     val matchingRootRawPath = calculateMatchingRootPath(sourceDir, sourceRoots)?.pathString
 
-    val packagePrefixAsRawPath = removeRootRawPathFromSourceRawPath(sourceDirRawPath, matchingRootRawPath)
+    val packagePrefixAsRawPath =
+        removeRootRawPathFromSourceRawPath(sourceDirRawPath, matchingRootRawPath)
 
     return mapPackageAsRawPathToPackageRepresentation(packagePrefixAsRawPath)
   }
 
   private fun calculateMatchingRootPath(sourceDir: URI, sourceRoots: List<URI>): Path? =
-    sourceDir.toPath().allSubdirectoriesSequence()
-      .firstOrNull { doRootsContainDir(it, sourceRoots) }
+      sourceDir.toPath().allSubdirectoriesSequence().firstOrNull {
+        doRootsContainDir(it, sourceRoots)
+      }
 
   private fun doRootsContainDir(sourceDir: Path, sourceRoots: List<URI>): Boolean =
-    sourceRoots.any { it.toPath() == sourceDir }
+      sourceRoots.any { it.toPath() == sourceDir }
 
-  private fun removeRootRawPathFromSourceRawPath(sourceDirRawPath: String, sourceRootRawPath: String?): String {
+  private fun removeRootRawPathFromSourceRawPath(
+      sourceDirRawPath: String,
+      sourceRootRawPath: String?
+  ): String {
     val rootRawPathToRemove = sourceRootRawPath ?: ""
 
     if (rootRawPathToRemove.isEmpty()) return ""
@@ -50,8 +55,7 @@ internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer
   }
 
   private fun mapPackageAsRawPathToPackageRepresentation(packageAsRawPath: String): String =
-    trimSlashes(packageAsRawPath).replace('/', PACKAGE_DELIMITER)
+      trimSlashes(packageAsRawPath).replace('/', PACKAGE_DELIMITER)
 
-  private fun trimSlashes(pathToTrim: String): String =
-    pathToTrim.trim { it == '/' }
+  private fun trimSlashes(pathToTrim: String): String = pathToTrim.trim { it == '/' }
 }

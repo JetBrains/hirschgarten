@@ -16,28 +16,28 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
 
 internal interface AndroidFacetEntityUpdaterExtension {
   fun createAndroidFacetEntityUpdater(
-    workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+      workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   ): WorkspaceModelEntityWithParentModuleUpdater<JavaModule, FacetEntity>
 }
 
 private val ep =
-  ExtensionPointName.create<AndroidFacetEntityUpdaterExtension>(
-    "org.jetbrains.bsp.androidFacetEntityUpdaterExtension",
-  )
+    ExtensionPointName.create<AndroidFacetEntityUpdaterExtension>(
+        "org.jetbrains.bsp.androidFacetEntityUpdaterExtension",
+    )
 
 internal fun androidFacetEntityUpdaterExtension(): AndroidFacetEntityUpdaterExtension? =
-  ep.extensionList.firstOrNull()
+    ep.extensionList.firstOrNull()
 
 @Suppress("UnusedPrivateClass")
 private class AndroidFacetEntityUpdaterExtensionImpl : AndroidFacetEntityUpdaterExtension {
   override fun createAndroidFacetEntityUpdater(
-    workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+      workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
   ): WorkspaceModelEntityWithParentModuleUpdater<JavaModule, FacetEntity> =
-    AndroidFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
+      AndroidFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
 }
 
 private class AndroidFacetEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+    private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithParentModuleUpdater<JavaModule, FacetEntity> {
   override fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): FacetEntity {
     val facetType = AndroidFacet.getFacetType()
@@ -52,31 +52,34 @@ private class AndroidFacetEntityUpdater(
     return addFacetEntity(facet, parentModuleEntity)
   }
 
-  private fun getAndroidProjectType(androidTargetType: AndroidTargetType?): Int = when (androidTargetType) {
-    AndroidTargetType.APP -> AndroidProjectTypes.PROJECT_TYPE_APP
-    AndroidTargetType.LIBRARY -> AndroidProjectTypes.PROJECT_TYPE_LIBRARY
-    AndroidTargetType.TEST -> AndroidProjectTypes.PROJECT_TYPE_TEST
-    null -> AndroidProjectTypes.PROJECT_TYPE_LIBRARY
-  }
+  private fun getAndroidProjectType(androidTargetType: AndroidTargetType?): Int =
+      when (androidTargetType) {
+        AndroidTargetType.APP -> AndroidProjectTypes.PROJECT_TYPE_APP
+        AndroidTargetType.LIBRARY -> AndroidProjectTypes.PROJECT_TYPE_LIBRARY
+        AndroidTargetType.TEST -> AndroidProjectTypes.PROJECT_TYPE_TEST
+        null -> AndroidProjectTypes.PROJECT_TYPE_LIBRARY
+      }
 
   private fun addFacetEntity(
-    facet: AndroidFacetConfiguration,
-    parentModuleEntity: ModuleEntity,
+      facet: AndroidFacetConfiguration,
+      parentModuleEntity: ModuleEntity,
   ): FacetEntity {
     val facetConfigurationXml = FacetUtil.saveFacetConfiguration(facet)?.let { JDOMUtil.write(it) }
-    val entity = FacetEntity(
-      name = "Android",
-      moduleId = parentModuleEntity.symbolicId,
-      typeId = FacetEntityTypeId(AndroidFacetType.TYPE_ID),
-      entitySource = parentModuleEntity.entitySource,
-    ) {
-      this.configurationXmlTag = facetConfigurationXml
-    }
+    val entity =
+        FacetEntity(
+            name = "Android",
+            moduleId = parentModuleEntity.symbolicId,
+            typeId = FacetEntityTypeId(AndroidFacetType.TYPE_ID),
+            entitySource = parentModuleEntity.entitySource,
+        ) {
+          this.configurationXmlTag = facetConfigurationXml
+        }
 
     val updatedParentModuleEntity =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
-        this.facets += entity
-      }
+        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(
+            parentModuleEntity) {
+              this.facets += entity
+            }
     return updatedParentModuleEntity.facets.last()
   }
 }

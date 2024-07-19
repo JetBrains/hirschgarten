@@ -1,9 +1,13 @@
 package org.jetbrains.plugins.bsp.ui.console
+
 // Temporary location - another package might be more suitable
 
 import java.io.OutputStream
 
-public class ConsoleOutputStream(private val taskId: String, private val bspSyncConsole: TaskConsole) : OutputStream() {
+public class ConsoleOutputStream(
+    private val taskId: String,
+    private val bspSyncConsole: TaskConsole
+) : OutputStream() {
   private var line: StringBuffer = StringBuffer()
 
   override fun write(b: Int) {

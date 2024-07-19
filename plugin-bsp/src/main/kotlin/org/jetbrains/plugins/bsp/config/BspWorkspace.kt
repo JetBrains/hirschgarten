@@ -29,7 +29,8 @@ public class BspWorkspace(public val project: Project) : Disposable {
 
   public companion object {
     @JvmStatic
-    public fun getInstance(project: Project): BspWorkspace = project.getService(BspWorkspace::class.java)
+    public fun getInstance(project: Project): BspWorkspace =
+        project.getService(BspWorkspace::class.java)
   }
 
   override fun dispose() {}
@@ -58,27 +59,32 @@ internal class BspSyncStatusService(private val project: Project) {
   companion object {
     @JvmStatic
     fun getInstance(project: Project): BspSyncStatusService =
-      project.getService(BspSyncStatusService::class.java)
+        project.getService(BspSyncStatusService::class.java)
   }
 }
 
 public class BspWorkspaceWatcher(private val project: Project) {
   public fun listenForConfigChanges() {
-    project.messageBus.connect().subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
-      override fun after(events: MutableList<out VFileEvent>) {
-        if (shouldNotifyOnEvents(events)) BspProjectAware.notify(project)
-      }
-    })
+    project.messageBus
+        .connect()
+        .subscribe(
+            VirtualFileManager.VFS_CHANGES,
+            object : BulkFileListener {
+              override fun after(events: MutableList<out VFileEvent>) {
+                if (shouldNotifyOnEvents(events)) BspProjectAware.notify(project)
+              }
+            })
   }
 
   private fun shouldNotifyOnEvents(events: List<VFileEvent>): Boolean {
-    val projectAwareExtension = BspProjectAwareExtension.ep.extensionList.firstOrNull() ?: return false
+    val projectAwareExtension =
+        BspProjectAwareExtension.ep.extensionList.firstOrNull() ?: return false
     val projectFileIndex = ProjectFileIndex.getInstance(project)
     return events.any {
       it.file?.let { vFile ->
         projectFileIndex.isInContent(vFile) &&
-          (vFile.name in projectAwareExtension.eligibleConfigFileNames ||
-            projectAwareExtension.eligibleConfigFileExtensions.contains(vFile.extension))
+            (vFile.name in projectAwareExtension.eligibleConfigFileNames ||
+                projectAwareExtension.eligibleConfigFileExtensions.contains(vFile.extension))
       } ?: false
     }
   }
@@ -86,6 +92,7 @@ public class BspWorkspaceWatcher(private val project: Project) {
 
 public interface BspWorkspaceListener {
   public fun syncStarted()
+
   public fun syncFinished(canceled: Boolean)
 
   public companion object {

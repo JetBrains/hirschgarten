@@ -12,25 +12,28 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
+import javax.swing.Icon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
-import javax.swing.Icon
 
 public abstract class BaseRunnerAction(
-  private val buildTargetInfo: BuildTargetInfo,
-  text: () -> String,
-  icon: Icon? = null,
-  private val isDebugAction: Boolean = false,
-) : SuspendableAction(
-  text = text,
-  icon = icon ?: if (isDebugAction) AllIcons.Actions.StartDebugger else AllIcons.Actions.Execute
-) {
+    private val buildTargetInfo: BuildTargetInfo,
+    text: () -> String,
+    icon: Icon? = null,
+    private val isDebugAction: Boolean = false,
+) :
+    SuspendableAction(
+        text = text,
+        icon =
+            icon
+                ?: if (isDebugAction) AllIcons.Actions.StartDebugger
+                else AllIcons.Actions.Execute) {
   protected abstract suspend fun getRunnerSettings(
-    project: Project,
-    buildTargetInfo: BuildTargetInfo,
+      project: Project,
+      buildTargetInfo: BuildTargetInfo,
   ): RunnerAndConfigurationSettings?
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -43,22 +46,24 @@ public abstract class BaseRunnerAction(
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
       val executor = getExecutor()
       ProgramRunner.getRunner(executor.id, settings.configuration)?.let { runner ->
-        val executionEnvironment = ExecutionEnvironmentBuilder(project, executor)
-          .runnerAndSettings(runner, settings)
-          .build()
+        val executionEnvironment =
+            ExecutionEnvironmentBuilder(project, executor)
+                .runnerAndSettings(runner, settings)
+                .build()
         withContext(Dispatchers.EDT) { runner.execute(executionEnvironment) }
       }
     } catch (e: Exception) {
       withContext(Dispatchers.EDT) {
-        Messages.showErrorDialog(project, e.message, BspPluginBundle.message("widget.side.menu.error.title"))
+        Messages.showErrorDialog(
+            project, e.message, BspPluginBundle.message("widget.side.menu.error.title"))
       }
     }
   }
 
   private fun getExecutor(): Executor =
-    if (isDebugAction) {
-      DefaultDebugExecutor.getDebugExecutorInstance()
-    } else {
-      DefaultRunExecutor.getRunExecutorInstance()
-    }
+      if (isDebugAction) {
+        DefaultDebugExecutor.getDebugExecutorInstance()
+      } else {
+        DefaultRunExecutor.getRunExecutorInstance()
+      }
 }

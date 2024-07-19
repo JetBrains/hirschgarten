@@ -11,15 +11,11 @@ plugins {
 }
 
 // Configure project's dependencies
-repositories {
-  mavenCentral()
-}
+repositories { mavenCentral() }
 
 kotlin {
   explicitApi()
-  jvmToolchain {
-    languageVersion = JavaLanguageVersion.of(javaVersion)
-  }
+  jvmToolchain { languageVersion = JavaLanguageVersion.of(javaVersion) }
 }
 
 // Configure detekt plugin.
@@ -44,12 +40,8 @@ tasks {
       sourceCompatibility = it
       targetCompatibility = it
     }
-    withType<KotlinCompile> {
-      kotlinOptions.jvmTarget = it
-    }
-    withType<Detekt> {
-      jvmTarget = it
-    }
+    withType<KotlinCompile> { kotlinOptions.jvmTarget = it }
+    withType<Detekt> { jvmTarget = it }
   }
 
   kotlinVersion.let {
@@ -59,9 +51,5 @@ tasks {
     }
   }
 
-  test {
-    testLogging {
-      events("PASSED", "SKIPPED", "FAILED")
-    }
-  }
+  test { testLogging { events("PASSED", "SKIPPED", "FAILED") } }
 }

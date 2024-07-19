@@ -7,6 +7,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
+import java.awt.Point
+import java.awt.event.MouseListener
+import java.util.concurrent.Callable
+import javax.swing.Icon
+import javax.swing.JPanel
+import javax.swing.SwingConstants
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
@@ -17,22 +23,15 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdActi
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
-import java.awt.Point
-import java.awt.event.MouseListener
-import java.util.concurrent.Callable
-import javax.swing.Icon
-import javax.swing.JPanel
-import javax.swing.SwingConstants
 
-internal fun BuildTargetInfo.getBuildTargetName(): String =
-  this.displayName ?: this.id.uri
+internal fun BuildTargetInfo.getBuildTargetName(): String = this.displayName ?: this.id.uri
 
 public class BuildTargetSearch(
-  private val targetIcon: Icon,
-  private val buildToolId: BuildToolId,
-  private val toolName: String,
-  targets: Collection<BuildTargetInfo>,
-  public val searchBarPanel: SearchBarPanel,
+    private val targetIcon: Icon,
+    private val buildToolId: BuildToolId,
+    private val toolName: String,
+    targets: Collection<BuildTargetInfo>,
+    public val searchBarPanel: SearchBarPanel,
 ) : BuildTargetContainer {
   public val targetSearchPanel: JPanel = JPanel(VerticalLayout(0))
 
@@ -42,10 +41,11 @@ public class BuildTargetSearch(
   private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, buildToolId)
 
   private var displayedSearchPanel: JPanel? = null
-  private val noResultsInfoComponent = JBLabel(
-    BspPluginBundle.message("widget.target.search.no.results"),
-    SwingConstants.CENTER,
-  )
+  private val noResultsInfoComponent =
+      JBLabel(
+          BspPluginBundle.message("widget.target.search.no.results"),
+          SwingConstants.CENTER,
+      )
 
   private val targets = targets.sortedBy { it.getBuildTargetName() }
 
@@ -69,8 +69,8 @@ public class BuildTargetSearch(
   private fun getCurrentSearchQuery(): Regex = searchBarPanel.getCurrentSearchQuery()
 
   /**
-   * @return `true` if search is in progress, or its results are ready,
-   * `false` if nothing is currently being searched for
+   * @return `true` if search is in progress, or its results are ready, `false` if nothing is
+   *   currently being searched for
    */
   public fun isSearchActive(): Boolean = !searchBarPanel.isEmpty()
 
@@ -78,11 +78,12 @@ public class BuildTargetSearch(
     if (isSearchActive()) {
       noResultsInfoComponent.isVisible = false
       searchBarPanel.inProgress = true
-      ReadAction
-        .nonBlocking(SearchCallable(query, targets))
-        .finishOnUiThread(ModalityState.defaultModalityState()) { displaySearchResultsUnlessOutdated(it) }
-        .coalesceBy(this)
-        .submit(NonUrgentExecutor.getInstance())
+      ReadAction.nonBlocking(SearchCallable(query, targets))
+          .finishOnUiThread(ModalityState.defaultModalityState()) {
+            displaySearchResultsUnlessOutdated(it)
+          }
+          .coalesceBy(this)
+          .submit(NonUrgentExecutor.getInstance())
     }
   }
 
@@ -107,12 +108,11 @@ public class BuildTargetSearch(
 
   private fun JPanel.addLazySearchDisplayUnlessEmpty(): JPanel? {
     val chosenDisplay = chooseTargetSearchPanel()
-    return if (chosenDisplay.isEmpty()) null
-    else chosenDisplay.get().also { this.add(it) }
+    return if (chosenDisplay.isEmpty()) null else chosenDisplay.get().also { this.add(it) }
   }
 
   private fun chooseTargetSearchPanel() =
-    if (searchBarPanel.isDisplayAsTreeChosen()) searchTreeDisplay else searchListDisplay
+      if (searchBarPanel.isDisplayAsTreeChosen()) searchTreeDisplay else searchListDisplay
 
   override fun isEmpty(): Boolean = targets.isEmpty()
 
@@ -132,7 +132,7 @@ public class BuildTargetSearch(
   }
 
   override fun getSelectedBuildTarget(): BuildTargetInfo? =
-    chooseTargetSearchPanel().getSelectedBuildTarget()
+      chooseTargetSearchPanel().getSelectedBuildTarget()
 
   override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetSearch {
     val new = BuildTargetSearch(targetIcon, buildToolId, toolName, newTargets, searchBarPanel)
@@ -149,23 +149,27 @@ public class BuildTargetSearch(
     }
   }
 
-  override fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction> =
-    BuildToolWindowTargetActionProviderExtension.ep.withBuildToolId(project.buildToolId)
-      ?.getTargetActions(targetSearchPanel, project, buildTargetInfo) ?: emptyList()
+  override fun getTargetActions(
+      project: Project,
+      buildTargetInfo: BuildTargetInfo
+  ): List<AnAction> =
+      BuildToolWindowTargetActionProviderExtension.ep
+          .withBuildToolId(project.buildToolId)
+          ?.getTargetActions(targetSearchPanel, project, buildTargetInfo) ?: emptyList()
 
   private class SearchCallable(
-    private val query: Regex,
-    private val targets: Collection<BuildTargetInfo>,
+      private val query: Regex,
+      private val targets: Collection<BuildTargetInfo>,
   ) : Callable<SearchResults> {
     override fun call(): SearchResults =
-      SearchResults(
-        query,
-        targets.filter { query.containsMatchIn(it.getBuildTargetName()) },
-      )
+        SearchResults(
+            query,
+            targets.filter { query.containsMatchIn(it.getBuildTargetName()) },
+        )
   }
 }
 
 private data class SearchResults(
-  val query: Regex,
-  val targets: List<BuildTargetInfo>,
+    val query: Regex,
+    val targets: List<BuildTargetInfo>,
 )

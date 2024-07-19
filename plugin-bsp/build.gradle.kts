@@ -19,15 +19,14 @@ val myToken: String by project
 val releaseChannel: String by project
 
 group = Plugin.group
+
 version = Plugin.version
 
 dependencies {
   implementation(project(":jps-compilation"))
   implementation(project(":protocol"))
   implementation(project(":workspacemodel"))
-  implementation(libs.bsp4j) {
-    exclude(group = "com.google.guava", "guava")
-  }
+  implementation(libs.bsp4j) { exclude(group = "com.google.guava", "guava") }
   implementation(libs.gson)
   testImplementation(libs.junitJupiter)
   testImplementation(libs.kotest)
@@ -48,9 +47,10 @@ dependencies {
 }
 
 tasks.runIde {
-  jvmArgs("-Didea.log.trace.categories=" +
-    "#org.jetbrains.plugins.bsp," +
-    "#org.jetbrains.magicmetamodel.impl.PerformanceLogger")
+  jvmArgs(
+      "-Didea.log.trace.categories=" +
+          "#org.jetbrains.plugins.bsp," +
+          "#org.jetbrains.magicmetamodel.impl.PerformanceLogger")
 }
 
 // Configure gradle-intellij-plugin plugin.
@@ -75,24 +75,35 @@ intellijPlatform {
       untilBuild = Plugin.untilBuild
     }
 
-    // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
-    description = File(projectDir, "README.md").readText().lines().run {
-      val start = "<!-- Plugin description -->"
-      val end = "<!-- Plugin description end -->"
+    // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's
+    // manifest
+    description =
+        File(projectDir, "README.md")
+            .readText()
+            .lines()
+            .run {
+              val start = "<!-- Plugin description -->"
+              val end = "<!-- Plugin description end -->"
 
-      if (!containsAll(listOf(start, end))) {
-        throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
-      }
-      subList(indexOf(start) + 1, indexOf(end))
-    }.joinToString("\n").run { markdownToHTML(this) }
+              if (!containsAll(listOf(start, end))) {
+                throw GradleException(
+                    "Plugin description section not found in README.md:\n$start ... $end")
+              }
+              subList(indexOf(start) + 1, indexOf(end))
+            }
+            .joinToString("\n")
+            .run { markdownToHTML(this) }
 
     // Get the latest available change notes from the changelog file
-    changeNotes = provider { changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML) }
+    changeNotes = provider {
+      changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML)
+    }
   }
 
   publishing {
     token = provider { myToken }
-    // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
+    // pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels,
+    // like 2.1.7-alpha.3
     // Specify pre-release label to publish the plugin in a custom Release Channel. Read more:
     // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
     // Release channel is set via command-line param "releaseChannel"
@@ -102,13 +113,11 @@ intellijPlatform {
   }
 
   verifyPlugin {
-    ides {
-      recommended()
-    }
-    failureLevel = setOf(
-      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-      VerifyPluginTask.FailureLevel.NOT_DYNAMIC
-    )
+    ides { recommended() }
+    failureLevel =
+        setOf(
+            VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+            VerifyPluginTask.FailureLevel.NOT_DYNAMIC)
     teamCityOutputFormat = true
   }
 }
@@ -132,20 +141,15 @@ allprojects {
     // disable the malfunctioned platform listener com.intellij.tests.JUnit5TestSessionListener
     // this listener caused the CI tests to fail with
     // AlreadyDisposedException: Already disposed: Application (containerState DISPOSE_COMPLETED)
-    // TODO: follow up https://youtrack.jetbrains.com/issue/IDEA-337508/AlreadyDisposedException-Already-disposed-Application-containerState-DISPOSECOMPLETED-after-junit5-tests-on-TeamCity
+    // TODO: follow up
+    // https://youtrack.jetbrains.com/issue/IDEA-337508/AlreadyDisposedException-Already-disposed-Application-containerState-DISPOSECOMPLETED-after-junit5-tests-on-TeamCity
     systemProperty("intellij.build.test.ignoreFirstAndLastTests", "true")
   }
 }
 
 repositories {
   mavenCentral()
-  intellijPlatform {
-    defaultRepositories()
-  }
+  intellijPlatform { defaultRepositories() }
 }
 
-tasks {
-  test {
-    classpath -= classpath.filter { it.name.contains("kotlin-compiler-embeddable") }
-  }
-}
+tasks { test { classpath -= classpath.filter { it.name.contains("kotlin-compiler-embeddable") } } }

@@ -19,18 +19,6 @@ import com.google.devtools.build.v1.PublishBuildToolEventStreamResponse
 import com.google.devtools.build.v1.PublishLifecycleEventRequest
 import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
-import org.jetbrains.bsp.protocol.JoinedBuildClient
-import org.jetbrains.bsp.protocol.PublishOutputParams
-import org.jetbrains.bsp.protocol.TestCoverageReport
-import org.jetbrains.bsp.bazel.commons.Constants
-import org.jetbrains.bsp.bazel.commons.ExitCodeMapper
-import org.jetbrains.bsp.bazel.logger.BspClientLogger
-import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
-import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bsp.bazel.server.model.Label
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import java.io.IOException
 import java.net.URI
 import java.nio.file.FileSystemNotFoundException
@@ -41,14 +29,25 @@ import java.util.ArrayDeque
 import java.util.Deque
 import java.util.UUID
 import java.util.function.Consumer
-
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
+import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bsp.bazel.commons.ExitCodeMapper
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
+import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.protocol.JoinedBuildClient
+import org.jetbrains.bsp.protocol.PublishOutputParams
+import org.jetbrains.bsp.protocol.TestCoverageReport
 
 class BepServer(
-  private val bspClient: JoinedBuildClient,
-  private val diagnosticsService: DiagnosticsService,
-  private val originId: String?,
-  private val target: BuildTargetIdentifier?,
-  bazelPathsResolver: BazelPathsResolver
+    private val bspClient: JoinedBuildClient,
+    private val diagnosticsService: DiagnosticsService,
+    private val originId: String?,
+    private val target: BuildTargetIdentifier?,
+    bazelPathsResolver: BazelPathsResolver
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
   private val bspClientLogger = BspClientLogger(bspClient)
   private val bepLogger = BepLogger(bspClientLogger)
@@ -57,22 +56,22 @@ class BepServer(
   private val bepOutputBuilder = BepOutputBuilder(bazelPathsResolver)
 
   override fun publishLifecycleEvent(
-    request: PublishLifecycleEventRequest, responseObserver: StreamObserver<Empty>
+      request: PublishLifecycleEventRequest,
+      responseObserver: StreamObserver<Empty>
   ) {
     responseObserver.onNext(Empty.getDefaultInstance())
     responseObserver.onCompleted()
   }
 
   override fun publishBuildToolEventStream(
-    responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>
+      responseObserver: StreamObserver<PublishBuildToolEventStreamResponse>
   ): StreamObserver<PublishBuildToolEventStreamRequest> {
     return BepStreamObserver(this, responseObserver)
   }
 
   fun handleEvent(buildEvent: BuildEvent) {
     try {
-      val event =
-        BuildEventStreamProtos.BuildEvent.parseFrom(buildEvent.bazelEvent.value)
+      val event = BuildEventStreamProtos.BuildEvent.parseFrom(buildEvent.bazelEvent.value)
 
       LOGGER.trace("Got event {}", event)
 
@@ -108,29 +107,37 @@ class BepServer(
 
       bspClientTestNotifier.beginTestTarget(target, parentId)
 
-      // TODO: this is the place where we could parse the test result and produce individual test events
+      // TODO: this is the place where we could parse the test result and produce individual test
+      // events
       // TODO: there's some other interesting data
       //  If testing is requested, a TestResult event is sent for each test attempt,
       //  shard, and run per test. This allows BEP consumers to identify precisely
       //  which test actions failed their tests and identify the test outputs
       //  (such as logs, test.xml files) for each test action.
 
-      val testStatus = when (testResult.status) {
-        BuildEventStreamProtos.TestStatus.NO_STATUS -> TestStatus.SKIPPED
-        BuildEventStreamProtos.TestStatus.PASSED -> TestStatus.PASSED
-        BuildEventStreamProtos.TestStatus.FLAKY -> TestStatus.FAILED
-        BuildEventStreamProtos.TestStatus.TIMEOUT -> TestStatus.FAILED
-        BuildEventStreamProtos.TestStatus.FAILED -> TestStatus.FAILED
-        BuildEventStreamProtos.TestStatus.INCOMPLETE -> TestStatus.SKIPPED
-        BuildEventStreamProtos.TestStatus.REMOTE_FAILURE -> TestStatus.IGNORED
-        BuildEventStreamProtos.TestStatus.FAILED_TO_BUILD -> TestStatus.CANCELLED
-        BuildEventStreamProtos.TestStatus.TOOL_HALTED_BEFORE_TESTING -> TestStatus.SKIPPED
-        else -> TestStatus.FAILED
-      }
+      val testStatus =
+          when (testResult.status) {
+            BuildEventStreamProtos.TestStatus.NO_STATUS -> TestStatus.SKIPPED
+            BuildEventStreamProtos.TestStatus.PASSED -> TestStatus.PASSED
+            BuildEventStreamProtos.TestStatus.FLAKY -> TestStatus.FAILED
+            BuildEventStreamProtos.TestStatus.TIMEOUT -> TestStatus.FAILED
+            BuildEventStreamProtos.TestStatus.FAILED -> TestStatus.FAILED
+            BuildEventStreamProtos.TestStatus.INCOMPLETE -> TestStatus.SKIPPED
+            BuildEventStreamProtos.TestStatus.REMOTE_FAILURE -> TestStatus.IGNORED
+            BuildEventStreamProtos.TestStatus.FAILED_TO_BUILD -> TestStatus.CANCELLED
+            BuildEventStreamProtos.TestStatus.TOOL_HALTED_BEFORE_TESTING -> TestStatus.SKIPPED
+            else -> TestStatus.FAILED
+          }
 
       val coverageReportUri = testResult.testActionOutputList.find { it.name == "test.lcov" }?.uri
       if (coverageReportUri != null) {
-        bspClient.onBuildPublishOutput(PublishOutputParams(originId, parentId, target, TestCoverageReport.DATA_KIND, TestCoverageReport(coverageReportUri)))
+        bspClient.onBuildPublishOutput(
+            PublishOutputParams(
+                originId,
+                parentId,
+                target,
+                TestCoverageReport.DATA_KIND,
+                TestCoverageReport(coverageReportUri)))
       }
 
       val testXmlUri = testResult.testActionOutputList.find { it.name == "test.xml" }?.uri
@@ -151,9 +158,7 @@ class BepServer(
       val cancelled = if (testStatus == TestStatus.CANCELLED) 1 else 0
       val skipped = if (testStatus == TestStatus.SKIPPED) 1 else 0
 
-      val testReport = TestReport(
-        target, passed, failed, ignored, cancelled, skipped
-      )
+      val testReport = TestReport(target, passed, failed, ignored, cancelled, skipped)
 
       bspClientTestNotifier.endTestTarget(testReport, parentId)
     }
@@ -167,9 +172,7 @@ class BepServer(
 
   private fun fetchNamedSet(event: BuildEventStreamProtos.BuildEvent) {
     if (event.id.hasNamedSet()) {
-      bepOutputBuilder.storeNamedSet(
-        event.id.namedSet.id, event.namedSetOfFiles
-      )
+      bepOutputBuilder.storeNamedSet(event.id.namedSet.id, event.namedSetOfFiles)
     }
   }
 
@@ -262,7 +265,8 @@ class BepServer(
   }
 
   private fun consumeUnsuccessfulActionCompletedEvent(
-    actionEvent: BuildEventStreamProtos.ActionExecuted, label: String
+      actionEvent: BuildEventStreamProtos.ActionExecuted,
+      label: String
   ) {
     when (actionEvent.stderr.fileCase) {
       BuildEventStreamProtos.File.FileCase.URI -> {
@@ -285,27 +289,32 @@ class BepServer(
     }
   }
 
-  private fun processDiagnosticText(stdErrText: String, targetLabel: String, diagnosticsFromProgress: Boolean) {
+  private fun processDiagnosticText(
+      stdErrText: String,
+      targetLabel: String,
+      diagnosticsFromProgress: Boolean
+  ) {
     if (startedEvents.isNotEmpty() && stdErrText.isNotEmpty()) {
       val events =
-        diagnosticsService.extractDiagnostics(
-          stdErrText, targetLabel, startedEvents.first.value, diagnosticsFromProgress
-        )
-      events.forEach(Consumer { publishDiagnosticsParams: PublishDiagnosticsParams? ->
-        bspClient.onBuildPublishDiagnostics(
-            publishDiagnosticsParams
-        )
-      })
+          diagnosticsService.extractDiagnostics(
+              stdErrText, targetLabel, startedEvents.first.value, diagnosticsFromProgress)
+      events.forEach(
+          Consumer { publishDiagnosticsParams: PublishDiagnosticsParams? ->
+            bspClient.onBuildPublishDiagnostics(publishDiagnosticsParams)
+          })
     }
   }
 
   private fun consumeCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
     val eventLabel = event.id.targetCompleted.label
     /* The events never contain @, which will be different than the actual target id. Here we work around that fact,
-    * but since we also set up the BEP server to gather info about build targets within certain path (//... etc.), we can't
-    * just use target.uri. So this only fixes the diagnostics without breaking the query for targets.
-    * */
-    val labelText = if (target != null && ("@$eventLabel" == target.uri || "@@$eventLabel" == target.uri) ) target.uri else eventLabel
+     * but since we also set up the BEP server to gather info about build targets within certain path (//... etc.), we can't
+     * just use target.uri. So this only fixes the diagnostics without breaking the query for targets.
+     * */
+    val labelText =
+        if (target != null && ("@$eventLabel" == target.uri || "@@$eventLabel" == target.uri))
+            target.uri
+        else eventLabel
     val label = Label.parse(labelText)
     val targetComplete = event.completed
     val outputGroups = targetComplete.outputGroupList
@@ -314,18 +323,19 @@ class BepServer(
 
     // We should clear diagnostics only on completed successful compilation
     val shouldClearDiagnostics =
-      outputGroups.stream().anyMatch { group: BuildEventStreamProtos.OutputGroup -> group.name == "default" }
+        outputGroups.stream().anyMatch { group: BuildEventStreamProtos.OutputGroup ->
+          group.name == "default"
+        }
     if (targetComplete.success && shouldClearDiagnostics) {
       // clear former diagnostics by publishing an empty array of diagnostics
       // why we do this on `target_completed` instead of `action_completed`?
       // because `action_completed` won't be published on build success for a target.
       // https://github.com/bazelbuild/bazel/blob/d43737f95d28789bb2d9ef2d7f62320e9a840ab0/src/main/java/com/google/devtools/build/lib/buildeventstream/proto/build_event_stream.proto#L157-L160
       val events = diagnosticsService.clearFormerDiagnostics(label)
-      events.forEach(Consumer { publishDiagnosticsParams: PublishDiagnosticsParams? ->
-        bspClient.onBuildPublishDiagnostics(
-          publishDiagnosticsParams
-        )
-      })
+      events.forEach(
+          Consumer { publishDiagnosticsParams: PublishDiagnosticsParams? ->
+            bspClient.onBuildPublishDiagnostics(publishDiagnosticsParams)
+          })
     }
   }
 
@@ -337,9 +347,7 @@ class BepServer(
 
   private fun consumeAbortedEvent(aborted: BuildEventStreamProtos.Aborted) {
     if (aborted.reason != BuildEventStreamProtos.Aborted.AbortReason.NO_BUILD) {
-      LOGGER.warn(
-        "Command aborted with reason {}: {}", aborted.reason, aborted.description
-      )
+      LOGGER.warn("Command aborted with reason {}: {}", aborted.reason, aborted.description)
     }
   }
 

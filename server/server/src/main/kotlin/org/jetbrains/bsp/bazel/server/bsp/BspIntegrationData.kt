@@ -1,7 +1,5 @@
 package org.jetbrains.bsp.bazel.server.bsp
 
-import ch.epfl.scala.bsp4j.BuildClient
-import org.eclipse.lsp4j.jsonrpc.Launcher
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintWriter

@@ -8,16 +8,16 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
 public class JvmTestEnvironmentTask(project: Project) :
-  BspServerSingleTargetTask<JvmTestEnvironmentResult>("jvmTestEnvironment", project) {
+    BspServerSingleTargetTask<JvmTestEnvironmentResult>("jvmTestEnvironment", project) {
   override fun executeWithServer(
-    server: JoinedBuildServer,
-    capabilities: BuildServerCapabilities,
-    targetId: BuildTargetIdentifier,
+      server: JoinedBuildServer,
+      capabilities: BuildServerCapabilities,
+      targetId: BuildTargetIdentifier,
   ): JvmTestEnvironmentResult {
     val params = createJvmTestEnvironmentParams(targetId)
     return server.buildTargetJvmTestEnvironment(params).get()
   }
 
   private fun createJvmTestEnvironmentParams(targetId: BuildTargetIdentifier) =
-    JvmTestEnvironmentParams(listOf(targetId))
+      JvmTestEnvironmentParams(listOf(targetId))
 }

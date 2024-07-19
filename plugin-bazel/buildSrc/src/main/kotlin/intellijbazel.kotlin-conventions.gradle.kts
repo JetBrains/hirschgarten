@@ -12,15 +12,9 @@ plugins {
 }
 
 // Configure project's dependencies
-repositories {
-  mavenCentral()
-}
+repositories { mavenCentral() }
 
-kotlin {
-  jvmToolchain {
-    languageVersion = JavaLanguageVersion.of(javaVersion)
-  }
-}
+kotlin { jvmToolchain { languageVersion = JavaLanguageVersion.of(javaVersion) } }
 
 // Configure detekt plugin.
 // Read more: https://detekt.github.io/detekt/kotlindsl.html
@@ -32,9 +26,7 @@ detekt {
   parallel = true
 }
 
-dependencies {
-  detektPlugins(libs.findLibrary("detektFormatting").get())
-}
+dependencies { detektPlugins(libs.findLibrary("detektFormatting").get()) }
 
 tasks {
   // Set the JVM compatibility versions
@@ -43,12 +35,8 @@ tasks {
       sourceCompatibility = it
       targetCompatibility = it
     }
-    withType<KotlinCompile> {
-      kotlinOptions.jvmTarget = it
-    }
-    withType<Detekt> {
-      jvmTarget = it
-    }
+    withType<KotlinCompile> { kotlinOptions.jvmTarget = it }
+    withType<Detekt> { jvmTarget = it }
   }
 
   kotlinVersion.let {

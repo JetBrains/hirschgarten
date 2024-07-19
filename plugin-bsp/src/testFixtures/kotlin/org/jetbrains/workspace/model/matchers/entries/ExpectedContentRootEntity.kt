@@ -8,27 +8,27 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
 public data class ExpectedContentRootEntity(
-  val url: VirtualFileUrl,
-  val excludedUrls: List<VirtualFileUrl>,
-  val excludedPatterns: List<String>,
-  val parentModuleEntity: ModuleEntity,
+    val url: VirtualFileUrl,
+    val excludedUrls: List<VirtualFileUrl>,
+    val excludedPatterns: List<String>,
+    val parentModuleEntity: ModuleEntity,
 )
 
 public infix fun ContentRootEntity.shouldBeEqual(expected: ExpectedContentRootEntity): Unit =
-  validateContentRootEntity(this, expected)
+    validateContentRootEntity(this, expected)
 
 public infix fun Collection<ContentRootEntity>.shouldContainExactlyInAnyOrder(
-  expectedValues: Collection<ExpectedContentRootEntity>,
+    expectedValues: Collection<ExpectedContentRootEntity>,
 ): Unit {
   this.shouldContainExactlyInAnyOrder(
-    assertion = { actual, expected -> validateContentRootEntity(actual, expected) },
-    expectedValues = expectedValues,
+      assertion = { actual, expected -> validateContentRootEntity(actual, expected) },
+      expectedValues = expectedValues,
   )
 }
 
 private fun validateContentRootEntity(
-  actual: ContentRootEntity,
-  expected: ExpectedContentRootEntity,
+    actual: ContentRootEntity,
+    expected: ExpectedContentRootEntity,
 ) {
   actual.url shouldBe expected.url
   actual.excludedUrls.map { it.url } shouldContainExactlyInAnyOrder expected.excludedUrls

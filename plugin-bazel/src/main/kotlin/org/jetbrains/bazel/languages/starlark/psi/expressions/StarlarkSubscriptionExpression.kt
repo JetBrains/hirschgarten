@@ -5,5 +5,6 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 
 class StarlarkSubscriptionExpression(node: ASTNode) : StarlarkBaseElement(node) {
-  override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitSubscriptionExpression(this)
+  override fun acceptVisitor(visitor: StarlarkElementVisitor) =
+      visitor.visitSubscriptionExpression(this)
 }

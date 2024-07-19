@@ -8,7 +8,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.plugins.bsp.config.BspWorkspaceListener
 
-internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
+internal class WaitForBazelSyncCommand(text: String, line: Int) :
+    PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
     const val PREFIX = CMD_PREFIX + "waitForBazelSync"
   }
@@ -19,13 +20,17 @@ internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackComman
     val syncFinished = Channel<Unit>()
 
     @Suppress("UnstableApiUsage")
-    project.messageBus.connect(nestedDisposable()).subscribe(BspWorkspaceListener.TOPIC, object : BspWorkspaceListener {
-      override fun syncFinished(canceled: Boolean) {
-        runBlocking { syncFinished.send(Unit) }
-      }
+    project.messageBus
+        .connect(nestedDisposable())
+        .subscribe(
+            BspWorkspaceListener.TOPIC,
+            object : BspWorkspaceListener {
+              override fun syncFinished(canceled: Boolean) {
+                runBlocking { syncFinished.send(Unit) }
+              }
 
-      override fun syncStarted() {}
-    })
+              override fun syncStarted() {}
+            })
 
     syncFinished.receive()
   }

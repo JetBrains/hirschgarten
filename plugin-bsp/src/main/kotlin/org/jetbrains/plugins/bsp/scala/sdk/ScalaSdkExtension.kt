@@ -5,18 +5,16 @@ import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsPr
 
 public interface ScalaSdkExtension {
   public fun addScalaSdk(
-    scalaSdk: ScalaSdk,
-    modelsProvider: IdeModifiableModelsProvider,
+      scalaSdk: ScalaSdk,
+      modelsProvider: IdeModifiableModelsProvider,
   )
 }
 
 private val ep =
-  ExtensionPointName.create<ScalaSdkExtension>(
-    "org.jetbrains.bsp.scalaSdkExtension",
-  )
+    ExtensionPointName.create<ScalaSdkExtension>(
+        "org.jetbrains.bsp.scalaSdkExtension",
+    )
 
-internal fun scalaSdkExtension(): ScalaSdkExtension? =
-  ep.extensionList.firstOrNull()
+internal fun scalaSdkExtension(): ScalaSdkExtension? = ep.extensionList.firstOrNull()
 
-internal fun scalaSdkExtensionExists(): Boolean =
-  ep.extensionList.isNotEmpty()
+internal fun scalaSdkExtensionExists(): Boolean = ep.extensionList.isNotEmpty()

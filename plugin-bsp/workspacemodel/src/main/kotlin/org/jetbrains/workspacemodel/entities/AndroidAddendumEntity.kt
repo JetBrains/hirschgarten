@@ -25,7 +25,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
   public val assetsDirectories: List<VirtualFileUrl>
   public val module: ModuleEntity
 
-  //region generated code
+  // region generated code
   @GeneratedCodeApiVersion(3)
   public interface Builder : WorkspaceEntity.Builder<AndroidAddendumEntity> {
     override var entitySource: EntitySource
@@ -43,12 +43,12 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
     @JvmStatic
     @JvmName("create")
     public operator fun invoke(
-      androidSdkName: String,
-      androidTargetType: AndroidTargetType,
-      resourceDirectories: List<VirtualFileUrl>,
-      assetsDirectories: List<VirtualFileUrl>,
-      entitySource: EntitySource,
-      init: (Builder.() -> Unit)? = null,
+        androidSdkName: String,
+        androidTargetType: AndroidTargetType,
+        resourceDirectories: List<VirtualFileUrl>,
+        assetsDirectories: List<VirtualFileUrl>,
+        entitySource: EntitySource,
+        init: (Builder.() -> Unit)? = null,
     ): Builder {
       val builder = builder()
       builder.androidSdkName = androidSdkName
@@ -60,20 +60,21 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
       return builder
     }
   }
-//endregion
+  // endregion
 
 }
 
-//region generated code
+// region generated code
 public fun MutableEntityStorage.modifyAndroidAddendumEntity(
-  entity: AndroidAddendumEntity,
-  modification: AndroidAddendumEntity.Builder.() -> Unit,
+    entity: AndroidAddendumEntity,
+    modification: AndroidAddendumEntity.Builder.() -> Unit,
 ): AndroidAddendumEntity {
   return modifyEntity(AndroidAddendumEntity.Builder::class.java, entity, modification)
 }
 
-public var ModuleEntity.Builder.androidAddendumEntity: @Child AndroidAddendumEntity.Builder?
-    by WorkspaceEntity.extensionBuilder(AndroidAddendumEntity::class.java)
-//endregion
+public var ModuleEntity.Builder.androidAddendumEntity: @Child AndroidAddendumEntity.Builder? by
+    WorkspaceEntity.extensionBuilder(AndroidAddendumEntity::class.java)
+// endregion
 
-public val ModuleEntity.androidAddendumEntity: @Child AndroidAddendumEntity? by WorkspaceEntity.extension()
+public val ModuleEntity.androidAddendumEntity: @Child AndroidAddendumEntity? by
+    WorkspaceEntity.extension()

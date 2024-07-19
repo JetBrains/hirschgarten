@@ -9,13 +9,13 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class MainActivityTest {
-    @Test
-    fun testTextView() {
-        Robolectric.buildActivity(MainActivity::class.java).use { controller ->
-            controller.setup()
-            val activity = controller.get()
-            val textView = activity.findViewById<TextView>(R.id.text_view)
-            assertEquals("Search", textView.text)
-        }
+  @Test
+  fun testTextView() {
+    Robolectric.buildActivity(MainActivity::class.java).use { controller ->
+      controller.setup()
+      val activity = controller.get()
+      val textView = activity.findViewById<TextView>(R.id.text_view)
+      assertEquals("Search", textView.text)
     }
+  }
 }

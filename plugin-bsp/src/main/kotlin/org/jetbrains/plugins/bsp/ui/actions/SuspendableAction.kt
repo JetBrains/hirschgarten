@@ -6,14 +6,15 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import javax.swing.Icon
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.server.tasks.saveAllFiles
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import javax.swing.Icon
 
 private val log = logger<SuspendableAction>()
 
-public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) : AnAction(text, icon) {
+public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
+    AnAction(text, icon) {
   public constructor(text: String, icon: Icon? = null) : this({ text }, icon)
 
   final override fun actionPerformed(e: AnActionEvent) {
@@ -21,11 +22,10 @@ public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) 
 
     if (project != null) {
       saveAllFiles()
-      BspCoroutineService.getInstance(project).start {
-        actionPerformed(project, e)
-      }
+      BspCoroutineService.getInstance(project).start { actionPerformed(project, e) }
     } else {
-      log.warn("`actionPerformed` for action '${e.presentation.text}' cannot be performed. Project is missing.")
+      log.warn(
+          "`actionPerformed` for action '${e.presentation.text}' cannot be performed. Project is missing.")
     }
   }
 
@@ -37,7 +37,8 @@ public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) 
     if (project != null) {
       doUpdate(project, e)
     } else {
-      log.warn("`update` for action '${e.presentation.text}' cannot be performed. Project is missing.")
+      log.warn(
+          "`update` for action '${e.presentation.text}' cannot be performed. Project is missing.")
     }
   }
 

@@ -68,7 +68,10 @@ open class Parsing(val context: ParsingContext) {
     protected fun advanceIdentifierLike(builder: PsiBuilder) {
       if (isReservedKeyword(builder)) {
         val tokenText = builder.tokenText ?: ""
-        advanceError(builder, StarlarkBundle.message("parser.reserved.keyword.cannot.be.used.as.identifier", tokenText))
+        advanceError(
+            builder,
+            StarlarkBundle.message(
+                "parser.reserved.keyword.cannot.be.used.as.identifier", tokenText))
       } else {
         builder.advanceLexer()
       }
@@ -83,10 +86,10 @@ open class Parsing(val context: ParsingContext) {
 
     @JvmStatic
     protected fun isIdentifierLike(builder: PsiBuilder): Boolean =
-      builder.tokenType === StarlarkTokenTypes.IDENTIFIER || isReservedKeyword(builder)
+        builder.tokenType === StarlarkTokenTypes.IDENTIFIER || isReservedKeyword(builder)
 
     private fun isReservedKeyword(builder: PsiBuilder): Boolean =
-      StarlarkTokenSets.RESERVED_KEYWORDS.contains(builder.tokenType)
+        StarlarkTokenSets.RESERVED_KEYWORDS.contains(builder.tokenType)
 
     @JvmStatic
     protected fun buildTokenElement(type: IElementType?, builder: PsiBuilder) {

@@ -18,15 +18,16 @@ public class BspProjectSystemSyncManager(private val project: Project) : Project
   private fun notifySyncEnded(project: Project) {
     DumbService.getInstance(project).smartInvokeLater {
       project.messageBus
-        .syncPublisher(PROJECT_SYSTEM_SYNC_TOPIC)
-        .syncEnded(ProjectSystemSyncManager.SyncResult.SUCCESS)
+          .syncPublisher(PROJECT_SYSTEM_SYNC_TOPIC)
+          .syncEnded(ProjectSystemSyncManager.SyncResult.SUCCESS)
     }
   }
 
   private fun initialNotifySyncEnded(project: Project) {
     notifySyncEnded(project)
 
-    // Hack: Android UI preview waits for ClearResourceCacheAfterFirstBuild to have received a successful sync message.
+    // Hack: Android UI preview waits for ClearResourceCacheAfterFirstBuild to have received a
+    // successful sync message.
     // But unfortunately, we have a race condition between us sending the initial syncEnded message
     // and ClearResourceCacheAfterFirstBuild starting to listen to PROJECT_SYSTEM_SYNC_TOPIC.
     // Therefore, we have to notify ClearResourceCacheAfterFirstBuild directly.
@@ -36,7 +37,7 @@ public class BspProjectSystemSyncManager(private val project: Project) : Project
   }
 
   override fun syncProject(
-    reason: ProjectSystemSyncManager.SyncReason,
+      reason: ProjectSystemSyncManager.SyncReason,
   ): ListenableFuture<ProjectSystemSyncManager.SyncResult> {
     notifySyncEnded(project)
     return Futures.immediateFuture(ProjectSystemSyncManager.SyncResult.SUCCESS)
@@ -46,5 +47,6 @@ public class BspProjectSystemSyncManager(private val project: Project) : Project
 
   override fun isSyncNeeded(): Boolean = false
 
-  override fun getLastSyncResult(): ProjectSystemSyncManager.SyncResult = ProjectSystemSyncManager.SyncResult.SUCCESS
+  override fun getLastSyncResult(): ProjectSystemSyncManager.SyncResult =
+      ProjectSystemSyncManager.SyncResult.SUCCESS
 }

@@ -18,16 +18,15 @@ import org.jetbrains.plugins.bsp.services.BspCoroutineService
  */
 internal class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator {
   override fun configureProject(
-    project: Project,
-    baseDir: VirtualFile,
-    moduleRef: Ref<Module>,
-    isProjectCreatedWithWizard: Boolean,
+      project: Project,
+      baseDir: VirtualFile,
+      moduleRef: Ref<Module>,
+      isProjectCreatedWithWizard: Boolean,
   ) {
     if (!project.isBspProject) return
 
     val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal
-    val fakeModules =
-      workspaceModel.entityStorage.current.entities(ModuleEntity::class.java)
+    val fakeModules = workspaceModel.entityStorage.current.entities(ModuleEntity::class.java)
 
     BspCoroutineService.getInstance(project).start {
       writeAction {

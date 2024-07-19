@@ -24,17 +24,18 @@ public object DefaultLibraryNameProvider : TargetNameReformatProvider {
 }
 
 public data class ProjectDetails(
-  val targetIds: List<BuildTargetIdentifier>,
-  val targets: Set<BuildTarget>,
-  val sources: List<SourcesItem>,
-  val resources: List<ResourcesItem>,
-  val dependenciesSources: List<DependencySourcesItem>,
-  val javacOptions: List<JavacOptionsItem>,
-  val scalacOptions: List<ScalacOptionsItem>,
-  val pythonOptions: List<PythonOptionsItem>,
-  val outputPathUris: List<String>,
-  val libraries: List<LibraryItem>?,
-  val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
-  var defaultJdkName: String? = null,
-  var jvmBinaryJars: List<JvmBinaryJarsItem> = emptyList(),
+    val targetIds: List<BuildTargetIdentifier>,
+    val targets: Set<BuildTarget>,
+    val sources: List<SourcesItem>,
+    val resources: List<ResourcesItem>,
+    val dependenciesSources: List<DependencySourcesItem>,
+    val javacOptions: List<JavacOptionsItem>,
+    val scalacOptions: List<ScalacOptionsItem>,
+    val pythonOptions: List<PythonOptionsItem>,
+    val outputPathUris: List<String>,
+    val libraries: List<LibraryItem>?,
+    val directories: WorkspaceDirectoriesResult =
+        WorkspaceDirectoriesResult(emptyList(), emptyList()),
+    var defaultJdkName: String? = null,
+    var jvmBinaryJars: List<JvmBinaryJarsItem> = emptyList(),
 )

@@ -8,6 +8,8 @@ import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.project.Project
+import java.util.UUID
+import java.util.concurrent.CompletableFuture
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
@@ -26,24 +28,23 @@ import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunCommandLineState
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunTaskListener
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspTestCommandLineState
-import java.util.UUID
-import java.util.concurrent.CompletableFuture
 
 public class JvmBspRunHandler : BspRunHandler {
   // Explanation for this logic:
-  // Because we have android_local_test with mocked Android classes, which should be run, well, locally,
+  // Because we have android_local_test with mocked Android classes, which should be run, well,
+  // locally,
   //  as opposed to on-device like with android_binary
   // TODO: perhaps better solved by having a tag
-  override fun canRun(targets: List<BuildTargetInfo>): Boolean = targets.all {
-    it.languageIds.isJvmTarget() ||
-      it.languageIds.includesAndroid() && it.capabilities.canTest
-  }
+  override fun canRun(targets: List<BuildTargetInfo>): Boolean =
+      targets.all {
+        it.languageIds.isJvmTarget() || it.languageIds.includesAndroid() && it.capabilities.canTest
+      }
 
   override fun getRunProfileState(
-    project: Project,
-    executor: Executor,
-    environment: ExecutionEnvironment,
-    configuration: BspRunConfigurationBase,
+      project: Project,
+      executor: Executor,
+      environment: ExecutionEnvironment,
+      configuration: BspRunConfigurationBase,
   ): RunProfileState {
     return when {
       executor is DefaultDebugExecutor -> {
@@ -65,13 +66,12 @@ public class JvmBspRunHandler : BspRunHandler {
   }
 
   public class JvmDebugHandlerState(
-    project: Project,
-    environment: ExecutionEnvironment,
-    private val configuration: BspRunConfigurationBase,
-    private val originId: OriginId,
+      project: Project,
+      environment: ExecutionEnvironment,
+      private val configuration: BspRunConfigurationBase,
+      private val originId: OriginId,
   ) : BspCommandLineStateBase(project, environment, configuration, originId) {
-    public val remoteConnection: RemoteConnection =
-      RemoteConnection(true, "localhost", "0", true)
+    public val remoteConnection: RemoteConnection = RemoteConnection(true, "localhost", "0", true)
 
     public val portForDebug: Int?
       get() = remoteConnection.debuggerAddress?.toInt()
@@ -86,7 +86,7 @@ public class JvmBspRunHandler : BspRunHandler {
     }
 
     override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
-      BspRunTaskListener(handler)
+        BspRunTaskListener(handler)
 
     override fun startBsp(server: JoinedBuildServer): CompletableFuture<*> {
       // SAFETY: safe to unwrap because we checked in checkRunCapabilities

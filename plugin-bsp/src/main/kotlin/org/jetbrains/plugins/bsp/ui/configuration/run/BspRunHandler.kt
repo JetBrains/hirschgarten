@@ -17,19 +17,20 @@ public interface BspRunHandler {
   public fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {}
 
   public fun getRunProfileState(
-    project: Project,
-    executor: Executor,
-    environment: ExecutionEnvironment,
-    configuration: BspRunConfigurationBase,
+      project: Project,
+      executor: Executor,
+      environment: ExecutionEnvironment,
+      configuration: BspRunConfigurationBase,
   ): RunProfileState
 
-  public fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> = emptyList()
+  public fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> =
+      emptyList()
 
   public companion object {
     public val ep: ExtensionPointName<BspRunHandler> =
-      ExtensionPointName.create("org.jetbrains.bsp.bspRunHandler")
+        ExtensionPointName.create("org.jetbrains.bsp.bspRunHandler")
 
     public fun getRunHandler(targets: List<BuildTargetInfo>): BspRunHandler =
-      ep.extensionList.firstOrNull { it.canRun(targets) } ?: GenericBspRunHandler()
+        ep.extensionList.firstOrNull { it.canRun(targets) } ?: GenericBspRunHandler()
   }
 }

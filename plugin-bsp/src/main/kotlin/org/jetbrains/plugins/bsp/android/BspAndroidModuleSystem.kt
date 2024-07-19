@@ -30,31 +30,42 @@ import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.moduleEntity
 import org.jetbrains.workspacemodel.entities.androidAddendumEntity
 
-public class BspAndroidModuleSystem(override val module: Module) : AndroidModuleSystem,
-  SampleDataDirectoryProvider by MainContentRootSampleDataDirectoryProvider(module) {
+public class BspAndroidModuleSystem(override val module: Module) :
+    AndroidModuleSystem,
+    SampleDataDirectoryProvider by MainContentRootSampleDataDirectoryProvider(module) {
   override val moduleClassFileFinder: ClassFileFinder = BspClassFileFinder(module)
 
-  override fun getModuleTemplates(targetDirectory: VirtualFile?): List<NamedModuleTemplate> = emptyList()
+  override fun getModuleTemplates(targetDirectory: VirtualFile?): List<NamedModuleTemplate> =
+      emptyList()
 
   override fun analyzeDependencyCompatibility(
-    dependenciesToAdd: List<GradleCoordinate>,
-  ): Triple<List<GradleCoordinate>, List<GradleCoordinate>, String> = Triple(emptyList(), emptyList(), "")
+      dependenciesToAdd: List<GradleCoordinate>,
+  ): Triple<List<GradleCoordinate>, List<GradleCoordinate>, String> =
+      Triple(emptyList(), emptyList(), "")
 
   override fun getRegisteredDependency(coordinate: GradleCoordinate): GradleCoordinate? = null
 
-  override fun getResolvedDependency(coordinate: GradleCoordinate, scope: DependencyScopeType): GradleCoordinate? = null
+  override fun getResolvedDependency(
+      coordinate: GradleCoordinate,
+      scope: DependencyScopeType
+  ): GradleCoordinate? = null
 
-  override fun canRegisterDependency(type: DependencyType): CapabilityStatus = CapabilityNotSupported()
+  override fun canRegisterDependency(type: DependencyType): CapabilityStatus =
+      CapabilityNotSupported()
 
-  override fun registerDependency(coordinate: GradleCoordinate): Unit = throw UnsupportedOperationException()
+  override fun registerDependency(coordinate: GradleCoordinate): Unit =
+      throw UnsupportedOperationException()
 
   override fun registerDependency(coordinate: GradleCoordinate, type: DependencyType): Unit =
-    throw UnsupportedOperationException()
+      throw UnsupportedOperationException()
 
-  override fun getAndroidLibraryDependencies(scope: DependencyScopeType): Collection<ExternalAndroidLibrary> {
+  override fun getAndroidLibraryDependencies(
+      scope: DependencyScopeType
+  ): Collection<ExternalAndroidLibrary> {
     val result = mutableListOf<ExternalAndroidLibrary>()
 
-    OrderEnumerator.orderEntries(module).withoutSdk().recursively().exportedOnly().forEachLibrary { library ->
+    OrderEnumerator.orderEntries(module).withoutSdk().recursively().exportedOnly().forEachLibrary {
+        library ->
       createExternalAndroidLibrary(library)?.let { result += it }
       true
     }
@@ -71,18 +82,18 @@ public class BspAndroidModuleSystem(override val module: Module) : AndroidModule
     val symbolsFile = roots.firstOrNull { it.name == "R.txt" }
 
     return ExternalLibraryImpl(
-      address = name,
-      manifestFile = manifestFile.toPathString(),
-      resFolder = resFolder?.let { RecursiveResourceFolder(it.toPathString()) },
-      symbolFile = symbolsFile?.toPathString(),
+        address = name,
+        manifestFile = manifestFile.toPathString(),
+        resFolder = resFolder?.let { RecursiveResourceFolder(it.toPathString()) },
+        symbolFile = symbolsFile?.toPathString(),
     )
   }
 
   override fun getResourceModuleDependencies(): List<Module> =
-    AndroidDependenciesCache.getAllAndroidDependencies(module, true).map { it.module }
+      AndroidDependenciesCache.getAllAndroidDependencies(module, true).map { it.module }
 
   override fun getDirectResourceModuleDependents(): List<Module> =
-    ModuleManager.getInstance(module.project).getModuleDependentModules(module)
+      ModuleManager.getInstance(module.project).getModuleDependentModules(module)
 
   override fun canGeneratePngFromVectorGraphics(): CapabilityStatus = CapabilityNotSupported()
 
@@ -90,13 +101,14 @@ public class BspAndroidModuleSystem(override val module: Module) : AndroidModule
 
   // Get the resource package from BSP, fallback to parsing the manifest otherwise.
   override fun getPackageName(): String? =
-    module.moduleEntity?.androidAddendumEntity?.resourceJavaPackage ?: getPackageName(module)
+      module.moduleEntity?.androidAddendumEntity?.resourceJavaPackage ?: getPackageName(module)
 
   override fun getResolveScope(scopeType: ScopeType): GlobalSearchScope =
-    module.getModuleWithDependenciesAndLibrariesScope(false)
+      module.getModuleWithDependenciesAndLibrariesScope(false)
 
   override val usesCompose: Boolean
     get() = true
 
-  override val moduleDependencies: ModuleDependencies get() = StudioModuleDependencies(module)
+  override val moduleDependencies: ModuleDependencies
+    get() = StudioModuleDependencies(module)
 }

@@ -6,41 +6,42 @@ import com.android.tools.sdk.AndroidSdkData
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import kotlin.io.path.toPath
+import org.jetbrains.plugins.bsp.utils.safeCastToURI
 
 public interface AndroidSdkGetterExtension {
   public fun getAndroidSdk(androidSdk: AndroidSdk): Sdk?
 }
 
 private val ep =
-  ExtensionPointName.create<AndroidSdkGetterExtension>(
-    "org.jetbrains.bsp.androidSdkGetterExtension",
-  )
+    ExtensionPointName.create<AndroidSdkGetterExtension>(
+        "org.jetbrains.bsp.androidSdkGetterExtension",
+    )
 
-public fun androidSdkGetterExtension(): AndroidSdkGetterExtension? =
-  ep.extensionList.firstOrNull()
+public fun androidSdkGetterExtension(): AndroidSdkGetterExtension? = ep.extensionList.firstOrNull()
 
-public fun androidSdkGetterExtensionExists(): Boolean =
-  ep.extensionList.isNotEmpty()
+public fun androidSdkGetterExtensionExists(): Boolean = ep.extensionList.isNotEmpty()
 
 public class AndroidSdkGetter : AndroidSdkGetterExtension {
   override fun getAndroidSdk(androidSdk: AndroidSdk): Sdk? {
-    // AndroidSdks will alter the Sdk name by adding (1), (2) and so on if an Sdk with the same name exists already,
+    // AndroidSdks will alter the Sdk name by adding (1), (2) and so on if an Sdk with the same name
+    // exists already,
     // so we can't create the Sdk with the requested name in that case.
     val sdkTable = ProjectJdkTable.getInstance()
     if (sdkTable.allJdks.any { sdk -> sdk.name == androidSdk.name }) {
       return null
     }
 
-    // The android.jar is located at <sdkPath>/platforms/android-<versionNumber>/android.jar, so we go 3 levels up
+    // The android.jar is located at <sdkPath>/platforms/android-<versionNumber>/android.jar, so we
+    // go 3 levels up
     val androidJar = androidSdk.androidJar.safeCastToURI().toPath()
     val sdkPath = androidJar.parent?.parent?.parent ?: return null
     val sdkData = AndroidSdkData.getSdkData(sdkPath.toFile()) ?: return null
 
-    val target = sdkData.targets.firstOrNull { androidTarget ->
-      androidTarget.getPath(IAndroidTarget.ANDROID_JAR) == androidJar
-    } ?: return null
+    val target =
+        sdkData.targets.firstOrNull { androidTarget ->
+          androidTarget.getPath(IAndroidTarget.ANDROID_JAR) == androidJar
+        } ?: return null
 
     return AndroidSdks.getInstance().create(target, sdkPath.toFile(), androidSdk.name, true)
   }

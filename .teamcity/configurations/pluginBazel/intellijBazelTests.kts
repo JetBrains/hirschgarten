@@ -9,7 +9,6 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-
 open class Tests(
     name: String,
     vcsRoot: GitVcsRoot,
@@ -18,52 +17,52 @@ open class Tests(
     failureConditions: FailureConditions.() -> Unit = {},
     artifactRules: String = "",
     requirements: (Requirements.() -> Unit)? = null
-) : BaseConfiguration.BaseBuildType(
-    name = "[tests] Plugin Bazel $name",
-    vcsRoot = vcsRoot,
-    failureConditions = failureConditions,
-    artifactRules = artifactRules,
-    steps = steps,
-    setupSteps = setupSteps,
-    requirements = requirements
-)
+) :
+    BaseConfiguration.BaseBuildType(
+        name = "[tests] Plugin Bazel $name",
+        vcsRoot = vcsRoot,
+        failureConditions = failureConditions,
+        artifactRules = artifactRules,
+        steps = steps,
+        setupSteps = setupSteps,
+        requirements = requirements)
 
-open class UnitTests(
-    vcsRoot: GitVcsRoot
-) : Tests(
-    name = "unit tests",
-    artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-testlogs/** => testlogs.zip",
-    vcsRoot = vcsRoot,
-    steps = {
-        bazel {
+open class UnitTests(vcsRoot: GitVcsRoot) :
+    Tests(
+        name = "unit tests",
+        artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-testlogs/** => testlogs.zip",
+        vcsRoot = vcsRoot,
+        steps = {
+          bazel {
             this.name = "run unit tests"
             id = "run_unit_tests"
             command = "test"
             targets = "//plugin-bazel/..."
             param("toolPath", "/usr/local/bin")
-        }
-    }
-)
+          }
+        })
 
-open class IdeProbe(
-    vcsRoot: GitVcsRoot
-) : Tests(
-    name = "ide-probe",
-    vcsRoot = vcsRoot,
-    setupSteps = true,
-    requirements = {
-        endsWith("cloud.amazon.agent-name-prefix", "-Large")
-        equals("container.engine.osType", "linux")
-    },
-    artifactRules = """
+open class IdeProbe(vcsRoot: GitVcsRoot) :
+    Tests(
+        name = "ide-probe",
+        vcsRoot = vcsRoot,
+        setupSteps = true,
+        requirements = {
+          endsWith("cloud.amazon.agent-name-prefix", "-Large")
+          equals("container.engine.osType", "linux")
+        },
+        artifactRules =
+            """
         +:%system.teamcity.build.checkoutDir%/probe/build/reports => reports.zip
         +:/mnt/agent/temp/buildTmp/ide-probe/screenshots => screenshots.zip
-    """.trimIndent(),
-    steps = {
-        script {
+    """
+                .trimIndent(),
+        steps = {
+          script {
             this.name = "install ide-probe dependencies"
             id = "install_ide_probe_dependencies"
-            scriptContent = """
+            scriptContent =
+                """
                 #!/bin/bash
                 set -euxo pipefail
 
@@ -83,56 +82,50 @@ open class IdeProbe(
                 sudo apt-get install -y pkg-config ||:
                 sudo apt-get install -y x11-apps ||:
                 sudo apt-get install -y imagemagick ||:
-            """.trimIndent()
-        }
+            """
+                    .trimIndent()
+          }
 
-        script {
+          script {
             this.name = "configure ide-probe"
             id = "configure_ide_probe"
-            scriptContent = """
+            scriptContent =
+                """
                 #!/bin/bash
                 set -euxo pipefail
 
                 #turn on virtual display for ide-probe tests
                 sed -i '/driver.vmOptions = \[ "-Dgit.process.ignored=false", "-Xms4g", "-Xmx12g" \]/a \\n  driver.display = "xvfb"\n' ./probe-setup/src/main/resources/ideprobe.conf
-            """.trimIndent()
-        }
+            """
+                    .trimIndent()
+          }
 
-        gradle {
+          gradle {
             this.name = "build plugin"
             id = "build_plugin"
             tasks = "buildPlugin"
             jdkHome = "%env.JDK_17_0%"
-        }
+          }
 
-        gradle {
+          gradle {
             this.name = "run ide-probe tests"
             id = "run_ide_probe_tests"
             tasks = ":probe:test --tests SingleProbeTests"
             gradleParams = "-Dorg.gradle.jvmargs=-Xmx12g"
             jdkHome = "%env.JDK_17_0%"
             jvmArgs = "-Xmx12g"
-        }
-    },
-    failureConditions = {
-        supportTestRetry = true
-        testFailure = true
-        executionTimeoutMin = 180
-    }
-)
+          }
+        },
+        failureConditions = {
+          supportTestRetry = true
+          testFailure = true
+          executionTimeoutMin = 180
+        })
 
-object UnitTestsGitHub : UnitTests(
-    vcsRoot = BaseConfiguration.GitHubVcs
-)
+object UnitTestsGitHub : UnitTests(vcsRoot = BaseConfiguration.GitHubVcs)
 
-object UnitTestsSpace : UnitTests(
-    vcsRoot = BaseConfiguration.SpaceVcs
-)
+object UnitTestsSpace : UnitTests(vcsRoot = BaseConfiguration.SpaceVcs)
 
-object IdeProbeGitHub : IdeProbe(
-    vcsRoot = BaseConfiguration.GitHubVcs
-)
+object IdeProbeGitHub : IdeProbe(vcsRoot = BaseConfiguration.GitHubVcs)
 
-object IdeProbeSpace : IdeProbe(
-    vcsRoot = BaseConfiguration.SpaceVcs
-)
+object IdeProbeSpace : IdeProbe(vcsRoot = BaseConfiguration.SpaceVcs)

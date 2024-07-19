@@ -30,10 +30,10 @@ import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 public const val importSubtaskId: String = "import-subtask-id"
 
 public class BspClient(
-  private val bspSyncConsole: TaskConsole,
-  private val bspBuildConsole: TaskConsole,
-  private val timeoutHandler: TimeoutHandler,
-  private val project: Project,
+    private val bspSyncConsole: TaskConsole,
+    private val bspBuildConsole: TaskConsole,
+    private val timeoutHandler: TimeoutHandler,
+    private val project: Project,
 ) : BuildClient {
   private val log = logger<BspClient>()
   private val gson = Gson()
@@ -48,9 +48,7 @@ public class BspClient(
     val originId = params.originId ?: return // TODO
     val message = params.message ?: return // TODO
 
-    BspTaskEventsService.getInstance(project).withListener(originId) {
-      onShowMessage(message)
-    }
+    BspTaskEventsService.getInstance(project).withListener(originId) { onShowMessage(message) }
   }
 
   override fun onBuildLogMessage(params: LogMessageParams) {
@@ -59,7 +57,8 @@ public class BspClient(
     log.debug("Got log message: $params")
 
     // Legacy task handling
-    if (params.originId == null || !BspTaskEventsService.getInstance(project).existsListener(params.originId)) {
+    if (params.originId == null ||
+        !BspTaskEventsService.getInstance(project).existsListener(params.originId)) {
       addMessageToConsole(params.originId, params.message)
       return
     }
@@ -67,9 +66,7 @@ public class BspClient(
     val originId = params.originId ?: return // TODO
     val message = params.message ?: return // TODO
 
-    BspTaskEventsService.getInstance(project).withListener(originId) {
-      onLogMessage(message)
-    }
+    BspTaskEventsService.getInstance(project).withListener(originId) { onLogMessage(message) }
   }
 
   override fun onBuildTaskStart(params: TaskStartParams) {
@@ -81,21 +78,22 @@ public class BspClient(
     val originId = params.originId ?: return // TODO
     val maybeParent = params.taskId.parents?.firstOrNull()
 
-    val data: Any? = when (params.dataKind) {
-      TaskStartDataKind.TEST_START -> {
-        gson.fromJson(params.data as JsonObject, TestStart::class.java)
-      }
+    val data: Any? =
+        when (params.dataKind) {
+          TaskStartDataKind.TEST_START -> {
+            gson.fromJson(params.data as JsonObject, TestStart::class.java)
+          }
 
-      TaskStartDataKind.TEST_TASK -> {
-        gson.fromJson(params.data as JsonObject, TestTask::class.java)
-      }
+          TaskStartDataKind.TEST_TASK -> {
+            gson.fromJson(params.data as JsonObject, TestTask::class.java)
+          }
 
-      TaskStartDataKind.COMPILE_TASK -> {
-        gson.fromJson(params.data as JsonObject, CompileTask::class.java)
-      }
+          TaskStartDataKind.COMPILE_TASK -> {
+            gson.fromJson(params.data as JsonObject, CompileTask::class.java)
+          }
 
-      else -> null
-    }
+          else -> null
+        }
 
     BspTaskEventsService.getInstance(project).withListener(originId) {
       onTaskStart(taskId, maybeParent, params.message ?: taskId, data)
@@ -121,21 +119,22 @@ public class BspClient(
     log.debug("Got task finish: $params")
     val originId = params.originId ?: return // TODO
 
-    val data: Any? = when (params.dataKind) {
-      TaskFinishDataKind.TEST_FINISH -> {
-        gson.fromJson(params.data as JsonObject, TestFinish::class.java)
-      }
+    val data: Any? =
+        when (params.dataKind) {
+          TaskFinishDataKind.TEST_FINISH -> {
+            gson.fromJson(params.data as JsonObject, TestFinish::class.java)
+          }
 
-      TaskFinishDataKind.TEST_REPORT -> {
-        gson.fromJson(params.data as JsonObject, TestReport::class.java)
-      }
+          TaskFinishDataKind.TEST_REPORT -> {
+            gson.fromJson(params.data as JsonObject, TestReport::class.java)
+          }
 
-      TaskFinishDataKind.COMPILE_REPORT -> {
-        gson.fromJson(params.data as JsonObject, CompileReport::class.java)
-      }
+          TaskFinishDataKind.COMPILE_REPORT -> {
+            gson.fromJson(params.data as JsonObject, CompileReport::class.java)
+          }
 
-      else -> null
-    }
+          else -> null
+        }
 
     val status = params.status
 
@@ -172,7 +171,8 @@ public class BspClient(
     onBuildEvent()
 
     // Legacy task handling
-    if (params.originId == null || !BspTaskEventsService.getInstance(project).existsListener(params.originId)) {
+    if (params.originId == null ||
+        !BspTaskEventsService.getInstance(project).existsListener(params.originId)) {
       log.debug("Got diagnostics without listener: $params")
       addDiagnosticToConsole(params)
       return
@@ -185,13 +185,12 @@ public class BspClient(
     BspTaskEventsService.getInstance(project).withListener(originId) {
       params.diagnostics.forEach {
         onDiagnostic(
-          textDocument,
-          buildTarget,
-          it.range.start.line,
-          it.range.start.character,
-          getMessageEventKind(it.severity),
-          it.message
-        )
+            textDocument,
+            buildTarget,
+            it.range.start.line,
+            it.range.start.character,
+            getMessageEventKind(it.severity),
+            it.message)
       }
     }
   }
@@ -215,28 +214,30 @@ public class BspClient(
 
   private fun addDiagnosticToConsole(params: PublishDiagnosticsParams) {
     if (params.originId != null && params.textDocument != null) {
-      val targetConsole = if (params.originId?.startsWith("build") == true) bspBuildConsole else bspSyncConsole
+      val targetConsole =
+          if (params.originId?.startsWith("build") == true) bspBuildConsole else bspSyncConsole
       params.diagnostics.forEach {
         targetConsole.addDiagnosticMessage(
-          params.originId,
-          params.textDocument.uri,
-          it.range.start.line,
-          it.range.start.character,
-          it.message,
-          getMessageEventKind(it.severity),
+            params.originId,
+            params.textDocument.uri,
+            it.range.start.line,
+            it.range.start.character,
+            it.message,
+            getMessageEventKind(it.severity),
         )
         logDiagnosticBySeverity(it.severity, it.message)
       }
     }
   }
 
-  private fun getMessageEventKind(severity: DiagnosticSeverity?): MessageEvent.Kind = when (severity) {
-    DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
-    DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
-    DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
-    DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
-    null -> MessageEvent.Kind.SIMPLE
-  }
+  private fun getMessageEventKind(severity: DiagnosticSeverity?): MessageEvent.Kind =
+      when (severity) {
+        DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
+        DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
+        DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
+        DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
+        null -> MessageEvent.Kind.SIMPLE
+      }
 
   private fun logDiagnosticBySeverity(severity: DiagnosticSeverity?, message: String) {
     when (severity) {

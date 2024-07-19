@@ -1,11 +1,11 @@
 package org.jetbrains.bsp.bazel.server.bep
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import java.time.Duration
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.jetbrains.bsp.bazel.commons.Format
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
-import java.time.Duration
 
 class BepLogger(private val bspClientLogger: BspClientLogger) {
   fun onProgress(progress: BuildEventStreamProtos.Progress) {
@@ -24,17 +24,17 @@ class BepLogger(private val bspClientLogger: BspClientLogger) {
 
   private fun logMessage(output: String) {
     bspClientLogger.message(output)
-    val filteredOutput = output.split('\n')
-      .dropLastWhile { it.isEmpty() }
-      .filter { !it.startsWith(ADDITIONAL_MESSAGE_PREFIX) }
-      .joinToString("\n")
+    val filteredOutput =
+        output
+            .split('\n')
+            .dropLastWhile { it.isEmpty() }
+            .filter { !it.startsWith(ADDITIONAL_MESSAGE_PREFIX) }
+            .joinToString("\n")
     LOGGER.info(filteredOutput)
   }
 
   companion object {
-    private val LOGGER: Logger = LogManager.getLogger(
-      BspClientLogger::class.java
-    )
+    private val LOGGER: Logger = LogManager.getLogger(BspClientLogger::class.java)
 
     private const val ADDITIONAL_MESSAGE_PREFIX = "    "
   }

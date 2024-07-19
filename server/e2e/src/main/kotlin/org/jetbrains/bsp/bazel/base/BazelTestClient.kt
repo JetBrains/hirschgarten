@@ -1,11 +1,11 @@
 package org.jetbrains.bsp.bazel.base
 
 import ch.epfl.scala.bsp4j.SourcesParams
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.testkit.client.BasicTestClient
 import org.jetbrains.bsp.testkit.client.MockClient
-import kotlin.time.Duration.Companion.minutes
 
 typealias BazelTestClient = BasicTestClient<JoinedBuildServer, MockClient>
 

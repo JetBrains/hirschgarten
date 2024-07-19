@@ -10,4 +10,7 @@ data class Diagnostic(
 
 data class Position(val line: Int, val character: Int)
 
-enum class Level { Error, Warning }
+enum class Level {
+  Error,
+  Warning
+}

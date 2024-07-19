@@ -11,7 +11,7 @@ class JdkVersionResolver {
       versions.computeIfAbsent(path.toRealPath()) { resolveJavaVersion(it) }
 
   private fun resolveJavaVersion(path: Path): Int? =
-    readFromReleaseFile(path) ?: readByRunningJavaBinary(path)
+      readFromReleaseFile(path) ?: readByRunningJavaBinary(path)
 
   private fun readFromReleaseFile(path: Path): Int? {
     val releasePath = path.resolve("release")
@@ -25,14 +25,11 @@ class JdkVersionResolver {
     val javaPath = path.resolve("bin/java")
     if (Files.notExists(javaPath)) return null
 
-    return firstLineOfJavaVersionOutput(javaPath)
-        ?.let { parseVersion(it, quotedVersionPattern) }
+    return firstLineOfJavaVersionOutput(javaPath)?.let { parseVersion(it, quotedVersionPattern) }
   }
 
   private fun firstLineOfJavaVersionOutput(javaPath: Path): String? {
-    val process = ProcessBuilder(javaPath.toString(), "-version")
-        .redirectErrorStream(true)
-        .start()
+    val process = ProcessBuilder(javaPath.toString(), "-version").redirectErrorStream(true).start()
     val result = process.waitFor()
 
     return if (result == 0) readLines(process).firstOrNull() else null

@@ -32,11 +32,10 @@ public class BspProjectViewNodeDecorator(private val project: Project) : Project
     }
   }
 
-  private fun PsiDirectoryNode.isRootModule(): Boolean =
-    project.rootDir == virtualFile
+  private fun PsiDirectoryNode.isRootModule(): Boolean = project.rootDir == virtualFile
 
   private fun PsiDirectoryNode.isBspModule(): Boolean =
-    virtualFile?.let { project.temporaryTargetUtils.isBaseDir(it) } == true
+      virtualFile?.let { project.temporaryTargetUtils.isBaseDir(it) } == true
 
   private fun PresentationData.addIconAndHighlight(text: String?) {
     setIcon(project.assets.icon)
@@ -49,8 +48,7 @@ public class BspProjectViewNodeDecorator(private val project: Project) : Project
     }
   }
 
-  private fun PresentationData.isJavaHackNode() =
-    locationString == "sources root"
+  private fun PresentationData.isJavaHackNode() = locationString == "sources root"
 
   private fun PresentationData.clearPresentation() {
     clearText()

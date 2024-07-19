@@ -3,30 +3,18 @@ plugins {
   id("org.jetbrains.intellij.platform.module")
 }
 
-tasks {
-  test {
-    classpath -= classpath.filter { it.name.contains("kotlin-compiler-embeddable") }
-  }
-}
+tasks { test { classpath -= classpath.filter { it.name.contains("kotlin-compiler-embeddable") } } }
 
 dependencies {
   intellijPlatform {
     intellijIdeaCommunity(Platform.version)
 
     plugins(Platform.plugins)
-//    bundledPlugins(Platform.bundledPlugins)
+    //    bundledPlugins(Platform.bundledPlugins)
     instrumentationTools()
   }
 }
 
-repositories {
-  intellijPlatform {
-    defaultRepositories()
-  }
-}
+repositories { intellijPlatform { defaultRepositories() } }
 
-kotlin {
-  sourceSets.main {
-    kotlin.srcDirs("src/main/kotlin", "src/main/gen")
-  }
-}
+kotlin { sourceSets.main { kotlin.srcDirs("src/main/kotlin", "src/main/gen") } }

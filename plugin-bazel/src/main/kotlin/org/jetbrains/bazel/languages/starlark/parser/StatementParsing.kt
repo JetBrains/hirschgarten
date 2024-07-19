@@ -26,8 +26,10 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
   fun parseSimpleStatement() {
     val firstToken = builder.tokenType ?: return
     when (firstToken) {
-      StarlarkTokenTypes.BREAK_KEYWORD -> parseKeywordStatement(StarlarkElementTypes.BREAK_STATEMENT)
-      StarlarkTokenTypes.CONTINUE_KEYWORD -> parseKeywordStatement(StarlarkElementTypes.CONTINUE_STATEMENT)
+      StarlarkTokenTypes.BREAK_KEYWORD ->
+          parseKeywordStatement(StarlarkElementTypes.BREAK_STATEMENT)
+      StarlarkTokenTypes.CONTINUE_KEYWORD ->
+          parseKeywordStatement(StarlarkElementTypes.CONTINUE_STATEMENT)
       StarlarkTokenTypes.PASS_KEYWORD -> parseKeywordStatement(StarlarkElementTypes.PASS_STATEMENT)
       StarlarkTokenTypes.RETURN_KEYWORD -> parseReturnStatement()
       StarlarkTokenTypes.LOAD_KEYWORD -> parseLoadStatement()
@@ -41,7 +43,8 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
     } else if (firstToken === StarlarkTokenTypes.INDENT) {
       builder.error(StarlarkBundle.message("parser.unexpected.indent"))
     } else {
-      builder.error(StarlarkBundle.message("parser.statement.expected.found.0", firstToken.toString()))
+      builder.error(
+          StarlarkBundle.message("parser.statement.expected.found.0", firstToken.toString()))
     }
   }
 
@@ -75,7 +78,8 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
     assertCurrentToken(StarlarkTokenTypes.RETURN_KEYWORD)
     val returnStatement = builder.mark()
     builder.advanceLexer()
-    if (builder.tokenType != null && !StarlarkTokenSets.ENDS_OF_STATEMENT.contains(builder.tokenType)) {
+    if (builder.tokenType != null &&
+        !StarlarkTokenSets.ENDS_OF_STATEMENT.contains(builder.tokenType)) {
       context.expressionParser.parseExpression()
     }
     checkEndOfStatement()
@@ -115,10 +119,10 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
     val marker = builder.mark()
     while (!atAnyOfTokens(
         listOf(
-          null, StarlarkTokenTypes.DEDENT, StarlarkTokenTypes.STATEMENT_BREAK, StarlarkTokenTypes.COLON
-        )
-      )
-    ) {
+            null,
+            StarlarkTokenTypes.DEDENT,
+            StarlarkTokenTypes.STATEMENT_BREAK,
+            StarlarkTokenTypes.COLON))) {
       builder.advanceLexer()
     }
     val result = matchToken(StarlarkTokenTypes.COLON)
@@ -234,11 +238,12 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
     loadValueList.done(StarlarkElementTypes.LOAD_VALUE_LIST)
   }
 
-  private fun parseLoadValue() = if (atToken(StarlarkTokenTypes.STRING)) {
-    buildTokenElement(StarlarkElementTypes.STRING_LITERAL_EXPRESSION, builder)
-  } else {
-    advanceError(builder, StarlarkBundle.message("parser.expected.string"))
-  }
+  private fun parseLoadValue() =
+      if (atToken(StarlarkTokenTypes.STRING)) {
+        buildTokenElement(StarlarkElementTypes.STRING_LITERAL_EXPRESSION, builder)
+      } else {
+        advanceError(builder, StarlarkBundle.message("parser.expected.string"))
+      }
 
   private fun parseExpressionStatement(firstToken: IElementType) {
     var exprStatement = builder.mark()

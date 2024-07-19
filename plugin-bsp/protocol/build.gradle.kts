@@ -4,21 +4,15 @@ plugins {
 }
 
 dependencies {
-  implementation(libs.bsp4j) {
-    exclude(group = "com.google.guava", "guava")
-  }
+  implementation(libs.bsp4j) { exclude(group = "com.google.guava", "guava") }
 
   intellijPlatform {
-//    intellijIdeaCommunity(Platform.version)
+    //    intellijIdeaCommunity(Platform.version)
 
     plugins(Platform.plugins)
-//    bundledPlugins(Platform.bundledPlugins)
+    //    bundledPlugins(Platform.bundledPlugins)
     instrumentationTools()
   }
 }
 
-repositories {
-  intellijPlatform {
-    defaultRepositories()
-  }
-}
+repositories { intellijPlatform { defaultRepositories() } }

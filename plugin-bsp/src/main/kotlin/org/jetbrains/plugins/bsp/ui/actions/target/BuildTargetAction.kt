@@ -11,11 +11,12 @@ import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 
 public class BuildTargetAction(
-  private val targetId: BuildTargetIdentifier,
-) : SuspendableAction(
-  text = { BspPluginBundle.message("widget.build.target.popup.message") },
-  icon = AllIcons.Toolwindows.ToolWindowBuild,
-) {
+    private val targetId: BuildTargetIdentifier,
+) :
+    SuspendableAction(
+        text = { BspPluginBundle.message("widget.build.target.popup.message") },
+        icon = AllIcons.Toolwindows.ToolWindowBuild,
+    ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     buildTarget(project, targetId)
   }

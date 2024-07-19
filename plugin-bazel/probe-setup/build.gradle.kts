@@ -19,10 +19,10 @@ repositories {
 tasks.processResources {
   filesMatching("*.conf") {
     expand(
-      ("plugin_version" to Plugin.version),
-      ("platform_version" to Platform.version),
-      ("scala_plugin_version" to scalaPluginVersion),
-      ("bsp_id") to findLatestCompatibleBspPluginVersion(),
+        ("plugin_version" to Plugin.version),
+        ("platform_version" to Platform.version),
+        ("scala_plugin_version" to scalaPluginVersion),
+        ("bsp_id") to findLatestCompatibleBspPluginVersion(),
     )
   }
 }
@@ -31,13 +31,13 @@ fun findLatestCompatibleBspPluginVersion(): String {
   val pluginId = "org.jetbrains.bsp"
   val buildVersion = "${Platform.type}-${Platform.version}"
   return findPluginRepositoryId(pluginId, buildVersion, "nightly")
-    ?: error("Couldn't find compatible BSP plugin version")
+      ?: error("Couldn't find compatible BSP plugin version")
 }
 
-
 fun findPluginRepositoryId(id: String, buildVersion: String, channel: String): String? =
-  PluginRepositoryFactory.create()
-    .pluginManager
-    .searchCompatibleUpdates(listOf(id), buildVersion, channel)
-    .firstOrNull()
-    ?.id?.toString()
+    PluginRepositoryFactory.create()
+        .pluginManager
+        .searchCompatibleUpdates(listOf(id), buildVersion, channel)
+        .firstOrNull()
+        ?.id
+        ?.toString()

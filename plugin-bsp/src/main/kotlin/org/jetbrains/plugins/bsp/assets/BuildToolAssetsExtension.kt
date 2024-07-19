@@ -2,10 +2,10 @@ package org.jetbrains.plugins.bsp.assets
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import javax.swing.Icon
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.WithBuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
-import javax.swing.Icon
 
 public interface BuildToolAssetsExtension : WithBuildToolId {
   public val presentableName: String
@@ -18,7 +18,8 @@ public interface BuildToolAssetsExtension : WithBuildToolId {
 
   public companion object {
     internal val ep =
-      ExtensionPointName.create<BuildToolAssetsExtension>("org.jetbrains.bsp.buildToolAssetsExtension")
+        ExtensionPointName.create<BuildToolAssetsExtension>(
+            "org.jetbrains.bsp.buildToolAssetsExtension")
   }
 }
 

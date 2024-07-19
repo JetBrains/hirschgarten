@@ -19,9 +19,9 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
+import java.nio.file.Path
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
-import java.nio.file.Path
 
 private val JAVA_ROOT_TYPE = SourceRootTypeId("java-source")
 private const val JAVA_SDK_NAME = "11"
@@ -37,7 +37,8 @@ public open class WorkspaceModelBaseTest {
 
   @BeforeEach
   protected open fun beforeEach() {
-    workspaceEntityStorageBuilder = (workspaceModel as WorkspaceModelImpl).getBuilderSnapshot().builder
+    workspaceEntityStorageBuilder =
+        (workspaceModel as WorkspaceModelImpl).getBuilderSnapshot().builder
   }
 
   protected val project: Project
@@ -60,25 +61,29 @@ public open class WorkspaceModelBaseTest {
   }
 
   protected fun <E : WorkspaceEntity> loadedEntries(entityClass: Class<E>): List<E> =
-    workspaceEntityStorageBuilder.entities(entityClass).toList()
+      workspaceEntityStorageBuilder.entities(entityClass).toList()
 
   protected fun updateWorkspaceModel(updater: (MutableEntityStorage) -> Unit) {
     WriteAction.compute<Unit, Throwable> { workspaceModel.updateProjectModel { updater(it) } }
   }
 
-  public fun addEmptyJavaModuleEntity(name: String, entityStorage: MutableEntityStorage): ModuleEntity =
-    entityStorage.addEntity(
-      ModuleEntity(
-        name = name,
-        dependencies = listOf(
-          SdkDependency(SdkId(JAVA_SDK_NAME, JAVA_SDK_TYPE)),
-          ModuleSourceDependency,
-        ),
-        entitySource = object : EntitySource {},
-      ) {
-        this.type = ModuleTypeId(StdModuleTypes.JAVA.id)
-      },
-    )
+  public fun addEmptyJavaModuleEntity(
+      name: String,
+      entityStorage: MutableEntityStorage
+  ): ModuleEntity =
+      entityStorage.addEntity(
+          ModuleEntity(
+              name = name,
+              dependencies =
+                  listOf(
+                      SdkDependency(SdkId(JAVA_SDK_NAME, JAVA_SDK_TYPE)),
+                      ModuleSourceDependency,
+                  ),
+              entitySource = object : EntitySource {},
+          ) {
+            this.type = ModuleTypeId(StdModuleTypes.JAVA.id)
+          },
+      )
 }
 
 public abstract class WorkspaceModelWithParentModuleBaseTest : WorkspaceModelBaseTest() {
@@ -99,21 +104,23 @@ public abstract class WorkspaceModelWithParentModuleBaseTest : WorkspaceModelBas
   }
 
   private fun addParentModuleEntity(builder: MutableEntityStorage): ModuleEntity =
-    builder.addEntity(
-      ModuleEntity(
-        name = parentModuleName,
-        dependencies = emptyList(),
-        entitySource = object : EntitySource {},
-      ) {
-        this.type = parentModuleType
-      },
-    )
+      builder.addEntity(
+          ModuleEntity(
+              name = parentModuleName,
+              dependencies = emptyList(),
+              entitySource = object : EntitySource {},
+          ) {
+            this.type = parentModuleType
+          },
+      )
 }
 
-public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
+public abstract class WorkspaceModelWithParentJavaModuleBaseTest :
+    WorkspaceModelWithParentModuleBaseTest() {
   override val parentModuleType = ModuleTypeId("JAVA_MODULE")
 }
 
-public abstract class WorkspaceModelWithParentPythonModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
+public abstract class WorkspaceModelWithParentPythonModuleBaseTest :
+    WorkspaceModelWithParentModuleBaseTest() {
   override val parentModuleType = ModuleTypeId("PYTHON_MODULE")
 }

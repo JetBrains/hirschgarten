@@ -25,5 +25,4 @@ class StarlarkParser : PsiParser {
     rootMarker.done(root)
     return builder.treeBuilt
   }
-
 }

@@ -5,7 +5,8 @@ import com.intellij.execution.process.ProcessOutputType
 import java.io.OutputStream
 import java.util.concurrent.CompletableFuture
 
-public class BspProcessHandler<T>(private val requestFuture: CompletableFuture<T>) : ProcessHandler() {
+public class BspProcessHandler<T>(private val requestFuture: CompletableFuture<T>) :
+    ProcessHandler() {
   override fun startNotify() {
     super.startNotify()
     requestFuture.handle { _, error ->

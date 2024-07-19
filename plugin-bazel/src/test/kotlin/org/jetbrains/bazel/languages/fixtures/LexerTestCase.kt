@@ -28,9 +28,7 @@ abstract class LexerTestCase : PlatformLiteFixture() {
         fail("Too many tokens. Following tokens: $remainingTokens")
       }
 
-      withClue("Token offset mismatch at position $idx") {
-        tokenPos shouldBeEqual lexer.tokenStart
-      }
+      withClue("Token offset mismatch at position $idx") { tokenPos shouldBeEqual lexer.tokenStart }
       withClue("Token mismatch at position $idx") {
         expectedTokens[idx] shouldBeEqual lexer.tokenType.toString()
       }

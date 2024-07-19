@@ -8,5 +8,5 @@ class StarlarkStatementList(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitStatementListImpl(this)
 
   fun getAssignments(): List<StarlarkAssignmentStatement> =
-    findChildrenByClass(StarlarkAssignmentStatement::class.java).toList()
+      findChildrenByClass(StarlarkAssignmentStatement::class.java).toList()
 }

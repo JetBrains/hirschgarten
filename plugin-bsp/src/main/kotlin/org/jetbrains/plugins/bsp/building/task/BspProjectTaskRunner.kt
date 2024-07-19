@@ -25,21 +25,20 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   private val log = logger<BspProjectTaskRunner>()
 
   override fun canRun(project: Project, projectTask: ProjectTask): Boolean =
-    project.isBspProject &&
-      project.isTrusted() &&
-      canRun(projectTask)
+      project.isBspProject && project.isTrusted() && canRun(projectTask)
 
-  override fun canRun(projectTask: ProjectTask): Boolean = when (projectTask) {
-    is JpsOnlyModuleBuildTask -> false
-    is BspOnlyModuleBuildTask -> true
-    is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationAsDefaultEnabled
-    else -> false
-  }
+  override fun canRun(projectTask: ProjectTask): Boolean =
+      when (projectTask) {
+        is JpsOnlyModuleBuildTask -> false
+        is BspOnlyModuleBuildTask -> true
+        is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationAsDefaultEnabled
+        else -> false
+      }
 
   override fun run(
-    project: Project,
-    projectTaskContext: ProjectTaskContext,
-    vararg tasks: ProjectTask,
+      project: Project,
+      projectTaskContext: ProjectTaskContext,
+      vararg tasks: ProjectTask,
   ): Promise<Result> {
     val result = AsyncPromise<Result>()
 
@@ -50,35 +49,41 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   }
 
   private fun runModuleBuildTasks(
-    project: Project,
-    tasks: List<ModuleBuildTask>,
+      project: Project,
+      tasks: List<ModuleBuildTask>,
   ): Promise<Result> {
     val targetsToBuild = obtainTargetsToBuild(project, tasks)
     return buildBspTargets(project, targetsToBuild)
   }
 
-  private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTargetInfo> {
+  private fun obtainTargetsToBuild(
+      project: Project,
+      tasks: List<ModuleBuildTask>
+  ): List<BuildTargetInfo> {
     val temporaryTargetUtils = project.temporaryTargetUtils
-    return tasks.map { it.module.name }
-      .mapNotNull { temporaryTargetUtils.getTargetIdForModuleId(it) }
-      .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
+    return tasks
+        .map { it.module.name }
+        .mapNotNull { temporaryTargetUtils.getTargetIdForModuleId(it) }
+        .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTargetInfo>): Promise<Result> {
+  private fun buildBspTargets(
+      project: Project,
+      targetsToBuild: List<BuildTargetInfo>
+  ): Promise<Result> {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
-    val result = BspCoroutineService.getInstance(project).startAsync {
-      runBuildTargetTask(targetIdentifiers, project, log)
-    }
-    return result
-      .toPromise()
-      .then { it?.toTaskRunnerResult() ?: TaskRunnerResults.FAILURE }
+    val result =
+        BspCoroutineService.getInstance(project).startAsync {
+          runBuildTargetTask(targetIdentifiers, project, log)
+        }
+    return result.toPromise().then { it?.toTaskRunnerResult() ?: TaskRunnerResults.FAILURE }
   }
 
   private fun CompileResult.toTaskRunnerResult() =
-    when (statusCode) {
-      StatusCode.OK -> TaskRunnerResults.SUCCESS
-      StatusCode.CANCELLED -> TaskRunnerResults.ABORTED
-      else -> TaskRunnerResults.FAILURE
-    }
+      when (statusCode) {
+        StatusCode.OK -> TaskRunnerResults.SUCCESS
+        StatusCode.CANCELLED -> TaskRunnerResults.ABORTED
+        else -> TaskRunnerResults.FAILURE
+      }
 }

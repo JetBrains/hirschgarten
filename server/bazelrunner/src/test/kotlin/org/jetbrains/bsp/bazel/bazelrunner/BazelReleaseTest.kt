@@ -2,13 +2,13 @@ package org.jetbrains.bsp.bazel.bazelrunner
 
 import com.google.common.base.Charsets
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
-import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
+import org.junit.jupiter.api.Test
 
 class BazelReleaseTest {
 
@@ -70,7 +70,7 @@ class BazelReleaseTest {
     release?.major shouldBe 6
   }
 
-  private fun copyBazelVersionToTmp() : Path {
+  private fun copyBazelVersionToTmp(): Path {
     val inputStream = BazelReleaseTest::class.java.getResourceAsStream("/.bazelversion")
     val content = inputStream?.bufferedReader(Charsets.UTF_8)?.readText()
     val tempDir = createTempDirectory("workspace").createDirectories()

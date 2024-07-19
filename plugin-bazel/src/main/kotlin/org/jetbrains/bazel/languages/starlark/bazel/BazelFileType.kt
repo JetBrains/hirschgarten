@@ -7,12 +7,13 @@ enum class BazelFileType {
   WORKSPACE;
 
   companion object {
-    val ofFileName = mapOf(
-      "BUILD.bazel" to BUILD,
-      "BUILD" to BUILD,
-      "MODULE.bazel" to MODULE,
-      "WORKSPACE.bazel" to WORKSPACE,
-      "WORKSPACE" to WORKSPACE,
-    )
+    val ofFileName =
+        mapOf(
+            "BUILD.bazel" to BUILD,
+            "BUILD" to BUILD,
+            "MODULE.bazel" to MODULE,
+            "WORKSPACE.bazel" to WORKSPACE,
+            "WORKSPACE" to WORKSPACE,
+        )
   }
 }

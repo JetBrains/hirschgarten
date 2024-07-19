@@ -13,7 +13,7 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
   public val includedRoots: List<VirtualFileUrl>
   public val excludedRoots: List<VirtualFileUrl>
 
-  //region generated code
+  // region generated code
   @GeneratedCodeApiVersion(3)
   public interface Builder : WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
     override var entitySource: EntitySource
@@ -27,11 +27,11 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
     @JvmStatic
     @JvmName("create")
     public operator fun invoke(
-      projectRoot: VirtualFileUrl,
-      includedRoots: List<VirtualFileUrl>,
-      excludedRoots: List<VirtualFileUrl>,
-      entitySource: EntitySource,
-      init: (Builder.() -> Unit)? = null,
+        projectRoot: VirtualFileUrl,
+        includedRoots: List<VirtualFileUrl>,
+        excludedRoots: List<VirtualFileUrl>,
+        entitySource: EntitySource,
+        init: (Builder.() -> Unit)? = null,
     ): Builder {
       val builder = builder()
       builder.projectRoot = projectRoot
@@ -42,14 +42,14 @@ public interface BspProjectDirectoriesEntity : WorkspaceEntity {
       return builder
     }
   }
-//endregion
+  // endregion
 }
 
-//region generated code
+// region generated code
 public fun MutableEntityStorage.modifyBspProjectDirectoriesEntity(
-  entity: BspProjectDirectoriesEntity,
-  modification: BspProjectDirectoriesEntity.Builder.() -> Unit,
+    entity: BspProjectDirectoriesEntity,
+    modification: BspProjectDirectoriesEntity.Builder.() -> Unit,
 ): BspProjectDirectoriesEntity {
   return modifyEntity(BspProjectDirectoriesEntity.Builder::class.java, entity, modification)
 }
-//endregion
+// endregion

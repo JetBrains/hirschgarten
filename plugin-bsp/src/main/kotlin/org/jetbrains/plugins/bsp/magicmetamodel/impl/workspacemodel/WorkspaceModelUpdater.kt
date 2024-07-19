@@ -12,41 +12,42 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import java.nio.file.Path
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
-import java.nio.file.Path
 
 public data class ModuleDetails(
-  val target: BuildTarget,
-  val sources: List<SourcesItem>,
-  val resources: List<ResourcesItem>,
-  val dependenciesSources: List<DependencySourcesItem>,
-  val javacOptions: JavacOptionsItem?,
-  val scalacOptions: ScalacOptionsItem?,
-  val pythonOptions: PythonOptionsItem?,
-  val outputPathUris: List<String>,
-  val libraryDependencies: List<BuildTargetIdentifier>?,
-  val moduleDependencies: List<BuildTargetIdentifier>,
-  val defaultJdkName: String?,
-  val jvmBinaryJars: List<JvmBinaryJarsItem>,
+    val target: BuildTarget,
+    val sources: List<SourcesItem>,
+    val resources: List<ResourcesItem>,
+    val dependenciesSources: List<DependencySourcesItem>,
+    val javacOptions: JavacOptionsItem?,
+    val scalacOptions: ScalacOptionsItem?,
+    val pythonOptions: PythonOptionsItem?,
+    val outputPathUris: List<String>,
+    val libraryDependencies: List<BuildTargetIdentifier>?,
+    val moduleDependencies: List<BuildTargetIdentifier>,
+    val defaultJdkName: String?,
+    val jvmBinaryJars: List<JvmBinaryJarsItem>,
 )
 
 internal data class ModuleName(
-  val name: String,
+    val name: String,
 )
 
 internal interface WorkspaceModelUpdater {
-  fun loadModules(moduleEntities: List<Module>) =
-    moduleEntities.forEach { loadModule(it) }
+  fun loadModules(moduleEntities: List<Module>) = moduleEntities.forEach { loadModule(it) }
 
   fun loadModule(module: Module)
 
   fun loadLibraries(libraries: List<Library>)
 
-  fun loadDirectories(includedDirectories: List<VirtualFileUrl>, excludedDirectories: List<VirtualFileUrl>)
+  fun loadDirectories(
+      includedDirectories: List<VirtualFileUrl>,
+      excludedDirectories: List<VirtualFileUrl>
+  )
 
-  fun removeModules(modules: List<ModuleName>) =
-    modules.forEach { removeModule(it) }
+  fun removeModules(modules: List<ModuleName>) = modules.forEach { removeModule(it) }
 
   fun removeModule(module: ModuleName)
 
@@ -54,20 +55,20 @@ internal interface WorkspaceModelUpdater {
 
   companion object {
     fun create(
-      workspaceEntityStorageBuilder: MutableEntityStorage,
-      virtualFileUrlManager: VirtualFileUrlManager,
-      projectBasePath: Path,
-      project: Project,
-      isPythonSupportEnabled: Boolean = false,
-      isAndroidSupportEnabled: Boolean = false,
+        workspaceEntityStorageBuilder: MutableEntityStorage,
+        virtualFileUrlManager: VirtualFileUrlManager,
+        projectBasePath: Path,
+        project: Project,
+        isPythonSupportEnabled: Boolean = false,
+        isAndroidSupportEnabled: Boolean = false,
     ): WorkspaceModelUpdater =
-      WorkspaceModelUpdaterImpl(
-        workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
-        virtualFileUrlManager = virtualFileUrlManager,
-        projectBasePath = projectBasePath,
-        project = project,
-        isPythonSupportEnabled = isPythonSupportEnabled,
-        isAndroidSupportEnabled = isAndroidSupportEnabled,
-      )
+        WorkspaceModelUpdaterImpl(
+            workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
+            virtualFileUrlManager = virtualFileUrlManager,
+            projectBasePath = projectBasePath,
+            project = project,
+            isPythonSupportEnabled = isPythonSupportEnabled,
+            isAndroidSupportEnabled = isAndroidSupportEnabled,
+        )
   }
 }

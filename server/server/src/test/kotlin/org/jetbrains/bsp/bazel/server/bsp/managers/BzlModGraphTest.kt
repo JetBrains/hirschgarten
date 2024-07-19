@@ -25,7 +25,8 @@ class BzlModGraphTest {
   @Test
   fun `should return only direct dependencies from a valid BzlMod json`() {
     // given
-    val s = """
+    val s =
+        """
         {
           "key": "test",
           "dependencies": [
@@ -56,13 +57,15 @@ class BzlModGraphTest {
             }
           ]
         }
-      """.trimIndent()
+      """
+            .trimIndent()
 
     // when
     val parsedJson = s.toJson() as? JsonObject
     val parsedBzlModGraph = gson.fromJson(parsedJson, BzlmodGraph::class.java)
 
     // then
-    parsedBzlModGraph.getAllDirectRuleDependencies() shouldContainExactlyInAnyOrder listOf("rules_java", "rules_jvm_external")
+    parsedBzlModGraph.getAllDirectRuleDependencies() shouldContainExactlyInAnyOrder
+        listOf("rules_java", "rules_jvm_external")
   }
 }

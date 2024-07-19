@@ -13,15 +13,16 @@ class StarlarkParamsCompletionContributor : CompletionContributor() {
   }
 }
 
-private class StarlarkParamsCompletionProvider(val lookupString: String) : CompletionProvider<CompletionParameters>() {
+private class StarlarkParamsCompletionProvider(val lookupString: String) :
+    CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
-    parameters: CompletionParameters,
-    context: ProcessingContext,
-    result: CompletionResultSet
+      parameters: CompletionParameters,
+      context: ProcessingContext,
+      result: CompletionResultSet
   ) {
     result.addElement(LookupElementBuilder.create(lookupString))
   }
 }
 
 private fun paramElement(token: String) =
-  psiElement().inside(StarlarkParameterList::class.java).afterLeaf(token)
+    psiElement().inside(StarlarkParameterList::class.java).afterLeaf(token)

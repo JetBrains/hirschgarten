@@ -21,9 +21,9 @@ import com.intellij.xdebugger.XDebugProcessStarter
 import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.impl.XDebugSessionImpl
+import java.util.concurrent.atomic.AtomicReference
 import org.jdom.Element
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
-import java.util.concurrent.atomic.AtomicReference
 
 public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
   override fun getRunnerId(): String = "BspJvmDebugRunner"
@@ -35,7 +35,10 @@ public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
     return profile.runHandler is JvmBspRunHandler
   }
 
-  override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
+  override fun doExecute(
+      state: RunProfileState,
+      environment: ExecutionEnvironment
+  ): RunContentDescriptor {
     // cast should always succeed, because canRun(...) checks for it
     val debugState = state as JvmBspRunHandler.JvmDebugHandlerState
     val connection = debugState.remoteConnection
@@ -43,9 +46,9 @@ public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
   }
 
   private fun attachVM(
-    state: RunProfileState,
-    executionEnvironment: ExecutionEnvironment,
-    connection: RemoteConnection,
+      state: RunProfileState,
+      executionEnvironment: ExecutionEnvironment,
+      connection: RemoteConnection,
   ): RunContentDescriptor {
     val ex = AtomicReference<ExecutionException>()
     val result = AtomicReference<RunContentDescriptor>()
@@ -53,15 +56,13 @@ public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
     ApplicationManager.getApplication().invokeAndWait {
       val debugEnvironment = DefaultDebugEnvironment(executionEnvironment, state, connection, 0L)
       try {
-        val debuggerSession = DebuggerManagerEx.getInstanceEx(project)
-          .attachVirtualMachine(debugEnvironment)
-          ?: error("VM attachment failed")
+        val debuggerSession =
+            DebuggerManagerEx.getInstanceEx(project).attachVirtualMachine(debugEnvironment)
+                ?: error("VM attachment failed")
         result.set(
-          XDebuggerManager
-            .getInstance(project)
-            .startSession(executionEnvironment, BspDebugProcessStarter(debuggerSession))
-            .runContentDescriptor
-        )
+            XDebuggerManager.getInstance(project)
+                .startSession(executionEnvironment, BspDebugProcessStarter(debuggerSession))
+                .runContentDescriptor)
       } catch (_: ProcessCanceledException) {
         // ignore
       } catch (e: ExecutionException) {
@@ -83,7 +84,7 @@ public class BspDebugRunnerSetting : RunnerSettings {
 }
 
 private class BspDebugProcessStarter(
-  private val debuggerSession: DebuggerSession,
+    private val debuggerSession: DebuggerSession,
 ) : XDebugProcessStarter() {
   override fun start(session: XDebugSession): XDebugProcess {
     val debugProcess = debuggerSession.process

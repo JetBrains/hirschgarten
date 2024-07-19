@@ -16,16 +16,18 @@ import org.jetbrains.plugins.bsp.services.BspTaskListener
 import org.jetbrains.plugins.bsp.services.TaskId
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 
-public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>) : BspTaskListener {
+public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>) :
+    BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
 
   init {
-    handler.addProcessListener(object : ProcessListener {
-      override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
-        // Not having this line causes the test tree to show "TERMINATED"
-        handler.notifyTextAvailable("##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
-      }
-    })
+    handler.addProcessListener(
+        object : ProcessListener {
+          override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
+            // Not having this line causes the test tree to show "TERMINATED"
+            handler.notifyTextAvailable("##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
+          }
+        })
   }
 
   override fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {
@@ -50,25 +52,26 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
       }
 
       is TestFinish -> {
-        val failureMessageBuilder = when (data.status!!) {
-          TestStatus.FAILED -> {
-            ServiceMessageBuilder.testFailed(data.displayName)
-          }
+        val failureMessageBuilder =
+            when (data.status!!) {
+              TestStatus.FAILED -> {
+                ServiceMessageBuilder.testFailed(data.displayName)
+              }
 
-          TestStatus.CANCELLED -> {
-            ServiceMessageBuilder.testIgnored(data.displayName)
-          }
+              TestStatus.CANCELLED -> {
+                ServiceMessageBuilder.testIgnored(data.displayName)
+              }
 
-          TestStatus.IGNORED -> {
-            ServiceMessageBuilder.testIgnored(data.displayName)
-          }
+              TestStatus.IGNORED -> {
+                ServiceMessageBuilder.testIgnored(data.displayName)
+              }
 
-          TestStatus.SKIPPED -> {
-            ServiceMessageBuilder.testIgnored(data.displayName)
-          }
+              TestStatus.SKIPPED -> {
+                ServiceMessageBuilder.testIgnored(data.displayName)
+              }
 
-          else -> null
-        }
+              else -> null
+            }
 
         if (failureMessageBuilder != null) {
           failureMessageBuilder.addAttribute("message", data.message ?: "No message")
@@ -97,7 +100,9 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
   // TODO: Log messages in the correct place
   override fun onLogMessage(message: String) {
     val messageWithNewline = if (message.endsWith("\n")) message else "$message\n"
-    ansiEscapeDecoder.escapeText(messageWithNewline, ProcessOutputType.STDOUT) { s: String, key: Key<Any> ->
+    ansiEscapeDecoder.escapeText(messageWithNewline, ProcessOutputType.STDOUT) {
+        s: String,
+        key: Key<Any> ->
       handler.notifyTextAvailable(s, key)
     }
   }

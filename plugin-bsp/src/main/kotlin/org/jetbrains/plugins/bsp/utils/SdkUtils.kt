@@ -7,8 +7,8 @@ import com.intellij.openapi.projectRoots.JavaSdk
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.roots.ProjectRootManager
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import kotlin.io.path.toPath
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 
 internal object SdkUtils {
   suspend fun addJdkIfNeeded(projectName: String, javaHomeUri: String) {
@@ -30,8 +30,9 @@ internal object SdkUtils {
   }
 
   fun getProjectJdkOrMostRecentJdk(project: Project): Sdk? =
-    ProjectRootManager.getInstance(project).projectSdk?.takeIf { it.sdkType == JavaSdk.getInstance() }
-      ?: getMostRecentJdk()
+      ProjectRootManager.getInstance(project).projectSdk?.takeIf {
+        it.sdkType == JavaSdk.getInstance()
+      } ?: getMostRecentJdk()
 
   private fun getMostRecentJdk(): Sdk? {
     val jdkType = JavaSdk.getInstance()

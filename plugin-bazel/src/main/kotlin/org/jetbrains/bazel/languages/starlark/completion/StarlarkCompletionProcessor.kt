@@ -5,8 +5,8 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 
 class StarlarkCompletionProcessor(
-  val results: MutableMap<String, StarlarkLookupElement>,
-  private val inputElement: StarlarkElement,
+    val results: MutableMap<String, StarlarkLookupElement>,
+    private val inputElement: StarlarkElement,
 ) : Processor<StarlarkElement> {
   override fun process(currentElement: StarlarkElement): Boolean {
     if (currentElement is StarlarkNamedElement && currentElement != inputElement) {

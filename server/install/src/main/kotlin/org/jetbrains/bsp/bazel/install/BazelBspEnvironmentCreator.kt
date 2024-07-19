@@ -7,8 +7,8 @@ class BazelBspEnvironmentCreator(
     projectRootDir: Path,
     private val discoveryDetails: BspConnectionDetails
 ) : EnvironmentCreator(projectRootDir) {
-    override fun create() {
-        createDotBazelBsp()
-        createDotBsp(discoveryDetails)
-    }
+  override fun create() {
+    createDotBazelBsp()
+    createDotBsp(discoveryDetails)
+  }
 }

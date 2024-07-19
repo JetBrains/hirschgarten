@@ -9,25 +9,25 @@ import com.intellij.openapi.actionSystem.Toggleable
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 
 public class FilterActionGroup(private val targetFilter: TargetFilter) :
-  DefaultActionGroup(
-    BspPluginBundle.message("widget.filter.action.group"),
-    null,
-    AllIcons.General.Filter,
-  ),
-  Toggleable {
+    DefaultActionGroup(
+        BspPluginBundle.message("widget.filter.action.group"),
+        null,
+        AllIcons.General.Filter,
+    ),
+    Toggleable {
   init {
     this.isPopup = true
     addFilterChangeAction(
-      TargetFilter.FILTER.OFF,
-      BspPluginBundle.message("widget.filter.turn.off"),
+        TargetFilter.FILTER.OFF,
+        BspPluginBundle.message("widget.filter.turn.off"),
     )
     addFilterChangeAction(
-      TargetFilter.FILTER.CAN_RUN,
-      BspPluginBundle.message("widget.filter.can.run"),
+        TargetFilter.FILTER.CAN_RUN,
+        BspPluginBundle.message("widget.filter.can.run"),
     )
     addFilterChangeAction(
-      TargetFilter.FILTER.CAN_TEST,
-      BspPluginBundle.message("widget.filter.can.test"),
+        TargetFilter.FILTER.CAN_TEST,
+        BspPluginBundle.message("widget.filter.can.test"),
     )
   }
 
@@ -44,12 +44,11 @@ public class FilterActionGroup(private val targetFilter: TargetFilter) :
 }
 
 private class FilterChangeAction(
-  private val targetFilter: TargetFilter,
-  private val filterType: TargetFilter.FILTER,
-  text: String,
+    private val targetFilter: TargetFilter,
+    private val filterType: TargetFilter.FILTER,
+    text: String,
 ) : ToggleAction(text) {
-  override fun isSelected(e: AnActionEvent): Boolean =
-    targetFilter.currentFilter == filterType
+  override fun isSelected(e: AnActionEvent): Boolean = targetFilter.currentFilter == filterType
 
   override fun setSelected(e: AnActionEvent, state: Boolean) {
     if (state) {

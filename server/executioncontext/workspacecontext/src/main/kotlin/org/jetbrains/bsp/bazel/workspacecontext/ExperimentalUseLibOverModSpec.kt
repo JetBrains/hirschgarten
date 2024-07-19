@@ -5,10 +5,11 @@ import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextSingletonEnt
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 
 data class ExperimentalUseLibOverModSpec(
-  override val value: Boolean,
+    override val value: Boolean,
 ) : ExecutionContextSingletonEntity<Boolean>()
 
-internal object ExperimentalUseLibOverModSpecExtractor : ExecutionContextEntityExtractor<ExperimentalUseLibOverModSpec> {
+internal object ExperimentalUseLibOverModSpecExtractor :
+    ExecutionContextEntityExtractor<ExperimentalUseLibOverModSpec> {
   override fun fromProjectView(projectView: ProjectView): ExperimentalUseLibOverModSpec =
-    ExperimentalUseLibOverModSpec(projectView.useLibOverModSection?.value ?: false)
+      ExperimentalUseLibOverModSpec(projectView.useLibOverModSection?.value ?: false)
 }

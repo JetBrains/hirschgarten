@@ -8,23 +8,25 @@ import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 
 public class TestTargetAction(
-  targetInfo: BuildTargetInfo,
-  text: (() -> String)? = null,
-  isDebugAction: Boolean = false,
-  verboseText: Boolean = false,
-) : BspRunnerAction(
-  targetInfo = targetInfo,
-  text = {
-    if (text != null) text()
-    else if (isDebugAction) BspPluginBundle.message(
-      "target.debug.action.text",
-      if (verboseText) targetInfo.getBuildTargetName() else ""
-    )
-    else BspPluginBundle.message(
-      "target.test.action.text",
-      if (verboseText) targetInfo.getBuildTargetName() else ""
-    )
-  },
-  isDebugAction = isDebugAction) {
-  override fun getConfigurationType(project: Project): ConfigurationType = BspTestConfigurationType()
+    targetInfo: BuildTargetInfo,
+    text: (() -> String)? = null,
+    isDebugAction: Boolean = false,
+    verboseText: Boolean = false,
+) :
+    BspRunnerAction(
+        targetInfo = targetInfo,
+        text = {
+          if (text != null) text()
+          else if (isDebugAction)
+              BspPluginBundle.message(
+                  "target.debug.action.text",
+                  if (verboseText) targetInfo.getBuildTargetName() else "")
+          else
+              BspPluginBundle.message(
+                  "target.test.action.text",
+                  if (verboseText) targetInfo.getBuildTargetName() else "")
+        },
+        isDebugAction = isDebugAction) {
+  override fun getConfigurationType(project: Project): ConfigurationType =
+      BspTestConfigurationType()
 }

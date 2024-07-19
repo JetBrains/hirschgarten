@@ -8,5 +8,12 @@ import ch.epfl.scala.bsp4j.PythonBuildServer
 import ch.epfl.scala.bsp4j.RustBuildServer
 import ch.epfl.scala.bsp4j.ScalaBuildServer
 
-interface JoinedBuildServer : BuildServer, JvmBuildServer, ScalaBuildServer,
-  JavaBuildServer, CppBuildServer, BazelBuildServer, PythonBuildServer, RustBuildServer
+interface JoinedBuildServer :
+    BuildServer,
+    JvmBuildServer,
+    ScalaBuildServer,
+    JavaBuildServer,
+    CppBuildServer,
+    BazelBuildServer,
+    PythonBuildServer,
+    RustBuildServer

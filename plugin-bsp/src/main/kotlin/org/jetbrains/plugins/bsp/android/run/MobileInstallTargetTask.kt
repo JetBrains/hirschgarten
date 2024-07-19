@@ -9,6 +9,8 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import java.util.UUID
+import java.util.concurrent.CompletableFuture
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
@@ -21,47 +23,51 @@ import org.jetbrains.plugins.bsp.server.tasks.saveAllFiles
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
-import java.util.UUID
-import java.util.concurrent.CompletableFuture
 
 public class MobileInstallTargetTask(
-  project: Project,
-  private val deviceFuture: ListenableFuture<IDevice>,
-  private val startType: MobileInstallStartType,
+    project: Project,
+    private val deviceFuture: ListenableFuture<IDevice>,
+    private val startType: MobileInstallStartType,
 ) : BspServerSingleTargetTask<MobileInstallResult>("mobile install target", project) {
   private val log = logger<MobileInstallTargetTask>()
 
   override fun executeWithServer(
-    server: JoinedBuildServer,
-    capabilities: BuildServerCapabilities,
-    targetId: BuildTargetIdentifier,
+      server: JoinedBuildServer,
+      capabilities: BuildServerCapabilities,
+      targetId: BuildTargetIdentifier,
   ): MobileInstallResult {
     val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
     val originId = "mobile-install-" + UUID.randomUUID().toString()
     val cancelOn = CompletableFuture<Void>()
 
-    startMobileInstallConsoleTask(targetId, deviceFuture, startType, bspBuildConsole, originId, cancelOn)
-    val targetDeviceSerialNumber = getTargetAndroidDeviceSerialNumber(bspBuildConsole)
-      ?: return MobileInstallResult(StatusCode.ERROR)
-    val mobileInstallParams = createMobileInstallParams(targetId, originId, targetDeviceSerialNumber)
+    startMobileInstallConsoleTask(
+        targetId, deviceFuture, startType, bspBuildConsole, originId, cancelOn)
+    val targetDeviceSerialNumber =
+        getTargetAndroidDeviceSerialNumber(bspBuildConsole)
+            ?: return MobileInstallResult(StatusCode.ERROR)
+    val mobileInstallParams =
+        createMobileInstallParams(targetId, originId, targetDeviceSerialNumber)
 
     val mobileInstallFuture = server.buildTargetMobileInstall(mobileInstallParams)
-    return BspTaskStatusLogger(mobileInstallFuture, bspBuildConsole, originId, cancelOn) { statusCode }.getResult()
+    return BspTaskStatusLogger(mobileInstallFuture, bspBuildConsole, originId, cancelOn) {
+          statusCode
+        }
+        .getResult()
   }
 
   private fun startMobileInstallConsoleTask(
-    targetId: BuildTargetIdentifier,
-    deviceFuture: ListenableFuture<IDevice>,
-    startType: MobileInstallStartType,
-    bspBuildConsole: TaskConsole,
-    originId: String,
-    cancelOn: CompletableFuture<Void>,
+      targetId: BuildTargetIdentifier,
+      deviceFuture: ListenableFuture<IDevice>,
+      startType: MobileInstallStartType,
+      bspBuildConsole: TaskConsole,
+      originId: String,
+      cancelOn: CompletableFuture<Void>,
   ) {
     bspBuildConsole.startTask(
-      originId,
-      BspPluginBundle.message("console.task.mobile.install.title"),
-      BspPluginBundle.message("console.task.mobile.install.in.progress.target", targetId.uri),
-      { cancelOn.cancel(true) },
+        originId,
+        BspPluginBundle.message("console.task.mobile.install.title"),
+        BspPluginBundle.message("console.task.mobile.install.in.progress.target", targetId.uri),
+        { cancelOn.cancel(true) },
     ) {
       BspCoroutineService.getInstance(project).start {
         runMobileInstallTargetTask(targetId, deviceFuture, startType, project, log)
@@ -70,16 +76,17 @@ public class MobileInstallTargetTask(
   }
 
   private fun createMobileInstallParams(
-    targetId: BuildTargetIdentifier,
-    originId: String,
-    targetDeviceSerialNumber: String,
+      targetId: BuildTargetIdentifier,
+      originId: String,
+      targetDeviceSerialNumber: String,
   ): MobileInstallParams {
-    val params = MobileInstallParams(
-      target = targetId,
-      originId = originId,
-      targetDeviceSerialNumber = targetDeviceSerialNumber,
-      startType = startType,
-    )
+    val params =
+        MobileInstallParams(
+            target = targetId,
+            originId = originId,
+            targetDeviceSerialNumber = targetDeviceSerialNumber,
+            startType = startType,
+        )
     return params
   }
 
@@ -90,32 +97,34 @@ public class MobileInstallTargetTask(
 
   private fun launchAndroidDevice(bspBuildConsole: TaskConsole): IDevice {
     if (!deviceFuture.isDone) {
-      bspBuildConsole.addMessage(BspPluginBundle.message("console.task.mobile.waiting.for.target.device"))
+      bspBuildConsole.addMessage(
+          BspPluginBundle.message("console.task.mobile.waiting.for.target.device"))
     }
     return deviceFuture.get()
   }
 }
 
 public suspend fun runMobileInstallTargetTask(
-  targetId: BuildTargetIdentifier,
-  deviceFuture: ListenableFuture<IDevice>,
-  startType: MobileInstallStartType,
-  project: Project,
-  log: Logger,
+    targetId: BuildTargetIdentifier,
+    deviceFuture: ListenableFuture<IDevice>,
+    startType: MobileInstallStartType,
+    project: Project,
+    log: Logger,
 ): MobileInstallResult? =
-  try {
-    saveAllFiles()
-    withBackgroundProgress(project, BspPluginBundle.message("console.task.mobile.install.in.progress")) {
-      MobileInstallTargetTask(project, deviceFuture, startType).connectAndExecute(targetId)
-    }
-  } catch (e: Exception) {
-    when {
-      doesCompletableFutureGetThrowCancelledException(e) ->
-        MobileInstallResult(StatusCode.CANCELLED)
+    try {
+      saveAllFiles()
+      withBackgroundProgress(
+          project, BspPluginBundle.message("console.task.mobile.install.in.progress")) {
+            MobileInstallTargetTask(project, deviceFuture, startType).connectAndExecute(targetId)
+          }
+    } catch (e: Exception) {
+      when {
+        doesCompletableFutureGetThrowCancelledException(e) ->
+            MobileInstallResult(StatusCode.CANCELLED)
 
-      else -> {
-        log.error(e)
-        null
+        else -> {
+          log.error(e)
+          null
+        }
       }
     }
-  }

@@ -6,9 +6,9 @@ import com.intellij.openapi.observable.properties.ObservableProperty
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.vfs.VirtualFile
+import javax.swing.JComponent
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
-import javax.swing.JComponent
 
 internal abstract class ImportProjectWizardStep : StepAdapter() {
   protected abstract val panel: DialogPanel
@@ -24,8 +24,10 @@ internal abstract class ImportProjectWizardStep : StepAdapter() {
 }
 
 internal class ImportProjectWizard(
-  project: Project,
-) : AbstractWizard<ImportProjectWizardStep>(BspPluginBundle.message("wizard.import.project.title"), project) {
+    project: Project,
+) :
+    AbstractWizard<ImportProjectWizardStep>(
+        BspPluginBundle.message("wizard.import.project.title"), project) {
   val connectionFile: ObservableProperty<VirtualFile>
 
   init {
@@ -38,11 +40,11 @@ internal class ImportProjectWizard(
   }
 
   override fun showAndGet(): Boolean =
-    if (isModal) {
-      super.showAndGet()
-    } else {
-      true
-    }
+      if (isModal) {
+        super.showAndGet()
+      } else {
+        true
+      }
 
   override fun getHelpID(): String? {
     TODO("Not yet implemented")

@@ -16,7 +16,7 @@ import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 
 private class BspLineMakerInfo(text: String, actions: List<AnAction>) :
-  RunLineMarkerContributor.Info(null, actions.toTypedArray(), { text }) {
+    RunLineMarkerContributor.Info(null, actions.toTypedArray(), { text }) {
   override fun shouldReplace(other: RunLineMarkerContributor.Info): Boolean = true
 }
 
@@ -24,34 +24,34 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? = getSlowInfo(element)
 
   override fun getSlowInfo(element: PsiElement): Info? =
-    if (element.project.isBspProject && element.shouldAddMarker()) element.calculateLineMarkerInfo()
-    else null
+      if (element.project.isBspProject && element.shouldAddMarker())
+          element.calculateLineMarkerInfo()
+      else null
 
   private fun PsiElement.shouldAddMarker(): Boolean =
-    !isInsideJar() && getStrictParentOfType<PsiNameIdentifierOwner>()
-      ?.isClassOrMethod() ?: false
+      !isInsideJar() && getStrictParentOfType<PsiNameIdentifierOwner>()?.isClassOrMethod() ?: false
 
   private fun PsiElement.isInsideJar() =
-    containingFile.virtualFile?.url?.startsWith("jar://") ?: false
+      containingFile.virtualFile?.url?.startsWith("jar://") ?: false
 
   private fun PsiNameIdentifierOwner.isClassOrMethod(): Boolean =
-    this is KtClassOrObject || this is KtNamedFunction || this is PsiClass || this is PsiMethod
+      this is KtClassOrObject || this is KtNamedFunction || this is PsiClass || this is PsiMethod
 
   private fun PsiElement.calculateLineMarkerInfo(): Info? =
-    containingFile.virtualFile?.let { url ->
-      val temporaryTargetUtils = project.temporaryTargetUtils
-      val targetInfos = temporaryTargetUtils.getTargetsForFile(url, project)
-        .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
-      calculateLineMarkerInfo(targetInfos)
-    }
+      containingFile.virtualFile?.let { url ->
+        val temporaryTargetUtils = project.temporaryTargetUtils
+        val targetInfos =
+            temporaryTargetUtils.getTargetsForFile(url, project).mapNotNull {
+              temporaryTargetUtils.getBuildTargetInfoForId(it)
+            }
+        calculateLineMarkerInfo(targetInfos)
+      }
 
   private fun calculateLineMarkerInfo(targetInfos: List<BuildTargetInfo>): Info =
-    BspLineMakerInfo(
-      text = "Run",
-      actions = targetInfos.flatMap { it.calculateEligibleActions() }
-    )
+      BspLineMakerInfo(
+          text = "Run", actions = targetInfos.flatMap { it.calculateEligibleActions() })
 
   private fun BuildTargetInfo?.calculateEligibleActions(): List<AnAction> =
-    if (this == null) emptyList()
-    else DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList()
+      if (this == null) emptyList()
+      else DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList()
 }

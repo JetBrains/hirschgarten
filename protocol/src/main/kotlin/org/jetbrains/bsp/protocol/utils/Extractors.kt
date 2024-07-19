@@ -11,29 +11,30 @@ import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 
 private inline fun <reified Data> extractData(target: BuildTarget, kind: String): Data? =
-  if (target.dataKind == kind) {
-    if (target.data is Data) target.data as Data
-    else Gson().fromJson(
-      target.data as JsonObject,
-      Data::class.java,
-    )
-  } else null
+    if (target.dataKind == kind) {
+      if (target.data is Data) target.data as Data
+      else
+          Gson()
+              .fromJson(
+                  target.data as JsonObject,
+                  Data::class.java,
+              )
+    } else null
 
 public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? =
-  extractData(target, BuildTargetDataKind.PYTHON)
+    extractData(target, BuildTargetDataKind.PYTHON)
 
 public fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? =
-  extractData(target, BuildTargetDataKind.SCALA)
+    extractData(target, BuildTargetDataKind.SCALA)
 
 public fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? =
-  extractData(target, "android")
+    extractData(target, "android")
 
 public fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? =
-  extractData(target, "kotlin")
-    ?: extractAndroidBuildTarget(target)?.kotlinBuildTarget
+    extractData(target, "kotlin") ?: extractAndroidBuildTarget(target)?.kotlinBuildTarget
 
 public fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
-  extractData(target, BuildTargetDataKind.JVM)
-    ?: extractAndroidBuildTarget(target)?.jvmBuildTarget
-    ?: extractKotlinBuildTarget(target)?.jvmBuildTarget
-    ?: extractScalaBuildTarget(target)?.jvmBuildTarget
+    extractData(target, BuildTargetDataKind.JVM)
+        ?: extractAndroidBuildTarget(target)?.jvmBuildTarget
+        ?: extractKotlinBuildTarget(target)?.jvmBuildTarget
+        ?: extractScalaBuildTarget(target)?.jvmBuildTarget

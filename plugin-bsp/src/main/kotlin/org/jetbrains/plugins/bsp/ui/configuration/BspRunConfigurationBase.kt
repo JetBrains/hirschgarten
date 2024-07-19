@@ -17,12 +17,13 @@ import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationEditor
 import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 
 public abstract class BspRunConfigurationBase(
-  project: Project,
-  configurationFactory: BspRunConfigurationTypeBase,
-  name: String,
-) : LocatableConfigurationBase<RunProfileState>(project, configurationFactory, name),
-  RunConfigurationWithSuppressedDefaultDebugAction,
-  DumbAware {
+    project: Project,
+    configurationFactory: BspRunConfigurationTypeBase,
+    name: String,
+) :
+    LocatableConfigurationBase<RunProfileState>(project, configurationFactory, name),
+    RunConfigurationWithSuppressedDefaultDebugAction,
+    DumbAware {
   public var targets: List<BuildTargetInfo> = emptyList()
     set(value) {
       runHandler = BspRunHandler.getRunHandler(value)
@@ -34,19 +35,18 @@ public abstract class BspRunConfigurationBase(
   public var runHandler: BspRunHandler = BspRunHandler.getRunHandler(targets)
 
   override fun getConfigurationEditor(): SettingsEditor<out BspRunConfigurationBase> =
-    BspRunConfigurationEditor(this)
+      BspRunConfigurationEditor(this)
 
-  override fun getBeforeRunTasks(): List<BeforeRunTask<*>> =
-    runHandler.getBeforeRunTasks(this)
+  override fun getBeforeRunTasks(): List<BeforeRunTask<*>> = runHandler.getBeforeRunTasks(this)
 }
 
 public class BspRunConfiguration(
-  project: Project,
-  configurationFactory: BspRunConfigurationType,
-  name: String,
+    project: Project,
+    configurationFactory: BspRunConfigurationType,
+    name: String,
 ) : BspRunConfigurationBase(project, configurationFactory, name) {
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
-    runHandler.getRunProfileState(project, executor, environment, this)
+      runHandler.getRunProfileState(project, executor, environment, this)
 
   override fun checkConfiguration() {
     // TODO: check if targetUri is valid
@@ -56,13 +56,14 @@ public class BspRunConfiguration(
 }
 
 public class BspTestConfiguration(
-  project: Project,
-  configurationFactory: BspTestConfigurationType,
-  name: String,
-) : BspRunConfigurationBase(project, configurationFactory, name),
-  SMRunnerConsolePropertiesProvider {
+    project: Project,
+    configurationFactory: BspTestConfigurationType,
+    name: String,
+) :
+    BspRunConfigurationBase(project, configurationFactory, name),
+    SMRunnerConsolePropertiesProvider {
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
-    runHandler.getRunProfileState(project, executor, environment, this)
+      runHandler.getRunProfileState(project, executor, environment, this)
 
   override fun checkConfiguration() {
     // TODO: check if targetUri is valid
@@ -71,5 +72,5 @@ public class BspTestConfiguration(
   }
 
   override fun createTestConsoleProperties(executor: Executor): SMTRunnerConsoleProperties =
-    SMTRunnerConsoleProperties(this, "BSP", executor)
+      SMTRunnerConsoleProperties(this, "BSP", executor)
 }

@@ -2,28 +2,23 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
+import java.awt.event.MouseListener
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
-import java.awt.event.MouseListener
 
-/**
- * Represents a container, which contains build targets and shows them in its UI representation
- */
+/** Represents a container, which contains build targets and shows them in its UI representation */
 public interface BuildTargetContainer {
-  /**
-   * Action responsible for copying target IDs inside this container
-   */
+  /** Action responsible for copying target IDs inside this container */
   public val copyTargetIdAction: CopyTargetIdAction
 
-  /**
-   * Returns `true` if this container contains no targets and `false` otherwise
-   */
+  /** Returns `true` if this container contains no targets and `false` otherwise */
   public fun isEmpty(): Boolean
 
   /**
    * Adds a mouse listener to this container's UI representation
    *
-   * @param listenerBuilder mouse listener builder, which will be provided with this container as its argument
+   * @param listenerBuilder mouse listener builder, which will be provided with this container as
+   *   its argument
    */
   public fun addMouseListener(listenerBuilder: (BuildTargetContainer) -> MouseListener)
 

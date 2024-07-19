@@ -16,50 +16,56 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
 
 public class BspRunConfigurationEditor(private val runConfiguration: BspRunConfigurationBase) :
-  RunConfigurationFragmentedEditor<BspRunConfigurationBase>(
-    runConfiguration, BspRunConfigurationExtensionManager.getInstance()
-  ) {
+    RunConfigurationFragmentedEditor<BspRunConfigurationBase>(
+        runConfiguration, BspRunConfigurationExtensionManager.getInstance()) {
   override fun createRunFragments(): List<SettingsEditorFragment<BspRunConfigurationBase, *>> =
-    SettingsEditorFragmentContainer.fragments {
-      add(CommonParameterFragments.createRunHeader())
-      addBeforeRunFragment(CompileStepBeforeRun.ID)
-      addAll(BeforeRunFragment.createGroup())
-      add(CommonTags.parallelRun())
-      addBspTargetFragment()
-      addBspEnvironmentFragment()
-    }
+      SettingsEditorFragmentContainer.fragments {
+        add(CommonParameterFragments.createRunHeader())
+        addBeforeRunFragment(CompileStepBeforeRun.ID)
+        addAll(BeforeRunFragment.createGroup())
+        add(CommonTags.parallelRun())
+        addBspTargetFragment()
+        addBspEnvironmentFragment()
+      }
 
   private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspEnvironmentFragment() {
-    this.addEnvironmentFragment(object : LabeledSettingsFragmentInfo {
-      override val editorLabel: String = ExecutionBundle.message("environment.variables.component.title")
-      override val settingsId: String = "external.system.environment.variables.fragment" // TODO: does it matter?
-      override val settingsName: String = ExecutionBundle.message("environment.variables.fragment.name")
-      override val settingsGroup: String = ExecutionBundle.message("group.operating.system")
-      override val settingsHint: String = ExecutionBundle.message("environment.variables.fragment.hint")
-      override val settingsActionHint: String =
-        ExecutionBundle.message("set.custom.environment.variables.for.the.process")
-    },
-      { runConfiguration.env.envs },
-      { runConfiguration.env.with(it) },
-      { runConfiguration.env.isPassParentEnvs },
-      { runConfiguration.env.with(it) },
-      false
-    )
+    this.addEnvironmentFragment(
+        object : LabeledSettingsFragmentInfo {
+          override val editorLabel: String =
+              ExecutionBundle.message("environment.variables.component.title")
+          override val settingsId: String =
+              "external.system.environment.variables.fragment" // TODO: does it matter?
+          override val settingsName: String =
+              ExecutionBundle.message("environment.variables.fragment.name")
+          override val settingsGroup: String = ExecutionBundle.message("group.operating.system")
+          override val settingsHint: String =
+              ExecutionBundle.message("environment.variables.fragment.hint")
+          override val settingsActionHint: String =
+              ExecutionBundle.message("set.custom.environment.variables.for.the.process")
+        },
+        { runConfiguration.env.envs },
+        { runConfiguration.env.with(it) },
+        { runConfiguration.env.isPassParentEnvs },
+        { runConfiguration.env.with(it) },
+        false)
   }
 
   private fun SettingsEditorFragmentContainer<BspRunConfigurationBase>.addBspTargetFragment() {
-    this.addLabeledSettingsEditorFragment(object : LabeledSettingsFragmentInfo { // TODO: Use bundle
-      override val editorLabel: String = "Build target"
-      override val settingsId: String = "bsp.target.fragment"
-      override val settingsName: String = "Build target"
-      override val settingsGroup: String = "BSP"
-      override val settingsHint: String = "Build target"
-      override val settingsActionHint: String = "Build target"
-    }, { BspTargetBrowserComponent() }, { s, c ->
-      c.text = s.targets.singleOrNull()?.id?.uri ?: ""
-    }, { _, _ ->
-      // TODO: set target
-    }, { true })
+    this.addLabeledSettingsEditorFragment(
+        object : LabeledSettingsFragmentInfo { // TODO: Use bundle
+          override val editorLabel: String = "Build target"
+          override val settingsId: String = "bsp.target.fragment"
+          override val settingsName: String = "Build target"
+          override val settingsGroup: String = "BSP"
+          override val settingsHint: String = "Build target"
+          override val settingsActionHint: String = "Build target"
+        },
+        { BspTargetBrowserComponent() },
+        { s, c -> c.text = s.targets.singleOrNull()?.id?.uri ?: "" },
+        { _, _ ->
+          // TODO: set target
+        },
+        { true })
   }
 }
 

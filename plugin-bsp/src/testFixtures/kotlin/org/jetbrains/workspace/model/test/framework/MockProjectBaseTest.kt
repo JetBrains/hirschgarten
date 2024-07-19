@@ -8,9 +8,9 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.rules.ProjectModelExtension
+import java.nio.file.Path
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
-import java.nio.file.Path
 
 @BazelTestApplication
 public open class MockProjectBaseTest : Disposable {
@@ -24,17 +24,13 @@ public open class MockProjectBaseTest : Disposable {
   private val virtualFileManager: VirtualFileManager
     get() = VirtualFileManager.getInstance()
 
-  @BeforeEach
-  protected open fun beforeEach() {
-  }
+  @BeforeEach protected open fun beforeEach() {}
 
   protected fun Path.toVirtualFile(): VirtualFile = virtualFileManager.findFileByNioPath(this)!!
 
   protected fun <T> runWriteAction(task: () -> T): T {
     var result: T? = null
-    WriteCommandAction.runWriteCommandAction(project) {
-      result = task()
-    }
+    WriteCommandAction.runWriteCommandAction(project) { result = task() }
 
     return result!!
   }

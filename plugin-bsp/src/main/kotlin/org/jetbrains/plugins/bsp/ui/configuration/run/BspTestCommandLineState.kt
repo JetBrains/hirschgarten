@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.ui.configuration.run
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.TestParams
 import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
@@ -13,33 +12,36 @@ import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import com.intellij.openapi.project.Project
-import org.jetbrains.bsp.protocol.JoinedBuildServer
+import java.util.concurrent.CompletableFuture
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.services.BspTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
 import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
 import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfiguration
-import java.util.concurrent.CompletableFuture
 
 public class BspTestCommandLineState(
-  private val project: Project,
-  private val environment: ExecutionEnvironment,
-  private val configuration: BspTestConfiguration,
-  private val originId: OriginId,
+    private val project: Project,
+    private val environment: ExecutionEnvironment,
+    private val configuration: BspTestConfiguration,
+    private val originId: OriginId,
 ) : BspCommandLineStateBase(project, environment, configuration, originId) {
   override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
     val properties = configuration.createTestConsoleProperties(executor)
     val handler = startProcess()
 
-    val console: BaseTestsOutputConsoleView = SMTestRunnerConnectionUtil.createAndAttachConsole(
-      BspPluginBundle.message("console.tasks.test.framework.name"),
-      handler,
-      properties,
-    )
+    val console: BaseTestsOutputConsoleView =
+        SMTestRunnerConnectionUtil.createAndAttachConsole(
+            BspPluginBundle.message("console.tasks.test.framework.name"),
+            handler,
+            properties,
+        )
 
-    handler.notifyTextAvailable(ServiceMessageBuilder.testsStarted().toString(), ProcessOutputType.STDOUT)
-    // OutputToGeneralTestEventsConverter.MyServiceMessageVisitor.visitServiceMessage ignores the first testingStarted event
+    handler.notifyTextAvailable(
+        ServiceMessageBuilder.testsStarted().toString(), ProcessOutputType.STDOUT)
+    // OutputToGeneralTestEventsConverter.MyServiceMessageVisitor.visitServiceMessage ignores the
+    // first testingStarted event
     handler.notifyTextAvailable("\n##teamcity[testingStarted]\n", ProcessOutputType.STDOUT)
     handler.notifyTextAvailable("\n##teamcity[testingStarted]\n", ProcessOutputType.STDOUT)
 
@@ -55,7 +57,7 @@ public class BspTestCommandLineState(
   }
 
   override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
-    BspTestTaskListener(handler)
+      BspTestTaskListener(handler)
 
   override fun startBsp(server: JoinedBuildServer): CompletableFuture<*> {
     val targets = configuration.targets.map { it.id }

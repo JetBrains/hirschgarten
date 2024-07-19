@@ -21,7 +21,11 @@ class FunctionParsing(context: ParsingContext) : Parsing(context) {
   private fun parseParameterList() {
     if (!atToken(StarlarkTokenTypes.LPAR)) {
       builder.error(StarlarkBundle.message("parser.expected.lpar"))
-      builder.mark().done(StarlarkElementTypes.PARAMETER_LIST) // To have non-empty parameters list at all the time.
+      builder
+          .mark()
+          .done(
+              StarlarkElementTypes
+                  .PARAMETER_LIST) // To have non-empty parameters list at all the time.
       return
     }
     parseParameterListContents(StarlarkTokenTypes.RPAR, true)
@@ -87,7 +91,8 @@ class FunctionParsing(context: ParsingContext) : Parsing(context) {
       if (!isStarParameter && matchToken(StarlarkTokenTypes.EQ)) {
         if (!context.expressionParser.parseSingleExpression(isTarget = false)) {
           val invalidElements = builder.mark()
-          while (!atAnyOfTokens(listOf(endToken, StarlarkTokenTypes.LINE_BREAK, StarlarkTokenTypes.COMMA, null))) {
+          while (!atAnyOfTokens(
+              listOf(endToken, StarlarkTokenTypes.LINE_BREAK, StarlarkTokenTypes.COMMA, null))) {
             nextToken()
           }
           invalidElements.error(StarlarkBundle.message("parser.expected.expression"))
@@ -100,7 +105,8 @@ class FunctionParsing(context: ParsingContext) : Parsing(context) {
         return false
       }
       val invalidElements = builder.mark()
-      while (!atAnyOfTokens(listOf(endToken, StarlarkTokenTypes.LINE_BREAK, StarlarkTokenTypes.COMMA, null))) {
+      while (!atAnyOfTokens(
+          listOf(endToken, StarlarkTokenTypes.LINE_BREAK, StarlarkTokenTypes.COMMA, null))) {
         nextToken()
       }
       invalidElements.error(StarlarkBundle.message("parser.expected.formal.param.name"))

@@ -2,21 +2,21 @@ package org.jetbrains.bsp.bazel.server.sync.languages.kotlin
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
-import org.jetbrains.bsp.bazel.info.BspTargetInfo
-import org.jetbrains.bsp.bazel.info.BspTargetInfo.KotlinTargetInfo
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
-import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
-import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
-import org.jetbrains.bsp.bazel.server.model.Label
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.toPath
+import org.jetbrains.bsp.bazel.info.BspTargetInfo
+import org.jetbrains.bsp.bazel.info.BspTargetInfo.KotlinTargetInfo
+import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
+import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
+import org.jetbrains.bsp.protocol.KotlinBuildTarget
 
 class KotlinLanguagePlugin(
-  private val javaLanguagePlugin: JavaLanguagePlugin,
-  private val bazelPathsResolver: BazelPathsResolver,
+    private val javaLanguagePlugin: JavaLanguagePlugin,
+    private val bazelPathsResolver: BazelPathsResolver,
 ) : LanguagePlugin<KotlinModule>() {
 
   override fun applyModuleData(moduleData: KotlinModule, buildTarget: BuildTarget) {
@@ -26,17 +26,18 @@ class KotlinLanguagePlugin(
   }
 
   fun toKotlinBuildTarget(kotlinModule: KotlinModule): KotlinBuildTarget {
-    val kotlinBuildTarget = with(kotlinModule) {
-      KotlinBuildTarget(
-        languageVersion = languageVersion,
-        apiVersion = apiVersion,
-        kotlincOptions = kotlincOptions,
-        associates = associates.map { BuildTargetIdentifier(it.value) },
-      )
-    }
-    kotlinModule.javaModule?.let { javaLanguagePlugin.toJvmBuildTarget(it) }?.let {
-      kotlinBuildTarget.jvmBuildTarget = it
-    }
+    val kotlinBuildTarget =
+        with(kotlinModule) {
+          KotlinBuildTarget(
+              languageVersion = languageVersion,
+              apiVersion = apiVersion,
+              kotlincOptions = kotlincOptions,
+              associates = associates.map { BuildTargetIdentifier(it.value) },
+          )
+        }
+    kotlinModule.javaModule
+        ?.let { javaLanguagePlugin.toJvmBuildTarget(it) }
+        ?.let { kotlinBuildTarget.jvmBuildTarget = it }
     return kotlinBuildTarget
   }
 
@@ -50,28 +51,29 @@ class KotlinLanguagePlugin(
         apiVersion = kotlinTargetInfo.apiVersion,
         associates = kotlinTargetInfo.associatesList.map { Label.parse(it) },
         kotlincOptions = kotlinTargetInfo.toKotlincOptArguments(),
-        javaModule = javaLanguagePlugin.resolveModule(targetInfo)
-    )
+        javaModule = javaLanguagePlugin.resolveModule(targetInfo))
   }
 
   private fun KotlinTargetInfo.toKotlincOptArguments(): List<String> =
-    kotlincOptsList + additionalKotlinOpts()
+      kotlincOptsList + additionalKotlinOpts()
 
   private fun KotlinTargetInfo.additionalKotlinOpts(): List<String> =
-    toKotlincPluginClasspathArguments() + toKotlincPluginOptionArguments()
+      toKotlincPluginClasspathArguments() + toKotlincPluginOptionArguments()
 
   private fun KotlinTargetInfo.toKotlincPluginOptionArguments(): List<String> =
-    kotlincPluginInfosList
-      .flatMap { it.kotlincPluginOptionsList }
-      .flatMap { listOf("-P", "plugin:${it.pluginId}:${it.optionValue}") }
+      kotlincPluginInfosList
+          .flatMap { it.kotlincPluginOptionsList }
+          .flatMap { listOf("-P", "plugin:${it.pluginId}:${it.optionValue}") }
 
   private fun KotlinTargetInfo.toKotlincPluginClasspathArguments(): List<String> =
-    kotlincPluginInfosList
-      .flatMap { it.pluginJarsList }
-      .map { "-Xplugin=${bazelPathsResolver.resolveUri(it).toPath()}" }
+      kotlincPluginInfosList
+          .flatMap { it.pluginJarsList }
+          .map { "-Xplugin=${bazelPathsResolver.resolveUri(it).toPath()}" }
 
-  override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
-      javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
+  override fun dependencySources(
+      targetInfo: BspTargetInfo.TargetInfo,
+      dependencyGraph: DependencyGraph
+  ): Set<URI> = javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
   override fun calculateSourceRoot(source: Path): Path? =
       javaLanguagePlugin.calculateSourceRoot(source)

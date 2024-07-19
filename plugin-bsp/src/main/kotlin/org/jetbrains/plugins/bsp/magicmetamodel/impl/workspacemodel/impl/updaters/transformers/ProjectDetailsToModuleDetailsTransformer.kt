@@ -5,8 +5,8 @@ import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 
 internal class ProjectDetailsToModuleDetailsTransformer(
-  private val projectDetails: ProjectDetails,
-  private val libraryGraph: LibraryGraph,
+    private val projectDetails: ProjectDetails,
+    private val libraryGraph: LibraryGraph,
 ) {
   private val targetsIndex = projectDetails.targets.associateBy { it.id }
   private val sourcesIndex = projectDetails.sources.groupBy { it.target }
@@ -21,18 +21,21 @@ internal class ProjectDetailsToModuleDetailsTransformer(
     val target = targetsIndex[targetId] ?: error("Cannot find target for target id: $targetId.")
     val allDependencies = libraryGraph.calculateAllDependencies(target)
     return ModuleDetails(
-      target = target,
-      sources = sourcesIndex[target.id].orEmpty(),
-      resources = resourcesIndex[targetId].orEmpty(),
-      dependenciesSources = dependenciesSourcesIndex[targetId].orEmpty(),
-      javacOptions = javacOptionsIndex[targetId],
-      scalacOptions = scalacOptionsIndex[targetId],
-      pythonOptions = pythonOptionsIndex[targetId],
-      outputPathUris = emptyList(),
-      libraryDependencies = allDependencies.libraryDependencies.takeIf { projectDetails.libraries != null }?.toList(),
-      moduleDependencies = allDependencies.moduleDependencies.toList(),
-      defaultJdkName = projectDetails.defaultJdkName,
-      jvmBinaryJars = jvmBinaryJarsIndex[targetId].orEmpty(),
+        target = target,
+        sources = sourcesIndex[target.id].orEmpty(),
+        resources = resourcesIndex[targetId].orEmpty(),
+        dependenciesSources = dependenciesSourcesIndex[targetId].orEmpty(),
+        javacOptions = javacOptionsIndex[targetId],
+        scalacOptions = scalacOptionsIndex[targetId],
+        pythonOptions = pythonOptionsIndex[targetId],
+        outputPathUris = emptyList(),
+        libraryDependencies =
+            allDependencies.libraryDependencies
+                .takeIf { projectDetails.libraries != null }
+                ?.toList(),
+        moduleDependencies = allDependencies.moduleDependencies.toList(),
+        defaultJdkName = projectDetails.defaultJdkName,
+        jvmBinaryJars = jvmBinaryJarsIndex[targetId].orEmpty(),
     )
   }
 }

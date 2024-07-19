@@ -2,13 +2,13 @@ package org.jetbrains.bsp.bazel.server.sync.languages.rust
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import java.nio.file.Paths
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BasicBazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.nio.file.Paths
 
 class RustLanguagePluginTest {
 
@@ -20,18 +20,17 @@ class RustLanguagePluginTest {
   @BeforeEach
   fun beforeEach() {
     // given
-    val bazelInfo = BasicBazelInfo(
-      execRoot = execRoot,
-      outputBase = Paths.get(outputBase),
-      workspaceRoot = Paths.get("/Users/user/workspace/bazel-bsp"),
-      release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
-      false
-    )
+    val bazelInfo =
+        BasicBazelInfo(
+            execRoot = execRoot,
+            outputBase = Paths.get(outputBase),
+            workspaceRoot = Paths.get("/Users/user/workspace/bazel-bsp"),
+            release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
+            false)
 
     bazelPathsResolver = BazelPathsResolver(bazelInfo)
     languagePlugin = RustLanguagePlugin(bazelPathsResolver)
   }
-
 
   @Test
   fun `should return empty workspace for empty requested targets list`() {
@@ -60,8 +59,7 @@ class RustLanguagePluginTest {
     val workspace = languagePlugin.toRustWorkspaceResult(requestedTargets, modules)
 
     // then
-    workspace.packages.map { it.resolvedTargets[0].name } shouldContainExactlyInAnyOrder
-        listOf("F")
+    workspace.packages.map { it.resolvedTargets[0].name } shouldContainExactlyInAnyOrder listOf("F")
   }
 
   @Test
@@ -105,7 +103,7 @@ class RustLanguagePluginTest {
   @Test
   fun `should return proper workspace for multiple requested targets`() {
     // given
-    //--> B    A
+    // --> B    A
     //    | \ / \
     //    C  D   E <--
     //    \ /  \ | \
@@ -124,7 +122,7 @@ class RustLanguagePluginTest {
   @Test
   fun `should return workspace with all modules for requested targets that depend on every module`() {
     // given
-    //--> B    A <--
+    // --> B    A <--
     //    | \ / \
     //    C  D   E
     //    \ /  \ | \
@@ -149,9 +147,8 @@ class RustLanguagePluginTest {
     //    \ /  \ | \
     //     F --> G  H <--
     val (modules, modulesMap) = getSampleModules()
-    val requestedTargets = listOf(
-        modulesMap["A"]!!, modulesMap["E"]!!, modulesMap["G"]!!, modulesMap["H"]!!
-    )
+    val requestedTargets =
+        listOf(modulesMap["A"]!!, modulesMap["E"]!!, modulesMap["G"]!!, modulesMap["H"]!!)
 
     // when
     val workspace = languagePlugin.toRustWorkspaceResult(requestedTargets, modules)

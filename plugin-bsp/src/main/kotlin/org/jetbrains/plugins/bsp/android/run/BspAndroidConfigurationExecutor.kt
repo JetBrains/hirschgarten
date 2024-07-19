@@ -5,6 +5,7 @@ import com.android.tools.idea.execution.common.AndroidConfigurationExecutor
 import com.android.tools.idea.execution.common.debug.DebugSessionStarter
 import com.android.tools.idea.execution.common.debug.impl.java.AndroidJavaDebugger
 import com.android.tools.idea.execution.common.processhandler.AndroidProcessHandler
+import com.android.tools.idea.project.getPackageName as getApplicationIdFromManifest
 import com.android.tools.idea.projectsystem.ApplicationProjectContext
 import com.android.tools.idea.run.ShowLogcatListener
 import com.android.tools.idea.run.configuration.execution.createRunContentDescriptor
@@ -19,10 +20,9 @@ import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.getModule
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
-import com.android.tools.idea.project.getPackageName as getApplicationIdFromManifest
 
 public class BspAndroidConfigurationExecutor(
-  private val environment: ExecutionEnvironment,
+    private val environment: ExecutionEnvironment,
 ) : AndroidConfigurationExecutor {
   override val configuration: RunConfiguration
     get() = environment.runProfile as RunConfiguration
@@ -30,9 +30,7 @@ public class BspAndroidConfigurationExecutor(
   override fun run(indicator: ProgressIndicator): RunContentDescriptor = runBlockingCancellable {
     val applicationId = getApplicationIdOrThrow()
     val processHandler = AndroidProcessHandler(applicationId, { it.forceStop(applicationId) })
-    val console = createConsole().apply {
-      attachToProcess(processHandler)
-    }
+    val console = createConsole().apply { attachToProcess(processHandler) }
 
     val device = getDevice()
     processHandler.addTargetDevice(device)
@@ -51,35 +49,36 @@ public class BspAndroidConfigurationExecutor(
   }
 
   private suspend fun startDebugSession(
-    device: IDevice,
-    applicationId: String,
-    environment: ExecutionEnvironment,
-    indicator: ProgressIndicator,
+      device: IDevice,
+      applicationId: String,
+      environment: ExecutionEnvironment,
+      indicator: ProgressIndicator,
   ): XDebugSessionImpl {
     val debugger = AndroidJavaDebugger()
     val debuggerState = debugger.createState()
 
     return DebugSessionStarter.attachDebuggerToStartedProcess(
-      device,
-      object : ApplicationProjectContext {
-        override val applicationId: String = applicationId
-      },
-      environment,
-      debugger,
-      debuggerState,
-      destroyRunningProcess = { d -> d.forceStop(applicationId) },
-      indicator,
+        device,
+        object : ApplicationProjectContext {
+          override val applicationId: String = applicationId
+        },
+        environment,
+        debugger,
+        debuggerState,
+        destroyRunningProcess = { d -> d.forceStop(applicationId) },
+        indicator,
     )
   }
 
   private fun getDevice(): IDevice {
-    val deviceFuture = environment.getCopyableUserData(DEVICE_FUTURE_KEY)
-      ?: throw ExecutionException("No target device")
+    val deviceFuture =
+        environment.getCopyableUserData(DEVICE_FUTURE_KEY)
+            ?: throw ExecutionException("No target device")
     return deviceFuture.get()
   }
 
   private fun getApplicationIdOrThrow(): String =
-    getApplicationId() ?: throw ExecutionException("Couldn't get application ID")
+      getApplicationId() ?: throw ExecutionException("Couldn't get application ID")
 
   private fun getApplicationId(): String? {
     val bspRunConfiguration = environment.runProfile as? BspRunConfiguration ?: return null
@@ -89,13 +88,16 @@ public class BspAndroidConfigurationExecutor(
   }
 
   private fun createConsole(): ConsoleView =
-    TextConsoleBuilderFactory.getInstance().createBuilder(environment.project).console
+      TextConsoleBuilderFactory.getInstance().createBuilder(environment.project).console
 
   private fun showLogcat(device: IDevice, applicationId: String) {
-    environment.project.messageBus.syncPublisher(ShowLogcatListener.TOPIC).showLogcat(device, applicationId)
+    environment.project.messageBus
+        .syncPublisher(ShowLogcatListener.TOPIC)
+        .showLogcat(device, applicationId)
   }
 
-  // The "Apply changes" button isn't available for BspRunConfiguration, so this is an unexpected code path
+  // The "Apply changes" button isn't available for BspRunConfiguration, so this is an unexpected
+  // code path
   override fun applyChanges(indicator: ProgressIndicator): RunContentDescriptor {
     throw ExecutionException("Apply changes not supported")
   }

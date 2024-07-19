@@ -2,7 +2,6 @@ package org.jetbrains.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
-import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -22,15 +21,13 @@ import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjectDirectoriesEntityData) :
-  BspProjectDirectoriesEntity, WorkspaceEntityBase(dataSource) {
+internal class BspProjectDirectoriesEntityImpl(
+    private val dataSource: BspProjectDirectoriesEntityData
+) : BspProjectDirectoriesEntity, WorkspaceEntityBase(dataSource) {
 
   private companion object {
 
-
-    private val connections = listOf<ConnectionId>(
-    )
-
+    private val connections = listOf<ConnectionId>()
   }
 
   override val projectRoot: VirtualFileUrl
@@ -61,10 +58,10 @@ internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjec
     return connections
   }
 
-
   internal class Builder(result: BspProjectDirectoriesEntityData?) :
-    ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(result),
-    BspProjectDirectoriesEntity.Builder {
+      ModifiableWorkspaceEntityBase<BspProjectDirectoriesEntity, BspProjectDirectoriesEntityData>(
+          result),
+      BspProjectDirectoriesEntity.Builder {
     internal constructor() : this(BspProjectDirectoriesEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -80,7 +77,8 @@ internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjec
       this.diff = builder
       addToBuilder()
       this.id = getEntityData().createEntityId()
-      // After adding entity data to the builder, we need to unbind it and move the control over entity data to builder
+      // After adding entity data to the builder, we need to unbind it and move the control over
+      // entity data to builder
       // Builder may switch to snapshot at any moment and lock entity data to modification
       this.currentEntityData = null
 
@@ -128,11 +126,12 @@ internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjec
       dataSource as BspProjectDirectoriesEntity
       if (this.entitySource != dataSource.entitySource) this.entitySource = dataSource.entitySource
       if (this.projectRoot != dataSource.projectRoot) this.projectRoot = dataSource.projectRoot
-      if (this.includedRoots != dataSource.includedRoots) this.includedRoots = dataSource.includedRoots.toMutableList()
-      if (this.excludedRoots != dataSource.excludedRoots) this.excludedRoots = dataSource.excludedRoots.toMutableList()
+      if (this.includedRoots != dataSource.includedRoots)
+          this.includedRoots = dataSource.includedRoots.toMutableList()
+      if (this.excludedRoots != dataSource.excludedRoots)
+          this.excludedRoots = dataSource.excludedRoots.toMutableList()
       updateChildToParentReferences(parents)
     }
-
 
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
@@ -140,7 +139,6 @@ internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjec
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
 
     override var projectRoot: VirtualFileUrl
@@ -197,21 +195,27 @@ internal class BspProjectDirectoriesEntityImpl(private val dataSource: BspProjec
         excludedRootsUpdater.invoke(value)
       }
 
-    override fun getEntityClass(): Class<BspProjectDirectoriesEntity> = BspProjectDirectoriesEntity::class.java
+    override fun getEntityClass(): Class<BspProjectDirectoriesEntity> =
+        BspProjectDirectoriesEntity::class.java
   }
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectDirectoriesEntity>() {
+internal class BspProjectDirectoriesEntityData :
+    WorkspaceEntityData<BspProjectDirectoriesEntity>() {
   public lateinit var projectRoot: VirtualFileUrl
   public lateinit var includedRoots: MutableList<VirtualFileUrl>
   public lateinit var excludedRoots: MutableList<VirtualFileUrl>
 
   internal fun isProjectRootInitialized(): Boolean = ::projectRoot.isInitialized
+
   internal fun isIncludedRootsInitialized(): Boolean = ::includedRoots.isInitialized
+
   internal fun isExcludedRootsInitialized(): Boolean = ::excludedRoots.isInitialized
 
-  override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
+  override fun wrapAsModifiable(
+      diff: MutableEntityStorage
+  ): WorkspaceEntity.Builder<BspProjectDirectoriesEntity> {
     val modifiable = BspProjectDirectoriesEntityImpl.Builder(null)
     modifiable.diff = diff
     modifiable.id = createEntityId()
@@ -230,7 +234,8 @@ internal class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectD
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn(
+        "org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity") as EntityMetadata
   }
 
   override fun clone(): BspProjectDirectoriesEntityData {
@@ -245,9 +250,10 @@ internal class BspProjectDirectoriesEntityData : WorkspaceEntityData<BspProjectD
     return BspProjectDirectoriesEntity::class.java
   }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
-    return BspProjectDirectoriesEntity(projectRoot, includedRoots, excludedRoots, entitySource) {
-    }
+  override fun createDetachedEntity(
+      parents: List<WorkspaceEntity.Builder<*>>
+  ): WorkspaceEntity.Builder<*> {
+    return BspProjectDirectoriesEntity(projectRoot, includedRoots, excludedRoots, entitySource) {}
   }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {

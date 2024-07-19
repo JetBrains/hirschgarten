@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.bazel.bazelrunner.outputs
 
 import com.google.common.base.Charsets
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -9,6 +8,7 @@ import java.io.InputStreamReader
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import org.eclipse.lsp4j.jsonrpc.CancelChecker
 
 abstract class OutputProcessor(private val process: Process, vararg loggers: OutputHandler) {
   val stdoutCollector = OutputCollector()
@@ -55,7 +55,7 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
   }
 
   fun waitForExit(cancelChecker: CancelChecker): Int {
-    var isFinished = false;
+    var isFinished = false
     while (!isFinished) {
       isFinished = process.waitFor(500, TimeUnit.MILLISECONDS)
       if (cancelChecker.isCanceled) {

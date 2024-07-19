@@ -33,113 +33,128 @@ import org.jetbrains.workspacemodel.entities.BspEntitySource
 import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
 
 internal class ModuleEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-  private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
+    private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+    private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
   override fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
-    addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
+      addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
   private fun addModuleEntity(
-    builder: MutableEntityStorage,
-    entityToAdd: GenericModuleInfo,
+      builder: MutableEntityStorage,
+      entityToAdd: GenericModuleInfo,
   ): ModuleEntity {
-    val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
+    val associatesDependencies =
+        entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val (libraryModulesDependencies, librariesDependencies) =
-      entityToAdd.librariesDependencies.partition {
-        !entityToAdd.isLibraryModule &&
-          workspaceModelEntityUpdaterConfig.project.temporaryTargetUtils.isLibraryModule(it.libraryName)
-      }
+        entityToAdd.librariesDependencies.partition {
+          !entityToAdd.isLibraryModule &&
+              workspaceModelEntityUpdaterConfig.project.temporaryTargetUtils.isLibraryModule(
+                  it.libraryName)
+        }
     val modulesDependencies =
-      (entityToAdd.modulesDependencies + libraryModulesDependencies.toLibraryModuleDependencies()).map {
-        toModuleDependencyItemModuleDependency(it)
-      }
+        (entityToAdd.modulesDependencies + libraryModulesDependencies.toLibraryModuleDependencies())
+            .map { toModuleDependencyItemModuleDependency(it) }
     val dependencies =
-      defaultDependencies +
-        modulesDependencies +
-        librariesDependencies.map { toLibraryDependency(it, workspaceModelEntityUpdaterConfig.project) } +
-        associatesDependencies
+        defaultDependencies +
+            modulesDependencies +
+            librariesDependencies.map {
+              toLibraryDependency(it, workspaceModelEntityUpdaterConfig.project)
+            } +
+            associatesDependencies
 
-
-    val moduleEntityBuilder = ModuleEntity(
-      name = entityToAdd.name,
-      dependencies = dependencies,
-      entitySource = toEntitySource(entityToAdd),
-    ) {
-      this.type = entityToAdd.type
-    }
+    val moduleEntityBuilder =
+        ModuleEntity(
+            name = entityToAdd.name,
+            dependencies = dependencies,
+            entitySource = toEntitySource(entityToAdd),
+        ) {
+          this.type = entityToAdd.type
+        }
 
     val moduleEntity = builder.addEntity(moduleEntityBuilder)
 
     val imlData =
-      ModuleCustomImlDataEntity(
-        customModuleOptions = entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap,
-        entitySource = moduleEntity.entitySource,
-      ) {
-        this.rootManagerTagCustomData = null
-        this.module = moduleEntityBuilder
-      }
+        ModuleCustomImlDataEntity(
+            customModuleOptions =
+                entityToAdd.capabilities.asMap() + entityToAdd.languageIdsAsSingleEntryMap,
+            entitySource = moduleEntity.entitySource,
+        ) {
+          this.rootManagerTagCustomData = null
+          this.module = moduleEntityBuilder
+        }
 
     // TODO: use a separate entity instead of imlData
-    return builder.modifyModuleEntity(moduleEntity) {
-      this.customImlData = imlData
-    }
+    return builder.modifyModuleEntity(moduleEntity) { this.customImlData = imlData }
   }
 
   private fun List<IntermediateLibraryDependency>.toLibraryModuleDependencies() =
-    this.map { IntermediateModuleDependency(it.libraryName) }
+      this.map { IntermediateModuleDependency(it.libraryName) }
 
-  private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource = when {
-    entityToAdd.isDummy -> BspDummyEntitySource
-    !JpsFeatureFlags.isJpsCompilationEnabled ||
-      entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspEntitySource
+  private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource =
+      when {
+        entityToAdd.isDummy -> BspDummyEntitySource
+        !JpsFeatureFlags.isJpsCompilationEnabled ||
+            entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } ->
+            BspEntitySource
 
-    else -> LegacyBridgeJpsEntitySourceFactory.createEntitySourceForModule(
-      project = workspaceModelEntityUpdaterConfig.project,
-      baseModuleDir = JpsPaths.getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)
-        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-      externalSource = null,
-      moduleFileName = entityToAdd.name + ModuleManagerEx.IML_EXTENSION
-    )
-  }
+        else ->
+            LegacyBridgeJpsEntitySourceFactory.createEntitySourceForModule(
+                project = workspaceModelEntityUpdaterConfig.project,
+                baseModuleDir =
+                    JpsPaths.getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)
+                        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+                externalSource = null,
+                moduleFileName = entityToAdd.name + ModuleManagerEx.IML_EXTENSION)
+      }
 
   private fun toModuleDependencyItemModuleDependency(
-    intermediateModuleDependency: IntermediateModuleDependency,
-    project: Project = workspaceModelEntityUpdaterConfig.project,
+      intermediateModuleDependency: IntermediateModuleDependency,
+      project: Project = workspaceModelEntityUpdaterConfig.project,
   ): ModuleDependency =
-    BspWorkspace.getInstance(project).interner.getOrPut(
-      ModuleDependency(
-        module = BspWorkspace.getInstance(project).interner.getOrPut(ModuleId(intermediateModuleDependency.moduleName)),
-        exported = true,
-        scope = DependencyScope.COMPILE,
-        productionOnTest = true,
-      )
-    )
+      BspWorkspace.getInstance(project)
+          .interner
+          .getOrPut(
+              ModuleDependency(
+                  module =
+                      BspWorkspace.getInstance(project)
+                          .interner
+                          .getOrPut(ModuleId(intermediateModuleDependency.moduleName)),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
+              ))
 }
 
 internal fun toLibraryDependency(
-  intermediateLibraryDependency: IntermediateLibraryDependency,
-  project: Project,
+    intermediateLibraryDependency: IntermediateLibraryDependency,
+    project: Project,
 ): LibraryDependency =
-  BspWorkspace.getInstance(project).interner.getOrPut(
-    LibraryDependency(
-      library = BspWorkspace.getInstance(project).interner.getOrPut(
-        LibraryId(
-          name = intermediateLibraryDependency.libraryName,
-          tableId = LibraryTableId.ProjectLibraryTableId, // treat all libraries as project-level libraries
-        )
-      ),
-      exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
-      scope = DependencyScope.COMPILE,
-    )
-  )
+    BspWorkspace.getInstance(project)
+        .interner
+        .getOrPut(
+            LibraryDependency(
+                library =
+                    BspWorkspace.getInstance(project)
+                        .interner
+                        .getOrPut(
+                            LibraryId(
+                                name = intermediateLibraryDependency.libraryName,
+                                tableId =
+                                    LibraryTableId.ProjectLibraryTableId, // treat all libraries as
+                                // project-level libraries
+                            )),
+                exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
+                scope = DependencyScope.COMPILE,
+            ))
 
 internal class WorkspaceModuleRemover(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+    private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModuleEntityRemover<ModuleName> {
   override fun removeEntity(entityToRemove: ModuleName) {
     // TODO https://youtrack.jetbrains.com/issue/BAZEL-634
     val moduleToRemove =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.resolve(ModuleId(entityToRemove.name))!!
+        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.resolve(
+            ModuleId(entityToRemove.name))!!
 
     workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(moduleToRemove)
   }
@@ -151,7 +166,10 @@ internal class WorkspaceModuleRemover(
   }
 
   private fun <E : WorkspaceEntity> removeEntities(entityClass: Class<E>) {
-    val allEntities = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(entityClass)
-    allEntities.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
+    val allEntities =
+        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(entityClass)
+    allEntities.forEach {
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it)
+    }
   }
 }

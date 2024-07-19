@@ -13,9 +13,11 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.tasks.runBuildTargetTask
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 
-private val PROVIDER_ID = Key.create<BuildPluginBeforeRunTaskProvider.Task>("BuildPluginBeforeRunTaskProvider")
+private val PROVIDER_ID =
+    Key.create<BuildPluginBeforeRunTaskProvider.Task>("BuildPluginBeforeRunTaskProvider")
 
-public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPluginBeforeRunTaskProvider.Task>() {
+public class BuildPluginBeforeRunTaskProvider :
+    BeforeRunTaskProvider<BuildPluginBeforeRunTaskProvider.Task>() {
   private val log = logger<BuildPluginBeforeRunTaskProvider>()
 
   public class Task : BeforeRunTask<Task>(PROVIDER_ID)
@@ -25,25 +27,23 @@ public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPlugi
   override fun getName(): String = BspPluginBundle.message("console.task.build.title")
 
   override fun createTask(configuration: RunConfiguration): Task? =
-    if (configuration is BspRunConfiguration) {
-      Task()
-    } else {
-      null
-    }
+      if (configuration is BspRunConfiguration) {
+        Task()
+      } else {
+        null
+      }
 
   override fun executeTask(
-    context: DataContext,
-    configuration: RunConfiguration,
-    environment: ExecutionEnvironment,
-    task: Task,
+      context: DataContext,
+      configuration: RunConfiguration,
+      environment: ExecutionEnvironment,
+      task: Task,
   ): Boolean {
     val runConfiguration = environment.runProfile as? BspRunConfiguration ?: return false
     if (runConfiguration.runHandler !is IntellijPluginRunHandler) return false
 
     val targetIds = runConfiguration.targets.map { it.id }
-    val buildResult = runBlocking {
-      runBuildTargetTask(targetIds, environment.project, log)
-    }
+    val buildResult = runBlocking { runBuildTargetTask(targetIds, environment.project, log) }
     return buildResult?.statusCode == StatusCode.OK
   }
 }

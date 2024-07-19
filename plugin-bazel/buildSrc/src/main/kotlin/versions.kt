@@ -5,13 +5,14 @@ object Plugin {
   const val name = "intellij-bazel"
   const val version = "2024.1.0-EAP"
 
-// See https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html
-// for insight into build numbers and IntelliJ Platform versions.
+  // See https://plugins.jetbrains.com/docs/intellij/build-number-ranges.html
+  // for insight into build numbers and IntelliJ Platform versions.
   const val sinceBuild = "241.15989.21"
   const val untilBuild = "241.*"
 }
 
-// Plugin Verifier integration -> https://github.com/JetBrains/gradle-intellij-plugin//plugin-verifier-dsl
+// Plugin Verifier integration ->
+// https://github.com/JetBrains/gradle-intellij-plugin//plugin-verifier-dsl
 // See https://jb.gg/intellij-platform-builds-list for available build versions.
 const val pluginVerifierIdeVersions = "241.15989.150"
 

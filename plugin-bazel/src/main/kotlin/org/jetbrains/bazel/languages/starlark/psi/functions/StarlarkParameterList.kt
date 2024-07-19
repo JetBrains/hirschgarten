@@ -8,5 +8,5 @@ class StarlarkParameterList(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitParameterList(this)
 
   fun getParameters(): List<StarlarkNamedParameter> =
-    findChildrenByClass(StarlarkNamedParameter::class.java).toList()
+      findChildrenByClass(StarlarkNamedParameter::class.java).toList()
 }

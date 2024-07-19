@@ -3,13 +3,11 @@ package org.jetbrains.workspacemodel.entities.impl
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
-import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
-import com.intellij.platform.workspace.storage.annotations.Child
 import com.intellij.platform.workspace.storage.impl.EntityLink
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
@@ -28,21 +26,21 @@ import org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) : JvmBinaryJarsEntity,
-  WorkspaceEntityBase(dataSource) {
+internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) :
+    JvmBinaryJarsEntity, WorkspaceEntityBase(dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(
-      ModuleEntity::class.java,
-      JvmBinaryJarsEntity::class.java,
-      ConnectionId.ConnectionType.ONE_TO_ONE,
-      false
-    )
+    internal val MODULE_CONNECTION_ID: ConnectionId =
+        ConnectionId.create(
+            ModuleEntity::class.java,
+            JvmBinaryJarsEntity::class.java,
+            ConnectionId.ConnectionType.ONE_TO_ONE,
+            false)
 
-    private val connections = listOf<ConnectionId>(
-      MODULE_CONNECTION_ID,
-    )
-
+    private val connections =
+        listOf<ConnectionId>(
+            MODULE_CONNECTION_ID,
+        )
   }
 
   override val jars: List<VirtualFileUrl>
@@ -64,9 +62,9 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
     return connections
   }
 
-
   internal class Builder(result: JvmBinaryJarsEntityData?) :
-    ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(result), JvmBinaryJarsEntity.Builder {
+      ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(result),
+      JvmBinaryJarsEntity.Builder {
     internal constructor() : this(JvmBinaryJarsEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -82,7 +80,8 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
       this.diff = builder
       addToBuilder()
       this.id = getEntityData().createEntityId()
-      // After adding entity data to the builder, we need to unbind it and move the control over entity data to builder
+      // After adding entity data to the builder, we need to unbind it and move the control over
+      // entity data to builder
       // Builder may switch to snapshot at any moment and lock entity data to modification
       this.currentEntityData = null
 
@@ -130,14 +129,12 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
 
     private val jarsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
@@ -168,10 +165,9 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
         return if (_diff != null) {
           @OptIn(EntityStorageInstrumentationApi::class)
           ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(
-            MODULE_CONNECTION_ID,
-            this
-          ) as? ModuleEntity.Builder)
-            ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
+              MODULE_CONNECTION_ID, this) as? ModuleEntity.Builder)
+              ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!!
+                  as ModuleEntity.Builder)
         } else {
           this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
         }
@@ -186,7 +182,8 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
           // else you're attaching a new entity to an existing entity that is not modifiable
           _diff.addEntity(value as ModifiableWorkspaceEntityBase<WorkspaceEntity, *>)
         }
-        if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
+        if (_diff != null &&
+            (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
           _diff.updateOneToOneParentOfChild(MODULE_CONNECTION_ID, this, value)
         } else {
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
@@ -209,7 +206,9 @@ internal class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity
 
   internal fun isJarsInitialized(): Boolean = ::jars.isInitialized
 
-  override fun wrapAsModifiable(diff: MutableEntityStorage): WorkspaceEntity.Builder<JvmBinaryJarsEntity> {
+  override fun wrapAsModifiable(
+      diff: MutableEntityStorage
+  ): WorkspaceEntity.Builder<JvmBinaryJarsEntity> {
     val modifiable = JvmBinaryJarsEntityImpl.Builder(null)
     modifiable.diff = diff
     modifiable.id = createEntityId()
@@ -228,7 +227,8 @@ internal class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn(
+        "org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity") as EntityMetadata
   }
 
   override fun clone(): JvmBinaryJarsEntityData {
@@ -242,7 +242,9 @@ internal class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity
     return JvmBinaryJarsEntity::class.java
   }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
+  override fun createDetachedEntity(
+      parents: List<WorkspaceEntity.Builder<*>>
+  ): WorkspaceEntity.Builder<*> {
     return JvmBinaryJarsEntity(jars, entitySource) {
       parents.filterIsInstance<ModuleEntity.Builder>().singleOrNull()?.let { this.module = it }
     }

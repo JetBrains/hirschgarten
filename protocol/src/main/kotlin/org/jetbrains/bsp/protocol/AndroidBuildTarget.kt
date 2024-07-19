@@ -12,12 +12,12 @@ public enum class AndroidTargetType(public val value: Int) {
 }
 
 public data class AndroidBuildTarget(
-  val androidJar: String,
-  val androidTargetType: AndroidTargetType,
-  val manifest: String?,
-  val resourceDirectories: List<String>,
-  val resourceJavaPackage: String?,
-  val assetsDirectories: List<String>,
-  var jvmBuildTarget: JvmBuildTarget? = null,
-  var kotlinBuildTarget: KotlinBuildTarget? = null,
+    val androidJar: String,
+    val androidTargetType: AndroidTargetType,
+    val manifest: String?,
+    val resourceDirectories: List<String>,
+    val resourceJavaPackage: String?,
+    val assetsDirectories: List<String>,
+    var jvmBuildTarget: JvmBuildTarget? = null,
+    var kotlinBuildTarget: KotlinBuildTarget? = null,
 )
