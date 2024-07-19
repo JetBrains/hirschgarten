@@ -29,9 +29,8 @@ internal class ProjectDetailsToModuleDetailsTransformer(
       scalacOptions = scalacOptionsIndex[targetId],
       pythonOptions = pythonOptionsIndex[targetId],
       outputPathUris = emptyList(),
-      libraryDependencies = allDependencies.libraryDependencies.map { it.uri }
-        .takeIf { projectDetails.libraries != null },
-      moduleDependencies = allDependencies.moduleDependencies.map { it.uri },
+      libraryDependencies = allDependencies.libraryDependencies.takeIf { projectDetails.libraries != null }?.toList(),
+      moduleDependencies = allDependencies.moduleDependencies.toList(),
       defaultJdkName = projectDetails.defaultJdkName,
       jvmBinaryJars = jvmBinaryJarsIndex[targetId].orEmpty(),
     )

@@ -59,7 +59,7 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     }
 
   private fun BuildTargetInfo.getBuildTargetName(): String =
-    this.displayName ?: this.id
+    this.displayName ?: this.id.uri
 
   private fun maybeAddShowMoreButton(targets: Collection<BuildTargetInfo>) {
     val remainingTargets = targets.size - TARGETS_TO_HIGHLIGHT

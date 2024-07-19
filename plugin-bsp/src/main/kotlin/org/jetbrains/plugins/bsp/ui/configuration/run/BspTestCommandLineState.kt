@@ -58,7 +58,7 @@ public class BspTestCommandLineState(
     BspTestTaskListener(handler)
 
   override fun startBsp(server: JoinedBuildServer): CompletableFuture<*> {
-    val targets = configuration.targets.map { BuildTargetIdentifier(it.id) }
+    val targets = configuration.targets.map { it.id }
     val runParams = TestParams(targets)
     runParams.originId = originId
     return server.buildTargetTest(runParams)

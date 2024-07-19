@@ -9,7 +9,6 @@ import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.AndroidAddendum
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
@@ -147,9 +146,9 @@ internal class ModuleDetailsToJavaModuleTransformer(
     }
   }
 
-  private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetId> {
+  private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetIdentifier> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
-    return kotlinBuildTarget?.associates?.map { it.uri } ?: emptyList()
+    return kotlinBuildTarget?.associates ?: emptyList()
   }
 }
 

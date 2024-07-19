@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import org.jetbrains.plugins.bsp.server.tasks.JvmRunEnvironmentTask
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 
@@ -29,5 +28,5 @@ public class RunWithLocalJvmRunnerAction(
   isDebugMode = isDebugMode
 ) {
   override fun getEnvironment(project: Project): JvmEnvironmentItem? =
-    JvmRunEnvironmentTask(project).connectAndExecute(targetInfo.id.toBsp4JTargetIdentifier())?.items?.first()
+    JvmRunEnvironmentTask(project).connectAndExecute(targetInfo.id)?.items?.first()
 }

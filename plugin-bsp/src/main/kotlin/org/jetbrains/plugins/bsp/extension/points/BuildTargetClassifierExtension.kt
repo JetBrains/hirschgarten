@@ -61,5 +61,5 @@ internal class DefaultBuildTargetClassifierExtension : BuildTargetClassifierExte
 
   override fun calculateBuildTargetPath(buildTargetInfo: BuildTargetInfo): List<String> = emptyList()
 
-  override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = buildTargetInfo.id
+  override fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String = buildTargetInfo.id.uri
 }

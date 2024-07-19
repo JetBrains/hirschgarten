@@ -14,7 +14,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetail
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.toBsp4JTargetIdentifier
 import java.nio.file.Path
 
 internal object TargetIdToModuleEntitiesMap {
@@ -61,6 +60,6 @@ internal object TargetIdToModuleEntitiesMap {
 @TestOnly
 public fun Collection<String>.toDefaultTargetsMap(): Map<BuildTargetIdentifier, BuildTargetInfo> =
   associateBy(
-    keySelector = { it.toBsp4JTargetIdentifier() },
-    valueTransform = { BuildTargetInfo(id = it) }
+    keySelector = { BuildTargetIdentifier(it) },
+    valueTransform = { BuildTargetInfo(id = BuildTargetIdentifier(it)) }
   )

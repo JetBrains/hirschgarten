@@ -264,7 +264,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
-      moduleDependencies = listOf(target2Id.uri),
+      moduleDependencies = listOf(target2Id),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
     )
@@ -292,7 +292,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = null,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
-      moduleDependencies = listOf(target2Id.uri),
+      moduleDependencies = listOf(target2Id),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
     )
@@ -306,7 +306,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
       pythonOptions = target4PythonOptionsItem,
       outputPathUris = emptyList(),
       libraryDependencies = emptyList(),
-      moduleDependencies = listOf(target1Id.uri),
+      moduleDependencies = listOf(target1Id),
       defaultJdkName = null,
       jvmBinaryJars = emptyList(),
     )

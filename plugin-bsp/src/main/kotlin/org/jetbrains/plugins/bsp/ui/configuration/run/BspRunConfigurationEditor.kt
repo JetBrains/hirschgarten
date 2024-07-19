@@ -56,7 +56,7 @@ public class BspRunConfigurationEditor(private val runConfiguration: BspRunConfi
       override val settingsHint: String = "Build target"
       override val settingsActionHint: String = "Build target"
     }, { BspTargetBrowserComponent() }, { s, c ->
-      c.text = s.targets.singleOrNull()?.id ?: ""
+      c.text = s.targets.singleOrNull()?.id?.uri ?: ""
     }, { _, _ ->
       // TODO: set target
     }, { true })
