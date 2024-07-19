@@ -110,6 +110,38 @@ git_override(
 )
 
 bazel_dep(
+    name = "aspect_rules_lint",
+    version = "1.0.0-rc5",
+    dev_dependency = True,
+)
+
+http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+
+http_jar(
+    name = "ktfmt",
+    url = "https://repo1.maven.org/maven2/com/facebook/ktfmt/0.51/ktfmt-0.51-jar-with-dependencies.jar",
+)
+
+http_jar(
+    name = "google_java_format",
+    url = "https://github.com/google/google-java-format/releases/download/v1.22.0/google-java-format-1.22.0-all-deps.jar",
+)
+
+bazel_dep(
+    name = "buildifier_prebuilt",
+    version = "6.4.0",
+    dev_dependency = True,
+)
+bazel_dep(
+    name = "rules_buf",
+    version = "0.3.0",
+    dev_dependency = True,
+)
+
+buf = use_extension("@rules_buf//buf:extensions.bzl", "buf")
+use_repo(buf, "rules_buf_toolchains")
+
+bazel_dep(
     name = "rules_bazel_integration_test",
     version = "0.24.1",
     dev_dependency = True,
