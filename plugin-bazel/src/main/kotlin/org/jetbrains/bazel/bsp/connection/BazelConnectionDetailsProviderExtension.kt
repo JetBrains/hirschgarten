@@ -33,7 +33,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.writeText
 
-private class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectPath.toNioPath()) {
+class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectPath.toNioPath()) {
   override fun create() {
     createDotBazelBsp()
   }

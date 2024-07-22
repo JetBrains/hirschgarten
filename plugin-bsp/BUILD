@@ -88,7 +88,7 @@ intellij_plugin(
 )
 
 intellij_plugin_debug_target(
-    name = "ijwb_bazel_dev",
+    name = "plugin-bsp-debug",
     visibility = ["//visibility:public"],
     deps = [
         ":intellij-bsp_jar",

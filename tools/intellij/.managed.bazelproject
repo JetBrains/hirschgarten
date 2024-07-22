@@ -6,7 +6,8 @@ derive_targets_from_directories: true
 workspace_type: intellij_plugin
 
 targets:
-  //plugin-bazel:ijwb_bazel_dev
+  //plugin-bazel:plugin-bazel-debug
+  //plugin-bazel:plugin-bazel-with-server-debug
 
 build_flags:
   --define=ij_product=intellij-2024.2

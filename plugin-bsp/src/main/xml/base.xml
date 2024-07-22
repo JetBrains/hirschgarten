@@ -48,6 +48,9 @@
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectSyncHook"
                         interface="org.jetbrains.plugins.bsp.flow.open.ProjectSyncHook"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.startBuiltInServerExtension"
+                        interface="org.jetbrains.plugins.bsp.extension.points.BspServerProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">
