@@ -28,10 +28,19 @@ kt_jvm_binary(
 )
 
 kt_jvm_library(
+    name = "intellij-bsp",
+    neverlink = True,
+    exports = [
+        "//plugin-bsp/src:intellij-bsp",
+    ],
+)
+
+kt_jvm_library(
     name = "in_memory_connection",
     srcs = ["src/main/kotlin/org/jetbrains/bsp/inmem/InMemoryConnection.kt"],
     visibility = ["//visibility:public"],
     deps = [
+        ":intellij-bsp",
         "//protocol",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
         "@maven//:ch_epfl_scala_bsp4j",

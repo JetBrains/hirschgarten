@@ -59,7 +59,13 @@ fun main(args0: Array<String>) {
             "--targets", args.target
     ))
 
-    val connection = Connection(installationDirectory, args.metricsFile, args.workspace, BuildClient())
+    val connection = Connection(
+            installationDirectory,
+            args.metricsFile,
+            args.workspace,
+            BuildClient(),
+            propagateTelemetryContext = false,
+    )
 
     val proxy = connection.clientLauncher.remoteProxy
     val buildInitializeResponse = proxy.buildInitialize(
