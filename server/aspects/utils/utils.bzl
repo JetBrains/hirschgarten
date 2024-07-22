@@ -30,7 +30,7 @@ def file_location(file):
         file.path,
         file.root.path if not file.is_source else "",
         file.is_source,
-        file.owner.workspace_root.startswith("..") or file.owner.workspace_root.startswith("external"),
+        file.owner.workspace_root.startswith("external/"),
     )
 
 def _strip_root_exec_path_fragment(path, root_fragment):
@@ -39,8 +39,12 @@ def _strip_root_exec_path_fragment(path, root_fragment):
     return path
 
 def _strip_external_workspace_prefix(path):
-    if path.startswith("../") or path.startswith("external/"):
-        return "/".join(path.split("/")[2:])
+    if path.startswith("external/"):
+        without_prefix = path.split("/", 2)
+        if len(without_prefix) > 2:
+            return without_prefix[2]
+        else:
+            return ""
     return path
 
 def to_file_location(exec_path, root_exec_path_fragment, is_source, is_external):
