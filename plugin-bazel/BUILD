@@ -69,18 +69,6 @@ intellij_plugin(
     ],
 )
 
-intellij_plugin(
-    name = "intellij-bazel_merged",
-    deploy_env = [
-        "intellij-bazel_exclude_debug",
-    ],
-    plugin_xml = ":stamped_plugin_xml",
-    deps = [
-        ":plugin_library",
-        "//plugin-bsp:plugin_library",
-    ],
-)
-
 java_binary(
     name = "intellij-bazel_exclude_debug",
     srcs = ["//plugin-bazel:DummySourceForExclude.java"],
@@ -113,9 +101,50 @@ plugin_deploy_zip(
 )
 
 intellij_plugin_debug_target(
-    name = "ijwb_bazel_dev",
+    name = "plugin-bazel-debug",
     deps = [
         ":intellij-bazel_jar",
         "//plugin-bsp:intellij-bsp_jar",
     ],
+)
+
+intellij_plugin_debug_target(
+    name = "plugin-bazel-with-server-debug",
+    deps = [
+        ":intellij-bazel-with-inmemory-server_jar",
+        "//plugin-bsp:intellij-bsp_jar",
+    ],
+)
+
+java_binary(
+    name = "intellij-bazel-debug_exclude",
+    srcs = ["//plugin-bazel:DummySourceForExclude.java"],
+    main_class = "DummySourceForExclude",
+    deps = [
+        "//protocol",
+        "@maven//:ch_epfl_scala_bsp4j",
+        "@maven//:org_apache_velocity_velocity_engine_core",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
+    ],
+)
+
+intellij_plugin(
+    name = "intellij-bazel-with-inmemory-server",
+    deploy_env = [
+        "intellij-bazel-debug_exclude",
+    ],
+    plugin_deps = ["org.jetbrains.bsp"],
+    plugin_xml = ":stamped_plugin_xml",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":plugin_library",
+        "//plugin-bazel/plugin-inmem-server:plugin_library",
+    ],
+)
+
+repackaged_files(
+    name = "intellij-bazel-with-inmemory-server_jar",
+    srcs = [":intellij-bazel-with-inmemory-server"],
+    prefix = "intellij-bazel-with-inmemory-server/lib",
 )

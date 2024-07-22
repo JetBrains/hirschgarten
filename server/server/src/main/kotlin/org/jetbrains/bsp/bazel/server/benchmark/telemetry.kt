@@ -52,7 +52,7 @@ fun setupTelemetry(config: TelemetryConfig) {
   setupTracing(sdkBuilder, resource, config, fileExporter)
   setupMetrics(sdkBuilder, resource, fileExporter)
   sdkBuilder.setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-  openTelemetry = sdkBuilder.buildAndRegisterGlobal()
+  openTelemetry = sdkBuilder.build()
 
   if (config.metricsFile != null) {
     MemoryProfiler.startRecording()
