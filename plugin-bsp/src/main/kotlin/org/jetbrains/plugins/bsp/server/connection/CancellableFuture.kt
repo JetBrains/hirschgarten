@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.server.connection
 
+import java.lang.ref.WeakReference
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 
@@ -46,10 +47,11 @@ public class CancellableFuture<T> private constructor(private val original: Comp
  * @return this future
  */
 public fun <T> CompletableFuture<T>.reactToExceptionIn(otherFuture: CompletableFuture<*>): CompletableFuture<T> {
+  val thisRef = WeakReference(this)
   otherFuture.whenComplete { _, exception ->
     when (exception) {
-      is CancellationException -> cancel(true)
-      is Throwable -> completeExceptionally(exception)
+      is CancellationException -> thisRef.get()?.cancel(true)
+      is Throwable -> thisRef.get()?.completeExceptionally(exception)
     }
   }
   return this
