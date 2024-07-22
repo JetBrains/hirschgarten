@@ -7,9 +7,9 @@ def create_all_extension_info(target, ctx, output_groups, dep_targets):
 
 def _collect_target_from_attr(rule_attrs, attr_name, result):
     """Collects the targets from the given attr into the result."""
-    if not hasattr(rule_attrs, attr_name):
-        return
-    attr_value = getattr(rule_attrs, attr_name)
+    attr_value = getattr(rule_attrs, attr_name, None)
+    if attr_value == None:
+       return
     type_name = type(attr_value)
     if type_name == "Target":
         result.append(attr_value)
