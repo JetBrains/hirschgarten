@@ -10,6 +10,7 @@ import java.nio.file.Path
 abstract class LanguagePlugin<T : LanguageData> {
 
     open fun calculateSourceRoot(source: Path): Path? = null
+    open fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> = listOf()
     open fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<URI> = emptySet()
     open fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>) {}
     open fun resolveModule(targetInfo: BspTargetInfo.TargetInfo): T? = null

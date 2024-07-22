@@ -3,12 +3,18 @@ package org.jetbrains.bsp.bazel
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.SourceItem
+import ch.epfl.scala.bsp4j.SourceItemKind
+import ch.epfl.scala.bsp4j.SourcesItem
+import ch.epfl.scala.bsp4j.SourcesParams
+import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.GoBuildTarget
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import kotlin.time.Duration.Companion.minutes
 import java.net.URI
+import kotlin.time.Duration.Companion.seconds
 
 object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient()
@@ -29,6 +35,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
 
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> = listOf(
     workspaceBuildTargets(),
+    sourcesResults()
   )
 
   private fun workspaceBuildTargets(): BazelBspTestScenarioStep =
@@ -38,6 +45,50 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
         expectedWorkspaceBuildTargetsResult()
       )
     }
+
+  private fun sourcesResults(): BazelBspTestScenarioStep {
+    val targetHello = SourceItem(
+      "file://\$WORKSPACE/example/hello.go", SourceItemKind.FILE, false
+    )
+    val targetHelloSources = SourcesItem(
+      BuildTargetIdentifier("$targetPrefix//example:hello"),
+      listOf(targetHello)
+    )
+    targetHelloSources.roots = listOf("file://\$WORKSPACE/example/")
+
+    val targetGoDefaultLibrary = SourceItem(
+      "file://\$WORKSPACE/lib/example_lib.go", SourceItemKind.FILE, false
+    )
+    val targetGoDefaultLibrarySources = SourcesItem(
+      BuildTargetIdentifier("$targetPrefix//lib:go_default_library"),
+      listOf(targetGoDefaultLibrary)
+    )
+    targetGoDefaultLibrarySources.roots = listOf("file://\$WORKSPACE/lib/")
+
+    val targetGoDefaultTest = SourceItem(
+      "file://\$WORKSPACE/lib/example_test.go", SourceItemKind.FILE, false
+    )
+    val targetGoDefaultTestSources = SourcesItem(
+      BuildTargetIdentifier("$targetPrefix//lib:go_default_test"),
+      listOf(
+        targetGoDefaultTest,
+        targetGoDefaultLibrary
+      )
+    )
+    targetGoDefaultTestSources.roots = listOf("file://\$WORKSPACE/lib/")
+
+    val sourcesParams = SourcesParams(expectedTargetIdentifiers())
+    val expectedSourcesResult = SourcesResult(
+      listOf(
+        targetHelloSources,
+        targetGoDefaultLibrarySources,
+        targetGoDefaultTestSources
+      )
+    )
+    return BazelBspTestScenarioStep("sources results") {
+      testClient.testSources(30.seconds, sourcesParams, expectedSourcesResult)
+    }
+  }
 
   private fun exampleBuildTarget(): BuildTarget =
     createGoBuildTarget(
@@ -50,7 +101,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       dependencies = listOf(
         BuildTargetIdentifier("$targetPrefix//lib:go_default_library")
       ),
-      importPath = "example/hello"
+      importPath = "example/hello",
     )
 
   private fun libBuildTarget(): BuildTarget =
@@ -72,7 +123,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       capabilities = BuildTargetCapabilities().also {
         it.canCompile = true; it.canTest = true; it.canRun = false; it.canDebug = true
       },
-      importPath = "testmain"
+      importPath = "testmain",
     )
 
   private fun createGoBuildTarget(

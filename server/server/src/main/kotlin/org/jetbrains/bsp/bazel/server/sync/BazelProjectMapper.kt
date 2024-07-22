@@ -5,9 +5,6 @@ import com.google.devtools.build.lib.view.proto.Deps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
@@ -717,7 +714,7 @@ class BazelProjectMapper(
 
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
-    val sources = target.sourcesList.toSet()
+    val sources = (target.sourcesList + languagePlugin.calculateAdditionalSources(target)).toSet()
       .map(bazelPathsResolver::resolve)
       .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
       .filter { it.exists() }
