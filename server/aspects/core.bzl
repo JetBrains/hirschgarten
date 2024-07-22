@@ -108,11 +108,6 @@ def _bsp_target_info_aspect_impl(target, ctx):
         for k, v in dep.bsp_info.output_groups.items():
             if dep in forwarded_deps:
                 output_groups[k] = output_groups[k] + [v] if k in output_groups else [v]
-            elif k.endswith("-direct-deps"):
-                pass
-            elif k.endswith("-outputs"):
-                directs = k[:-len("outputs")] + "direct-deps"
-                output_groups[directs] = output_groups[directs] + [v] if directs in output_groups else [v]
             else:
                 output_groups[k] = output_groups[k] + [v] if k in output_groups else [v]
 

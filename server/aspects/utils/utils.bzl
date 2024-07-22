@@ -67,8 +67,6 @@ def create_struct(**kwargs):
 
 def update_sync_output_groups(groups_dict, key, new_set):
     update_set_in_dict(groups_dict, key + "-transitive-deps", new_set)
-    update_set_in_dict(groups_dict, key + "-outputs", new_set)
-    update_set_in_dict(groups_dict, key + "-direct-deps", new_set)
 
 def update_set_in_dict(input_dict, key, other_set):
     input_dict[key] = depset(transitive = [input_dict.get(key, depset()), other_set])
