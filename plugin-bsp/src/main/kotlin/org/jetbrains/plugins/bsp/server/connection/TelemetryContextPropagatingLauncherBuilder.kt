@@ -10,7 +10,7 @@ import org.eclipse.lsp4j.jsonrpc.json.StreamMessageConsumer
 import org.eclipse.lsp4j.jsonrpc.services.ServiceEndpoints
 import java.io.OutputStream
 
-internal class TelemetryContextPropagatingLauncherBuilder<T> : Launcher.Builder<T>() {
+public class TelemetryContextPropagatingLauncherBuilder<T> : Launcher.Builder<T>() {
   override fun createRemoteEndpoint(jsonHandler: MessageJsonHandler): RemoteEndpoint {
     val outgoingMessageStream =
       wrapMessageConsumer(TelemetryContextPropagatingStreamMessageConsumer(output, jsonHandler))

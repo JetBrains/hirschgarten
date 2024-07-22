@@ -13,6 +13,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.DefaultWorkspaceContextProvider
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
+import org.jetbrains.plugins.bsp.server.connection.TelemetryContextPropagatingLauncherBuilder
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
@@ -26,7 +27,13 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 
-class Connection(installationDirectory: Path, metricsFile: Path?, workspace: Path, client: BuildClient) {
+class Connection(
+    installationDirectory: Path,
+    metricsFile: Path?,
+    workspace: Path,
+    client: BuildClient,
+    propagateTelemetryContext: Boolean,
+) {
     val serverOut = FixedThreadPipedOutputStream()
     val clientOut = FixedThreadPipedOutputStream()
     val serverExecutor = Executors.newFixedThreadPool(4, threadFactory("cli-server-pool-%d"))
@@ -42,7 +49,7 @@ class Connection(installationDirectory: Path, metricsFile: Path?, workspace: Pat
     val serverAliveFuture = serverLauncher.startListening()
 
     val clientExecutor = Executors.newFixedThreadPool(4, threadFactory("cli-client-pool-%d"))
-    val clientLauncher = startClient(serverOut.inputStream, clientOut, clientExecutor, client)
+    val clientLauncher = startClient(serverOut.inputStream, clientOut, clientExecutor, client, propagateTelemetryContext)
     val clientAliveFuture = clientLauncher.startListening()
 
     fun stop() {
@@ -99,22 +106,33 @@ private fun threadFactory(nameFormat: String): ThreadFactory =
         }
         .build()
 
+@Suppress("UNCHECKED_CAST")
 private fun startClient(
-    serverOut: PipedInputStream, clientIn: OutputStream, clientExecutor: ExecutorService?, buildClient: BuildClient
-): Launcher<JoinedBuildServer> =
-    Builder<JoinedBuildServer>()
+    serverOut: PipedInputStream,
+    clientIn: OutputStream,
+    clientExecutor: ExecutorService?,
+    buildClient: BuildClient,
+    propagateTelemetryContext: Boolean,
+): Launcher<JoinedBuildServer> {
+    val builder: Builder<JoinedBuildClient> = if (propagateTelemetryContext) {
+        TelemetryContextPropagatingLauncherBuilder<JoinedBuildServer>() as Builder<JoinedBuildClient>
+    } else {
+        Builder<JoinedBuildClient>()
+    }
+    return builder
         .setInput(serverOut)
         .setOutput(clientIn)
-        .setRemoteInterface(JoinedBuildServer::class.java)
+        .setRemoteInterface(JoinedBuildServer::class.java as Class<JoinedBuildClient>)
         .setExecutorService(clientExecutor)
         .setLocalService(buildClient)
-        .configureGson { builder ->
-            builder.registerTypeAdapter(
+        .configureGson { gsonBuilder ->
+            gsonBuilder.registerTypeAdapter(
                 BuildServerCapabilities::class.java,
                 BazelBuildServerCapabilitiesTypeAdapter(),
             )
         }
-        .create()
+        .create() as Launcher<JoinedBuildServer>
+}
 
 private fun startServer(serverIn: OutputStream,
                         clientOut: PipedInputStream,
