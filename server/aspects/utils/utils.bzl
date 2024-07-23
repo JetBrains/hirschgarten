@@ -82,21 +82,6 @@ def get_aspect_ids(ctx, target):
         return None
     return [aspect_id for aspect_id in aspect_ids if "bsp_target_info_aspect" not in aspect_id]
 
-def create_proto(target, ctx, data, name):
-    if data == None:
-        return None
-
-    aspect_ids = get_aspect_ids(ctx, target)
-    file_name = target.label.name
-    file_name = file_name + "-" + str(abs(hash(file_name)))
-    if aspect_ids:
-        file_name = file_name + "-" + str(abs(hash(".".join(aspect_ids))))
-    file_name = "%s.%s" % (file_name, name)
-    file_name = "%s.bsp-info.textproto" % file_name
-    info_file = ctx.actions.declare_file(file_name)
-    ctx.actions.write(info_file, data.to_proto())
-    return info_file
-
 def is_external(target):
     return not str(target.label).startswith("@@//") and not str(target.label).startswith("@//") and not str(target.label).startswith("//")
 
