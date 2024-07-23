@@ -29,6 +29,7 @@ class TargetKindResolver {
             "test" to setOf(Tag.TEST),
             "proc_macro" to LIBRARY,
             "intellij_plugin_debug_target" to setOf(Tag.INTELLIJ_PLUGIN, Tag.APPLICATION),
+            "plugin" to LIBRARY,
         )
         private val NO_IDE: Set<Tag> = setOf(Tag.NO_IDE)
     }
