@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
@@ -30,7 +31,11 @@ private const val ID = "org.jetbrains.bsp.BspFileTargetsWidget"
 
 public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
   init {
-    project.temporaryTargetUtils.registerListener { update() }
+    project.temporaryTargetUtils.registerListener {
+      ApplicationManager.getApplication().invokeLater {
+        update()
+      }
+    }
   }
 
   override fun ID(): String = ID

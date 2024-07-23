@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import org.jetbrains.plugins.bsp.assets.assets
@@ -40,7 +41,11 @@ private class ListsUpdater(
         searchBarPanel = searchBarPanel,
       )
     loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it, project) }
-    temporaryTargetUtils.registerListener { rerenderComponents() }
+    temporaryTargetUtils.registerListener {
+      ApplicationManager.getApplication().invokeLater {
+        rerenderComponents()
+      }
+    }
   }
 
   fun rerenderComponents() {
