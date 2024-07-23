@@ -93,6 +93,7 @@ object ServerGitHub : Project({
             branchFilter = "+:pull/*"
             triggerRules = """
                 +:/server/**
+                +:*
                 -:**.md
                 -:**.yml
                 -:LICENSE
@@ -172,6 +173,7 @@ object ServerSpace : Project({
             """.trimIndent()
             triggerRules = """
                 +:/server/**
+                +:*
                 -:**.md
                 -:**.yml
                 -:LICENSE
@@ -231,6 +233,7 @@ object PluginBspGitHub : Project({
         vcs {
             triggerRules = """
                 +:/plugin-bsp/**
+                +:*
                 -:**.md
                 -:**.yml
                 -:LICENSE
@@ -284,6 +287,7 @@ object PluginBspSpace : Project({
         vcs {
             triggerRules = """
                 +:/plugin-bsp/**
+                +:*
                 -:**.md
                 -:**.yml
                 -:LICENSE
@@ -335,6 +339,7 @@ object PluginBazelGitHub : Project({
         vcs {
             triggerRules = """
                 +:/plugin-bazel/**
+                +:*
                 -:**.md
                 -:**.yml
                 -:LICENSE
@@ -385,6 +390,7 @@ object PluginBazelSpace : Project({
         vcs {
             triggerRules = """
                 +:/plugin-bazel/**
+                +:*
                 -:**.md
                 -:**.yml
                 -:LICENSE
