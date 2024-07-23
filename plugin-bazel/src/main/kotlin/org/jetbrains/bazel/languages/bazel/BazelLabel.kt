@@ -1,6 +1,11 @@
 package org.jetbrains.bazel.languages.bazel
 
-data class BazelLabel(val repoName: String, val packageName: String, val targetName: String) {
+data class BazelLabel(
+  val repoName: String,
+  val packageName: String,
+  val targetName: String,
+  val hasPackageName: Boolean
+) {
   val qualifiedPackageName = "$repoName//$packageName"
   val qualifiedTargetName = "$qualifiedPackageName:$targetName"
 
@@ -8,7 +13,7 @@ data class BazelLabel(val repoName: String, val packageName: String, val targetN
     fun ofString(label: String): BazelLabel {
       val (repoName, packageAndTarget) = label.getRepoNameAndPackageWithTarget()
       val (packageName, targetName) = packageAndTarget.getPackageNameAndTargetName(label)
-      return BazelLabel(repoName, packageName, targetName)
+      return BazelLabel(repoName, packageName, targetName, label.contains("//"))
     }
 
     private fun String.getRepoNameAndPackageWithTarget(): Pair<String, String> =
