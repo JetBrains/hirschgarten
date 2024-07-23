@@ -29,3 +29,18 @@ kt_jvm_library(
         ":open_for_testing",
     ],
 )
+
+kt_jvm_library(
+    name = "open_for_testing_export",
+    srcs = [],
+    exported_compiler_plugins = [":open_for_testing_plugin"],
+    exports = [":open_for_testing"],
+)
+
+kt_jvm_library(
+    name = "user_of_export",
+    srcs = ["User.kt"],
+    deps = [
+        ":open_for_testing_export",
+    ],
+)

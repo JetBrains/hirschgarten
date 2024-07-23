@@ -5,10 +5,10 @@ import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.bazel.install.Install
+import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import kotlin.time.Duration.Companion.seconds
 
 object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
@@ -97,6 +97,7 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     openForTestingBuildTarget.data = openForTestingBuildTargetData
     openForTestingBuildTarget.dataKind = "kotlin"
 
+
     val userBuildTargetData = KotlinBuildTarget(
       languageVersion = "1.9",
       apiVersion = "1.9",
@@ -132,8 +133,52 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     userBuildTarget.data = userBuildTargetData
     userBuildTarget.dataKind = "kotlin"
 
+
+    val userOfExportBuildTarget = BuildTarget(BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:user_of_export"),
+      listOf("library"),
+      listOf("java", "kotlin"),
+      listOf(
+        BuildTargetIdentifier("rules_kotlin_kotlin-stdlibs"),
+        BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
+        BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing_export"),
+        BuildTargetIdentifier("allopen-compiler-plugin.jar"),
+      ),
+      BuildTargetCapabilities().also {
+        it.canCompile = true
+        it.canTest = false
+        it.canRun = false
+        it.canDebug = false
+      })
+    userOfExportBuildTarget.displayName = "@//plugin_allopen_test:user_of_export"
+    userOfExportBuildTarget.baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/"
+    userOfExportBuildTarget.data = userBuildTargetData
+    userOfExportBuildTarget.dataKind = "kotlin"
+
+
+    val openForTestingExport = BuildTarget(BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:open_for_testing_export"),
+      listOf("library"),
+      listOf(),
+      listOf(
+        BuildTargetIdentifier("rules_kotlin_kotlin-stdlibs"),
+        BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
+      ),
+      BuildTargetCapabilities().also {
+        it.canCompile = true
+        it.canTest = false
+        it.canRun = false
+        it.canDebug = false
+      })
+    openForTestingExport.displayName = "@//plugin_allopen_test:open_for_testing_export"
+    openForTestingExport.baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/"
+
     return WorkspaceBuildTargetsResult(
-      listOf(kotlincTestBuildTarget, openForTestingBuildTarget, userBuildTarget)
+      listOf(
+        kotlincTestBuildTarget,
+        openForTestingBuildTarget,
+        userBuildTarget,
+        userOfExportBuildTarget,
+        openForTestingExport,
+      )
     )
   }
 
