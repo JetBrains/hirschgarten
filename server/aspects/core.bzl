@@ -176,7 +176,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     file_name = file_name + "-" + str(abs(hash(file_name)))
     if aspect_ids:
         file_name = file_name + "-" + str(abs(hash(".".join(aspect_ids))))
-    file_name = "%s.bsp-info.textproto" % file_name
+    file_name = "bsp.%s.bsp-info.textproto" % file_name
     info_file = ctx.actions.declare_file(file_name)
     ctx.actions.write(info_file, create_struct(**info).to_proto())
     update_sync_output_groups(output_groups, "bsp-target-info", depset([info_file]))
