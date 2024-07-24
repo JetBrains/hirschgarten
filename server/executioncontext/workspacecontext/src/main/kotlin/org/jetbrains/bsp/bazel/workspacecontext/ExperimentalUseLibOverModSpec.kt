@@ -10,5 +10,5 @@ data class ExperimentalUseLibOverModSpec(
 
 internal object ExperimentalUseLibOverModSpecExtractor : ExecutionContextEntityExtractor<ExperimentalUseLibOverModSpec> {
   override fun fromProjectView(projectView: ProjectView): ExperimentalUseLibOverModSpec =
-    ExperimentalUseLibOverModSpec(projectView.useLibOverModSection?.value ?: false)
+    ExperimentalUseLibOverModSpec(projectView.useLibOverModSection?.value ?: true)
 }
