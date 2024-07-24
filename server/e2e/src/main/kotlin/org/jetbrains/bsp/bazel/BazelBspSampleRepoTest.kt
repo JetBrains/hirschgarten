@@ -1213,7 +1213,10 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTargetIdentifier("$targetPrefix//java_targets:java_library_exported"),
       listOf("library"),
       emptyList(),
-      listOf(BuildTargetIdentifier("$targetPrefix//java_targets/subpackage:java_library")),
+      listOf(
+        BuildTargetIdentifier("$targetPrefix//java_targets/subpackage:java_library"),
+        BuildTargetIdentifier("$targetPrefix//java_targets:java_library_exported_output_jars"),
+      ),
       BuildTargetCapabilities().also {
         it.canCompile = true; it.canTest = false; it.canRun = false; it.canDebug = false
       }
