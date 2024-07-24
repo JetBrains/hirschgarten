@@ -23,12 +23,12 @@ public class BspProjectSystemBuildManager(private val project: Project) : Projec
   override fun addBuildListener(parentDisposable: Disposable, buildListener: ProjectSystemBuildManager.BuildListener) {
     project.messageBus.connect(parentDisposable).subscribe(BspWorkspaceListener.TOPIC, object : BspWorkspaceListener {
       override fun syncStarted() {
-        buildListener.buildStarted(BuildMode.COMPILE)
+        buildListener.buildStarted(BuildMode.COMPILE_OR_ASSEMBLE)
       }
 
       override fun syncFinished(canceled: Boolean) {
         val status = if (canceled) BuildStatus.CANCELLED else BuildStatus.SUCCESS
-        buildListener.buildCompleted(BuildResult(BuildMode.COMPILE, status, System.currentTimeMillis()))
+        buildListener.buildCompleted(BuildResult(BuildMode.COMPILE_OR_ASSEMBLE, status, System.currentTimeMillis()))
       }
     })
   }
