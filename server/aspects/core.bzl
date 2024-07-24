@@ -106,15 +106,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     output_groups = dict()
     for dep in dep_targets:
         for k, v in dep.bsp_info.output_groups.items():
-            if dep in forwarded_deps:
-                output_groups[k] = output_groups[k] + [v] if k in output_groups else [v]
-            elif k.endswith("-direct-deps"):
-                pass
-            elif k.endswith("-outputs"):
-                directs = k[:-len("outputs")] + "direct-deps"
-                output_groups[directs] = output_groups[directs] + [v] if directs in output_groups else [v]
-            else:
-                output_groups[k] = output_groups[k] + [v] if k in output_groups else [v]
+            output_groups[k] = output_groups[k] + [v] if k in output_groups else [v]
 
     for k, v in output_groups.items():
         output_groups[k] = depset(transitive = v)
@@ -184,7 +176,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     file_name = file_name + "-" + str(abs(hash(file_name)))
     if aspect_ids:
         file_name = file_name + "-" + str(abs(hash(".".join(aspect_ids))))
-    file_name = "%s.bsp-info.textproto" % file_name
+    file_name = "bsp.%s.bsp-info.textproto" % file_name
     info_file = ctx.actions.declare_file(file_name)
     ctx.actions.write(info_file, create_struct(**info).to_proto())
     update_sync_output_groups(output_groups, "bsp-target-info", depset([info_file]))

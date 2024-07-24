@@ -1,0 +1,21 @@
+### Requirements
+
+1) `Idea 24.2 Nightly`  
+(If doesn't work in Nightly, try `IDEA 24.2 Beta`)
+2) Latest plugins installed as explained on [landing page](https://lp.jetbrains.com/new-bazel-plugin/#:~:text=Install%20plugin)  
+Debug/developer run configurations are currently tied to our latest plugins, so you have to install both plugins
+
+
+### How to develop/debug plugins
+
+1) `git clone git@github.com:JetBrains/hirschgarten.git`
+2) Open the cloned `hirschgarten` repo in IDEA and wait for it to import.
+3) Open "File->Project Structure". Click "SDKs".
+4) Hit the "+" button. Click "Download JDK". Install JetBrains Runtime (JCEF) version 21.  
+   <img src="dev1.png" width="400">  
+5) Hit the "+" button. Click "Add IntelliJ Platform Plugin SDK from disk". A "Contents" folder will pop up, hit "Open" in Finder.  
+   <img src="dev2.png" width="400">  
+6) A "Select Internal Java Platform" dialog will open. Select "jbr-21" in the dropdown list and click "OK". Then click "OK" again.  
+   <img src="dev3.png" width="400">  
+7) In the target view, expand the "plugin-bazel" subtree. Right-click "plugin-bazel-with-server-debug" and click "Run". You can use the created run configuration for the current session, but you'll have to right-click the target again next time you open the project.    
+   <img src="dev4.png" width="400">  
