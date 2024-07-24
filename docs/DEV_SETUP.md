@@ -1,10 +1,9 @@
 ### Requirements
 
-1) `Idea 24.2 Nightly`  
-(If doesn't work in Nightly, try `IDEA 24.2 Beta`)
+1) `Idea 24.2 Beta`  
 2) Latest plugins installed as explained on [landing page](https://lp.jetbrains.com/new-bazel-plugin/#:~:text=Install%20plugin)  
 Debug/developer run configurations are currently tied to our latest plugins, so you have to install both plugins
-3) [Plugin DevKit plugin](https://plugins.jetbrains.com/plugin/22851-plugin-devkit) installed.
+3) [Plugin DevKit](https://plugins.jetbrains.com/plugin/22851-plugin-devkit/versions/stable) - for now works only with version 242.20224.23 from the marketplace
 
 
 ### How to develop/debug plugins
