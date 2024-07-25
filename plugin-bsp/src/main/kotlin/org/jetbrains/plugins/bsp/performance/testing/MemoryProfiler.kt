@@ -24,11 +24,10 @@ import kotlin.time.Duration
 private const val MB = 1024 * 1024
 
 internal object MemoryProfiler : NotificationListener {
-  private val maxUsedMb = AtomicLong()
-  private val usedAtExitMb = AtomicLong()
+  private val maxMemoryMb = AtomicLong()
 
-  fun startRecording() {
-    createOpenTelemetryMemoryGauges()
+  fun startRecordingMaxMemory() {
+    registerMaxMemoryGauge()
     registerMetricsExporter()
 
     for (bean in ManagementFactory.getGarbageCollectorMXBeans()) {
@@ -36,13 +35,11 @@ internal object MemoryProfiler : NotificationListener {
     }
   }
 
-  private fun createOpenTelemetryMemoryGauges() {
-    val maxUsedMbGauge = bspMeter.gaugeBuilder("bsp.max.used.memory.mb").ofLongs().buildObserver()
-    val usedAtExistMbGauge = bspMeter.gaugeBuilder("bsp.used.at.exit.mb").ofLongs().buildObserver()
+  private fun registerMaxMemoryGauge() {
+    val maxMemoryMbGauge = bspMeter.gaugeBuilder("bsp.max.used.memory.mb").ofLongs().buildObserver()
     bspMeter.batchCallback({
-      maxUsedMbGauge.record(maxUsedMb.get())
-      usedAtExistMbGauge.record(usedAtExitMb.get())
-    }, maxUsedMbGauge, usedAtExistMbGauge)
+      maxMemoryMbGauge.record(maxMemoryMb.get())
+    }, maxMemoryMbGauge)
   }
 
   private fun registerMetricsExporter() {
@@ -59,17 +56,23 @@ internal object MemoryProfiler : NotificationListener {
   override fun handleNotification(notification: Notification, handback: Any?) {
     if (notification.type != GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION) return
     val usedMb = getUsedMemoryMb()
-    maxUsedMb.getAndUpdate { max(it, usedMb) }
+    maxMemoryMb.getAndUpdate { max(it, usedMb) }
   }
 
-  fun stopRecording() {
+  fun stopRecordingMaxMemory() {
     for (bean in ManagementFactory.getGarbageCollectorMXBeans()) {
       (bean as? NotificationEmitter)?.removeNotificationListener(this)
     }
+  }
+
+  fun recordMemory(gaugeName: String) {
     forceGc()
-    val usedAtExitMb = getUsedMemoryMb()
-    this.usedAtExitMb.set(usedAtExitMb)
-    maxUsedMb.getAndUpdate { max(it, usedAtExitMb) }
+    val usedMb = getUsedMemoryMb()
+
+    val gauge = bspMeter.gaugeBuilder(gaugeName).ofLongs().buildObserver()
+    bspMeter.batchCallback({
+      gauge.record(usedMb)
+    }, gauge)
   }
 
   private fun getUsedMemoryMb(): Long {

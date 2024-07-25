@@ -19,6 +19,7 @@ import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
 import com.intellij.tools.ide.performanceTesting.commands.takeScreenshot
+import com.intellij.tools.ide.performanceTesting.commands.waitForSmartMode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.kodein.di.DI
@@ -70,11 +71,14 @@ class BazelTest {
     installPlugin(context, System.getProperty("bsp.benchmark.bazel.plugin.zip"))
 
     val commands = CommandChain()
-      .startMemoryProfiling()
+      .startRecordingMaxMemory()
       .openBspToolWindow()
       .takeScreenshot("startSync")
       .waitForBazelSync()
-      .stopMemoryProfiling()
+      .recordMemory("bsp.used.after.sync.mb")
+      .stopRecordingMaxMemory()
+      .waitForSmartMode()
+      .recordMemory("bsp.used.after.indexing.mb")
       .exitApp()
     val startResult = context.runIDE(commands = commands)
 
@@ -190,13 +194,18 @@ private fun <T : CommandChain> T.waitForBazelSync(): T {
   return this
 }
 
-private fun <T : CommandChain> T.startMemoryProfiling(): T {
-  addCommand(CMD_PREFIX + "startMemoryProfiling")
+private fun <T : CommandChain> T.startRecordingMaxMemory(): T {
+  addCommand(CMD_PREFIX + "startRecordingMaxMemory")
   return this
 }
 
-private fun <T : CommandChain> T.stopMemoryProfiling(): T {
-  addCommand(CMD_PREFIX + "stopMemoryProfiling")
+private fun <T : CommandChain> T.stopRecordingMaxMemory(): T {
+  addCommand(CMD_PREFIX + "stopRecordingMaxMemory")
+  return this
+}
+
+private fun <T : CommandChain> T.recordMemory(gaugeName: String): T {
+  addCommand(CMD_PREFIX + "recordMemory", gaugeName)
   return this
 }
 
