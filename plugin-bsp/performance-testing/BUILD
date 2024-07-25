@@ -17,7 +17,7 @@ kt_test(
         "-Dbsp.benchmark.bazel.plugin.zip=%s" % INTELLIJ_BAZEL_PLUGIN_ZIP,
     ],
     resources = [
-        "//plugin-bazel:intellij-bazel_zip",
+        "//plugin-bazel:intellij-bazel-with-inmemory-server_zip",
         "//plugin-bsp:intellij-bsp_zip",
     ],
     tags = ["manual"],

@@ -178,3 +178,12 @@ repackaged_files(
     srcs = [":intellij-bazel-with-inmemory-server"],
     prefix = "intellij-bazel-with-inmemory-server/lib",
 )
+
+plugin_deploy_zip(
+    name = "intellij-bazel-with-inmemory-server_zip",
+    srcs = [
+        ":intellij-bazel-with-inmemory-server_jar",
+    ],
+    visibility = ["//visibility:public"],
+    zip_filename = "intellij-bazel-with-inmemory-server.zip",
+)
