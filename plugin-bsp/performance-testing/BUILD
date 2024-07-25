@@ -1,8 +1,8 @@
 load("//plugin-bsp/rules/kotlin:junit5.bzl", "kt_test")
 
-INTELLIJ_BSP_PLUGIN_ZIP = "plugin-bsp/intellij-bazel-with-inmemory-server.zip"
+INTELLIJ_BSP_PLUGIN_ZIP = "plugin-bsp/intellij-bsp.zip"
 
-INTELLIJ_BAZEL_PLUGIN_ZIP = "plugin-bazel/intellij-bazel.zip"
+INTELLIJ_BAZEL_PLUGIN_ZIP = "plugin-bazel/intellij-bazel-with-inmemory-server.zip"
 
 PLATFORM_VERSION = "242.19890.14"
 
