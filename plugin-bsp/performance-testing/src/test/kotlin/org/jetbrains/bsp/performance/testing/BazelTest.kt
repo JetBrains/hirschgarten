@@ -24,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
+import java.io.File
 import java.io.FileOutputStream
 import java.net.URI
 import java.nio.file.Path
@@ -67,6 +68,7 @@ class BazelTest {
       .useEAP()
     val context = Starter.newContext(projectName, testCase)
       .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
+      .patchPathVariable()
     installPlugin(context, System.getProperty("bsp.benchmark.bsp.plugin.zip"))
     installPlugin(context, System.getProperty("bsp.benchmark.bazel.plugin.zip"))
 
@@ -184,6 +186,23 @@ class BazelTest {
     val value = System.getProperty(key) ?: return this
     applyVMOptionsPatch {
       addSystemProperty(key, value)
+    }
+    return this
+  }
+
+  /**
+   * Bazel adds the current version of itself to the PATH variable that is passed to the test.
+   * This causes `.bazelversion` of the test project to be ignored.
+   */
+  private fun IDETestContext.patchPathVariable(): IDETestContext {
+    var path = checkNotNull(System.getenv("PATH")){ "PATH is null" }
+    val paths = path.split(File.pathSeparator)
+    if (paths[0] == "." && "bazelisk" in paths[1]) {
+      path = paths.drop(2).joinToString(File.pathSeparator)
+    }
+    applyVMOptionsPatch {
+      withEnv("PATH", path)
+      withEnv("HOME", System.getProperty("user.home"))
     }
     return this
   }
