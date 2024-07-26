@@ -8,9 +8,9 @@ import org.jetbrains.bsp.protocol.AndroidTargetType.APP
 import org.jetbrains.bsp.protocol.AndroidTargetType.LIBRARY
 import org.jetbrains.bsp.protocol.AndroidTargetType.TEST
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.AndroidAddendum
-import org.jetbrains.workspacemodel.entities.AndroidAddendumEntity
-import org.jetbrains.workspacemodel.entities.AndroidTargetType
-import org.jetbrains.workspacemodel.entities.androidAddendumEntity
+import org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendumEntity
+import org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidTargetType
+import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
 import java.nio.file.Path
 
 internal class AndroidAddendumEntityUpdater(

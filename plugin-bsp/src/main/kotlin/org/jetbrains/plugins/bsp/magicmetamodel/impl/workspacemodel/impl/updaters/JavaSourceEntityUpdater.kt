@@ -13,12 +13,14 @@ internal class JavaSourceEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
 ) : WorkspaceModelEntityWithParentModuleUpdater<JavaSourceRoot, JavaSourceRootPropertiesEntity> {
   private val sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+  private val generatedJavaSourceEntityUpdater = GeneratedJavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntities(
-    entriesToAdd: List<JavaSourceRoot>,
+    entitiesToAdd: List<JavaSourceRoot>,
     parentModuleEntity: ModuleEntity
   ): List<JavaSourceRootPropertiesEntity> {
-    val sourceRootEntities = sourceEntityUpdater.addEntities(entriesToAdd.map { entityToAdd ->
+    generatedJavaSourceEntityUpdater.addEntities(entitiesToAdd)
+    val sourceRootEntities = sourceEntityUpdater.addEntities(entitiesToAdd.map { entityToAdd ->
       GenericSourceRoot(
         entityToAdd.sourcePath,
         entityToAdd.rootType,
@@ -26,7 +28,7 @@ internal class JavaSourceEntityUpdater(
       )
     }, parentModuleEntity)
 
-    return (sourceRootEntities zip entriesToAdd).map { (sourceRootEntity, entityToAdd) ->
+    return (sourceRootEntities zip entitiesToAdd).map { (sourceRootEntity, entityToAdd) ->
       addJavaSourceRootEntity(
         workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
         sourceRootEntity,

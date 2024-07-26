@@ -20,7 +20,7 @@ import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -162,7 +162,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
 
     // when
     val returnedModuleEntries = runTestWriteAction {
-      moduleEntityUpdater.addEntries(modules)
+      moduleEntityUpdater.addEntities(modules)
     }
 
     // then

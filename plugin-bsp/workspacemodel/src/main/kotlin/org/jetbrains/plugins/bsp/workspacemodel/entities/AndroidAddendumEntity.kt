@@ -1,4 +1,4 @@
-package org.jetbrains.workspacemodel.entities
+package org.jetbrains.plugins.bsp.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource

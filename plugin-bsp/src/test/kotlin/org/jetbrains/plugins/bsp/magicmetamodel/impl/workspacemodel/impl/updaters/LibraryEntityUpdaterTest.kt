@@ -83,7 +83,7 @@ internal class LibraryEntityUpdaterTest : WorkspaceModelBaseTest() {
 
     // when
     val returnedLibraryEntries = runTestWriteAction {
-      libraryEntityUpdater.addEntries(libraries)
+      libraryEntityUpdater.addEntities(libraries)
     }
 
     // then
