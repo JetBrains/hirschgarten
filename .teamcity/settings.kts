@@ -149,7 +149,7 @@ object ServerSpace : Project({
             buildType(BazelE2eTests.AndroidKotlinProjectSpace)
             buildType(BazelE2eTests.ScalaProjectSpace)
             buildType(BazelE2eTests.KotlinProjectSpace)
-//            buildType(BazelE2ePluginTests.Space)
+            buildType(BazelE2ePluginTests.Space)
             buildType(BazelBenchmark.Space)
         }
 

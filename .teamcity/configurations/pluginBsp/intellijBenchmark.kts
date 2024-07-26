@@ -32,7 +32,7 @@ open class Benchmark (
             id = "run_benchmark"
             command = "test"
             targets = "//plugin-bsp/performance-testing"
-            arguments = "--jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/"
+            arguments = "--jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/ --action_env=PATH"
             param("toolPath", "/usr/local/bin")
         }
     }

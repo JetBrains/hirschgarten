@@ -6,7 +6,7 @@ exports_files(["main/resources/META-INF/base.xml"])
 
 proto_library(
     name = "starlark_annotations_proto",
-    srcs = glob(["proto/**/*.proto"]),
+    srcs = glob(["main/proto/**/*.proto"]),
 )
 
 java_proto_library(
@@ -25,7 +25,6 @@ kt_jvm_library(
 kt_jvm_library(
     name = "intellij-bazel",
     srcs = glob([
-        "main/kotlin/**/*.java",
         "main/kotlin/**/*.kt",
         "main/gen/**/*.java",
     ]),
