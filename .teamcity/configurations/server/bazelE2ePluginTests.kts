@@ -31,7 +31,7 @@ open class PluginRun(
             id = "run_plugin"
             command = "test"
             targets = "//plugin-bsp/performance-testing"
-            arguments = "--jvmopt=\"-Dbsp.benchmark.cache.directory=%system.teamcity.build.tempDir%\"  --jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/"
+            arguments = "--jvmopt=\"-Dbsp.benchmark.cache.directory=%system.teamcity.build.tempDir%\"  --jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/ --action_env=PATH"
             param("toolPath", "/usr/local/bin")
         }
     }
