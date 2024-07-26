@@ -4,8 +4,8 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity
-import org.jetbrains.workspacemodel.entities.jvmBinaryJarsEntity
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JvmBinaryJarsEntity
+import org.jetbrains.plugins.bsp.workspacemodel.entities.jvmBinaryJarsEntity
 
 internal class JvmBinaryJarsEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,

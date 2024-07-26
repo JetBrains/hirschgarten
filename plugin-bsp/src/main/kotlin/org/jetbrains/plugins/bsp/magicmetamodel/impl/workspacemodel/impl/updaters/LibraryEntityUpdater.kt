@@ -10,7 +10,7 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
-import org.jetbrains.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 
 internal class LibraryEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,

@@ -81,8 +81,8 @@ import org.jetbrains.plugins.bsp.utils.SdkUtils
 import org.jetbrains.plugins.bsp.utils.findLibraryNameProvider
 import org.jetbrains.plugins.bsp.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.orDefault
-import org.jetbrains.workspacemodel.entities.BspDummyEntitySource
-import org.jetbrains.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException

@@ -28,9 +28,9 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Intermediate
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
-import org.jetbrains.workspacemodel.entities.BspDummyEntitySource
-import org.jetbrains.workspacemodel.entities.BspEntitySource
-import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
 
 internal class ModuleEntityUpdater(
   private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,

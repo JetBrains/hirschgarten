@@ -1,4 +1,4 @@
-package org.jetbrains.workspacemodel.entities.impl
+package org.jetbrains.plugins.bsp.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.ConnectionId
@@ -23,21 +23,17 @@ import com.intellij.platform.workspace.storage.instrumentation.EntityStorageInst
 import com.intellij.platform.workspace.storage.instrumentation.MutableEntityStorageInstrumentation
 import com.intellij.platform.workspace.storage.metadata.model.EntityMetadata
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
-import org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JvmBinaryJarsEntity
 
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) : JvmBinaryJarsEntity,
-  WorkspaceEntityBase(dataSource) {
+internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) : JvmBinaryJarsEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(
-      ModuleEntity::class.java,
-      JvmBinaryJarsEntity::class.java,
-      ConnectionId.ConnectionType.ONE_TO_ONE,
-      false
-    )
+    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, JvmBinaryJarsEntity::class.java,
+                                                                          ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -65,8 +61,8 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
   }
 
 
-  internal class Builder(result: JvmBinaryJarsEntityData?) :
-    ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(result), JvmBinaryJarsEntity.Builder {
+  internal class Builder(result: JvmBinaryJarsEntityData?) : ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(
+    result), JvmBinaryJarsEntity.Builder {
     internal constructor() : this(JvmBinaryJarsEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -74,7 +70,8 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
         if (existsInBuilder(builder)) {
           this.diff = builder
           return
-        } else {
+        }
+        else {
           error("Entity JvmBinaryJarsEntity is already created in a different builder")
         }
       }
@@ -104,7 +101,8 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
         if (_diff.extractOneToOneParent<WorkspaceEntityBase>(MODULE_CONNECTION_ID, this) == null) {
           error("Field JvmBinaryJarsEntity#module should be initialized")
         }
-      } else {
+      }
+      else {
         if (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)] == null) {
           error("Field JvmBinaryJarsEntity#module should be initialized")
         }
@@ -151,7 +149,8 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
         if (collection_jars !is MutableWorkspaceList) return collection_jars
         if (diff == null || modifiable.get()) {
           collection_jars.setModificationUpdateAction(jarsUpdater)
-        } else {
+        }
+        else {
           collection_jars.cleanModificationUpdateAction()
         }
         return collection_jars
@@ -167,12 +166,10 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
         val _diff = diff
         return if (_diff != null) {
           @OptIn(EntityStorageInstrumentationApi::class)
-          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(
-            MODULE_CONNECTION_ID,
-            this
-          ) as? ModuleEntity.Builder)
-            ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
-        } else {
+          ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModuleEntity.Builder)
+          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
+        }
+        else {
           this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
         }
       }
@@ -188,7 +185,8 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
           _diff.updateOneToOneParentOfChild(MODULE_CONNECTION_ID, this, value)
-        } else {
+        }
+        else {
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
           }
@@ -205,7 +203,7 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
 
 @OptIn(WorkspaceEntityInternalApi::class)
 internal class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity>() {
-  public lateinit var jars: MutableList<VirtualFileUrl>
+  lateinit var jars: MutableList<VirtualFileUrl>
 
   internal fun isJarsInitialized(): Boolean = ::jars.isInitialized
 
@@ -228,7 +226,8 @@ internal class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.workspacemodel.entities.JvmBinaryJarsEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn(
+      "org.jetbrains.plugins.bsp.workspacemodel.entities.JvmBinaryJarsEntity") as EntityMetadata
   }
 
   override fun clone(): JvmBinaryJarsEntityData {

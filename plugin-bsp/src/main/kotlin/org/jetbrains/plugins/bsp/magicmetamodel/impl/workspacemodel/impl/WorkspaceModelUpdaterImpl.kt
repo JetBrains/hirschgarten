@@ -18,8 +18,8 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.JavaModuleToDummyJavaModulesTransformerHACK
-import org.jetbrains.workspacemodel.entities.BspEntitySource
-import org.jetbrains.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
 import java.nio.file.Path
 
 internal class WorkspaceModelUpdaterImpl(
@@ -48,7 +48,7 @@ internal class WorkspaceModelUpdaterImpl(
     when (module) {
       is JavaModule -> {
         val dummyJavaModules = javaModuleToDummyJavaModulesTransformerHACK.transform(module)
-        javaModuleUpdater.addEntries(dummyJavaModules.filterNot { it.isAlreadyAdded() })
+        javaModuleUpdater.addEntities(dummyJavaModules.filterNot { it.isAlreadyAdded() })
         javaModuleUpdater.addEntity(module)
       }
       is PythonModule -> pythonModuleUpdater.addEntity(module)
@@ -57,7 +57,7 @@ internal class WorkspaceModelUpdaterImpl(
 
   override fun loadLibraries(libraries: List<Library>) {
     val libraryEntityUpdater = LibraryEntityUpdater(workspaceModelEntityUpdaterConfig)
-    libraryEntityUpdater.addEntries(libraries)
+    libraryEntityUpdater.addEntities(libraries)
   }
 
   override fun loadDirectories(includedDirectories: List<VirtualFileUrl>, excludedDirectories: List<VirtualFileUrl>) {
