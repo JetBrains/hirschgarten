@@ -31,7 +31,8 @@ open class Benchmark(vcsRoot: GitVcsRoot) :
         id = "run_benchmark"
         command = "test"
         targets = "//plugin-bsp/performance-testing"
-        arguments = "--jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/ --action_env=PATH --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+        arguments =
+          "--jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/ --action_env=PATH --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
         param("toolPath", "/usr/local/bin")
       }
     },

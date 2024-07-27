@@ -29,7 +29,8 @@ open class E2ETest(
         this.command = "test"
         this.targets = targets
         // This fixes FileUtils.getCacheDirectory in integration tests
-        this.arguments = "--sandbox_writable_path=/home/teamcity/.cache --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+        this.arguments =
+          "--sandbox_writable_path=/home/teamcity/.cache --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
         logging = BazelStep.Verbosity.Diagnostic
         param("toolPath", "/usr/local/bin")
       }
