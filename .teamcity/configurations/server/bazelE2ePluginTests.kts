@@ -31,7 +31,8 @@ open class PluginRun(vcsRoot: GitVcsRoot) :
         id = "run_plugin"
         command = "test"
         targets = "//plugin-bsp/performance-testing"
-        arguments ="--jvmopt=\"-Dbsp.benchmark.cache.directory=%system.teamcity.build.tempDir%\"  --jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/ --action_env=PATH --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+        arguments =
+          "--jvmopt=\"-Dbsp.benchmark.cache.directory=%system.teamcity.build.tempDir%\"  --jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/ --action_env=PATH --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
         param("toolPath", "/usr/local/bin")
       }
     },
