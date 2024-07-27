@@ -15,6 +15,7 @@ open class Build(vcsRoot: GitVcsRoot) :
         name = "build plugin"
         command = "build"
         targets = "//plugin-bazel/..."
+        arguments = "--announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
         param("toolPath", "/usr/local/bin")
       }
     },

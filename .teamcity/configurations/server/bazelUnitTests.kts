@@ -14,7 +14,7 @@ open class UnitTests(vcsRoot: GitVcsRoot) :
         name = "bazel test //..."
         command = "test"
         targets = "//server/..."
-        arguments = "--test_output=errors"
+        arguments = "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
         param("toolPath", "/usr/local/bin")
       }
     },

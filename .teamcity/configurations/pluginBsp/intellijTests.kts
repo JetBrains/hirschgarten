@@ -15,6 +15,7 @@ open class UnitTests(vcsRoot: GitVcsRoot) :
         id = "run_unit_tests"
         command = "test"
         targets = "//plugin-bsp/..."
+        arguments = "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
         param("toolPath", "/usr/local/bin")
       }
     },
