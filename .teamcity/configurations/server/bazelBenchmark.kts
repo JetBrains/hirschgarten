@@ -17,6 +17,7 @@ open class Benchmark(vcsRoot: GitVcsRoot) :
         id = "generate_project_for_benchmark"
         command = "run"
         targets = "//server/bspcli:generator /tmp/project_10 10"
+        arguments = "--announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
         param("toolPath", "/usr/local/bin")
       }
       bazel {
@@ -24,6 +25,7 @@ open class Benchmark(vcsRoot: GitVcsRoot) :
         id = "run_benchmark"
         command = "run"
         targets = "//server/bspcli:bspcli /tmp/project_10 %system.teamcity.build.checkoutDir%/metrics.txt"
+        arguments = "--announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
         param("toolPath", "/usr/local/bin")
       }
     },

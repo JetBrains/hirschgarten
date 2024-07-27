@@ -19,6 +19,9 @@ project {
   subProject(PluginBazel)
   vcsRoot(BaseConfiguration.GitHubVcs)
   vcsRoot(BaseConfiguration.SpaceVcs)
+
+  buildType(BazelFormat.GitHub)
+  buildType(BazelFormat.Space)
 }
 
 object Server : Project({
@@ -54,11 +57,6 @@ object ServerGitHub : Project({
   val allSteps =
     sequential {
 
-      buildType(BazelFormat.GitHub, options = {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      })
-
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
@@ -86,6 +84,16 @@ object ServerGitHub : Project({
   // initialize all build steps for bazel-bsp
   allSteps.forEach { buildType(it) }
 
+  // make all the builds depend on formater
+  allSteps.dropLast(1).forEach {
+    it.dependencies {
+      snapshot(BazelFormat.GitHub) {
+        onDependencyFailure = FailureAction.CANCEL
+        onDependencyCancel = FailureAction.CANCEL
+      }
+    }
+  }
+
   // setup trigger for bazel-bsp pipeline
   allSteps.last().triggers {
     vcs {
@@ -104,7 +112,6 @@ object ServerGitHub : Project({
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
-      RelativeId("GitHubFormatServerBuildifier"),
       RelativeId("GitHubBuildServerBuild"),
       RelativeId("GitHubUnitTestsServerUnitTests"),
       RelativeId("GitHubE2eTestsServerE2eSampleRepoTest"),
@@ -129,11 +136,6 @@ object ServerSpace : Project({
   // setup pipeline chain for bazel-bsp
   val allSteps =
     sequential {
-
-      buildType(BazelFormat.Space, options = {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      })
 
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
@@ -162,6 +164,16 @@ object ServerSpace : Project({
   // initialize all build steps for bazel-bsp
   allSteps.forEach { buildType(it) }
 
+  // make all the builds depend on formater
+  allSteps.dropLast(1).forEach {
+    it.dependencies {
+      snapshot(BazelFormat.Space) {
+        onDependencyFailure = FailureAction.CANCEL
+        onDependencyCancel = FailureAction.CANCEL
+      }
+    }
+  }
+
   // setup trigger for bazel-bsp pipeline
   allSteps.last().triggers {
     vcs {
@@ -185,7 +197,6 @@ object ServerSpace : Project({
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
-      RelativeId("SpaceFormatServerBuildifier"),
       RelativeId("SpaceBuildServerBuild"),
       RelativeId("SpaceUnitTestsServerUnitTests"),
       RelativeId("SpaceE2eTestsServerE2eSampleRepoTest"),
@@ -196,7 +207,7 @@ object ServerSpace : Project({
       RelativeId("SpaceE2eTestsServerE2eAndroidProjectTest"),
       RelativeId("SpaceE2eTestsServerE2eAndroidKotlinProjectTest"),
       RelativeId("SpaceE2eTestsServerE2eEnabledRulesTest"),
-//        RelativeId("SpaceE2eTestsServerPluginRun"),
+      RelativeId("SpaceE2eTestsServerPluginRun"),
       RelativeId("SpaceBenchmarkServer10targets"),
       RelativeId("SpaceServerResults"),
     )
@@ -229,6 +240,16 @@ object PluginBspGitHub : Project({
 
   // initialize all build steps for intellij-bsp
   allSteps.forEach { buildType(it) }
+
+  // make all the builds depend on formater
+  allSteps.dropLast(1).forEach {
+    it.dependencies {
+      snapshot(BazelFormat.GitHub) {
+        onDependencyFailure = FailureAction.CANCEL
+        onDependencyCancel = FailureAction.CANCEL
+      }
+    }
+  }
 
   // setup trigger for intellij-bsp pipeline
   allSteps.last().triggers {
@@ -287,6 +308,16 @@ object PluginBspSpace : Project({
   // initialize all build steps for intellij-bsp
   allSteps.forEach { buildType(it) }
 
+  // make all the builds depend on formater
+  allSteps.dropLast(1).forEach {
+    it.dependencies {
+      snapshot(BazelFormat.Space) {
+        onDependencyFailure = FailureAction.CANCEL
+        onDependencyCancel = FailureAction.CANCEL
+      }
+    }
+  }
+
   // setup trigger for intellij-bsp pipeline
   allSteps.last().triggers {
     vcs {
@@ -342,6 +373,16 @@ object PluginBazelGitHub : Project({
   // initialize all build steps for intellij-bsp
   allSteps.forEach { buildType(it) }
 
+  // make all the builds depend on formater
+  allSteps.dropLast(1).forEach {
+    it.dependencies {
+      snapshot(BazelFormat.GitHub) {
+        onDependencyFailure = FailureAction.CANCEL
+        onDependencyCancel = FailureAction.CANCEL
+      }
+    }
+  }
+
   // setup trigger for intellij-bsp pipeline
   allSteps.last().triggers {
     vcs {
@@ -395,6 +436,16 @@ object PluginBazelSpace : Project({
 
   // initialize all build steps for intellij-bsp
   allSteps.forEach { buildType(it) }
+
+  // make all the builds depend on formater
+  allSteps.dropLast(1).forEach {
+    it.dependencies {
+      snapshot(BazelFormat.Space) {
+        onDependencyFailure = FailureAction.CANCEL
+        onDependencyCancel = FailureAction.CANCEL
+      }
+    }
+  }
 
   // setup trigger for intellij-bsp pipeline
   allSteps.last().triggers {
