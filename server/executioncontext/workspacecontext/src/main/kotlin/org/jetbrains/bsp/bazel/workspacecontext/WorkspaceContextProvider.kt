@@ -7,32 +7,27 @@ import java.nio.file.Path
 import kotlin.io.path.notExists
 
 interface WorkspaceContextProvider {
-
-    fun currentWorkspaceContext(): WorkspaceContext
+  fun currentWorkspaceContext(): WorkspaceContext
 }
 
-class DefaultWorkspaceContextProvider(
-    workspaceRoot: Path,
-    private val projectViewPath: Path
-) : WorkspaceContextProvider {
+class DefaultWorkspaceContextProvider(workspaceRoot: Path, private val projectViewPath: Path) : WorkspaceContextProvider {
+  private val workspaceContextConstructor = WorkspaceContextConstructor(workspaceRoot)
 
-    private val workspaceContextConstructor = WorkspaceContextConstructor(workspaceRoot)
+  override fun currentWorkspaceContext(): WorkspaceContext {
+    val projectView = ensureProjectViewExistsAndParse()
 
-    override fun currentWorkspaceContext(): WorkspaceContext {
-        val projectView = ensureProjectViewExistsAndParse()
+    return workspaceContextConstructor.construct(projectView)
+  }
 
-        return workspaceContextConstructor.construct(projectView)
+  private fun ensureProjectViewExistsAndParse(): ProjectView {
+    if (projectViewPath.notExists()) {
+      generateEmptyProjectView()
     }
+    return DefaultProjectViewParser().parse(projectViewPath)
+  }
 
-    private fun ensureProjectViewExistsAndParse(): ProjectView {
-        if (projectViewPath.notExists()) {
-            generateEmptyProjectView()
-        }
-        return DefaultProjectViewParser().parse(projectViewPath)
-    }
-
-    private fun generateEmptyProjectView() {
-        val emptyProjectView = ProjectView.Builder().build()
-        DefaultProjectViewGenerator.generatePrettyStringAndSaveInFile(emptyProjectView, projectViewPath)
-    }
+  private fun generateEmptyProjectView() {
+    val emptyProjectView = ProjectView.Builder().build()
+    DefaultProjectViewGenerator.generatePrettyStringAndSaveInFile(emptyProjectView, projectViewPath)
+  }
 }

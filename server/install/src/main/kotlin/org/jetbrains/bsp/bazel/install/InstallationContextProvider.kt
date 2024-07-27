@@ -10,32 +10,33 @@ import kotlin.io.path.exists
 import kotlin.io.path.isRegularFile
 
 object InstallationContextProvider {
+  private const val DEFAULT_GENERATED_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 
-    private const val DEFAULT_GENERATED_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
+  fun createInstallationContext(cliOptions: CliOptions): InstallationContext =
+    InstallationContext(
+      javaPath =
+        cliOptions
+          .javaPath
+          ?.let { InstallationContextJavaPathEntity(it) } ?: InstallationContextJavaPathEntityMapper.default(),
+      debuggerAddress =
+        cliOptions
+          .debuggerAddress
+          ?.let { InstallationContextDebuggerAddressEntity(it) },
+      projectViewFilePath = calculateGeneratedProjectViewPath(cliOptions),
+      bazelWorkspaceRootDir = cliOptions.bazelWorkspaceRootDir,
+    )
 
-    fun createInstallationContext(cliOptions: CliOptions): InstallationContext =
-        InstallationContext(
-            javaPath = cliOptions
-                .javaPath
-                ?.let { InstallationContextJavaPathEntity(it) } ?: InstallationContextJavaPathEntityMapper.default(),
-            debuggerAddress = cliOptions
-                .debuggerAddress
-                ?.let { InstallationContextDebuggerAddressEntity(it) },
-            projectViewFilePath = calculateGeneratedProjectViewPath(cliOptions),
-            bazelWorkspaceRootDir = cliOptions.bazelWorkspaceRootDir
-        )
-
-    fun generateAndSaveProjectViewFileIfNeeded(cliOptions: CliOptions) {
-        val generatedProjectViewFilePath = calculateGeneratedProjectViewPath(cliOptions)
-        if (!generatedProjectViewFilePath.isFileExisted() || cliOptions.projectViewCliOptions != null) {
-            if (!generatedProjectViewFilePath.exists()) {
-              ProjectViewCLiOptionsProvider.generateProjectViewAndSave(cliOptions, generatedProjectViewFilePath)
-            }
-        }
+  fun generateAndSaveProjectViewFileIfNeeded(cliOptions: CliOptions) {
+    val generatedProjectViewFilePath = calculateGeneratedProjectViewPath(cliOptions)
+    if (!generatedProjectViewFilePath.isFileExisted() || cliOptions.projectViewCliOptions != null) {
+      if (!generatedProjectViewFilePath.exists()) {
+        ProjectViewCLiOptionsProvider.generateProjectViewAndSave(cliOptions, generatedProjectViewFilePath)
+      }
     }
+  }
 
-    private fun calculateGeneratedProjectViewPath(cliOptions: CliOptions): Path =
-        cliOptions.projectViewFilePath ?: cliOptions.workspaceRootDir.resolve(DEFAULT_GENERATED_PROJECT_VIEW_FILE_NAME)
+  private fun calculateGeneratedProjectViewPath(cliOptions: CliOptions): Path =
+    cliOptions.projectViewFilePath ?: cliOptions.workspaceRootDir.resolve(DEFAULT_GENERATED_PROJECT_VIEW_FILE_NAME)
 
-    private fun Path.isFileExisted() = this.exists() && this.isRegularFile()
+  private fun Path.isFileExisted() = this.exists() && this.isRegularFile()
 }

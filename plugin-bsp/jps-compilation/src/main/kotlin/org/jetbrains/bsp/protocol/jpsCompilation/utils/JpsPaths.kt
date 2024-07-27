@@ -5,8 +5,7 @@ import java.nio.file.Path
 public const val JPS_COMPILED_BASE_DIRECTORY: String = ".jps-compiled"
 
 public object JpsPaths {
-  private fun getJpsCompiledBasePath(projectBasePath: Path): Path =
-    projectBasePath.resolve(JPS_COMPILED_BASE_DIRECTORY)
+  private fun getJpsCompiledBasePath(projectBasePath: Path): Path = projectBasePath.resolve(JPS_COMPILED_BASE_DIRECTORY)
 
   public fun getJpsCompiledProductionPath(projectBasePath: Path, moduleName: String): Path =
     getJpsCompiledBasePath(projectBasePath)
@@ -20,6 +19,5 @@ public object JpsPaths {
       .resolve("classes")
       .resolve(moduleName)
 
-  public fun getJpsImlModulesPath(projectBasePath: Path): Path =
-    projectBasePath.resolve(".idea").resolve("modules")
+  public fun getJpsImlModulesPath(projectBasePath: Path): Path = projectBasePath.resolve(".idea").resolve("modules")
 }

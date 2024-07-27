@@ -52,12 +52,13 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val emptyModulesDetails = listOf<ModuleDetails>()
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(
-      mapOf(),
-      DefaultModuleNameProvider,
-      DefaultLibraryNameProvider,
-      hasDefaultPythonInterpreter
-    ).transform(emptyModulesDetails)
+    val pythonModules =
+      ModuleDetailsToPythonModuleTransformer(
+        mapOf(),
+        DefaultModuleNameProvider,
+        DefaultLibraryNameProvider,
+        hasDefaultPythonInterpreter,
+      ).transform(emptyModulesDetails)
 
     // then
     pythonModules shouldBe emptyList()
@@ -77,16 +78,17 @@ class ModuleDetailsToPythonModuleTransformerTest {
     sdkInfoJsonObject.addProperty("interpreter", interpreter)
 
     val buildTargetId = BuildTargetIdentifier("module1")
-    val buildTarget = BuildTarget(
-      buildTargetId,
-      listOf("library"),
-      listOf("python"),
-      listOf(
-        BuildTargetIdentifier("module2"),
-        BuildTargetIdentifier("module3"),
-      ),
-      BuildTargetCapabilities(),
-    )
+    val buildTarget =
+      BuildTarget(
+        buildTargetId,
+        listOf("library"),
+        listOf("python"),
+        listOf(
+          BuildTargetIdentifier("module2"),
+          BuildTargetIdentifier("module3"),
+        ),
+        BuildTargetCapabilities(),
+      )
     buildTarget.baseDirectory = projectRoot.toUri().toString()
     buildTarget.dataKind = BuildTargetDataKind.PYTHON
     buildTarget.data = sdkInfoJsonObject
@@ -107,95 +109,108 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val dir1BPath = createTempDirectory(packageB2Path, "dir1")
     dir1BPath.toFile().deleteOnExit()
 
-    val sourcesItem = SourcesItem(
-      buildTargetId,
-      listOf(
-        SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-        SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-        SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
-      ),
-    )
+    val sourcesItem =
+      SourcesItem(
+        buildTargetId,
+        listOf(
+          SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
+          SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
+          SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+        ),
+      )
     sourcesItem.roots = listOf(projectRoot.toUri().toString())
 
     val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
-    val resourcesItem = ResourcesItem(
-      buildTargetId,
-      listOf(resourceFilePath.toUri().toString()),
-    )
+    val resourcesItem =
+      ResourcesItem(
+        buildTargetId,
+        listOf(resourceFilePath.toUri().toString()),
+      )
 
-    val dependencySourcesItem = DependencySourcesItem(
-      buildTargetId,
-      emptyList(),
-    )
-    val pythonOptionsItem = PythonOptionsItem(
-      buildTargetId,
-      listOf("opt1", "opt2", "opt3"),
-    )
+    val dependencySourcesItem =
+      DependencySourcesItem(
+        buildTargetId,
+        emptyList(),
+      )
+    val pythonOptionsItem =
+      PythonOptionsItem(
+        buildTargetId,
+        listOf("opt1", "opt2", "opt3"),
+      )
 
-    val moduleDetails = ModuleDetails(
-      target = buildTarget,
-      sources = listOf(sourcesItem),
-      resources = listOf(resourcesItem),
-      dependenciesSources = listOf(dependencySourcesItem),
-      javacOptions = null,
-      scalacOptions = null,
-      pythonOptions = pythonOptionsItem,
-      outputPathUris = emptyList(),
-      libraryDependencies = null,
-      moduleDependencies = listOf(
-        BuildTargetIdentifier("module2"),
-        BuildTargetIdentifier("module3"),
-      ),
-      defaultJdkName = null,
-      jvmBinaryJars = emptyList(),
-    )
+    val moduleDetails =
+      ModuleDetails(
+        target = buildTarget,
+        sources = listOf(sourcesItem),
+        resources = listOf(resourcesItem),
+        dependenciesSources = listOf(dependencySourcesItem),
+        javacOptions = null,
+        scalacOptions = null,
+        pythonOptions = pythonOptionsItem,
+        outputPathUris = emptyList(),
+        libraryDependencies = null,
+        moduleDependencies =
+          listOf(
+            BuildTargetIdentifier("module2"),
+            BuildTargetIdentifier("module3"),
+          ),
+        defaultJdkName = null,
+        jvmBinaryJars = emptyList(),
+      )
 
     val targetsMap = listOf("module1", "module2", "module3").toDefaultTargetsMap()
 
     // when
-    val pythonModule = ModuleDetailsToPythonModuleTransformer(
-      targetsMap,
-      DefaultModuleNameProvider,
-      DefaultLibraryNameProvider,
-      hasDefaultPythonInterpreter
-    ).transform(moduleDetails)
+    val pythonModule =
+      ModuleDetailsToPythonModuleTransformer(
+        targetsMap,
+        DefaultModuleNameProvider,
+        DefaultLibraryNameProvider,
+        hasDefaultPythonInterpreter,
+      ).transform(moduleDetails)
 
     // then
-    val expectedModule = GenericModuleInfo(
-      name = "module1",
-      type = ModuleTypeId("PYTHON_MODULE"),
-      modulesDependencies = listOf(IntermediateModuleDependency("module2"), IntermediateModuleDependency("module3")),
-      librariesDependencies = emptyList(),
-    )
+    val expectedModule =
+      GenericModuleInfo(
+        name = "module1",
+        type = ModuleTypeId("PYTHON_MODULE"),
+        modulesDependencies = listOf(IntermediateModuleDependency("module2"), IntermediateModuleDependency("module3")),
+        librariesDependencies = emptyList(),
+      )
 
-    val expectedGenericSourceRoot1 = GenericSourceRoot(
-      sourcePath = file1APath,
-      rootType = SourceRootTypeId("python-source"),
-    )
-    val expectedGenericSourceRoot2 = GenericSourceRoot(
-      sourcePath = file2APath,
-      rootType = SourceRootTypeId("python-source"),
-    )
-    val expectedGenericSourceRoot3 = GenericSourceRoot(
-      sourcePath = dir1BPath,
-      rootType = SourceRootTypeId("python-source"),
-    )
+    val expectedGenericSourceRoot1 =
+      GenericSourceRoot(
+        sourcePath = file1APath,
+        rootType = SourceRootTypeId("python-source"),
+      )
+    val expectedGenericSourceRoot2 =
+      GenericSourceRoot(
+        sourcePath = file2APath,
+        rootType = SourceRootTypeId("python-source"),
+      )
+    val expectedGenericSourceRoot3 =
+      GenericSourceRoot(
+        sourcePath = dir1BPath,
+        rootType = SourceRootTypeId("python-source"),
+      )
 
-    val expectedResourceRoot1 = ResourceRoot(
-      resourcePath = resourceFilePath.parent,
-      rootType = SourceRootTypeId(""),
-    )
+    val expectedResourceRoot1 =
+      ResourceRoot(
+        resourcePath = resourceFilePath.parent,
+        rootType = SourceRootTypeId(""),
+      )
 
     val expectedPythonSdkInfo = PythonSdkInfo(version = version, originalName = buildTargetId.uri)
 
-    val expectedPythonModule = PythonModule(
-      module = expectedModule,
-      sourceRoots = listOf(expectedGenericSourceRoot1, expectedGenericSourceRoot2, expectedGenericSourceRoot3),
-      resourceRoots = listOf(expectedResourceRoot1),
-      libraries = emptyList(),
-      sdkInfo = expectedPythonSdkInfo,
-    )
+    val expectedPythonModule =
+      PythonModule(
+        module = expectedModule,
+        sourceRoots = listOf(expectedGenericSourceRoot1, expectedGenericSourceRoot2, expectedGenericSourceRoot3),
+        resourceRoots = listOf(expectedResourceRoot1),
+        libraries = emptyList(),
+        sdkInfo = expectedPythonSdkInfo,
+      )
 
     validatePythonModule(pythonModule, expectedPythonModule)
   }
@@ -213,13 +228,14 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val buildTargetId2 = BuildTargetIdentifier("module2")
     val buildTargetId3 = BuildTargetIdentifier("module3")
 
-    val buildTarget1 = BuildTarget(
-      buildTargetId1,
-      listOf("library"),
-      listOf("python"),
-      listOf(buildTargetId2, buildTargetId2),
-      BuildTargetCapabilities(),
-    )
+    val buildTarget1 =
+      BuildTarget(
+        buildTargetId1,
+        listOf("library"),
+        listOf("python"),
+        listOf(buildTargetId2, buildTargetId2),
+        BuildTargetCapabilities(),
+      )
     buildTarget1.baseDirectory = module1Root.toUri().toString()
 
     val packageA1Path = createTempDirectory(module1Root, "packageA1")
@@ -238,65 +254,72 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val dir1BPath = createTempDirectory(packageB2Path, "dir1")
     dir1BPath.toFile().deleteOnExit()
 
-    val sourcesItem1 = SourcesItem(
-      buildTargetId1,
-      listOf(
-        SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-        SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-        SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
-      ),
-    )
+    val sourcesItem1 =
+      SourcesItem(
+        buildTargetId1,
+        listOf(
+          SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
+          SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
+          SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+        ),
+      )
     sourcesItem1.roots = listOf(module1Root.toUri().toString())
 
     val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
     resourceFilePath11.toFile().deleteOnExit()
     val resourceFilePath12 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File2.txt")
     resourceFilePath12.toFile().deleteOnExit()
-    val resourcesItem1 = ResourcesItem(
-      buildTargetId1,
-      listOf(
-        resourceFilePath11.toUri().toString(),
-        resourceFilePath12.toUri().toString(),
-      ),
-    )
+    val resourcesItem1 =
+      ResourcesItem(
+        buildTargetId1,
+        listOf(
+          resourceFilePath11.toUri().toString(),
+          resourceFilePath12.toUri().toString(),
+        ),
+      )
 
-    val dependencySourcesItem1 = DependencySourcesItem(
-      buildTargetId1,
-      listOf("file:///example/externalSource1.py"),
-    )
-    val target1PythonOptionsItem = PythonOptionsItem(
-      buildTargetId1,
-      listOf("opt1.1", "opt1.2", "opt1.3"),
-    )
+    val dependencySourcesItem1 =
+      DependencySourcesItem(
+        buildTargetId1,
+        listOf("file:///example/externalSource1.py"),
+      )
+    val target1PythonOptionsItem =
+      PythonOptionsItem(
+        buildTargetId1,
+        listOf("opt1.1", "opt1.2", "opt1.3"),
+      )
 
-    val moduleDetails1 = ModuleDetails(
-      target = buildTarget1,
-      sources = listOf(sourcesItem1),
-      resources = listOf(resourcesItem1),
-      dependenciesSources = listOf(dependencySourcesItem1),
-      javacOptions = null,
-      scalacOptions = null,
-      pythonOptions = target1PythonOptionsItem,
-      outputPathUris = emptyList(),
-      libraryDependencies = null,
-      moduleDependencies = listOf(
-        buildTargetId2,
-        buildTargetId3,
-      ),
-      defaultJdkName = null,
-      jvmBinaryJars = emptyList(),
-    )
+    val moduleDetails1 =
+      ModuleDetails(
+        target = buildTarget1,
+        sources = listOf(sourcesItem1),
+        resources = listOf(resourcesItem1),
+        dependenciesSources = listOf(dependencySourcesItem1),
+        javacOptions = null,
+        scalacOptions = null,
+        pythonOptions = target1PythonOptionsItem,
+        outputPathUris = emptyList(),
+        libraryDependencies = null,
+        moduleDependencies =
+          listOf(
+            buildTargetId2,
+            buildTargetId3,
+          ),
+        defaultJdkName = null,
+        jvmBinaryJars = emptyList(),
+      )
 
     val module2Root = createTempDirectory(projectBasePath, "module2").toAbsolutePath()
     module2Root.toFile().deleteOnExit()
 
-    val buildTarget2 = BuildTarget(
-      buildTargetId2,
-      listOf("test"),
-      listOf("python"),
-      listOf(buildTargetId3),
-      BuildTargetCapabilities(),
-    )
+    val buildTarget2 =
+      BuildTarget(
+        buildTargetId2,
+        listOf("test"),
+        listOf("python"),
+        listOf(buildTargetId3),
+        BuildTargetCapabilities(),
+      )
     buildTarget2.baseDirectory = module2Root.toUri().toString()
 
     val packageC1Path = createTempDirectory(module2Root, "packageC1")
@@ -306,124 +329,142 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val dir1CPath = createTempDirectory(packageC2Path, "dir1")
     dir1CPath.toFile().deleteOnExit()
 
-    val sourcesItem2 = SourcesItem(
-      buildTargetId2,
-      listOf(
-        SourceItem(dir1CPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
-      ),
-    )
+    val sourcesItem2 =
+      SourcesItem(
+        buildTargetId2,
+        listOf(
+          SourceItem(dir1CPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+        ),
+      )
     sourcesItem2.roots = listOf(module2Root.toUri().toString())
 
     val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
-    val resourcesItem2 = ResourcesItem(
-      buildTargetId2,
-      listOf(resourceDirPath21.toUri().toString()),
-    )
+    val resourcesItem2 =
+      ResourcesItem(
+        buildTargetId2,
+        listOf(resourceDirPath21.toUri().toString()),
+      )
 
-    val dependencySourcesItem2 = DependencySourcesItem(
-      buildTargetId2,
-      emptyList(),
-    )
-    val target2PythonOptionsItem = PythonOptionsItem(
-      buildTargetId2,
-      listOf("opt2.1", "opt2.2"),
-    )
+    val dependencySourcesItem2 =
+      DependencySourcesItem(
+        buildTargetId2,
+        emptyList(),
+      )
+    val target2PythonOptionsItem =
+      PythonOptionsItem(
+        buildTargetId2,
+        listOf("opt2.1", "opt2.2"),
+      )
 
-    val moduleDetails2 = ModuleDetails(
-      target = buildTarget2,
-      sources = listOf(sourcesItem2),
-      resources = listOf(resourcesItem2),
-      dependenciesSources = listOf(dependencySourcesItem2),
-      javacOptions = null,
-      scalacOptions = null,
-      pythonOptions = target2PythonOptionsItem,
-      outputPathUris = emptyList(),
-      libraryDependencies = null,
-      moduleDependencies = listOf(buildTargetId3),
-      defaultJdkName = null,
-      jvmBinaryJars = emptyList(),
-    )
+    val moduleDetails2 =
+      ModuleDetails(
+        target = buildTarget2,
+        sources = listOf(sourcesItem2),
+        resources = listOf(resourcesItem2),
+        dependenciesSources = listOf(dependencySourcesItem2),
+        javacOptions = null,
+        scalacOptions = null,
+        pythonOptions = target2PythonOptionsItem,
+        outputPathUris = emptyList(),
+        libraryDependencies = null,
+        moduleDependencies = listOf(buildTargetId3),
+        defaultJdkName = null,
+        jvmBinaryJars = emptyList(),
+      )
 
     val modulesDetails = listOf(moduleDetails1, moduleDetails2)
 
     val targetsMap = listOf(buildTargetId1.uri, buildTargetId2.uri, buildTargetId3.uri).toDefaultTargetsMap()
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(
-      targetsMap,
-      DefaultModuleNameProvider,
-      DefaultLibraryNameProvider,
-      hasDefaultPythonInterpreter
-    ).transform(modulesDetails)
+    val pythonModules =
+      ModuleDetailsToPythonModuleTransformer(
+        targetsMap,
+        DefaultModuleNameProvider,
+        DefaultLibraryNameProvider,
+        hasDefaultPythonInterpreter,
+      ).transform(modulesDetails)
 
     // then
-    val expectedModule1 = GenericModuleInfo(
-      name = "module1",
-      type = ModuleTypeId("PYTHON_MODULE"),
-      modulesDependencies = listOf(IntermediateModuleDependency("module2"), IntermediateModuleDependency("module3")),
-      librariesDependencies = emptyList(),
-    )
+    val expectedModule1 =
+      GenericModuleInfo(
+        name = "module1",
+        type = ModuleTypeId("PYTHON_MODULE"),
+        modulesDependencies = listOf(IntermediateModuleDependency("module2"), IntermediateModuleDependency("module3")),
+        librariesDependencies = emptyList(),
+      )
 
-    val expectedGenericSourceRoot11 = GenericSourceRoot(
-      sourcePath = file1APath,
-      rootType = SourceRootTypeId("python-source"),
-    )
-    val expectedGenericSourceRoot12 = GenericSourceRoot(
-      sourcePath = file2APath,
-      rootType = SourceRootTypeId("python-source"),
-    )
-    val expectedGenericSourceRoot13 = GenericSourceRoot(
-      sourcePath = dir1BPath,
-      rootType = SourceRootTypeId("python-source"),
-    )
+    val expectedGenericSourceRoot11 =
+      GenericSourceRoot(
+        sourcePath = file1APath,
+        rootType = SourceRootTypeId("python-source"),
+      )
+    val expectedGenericSourceRoot12 =
+      GenericSourceRoot(
+        sourcePath = file2APath,
+        rootType = SourceRootTypeId("python-source"),
+      )
+    val expectedGenericSourceRoot13 =
+      GenericSourceRoot(
+        sourcePath = dir1BPath,
+        rootType = SourceRootTypeId("python-source"),
+      )
 
-    val expectedResourceRoot11 = ResourceRoot(
-      resourcePath = resourceFilePath11.parent,
-      rootType = SourceRootTypeId(""),
-    )
+    val expectedResourceRoot11 =
+      ResourceRoot(
+        resourcePath = resourceFilePath11.parent,
+        rootType = SourceRootTypeId(""),
+      )
 
     val expectedPythonSdk1 =
       PythonSdkInfo(version = defaultPythonVersion, originalName = "${buildTargetId1.uri}-detected")
 
-    val expectedPythonModule1 = PythonModule(
-      module = expectedModule1,
-      sourceRoots = listOf(expectedGenericSourceRoot11, expectedGenericSourceRoot12, expectedGenericSourceRoot13),
-      resourceRoots = listOf(expectedResourceRoot11),
-      libraries = listOf(PythonLibrary(dependencySourcesItem1.sources)),
-      sdkInfo = expectedPythonSdk1,
-    )
+    val expectedPythonModule1 =
+      PythonModule(
+        module = expectedModule1,
+        sourceRoots = listOf(expectedGenericSourceRoot11, expectedGenericSourceRoot12, expectedGenericSourceRoot13),
+        resourceRoots = listOf(expectedResourceRoot11),
+        libraries = listOf(PythonLibrary(dependencySourcesItem1.sources)),
+        sdkInfo = expectedPythonSdk1,
+      )
 
-    val expectedModule2 = GenericModuleInfo(
-      name = "module2",
-      type = ModuleTypeId("PYTHON_MODULE"),
-      modulesDependencies = listOf(IntermediateModuleDependency("module3")),
-      librariesDependencies = emptyList(),
-    )
+    val expectedModule2 =
+      GenericModuleInfo(
+        name = "module2",
+        type = ModuleTypeId("PYTHON_MODULE"),
+        modulesDependencies = listOf(IntermediateModuleDependency("module3")),
+        librariesDependencies = emptyList(),
+      )
 
-    val expectedGenericSourceRoot21 = GenericSourceRoot(
-      sourcePath = dir1CPath,
-      rootType = SourceRootTypeId("python-test"),
-    )
+    val expectedGenericSourceRoot21 =
+      GenericSourceRoot(
+        sourcePath = dir1CPath,
+        rootType = SourceRootTypeId("python-test"),
+      )
 
-    val expectedResourceRoot21 = ResourceRoot(
-      resourcePath = resourceDirPath21,
-      rootType = SourceRootTypeId(""),
-    )
+    val expectedResourceRoot21 =
+      ResourceRoot(
+        resourcePath = resourceDirPath21,
+        rootType = SourceRootTypeId(""),
+      )
 
     val expectedPythonSdk2 =
       PythonSdkInfo(version = defaultPythonVersion, originalName = "${buildTargetId2.uri}-detected")
 
-    val expectedPythonModule2 = PythonModule(
-      module = expectedModule2,
-      sourceRoots = listOf(expectedGenericSourceRoot21),
-      resourceRoots = listOf(expectedResourceRoot21),
-      libraries = emptyList(),
-      sdkInfo = expectedPythonSdk2,
-    )
+    val expectedPythonModule2 =
+      PythonModule(
+        module = expectedModule2,
+        sourceRoots = listOf(expectedGenericSourceRoot21),
+        resourceRoots = listOf(expectedResourceRoot21),
+        libraries = emptyList(),
+        sdkInfo = expectedPythonSdk2,
+      )
 
-    pythonModules shouldContainExactlyInAnyOrder Pair(
-      listOf(expectedPythonModule1, expectedPythonModule2), this::validatePythonModule,
-    )
+    pythonModules shouldContainExactlyInAnyOrder
+      Pair(
+        listOf(expectedPythonModule1, expectedPythonModule2),
+        this::validatePythonModule,
+      )
   }
 
   @Test
@@ -445,12 +486,13 @@ class ModuleDetailsToPythonModuleTransformerTest {
       )
 
     fun emptyExpectedModule(name: String, sdkInfo: PythonSdkInfo): PythonModule {
-      val expectedModule = GenericModuleInfo(
-        name = name,
-        type = ModuleTypeId("PYTHON_MODULE"),
-        modulesDependencies = emptyList(),
-        librariesDependencies = emptyList(),
-      )
+      val expectedModule =
+        GenericModuleInfo(
+          name = name,
+          type = ModuleTypeId("PYTHON_MODULE"),
+          modulesDependencies = emptyList(),
+          librariesDependencies = emptyList(),
+        )
 
       return PythonModule(
         module = expectedModule,
@@ -482,13 +524,14 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val sdkInfoJsonObject3 = JsonObject()
 
     val buildTarget1Id = BuildTargetIdentifier("module1")
-    val buildTarget1 = BuildTarget(
-      buildTarget1Id,
-      listOf("library"),
-      listOf("python"),
-      emptyList(),
-      BuildTargetCapabilities(),
-    )
+    val buildTarget1 =
+      BuildTarget(
+        buildTarget1Id,
+        listOf("library"),
+        listOf("python"),
+        emptyList(),
+        BuildTargetCapabilities(),
+      )
     buildTarget1.baseDirectory = projectRoot.toUri().toString()
     buildTarget1.dataKind = BuildTargetDataKind.PYTHON
     buildTarget1.data = sdkInfoJsonObject1
@@ -496,13 +539,14 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val moduleDetails1 = emptyModuleDetails(buildTarget1)
 
     val buildTarget2Id = BuildTargetIdentifier("module2")
-    val buildTarget2 = BuildTarget(
-      buildTarget2Id,
-      listOf("library"),
-      listOf("python"),
-      emptyList(),
-      BuildTargetCapabilities(),
-    )
+    val buildTarget2 =
+      BuildTarget(
+        buildTarget2Id,
+        listOf("library"),
+        listOf("python"),
+        emptyList(),
+        BuildTargetCapabilities(),
+      )
     buildTarget2.baseDirectory = projectRoot.toUri().toString()
     buildTarget2.dataKind = BuildTargetDataKind.PYTHON
     buildTarget2.data = sdkInfoJsonObject2
@@ -510,13 +554,14 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val moduleDetails2 = emptyModuleDetails(buildTarget2)
 
     val buildTarget3Id = BuildTargetIdentifier("module3")
-    val buildTarget3 = BuildTarget(
-      buildTarget3Id,
-      listOf("library"),
-      listOf("python"),
-      emptyList(),
-      BuildTargetCapabilities(),
-    )
+    val buildTarget3 =
+      BuildTarget(
+        buildTarget3Id,
+        listOf("library"),
+        listOf("python"),
+        emptyList(),
+        BuildTargetCapabilities(),
+      )
     buildTarget3.baseDirectory = projectRoot.toUri().toString()
     buildTarget3.dataKind = BuildTargetDataKind.PYTHON
     buildTarget3.data = sdkInfoJsonObject3
@@ -526,12 +571,13 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val modulesDetails = listOf(moduleDetails1, moduleDetails2, moduleDetails3)
 
     // when
-    val pythonModules = ModuleDetailsToPythonModuleTransformer(
-      mapOf(),
-      DefaultModuleNameProvider,
-      DefaultLibraryNameProvider,
-      hasDefaultPythonInterpreter
-    ).transform(modulesDetails)
+    val pythonModules =
+      ModuleDetailsToPythonModuleTransformer(
+        mapOf(),
+        DefaultModuleNameProvider,
+        DefaultLibraryNameProvider,
+        hasDefaultPythonInterpreter,
+      ).transform(modulesDetails)
 
     // then
     val expectedSdkInfo1 = PythonSdkInfo(version = version1, "${buildTarget1.id.uri}-detected")
@@ -544,9 +590,11 @@ class ModuleDetailsToPythonModuleTransformerTest {
 
     val expectedModules = listOf(expectedModule1, expectedModule2, expectedModule3)
 
-    pythonModules shouldContainExactlyInAnyOrder Pair(
-      expectedModules, this::validatePythonModule,
-    )
+    pythonModules shouldContainExactlyInAnyOrder
+      Pair(
+        expectedModules,
+        this::validatePythonModule,
+      )
   }
 
   private infix fun <T, C : Collection<T>, E> C.shouldContainExactlyInAnyOrder(
@@ -595,10 +643,11 @@ class ExtractPythonBuildTargetTest {
     val extractedPythonBuildTarget = extractPythonBuildTarget(buildTarget)
 
     // then
-    extractedPythonBuildTarget shouldBe PythonBuildTarget().also {
-      it.version = version
-      it.interpreter = interpreter
-    }
+    extractedPythonBuildTarget shouldBe
+      PythonBuildTarget().also {
+        it.version = version
+        it.interpreter = interpreter
+      }
   }
 
   @Test
@@ -614,18 +663,19 @@ class ExtractPythonBuildTargetTest {
   }
 
   private fun buildDummyTarget(): BuildTarget {
-    val buildTarget = BuildTarget(
-      BuildTargetIdentifier("target"),
-      listOf("tag1", "tag2"),
-      listOf("language1"),
-      listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
-      BuildTargetCapabilities().also {
-        it.canCompile = true
-        it.canTest = false
-        it.canRun = true
-        it.canDebug = true
-      }
-    )
+    val buildTarget =
+      BuildTarget(
+        BuildTargetIdentifier("target"),
+        listOf("tag1", "tag2"),
+        listOf("language1"),
+        listOf(BuildTargetIdentifier("dep1"), BuildTargetIdentifier("dep2")),
+        BuildTargetCapabilities().also {
+          it.canCompile = true
+          it.canTest = false
+          it.canRun = true
+          it.canDebug = true
+        },
+      )
     buildTarget.displayName = "target name"
     buildTarget.baseDirectory = "/base/dir"
     return buildTarget

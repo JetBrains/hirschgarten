@@ -11,7 +11,9 @@ import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import java.lang.ref.WeakReference
 
-public class ConnectAction : SuspendableAction({ BspPluginBundle.message("connect.action.text") }), DumbAware {
+public class ConnectAction :
+  SuspendableAction({ BspPluginBundle.message("connect.action.text") }),
+  DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
     val collectProjectDetailsTask = CollectProjectDetailsTask(project, "bsp-connect")
@@ -32,8 +34,11 @@ public class ConnectAction : SuspendableAction({ BspPluginBundle.message("connec
       )
       bspSyncConsole.finishTask("bsp-connect", BspPluginBundle.message("console.task.connect.success"))
     } catch (e: Exception) {
-      bspSyncConsole.finishTask("bsp-connect",
-        BspPluginBundle.message("console.task.connect.failed"), FailureResultImpl(e))
+      bspSyncConsole.finishTask(
+        "bsp-connect",
+        BspPluginBundle.message("console.task.connect.failed"),
+        FailureResultImpl(e),
+      )
     }
   }
 

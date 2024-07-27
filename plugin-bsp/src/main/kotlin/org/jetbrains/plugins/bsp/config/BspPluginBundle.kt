@@ -15,7 +15,10 @@ internal object BspPluginBundle : DynamicBundle(BUNDLE) {
     trimMultipleSpaces: Boolean = true,
   ): String {
     val originalMessage = getMessage(key, *params)
-    return if (trimMultipleSpaces) originalMessage.replace("\\s+".toRegex(), " ")
-    else originalMessage
+    return if (trimMultipleSpaces) {
+      originalMessage.replace("\\s+".toRegex(), " ")
+    } else {
+      originalMessage
+    }
   }
 }

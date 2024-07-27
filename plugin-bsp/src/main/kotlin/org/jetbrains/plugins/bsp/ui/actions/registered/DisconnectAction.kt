@@ -11,7 +11,9 @@ import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 
 private val log = logger<DisconnectAction>()
 
-public class DisconnectAction : SuspendableAction({ BspPluginBundle.message("disconnect.action.text") }), DumbAware {
+public class DisconnectAction :
+  SuspendableAction({ BspPluginBundle.message("disconnect.action.text") }),
+  DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     withBackgroundProgress(project, "Disconnecting...") {
       try {

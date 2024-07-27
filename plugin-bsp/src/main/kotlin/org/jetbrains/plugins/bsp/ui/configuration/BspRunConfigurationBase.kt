@@ -33,11 +33,9 @@ public abstract class BspRunConfigurationBase(
   public var env: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
   public var runHandler: BspRunHandler = BspRunHandler.getRunHandler(targets)
 
-  override fun getConfigurationEditor(): SettingsEditor<out BspRunConfigurationBase> =
-    BspRunConfigurationEditor(this)
+  override fun getConfigurationEditor(): SettingsEditor<out BspRunConfigurationBase> = BspRunConfigurationEditor(this)
 
-  override fun getBeforeRunTasks(): List<BeforeRunTask<*>> =
-    runHandler.getBeforeRunTasks(this)
+  override fun getBeforeRunTasks(): List<BeforeRunTask<*>> = runHandler.getBeforeRunTasks(this)
 }
 
 public class BspRunConfiguration(

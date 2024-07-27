@@ -18,7 +18,7 @@ public class BspClassFileFinder(private val module: Module) : ClassFileFinder {
     OrderEnumerator.orderEntries(module).recursively().forEachModule { module ->
       val classFile = findClassFileInModule(module, fqcn) ?: return@forEachModule true
       result = classFile
-      false  // Stop iteration when found
+      false // Stop iteration when found
     }
     return result
   }

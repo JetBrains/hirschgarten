@@ -16,11 +16,8 @@ interface BazelExternalRulesQuery {
   fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String>
 }
 
-class BazelEnabledRulesQueryImpl(
-        private val enabledRulesSpec: EnabledRulesSpec,
-) : BazelExternalRulesQuery {
-  override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> =
-    enabledRulesSpec.values
+class BazelEnabledRulesQueryImpl(private val enabledRulesSpec: EnabledRulesSpec) : BazelExternalRulesQuery {
+  override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> = enabledRulesSpec.values
 }
 
 private val rulesDisabledFromAutoDetection = listOf("rules_android", "rules_rust")
@@ -28,19 +25,23 @@ private val rulesDisabledFromAutoDetection = listOf("rules_android", "rules_rust
 class BazelExternalRulesQueryImpl(
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
-  private val enabledRules: EnabledRulesSpec
+  private val enabledRules: EnabledRulesSpec,
 ) : BazelExternalRulesQuery {
-    override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> = when {
-        enabledRules.isNotEmpty() -> BazelEnabledRulesQueryImpl(enabledRules).fetchExternalRuleNames(cancelChecker)
-        isBzlModEnabled -> BazelBzlModExternalRulesQueryImpl(bazelRunner).fetchExternalRuleNames(cancelChecker) +
-                BazelWorkspaceExternalRulesQueryImpl(bazelRunner).fetchExternalRuleNames(cancelChecker)
-        else -> BazelWorkspaceExternalRulesQueryImpl(bazelRunner).fetchExternalRuleNames(cancelChecker)
+  override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> =
+    when {
+      enabledRules.isNotEmpty() -> BazelEnabledRulesQueryImpl(enabledRules).fetchExternalRuleNames(cancelChecker)
+      isBzlModEnabled ->
+        BazelBzlModExternalRulesQueryImpl(bazelRunner).fetchExternalRuleNames(cancelChecker) +
+          BazelWorkspaceExternalRulesQueryImpl(bazelRunner).fetchExternalRuleNames(cancelChecker)
+      else -> BazelWorkspaceExternalRulesQueryImpl(bazelRunner).fetchExternalRuleNames(cancelChecker)
     }
 }
 
 class BazelWorkspaceExternalRulesQueryImpl(private val bazelRunner: BazelRunner) : BazelExternalRulesQuery {
   override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> =
-    bazelRunner.commandBuilder().query()
+    bazelRunner
+      .commandBuilder()
+      .query()
       .withArgument("//external:*")
       .withFlags(listOf("--output=xml", "--order_output=no"))
       .executeBazelCommand(parseProcessOutput = false)
@@ -49,9 +50,10 @@ class BazelWorkspaceExternalRulesQueryImpl(private val bazelRunner: BazelRunner)
         if (result.isNotSuccess) {
           log.warn("Bazel query failed with output: '${result.stderr.escapeNewLines()}'")
           null
-        } else result.stdout.readXML(log)?.calculateEligibleRules()
-      }
-      ?.removeRulesDisabledFromAutoDetection()
+        } else {
+          result.stdout.readXML(log)?.calculateEligibleRules()
+        }
+      }?.removeRulesDisabledFromAutoDetection()
       .orEmpty()
 
   private fun Document.calculateEligibleRules(): List<String> {
@@ -63,7 +65,12 @@ class BazelWorkspaceExternalRulesQueryImpl(private val bazelRunner: BazelRunner)
     val eligibleItems = xPath.evaluate(expression, this, XPathConstants.NODESET) as NodeList
     val returnList = mutableListOf<String>()
     for (i in 0 until eligibleItems.length) {
-      eligibleItems.item(i).attributes.getNamedItem("value")?.nodeValue?.let { returnList.add(it) }
+      eligibleItems
+        .item(i)
+        .attributes
+        .getNamedItem("value")
+        ?.nodeValue
+        ?.let { returnList.add(it) }
     }
     return returnList.toList()
   }
@@ -77,23 +84,30 @@ class BazelBzlModExternalRulesQueryImpl(private val bazelRunner: BazelRunner) : 
   private val gson = Gson()
 
   override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> {
-    val bzlmodGraphJson = bazelRunner.commandBuilder().graph()
-      .withFlag("--output=json")
-      .executeBazelCommand(parseProcessOutput = false)
-      .waitAndGetResult(cancelChecker, ensureAllOutputRead = true).let { result ->
-        if (result.isNotSuccess) {
-          log.warn("Bazel query failed with output: '${result.stderr.escapeNewLines()}'")
-          null
-        } else result.stdout.toJson(log)
-      } as? JsonObject
-      return try {
-        gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
-          .getAllDirectRuleDependencies()
-          .removeRulesDisabledFromAutoDetection()
-      } catch (e: Throwable) {
-        log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
-        emptyList()
-      }
+    val bzlmodGraphJson =
+      bazelRunner
+        .commandBuilder()
+        .graph()
+        .withFlag("--output=json")
+        .executeBazelCommand(parseProcessOutput = false)
+        .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
+        .let { result ->
+          if (result.isNotSuccess) {
+            log.warn("Bazel query failed with output: '${result.stderr.escapeNewLines()}'")
+            null
+          } else {
+            result.stdout.toJson(log)
+          }
+        } as? JsonObject
+    return try {
+      gson
+        .fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
+        .getAllDirectRuleDependencies()
+        .removeRulesDisabledFromAutoDetection()
+    } catch (e: Throwable) {
+      log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
+      emptyList()
+    }
   }
 
   companion object {
@@ -108,8 +122,7 @@ data class BzlmodDependency(val key: String) {
    * There were some issues with (empty) bzlmod projects and android, so the automatic mechanism ignores it.
    * Use `enabled_rules` to enable `rules_android` instead.
    */
-  fun toDependencyName(): String =
-    key.substringBefore('@')
+  fun toDependencyName(): String = key.substringBefore('@')
 }
 
 data class BzlmodGraph(val dependencies: List<BzlmodDependency>) {

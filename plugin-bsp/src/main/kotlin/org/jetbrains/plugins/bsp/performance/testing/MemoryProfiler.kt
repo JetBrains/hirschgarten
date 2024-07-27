@@ -49,7 +49,8 @@ internal object MemoryProfiler : NotificationListener {
       FilteredMetricsExporter(SynchronizedClearableLazy { metricsExporter }) { metric ->
         metric.belongsToScope(bspScope)
       }
-    TelemetryManager.getInstance()
+    TelemetryManager
+      .getInstance()
       .addMetricsExporters(listOf(MetricsExporterEntry(listOf(filteredMetricsExporter), Duration.INFINITE)))
   }
 
@@ -86,7 +87,10 @@ internal object MemoryProfiler : NotificationListener {
     while (oldGcCount == getGcCount()) sleep(1)
   }
 
-  private fun getGcCount(): Long = ManagementFactory.getGarbageCollectorMXBeans().mapNotNull {
-    it.collectionCount.takeIf { count -> count != -1L }
-  }.sum()
+  private fun getGcCount(): Long =
+    ManagementFactory
+      .getGarbageCollectorMXBeans()
+      .mapNotNull {
+        it.collectionCount.takeIf { count -> count != -1L }
+      }.sum()
 }

@@ -18,7 +18,7 @@ class WorkspaceModelUpdaterCreateTest : WorkspaceModelBaseTest() {
         workspaceEntityStorageBuilder,
         virtualFileUrlManager,
         projectBasePath,
-        project
+        project,
       )
 
     // then

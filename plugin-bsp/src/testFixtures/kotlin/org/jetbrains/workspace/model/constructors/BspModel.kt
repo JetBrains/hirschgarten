@@ -5,9 +5,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 
-public class BuildTargetId(
-  uri: String,
-) : BuildTargetIdentifier(uri)
+public class BuildTargetId(uri: String) : BuildTargetIdentifier(uri)
 
 public class BuildTarget(
   id: BuildTargetIdentifier,
@@ -44,6 +42,4 @@ public class SourcesItem(
   }
 }
 
-public class TextDocumentId(
-  uri: String,
-) : TextDocumentIdentifier(uri)
+public class TextDocumentId(uri: String) : TextDocumentIdentifier(uri)

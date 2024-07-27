@@ -28,31 +28,30 @@ internal class PythonModuleWithSourcesUpdater(
   }
 
   private fun calculateModuleDefaultDependencies(entityToAdd: PythonModule): List<ModuleDependencyItem> =
-    if (isPythonSupportEnabled && entityToAdd.sdkInfo != null)
+    if (isPythonSupportEnabled && entityToAdd.sdkInfo != null) {
       defaultDependencies + SdkDependency(SdkId(entityToAdd.sdkInfo.toString(), PYTHON_SDK_ID))
-    else
+    } else {
       defaultDependencies
+    }
 
   private companion object {
-    val defaultDependencies = listOf(
-      ModuleSourceDependency,
-    )
+    val defaultDependencies =
+      listOf(
+        ModuleSourceDependency,
+      )
   }
 }
 
-internal class PythonModuleWithoutSourcesUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
+internal class PythonModuleWithoutSourcesUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
   override fun addEntity(entityToAdd: PythonModule): ModuleEntity {
     val moduleEntityUpdater = ModuleEntityUpdater(workspaceModelEntityUpdaterConfig)
     return moduleEntityUpdater.addEntity(entityToAdd.module)
   }
 }
 
-internal class PythonModuleUpdater(
-  workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-  isPythonSupportEnabled: Boolean,
-) : WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
+internal class PythonModuleUpdater(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig, isPythonSupportEnabled: Boolean) :
+  WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
   private val pythonModuleWithSourcesUpdater =
     PythonModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled)
   private val pythonModuleWithoutSourcesUpdater = PythonModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)

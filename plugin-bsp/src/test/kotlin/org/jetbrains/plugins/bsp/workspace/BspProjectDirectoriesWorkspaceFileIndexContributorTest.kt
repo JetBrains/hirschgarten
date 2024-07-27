@@ -13,9 +13,9 @@ import com.intellij.workspaceModel.ide.toPath
 import io.kotest.inspectors.shouldForAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.io.path.createDirectories
@@ -67,12 +67,13 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
   @Test
   fun `should exclude all the files in the project if no files are included`() {
     // given
-    val entity = BspProjectDirectoriesEntity(
-      projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
-      includedRoots = emptyList(),
-      excludedRoots = emptyList(),
-      entitySource = BspEntitySource
-    )
+    val entity =
+      BspProjectDirectoriesEntity(
+        projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
+        includedRoots = emptyList(),
+        excludedRoots = emptyList(),
+        entitySource = BspEntitySource,
+      )
 
     // when
     runTestWriteAction {
@@ -97,12 +98,13 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
   @Test
   fun `should include all the files in the project if project root is included`() {
     // given
-    val entity = BspProjectDirectoriesEntity(
-      projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
-      includedRoots = listOf(projectRoot),
-      excludedRoots = emptyList(),
-      entitySource = BspEntitySource
-    )
+    val entity =
+      BspProjectDirectoriesEntity(
+        projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
+        includedRoots = listOf(projectRoot),
+        excludedRoots = emptyList(),
+        entitySource = BspEntitySource,
+      )
 
     // when
     runTestWriteAction {
@@ -128,12 +130,13 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
   @Test
   fun `should include included directories in the project and exclude not included directories`() {
     // given
-    val entity = BspProjectDirectoriesEntity(
-      projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
-      includedRoots = listOf(dir1),
-      excludedRoots = emptyList(),
-      entitySource = BspEntitySource
-    )
+    val entity =
+      BspProjectDirectoriesEntity(
+        projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
+        includedRoots = listOf(dir1),
+        excludedRoots = emptyList(),
+        entitySource = BspEntitySource,
+      )
 
     // when
     runTestWriteAction {
@@ -159,12 +162,13 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
   @Test
   fun `should include included directories in the project and exclude excluded (nested) directories`() {
     // given
-    val entity = BspProjectDirectoriesEntity(
-      projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
-      includedRoots = listOf(dir1),
-      excludedRoots = listOf(dir1Dir3, dir4),
-      entitySource = BspEntitySource
-    )
+    val entity =
+      BspProjectDirectoriesEntity(
+        projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
+        includedRoots = listOf(dir1),
+        excludedRoots = listOf(dir1Dir3, dir4),
+        entitySource = BspEntitySource,
+      )
 
     // when
     runTestWriteAction {
@@ -206,8 +210,7 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
     actualIncludedFiles shouldContainExactlyInAnyOrder expectedIncludedFiles
   }
 
-  private fun List<VirtualFileUrl>.shouldBeExcluded() =
-    this.shouldForAll { it.isExcluded() shouldBe true }
+  private fun List<VirtualFileUrl>.shouldBeExcluded() = this.shouldForAll { it.isExcluded() shouldBe true }
 
   private fun VirtualFileUrl.isExcluded(): Boolean {
     val file = this.toVirtualFile()
@@ -215,6 +218,5 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
     return runReadAction { fileIndexFacade.isExcludedFile(file) }
   }
 
-  private fun VirtualFileUrl.toVirtualFile(): VirtualFile =
-    VirtualFileManager.getInstance().refreshAndFindFileByUrl(url)!!
+  private fun VirtualFileUrl.toVirtualFile(): VirtualFile = VirtualFileManager.getInstance().refreshAndFindFileByUrl(url)!!
 }

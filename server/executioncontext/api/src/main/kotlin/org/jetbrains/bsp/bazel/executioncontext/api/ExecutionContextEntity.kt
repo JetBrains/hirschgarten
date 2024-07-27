@@ -16,7 +16,7 @@ abstract class ExecutionContextEntity
  * create your list-based entity.
  */
 abstract class ExecutionContextListEntity<T> : ExecutionContextEntity() {
-    abstract val values: List<T>
+  abstract val values: List<T>
 }
 
 /**
@@ -24,23 +24,20 @@ abstract class ExecutionContextListEntity<T> : ExecutionContextEntity() {
  * create your list-based with excluded values entity.
  */
 abstract class ExecutionContextExcludableListEntity<T> : ExecutionContextListEntity<T>() {
-    abstract val excludedValues: List<T>
+  abstract val excludedValues: List<T>
 }
-
 
 /**
  * Base single-value `ExecutionContext` entity class - you need to extend it if you want
  * to create your single-value entity.
  */
 abstract class ExecutionContextSingletonEntity<T> : ExecutionContextEntity() {
-    abstract val value: T
+  abstract val value: T
 }
-
 
 /** `ProjectViewToExecutionContextEntityMapper` mapping failed? Return ('throw') it. */
 class ExecutionContextEntityExtractorException(entityName: String, message: String) :
-    Exception("Mapping project view into '$entityName' failed! $message")
-
+  Exception("Mapping project view into '$entityName' failed! $message")
 
 /**
  * Maps `ProjectView` into `ExecutionContextEntity`.
@@ -52,5 +49,5 @@ class ExecutionContextEntityExtractorException(entityName: String, message: Stri
  * @see org.jetbrains.bsp.bazel.projectview.model.ProjectView
  */
 interface ExecutionContextEntityExtractor<T> {
-    fun fromProjectView(projectView: ProjectView): T
+  fun fromProjectView(projectView: ProjectView): T
 }

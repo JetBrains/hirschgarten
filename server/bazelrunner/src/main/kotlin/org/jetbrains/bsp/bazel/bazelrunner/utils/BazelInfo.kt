@@ -12,36 +12,35 @@ interface BazelInfo {
   val isBzlModEnabled: Boolean
 }
 
-data class BazelRelease(
-  val major: Int
-) {
+data class BazelRelease(val major: Int) {
+  fun isRelativeWorkspacePath(label: String) =
+    when (major) {
+      in 0..3 -> throw RuntimeException("Unsupported Bazel version, use Bazel 4 or newer")
+      in 4..5 -> label.startsWith("//")
+      else -> label.startsWith("@//") || label.startsWith("@@//")
+    }
 
-  fun isRelativeWorkspacePath(label: String) = when (major) {
-    in 0..3 -> throw RuntimeException("Unsupported Bazel version, use Bazel 4 or newer")
-    in 4..5 -> label.startsWith("//")
-    else -> label.startsWith("@//") || label.startsWith("@@//")
-  }
-
-  fun stripPrefix(label: String) = when (major) {
-    in 0..3 -> throw RuntimeException("Unsupported Bazel version, use Bazel 4 or newer")
-    in 4..5 -> label.removePrefix("//")
-    else -> label.dropWhile { it == '@' }.removePrefix("//")
-  }
+  fun stripPrefix(label: String) =
+    when (major) {
+      in 0..3 -> throw RuntimeException("Unsupported Bazel version, use Bazel 4 or newer")
+      in 4..5 -> label.removePrefix("//")
+      else -> label.dropWhile { it == '@' }.removePrefix("//")
+    }
 
   companion object {
-    fun fromReleaseString(versionString: String): BazelRelease? =
-      VERSION_REGEX.find(versionString)?.toBazelRelease()
+    fun fromReleaseString(versionString: String): BazelRelease? = VERSION_REGEX.find(versionString)?.toBazelRelease()
 
     fun fromBazelVersionFile(workspacePath: Path): BazelRelease? {
-      val versionString = workspacePath.resolve(".bazelversion")
-              .takeIf { it.isReadable() }
-              ?.readText()
-              .orEmpty()
+      val versionString =
+        workspacePath
+          .resolve(".bazelversion")
+          .takeIf { it.isReadable() }
+          ?.readText()
+          .orEmpty()
       return BAZEL_VERSION_MAJOR_REGEX.find(versionString)?.toBazelRelease()
     }
 
-    private fun MatchResult.toBazelRelease() =
-            BazelRelease(value.toInt())
+    private fun MatchResult.toBazelRelease() = BazelRelease(value.toInt())
 
     internal val LATEST_SUPPORTED_MAJOR = BazelRelease(6)
 
@@ -50,7 +49,6 @@ data class BazelRelease(
     private val VERSION_REGEX = """(?<=release )\d+(?=[0-9.]*)""".toRegex()
   }
 }
-
 
 fun BazelRelease?.orLatestSupported() = this ?: BazelRelease.LATEST_SUPPORTED_MAJOR
 

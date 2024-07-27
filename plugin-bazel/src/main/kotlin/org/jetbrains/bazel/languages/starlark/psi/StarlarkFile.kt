@@ -9,7 +9,9 @@ import org.jetbrains.bazel.languages.starlark.bazel.BazelFileType
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 
-class StarlarkFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, StarlarkLanguage), StarlarkElement {
+class StarlarkFile(viewProvider: FileViewProvider) :
+  PsiFileBase(viewProvider, StarlarkLanguage),
+  StarlarkElement {
   override fun getFileType(): FileType = StarlarkFileType
 
   fun isBuildFile(): Boolean = this.getBazelFileType() == BazelFileType.BUILD

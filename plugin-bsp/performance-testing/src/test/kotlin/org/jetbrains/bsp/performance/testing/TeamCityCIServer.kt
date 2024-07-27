@@ -1,4 +1,5 @@
 @file:Suppress("detekt:all")
+
 package org.jetbrains.bsp.performance.testing
 
 import com.intellij.ide.starter.ci.CIServer
@@ -19,47 +20,93 @@ import kotlin.io.path.bufferedReader
 fun CIServer.asTeamCity(): TeamCityCIServer = this as TeamCityCIServer
 
 open class TeamCityCIServer(
-  private val systemPropertiesFilePath: Path? = try {
-    Path(System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE"))
-  }
-  catch (_: Exception) {
-    null
-  }
+  private val systemPropertiesFilePath: Path? =
+    try {
+      Path(System.getenv("TEAMCITY_BUILD_PROPERTIES_FILE"))
+    } catch (_: Exception) {
+      null
+    },
 ) : CIServer {
-  override fun publishArtifact(source: Path, artifactPath: String, artifactName: String) {
+  override fun publishArtifact(
+    source: Path,
+    artifactPath: String,
+    artifactName: String,
+  ) {
     TeamCityClient.publishTeamCityArtifacts(source = source, artifactPath = artifactPath, artifactName = artifactName)
   }
 
-  fun reportTest(testName: String, message: String, details: String, isFailure: Boolean) {
+  fun reportTest(
+    testName: String,
+    message: String,
+    details: String,
+    isFailure: Boolean,
+  ) {
     val flowId = UUID.randomUUID().toString()
 
     val generifiedTestName = testName.processStringForTC()
 
-    logOutput(String.format("##teamcity[testStarted name='%s' flowId='%s' nodeId='%s' parentNodeId='0']", generifiedTestName, flowId, generifiedTestName))
+    logOutput(
+      String.format(
+        "##teamcity[testStarted name='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
+        generifiedTestName,
+        flowId,
+        generifiedTestName,
+      ),
+    )
     if (isFailure) {
-      logOutput(String.format(
-        "##teamcity[testFailed name='%s' message='%s' details='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
-        generifiedTestName, message.processStringForTC(), details.processStringForTC(), flowId, generifiedTestName
-      ))
+      logOutput(
+        String.format(
+          "##teamcity[testFailed name='%s' message='%s' details='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
+          generifiedTestName,
+          message.processStringForTC(),
+          details.processStringForTC(),
+          flowId,
+          generifiedTestName,
+        ),
+      )
     }
-    logOutput(String.format("##teamcity[testFinished name='%s' flowId='%s' nodeId='%s' parentNodeId='0']", generifiedTestName, flowId, generifiedTestName))
+    logOutput(
+      String.format(
+        "##teamcity[testFinished name='%s' flowId='%s' nodeId='%s' parentNodeId='0']",
+        generifiedTestName,
+        flowId,
+        generifiedTestName,
+      ),
+    )
   }
 
-  override fun reportTestFailure(testName: String, message: String, details: String) {
+  override fun reportTestFailure(
+    testName: String,
+    message: String,
+    details: String,
+  ) {
     reportTest(testName, message, details, isFailure = true)
   }
 
-  fun reportPassedTest(testName: String, message: String, details: String) {
+  fun reportPassedTest(
+    testName: String,
+    message: String,
+    details: String,
+  ) {
     reportTest(testName, message, details, isFailure = false)
   }
 
-  override fun ignoreTestFailure(testName: String, message: String, details: String) {
+  override fun ignoreTestFailure(
+    testName: String,
+    message: String,
+    details: String,
+  ) {
     val flowId = UUID.randomUUID().toString()
     val generifiedTestName = testName.processStringForTC()
-    logOutput(String.format(
-      "##teamcity[testIgnored name='%s' message='%s' details='%s' flowId='%s']",
-      generifiedTestName, message.processStringForTC(), details.processStringForTC(), flowId
-    ))
+    logOutput(
+      String.format(
+        "##teamcity[testIgnored name='%s' message='%s' details='%s' flowId='%s']",
+        generifiedTestName,
+        message.processStringForTC(),
+        details.processStringForTC(),
+        flowId,
+      ),
+    )
   }
 
   override fun isTestFailureShouldBeIgnored(message: String): Boolean {
@@ -74,14 +121,26 @@ open class TeamCityCIServer(
   val buildStartTime: String by lazy {
     if (buildId == LOCAL_RUN_ID) {
       ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME)
-    }
-    else {
-      val fullUrl = TeamCityClient.restUri.resolve("builds/id:${buildId}?fields=startDate")
-      TeamCityClient.get(fullUrl) { it.withAuth() }.fields().asSequence().firstOrNull { it.key == "startDate" }?.value?.asText()?.let {
-        runCatching {
-          ZonedDateTime.parse(it, DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmssX")).format(DateTimeFormatter.RFC_1123_DATE_TIME)
-        }.getOrNull()
-      }
+    } else {
+      val fullUrl = TeamCityClient.restUri.resolve("builds/id:$buildId?fields=startDate")
+      TeamCityClient
+        .get(
+          fullUrl,
+        ) { it.withAuth() }
+        .fields()
+        .asSequence()
+        .firstOrNull { it.key == "startDate" }
+        ?.value
+        ?.asText()
+        ?.let {
+          runCatching {
+            ZonedDateTime
+              .parse(
+                it,
+                DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmssX"),
+              ).format(DateTimeFormatter.RFC_1123_DATE_TIME)
+          }.getOrNull()
+        }
         ?: ZonedDateTime.now().format(DateTimeFormatter.RFC_1123_DATE_TIME)
     }
   }
@@ -89,13 +148,14 @@ open class TeamCityCIServer(
   private val listOfPatternsWhichShouldBeIgnored by lazy {
     val ignoredPattern = System.getenv("IGNORED_TEST_FAILURE_PATTERN")
     logOutput("DEBUG: ignored patterns form ENV $ignoredPattern")
-    val patterns = mutableListOf(
-      "No files have been downloaded for .+:.+".toRegex(),
-      "Library '.+' resolution failed".toRegex(),
-      "Too many IDE internal errors. Monitoring stopped.".toRegex(),
-      "Invalid folding descriptor detected".toRegex(),
-      "Non-idempotent computation: it returns different results when invoked multiple times".toRegex()
-    )
+    val patterns =
+      mutableListOf(
+        "No files have been downloaded for .+:.+".toRegex(),
+        "Library '.+' resolution failed".toRegex(),
+        "Too many IDE internal errors. Monitoring stopped.".toRegex(),
+        "Invalid folding descriptor detected".toRegex(),
+        "Non-idempotent computation: it returns different results when invoked multiple times".toRegex(),
+      )
     if (ignoredPattern != null && ignoredPattern.isNotBlank()) {
       val ignoredPatterns = ignoredPattern.split("\n")
       ignoredPatterns.forEach {
@@ -120,8 +180,7 @@ open class TeamCityCIServer(
         }
         map
       }
-    }
-    catch (t: Throwable) {
+    } catch (t: Throwable) {
       emptyMap()
     }
 
@@ -139,12 +198,14 @@ open class TeamCityCIServer(
   private fun getBuildParam(name: String, impreciseNameMatch: Boolean = false): String? {
     val totalParams = systemProperties.plus(buildParams)
 
-    val paramValue = if (impreciseNameMatch) {
-      val paramCandidates = totalParams.filter { it.key.contains(name) }
-      if (paramCandidates.size > 1) System.err.println("Found many parameters matching $name. Candidates: $paramCandidates")
-      paramCandidates[paramCandidates.toSortedMap().firstKey()]
-    }
-    else totalParams[name]
+    val paramValue =
+      if (impreciseNameMatch) {
+        val paramCandidates = totalParams.filter { it.key.contains(name) }
+        if (paramCandidates.size > 1) System.err.println("Found many parameters matching $name. Candidates: $paramCandidates")
+        paramCandidates[paramCandidates.toSortedMap().firstKey()]
+      } else {
+        totalParams[name]
+      }
 
     return paramValue
   }
@@ -172,7 +233,7 @@ open class TeamCityCIServer(
   val password: String by lazy { getBuildParam("teamcity.auth.password")!! }
 
   private val isDefaultBranch by lazy {
-    //see https://www.jetbrains.com/help/teamcity/predefined-build-parameters.html#PredefinedBuildParameters-Branch-RelatedParameters
+    // see https://www.jetbrains.com/help/teamcity/predefined-build-parameters.html#PredefinedBuildParameters-Branch-RelatedParameters
     hasBooleanProperty("teamcity.build.branch.is_default", default = false)
   }
 
@@ -221,8 +282,9 @@ open class TeamCityCIServer(
     const val LOCAL_RUN_ID = "LOCAL_RUN_SNAPSHOT"
 
     fun String.processStringForTC(): String {
-      //todo replace to intellij.platform.testFramework.util.teamcity.escapeStringForTeamCity when module is published
-      return this.substring(0, kotlin.math.min(7000, this.length))
+      // todo replace to intellij.platform.testFramework.util.teamcity.escapeStringForTeamCity when module is published
+      return this
+        .substring(0, kotlin.math.min(7000, this.length))
         .replace("\\|", "||")
         .replace("\\[", "|[")
         .replace("]", "|]")
@@ -236,11 +298,11 @@ open class TeamCityCIServer(
     }
 
     fun reportTeamCityStatistics(key: String, value: Int) {
-      logOutput(" ##teamcity[buildStatisticValue key='${key}' value='${value}']")
+      logOutput(" ##teamcity[buildStatisticValue key='$key' value='$value']")
     }
 
     fun reportTeamCityStatistics(key: String, value: Long) {
-      logOutput(" ##teamcity[buildStatisticValue key='${key}' value='${value}']")
+      logOutput(" ##teamcity[buildStatisticValue key='$key' value='$value']")
     }
 
     fun reportTeamCityMessage(text: String) {
@@ -263,24 +325,50 @@ open class TeamCityCIServer(
       println("##teamcity[testFinished name='${testName.processStringForTC()}' flowId='$flowId']")
     }
 
-    fun testIgnored(testName: String, message: String, flowId: String) {
-      println("##teamcity[testIgnored name='${testName.processStringForTC()}' message='${message.processStringForTC()}' flowId='$flowId']")
+    fun testIgnored(
+      testName: String,
+      message: String,
+      flowId: String,
+    ) {
+      println(
+        "##teamcity[testIgnored name='${testName.processStringForTC()}' message='${message.processStringForTC()}' flowId='$flowId']",
+      )
     }
 
-    fun testFailed(testName: String, message: String, flowId: String) {
-      println("##teamcity[testFailed name='${testName.processStringForTC()}' message='${message.processStringForTC()}' flowId='$flowId']")
+    fun testFailed(
+      testName: String,
+      message: String,
+      flowId: String,
+    ) {
+      println(
+        "##teamcity[testFailed name='${testName.processStringForTC()}' message='${message.processStringForTC()}' flowId='$flowId']",
+      )
     }
 
-    fun addTextMetadata(testName: String, value: String, flowId: String) {
+    fun addTextMetadata(
+      testName: String,
+      value: String,
+      flowId: String,
+    ) {
       addTestMetadata(testName, TeamCityMetadataType.TEXT, flowId, null, value)
     }
 
-    fun addTestMetadata(testName: String, type: TeamCityMetadataType, flowId: String, name: String?, value: String) {
-      val nameAttr = if (name != null) {
-        "name='${name.processStringForTC()}'"
-      }
-      else ""
-      println("##teamcity[testMetadata testName='${testName.processStringForTC()}' type='${type.name.lowercase()}' ${nameAttr} value='${value.processStringForTC()}' flowId='$flowId']")
+    fun addTestMetadata(
+      testName: String,
+      type: TeamCityMetadataType,
+      flowId: String,
+      name: String?,
+      value: String,
+    ) {
+      val nameAttr =
+        if (name != null) {
+          "name='${name.processStringForTC()}'"
+        } else {
+          ""
+        }
+      println(
+        "##teamcity[testMetadata testName='${testName.processStringForTC()}' type='${type.name.lowercase()}' $nameAttr value='${value.processStringForTC()}' flowId='$flowId']",
+      )
     }
 
     fun progressStart(activityName: String) {
@@ -297,6 +385,6 @@ open class TeamCityCIServer(
     TEXT,
     LINK,
     ARTIFACT,
-    IMAGE
+    IMAGE,
   }
 }

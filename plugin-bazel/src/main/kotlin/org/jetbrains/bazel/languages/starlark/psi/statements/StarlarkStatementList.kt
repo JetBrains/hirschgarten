@@ -7,6 +7,5 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 class StarlarkStatementList(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitStatementListImpl(this)
 
-  fun getAssignments(): List<StarlarkAssignmentStatement> =
-    findChildrenByClass(StarlarkAssignmentStatement::class.java).toList()
+  fun getAssignments(): List<StarlarkAssignmentStatement> = findChildrenByClass(StarlarkAssignmentStatement::class.java).toList()
 }

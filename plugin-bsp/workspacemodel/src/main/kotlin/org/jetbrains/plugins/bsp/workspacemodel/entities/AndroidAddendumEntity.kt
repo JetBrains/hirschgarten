@@ -61,19 +61,16 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
     }
   }
 //endregion
-
 }
 
 //region generated code
 public fun MutableEntityStorage.modifyAndroidAddendumEntity(
   entity: AndroidAddendumEntity,
   modification: AndroidAddendumEntity.Builder.() -> Unit,
-): AndroidAddendumEntity {
-  return modifyEntity(AndroidAddendumEntity.Builder::class.java, entity, modification)
-}
+): AndroidAddendumEntity = modifyEntity(AndroidAddendumEntity.Builder::class.java, entity, modification)
 
 public var ModuleEntity.Builder.androidAddendumEntity: @Child AndroidAddendumEntity.Builder?
-    by WorkspaceEntity.extensionBuilder(AndroidAddendumEntity::class.java)
+  by WorkspaceEntity.extensionBuilder(AndroidAddendumEntity::class.java)
 //endregion
 
 public val ModuleEntity.androidAddendumEntity: @Child AndroidAddendumEntity? by WorkspaceEntity.extension()

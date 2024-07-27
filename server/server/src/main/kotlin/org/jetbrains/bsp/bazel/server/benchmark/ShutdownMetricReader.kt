@@ -17,8 +17,7 @@ class ShutdownMetricReader(private val exporter: MetricExporter) : MetricReader 
     this.registration = registration
   }
 
-  override fun forceFlush(): CompletableResultCode =
-    exporter.export(registration.collectAllMetrics())
+  override fun forceFlush(): CompletableResultCode = exporter.export(registration.collectAllMetrics())
 
   override fun shutdown(): CompletableResultCode {
     val result = forceFlush()

@@ -13,7 +13,6 @@ import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 private const val DUMMY_FILENAME = "dummy.bzl"
 
 class StarlarkElementGenerator(val project: Project) {
-
   fun createNameIdentifier(name: String): ASTNode {
     val dummyFile = createDummyFile(name)
     val referenceNode = dummyFile.node.firstChildNode.firstChildNode

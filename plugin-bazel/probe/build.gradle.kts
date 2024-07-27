@@ -1,5 +1,3 @@
-import org.gradle.platform.base.Platform
-
 plugins {
   id("intellijbazel.kotlin-conventions")
   id("org.gradle.test-retry") version "1.5.2"
@@ -13,7 +11,7 @@ dependencies {
   testRuntimeOnly(
     files(layout.buildDirectory.file("distributions/${Plugin.name}-${Plugin.version}.zip")) {
       builtBy(":buildPlugin")
-    }
+    },
   )
 }
 

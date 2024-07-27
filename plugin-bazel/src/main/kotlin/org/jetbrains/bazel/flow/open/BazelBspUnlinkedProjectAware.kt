@@ -12,15 +12,17 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 internal class BazelBspUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID
 
-  override fun isBuildFile(project: Project, buildFile: VirtualFile): Boolean =
-    BazelBspOpenProjectProvider().canOpenProject(buildFile)
+  override fun isBuildFile(project: Project, buildFile: VirtualFile): Boolean = BazelBspOpenProjectProvider().canOpenProject(buildFile)
 
-  override fun isLinkedProject(project: Project, externalProjectPath: String): Boolean =
-    project.isBspProject
+  override fun isLinkedProject(project: Project, externalProjectPath: String): Boolean = project.isBspProject
 
   override fun linkAndLoadProject(project: Project, externalProjectPath: String) {
     BazelBspOpenProjectProvider().linkToExistingProject(externalProjectPath, project)
   }
 
-  override fun subscribe(project: Project, listener: ExternalSystemProjectLinkListener, parentDisposable: Disposable) {}
+  override fun subscribe(
+    project: Project,
+    listener: ExternalSystemProjectLinkListener,
+    parentDisposable: Disposable,
+  ) {}
 }

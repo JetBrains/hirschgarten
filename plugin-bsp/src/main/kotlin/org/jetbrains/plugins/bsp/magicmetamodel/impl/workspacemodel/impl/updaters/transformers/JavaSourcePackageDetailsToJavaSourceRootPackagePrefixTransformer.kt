@@ -6,14 +6,9 @@ import java.nio.file.Path
 import kotlin.io.path.pathString
 import kotlin.io.path.toPath
 
-internal data class JavaSourcePackageDetails(
-  val sourceURI: URI,
-  val sourceRoots: List<URI>,
-)
+internal data class JavaSourcePackageDetails(val sourceURI: URI, val sourceRoots: List<URI>)
 
-internal data class JavaSourceRootPackagePrefix(
-  val packagePrefix: String,
-)
+internal data class JavaSourceRootPackagePrefix(val packagePrefix: String)
 
 internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer :
   WorkspaceModelEntityBaseTransformer<JavaSourcePackageDetails, JavaSourceRootPackagePrefix> {
@@ -35,11 +30,12 @@ internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer
   }
 
   private fun calculateMatchingRootPath(sourceDir: URI, sourceRoots: List<URI>): Path? =
-    sourceDir.toPath().allSubdirectoriesSequence()
+    sourceDir
+      .toPath()
+      .allSubdirectoriesSequence()
       .firstOrNull { doRootsContainDir(it, sourceRoots) }
 
-  private fun doRootsContainDir(sourceDir: Path, sourceRoots: List<URI>): Boolean =
-    sourceRoots.any { it.toPath() == sourceDir }
+  private fun doRootsContainDir(sourceDir: Path, sourceRoots: List<URI>): Boolean = sourceRoots.any { it.toPath() == sourceDir }
 
   private fun removeRootRawPathFromSourceRawPath(sourceDirRawPath: String, sourceRootRawPath: String?): String {
     val rootRawPathToRemove = sourceRootRawPath ?: ""
@@ -52,6 +48,5 @@ internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer
   private fun mapPackageAsRawPathToPackageRepresentation(packageAsRawPath: String): String =
     trimSlashes(packageAsRawPath).replace('/', PACKAGE_DELIMITER)
 
-  private fun trimSlashes(pathToTrim: String): String =
-    pathToTrim.trim { it == '/' }
+  private fun trimSlashes(pathToTrim: String): String = pathToTrim.trim { it == '/' }
 }

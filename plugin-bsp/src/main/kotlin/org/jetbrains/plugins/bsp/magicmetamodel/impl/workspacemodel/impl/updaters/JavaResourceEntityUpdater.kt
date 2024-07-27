@@ -12,39 +12,34 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 
-internal class JavaResourceEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithParentModuleUpdater<ResourceRoot, JavaResourceRootPropertiesEntity> {
+internal class JavaResourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithParentModuleUpdater<ResourceRoot, JavaResourceRootPropertiesEntity> {
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntities(
-    entitiesToAdd: List<ResourceRoot>,
-    parentModuleEntity: ModuleEntity
-  ): List<JavaResourceRootPropertiesEntity> {
+  override fun addEntities(entitiesToAdd: List<ResourceRoot>, parentModuleEntity: ModuleEntity): List<JavaResourceRootPropertiesEntity> {
     val contentRootEntities = addContentRootEntities(entitiesToAdd, parentModuleEntity)
 
-    val sourceRoots = (entitiesToAdd zip contentRootEntities).map { (entityToAdd, contentRootEntity) ->
-      addSourceRootEntity(
-        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
-        contentRootEntity,
-        entityToAdd,
-        parentModuleEntity,
-      )
-    }
+    val sourceRoots =
+      (entitiesToAdd zip contentRootEntities).map { (entityToAdd, contentRootEntity) ->
+        addSourceRootEntity(
+          workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
+          contentRootEntity,
+          entityToAdd,
+          parentModuleEntity,
+        )
+      }
     return sourceRoots.map { sourceRoot ->
       addJavaResourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, sourceRoot)
     }
   }
 
-  private fun addContentRootEntities(
-    entitiesToAdd: List<ResourceRoot>,
-    parentModuleEntity: ModuleEntity,
-  ): List<ContentRootEntity> {
-    val contentRoots = entitiesToAdd.map { entityToAdd ->
-      ContentRoot(
-        path = entityToAdd.resourcePath,
-      )
-    }
+  private fun addContentRootEntities(entitiesToAdd: List<ResourceRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> {
+    val contentRoots =
+      entitiesToAdd.map { entityToAdd ->
+        ContentRoot(
+          path = entityToAdd.resourcePath,
+        )
+      }
 
     return contentRootEntityUpdater.addEntities(contentRoots, parentModuleEntity)
   }
@@ -55,42 +50,39 @@ internal class JavaResourceEntityUpdater(
     entityToAdd: ResourceRoot,
     parentModuleEntity: ModuleEntity,
   ): SourceRootEntity {
-    val entity = SourceRootEntity(
-      url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-      rootTypeId = entityToAdd.rootType,
-      entitySource = parentModuleEntity.entitySource,
-    )
+    val entity =
+      SourceRootEntity(
+        url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+        rootTypeId = entityToAdd.rootType,
+        entitySource = parentModuleEntity.entitySource,
+      )
 
-    val updatedContentRootEntity = builder.modifyContentRootEntity(contentRootEntity) {
-      this.sourceRoots += entity
-    }
+    val updatedContentRootEntity =
+      builder.modifyContentRootEntity(contentRootEntity) {
+        this.sourceRoots += entity
+      }
 
     return updatedContentRootEntity.sourceRoots.last()
   }
 
-  private fun addJavaResourceRootEntity(
-    builder: MutableEntityStorage,
-    sourceRoot: SourceRootEntity,
-  ): JavaResourceRootPropertiesEntity {
-    val entity = JavaResourceRootPropertiesEntity(
-      generated = DEFAULT_GENERATED,
-      relativeOutputPath = DEFAULT_RELATIVE_OUTPUT_PATH,
-      entitySource = sourceRoot.entitySource,
-    )
+  private fun addJavaResourceRootEntity(builder: MutableEntityStorage, sourceRoot: SourceRootEntity): JavaResourceRootPropertiesEntity {
+    val entity =
+      JavaResourceRootPropertiesEntity(
+        generated = DEFAULT_GENERATED,
+        relativeOutputPath = DEFAULT_RELATIVE_OUTPUT_PATH,
+        entitySource = sourceRoot.entitySource,
+      )
 
-    val updatedSourceRoot = builder.modifySourceRootEntity(sourceRoot) {
-      this.javaResourceRoots += entity
-    }
+    val updatedSourceRoot =
+      builder.modifySourceRootEntity(sourceRoot) {
+        this.javaResourceRoots += entity
+      }
 
     return updatedSourceRoot.javaResourceRoots.last()
   }
 
-  override fun addEntity(
-    entityToAdd: ResourceRoot,
-    parentModuleEntity: ModuleEntity
-  ): JavaResourceRootPropertiesEntity {
-    return addEntities(listOf(entityToAdd), parentModuleEntity).single()
-  }
+  override fun addEntity(entityToAdd: ResourceRoot, parentModuleEntity: ModuleEntity): JavaResourceRootPropertiesEntity =
+    addEntities(listOf(entityToAdd), parentModuleEntity).single()
 
   private companion object {
     private const val DEFAULT_GENERATED = false

@@ -2,9 +2,6 @@ package org.jetbrains.plugins.bsp.protocol.connection
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.google.gson.Gson
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.extensions.ExtensionPoint
-import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findOrCreateFile
 import com.intellij.openapi.vfs.writeText
@@ -34,7 +31,10 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
   override fun beforeEach() {
     // given
     super.beforeEach()
-    ConnectionDetailsProviderExtension.ep.point.registerExtension(DefaultConnectionDetailsProviderExtension(), projectModel.disposableRule.disposable)
+    ConnectionDetailsProviderExtension.ep.point.registerExtension(
+      DefaultConnectionDetailsProviderExtension(),
+      projectModel.disposableRule.disposable,
+    )
     extension = ConnectionDetailsProviderExtension.ep.withBuildToolIdOrDefault(bspBuildToolId)
 
     projectRoot = createTempDirectory("root").also { it.toFile().deleteOnExit() }.toVirtualFile()
@@ -42,7 +42,9 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
   }
 
   @Nested
-  @DisplayName("DefaultConnectionDetailsProviderExtension#onFirstOpening and DefaultConnectionDetailsProviderExtension#provideNewConnectionDetails tests")
+  @DisplayName(
+    "DefaultConnectionDetailsProviderExtension#onFirstOpening and DefaultConnectionDetailsProviderExtension#provideNewConnectionDetails tests",
+  )
   inner class OnFirstOpeningAndProvideNewConnectionDetailsTest {
     @Test
     fun `onFirstOpening should fail if there is no connection file`() {
@@ -59,21 +61,23 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     @Test
     fun `onFirstOpening should true if there is one connection file and todo should point to this file (headless mode)`() {
       // given
-      val bspConnectionDetails = BspConnectionDetails(
-        "build-tool-id",
-        listOf("build-tool", "bsp"),
-        "1.2.37",
-        "2.0.0",
-        listOf()
-      )
+      val bspConnectionDetails =
+        BspConnectionDetails(
+          "build-tool-id",
+          listOf("build-tool", "bsp"),
+          "1.2.37",
+          "2.0.0",
+          listOf(),
+        )
       runWriteAction {
         bspConnectionDetails.saveInFile("connection-file")
       }
 
       // when
-      val onFirstOpeningResult = runBlocking {
-        extension.onFirstOpening(project, projectRoot)
-      }
+      val onFirstOpeningResult =
+        runBlocking {
+          extension.onFirstOpening(project, projectRoot)
+        }
 
       // then
       onFirstOpeningResult shouldBe true
@@ -83,27 +87,30 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     @Test
     fun `onFirstOpening should true if there are multiple connection files and connectionFile should point to one of them (headless mode)`() {
       // given
-      val bspConnectionDetails1 = BspConnectionDetails(
-        "build-tool-id1",
-        listOf("build-tool1", "bsp"),
-        "1.2.37",
-        "2.0.0",
-        listOf()
-      )
-      val bspConnectionDetails2 = BspConnectionDetails(
-        "build-tool-id2",
-        listOf("build-tool3", "bsp"),
-        "1.2.37",
-        "2.0.0",
-        listOf()
-      )
-      val bspConnectionDetails3 = BspConnectionDetails(
-        "build-tool-id3",
-        listOf("build-tool3", "bsp"),
-        "1.2.37",
-        "2.0.0",
-        listOf()
-      )
+      val bspConnectionDetails1 =
+        BspConnectionDetails(
+          "build-tool-id1",
+          listOf("build-tool1", "bsp"),
+          "1.2.37",
+          "2.0.0",
+          listOf(),
+        )
+      val bspConnectionDetails2 =
+        BspConnectionDetails(
+          "build-tool-id2",
+          listOf("build-tool3", "bsp"),
+          "1.2.37",
+          "2.0.0",
+          listOf(),
+        )
+      val bspConnectionDetails3 =
+        BspConnectionDetails(
+          "build-tool-id3",
+          listOf("build-tool3", "bsp"),
+          "1.2.37",
+          "2.0.0",
+          listOf(),
+        )
       runWriteAction {
         bspConnectionDetails1.saveInFile("connection-file1")
         bspConnectionDetails2.saveInFile("connection-file2")
@@ -111,9 +118,10 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
       }
 
       // when
-      val onFirstOpeningResult = runBlocking {
-        extension.onFirstOpening(project, projectRoot)
-      }
+      val onFirstOpeningResult =
+        runBlocking {
+          extension.onFirstOpening(project, projectRoot)
+        }
 
       // then
       onFirstOpeningResult shouldBe true
@@ -131,13 +139,14 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     @BeforeEach
     fun beforeEach() {
       // given
-      initConnectionDetails = BspConnectionDetails(
-        "build-tool-id",
-        listOf("build-tool", "bsp"),
-        "1.2.37",
-        "2.0.0",
-        listOf()
-      )
+      initConnectionDetails =
+        BspConnectionDetails(
+          "build-tool-id",
+          listOf("build-tool", "bsp"),
+          "1.2.37",
+          "2.0.0",
+          listOf(),
+        )
       connectionFileName = "connection-file"
 
       runWriteAction {
@@ -154,9 +163,10 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
       // given
 
       // when
-      val result = runBlocking {
-        extension.provideNewConnectionDetails(project, initConnectionDetails)
-      }
+      val result =
+        runBlocking {
+          extension.provideNewConnectionDetails(project, initConnectionDetails)
+        }
 
       // then
       result shouldBe null
@@ -180,21 +190,23 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     @Test
     fun `should return new connection details if connection file (version) has changed since init`() {
       // given
-      val newConnectionDetails = BspConnectionDetails(
-        "build-tool-id",
-        listOf("build-tool", "bsp"),
-        "1.2.38",
-        "2.0.0",
-        listOf()
-      )
+      val newConnectionDetails =
+        BspConnectionDetails(
+          "build-tool-id",
+          listOf("build-tool", "bsp"),
+          "1.2.38",
+          "2.0.0",
+          listOf(),
+        )
       runWriteAction {
         newConnectionDetails.saveInFile(connectionFileName)
       }
 
       // when
-      val result = runBlocking {
-        extension.provideNewConnectionDetails(project, initConnectionDetails)
-      }
+      val result =
+        runBlocking {
+          extension.provideNewConnectionDetails(project, initConnectionDetails)
+        }
 
       // then
       result shouldBe newConnectionDetails
@@ -203,21 +215,23 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     @Test
     fun `should return new connection details if connection file (command) has changed since init`() {
       // given
-      val newConnectionDetails = BspConnectionDetails(
-        "build-tool-id",
-        listOf("build-tool-another-command", "bsp"),
-        "1.2.37",
-        "2.0.0",
-        listOf()
-      )
+      val newConnectionDetails =
+        BspConnectionDetails(
+          "build-tool-id",
+          listOf("build-tool-another-command", "bsp"),
+          "1.2.37",
+          "2.0.0",
+          listOf(),
+        )
       runWriteAction {
         newConnectionDetails.saveInFile(connectionFileName)
       }
 
       // when
-      val result = runBlocking {
-        extension.provideNewConnectionDetails(project, initConnectionDetails)
-      }
+      val result =
+        runBlocking {
+          extension.provideNewConnectionDetails(project, initConnectionDetails)
+        }
 
       // then
       result shouldBe newConnectionDetails
@@ -226,32 +240,35 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     @Test
     fun `should return new connection details if connection file has changed multiple times since init`() {
       // given
-      val newConnectionDetails1 = BspConnectionDetails(
-        "build-tool-id",
-        listOf("build-tool", "bsp"),
-        "1.2.38",
-        "2.0.0",
-        listOf()
-      )
+      val newConnectionDetails1 =
+        BspConnectionDetails(
+          "build-tool-id",
+          listOf("build-tool", "bsp"),
+          "1.2.38",
+          "2.0.0",
+          listOf(),
+        )
       runWriteAction {
         newConnectionDetails1.saveInFile(connectionFileName)
       }
 
-      val newConnectionDetails2 = BspConnectionDetails(
-        "build-tool-id",
-        listOf("build-tool", "bsp"),
-        "1.2.39",
-        "2.0.0",
-        listOf()
-      )
+      val newConnectionDetails2 =
+        BspConnectionDetails(
+          "build-tool-id",
+          listOf("build-tool", "bsp"),
+          "1.2.39",
+          "2.0.0",
+          listOf(),
+        )
       runWriteAction {
         newConnectionDetails2.saveInFile(connectionFileName)
       }
 
       // when
-      val result = runBlocking {
-        extension.provideNewConnectionDetails(project, initConnectionDetails)
-      }
+      val result =
+        runBlocking {
+          extension.provideNewConnectionDetails(project, initConnectionDetails)
+        }
 
       // then
       result shouldBe newConnectionDetails2
@@ -262,9 +279,7 @@ class DefaultConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     fileName.toFile().writeText(this.toJson())
   }
 
-  private fun String.toFile(): VirtualFile =
-    projectRoot.findOrCreateFile(".bsp/$this.json")
+  private fun String.toFile(): VirtualFile = projectRoot.findOrCreateFile(".bsp/$this.json")
 
-  private fun BspConnectionDetails.toJson(): String =
-    Gson().toJson(this)
+  private fun BspConnectionDetails.toJson(): String = Gson().toJson(this)
 }

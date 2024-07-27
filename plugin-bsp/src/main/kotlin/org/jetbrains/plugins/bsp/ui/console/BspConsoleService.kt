@@ -23,7 +23,6 @@ public class BspConsoleService(project: Project) {
   }
 
   public companion object {
-    public fun getInstance(project: Project): BspConsoleService =
-      project.getService(BspConsoleService::class.java)
+    public fun getInstance(project: Project): BspConsoleService = project.getService(BspConsoleService::class.java)
   }
 }

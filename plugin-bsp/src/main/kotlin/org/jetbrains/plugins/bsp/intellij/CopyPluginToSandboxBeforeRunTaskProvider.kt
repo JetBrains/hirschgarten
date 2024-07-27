@@ -26,8 +26,7 @@ import kotlin.io.path.toPath
 private val PROVIDER_ID =
   Key.create<CopyPluginToSandboxBeforeRunTaskProvider.Task>("CopyPluginToSandboxBeforeRunTaskProvider")
 
-public class CopyPluginToSandboxBeforeRunTaskProvider :
-  BeforeRunTaskProvider<CopyPluginToSandboxBeforeRunTaskProvider.Task>() {
+public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<CopyPluginToSandboxBeforeRunTaskProvider.Task>() {
   public class Task : BeforeRunTask<Task>(PROVIDER_ID)
 
   override fun getId(): Key<Task> = PROVIDER_ID
@@ -49,9 +48,10 @@ public class CopyPluginToSandboxBeforeRunTaskProvider :
   ): Boolean {
     val runConfiguration = environment.runProfile as? BspRunConfiguration ?: return false
     if (runConfiguration.runHandler !is IntellijPluginRunHandler) return false
-    val pluginSandbox = checkNotNull(environment.getUserData(INTELLIJ_PLUGIN_SANDBOX_KEY)) {
-      "INTELLIJ_PLUGIN_SANDBOX_KEY must be passed"
-    }
+    val pluginSandbox =
+      checkNotNull(environment.getUserData(INTELLIJ_PLUGIN_SANDBOX_KEY)) {
+        "INTELLIJ_PLUGIN_SANDBOX_KEY must be passed"
+      }
 
     val pluginJars = mutableListOf<Path>()
 
@@ -59,7 +59,8 @@ public class CopyPluginToSandboxBeforeRunTaskProvider :
       val module = target.getModule(environment.project) ?: continue
       OrderEnumerator.orderEntries(module).librariesOnly().withoutSdk().forEachLibrary { library ->
         // Use URLs directly because getFiles will be empty until everything is indexed.
-        library.getUrls(OrderRootType.CLASSES)
+        library
+          .getUrls(OrderRootType.CLASSES)
           .mapNotNull { "file://" + it.removePrefix("jar://").removeSuffix("!/") }
           .map { URI.create(it).toPath() }
           .forEach { pluginJars.add(it) }
@@ -80,12 +81,13 @@ public class CopyPluginToSandboxBeforeRunTaskProvider :
         pluginSandbox.createDirectories()
         pluginJar.copyTo(pluginSandbox.resolve(pluginJar.name), overwrite = true)
       } catch (e: IOException) {
-        val errorMessage = BspPluginBundle.message(
-          "console.task.exception.plugin.jar.could.not.copy",
-          pluginJar,
-          pluginSandbox,
-          e.message.orEmpty(),
-        )
+        val errorMessage =
+          BspPluginBundle.message(
+            "console.task.exception.plugin.jar.could.not.copy",
+            pluginJar,
+            pluginSandbox,
+            e.message.orEmpty(),
+          )
         showError(errorMessage, environment)
         return false
       }
@@ -102,7 +104,6 @@ public class CopyPluginToSandboxBeforeRunTaskProvider :
       .notify(environment.project)
   }
 
-  private fun getNotificationGroup(): NotificationGroup {
-    return NotificationGroupManager.getInstance().getNotificationGroup("CopyPluginToSandboxBeforeRunTaskProvider")
-  }
+  private fun getNotificationGroup(): NotificationGroup =
+    NotificationGroupManager.getInstance().getNotificationGroup("CopyPluginToSandboxBeforeRunTaskProvider")
 }

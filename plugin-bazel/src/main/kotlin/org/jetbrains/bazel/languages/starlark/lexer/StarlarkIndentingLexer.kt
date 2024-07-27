@@ -6,12 +6,20 @@ import it.unimi.dsi.fastutil.ints.IntArrayList
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenSets
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 
-private open class PendingToken(var type: IElementType?, val start: Int, val end: Int) {
+private open class PendingToken(
+  var type: IElementType?,
+  val start: Int,
+  val end: Int,
+) {
   override fun toString(): String = "$type:$start-$end"
 }
 
-private class PendingCommentToken(type: IElementType?, start: Int, end: Int, val indent: Int) :
-  PendingToken(type, start, end)
+private class PendingCommentToken(
+  type: IElementType?,
+  start: Int,
+  end: Int,
+  val indent: Int,
+) : PendingToken(type, start, end)
 
 class StarlarkIndentingLexer : FlexAdapter(_StarlarkLexer(null)) {
   private val indentStack = IntArrayList()
@@ -28,7 +36,12 @@ class StarlarkIndentingLexer : FlexAdapter(_StarlarkLexer(null)) {
 
   override fun getTokenEnd(): Int = tokenQueue.getOrNull(0)?.end ?: super.getTokenEnd()
 
-  override fun start(buffer: CharSequence, startOffset: Int, endOffset: Int, initialState: Int) {
+  override fun start(
+    buffer: CharSequence,
+    startOffset: Int,
+    endOffset: Int,
+    initialState: Int,
+  ) {
     super.start(buffer, startOffset, endOffset, initialState)
     setStartState()
   }
@@ -190,12 +203,13 @@ class StarlarkIndentingLexer : FlexAdapter(_StarlarkLexer(null)) {
       lastSuiteIndent = indentStack.popInt()
       lastIndent = indentStack.topInt()
       var dedentOffset = whiteSpaceStart
-      insertIndex = if (indent > lastIndent) {
-        pushToken(StarlarkTokenTypes.INCONSISTENT_DEDENT, whiteSpaceStart, whiteSpaceStart)
-        tokenQueue.size
-      } else {
-        skipPrecedingCommentsWithSameIndentOnSuiteClose(lastSuiteIndent, insertIndex)
-      }
+      insertIndex =
+        if (indent > lastIndent) {
+          pushToken(StarlarkTokenTypes.INCONSISTENT_DEDENT, whiteSpaceStart, whiteSpaceStart)
+          tokenQueue.size
+        } else {
+          skipPrecedingCommentsWithSameIndentOnSuiteClose(lastSuiteIndent, insertIndex)
+        }
       if (insertIndex != tokenQueue.size) {
         dedentOffset = tokenQueue[insertIndex].start
       }
@@ -250,13 +264,18 @@ class StarlarkIndentingLexer : FlexAdapter(_StarlarkLexer(null)) {
     }
     return if (super.getTokenType() == null) {
       0
-    } else indent
+    } else {
+      indent
+    }
   }
 
   private fun isBaseAt(tokenType: IElementType): Boolean = super.getTokenType() === tokenType
 
-  private fun pushToken(type: IElementType?, start: Int, end: Int): Boolean =
-    tokenQueue.add(PendingToken(type, start, end))
+  private fun pushToken(
+    type: IElementType?,
+    start: Int,
+    end: Int,
+  ): Boolean = tokenQueue.add(PendingToken(type, start, end))
 
   private fun isPrecededByCommentWithLineBreak(i: Int): Boolean =
     i > 1 && tokenQueue[i - 1].type === StarlarkTokenTypes.LINE_BREAK && tokenQueue[i - 2] is PendingCommentToken

@@ -2,7 +2,6 @@ console-reports:
   active: true
   exclude:
     - '' # Exclude nothing -> Enable all workaround
-
 # https://detekt.dev/docs/rules/comments
 comments:
   active: true
@@ -11,7 +10,6 @@ comments:
   OutdatedDocumentation:
     # triggers false positives
     active: false
-
 # https://detekt.dev/docs/rules/complexity/#complexcondition
 complexity:
   active: true
@@ -29,7 +27,7 @@ complexity:
     active: true
   LongMethod:
     active: true
-    excludes: [ '**/test/**' ]
+    excludes: ['**/test/**']
   LargeClass:
     active: true
   MethodOverloading:
@@ -42,12 +40,11 @@ complexity:
     active: true
   StringLiteralDuplication:
     active: true
-    excludes: [ '**/test/**' ]
+    excludes: ['**/test/**']
     # TODO
     threshold: 7
     ignoreAnnotation: true
     excludeStringsWithLessThan5Characters: true
-
 # https://detekt.dev/docs/rules/coroutines
 coroutines:
   active: true
@@ -65,7 +62,6 @@ coroutines:
     active: true
   SuspendFunWithFlowReturnType:
     active: true
-
 # https://detekt.dev/docs/rules/empty-blocks
 empty-blocks:
   active: true
@@ -100,7 +96,6 @@ empty-blocks:
     active: true
   EmptyWhileBlock:
     active: true
-
 # https://detekt.dev/docs/rules/exceptions
 exceptions:
   active: true
@@ -134,7 +129,6 @@ exceptions:
     active: false
   TooGenericExceptionThrown:
     active: true
-
 # https://detekt.dev/docs/rules/formatting
 formatting:
   active: true
@@ -279,7 +273,6 @@ formatting:
   # todo
   Wrapping:
     active: false
-
 # https://detekt.dev/docs/rules/naming
 naming:
   BooleanPropertyNaming:
@@ -313,7 +306,6 @@ naming:
     active: false
   VariableNaming:
     active: true
-
 # https://detekt.dev/docs/rules/performance
 performance:
   ArrayPrimitive:
@@ -329,7 +321,6 @@ performance:
     active: true
   UnnecessaryTemporaryInstantiation:
     active: true
-
 # https://detekt.dev/docs/rules/potential-bugs
 potential-bugs:
   AvoidReferentialEquality:
@@ -394,7 +385,6 @@ potential-bugs:
     active: true
   WrongEqualsTypeParameter:
     active: true
-
 # https://detekt.dev/docs/rules/style
 style:
   AlsoCouldBeApply:

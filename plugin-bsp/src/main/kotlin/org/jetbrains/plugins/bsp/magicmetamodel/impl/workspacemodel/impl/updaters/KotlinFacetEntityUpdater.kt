@@ -63,20 +63,21 @@ internal class KotlinFacetEntityUpdater(
     entitySource = parentModuleEntity.entitySource,
     externalSystemRunTasks = emptyList(),
     version = KotlinFacetSettings.CURRENT_VERSION,
-    flushNeeded = true
+    flushNeeded = true,
   ) {
     this.productionOutputPath = ""
     this.testOutputPath = ""
     this.compilerArguments = compilerArguments?.let {
       CompilerArgumentsSerializer.serializeToString(it)
     } ?: ""
-    this.compilerSettings = CompilerSettingsData(
-      additionalArguments = kotlincOpts?.joinToString(" ") ?: "",
-      scriptTemplates = "",
-      scriptTemplatesClasspath = "",
-      copyJsLibraryFiles = false,
-      outputDirectoryForJsLibraryFiles = "",
-    )
+    this.compilerSettings =
+      CompilerSettingsData(
+        additionalArguments = kotlincOpts?.joinToString(" ") ?: "",
+        scriptTemplates = "",
+        scriptTemplatesClasspath = "",
+        copyJsLibraryFiles = false,
+        outputDirectoryForJsLibraryFiles = "",
+      )
     this.targetPlatform = compilerArguments?.jvmTarget?.let { jvmTargetString ->
       JvmTarget.fromString(jvmTargetString)?.let { jvmTarget ->
         JvmPlatforms.jvmPlatformByTargetVersion(jvmTarget).serializeComponentPlatforms()
@@ -95,15 +96,18 @@ internal class KotlinFacetEntityUpdater(
   }
 
   private fun JavaModule.toAssociateModules(): Set<String> =
-    this.genericModuleInfo.associates.map { it.moduleName }.toSet()
+    this.genericModuleInfo.associates
+      .map { it.moduleName }
+      .toSet()
 
   private fun addKotlinSettingsEntity(
     parentModuleEntity: ModuleEntity,
     kotlinSettingsEntity: KotlinSettingsEntity.Builder,
   ): KotlinSettingsEntity {
-    val updatedParentModuleEntity = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
-      this.kotlinSettings += kotlinSettingsEntity
-    }
+    val updatedParentModuleEntity =
+      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
+        this.kotlinSettings += kotlinSettingsEntity
+      }
 
     return updatedParentModuleEntity.kotlinSettings.last()
   }

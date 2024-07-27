@@ -29,8 +29,12 @@ public object BspBalloonNotifier {
    * @param subtitle subtitle of the notification (none by default)
    * @param customIcon icon for the notification
    */
-  public fun info(title: String, content: String, subtitle: String = "", customIcon: Icon): Unit =
-    notify(title, content, subtitle, NotificationType.INFORMATION, customIcon)
+  public fun info(
+    title: String,
+    content: String,
+    subtitle: String = "",
+    customIcon: Icon,
+  ): Unit = notify(title, content, subtitle, NotificationType.INFORMATION, customIcon)
 
   /**
    * Display a warning as a balloon notification
@@ -39,8 +43,11 @@ public object BspBalloonNotifier {
    * @param content main content of the notification
    * @param subtitle subtitle of the notification (none by default)
    */
-  public fun warn(title: String, content: String, subtitle: String = ""): Unit =
-    notify(title, content, subtitle, NotificationType.WARNING, null)
+  public fun warn(
+    title: String,
+    content: String,
+    subtitle: String = "",
+  ): Unit = notify(title, content, subtitle, NotificationType.WARNING, null)
 
   /**
    * Display an error as a balloon notification
@@ -49,8 +56,11 @@ public object BspBalloonNotifier {
    * @param content main content of the notification
    * @param subtitle subtitle of the notification (none by default)
    */
-  public fun error(title: String, content: String, subtitle: String = ""): Unit =
-    notify(title, content, subtitle, NotificationType.ERROR, null)
+  public fun error(
+    title: String,
+    content: String,
+    subtitle: String = "",
+  ): Unit = notify(title, content, subtitle, NotificationType.ERROR, null)
 
   private fun notify(
     title: String,
@@ -59,10 +69,11 @@ public object BspBalloonNotifier {
     notificationType: NotificationType,
     customIcon: Icon?,
   ) {
-    val notification = Notification(BALLOON_ID, "<html>$content</html>", notificationType)
-      .setTitle(title)
-      .setSubtitle(subtitle)
-      .let { if (customIcon != null) it.setIcon(customIcon) else it }
+    val notification =
+      Notification(BALLOON_ID, "<html>$content</html>", notificationType)
+        .setTitle(title)
+        .setSubtitle(subtitle)
+        .let { if (customIcon != null) it.setIcon(customIcon) else it }
     Notifications.Bus.notify(notification)
   }
 }

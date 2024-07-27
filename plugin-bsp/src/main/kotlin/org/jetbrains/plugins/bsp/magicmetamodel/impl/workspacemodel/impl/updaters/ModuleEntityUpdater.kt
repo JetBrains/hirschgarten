@@ -39,10 +39,7 @@ internal class ModuleEntityUpdater(
   override fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
     addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
-  private fun addModuleEntity(
-    builder: MutableEntityStorage,
-    entityToAdd: GenericModuleInfo,
-  ): ModuleEntity {
+  private fun addModuleEntity(builder: MutableEntityStorage, entityToAdd: GenericModuleInfo): ModuleEntity {
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val (libraryModulesDependencies, librariesDependencies) =
       entityToAdd.librariesDependencies.partition {
@@ -59,14 +56,14 @@ internal class ModuleEntityUpdater(
         librariesDependencies.map { toLibraryDependency(it, workspaceModelEntityUpdaterConfig.project) } +
         associatesDependencies
 
-
-    val moduleEntityBuilder = ModuleEntity(
-      name = entityToAdd.name,
-      dependencies = dependencies,
-      entitySource = toEntitySource(entityToAdd),
-    ) {
-      this.type = entityToAdd.type
-    }
+    val moduleEntityBuilder =
+      ModuleEntity(
+        name = entityToAdd.name,
+        dependencies = dependencies,
+        entitySource = toEntitySource(entityToAdd),
+      ) {
+        this.type = entityToAdd.type
+      }
 
     val moduleEntity = builder.addEntity(moduleEntityBuilder)
 
@@ -85,22 +82,25 @@ internal class ModuleEntityUpdater(
     }
   }
 
-  private fun List<IntermediateLibraryDependency>.toLibraryModuleDependencies() =
-    this.map { IntermediateModuleDependency(it.libraryName) }
+  private fun List<IntermediateLibraryDependency>.toLibraryModuleDependencies() = this.map { IntermediateModuleDependency(it.libraryName) }
 
-  private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource = when {
-    entityToAdd.isDummy -> BspDummyEntitySource
-    !JpsFeatureFlags.isJpsCompilationEnabled ||
-      entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspEntitySource
+  private fun toEntitySource(entityToAdd: GenericModuleInfo): EntitySource =
+    when {
+      entityToAdd.isDummy -> BspDummyEntitySource
+      !JpsFeatureFlags.isJpsCompilationEnabled ||
+        entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspEntitySource
 
-    else -> LegacyBridgeJpsEntitySourceFactory.createEntitySourceForModule(
-      project = workspaceModelEntityUpdaterConfig.project,
-      baseModuleDir = JpsPaths.getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)
-        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-      externalSource = null,
-      moduleFileName = entityToAdd.name + ModuleManagerEx.IML_EXTENSION
-    )
-  }
+      else ->
+        LegacyBridgeJpsEntitySourceFactory.createEntitySourceForModule(
+          project = workspaceModelEntityUpdaterConfig.project,
+          baseModuleDir =
+            JpsPaths
+              .getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)
+              .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+          externalSource = null,
+          moduleFileName = entityToAdd.name + ModuleManagerEx.IML_EXTENSION,
+        )
+    }
 
   private fun toModuleDependencyItemModuleDependency(
     intermediateModuleDependency: IntermediateModuleDependency,
@@ -112,30 +112,27 @@ internal class ModuleEntityUpdater(
         exported = true,
         scope = DependencyScope.COMPILE,
         productionOnTest = true,
-      )
+      ),
     )
 }
 
-internal fun toLibraryDependency(
-  intermediateLibraryDependency: IntermediateLibraryDependency,
-  project: Project,
-): LibraryDependency =
+internal fun toLibraryDependency(intermediateLibraryDependency: IntermediateLibraryDependency, project: Project): LibraryDependency =
   BspWorkspace.getInstance(project).interner.getOrPut(
     LibraryDependency(
-      library = BspWorkspace.getInstance(project).interner.getOrPut(
-        LibraryId(
-          name = intermediateLibraryDependency.libraryName,
-          tableId = LibraryTableId.ProjectLibraryTableId, // treat all libraries as project-level libraries
-        )
-      ),
+      library =
+        BspWorkspace.getInstance(project).interner.getOrPut(
+          LibraryId(
+            name = intermediateLibraryDependency.libraryName,
+            tableId = LibraryTableId.ProjectLibraryTableId, // treat all libraries as project-level libraries
+          ),
+        ),
       exported = true, // TODO https://youtrack.jetbrains.com/issue/BAZEL-632
       scope = DependencyScope.COMPILE,
-    )
+    ),
   )
 
-internal class WorkspaceModuleRemover(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModuleEntityRemover<ModuleName> {
+internal class WorkspaceModuleRemover(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModuleEntityRemover<ModuleName> {
   override fun removeEntity(entityToRemove: ModuleName) {
     // TODO https://youtrack.jetbrains.com/issue/BAZEL-634
     val moduleToRemove =

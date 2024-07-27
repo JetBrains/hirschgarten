@@ -18,6 +18,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 // This file is copied from the monorepo, because these functions aren't yet published to Maven.
+
 /**
  * Copies the files to a temp directory to make sure that the artifacts are published by TeamCity.
  * Otherwise, the files might be cleaned before the TeamCity build finishes.
@@ -32,7 +33,7 @@ fun IDEStartResult.publishTeamCityArtifacts(
     source = source,
     artifactPath = artifactPath,
     artifactName = artifactName,
-    zipContent = zipContent
+    zipContent = zipContent,
   )
 }
 
@@ -42,32 +43,34 @@ fun IDEStartResult.publishPerformanceMetrics(
   projectName: String = runContext.contextName,
   metrics: Collection<PerformanceMetrics.Metric>,
 ) {
-  val buildInfo: CIServerBuildInfo = CIServer.instance.asTeamCity().run {
-    val buildTypeId = this.buildTypeId ?: ""
+  val buildInfo: CIServerBuildInfo =
+    CIServer.instance.asTeamCity().run {
+      val buildTypeId = this.buildTypeId ?: ""
 
-    CIServerBuildInfo(
-      buildId = this.buildId,
-      typeId = buildTypeId,
-      configName = this.configurationName ?: "",
-      buildNumber = this.buildNumber,
-      branchName = this.branchName,
-      url = "${this.serverUri}/viewLog.html?buildId=$buildId&buildTypeId=$buildTypeId",
-      isPersonal = this.isPersonalBuild,
-    )
-  }
+      CIServerBuildInfo(
+        buildId = this.buildId,
+        typeId = buildTypeId,
+        configName = this.configurationName ?: "",
+        buildNumber = this.buildNumber,
+        branchName = this.branchName,
+        url = "${this.serverUri}/viewLog.html?buildId=$buildId&buildTypeId=$buildTypeId",
+        isPersonal = this.isPersonalBuild,
+      )
+    }
 
   val metricsSortedByName = metrics.sortedBy { it.id.name }
 
-  val appMetrics = PerformanceMetricsDto.create(
-    projectName = projectName,
-    buildNumber = BuildNumber.fromStringWithProductCode(context.ide.build, context.ide.productCode)!!,
-    methodName = getMethodName(),
-    projectURL = context.getProjectURL(),
-    projectDescription = context.getProjectDescription(),
-    metrics = metricsSortedByName,
-    buildInfo = buildInfo,
-    generated = CIServer.instance.asTeamCity().buildStartTime
-  )
+  val appMetrics =
+    PerformanceMetricsDto.create(
+      projectName = projectName,
+      buildNumber = BuildNumber.fromStringWithProductCode(context.ide.build, context.ide.productCode)!!,
+      methodName = getMethodName(),
+      projectURL = context.getProjectURL(),
+      projectDescription = context.getProjectDescription(),
+      metrics = metricsSortedByName,
+      buildInfo = buildInfo,
+      generated = CIServer.instance.asTeamCity().buildStartTime,
+    )
 
   val reportFile = Files.createTempFile(runContext.snapshotsDir, artifactName, null)
   jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValue(reportFile.toFile(), appMetrics)
@@ -85,10 +88,11 @@ private fun getMethodName(): String {
 private fun IDETestContext.getProjectDescription(): String = testCase.projectInfo.getDescription()
 
 private fun IDETestContext.getProjectURL(): String {
-  val url = when (val projectInfo = this.testCase.projectInfo) {
-    is RemoteArchiveProjectInfo -> projectInfo.projectURL
-    is GitProjectInfo -> projectInfo.repositoryUrl
-    else -> ""
-  }
+  val url =
+    when (val projectInfo = this.testCase.projectInfo) {
+      is RemoteArchiveProjectInfo -> projectInfo.projectURL
+      is GitProjectInfo -> projectInfo.repositoryUrl
+      else -> ""
+    }
   return url
 }

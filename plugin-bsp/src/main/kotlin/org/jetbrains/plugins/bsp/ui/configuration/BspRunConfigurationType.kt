@@ -15,28 +15,28 @@ public abstract class BspRunConfigurationTypeBase(
   icon: NotNullLazyValue<Icon>,
 ) : SimpleConfigurationType(id, name, description, icon)
 
-public class BspRunConfigurationType : BspRunConfigurationTypeBase(
-  id = ID,
-  name = BspPluginBundle.message("runconfig.run.name"),
-  description = BspPluginBundle.message("runconfig.run.description"),
-  icon = NotNullLazyValue.createValue { BspPluginIcons.bsp },
-) {
-  override fun createTemplateConfiguration(project: Project): RunConfiguration =
-    BspRunConfiguration(project, this, name)
+public class BspRunConfigurationType :
+  BspRunConfigurationTypeBase(
+    id = ID,
+    name = BspPluginBundle.message("runconfig.run.name"),
+    description = BspPluginBundle.message("runconfig.run.description"),
+    icon = NotNullLazyValue.createValue { BspPluginIcons.bsp },
+  ) {
+  override fun createTemplateConfiguration(project: Project): RunConfiguration = BspRunConfiguration(project, this, name)
 
   public companion object {
     public const val ID: String = "BspRunConfiguration"
   }
 }
 
-public class BspTestConfigurationType : BspRunConfigurationTypeBase(
-  id = ID,
-  name = BspPluginBundle.message("runconfig.test.name"),
-  description = BspPluginBundle.message("runconfig.test.description"),
-  icon = NotNullLazyValue.createValue { BspPluginIcons.bsp },
-) {
-  override fun createTemplateConfiguration(project: Project): RunConfiguration =
-    BspTestConfiguration(project, this, name)
+public class BspTestConfigurationType :
+  BspRunConfigurationTypeBase(
+    id = ID,
+    name = BspPluginBundle.message("runconfig.test.name"),
+    description = BspPluginBundle.message("runconfig.test.description"),
+    icon = NotNullLazyValue.createValue { BspPluginIcons.bsp },
+  ) {
+  override fun createTemplateConfiguration(project: Project): RunConfiguration = BspTestConfiguration(project, this, name)
 
   public companion object {
     public const val ID: String = "BspTestConfiguration"

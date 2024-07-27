@@ -26,8 +26,15 @@ java_binary(
     runtime_deps = ["@google_java_format//jar"],
 )
 
+# java_binary(
+#     name = "ktfmt",
+#     main_class = "com.facebook.ktfmt.cli.Main",
+#     runtime_deps = ["@ktfmt//jar"],
+# )
+
 java_binary(
     name = "ktfmt",
-    main_class = "com.facebook.ktfmt.cli.Main",
-    runtime_deps = ["@ktfmt//jar"],
+    args = ["--format"],
+    main_class = "com.pinterest.ktlint.Main",
+    runtime_deps = ["@ktlint//jar"],
 )

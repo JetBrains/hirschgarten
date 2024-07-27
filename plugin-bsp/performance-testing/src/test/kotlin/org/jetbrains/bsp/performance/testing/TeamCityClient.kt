@@ -1,4 +1,5 @@
 @file:Suppress("detekt:all")
+
 package org.jetbrains.bsp.performance.testing
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -30,11 +31,12 @@ import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 
 // Copied from monorepo to fix an authentication issue
-fun <T : HttpRequest> T.withAuth(): T = this.apply {
-  val teamCityCI by lazy { CIServer.instance.asTeamCity() }
+fun <T : HttpRequest> T.withAuth(): T =
+  this.apply {
+    val teamCityCI by lazy { CIServer.instance.asTeamCity() }
 
-  addHeader(BasicScheme().authenticate(UsernamePasswordCredentials(teamCityCI.userName, teamCityCI.password), this, null))
-}
+    addHeader(BasicScheme().authenticate(UsernamePasswordCredentials(teamCityCI.userName, teamCityCI.password), this, null))
+  }
 
 // TODO: move on to use TeamCityRest client library or stick with Okhttp
 object TeamCityClient {
@@ -47,24 +49,26 @@ object TeamCityClient {
   val guestAuthUri: URI = teamCityURI.resolve("/guestAuth/app/rest/")
 
   fun get(fullUrl: URI, additionalRequestActions: (HttpRequest) -> HttpRequest = { it }): JsonNode {
-    val request = HttpGet(fullUrl).apply {
-      addHeader("Content-Type", "application/json")
-      addHeader("Accept", "application/json")
-      additionalRequestActions(this)
-    }
+    val request =
+      HttpGet(fullUrl).apply {
+        addHeader("Content-Type", "application/json")
+        addHeader("Accept", "application/json")
+        additionalRequestActions(this)
+      }
 
     logOutput("Request to TeamCity: $fullUrl")
 
-    val result = withRetryBlocking(messageOnFailure = "Failure during request to TeamCity") {
-      HttpClient.sendRequest(request) {
-        if (it.statusLine.statusCode != 200) {
-          logError(InputStreamReader(it.entity.content).readText())
-          throw RuntimeException("TeamCity returned not successful status code ${it.statusLine.statusCode}")
-        }
+    val result =
+      withRetryBlocking(messageOnFailure = "Failure during request to TeamCity") {
+        HttpClient.sendRequest(request) {
+          if (it.statusLine.statusCode != 200) {
+            logError(InputStreamReader(it.entity.content).readText())
+            throw RuntimeException("TeamCity returned not successful status code ${it.statusLine.statusCode}")
+          }
 
-        jacksonObjectMapper().readTree(it.entity.content)
+          jacksonObjectMapper().readTree(it.entity.content)
+        }
       }
-    }
 
     return requireNotNull(result) { "Request ${request.uri} failed" }
   }
@@ -75,21 +79,33 @@ object TeamCityClient {
     val number = if (!ideInfo.buildNumber.isBlank()) "number:${ideInfo.buildNumber}," else ""
     val branchName = System.getProperty("use.branch.name", "")
     val branch = if (branchName.isNotEmpty()) "branch:$branchName," else ""
-    val fullUrl = guestAuthUri.resolve("builds?locator=buildType:${ideInfo.buildType},${branch}${tag}${number}status:SUCCESS,branch:default:any,state:(finished:true),count:1")
+    val fullUrl =
+      guestAuthUri.resolve(
+        "builds?locator=buildType:${ideInfo.buildType},${branch}${tag}${number}status:SUCCESS,branch:default:any,state:(finished:true),count:1",
+      )
 
-    val build = get(fullUrl).fields().asSequence().first { it.key == "build" }.value
+    val build =
+      get(fullUrl)
+        .fields()
+        .asSequence()
+        .first { it.key == "build" }
+        .value
     val buildId = build.findValue("id").asText()
     val buildNumber = ideInfo.buildNumber.ifBlank { build.findValue("number").asText() }
     return Pair(buildId, buildNumber)
   }
 
-  fun downloadArtifact(buildId: String, artifactName: String, outFile: File) {
+  fun downloadArtifact(
+    buildId: String,
+    artifactName: String,
+    outFile: File,
+  ) {
     val artifactUrl = guestAuthUri.resolve("builds/id:$buildId/artifacts/content/$artifactName")
     HttpClient.download(artifactUrl.toString(), outFile)
   }
 
   private fun printTcArtifactsPublishMessage(spec: String) {
-    logOutput(" !!teamcity[publishArtifacts '$spec'] ") //we need this to see in the usual IDEA log
+    logOutput(" !!teamcity[publishArtifacts '$spec'] ") // we need this to see in the usual IDEA log
     logOutput(" ##teamcity[publishArtifacts '$spec'] ")
   }
 
@@ -134,21 +150,17 @@ object TeamCityClient {
       }
       if (zipContent) {
         printTcArtifactsPublishMessage("${artifactDir.toRealPath()}/** => $sanitizedArtifactPath/$sanitizedArtifactName$suffix.zip")
-      }
-      else {
+      } else {
         printTcArtifactsPublishMessage("${artifactDir.toRealPath()}/** => $sanitizedArtifactPath$suffix")
       }
-    }
-    else {
+    } else {
       val tempFile = artifactDir
       source.copyTo(tempFile, overwrite = true)
       if (zipContent) {
         printTcArtifactsPublishMessage("${tempFile.toRealPath()} => $sanitizedArtifactPath/${sanitizedArtifactName + suffix}.zip")
-      }
-      else {
+      } else {
         printTcArtifactsPublishMessage("${tempFile.toRealPath()} => $sanitizedArtifactPath")
       }
     }
   }
 }
-

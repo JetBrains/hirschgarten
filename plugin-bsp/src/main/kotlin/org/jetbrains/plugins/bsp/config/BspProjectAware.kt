@@ -15,6 +15,7 @@ import org.jetbrains.plugins.bsp.services.BspCoroutineService
 
 public interface BspProjectAwareExtension {
   public fun getProjectId(projectPath: VirtualFile): ExternalSystemProjectId
+
   public val eligibleConfigFileNames: List<String>
   public val eligibleConfigFileExtensions: List<String>
 
@@ -24,8 +25,7 @@ public interface BspProjectAwareExtension {
   }
 }
 
-public abstract class BspProjectAware(private val workspace: BspWorkspace) :
-  ExternalSystemProjectAware {
+public abstract class BspProjectAware(private val workspace: BspWorkspace) : ExternalSystemProjectAware {
   override val settingsFiles: Set<String>
     get() = emptySet()
 
@@ -40,18 +40,24 @@ public abstract class BspProjectAware(private val workspace: BspWorkspace) :
   }
 
   override fun subscribe(listener: ExternalSystemProjectListener, parentDisposable: Disposable) {
-    workspace.project.messageBus.connect().subscribe(BspWorkspaceListener.TOPIC, object : BspWorkspaceListener {
-      override fun syncStarted() {
-        listener.onProjectReloadStart()
-      }
+    workspace.project.messageBus.connect().subscribe(
+      BspWorkspaceListener.TOPIC,
+      object : BspWorkspaceListener {
+        override fun syncStarted() {
+          listener.onProjectReloadStart()
+        }
 
-      override fun syncFinished(canceled: Boolean) {
-        listener.onProjectReloadFinish(
-          if (canceled) ExternalSystemRefreshStatus.CANCEL
-          else ExternalSystemRefreshStatus.SUCCESS
-        )
-      }
-    })
+        override fun syncFinished(canceled: Boolean) {
+          listener.onProjectReloadFinish(
+            if (canceled) {
+              ExternalSystemRefreshStatus.CANCEL
+            } else {
+              ExternalSystemRefreshStatus.SUCCESS
+            },
+          )
+        }
+      },
+    )
   }
 
   public companion object {
@@ -60,10 +66,11 @@ public abstract class BspProjectAware(private val workspace: BspWorkspace) :
       val projectAwareExtension = BspProjectAwareExtension.ep.extensionList.firstOrNull()
       projectAwareExtension?.also {
         val project = workspace.project
-        val projectAware = object : BspProjectAware(workspace) {
-          override val projectId: ExternalSystemProjectId
-            get() = it.getProjectId(project.rootDir)
-        }
+        val projectAware =
+          object : BspProjectAware(workspace) {
+            override val projectId: ExternalSystemProjectId
+              get() = it.getProjectId(project.rootDir)
+          }
         val projectTracker = ExternalSystemProjectTracker.getInstance(project)
         projectTracker.register(projectAware)
         projectTracker.activate(projectAware.projectId)

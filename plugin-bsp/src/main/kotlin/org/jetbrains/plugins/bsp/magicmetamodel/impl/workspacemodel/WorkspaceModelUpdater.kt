@@ -31,13 +31,10 @@ public data class ModuleDetails(
   val jvmBinaryJars: List<JvmBinaryJarsItem>,
 )
 
-internal data class ModuleName(
-  val name: String,
-)
+internal data class ModuleName(val name: String)
 
 internal interface WorkspaceModelUpdater {
-  fun loadModules(moduleEntities: List<Module>) =
-    moduleEntities.forEach { loadModule(it) }
+  fun loadModules(moduleEntities: List<Module>) = moduleEntities.forEach { loadModule(it) }
 
   fun loadModule(module: Module)
 
@@ -45,8 +42,7 @@ internal interface WorkspaceModelUpdater {
 
   fun loadDirectories(includedDirectories: List<VirtualFileUrl>, excludedDirectories: List<VirtualFileUrl>)
 
-  fun removeModules(modules: List<ModuleName>) =
-    modules.forEach { removeModule(it) }
+  fun removeModules(modules: List<ModuleName>) = modules.forEach { removeModule(it) }
 
   fun removeModule(module: ModuleName)
 

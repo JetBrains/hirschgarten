@@ -10,15 +10,11 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 
-internal class PythonResourceEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithParentModuleUpdater<ResourceRoot, SourceRootEntity> {
+internal class PythonResourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithParentModuleUpdater<ResourceRoot, SourceRootEntity> {
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntities(
-    entitiesToAdd: List<ResourceRoot>,
-    parentModuleEntity: ModuleEntity
-  ): List<SourceRootEntity> {
+  override fun addEntities(entitiesToAdd: List<ResourceRoot>, parentModuleEntity: ModuleEntity): List<SourceRootEntity> {
     val contentRootEntities = addContentRootEntities(entitiesToAdd, parentModuleEntity)
 
     return (entitiesToAdd zip contentRootEntities).map { (entityToAdd, contentRootEntity) ->
@@ -30,15 +26,13 @@ internal class PythonResourceEntityUpdater(
     }
   }
 
-  private fun addContentRootEntities(
-    entitiesToAdd: List<ResourceRoot>,
-    parentModuleEntity: ModuleEntity,
-  ): List<ContentRootEntity> {
-    val contentRoots = entitiesToAdd.map { entityToAdd ->
-      ContentRoot(
-        path = entityToAdd.resourcePath,
-      )
-    }
+  private fun addContentRootEntities(entitiesToAdd: List<ResourceRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> {
+    val contentRoots =
+      entitiesToAdd.map { entityToAdd ->
+        ContentRoot(
+          path = entityToAdd.resourcePath,
+        )
+      }
 
     return contentRootEntityUpdater.addEntities(contentRoots, parentModuleEntity)
   }
@@ -48,22 +42,23 @@ internal class PythonResourceEntityUpdater(
     contentRootEntity: ContentRootEntity,
     entityToAdd: ResourceRoot,
   ): SourceRootEntity {
-    val entity = SourceRootEntity(
-      url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-      rootTypeId = ROOT_TYPE,
-      entitySource = contentRootEntity.entitySource,
-    )
+    val entity =
+      SourceRootEntity(
+        url = entityToAdd.resourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+        rootTypeId = ROOT_TYPE,
+        entitySource = contentRootEntity.entitySource,
+      )
 
-    val updatedContentRootEntity = builder.modifyContentRootEntity(contentRootEntity) {
-      this.sourceRoots += entity
-    }
+    val updatedContentRootEntity =
+      builder.modifyContentRootEntity(contentRootEntity) {
+        this.sourceRoots += entity
+      }
 
     return updatedContentRootEntity.sourceRoots.last()
   }
 
-  override fun addEntity(entityToAdd: ResourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity {
-    return addEntities(listOf(entityToAdd), parentModuleEntity).single()
-  }
+  override fun addEntity(entityToAdd: ResourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity =
+    addEntities(listOf(entityToAdd), parentModuleEntity).single()
 
   private companion object {
     private val ROOT_TYPE = SourceRootTypeId("python-resource")

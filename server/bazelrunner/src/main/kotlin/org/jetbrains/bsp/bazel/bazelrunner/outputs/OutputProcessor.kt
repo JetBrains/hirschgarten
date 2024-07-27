@@ -29,33 +29,34 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
   protected abstract fun isRunning(): Boolean
 
   protected fun start(inputStream: InputStream, vararg handlers: OutputHandler) {
-    val runnable = Runnable {
-      try {
-        BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
-          var prevLine: String? = null
+    val runnable =
+      Runnable {
+        try {
+          BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).use { reader ->
+            var prevLine: String? = null
 
-          while (!Thread.currentThread().isInterrupted) {
-            val line = reader.readLine() ?: return@Runnable
-            if (line == prevLine) continue
-            prevLine = line
-            if (isRunning()) {
-              handlers.forEach { it.onNextLine(line) }
-            } else {
-              break
+            while (!Thread.currentThread().isInterrupted) {
+              val line = reader.readLine() ?: return@Runnable
+              if (line == prevLine) continue
+              prevLine = line
+              if (isRunning()) {
+                handlers.forEach { it.onNextLine(line) }
+              } else {
+                break
+              }
             }
           }
+        } catch (e: IOException) {
+          if (Thread.currentThread().isInterrupted) return@Runnable
+          throw RuntimeException(e)
         }
-      } catch (e: IOException) {
-        if (Thread.currentThread().isInterrupted) return@Runnable
-        throw RuntimeException(e)
       }
-    }
 
     executorService.submit(runnable).also { runningProcessors.add(it) }
   }
 
   fun waitForExit(cancelChecker: CancelChecker): Int {
-    var isFinished = false;
+    var isFinished = false
     while (!isFinished) {
       isFinished = process.waitFor(500, TimeUnit.MILLISECONDS)
       if (cancelChecker.isCanceled) {

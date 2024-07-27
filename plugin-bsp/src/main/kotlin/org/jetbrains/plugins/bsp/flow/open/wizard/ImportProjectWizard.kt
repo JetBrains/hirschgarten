@@ -23,9 +23,8 @@ internal abstract class ImportProjectWizardStep : StepAdapter() {
   protected open fun commit(finishChosen: Boolean) {}
 }
 
-internal class ImportProjectWizard(
-  project: Project,
-) : AbstractWizard<ImportProjectWizardStep>(BspPluginBundle.message("wizard.import.project.title"), project) {
+internal class ImportProjectWizard(project: Project) :
+  AbstractWizard<ImportProjectWizardStep>(BspPluginBundle.message("wizard.import.project.title"), project) {
   val connectionFile: ObservableProperty<VirtualFile>
 
   init {

@@ -9,12 +9,12 @@ import org.jetbrains.bazel.languages.starlark.rename.RenameUtils
 
 class StarlarkFunctionCallReference(element: StarlarkCallExpression, rangeInElement: TextRange) :
   PsiReferenceBase<StarlarkCallExpression>(element, rangeInElement, true) {
-
-  override fun resolve(): PsiElement? = myElement?.let {
-    val processor = StarlarkResolveProcessor(mutableListOf(), it)
-    SearchUtils.searchInFile(it, processor)
-    processor.result.firstOrNull()
-  }
+  override fun resolve(): PsiElement? =
+    myElement?.let {
+      val processor = StarlarkResolveProcessor(mutableListOf(), it)
+      SearchUtils.searchInFile(it, processor)
+      processor.result.firstOrNull()
+    }
 
   override fun getVariants(): Array<StarlarkLookupElement> = emptyArray()
 

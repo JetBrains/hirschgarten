@@ -45,15 +45,18 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
 
   private fun subscribeToWorkspaceModelChange() {
     val connection = project.messageBus.connect()
-    connection.subscribe(WorkspaceModelTopics.CHANGED, object : WorkspaceModelChangeListener {
-      override fun changed(event: VersionedStorageChange) {
-        val sourceRootChanges = event.getChanges(SourceRootEntity::class.java)
-        sourceRootChanges.forEach {
-          handleSingleFileSourceEntity(it.oldEntity, false)
-          handleSingleFileSourceEntity(it.newEntity, true)
+    connection.subscribe(
+      WorkspaceModelTopics.CHANGED,
+      object : WorkspaceModelChangeListener {
+        override fun changed(event: VersionedStorageChange) {
+          val sourceRootChanges = event.getChanges(SourceRootEntity::class.java)
+          sourceRootChanges.forEach {
+            handleSingleFileSourceEntity(it.oldEntity, false)
+            handleSingleFileSourceEntity(it.newEntity, true)
+          }
         }
-      }
-    })
+      },
+    )
   }
 
   private fun handleSingleFileSourceEntity(entity: SourceRootEntity?, isNewEntity: Boolean) {
@@ -63,13 +66,23 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
     singleFileSourceCandidate?.let { updateSingleFileSourceData(it, module, isNewEntity) }
   }
 
-  private fun updateSingleFileSourceData(sourceFile: VirtualFile, module: Module, isNewEntity: Boolean) {
-    if (sourceFile.isFileSupported()) synchronized(lock) {
-      updateSingleFileSourceDataAccordingly(sourceFile, module, isNewEntity)
+  private fun updateSingleFileSourceData(
+    sourceFile: VirtualFile,
+    module: Module,
+    isNewEntity: Boolean,
+  ) {
+    if (sourceFile.isFileSupported()) {
+      synchronized(lock) {
+        updateSingleFileSourceDataAccordingly(sourceFile, module, isNewEntity)
+      }
     }
   }
 
-  private fun updateSingleFileSourceDataAccordingly(sourceFile: VirtualFile, module: Module, isNewEntity: Boolean) {
+  private fun updateSingleFileSourceDataAccordingly(
+    sourceFile: VirtualFile,
+    module: Module,
+    isNewEntity: Boolean,
+  ) {
     val sourceDirectory = getSourceDirectory(sourceFile)
     if (isNewEntity) {
       addSourceDirectory(module, sourceDirectory)
@@ -78,11 +91,9 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
     }
   }
 
-  private fun VirtualFile.isFileSupported(): Boolean =
-    this.isFile && supportedFileExtensions.contains(this.extension)
+  private fun VirtualFile.isFileSupported(): Boolean = this.isFile && supportedFileExtensions.contains(this.extension)
 
-  private fun extractModuleFromEntity(entity: SourceRootEntity): Module? =
-    moduleManager.findModuleByName(entity.contentRoot.module.name)
+  private fun extractModuleFromEntity(entity: SourceRootEntity): Module? = moduleManager.findModuleByName(entity.contentRoot.module.name)
 
   private fun extractVirtualFileFromEntity(entity: SourceRootEntity): VirtualFile? = entity.url.virtualFile
 
@@ -103,10 +114,11 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
 
   private fun findSourceRootEntity(file: VirtualFile): SourceRootEntity? {
     if (!file.isFileSupported()) return null
-    val entityCandidates = workspaceModel
-      .currentSnapshot
-      .getVirtualFileUrlIndex()
-      .findEntitiesByUrl(file.toVirtualFileUrl(virtualFileUrlManager))
+    val entityCandidates =
+      workspaceModel
+        .currentSnapshot
+        .getVirtualFileUrlIndex()
+        .findEntitiesByUrl(file.toVirtualFileUrl(virtualFileUrlManager))
 
     return entityCandidates
       .filterIsInstance<SourceRootEntity>()
@@ -117,7 +129,11 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
     if (isSingleFileSource(file)) getSourceDirectory(file) else null
 
   override fun getPackageNameForSingleFileSource(file: VirtualFile): String? =
-    findSourceRootEntity(file)?.javaSourceRoots?.firstOrNull()?.packagePrefix?.nullize()
+    findSourceRootEntity(file)
+      ?.javaSourceRoots
+      ?.firstOrNull()
+      ?.packagePrefix
+      ?.nullize()
 }
 
 /**

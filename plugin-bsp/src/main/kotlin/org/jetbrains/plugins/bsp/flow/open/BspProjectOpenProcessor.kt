@@ -47,12 +47,14 @@ internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(bspBuildToo
     val buildToolIds = file.collectBuildToolIdsFromConnectionFiles()
     log.debug("Detected build tool ids: $buildToolIds")
 
-    return buildToolIds.any { it.shouldBspProjectOpenProcessorBeAvailable() }
+    return buildToolIds
+      .any { it.shouldBspProjectOpenProcessorBeAvailable() }
       .also { log.debug("Will BspProjectOpenProcessor be available: $it") }
   }
 
   private fun VirtualFile.collectBuildToolIdsFromConnectionFiles(): List<BuildToolId> =
-    this.findChild(BSP_CONNECTION_DIR)
+    this
+      .findChild(BSP_CONNECTION_DIR)
       ?.children
       ?.mapNotNull { it.parseBspConnectionDetails() }
       ?.map { BuildToolId(it.name) }

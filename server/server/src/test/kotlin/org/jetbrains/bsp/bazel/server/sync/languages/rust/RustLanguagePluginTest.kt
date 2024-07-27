@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 
 class RustLanguagePluginTest {
-
   private val outputBase = "/private/var/tmp/_bazel/125c7a6ca879ed16a4b4b1a74bc5f27b"
   private val execRoot = "$outputBase/execroot/bazel_bsp"
   private lateinit var bazelPathsResolver: BazelPathsResolver
@@ -20,18 +19,18 @@ class RustLanguagePluginTest {
   @BeforeEach
   fun beforeEach() {
     // given
-    val bazelInfo = BasicBazelInfo(
-      execRoot = execRoot,
-      outputBase = Paths.get(outputBase),
-      workspaceRoot = Paths.get("/Users/user/workspace/bazel-bsp"),
-      release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
-      false
-    )
+    val bazelInfo =
+      BasicBazelInfo(
+        execRoot = execRoot,
+        outputBase = Paths.get(outputBase),
+        workspaceRoot = Paths.get("/Users/user/workspace/bazel-bsp"),
+        release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
+        false,
+      )
 
     bazelPathsResolver = BazelPathsResolver(bazelInfo)
     languagePlugin = RustLanguagePlugin(bazelPathsResolver)
   }
-
 
   @Test
   fun `should return empty workspace for empty requested targets list`() {
@@ -61,7 +60,7 @@ class RustLanguagePluginTest {
 
     // then
     workspace.packages.map { it.resolvedTargets[0].name } shouldContainExactlyInAnyOrder
-        listOf("F")
+      listOf("F")
   }
 
   @Test
@@ -80,7 +79,7 @@ class RustLanguagePluginTest {
 
     // then
     workspace.packages.map { it.resolvedTargets[0].name } shouldContainExactlyInAnyOrder
-        listOf("E", "G", "H")
+      listOf("E", "G", "H")
   }
 
   @Test
@@ -99,13 +98,13 @@ class RustLanguagePluginTest {
 
     // then
     workspace.packages.map { it.resolvedTargets[0].name } shouldContainExactlyInAnyOrder
-        listOf("A", "D", "E", "F", "G", "H")
+      listOf("A", "D", "E", "F", "G", "H")
   }
 
   @Test
   fun `should return proper workspace for multiple requested targets`() {
     // given
-    //--> B    A
+    // --> B    A
     //    | \ / \
     //    C  D   E <--
     //    \ /  \ | \
@@ -118,13 +117,13 @@ class RustLanguagePluginTest {
 
     // then
     workspace.packages.map { it.resolvedTargets[0].name } shouldContainExactlyInAnyOrder
-        listOf("B", "C", "D", "F", "E", "G", "H")
+      listOf("B", "C", "D", "F", "E", "G", "H")
   }
 
   @Test
   fun `should return workspace with all modules for requested targets that depend on every module`() {
     // given
-    //--> B    A <--
+    // --> B    A <--
     //    | \ / \
     //    C  D   E
     //    \ /  \ | \
@@ -137,7 +136,7 @@ class RustLanguagePluginTest {
 
     // then
     workspace.packages.map { it.resolvedTargets[0].name } shouldContainExactlyInAnyOrder
-        listOf("A", "B", "C", "D", "E", "F", "G", "H")
+      listOf("A", "B", "C", "D", "E", "F", "G", "H")
   }
 
   @Test
@@ -149,15 +148,19 @@ class RustLanguagePluginTest {
     //    \ /  \ | \
     //     F --> G  H <--
     val (modules, modulesMap) = getSampleModules()
-    val requestedTargets = listOf(
-        modulesMap["A"]!!, modulesMap["E"]!!, modulesMap["G"]!!, modulesMap["H"]!!
-    )
+    val requestedTargets =
+      listOf(
+        modulesMap["A"]!!,
+        modulesMap["E"]!!,
+        modulesMap["G"]!!,
+        modulesMap["H"]!!,
+      )
 
     // when
     val workspace = languagePlugin.toRustWorkspaceResult(requestedTargets, modules)
 
     // then
     workspace.packages.map { it.resolvedTargets[0].name } shouldContainExactlyInAnyOrder
-        listOf("A", "D", "E", "F", "G", "H")
+      listOf("A", "D", "E", "F", "G", "H")
   }
 }

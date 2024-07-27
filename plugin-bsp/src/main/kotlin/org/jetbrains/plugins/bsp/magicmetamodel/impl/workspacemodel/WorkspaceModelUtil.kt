@@ -20,4 +20,3 @@ internal fun BuildTargetInfo.getModule(project: Project): Module? {
   val moduleName = moduleNameProvider(this)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }
-

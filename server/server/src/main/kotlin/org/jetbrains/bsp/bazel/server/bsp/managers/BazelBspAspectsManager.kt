@@ -22,7 +22,6 @@ class BazelBspAspectsManager(
   private val bazelBspCompilationManager: BazelBspCompilationManager,
   private val aspectsResolver: InternalAspectsResolver,
 ) {
-
   private val aspectsPath = Paths.get(aspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
   private val templateWriter = TemplateWriter(aspectsPath)
 
@@ -37,10 +36,12 @@ class BazelBspAspectsManager(
     ruleLanguages.filter { it.language.isTemplate }.forEach {
       val outputFile = aspectsPath.resolve(it.language.toAspectRelativePath())
       val templateFilePath = it.language.toAspectTemplateRelativePath()
-      val variableMap = mapOf(
-        "ruleName" to it.ruleName,
-        "addTransitiveCompileTimeJars" to if (workspaceContext.experimentalAddTransitiveCompileTimeJars.value) "True" else "False",
-      )
+      val variableMap =
+        mapOf(
+          "ruleName" to it.ruleName,
+          "addTransitiveCompileTimeJars" to
+            if (workspaceContext.experimentalAddTransitiveCompileTimeJars.value) "True" else "False",
+        )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }
   }
@@ -54,13 +55,14 @@ class BazelBspAspectsManager(
     isRustEnabled: Boolean,
   ): BazelBspAspectsManagerResult {
     if (targetSpecs.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), isFailure = false)
-    val defaultFlags = listOf(
-      aspect(aspectsResolver.resolveLabel(aspect)),
-      outputGroups(outputGroups),
-      keepGoing(),
-      color(true),
-      curses(false),
-    )
+    val defaultFlags =
+      listOf(
+        aspect(aspectsResolver.resolveLabel(aspect)),
+        outputGroups(outputGroups),
+        keepGoing(),
+        color(true),
+        curses(false),
+      )
     val buildManualTargetsFlags = if (shouldBuildManualFlags) listOf(buildManualTests()) else emptyList()
 
     val flagsToUse = defaultFlags + buildManualTargetsFlags

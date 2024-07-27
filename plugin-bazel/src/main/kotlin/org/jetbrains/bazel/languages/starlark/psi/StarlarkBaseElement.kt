@@ -5,7 +5,9 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElementVisitor
 import org.jetbrains.bazel.languages.bazel.BazelPackage
 
-abstract class StarlarkBaseElement(node: ASTNode) : ASTWrapperPsiElement(node), StarlarkElement {
+abstract class StarlarkBaseElement(node: ASTNode) :
+  ASTWrapperPsiElement(node),
+  StarlarkElement {
   override fun accept(visitor: PsiElementVisitor) {
     if (visitor is StarlarkElementVisitor) {
       acceptVisitor(visitor)

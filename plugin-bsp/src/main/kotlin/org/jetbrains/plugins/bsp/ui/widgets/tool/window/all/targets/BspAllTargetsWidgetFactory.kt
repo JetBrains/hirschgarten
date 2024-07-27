@@ -15,11 +15,12 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowPanel
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 
-public class BspAllTargetsWidgetFactory : ToolWindowFactory, DumbAware {
+public class BspAllTargetsWidgetFactory :
+  ToolWindowFactory,
+  DumbAware {
   override suspend fun isApplicableAsync(project: Project): Boolean = project.isBspProject
 
-  override fun shouldBeAvailable(project: Project): Boolean =
-    project.isBspProject
+  override fun shouldBeAvailable(project: Project): Boolean = project.isBspProject
 
   override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
     BspToolWindowService.getInstance(project).setDeepPanelReload { doCreateToolWindowContent(project, toolWindow) }

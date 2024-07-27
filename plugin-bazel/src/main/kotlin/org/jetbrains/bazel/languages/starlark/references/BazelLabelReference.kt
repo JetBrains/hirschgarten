@@ -40,23 +40,24 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     return findBuildFilePsi(project, buildFile)
   }
 
-  private fun resolveImplicitPackage(): StarlarkFile? =
-    element.getBazelPackage()?.buildFile
+  private fun resolveImplicitPackage(): StarlarkFile? = element.getBazelPackage()?.buildFile
 
   private fun resolveRuleTarget(buildFilePsi: StarlarkFile, label: BazelLabel): StarlarkCallExpression? =
     buildFilePsi.findRuleTarget(label.targetName)
 
-  private fun resolveFileTarget(project: Project, buildFilePsi: StarlarkFile, label: BazelLabel): PsiFile? {
+  private fun resolveFileTarget(
+    project: Project,
+    buildFilePsi: StarlarkFile,
+    label: BazelLabel,
+  ): PsiFile? {
     val targetFile = buildFilePsi.parent?.virtualFile?.findFileByRelativePath(label.targetName) ?: return null
     return PsiManager.getInstance(project).findFile(targetFile)
   }
 
-  private fun findReferredPackage(project: Project, label: BazelLabel): VirtualFile? {
-    return project.rootDir.findFileByRelativePath(label.packageName)
-  }
+  private fun findReferredPackage(project: Project, label: BazelLabel): VirtualFile? =
+    project.rootDir.findFileByRelativePath(label.packageName)
 
-  private fun findBuildFile(packageDir: VirtualFile): VirtualFile? =
-    BUILD_FILE_NAMES.mapNotNull { packageDir.findChild(it) }.firstOrNull()
+  private fun findBuildFile(packageDir: VirtualFile): VirtualFile? = BUILD_FILE_NAMES.mapNotNull { packageDir.findChild(it) }.firstOrNull()
 
   private fun findBuildFilePsi(project: Project, buildFile: VirtualFile): StarlarkFile? =
     PsiManager.getInstance(project).findFile(buildFile) as? StarlarkFile

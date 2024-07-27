@@ -11,6 +11,8 @@ const val BUNDLE = "messages.BazelPluginBundle"
 object BazelPluginBundle : DynamicBundle(BUNDLE) {
   @Nls
   @JvmStatic
-  fun message(@NonNls @PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any): String =
-    getMessage(key, *params)
+  fun message(
+    @NonNls @PropertyKey(resourceBundle = BUNDLE) key: String,
+    vararg params: Any,
+  ): String = getMessage(key, *params)
 }

@@ -35,9 +35,7 @@ public class BspProjectSystemSyncManager(private val project: Project) : Project
     }
   }
 
-  override fun syncProject(
-    reason: ProjectSystemSyncManager.SyncReason,
-  ): ListenableFuture<ProjectSystemSyncManager.SyncResult> {
+  override fun syncProject(reason: ProjectSystemSyncManager.SyncReason): ListenableFuture<ProjectSystemSyncManager.SyncResult> {
     notifySyncEnded(project)
     return Futures.immediateFuture(ProjectSystemSyncManager.SyncResult.SUCCESS)
   }

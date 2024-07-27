@@ -41,8 +41,9 @@ public class MobileInstallTargetTask(
     val cancelOn = CompletableFuture<Void>()
 
     startMobileInstallConsoleTask(targetId, deviceFuture, startType, bspBuildConsole, originId, cancelOn)
-    val targetDeviceSerialNumber = getTargetAndroidDeviceSerialNumber(bspBuildConsole)
-      ?: return MobileInstallResult(StatusCode.ERROR)
+    val targetDeviceSerialNumber =
+      getTargetAndroidDeviceSerialNumber(bspBuildConsole)
+        ?: return MobileInstallResult(StatusCode.ERROR)
     val mobileInstallParams = createMobileInstallParams(targetId, originId, targetDeviceSerialNumber)
 
     val mobileInstallFuture = server.buildTargetMobileInstall(mobileInstallParams)
@@ -74,12 +75,13 @@ public class MobileInstallTargetTask(
     originId: String,
     targetDeviceSerialNumber: String,
   ): MobileInstallParams {
-    val params = MobileInstallParams(
-      target = targetId,
-      originId = originId,
-      targetDeviceSerialNumber = targetDeviceSerialNumber,
-      startType = startType,
-    )
+    val params =
+      MobileInstallParams(
+        target = targetId,
+        originId = originId,
+        targetDeviceSerialNumber = targetDeviceSerialNumber,
+        startType = startType,
+      )
     return params
   }
 

@@ -10,9 +10,7 @@ import com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId
 import com.intellij.platform.workspace.storage.impl.containers.toMutableWorkspaceList
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 
-public data class PackageNameId(
-  public val packageName: String,
-) : SymbolicEntityId<WorkspaceEntityWithSymbolicId> {
+public data class PackageNameId(public val packageName: String) : SymbolicEntityId<WorkspaceEntityWithSymbolicId> {
   override val presentableName: String
     get() = packageName
 }
@@ -54,7 +52,5 @@ public interface GeneratedJavaSourceRootEntity : WorkspaceEntity {
 fun MutableEntityStorage.modifyGeneratedJavaSourceRootEntity(
   entity: GeneratedJavaSourceRootEntity,
   modification: GeneratedJavaSourceRootEntity.Builder.() -> Unit,
-): GeneratedJavaSourceRootEntity {
-  return modifyEntity(GeneratedJavaSourceRootEntity.Builder::class.java, entity, modification)
-}
+): GeneratedJavaSourceRootEntity = modifyEntity(GeneratedJavaSourceRootEntity.Builder::class.java, entity, modification)
 //endregion

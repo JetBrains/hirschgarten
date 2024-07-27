@@ -34,7 +34,7 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
   }
 
   override fun createFormattingTask(request: AsyncFormattingRequest): FormattingTask? {
-    //TODO: buildifier settings (https://youtrack.jetbrains.com/issue/BAZEL-927/settings-page-for-buildifier)
+    // TODO: buildifier settings (https://youtrack.jetbrains.com/issue/BAZEL-927/settings-page-for-buildifier)
     val buildifierPath = "buildifier"
 
     if (!checkDocumentExists(request)) {
@@ -74,11 +74,12 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
 
   private fun createProcessHandler(request: AsyncFormattingRequest, buildifierPath: String): CapturingProcessHandler? {
     val ioFile = request.ioFile ?: return null
-    val commandLine = GeneralCommandLine()
-      .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-      .withExePath(buildifierPath)
-      .withInput(ioFile)
-      .withWorkDirectory(ioFile.parent)
+    val commandLine =
+      GeneralCommandLine()
+        .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
+        .withExePath(buildifierPath)
+        .withInput(ioFile)
+        .withWorkDirectory(ioFile.parent)
 
     return CapturingProcessHandler(commandLine)
   }
@@ -109,16 +110,25 @@ private open class BuildifierProcessListener(private val request: AsyncFormattin
 
   private fun showFormattedLinesInfo(text: String) {
     PsiEditorUtil.findEditor(request.context.containingFile)?.let { editor: Editor ->
-      ApplicationManager.getApplication()
-        .invokeLater({
-          val component = HintUtil.createInformationLabel(text)
-          val hint = LightweightHint(component)
-          HintManagerImpl.getInstanceImpl()
-            .showEditorHint(hint, editor, HintManager.ABOVE,
-              HintManager.HIDE_BY_ANY_KEY or HintManager.HIDE_BY_SCROLLING, 0,
-              false)
-        },
-          ModalityState.defaultModalityState()) { editor.isDisposed || !editor.component.isShowing }
+      ApplicationManager
+        .getApplication()
+        .invokeLater(
+          {
+            val component = HintUtil.createInformationLabel(text)
+            val hint = LightweightHint(component)
+            HintManagerImpl
+              .getInstanceImpl()
+              .showEditorHint(
+                hint,
+                editor,
+                HintManager.ABOVE,
+                HintManager.HIDE_BY_ANY_KEY or HintManager.HIDE_BY_SCROLLING,
+                0,
+                false,
+              )
+          },
+          ModalityState.defaultModalityState(),
+        ) { editor.isDisposed || !editor.component.isShowing }
     }
   }
 }

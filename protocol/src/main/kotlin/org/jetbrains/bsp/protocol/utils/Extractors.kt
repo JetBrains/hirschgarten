@@ -12,21 +12,23 @@ import org.jetbrains.bsp.protocol.KotlinBuildTarget
 
 private inline fun <reified Data> extractData(target: BuildTarget, kind: String): Data? =
   if (target.dataKind == kind) {
-    if (target.data is Data) target.data as Data
-    else Gson().fromJson(
-      target.data as JsonObject,
-      Data::class.java,
-    )
-  } else null
+    if (target.data is Data) {
+      target.data as Data
+    } else {
+      Gson().fromJson(
+        target.data as JsonObject,
+        Data::class.java,
+      )
+    }
+  } else {
+    null
+  }
 
-public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? =
-  extractData(target, BuildTargetDataKind.PYTHON)
+public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? = extractData(target, BuildTargetDataKind.PYTHON)
 
-public fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? =
-  extractData(target, BuildTargetDataKind.SCALA)
+public fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? = extractData(target, BuildTargetDataKind.SCALA)
 
-public fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? =
-  extractData(target, "android")
+public fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? = extractData(target, "android")
 
 public fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? =
   extractData(target, "kotlin")

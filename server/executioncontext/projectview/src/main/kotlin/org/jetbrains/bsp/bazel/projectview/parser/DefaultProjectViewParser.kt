@@ -25,42 +25,42 @@ import kotlin.io.path.Path
  * @see ProjectViewSectionSplitter
  */
 open class DefaultProjectViewParser : ProjectViewParser {
+  private val log = LogManager.getLogger(DefaultProjectViewParser::class.java)
 
-    private val log = LogManager.getLogger(DefaultProjectViewParser::class.java)
+  override fun parse(projectViewFileContent: String): ProjectView {
+    log.trace("Parsing project view for the content: '{}'", projectViewFileContent.escapeNewLines())
 
-    override fun parse(projectViewFileContent: String): ProjectView {
-        log.trace("Parsing project view for the content: '{}'", projectViewFileContent.escapeNewLines())
+    val rawSections = ProjectViewSectionSplitter.getRawSectionsForFileContent(projectViewFileContent)
 
-        val rawSections = ProjectViewSectionSplitter.getRawSectionsForFileContent(projectViewFileContent)
+    return ProjectView
+      .Builder(
+        imports = findImportedProjectViews(rawSections),
+        targets = ProjectViewTargetsSectionParser.parse(rawSections),
+        bazelBinary = ProjectViewBazelBinarySectionParser.parse(rawSections),
+        buildFlags = ProjectViewBuildFlagsSectionParser.parse(rawSections),
+        buildManualTargets = ProjectViewBuildManualTargetsSectionParser.parse(rawSections),
+        directories = ProjectViewDirectoriesSectionParser.parse(rawSections),
+        deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSectionParser.parse(rawSections),
+        importDepth = ProjectViewImportDepthSectionParser.parse(rawSections),
+        enabledRules = ProjectViewEnabledRulesSectionParser.parse(rawSections),
+        ideJavaHomeOverride = ProjectViewIdeJavaHomeOverrideSectionParser.parse(rawSections),
+        useLibOverModSection = ExperimentalUseLibOverModSectionParser.parse(rawSections),
+        addTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsParser.parse(rawSections),
+      ).build()
+  }
 
-        return ProjectView.Builder(
-            imports = findImportedProjectViews(rawSections),
-            targets = ProjectViewTargetsSectionParser.parse(rawSections),
-            bazelBinary = ProjectViewBazelBinarySectionParser.parse(rawSections),
-            buildFlags = ProjectViewBuildFlagsSectionParser.parse(rawSections),
-            buildManualTargets = ProjectViewBuildManualTargetsSectionParser.parse(rawSections),
-            directories = ProjectViewDirectoriesSectionParser.parse(rawSections),
-            deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSectionParser.parse(rawSections),
-            importDepth = ProjectViewImportDepthSectionParser.parse(rawSections),
-            enabledRules = ProjectViewEnabledRulesSectionParser.parse(rawSections),
-            ideJavaHomeOverride = ProjectViewIdeJavaHomeOverrideSectionParser.parse(rawSections),
-            useLibOverModSection = ExperimentalUseLibOverModSectionParser.parse(rawSections),
-            addTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsParser.parse(rawSections)
-        ).build()
-    }
+  private fun findImportedProjectViews(rawSections: ProjectViewRawSections): List<ProjectView> =
+    rawSections
+      .getAllWithName(IMPORT_STATEMENT)
+      .asSequence()
+      .map { it.sectionBody }
+      .map(String::trim)
+      .map(::Path)
+      .onEach { log.debug("Parsing imported file {}.", it) }
+      .map(this::parse)
+      .toList()
 
-    private fun findImportedProjectViews(rawSections: ProjectViewRawSections): List<ProjectView> =
-        rawSections
-            .getAllWithName(IMPORT_STATEMENT)
-            .asSequence()
-            .map { it.sectionBody }
-            .map(String::trim)
-            .map(::Path)
-            .onEach { log.debug("Parsing imported file {}.", it) }
-            .map(this::parse)
-            .toList()
-
-    companion object {
-        private const val IMPORT_STATEMENT = "import"
-    }
+  companion object {
+    private const val IMPORT_STATEMENT = "import"
+  }
 }

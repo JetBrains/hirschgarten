@@ -18,8 +18,7 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
   override val isStrongProjectInfoHolder: Boolean
     get() = ApplicationManager.getApplication().isHeadlessEnvironment
 
-  override fun canOpenProject(file: VirtualFile): Boolean =
-    file.children.any { it.name in BazelPluginConstants.WORKSPACE_FILE_NAMES }
+  override fun canOpenProject(file: VirtualFile): Boolean = file.children.any { it.name in BazelPluginConstants.WORKSPACE_FILE_NAMES }
 }
 
 internal class BazelBspProjectOpenProcessorExtension : BspProjectOpenProcessorExtension {

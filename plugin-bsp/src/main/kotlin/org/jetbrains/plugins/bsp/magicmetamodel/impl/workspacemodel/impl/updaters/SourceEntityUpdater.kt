@@ -9,15 +9,11 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 
-internal open class SourceEntityUpdater(
-  val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithParentModuleUpdater<GenericSourceRoot, SourceRootEntity> {
+internal open class SourceEntityUpdater(val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithParentModuleUpdater<GenericSourceRoot, SourceRootEntity> {
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
-  override fun addEntities(
-    entitiesToAdd: List<GenericSourceRoot>,
-    parentModuleEntity: ModuleEntity,
-  ): List<SourceRootEntity> {
+  override fun addEntities(entitiesToAdd: List<GenericSourceRoot>, parentModuleEntity: ModuleEntity): List<SourceRootEntity> {
     val contentRootEntities = addContentRootEntities(entitiesToAdd, parentModuleEntity)
 
     return (contentRootEntities zip entitiesToAdd).map { (contentRootEntity, entryToAdd) ->
@@ -29,16 +25,14 @@ internal open class SourceEntityUpdater(
     }
   }
 
-  private fun addContentRootEntities(
-    entitiesToAdd: List<GenericSourceRoot>,
-    parentModuleEntity: ModuleEntity,
-  ): List<ContentRootEntity> {
-    val contentRoots = entitiesToAdd.map { entityToAdd ->
-      ContentRoot(
-        path = entityToAdd.sourcePath,
-        excludedPaths = entityToAdd.excludedPaths,
-      )
-    }
+  private fun addContentRootEntities(entitiesToAdd: List<GenericSourceRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> {
+    val contentRoots =
+      entitiesToAdd.map { entityToAdd ->
+        ContentRoot(
+          path = entityToAdd.sourcePath,
+          excludedPaths = entityToAdd.excludedPaths,
+        )
+      }
 
     return contentRootEntityUpdater.addEntities(contentRoots, parentModuleEntity)
   }
@@ -48,20 +42,21 @@ internal open class SourceEntityUpdater(
     contentRootEntity: ContentRootEntity,
     entityToAdd: GenericSourceRoot,
   ): SourceRootEntity {
-      val entity = SourceRootEntity(
+    val entity =
+      SourceRootEntity(
         url = entityToAdd.sourcePath.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         rootTypeId = entityToAdd.rootType,
         entitySource = contentRootEntity.entitySource,
       )
 
-    val updatedContentRootEntity = builder.modifyContentRootEntity(contentRootEntity) {
-      this.sourceRoots += entity
-    }
+    val updatedContentRootEntity =
+      builder.modifyContentRootEntity(contentRootEntity) {
+        this.sourceRoots += entity
+      }
 
     return updatedContentRootEntity.sourceRoots.last()
   }
 
-  override fun addEntity(entityToAdd: GenericSourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity {
-    return addEntities(listOf(entityToAdd), parentModuleEntity).single()
-  }
+  override fun addEntity(entityToAdd: GenericSourceRoot, parentModuleEntity: ModuleEntity): SourceRootEntity =
+    addEntities(listOf(entityToAdd), parentModuleEntity).single()
 }

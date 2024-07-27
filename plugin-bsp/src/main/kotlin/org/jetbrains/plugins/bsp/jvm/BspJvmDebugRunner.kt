@@ -53,14 +53,16 @@ public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
     ApplicationManager.getApplication().invokeAndWait {
       val debugEnvironment = DefaultDebugEnvironment(executionEnvironment, state, connection, 0L)
       try {
-        val debuggerSession = DebuggerManagerEx.getInstanceEx(project)
-          .attachVirtualMachine(debugEnvironment)
-          ?: error("VM attachment failed")
+        val debuggerSession =
+          DebuggerManagerEx
+            .getInstanceEx(project)
+            .attachVirtualMachine(debugEnvironment)
+            ?: error("VM attachment failed")
         result.set(
           XDebuggerManager
             .getInstance(project)
             .startSession(executionEnvironment, BspDebugProcessStarter(debuggerSession))
-            .runContentDescriptor
+            .runContentDescriptor,
         )
       } catch (_: ProcessCanceledException) {
         // ignore
@@ -82,9 +84,7 @@ public class BspDebugRunnerSetting : RunnerSettings {
   }
 }
 
-private class BspDebugProcessStarter(
-  private val debuggerSession: DebuggerSession,
-) : XDebugProcessStarter() {
+private class BspDebugProcessStarter(private val debuggerSession: DebuggerSession) : XDebugProcessStarter() {
   override fun start(session: XDebugSession): XDebugProcess {
     val debugProcess = debuggerSession.process
     val sessionImpl = session as XDebugSessionImpl

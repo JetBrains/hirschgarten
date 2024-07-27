@@ -21,26 +21,21 @@ import java.util.concurrent.CompletableFuture
 
 private val testBuildToolId = BuildToolId("testBuildTool")
 
-private class TestBuildToolExtension: ConnectionDetailsProviderExtension {
+private class TestBuildToolExtension : ConnectionDetailsProviderExtension {
   override val buildToolId: BuildToolId = testBuildToolId
 
   override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean = true
 
-  override fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?,
-  ): BspConnectionDetails? = null
+  override fun provideNewConnectionDetails(project: Project, currentConnectionDetails: BspConnectionDetails?): BspConnectionDetails? = null
 }
 
-private class TestBuildToolExtensionJavaShim: ConnectionDetailsProviderExtensionJavaShim {
+private class TestBuildToolExtensionJavaShim : ConnectionDetailsProviderExtensionJavaShim {
   override val buildToolId: BuildToolId = testBuildToolId
+
   override fun onFirstOpening(project: Project, projectPath: VirtualFile): CompletableFuture<Boolean> =
     CompletableFuture.completedFuture(true)
 
-  override fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?,
-  ): BspConnectionDetails? = null
+  override fun provideNewConnectionDetails(project: Project, currentConnectionDetails: BspConnectionDetails?): BspConnectionDetails? = null
 }
 
 @DisplayName("ConnectionDetailsProviderExtensionTest related things tests")

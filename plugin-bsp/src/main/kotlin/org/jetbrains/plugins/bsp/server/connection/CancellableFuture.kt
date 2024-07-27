@@ -13,8 +13,7 @@ import java.util.concurrent.CompletableFuture
  *
  * @see <a href="https://github.com/JetBrains/intellij-scala/commit/ee5bf9e296b06fdedaae316dc63e6782c35e0f00">more details</a>
  */
-public class CancellableFuture<T> private constructor(private val original: CompletableFuture<*>) :
-  CompletableFuture<T>() {
+public class CancellableFuture<T> private constructor(private val original: CompletableFuture<*>) : CompletableFuture<T>() {
   @Synchronized
   override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
     if (!original.isDone) original.cancel(mayInterruptIfRunning)

@@ -20,24 +20,25 @@ class StarlarkFunctionAnnotator : Annotator {
     }
   }
 
-  private fun isFunctionDeclaration(element: PsiElement): Boolean = checkElementAndParentType(
-    element = element,
-    expectedElementTypes = listOf(StarlarkTokenTypes.IDENTIFIER),
-    expectedParentType = listOf(StarlarkElementTypes.FUNCTION_DECLARATION),
-  )
+  private fun isFunctionDeclaration(element: PsiElement): Boolean =
+    checkElementAndParentType(
+      element = element,
+      expectedElementTypes = listOf(StarlarkTokenTypes.IDENTIFIER),
+      expectedParentType = listOf(StarlarkElementTypes.FUNCTION_DECLARATION),
+    )
 
-  private fun isNamedArgument(element: PsiElement): Boolean = checkElementAndParentType(
-    element = element,
-    expectedElementTypes = listOf(StarlarkTokenTypes.IDENTIFIER, StarlarkTokenTypes.EQ),
-    expectedParentType = listOf(StarlarkElementTypes.NAMED_ARGUMENT_EXPRESSION),
-  )
+  private fun isNamedArgument(element: PsiElement): Boolean =
+    checkElementAndParentType(
+      element = element,
+      expectedElementTypes = listOf(StarlarkTokenTypes.IDENTIFIER, StarlarkTokenTypes.EQ),
+      expectedParentType = listOf(StarlarkElementTypes.NAMED_ARGUMENT_EXPRESSION),
+    )
 
   private fun checkElementAndParentType(
     element: PsiElement,
     expectedElementTypes: List<IElementType>,
     expectedParentType: List<IElementType>,
-  ): Boolean =
-    expectedElementTypes.contains(element.elementType) && expectedParentType.contains(element.parent.elementType)
+  ): Boolean = expectedElementTypes.contains(element.elementType) && expectedParentType.contains(element.parent.elementType)
 }
 
 private fun AnnotationHolder.mark(element: PsiElement, attr: TextAttributesKey) {

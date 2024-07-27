@@ -23,7 +23,4 @@ public data class MobileInstallParams(
   val startType: MobileInstallStartType,
 )
 
-public data class MobileInstallResult(
-  val statusCode: StatusCode,
-  var originId: String? = null,
-)
+public data class MobileInstallResult(val statusCode: StatusCode, var originId: String? = null)

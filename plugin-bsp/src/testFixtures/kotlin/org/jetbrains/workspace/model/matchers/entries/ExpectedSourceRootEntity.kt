@@ -7,7 +7,6 @@ import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import io.kotest.matchers.shouldBe
 import org.jetbrains.workspace.model.matchers.shouldContainExactlyInAnyOrder
 
@@ -17,21 +16,15 @@ public data class ExpectedSourceRootEntity(
   val parentModuleEntity: ModuleEntity,
 )
 
-public infix fun SourceRootEntity.shouldBeEqual(expected: ExpectedSourceRootEntity): Unit =
-  validateSourceRootEntity(this, expected)
+public infix fun SourceRootEntity.shouldBeEqual(expected: ExpectedSourceRootEntity): Unit = validateSourceRootEntity(this, expected)
 
-public infix fun Collection<SourceRootEntity>.shouldContainExactlyInAnyOrder(
-  expectedValues: Collection<ExpectedSourceRootEntity>,
-): Unit =
+public infix fun Collection<SourceRootEntity>.shouldContainExactlyInAnyOrder(expectedValues: Collection<ExpectedSourceRootEntity>): Unit =
   this.shouldContainExactlyInAnyOrder(
     assertion = { actual, expected -> validateSourceRootEntity(actual, expected) },
     expectedValues = expectedValues,
   )
 
-private fun validateSourceRootEntity(
-  actual: SourceRootEntity,
-  expected: ExpectedSourceRootEntity,
-) {
+private fun validateSourceRootEntity(actual: SourceRootEntity, expected: ExpectedSourceRootEntity) {
   actual.url shouldBe expected.sourceRootEntity.url
   actual.rootTypeId shouldBe expected.sourceRootEntity.rootTypeId
 
@@ -47,18 +40,12 @@ private fun validateSourceRootEntity(
   actual.contentRoot shouldBeEqual toExpectedContentRootEntity(expected)
 }
 
-private fun validateJavaSourceRootEntity(
-  actual: JavaSourceRootPropertiesEntity,
-  expected: JavaSourceRootPropertiesEntity.Builder,
-) {
+private fun validateJavaSourceRootEntity(actual: JavaSourceRootPropertiesEntity, expected: JavaSourceRootPropertiesEntity.Builder) {
   actual.generated shouldBe expected.generated
   actual.packagePrefix shouldBe expected.packagePrefix
 }
 
-private fun validateJavaResourceRootEntity(
-  actual: JavaResourceRootPropertiesEntity,
-  expected: JavaResourceRootPropertiesEntity.Builder,
-) {
+private fun validateJavaResourceRootEntity(actual: JavaResourceRootPropertiesEntity, expected: JavaResourceRootPropertiesEntity.Builder) {
   actual.generated shouldBe expected.generated
   actual.relativeOutputPath shouldBe expected.relativeOutputPath
 }

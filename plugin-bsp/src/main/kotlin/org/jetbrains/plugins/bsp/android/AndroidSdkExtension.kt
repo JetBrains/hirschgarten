@@ -18,11 +18,9 @@ private val ep =
     "org.jetbrains.bsp.androidSdkGetterExtension",
   )
 
-public fun androidSdkGetterExtension(): AndroidSdkGetterExtension? =
-  ep.extensionList.firstOrNull()
+public fun androidSdkGetterExtension(): AndroidSdkGetterExtension? = ep.extensionList.firstOrNull()
 
-public fun androidSdkGetterExtensionExists(): Boolean =
-  ep.extensionList.isNotEmpty()
+public fun androidSdkGetterExtensionExists(): Boolean = ep.extensionList.isNotEmpty()
 
 public class AndroidSdkGetter : AndroidSdkGetterExtension {
   override fun getAndroidSdk(androidSdk: AndroidSdk): Sdk? {
@@ -38,9 +36,10 @@ public class AndroidSdkGetter : AndroidSdkGetterExtension {
     val sdkPath = androidJar.parent?.parent?.parent ?: return null
     val sdkData = AndroidSdkData.getSdkData(sdkPath.toFile()) ?: return null
 
-    val target = sdkData.targets.firstOrNull { androidTarget ->
-      androidTarget.getPath(IAndroidTarget.ANDROID_JAR) == androidJar
-    } ?: return null
+    val target =
+      sdkData.targets.firstOrNull { androidTarget ->
+        androidTarget.getPath(IAndroidTarget.ANDROID_JAR) == androidJar
+      } ?: return null
 
     return AndroidSdks.getInstance().create(target, sdkPath.toFile(), androidSdk.name, true)
   }

@@ -25,13 +25,10 @@ public abstract class BaseRunnerAction(
   icon: Icon? = null,
   private val isDebugAction: Boolean = false,
 ) : SuspendableAction(
-  text = text,
-  icon = icon ?: if (isDebugAction) AllIcons.Actions.StartDebugger else AllIcons.Actions.Execute
-) {
-  protected abstract suspend fun getRunnerSettings(
-    project: Project,
-    buildTargetInfo: BuildTargetInfo,
-  ): RunnerAndConfigurationSettings?
+    text = text,
+    icon = icon ?: if (isDebugAction) AllIcons.Actions.StartDebugger else AllIcons.Actions.Execute,
+  ) {
+  protected abstract suspend fun getRunnerSettings(project: Project, buildTargetInfo: BuildTargetInfo): RunnerAndConfigurationSettings?
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     doPerformAction(project)
@@ -43,9 +40,10 @@ public abstract class BaseRunnerAction(
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
       val executor = getExecutor()
       ProgramRunner.getRunner(executor.id, settings.configuration)?.let { runner ->
-        val executionEnvironment = ExecutionEnvironmentBuilder(project, executor)
-          .runnerAndSettings(runner, settings)
-          .build()
+        val executionEnvironment =
+          ExecutionEnvironmentBuilder(project, executor)
+            .runnerAndSettings(runner, settings)
+            .build()
         withContext(Dispatchers.EDT) { runner.execute(executionEnvironment) }
       }
     } catch (e: Exception) {

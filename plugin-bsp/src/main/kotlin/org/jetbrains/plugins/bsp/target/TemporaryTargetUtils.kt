@@ -34,7 +34,7 @@ public data class TemporaryTargetUtilsState(
 @Service(Service.Level.PROJECT)
 @State(
   name = "TemporaryTargetUtils",
-  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)]
+  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
 public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState> {
   private var targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
@@ -57,12 +57,15 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
     libraryModules: List<JavaModule>,
   ) {
     this.targetIdToTargetInfo = targetIdToTargetInfo
-    moduleIdToBuildTargetId = targetIdToModuleEntity.entries.associate { (targetId, module) ->
-      module.getModuleName() to targetId
-    }
-    fileToTargetId = targetIdToModuleDetails.values.flatMap { it.toPairsUrlToId() }
-      .groupBy { it.first }
-      .mapValues { it.value.map { pair -> pair.second } }
+    moduleIdToBuildTargetId =
+      targetIdToModuleEntity.entries.associate { (targetId, module) ->
+        module.getModuleName() to targetId
+      }
+    fileToTargetId =
+      targetIdToModuleDetails.values
+        .flatMap { it.toPairsUrlToId() }
+        .groupBy { it.first }
+        .mapValues { it.value.map { pair -> pair.second } }
     this.libraries = libraries
     this.libraryModules = libraryModules
     this.libraryModulesLookupTable = createLibraryModulesLookupTable()
@@ -75,8 +78,7 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
 
   private fun String.processUriString() = this.trimEnd('/')
 
-  private fun createLibraryModulesLookupTable() =
-    libraryModules.map { it.genericModuleInfo.name }.toHashSet()
+  private fun createLibraryModulesLookupTable() = libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
   public fun fireListeners() {
     listeners.forEach { it() }
@@ -102,7 +104,9 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
         iter = iter.parent
       }
       emptyList()
-    } else emptyList()
+    } else {
+      emptyList()
+    }
   }
 
   public fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? = moduleIdToBuildTargetId[moduleId]
@@ -125,9 +129,10 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
     )
 
   override fun loadState(state: TemporaryTargetUtilsState) {
-    targetIdToTargetInfo = state.idToTargetInfo
-      .mapKeys { BuildTargetIdentifier(it.key) }
-      .mapValues { it.value.fromState() }
+    targetIdToTargetInfo =
+      state.idToTargetInfo
+        .mapKeys { BuildTargetIdentifier(it.key) }
+        .mapValues { it.value.fromState() }
     moduleIdToBuildTargetId = state.moduleIdToBuildTargetId.mapValues { BuildTargetIdentifier(it.value) }
     fileToTargetId =
       state.fileToId.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { BuildTargetIdentifier(it) } }

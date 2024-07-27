@@ -26,10 +26,11 @@ public class BspPanelComponent private constructor(
   private val targetTree: BuildTargetTree,
   private val targetSearch: BuildTargetSearch,
 ) : JPanel(VerticalLayout(0)) {
-  private val emptyTreeMessage = JBLabel(
-    BspPluginBundle.message("widget.no.targets.message"),
-    SwingConstants.CENTER,
-  )
+  private val emptyTreeMessage =
+    JBLabel(
+      BspPluginBundle.message("widget.no.targets.message"),
+      SwingConstants.CENTER,
+    )
 
   /**
    * @param targetIcon icon which will be shown next to valid build targets in this panel

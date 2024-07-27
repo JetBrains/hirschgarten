@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<baseline version="1.0">
+    <file name=".teamcity/configurations/baseConfiguration.kts">
+        <error line="8" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name=".teamcity/configurations/pluginBsp/intellijBenchmark.kts">
+        <error line="14" column="141" source="standard:max-line-length" />
+    </file>
+    <file name=".teamcity/configurations/server/bazelE2ePluginTests.kts">
+        <error line="14" column="141" source="standard:max-line-length" />
+    </file>
+    <file name=".teamcity/settings.kts">
+        <error line="1" column="1" source="standard:no-wildcard-imports" />
+        <error line="7" column="1" source="standard:no-wildcard-imports" />
+        <error line="9" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="plugin-bazel/buildSrc/src/main/kotlin/versions.kt">
+        <error line="1" column="1" source="standard:filename" />
+        <error line="4" column="13" source="standard:property-naming" />
+        <error line="5" column="13" source="standard:property-naming" />
+        <error line="6" column="13" source="standard:property-naming" />
+        <error line="10" column="13" source="standard:property-naming" />
+        <error line="11" column="13" source="standard:property-naming" />
+        <error line="16" column="11" source="standard:property-naming" />
+        <error line="19" column="13" source="standard:property-naming" />
+        <error line="20" column="13" source="standard:property-naming" />
+        <error line="21" column="13" source="standard:property-naming" />
+        <error line="28" column="11" source="standard:property-naming" />
+        <error line="29" column="11" source="standard:property-naming" />
+        <error line="32" column="11" source="standard:property-naming" />
+    </file>
+    <file name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/completion/StarlarkParamsCompletionContributor.kt">
+        <error line="3" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/elements/StarlarkElementTypes.kt">
+        <error line="7" column="1" source="standard:no-wildcard-imports" />
+        <error line="8" column="1" source="standard:no-wildcard-imports" />
+        <error line="9" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/parser/ParsingContext.kt">
+        <error line="4" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/starlark/psi/StarlarkElementVisitor.kt">
+        <error line="4" column="1" source="standard:no-wildcard-imports" />
+        <error line="5" column="1" source="standard:no-wildcard-imports" />
+        <error line="6" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui/notifications/BazelBspAttachSourcerProvider.kt">
+        <error line="1" column="1" source="standard:filename" />
+    </file>
+    <file name="plugin-bsp/buildSrc/src/main/kotlin/versions.kt">
+        <error line="1" column="1" source="standard:filename" />
+        <error line="4" column="13" source="standard:property-naming" />
+        <error line="13" column="11" source="standard:property-naming" />
+        <error line="14" column="11" source="standard:property-naming" />
+    </file>
+    <file name="plugin-bsp/performance-testing/src/test/kotlin/org/jetbrains/bsp/performance/testing/publishTeamCityArtifacts.kt">
+        <error line="1" column="1" source="standard:filename" />
+    </file>
+    <file name="plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/performance/testing/bspTracer.kt">
+        <error line="1" column="1" source="standard:filename" />
+    </file>
+    <file name="plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/server/client/BspClient.kt">
+        <error line="30" column="18" source="standard:property-naming" />
+    </file>
+    <file name="plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/server/connection/DefaultBspConnection.kt">
+        <error line="118" column="19" source="standard:property-naming" />
+    </file>
+    <file name="plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/flow/open/GenericBspProjectOpenProcessorTest.kt">
+        <error line="153" column="141" source="standard:max-line-length" />
+    </file>
+    <file name="plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl/workspacemodel/impl/updaters/transformers/DependencySourcesItemToLibraryTransformerTest.kt">
+        <error line="52" column="141" source="standard:max-line-length" />
+    </file>
+    <file name="plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/protocol/connection/DefaultConnectionDetailsProviderExtensionTest.kt">
+        <error line="88" column="141" source="standard:max-line-length" />
+    </file>
+    <file name="plugin-bsp/workspacemodel/src/main/gen/org/jetbrains/plugins/bsp/workspacemodel/entities/impl/AndroidAddendumEntityImpl.kt">
+        <error line="130" column="11" source="standard:backing-property-naming" />
+        <error line="130" column="11" source="standard:backing-property-naming" />
+        <error line="217" column="13" source="standard:backing-property-naming" />
+        <error line="217" column="13" source="standard:backing-property-naming" />
+        <error line="222" column="11" source="standard:backing-property-naming" />
+        <error line="222" column="11" source="standard:backing-property-naming" />
+        <error line="252" column="11" source="standard:backing-property-naming" />
+        <error line="252" column="11" source="standard:backing-property-naming" />
+        <error line="275" column="13" source="standard:backing-property-naming" />
+        <error line="275" column="13" source="standard:backing-property-naming" />
+        <error line="286" column="13" source="standard:backing-property-naming" />
+        <error line="286" column="13" source="standard:backing-property-naming" />
+        <error line="160" column="11" source="standard:property-naming" />
+        <error line="164" column="11" source="standard:property-naming" />
+        <error line="228" column="13" source="standard:property-naming" />
+        <error line="258" column="13" source="standard:property-naming" />
+    </file>
+    <file name="plugin-bsp/workspacemodel/src/main/gen/org/jetbrains/plugins/bsp/workspacemodel/entities/impl/BspProjectDirectoriesEntityImpl.kt">
+        <error line="93" column="11" source="standard:backing-property-naming" />
+        <error line="93" column="11" source="standard:backing-property-naming" />
+        <error line="145" column="13" source="standard:backing-property-naming" />
+        <error line="145" column="13" source="standard:backing-property-naming" />
+        <error line="150" column="11" source="standard:backing-property-naming" />
+        <error line="150" column="11" source="standard:backing-property-naming" />
+        <error line="172" column="11" source="standard:backing-property-naming" />
+        <error line="172" column="11" source="standard:backing-property-naming" />
+        <error line="111" column="11" source="standard:property-naming" />
+        <error line="115" column="11" source="standard:property-naming" />
+        <error line="156" column="13" source="standard:property-naming" />
+        <error line="178" column="13" source="standard:property-naming" />
+    </file>
+    <file name="plugin-bsp/workspacemodel/src/main/gen/org/jetbrains/plugins/bsp/workspacemodel/entities/impl/GeneratedJavaSourceRootEntityImpl.kt">
+        <error line="89" column="11" source="standard:backing-property-naming" />
+        <error line="89" column="11" source="standard:backing-property-naming" />
+        <error line="136" column="11" source="standard:backing-property-naming" />
+        <error line="136" column="11" source="standard:backing-property-naming" />
+        <error line="104" column="11" source="standard:property-naming" />
+        <error line="142" column="13" source="standard:property-naming" />
+        <error line="189" column="9" source="standard:property-naming" />
+        <error line="202" column="9" source="standard:property-naming" />
+    </file>
+    <file name="plugin-bsp/workspacemodel/src/main/gen/org/jetbrains/plugins/bsp/workspacemodel/entities/impl/JvmBinaryJarsEntityImpl.kt">
+        <error line="97" column="11" source="standard:backing-property-naming" />
+        <error line="97" column="11" source="standard:backing-property-naming" />
+        <error line="141" column="11" source="standard:backing-property-naming" />
+        <error line="141" column="11" source="standard:backing-property-naming" />
+        <error line="164" column="13" source="standard:backing-property-naming" />
+        <error line="164" column="13" source="standard:backing-property-naming" />
+        <error line="175" column="13" source="standard:backing-property-naming" />
+        <error line="175" column="13" source="standard:backing-property-naming" />
+        <error line="118" column="11" source="standard:property-naming" />
+        <error line="147" column="13" source="standard:property-naming" />
+    </file>
+    <file name="protocol/src/main/kotlin/org/jetbrains/bsp/protocol/WorkspaceInvalidTargets.kt">
+        <error line="1" column="1" source="standard:filename" />
+    </file>
+    <file name="server/bazelrunner/src/main/kotlin/org/jetbrains/bsp/bazel/bazelrunner/BazelRunnerBuildBuilder.kt">
+        <error line="26" column="23" source="standard:property-naming" />
+    </file>
+    <file name="server/bspcli/src/main/kotlin/org/jetbrains/bsp/inmem/InMemoryConnection.kt">
+        <error line="81" column="15" source="standard:backing-property-naming" />
+    </file>
+    <file name="server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/BazelBspScalaProjectTest.kt">
+        <error line="25" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="server/e2e/test-resources/kotlin-project/plugin_allopen_test/User.kt">
+        <error line="3" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="server/example/kotlincplugin/User.kt">
+        <error line="3" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="server/example/kotlincplugin/UserIsOpenTest.kt">
+        <error line="1" column="1" source="standard:filename" />
+        <error line="3" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="server/executioncontext/projectview/src/main/kotlin/org/jetbrains/bsp/bazel/projectview/generator/sections/ProjectViewSingletonSectionGenerator.kt">
+        <error line="22" column="140" source="standard:max-line-length" />
+    </file>
+    <file name="server/executioncontext/projectview/src/test/kotlin/org/jetbrains/bsp/bazel/projectview/parser/splitter/ProjectViewSectionSplitterTest.kt">
+        <error line="212" column="7" source="standard:indent" />
+    </file>
+    <file name="server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/benchmark/telemetry.kt">
+        <error line="1" column="1" source="standard:filename" />
+    </file>
+    <file name="server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/benchmark/trace.kt">
+        <error line="1" column="1" source="standard:filename" />
+    </file>
+    <file name="server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/managers/TemplateWriter.kt">
+        <error line="8" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/diagnostics/BazelRootMessageParser.kt">
+        <error line="4" column="21" source="standard:property-naming" />
+    </file>
+    <file name="server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/DependencyMapper.kt">
+        <error line="9" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="server/server/src/test/kotlin/org/jetbrains/bsp/bazel/server/bep/TestXmlParserTest.kt">
+        <error line="3" column="1" source="standard:no-wildcard-imports" />
+    </file>
+    <file name="server/server/src/test/kotlin/org/jetbrains/bsp/bazel/server/diagnostics/DiagnosticsServiceTest.kt">
+        <error line="881" column="15" source="standard:function-naming" />
+        <error line="884" column="15" source="standard:function-naming" />
+    </file>
+    <file name="server/server/src/test/kotlin/org/jetbrains/bsp/bazel/server/sync/DependencyMapperTest.kt">
+        <error line="17" column="141" source="standard:max-line-length" />
+    </file>
+    <file name="server/server/src/test/kotlin/org/jetbrains/bsp/bazel/server/sync/dependencygraph/DependencyGraphTest.kt">
+        <error line="213" column="141" source="standard:max-line-length" />
+        <error line="270" column="141" source="standard:max-line-length" />
+    </file>
+</baseline>

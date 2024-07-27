@@ -35,16 +35,20 @@ public abstract class BaseBspProjectOpenProcessor(private val buildToolId: Build
     forceOpenInNewFrame: Boolean,
     projectToClose: Project?,
     virtualFile: VirtualFile,
-  ): OpenProjectTask = OpenProjectTask {
-    runConfigurators = true
-    isNewProject = !ProjectUtilCore.isValidProjectPath(projectPath)
-    isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode
+  ): OpenProjectTask =
+    OpenProjectTask {
+      runConfigurators = true
+      isNewProject = !ProjectUtilCore.isValidProjectPath(projectPath)
+      isRefreshVfsNeeded = !ApplicationManager.getApplication().isUnitTestMode
 
-    this.forceOpenInNewFrame = forceOpenInNewFrame
-    this.projectToClose = projectToClose
+      this.forceOpenInNewFrame = forceOpenInNewFrame
+      this.projectToClose = projectToClose
 
-    beforeOpen = { it.initProperties(virtualFile, buildToolId); true }
-  }
+      beforeOpen = {
+        it.initProperties(virtualFile, buildToolId)
+        true
+      }
+    }
 }
 
 public fun Project.initProperties(projectRootDir: VirtualFile, buildToolId: BuildToolId) {

@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
 class BazelLabelTest {
-
   @Test
   fun `canonical qualified label`() {
     // given

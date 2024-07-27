@@ -18,7 +18,7 @@ class BazelBspProjectAwareExtension : BspProjectAwareExtension {
     BazelPluginConstants.SUPPORTED_EXTENSIONS
 }
 
-class BazelExternalSystemIconProvider: ExternalSystemIconProvider {
+class BazelExternalSystemIconProvider : ExternalSystemIconProvider {
   override val reloadIcon: Icon
     get() = BazelPluginIcons.bazelReload
 }

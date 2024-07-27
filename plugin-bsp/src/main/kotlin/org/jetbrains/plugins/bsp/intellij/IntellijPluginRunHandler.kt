@@ -36,15 +36,13 @@ internal val INTELLIJ_PLUGIN_SANDBOX_KEY: Key<Path> = Key.create("INTELLIJ_PLUGI
 private const val INTELLIJ_PLUGIN_TAG = "intellij-plugin"
 
 public class IntellijPluginRunHandler : BspRunHandler {
-  override fun canRun(targets: List<BuildTargetInfo>): Boolean =
-    targets.all { it.tags.contains(INTELLIJ_PLUGIN_TAG) }
+  override fun canRun(targets: List<BuildTargetInfo>): Boolean = targets.all { it.tags.contains(INTELLIJ_PLUGIN_TAG) }
 
-  override fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> {
-    return listOf(
+  override fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> =
+    listOf(
       BuildPluginBeforeRunTaskProvider().createTask(configuration),
       CopyPluginToSandboxBeforeRunTaskProvider().createTask(configuration),
     ).map { checkNotNull(it) { "Couldn't create before run task" } }
-  }
 
   // Mostly copied from org.jetbrains.idea.devkit.run.PluginRunConfiguration
   override fun getRunProfileState(
@@ -53,11 +51,13 @@ public class IntellijPluginRunHandler : BspRunHandler {
     environment: ExecutionEnvironment,
     configuration: BspRunConfigurationBase,
   ): RunProfileState {
-    val ideaJdk = findNewestIdeaJdk()
-      ?: throw ExecutionException(BspPluginBundle.message("console.task.exception.no.intellij.platform.plugin.sdk"))
+    val ideaJdk =
+      findNewestIdeaJdk()
+        ?: throw ExecutionException(BspPluginBundle.message("console.task.exception.no.intellij.platform.plugin.sdk"))
 
-    var sandboxHome = (ideaJdk.sdkAdditionalData as Sandbox).sandboxHome
-      ?: throw ExecutionException(DevKitBundle.message("sandbox.no.configured"))
+    var sandboxHome =
+      (ideaJdk.sdkAdditionalData as Sandbox).sandboxHome
+        ?: throw ExecutionException(DevKitBundle.message("sandbox.no.configured"))
 
     try {
       sandboxHome = File(sandboxHome).canonicalPath
@@ -68,7 +68,7 @@ public class IntellijPluginRunHandler : BspRunHandler {
 
     environment.putUserData(INTELLIJ_PLUGIN_SANDBOX_KEY, Path.of(canonicalSandbox).resolve("plugins"))
 
-    //copy license from running instance of idea
+    // copy license from running instance of idea
     IdeaLicenseHelper.copyIDEALicense(sandboxHome)
 
     return object : JavaCommandLineState(environment) {

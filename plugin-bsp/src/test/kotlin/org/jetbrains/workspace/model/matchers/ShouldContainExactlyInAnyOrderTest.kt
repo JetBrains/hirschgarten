@@ -56,6 +56,5 @@ class ShouldContainExactlyInAnyOrderTest {
     }
   }
 
-  private fun shouldBeTheSame(actual: Int, expected: String) =
-    actual shouldBe expected.toInt()
+  private fun shouldBeTheSame(actual: Int, expected: String) = actual shouldBe expected.toInt()
 }

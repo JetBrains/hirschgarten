@@ -14,7 +14,11 @@ abstract class LexerTestCase : PlatformLiteFixture() {
     initApplication()
   }
 
-  fun doLexerTest(code: String, lexer: Lexer, expectedTokens: List<String>) {
+  fun doLexerTest(
+    code: String,
+    lexer: Lexer,
+    expectedTokens: List<String>,
+  ) {
     lexer.start(code)
     var idx = 0
     var tokenPos = 0

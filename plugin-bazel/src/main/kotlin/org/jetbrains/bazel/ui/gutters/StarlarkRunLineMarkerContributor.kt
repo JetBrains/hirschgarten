@@ -20,11 +20,12 @@ import kotlin.io.path.Path
 import kotlin.io.path.toPath
 
 internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
-  override fun getInfo(element: PsiElement): Info? {
-    return if (element.project.isBspProject && element.shouldAddMarker())
+  override fun getInfo(element: PsiElement): Info? =
+    if (element.project.isBspProject && element.shouldAddMarker()) {
       element.calculateMarkerInfo()
-    else null
-  }
+    } else {
+      null
+    }
 
   private fun PsiElement.shouldAddMarker(): Boolean =
     when (this) {
@@ -58,19 +59,19 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     return visitor.identifier
   }
 
-  private fun calculateLineMarkerInfo(
-    targetInfo: BuildTargetInfo?,
-  ): Info =
+  private fun calculateLineMarkerInfo(targetInfo: BuildTargetInfo?): Info =
     Info(
       AllIcons.Actions.Execute,
       targetInfo.calculateEligibleActions().toTypedArray(),
     ) { "Run" }
 
   private fun BuildTargetInfo?.calculateEligibleActions(): List<AnAction> =
-    if (this == null)
+    if (this == null) {
       emptyList()
-    else DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList() +
-      BuildTargetAction(this.id)
+    } else {
+      DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList() +
+        BuildTargetAction(this.id)
+    }
 }
 
 private class StarlarkCallExpressionVisitor : StarlarkElementVisitor() {

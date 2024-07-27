@@ -5,9 +5,9 @@ import org.jetbrains.bsp.bazel.bazelrunner.outputs.OutputCollector
 import org.jetbrains.bsp.bazel.commons.ExitCodeMapper
 
 class BazelProcessResult(
-    private val stdoutCollector: OutputCollector,
-    private val stderrCollector: OutputCollector,
-    private val exitCode: Int
+  private val stdoutCollector: OutputCollector,
+  private val stderrCollector: OutputCollector,
+  private val exitCode: Int,
 ) {
   val isNotSuccess: Boolean get() = statusCode != StatusCode.OK
   val statusCode: StatusCode get() = ExitCodeMapper.mapExitCode(exitCode)

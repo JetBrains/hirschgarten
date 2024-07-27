@@ -64,20 +64,19 @@ public data class BuildTargetInfoState(
     )
 }
 
-public fun BuildTargetInfo.toState(): BuildTargetInfoState = BuildTargetInfoState(
-  id = id.uri,
-  displayName = displayName,
-  dependencies = dependencies.map { it.uri },
-  capabilities = capabilities.toState(),
-  tags = tags,
-  languageIds = languageIds,
-  baseDirectory = baseDirectory,
-)
+public fun BuildTargetInfo.toState(): BuildTargetInfoState =
+  BuildTargetInfoState(
+    id = id.uri,
+    displayName = displayName,
+    dependencies = dependencies.map { it.uri },
+    capabilities = capabilities.toState(),
+    tags = tags,
+    languageIds = languageIds,
+    baseDirectory = baseDirectory,
+  )
 
-public data class ContentRootState(
-  var path: String = "",
-  var excludedPaths: List<String> = emptyList(),
-) : ConvertableFromState<ContentRoot> {
+public data class ContentRootState(var path: String = "", var excludedPaths: List<String> = emptyList()) :
+  ConvertableFromState<ContentRoot> {
   override fun fromState(): ContentRoot =
     ContentRoot(
       path = Path(path),
@@ -98,70 +97,75 @@ public data class SourceRootState(
   var rootType: SourceRootTypeId = SourceRootTypeId(""),
   var excludedPaths: List<String> = emptyList(),
 ) {
-  public fun toJavaSourceRoot(): JavaSourceRoot = JavaSourceRoot(
-    sourcePath = Path(sourcePath),
+  public fun toJavaSourceRoot(): JavaSourceRoot =
+    JavaSourceRoot(
+      sourcePath = Path(sourcePath),
+      generated = generated,
+      packagePrefix = packagePrefix,
+      rootType = rootType,
+      excludedPaths = excludedPaths.map { Path(it) },
+    )
+
+  public fun toGenericSourceRoot(): GenericSourceRoot =
+    GenericSourceRoot(
+      sourcePath = Path(sourcePath),
+      rootType = rootType,
+      excludedPaths = excludedPaths.map { Path(it) },
+    )
+}
+
+public fun JavaSourceRoot.toState(): SourceRootState =
+  SourceRootState(
+    sourcePath = sourcePath.toString(),
     generated = generated,
     packagePrefix = packagePrefix,
     rootType = rootType,
-    excludedPaths = excludedPaths.map { Path(it) },
+    excludedPaths = excludedPaths.map { it.toString() },
   )
 
-  public fun toGenericSourceRoot(): GenericSourceRoot = GenericSourceRoot(
-    sourcePath = Path(sourcePath),
-    rootType = rootType,
-    excludedPaths = excludedPaths.map { Path(it) },
-  )
-}
-
-public fun JavaSourceRoot.toState(): SourceRootState = SourceRootState(
-  sourcePath = sourcePath.toString(),
-  generated = generated,
-  packagePrefix = packagePrefix,
-  rootType = rootType,
-  excludedPaths = excludedPaths.map { it.toString() },
-)
-
-public data class ResourceRootState(
-  var resourcePath: String = "",
-  var rootType: SourceRootTypeId = SourceRootTypeId(""),
-) {
+public data class ResourceRootState(var resourcePath: String = "", var rootType: SourceRootTypeId = SourceRootTypeId("")) {
   public fun toResourceRoot(): ResourceRoot = ResourceRoot(Path(resourcePath), rootType)
 }
 
-public fun ResourceRoot.toState(): ResourceRootState = ResourceRootState(
-  resourcePath = resourcePath.toString(),
-  rootType = rootType,
-)
+public fun ResourceRoot.toState(): ResourceRootState =
+  ResourceRootState(
+    resourcePath = resourcePath.toString(),
+    rootType = rootType,
+  )
 
-public fun GenericSourceRoot.toState(): SourceRootState = SourceRootState(
-  sourcePath = sourcePath.toString(),
-  rootType = rootType,
-  excludedPaths = excludedPaths.map { it.toString() },
-)
+public fun GenericSourceRoot.toState(): SourceRootState =
+  SourceRootState(
+    sourcePath = sourcePath.toString(),
+    rootType = rootType,
+    excludedPaths = excludedPaths.map { it.toString() },
+  )
 
 public data class LibraryState(
   var displayName: String = "",
   var sourceJars: List<String> = emptyList(),
   var classJars: List<String> = emptyList(),
 ) : ConvertableFromState<Library> {
-  override fun fromState(): Library = Library(
+  override fun fromState(): Library =
+    Library(
+      displayName = displayName,
+      sourceJars = sourceJars,
+      classJars = classJars,
+    )
+
+  internal fun toPythonLibrary(): PythonLibrary = PythonLibrary(sourceJars)
+}
+
+public fun Library.toState(): LibraryState =
+  LibraryState(
     displayName = displayName,
     sourceJars = sourceJars,
     classJars = classJars,
   )
 
-  internal fun toPythonLibrary(): PythonLibrary = PythonLibrary(sourceJars)
-}
-
-public fun Library.toState(): LibraryState = LibraryState(
-  displayName = displayName,
-  sourceJars = sourceJars,
-  classJars = classJars,
-)
-
-public fun PythonLibrary.toState(): LibraryState = LibraryState(
-  sourceJars = sources,
-)
+public fun PythonLibrary.toState(): LibraryState =
+  LibraryState(
+    sourceJars = sources,
+  )
 
 public data class GenericModuleInfoState(
   var name: String = "",
@@ -171,24 +175,26 @@ public data class GenericModuleInfoState(
   var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState(),
   var languageIds: List<String> = emptyList(),
 ) : ConvertableFromState<GenericModuleInfo> {
-  override fun fromState(): GenericModuleInfo = GenericModuleInfo(
-    name = name,
-    type = type,
-    modulesDependencies = modulesDependencies.map { IntermediateModuleDependency(it) },
-    librariesDependencies = librariesDependencies.map { IntermediateLibraryDependency(it) },
-    capabilities = capabilities.fromState(),
-    languageIds = languageIds,
-  )
+  override fun fromState(): GenericModuleInfo =
+    GenericModuleInfo(
+      name = name,
+      type = type,
+      modulesDependencies = modulesDependencies.map { IntermediateModuleDependency(it) },
+      librariesDependencies = librariesDependencies.map { IntermediateLibraryDependency(it) },
+      capabilities = capabilities.fromState(),
+      languageIds = languageIds,
+    )
 }
 
-public fun GenericModuleInfo.toState(): GenericModuleInfoState = GenericModuleInfoState(
-  name = name,
-  type = type,
-  modulesDependencies = modulesDependencies.map { it.moduleName },
-  librariesDependencies = librariesDependencies.map { it.libraryName },
-  capabilities = capabilities.toState(),
-  languageIds = languageIds,
-)
+public fun GenericModuleInfo.toState(): GenericModuleInfoState =
+  GenericModuleInfoState(
+    name = name,
+    type = type,
+    modulesDependencies = modulesDependencies.map { it.moduleName },
+    librariesDependencies = librariesDependencies.map { it.libraryName },
+    capabilities = capabilities.toState(),
+    languageIds = languageIds,
+  )
 
 // TODO: Provide more generic structure for module with support for other languages
 public data class ModuleState(
@@ -205,76 +211,77 @@ public data class ModuleState(
   var javaAddendum: JavaAddendumState? = null,
   var androidAddendum: AndroidAddendumState? = null,
 ) : ConvertableFromState<Module> {
-  public fun toJavaModule(): JavaModule = JavaModule(
-    genericModuleInfo = module.fromState(),
-    baseDirContentRoot = baseDirContentRoot?.fromState(),
-    sourceRoots = sourceRoots.map { it.toJavaSourceRoot() },
-    resourceRoots = resourceRoots.map { it.toResourceRoot() },
-    moduleLevelLibraries = libraries?.map { it.fromState() },
-    jvmJdkName = jvmJdkName,
-    jvmBinaryJars = jvmBinaryJars.map { Path(it) },
-    kotlinAddendum = kotlinAddendum?.fromState(),
-    scalaAddendum = scalaAddendum?.fromState(),
-    androidAddendum = androidAddendum?.fromState(),
-  )
+  public fun toJavaModule(): JavaModule =
+    JavaModule(
+      genericModuleInfo = module.fromState(),
+      baseDirContentRoot = baseDirContentRoot?.fromState(),
+      sourceRoots = sourceRoots.map { it.toJavaSourceRoot() },
+      resourceRoots = resourceRoots.map { it.toResourceRoot() },
+      moduleLevelLibraries = libraries?.map { it.fromState() },
+      jvmJdkName = jvmJdkName,
+      jvmBinaryJars = jvmBinaryJars.map { Path(it) },
+      kotlinAddendum = kotlinAddendum?.fromState(),
+      scalaAddendum = scalaAddendum?.fromState(),
+      androidAddendum = androidAddendum?.fromState(),
+    )
 
-  public fun toPythonModule(): PythonModule = PythonModule(
-    module = module.fromState(),
-    sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
-    libraries = libraries?.map { it.toPythonLibrary() }.orEmpty(),
-    resourceRoots = resourceRoots.map { it.toResourceRoot() },
-    sdkInfo = sdkInfo?.fromState(),
-  )
+  public fun toPythonModule(): PythonModule =
+    PythonModule(
+      module = module.fromState(),
+      sourceRoots = sourceRoots.map { it.toGenericSourceRoot() },
+      libraries = libraries?.map { it.toPythonLibrary() }.orEmpty(),
+      resourceRoots = resourceRoots.map { it.toResourceRoot() },
+      sdkInfo = sdkInfo?.fromState(),
+    )
 
   override fun fromState(): Module =
-    if (module.languageIds.includesPython())
+    if (module.languageIds.includesPython()) {
       toPythonModule()
-    else
+    } else {
       toJavaModule()
+    }
 }
 
-public data class PythonSdkInfoState(
-  var version: String = "",
-  var originalName: String = "",
-) : ConvertableFromState<PythonSdkInfo> {
-  override fun fromState(): PythonSdkInfo = PythonSdkInfo(
+public data class PythonSdkInfoState(var version: String = "", var originalName: String = "") : ConvertableFromState<PythonSdkInfo> {
+  override fun fromState(): PythonSdkInfo =
+    PythonSdkInfo(
+      version = version,
+      originalName = originalName,
+    )
+}
+
+public fun PythonSdkInfo.toState(): PythonSdkInfoState =
+  PythonSdkInfoState(
     version = version,
     originalName = originalName,
   )
-}
-
-public fun PythonSdkInfo.toState(): PythonSdkInfoState = PythonSdkInfoState(
-  version = version,
-  originalName = originalName,
-)
 
 public data class KotlinAddendumState(
   var languageVersion: String = "",
   val apiVersion: String = "",
   val kotlincOptions: List<String> = emptyList(),
 ) : ConvertableFromState<KotlinAddendum> {
-  override fun fromState(): KotlinAddendum = KotlinAddendum(
-    languageVersion = languageVersion,
-    apiVersion = apiVersion,
-    kotlincOptions = kotlincOptions,
-  )
+  override fun fromState(): KotlinAddendum =
+    KotlinAddendum(
+      languageVersion = languageVersion,
+      apiVersion = apiVersion,
+      kotlincOptions = kotlincOptions,
+    )
 }
 
 // TODO: What is it needed for? It's the same as ScalaAddendum
-public data class ScalaAddendumState(
-  var scalaSdkName: String = "",
-) : ConvertableFromState<ScalaAddendum> {
-  override fun fromState(): ScalaAddendum = ScalaAddendum(
-    scalaSdkName = scalaSdkName,
-  )
+public data class ScalaAddendumState(var scalaSdkName: String = "") : ConvertableFromState<ScalaAddendum> {
+  override fun fromState(): ScalaAddendum =
+    ScalaAddendum(
+      scalaSdkName = scalaSdkName,
+    )
 }
 
-public data class JavaAddendumState(
-  var languageVersion: String = "",
-) : ConvertableFromState<JavaAddendum> {
-  override fun fromState(): JavaAddendum = JavaAddendum(
-    languageVersion = languageVersion
-  )
+public data class JavaAddendumState(var languageVersion: String = "") : ConvertableFromState<JavaAddendum> {
+  override fun fromState(): JavaAddendum =
+    JavaAddendum(
+      languageVersion = languageVersion,
+    )
 }
 
 public data class AndroidAddendumState(
@@ -285,14 +292,15 @@ public data class AndroidAddendumState(
   var resourceJavaPackage: String? = null,
   var assetsDirectories: List<String> = emptyList(),
 ) : ConvertableFromState<AndroidAddendum> {
-  override fun fromState(): AndroidAddendum = AndroidAddendum(
-    androidSdkName = androidSdkName,
-    androidTargetType = androidTargetType,
-    manifest = manifest?.let { Path(it) },
-    resourceDirectories = resourceDirectories.map { Path(it) },
-    resourceJavaPackage = resourceJavaPackage,
-    assetsDirectories = assetsDirectories.map { Path(it) },
-  )
+  override fun fromState(): AndroidAddendum =
+    AndroidAddendum(
+      androidSdkName = androidSdkName,
+      androidTargetType = androidTargetType,
+      manifest = manifest?.let { Path(it) },
+      resourceDirectories = resourceDirectories.map { Path(it) },
+      resourceJavaPackage = resourceJavaPackage,
+      assetsDirectories = assetsDirectories.map { Path(it) },
+    )
 }
 
 public data class ModuleCapabilitiesState(
@@ -301,36 +309,41 @@ public data class ModuleCapabilitiesState(
   var canCompile: Boolean = false,
   var canDebug: Boolean = false,
 ) : ConvertableFromState<ModuleCapabilities> {
-  override fun fromState(): ModuleCapabilities = ModuleCapabilities(
+  override fun fromState(): ModuleCapabilities =
+    ModuleCapabilities(
+      canRun = canRun,
+      canTest = canTest,
+      canCompile = canCompile,
+      canDebug = canDebug,
+    )
+}
+
+public fun KotlinAddendum.toState(): KotlinAddendumState =
+  KotlinAddendumState(
+    languageVersion = languageVersion,
+    apiVersion = apiVersion,
+    kotlincOptions = kotlincOptions,
+  )
+
+public fun ScalaAddendum.toState(): ScalaAddendumState =
+  ScalaAddendumState(
+    scalaSdkName = scalaSdkName,
+  )
+
+public fun AndroidAddendum.toState(): AndroidAddendumState =
+  AndroidAddendumState(
+    androidSdkName = androidSdkName,
+    androidTargetType = androidTargetType,
+    manifest = manifest?.toString(),
+    resourceDirectories = resourceDirectories.map { it.toString() },
+    resourceJavaPackage = resourceJavaPackage,
+    assetsDirectories = assetsDirectories.map { it.toString() },
+  )
+
+public fun ModuleCapabilities.toState(): ModuleCapabilitiesState =
+  ModuleCapabilitiesState(
     canRun = canRun,
     canTest = canTest,
     canCompile = canCompile,
     canDebug = canDebug,
   )
-}
-
-public fun KotlinAddendum.toState(): KotlinAddendumState = KotlinAddendumState(
-  languageVersion = languageVersion,
-  apiVersion = apiVersion,
-  kotlincOptions = kotlincOptions,
-)
-
-public fun ScalaAddendum.toState(): ScalaAddendumState = ScalaAddendumState(
-  scalaSdkName = scalaSdkName,
-)
-
-public fun AndroidAddendum.toState(): AndroidAddendumState = AndroidAddendumState(
-  androidSdkName = androidSdkName,
-  androidTargetType = androidTargetType,
-  manifest = manifest?.toString(),
-  resourceDirectories = resourceDirectories.map { it.toString() },
-  resourceJavaPackage = resourceJavaPackage,
-  assetsDirectories = assetsDirectories.map { it.toString() },
-)
-
-public fun ModuleCapabilities.toState(): ModuleCapabilitiesState = ModuleCapabilitiesState(
-  canRun = canRun,
-  canTest = canTest,
-  canCompile = canCompile,
-  canDebug = canDebug,
-)

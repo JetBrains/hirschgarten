@@ -26,48 +26,55 @@ internal class ModuleDetailsToPythonModuleTransformer(
   override fun transform(inputEntity: ModuleDetails): PythonModule =
     PythonModule(
       module = toGenericModuleInfo(inputEntity),
-      sourceRoots = sourcesItemToPythonSourceRootTransformer.transform(inputEntity.sources.map {
-        BuildTargetAndSourceItem(
-          inputEntity.target,
-          it,
-        )
-      }),
+      sourceRoots =
+        sourcesItemToPythonSourceRootTransformer.transform(
+          inputEntity.sources.map {
+            BuildTargetAndSourceItem(
+              inputEntity.target,
+              it,
+            )
+          },
+        ),
       resourceRoots = resourcesItemToPythonResourceRootTransformer.transform(inputEntity.resources),
       libraries = DependencySourcesItemToPythonLibraryTransformer.transform(inputEntity.dependenciesSources),
       sdkInfo = toSdkInfo(inputEntity),
     )
 
   override fun toGenericModuleInfo(inputEntity: ModuleDetails): GenericModuleInfo {
-    val bspModuleDetails = BspModuleDetails(
-      target = inputEntity.target,
-      dependencySources = inputEntity.dependenciesSources,
-      type = type,
-      javacOptions = null,
-      pythonOptions = inputEntity.pythonOptions,
-      libraryDependencies = inputEntity.libraryDependencies,
-      moduleDependencies = inputEntity.moduleDependencies,
-      scalacOptions = inputEntity.scalacOptions,
-    )
+    val bspModuleDetails =
+      BspModuleDetails(
+        target = inputEntity.target,
+        dependencySources = inputEntity.dependenciesSources,
+        type = type,
+        javacOptions = null,
+        pythonOptions = inputEntity.pythonOptions,
+        libraryDependencies = inputEntity.libraryDependencies,
+        moduleDependencies = inputEntity.moduleDependencies,
+        scalacOptions = inputEntity.scalacOptions,
+      )
 
     return bspModuleDetailsToModuleTransformer.transform(bspModuleDetails)
   }
 
   private fun toSdkInfo(inputEntity: ModuleDetails): PythonSdkInfo? {
     val pythonBuildTarget = extractPythonBuildTarget(inputEntity.target)
-    return if (pythonBuildTarget != null && pythonBuildTarget.version != null && pythonBuildTarget.interpreter != null)
+    return if (pythonBuildTarget != null && pythonBuildTarget.version != null && pythonBuildTarget.interpreter != null) {
       PythonSdkInfo(
         version = pythonBuildTarget.version,
         originalName = inputEntity.target.id.uri,
       )
-    else
+    } else {
       toDefaultSdkInfo(inputEntity, pythonBuildTarget)
+    }
   }
 
   private fun toDefaultSdkInfo(inputEntity: ModuleDetails, pythonBuildTarget: PythonBuildTarget?): PythonSdkInfo? =
-    if (hasDefaultPythonInterpreter)
+    if (hasDefaultPythonInterpreter) {
       PythonSdkInfo(
         version = pythonBuildTarget?.version ?: "PY3",
-        originalName = "${inputEntity.target.id.uri}-detected"
+        originalName = "${inputEntity.target.id.uri}-detected",
       )
-    else null
+    } else {
+      null
+    }
 }

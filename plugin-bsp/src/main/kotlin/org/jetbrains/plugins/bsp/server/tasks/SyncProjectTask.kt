@@ -21,17 +21,16 @@ private const val SYNC_TASK_ID = "bsp-sync-project"
 private val log = logger<SyncProjectTask>()
 
 public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Project", project) {
-  public suspend fun execute(
-    shouldBuildProject: Boolean,
-  ): Unit = bspTracer.spanBuilder("bsp.sync.project.ms").useWithScope {
-    try {
-      log.debug("Starting sync project task")
-      preSync()
-      collectProject(SYNC_TASK_ID, shouldBuildProject)
-    } finally {
-      BspSyncStatusService.getInstance(project).finishSync()
+  public suspend fun execute(shouldBuildProject: Boolean): Unit =
+    bspTracer.spanBuilder("bsp.sync.project.ms").useWithScope {
+      try {
+        log.debug("Starting sync project task")
+        preSync()
+        collectProject(SYNC_TASK_ID, shouldBuildProject)
+      } finally {
+        BspSyncStatusService.getInstance(project).finishSync()
+      }
     }
-  }
 
   private fun preSync() {
     log.debug("Running pre sync tasks")
@@ -39,41 +38,42 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
     saveAllFiles()
   }
 
-  private suspend fun collectProject(taskId: String, buildProject: Boolean) = coroutineScope {
-    log.debug("Collecting project details")
-    val collectProjectDetailsTask = CollectProjectDetailsTask(project, taskId)
-    // Use weak reference for the cancellation callback so that it doesn't prevent GC
-    val collectProjectDetailsTaskRef = WeakReference(collectProjectDetailsTask)
+  private suspend fun collectProject(taskId: String, buildProject: Boolean) =
+    coroutineScope {
+      log.debug("Collecting project details")
+      val collectProjectDetailsTask = CollectProjectDetailsTask(project, taskId)
+      // Use weak reference for the cancellation callback so that it doesn't prevent GC
+      val collectProjectDetailsTaskRef = WeakReference(collectProjectDetailsTask)
 
-    val syncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    syncConsole.startTask(
-      taskId = taskId,
-      title = BspPluginBundle.message("console.task.sync.title"),
-      message = BspPluginBundle.message("console.task.sync.in.progress"),
-      cancelAction = { collectProjectDetailsTaskRef.get()?.onCancel() },
-    )
-    log.debug("Connecting to the server")
-    runInterruptible {
-      project.connection.connect(taskId) { errorMessage ->
-        collectProjectDetailsTaskRef.get()?.cancelExecution()
-        coroutineContext.job.cancel(cause = CancellationException(errorMessage))
-      }
-    }
-    try {
-      log.debug("Running CollectProjectDetailsTask")
-      collectProjectDetailsTask.execute(
-        name = "Syncing...",
-        cancelable = true,
-        buildProject = buildProject
+      val syncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+      syncConsole.startTask(
+        taskId = taskId,
+        title = BspPluginBundle.message("console.task.sync.title"),
+        message = BspPluginBundle.message("console.task.sync.in.progress"),
+        cancelAction = { collectProjectDetailsTaskRef.get()?.onCancel() },
       )
-      syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.success"))
-    } catch (e: Exception) {
-      log.debug("BSP sync failed")
-      syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.failed"), FailureResultImpl(e))
-    }
+      log.debug("Connecting to the server")
+      runInterruptible {
+        project.connection.connect(taskId) { errorMessage ->
+          collectProjectDetailsTaskRef.get()?.cancelExecution()
+          coroutineContext.job.cancel(cause = CancellationException(errorMessage))
+        }
+      }
+      try {
+        log.debug("Running CollectProjectDetailsTask")
+        collectProjectDetailsTask.execute(
+          name = "Syncing...",
+          cancelable = true,
+          buildProject = buildProject,
+        )
+        syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.success"))
+      } catch (e: Exception) {
+        log.debug("BSP sync failed")
+        syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.failed"), FailureResultImpl(e))
+      }
 
-    BspToolWindowService.getInstance(project).doDeepPanelReload()
-  }
+      BspToolWindowService.getInstance(project).doDeepPanelReload()
+    }
 
   private fun CollectProjectDetailsTask.onCancel() {
     log.debug("Cancelling BSP sync")

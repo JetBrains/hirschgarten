@@ -35,12 +35,10 @@ public class DefaultConnectionDetailsProviderExtension : ConnectionDetailsProvid
     return wizardResult
   }
 
-  override fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?,
-  ): BspConnectionDetails? {
-    val connectionDetailsFromFile = project.stateService.connectionFile?.parseBspConnectionDetails()
-      ?: error("Cannot parse connection details from connection file. Please reimport the project.")
+  override fun provideNewConnectionDetails(project: Project, currentConnectionDetails: BspConnectionDetails?): BspConnectionDetails? {
+    val connectionDetailsFromFile =
+      project.stateService.connectionFile?.parseBspConnectionDetails()
+        ?: error("Cannot parse connection details from connection file. Please reimport the project.")
 
     return connectionDetailsFromFile.takeIf { it != currentConnectionDetails }
   }
@@ -65,8 +63,9 @@ internal data class DefaultConnectionDetailsProviderState(
   reportStatistic = true,
 )
 @Service(Service.Level.PROJECT)
-internal class DefaultConnectionDetailsProviderExtensionService
-: PersistentStateComponent<DefaultConnectionDetailsProviderState>, Disposable {
+internal class DefaultConnectionDetailsProviderExtensionService :
+  PersistentStateComponent<DefaultConnectionDetailsProviderState>,
+  Disposable {
   var connectionFile: VirtualFile? = null
 
   override fun getState(): DefaultConnectionDetailsProviderState =

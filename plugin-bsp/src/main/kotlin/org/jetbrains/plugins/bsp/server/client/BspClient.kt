@@ -81,21 +81,22 @@ public class BspClient(
     val originId = params.originId ?: return // TODO
     val maybeParent = params.taskId.parents?.firstOrNull()
 
-    val data: Any? = when (params.dataKind) {
-      TaskStartDataKind.TEST_START -> {
-        gson.fromJson(params.data as JsonObject, TestStart::class.java)
-      }
+    val data: Any? =
+      when (params.dataKind) {
+        TaskStartDataKind.TEST_START -> {
+          gson.fromJson(params.data as JsonObject, TestStart::class.java)
+        }
 
-      TaskStartDataKind.TEST_TASK -> {
-        gson.fromJson(params.data as JsonObject, TestTask::class.java)
-      }
+        TaskStartDataKind.TEST_TASK -> {
+          gson.fromJson(params.data as JsonObject, TestTask::class.java)
+        }
 
-      TaskStartDataKind.COMPILE_TASK -> {
-        gson.fromJson(params.data as JsonObject, CompileTask::class.java)
-      }
+        TaskStartDataKind.COMPILE_TASK -> {
+          gson.fromJson(params.data as JsonObject, CompileTask::class.java)
+        }
 
-      else -> null
-    }
+        else -> null
+      }
 
     BspTaskEventsService.getInstance(project).withListener(originId) {
       onTaskStart(taskId, maybeParent, params.message ?: taskId, data)
@@ -121,21 +122,22 @@ public class BspClient(
     log.debug("Got task finish: $params")
     val originId = params.originId ?: return // TODO
 
-    val data: Any? = when (params.dataKind) {
-      TaskFinishDataKind.TEST_FINISH -> {
-        gson.fromJson(params.data as JsonObject, TestFinish::class.java)
-      }
+    val data: Any? =
+      when (params.dataKind) {
+        TaskFinishDataKind.TEST_FINISH -> {
+          gson.fromJson(params.data as JsonObject, TestFinish::class.java)
+        }
 
-      TaskFinishDataKind.TEST_REPORT -> {
-        gson.fromJson(params.data as JsonObject, TestReport::class.java)
-      }
+        TaskFinishDataKind.TEST_REPORT -> {
+          gson.fromJson(params.data as JsonObject, TestReport::class.java)
+        }
 
-      TaskFinishDataKind.COMPILE_REPORT -> {
-        gson.fromJson(params.data as JsonObject, CompileReport::class.java)
-      }
+        TaskFinishDataKind.COMPILE_REPORT -> {
+          gson.fromJson(params.data as JsonObject, CompileReport::class.java)
+        }
 
-      else -> null
-    }
+        else -> null
+      }
 
     val status = params.status
 
@@ -190,7 +192,7 @@ public class BspClient(
           it.range.start.line,
           it.range.start.character,
           getMessageEventKind(it.severity),
-          it.message
+          it.message,
         )
       }
     }
@@ -230,13 +232,14 @@ public class BspClient(
     }
   }
 
-  private fun getMessageEventKind(severity: DiagnosticSeverity?): MessageEvent.Kind = when (severity) {
-    DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
-    DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
-    DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
-    DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
-    null -> MessageEvent.Kind.SIMPLE
-  }
+  private fun getMessageEventKind(severity: DiagnosticSeverity?): MessageEvent.Kind =
+    when (severity) {
+      DiagnosticSeverity.ERROR -> MessageEvent.Kind.ERROR
+      DiagnosticSeverity.WARNING -> MessageEvent.Kind.WARNING
+      DiagnosticSeverity.INFORMATION -> MessageEvent.Kind.INFO
+      DiagnosticSeverity.HINT -> MessageEvent.Kind.INFO
+      null -> MessageEvent.Kind.SIMPLE
+    }
 
   private fun logDiagnosticBySeverity(severity: DiagnosticSeverity?, message: String) {
     when (severity) {

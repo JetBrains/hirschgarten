@@ -1,8 +1,11 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
 class DiagnosticsParser {
-
-  fun parse(bazelOutput: String, target: String, onlyKnownFiles: Boolean): List<Diagnostic> {
+  fun parse(
+    bazelOutput: String,
+    target: String,
+    onlyKnownFiles: Boolean,
+  ): List<Diagnostic> {
     val output = prepareOutput(bazelOutput, target)
     val diagnostics = collectDiagnostics(output, onlyKnownFiles)
     return deduplicate(diagnostics)
@@ -33,8 +36,8 @@ class DiagnosticsParser {
           message = output.fullOutput(),
           level = Level.Error,
           fileLocation = "<unknown>",
-          targetLabel = output.targetLabel
-        )
+          targetLabel = output.targetLabel,
+        ),
       )
     }
 
@@ -42,22 +45,23 @@ class DiagnosticsParser {
   }
 
   private fun deduplicate(parsedDiagnostics: List<Diagnostic>): List<Diagnostic> =
-      parsedDiagnostics
-          .groupBy { Triple(it.fileLocation, it.message, it.position) }
-          .values
-          .map { it.first() }
+    parsedDiagnostics
+      .groupBy { Triple(it.fileLocation, it.message, it.position) }
+      .values
+      .map { it.first() }
 
   companion object {
-    private val Parsers = listOf(
+    private val Parsers =
+      listOf(
         BazelRootMessageParser,
         CompilerDiagnosticParser,
         Scala3CompilerDiagnosticParser,
-        AllCatchParser
-    )
-    private val IgnoredLines = listOf(
+        AllCatchParser,
+      )
+    private val IgnoredLines =
+      listOf(
         "^$".toRegex(),
-        "Use --sandbox_debug to see verbose messages from the sandbox".toRegex()
-    )
+        "Use --sandbox_debug to see verbose messages from the sandbox".toRegex(),
+      )
   }
-
 }

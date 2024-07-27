@@ -27,32 +27,37 @@ internal object TargetIdToModuleEntitiesMap {
     hasDefaultPythonInterpreter: Boolean,
     isAndroidSupportEnabled: Boolean,
   ): Map<BuildTargetIdentifier, Module> {
-    val moduleDetailsToJavaModuleTransformer = ModuleDetailsToJavaModuleTransformer(
-      targetIdToTargetInfo,
-      moduleNameProvider,
-      libraryNameProvider,
-      projectBasePath,
-      isAndroidSupportEnabled,
-    )
-    val moduleDetailsToPythonModuleTransformer = ModuleDetailsToPythonModuleTransformer(
-      targetIdToTargetInfo,
-      moduleNameProvider,
-      libraryNameProvider,
-      hasDefaultPythonInterpreter,
-    )
+    val moduleDetailsToJavaModuleTransformer =
+      ModuleDetailsToJavaModuleTransformer(
+        targetIdToTargetInfo,
+        moduleNameProvider,
+        libraryNameProvider,
+        projectBasePath,
+        isAndroidSupportEnabled,
+      )
+    val moduleDetailsToPythonModuleTransformer =
+      ModuleDetailsToPythonModuleTransformer(
+        targetIdToTargetInfo,
+        moduleNameProvider,
+        libraryNameProvider,
+        hasDefaultPythonInterpreter,
+      )
 
     return runBlocking(Dispatchers.Default) {
-      projectDetails.targetIds.map {
-        async {
-          val moduleDetails = targetIdToModuleDetails.getValue(it)
-          val module = if (moduleDetails.target.languageIds.includesPython()) {
-            moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
-          } else {
-            moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
+      projectDetails.targetIds
+        .map {
+          async {
+            val moduleDetails = targetIdToModuleDetails.getValue(it)
+            val module =
+              if (moduleDetails.target.languageIds.includesPython()) {
+                moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
+              } else {
+                moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
+              }
+            it to module
           }
-          it to module
-        }
-      }.awaitAll().toMap()
+        }.awaitAll()
+        .toMap()
     }
   }
 }
@@ -61,5 +66,5 @@ internal object TargetIdToModuleEntitiesMap {
 public fun Collection<String>.toDefaultTargetsMap(): Map<BuildTargetIdentifier, BuildTargetInfo> =
   associateBy(
     keySelector = { BuildTargetIdentifier(it) },
-    valueTransform = { BuildTargetInfo(id = BuildTargetIdentifier(it)) }
+    valueTransform = { BuildTargetInfo(id = BuildTargetIdentifier(it)) },
   )

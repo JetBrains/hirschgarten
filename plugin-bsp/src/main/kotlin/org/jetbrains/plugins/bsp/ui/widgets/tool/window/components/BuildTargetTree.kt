@@ -62,14 +62,15 @@ public class BuildTargetTree(
           bspBuildTargetClassifier.calculateBuildTargetPath(it),
           bspBuildTargetClassifier.calculateBuildTargetName(it),
         )
-      } + invalidTargets.map {
-        BuildTargetTreeIdentifier(
-          it,
-          null,
-          bspBuildTargetClassifier.calculateBuildTargetPath(it.toFakeBuildTargetInfo()),
-          bspBuildTargetClassifier.calculateBuildTargetName(it.toFakeBuildTargetInfo()),
-        )
-      },
+      } +
+        invalidTargets.map {
+          BuildTargetTreeIdentifier(
+            it,
+            null,
+            bspBuildTargetClassifier.calculateBuildTargetPath(it.toFakeBuildTargetInfo()),
+            bspBuildTargetClassifier.calculateBuildTargetName(it.toFakeBuildTargetInfo()),
+          )
+        },
       bspBuildTargetClassifier.separator,
     )
   }
@@ -79,9 +80,10 @@ public class BuildTargetTree(
 
   private fun generateTreeFromIdentifiers(targets: List<BuildTargetTreeIdentifier>, separator: String?) {
     val pathToIdentifierMap = targets.groupBy { it.path.firstOrNull() }
-    val sortedDirs = pathToIdentifierMap.keys
-      .filterNotNull()
-      .sorted()
+    val sortedDirs =
+      pathToIdentifierMap.keys
+        .filterNotNull()
+        .sorted()
     rootNode.removeAllChildren()
     for (dir in sortedDirs) {
       pathToIdentifierMap[dir]?.let {
@@ -142,14 +144,12 @@ public class BuildTargetTree(
         }
       }
 
-  private fun generateChildrenTargetNodes(
-    pathToIdentifierMap: Map<String?, List<BuildTargetTreeIdentifier>>,
-  ): List<TreeNode> =
+  private fun generateChildrenTargetNodes(pathToIdentifierMap: Map<String?, List<BuildTargetTreeIdentifier>>): List<TreeNode> =
     pathToIdentifierMap[null]?.map { generateTargetNode(it) } ?: emptyList()
 
   private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
     DefaultMutableTreeNode(
-      TargetNodeData(identifier.id, identifier.target, identifier.displayName, identifier.target != null)
+      TargetNodeData(identifier.id, identifier.target, identifier.displayName, identifier.target != null),
     )
 
   private fun simplifyNodeIfHasOneChild(
@@ -179,9 +179,11 @@ public class BuildTargetTree(
   override fun getSelectedBuildTarget(): BuildTargetInfo? {
     val selected = treeComponent.lastSelectedPathComponent as? DefaultMutableTreeNode
     val userObject = selected?.userObject
-    return if (userObject is TargetNodeData)
+    return if (userObject is TargetNodeData) {
       userObject.target
-    else null
+    } else {
+      null
+    }
   }
 
   override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetTree =
@@ -199,11 +201,13 @@ public class BuildTargetTree(
   }
 
   override fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction> =
-    BuildToolWindowTargetActionProviderExtension.ep.withBuildToolId(project.buildToolId)
+    BuildToolWindowTargetActionProviderExtension.ep
+      .withBuildToolId(project.buildToolId)
       ?.getTargetActions(treeComponent, project, buildTargetInfo) ?: emptyList()
 }
 
 private interface NodeData
+
 private data class DirectoryNodeData(val name: String) : NodeData {
   override fun toString(): String = name
 }
@@ -237,34 +241,37 @@ private class TargetTreeCellRenderer(
     leaf: Boolean,
     row: Int,
     hasFocus: Boolean,
-  ): Component {
-    return when (val userObject = (value as? DefaultMutableTreeNode)?.userObject) {
-      is DirectoryNodeData -> JBLabel(
-        labelHighlighter(userObject.name),
-        PlatformIcons.FOLDER_ICON,
-        SwingConstants.LEFT,
-      )
+  ): Component =
+    when (val userObject = (value as? DefaultMutableTreeNode)?.userObject) {
+      is DirectoryNodeData ->
+        JBLabel(
+          labelHighlighter(userObject.name),
+          PlatformIcons.FOLDER_ICON,
+          SwingConstants.LEFT,
+        )
 
       is TargetNodeData ->
-        if (userObject.isValid)
+        if (userObject.isValid) {
           JBLabel(
             labelHighlighter(userObject.displayName),
             targetIcon,
             SwingConstants.LEFT,
-          ) else
+          )
+        } else {
           JBLabel(
             labelStrikethrough(userObject.displayName),
             invalidTargetIcon,
-            SwingConstants.LEFT
+            SwingConstants.LEFT,
           )
+        }
 
-      else -> JBLabel(
-        BspPluginBundle.message("widget.no.renderable.component"),
-        PlatformIcons.ERROR_INTRODUCTION_ICON,
-        SwingConstants.LEFT,
-      )
+      else ->
+        JBLabel(
+          BspPluginBundle.message("widget.no.renderable.component"),
+          PlatformIcons.ERROR_INTRODUCTION_ICON,
+          SwingConstants.LEFT,
+        )
     }
-  }
 
   private fun labelStrikethrough(text: String): String = "<html><s>$text</s><html>"
 }

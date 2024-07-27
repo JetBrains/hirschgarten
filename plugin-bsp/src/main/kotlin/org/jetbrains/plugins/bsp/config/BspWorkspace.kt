@@ -57,18 +57,20 @@ internal class BspSyncStatusService(private val project: Project) {
 
   companion object {
     @JvmStatic
-    fun getInstance(project: Project): BspSyncStatusService =
-      project.getService(BspSyncStatusService::class.java)
+    fun getInstance(project: Project): BspSyncStatusService = project.getService(BspSyncStatusService::class.java)
   }
 }
 
 public class BspWorkspaceWatcher(private val project: Project) {
   public fun listenForConfigChanges() {
-    project.messageBus.connect().subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
-      override fun after(events: MutableList<out VFileEvent>) {
-        if (shouldNotifyOnEvents(events)) BspProjectAware.notify(project)
-      }
-    })
+    project.messageBus.connect().subscribe(
+      VirtualFileManager.VFS_CHANGES,
+      object : BulkFileListener {
+        override fun after(events: MutableList<out VFileEvent>) {
+          if (shouldNotifyOnEvents(events)) BspProjectAware.notify(project)
+        }
+      },
+    )
   }
 
   private fun shouldNotifyOnEvents(events: List<VFileEvent>): Boolean {
@@ -77,8 +79,10 @@ public class BspWorkspaceWatcher(private val project: Project) {
     return events.any {
       it.file?.let { vFile ->
         projectFileIndex.isInContent(vFile) &&
-          (vFile.name in projectAwareExtension.eligibleConfigFileNames ||
-            projectAwareExtension.eligibleConfigFileExtensions.contains(vFile.extension))
+          (
+            vFile.name in projectAwareExtension.eligibleConfigFileNames ||
+              projectAwareExtension.eligibleConfigFileExtensions.contains(vFile.extension)
+          )
       } ?: false
     }
   }
@@ -86,6 +90,7 @@ public class BspWorkspaceWatcher(private val project: Project) {
 
 public interface BspWorkspaceListener {
   public fun syncStarted()
+
   public fun syncFinished(canceled: Boolean)
 
   public companion object {

@@ -21,8 +21,8 @@ open class Parsing(val context: ParsingContext) {
     return false
   }
 
-  protected fun parseIdentifierOrSkip(): Boolean {
-    return if (atToken(StarlarkTokenTypes.IDENTIFIER)) {
+  protected fun parseIdentifierOrSkip(): Boolean =
+    if (atToken(StarlarkTokenTypes.IDENTIFIER)) {
       builder.advanceLexer()
       true
     } else {
@@ -33,7 +33,6 @@ open class Parsing(val context: ParsingContext) {
       nameExpected.error(StarlarkBundle.message("parser.expected.identifier"))
       false
     }
-  }
 
   protected fun assertCurrentToken(tokenType: StarlarkTokenType) {
     LOG.assertTrue(atToken(tokenType))
@@ -85,8 +84,7 @@ open class Parsing(val context: ParsingContext) {
     protected fun isIdentifierLike(builder: PsiBuilder): Boolean =
       builder.tokenType === StarlarkTokenTypes.IDENTIFIER || isReservedKeyword(builder)
 
-    private fun isReservedKeyword(builder: PsiBuilder): Boolean =
-      StarlarkTokenSets.RESERVED_KEYWORDS.contains(builder.tokenType)
+    private fun isReservedKeyword(builder: PsiBuilder): Boolean = StarlarkTokenSets.RESERVED_KEYWORDS.contains(builder.tokenType)
 
     @JvmStatic
     protected fun buildTokenElement(type: IElementType?, builder: PsiBuilder) {

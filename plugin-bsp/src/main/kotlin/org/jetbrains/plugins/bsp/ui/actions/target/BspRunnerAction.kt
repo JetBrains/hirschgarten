@@ -18,10 +18,7 @@ public abstract class BspRunnerAction(
 ) : BaseRunnerAction(targetInfo, text, icon, isDebugAction) {
   public abstract fun getConfigurationType(project: Project): ConfigurationType
 
-  override suspend fun getRunnerSettings(
-    project: Project,
-    buildTargetInfo: BuildTargetInfo,
-  ): RunnerAndConfigurationSettings? {
+  override suspend fun getRunnerSettings(project: Project, buildTargetInfo: BuildTargetInfo): RunnerAndConfigurationSettings? {
     val factory = getConfigurationType(project).configurationFactories.first()
     val settings =
       RunManager.getInstance(project).createConfiguration(calculateConfigurationName(buildTargetInfo), factory)
@@ -33,11 +30,12 @@ public abstract class BspRunnerAction(
 
   private fun calculateConfigurationName(targetInfo: BuildTargetInfo): String {
     val targetDisplayName = targetInfo.getBuildTargetName()
-    val actionNameKey = when {
-      isDebugAction -> "target.debug.config.name"
-      this is TestTargetAction -> "target.test.config.name"
-      else -> "target.run.config.name"
-    }
+    val actionNameKey =
+      when {
+        isDebugAction -> "target.debug.config.name"
+        this is TestTargetAction -> "target.test.config.name"
+        else -> "target.run.config.name"
+      }
     return BspPluginBundle.message(actionNameKey, targetDisplayName)
   }
 }

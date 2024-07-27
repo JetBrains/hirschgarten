@@ -11,7 +11,7 @@ class BazelGlobalFunctionCompletionContributorTest : BasePlatformTestCase() {
   @Test
   fun `should complete extension functions`() {
     // given
-    myFixture.configureByText("dummy.bzl", "")
+    myFixture.configureByText("dummy.bzlmock", "")
     myFixture.type("x")
 
     // when

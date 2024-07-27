@@ -25,37 +25,38 @@ class BzlModGraphTest {
   @Test
   fun `should return only direct dependencies from a valid BzlMod json`() {
     // given
-    val s = """
-        {
-          "key": "test",
-          "dependencies": [
-            {
-              "key": "rules_java@7.4.0",
-              "dependencies": [
-                {
-                  "key": "bazel_skylib@1.4.2",
-                  "unexpanded": true
-                },
-                {
-                  "key": "platforms@0.0.8",
-                  "unexpanded": true
-                },
-                {
-                  "key": "rules_cc@0.0.9",
-                  "unexpanded": true
-                }
-              ]
-            },
-            {
-              "key": "rules_jvm_external@6.0",
-              "dependencies": [
-                {
-                  "key": "rules_kotlin@1.9.0"
-                }
-              ]
-            }
-          ]
-        }
+    val s =
+      """
+      {
+        "key": "test",
+        "dependencies": [
+          {
+            "key": "rules_java@7.4.0",
+            "dependencies": [
+              {
+                "key": "bazel_skylib@1.4.2",
+                "unexpanded": true
+              },
+              {
+                "key": "platforms@0.0.8",
+                "unexpanded": true
+              },
+              {
+                "key": "rules_cc@0.0.9",
+                "unexpanded": true
+              }
+            ]
+          },
+          {
+            "key": "rules_jvm_external@6.0",
+            "dependencies": [
+              {
+                "key": "rules_kotlin@1.9.0"
+              }
+            ]
+          }
+        ]
+      }
       """.trimIndent()
 
     // when

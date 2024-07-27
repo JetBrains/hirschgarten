@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.android
 
+import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinModule
-import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.isAndroidEnabled
 
@@ -27,24 +27,24 @@ class KotlinAndroidModulesMerger {
   private fun doMergeKotlinAndroidModules(modules: List<Module>): List<Module> {
     val moduleById = modules.associateBy { it.label.value }
 
-    val mergedKotlinAndroidModules = modules.mapNotNull { parentModule ->
-      tryMergeKotlinAndroidModule(parentModule, moduleById)
-    }
+    val mergedKotlinAndroidModules =
+      modules.mapNotNull { parentModule ->
+        tryMergeKotlinAndroidModule(parentModule, moduleById)
+      }
     if (mergedKotlinAndroidModules.isEmpty()) return modules
 
     val newModules = mergedKotlinAndroidModules.map { it.mergedModule }
-    val oldModulesToRemove = mergedKotlinAndroidModules.asSequence()
-      .flatMap { it.oldModulesToRemove }
-      .map { it.label.value }
-      .toSet()
+    val oldModulesToRemove =
+      mergedKotlinAndroidModules
+        .asSequence()
+        .flatMap { it.oldModulesToRemove }
+        .map { it.label.value }
+        .toSet()
     val withoutOldModules = (moduleById - oldModulesToRemove).values
     return withoutOldModules + newModules
   }
 
-  private fun tryMergeKotlinAndroidModule(
-    parentModule: Module,
-    moduleById: Map<String, Module>,
-  ): MergedKotlinAndroidModule? {
+  private fun tryMergeKotlinAndroidModule(parentModule: Module, moduleById: Map<String, Module>): MergedKotlinAndroidModule? {
     if (parentModule.sourceSet.sources.isNotEmpty()) return null
 
     val parentModuleId = parentModule.label.value
@@ -56,40 +56,44 @@ class KotlinAndroidModulesMerger {
 
     // kt_android_local_test passes the resources and manifest to the parent module;
     // kt_android_library passes them to the Android module.
-    val androidLanguageData = if (androidModule.resources.isNotEmpty()) {
-      androidModule.languageData as? AndroidModule
-    } else {
-      parentModule.languageData as? AndroidModule
-    } ?: return null
+    val androidLanguageData =
+      if (androidModule.resources.isNotEmpty()) {
+        androidModule.languageData as? AndroidModule
+      } else {
+        parentModule.languageData as? AndroidModule
+      } ?: return null
 
-    val javaModule = androidLanguageData.javaModule?.run {
-      copy(binaryOutputs = binaryOutputs + kotlinModule.javaModule?.binaryOutputs.orEmpty())
-    }
+    val javaModule =
+      androidLanguageData.javaModule?.run {
+        copy(binaryOutputs = binaryOutputs + kotlinModule.javaModule?.binaryOutputs.orEmpty())
+      }
     val kotlinAndroidLanguageData = androidLanguageData.copy(kotlinModule = kotlinLanguageData, javaModule = javaModule)
 
     val mergedDependencies =
       kotlinModule.directDependencies.asSequence() + androidModule.directDependencies.asSequence()
-    val correctMergedDependencies = mergedDependencies
-      .filterNot { it == androidModule.label }
-      .filterNot { it == kotlinModule.label }
-      .filterNot { it.value.endsWith("//third_party:android_sdk") }  // This is added by Kotlin rules
-      .distinct()
-      .toList()
+    val correctMergedDependencies =
+      mergedDependencies
+        .filterNot { it == androidModule.label }
+        .filterNot { it == kotlinModule.label }
+        .filterNot { it.value.endsWith("//third_party:android_sdk") } // This is added by Kotlin rules
+        .distinct()
+        .toList()
 
-    val mergedModule = Module(
-      label = parentModule.label,
-      isSynthetic = false,
-      directDependencies = correctMergedDependencies,
-      languages = kotlinModule.languages + androidModule.languages,
-      tags = parentModule.tags,
-      baseDirectory = parentModule.baseDirectory,
-      sourceSet = kotlinModule.sourceSet,
-      resources = androidModule.resources + parentModule.resources,
-      outputs = kotlinModule.outputs + androidModule.outputs,
-      sourceDependencies = kotlinModule.sourceDependencies + androidModule.sourceDependencies,
-      languageData = kotlinAndroidLanguageData,
-      environmentVariables = kotlinModule.environmentVariables + androidModule.environmentVariables,
-    )
+    val mergedModule =
+      Module(
+        label = parentModule.label,
+        isSynthetic = false,
+        directDependencies = correctMergedDependencies,
+        languages = kotlinModule.languages + androidModule.languages,
+        tags = parentModule.tags,
+        baseDirectory = parentModule.baseDirectory,
+        sourceSet = kotlinModule.sourceSet,
+        resources = androidModule.resources + parentModule.resources,
+        outputs = kotlinModule.outputs + androidModule.outputs,
+        sourceDependencies = kotlinModule.sourceDependencies + androidModule.sourceDependencies,
+        languageData = kotlinAndroidLanguageData,
+        environmentVariables = kotlinModule.environmentVariables + androidModule.environmentVariables,
+      )
 
     return MergedKotlinAndroidModule(
       mergedModule = mergedModule,
@@ -97,8 +101,5 @@ class KotlinAndroidModulesMerger {
     )
   }
 
-  private data class MergedKotlinAndroidModule(
-    val mergedModule: Module,
-    val oldModulesToRemove: List<Module>,
-  )
+  private data class MergedKotlinAndroidModule(val mergedModule: Module, val oldModulesToRemove: List<Module>)
 }

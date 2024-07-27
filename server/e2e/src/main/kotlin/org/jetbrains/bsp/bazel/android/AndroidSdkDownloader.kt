@@ -19,8 +19,9 @@ object AndroidSdkDownloader {
   private val log = LogManager.getLogger(AndroidSdkDownloader::class.java)
 
   private val androidHome: Path? = System.getenv("ANDROID_HOME")?.let { Path(it) }
-  val androidSdkPath: Path = androidHome ?:
-    checkNotNull(FileUtils.getCacheDirectory("bazel_android_sdk")?.toPath()) { "Couldn't get Android SDK cache dir" }
+  val androidSdkPath: Path =
+    androidHome
+      ?: checkNotNull(FileUtils.getCacheDirectory("bazel_android_sdk")?.toPath()) { "Couldn't get Android SDK cache dir" }
 
   fun downloadAndroidSdkIfNeeded() {
     if (androidHome != null) {
@@ -52,11 +53,12 @@ object AndroidSdkDownloader {
 
   private fun getCommandLineToolsDownloadLink(): String {
     val os = System.getProperty("os.name").lowercase()
-    val osPart = when {
-      os.startsWith("linux") -> "linux"
-      os.startsWith("mac") -> "mac"
-      else -> error("Can't download the Android SDK on OS $os. Set the \$ANDROID_HOME environment variable manually.")
-    }
+    val osPart =
+      when {
+        os.startsWith("linux") -> "linux"
+        os.startsWith("mac") -> "mac"
+        else -> error("Can't download the Android SDK on OS $os. Set the \$ANDROID_HOME environment variable manually.")
+      }
     return "https://dl.google.com/android/repository/commandlinetools-$osPart-11076708_latest.zip"
   }
 
@@ -70,22 +72,23 @@ object AndroidSdkDownloader {
     outputDirectory.resolve("cmdline-tools").moveTo(outputDirectory.resolve("latest"))
   }
 
-  private fun unzipArchive(zip: Path, outputDirectory: Path) =
-    runShellCommand("unzip '$zip' -d '$outputDirectory'")
+  private fun unzipArchive(zip: Path, outputDirectory: Path) = runShellCommand("unzip '$zip' -d '$outputDirectory'")
 
   private fun downloadSdkWithSdkManager() {
     val sdkManager = androidSdkPath.resolve("cmdline-tools/latest/bin/sdkmanager")
     sdkManager.setPosixFilePermissions(
-      setOf(PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_EXECUTE))
+      setOf(PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_EXECUTE),
+    )
     runShellCommand("yes | '$sdkManager' --licenses")
     runShellCommand("'$sdkManager' 'platforms;android-34' 'build-tools;34.0.0'")
   }
 
   private fun runShellCommand(command: String) {
     log.info("Invoking $command")
-    val process = ProcessBuilder("/bin/sh", "-c", command)
-      .inheritIO()
-      .start()
+    val process =
+      ProcessBuilder("/bin/sh", "-c", command)
+        .inheritIO()
+        .start()
     process.waitFor(5, TimeUnit.MINUTES)
     check(process.exitValue() == 0) { "$command exited with exit code ${process.exitValue()}" }
   }

@@ -33,14 +33,16 @@ public abstract class BspCommandLineStateBase(
     // We have to start runFuture later, because we need to register the listener first
     // Otherwise, we might miss some events
     val computationStarter = CompletableFuture<Unit>()
-    val runFuture = computationStarter.thenCompose {
-      val completableFuture: CompletableFuture<*> = project.connection.runWithServer { server, capabilities ->
-        checkRunCapabilities(capabilities)
-        startBsp(server)
+    val runFuture =
+      computationStarter.thenCompose {
+        val completableFuture: CompletableFuture<*> =
+          project.connection.runWithServer { server, capabilities ->
+            checkRunCapabilities(capabilities)
+            startBsp(server)
+          }
+        // The above "useless" type is actually needed because of a bug in Kotlin compiler
+        completableFuture
       }
-      // The above "useless" type is actually needed because of a bug in Kotlin compiler
-      completableFuture
-    }
 
     val handler = BspProcessHandler(runFuture)
     val runListener = createAndAddTaskListener(handler)
@@ -71,8 +73,7 @@ internal class BspRunCommandLineState(
     }
   }
 
-  override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
-    BspRunTaskListener(handler)
+  override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener = BspRunTaskListener(handler)
 
   override fun startBsp(server: JoinedBuildServer): CompletableFuture<*> {
     // SAFETY: safe to unwrap because we checked in checkRunCapabilities

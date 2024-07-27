@@ -8,7 +8,6 @@ object Platform {
   val plugins =
     listOf("PythonCore:$version", "org.jetbrains.android:$version")
   val bundledPlugins = listOf("com.intellij.java", "org.jetbrains.kotlin", "com.jetbrains.performancePlugin")
-
 }
 
 const val javaVersion = "17"

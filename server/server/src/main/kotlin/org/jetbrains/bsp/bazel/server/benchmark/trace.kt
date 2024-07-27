@@ -22,13 +22,12 @@ import kotlin.coroutines.EmptyCoroutineContext
  *
  * See [span concept](https://opentelemetry.io/docs/concepts/signals/traces/#spans) for more details on span nesting.
  */
-inline fun <T> SpanBuilder.use(operation: (Span) -> T): T {
-  return startSpan().useWithoutActiveScope { span ->
+inline fun <T> SpanBuilder.use(operation: (Span) -> T): T =
+  startSpan().useWithoutActiveScope { span ->
     span.makeCurrent().use {
       operation(span)
     }
   }
-}
 
 /**
  * Does not activate the span scope, so **new spans created inside will not be linked to [this] span**.
@@ -52,23 +51,20 @@ inline fun <T> Span.useWithoutActiveScope(operation: (Span) -> T): T {
 @Suppress("unused")
 suspend inline fun <T> SpanBuilder.useWithScope(
   context: CoroutineContext = EmptyCoroutineContext,
-  crossinline operation: suspend CoroutineScope.(Span) -> T
+  crossinline operation: suspend CoroutineScope.(Span) -> T,
 ): T {
   val span = startSpan()
   return withContext(Context.current().with(span).asContextElement() + context) {
     try {
       operation(span)
-    }
-    catch (e: CancellationException) {
+    } catch (e: CancellationException) {
       span.recordException(e, Attributes.of(ExceptionAttributes.EXCEPTION_ESCAPED, true))
       throw e
-    }
-    catch (e: Throwable) {
+    } catch (e: Throwable) {
       span.recordException(e, Attributes.of(ExceptionAttributes.EXCEPTION_ESCAPED, true))
       span.setStatus(StatusCode.ERROR)
       throw e
-    }
-    finally {
+    } finally {
       span.end()
     }
   }

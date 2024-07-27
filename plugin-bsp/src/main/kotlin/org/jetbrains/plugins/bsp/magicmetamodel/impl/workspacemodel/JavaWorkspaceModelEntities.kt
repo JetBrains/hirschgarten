@@ -28,19 +28,21 @@ public data class JavaModule(
   val scalaAddendum: ScalaAddendum? = null,
   val javaAddendum: JavaAddendum? = null,
   val androidAddendum: AndroidAddendum? = null,
-) : WorkspaceModelEntity(), Module {
-  override fun toState(): ModuleState = ModuleState(
-    module = genericModuleInfo.toState(),
-    baseDirContentRoot = baseDirContentRoot?.let(ContentRoot::toState),
-    sourceRoots = sourceRoots.map { it.toState() },
-    resourceRoots = resourceRoots.map { it.toState() },
-    libraries = moduleLevelLibraries?.map { it.toState() },
-    jvmJdkName = jvmJdkName,
-    jvmBinaryJars = jvmBinaryJars.map { it.toString() },
-    kotlinAddendum = kotlinAddendum?.toState(),
-    scalaAddendum = scalaAddendum?.toState(),
-    androidAddendum = androidAddendum?.toState(),
-  )
+) : WorkspaceModelEntity(),
+  Module {
+  override fun toState(): ModuleState =
+    ModuleState(
+      module = genericModuleInfo.toState(),
+      baseDirContentRoot = baseDirContentRoot?.let(ContentRoot::toState),
+      sourceRoots = sourceRoots.map { it.toState() },
+      resourceRoots = resourceRoots.map { it.toState() },
+      libraries = moduleLevelLibraries?.map { it.toState() },
+      jvmJdkName = jvmJdkName,
+      jvmBinaryJars = jvmBinaryJars.map { it.toString() },
+      kotlinAddendum = kotlinAddendum?.toState(),
+      scalaAddendum = scalaAddendum?.toState(),
+      androidAddendum = androidAddendum?.toState(),
+    )
 
   override fun getModuleName(): String = genericModuleInfo.name
 }
@@ -51,13 +53,9 @@ public data class KotlinAddendum(
   val kotlincOptions: List<String>,
 )
 
-public data class ScalaAddendum(
-  val scalaSdkName: String,
-)
+public data class ScalaAddendum(val scalaSdkName: String)
 
-public data class JavaAddendum(
-  val languageVersion: String,
-)
+public data class JavaAddendum(val languageVersion: String)
 
 public data class AndroidAddendum(
   val androidSdkName: String,

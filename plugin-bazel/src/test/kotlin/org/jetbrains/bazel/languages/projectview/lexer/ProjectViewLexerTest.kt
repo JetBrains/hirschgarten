@@ -3,7 +3,6 @@ package org.jetbrains.bazel.languages.projectview.lexer
 import org.jetbrains.bazel.languages.fixtures.LexerTestCase
 import org.junit.Test
 
-
 class ProjectViewLexerTest : LexerTestCase() {
   @Test
   fun `should lex boolean literal`() {
@@ -11,12 +10,13 @@ class ProjectViewLexerTest : LexerTestCase() {
     val code = "derive_targets_from_directories: false"
 
     // when & then
-    code shouldLexTo listOf(
-      "ProjectView:derive_targets_from_directories",
-      "ProjectView::",
-      "ProjectView:SPACE",
-      "ProjectView:BOOL",
-    )
+    code shouldLexTo
+      listOf(
+        "ProjectView:derive_targets_from_directories",
+        "ProjectView::",
+        "ProjectView:SPACE",
+        "ProjectView:BOOL",
+      )
   }
 
   @Test
@@ -25,12 +25,13 @@ class ProjectViewLexerTest : LexerTestCase() {
     val code = "import_depth: 0"
 
     // when & then
-    code shouldLexTo listOf(
-      "ProjectView:import_depth",
-      "ProjectView::",
-      "ProjectView:SPACE",
-      "ProjectView:INT",
-    )
+    code shouldLexTo
+      listOf(
+        "ProjectView:import_depth",
+        "ProjectView::",
+        "ProjectView:SPACE",
+        "ProjectView:INT",
+      )
   }
 
   @Test
@@ -44,18 +45,19 @@ class ProjectViewLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "ProjectView:enabled_rules",
-      "ProjectView::",
-      "ProjectView:LINE_BREAK",
-      "ProjectView:SPACE",
-      "ProjectView:SPACE",
-      "ProjectView:IDENTIFIER",
-      "ProjectView:LINE_BREAK",
-      "ProjectView:SPACE",
-      "ProjectView:SPACE",
-      "ProjectView:IDENTIFIER",
-    )
+    code shouldLexTo
+      listOf(
+        "ProjectView:enabled_rules",
+        "ProjectView::",
+        "ProjectView:LINE_BREAK",
+        "ProjectView:SPACE",
+        "ProjectView:SPACE",
+        "ProjectView:IDENTIFIER",
+        "ProjectView:LINE_BREAK",
+        "ProjectView:SPACE",
+        "ProjectView:SPACE",
+        "ProjectView:IDENTIFIER",
+      )
   }
 
   private infix fun String.shouldLexTo(expectedTokens: List<String>) {

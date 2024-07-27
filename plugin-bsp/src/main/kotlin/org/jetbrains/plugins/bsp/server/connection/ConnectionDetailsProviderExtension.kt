@@ -48,10 +48,7 @@ public interface ConnectionDetailsProviderExtension : WithBuildToolId {
    * @return [null] if the newest available connection details are equal to [currentConnectionDetails];
    * otherwise new [BspConnectionDetails] if available
    */
-  public fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?,
-  ): BspConnectionDetails?
+  public fun provideNewConnectionDetails(project: Project, currentConnectionDetails: BspConnectionDetails?): BspConnectionDetails?
 
   public companion object {
     internal val ep: ExtensionPointName<ConnectionDetailsProviderExtension> =
@@ -66,10 +63,7 @@ public interface ConnectionDetailsProviderExtension : WithBuildToolId {
 public interface ConnectionDetailsProviderExtensionJavaShim : WithBuildToolId {
   public fun onFirstOpening(project: Project, projectPath: VirtualFile): CompletableFuture<Boolean>
 
-  public fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?,
-  ): BspConnectionDetails?
+  public fun provideNewConnectionDetails(project: Project, currentConnectionDetails: BspConnectionDetails?): BspConnectionDetails?
 
   public companion object {
     internal val ep: ExtensionPointName<ConnectionDetailsProviderExtensionJavaShim> =
@@ -77,26 +71,24 @@ public interface ConnectionDetailsProviderExtensionJavaShim : WithBuildToolId {
   }
 }
 
-internal class ConnectionDetailsProviderExtensionAdapter(
-  private val extension: ConnectionDetailsProviderExtensionJavaShim,
-) : ConnectionDetailsProviderExtension {
+internal class ConnectionDetailsProviderExtensionAdapter(private val extension: ConnectionDetailsProviderExtensionJavaShim) :
+  ConnectionDetailsProviderExtension {
   override val buildToolId: BuildToolId
     get() = extension.buildToolId
 
   override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean =
     extension.onFirstOpening(project, projectPath).await()
 
-  override fun provideNewConnectionDetails(
-    project: Project,
-    currentConnectionDetails: BspConnectionDetails?,
-  ): BspConnectionDetails? =
+  override fun provideNewConnectionDetails(project: Project, currentConnectionDetails: BspConnectionDetails?): BspConnectionDetails? =
     extension.provideNewConnectionDetails(project, currentConnectionDetails)
 }
 
 internal val Project.connectionDetailsProvider: ConnectionDetailsProviderExtension
-  get() = calculateJavaShimProviderInAdapter(buildToolId)
-    ?: ConnectionDetailsProviderExtension.ep.withBuildToolIdOrDefault(buildToolId)
+  get() =
+    calculateJavaShimProviderInAdapter(buildToolId)
+      ?: ConnectionDetailsProviderExtension.ep.withBuildToolIdOrDefault(buildToolId)
 
 private fun calculateJavaShimProviderInAdapter(buildToolId: BuildToolId): ConnectionDetailsProviderExtension? =
-  ConnectionDetailsProviderExtensionJavaShim.ep.withBuildToolId(buildToolId)
+  ConnectionDetailsProviderExtensionJavaShim.ep
+    .withBuildToolId(buildToolId)
     ?.let { ConnectionDetailsProviderExtensionAdapter(it) }

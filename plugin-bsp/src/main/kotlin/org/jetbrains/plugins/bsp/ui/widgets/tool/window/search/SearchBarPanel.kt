@@ -26,12 +26,13 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
     repaintLoading()
   }
 
-  private val searchLoadingExtension: TextComponentExtension.Indicator = TextComponentExtension.Indicator(
-    trueIcon = AnimatedIcon.Default.INSTANCE,
-    falseIcon = AllIcons.Actions.Find,
-    predicate = { inProgress },
-    beforeText = true,
-  )
+  private val searchLoadingExtension: TextComponentExtension.Indicator =
+    TextComponentExtension.Indicator(
+      trueIcon = AnimatedIcon.Default.INSTANCE,
+      falseIcon = AllIcons.Actions.Find,
+      predicate = { inProgress },
+      beforeText = true,
+    )
 
   private val textField = prepareTextField()
   private val displayChangeListeners = mutableListOf<() -> Unit>()
@@ -55,26 +56,29 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
 
   private fun prepareTextField(): ExtendableTextField {
     val newField = ExtendableTextField()
-    val regexExtension = TextComponentExtension.Switch(
-      // RegexHovered icon matches the ShowAsTree icon better than the normal Regex; on new UI both icons look the same
-      icon = AllIcons.Actions.RegexHovered,
-      valueGetter = { regexMode },
-      valueSetter = { regexMode = it },
-      parentComponent = newField,
-      tooltip = BspPluginBundle.message("widget.target.search.regex"),
-    )
-    val treeExtension = TextComponentExtension.Switch(
-      icon = AllIcons.Actions.ShowAsTree,
-      valueGetter = { displayAsTree },
-      valueSetter = { displayAsTree = it },
-      parentComponent = newField,
-      tooltip = BspPluginBundle.message("widget.target.search.display.as.tree"),
-    )
-    val clearExtension = TextComponentExtension.Clear(
-      isEmpty = { newField.text.isEmpty() },
-      clearAction = ::clearQuery,
-      tooltip = BspPluginBundle.message("widget.target.search.clear"),
-    )
+    val regexExtension =
+      TextComponentExtension.Switch(
+        // RegexHovered icon matches the ShowAsTree icon better than the normal Regex; on new UI both icons look the same
+        icon = AllIcons.Actions.RegexHovered,
+        valueGetter = { regexMode },
+        valueSetter = { regexMode = it },
+        parentComponent = newField,
+        tooltip = BspPluginBundle.message("widget.target.search.regex"),
+      )
+    val treeExtension =
+      TextComponentExtension.Switch(
+        icon = AllIcons.Actions.ShowAsTree,
+        valueGetter = { displayAsTree },
+        valueSetter = { displayAsTree = it },
+        parentComponent = newField,
+        tooltip = BspPluginBundle.message("widget.target.search.display.as.tree"),
+      )
+    val clearExtension =
+      TextComponentExtension.Clear(
+        isEmpty = { newField.text.isEmpty() },
+        clearAction = ::clearQuery,
+        tooltip = BspPluginBundle.message("widget.target.search.clear"),
+      )
     return newField.apply {
       addExtension(searchLoadingExtension)
       addExtension(treeExtension)
@@ -137,21 +141,25 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
   public fun isEmpty(): Boolean = textField.text.isEmpty()
 }
 
-private class AtomicBoolean(
-  private val changeListener: (() -> Unit)?,
-) : ReadWriteProperty<SearchBarPanel, Boolean> {
+private class AtomicBoolean(private val changeListener: (() -> Unit)?) : ReadWriteProperty<SearchBarPanel, Boolean> {
   var theValue: Boolean by AtomicProperty(false)
 
   override fun getValue(thisRef: SearchBarPanel, property: KProperty<*>): Boolean = theValue
 
-  override fun setValue(thisRef: SearchBarPanel, property: KProperty<*>, value: Boolean) {
+  override fun setValue(
+    thisRef: SearchBarPanel,
+    property: KProperty<*>,
+    value: Boolean,
+  ) {
     theValue = value
     changeListener?.invoke()
   }
 }
 
 private class SimpleAction(private val action: () -> Unit) : AnAction() {
-  override fun actionPerformed(e: AnActionEvent) { action() }
+  override fun actionPerformed(e: AnActionEvent) {
+    action()
+  }
 }
 
 private val FIND_SHORTCUT_SET = CommonShortcuts.getFind()

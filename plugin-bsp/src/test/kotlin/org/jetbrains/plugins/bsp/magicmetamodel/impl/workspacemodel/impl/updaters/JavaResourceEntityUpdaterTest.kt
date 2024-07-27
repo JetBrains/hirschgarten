@@ -38,38 +38,44 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
     val javaResourceRoot = ResourceRoot(resourcePath, SourceRootTypeId("java-resource"))
 
     // when
-    val returnedJavaResourceRootEntity = runTestWriteAction {
-      javaResourceEntityUpdater.addEntity(javaResourceRoot, parentModuleEntity)
-    }
+    val returnedJavaResourceRootEntity =
+      runTestWriteAction {
+        javaResourceEntityUpdater.addEntity(javaResourceRoot, parentModuleEntity)
+      }
 
     // then
     val virtualResourceUrl = resourcePath.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedJavaResourceRootEntity = ExpectedSourceRootEntity(
-      contentRootEntity = ContentRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualResourceUrl,
-        excludedPatterns = emptyList(),
-      ),
-      sourceRootEntity = SourceRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualResourceUrl,
-        rootTypeId = SourceRootTypeId("java-resource"),
-      ) {
-        javaResourceRoots = listOf(
-          JavaResourceRootPropertiesEntity(
+    val expectedJavaResourceRootEntity =
+      ExpectedSourceRootEntity(
+        contentRootEntity =
+          ContentRootEntity(
             entitySource = parentModuleEntity.entitySource,
-            generated = false,
-            relativeOutputPath = "",
+            url = virtualResourceUrl,
+            excludedPatterns = emptyList(),
           ),
-        )
-      },
-      parentModuleEntity = parentModuleEntity,
-    )
+        sourceRootEntity =
+          SourceRootEntity(
+            entitySource = parentModuleEntity.entitySource,
+            url = virtualResourceUrl,
+            rootTypeId = SourceRootTypeId("java-resource"),
+          ) {
+            javaResourceRoots =
+              listOf(
+                JavaResourceRootPropertiesEntity(
+                  entitySource = parentModuleEntity.entitySource,
+                  generated = false,
+                  relativeOutputPath = "",
+                ),
+              )
+          },
+        parentModuleEntity = parentModuleEntity,
+      )
 
     returnedJavaResourceRootEntity.sourceRoot shouldBeEqual expectedJavaResourceRootEntity
-    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
-      expectedJavaResourceRootEntity,
-    )
+    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder
+      listOf(
+        expectedJavaResourceRootEntity,
+      )
   }
 
   @Test
@@ -79,38 +85,44 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
     val javaResourceRoot = ResourceRoot(resourcePath, SourceRootTypeId("java-test-resource"))
 
     // when
-    val returnedJavaResourceRootEntity = runTestWriteAction {
-      javaResourceEntityUpdater.addEntity(javaResourceRoot, parentModuleEntity)
-    }
+    val returnedJavaResourceRootEntity =
+      runTestWriteAction {
+        javaResourceEntityUpdater.addEntity(javaResourceRoot, parentModuleEntity)
+      }
 
     // then
     val virtualResourceUrl = resourcePath.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedJavaResourceRootEntity = ExpectedSourceRootEntity(
-      contentRootEntity = ContentRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualResourceUrl,
-        excludedPatterns = emptyList(),
-      ),
-      sourceRootEntity = SourceRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualResourceUrl,
-        rootTypeId = SourceRootTypeId("java-test-resource"),
-      ) {
-        javaResourceRoots = listOf(
-          JavaResourceRootPropertiesEntity(
+    val expectedJavaResourceRootEntity =
+      ExpectedSourceRootEntity(
+        contentRootEntity =
+          ContentRootEntity(
             entitySource = parentModuleEntity.entitySource,
-            generated = false,
-            relativeOutputPath = "",
+            url = virtualResourceUrl,
+            excludedPatterns = emptyList(),
           ),
-        )
-      },
-      parentModuleEntity = parentModuleEntity,
-    )
+        sourceRootEntity =
+          SourceRootEntity(
+            entitySource = parentModuleEntity.entitySource,
+            url = virtualResourceUrl,
+            rootTypeId = SourceRootTypeId("java-test-resource"),
+          ) {
+            javaResourceRoots =
+              listOf(
+                JavaResourceRootPropertiesEntity(
+                  entitySource = parentModuleEntity.entitySource,
+                  generated = false,
+                  relativeOutputPath = "",
+                ),
+              )
+          },
+        parentModuleEntity = parentModuleEntity,
+      )
 
     returnedJavaResourceRootEntity.sourceRoot shouldBeEqual expectedJavaResourceRootEntity
-    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder listOf(
-      expectedJavaResourceRootEntity,
-    )
+    loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder
+      listOf(
+        expectedJavaResourceRootEntity,
+      )
   }
 
   @Test
@@ -128,85 +140,99 @@ class JavaResourceEntityUpdaterTest : WorkspaceModelWithParentJavaModuleBaseTest
     val javaResourceRoots = listOf(javaResourceRoot1, javaResourceRoot2, javaResourceRoot3)
 
     // when
-    val returnedJavaResourceRootEntries = runTestWriteAction {
-      javaResourceEntityUpdater.addEntities(javaResourceRoots, parentModuleEntity)
-    }
+    val returnedJavaResourceRootEntries =
+      runTestWriteAction {
+        javaResourceEntityUpdater.addEntities(javaResourceRoots, parentModuleEntity)
+      }
 
     // then
     val virtualResourceUrl1 = resourcePath1.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedJavaResourceRootEntity1 = ExpectedSourceRootEntity(
-      contentRootEntity = ContentRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualResourceUrl1,
-        excludedPatterns = emptyList(),
-      ),
-      sourceRootEntity = SourceRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualResourceUrl1,
-        rootTypeId = SourceRootTypeId("java-resource"),
-      ) {
-        this.javaResourceRoots = listOf(
-          JavaResourceRootPropertiesEntity(
+    val expectedJavaResourceRootEntity1 =
+      ExpectedSourceRootEntity(
+        contentRootEntity =
+          ContentRootEntity(
             entitySource = parentModuleEntity.entitySource,
-            generated = false,
-            relativeOutputPath = "",
+            url = virtualResourceUrl1,
+            excludedPatterns = emptyList(),
           ),
-        )
-      },
-      parentModuleEntity = parentModuleEntity,
-    )
+        sourceRootEntity =
+          SourceRootEntity(
+            entitySource = parentModuleEntity.entitySource,
+            url = virtualResourceUrl1,
+            rootTypeId = SourceRootTypeId("java-resource"),
+          ) {
+            this.javaResourceRoots =
+              listOf(
+                JavaResourceRootPropertiesEntity(
+                  entitySource = parentModuleEntity.entitySource,
+                  generated = false,
+                  relativeOutputPath = "",
+                ),
+              )
+          },
+        parentModuleEntity = parentModuleEntity,
+      )
 
     val virtualResourceUrl2 = resourcePath2.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedJavaResourceRootEntity2 = ExpectedSourceRootEntity(
-      contentRootEntity = ContentRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualResourceUrl2,
-        excludedPatterns = emptyList(),
-      ),
-      sourceRootEntity = SourceRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualResourceUrl2,
-        rootTypeId = SourceRootTypeId("java-resource"),
-      ) {
-        this.javaResourceRoots = listOf(
-          JavaResourceRootPropertiesEntity(
+    val expectedJavaResourceRootEntity2 =
+      ExpectedSourceRootEntity(
+        contentRootEntity =
+          ContentRootEntity(
             entitySource = parentModuleEntity.entitySource,
-            generated = false,
-            relativeOutputPath = "",
+            url = virtualResourceUrl2,
+            excludedPatterns = emptyList(),
           ),
-        )
-      },
-      parentModuleEntity = parentModuleEntity,
-    )
+        sourceRootEntity =
+          SourceRootEntity(
+            entitySource = parentModuleEntity.entitySource,
+            url = virtualResourceUrl2,
+            rootTypeId = SourceRootTypeId("java-resource"),
+          ) {
+            this.javaResourceRoots =
+              listOf(
+                JavaResourceRootPropertiesEntity(
+                  entitySource = parentModuleEntity.entitySource,
+                  generated = false,
+                  relativeOutputPath = "",
+                ),
+              )
+          },
+        parentModuleEntity = parentModuleEntity,
+      )
 
     val virtualResourceUrl3 = resourcePath3.toVirtualFileUrl(virtualFileUrlManager)
-    val expectedJavaResourceRootEntity3 = ExpectedSourceRootEntity(
-      contentRootEntity = ContentRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualResourceUrl3,
-        excludedPatterns = emptyList(),
-      ),
-      sourceRootEntity = SourceRootEntity(
-        entitySource = parentModuleEntity.entitySource,
-        url = virtualResourceUrl3,
-        rootTypeId = SourceRootTypeId("java-resource"),
-      ) {
-        this.javaResourceRoots = listOf(
-          JavaResourceRootPropertiesEntity(
+    val expectedJavaResourceRootEntity3 =
+      ExpectedSourceRootEntity(
+        contentRootEntity =
+          ContentRootEntity(
             entitySource = parentModuleEntity.entitySource,
-            generated = false,
-            relativeOutputPath = "",
+            url = virtualResourceUrl3,
+            excludedPatterns = emptyList(),
           ),
-        )
-      },
-      parentModuleEntity = parentModuleEntity,
-    )
+        sourceRootEntity =
+          SourceRootEntity(
+            entitySource = parentModuleEntity.entitySource,
+            url = virtualResourceUrl3,
+            rootTypeId = SourceRootTypeId("java-resource"),
+          ) {
+            this.javaResourceRoots =
+              listOf(
+                JavaResourceRootPropertiesEntity(
+                  entitySource = parentModuleEntity.entitySource,
+                  generated = false,
+                  relativeOutputPath = "",
+                ),
+              )
+          },
+        parentModuleEntity = parentModuleEntity,
+      )
 
-    val expectedJavaResourceRootEntries = listOf(
-      expectedJavaResourceRootEntity1,
-      expectedJavaResourceRootEntity2,
-      expectedJavaResourceRootEntity3,
-    )
+    val expectedJavaResourceRootEntries =
+      listOf(
+        expectedJavaResourceRootEntity1,
+        expectedJavaResourceRootEntity2,
+        expectedJavaResourceRootEntity3,
+      )
 
     returnedJavaResourceRootEntries.map { it.sourceRoot } shouldContainExactlyInAnyOrder expectedJavaResourceRootEntries
     loadedEntries(SourceRootEntity::class.java) shouldContainExactlyInAnyOrder expectedJavaResourceRootEntries
