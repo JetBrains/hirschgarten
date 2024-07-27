@@ -2,14 +2,12 @@ package org.jetbrains.plugins.bsp.workspacemodel.entities.impl
 
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
-import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.SymbolicEntityId
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
-import com.intellij.platform.workspace.storage.WorkspaceEntityWithSymbolicId
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.SoftLinkable
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
@@ -27,15 +25,14 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.PackageNameId
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: GeneratedJavaSourceRootEntityData) : GeneratedJavaSourceRootEntity, WorkspaceEntityBase(
-  dataSource) {
-
+internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: GeneratedJavaSourceRootEntityData) :
+  WorkspaceEntityBase(
+    dataSource,
+  ),
+  GeneratedJavaSourceRootEntity {
   private companion object {
-
-
-    private val connections = listOf<ConnectionId>(
-    )
-
+    private val connections =
+      listOf<ConnectionId>()
   }
 
   override val packageNameId: PackageNameId
@@ -56,13 +53,13 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
       return dataSource.entitySource
     }
 
-  override fun connectionIdList(): List<ConnectionId> {
-    return connections
-  }
+  override fun connectionIdList(): List<ConnectionId> = connections
 
-
-  internal class Builder(result: GeneratedJavaSourceRootEntityData?) : ModifiableWorkspaceEntityBase<GeneratedJavaSourceRootEntity, GeneratedJavaSourceRootEntityData>(
-    result), GeneratedJavaSourceRootEntity.Builder {
+  internal class Builder(result: GeneratedJavaSourceRootEntityData?) :
+    ModifiableWorkspaceEntityBase<GeneratedJavaSourceRootEntity, GeneratedJavaSourceRootEntityData>(
+      result,
+    ),
+    GeneratedJavaSourceRootEntity.Builder {
     internal constructor() : this(GeneratedJavaSourceRootEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -70,8 +67,7 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
         if (existsInBuilder(builder)) {
           this.diff = builder
           return
-        }
-        else {
+        } else {
           error("Entity GeneratedJavaSourceRootEntity is already created in a different builder")
         }
       }
@@ -102,9 +98,7 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
       }
     }
 
-    override fun connectionIdList(): List<ConnectionId> {
-      return connections
-    }
+    override fun connectionIdList(): List<ConnectionId> = connections
 
     override fun afterModification() {
       val collection_sourceRoots = getEntityData().sourceRoots
@@ -122,14 +116,12 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
       updateChildToParentReferences(parents)
     }
 
-
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
-
       }
 
     override var packageNameId: PackageNameId
@@ -138,7 +130,6 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
         checkModificationAllowed()
         getEntityData(true).packageNameId = value
         changedProperty.add("packageNameId")
-
       }
 
     private val sourceRootsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
@@ -152,8 +143,7 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
         if (collection_sourceRoots !is MutableWorkspaceList) return collection_sourceRoots
         if (diff == null || modifiable.get()) {
           collection_sourceRoots.setModificationUpdateAction(sourceRootsUpdater)
-        }
-        else {
+        } else {
           collection_sourceRoots.cleanModificationUpdateAction()
         }
         return collection_sourceRoots
@@ -169,11 +159,14 @@ internal class GeneratedJavaSourceRootEntityImpl(private val dataSource: Generat
 }
 
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<GeneratedJavaSourceRootEntity>(), SoftLinkable {
+internal class GeneratedJavaSourceRootEntityData :
+  WorkspaceEntityData<GeneratedJavaSourceRootEntity>(),
+  SoftLinkable {
   lateinit var packageNameId: PackageNameId
   lateinit var sourceRoots: MutableList<VirtualFileUrl>
 
   internal fun isPackageNameIdInitialized(): Boolean = ::packageNameId.isInitialized
+
   internal fun isSourceRootsInitialized(): Boolean = ::sourceRoots.isInitialized
 
   override fun getLinks(): Set<SymbolicEntityId<*>> {
@@ -206,13 +199,13 @@ internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<Generated
 
   override fun updateLink(oldLink: SymbolicEntityId<*>, newLink: SymbolicEntityId<*>): Boolean {
     var changed = false
-    val packageNameId_data = if (packageNameId == oldLink) {
-      changed = true
-      newLink as PackageNameId
-    }
-    else {
-      null
-    }
+    val packageNameId_data =
+      if (packageNameId == oldLink) {
+        changed = true
+        newLink as PackageNameId
+      } else {
+        null
+      }
     if (packageNameId_data != null) {
       packageNameId = packageNameId_data
     }
@@ -237,10 +230,10 @@ internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<Generated
     }
   }
 
-  override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.plugins.bsp.workspacemodel.entities.GeneratedJavaSourceRootEntity") as EntityMetadata
-  }
+  override fun getMetadata(): EntityMetadata =
+    MetadataStorageImpl.getMetadataByTypeFqn(
+      "org.jetbrains.plugins.bsp.workspacemodel.entities.GeneratedJavaSourceRootEntity",
+    ) as EntityMetadata
 
   override fun clone(): GeneratedJavaSourceRootEntityData {
     val clonedEntity = super.clone()
@@ -249,14 +242,11 @@ internal class GeneratedJavaSourceRootEntityData : WorkspaceEntityData<Generated
     return clonedEntity
   }
 
-  override fun getEntityInterface(): Class<out WorkspaceEntity> {
-    return GeneratedJavaSourceRootEntity::class.java
-  }
+  override fun getEntityInterface(): Class<out WorkspaceEntity> = GeneratedJavaSourceRootEntity::class.java
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
-    return GeneratedJavaSourceRootEntity(packageNameId, sourceRoots, entitySource) {
+  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> =
+    GeneratedJavaSourceRootEntity(packageNameId, sourceRoots, entitySource) {
     }
-  }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {
     val res = mutableListOf<Class<out WorkspaceEntity>>()

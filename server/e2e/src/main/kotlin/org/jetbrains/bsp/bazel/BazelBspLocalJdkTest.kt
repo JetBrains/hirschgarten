@@ -19,40 +19,44 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
 
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> = listOf(workspaceBuildTargets())
 
-
   private fun workspaceBuildTargets(): BazelBspTestScenarioStep {
     val workspaceBuildTargetsResult = expectedWorkspaceBuildTargetsResult()
 
     return BazelBspTestScenarioStep("workspace build targets") {
       testClient.testWorkspaceTargets(
-        60.seconds, workspaceBuildTargetsResult
+        60.seconds,
+        workspaceBuildTargetsResult,
       )
     }
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val exampleExampleJvmBuildTarget = JvmBuildTarget().also {
-      it.javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/local_jdk/"
-      it.javaVersion = "17"
-    }
+    val exampleExampleJvmBuildTarget =
+      JvmBuildTarget().also {
+        it.javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/local_jdk/"
+        it.javaVersion = "17"
+      }
 
-    val exampleExampleBuildTarget = BuildTarget(BuildTargetIdentifier("$targetPrefix//example:example"),
-      listOf("application"),
-      listOf("java"),
-      emptyList(),
-      BuildTargetCapabilities().also {
-        it.canCompile = true
-        it.canTest = false
-        it.canRun = true
-        it.canDebug = true
-      })
+    val exampleExampleBuildTarget =
+      BuildTarget(
+        BuildTargetIdentifier("$targetPrefix//example:example"),
+        listOf("application"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities().also {
+          it.canCompile = true
+          it.canTest = false
+          it.canRun = true
+          it.canDebug = true
+        },
+      )
     exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
     exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
     exampleExampleBuildTarget.data = exampleExampleJvmBuildTarget
     exampleExampleBuildTarget.dataKind = BuildTargetDataKind.JVM
 
     return WorkspaceBuildTargetsResult(
-      listOf(exampleExampleBuildTarget)
+      listOf(exampleExampleBuildTarget),
     )
   }
 }

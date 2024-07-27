@@ -50,7 +50,9 @@ public abstract class LazySearchDisplay {
     public fun highlight(text: String, query: Regex): String =
       if (query.pattern.isNotEmpty() && query.containsMatchIn(text)) {
         "<html>${highlightAllOccurrences(text, query)}</html>"
-      } else text
+      } else {
+        text
+      }
 
     private tailrec fun highlightAllOccurrences(
       text: String,
@@ -58,11 +60,13 @@ public abstract class LazySearchDisplay {
       builtText: String = "",
       startIndex: Int = 0,
     ): String {
-      val foundRange = query.find(text, startIndex)?.range
-        ?: return builtText + text.substring(startIndex)
-      val updatedText = builtText +
-        text.substring(startIndex, foundRange.first) +
-        "<b><u>${text.substring(foundRange.first, foundRange.last + 1)}</u></b>"
+      val foundRange =
+        query.find(text, startIndex)?.range
+          ?: return builtText + text.substring(startIndex)
+      val updatedText =
+        builtText +
+          text.substring(startIndex, foundRange.first) +
+          "<b><u>${text.substring(foundRange.first, foundRange.last + 1)}</u></b>"
       return highlightAllOccurrences(text, query, updatedText, foundRange.last + 1)
     }
   }

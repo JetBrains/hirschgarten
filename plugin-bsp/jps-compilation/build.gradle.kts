@@ -1,21 +1,21 @@
 
 plugins {
-    id("intellijbsp.kotlin-conventions")
-    id("org.jetbrains.intellij.platform.module")
+  id("intellijbsp.kotlin-conventions")
+  id("org.jetbrains.intellij.platform.module")
 }
 
 dependencies {
-    intellijPlatform {
-        intellijIdeaCommunity(Platform.version)
+  intellijPlatform {
+    intellijIdeaCommunity(Platform.version)
 
-        plugins(Platform.plugins)
+    plugins(Platform.plugins)
 //        bundledPlugins(Platform.bundledPlugins)
-        instrumentationTools()
-    }
+    instrumentationTools()
+  }
 }
 
 repositories {
-    intellijPlatform {
-        defaultRepositories()
-    }
+  intellijPlatform {
+    defaultRepositories()
+  }
 }

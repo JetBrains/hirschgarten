@@ -70,10 +70,11 @@ public open class WorkspaceModelBaseTest {
     entityStorage.addEntity(
       ModuleEntity(
         name = name,
-        dependencies = listOf(
-          SdkDependency(SdkId(JAVA_SDK_NAME, JAVA_SDK_TYPE)),
-          ModuleSourceDependency,
-        ),
+        dependencies =
+          listOf(
+            SdkDependency(SdkId(JAVA_SDK_NAME, JAVA_SDK_TYPE)),
+            ModuleSourceDependency,
+          ),
         entitySource = object : EntitySource {},
       ) {
         this.type = ModuleTypeId(StdModuleTypes.JAVA.id)

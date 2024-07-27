@@ -30,12 +30,13 @@ internal class WorkspaceModelUpdaterImpl(
   isPythonSupportEnabled: Boolean,
   isAndroidSupportEnabled: Boolean,
 ) : WorkspaceModelUpdater {
-  private val workspaceModelEntityUpdaterConfig = WorkspaceModelEntityUpdaterConfig(
-    workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
-    virtualFileUrlManager = virtualFileUrlManager,
-    projectBasePath = projectBasePath,
-    project = project,
-  )
+  private val workspaceModelEntityUpdaterConfig =
+    WorkspaceModelEntityUpdaterConfig(
+      workspaceEntityStorageBuilder = workspaceEntityStorageBuilder,
+      virtualFileUrlManager = virtualFileUrlManager,
+      projectBasePath = projectBasePath,
+      project = project,
+    )
   private val javaModuleUpdater =
     JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
   private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled)
@@ -61,18 +62,19 @@ internal class WorkspaceModelUpdaterImpl(
   }
 
   override fun loadDirectories(includedDirectories: List<VirtualFileUrl>, excludedDirectories: List<VirtualFileUrl>) {
-    val entity = BspProjectDirectoriesEntity(
-      projectRoot = workspaceModelEntityUpdaterConfig.projectBasePath
-        .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-      includedRoots = includedDirectories,
-      excludedRoots = excludedDirectories,
-      entitySource = BspEntitySource,
-    )
+    val entity =
+      BspProjectDirectoriesEntity(
+        projectRoot =
+          workspaceModelEntityUpdaterConfig.projectBasePath
+            .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
+        includedRoots = includedDirectories,
+        excludedRoots = excludedDirectories,
+        entitySource = BspEntitySource,
+      )
     workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(entity)
   }
 
-  private fun Module.isAlreadyAdded() =
-    workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(getModuleName()))
+  private fun Module.isAlreadyAdded() = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(getModuleName()))
 
   override fun removeModule(module: ModuleName) {
     workspaceModuleRemover.removeEntity(module)

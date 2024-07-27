@@ -1,13 +1,12 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
 object CompilerDiagnosticParser : Parser {
-
-  override fun tryParse(output: Output): List<Diagnostic> =
-      listOfNotNull(tryParseOne(output))
+  override fun tryParse(output: Output): List<Diagnostic> = listOfNotNull(tryParseOne(output))
 
   // Example:
   // server/DiagnosticsServiceTest.kt:12:18: error: type mismatch: inferred type is String but Int was expected
-  private val DiagnosticHeader = """
+  private val DiagnosticHeader =
+    """
       ^                # start of line
       ([^:]+)          # file path (1)
       :(\d+)           # line number (2)
@@ -19,16 +18,17 @@ object CompilerDiagnosticParser : Parser {
       """.toRegex(RegexOption.COMMENTS)
 
   fun tryParseOne(output: Output): Diagnostic? =
-      output.tryTake(DiagnosticHeader)
-          ?.let { match ->
-            val path = match.groupValues[1]
-            val line = match.groupValues[2].toInt()
-            val messageLines = collectMessageLines(match.groupValues[5], output)
-            val column = match.groupValues[3].toIntOrNull() ?: tryFindColumnNumber(messageLines) ?: 1
-            val level = if (match.groupValues[4] == "warning") Level.Warning else Level.Error
-            val message = messageLines.joinToString("\n")
-            Diagnostic(Position(line, column), message, level, path, output.targetLabel)
-          }
+    output
+      .tryTake(DiagnosticHeader)
+      ?.let { match ->
+        val path = match.groupValues[1]
+        val line = match.groupValues[2].toInt()
+        val messageLines = collectMessageLines(match.groupValues[5], output)
+        val column = match.groupValues[3].toIntOrNull() ?: tryFindColumnNumber(messageLines) ?: 1
+        val level = if (match.groupValues[4] == "warning") Level.Warning else Level.Error
+        val message = messageLines.joinToString("\n")
+        Diagnostic(Position(line, column), message, level, path, output.targetLabel)
+      }
 
   private fun collectMessageLines(header: String, output: Output): List<String> {
     val lines = mutableListOf<String>()
@@ -50,8 +50,7 @@ object CompilerDiagnosticParser : Parser {
 
   private val IssueDetails = """^\s+.*|${IssuePositionMarker.pattern}""".toRegex() // indented line or ^
 
-  private fun tryCollectLinesMatchingIssueDetails(output: Output) =
-      generateSequence { output.tryTake(IssueDetails)?.value }.toList()
+  private fun tryCollectLinesMatchingIssueDetails(output: Output) = generateSequence { output.tryTake(IssueDetails)?.value }.toList()
 
   private fun tryFindColumnNumber(messageLines: List<String>): Int? {
     val line = messageLines.find { IssuePositionMarker.matches(it) }

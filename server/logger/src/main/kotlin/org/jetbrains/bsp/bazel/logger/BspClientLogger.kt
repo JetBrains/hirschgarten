@@ -9,7 +9,6 @@ import java.time.Duration
 private val LOG_OPERATION_THRESHOLD: Duration = Duration.ofMillis(100)
 
 data class BspClientLogger(private val bspClient: BuildClient, private val originId: String? = null) {
-
   fun error(errorMessage: String) {
     log(MessageType.ERROR, errorMessage)
   }

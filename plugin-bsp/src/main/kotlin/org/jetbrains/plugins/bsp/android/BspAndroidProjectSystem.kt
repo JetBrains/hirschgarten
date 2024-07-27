@@ -29,11 +29,11 @@ public class BspAndroidProjectSystem(override val project: Project) : AndroidPro
 
   override fun allowsFileCreation(): Boolean = true
 
-  override fun getAndroidFacetsWithPackageName(project: Project, packageName: String): Collection<AndroidFacet> {
-    return ProjectFacetManager.getInstance(project)
+  override fun getAndroidFacetsWithPackageName(project: Project, packageName: String): Collection<AndroidFacet> =
+    ProjectFacetManager
+      .getInstance(project)
       .getFacets(AndroidFacet.ID)
       .filter { it.module.getModuleSystem().getPackageName() == packageName }
-  }
 
   override fun getBootClasspath(module: Module): Collection<String> = emptyList()
 
@@ -43,8 +43,7 @@ public class BspAndroidProjectSystem(override val project: Project) : AndroidPro
 
   override fun getDefaultApkFile(): VirtualFile? = null
 
-  override fun getLightResourceClassService(): LightResourceClassService =
-    ProjectLightResourceClassService.getInstance(project)
+  override fun getLightResourceClassService(): LightResourceClassService = ProjectLightResourceClassService.getInstance(project)
 
   override fun getModuleSystem(module: Module): AndroidModuleSystem = BspAndroidModuleSystem(module)
 

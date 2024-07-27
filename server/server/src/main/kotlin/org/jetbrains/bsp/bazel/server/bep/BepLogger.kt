@@ -24,17 +24,20 @@ class BepLogger(private val bspClientLogger: BspClientLogger) {
 
   private fun logMessage(output: String) {
     bspClientLogger.message(output)
-    val filteredOutput = output.split('\n')
-      .dropLastWhile { it.isEmpty() }
-      .filter { !it.startsWith(ADDITIONAL_MESSAGE_PREFIX) }
-      .joinToString("\n")
+    val filteredOutput =
+      output
+        .split('\n')
+        .dropLastWhile { it.isEmpty() }
+        .filter { !it.startsWith(ADDITIONAL_MESSAGE_PREFIX) }
+        .joinToString("\n")
     LOGGER.info(filteredOutput)
   }
 
   companion object {
-    private val LOGGER: Logger = LogManager.getLogger(
-      BspClientLogger::class.java
-    )
+    private val LOGGER: Logger =
+      LogManager.getLogger(
+        BspClientLogger::class.java,
+      )
 
     private const val ADDITIONAL_MESSAGE_PREFIX = "    "
   }

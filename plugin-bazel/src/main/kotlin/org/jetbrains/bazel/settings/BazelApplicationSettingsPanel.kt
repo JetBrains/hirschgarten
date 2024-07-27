@@ -13,7 +13,6 @@ import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
-import net.miginfocom.layout.AlignX
 import javax.swing.JComponent
 
 internal val serverDetectedJdk = ProjectJdkImpl("Server Detected Jdk", JavaSdk.getInstance())
@@ -23,11 +22,8 @@ internal data class BazelApplicationServerSettings(
   val customJvmOptions: List<String> = emptyList(),
 )
 
-internal data class BazelApplicationSettings(
-  var serverSettings: BazelApplicationServerSettings = BazelApplicationServerSettings(),
-) {
-  internal fun newWithSdk(sdk: Sdk?): BazelApplicationSettings? =
-    sdk?.let { copy(serverSettings = serverSettings.copy(selectedJdk = it)) }
+internal data class BazelApplicationSettings(var serverSettings: BazelApplicationServerSettings = BazelApplicationServerSettings()) {
+  internal fun newWithSdk(sdk: Sdk?): BazelApplicationSettings? = sdk?.let { copy(serverSettings = serverSettings.copy(selectedJdk = it)) }
 
   internal fun newWithCustomJvmOptions(customJvmOptions: List<String>): BazelApplicationSettings =
     copy(serverSettings = serverSettings.copy(customJvmOptions = customJvmOptions))
@@ -63,15 +59,15 @@ internal class BazelApplicationSettingsPanel : Configurable {
       }
     }
 
-  private fun String.toJvmOptions(): List<String> =
-      split("\\s+".toRegex()).filter { it.isNotBlank() }
+  private fun String.toJvmOptions(): List<String> = split("\\s+".toRegex()).filter { it.isNotBlank() }
 
-  override fun createComponent(): JComponent = panel {
-    group("Server Settings", true) {
-      row("JDK used to run server") { cell(serverJdkComboBox).align(Align.FILL) }
-      row("Server Custom JVM options") { cell(serverCustomJvmOptions).align(Align.FILL) }
+  override fun createComponent(): JComponent =
+    panel {
+      group("Server Settings", true) {
+        row("JDK used to run server") { cell(serverJdkComboBox).align(Align.FILL) }
+        row("Server Custom JVM options") { cell(serverCustomJvmOptions).align(Align.FILL) }
+      }
     }
-  }
 
   override fun isModified(): Boolean = bazelApplicationSettings != currentBazelApplicationSettings
 
@@ -91,8 +87,7 @@ internal class BazelApplicationSettingsPanel : Configurable {
   private fun savedJdkOrDefault(): Sdk =
     serverJdkComboBoxModel.findSdk(bazelApplicationSettings.serverSettings.selectedJdk.name) ?: serverDetectedJdk
 
-  private fun savedCustomJvmOptions(): String =
-    bazelApplicationSettings.serverSettings.customJvmOptions.joinToString("\n")
+  private fun savedCustomJvmOptions(): String = bazelApplicationSettings.serverSettings.customJvmOptions.joinToString("\n")
 
   override fun getDisplayName(): String = "Bazel"
 }
@@ -109,4 +104,6 @@ internal class BazelApplicationSettingsService {
 
 internal var bazelApplicationSettings: BazelApplicationSettings
   get() = BazelApplicationSettingsService.getInstance().settings
-  private set(value) { BazelApplicationSettingsService.getInstance().settings = value }
+  private set(value) {
+    BazelApplicationSettingsService.getInstance().settings = value
+  }

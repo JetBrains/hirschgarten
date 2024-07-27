@@ -7,12 +7,9 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.GeneratedJavaSourceRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.PackageNameId
 import java.nio.file.Path
 
-internal class GeneratedJavaSourceEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaSourceRoot, GeneratedJavaSourceRootEntity> {
-  override fun addEntity(entityToAdd: JavaSourceRoot): GeneratedJavaSourceRootEntity {
-    return addEntities(listOf(entityToAdd)).single()
-  }
+internal class GeneratedJavaSourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithoutParentModuleUpdater<JavaSourceRoot, GeneratedJavaSourceRootEntity> {
+  override fun addEntity(entityToAdd: JavaSourceRoot): GeneratedJavaSourceRootEntity = addEntities(listOf(entityToAdd)).single()
 
   override fun addEntities(entitiesToAdd: List<JavaSourceRoot>): List<GeneratedJavaSourceRootEntity> {
     val packages = mutableMapOf<String, MutableList<Path>>()
@@ -23,17 +20,19 @@ internal class GeneratedJavaSourceEntityUpdater(
       packagePaths.add(entity.sourcePath)
     }
 
-    return packages.map { (packageName, sourceRoots) ->
-      val sourceRootUrls = sourceRoots.map {
-        it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+    return packages
+      .map { (packageName, sourceRoots) ->
+        val sourceRootUrls =
+          sourceRoots.map {
+            it.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+          }
+        GeneratedJavaSourceRootEntity(
+          packageNameId = PackageNameId(packageName),
+          sourceRoots = sourceRootUrls,
+          entitySource = BspEntitySource,
+        )
+      }.map {
+        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(it)
       }
-      GeneratedJavaSourceRootEntity(
-        packageNameId = PackageNameId(packageName),
-        sourceRoots = sourceRootUrls,
-        entitySource = BspEntitySource,
-      )
-    }.map {
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(it)
-    }
   }
 }

@@ -20,13 +20,11 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.PackageNameId
 class GeneratedClassFinder(private val project: Project) : PsiElementFinder() {
   private val workspaceModel = WorkspaceModel.getInstance(project)
 
-  override fun findClass(qualifiedName: String, scope: GlobalSearchScope): PsiClass? {
-    return findGeneratedClasses(qualifiedName, scope).firstOrNull()
-  }
+  override fun findClass(qualifiedName: String, scope: GlobalSearchScope): PsiClass? =
+    findGeneratedClasses(qualifiedName, scope).firstOrNull()
 
-  override fun findClasses(qualifiedName: String, scope: GlobalSearchScope): Array<PsiClass> {
-    return findGeneratedClasses(qualifiedName, scope).toList().toTypedArray()
-  }
+  override fun findClasses(qualifiedName: String, scope: GlobalSearchScope): Array<PsiClass> =
+    findGeneratedClasses(qualifiedName, scope).toList().toTypedArray()
 
   private fun findGeneratedClasses(qualifiedName: String, scope: GlobalSearchScope): Sequence<PsiClass> {
     val packageName = StringUtil.getPackageName(qualifiedName)
@@ -34,16 +32,18 @@ class GeneratedClassFinder(private val project: Project) : PsiElementFinder() {
       .filter { it.qualifiedName == qualifiedName }
   }
 
-  override fun getClasses(psiPackage: PsiPackage, scope: GlobalSearchScope): Array<PsiClass> {
-    return findGeneratedClassesInPackage(psiPackage.qualifiedName, scope).toList().toTypedArray()
-  }
+  override fun getClasses(psiPackage: PsiPackage, scope: GlobalSearchScope): Array<PsiClass> =
+    findGeneratedClassesInPackage(psiPackage.qualifiedName, scope).toList().toTypedArray()
 
-  override fun getClasses(className: String?, psiPackage: PsiPackage, scope: GlobalSearchScope): Array<PsiClass> {
-    return findGeneratedClassesInPackage(psiPackage.qualifiedName, scope)
+  override fun getClasses(
+    className: String?,
+    psiPackage: PsiPackage,
+    scope: GlobalSearchScope,
+  ): Array<PsiClass> =
+    findGeneratedClassesInPackage(psiPackage.qualifiedName, scope)
       .filter { className == null || it.name == className }
       .toList()
       .toTypedArray()
-  }
 
   private fun findGeneratedClassesInPackage(packageName: String, scope: GlobalSearchScope): Sequence<PsiClass> =
     workspaceModel.currentSnapshot

@@ -7,17 +7,18 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JvmBinaryJarsEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.jvmBinaryJarsEntity
 
-internal class JvmBinaryJarsEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithParentModuleUpdater<JavaModule, JvmBinaryJarsEntity> {
+internal class JvmBinaryJarsEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithParentModuleUpdater<JavaModule, JvmBinaryJarsEntity> {
   override fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): JvmBinaryJarsEntity {
-    val jvmBinaryJars = entityToAdd.jvmBinaryJars.map { jar ->
-      jar.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
-    }
-    val entity = JvmBinaryJarsEntity(
-      entitySource = parentModuleEntity.entitySource,
-      jars = jvmBinaryJars,
-    )
+    val jvmBinaryJars =
+      entityToAdd.jvmBinaryJars.map { jar ->
+        jar.toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
+      }
+    val entity =
+      JvmBinaryJarsEntity(
+        entitySource = parentModuleEntity.entitySource,
+        jars = jvmBinaryJars,
+      )
     val updatedParentModuleEntity =
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
         this.jvmBinaryJarsEntity = entity

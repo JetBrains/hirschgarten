@@ -12,9 +12,13 @@ class StarlarkLexerTest : LexerTestCase() {
     val code = "x=0"
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER", "Starlark:=", "Starlark:INT", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:INT",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -23,14 +27,15 @@ class StarlarkLexerTest : LexerTestCase() {
     val code = "x  =   0"
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER",
-      "Starlark:SPACE",
-      "Starlark:=",
-      "Starlark:SPACE",
-      "Starlark:INT",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:SPACE",
+        "Starlark:=",
+        "Starlark:SPACE",
+        "Starlark:INT",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -43,15 +48,16 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:(",
-      "Starlark:IDENTIFIER",
-      "Starlark:,",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:)",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:(",
+        "Starlark:IDENTIFIER",
+        "Starlark:,",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:)",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -64,15 +70,16 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:[",
-      "Starlark:IDENTIFIER",
-      "Starlark:,",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:]",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:[",
+        "Starlark:IDENTIFIER",
+        "Starlark:,",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:]",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -85,15 +92,16 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:{",
-      "Starlark:IDENTIFIER",
-      "Starlark:,",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:}",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:{",
+        "Starlark:IDENTIFIER",
+        "Starlark:,",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:}",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -106,17 +114,18 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER",
-      "Starlark:=",
-      "Starlark:{",
-      "Starlark:IDENTIFIER",
-      "Starlark:,",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:}",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:{",
+        "Starlark:IDENTIFIER",
+        "Starlark:,",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:}",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -129,19 +138,20 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER",
-      "Starlark:=",
-      "Starlark:{",
-      "Starlark:IDENTIFIER",
-      "Starlark:,",
-      "Starlark:SPACE",
-      "Starlark:COMMENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:}",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:{",
+        "Starlark:IDENTIFIER",
+        "Starlark:,",
+        "Starlark:SPACE",
+        "Starlark:COMMENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:}",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -155,22 +165,23 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER",
-      "Starlark:=",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:{",
-      "Starlark:IDENTIFIER",
-      "Starlark:,",
-      "Starlark:SPACE",
-      "Starlark:COMMENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:}",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:{",
+        "Starlark:IDENTIFIER",
+        "Starlark:,",
+        "Starlark:SPACE",
+        "Starlark:COMMENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:}",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -183,17 +194,18 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:if",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:if",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -207,20 +219,21 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:if",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:if",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -234,21 +247,22 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:if",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:DEDENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:if",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:DEDENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -263,26 +277,27 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:if",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:DEDENT",
-      "Starlark:DEDENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:if",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:DEDENT",
+        "Starlark:DEDENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -298,29 +313,30 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:if",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:DEDENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:DEDENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:if",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:DEDENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:DEDENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -335,20 +351,21 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:if",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:if",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -362,20 +379,21 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:if",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:if",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -390,23 +408,24 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:if",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:COMMENT",
-      "Starlark:DEDENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:if",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:COMMENT",
+        "Starlark:DEDENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -420,14 +439,15 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:COMMENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:COMMENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:COMMENT",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:COMMENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:COMMENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:COMMENT",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -442,22 +462,23 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:if",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:COMMENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:if",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:COMMENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -466,9 +487,13 @@ class StarlarkLexerTest : LexerTestCase() {
     val code = "x=b'X'"
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER", "Starlark:=", "Starlark:BYTES", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:BYTES",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -477,9 +502,13 @@ class StarlarkLexerTest : LexerTestCase() {
     val code = "x=0"
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER", "Starlark:=", "Starlark:INT", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:INT",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -488,9 +517,13 @@ class StarlarkLexerTest : LexerTestCase() {
     val code = "x=42"
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER", "Starlark:=", "Starlark:INT", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:INT",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -499,9 +532,13 @@ class StarlarkLexerTest : LexerTestCase() {
     val code = "x=0x859"
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER", "Starlark:=", "Starlark:INT", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:INT",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -510,9 +547,13 @@ class StarlarkLexerTest : LexerTestCase() {
     val code = "x=0o4131"
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER", "Starlark:=", "Starlark:INT", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:INT",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -525,15 +566,16 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:STRING",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:=",
-      "Starlark:STRING",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:STRING",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:STRING",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -545,9 +587,12 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:STRING", "Starlark:;", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:STRING",
+        "Starlark:;",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -562,9 +607,12 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:STRING", "Starlark:;", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:STRING",
+        "Starlark:;",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -576,9 +624,13 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER", "Starlark:=", "Starlark:STRING", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:STRING",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -590,9 +642,13 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:IDENTIFIER", "Starlark:=", "Starlark:STRING", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:IDENTIFIER",
+        "Starlark:=",
+        "Starlark:STRING",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -604,9 +660,12 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:STRING", "Starlark:STRING", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:STRING",
+        "Starlark:STRING",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -623,34 +682,35 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:def",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark:(",
-      "Starlark:)",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:pass",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:DEDENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:COMMENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:def",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark:(",
-      "Starlark:)",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:pass",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:def",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark:(",
+        "Starlark:)",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:pass",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:DEDENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:COMMENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:def",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark:(",
+        "Starlark:)",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:pass",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -665,24 +725,25 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:def",
-      "Starlark:SPACE",
-      "Starlark:IDENTIFIER",
-      "Starlark:(",
-      "Starlark:)",
-      "Starlark::",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:INDENT",
-      "Starlark:pass",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:COMMENT",
-      "Starlark:DEDENT",
-      "Starlark:LINE_BREAK",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:def",
+        "Starlark:SPACE",
+        "Starlark:IDENTIFIER",
+        "Starlark:(",
+        "Starlark:)",
+        "Starlark::",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:INDENT",
+        "Starlark:pass",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:COMMENT",
+        "Starlark:DEDENT",
+        "Starlark:LINE_BREAK",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -691,9 +752,13 @@ class StarlarkLexerTest : LexerTestCase() {
     val code = "   x"
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:SPACE", "Starlark:INDENT", "Starlark:IDENTIFIER", "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:SPACE",
+        "Starlark:INDENT",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -706,13 +771,14 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:STRING",
-      "Starlark:STATEMENT_BREAK",
-      "Starlark:LINE_BREAK",
-      "Starlark:IDENTIFIER",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:STRING",
+        "Starlark:STATEMENT_BREAK",
+        "Starlark:LINE_BREAK",
+        "Starlark:IDENTIFIER",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   @Test
@@ -725,10 +791,11 @@ class StarlarkLexerTest : LexerTestCase() {
       """.trimMargin()
 
     // when & then
-    code shouldLexTo listOf(
-      "Starlark:STRING",
-      "Starlark:STATEMENT_BREAK",
-    )
+    code shouldLexTo
+      listOf(
+        "Starlark:STRING",
+        "Starlark:STATEMENT_BREAK",
+      )
   }
 
   private infix fun String.shouldLexTo(expectedTokens: List<String>) {

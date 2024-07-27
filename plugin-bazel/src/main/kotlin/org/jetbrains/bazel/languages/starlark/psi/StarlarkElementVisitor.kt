@@ -5,7 +5,6 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.*
 import org.jetbrains.bazel.languages.starlark.psi.functions.*
 import org.jetbrains.bazel.languages.starlark.psi.statements.*
 
-
 open class StarlarkElementVisitor : PsiElementVisitor() {
   fun visitArgumentList(node: StarlarkArgumentList) {
     visitElement(node)

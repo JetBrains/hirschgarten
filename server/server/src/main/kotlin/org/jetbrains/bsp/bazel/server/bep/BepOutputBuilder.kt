@@ -17,13 +17,15 @@ class BepOutputBuilder(private val bazelPathsResolver: BazelPathsResolver) {
   private val rootTargets: MutableSet<Label> = HashSet()
 
   fun storeNamedSet(id: String, namedSetOfFiles: NamedSetOfFiles) {
-    val textProtoDepSet = TextProtoDepSet(
-      files = namedSetOfFiles
-        .filesList
-        .filter { it.name.endsWith("bsp-info.textproto") }
-        .map { it.toLocalPath() },
-      children = namedSetOfFiles.fileSetsList.map { it.id }
-    )
+    val textProtoDepSet =
+      TextProtoDepSet(
+        files =
+          namedSetOfFiles
+            .filesList
+            .filter { it.name.endsWith("bsp-info.textproto") }
+            .map { it.toLocalPath() },
+        children = namedSetOfFiles.fileSetsList.map { it.id },
+      )
 
     textProtoFileSets[id] = textProtoDepSet
   }

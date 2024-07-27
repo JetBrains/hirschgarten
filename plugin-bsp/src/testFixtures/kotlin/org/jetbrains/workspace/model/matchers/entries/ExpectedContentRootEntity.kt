@@ -14,22 +14,16 @@ public data class ExpectedContentRootEntity(
   val parentModuleEntity: ModuleEntity,
 )
 
-public infix fun ContentRootEntity.shouldBeEqual(expected: ExpectedContentRootEntity): Unit =
-  validateContentRootEntity(this, expected)
+public infix fun ContentRootEntity.shouldBeEqual(expected: ExpectedContentRootEntity): Unit = validateContentRootEntity(this, expected)
 
-public infix fun Collection<ContentRootEntity>.shouldContainExactlyInAnyOrder(
-  expectedValues: Collection<ExpectedContentRootEntity>,
-): Unit {
+public infix fun Collection<ContentRootEntity>.shouldContainExactlyInAnyOrder(expectedValues: Collection<ExpectedContentRootEntity>) {
   this.shouldContainExactlyInAnyOrder(
     assertion = { actual, expected -> validateContentRootEntity(actual, expected) },
     expectedValues = expectedValues,
   )
 }
 
-private fun validateContentRootEntity(
-  actual: ContentRootEntity,
-  expected: ExpectedContentRootEntity,
-) {
+private fun validateContentRootEntity(actual: ContentRootEntity, expected: ExpectedContentRootEntity) {
   actual.url shouldBe expected.url
   actual.excludedUrls.map { it.url } shouldContainExactlyInAnyOrder expected.excludedUrls
   actual.excludedPatterns shouldContainExactlyInAnyOrder expected.excludedPatterns

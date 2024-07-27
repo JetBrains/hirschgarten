@@ -32,47 +32,48 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
       val mmmLibraries = getAllMMMLibraries(project)
       val fileManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
       val libraries = orderEntries.mapNotNull { it.library }.distinct()
-      val modelsToCommit = libraries.mapNotNull { library ->
-        val bazelLibrarySources = library.pickSourcesFromBazel(mmmLibraries)
-        val availableSources = filterOutUnavailableSources(bazelLibrarySources)
-        if (availableSources.isEmpty()) {
-          showError(project, library.name.orEmpty())
-          null
-        } else {
-          library.obtainModelWithAddedSources(availableSources, fileManager)
+      val modelsToCommit =
+        libraries.mapNotNull { library ->
+          val bazelLibrarySources = library.pickSourcesFromBazel(mmmLibraries)
+          val availableSources = filterOutUnavailableSources(bazelLibrarySources)
+          if (availableSources.isEmpty()) {
+            showError(project, library.name.orEmpty())
+            null
+          } else {
+            library.obtainModelWithAddedSources(availableSources, fileManager)
+          }
         }
-      }
-      if (modelsToCommit.isNotEmpty()) WriteAction.run<Exception> {
-        modelsToCommit.forEach {
-          it.commit()
+      if (modelsToCommit.isNotEmpty()) {
+        WriteAction.run<Exception> {
+          modelsToCommit.forEach {
+            it.commit()
+          }
         }
       }
       return ActionCallback.DONE
     }
 
-    private fun filterOutUnavailableSources(sources: List<String>) =
-      sources.filter { URI(it).toPath().toFile().exists() }
+    private fun filterOutUnavailableSources(sources: List<String>) = sources.filter { URI(it).toPath().toFile().exists() }
 
     private fun showError(project: Project, target: String) {
       Notification(
         RESOLVING_BAZEL_SOURCES_GROUP_ID,
         BazelPluginBundle.message("sources.files.not.resolved"),
         BazelPluginBundle.message("error.message.failed.to.resolve.sources.0", target),
-        NotificationType.ERROR
+        NotificationType.ERROR,
       ).notify(project)
     }
 
-    private fun Library.obtainModelWithAddedSources(
-      sources: List<String>,
-      fileManager: VirtualFileUrlManager
-    ): Library.ModifiableModel? {
-      return if (sources.isEmpty()) null
-      else modifiableModel.apply {
-        sources.forEach {
-          addSource(it, fileManager)
+    private fun Library.obtainModelWithAddedSources(sources: List<String>, fileManager: VirtualFileUrlManager): Library.ModifiableModel? =
+      if (sources.isEmpty()) {
+        null
+      } else {
+        modifiableModel.apply {
+          sources.forEach {
+            addSource(it, fileManager)
+          }
         }
       }
-    }
 
     private fun Library.ModifiableModel.addSource(sourceUri: String, fileManager: VirtualFileUrlManager) {
       val path = MMMLibrary.formatJarString(sourceUri)
@@ -89,13 +90,14 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
     psiFile: PsiFile,
   ): List<AttachSourcesProvider.AttachSourcesAction> {
     val project = orderEntries.firstNotNullOf { it.ownerModule.project }
-    return if (project.isBazelProject() && project.containsBazelSourcesForEntries(orderEntries))
+    return if (project.isBazelProject() && project.containsBazelSourcesForEntries(orderEntries)) {
       listOf(BazelAttachSourcesAction(project))
-    else emptyList()
+    } else {
+      emptyList()
+    }
   }
 
-  private fun Project.isBazelProject() =
-    buildToolIdOrNull == BazelPluginConstants.bazelBspBuildToolId
+  private fun Project.isBazelProject() = buildToolIdOrNull == BazelPluginConstants.bazelBspBuildToolId
 
   private fun Project.containsBazelSourcesForEntries(orderEntries: List<LibraryOrderEntry>): Boolean {
     val mmmLibraries = getAllMMMLibraries(this)
@@ -107,9 +109,9 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
   }
 }
 
-private fun getAllMMMLibraries(project: Project): List<MMMLibrary> =
-  project.temporaryTargetUtils.getAllLibraries()
+private fun getAllMMMLibraries(project: Project): List<MMMLibrary> = project.temporaryTargetUtils.getAllLibraries()
 
 private fun Library.pickSourcesFromBazel(mmmLibraries: List<MMMLibrary>) =
-  mmmLibraries.filter { it.displayName == name }
+  mmmLibraries
+    .filter { it.displayName == name }
     .flatMap { it.sourceJars }

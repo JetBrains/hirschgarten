@@ -15,20 +15,19 @@ public class TelemetryContextPropagatingLauncherBuilder<T> : Launcher.Builder<T>
     val outgoingMessageStream =
       wrapMessageConsumer(TelemetryContextPropagatingStreamMessageConsumer(output, jsonHandler))
     val localEndpoint = ServiceEndpoints.toEndpoint(localServices)
-    val remoteEndpoint = if (exceptionHandler == null) {
-      RemoteEndpoint(outgoingMessageStream, localEndpoint)
-    } else {
-      RemoteEndpoint(outgoingMessageStream, localEndpoint, exceptionHandler)
-    }
+    val remoteEndpoint =
+      if (exceptionHandler == null) {
+        RemoteEndpoint(outgoingMessageStream, localEndpoint)
+      } else {
+        RemoteEndpoint(outgoingMessageStream, localEndpoint, exceptionHandler)
+      }
     jsonHandler.methodProvider = remoteEndpoint
     return remoteEndpoint
   }
 }
 
-private class TelemetryContextPropagatingStreamMessageConsumer(
-  output: OutputStream,
-  jsonHandler: MessageJsonHandler,
-) : StreamMessageConsumer(output, jsonHandler) {
+private class TelemetryContextPropagatingStreamMessageConsumer(output: OutputStream, jsonHandler: MessageJsonHandler) :
+  StreamMessageConsumer(output, jsonHandler) {
   override fun getHeader(contentLength: Int): String {
     val headerBuilder = StringBuilder(super.getHeader(contentLength))
     if (headerBuilder.endsWith(CRLF + CRLF)) {
@@ -41,7 +40,11 @@ private class TelemetryContextPropagatingStreamMessageConsumer(
   }
 
   private inner class HeaderSetter : TextMapSetter<StringBuilder> {
-    override fun set(headerBuilder: StringBuilder?, key: String, value: String) {
+    override fun set(
+      headerBuilder: StringBuilder?,
+      key: String,
+      value: String,
+    ) {
       appendHeader(headerBuilder ?: return, key, value).append(CRLF)
     }
   }

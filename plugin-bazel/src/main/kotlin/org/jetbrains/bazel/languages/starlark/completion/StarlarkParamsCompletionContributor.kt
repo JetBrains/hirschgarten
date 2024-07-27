@@ -17,11 +17,10 @@ private class StarlarkParamsCompletionProvider(val lookupString: String) : Compl
   override fun addCompletions(
     parameters: CompletionParameters,
     context: ProcessingContext,
-    result: CompletionResultSet
+    result: CompletionResultSet,
   ) {
     result.addElement(LookupElementBuilder.create(lookupString))
   }
 }
 
-private fun paramElement(token: String) =
-  psiElement().inside(StarlarkParameterList::class.java).afterLeaf(token)
+private fun paramElement(token: String) = psiElement().inside(StarlarkParameterList::class.java).afterLeaf(token)

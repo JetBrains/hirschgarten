@@ -10,9 +10,7 @@ pull-requests:
   - group-id: kotest
     dependencies: "io.kotest:*"
   - title: "[maintenance] updated ${dependencyId} to ${versionTo}"
-
 search-paths:
-  -
-    path-patterns:
+  - path-patterns:
       - "exact:MODULE.bazel"
       - "exact:WORKSPACE.bzlmod"

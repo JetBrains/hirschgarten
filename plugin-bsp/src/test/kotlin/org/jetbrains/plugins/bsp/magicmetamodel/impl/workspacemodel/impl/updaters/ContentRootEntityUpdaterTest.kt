@@ -31,10 +31,11 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
   fun `should add one content root to the workspace model`() {
     // given
     val contentPath = Path("/root/dir/example/resource/File.txt")
-    val contentRoot = ContentRoot(
-      path = contentPath,
-      excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt")),
-    )
+    val contentRoot =
+      ContentRoot(
+        path = contentPath,
+        excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt")),
+      )
 
     // when
     runTestWriteAction {
@@ -42,12 +43,13 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     }
 
     // then
-    val expectedContentRootEntity = ExpectedContentRootEntity(
-      url = contentPath.toVirtualFileUrl(virtualFileUrlManager),
-      excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager)),
-      excludedPatterns = emptyList(),
-      parentModuleEntity = parentModuleEntity,
-    )
+    val expectedContentRootEntity =
+      ExpectedContentRootEntity(
+        url = contentPath.toVirtualFileUrl(virtualFileUrlManager),
+        excludedUrls = listOf(Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager)),
+        excludedPatterns = emptyList(),
+        parentModuleEntity = parentModuleEntity,
+      )
 
     // TODO it's odd, but it doubles the excluded urls xd
     // returnedContentRootEntity shouldBeEqual expectedContentRootEntity
@@ -58,20 +60,23 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
   fun `should add multiple content root to the workspace model`() {
     // given
     val contentPath1 = Path("/root/dir/example/resource/File1.txt")
-    val contentRoot1 = ContentRoot(
-      path = contentPath1,
-      excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt")),
-    )
+    val contentRoot1 =
+      ContentRoot(
+        path = contentPath1,
+        excludedPaths = listOf(Path("/root/dir/example/resource/ExcludedFile.txt")),
+      )
 
     val contentPath2 = Path("/root/dir/example/resource/File2.txt")
-    val contentRoot2 = ContentRoot(
-      path = contentPath2,
-    )
+    val contentRoot2 =
+      ContentRoot(
+        path = contentPath2,
+      )
 
     val contentPath3 = Path("/root/dir/another/example/resource/File3.txt")
-    val contentRoot3 = ContentRoot(
-      path = contentPath3,
-    )
+    val contentRoot3 =
+      ContentRoot(
+        path = contentPath3,
+      )
 
     val contentRoots = listOf(contentRoot1, contentRoot2, contentRoot3)
 
@@ -81,28 +86,32 @@ internal class ContentRootEntityUpdaterTest : WorkspaceModelWithParentJavaModule
     }
 
     // then
-    val expectedContentRootEntity1 = ExpectedContentRootEntity(
-      url = contentPath1.toVirtualFileUrl(virtualFileUrlManager),
-      excludedPatterns = emptyList(),
-      excludedUrls = listOf(
-        Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager),
-      ),
-      parentModuleEntity = parentModuleEntity,
-    )
+    val expectedContentRootEntity1 =
+      ExpectedContentRootEntity(
+        url = contentPath1.toVirtualFileUrl(virtualFileUrlManager),
+        excludedPatterns = emptyList(),
+        excludedUrls =
+          listOf(
+            Path("/root/dir/example/resource/ExcludedFile.txt").toVirtualFileUrl(virtualFileUrlManager),
+          ),
+        parentModuleEntity = parentModuleEntity,
+      )
 
-    val expectedContentRootEntity2 = ExpectedContentRootEntity(
-      url = contentPath2.toVirtualFileUrl(virtualFileUrlManager),
-      excludedUrls = emptyList(),
-      excludedPatterns = emptyList(),
-      parentModuleEntity = parentModuleEntity,
-    )
+    val expectedContentRootEntity2 =
+      ExpectedContentRootEntity(
+        url = contentPath2.toVirtualFileUrl(virtualFileUrlManager),
+        excludedUrls = emptyList(),
+        excludedPatterns = emptyList(),
+        parentModuleEntity = parentModuleEntity,
+      )
 
-    val expectedContentRootEntity3 = ExpectedContentRootEntity(
-      url = contentPath3.toVirtualFileUrl(virtualFileUrlManager),
-      excludedUrls = emptyList(),
-      excludedPatterns = emptyList(),
-      parentModuleEntity = parentModuleEntity,
-    )
+    val expectedContentRootEntity3 =
+      ExpectedContentRootEntity(
+        url = contentPath3.toVirtualFileUrl(virtualFileUrlManager),
+        excludedUrls = emptyList(),
+        excludedPatterns = emptyList(),
+        parentModuleEntity = parentModuleEntity,
+      )
 
     val expectedContentRootEntries =
       listOf(expectedContentRootEntity1, expectedContentRootEntity2, expectedContentRootEntity3)

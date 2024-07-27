@@ -115,8 +115,11 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
     val marker = builder.mark()
     while (!atAnyOfTokens(
         listOf(
-          null, StarlarkTokenTypes.DEDENT, StarlarkTokenTypes.STATEMENT_BREAK, StarlarkTokenTypes.COLON
-        )
+          null,
+          StarlarkTokenTypes.DEDENT,
+          StarlarkTokenTypes.STATEMENT_BREAK,
+          StarlarkTokenTypes.COLON,
+        ),
       )
     ) {
       builder.advanceLexer()
@@ -234,11 +237,12 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
     loadValueList.done(StarlarkElementTypes.LOAD_VALUE_LIST)
   }
 
-  private fun parseLoadValue() = if (atToken(StarlarkTokenTypes.STRING)) {
-    buildTokenElement(StarlarkElementTypes.STRING_LITERAL_EXPRESSION, builder)
-  } else {
-    advanceError(builder, StarlarkBundle.message("parser.expected.string"))
-  }
+  private fun parseLoadValue() =
+    if (atToken(StarlarkTokenTypes.STRING)) {
+      buildTokenElement(StarlarkElementTypes.STRING_LITERAL_EXPRESSION, builder)
+    } else {
+      advanceError(builder, StarlarkBundle.message("parser.expected.string"))
+    }
 
   private fun parseExpressionStatement(firstToken: IElementType) {
     var exprStatement = builder.mark()

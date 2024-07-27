@@ -1,4 +1,4 @@
-rootProject.name="build-conventions"
+rootProject.name = "build-conventions"
 dependencyResolutionManagement {
   versionCatalogs {
     create("libs") {

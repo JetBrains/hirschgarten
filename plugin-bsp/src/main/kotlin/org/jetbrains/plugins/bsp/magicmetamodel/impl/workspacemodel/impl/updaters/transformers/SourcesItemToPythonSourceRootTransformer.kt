@@ -17,10 +17,7 @@ internal class SourcesItemToPythonSourceRootTransformer :
     return allSourceRoots.filter { isNotAChildOfAnySourceDir(it, allSourceRootsPaths) }
   }
 
-  private fun isNotAChildOfAnySourceDir(
-    sourceRoot: GenericSourceRoot,
-    allSourceRootsPaths: Set<Path>,
-  ): Boolean {
+  private fun isNotAChildOfAnySourceDir(sourceRoot: GenericSourceRoot, allSourceRootsPaths: Set<Path>): Boolean {
     var sourcePathParent = sourceRoot.sourcePath.parent
     while (sourcePathParent != null) {
       if (sourcePathParent in allSourceRootsPaths) return false
@@ -40,13 +37,9 @@ internal class SourcesItemToPythonSourceRootTransformer :
   private fun inferRootType(buildTarget: BuildTarget): SourceRootTypeId =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
 
-  private fun toPythonSourceRoot(
-    sourceRoot: SourceRoot,
-    rootType: SourceRootTypeId,
-  ): GenericSourceRoot {
-    return GenericSourceRoot(
+  private fun toPythonSourceRoot(sourceRoot: SourceRoot, rootType: SourceRootTypeId): GenericSourceRoot =
+    GenericSourceRoot(
       sourcePath = sourceRoot.sourcePath,
       rootType = rootType,
     )
-  }
 }

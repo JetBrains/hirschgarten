@@ -20,6 +20,5 @@ abstract class ExecutionContext
  * @see org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractor
  */
 interface ExecutionContextConstructor<T : ExecutionContext> {
-
-    fun construct(projectView: ProjectView): T
+  fun construct(projectView: ProjectView): T
 }

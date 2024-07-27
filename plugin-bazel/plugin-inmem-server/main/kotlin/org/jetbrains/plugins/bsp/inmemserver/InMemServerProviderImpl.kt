@@ -11,32 +11,33 @@ import org.jetbrains.plugins.bsp.extension.points.GenericConnection
 import org.jetbrains.plugins.bsp.server.client.BspClient
 import java.nio.file.Path
 
-class InMemServerProviderImpl: BspServerProvider {
-    override fun getConnection(
-        project: Project,
-        metricsFile: Path?,
-        bspClient: BspClient
-    ): GenericConnection {
-        return object : GenericConnection {
-            val installationDirectory = project.rootDir.toNioPath()
-            val conn = Connection(
-                installationDirectory,
-                metricsFile,
-                installationDirectory,
-                bspClient,
-                propagateTelemetryContext = true,
-            )
-            val projectPath = VfsUtil.findFile(installationDirectory, true) ?: error("Project doesn't exist")
-            init {
-                DotBazelBspCreator(projectPath).create()
-            }
+class InMemServerProviderImpl : BspServerProvider {
+  override fun getConnection(
+    project: Project,
+    metricsFile: Path?,
+    bspClient: BspClient,
+  ): GenericConnection =
+    object : GenericConnection {
+      val installationDirectory = project.rootDir.toNioPath()
+      val conn =
+        Connection(
+          installationDirectory,
+          metricsFile,
+          installationDirectory,
+          bspClient,
+          propagateTelemetryContext = true,
+        )
+      val projectPath = VfsUtil.findFile(installationDirectory, true) ?: error("Project doesn't exist")
 
-            override val server: JoinedBuildServer
-                get() = conn.clientLauncher.remoteProxy
+      init {
+        DotBazelBspCreator(projectPath).create()
+      }
 
-            override fun shutdown() {
-                conn.stop()
-            }
-        }
+      override val server: JoinedBuildServer
+        get() = conn.clientLauncher.remoteProxy
+
+      override fun shutdown() {
+        conn.stop()
+      }
     }
 }

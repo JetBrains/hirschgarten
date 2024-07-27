@@ -10,14 +10,13 @@ import org.virtuslab.ideprobe.robot.RobotSyntax.SearchableOps
 import scala.runtime.BoxedUnit
 
 class SingleProbeTests {
-
   @Test
   fun `open fresh instance of bazel-bsp project and check imported targets`() {
     with(
       IdeProbeTestRunner(
         "https://github.com/JetBrains/bazel-bsp.git",
         "3.1.0",
-      )
+      ),
     ) {
       runIntellijAndOpenProject { probe, robot, intellij ->
         fun testTargetsTree(buildPanel: SearchableOps) {
@@ -45,9 +44,11 @@ class SingleProbeTests {
           newBuildPanel.findElement(Query.className("ActionButton", "myaction.key" to "resync.action.text"))
         probe.screenshot("_bazel-bsp-before-resync-click")
         resync.click()
-        probe.await(emptyBackgroundTaskWithoutTimeouts {
-          robot.findElement(Query.className("StripeButton", "text" to "Bazel"))
-        })
+        probe.await(
+          emptyBackgroundTaskWithoutTimeouts {
+            robot.findElement(Query.className("StripeButton", "text" to "Bazel"))
+          },
+        )
         probe.screenshot("_bazel-bsp-after-resync-click")
         testTargetsTree(newBuildPanel)
         probe.screenshot("_bazel-bsp-before-end-of-test")
@@ -60,8 +61,9 @@ class SingleProbeTests {
   fun `open fresh instance of bazel project and check build console output for errors`() {
     with(
       IdeProbeTestRunner(
-        "https://github.com/bazelbuild/bazel.git", "7.0.2",
-      )
+        "https://github.com/bazelbuild/bazel.git",
+        "7.0.2",
+      ),
     ) {
       runIntellijAndOpenProject { probe, robot, _ ->
         probe.screenshot("_bazel-on-open")
@@ -86,9 +88,15 @@ class SingleProbeTests {
     var problemsText = ""
     probe.tryUntilSuccessful {
       errors.fixture().click()
-      val problemsTree = findElement(Query.className("ProblemsViewPanel"))
-        .findElement(Query.className("Tree"))
-      problemsText = problemsTree.fullText().split("\n").firstOrNull().orEmpty()
+      val problemsTree =
+        findElement(Query.className("ProblemsViewPanel"))
+          .findElement(Query.className("Tree"))
+      problemsText =
+        problemsTree
+          .fullText()
+          .split("\n")
+          .firstOrNull()
+          .orEmpty()
     }
     Assertions.assertEquals("No errors found by the IDE", problemsText)
   }

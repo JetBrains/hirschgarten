@@ -4,9 +4,7 @@ import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtrac
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextSingletonEntity
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 
-data class ExperimentalAddTransitiveCompileTimeJars(
-  override val value: Boolean,
-) : ExecutionContextSingletonEntity<Boolean>()
+data class ExperimentalAddTransitiveCompileTimeJars(override val value: Boolean) : ExecutionContextSingletonEntity<Boolean>()
 
 internal object ExperimentalAddTransitiveCompileTimeJarsExtractor :
   ExecutionContextEntityExtractor<ExperimentalAddTransitiveCompileTimeJars> {

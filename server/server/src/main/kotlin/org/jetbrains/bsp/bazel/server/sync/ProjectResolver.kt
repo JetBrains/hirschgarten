@@ -30,58 +30,68 @@ class ProjectResolver(
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
 ) {
-  private fun <T> measured(description: String, f: () -> T): T {
-    return tracer.spanBuilder(description).use { f() }
-  }
+  private fun <T> measured(description: String, f: () -> T): T = tracer.spanBuilder(description).use { f() }
 
-  fun resolve(cancelChecker: CancelChecker, build: Boolean): Project = tracer.spanBuilder("Resolve project").use {
-    val workspaceContext = measured(
-      "Reading project view and creating workspace context",
-      workspaceContextProvider::currentWorkspaceContext
-    )
-
-    val bazelExternalRulesQuery =
-      BazelExternalRulesQueryImpl(bazelRunner, bazelInfo.isBzlModEnabled, workspaceContext.enabledRules)
-
-    val externalRuleNames = measured(
-      "Discovering supported external rules"
-    ) { bazelExternalRulesQuery.fetchExternalRuleNames(cancelChecker) }
-
-    val ruleLanguages = measured(
-      "Mapping rule names to languages"
-    ) { bazelBspAspectsManager.calculateRuleLanguages(externalRuleNames) }
-
-    measured("Realizing language aspect files from templates") {
-      bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext)
-    }
-
-    measured("Generating language extensions file") {
-      bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages)
-    }
-
-    val buildAspectResult = measured(
-      "Building project with aspect"
-    ) { buildProjectWithAspect(cancelChecker, workspaceContext, keepDefaultOutputGroups = build) }
-    val aspectOutputs = measured(
-        "Reading aspect output paths"
-    ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
-    val targets = measured(
-        "Parsing aspect outputs"
-    ) { targetInfoReader.readTargetMapFromAspectOutputs(aspectOutputs) }
-    val allTargetNames =
-      if (buildAspectResult.isFailure)
+  fun resolve(cancelChecker: CancelChecker, build: Boolean): Project =
+    tracer.spanBuilder("Resolve project").use {
+      val workspaceContext =
         measured(
-          "Fetching all possible target names"
-        ) { formatTargetsIfNeeded(bazelBspFallbackAspectsManager.getAllPossibleTargets(cancelChecker), targets) }
-      else
-        emptyList()
-    val rootTargets = buildAspectResult.bepOutput.rootTargets().let { formatTargetsIfNeeded(it, targets) }
-    return measured(
-      "Mapping to internal model"
-    ) { bazelProjectMapper.createProject(targets, rootTargets.toSet(), allTargetNames, workspaceContext, bazelInfo) }
-  }
+          "Reading project view and creating workspace context",
+          workspaceContextProvider::currentWorkspaceContext,
+        )
 
-  private fun buildProjectWithAspect(cancelChecker: CancelChecker, workspaceContext: WorkspaceContext, keepDefaultOutputGroups: Boolean): BazelBspAspectsManagerResult {
+      val bazelExternalRulesQuery =
+        BazelExternalRulesQueryImpl(bazelRunner, bazelInfo.isBzlModEnabled, workspaceContext.enabledRules)
+
+      val externalRuleNames =
+        measured(
+          "Discovering supported external rules",
+        ) { bazelExternalRulesQuery.fetchExternalRuleNames(cancelChecker) }
+
+      val ruleLanguages =
+        measured(
+          "Mapping rule names to languages",
+        ) { bazelBspAspectsManager.calculateRuleLanguages(externalRuleNames) }
+
+      measured("Realizing language aspect files from templates") {
+        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext)
+      }
+
+      measured("Generating language extensions file") {
+        bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages)
+      }
+
+      val buildAspectResult =
+        measured(
+          "Building project with aspect",
+        ) { buildProjectWithAspect(cancelChecker, workspaceContext, keepDefaultOutputGroups = build) }
+      val aspectOutputs =
+        measured(
+          "Reading aspect output paths",
+        ) { buildAspectResult.bepOutput.filesByOutputGroupNameTransitive(BSP_INFO_OUTPUT_GROUP) }
+      val targets =
+        measured(
+          "Parsing aspect outputs",
+        ) { targetInfoReader.readTargetMapFromAspectOutputs(aspectOutputs) }
+      val allTargetNames =
+        if (buildAspectResult.isFailure) {
+          measured(
+            "Fetching all possible target names",
+          ) { formatTargetsIfNeeded(bazelBspFallbackAspectsManager.getAllPossibleTargets(cancelChecker), targets) }
+        } else {
+          emptyList()
+        }
+      val rootTargets = buildAspectResult.bepOutput.rootTargets().let { formatTargetsIfNeeded(it, targets) }
+      return measured(
+        "Mapping to internal model",
+      ) { bazelProjectMapper.createProject(targets, rootTargets.toSet(), allTargetNames, workspaceContext, bazelInfo) }
+    }
+
+  private fun buildProjectWithAspect(
+    cancelChecker: CancelChecker,
+    workspaceContext: WorkspaceContext,
+    keepDefaultOutputGroups: Boolean,
+  ): BazelBspAspectsManagerResult {
     val outputGroups =
       listOf(BSP_INFO_OUTPUT_GROUP, ARTIFACTS_OUTPUT_GROUP, RUST_ANALYZER_OUTPUT_GROUP)
         .map { if (keepDefaultOutputGroups) "+$it" else it }
@@ -96,22 +106,26 @@ class ProjectResolver(
     )
   }
 
-  private fun formatTargetsIfNeeded(targets: Collection<Label>, targetsInfo: Map<Label, BspTargetInfo.TargetInfo >): List<Label> =
+  private fun formatTargetsIfNeeded(targets: Collection<Label>, targetsInfo: Map<Label, BspTargetInfo.TargetInfo>): List<Label> =
     when (bazelInfo.release.major) {
       // Since bazel 6, the main repository targets are stringified to "@//"-prefixed labels,
       // contrary to "//"-prefixed in older Bazel versions. Unfortunately this does not apply
       // to BEP data, probably due to a bug, so we need to add the "@" or "@@" prefix here.
       in 0..5 -> targets.toList()
-      else -> targets.map {
-          if (targetsInfo.contains(Label.parse("@@${it.value}"))) "@@$it"
-          else "@$it"
-        }.map {
-          Label.parse(it)
-      }
+      else ->
+        targets
+          .map {
+            if (targetsInfo.contains(Label.parse("@@${it.value}"))) {
+              "@@$it"
+            } else {
+              "@$it"
+            }
+          }.map {
+            Label.parse(it)
+          }
     }.toList()
 
-  private fun WorkspaceContext.shouldAddBuildAffectingFlags(willBeBuilt: Boolean): Boolean =
-    this.buildManualTargets.value || !willBeBuilt
+  private fun WorkspaceContext.shouldAddBuildAffectingFlags(willBeBuilt: Boolean): Boolean = this.buildManualTargets.value || !willBeBuilt
 
   fun releaseMemory() {
     bazelPathsResolver.clear()

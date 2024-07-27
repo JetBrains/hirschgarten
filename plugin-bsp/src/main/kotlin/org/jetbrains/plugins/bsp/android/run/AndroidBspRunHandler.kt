@@ -26,9 +26,11 @@ public val DEVICE_FUTURE_KEY: Key<ListenableFuture<IDevice>> = Key.create("DEVIC
 
 public class AndroidBspRunHandler : BspRunHandler {
   override fun canRun(targets: List<BuildTargetInfo>): Boolean =
-    BspFeatureFlags.isAndroidSupportEnabled && targets.size == 1 && targets.all {
-      it.languageIds.includesAndroid() && !it.capabilities.canTest
-    }
+    BspFeatureFlags.isAndroidSupportEnabled &&
+      targets.size == 1 &&
+      targets.all {
+        it.languageIds.includesAndroid() && !it.capabilities.canTest
+      }
 
   override fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {
     configuration.putUserData(DeployableToDevice.KEY, true)

@@ -30,17 +30,18 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
   @Test
   fun `should return no module dependencies for no all targets`() {
     // given
-    val buildTarget = BuildTarget(
-      BuildTargetIdentifier("//target1"),
-      emptyList(),
-      emptyList(),
-      listOf(
-        BuildTargetIdentifier("//target2"),
-        BuildTargetIdentifier("//target3"),
-        BuildTargetIdentifier("@maven//:lib1"),
-      ),
-      BuildTargetCapabilities(),
-    )
+    val buildTarget =
+      BuildTarget(
+        BuildTargetIdentifier("//target1"),
+        emptyList(),
+        emptyList(),
+        listOf(
+          BuildTargetIdentifier("//target2"),
+          BuildTargetIdentifier("//target3"),
+          BuildTargetIdentifier("@maven//:lib1"),
+        ),
+        BuildTargetCapabilities(),
+      )
     val allTargets = setOf<BuildTargetIdentifier>()
 
     // when
@@ -55,20 +56,22 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
   @Test
   fun `should return single module dependency for target with one dependency`() {
     // given
-    val buildTarget = BuildTarget(
-      BuildTargetIdentifier("//target1"),
-      emptyList(),
-      emptyList(),
-      listOf(
-        BuildTargetIdentifier("//target2"),
-        BuildTargetIdentifier("@maven//:lib1"),
-      ),
-      BuildTargetCapabilities(),
-    )
-    val allTargets = setOf(
-      "//target1",
-      "//target2",
-    )
+    val buildTarget =
+      BuildTarget(
+        BuildTargetIdentifier("//target1"),
+        emptyList(),
+        emptyList(),
+        listOf(
+          BuildTargetIdentifier("//target2"),
+          BuildTargetIdentifier("@maven//:lib1"),
+        ),
+        BuildTargetCapabilities(),
+      )
+    val allTargets =
+      setOf(
+        "//target1",
+        "//target2",
+      )
 
     val targetsMap = allTargets.toDefaultTargetsMap()
 
@@ -78,9 +81,10 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
-    val expectedIntermediateModuleDependency = IntermediateModuleDependency(
-      moduleName = "//target2",
-    )
+    val expectedIntermediateModuleDependency =
+      IntermediateModuleDependency(
+        moduleName = "//target2",
+      )
 
     moduleDependencies shouldBe listOf(expectedIntermediateModuleDependency)
   }
@@ -88,26 +92,28 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
   @Test
   fun `should return multiple modules dependencies for target with multiple dependencies`() {
     // given
-    val buildTarget = BuildTarget(
-      BuildTargetIdentifier("//target1"),
-      emptyList(),
-      emptyList(),
-      listOf(
-        BuildTargetIdentifier("//target2"),
-        BuildTargetIdentifier("//target3"),
-        BuildTargetIdentifier("//target4"),
-        BuildTargetIdentifier("@maven//:lib1"),
-        BuildTargetIdentifier("@maven//:lib2"),
-      ),
-      BuildTargetCapabilities(),
-    )
-    val allTargets = setOf(
-      "//target1",
-      "//target2",
-      "//target3",
-      "//target4",
-      "//target5",
-    )
+    val buildTarget =
+      BuildTarget(
+        BuildTargetIdentifier("//target1"),
+        emptyList(),
+        emptyList(),
+        listOf(
+          BuildTargetIdentifier("//target2"),
+          BuildTargetIdentifier("//target3"),
+          BuildTargetIdentifier("//target4"),
+          BuildTargetIdentifier("@maven//:lib1"),
+          BuildTargetIdentifier("@maven//:lib2"),
+        ),
+        BuildTargetCapabilities(),
+      )
+    val allTargets =
+      setOf(
+        "//target1",
+        "//target2",
+        "//target3",
+        "//target4",
+        "//target5",
+      )
 
     val targetsMap = allTargets.toDefaultTargetsMap()
 
@@ -117,53 +123,60 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTarget)
 
     // then
-    val expectedIntermediateModuleDependency1 = IntermediateModuleDependency(
-      moduleName = "//target2",
-    )
-    val expectedIntermediateModuleDependency2 = IntermediateModuleDependency(
-      moduleName = "//target3",
-    )
-    val expectedIntermediateModuleDependency3 = IntermediateModuleDependency(
-      moduleName = "//target4",
-    )
+    val expectedIntermediateModuleDependency1 =
+      IntermediateModuleDependency(
+        moduleName = "//target2",
+      )
+    val expectedIntermediateModuleDependency2 =
+      IntermediateModuleDependency(
+        moduleName = "//target3",
+      )
+    val expectedIntermediateModuleDependency3 =
+      IntermediateModuleDependency(
+        moduleName = "//target4",
+      )
 
-    moduleDependencies shouldBe listOf(expectedIntermediateModuleDependency1, expectedIntermediateModuleDependency2, expectedIntermediateModuleDependency3)
+    moduleDependencies shouldBe
+      listOf(expectedIntermediateModuleDependency1, expectedIntermediateModuleDependency2, expectedIntermediateModuleDependency3)
   }
 
   @Test
   fun `should return multiple modules dependencies for multiple targets`() {
     // given
-    val buildTarget1 = BuildTarget(
-      BuildTargetIdentifier("//target1"),
-      emptyList(),
-      emptyList(),
-      listOf(
-        BuildTargetIdentifier("//target2"),
-        BuildTargetIdentifier("//target3"),
-        BuildTargetIdentifier("@maven//:lib1"),
-        BuildTargetIdentifier("@maven//:lib2"),
-      ),
-      BuildTargetCapabilities(),
-    )
-    val buildTarget2 = BuildTarget(
-      BuildTargetIdentifier("//target1"),
-      emptyList(),
-      emptyList(),
-      listOf(
-        BuildTargetIdentifier("//target3"),
-        BuildTargetIdentifier("//target4"),
-        BuildTargetIdentifier("@maven//:lib2"),
-      ),
-      BuildTargetCapabilities(),
-    )
+    val buildTarget1 =
+      BuildTarget(
+        BuildTargetIdentifier("//target1"),
+        emptyList(),
+        emptyList(),
+        listOf(
+          BuildTargetIdentifier("//target2"),
+          BuildTargetIdentifier("//target3"),
+          BuildTargetIdentifier("@maven//:lib1"),
+          BuildTargetIdentifier("@maven//:lib2"),
+        ),
+        BuildTargetCapabilities(),
+      )
+    val buildTarget2 =
+      BuildTarget(
+        BuildTargetIdentifier("//target1"),
+        emptyList(),
+        emptyList(),
+        listOf(
+          BuildTargetIdentifier("//target3"),
+          BuildTargetIdentifier("//target4"),
+          BuildTargetIdentifier("@maven//:lib2"),
+        ),
+        BuildTargetCapabilities(),
+      )
 
-    val allTargets = setOf(
-      "//target1",
-      "//target2",
-      "//target3",
-      "//target4",
-      "//target5",
-    )
+    val allTargets =
+      setOf(
+        "//target1",
+        "//target2",
+        "//target3",
+        "//target4",
+        "//target5",
+      )
 
     val buildTargets = listOf(buildTarget1, buildTarget2)
 
@@ -175,19 +188,22 @@ class BuildTargetToIntermediateModuleDependencyTransformerTest {
     val moduleDependencies = buildTargetToModuleDependencyTransformer.transform(buildTargets)
 
     // then
-    val expectedIntermediateModuleDependency1 = IntermediateModuleDependency(
-      moduleName = "//target2",
-    )
-    val expectedIntermediateModuleDependency2 = IntermediateModuleDependency(
-      moduleName = "//target3",
-    )
-    val expectedIntermediateModuleDependency3 = IntermediateModuleDependency(
-      moduleName = "//target4",
-    )
+    val expectedIntermediateModuleDependency1 =
+      IntermediateModuleDependency(
+        moduleName = "//target2",
+      )
+    val expectedIntermediateModuleDependency2 =
+      IntermediateModuleDependency(
+        moduleName = "//target3",
+      )
+    val expectedIntermediateModuleDependency3 =
+      IntermediateModuleDependency(
+        moduleName = "//target4",
+      )
 
-    moduleDependencies shouldBe listOf(expectedIntermediateModuleDependency1, expectedIntermediateModuleDependency2, expectedIntermediateModuleDependency3)
+    moduleDependencies shouldBe
+      listOf(expectedIntermediateModuleDependency1, expectedIntermediateModuleDependency2, expectedIntermediateModuleDependency3)
   }
 
-  private fun Set<String>.toTargetIds(): Set<BuildTargetIdentifier> =
-    mapTo(mutableSetOf()) { BuildTargetIdentifier(it) }
+  private fun Set<String>.toTargetIds(): Set<BuildTargetIdentifier> = mapTo(mutableSetOf()) { BuildTargetIdentifier(it) }
 }

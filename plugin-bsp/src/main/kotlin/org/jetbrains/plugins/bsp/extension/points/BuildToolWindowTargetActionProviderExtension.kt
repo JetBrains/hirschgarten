@@ -8,7 +8,11 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetI
 import javax.swing.JComponent
 
 public interface BuildToolWindowTargetActionProviderExtension : WithBuildToolId {
-  public fun getTargetActions(component: JComponent, project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction>
+  public fun getTargetActions(
+    component: JComponent,
+    project: Project,
+    buildTargetInfo: BuildTargetInfo,
+  ): List<AnAction>
 
   public companion object {
     internal val ep: ExtensionPointName<BuildToolWindowTargetActionProviderExtension> =

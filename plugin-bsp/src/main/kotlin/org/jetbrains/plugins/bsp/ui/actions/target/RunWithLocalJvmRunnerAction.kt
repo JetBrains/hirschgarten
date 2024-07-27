@@ -13,20 +13,24 @@ public class RunWithLocalJvmRunnerAction(
   isDebugMode: Boolean = false,
   verboseText: Boolean = false,
 ) : LocalJvmRunnerAction(
-  targetInfo = targetInfo,
-  text = {
-    if (text != null) text()
-    else if (isDebugMode) BspPluginBundle.message(
-      "target.debug.with.jvm.runner.action.text",
-      if (verboseText) targetInfo.getBuildTargetName() else ""
-    )
-    else BspPluginBundle.message(
-      "target.run.with.jvm.runner.action.text",
-      if (verboseText) targetInfo.getBuildTargetName() else ""
-    )
-  },
-  isDebugMode = isDebugMode
-) {
+    targetInfo = targetInfo,
+    text = {
+      if (text != null) {
+        text()
+      } else if (isDebugMode) {
+        BspPluginBundle.message(
+          "target.debug.with.jvm.runner.action.text",
+          if (verboseText) targetInfo.getBuildTargetName() else "",
+        )
+      } else {
+        BspPluginBundle.message(
+          "target.run.with.jvm.runner.action.text",
+          if (verboseText) targetInfo.getBuildTargetName() else "",
+        )
+      }
+    },
+    isDebugMode = isDebugMode,
+  ) {
   override fun getEnvironment(project: Project): JvmEnvironmentItem? =
     JvmRunEnvironmentTask(project).connectAndExecute(targetInfo.id)?.items?.first()
 }

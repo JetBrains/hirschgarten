@@ -21,34 +21,35 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.getModule
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
 import com.android.tools.idea.project.getPackageName as getApplicationIdFromManifest
 
-public class BspAndroidConfigurationExecutor(
-  private val environment: ExecutionEnvironment,
-) : AndroidConfigurationExecutor {
+public class BspAndroidConfigurationExecutor(private val environment: ExecutionEnvironment) : AndroidConfigurationExecutor {
   override val configuration: RunConfiguration
     get() = environment.runProfile as RunConfiguration
 
-  override fun run(indicator: ProgressIndicator): RunContentDescriptor = runBlockingCancellable {
-    val applicationId = getApplicationIdOrThrow()
-    val processHandler = AndroidProcessHandler(applicationId, { it.forceStop(applicationId) })
-    val console = createConsole().apply {
-      attachToProcess(processHandler)
+  override fun run(indicator: ProgressIndicator): RunContentDescriptor =
+    runBlockingCancellable {
+      val applicationId = getApplicationIdOrThrow()
+      val processHandler = AndroidProcessHandler(applicationId, { it.forceStop(applicationId) })
+      val console =
+        createConsole().apply {
+          attachToProcess(processHandler)
+        }
+
+      val device = getDevice()
+      processHandler.addTargetDevice(device)
+
+      showLogcat(device, applicationId)
+
+      createRunContentDescriptor(processHandler, console, environment)
     }
 
-    val device = getDevice()
-    processHandler.addTargetDevice(device)
-
-    showLogcat(device, applicationId)
-
-    createRunContentDescriptor(processHandler, console, environment)
-  }
-
-  override fun debug(indicator: ProgressIndicator): RunContentDescriptor = runBlockingCancellable {
-    val device = getDevice()
-    val applicationId = getApplicationIdOrThrow()
-    val debugSession = startDebugSession(device, applicationId, environment, indicator)
-    showLogcat(device, applicationId)
-    debugSession.runContentDescriptor
-  }
+  override fun debug(indicator: ProgressIndicator): RunContentDescriptor =
+    runBlockingCancellable {
+      val device = getDevice()
+      val applicationId = getApplicationIdOrThrow()
+      val debugSession = startDebugSession(device, applicationId, environment, indicator)
+      showLogcat(device, applicationId)
+      debugSession.runContentDescriptor
+    }
 
   private suspend fun startDebugSession(
     device: IDevice,
@@ -73,13 +74,13 @@ public class BspAndroidConfigurationExecutor(
   }
 
   private fun getDevice(): IDevice {
-    val deviceFuture = environment.getCopyableUserData(DEVICE_FUTURE_KEY)
-      ?: throw ExecutionException("No target device")
+    val deviceFuture =
+      environment.getCopyableUserData(DEVICE_FUTURE_KEY)
+        ?: throw ExecutionException("No target device")
     return deviceFuture.get()
   }
 
-  private fun getApplicationIdOrThrow(): String =
-    getApplicationId() ?: throw ExecutionException("Couldn't get application ID")
+  private fun getApplicationIdOrThrow(): String = getApplicationId() ?: throw ExecutionException("Couldn't get application ID")
 
   private fun getApplicationId(): String? {
     val bspRunConfiguration = environment.runProfile as? BspRunConfiguration ?: return null
@@ -88,19 +89,17 @@ public class BspAndroidConfigurationExecutor(
     return getApplicationIdFromManifest(module)
   }
 
-  private fun createConsole(): ConsoleView =
-    TextConsoleBuilderFactory.getInstance().createBuilder(environment.project).console
+  private fun createConsole(): ConsoleView = TextConsoleBuilderFactory.getInstance().createBuilder(environment.project).console
 
   private fun showLogcat(device: IDevice, applicationId: String) {
-    environment.project.messageBus.syncPublisher(ShowLogcatListener.TOPIC).showLogcat(device, applicationId)
+    environment.project.messageBus
+      .syncPublisher(ShowLogcatListener.TOPIC)
+      .showLogcat(device, applicationId)
   }
 
   // The "Apply changes" button isn't available for BspRunConfiguration, so this is an unexpected code path
-  override fun applyChanges(indicator: ProgressIndicator): RunContentDescriptor {
-    throw ExecutionException("Apply changes not supported")
-  }
+  override fun applyChanges(indicator: ProgressIndicator): RunContentDescriptor = throw ExecutionException("Apply changes not supported")
 
-  override fun applyCodeChanges(indicator: ProgressIndicator): RunContentDescriptor {
+  override fun applyCodeChanges(indicator: ProgressIndicator): RunContentDescriptor =
     throw ExecutionException("Apply code changes not supported")
-  }
 }

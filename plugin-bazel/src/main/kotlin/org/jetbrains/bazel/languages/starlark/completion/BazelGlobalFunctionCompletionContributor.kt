@@ -27,49 +27,55 @@ class BazelGlobalFunctionCompletionContributor : CompletionContributor() {
     extend(
       CompletionType.BASIC,
       fileSpecificFunctionCompletionElement(BazelFileType.EXTENSION),
-      BazelExtensionFunctionCompletionProvider
+      BazelExtensionFunctionCompletionProvider,
     )
     extend(
       CompletionType.BASIC,
       fileSpecificFunctionCompletionElement(BazelFileType.BUILD),
-      BazelBuildFunctionCompletionProvider
+      BazelBuildFunctionCompletionProvider,
     )
     extend(
       CompletionType.BASIC,
       fileSpecificFunctionCompletionElement(BazelFileType.MODULE),
-      BazelModuleFunctionCompletionProvider
+      BazelModuleFunctionCompletionProvider,
     )
     extend(
       CompletionType.BASIC,
       fileSpecificFunctionCompletionElement(BazelFileType.WORKSPACE),
-      BazelWorkspaceFunctionCompletionProvider
+      BazelWorkspaceFunctionCompletionProvider,
     )
   }
 
-  private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType) = globalFunctionCompletionElement()
-    .inFile(psiFile(StarlarkFile::class.java).with(bazelFileTypeCondition(bazelFileType)))
+  private fun fileSpecificFunctionCompletionElement(bazelFileType: BazelFileType) =
+    globalFunctionCompletionElement()
+      .inFile(psiFile(StarlarkFile::class.java).with(bazelFileTypeCondition(bazelFileType)))
 
   private fun globalFunctionCompletionElement() =
-    psiElement().withLanguage(StarlarkLanguage).withParent(StarlarkReferenceExpression::class.java).andNot(psiComment())
+    psiElement()
+      .withLanguage(StarlarkLanguage)
+      .withParent(StarlarkReferenceExpression::class.java)
+      .andNot(psiComment())
       .andNot(psiElement().afterLeaf(psiElement(StarlarkTokenTypes.DOT)))
 
   private fun bazelFileTypeCondition(bazelFileType: BazelFileType) =
     object : PatternCondition<StarlarkFile>("withBazelFileType") {
-      override fun accepts(file: StarlarkFile, context: ProcessingContext): Boolean =
-        file.getBazelFileType() == bazelFileType
+      override fun accepts(file: StarlarkFile, context: ProcessingContext): Boolean = file.getBazelFileType() == bazelFileType
     }
 }
 
-private abstract class BazelFunctionCompletionProvider(val functionNames: Set<String>) :
-  CompletionProvider<CompletionParameters>() {
+private abstract class BazelFunctionCompletionProvider(val functionNames: Set<String>) : CompletionProvider<CompletionParameters>() {
   override fun addCompletions(
-    parameters: CompletionParameters, context: ProcessingContext, result: CompletionResultSet
+    parameters: CompletionParameters,
+    context: ProcessingContext,
+    result: CompletionResultSet,
   ) {
     functionNames.forEach { result.addElement(functionLookupElement(it)) }
   }
 
   private fun functionLookupElement(name: String): LookupElement =
-    LookupElementBuilder.create(name).withInsertHandler(ParenthesesInsertHandler.NO_PARAMETERS)
+    LookupElementBuilder
+      .create(name)
+      .withInsertHandler(ParenthesesInsertHandler.NO_PARAMETERS)
       .withIcon(PlatformIcons.FUNCTION_ICON)
 }
 

@@ -26,10 +26,12 @@ class DefaultWorkspaceContextProviderTest {
   fun `should parse project view file and return workspace context`() {
     // given
     projectViewFile.createFile()
-    projectViewFile.writeText("""
+    projectViewFile.writeText(
+      """
       |targets:
       |  //...
-    """.trimMargin())
+      """.trimMargin(),
+    )
 
     val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile)
 

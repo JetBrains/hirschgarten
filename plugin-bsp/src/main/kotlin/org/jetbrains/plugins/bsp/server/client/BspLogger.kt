@@ -21,7 +21,9 @@ public class BspLogger {
   }
 
   public fun getBspLoggerInstance(name: String): Logger {
-    val logger = java.util.logging.Logger.getLogger(name)
+    val logger =
+      java.util.logging.Logger
+        .getLogger(name)
     JulLogger.clearHandlers(logger)
     handler.setLevel(baseLoggerLevel)
     logger.addHandler(handler)
@@ -34,6 +36,7 @@ public class BspLogger {
     private val creationTime = System.currentTimeMillis()
 
     private val separator = System.lineSeparator()
+
     override fun format(record: LogRecord): String {
       val time = Instant.fromEpochMilliseconds(record.millis)
       val relativeTime = timeSinceStartup(record.millis)
@@ -43,10 +46,8 @@ public class BspLogger {
       return "$time [$relativeTime] $levelName - $message$separator$exception"
     }
 
-    private fun timeSinceStartup(current: Long) =
-      (current - creationTime).takeUnless { it <= 0 }?.toString() ?: "-------"
+    private fun timeSinceStartup(current: Long) = (current - creationTime).takeUnless { it <= 0 }?.toString() ?: "-------"
   }
 }
 
-public inline fun <reified T : Any> bspLogger(): Logger =
-  BspLogger().getBspLoggerInstance("#${T::class.java}")
+public inline fun <reified T : Any> bspLogger(): Logger = BspLogger().getBspLoggerInstance("#${T::class.java}")

@@ -13,19 +13,23 @@ public class RunTargetAction(
   isDebugAction: Boolean = false,
   verboseText: Boolean = false,
 ) : BspRunnerAction(
-  targetInfo = targetInfo,
-  text = {
-    if (text != null) text()
-    else if (isDebugAction) BspPluginBundle.message(
-      "target.debug.action.text",
-      if (verboseText) targetInfo.getBuildTargetName() else ""
-    )
-    else BspPluginBundle.message(
-      "target.run.action.text",
-      if (verboseText) targetInfo.getBuildTargetName() else ""
-    )
-  },
-  isDebugAction = isDebugAction,
-) {
+    targetInfo = targetInfo,
+    text = {
+      if (text != null) {
+        text()
+      } else if (isDebugAction) {
+        BspPluginBundle.message(
+          "target.debug.action.text",
+          if (verboseText) targetInfo.getBuildTargetName() else "",
+        )
+      } else {
+        BspPluginBundle.message(
+          "target.run.action.text",
+          if (verboseText) targetInfo.getBuildTargetName() else "",
+        )
+      }
+    },
+    isDebugAction = isDebugAction,
+  ) {
   override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType()
 }

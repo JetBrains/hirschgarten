@@ -12,9 +12,8 @@ import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 
-internal class LibraryEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithoutParentModuleUpdater<Library, LibraryEntity> {
+internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithoutParentModuleUpdater<Library, LibraryEntity> {
   //  a snippet of adding module library entity in case we want it back
   //  private fun addModuleLibraryEntity(
   //    builder: MutableEntityStorage,
@@ -28,10 +27,7 @@ internal class LibraryEntityUpdater(
   override fun addEntity(entityToAdd: Library): LibraryEntity =
     addProjectLibraryEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
 
-  private fun addProjectLibraryEntity(
-    builder: MutableEntityStorage,
-    entityToAdd: Library,
-  ): LibraryEntity {
+  private fun addProjectLibraryEntity(builder: MutableEntityStorage, entityToAdd: Library): LibraryEntity {
     val tableId = LibraryTableId.ProjectLibraryTableId
     val entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig)
     return addLibraryEntity(builder, entityToAdd, tableId, entitySource)
@@ -43,14 +39,15 @@ internal class LibraryEntityUpdater(
     tableId: LibraryTableId,
     entitySource: EntitySource,
   ): LibraryEntity {
-    val libraryEntity = LibraryEntity(
-      name = entityToAdd.displayName,
-      tableId = tableId,
-      roots = toLibrarySourcesRoots(entityToAdd) + toLibraryClassesRoots(entityToAdd),
-      entitySource = entitySource,
-    ) {
-      this.excludedRoots = arrayListOf()
-    }
+    val libraryEntity =
+      LibraryEntity(
+        name = entityToAdd.displayName,
+        tableId = tableId,
+        roots = toLibrarySourcesRoots(entityToAdd) + toLibraryClassesRoots(entityToAdd),
+        entitySource = entitySource,
+      ) {
+        this.excludedRoots = arrayListOf()
+      }
 
     val foundLibrary = builder.resolve(LibraryId(entityToAdd.displayName, tableId))
     if (foundLibrary != null) return foundLibrary
@@ -75,11 +72,12 @@ internal class LibraryEntityUpdater(
     }
 }
 
-internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig):
-  EntitySource = when {
-  !JpsFeatureFlags.isJpsCompilationEnabled -> BspEntitySource
-  else -> LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
-    workspaceModelEntityUpdaterConfig.project,
-    null
-  )
-}
+internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
+  when {
+    !JpsFeatureFlags.isJpsCompilationEnabled -> BspEntitySource
+    else ->
+      LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
+        workspaceModelEntityUpdaterConfig.project,
+        null,
+      )
+  }

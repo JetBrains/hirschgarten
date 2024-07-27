@@ -12,8 +12,5 @@ internal fun createAllBspOnlyModuleBuildTasks(project: Project): ProjectTask =
 internal fun createAllJpsOnlyModuleBuildTasks(project: Project): ProjectTask =
   createAllCustomModuleBuildTasks(project, ::JpsOnlyModuleBuildTask)
 
-private fun <T : CustomModuleBuildTask> createAllCustomModuleBuildTasks(
-  project: Project,
-  factory: (Module) -> T,
-): ProjectTask =
+private fun <T : CustomModuleBuildTask> createAllCustomModuleBuildTasks(project: Project, factory: (Module) -> T): ProjectTask =
   ModuleManager.getInstance(project).modules.let { modules -> ProjectTaskList(modules.map { factory(it) }) }

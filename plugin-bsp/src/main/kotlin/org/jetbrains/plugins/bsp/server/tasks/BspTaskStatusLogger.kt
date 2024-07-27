@@ -17,11 +17,12 @@ public class BspTaskStatusLogger<T>(
   private val cancelOn: CompletableFuture<Void>,
   private val statusCode: T.() -> StatusCode,
 ) {
-  public fun getResult(): T = taskFuture
-    .reactToExceptionIn(cancelOn)
-    .catchBuildErrors()
-    .get()
-    .also { finishBuildConsoleTaskWithProperResult(it, bspBuildConsole, originId) }
+  public fun getResult(): T =
+    taskFuture
+      .reactToExceptionIn(cancelOn)
+      .catchBuildErrors()
+      .get()
+      .also { finishBuildConsoleTaskWithProperResult(it, bspBuildConsole, originId) }
 
   private fun finishBuildConsoleTaskWithProperResult(
     result: T,
@@ -30,8 +31,12 @@ public class BspTaskStatusLogger<T>(
   ) = when (result.statusCode()) {
     StatusCode.OK -> bspBuildConsole.finishTask(uuid, BspPluginBundle.message("console.task.status.ok"))
     StatusCode.CANCELLED -> bspBuildConsole.finishTask(uuid, BspPluginBundle.message("console.task.status.cancelled"))
-    StatusCode.ERROR -> bspBuildConsole.finishTask(uuid,
-      BspPluginBundle.message("console.task.status.error"), FailureResultImpl())
+    StatusCode.ERROR ->
+      bspBuildConsole.finishTask(
+        uuid,
+        BspPluginBundle.message("console.task.status.error"),
+        FailureResultImpl(),
+      )
     else -> bspBuildConsole.finishTask(uuid, BspPluginBundle.message("console.task.status.other"))
   }
 
@@ -40,24 +45,28 @@ public class BspTaskStatusLogger<T>(
       exception?.let {
         if (isTimeoutException(it)) {
           val message = BspPluginBundle.message("console.task.exception.timeout.message")
-          bspBuildConsole.finishTask(originId,
-            BspPluginBundle.message("console.task.exception.timed.out"), FailureResultImpl(message)
+          bspBuildConsole.finishTask(
+            originId,
+            BspPluginBundle.message("console.task.exception.timed.out"),
+            FailureResultImpl(message),
           )
         } else if (isCancellationException(it)) {
-          bspBuildConsole.finishTask(originId, BspPluginBundle.message("console.task.exception.cancellation"),
-            FailureResultImpl(BspPluginBundle.message("console.task.exception.cancellation.message"))
+          bspBuildConsole.finishTask(
+            originId,
+            BspPluginBundle.message("console.task.exception.cancellation"),
+            FailureResultImpl(BspPluginBundle.message("console.task.exception.cancellation.message")),
           )
         } else {
-          bspBuildConsole.finishTask(originId,
-            BspPluginBundle.message("console.task.exception.other"), FailureResultImpl(it)
+          bspBuildConsole.finishTask(
+            originId,
+            BspPluginBundle.message("console.task.exception.other"),
+            FailureResultImpl(it),
           )
         }
       }
     }
 
-  private fun isTimeoutException(e: Throwable): Boolean =
-    e is CompletionException && e.cause is TimeoutException
+  private fun isTimeoutException(e: Throwable): Boolean = e is CompletionException && e.cause is TimeoutException
 
-  private fun isCancellationException(e: Throwable): Boolean =
-    e is CompletionException && e.cause is CancellationException
+  private fun isCancellationException(e: Throwable): Boolean = e is CompletionException && e.cause is CancellationException
 }

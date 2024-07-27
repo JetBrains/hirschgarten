@@ -34,8 +34,7 @@ class BazelBspJumpToBuildFileAction(
       (virtualFileManager.findFileByNioPath(buildFilePath) ?: virtualFileManager.findFileByNioPath(buildBazelFilePath))
         ?.let {
           PsiManager.getInstance(project).findFile(it)
-        }
-        ?.let {
+        }?.let {
           EditorHelper.openInEditor(it, true, true)
         }
     }

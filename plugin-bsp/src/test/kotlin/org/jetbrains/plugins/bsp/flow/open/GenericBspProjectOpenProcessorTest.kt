@@ -43,7 +43,12 @@ class GenericBspProjectOpenProcessorTest : MockProjectBaseTest() {
   private fun cleanupExtensionPoints() {
     val epName = BspProjectOpenProcessorExtension.ep.name
     application.extensionArea.unregisterExtensionPoint(epName)
-    application.extensionArea.registerExtensionPoint(epName, BspProjectOpenProcessorExtension::class.java.name, ExtensionPoint.Kind.INTERFACE, true)
+    application.extensionArea.registerExtensionPoint(
+      epName,
+      BspProjectOpenProcessorExtension::class.java.name,
+      ExtensionPoint.Kind.INTERFACE,
+      true,
+    )
   }
 
   @Nested

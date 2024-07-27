@@ -6,14 +6,10 @@ import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import java.nio.file.Path
 
-data class DirectoriesSpec(
-  override val values: List<Path>,
-  override val excludedValues: List<Path>,
-) : ExecutionContextExcludableListEntity<Path>()
+data class DirectoriesSpec(override val values: List<Path>, override val excludedValues: List<Path>) :
+  ExecutionContextExcludableListEntity<Path>()
 
-internal class DirectoriesSpecExtractor(private val workspaceRoot: Path)
-  : ExecutionContextEntityExtractor<DirectoriesSpec> {
-
+internal class DirectoriesSpecExtractor(private val workspaceRoot: Path) : ExecutionContextEntityExtractor<DirectoriesSpec> {
   override fun fromProjectView(projectView: ProjectView): DirectoriesSpec =
     projectView.directories?.toDirectoriesSpec()
       ?: DirectoriesSpec(
@@ -27,6 +23,5 @@ internal class DirectoriesSpecExtractor(private val workspaceRoot: Path)
       excludedValues = excludedValues.map { it.resolveAndNormalize() },
     )
 
-  private fun Path.resolveAndNormalize() =
-    workspaceRoot.resolve(this).normalize()
+  private fun Path.resolveAndNormalize() = workspaceRoot.resolve(this).normalize()
 }

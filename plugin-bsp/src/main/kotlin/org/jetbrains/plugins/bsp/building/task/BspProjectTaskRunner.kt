@@ -29,12 +29,13 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
       project.isTrusted() &&
       canRun(projectTask)
 
-  override fun canRun(projectTask: ProjectTask): Boolean = when (projectTask) {
-    is JpsOnlyModuleBuildTask -> false
-    is BspOnlyModuleBuildTask -> true
-    is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationAsDefaultEnabled
-    else -> false
-  }
+  override fun canRun(projectTask: ProjectTask): Boolean =
+    when (projectTask) {
+      is JpsOnlyModuleBuildTask -> false
+      is BspOnlyModuleBuildTask -> true
+      is ModuleBuildTask -> !JpsFeatureFlags.isJpsCompilationAsDefaultEnabled
+      else -> false
+    }
 
   override fun run(
     project: Project,
@@ -49,17 +50,15 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
     return result
   }
 
-  private fun runModuleBuildTasks(
-    project: Project,
-    tasks: List<ModuleBuildTask>,
-  ): Promise<Result> {
+  private fun runModuleBuildTasks(project: Project, tasks: List<ModuleBuildTask>): Promise<Result> {
     val targetsToBuild = obtainTargetsToBuild(project, tasks)
     return buildBspTargets(project, targetsToBuild)
   }
 
   private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTargetInfo> {
     val temporaryTargetUtils = project.temporaryTargetUtils
-    return tasks.map { it.module.name }
+    return tasks
+      .map { it.module.name }
       .mapNotNull { temporaryTargetUtils.getTargetIdForModuleId(it) }
       .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
   }
@@ -67,9 +66,10 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
   @OptIn(ExperimentalCoroutinesApi::class)
   private fun buildBspTargets(project: Project, targetsToBuild: List<BuildTargetInfo>): Promise<Result> {
     val targetIdentifiers = targetsToBuild.filter { it.capabilities.canCompile }.map { it.id }
-    val result = BspCoroutineService.getInstance(project).startAsync {
-      runBuildTargetTask(targetIdentifiers, project, log)
-    }
+    val result =
+      BspCoroutineService.getInstance(project).startAsync {
+        runBuildTargetTask(targetIdentifiers, project, log)
+      }
     return result
       .toPromise()
       .then { it?.toTaskRunnerResult() ?: TaskRunnerResults.FAILURE }

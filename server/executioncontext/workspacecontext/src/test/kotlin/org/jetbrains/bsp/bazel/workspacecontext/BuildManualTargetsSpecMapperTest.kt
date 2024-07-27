@@ -8,42 +8,43 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class BuildManualTargetsSpecMapperTest {
+  @Nested
+  @DisplayName("fun map(projectView): BuildManualTargetsSpec tests")
+  inner class MapTest {
+    @Test
+    fun `should return success with default spec if build manual targets is null`() {
+      // given
+      val projectView = ProjectView.Builder(buildManualTargets = null).build()
 
-    @Nested
-    @DisplayName("fun map(projectView): BuildManualTargetsSpec tests")
-    inner class MapTest {
+      // when
+      val buildManualTargetsSpec = BuildManualTargetsSpecExtractor.fromProjectView(projectView)
 
-        @Test
-        fun `should return success with default spec if build manual targets is null`() {
-            // given
-            val projectView = ProjectView.Builder(buildManualTargets = null).build()
-
-            // when
-            val buildManualTargetsSpec = BuildManualTargetsSpecExtractor.fromProjectView(projectView)
-
-            // then
-            val expectedBuildManualTargetsSpec = BuildManualTargetsSpec(false)
-            buildManualTargetsSpec shouldBe expectedBuildManualTargetsSpec
-        }
-
-        @Test
-        fun `should return success for successful mapping`() {
-            // given
-            val projectView =
-                    ProjectView.Builder(
-                            buildManualTargets = ProjectViewBuildManualTargetsSection(
-                                    true
-                            )
-                    ).build()
-
-            // when
-            val buildManualTargetsSpec = BuildManualTargetsSpecExtractor.fromProjectView(projectView)
-
-            // then
-            val expectedBuildManualTargetsSpec = BuildManualTargetsSpec(
-                    true
-            )
-            buildManualTargetsSpec shouldBe expectedBuildManualTargetsSpec
-        }
+      // then
+      val expectedBuildManualTargetsSpec = BuildManualTargetsSpec(false)
+      buildManualTargetsSpec shouldBe expectedBuildManualTargetsSpec
     }
+
+    @Test
+    fun `should return success for successful mapping`() {
+      // given
+      val projectView =
+        ProjectView
+          .Builder(
+            buildManualTargets =
+              ProjectViewBuildManualTargetsSection(
+                true,
+              ),
+          ).build()
+
+      // when
+      val buildManualTargetsSpec = BuildManualTargetsSpecExtractor.fromProjectView(projectView)
+
+      // then
+      val expectedBuildManualTargetsSpec =
+        BuildManualTargetsSpec(
+          true,
+        )
+      buildManualTargetsSpec shouldBe expectedBuildManualTargetsSpec
+    }
+  }
 }

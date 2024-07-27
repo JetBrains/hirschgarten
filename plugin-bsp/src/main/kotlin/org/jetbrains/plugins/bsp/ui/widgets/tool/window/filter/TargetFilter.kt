@@ -3,9 +3,7 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 
-public class TargetFilter(
-  private val onFilterChange: () -> Unit,
-) {
+public class TargetFilter(private val onFilterChange: () -> Unit) {
   public var currentFilter: FILTER = FILTER.OFF
     set(value) {
       if (field != value) {
@@ -19,8 +17,7 @@ public class TargetFilter(
   public fun getMatchingLoadedTargets(xd: TemporaryTargetUtils): List<BuildTargetInfo> =
     xd.allTargetIds().mapNotNull { xd.getBuildTargetInfoForId(it) }.filterTargets()
 
-  private fun List<BuildTargetInfo>.filterTargets(): List<BuildTargetInfo> =
-    this.filter(currentFilter.predicate)
+  private fun List<BuildTargetInfo>.filterTargets(): List<BuildTargetInfo> = this.filter(currentFilter.predicate)
 
   public enum class FILTER(public val predicate: (BuildTargetInfo) -> Boolean) {
     OFF({ true }),

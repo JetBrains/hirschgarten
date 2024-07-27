@@ -16,17 +16,16 @@ public fun Project.findModuleNameProvider(): TargetNameReformatProvider? =
 public fun Project.findLibraryNameProvider(): TargetNameReformatProvider? =
   this.buildToolId.takeIf { it.id != "bsp" }?.let { createLibraryNameProvider(it) }
 
-private fun createModuleNameProvider(buildToolId: BuildToolId): TargetNameReformatProvider =
-  createNameReformatProvider(buildToolId)
+private fun createModuleNameProvider(buildToolId: BuildToolId): TargetNameReformatProvider = createNameReformatProvider(buildToolId)
 
-private fun createLibraryNameProvider(buildToolId: BuildToolId): TargetNameReformatProvider =
-  createNameReformatProvider(buildToolId)
+private fun createLibraryNameProvider(buildToolId: BuildToolId): TargetNameReformatProvider = createNameReformatProvider(buildToolId)
 
 private fun createNameReformatProvider(buildToolId: BuildToolId): (BuildTargetInfo) -> String {
   val bspBuildTargetClassifier = BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
   return { buildTargetInfo ->
     val sanitizedName = bspBuildTargetClassifier.calculateBuildTargetName(buildTargetInfo).replaceDots()
-    bspBuildTargetClassifier.calculateBuildTargetPath(buildTargetInfo)
+    bspBuildTargetClassifier
+      .calculateBuildTargetPath(buildTargetInfo)
       .shortenTargetPath(sanitizedName.length)
       .joinToString(".", postfix = ".$sanitizedName") { pathElement -> pathElement.replaceDots() }
   }
@@ -36,19 +35,27 @@ private fun List<String>.shortenTargetPath(targetNameLength: Int = 0): List<Stri
   if (BspFeatureFlags.isShortenModuleLibraryNamesEnabled) {
     val maxLength = 200 - targetNameLength
     var runningLength = 0
-    val (subPath, remaining) = asReversed().partition {
-      runningLength += it.length
-      runningLength <= maxLength
+    val (subPath, remaining) =
+      asReversed().partition {
+        runningLength += it.length
+        runningLength <= maxLength
+      }
+    if (remaining.isEmpty()) {
+      subPath.asReversed()
+    } else {
+      listOf(StringUtils.md5Hash(remaining.joinToString(""), 5)) + subPath.asReversed()
     }
-    if (remaining.isEmpty()) subPath.asReversed()
-    else listOf(StringUtils.md5Hash(remaining.joinToString(""), 5)) + subPath.asReversed()
-  } else this
+  } else {
+    this
+  }
 
 internal fun String.replaceDots(): String = this.replace('.', '-')
 
 internal fun String.shortenTargetPath(): String =
-  if (BspFeatureFlags.isShortenModuleLibraryNamesEnabled)
+  if (BspFeatureFlags.isShortenModuleLibraryNamesEnabled) {
     split(".").shortenTargetPath().joinToString(".")
-  else this
+  } else {
+    this
+  }
 
 public fun TargetNameReformatProvider?.orDefault(): TargetNameReformatProvider = this ?: DefaultModuleNameProvider

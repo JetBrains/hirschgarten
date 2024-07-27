@@ -84,9 +84,9 @@ internal class JavaModuleWithSourcesUpdater(
         SdkDependency(
           SdkId(
             addendum.androidSdkName,
-            AndroidSdkType.SDK_NAME
-          )
-        )
+            AndroidSdkType.SDK_NAME,
+          ),
+        ),
       )
     }
     entityToAdd.jvmJdkName?.also {
@@ -97,7 +97,7 @@ internal class JavaModuleWithSourcesUpdater(
         toLibraryDependency(
           IntermediateLibraryDependency(addendum.scalaSdkName, true),
           workspaceModelEntityUpdaterConfig.project,
-        )
+        ),
       )
     }
     return returnDependencies
@@ -109,20 +109,23 @@ internal class JavaModuleWithSourcesUpdater(
     moduleEntity: ModuleEntity,
   ) {
     val compilerOutput =
-      JpsPaths.getJpsCompiledProductionPath(projectBasePath, entityToAdd.genericModuleInfo.name)
+      JpsPaths
+        .getJpsCompiledProductionPath(projectBasePath, entityToAdd.genericModuleInfo.name)
         .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
     val testCompilerOutput =
-      JpsPaths.getJpsCompiledTestPath(projectBasePath, entityToAdd.genericModuleInfo.name)
+      JpsPaths
+        .getJpsCompiledTestPath(projectBasePath, entityToAdd.genericModuleInfo.name)
         .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager)
-    val entity = JavaModuleSettingsEntity(
-      inheritedCompilerOutput = false,
-      excludeOutput = true,
-      entitySource = moduleEntity.entitySource,
-    ) {
-      this.compilerOutput = compilerOutput
-      this.compilerOutputForTests = testCompilerOutput
-      this.languageLevelId = LanguageLevel.parse(entityToAdd.javaAddendum?.languageVersion)?.name
-    }
+    val entity =
+      JavaModuleSettingsEntity(
+        inheritedCompilerOutput = false,
+        excludeOutput = true,
+        entitySource = moduleEntity.entitySource,
+      ) {
+        this.compilerOutput = compilerOutput
+        this.compilerOutputForTests = testCompilerOutput
+        this.languageLevelId = LanguageLevel.parse(entityToAdd.javaAddendum?.languageVersion)?.name
+      }
 
     builder.modifyModuleEntity(moduleEntity) {
       this.javaSettings = entity
@@ -130,18 +133,19 @@ internal class JavaModuleWithSourcesUpdater(
   }
 
   private companion object {
-    val defaultDependencies = listOf(
-      ModuleSourceDependency,
-    )
+    val defaultDependencies =
+      listOf(
+        ModuleSourceDependency,
+      )
   }
 }
 
-internal fun JavaModule.isRoot(projectBasePath: Path): Boolean = // TODO - that is a temporary predicate
+internal fun JavaModule.isRoot(projectBasePath: Path): Boolean =
+  // TODO - that is a temporary predicate
   sourceRoots.isEmpty() && resourceRoots.isEmpty() && baseDirContentRoot?.path == projectBasePath
 
-internal class JavaModuleWithoutSourcesUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
+internal class JavaModuleWithoutSourcesUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithoutParentModuleUpdater<JavaModule, ModuleEntity> {
   override fun addEntity(entityToAdd: JavaModule): ModuleEntity {
     val moduleEntityUpdater =
       ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateJavaModuleDependencies(entityToAdd))
@@ -172,8 +176,7 @@ internal class JavaModuleUpdater(
       javaModuleWithSourcesUpdater.addEntity(entityToAdd)
     }
 
-  private fun JavaModule.doesntContainSourcesAndResources() =
-    this.sourceRoots.isEmpty() && this.resourceRoots.isEmpty()
+  private fun JavaModule.doesntContainSourcesAndResources() = this.sourceRoots.isEmpty() && this.resourceRoots.isEmpty()
 
   private fun JavaModule.containsJavaKotlinLanguageIds() =
     with(genericModuleInfo.languageIds) {

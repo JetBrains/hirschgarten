@@ -7,6 +7,5 @@ import org.jetbrains.android.facet.AndroidRootUtil.getExternalLibraries
 import java.io.File
 
 public class BspClassJarProvider : ClassJarProvider {
-  override fun getModuleExternalLibraries(module: Module): List<File> =
-    getExternalLibraries(module).map { VfsUtilCore.virtualToIoFile(it) }
+  override fun getModuleExternalLibraries(module: Module): List<File> = getExternalLibraries(module).map { VfsUtilCore.virtualToIoFile(it) }
 }

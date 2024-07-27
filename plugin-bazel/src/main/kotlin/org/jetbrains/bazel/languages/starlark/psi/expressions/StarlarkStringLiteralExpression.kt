@@ -11,12 +11,15 @@ class StarlarkStringLiteralExpression(node: ASTNode) : StarlarkBaseElement(node)
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitStringLiteralExpression(this)
 
   fun getStringContents() =
-    node.findChildByType(StarlarkTokenTypes.STRING)?.text
+    node
+      .findChildByType(StarlarkTokenTypes.STRING)
+      ?.text
       ?.let {
-        if (it.startsWith("\"\"\""))
+        if (it.startsWith("\"\"\"")) {
           it.removeSurrounding("\"\"\"")
-        else
+        } else {
           it.removeSurrounding("\"")
+        }
       }
 
   override fun getReference(): PsiReference = BazelLabelReference(this, true)

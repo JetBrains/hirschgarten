@@ -30,7 +30,8 @@ import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.moduleEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
 
-public class BspAndroidModuleSystem(override val module: Module) : AndroidModuleSystem,
+public class BspAndroidModuleSystem(override val module: Module) :
+  AndroidModuleSystem,
   SampleDataDirectoryProvider by MainContentRootSampleDataDirectoryProvider(module) {
   override val moduleClassFileFinder: ClassFileFinder = BspClassFileFinder(module)
 
@@ -48,8 +49,7 @@ public class BspAndroidModuleSystem(override val module: Module) : AndroidModule
 
   override fun registerDependency(coordinate: GradleCoordinate): Unit = throw UnsupportedOperationException()
 
-  override fun registerDependency(coordinate: GradleCoordinate, type: DependencyType): Unit =
-    throw UnsupportedOperationException()
+  override fun registerDependency(coordinate: GradleCoordinate, type: DependencyType): Unit = throw UnsupportedOperationException()
 
   override fun getAndroidLibraryDependencies(scope: DependencyScopeType): Collection<ExternalAndroidLibrary> {
     val result = mutableListOf<ExternalAndroidLibrary>()
@@ -89,11 +89,9 @@ public class BspAndroidModuleSystem(override val module: Module) : AndroidModule
   override fun getManifestOverrides(): ManifestOverrides = ManifestOverrides()
 
   // Get the resource package from BSP, fallback to parsing the manifest otherwise.
-  override fun getPackageName(): String? =
-    module.moduleEntity?.androidAddendumEntity?.resourceJavaPackage ?: getPackageName(module)
+  override fun getPackageName(): String? = module.moduleEntity?.androidAddendumEntity?.resourceJavaPackage ?: getPackageName(module)
 
-  override fun getResolveScope(scopeType: ScopeType): GlobalSearchScope =
-    module.getModuleWithDependenciesAndLibrariesScope(false)
+  override fun getResolveScope(scopeType: ScopeType): GlobalSearchScope = module.getModuleWithDependenciesAndLibrariesScope(false)
 
   override val usesCompose: Boolean
     get() = true

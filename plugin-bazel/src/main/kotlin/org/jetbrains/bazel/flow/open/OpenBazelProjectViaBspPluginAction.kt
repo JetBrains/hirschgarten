@@ -14,16 +14,18 @@ import org.jetbrains.plugins.bsp.flow.open.BspStartupActivity
 import org.jetbrains.plugins.bsp.flow.open.initProperties
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 
-private val ELIGIBLE_BAZEL_PROJECT_FILE_NAMES = listOf(
-  "projectview.bazelproject",
-  "WORKSPACE",
-  "WORKSPACE.bazel",
-  "MODULE.bazel",
-  "WORKSPACE.bzlmod",
-)
+private val ELIGIBLE_BAZEL_PROJECT_FILE_NAMES =
+  listOf(
+    "projectview.bazelproject",
+    "WORKSPACE",
+    "WORKSPACE.bazel",
+    "MODULE.bazel",
+    "WORKSPACE.bzlmod",
+  )
 
-internal class OpenBazelProjectViaBspPluginAction:
-  SuspendableAction({ "Open Bazel project"}), DumbAware {
+internal class OpenBazelProjectViaBspPluginAction :
+  SuspendableAction({ "Open Bazel project" }),
+  DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val psiFile = CommonDataKeys.PSI_FILE.getData(e.dataContext)
 
@@ -38,7 +40,8 @@ internal class OpenBazelProjectViaBspPluginAction:
 
     e.presentation.isEnabled = importable
     e.presentation.isVisible =
-      psiFile?.virtualFile?.name?.let { ELIGIBLE_BAZEL_PROJECT_FILE_NAMES.contains(it) } == true && importable
+      psiFile?.virtualFile?.name?.let { ELIGIBLE_BAZEL_PROJECT_FILE_NAMES.contains(it) } == true &&
+      importable
   }
 
   private fun isImportableBazelBspProject(project: Project?, psiFile: PsiFile? = null): Boolean {

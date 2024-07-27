@@ -21,10 +21,7 @@ import kotlin.math.sqrt
 
 private typealias BTI = BuildTargetIdentifier
 
-public class ChunkingBuildServer<S : JoinedBuildServer>(
-  private val base: S,
-  private val minChunkSize: Int,
-) : JoinedBuildServer by base {
+public class ChunkingBuildServer<S : JoinedBuildServer>(private val base: S, private val minChunkSize: Int) : JoinedBuildServer by base {
   override fun buildTargetSources(params: SourcesParams?): CompletableFuture<SourcesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
@@ -43,9 +40,7 @@ public class ChunkingBuildServer<S : JoinedBuildServer>(
       wrapRes = { ResourcesResult(it) },
     )(params)
 
-  override fun buildTargetDependencySources(
-    params: DependencySourcesParams?,
-  ): CompletableFuture<DependencySourcesResult> =
+  override fun buildTargetDependencySources(params: DependencySourcesParams?): CompletableFuture<DependencySourcesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { DependencySourcesParams(it) },
@@ -63,9 +58,7 @@ public class ChunkingBuildServer<S : JoinedBuildServer>(
       wrapRes = { OutputPathsResult(it) },
     )(params)
 
-  override fun buildTargetDependencyModules(
-    params: DependencyModulesParams?,
-  ): CompletableFuture<DependencyModulesResult> =
+  override fun buildTargetDependencyModules(params: DependencyModulesParams?): CompletableFuture<DependencyModulesResult> =
     chunkedRequest(
       unwrapReq = { it.targets },
       wrapReq = { DependencyModulesParams(it) },
@@ -106,16 +99,18 @@ public class ChunkingBuildServer<S : JoinedBuildServer>(
     fun (requestParams: ReqW?): CompletableFuture<ResW> {
       if (requestParams == null) return doRequest(null)
       val allTargetsIds = unwrapReq(requestParams)
-      val requests = allTargetsIds.chunked(chunkSize(allTargetsIds))
-        .map { doRequest(wrapReq(it)) }
-      val all = CompletableFuture.allOf(*requests.toTypedArray()).thenApply {
-        requests.map { unwrapRes(it.get()) }.flatten().let { wrapRes(it) }
-      }
+      val requests =
+        allTargetsIds
+          .chunked(chunkSize(allTargetsIds))
+          .map { doRequest(wrapReq(it)) }
+      val all =
+        CompletableFuture.allOf(*requests.toTypedArray()).thenApply {
+          requests.map { unwrapRes(it.get()) }.flatten().let { wrapRes(it) }
+        }
       return all.whenComplete { _, _ ->
         if (all.isCancelled) requests.forEach { it.cancel(true) }
       }
     }
 
-  private fun chunkSize(targetIds: List<Any>) =
-    sqrt(targetIds.size.toDouble()).toInt().coerceAtLeast(minChunkSize)
+  private fun chunkSize(targetIds: List<Any>) = sqrt(targetIds.size.toDouble()).toInt().coerceAtLeast(minChunkSize)
 }

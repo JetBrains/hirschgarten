@@ -13,20 +13,24 @@ internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackComman
     const val PREFIX = CMD_PREFIX + "waitForBazelSync"
   }
 
-  override suspend fun doExecute(context: PlaybackContext) = coroutineScope {
-    val project = context.project
+  override suspend fun doExecute(context: PlaybackContext) =
+    coroutineScope {
+      val project = context.project
 
-    val syncFinished = Channel<Unit>()
+      val syncFinished = Channel<Unit>()
 
-    @Suppress("UnstableApiUsage")
-    project.messageBus.connect(nestedDisposable()).subscribe(BspWorkspaceListener.TOPIC, object : BspWorkspaceListener {
-      override fun syncFinished(canceled: Boolean) {
-        runBlocking { syncFinished.send(Unit) }
-      }
+      @Suppress("UnstableApiUsage")
+      project.messageBus.connect(nestedDisposable()).subscribe(
+        BspWorkspaceListener.TOPIC,
+        object : BspWorkspaceListener {
+          override fun syncFinished(canceled: Boolean) {
+            runBlocking { syncFinished.send(Unit) }
+          }
 
-      override fun syncStarted() {}
-    })
+          override fun syncStarted() {}
+        },
+      )
 
-    syncFinished.receive()
-  }
+      syncFinished.receive()
+    }
 }

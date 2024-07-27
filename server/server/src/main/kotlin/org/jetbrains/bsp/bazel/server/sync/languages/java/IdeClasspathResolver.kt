@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.java
 
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import java.net.URI
 
 class IdeClasspathResolver(
@@ -32,12 +32,13 @@ class IdeClasspathResolver(
       return runtimeJar
     }
     val headerSuffix = toMavenSuffix(compileJar)
-    val mavenJarSuffix = headerSuffix?.let { s: String ->
-      s.replace(
-        "/header_([^/]+)\\.jar$".toRegex(),
-        "/$1.jar"
-      )
-    }
+    val mavenJarSuffix =
+      headerSuffix?.let { s: String ->
+        s.replace(
+          "/header_([^/]+)\\.jar$".toRegex(),
+          "/$1.jar",
+        )
+      }
     return mavenJarSuffix?.takeIf(runtimeMavenJarSuffixes::contains)?.let { suffix ->
       runtimeJars.find { jar: String -> jar.endsWith(suffix) }
     } ?: compileJar
@@ -63,14 +64,16 @@ class IdeClasspathResolver(
   companion object {
     private val JAR_PATTERN = ("((-[hi]jar)|(\\.abi))\\.jar\$").toRegex()
 
-    fun resolveIdeClasspath(label: Label,
-                            bazelPathsResolver: BazelPathsResolver,
-                            runtimeClasspath: List<URI>,
-                            compileClasspath: List<URI>) =
-            IdeClasspathResolver(
-                    label,
-                    bazelPathsResolver,
-                    runtimeClasspath.asSequence(),
-                    compileClasspath.asSequence()).resolve().toList()
+    fun resolveIdeClasspath(
+      label: Label,
+      bazelPathsResolver: BazelPathsResolver,
+      runtimeClasspath: List<URI>,
+      compileClasspath: List<URI>,
+    ) = IdeClasspathResolver(
+      label,
+      bazelPathsResolver,
+      runtimeClasspath.asSequence(),
+      compileClasspath.asSequence(),
+    ).resolve().toList()
   }
 }

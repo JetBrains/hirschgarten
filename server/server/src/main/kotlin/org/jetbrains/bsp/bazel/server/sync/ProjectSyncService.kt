@@ -38,14 +38,14 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.JsonObject
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
+import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
+import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
-import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
-import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
-import org.jetbrains.bsp.bazel.server.model.Language
 
 /** A facade for all project sync related methods  */
 class ProjectSyncService(
@@ -53,7 +53,6 @@ class ProjectSyncService(
   private val projectProvider: ProjectProvider,
   private val telemetryConfig: TelemetryConfig,
 ) {
-
   private lateinit var clientCapabilities: BuildClientCapabilities
 
   fun initialize(cancelChecker: CancelChecker, initializeBuildParams: InitializeBuildParams): InitializeBuildResult {
@@ -68,7 +67,6 @@ class ProjectSyncService(
     val telemetryConfigWithHttp = telemetryConfig.copy(openTelemetryEndpoint = openTelemetryEndpoint)
     setupTelemetry(telemetryConfigWithHttp)
   }
-
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-639
   // We might consider doing the actual project reload in this endpoint
@@ -107,17 +105,14 @@ class ProjectSyncService(
     return bspMapper.resources(project, resourcesParams)
   }
 
-  fun buildTargetInverseSources(
-    cancelChecker: CancelChecker,
-    inverseSourcesParams: InverseSourcesParams
-  ): InverseSourcesResult {
+  fun buildTargetInverseSources(cancelChecker: CancelChecker, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
     val project = projectProvider.get(cancelChecker)
     return bspMapper.inverseSources(project, inverseSourcesParams, cancelChecker)
   }
 
   fun buildTargetDependencySources(
     cancelChecker: CancelChecker,
-    dependencySourcesParams: DependencySourcesParams
+    dependencySourcesParams: DependencySourcesParams,
   ): DependencySourcesResult {
     val project = projectProvider.get(cancelChecker)
     return bspMapper.dependencySources(project, dependencySourcesParams)
@@ -170,36 +165,23 @@ class ProjectSyncService(
     return bspMapper.buildTargetScalacOptions(project, params, includeClasspath, cancelChecker)
   }
 
-  fun buildTargetScalaTestClasses(
-    cancelChecker: CancelChecker,
-    params: ScalaTestClassesParams
-  ): ScalaTestClassesResult {
+  fun buildTargetScalaTestClasses(cancelChecker: CancelChecker, params: ScalaTestClassesParams): ScalaTestClassesResult {
     val project = projectProvider.get(cancelChecker)
     return bspMapper.buildTargetScalaTestClasses(project, params)
   }
 
-  fun buildTargetScalaMainClasses(
-    cancelChecker: CancelChecker,
-    params: ScalaMainClassesParams
-  ): ScalaMainClassesResult {
+  fun buildTargetScalaMainClasses(cancelChecker: CancelChecker, params: ScalaMainClassesParams): ScalaMainClassesResult {
     val project = projectProvider.get(cancelChecker)
     return bspMapper.buildTargetScalaMainClasses(project, params)
   }
 
-  fun buildTargetDependencyModules(
-    cancelChecker: CancelChecker,
-    params: DependencyModulesParams
-  ): DependencyModulesResult {
+  fun buildTargetDependencyModules(cancelChecker: CancelChecker, params: DependencyModulesParams): DependencyModulesResult {
     val project = projectProvider.get(cancelChecker)
     return bspMapper.buildDependencyModules(project, params)
   }
 
-  fun rustWorkspace(
-    cancelChecker: CancelChecker,
-    params: RustWorkspaceParams
-  ): RustWorkspaceResult {
+  fun rustWorkspace(cancelChecker: CancelChecker, params: RustWorkspaceParams): RustWorkspaceResult {
     val project = projectProvider.get(cancelChecker)
     return bspMapper.rustWorkspace(project, params)
   }
 }
-

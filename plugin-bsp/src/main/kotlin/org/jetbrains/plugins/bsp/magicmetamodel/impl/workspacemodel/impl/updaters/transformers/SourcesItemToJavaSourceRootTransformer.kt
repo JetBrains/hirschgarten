@@ -7,10 +7,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRo
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.net.URI
 
-internal data class BuildTargetAndSourceItem(
-  val buildTarget: BuildTarget,
-  val sourcesItem: SourcesItem,
-)
+internal data class BuildTargetAndSourceItem(val buildTarget: BuildTarget, val sourcesItem: SourcesItem)
 
 internal class SourcesItemToJavaSourceRootTransformer :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
@@ -26,8 +23,7 @@ internal class SourcesItemToJavaSourceRootTransformer :
       .map { toJavaSourceRoot(it, sourceRoots, rootType) }
   }
 
-  private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> =
-    sourcesItem.roots.orEmpty().map { it.safeCastToURI() }
+  private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> = sourcesItem.roots.orEmpty().map { it.safeCastToURI() }
 
   private fun inferRootType(buildTarget: BuildTarget): SourceRootTypeId =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
@@ -48,10 +44,11 @@ internal class SourcesItemToJavaSourceRootTransformer :
   }
 
   private fun calculatePackagePrefix(sourceRoot: SourceRoot, sourceRoots: List<URI>): JavaSourceRootPackagePrefix {
-    val packageDetails = JavaSourcePackageDetails(
-      sourceURI = sourceRoot.sourcePath.let { if (sourceRoot.isFile) it.parent else it }.toUri(),
-      sourceRoots = sourceRoots,
-    )
+    val packageDetails =
+      JavaSourcePackageDetails(
+        sourceURI = sourceRoot.sourcePath.let { if (sourceRoot.isFile) it.parent else it }.toUri(),
+        sourceRoots = sourceRoots,
+      )
 
     return JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer.transform(packageDetails)
   }

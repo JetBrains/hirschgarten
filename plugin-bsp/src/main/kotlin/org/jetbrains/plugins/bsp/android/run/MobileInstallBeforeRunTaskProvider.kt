@@ -45,15 +45,17 @@ public class MobileInstallBeforeRunTaskProvider : BeforeRunTaskProvider<MobileIn
     val targetId = runConfiguration.targets.singleOrNull()?.id ?: return false
     val deviceFuture = environment.getCopyableUserData(DEVICE_FUTURE_KEY) ?: return false
 
-    val startType = when (environment.executor.id) {
-      DefaultRunExecutor.EXECUTOR_ID -> MobileInstallStartType.COLD
-      DefaultDebugExecutor.EXECUTOR_ID -> MobileInstallStartType.DEBUG
-      else -> return false
-    }
+    val startType =
+      when (environment.executor.id) {
+        DefaultRunExecutor.EXECUTOR_ID -> MobileInstallStartType.COLD
+        DefaultDebugExecutor.EXECUTOR_ID -> MobileInstallStartType.DEBUG
+        else -> return false
+      }
 
-    val mobileInstallResult = runBlocking {
-      runMobileInstallTargetTask(targetId, deviceFuture, startType, environment.project, log)
-    }
+    val mobileInstallResult =
+      runBlocking {
+        runMobileInstallTargetTask(targetId, deviceFuture, startType, environment.project, log)
+      }
     return mobileInstallResult?.statusCode == StatusCode.OK
   }
 }

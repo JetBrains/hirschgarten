@@ -26,11 +26,12 @@ class JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformerTest {
   fun `should return no package for equal source dir and one root from all roots`() {
     // given
     val sourceDir = URI.create("file:///example/package/root/")
-    val roots = listOf(
-      URI.create("file:///another/example/package/root/"),
-      URI.create("file:///example/package/root/"),
-      URI.create("file:///another/another/example/package/root/"),
-    )
+    val roots =
+      listOf(
+        URI.create("file:///another/example/package/root/"),
+        URI.create("file:///example/package/root/"),
+        URI.create("file:///another/another/example/package/root/"),
+      )
     val javaSourcePackageDetails = JavaSourcePackageDetails(sourceDir, roots)
 
     // when
@@ -60,11 +61,12 @@ class JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformerTest {
   fun `should return package for source dir and multiple roots`() {
     // given
     val sourceDir = URI.create("file:///root/dir/example/package/")
-    val roots = listOf(
-      URI.create("file:///another/example/package/root/"),
-      URI.create("file:///root/dir/"),
-      URI.create("file:///another/another/example/package/root/"),
-    )
+    val roots =
+      listOf(
+        URI.create("file:///another/example/package/root/"),
+        URI.create("file:///root/dir/"),
+        URI.create("file:///another/another/example/package/root/"),
+      )
     val javaSourcePackageDetails = JavaSourcePackageDetails(sourceDir, roots)
 
     // when
@@ -79,11 +81,12 @@ class JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformerTest {
   fun `should return no package for source dir being parent for roots`() {
     // given
     val sourceDir = URI.create("file:///example/package/")
-    val roots = listOf(
-      URI.create("file:///another/example/package/root/"),
-      URI.create("file:///example/package/root/"),
-      URI.create("file:///another/another/example/package/root/"),
-    )
+    val roots =
+      listOf(
+        URI.create("file:///another/example/package/root/"),
+        URI.create("file:///example/package/root/"),
+        URI.create("file:///another/another/example/package/root/"),
+      )
     val javaSourcePackageDetails = JavaSourcePackageDetails(sourceDir, roots)
 
     // when
@@ -98,11 +101,12 @@ class JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformerTest {
   fun `should return no package for no matching roots`() {
     // given
     val sourceDir = URI.create("file:///root/dir/example/package/")
-    val roots = listOf(
-      URI.create("file:///another/root/dir/example/package/"),
-      URI.create("file:///not/matching/root/dir/"),
-      URI.create("file:///another/another/root/dir/example/package/"),
-    )
+    val roots =
+      listOf(
+        URI.create("file:///another/root/dir/example/package/"),
+        URI.create("file:///not/matching/root/dir/"),
+        URI.create("file:///another/another/root/dir/example/package/"),
+      )
     val javaSourcePackageDetails = JavaSourcePackageDetails(sourceDir, roots)
 
     // when

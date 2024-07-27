@@ -48,8 +48,7 @@ private class FilterChangeAction(
   private val filterType: TargetFilter.FILTER,
   text: String,
 ) : ToggleAction(text) {
-  override fun isSelected(e: AnActionEvent): Boolean =
-    targetFilter.currentFilter == filterType
+  override fun isSelected(e: AnActionEvent): Boolean = targetFilter.currentFilter == filterType
 
   override fun setSelected(e: AnActionEvent, state: Boolean) {
     if (state) {

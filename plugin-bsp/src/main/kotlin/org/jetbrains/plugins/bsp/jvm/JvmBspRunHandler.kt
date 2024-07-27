@@ -34,18 +34,20 @@ public class JvmBspRunHandler : BspRunHandler {
   // Because we have android_local_test with mocked Android classes, which should be run, well, locally,
   //  as opposed to on-device like with android_binary
   // TODO: perhaps better solved by having a tag
-  override fun canRun(targets: List<BuildTargetInfo>): Boolean = targets.all {
-    it.languageIds.isJvmTarget() ||
-      it.languageIds.includesAndroid() && it.capabilities.canTest
-  }
+  override fun canRun(targets: List<BuildTargetInfo>): Boolean =
+    targets.all {
+      it.languageIds.isJvmTarget() ||
+        it.languageIds.includesAndroid() &&
+        it.capabilities.canTest
+    }
 
   override fun getRunProfileState(
     project: Project,
     executor: Executor,
     environment: ExecutionEnvironment,
     configuration: BspRunConfigurationBase,
-  ): RunProfileState {
-    return when {
+  ): RunProfileState =
+    when {
       executor is DefaultDebugExecutor -> {
         JvmDebugHandlerState(project, environment, configuration, UUID.randomUUID().toString())
       }
@@ -62,7 +64,6 @@ public class JvmBspRunHandler : BspRunHandler {
         throw ExecutionException("JvmBspRunHandler can run only JVM or generic BSP targets")
       }
     }
-  }
 
   public class JvmDebugHandlerState(
     project: Project,
@@ -85,8 +86,7 @@ public class JvmBspRunHandler : BspRunHandler {
       }
     }
 
-    override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener =
-      BspRunTaskListener(handler)
+    override fun createAndAddTaskListener(handler: BspProcessHandler<out Any>): BspTaskListener = BspRunTaskListener(handler)
 
     override fun startBsp(server: JoinedBuildServer): CompletableFuture<*> {
       // SAFETY: safe to unwrap because we checked in checkRunCapabilities

@@ -5,10 +5,8 @@ import com.intellij.ui.components.fields.ExtendableTextComponent
 import javax.swing.Icon
 import javax.swing.JComponent
 
-public sealed class TextComponentExtension(
-  private val tooltip: String?,
-  private val beforeText: Boolean,
-) : ExtendableTextComponent.Extension {
+public sealed class TextComponentExtension(private val tooltip: String?, private val beforeText: Boolean) :
+  ExtendableTextComponent.Extension {
   override fun isIconBeforeText(): Boolean = beforeText
 
   override fun getTooltip(): String? = tooltip
@@ -29,8 +27,7 @@ public sealed class TextComponentExtension(
     tooltip: String? = null,
     beforeText: Boolean = false,
   ) : TextComponentExtension(tooltip, beforeText) {
-    override fun getIcon(hovered: Boolean): Icon =
-      if (predicate()) trueIcon else falseIcon
+    override fun getIcon(hovered: Boolean): Icon = if (predicate()) trueIcon else falseIcon
 
     override fun getActionOnClick(): Runnable? = null
 

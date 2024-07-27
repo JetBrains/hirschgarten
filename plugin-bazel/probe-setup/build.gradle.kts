@@ -34,10 +34,15 @@ fun findLatestCompatibleBspPluginVersion(): String {
     ?: error("Couldn't find compatible BSP plugin version")
 }
 
-
-fun findPluginRepositoryId(id: String, buildVersion: String, channel: String): String? =
-  PluginRepositoryFactory.create()
+fun findPluginRepositoryId(
+  id: String,
+  buildVersion: String,
+  channel: String,
+): String? =
+  PluginRepositoryFactory
+    .create()
     .pluginManager
     .searchCompatibleUpdates(listOf(id), buildVersion, channel)
     .firstOrNull()
-    ?.id?.toString()
+    ?.id
+    ?.toString()

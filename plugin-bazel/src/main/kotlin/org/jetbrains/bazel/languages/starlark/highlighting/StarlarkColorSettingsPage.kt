@@ -26,7 +26,7 @@ class StarlarkColorSettingsPage : ColorSettingsPage {
       StarlarkBundle.message("highlighter.descriptor.text.brackets") to StarlarkHighlightingColors.BRACKETS,
       StarlarkBundle.message("highlighter.descriptor.text.identifier") to StarlarkHighlightingColors.IDENTIFIER,
       StarlarkBundle.message("highlighter.descriptor.text.functionDeclaration")
-              to StarlarkHighlightingColors.FUNCTION_DECLARATION,
+        to StarlarkHighlightingColors.FUNCTION_DECLARATION,
       StarlarkBundle.message("highlighter.descriptor.text.namedArgument") to StarlarkHighlightingColors.NAMED_ARGUMENT,
     )
   }
@@ -39,7 +39,8 @@ class StarlarkColorSettingsPage : ColorSettingsPage {
 
   override fun getHighlighter(): SyntaxHighlighter = StarlarkSyntaxHighlighter
 
-  override fun getDemoText(): String = """
+  override fun getDemoText(): String =
+    """
     |# Line comment
     |
     |def fun(param, optional_param = "string", *varargs, **kwargs):
@@ -62,7 +63,7 @@ class StarlarkColorSettingsPage : ColorSettingsPage {
     |
     |"banana".count("a")
     |numbers = {"one": 1, "two": 2}
-  """.trimMargin()
+    """.trimMargin()
 
   override fun getAdditionalHighlightingTagToDescriptorMap(): MutableMap<String, TextAttributesKey>? = null
 }

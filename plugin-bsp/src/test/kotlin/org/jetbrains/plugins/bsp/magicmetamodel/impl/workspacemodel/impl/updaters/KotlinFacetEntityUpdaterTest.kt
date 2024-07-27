@@ -34,45 +34,52 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
 
       val associates = listOf("//target4", "target5")
 
-      val kotlinBuildTarget = KotlinBuildTarget(
-        languageVersion = "1.8",
-        apiVersion = "1.8",
-        kotlincOptions = listOf(),
-        associates = associates.map { BuildTargetIdentifier(it) },
-        jvmBuildTarget = JvmBuildTarget().also {
-          it.javaHome = javaHome
-          it.javaVersion = javaVersion
-        },
-      )
+      val kotlinBuildTarget =
+        KotlinBuildTarget(
+          languageVersion = "1.8",
+          apiVersion = "1.8",
+          kotlincOptions = listOf(),
+          associates = associates.map { BuildTargetIdentifier(it) },
+          jvmBuildTarget =
+            JvmBuildTarget().also {
+              it.javaHome = javaHome
+              it.javaVersion = javaVersion
+            },
+        )
 
-      val module = GenericModuleInfo(
-        name = "module1",
-        type = ModuleTypeId("JAVA_MODULE"),
-        modulesDependencies = listOf(
-          IntermediateModuleDependency("module2"),
-          IntermediateModuleDependency("module3"),
-        ),
-        librariesDependencies = listOf(),
-        associates = associates.map { IntermediateModuleDependency(it) },
-      )
+      val module =
+        GenericModuleInfo(
+          name = "module1",
+          type = ModuleTypeId("JAVA_MODULE"),
+          modulesDependencies =
+            listOf(
+              IntermediateModuleDependency("module2"),
+              IntermediateModuleDependency("module3"),
+            ),
+          librariesDependencies = listOf(),
+          associates = associates.map { IntermediateModuleDependency(it) },
+        )
 
-      val baseDirContentRoot = ContentRoot(
-        path = projectBasePath.toAbsolutePath(),
-        excludedPaths = listOf(),
-      )
-      val javaModule = JavaModule(
-        genericModuleInfo = module,
-        baseDirContentRoot = baseDirContentRoot,
-        sourceRoots = listOf(),
-        resourceRoots = listOf(),
-        moduleLevelLibraries = listOf(),
-        jvmJdkName = "${projectBasePath.name}-$javaVersion",
-        kotlinAddendum = KotlinAddendum(
-          languageVersion = kotlinBuildTarget.languageVersion,
-          apiVersion = kotlinBuildTarget.apiVersion,
-          kotlincOptions = kotlinBuildTarget.kotlincOptions,
-        ),
-      )
+      val baseDirContentRoot =
+        ContentRoot(
+          path = projectBasePath.toAbsolutePath(),
+          excludedPaths = listOf(),
+        )
+      val javaModule =
+        JavaModule(
+          genericModuleInfo = module,
+          baseDirContentRoot = baseDirContentRoot,
+          sourceRoots = listOf(),
+          resourceRoots = listOf(),
+          moduleLevelLibraries = listOf(),
+          jvmJdkName = "${projectBasePath.name}-$javaVersion",
+          kotlinAddendum =
+            KotlinAddendum(
+              languageVersion = kotlinBuildTarget.languageVersion,
+              apiVersion = kotlinBuildTarget.apiVersion,
+              kotlincOptions = kotlinBuildTarget.kotlincOptions,
+            ),
+        )
 
       // when
       updateWorkspaceModel {
@@ -102,7 +109,7 @@ class KotlinFacetEntityUpdaterTest : WorkspaceModelBaseTest() {
         builder,
         virtualFileUrlManager,
         projectBasePath,
-        project
+        project,
       )
     val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
     return kotlinFacetEntityUpdater.addEntity(javaModule, parentEntity)

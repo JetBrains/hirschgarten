@@ -36,8 +36,9 @@ fun emptyBackgroundTaskWithoutTimeouts(
     BoxedUnit.UNIT
   }
 
-fun SearchableComponent.fixture(): CommonContainerFixture = searchContext() as? CommonContainerFixture
-  ?: throw InvalidClassException("Element ${searchContext()} is not a CommonContainerFixture ")
+fun SearchableComponent.fixture(): CommonContainerFixture =
+  searchContext() as? CommonContainerFixture
+    ?: throw InvalidClassException("Element ${searchContext()} is not a CommonContainerFixture ")
 
 fun SearchableComponent.fullText(): String = fullTexts().joinToString("\n")
 
@@ -51,55 +52,61 @@ fun SearchableComponent.clickElementNamed(
   name: String,
   type: MouseButton,
   count: Int = 1,
-  sameNamedInstance: Int = 0
+  sameNamedInstance: Int = 0,
 ) = with(fixture()) {
-  val button = when (type) {
-    MouseButton.Left -> "MouseButton.LEFT_BUTTON"
-    MouseButton.Right -> "MouseButton.RIGHT_BUTTON"
-    else -> return@with
-  }
+  val button =
+    when (type) {
+      MouseButton.Left -> "MouseButton.LEFT_BUTTON"
+      MouseButton.Right -> "MouseButton.RIGHT_BUTTON"
+      else -> return@with
+    }
   extractData().filter { it.text == name }.getOrNull(sameNamedInstance)?.run {
     step("clicking $count time(s) with $type at ${point.x}:${point.y}") {
       runJs(
         """
         const point = new java.awt.Point(${point.x}, ${point.y}); 
         robot.click(component, point, $button, $count);
-      """.trimIndent()
+        """.trimIndent(),
       )
     }
   }
 }
 
 // Probably not ideal selector, but without changes to dialog won't be better
-fun RobotProbeDriver.findContextMenu() =
-  findElement(Query.div("class" to "MyList"))
+fun RobotProbeDriver.findContextMenu() = findElement(Query.div("class" to "MyList"))
 
 fun SearchableComponent.click(): Unit = fixture().runJs("component.click();", true)
 
 fun SearchableComponent.setText(text: String): Unit = fixture().runJs("component.setText('$text');", true)
 
-fun RobotProbeDriver.getBuildConsoleOutput(): List<String> = findElement(Query.className("BuildTextConsoleView"))
-  .fixture()
-  .callJs<String>("component.getText();")
-  .split("\n")
+fun RobotProbeDriver.getBuildConsoleOutput(): List<String> =
+  findElement(Query.className("BuildTextConsoleView"))
+    .fixture()
+    .callJs<String>("component.getText();")
+    .split("\n")
 
-fun SearchableComponent.findElement(xpath: String) =
-  RobotSyntaxObj.SearchableOps(this.findWithTimeout(xpath, robotTimeout))
+fun SearchableComponent.findElement(xpath: String) = RobotSyntaxObj.SearchableOps(this.findWithTimeout(xpath, robotTimeout))
 
-fun IntelliJFixture.withBuild(build: String, version: String? = null) = withVersion(
-  `IdeProbeTestRunner$`.`MODULE$`.version(build, Option.apply(version))
-)
+fun IntelliJFixture.withBuild(build: String, version: String? = null) =
+  withVersion(
+    `IdeProbeTestRunner$`.`MODULE$`.version(build, Option.apply(version)),
+  )
 
 fun ProbeDriver.tryUntilSuccessful(action: () -> Unit) {
-  val actionToDo = DoOnlyOnce {
-    action()
-    BoxedUnit.UNIT
-  }
-  val waitLogic = BasicWaiting(fiveSeconds, minute) {
-    actionToDo.attempt()
-    if (actionToDo.isSuccessful) WaitDecision.`Done$`.`MODULE$`
-    else WaitDecision.KeepWaiting(Option.apply(null))
-  }
+  val actionToDo =
+    DoOnlyOnce {
+      action()
+      BoxedUnit.UNIT
+    }
+  val waitLogic =
+    BasicWaiting(fiveSeconds, minute) {
+      actionToDo.attempt()
+      if (actionToDo.isSuccessful) {
+        WaitDecision.`Done$`.`MODULE$`
+      } else {
+        WaitDecision.KeepWaiting(Option.apply(null))
+      }
+    }
   return await(waitLogic)
 }
 

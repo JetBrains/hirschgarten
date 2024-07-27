@@ -17,10 +17,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouse
 import javax.swing.JComponent
 import javax.swing.SwingConstants
 
-private class ListsUpdater(
-  private val project: Project,
-  private val targetPanelUpdater: (ListsUpdater) -> Unit,
-) {
+private class ListsUpdater(private val project: Project, private val targetPanelUpdater: (ListsUpdater) -> Unit) {
   var loadedTargetsPanel: BspPanelComponent
     private set
   val targetFilter = TargetFilter { rerenderComponents() }
@@ -28,7 +25,10 @@ private class ListsUpdater(
 
   init {
     val invalidTargets =
-      InvalidTargetsProviderExtension.ep.withBuildToolId(project.buildToolId)?.provideInvalidTargets(project).orEmpty()
+      InvalidTargetsProviderExtension.ep
+        .withBuildToolId(project.buildToolId)
+        ?.provideInvalidTargets(project)
+        .orEmpty()
     val temporaryTargetUtils = project.temporaryTargetUtils
     loadedTargetsPanel =
       BspPanelComponent(
@@ -51,8 +51,9 @@ private class ListsUpdater(
   fun rerenderComponents() {
     val temporaryTargetUtils = project.temporaryTargetUtils
     searchBarPanel.clearAllListeners()
-    loadedTargetsPanel = loadedTargetsPanel
-      .createNewWithTargets(targetFilter.getMatchingLoadedTargets(temporaryTargetUtils))
+    loadedTargetsPanel =
+      loadedTargetsPanel
+        .createNewWithTargets(targetFilter.getMatchingLoadedTargets(temporaryTargetUtils))
     targetPanelUpdater(this@ListsUpdater)
   }
 }

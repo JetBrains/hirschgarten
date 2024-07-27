@@ -29,10 +29,7 @@ import org.jetbrains.plugins.bsp.ui.actions.registered.isSyncInProgress
 import java.io.File
 import java.net.URI
 
-private data class SubtaskParents(
-  val rootTask: Any,
-  val parentTask: Any,
-)
+private data class SubtaskParents(val rootTask: Any, val parentTask: Any)
 
 private val log = logger<TaskConsole>()
 
@@ -64,8 +61,13 @@ public abstract class TaskConsole(
   ): Unit =
     doUnlessTaskInProgress(taskId) {
       tasksInProgress.add(taskId)
-      doStartTask(taskId, BspPluginBundle.message("console.tasks.title", buildToolName, title),
-        message, cancelAction, redoAction)
+      doStartTask(
+        taskId,
+        BspPluginBundle.message("console.tasks.title", buildToolName, title),
+        message,
+        cancelAction,
+        redoAction,
+      )
     }
 
   private fun doStartTask(
@@ -93,10 +95,7 @@ public abstract class TaskConsole(
     taskDescriptor.withAction(cancelAction)
   }
 
-  private fun addRedoActionToTheDescriptor(
-    taskDescriptor: DefaultBuildDescriptor,
-    redoAction: (() -> Unit)? = null,
-  ) {
+  private fun addRedoActionToTheDescriptor(taskDescriptor: DefaultBuildDescriptor, redoAction: (() -> Unit)? = null) {
     val action = calculateRedoAction(redoAction)
     taskDescriptor.withAction(action)
   }
@@ -123,7 +122,11 @@ public abstract class TaskConsole(
       doFinishTask(taskId, message, result)
     }
 
-  private fun doFinishTask(taskId: Any, message: String, result: EventResult) {
+  private fun doFinishTask(
+    taskId: Any,
+    message: String,
+    result: EventResult,
+  ) {
     if (result is FailureResultImpl) {
       result.failures.forEach { log.error(it.message, it.error) }
     }
@@ -142,18 +145,28 @@ public abstract class TaskConsole(
    * @param message will be displayed as this subtask's title until it's finished
    */
   @Synchronized
-  public fun startSubtask(parentTaskId: Any, subtaskId: Any, message: String) {
+  public fun startSubtask(
+    parentTaskId: Any,
+    subtaskId: Any,
+    message: String,
+  ) {
     val rootTaskId = subtaskParentMap[parentTaskId]?.rootTask ?: parentTaskId
     doIfTaskInProgress(rootTaskId) {
       doStartSubtask(rootTaskId, parentTaskId, subtaskId, message)
     }
   }
 
-  private fun doStartSubtask(rootTaskId: Any, parentTaskId: Any, subtaskId: Any, message: String) {
-    subtaskParentMap[subtaskId] = SubtaskParents(
-      rootTask = rootTaskId,
-      parentTask = parentTaskId,
-    )
+  private fun doStartSubtask(
+    rootTaskId: Any,
+    parentTaskId: Any,
+    subtaskId: Any,
+    message: String,
+  ) {
+    subtaskParentMap[subtaskId] =
+      SubtaskParents(
+        rootTask = rootTaskId,
+        parentTask = parentTaskId,
+      )
     val event = ProgressBuildEventImpl(subtaskId, parentTaskId, System.currentTimeMillis(), message, -1, -1, "")
     taskView.onEvent(rootTaskId, event)
   }
@@ -167,7 +180,11 @@ public abstract class TaskConsole(
    * @param result result type of the subtask, default [SuccessResultImpl]
    */
   @Synchronized
-  public fun finishSubtask(subtaskId: Any, message: String, result: EventResult = SuccessResultImpl()) {
+  public fun finishSubtask(
+    subtaskId: Any,
+    message: String,
+    result: EventResult = SuccessResultImpl(),
+  ) {
     subtaskParentMap[subtaskId]?.let {
       doIfTaskInProgress(it.rootTask) {
         doFinishSubtask(it.rootTask, subtaskId, message, result)
@@ -175,7 +192,12 @@ public abstract class TaskConsole(
     }
   }
 
-  private fun doFinishSubtask(rootTask: Any, subtaskId: Any, message: String, result: EventResult) {
+  private fun doFinishSubtask(
+    rootTask: Any,
+    subtaskId: Any,
+    message: String,
+    result: EventResult,
+  ) {
     subtaskParentMap.remove(subtaskId)
     finishAllDescendants(subtaskId)
     val event = FinishEventImpl(subtaskId, null, System.currentTimeMillis(), message, result)
@@ -231,14 +253,15 @@ public abstract class TaskConsole(
     message: String,
     severity: MessageEvent.Kind,
   ) {
-    val event = FileMessageEventImpl(
-      subtaskId,
-      severity,
-      null,
-      prepareTextToPrint(message),
-      null,
-      filePosition,
-    )
+    val event =
+      FileMessageEventImpl(
+        subtaskId,
+        severity,
+        null,
+        prepareTextToPrint(message),
+        null,
+        filePosition,
+      )
     taskView.onEvent(taskId, event)
   }
 
@@ -277,7 +300,8 @@ public abstract class TaskConsole(
   }
 
   private fun sendMessageToAncestors(taskId: Any, message: String): Unit =
-    doUnlessTaskInProgress(taskId) { // if taskID is a root task, it has no parents
+    doUnlessTaskInProgress(taskId) {
+      // if taskID is a root task, it has no parents
       maybeGetParentTask(taskId)?.let {
         if (it != taskId) {
           sendMessageEvent(it, message)
@@ -305,19 +329,14 @@ public abstract class TaskConsole(
     }
   }
 
-  private fun prepareTextToPrint(text: String): String =
-    if (text.endsWith("\n")) text else text + "\n"
+  private fun prepareTextToPrint(text: String): String = if (text.endsWith("\n")) text else text + "\n"
 
-  private fun maybeGetParentTask(taskId: Any): Any? =
-    if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.parentTask
+  private fun maybeGetParentTask(taskId: Any): Any? = if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.parentTask
 
-  private fun maybeGetRootTask(taskId: Any): Any? =
-    if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.rootTask
+  private fun maybeGetRootTask(taskId: Any): Any? = if (tasksInProgress.contains(taskId)) taskId else subtaskParentMap[taskId]?.rootTask
 
-  private inner class CancelAction(
-    private val doCancelAction: () -> Unit,
-    private val taskId: Any,
-  ) : DumbAwareAction({ "Stop" }, BspPluginIcons.disconnect) {
+  private inner class CancelAction(private val doCancelAction: () -> Unit, private val taskId: Any) :
+    DumbAwareAction({ "Stop" }, BspPluginIcons.disconnect) {
     override fun actionPerformed(e: AnActionEvent) {
       doCancelAction()
     }
@@ -326,8 +345,7 @@ public abstract class TaskConsole(
       e.presentation.isEnabled = tasksInProgress.contains(taskId)
     }
 
-    override fun getActionUpdateThread(): ActionUpdateThread =
-      ActionUpdateThread.BGT
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
   }
 }
 
@@ -363,7 +381,6 @@ public class BuildTaskConsole(
         e.presentation.isEnabled = tasksInProgress.isEmpty()
       }
 
-      override fun getActionUpdateThread(): ActionUpdateThread =
-        ActionUpdateThread.BGT
+      override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
     }
 }

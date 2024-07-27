@@ -7,9 +7,9 @@ import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.JvmOutputsOrBuilder
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -21,79 +21,77 @@ class JavaLanguagePlugin(
   private val bazelPathsResolver: BazelPathsResolver,
   private val jdkResolver: JdkResolver,
 ) : LanguagePlugin<JavaModule>() {
-    private var jdk: Jdk? = null
+  private var jdk: Jdk? = null
 
-    override fun prepareSync(targets: Sequence<TargetInfo>) {
-        val ideJavaHomeOverride = workspaceContextProvider.currentWorkspaceContext().ideJavaHomeOverrideSpec.value
-        jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it.toUri()) } ?: jdkResolver.resolve(targets)
+  override fun prepareSync(targets: Sequence<TargetInfo>) {
+    val ideJavaHomeOverride = workspaceContextProvider.currentWorkspaceContext().ideJavaHomeOverrideSpec.value
+    jdk = ideJavaHomeOverride?.let { Jdk(version = "ideJavaHomeOverride", javaHome = it.toUri()) } ?: jdkResolver.resolve(targets)
+  }
+
+  override fun resolveModule(targetInfo: TargetInfo): JavaModule? =
+    targetInfo.takeIf(TargetInfo::hasJvmTargetInfo)?.jvmTargetInfo?.run {
+      val mainOutput = bazelPathsResolver.resolveUri(getJars(0).getBinaryJars(0))
+      val binaryOutputs = jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolveUri)
+      val mainClass = getMainClass(this)
+      val runtimeJdk = jdkResolver.resolveJdk(targetInfo)
+
+      JavaModule(
+        getJdk(),
+        runtimeJdk,
+        javacOptsList,
+        jvmFlagsList,
+        mainOutput,
+        binaryOutputs,
+        mainClass,
+        argsList,
+      )
     }
 
-    override fun resolveModule(targetInfo: TargetInfo): JavaModule? =
-        targetInfo.takeIf(TargetInfo::hasJvmTargetInfo)?.jvmTargetInfo?.run {
-            val mainOutput = bazelPathsResolver.resolveUri(getJars(0).getBinaryJars(0))
-            val binaryOutputs = jarsList.flatMap { it.binaryJarsList }.map(bazelPathsResolver::resolveUri)
-            val mainClass = getMainClass(this)
-            val runtimeJdk = jdkResolver.resolveJdk(targetInfo)
+  override fun calculateSourceRoot(source: Path): Path = JVMLanguagePluginParser.calculateJVMSourceRoot(source)
 
-            JavaModule(
-                getJdk(),
-                runtimeJdk,
-                javacOptsList,
-                jvmFlagsList,
-                mainOutput,
-                binaryOutputs,
-                mainClass,
-                argsList,
-            )
-        }
+  private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 
+  private fun getJdk(): Jdk = jdk ?: throw RuntimeException("Failed to resolve JDK for project")
 
-    override fun calculateSourceRoot(source: Path): Path =
-        JVMLanguagePluginParser.calculateJVMSourceRoot(source)
+  override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
+    targetInfo
+      .getJvmTargetInfoOrNull()
+      ?.run {
+        dependencyGraph
+          .transitiveDependenciesWithoutRootTargets(Label.parse(targetInfo.id))
+          .flatMap(::getSourceJars)
+          .map(bazelPathsResolver::resolveUri)
+          .toSet()
+      }.orEmpty()
 
-    private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? =
-        jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
+  private fun getSourceJars(targetInfo: TargetInfo): List<FileLocation> =
+    targetInfo
+      .getJvmTargetInfoOrNull()
+      ?.run { jarsOrBuilderList + generatedJarsList }
+      ?.flatMap(JvmOutputsOrBuilder::getSourceJarsList)
+      .orEmpty()
 
-    private fun getJdk(): Jdk = jdk ?: throw RuntimeException("Failed to resolve JDK for project")
+  private fun TargetInfo.getJvmTargetInfoOrNull(): JvmTargetInfo? = this.takeIf(TargetInfo::hasJvmTargetInfo)?.jvmTargetInfo
 
-    override fun dependencySources(
-        targetInfo: TargetInfo, dependencyGraph: DependencyGraph
-    ): Set<URI> =
-        targetInfo.getJvmTargetInfoOrNull()?.run {
-            dependencyGraph.transitiveDependenciesWithoutRootTargets(Label.parse(targetInfo.id))
-                .flatMap(::getSourceJars)
-                .map(bazelPathsResolver::resolveUri)
-                .toSet()
-        }.orEmpty()
+  override fun applyModuleData(moduleData: JavaModule, buildTarget: BuildTarget) {
+    val jvmBuildTarget = toJvmBuildTarget(moduleData)
+    buildTarget.dataKind = BuildTargetDataKind.JVM
+    buildTarget.data = jvmBuildTarget
+  }
 
-    private fun getSourceJars(targetInfo: TargetInfo): List<FileLocation> =
-        targetInfo.getJvmTargetInfoOrNull()
-            ?.run {  jarsOrBuilderList + generatedJarsList }
-            ?.flatMap(JvmOutputsOrBuilder::getSourceJarsList)
-            .orEmpty()
-
-    private fun TargetInfo.getJvmTargetInfoOrNull(): JvmTargetInfo? =
-        this.takeIf(TargetInfo::hasJvmTargetInfo)?.jvmTargetInfo
-
-    override fun applyModuleData(moduleData: JavaModule, buildTarget: BuildTarget) {
-        val jvmBuildTarget = toJvmBuildTarget(moduleData)
-        buildTarget.dataKind = BuildTargetDataKind.JVM
-        buildTarget.data = jvmBuildTarget
+  private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? =
+    javacOpts.firstNotNullOfOrNull {
+      val flagName = it.substringBefore(' ')
+      val argument = it.substringAfter(' ')
+      if (flagName == "-target" || flagName == "--target" || flagName == "--release") argument else null
     }
 
-    private fun javaVersionFromJavacOpts(javacOpts: List<String>): String? =
-        javacOpts.firstNotNullOfOrNull {
-            val flagName = it.substringBefore(' ')
-            val argument = it.substringAfter(' ')
-            if (flagName == "-target" || flagName == "--target" || flagName == "--release") argument else null
-        }
-
-    fun toJvmBuildTarget(javaModule: JavaModule): JvmBuildTarget {
-        val jdk = javaModule.jdk
-        val javaHome = jdk.javaHome?.toString()
-        return JvmBuildTarget().also {
-            it.javaVersion = javaVersionFromJavacOpts(javaModule.javacOpts)?: jdk.version
-            it.javaHome = javaHome
-        }
+  fun toJvmBuildTarget(javaModule: JavaModule): JvmBuildTarget {
+    val jdk = javaModule.jdk
+    val javaHome = jdk.javaHome?.toString()
+    return JvmBuildTarget().also {
+      it.javaVersion = javaVersionFromJavacOpts(javaModule.javacOpts) ?: jdk.version
+      it.javaHome = javaHome
     }
+  }
 }

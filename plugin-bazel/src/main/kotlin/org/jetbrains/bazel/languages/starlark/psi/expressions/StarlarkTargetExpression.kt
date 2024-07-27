@@ -9,7 +9,9 @@ import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableEl
 import org.jetbrains.bazel.languages.starlark.references.StarlarkLocalVariableReference
 import javax.swing.Icon
 
-class StarlarkTargetExpression(node: ASTNode) : StarlarkNamedElement(node), StarlarkLocalVariableElement {
+class StarlarkTargetExpression(node: ASTNode) :
+  StarlarkNamedElement(node),
+  StarlarkLocalVariableElement {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitTargetExpression(this)
 
   override fun getReference(): PsiReference = StarlarkLocalVariableReference(this, true)

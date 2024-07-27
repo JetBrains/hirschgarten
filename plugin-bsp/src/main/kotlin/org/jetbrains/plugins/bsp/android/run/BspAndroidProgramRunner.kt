@@ -28,11 +28,10 @@ public class BspAndroidProgramRunner : AndroidConfigurationProgramRunner() {
     environment: ExecutionEnvironment,
     executor: AndroidConfigurationExecutor,
     indicator: ProgressIndicator,
-  ): RunContentDescriptor {
-    return when (environment.executor.id) {
+  ): RunContentDescriptor =
+    when (environment.executor.id) {
       DefaultRunExecutor.EXECUTOR_ID -> executor.run(indicator)
       DefaultDebugExecutor.EXECUTOR_ID -> executor.debug(indicator)
       else -> throw ExecutionException("Only run and debug are supported")
     }
-  }
 }

@@ -61,12 +61,13 @@ class SourceItemToSourceRootTransformerTest {
   fun `should return multiple dirs for multiple source files`() {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
-      val sourceItems = listOf(
-        SourceItem("file:///example/source1/File1.java", SourceItemKind.FILE, generated),
-        SourceItem("file:///example/source1/File2.java", SourceItemKind.FILE, generated),
-        SourceItem("file:///example/source1/subpackage/File2.java", SourceItemKind.FILE, generated),
-        SourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
-      )
+      val sourceItems =
+        listOf(
+          SourceItem("file:///example/source1/File1.java", SourceItemKind.FILE, generated),
+          SourceItem("file:///example/source1/File2.java", SourceItemKind.FILE, generated),
+          SourceItem("file:///example/source1/subpackage/File2.java", SourceItemKind.FILE, generated),
+          SourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
+        )
 
       // when
       val sourcesDirs = SourceItemToSourceRootTransformer.transform(sourceItems)
@@ -84,7 +85,8 @@ class SourceItemToSourceRootTransformerTest {
       val expectedSource2Path = URI.create("file:///example/source2/File1.java").toPath()
       val expectedSource2 = SourceRoot(expectedSource2Path, generated, true)
 
-      sourcesDirs shouldContainExactlyInAnyOrder listOf(expectedSource1A, expectedSource1B, expectedSource1Subpackage, expectedSource2)
+      sourcesDirs shouldContainExactlyInAnyOrder
+        listOf(expectedSource1A, expectedSource1B, expectedSource1Subpackage, expectedSource2)
     }
   }
 
@@ -92,11 +94,12 @@ class SourceItemToSourceRootTransformerTest {
   fun `should return multiple dirs for multiple source dirs`() {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
-      val sourceItems = listOf(
-        SourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
-        SourceItem("file:///example/source1/subpackage/", SourceItemKind.DIRECTORY, generated),
-        SourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
-      )
+      val sourceItems =
+        listOf(
+          SourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
+          SourceItem("file:///example/source1/subpackage/", SourceItemKind.DIRECTORY, generated),
+          SourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
+        )
 
       // when
       val sourcesDirs = SourceItemToSourceRootTransformer.transform(sourceItems)
@@ -119,12 +122,13 @@ class SourceItemToSourceRootTransformerTest {
   fun `should return multiple dirs and files for multiple source dirs and files`() {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
-      val sourceItems = listOf(
-        SourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
-        SourceItem("file:///example/source1/subpackage/File1.java", SourceItemKind.FILE, generated),
-        SourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
-        SourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
-      )
+      val sourceItems =
+        listOf(
+          SourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
+          SourceItem("file:///example/source1/subpackage/File1.java", SourceItemKind.FILE, generated),
+          SourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
+          SourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
+        )
 
       // when
       val sourcesDirs = SourceItemToSourceRootTransformer.transform(sourceItems)
@@ -142,7 +146,8 @@ class SourceItemToSourceRootTransformerTest {
       val expectedSource2FilePath = URI.create("file:///example/source2/File1.java").toPath()
       val expectedSource2File = SourceRoot(expectedSource2FilePath, generated, true)
 
-      sourcesDirs shouldContainExactlyInAnyOrder listOf(expectedSource1, expectedSource1Subpackage, expectedSource2, expectedSource2File)
+      sourcesDirs shouldContainExactlyInAnyOrder
+        listOf(expectedSource1, expectedSource1Subpackage, expectedSource2, expectedSource2File)
     }
   }
 

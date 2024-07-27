@@ -19,6 +19,5 @@ public class LazySearchTreeDisplay(icon: Icon, buildToolId: BuildToolId) : LazyS
     targetTree.addMouseListener { _ -> mouseListener }
   }
 
-  override fun getSelectedBuildTarget(): BuildTargetInfo? =
-    targetTree.getSelectedBuildTarget()
+  override fun getSelectedBuildTarget(): BuildTargetInfo? = targetTree.getSelectedBuildTarget()
 }

@@ -16,21 +16,22 @@ import com.intellij.platform.workspace.jps.entities.SdkId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 @DisplayName("ModuleEntityUpdater.addEntity(entityToAdd, parentModuleEntity) tests")
 internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
-  private val defaultDependencies = listOf(
-    SdkDependency(SdkId("11", "JavaSDK")),
-    ModuleSourceDependency,
-  )
+  private val defaultDependencies =
+    listOf(
+      SdkDependency(SdkId("11", "JavaSDK")),
+      ModuleSourceDependency,
+    )
 
   private lateinit var moduleEntityUpdater: ModuleEntityUpdater
 
@@ -47,73 +48,82 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
   @Test
   fun `should add one module to the workspace model`() {
     // given
-    val module = GenericModuleInfo(
-      name = "module1",
-      type = ModuleTypeId("JAVA_MODULE"),
-      modulesDependencies = listOf(
-        IntermediateModuleDependency(
-          moduleName = "module2",
-        ),
-        IntermediateModuleDependency(
-          moduleName = "module3",
-        ),
-      ),
-      librariesDependencies = listOf(
-        IntermediateLibraryDependency(
-          libraryName = "lib1",
-        ),
-        IntermediateLibraryDependency(
-          libraryName = "lib2",
-        ),
-      ),
-    )
+    val module =
+      GenericModuleInfo(
+        name = "module1",
+        type = ModuleTypeId("JAVA_MODULE"),
+        modulesDependencies =
+          listOf(
+            IntermediateModuleDependency(
+              moduleName = "module2",
+            ),
+            IntermediateModuleDependency(
+              moduleName = "module3",
+            ),
+          ),
+        librariesDependencies =
+          listOf(
+            IntermediateLibraryDependency(
+              libraryName = "lib1",
+            ),
+            IntermediateLibraryDependency(
+              libraryName = "lib2",
+            ),
+          ),
+      )
 
     // when
-    val returnedModuleEntity = runTestWriteAction {
-      moduleEntityUpdater.addEntity(module)
-    }
+    val returnedModuleEntity =
+      runTestWriteAction {
+        moduleEntityUpdater.addEntity(module)
+      }
 
     // then
-    val expectedModule = ExpectedModuleEntity(
-      moduleEntity = ModuleEntity(
-        name = "module1",
-        dependencies = listOf(
-          ModuleDependency(
-            module = ModuleId("module2"),
-            exported = true,
-            scope = DependencyScope.COMPILE,
-            productionOnTest = true,
-          ),
-          ModuleDependency(
-            module = ModuleId("module3"),
-            exported = true,
-            scope = DependencyScope.COMPILE,
-            productionOnTest = true,
-          ),
-          LibraryDependency(
-            library = LibraryId(
-              name = "lib1",
-              tableId = LibraryTableId.ProjectLibraryTableId,
-            ),
-            exported = true,
-            scope = DependencyScope.COMPILE,
-          ),
-          LibraryDependency(
-            library = LibraryId(
-              name = "lib2",
-              tableId = LibraryTableId.ProjectLibraryTableId,
-            ),
-            exported = true,
-            scope = DependencyScope.COMPILE,
-          ),
-          SdkDependency(SdkId("11", "JavaSDK")),
-          ModuleSourceDependency,
-        ),
-        entitySource = BspEntitySource,
-      ) {
-        type = ModuleTypeId("JAVA_MODULE")
-      },
-    )
+    val expectedModule =
+      ExpectedModuleEntity(
+        moduleEntity =
+          ModuleEntity(
+            name = "module1",
+            dependencies =
+              listOf(
+                ModuleDependency(
+                  module = ModuleId("module2"),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
+                ),
+                ModuleDependency(
+                  module = ModuleId("module3"),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
+                ),
+                LibraryDependency(
+                  library =
+                    LibraryId(
+                      name = "lib1",
+                      tableId = LibraryTableId.ProjectLibraryTableId,
+                    ),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                ),
+                LibraryDependency(
+                  library =
+                    LibraryId(
+                      name = "lib2",
+                      tableId = LibraryTableId.ProjectLibraryTableId,
+                    ),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                ),
+                SdkDependency(SdkId("11", "JavaSDK")),
+                ModuleSourceDependency,
+              ),
+            entitySource = BspEntitySource,
+          ) {
+            type = ModuleTypeId("JAVA_MODULE")
+          },
+      )
 
     returnedModuleEntity shouldBeEqual expectedModule
     loadedEntries(ModuleEntity::class.java) shouldContainExactlyInAnyOrder listOf(expectedModule)
@@ -122,116 +132,132 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
   @Test
   fun `should add multiple modules to the workspace model`() {
     // given
-    val module1 = GenericModuleInfo(
-      name = "module1",
-      type = ModuleTypeId("JAVA_MODULE"),
-      modulesDependencies = listOf(
-        IntermediateModuleDependency(
-          moduleName = "module2",
-        ),
-        IntermediateModuleDependency(
-          moduleName = "module3",
-        ),
-      ),
-      librariesDependencies = listOf(
-        IntermediateLibraryDependency(
-          libraryName = "lib1",
-        ),
-        IntermediateLibraryDependency(
-          libraryName = "lib2",
-        ),
-      ),
-    )
+    val module1 =
+      GenericModuleInfo(
+        name = "module1",
+        type = ModuleTypeId("JAVA_MODULE"),
+        modulesDependencies =
+          listOf(
+            IntermediateModuleDependency(
+              moduleName = "module2",
+            ),
+            IntermediateModuleDependency(
+              moduleName = "module3",
+            ),
+          ),
+        librariesDependencies =
+          listOf(
+            IntermediateLibraryDependency(
+              libraryName = "lib1",
+            ),
+            IntermediateLibraryDependency(
+              libraryName = "lib2",
+            ),
+          ),
+      )
 
-    val module2 = GenericModuleInfo(
-      name = "module2",
-      type = ModuleTypeId("JAVA_MODULE"),
-      modulesDependencies = listOf(
-        IntermediateModuleDependency(
-          moduleName = "module3",
-        ),
-      ),
-      librariesDependencies = listOf(
-        IntermediateLibraryDependency(
-          libraryName = "lib1",
-        ),
-      ),
-    )
+    val module2 =
+      GenericModuleInfo(
+        name = "module2",
+        type = ModuleTypeId("JAVA_MODULE"),
+        modulesDependencies =
+          listOf(
+            IntermediateModuleDependency(
+              moduleName = "module3",
+            ),
+          ),
+        librariesDependencies =
+          listOf(
+            IntermediateLibraryDependency(
+              libraryName = "lib1",
+            ),
+          ),
+      )
 
     val modules = listOf(module1, module2)
 
     // when
-    val returnedModuleEntries = runTestWriteAction {
-      moduleEntityUpdater.addEntities(modules)
-    }
+    val returnedModuleEntries =
+      runTestWriteAction {
+        moduleEntityUpdater.addEntities(modules)
+      }
 
     // then
-    val expectedModule1 = ExpectedModuleEntity(
-      moduleEntity = ModuleEntity(
-        name = "module1",
-        dependencies = listOf(
-          ModuleDependency(
-            module = ModuleId("module2"),
-            exported = true,
-            scope = DependencyScope.COMPILE,
-            productionOnTest = true,
-          ),
-          ModuleDependency(
-            module = ModuleId("module3"),
-            exported = true,
-            scope = DependencyScope.COMPILE,
-            productionOnTest = true,
-          ),
-          LibraryDependency(
-            library = LibraryId(
-              name = "lib1",
-              tableId = LibraryTableId.ProjectLibraryTableId,
-            ),
-            exported = true,
-            scope = DependencyScope.COMPILE,
-          ),
-          LibraryDependency(
-            library = LibraryId(
-              name = "lib2",
-              tableId = LibraryTableId.ProjectLibraryTableId,
-            ),
-            exported = true,
-            scope = DependencyScope.COMPILE,
-          ),
-          SdkDependency(SdkId("11", "JavaSDK")),
-          ModuleSourceDependency,
-        ),
-        entitySource = BspEntitySource,
-      ) {
-        type = ModuleTypeId("JAVA_MODULE")
-      },
-    )
-    val expectedModule2 = ExpectedModuleEntity(
-      moduleEntity = ModuleEntity(
-        name = "module2",
-        dependencies = listOf(
-          ModuleDependency(
-            module = ModuleId("module3"),
-            exported = true,
-            scope = DependencyScope.COMPILE,
-            productionOnTest = true,
-          ),
-          LibraryDependency(
-            library = LibraryId(
-              name = "lib1",
-              tableId = LibraryTableId.ProjectLibraryTableId,
-            ),
-            exported = true,
-            scope = DependencyScope.COMPILE,
-          ),
-          SdkDependency(SdkId("11", "JavaSDK")),
-          ModuleSourceDependency,
-        ),
-        entitySource = BspEntitySource,
-      ) {
-        type = ModuleTypeId("JAVA_MODULE")
-      },
-    )
+    val expectedModule1 =
+      ExpectedModuleEntity(
+        moduleEntity =
+          ModuleEntity(
+            name = "module1",
+            dependencies =
+              listOf(
+                ModuleDependency(
+                  module = ModuleId("module2"),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
+                ),
+                ModuleDependency(
+                  module = ModuleId("module3"),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
+                ),
+                LibraryDependency(
+                  library =
+                    LibraryId(
+                      name = "lib1",
+                      tableId = LibraryTableId.ProjectLibraryTableId,
+                    ),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                ),
+                LibraryDependency(
+                  library =
+                    LibraryId(
+                      name = "lib2",
+                      tableId = LibraryTableId.ProjectLibraryTableId,
+                    ),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                ),
+                SdkDependency(SdkId("11", "JavaSDK")),
+                ModuleSourceDependency,
+              ),
+            entitySource = BspEntitySource,
+          ) {
+            type = ModuleTypeId("JAVA_MODULE")
+          },
+      )
+    val expectedModule2 =
+      ExpectedModuleEntity(
+        moduleEntity =
+          ModuleEntity(
+            name = "module2",
+            dependencies =
+              listOf(
+                ModuleDependency(
+                  module = ModuleId("module3"),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                  productionOnTest = true,
+                ),
+                LibraryDependency(
+                  library =
+                    LibraryId(
+                      name = "lib1",
+                      tableId = LibraryTableId.ProjectLibraryTableId,
+                    ),
+                  exported = true,
+                  scope = DependencyScope.COMPILE,
+                ),
+                SdkDependency(SdkId("11", "JavaSDK")),
+                ModuleSourceDependency,
+              ),
+            entitySource = BspEntitySource,
+          ) {
+            type = ModuleTypeId("JAVA_MODULE")
+          },
+      )
 
     val expectedModuleEntries = listOf(expectedModule1, expectedModule2)
 

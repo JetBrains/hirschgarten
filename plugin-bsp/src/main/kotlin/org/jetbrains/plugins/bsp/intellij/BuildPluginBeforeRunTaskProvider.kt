@@ -41,9 +41,10 @@ public class BuildPluginBeforeRunTaskProvider : BeforeRunTaskProvider<BuildPlugi
     if (runConfiguration.runHandler !is IntellijPluginRunHandler) return false
 
     val targetIds = runConfiguration.targets.map { it.id }
-    val buildResult = runBlocking {
-      runBuildTargetTask(targetIds, environment.project, log)
-    }
+    val buildResult =
+      runBlocking {
+        runBuildTargetTask(targetIds, environment.project, log)
+      }
     return buildResult?.statusCode == StatusCode.OK
   }
 }

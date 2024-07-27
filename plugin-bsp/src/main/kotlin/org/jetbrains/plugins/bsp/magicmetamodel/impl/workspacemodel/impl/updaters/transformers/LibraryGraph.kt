@@ -26,10 +26,11 @@ internal class LibraryGraph(private val libraries: List<LibraryItem>) {
     target: BuildTarget,
     includesTransitive: Boolean = !BspFeatureFlags.isWrapLibrariesInsideModulesEnabled,
   ): LibraryGraphDependencies =
-    if (includesTransitive)
+    if (includesTransitive) {
       calculateAllTransitiveDependencies(target)
-    else
+    } else {
       calculateDirectDependencies(target)
+    }
 
   private fun calculateAllTransitiveDependencies(target: BuildTarget): LibraryGraphDependencies {
     val toVisit = target.dependencies.toMutableSet()
@@ -44,8 +45,9 @@ internal class LibraryGraph(private val libraries: List<LibraryItem>) {
 
       if (currentNode !in visited) {
         // don't traverse further when hitting modules
-        if (currentNode.isCurrentNodeLibrary())
+        if (currentNode.isCurrentNodeLibrary()) {
           toVisit += graph[currentNode].orEmpty()
+        }
         visited += currentNode
 
         currentNode.addToCorrectResultSet(resultLibraries, resultModules)
@@ -80,47 +82,46 @@ internal class LibraryGraph(private val libraries: List<LibraryItem>) {
     }
   }
 
-  fun createLibraries(
-    libraryNameProvider: TargetNameReformatProvider,
-  ): List<Library> =
-    libraries.map {
-      Library(
-        displayName = libraryNameProvider(BuildTargetInfo(id = it.id)),
-        iJars = it.ijars,
-        classJars = it.jars,
-        sourceJars = it.sourceJars,
-      )
-    }.orEmpty()
+  fun createLibraries(libraryNameProvider: TargetNameReformatProvider): List<Library> =
+    libraries
+      .map {
+        Library(
+          displayName = libraryNameProvider(BuildTargetInfo(id = it.id)),
+          iJars = it.ijars,
+          classJars = it.jars,
+          sourceJars = it.sourceJars,
+        )
+      }.orEmpty()
 
-  fun createLibraryModules(
-    libraryNameProvider: TargetNameReformatProvider,
-    defaultJdkName: String?,
-  ): List<JavaModule> {
+  fun createLibraryModules(libraryNameProvider: TargetNameReformatProvider, defaultJdkName: String?): List<JavaModule> {
     if (!BspFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
 
-    return libraries.map { library ->
-      val libraryName = libraryNameProvider(BuildTargetInfo(id = library.id))
-      JavaModule(
-        genericModuleInfo = GenericModuleInfo(
-          name = libraryName,
-          type = ModuleTypeId(StdModuleTypes.JAVA.id),
-          librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
-          modulesDependencies = library.dependencies.map {
-            IntermediateModuleDependency(
-              libraryNameProvider(
-                BuildTargetInfo(id = it)
-              )
-            )
-          },
-          isLibraryModule = true,
-          languageIds = listOf("java"),
-        ),
-        jvmJdkName = defaultJdkName,
-        baseDirContentRoot = null,
-        moduleLevelLibraries = null,
-        sourceRoots = emptyList(),
-        resourceRoots = emptyList(),
-      )
-    }.orEmpty()
+    return libraries
+      .map { library ->
+        val libraryName = libraryNameProvider(BuildTargetInfo(id = library.id))
+        JavaModule(
+          genericModuleInfo =
+            GenericModuleInfo(
+              name = libraryName,
+              type = ModuleTypeId(StdModuleTypes.JAVA.id),
+              librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
+              modulesDependencies =
+                library.dependencies.map {
+                  IntermediateModuleDependency(
+                    libraryNameProvider(
+                      BuildTargetInfo(id = it),
+                    ),
+                  )
+                },
+              isLibraryModule = true,
+              languageIds = listOf("java"),
+            ),
+          jvmJdkName = defaultJdkName,
+          baseDirContentRoot = null,
+          moduleLevelLibraries = null,
+          sourceRoots = emptyList(),
+          resourceRoots = emptyList(),
+        )
+      }.orEmpty()
   }
 }

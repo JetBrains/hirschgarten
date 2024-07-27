@@ -48,9 +48,11 @@ dependencies {
 }
 
 tasks.runIde {
-  jvmArgs("-Didea.log.trace.categories=" +
-    "#org.jetbrains.plugins.bsp," +
-    "#org.jetbrains.magicmetamodel.impl.PerformanceLogger")
+  jvmArgs(
+    "-Didea.log.trace.categories=" +
+      "#org.jetbrains.plugins.bsp," +
+      "#org.jetbrains.magicmetamodel.impl.PerformanceLogger",
+  )
 }
 
 // Configure gradle-intellij-plugin plugin.
@@ -76,15 +78,20 @@ intellijPlatform {
     }
 
     // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
-    description = File(projectDir, "README.md").readText().lines().run {
-      val start = "<!-- Plugin description -->"
-      val end = "<!-- Plugin description end -->"
+    description =
+      File(projectDir, "README.md")
+        .readText()
+        .lines()
+        .run {
+          val start = "<!-- Plugin description -->"
+          val end = "<!-- Plugin description end -->"
 
-      if (!containsAll(listOf(start, end))) {
-        throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
-      }
-      subList(indexOf(start) + 1, indexOf(end))
-    }.joinToString("\n").run { markdownToHTML(this) }
+          if (!containsAll(listOf(start, end))) {
+            throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
+          }
+          subList(indexOf(start) + 1, indexOf(end))
+        }.joinToString("\n")
+        .run { markdownToHTML(this) }
 
     // Get the latest available change notes from the changelog file
     changeNotes = provider { changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML) }
@@ -105,10 +112,11 @@ intellijPlatform {
     ides {
       recommended()
     }
-    failureLevel = setOf(
-      VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
-      VerifyPluginTask.FailureLevel.NOT_DYNAMIC
-    )
+    failureLevel =
+      setOf(
+        VerifyPluginTask.FailureLevel.COMPATIBILITY_PROBLEMS,
+        VerifyPluginTask.FailureLevel.NOT_DYNAMIC,
+      )
     teamCityOutputFormat = true
   }
 }

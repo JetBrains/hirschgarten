@@ -7,10 +7,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import kotlin.io.path.toPath
 
-internal data class BuildTargetAndResourcesItem(
-  val buildTarget: BuildTarget,
-  val resourcesItem: ResourcesItem,
-)
+internal data class BuildTargetAndResourcesItem(val buildTarget: BuildTarget, val resourcesItem: ResourcesItem)
 
 internal class ResourcesItemToJavaResourceRootTransformer :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndResourcesItem, ResourceRoot> {

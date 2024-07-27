@@ -28,7 +28,6 @@ import java.nio.file.Path
  */
 
 class MultipleProbeTests {
-
   companion object {
     private lateinit var runner: IdeProbeTestRunner
     private lateinit var installedIntellij: Tuple2<Path, InstalledIntelliJ>
@@ -39,10 +38,11 @@ class MultipleProbeTests {
     @BeforeAll
     @JvmStatic
     fun setupIntellij() {
-      runner = IdeProbeTestRunner(
-        "https://github.com/JetBrains/bazel-bsp.git",
-        "3.1.0"
-      )
+      runner =
+        IdeProbeTestRunner(
+          "https://github.com/JetBrains/bazel-bsp.git",
+          "3.1.0",
+        )
       installedIntellij = runner.prepareInstance()
     }
 
@@ -71,4 +71,3 @@ class MultipleProbeTests {
     }
   }*/
 }
-

@@ -5,7 +5,6 @@ import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.Test
 
 class LabelTest {
-
   @Test
   fun `should return target name for label with bazel 6 target`() {
     // given

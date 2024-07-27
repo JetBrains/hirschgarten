@@ -20,15 +20,22 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
 
   init {
-    handler.addProcessListener(object : ProcessListener {
-      override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
-        // Not having this line causes the test tree to show "TERMINATED"
-        handler.notifyTextAvailable("##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
-      }
-    })
+    handler.addProcessListener(
+      object : ProcessListener {
+        override fun processWillTerminate(event: ProcessEvent, willBeDestroyed: Boolean) {
+          // Not having this line causes the test tree to show "TERMINATED"
+          handler.notifyTextAvailable("##teamcity[testingFinished]\n", ProcessOutputType.STDOUT)
+        }
+      },
+    )
   }
 
-  override fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {
+  override fun onTaskStart(
+    taskId: TaskId,
+    parentId: TaskId?,
+    message: String,
+    data: Any?,
+  ) {
     when (data) {
       is TestTask -> {
         val testSuiteStarted = ServiceMessageBuilder.testSuiteStarted(data.target.uri).toString()
@@ -42,7 +49,12 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
     }
   }
 
-  override fun onTaskFinish(taskId: TaskId, message: String, status: StatusCode, data: Any?) {
+  override fun onTaskFinish(
+    taskId: TaskId,
+    message: String,
+    status: StatusCode,
+    data: Any?,
+  ) {
     when (data) {
       is TestReport -> {
         val testSuiteFinished = ServiceMessageBuilder.testSuiteFinished(data.target.uri).toString()
@@ -50,25 +62,26 @@ public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>
       }
 
       is TestFinish -> {
-        val failureMessageBuilder = when (data.status!!) {
-          TestStatus.FAILED -> {
-            ServiceMessageBuilder.testFailed(data.displayName)
-          }
+        val failureMessageBuilder =
+          when (data.status!!) {
+            TestStatus.FAILED -> {
+              ServiceMessageBuilder.testFailed(data.displayName)
+            }
 
-          TestStatus.CANCELLED -> {
-            ServiceMessageBuilder.testIgnored(data.displayName)
-          }
+            TestStatus.CANCELLED -> {
+              ServiceMessageBuilder.testIgnored(data.displayName)
+            }
 
-          TestStatus.IGNORED -> {
-            ServiceMessageBuilder.testIgnored(data.displayName)
-          }
+            TestStatus.IGNORED -> {
+              ServiceMessageBuilder.testIgnored(data.displayName)
+            }
 
-          TestStatus.SKIPPED -> {
-            ServiceMessageBuilder.testIgnored(data.displayName)
-          }
+            TestStatus.SKIPPED -> {
+              ServiceMessageBuilder.testIgnored(data.displayName)
+            }
 
-          else -> null
-        }
+            else -> null
+          }
 
         if (failureMessageBuilder != null) {
           failureMessageBuilder.addAttribute("message", data.message ?: "No message")

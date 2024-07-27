@@ -37,7 +37,9 @@ public interface BspConnection {
 
 internal var Project.connection: BspConnection
   get() = findOrCreateConnection().also { connection = it }
-  set(value) { BspConnectionService.getInstance(this).connection = value }
+  set(value) {
+    BspConnectionService.getInstance(this).connection = value
+  }
 
 private fun Project.findOrCreateConnection(): BspConnection =
   BspConnectionService.getInstance(this).connection ?: DefaultBspConnection(this, connectionDetailsProvider)
@@ -47,7 +49,6 @@ internal class BspConnectionService {
   var connection: BspConnection? = null
 
   internal companion object {
-    fun getInstance(project: Project): BspConnectionService =
-      project.getService(BspConnectionService::class.java)
+    fun getInstance(project: Project): BspConnectionService = project.getService(BspConnectionService::class.java)
   }
 }

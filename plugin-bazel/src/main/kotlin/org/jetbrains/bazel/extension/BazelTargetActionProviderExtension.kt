@@ -16,6 +16,5 @@ class BazelTargetActionProviderExtension : BuildToolWindowTargetActionProviderEx
     component: JComponent,
     project: Project,
     buildTargetInfo: BuildTargetInfo,
-  ): List<AnAction> =
-    listOf(BazelBspJumpToBuildFileAction(component, project, buildTargetInfo))
+  ): List<AnAction> = listOf(BazelBspJumpToBuildFileAction(component, project, buildTargetInfo))
 }

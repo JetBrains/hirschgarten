@@ -25,20 +25,17 @@ private val ep =
     "org.jetbrains.bsp.androidFacetEntityUpdaterExtension",
   )
 
-internal fun androidFacetEntityUpdaterExtension(): AndroidFacetEntityUpdaterExtension? =
-  ep.extensionList.firstOrNull()
+internal fun androidFacetEntityUpdaterExtension(): AndroidFacetEntityUpdaterExtension? = ep.extensionList.firstOrNull()
 
 @Suppress("UnusedPrivateClass")
 private class AndroidFacetEntityUpdaterExtensionImpl : AndroidFacetEntityUpdaterExtension {
   override fun createAndroidFacetEntityUpdater(
     workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-  ): WorkspaceModelEntityWithParentModuleUpdater<JavaModule, FacetEntity> =
-    AndroidFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
+  ): WorkspaceModelEntityWithParentModuleUpdater<JavaModule, FacetEntity> = AndroidFacetEntityUpdater(workspaceModelEntityUpdaterConfig)
 }
 
-private class AndroidFacetEntityUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-) : WorkspaceModelEntityWithParentModuleUpdater<JavaModule, FacetEntity> {
+private class AndroidFacetEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithParentModuleUpdater<JavaModule, FacetEntity> {
   override fun addEntity(entityToAdd: JavaModule, parentModuleEntity: ModuleEntity): FacetEntity {
     val facetType = AndroidFacet.getFacetType()
     val facet = facetType.createDefaultConfiguration()
@@ -52,26 +49,25 @@ private class AndroidFacetEntityUpdater(
     return addFacetEntity(facet, parentModuleEntity)
   }
 
-  private fun getAndroidProjectType(androidTargetType: AndroidTargetType?): Int = when (androidTargetType) {
-    AndroidTargetType.APP -> AndroidProjectTypes.PROJECT_TYPE_APP
-    AndroidTargetType.LIBRARY -> AndroidProjectTypes.PROJECT_TYPE_LIBRARY
-    AndroidTargetType.TEST -> AndroidProjectTypes.PROJECT_TYPE_TEST
-    null -> AndroidProjectTypes.PROJECT_TYPE_LIBRARY
-  }
-
-  private fun addFacetEntity(
-    facet: AndroidFacetConfiguration,
-    parentModuleEntity: ModuleEntity,
-  ): FacetEntity {
-    val facetConfigurationXml = FacetUtil.saveFacetConfiguration(facet)?.let { JDOMUtil.write(it) }
-    val entity = FacetEntity(
-      name = "Android",
-      moduleId = parentModuleEntity.symbolicId,
-      typeId = FacetEntityTypeId(AndroidFacetType.TYPE_ID),
-      entitySource = parentModuleEntity.entitySource,
-    ) {
-      this.configurationXmlTag = facetConfigurationXml
+  private fun getAndroidProjectType(androidTargetType: AndroidTargetType?): Int =
+    when (androidTargetType) {
+      AndroidTargetType.APP -> AndroidProjectTypes.PROJECT_TYPE_APP
+      AndroidTargetType.LIBRARY -> AndroidProjectTypes.PROJECT_TYPE_LIBRARY
+      AndroidTargetType.TEST -> AndroidProjectTypes.PROJECT_TYPE_TEST
+      null -> AndroidProjectTypes.PROJECT_TYPE_LIBRARY
     }
+
+  private fun addFacetEntity(facet: AndroidFacetConfiguration, parentModuleEntity: ModuleEntity): FacetEntity {
+    val facetConfigurationXml = FacetUtil.saveFacetConfiguration(facet)?.let { JDOMUtil.write(it) }
+    val entity =
+      FacetEntity(
+        name = "Android",
+        moduleId = parentModuleEntity.symbolicId,
+        typeId = FacetEntityTypeId(AndroidFacetType.TYPE_ID),
+        entitySource = parentModuleEntity.entitySource,
+      ) {
+        this.configurationXmlTag = facetConfigurationXml
+      }
 
     val updatedParentModuleEntity =
       workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {

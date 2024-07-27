@@ -5,10 +5,7 @@ import org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
-private data class TargetIdComponents(
-  val packagePath: String,
-  val targetName: String,
-)
+private data class TargetIdComponents(val packagePath: String, val targetName: String)
 
 internal class BazelBuildTargetClassifier : BuildTargetClassifierExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
@@ -38,17 +35,21 @@ internal class BazelBuildTargetClassifier : BuildTargetClassifierExtension {
     val packagePathAndTargetName = repositoryAndTheRest[1].split(":", limit = 2)
     if (packagePathAndTargetName.isEmpty()) return null
     val fullPackagePath =
-      if (repository.isEmpty()) packagePathAndTargetName[0]
-      else "$repository/${packagePathAndTargetName[0]}"
-    return if (packagePathAndTargetName.size == 1)
+      if (repository.isEmpty()) {
+        packagePathAndTargetName[0]
+      } else {
+        "$repository/${packagePathAndTargetName[0]}"
+      }
+    return if (packagePathAndTargetName.size == 1) {
       TargetIdComponents(
         packagePath = fullPackagePath,
         targetName = label,
       )
-    else
+    } else {
       TargetIdComponents(
         packagePath = fullPackagePath,
         targetName = packagePathAndTargetName[1],
       )
+    }
   }
 }

@@ -11,7 +11,6 @@ import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 
 class BazelReleaseTest {
-
   @Test
   fun `should handle old bazel`() {
     // given & when
@@ -70,7 +69,7 @@ class BazelReleaseTest {
     release?.major shouldBe 6
   }
 
-  private fun copyBazelVersionToTmp() : Path {
+  private fun copyBazelVersionToTmp(): Path {
     val inputStream = BazelReleaseTest::class.java.getResourceAsStream("/.bazelversion")
     val content = inputStream?.bufferedReader(Charsets.UTF_8)?.readText()
     val tempDir = createTempDirectory("workspace").createDirectories()

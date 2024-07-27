@@ -11,15 +11,16 @@ import kotlinx.coroutines.flow.update
 
 internal class BspStartupActivityTracker : ActivityTracker {
   override val presentableName: String = "BSP Activity Tracker"
+
   override suspend fun awaitConfiguration(project: Project) {
     project.bspTrackerServiceState().first { !it }
   }
 
-  override suspend fun isInProgress(project: Project): Boolean =
-    project.bspTrackerServiceState().value
+  override suspend fun isInProgress(project: Project): Boolean = project.bspTrackerServiceState().value
 
   internal companion object {
     val log = logger<BspStartupActivityTracker>()
+
     suspend fun startConfigurationPhase(project: Project) {
       project.bspTrackerServiceState().update { true }
     }
@@ -28,8 +29,7 @@ internal class BspStartupActivityTracker : ActivityTracker {
       project.bspTrackerServiceState().update { false }
     }
 
-    private suspend fun Project.bspTrackerServiceState() =
-      this.serviceAsync<BspConfigurationTrackerService>().isRunning
+    private suspend fun Project.bspTrackerServiceState() = this.serviceAsync<BspConfigurationTrackerService>().isRunning
   }
 }
 

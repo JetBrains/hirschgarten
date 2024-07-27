@@ -28,7 +28,6 @@ private class TelemetryContextPropagatingStreamMessageProducer(
   jsonHandler: MessageJsonHandler,
   issueHandler: MessageIssueHandler,
 ) : StreamMessageProducer(input, jsonHandler, issueHandler) {
-
   private val currentHeaders = mutableMapOf<String, String>()
 
   override fun parseHeader(line: String, headers: Headers) {
@@ -42,9 +41,10 @@ private class TelemetryContextPropagatingStreamMessageProducer(
       // The first call via BSP is build/initialize, at which point the telemetry isn't initialized yet.
       return super.handleMessage(input, headers)
     }
-    val context = ExtendedContextPropagators
-      .extractTextMapPropagationContext(currentHeaders, openTelemetry.propagators)
-      .also { currentHeaders.clear() }
+    val context =
+      ExtendedContextPropagators
+        .extractTextMapPropagationContext(currentHeaders, openTelemetry.propagators)
+        .also { currentHeaders.clear() }
     context.makeCurrent().use {
       return super.handleMessage(input, headers)
     }

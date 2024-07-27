@@ -9,6 +9,7 @@ public data class PythonSdkInfo(val version: String, val originalName: String) {
   public companion object {
     public const val PYTHON_SDK_ID: String = "PythonSDK"
     private const val SEPARATOR = '-'
+
     public fun fromString(value: String): PythonSdkInfo? {
       val parts = value.split(SEPARATOR)
       return parts.takeIf { it.size == 2 }?.let {
@@ -26,15 +27,17 @@ public data class PythonModule(
   val resourceRoots: List<ResourceRoot>,
   val libraries: List<PythonLibrary>,
   val sdkInfo: PythonSdkInfo?,
-) : WorkspaceModelEntity(), Module {
-  override fun toState(): ModuleState = ModuleState(
-    module = module.toState(),
-    baseDirContentRoot = null,
-    sourceRoots = sourceRoots.map { it.toState() },
-    resourceRoots = resourceRoots.map { it.toState() },
-    libraries = libraries.map { it.toState() },
-    sdkInfo = sdkInfo?.toState(),
-  )
+) : WorkspaceModelEntity(),
+  Module {
+  override fun toState(): ModuleState =
+    ModuleState(
+      module = module.toState(),
+      baseDirContentRoot = null,
+      sourceRoots = sourceRoots.map { it.toState() },
+      resourceRoots = resourceRoots.map { it.toState() },
+      libraries = libraries.map { it.toState() },
+      sdkInfo = sdkInfo?.toState(),
+    )
 
   override fun getModuleName(): String = module.name
 }

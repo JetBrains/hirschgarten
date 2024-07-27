@@ -6,7 +6,6 @@ import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import java.io.StringWriter
 import java.nio.file.Path
 import java.util.*
-import kotlin.io.path.writeText
 
 class TemplateWriter(private val resourcePath: Path) {
   private val velocityEngine: VelocityEngine = VelocityEngine()
@@ -23,7 +22,11 @@ class TemplateWriter(private val resourcePath: Path) {
       return props
     }
 
-  fun writeToFile(templateFilePath: String, outputFile: Path, variableMap: Map<String, String?>) {
+  fun writeToFile(
+    templateFilePath: String,
+    outputFile: Path,
+    variableMap: Map<String, String?>,
+  ) {
     val template = velocityEngine.getTemplate(templateFilePath)
     val context = VelocityContext()
     variableMap.entries.forEach { context.put(it.key, it.value) }

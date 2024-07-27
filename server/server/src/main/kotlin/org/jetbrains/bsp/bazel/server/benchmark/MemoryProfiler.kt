@@ -59,7 +59,10 @@ internal object MemoryProfiler : NotificationListener {
     while (oldGcCount == getGcCount()) sleep(1)
   }
 
-  private fun getGcCount(): Long = ManagementFactory.getGarbageCollectorMXBeans().mapNotNull {
-    it.collectionCount.takeIf { count -> count != -1L }
-  }.sum()
+  private fun getGcCount(): Long =
+    ManagementFactory
+      .getGarbageCollectorMXBeans()
+      .mapNotNull {
+        it.collectionCount.takeIf { count -> count != -1L }
+      }.sum()
 }

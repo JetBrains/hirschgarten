@@ -5,6 +5,7 @@ import java.nio.file.Path
 import kotlin.io.path.toPath
 
 internal fun URI.toAbsolutePath(): Path =
-  this.normalize()
+  this
+    .normalize()
     .toPath()
     .toAbsolutePath()

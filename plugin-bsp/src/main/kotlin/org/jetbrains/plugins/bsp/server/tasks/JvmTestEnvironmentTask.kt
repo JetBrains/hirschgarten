@@ -18,6 +18,5 @@ public class JvmTestEnvironmentTask(project: Project) :
     return server.buildTargetJvmTestEnvironment(params).get()
   }
 
-  private fun createJvmTestEnvironmentParams(targetId: BuildTargetIdentifier) =
-    JvmTestEnvironmentParams(listOf(targetId))
+  private fun createJvmTestEnvironmentParams(targetId: BuildTargetIdentifier) = JvmTestEnvironmentParams(listOf(targetId))
 }

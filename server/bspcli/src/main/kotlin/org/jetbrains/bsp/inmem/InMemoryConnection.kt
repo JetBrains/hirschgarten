@@ -28,40 +28,41 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 
 class Connection(
-    installationDirectory: Path,
-    metricsFile: Path?,
-    workspace: Path,
-    client: BuildClient,
-    propagateTelemetryContext: Boolean,
+  installationDirectory: Path,
+  metricsFile: Path?,
+  workspace: Path,
+  client: BuildClient,
+  propagateTelemetryContext: Boolean,
 ) {
-    val serverOut = FixedThreadPipedOutputStream()
-    val clientOut = FixedThreadPipedOutputStream()
-    val serverExecutor = Executors.newFixedThreadPool(4, threadFactory("cli-server-pool-%d"))
-    val telemetryConfig = TelemetryConfig(metricsFile = metricsFile)
-    val serverLauncher = startServer(
-        serverOut,
-        clientOut.inputStream,
-        serverExecutor,
-        workspace,
-        installationDirectory,
-        telemetryConfig
+  val serverOut = FixedThreadPipedOutputStream()
+  val clientOut = FixedThreadPipedOutputStream()
+  val serverExecutor = Executors.newFixedThreadPool(4, threadFactory("cli-server-pool-%d"))
+  val telemetryConfig = TelemetryConfig(metricsFile = metricsFile)
+  val serverLauncher =
+    startServer(
+      serverOut,
+      clientOut.inputStream,
+      serverExecutor,
+      workspace,
+      installationDirectory,
+      telemetryConfig,
     )
-    val serverAliveFuture = serverLauncher.startListening()
+  val serverAliveFuture = serverLauncher.startListening()
 
-    val clientExecutor = Executors.newFixedThreadPool(4, threadFactory("cli-client-pool-%d"))
-    val clientLauncher = startClient(serverOut.inputStream, clientOut, clientExecutor, client, propagateTelemetryContext)
-    val clientAliveFuture = clientLauncher.startListening()
+  val clientExecutor = Executors.newFixedThreadPool(4, threadFactory("cli-client-pool-%d"))
+  val clientLauncher = startClient(serverOut.inputStream, clientOut, clientExecutor, client, propagateTelemetryContext)
+  val clientAliveFuture = clientLauncher.startListening()
 
-    fun stop() {
-        clientExecutor.shutdown()
-        serverExecutor.shutdown()
+  fun stop() {
+    clientExecutor.shutdown()
+    serverExecutor.shutdown()
 
-        clientOut.stop()
-        serverOut.stop()
+    clientOut.stop()
+    serverOut.stop()
 
-        clientAliveFuture.get()
-        serverAliveFuture.get()
-    }
+    clientAliveFuture.get()
+    serverAliveFuture.get()
+  }
 }
 
 /**
@@ -74,78 +75,82 @@ class Connection(
  * PipedInputStream, and it's the only thread that is allowed to write to PipedOutputStream
  */
 class FixedThreadPipedOutputStream : OutputStream() {
-    val inputStream = PipedInputStream()
-    private val outputStream = PrintStream(PipedOutputStream(inputStream), true)
-    private val queue = ArrayBlockingQueue<Int>(10000)
-    private val _stop = AtomicBoolean(false)
-    private val thread = Thread {
-        while (!_stop.get()) {
-            queue.poll(100, TimeUnit.MILLISECONDS)
-                ?.let { outputStream.write(it) }
-        }
+  val inputStream = PipedInputStream()
+  private val outputStream = PrintStream(PipedOutputStream(inputStream), true)
+  private val queue = ArrayBlockingQueue<Int>(10000)
+  private val _stop = AtomicBoolean(false)
+  private val thread =
+    Thread {
+      while (!_stop.get()) {
+        queue
+          .poll(100, TimeUnit.MILLISECONDS)
+          ?.let { outputStream.write(it) }
+      }
     }.also { it.start() }
 
-    fun stop() {
-        outputStream.close()
-        inputStream.close()
-        _stop.set(true)
-        thread.join()
-    }
+  fun stop() {
+    outputStream.close()
+    inputStream.close()
+    _stop.set(true)
+    thread.join()
+  }
 
-    override fun write(b: Int) {
-        queue.put(b)
-    }
+  override fun write(b: Int) {
+    queue.put(b)
+  }
 }
 
 private fun threadFactory(nameFormat: String): ThreadFactory =
-    ThreadFactoryBuilder()
-        .setNameFormat(nameFormat)
-        .setUncaughtExceptionHandler { _, e ->
-            e.printStackTrace()
-            exitProcess(1)
-        }
-        .build()
+  ThreadFactoryBuilder()
+    .setNameFormat(nameFormat)
+    .setUncaughtExceptionHandler { _, e ->
+      e.printStackTrace()
+      exitProcess(1)
+    }.build()
 
 @Suppress("UNCHECKED_CAST")
 private fun startClient(
-    serverOut: PipedInputStream,
-    clientIn: OutputStream,
-    clientExecutor: ExecutorService?,
-    buildClient: BuildClient,
-    propagateTelemetryContext: Boolean,
+  serverOut: PipedInputStream,
+  clientIn: OutputStream,
+  clientExecutor: ExecutorService?,
+  buildClient: BuildClient,
+  propagateTelemetryContext: Boolean,
 ): Launcher<JoinedBuildServer> {
-    val builder: Builder<JoinedBuildClient> = if (propagateTelemetryContext) {
-        TelemetryContextPropagatingLauncherBuilder<JoinedBuildServer>() as Builder<JoinedBuildClient>
+  val builder: Builder<JoinedBuildClient> =
+    if (propagateTelemetryContext) {
+      TelemetryContextPropagatingLauncherBuilder<JoinedBuildServer>() as Builder<JoinedBuildClient>
     } else {
-        Builder<JoinedBuildClient>()
+      Builder<JoinedBuildClient>()
     }
-    return builder
-        .setInput(serverOut)
-        .setOutput(clientIn)
-        .setRemoteInterface(JoinedBuildServer::class.java as Class<JoinedBuildClient>)
-        .setExecutorService(clientExecutor)
-        .setLocalService(buildClient)
-        .configureGson { gsonBuilder ->
-            gsonBuilder.registerTypeAdapter(
-                BuildServerCapabilities::class.java,
-                BazelBuildServerCapabilitiesTypeAdapter(),
-            )
-        }
-        .create() as Launcher<JoinedBuildServer>
+  return builder
+    .setInput(serverOut)
+    .setOutput(clientIn)
+    .setRemoteInterface(JoinedBuildServer::class.java as Class<JoinedBuildClient>)
+    .setExecutorService(clientExecutor)
+    .setLocalService(buildClient)
+    .configureGson { gsonBuilder ->
+      gsonBuilder.registerTypeAdapter(
+        BuildServerCapabilities::class.java,
+        BazelBuildServerCapabilitiesTypeAdapter(),
+      )
+    }.create() as Launcher<JoinedBuildServer>
 }
 
-private fun startServer(serverIn: OutputStream,
-                        clientOut: PipedInputStream,
-                        serverExecutor: ExecutorService,
-                        workspace: Path,
-                        directory: Path,
-                        telemetryConfig: TelemetryConfig): Launcher<JoinedBuildClient> {
-    val bspInfo = BspInfo(directory)
-    val bspIntegrationData = BspIntegrationData(serverIn, clientOut, serverExecutor, null)
-    val workspaceContextProvider = DefaultWorkspaceContextProvider(
-        workspaceRoot = workspace,
-        projectViewPath = directory.resolve("projectview.bazelproject")
+private fun startServer(
+  serverIn: OutputStream,
+  clientOut: PipedInputStream,
+  serverExecutor: ExecutorService,
+  workspace: Path,
+  directory: Path,
+  telemetryConfig: TelemetryConfig,
+): Launcher<JoinedBuildClient> {
+  val bspInfo = BspInfo(directory)
+  val bspIntegrationData = BspIntegrationData(serverIn, clientOut, serverExecutor, null)
+  val workspaceContextProvider =
+    DefaultWorkspaceContextProvider(
+      workspaceRoot = workspace,
+      projectViewPath = directory.resolve("projectview.bazelproject"),
     )
-    val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspace, telemetryConfig)
-    return bspServer.buildServer(bspIntegrationData)
+  val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspace, telemetryConfig)
+  return bspServer.buildServer(bspIntegrationData)
 }

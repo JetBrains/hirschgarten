@@ -8,17 +8,15 @@ import org.virtuslab.ideprobe.robot.RobotSyntax.SearchableOps
 import scala.runtime.BoxedUnit
 import java.nio.file.Paths
 
-
 class LocalProbeTests {
-
   @Test
   fun `open local instance of bazel-bsp project and check imported targets`() {
     val localBazelBspPath = Paths.get("/tmp/bazel-bsp")
 
     with(
       IdeProbeTestRunner(
-        localBazelBspPath
-      )
+        localBazelBspPath,
+      ),
     ) {
       runIntellijAndOpenProject { probe, robot, intellij ->
         fun testTargetsTree(buildPanel: SearchableOps) {
@@ -47,9 +45,15 @@ class LocalProbeTests {
     var problemsText = ""
     probe.tryUntilSuccessful {
       errors.fixture().click()
-      val problemsTree = findElement(Query.className("ProblemsViewPanel"))
-        .findElement(Query.className("Tree"))
-      problemsText = problemsTree.fullText().split("\n").firstOrNull().orEmpty()
+      val problemsTree =
+        findElement(Query.className("ProblemsViewPanel"))
+          .findElement(Query.className("Tree"))
+      problemsText =
+        problemsTree
+          .fullText()
+          .split("\n")
+          .firstOrNull()
+          .orEmpty()
     }
     Assertions.assertEquals("No errors found by the IDE", problemsText)
   }

@@ -10,6 +10,4 @@ public data class LibraryItem(
   val sourceJars: List<String>,
 )
 
-public data class WorkspaceLibrariesResult(
-  val libraries: List<LibraryItem>,
-)
+public data class WorkspaceLibrariesResult(val libraries: List<LibraryItem>)

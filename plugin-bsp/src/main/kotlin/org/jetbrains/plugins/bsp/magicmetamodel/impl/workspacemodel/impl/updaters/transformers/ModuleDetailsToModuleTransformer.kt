@@ -15,8 +15,7 @@ internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelE
   targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
   moduleNameProvider: TargetNameReformatProvider,
   libraryNameProvider: TargetNameReformatProvider,
-) :
-  WorkspaceModelEntityTransformer<ModuleDetails, T> {
+) : WorkspaceModelEntityTransformer<ModuleDetails, T> {
   protected abstract val type: ModuleTypeId
 
   val bspModuleDetailsToModuleTransformer =

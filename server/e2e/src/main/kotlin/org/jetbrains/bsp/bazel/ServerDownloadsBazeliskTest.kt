@@ -16,17 +16,21 @@ object ServerDownloadsBazeliskTest : BazelBspTestBaseScenario() {
     // DO NOT supply the -b flag to test whether bazelisk is downloaded
     Install.main(
       arrayOf(
-        "-d", workspaceDir, "-t", "//...", "--produce-trace-log"
-      )
+        "-d",
+        workspaceDir,
+        "-t",
+        "//...",
+        "--produce-trace-log",
+      ),
     )
   }
 
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> = listOf(resolveProject())
 
-  override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult =
-    WorkspaceBuildTargetsResult(listOf())
+  override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult = WorkspaceBuildTargetsResult(listOf())
 
-  private fun resolveProject(): BazelBspTestScenarioStep = BazelBspTestScenarioStep(
-    "resolve project"
-  ) { mockTestClient.testResolveProject(2.minutes) }
+  private fun resolveProject(): BazelBspTestScenarioStep =
+    BazelBspTestScenarioStep(
+      "resolve project",
+    ) { mockTestClient.testResolveProject(2.minutes) }
 }

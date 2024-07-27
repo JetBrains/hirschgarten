@@ -20,6 +20,5 @@ public class BazelBuildServerCapabilitiesTypeAdapter : TypeAdapter<BuildServerCa
     }
   }
 
-  override fun read(reader: JsonReader): BazelBuildServerCapabilities =
-    gson.fromJson(reader, BazelBuildServerCapabilities::class.java)
+  override fun read(reader: JsonReader): BazelBuildServerCapabilities = gson.fromJson(reader, BazelBuildServerCapabilities::class.java)
 }

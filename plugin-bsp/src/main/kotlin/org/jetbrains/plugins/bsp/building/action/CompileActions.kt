@@ -40,6 +40,7 @@ internal class CompileProjectWithBspAction :
 internal class CompileProjectWithJpsAction :
   CustomCompileProjectAction(BspPluginBundle.message("project.task.action.name.build.project.jps")) {
   override fun getProjectTask(project: Project): ProjectTask = createAllJpsOnlyModuleBuildTasks(project)
+
   override fun update(project: Project, e: AnActionEvent) {
     super.update(project, e)
     e.presentation.isEnabled = JpsFeatureFlags.isJpsCompilationEnabled && e.presentation.isEnabled

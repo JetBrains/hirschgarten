@@ -11,10 +11,7 @@ import org.jetbrains.bsp.bazel.server.model.Language
  * we still have to pass the dependent Kotlin target explicitly during build (and not just the merged target).
  */
 class AdditionalAndroidBuildTargetsProvider(private val projectProvider: ProjectProvider) {
-  fun getAdditionalBuildTargets(
-    cancelChecker: CancelChecker,
-    targets: List<BuildTargetIdentifier>,
-  ): List<BuildTargetIdentifier> {
+  fun getAdditionalBuildTargets(cancelChecker: CancelChecker, targets: List<BuildTargetIdentifier>): List<BuildTargetIdentifier> {
     val project = projectProvider.get(cancelChecker)
     val modules = BspMappings.getModules(project, targets)
     return modules

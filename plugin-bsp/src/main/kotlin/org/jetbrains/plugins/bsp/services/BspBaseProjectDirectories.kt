@@ -9,12 +9,10 @@ import com.intellij.platform.workspace.storage.VersionedStorageChange
 import kotlinx.coroutines.CoroutineScope
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
 
-public class BspBaseProjectDirectories(project: Project, scope: CoroutineScope) :
-  BaseProjectDirectoriesImpl(project, scope) {
-  override fun collectRoots(snapshot: ImmutableEntityStorage): Sequence<VirtualFile> {
-    return super.collectRoots(snapshot) +
+public class BspBaseProjectDirectories(project: Project, scope: CoroutineScope) : BaseProjectDirectoriesImpl(project, scope) {
+  override fun collectRoots(snapshot: ImmutableEntityStorage): Sequence<VirtualFile> =
+    super.collectRoots(snapshot) +
       snapshot.entities(BspProjectDirectoriesEntity::class.java).mapNotNull { it.projectRoot.virtualFile }
-  }
 
   override fun processChange(
     change: VersionedStorageChange,

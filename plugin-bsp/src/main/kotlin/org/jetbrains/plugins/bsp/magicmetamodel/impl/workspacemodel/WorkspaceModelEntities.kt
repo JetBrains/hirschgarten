@@ -32,12 +32,10 @@ public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
 
 public abstract class WorkspaceModelEntity
 
-public data class ContentRoot(
-  val path: Path,
-  val excludedPaths: List<Path> = ArrayList(),
-) : WorkspaceModelEntity()
+public data class ContentRoot(val path: Path, val excludedPaths: List<Path> = ArrayList()) : WorkspaceModelEntity()
 
 public interface ResourceRootEntity
+
 public interface EntityDependency
 
 public data class GenericSourceRoot(
@@ -46,17 +44,17 @@ public data class GenericSourceRoot(
   val excludedPaths: List<Path> = ArrayList(),
 ) : WorkspaceModelEntity()
 
-public data class ResourceRoot(
-  val resourcePath: Path,
-  val rootType: SourceRootTypeId,
-) : WorkspaceModelEntity(), ResourceRootEntity
+public data class ResourceRoot(val resourcePath: Path, val rootType: SourceRootTypeId) :
+  WorkspaceModelEntity(),
+  ResourceRootEntity
 
 public data class Library(
   val displayName: String,
   val iJars: List<String> = listOf(),
   val sourceJars: List<String> = listOf(),
   val classJars: List<String> = listOf(),
-) : WorkspaceModelEntity(), ResourceRootEntity {
+) : WorkspaceModelEntity(),
+  ResourceRootEntity {
   public companion object {
     public fun formatJarString(jar: String): String =
       if (jar.endsWith(".jar")) {
@@ -68,14 +66,13 @@ public data class Library(
   }
 }
 
-public data class IntermediateModuleDependency(
-  val moduleName: String,
-) : WorkspaceModelEntity(), EntityDependency
+public data class IntermediateModuleDependency(val moduleName: String) :
+  WorkspaceModelEntity(),
+  EntityDependency
 
-public data class IntermediateLibraryDependency(
-  val libraryName: String,
-  val isProjectLevelLibrary: Boolean = false,
-) : WorkspaceModelEntity(), EntityDependency
+public data class IntermediateLibraryDependency(val libraryName: String, val isProjectLevelLibrary: Boolean = false) :
+  WorkspaceModelEntity(),
+  EntityDependency
 
 /**
 This class holds basic module data that are not language-specific
@@ -110,15 +107,18 @@ public data class GenericModuleInfo(
   )
 
   internal val languageIdsAsSingleEntryMap: Map<String, String>
-    get() = languageIds.takeUnless { it.isEmpty() }?.let {
-      mapOf(LANGUAGE_IDS to it.joinToString(LANGUAGE_IDS_SEPARATOR))
-    }.orEmpty()
+    get() =
+      languageIds
+        .takeUnless { it.isEmpty() }
+        ?.let {
+          mapOf(LANGUAGE_IDS to it.joinToString(LANGUAGE_IDS_SEPARATOR))
+        }.orEmpty()
 
   private companion object {
     const val LANGUAGE_IDS = "languageIds"
     const val LANGUAGE_IDS_SEPARATOR = ","
-    fun languageIdsFromMap(map: Map<String, String>): List<String> =
-      map[LANGUAGE_IDS]?.split(LANGUAGE_IDS_SEPARATOR).orEmpty()
+
+    fun languageIdsFromMap(map: Map<String, String>): List<String> = map[LANGUAGE_IDS]?.split(LANGUAGE_IDS_SEPARATOR).orEmpty()
   }
 }
 
@@ -156,5 +156,6 @@ internal fun BuildTargetCapabilities.toModuleCapabilities() =
 
 public interface Module {
   public fun toState(): ModuleState
+
   public fun getModuleName(): String
 }

@@ -7,8 +7,7 @@ import ch.epfl.scala.bsp4j.JvmRunEnvironmentResult
 import com.intellij.openapi.project.Project
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
-public class JvmRunEnvironmentTask(project: Project) :
-  BspServerSingleTargetTask<JvmRunEnvironmentResult>("jvmRunEnvironment", project) {
+public class JvmRunEnvironmentTask(project: Project) : BspServerSingleTargetTask<JvmRunEnvironmentResult>("jvmRunEnvironment", project) {
   override fun executeWithServer(
     server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
@@ -18,6 +17,5 @@ public class JvmRunEnvironmentTask(project: Project) :
     return server.buildTargetJvmRunEnvironment(params).get()
   }
 
-  private fun createJvmRunEnvironmentParams(targetId: BuildTargetIdentifier) =
-    JvmRunEnvironmentParams(listOf(targetId))
+  private fun createJvmRunEnvironmentParams(targetId: BuildTargetIdentifier) = JvmRunEnvironmentParams(listOf(targetId))
 }

@@ -6,17 +6,19 @@ import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 
 class BazelBspFallbackAspectsManager(
-    private val bazelRunner: BazelRunner,
-    private val workspaceContextProvider: WorkspaceContextProvider
+  private val bazelRunner: BazelRunner,
+  private val workspaceContextProvider: WorkspaceContextProvider,
 ) {
-    fun getAllPossibleTargets(cancelChecker: CancelChecker): List<Label> {
-        val targets = workspaceContextProvider.currentWorkspaceContext().targets
-        return bazelRunner.commandBuilder().query()
-            .withTargets(targets)
-            .withFlags(listOf("--output=label", "--keep_going"))
-            .executeBazelCommand(parseProcessOutput = false)
-            .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
-            .stdoutLines
-            .map { Label.parse(it) }
-    }
+  fun getAllPossibleTargets(cancelChecker: CancelChecker): List<Label> {
+    val targets = workspaceContextProvider.currentWorkspaceContext().targets
+    return bazelRunner
+      .commandBuilder()
+      .query()
+      .withTargets(targets)
+      .withFlags(listOf("--output=label", "--keep_going"))
+      .executeBazelCommand(parseProcessOutput = false)
+      .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
+      .stdoutLines
+      .map { Label.parse(it) }
+  }
 }
