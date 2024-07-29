@@ -23,7 +23,7 @@ public class CopyTargetIdAction(private val container: BuildTargetContainer, com
 
   private fun BuildTargetInfo.copyIdToClipboard() {
     val clipboard = CopyPasteManager.getInstance()
-    val transferable = TextTransferable(this.id as CharSequence)
+    val transferable = TextTransferable(this.id.uri as CharSequence)
     clipboard.setContents(transferable)
   }
 }
