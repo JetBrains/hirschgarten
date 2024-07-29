@@ -1,6 +1,3 @@
-// Suppress to be able to import org.jetbrains.idea.devkit.run.loadProductInfo
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package org.jetbrains.plugins.bsp.intellij
 
 import com.intellij.execution.BeforeRunTask
@@ -24,6 +21,7 @@ import org.jetbrains.idea.devkit.projectRoots.IdeaJdk
 import org.jetbrains.idea.devkit.projectRoots.Sandbox
 import org.jetbrains.idea.devkit.run.IdeaLicenseHelper
 import org.jetbrains.idea.devkit.run.loadProductInfo
+import org.jetbrains.idea.devkit.run.resolveIdeHomeVariable
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
@@ -91,7 +89,9 @@ public class IntellijPluginRunHandler : BspRunHandler {
 
         // use product-info.json values if found, otherwise fallback to defaults
         val productInfo = loadProductInfo(ideaJdkHome) ?: throw ExecutionException("IDEA product info is null")
-        productInfo.additionalJvmArguments.forEach(vm::add)
+        productInfo.getCurrentLaunch().additionalJvmArguments.forEach { item ->
+          vm.add(resolveIdeHomeVariable(item, ideaJdkHome))
+        }
 
         if (SystemInfo.isMac) {
           vm.defineProperty("apple.awt.fileDialogForDirectories", "true")
@@ -100,10 +100,14 @@ public class IntellijPluginRunHandler : BspRunHandler {
         vm.defineProperty(SlowOperations.IDEA_PLUGIN_SANDBOX_MODE, "true")
 
         params.workingDirectory = ideaJdkHome + File.separator + "bin" + File.separator
-        params.setJdk(ideaJdk)
+        params.jdk = ideaJdk
 
-        for (path in productInfo.bootClassPathJarNames) {
+        for (path in productInfo.getCurrentLaunch().bootClassPathJarNames) {
           params.classPath.add(ideaJdkHome + FileUtil.toSystemDependentName("/lib/$path"))
+        }
+
+        for (moduleJarPath in productInfo.getProductModuleJarPaths()) {
+          params.classPath.add(ideaJdkHome + FileUtil.toSystemIndependentName("/$moduleJarPath"))
         }
 
         params.classPath.addFirst((ideaJdk.sdkType as JavaSdkType).getToolsPath(ideaJdk))
