@@ -11,7 +11,7 @@ load(
     "intellij_plugin_debug_target",
 )
 load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain")
-load("//:versions.bzl", "DEV_VERSION", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
+load("//:versions.bzl", "INTELLIJ_BAZEL_VERSION", "PLATFORM_VERSION", "SINCE_VERSION")
 
 define_kt_toolchain(
     name = "kotlin_toolchain",
@@ -44,17 +44,6 @@ stamped_plugin_xml(
     version = INTELLIJ_BAZEL_VERSION,
 )
 
-stamped_plugin_xml(
-    name = "stamped_plugin_xml_dev",
-    changelog_file = "CHANGELOG.md",
-    description_file = "description.html",
-    plugin_id = "org.jetbrains.bazel",
-    plugin_name = "Bazel by JetBrains (experimental)",
-    since_build_numbers = {PLATFORM_VERSION: SINCE_VERSION},
-    stamp_since_build = True,
-    version = DEV_VERSION,
-)
-
 java_binary(
     name = "intellij-bazel_exclude",
     srcs = ["//plugin-bazel:DummySourceForExclude.java"],
@@ -74,19 +63,6 @@ intellij_plugin(
     ],
     plugin_deps = ["org.jetbrains.bsp"],
     plugin_xml = ":stamped_plugin_xml",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":plugin_library",
-    ],
-)
-
-intellij_plugin(
-    name = "intellij-bazel-dev",
-    deploy_env = [
-        "intellij-bazel_exclude",
-    ],
-    plugin_deps = ["org.jetbrains.bsp"],
-    plugin_xml = ":stamped_plugin_xml_dev",
     visibility = ["//visibility:public"],
     deps = [
         ":plugin_library",
@@ -115,12 +91,6 @@ repackaged_files(
     prefix = "intellij-bazel/lib",
 )
 
-repackaged_files(
-    name = "intellij-bazel-dev_jar",
-    srcs = [":intellij-bazel-dev"],
-    prefix = "intellij-bazel-dev/lib",
-)
-
 plugin_deploy_zip(
     name = "intellij-bazel_zip",
     srcs = [
@@ -133,8 +103,8 @@ plugin_deploy_zip(
 intellij_plugin_debug_target(
     name = "plugin-bazel-debug",
     deps = [
-        ":intellij-bazel-dev_jar",
-        "//plugin-bsp:intellij-bsp-dev_jar",
+        ":intellij-bazel_jar",
+        "//plugin-bsp:intellij-bsp_jar",
     ],
 )
 
@@ -142,7 +112,7 @@ intellij_plugin_debug_target(
     name = "plugin-bazel-with-server-debug",
     deps = [
         ":intellij-bazel-with-inmemory-server_jar",
-        "//plugin-bsp:intellij-bsp-dev_jar",
+        "//plugin-bsp:intellij-bsp_jar",
     ],
 )
 
@@ -165,7 +135,7 @@ intellij_plugin(
         "intellij-bazel-debug_exclude",
     ],
     plugin_deps = ["org.jetbrains.bsp"],
-    plugin_xml = ":stamped_plugin_xml_dev",
+    plugin_xml = ":stamped_plugin_xml",
     visibility = ["//visibility:public"],
     deps = [
         ":plugin_library",
