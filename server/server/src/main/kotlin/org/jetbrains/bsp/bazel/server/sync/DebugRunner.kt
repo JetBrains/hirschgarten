@@ -74,10 +74,10 @@ class DebugRunner(private val bazelRunner: BazelRunner, private val errorMessage
       bazelRunner
         .commandBuilder()
         .run()
-        .withArguments(debugArguments)
-        .withArgument(bspUri)
-        .withArguments(params.runParams.arguments)
-        .withFlag(BazelFlag.color(true))
+        .withProgramArguments(debugArguments)
+        .withProgramArgument(bspUri)
+        .withProgramArguments(params.runParams.arguments)
+        .withBazelArgument(BazelFlag.color(true))
         .executeBazelCommand(params.originId)
         .waitAndGetResult(cancelChecker)
     return RunResult(bazelProcessResult.statusCode).apply { originId = params.originId }

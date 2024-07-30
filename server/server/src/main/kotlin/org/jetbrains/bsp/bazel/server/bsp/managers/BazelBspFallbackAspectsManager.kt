@@ -15,7 +15,7 @@ class BazelBspFallbackAspectsManager(
       .commandBuilder()
       .query()
       .withTargets(targets)
-      .withFlags(listOf("--output=label", "--keep_going"))
+      .withBazelArguments(listOf("--output=label", "--keep_going"))
       .executeBazelCommand(parseProcessOutput = false)
       .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
       .stdoutLines

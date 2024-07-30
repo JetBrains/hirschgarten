@@ -39,8 +39,8 @@ object InverseSourcesQuery {
       bazelRunner
         .commandBuilder()
         .query()
-        .withArgument("attr('srcs', $fileLabel, $packageLabel)")
-        .withArguments(consistentLabelsArg)
+        .withProgramArgument("attr('srcs', $fileLabel, $packageLabel)")
+        .withProgramArguments(consistentLabelsArg)
         .executeBazelCommand(null)
         .waitAndGetResult(cancelChecker)
     if (targetLabelsQuery.statusCode == StatusCode.OK) {

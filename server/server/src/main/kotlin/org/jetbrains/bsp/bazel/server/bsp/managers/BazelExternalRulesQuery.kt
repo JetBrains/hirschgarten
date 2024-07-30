@@ -42,8 +42,8 @@ class BazelWorkspaceExternalRulesQueryImpl(private val bazelRunner: BazelRunner)
     bazelRunner
       .commandBuilder()
       .query()
-      .withArgument("//external:*")
-      .withFlags(listOf("--output=xml", "--order_output=no"))
+      .withProgramArgument("//external:*")
+      .withBazelArguments(listOf("--output=xml", "--order_output=no"))
       .executeBazelCommand(parseProcessOutput = false)
       .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
       .let { result ->
@@ -88,7 +88,7 @@ class BazelBzlModExternalRulesQueryImpl(private val bazelRunner: BazelRunner) : 
       bazelRunner
         .commandBuilder()
         .graph()
-        .withFlag("--output=json")
+        .withBazelArgument("--output=json")
         .executeBazelCommand(parseProcessOutput = false)
         .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
         .let { result ->

@@ -21,7 +21,7 @@ object ClasspathQuery {
         .cquery()
         .withUseBuildFlags()
         .withTargets(listOf(target.uri))
-        .withFlags(listOf("--starlark:file=$queryFile", "--output=starlark"))
+        .withBazelArguments(listOf("--starlark:file=$queryFile", "--output=starlark"))
         .executeBazelCommand(parseProcessOutput = false)
         .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
     if (cqueryResult.isNotSuccess) throw RuntimeException("Could not query target '${target.uri}' for runtime classpath")

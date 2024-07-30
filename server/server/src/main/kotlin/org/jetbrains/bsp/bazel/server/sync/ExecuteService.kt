@@ -105,7 +105,7 @@ class ExecuteService(
       }
 
     bazelTestParamsData?.testFilter?.let { testFilter ->
-      baseCommand = baseCommand.withFlag(BazelFlag.testFilter(testFilter))
+      baseCommand = baseCommand.withBazelArgument(BazelFlag.testFilter(testFilter))
     }
 
     // TODO: handle multiple targets
@@ -114,10 +114,10 @@ class ExecuteService(
         run {
           baseCommand
             .withTargets(targetsSpec)
-            .withArguments(params.arguments)
+            .withProgramArguments(params.arguments)
             // Use file:// uri scheme for output paths in the build events.
-            .withFlag(BazelFlag.buildEventBinaryPathConversion(false))
-            .withFlag(BazelFlag.color(true))
+            .withBazelArgument(BazelFlag.buildEventBinaryPathConversion(false))
+            .withBazelArgument(BazelFlag.color(true))
             .executeBazelBesCommand(params.originId, bepReader.eventFile.toPath())
             .waitAndGetResult(cancelChecker, true)
         }
@@ -140,9 +140,9 @@ class ExecuteService(
       bazelRunner
         .commandBuilder()
         .run()
-        .withArgument(BspMappings.toBspUri(bspId))
-        .withArguments(params.arguments)
-        .withFlag(BazelFlag.color(true))
+        .withBazelArgument(BazelFlag.color(true))
+        .withTargets(listOf(BspMappings.toBspUri(bspId)))
+        .withProgramArguments(params.arguments)
         .executeBazelCommand(params.originId)
         .waitAndGetResult(cancelChecker)
     return RunResult(bazelProcessResult.statusCode).apply { originId = originId }
@@ -175,10 +175,10 @@ class ExecuteService(
       bazelRunner
         .commandBuilder()
         .mobileInstall()
-        .withArgument(BspMappings.toBspUri(bspId))
-        .withArgument(BazelFlag.device(params.targetDeviceSerialNumber))
-        .withArgument(BazelFlag.start(startType))
-        .withFlag(BazelFlag.color(true))
+        .withProgramArgument(BspMappings.toBspUri(bspId))
+        .withProgramArgument(BazelFlag.device(params.targetDeviceSerialNumber))
+        .withProgramArgument(BazelFlag.start(startType))
+        .withBazelArgument(BazelFlag.color(true))
         .executeBazelCommand(params.originId)
         .waitAndGetResult(cancelChecker)
     return MobileInstallResult(bazelProcessResult.statusCode, params.originId)

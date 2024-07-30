@@ -37,7 +37,7 @@ class BazelBspCompilationManager(
         bazelRunner
           .commandBuilder()
           .build()
-          .withFlags(extraFlags)
+          .withBazelArguments(extraFlags)
           .withTargets(targetSpecs)
           .withEnvironment(environment)
           .executeBazelBesCommand(originId, bepReader.eventFile.toPath().toAbsolutePath())

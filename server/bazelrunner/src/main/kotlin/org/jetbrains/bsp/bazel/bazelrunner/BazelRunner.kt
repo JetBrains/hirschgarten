@@ -8,29 +8,21 @@ import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.bazel.workspacecontext.extraFlags
 import java.nio.file.Path
+import kotlin.io.path.pathString
 
-class BazelRunner private constructor(
+class BazelRunner(
   private val workspaceContextProvider: WorkspaceContextProvider,
-  private val bspClientLogger: BspClientLogger,
+  private val bspClientLogger: BspClientLogger?,
   val workspaceRoot: Path?,
-  val bazelBspRoot: String,
 ) {
   companion object {
     private val LOGGER = LogManager.getLogger(BazelRunner::class.java)
-
-    @JvmStatic
-    fun of(
-      workspaceContextProvider: WorkspaceContextProvider,
-      bspClientLogger: BspClientLogger,
-      workspaceRoot: Path?,
-      bazelBspRoot: String,
-    ): BazelRunner = BazelRunner(workspaceContextProvider, bspClientLogger, workspaceRoot, bazelBspRoot)
   }
 
   fun commandBuilder(): BazelRunnerCommandBuilder = BazelRunnerCommandBuilder(this)
 
   fun runBazelCommandBes(
-    command: List<String>,
+    command: String,
     flags: List<String>,
     arguments: List<String>,
     environment: Map<String, String>,
@@ -56,7 +48,7 @@ class BazelRunner private constructor(
   }
 
   fun runBazelCommand(
-    command: List<String>,
+    command: String,
     flags: List<String>,
     arguments: List<String>,
     environment: Map<String, String>,
@@ -66,7 +58,8 @@ class BazelRunner private constructor(
   ): BazelProcess {
     val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
     val usedBuildFlags = if (useBuildFlags) buildFlags(workspaceContext) else emptyList()
-    val defaultFlags = listOf(repositoryOverride(Constants.ASPECT_REPOSITORY, bazelBspRoot))
+    val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath.value
+    val defaultFlags = listOf(repositoryOverride(Constants.ASPECT_REPOSITORY, relativeDotBspFolderPath.pathString))
     val processArgs =
       listOf(bazel(workspaceContext)) + command + usedBuildFlags + defaultFlags + flags + arguments
     logInvocation(processArgs, environment, originId)
@@ -90,7 +83,7 @@ class BazelRunner private constructor(
   ) {
     "Invoking: ${envToString(processEnv)} ${processArgs.joinToString(" ")}"
       .also { LOGGER.info(it) }
-      .also { bspClientLogger.copy(originId = originId).message(it) }
+      .also { bspClientLogger?.copy(originId = originId)?.message(it) }
   }
 
   private fun bazel(workspaceContext: WorkspaceContext): String = workspaceContext.bazelBinary.value.toString()
