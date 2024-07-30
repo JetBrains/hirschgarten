@@ -9,9 +9,11 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 
-internal class JavaSourceEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
-  WorkspaceModelEntityWithParentModuleUpdater<JavaSourceRoot, JavaSourceRootPropertiesEntity> {
-  private val sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+internal class JavaSourceEntityUpdater(
+  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+  workspaceModelEntitiesFolderMarker: Boolean = false,
+) : WorkspaceModelEntityWithParentModuleUpdater<JavaSourceRoot, JavaSourceRootPropertiesEntity> {
+  private val sourceEntityUpdater = SourceEntityUpdater(workspaceModelEntityUpdaterConfig, workspaceModelEntitiesFolderMarker)
   private val generatedJavaSourceEntityUpdater = GeneratedJavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntities(entitiesToAdd: List<JavaSourceRoot>, parentModuleEntity: ModuleEntity): List<JavaSourceRootPropertiesEntity> {

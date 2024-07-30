@@ -34,7 +34,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
 ) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, moduleNameProvider, libraryNameProvider) {
   override val type = ModuleTypeId("JAVA_MODULE")
 
-  private val sourcesItemToJavaSourceRootTransformer = SourcesItemToJavaSourceRootTransformer()
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()
 
   override fun transform(inputEntity: ModuleDetails): JavaModule =
@@ -61,10 +60,11 @@ internal class ModuleDetailsToJavaModuleTransformer(
       scalaAddendum = toScalaAddendum(inputEntity),
       javaAddendum = toJavaAddendum(inputEntity),
       androidAddendum = if (isAndroidSupportEnabled) toAndroidAddendum(inputEntity) else null,
+      workspaceModelEntitiesFolderMarker = inputEntity.workspaceModelEntitiesFolderMarker,
     )
 
   private fun toJavaSourceRoots(inputEntity: ModuleDetails): List<JavaSourceRoot> =
-    sourcesItemToJavaSourceRootTransformer.transform(
+    SourcesItemToJavaSourceRootTransformer(inputEntity.workspaceModelEntitiesFolderMarker).transform(
       inputEntity.sources.map {
         BuildTargetAndSourceItem(
           buildTarget = inputEntity.target,
