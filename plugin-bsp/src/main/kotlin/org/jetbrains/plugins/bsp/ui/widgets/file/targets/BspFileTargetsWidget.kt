@@ -42,9 +42,9 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
 
   override fun getWidgetState(file: VirtualFile?): WidgetState =
     if (file == null) {
-      inactiveWidgetState(project.assets.icon)
+      inactiveWidgetState(project.assets.targetIcon)
     } else {
-      activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, project.assets.icon)
+      activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, project.assets.targetIcon)
     }
 
   private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
