@@ -151,6 +151,10 @@
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <projectConfigurator
+                implementation="org.jetbrains.plugins.bsp.services.BspKotlinProjectConfigurator"
+                order="first"
+        />
         <!--suppress PluginXmlValidity -->
         <supportsKotlinK2Mode/>
     </extensions>
