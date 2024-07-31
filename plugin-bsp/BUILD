@@ -43,6 +43,12 @@ optional_plugin_dep(
     plugin_xml = "//plugin-bsp/src:main/xml/bsp-withDevKit.xml",
 )
 
+optional_plugin_dep(
+    name = "bsp_code_with_me",
+    module = ["com.jetbrains.codeWithMe"],
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withCodeWithMe.xml",
+)
+
 intellij_plugin_library(
     name = "plugin_library",
     optional_plugin_deps = [
@@ -50,6 +56,7 @@ intellij_plugin_library(
         ":bsp_with_android",
         ":bsp_performance_testing",
         ":bsp_devkit",
+        ":bsp_code_with_me",
     ],
     plugin_deps = [
         "com.intellij.modules.platform",

@@ -50,5 +50,12 @@ public suspend fun registerBspToolWindow(project: Project) {
   }
 }
 
-public val Project.bspToolWindowId: String
+public suspend fun showBspToolWindow(project: Project) {
+  val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(project.bspToolWindowId) ?: return
+  withContext(Dispatchers.EDT) {
+    toolWindow.show()
+  }
+}
+
+private val Project.bspToolWindowId: String
   get() = this.assets.presentableName
