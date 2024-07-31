@@ -41,7 +41,7 @@ public suspend fun registerBspToolWindow(project: Project) {
   if (currentToolWindow == null) {
     withContext(Dispatchers.EDT) {
       toolWindowManager.registerToolWindow(project.bspToolWindowId) {
-        this.icon = project.assets.icon
+        this.icon = project.assets.toolWindowIcon
         this.anchor = ToolWindowAnchor.RIGHT
         this.canCloseContent = false
         this.contentFactory = BspAllTargetsWidgetFactory()

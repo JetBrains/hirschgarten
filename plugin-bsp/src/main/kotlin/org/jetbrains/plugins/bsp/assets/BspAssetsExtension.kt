@@ -11,9 +11,7 @@ public class BspAssetsExtension : BuildToolAssetsExtension {
 
   override val presentableName: String = "BSP"
 
-  override val icon: Icon = BspPluginIcons.bsp
-
   override val targetIcon: Icon = BspPluginIcons.bsp
-
-  override val invalidTargetIcon: Icon = AllIcons.General.Warning
+  override val errorTargetIcon: Icon = AllIcons.General.Error
+  override val toolWindowIcon: Icon = BspPluginIcons.bsp
 }

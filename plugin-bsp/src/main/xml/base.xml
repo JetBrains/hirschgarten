@@ -159,7 +159,7 @@
         <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.DisconnectAction"
                 icon="/icons/disconnect.svg"/>
         <action id="Bsp.ResyncAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.ResyncAction"
-                icon="/icons/reload.svg"/>
+                icon="/icons/resync.svg"/>
         <action id="Bsp.BuildAndResyncAction"
                 class="org.jetbrains.plugins.bsp.ui.actions.registered.BuildAndResyncAction"
                 icon="/icons/buildAndResync.svg"/>
