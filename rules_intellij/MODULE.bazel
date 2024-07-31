@@ -1,6 +1,6 @@
 module(
+    name = "rules_intellij",
     bazel_compatibility = [">=7.0.0"],
-    repo_name = "intellij_with_bazel",
 )
 
 bazel_dep(
@@ -9,11 +9,11 @@ bazel_dep(
 )
 bazel_dep(
     name = "rules_java",
-    version = "7.8.0",
+    version = "7.6.5",
 )
 bazel_dep(
     name = "rules_python",
-    version = "0.34.0",
+    version = "0.33.2",
 )
 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
@@ -24,8 +24,12 @@ python.toolchain(
 use_repo(python, "python_3_12", "python_versions")
 
 bazel_dep(
+    name = "rules_kotlin",
+    version = "1.9.6",
+)
+bazel_dep(
     name = "rules_proto",
-    version = "6.0.2",
+    version = "5.3.0-21.7",
 )
 bazel_dep(
     name = "protobuf",
@@ -36,52 +40,17 @@ bazel_dep(
     name = "bazel_skylib",
     version = "1.7.1",
 )
-bazel_dep(
-    name = "rules_pkg",
-    version = "1.0.1",
-)
-bazel_dep(
-    name = "rules_kotlin",
-    version = "1.9.6",
-)
-bazel_dep(
-    name = "rules_android",
-    version = "0.1.1",
-    repo_name = "build_bazel_rules_android",
-)
-
-remote_android_extensions = use_extension("@bazel_tools//tools/android:android_extensions.bzl", "remote_android_tools_extensions")
-use_repo(remote_android_extensions, "android_gmaven_r8", "android_tools")
-
-bazel_dep(
-    name = "rules_bazel_integration_test",
-    version = "0.24.1",
-    dev_dependency = True,
-)
-
-bazel_binaries = use_extension(
-    "@rules_bazel_integration_test//:extensions.bzl",
-    "bazel_binaries",
-    dev_dependency = True,
-)
-bazel_binaries.download(version = "5.4.1")
-bazel_binaries.download(version = "6.5.0")
-bazel_binaries.download(version = "7.0.2")
-use_repo(
-    bazel_binaries,
-    "bazel_binaries",
-    "bazel_binaries_bazelisk",
-    "build_bazel_bazel_5_4_1",
-    "build_bazel_bazel_6_5_0",
-    "build_bazel_bazel_7_0_2",
-)
-
-bazel_dep(name = "rules_jvm_external", version = "6.2")
+bazel_dep(name = "rules_jvm_external", version = "6.1")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
-    name = "maven",
+    name = "rules_intellij_maven",
     artifacts = [
+        "ch.epfl.scala:bsp4j:2.2.0-M2",
+        "org.junit.jupiter:junit-jupiter:5.10.2",
+        "org.junit.platform:junit-platform-console:1.10.2",
+        "org.junit.platform:junit-platform-suite-engine:1.10.2",
+        "org.junit.platform:junit-platform-suite-api:1.10.2",
         "junit:junit:4.13.2",
         "org.mockito:mockito-core:5.8.0",
         "org.objenesis:objenesis:3.3",
@@ -101,8 +70,28 @@ maven.install(
         "com.google.guava:guava:33.0.0-jre",  # changed to jre
         "com.google.truth:truth:1.1.5",
         "com.google.truth.extensions:truth-java8-extension:1.1.5",
+        "com.google.api.grpc:proto-google-common-protos:2.34.0",
         "com.google.j2objc:j2objc-annotations:2.8",
         "com.google.guava:failureaccess:1.0.2",
+        # Apparently bumping grpc to >= 1.58 causes a dependency cycle
+        "io.grpc:grpc-netty:1.57.0",
+        "io.grpc:grpc-stub:1.57.0",
+        "io.grpc:grpc-api:1.57.0",
+        "io.grpc:grpc-protobuf:1.57.0",
+        "io.grpc:grpc-protobuf-lite:1.57.0",
+        "io.grpc:grpc-core:1.57.0",
+        "io.netty:netty-common:4.1.97.Final",
+        "io.netty:netty-transport-classes-epoll:4.1.97.Final",
+        "io.netty:netty-transport-native-epoll:4.1.97.Final",
+        "io.netty:netty-transport-native-unix-common:4.1.97.Final",
+        "io.netty:netty-transport-classes-kqueue:4.1.97.Final",
+        "io.netty:netty-transport:4.1.97.Final",
+        "org.apache.tomcat:annotations-api:6.0.53",
+    ],
+    exclusions = [
+        # Required because of https://github.com/bazelbuild/rules_jvm_external/issues/966
+        "io.grpc:grpc-util",
+        "io.grpc:grpc-core",
     ],
     fail_if_repin_required = True,
     generate_compat_repositories = True,
@@ -110,11 +99,24 @@ maven.install(
 )
 use_repo(
     maven,
+    "com_google_api_grpc_proto_google_common_protos",
+    "com_google_guava_failureaccess",
     "com_google_guava_guava",
     "com_google_j2objc_j2objc_annotations",
-    "com_google_guava_failureaccess",
-    "maven",
-    "unpinned_maven",
+    "io_grpc_grpc_api",
+    "io_grpc_grpc_core",
+    "io_grpc_grpc_netty",
+    "io_grpc_grpc_protobuf",
+    "io_grpc_grpc_protobuf_lite",
+    "io_grpc_grpc_stub",
+    "io_netty_netty_common",
+    "io_netty_netty_transport",
+    "io_netty_netty_transport_classes_epoll",
+    "io_netty_netty_transport_classes_kqueue",
+    "io_netty_netty_transport_native_epoll",
+    "io_netty_netty_transport_native_unix_common",
+    "org_apache_tomcat_annotations_api",
+    "rules_intellij_maven",
     auto_value = "com_google_auto_value_auto_value",
     auto_value_annotations = "com_google_auto_value_auto_value_annotations",
     bytebuddy = "net_bytebuddy_byte_buddy",
@@ -131,4 +133,171 @@ use_repo(
     objenesis = "org_objenesis_objenesis",
     truth = "com_google_truth_truth",
     truth8 = "com_google_truth_extensions_truth_java8_extension",
+)
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+
+# The plugin api for intellij_ce_2024_1. This is required to build IJwB and run integration tests.
+IC_241_SHA = "456805da1a95f98b8bd7b26ee2b49705ef1656598d438889ee4cc18099e87928"
+
+IC_241_URL = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea/ideaIC/2024.1.2/ideaIC-2024.1.2.zip"
+
+http_archive(
+    name = "intellij_ce_2024_1",
+    build_file = "@rules_intellij//intellij_platform_sdk:BUILD.idea241",
+    sha256 = IC_241_SHA,
+    url = IC_241_URL,
+)
+
+# The plugin api for intellij_ce_2024_2. This is required to build IJwB and run integration tests.
+IC_242_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/242.19533.56-EAP-SNAPSHOT/ideaIC-242.19533.56-EAP-SNAPSHOT.zip"
+
+http_archive(
+    name = "intellij_ce_2024_2",
+    build_file = "@rules_intellij//intellij_platform_sdk:BUILD.idea242",
+    integrity = "sha256-iXdfBQl1Vt0PEL0i10GTswKr6W7GjVR4dRzAml7JZwM=",
+    url = IC_242_URL,
+)
+
+DEVKIT_BUILD_FILE = """
+java_import(
+    name = "devkit",
+    jars = ["devkit/lib/devkit.jar"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+DEVKIT_241_SHA = "7fbabd16a4b8b66de40a3fac80ea927dc44c1f5234b829b5dfb082f0b8de4cc2"
+
+DEVKIT_241_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/241.17011.92/DevKit-241.17011.92.zip"
+
+http_archive(
+    name = "devkit_2024_1",
+    build_file_content = DEVKIT_BUILD_FILE,
+    sha256 = DEVKIT_241_SHA,
+    url = DEVKIT_241_URL,
+)
+
+DEVKIT_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/242.20224.159/DevKit-242.20224.159.zip"
+
+http_archive(
+    name = "devkit_2024_2",
+    build_file_content = DEVKIT_BUILD_FILE,
+    integrity = "sha256-gn7ypvLoBnC9qCfFlSwj3QDVyN9QAjj0O54YYMZikZ4=",
+    url = DEVKIT_242_URL,
+)
+
+_PYTHON_CE_BUILD_FILE = """
+java_import(
+    name = "python",
+    jars = ["python-ce/lib/python-ce.jar"],
+    visibility = ["//visibility:public"],
+)
+filegroup(
+  name = "python_helpers",
+  srcs = glob(["python-ce/helpers/**/*"]),
+  visibility = ["//visibility:public"],
+)
+"""
+
+PYTHON_PLUGIN_241_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/241.17011.48/PythonCore-241.17011.48.zip"
+
+PYTHON_PLUGIN_241_SHA = "f0d1a93979a9aa650250ee46d3b21038f7b37c2c02f17ab879fc188c29a54592"
+
+http_archive(
+    name = "python_2024_1",
+    build_file_content = _PYTHON_CE_BUILD_FILE,
+    sha256 = PYTHON_PLUGIN_241_SHA,
+    url = PYTHON_PLUGIN_241_URL,
+)
+
+_PYTHON_CE_242_BUILD_FILE = """
+java_import(
+    name = "python",
+    jars = glob(["python-ce/lib/*.jar", "python-ce/lib/modules/*.jar"]),
+    visibility = ["//visibility:public"],
+)
+filegroup(
+  name = "python_helpers",
+  srcs = glob(["python-ce/helpers/**/*"]),
+  visibility = ["//visibility:public"],
+)
+"""
+
+PYTHON_PLUGIN_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/242.20224.23/PythonCore-242.20224.23.zip"
+
+http_archive(
+    name = "python_2024_2",
+    build_file_content = _PYTHON_CE_242_BUILD_FILE,
+    integrity = "sha256-j8NffkzXMkef5icGqtK3g2OL48GbeVUc8Y/zmC80z84=",
+    url = PYTHON_PLUGIN_242_URL,
+)
+
+_GO_BUILD_FILE_242 = """
+java_import(
+    name = "go",
+    jars = glob(["go-plugin/lib/*.jar", "go-plugin/lib/modules/*.jar"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
+GO_PLUGIN_242_SHA = "472b4aae006b17f5a6b9ef9a6fac425e386ef0bba19445dccdc4d7dfacbc2613"
+
+GO_PLUGIN_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/242.20224.91/org.jetbrains.plugins.go-242.20224.91.zip"
+
+http_archive(
+    name = "go_2024_2",
+    build_file_content = _GO_BUILD_FILE_242,
+    sha256 = GO_PLUGIN_242_SHA,
+    url = GO_PLUGIN_242_URL,
+)
+
+_ANDRIOD_PLUGIN_BUILD_FILE = """
+java_import(
+    name = "android",
+    jars = glob(["android/lib/*.jar"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
+ANDROID_PLUGIN_241_URL = "https://downloads.marketplace.jetbrains.com/files/22989/544295/android-241.17011.79.zip"
+
+http_archive(
+    name = "android_2024_1",
+    build_file_content = _ANDRIOD_PLUGIN_BUILD_FILE,
+    url = ANDROID_PLUGIN_241_URL,
+)
+
+ANDROID_PLUGIN_242_URL = "https://downloads.marketplace.jetbrains.com/files/22989/573757/android-242.20224.91.zip"
+
+http_archive(
+    name = "android_2024_2",
+    build_file_content = _ANDRIOD_PLUGIN_BUILD_FILE,
+    integrity = "sha256-WXuv6u44NtC1N9AxTrGs1KviS+f2aBsBnMB76AS/8/s=",
+    url = ANDROID_PLUGIN_242_URL,
+)
+
+PERFORMANCE_PLUGIN_241_URL = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/performanceTesting/performance-testing/241.17890.14/performance-testing-241.17890.14.jar"
+
+http_jar(
+    name = "performance_2024_1",
+    url = PERFORMANCE_PLUGIN_241_URL,
+)
+
+PERFORMANCE_PLUGIN_242_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/performanceTesting/performance-testing/242.20224.91-EAP-SNAPSHOT/performance-testing-242.20224.91-EAP-SNAPSHOT.jar"
+
+http_jar(
+    name = "performance_2024_2",
+    url = PERFORMANCE_PLUGIN_242_URL,
+    integrity = "sha256-P3lIU4P5/gh2ey6ds5QClEKtOSWhtzoleNSKz9QOcMs=",
+)
+
+CODE_WITH_ME_242_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/cwm/cwm-host/242.18071.24-EAP-SNAPSHOT/cwm-host-242.18071.24-EAP-SNAPSHOT.jar"
+
+http_jar(
+    name = "code_with_me_2024_2",
+    url = CODE_WITH_ME_242_URL,
+    integrity = "sha256-4bs5Eg3uIY1L4IVK/pNjqNovP8lbo81dzUYe3HVf6xI=",
 )

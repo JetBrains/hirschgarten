@@ -3,13 +3,13 @@
 # Common test utilities for IntelliJ plugins.
 
 load(
+    "//:build-visibility.bzl",
+    "INTELLIJ_PLUGINS_VISIBILITY",
+)
+load(
     "//intellij_platform_sdk:build_defs.bzl",
     "select_for_ide",
     "select_for_plugin_api",
-)
-load(
-    "//:build-visibility.bzl",
-    "INTELLIJ_PLUGINS_VISIBILITY",
 )
 
 package(default_visibility = INTELLIJ_PLUGINS_VISIBILITY)
@@ -177,8 +177,13 @@ java_library(
         "//common/experiments:unit_test_utils",
         "//intellij_platform_sdk:jsr305",
         "//intellij_platform_sdk:plugin_api_for_tests",
-        "@com_google_guava_guava//jar",
-        "@junit//jar",
+        "@rules_intellij_maven//:org_junit_jupiter_junit_jupiter",
+        "@rules_intellij_maven//:org_junit_jupiter_junit_jupiter_api",
+        "@rules_intellij_maven//:org_junit_platform_junit_platform_engine",
+        "@rules_intellij_maven//:org_junit_platform_junit_platform_launcher",
+        "@rules_intellij_maven//:org_junit_platform_junit_platform_console",
+        "@rules_intellij_maven//:org_junit_platform_junit_platform_suite_engine",
+        "@rules_intellij_maven//:org_junit_platform_junit_platform_suite_api",
     ],
 )
 

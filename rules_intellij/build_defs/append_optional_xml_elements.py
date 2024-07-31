@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Appends XML elements specifying optional dependencies to a plugin XML file.
+"""Appends XML elements specifying dependencies and optional dependencies to a plugin XML file.
 """
 
 import argparse
@@ -27,8 +27,12 @@ parser.add_argument(
     "--plugin_xml", help="The main plugin xml file", required=True)
 parser.add_argument("--output", help="The output file.")
 parser.add_argument(
+    "--plugin_deps",
+    nargs="*",
+    help="Sequence of module names that the plugin unconditionally depends on")
+parser.add_argument(
     "optional_xml_files",
-    nargs="+",
+    nargs="*",
     help="Sequence of module, module xml... pairs")
 
 
@@ -44,6 +48,12 @@ def main():
 
   plugin_xml = dom.documentElement
 
+  for module in args.plugin_deps:
+    depends_element = dom.createElement("depends")
+    depends_element.appendChild(dom.createTextNode(module))
+    plugin_xml.appendChild(depends_element)
+    plugin_xml.appendChild(dom.createTextNode("\n"))
+
   for module, optional_xml in pairwise(args.optional_xml_files):
     depends_element = dom.createElement("depends")
     depends_element.setAttribute("optional", "true")
@@ -54,9 +64,9 @@ def main():
 
   if args.output:
     with open(args.output, "wb") as f:
-      f.write(dom.toxml(encoding="utf-8"))
+      f.write(dom.toprettyxml(encoding="utf-8"))
   else:
-    sys.stdout.buffer.write(dom.toxml(encoding="utf-8"))
+    sys.stdout.buffer.write(dom.toprettyxml(encoding="utf-8"))
 
 if __name__ == "__main__":
   main()

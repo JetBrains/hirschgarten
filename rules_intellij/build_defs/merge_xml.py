@@ -69,6 +69,6 @@ if __name__ == "__main__":
 
   if args.output:
     with open(args.output, "wb") as f:
-      f.write(dom.toxml(encoding="utf-8"))
+      f.write(dom.toprettyxml(encoding="utf-8"))
   else:
-    sys.stdout.buffer.write(dom.toxml(encoding="utf-8"))
+    sys.stdout.buffer.write(dom.toprettyxml(encoding="utf-8"))

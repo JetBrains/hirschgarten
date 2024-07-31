@@ -4,3 +4,4 @@ bazel-*
 .ijwb/
 .aswb/
 .clwb/
+MODULE.bazel.lock

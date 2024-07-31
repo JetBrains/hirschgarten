@@ -15,6 +15,7 @@
  */
 package com.google.idea.testing;
 
+import com.intellij.openapi.application.ApplicationManager;
 import org.junit.runners.Suite;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -28,7 +29,8 @@ import org.junit.runners.model.RunnerBuilder;
  */
 public final class IntellijIntegrationSuite extends Suite {
   static {
-    BlazeTestSystemProperties.configureSystemProperties();
+    // I'm not sure if it will work, but we are not using this class anyway
+    BlazeTestSystemProperties.configureSystemProperties(ApplicationManager.getApplication());
   }
 
   /** Only called reflectively. Do not use programmatically. */

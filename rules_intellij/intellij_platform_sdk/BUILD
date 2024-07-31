@@ -12,6 +12,7 @@ load(
 )
 load(
     ":build_defs.bzl",
+    "select_for_plugin_api",
     "select_from_plugin_api_directory",
 )
 
@@ -765,6 +766,12 @@ java_library(
             ":platform_images",
         ],
     ),
+    data = [":application_info_json", ":bin"]
+)
+
+filegroup(
+    name = "bin",
+    srcs = glob(["bin/**"]),
 )
 
 # The outward facing plugin api
@@ -797,7 +804,7 @@ java_library(
 java_library(
     name = "test_libs",
     testonly = 1,
-    visibility = [":test_libs_visibility"],
+    visibility = ["//visibility:public"],
     exports = [
         "//third_party:truth",
         "@bytebuddy_agent//jar",
@@ -818,9 +825,54 @@ java_library(
     ),
 )
 
+# Some versions of the IDE include jsr305.jar, but others don't. So we need to include the JSR 305
+# classes (@Nullable, etc.) in the plugin jars for IDEs that don't already have it on the classpath.
 java_library(
     name = "jsr305",
-    exports = ["@jsr305_annotations//jar"],
+    exports = select_for_plugin_api({
+        "clion-2021.3": [":bundled_jsr305"],
+        "clion-2022.1": ["@jsr305_annotations//jar"],
+        "clion-2022.2": ["@jsr305_annotations//jar"],
+        "clion-2022.3": ["@jsr305_annotations//jar"],
+        "clion-2024.1": [],
+        "clion-2024.2": [],
+        "intellij-2021.3": ["@jsr305_annotations//jar"],
+        "intellij-2022.1": ["@jsr305_annotations//jar"],
+        "intellij-2022.2": ["@jsr305_annotations//jar"],
+        "intellij-2022.3": ["@jsr305_annotations//jar"],
+        "intellij-2023.1": ["@jsr305_annotations//jar"],
+        "intellij-2023.2": ["@jsr305_annotations//jar"],
+        "intellij-2023.3": ["@jsr305_annotations//jar"],
+        "intellij-2024.1": ["@jsr305_annotations//jar"],
+        "intellij-2024.2": ["@jsr305_annotations//jar"],
+        "intellij-ue-2021.3": ["@jsr305_annotations//jar"],
+        "intellij-ue-2022.1": ["@jsr305_annotations//jar"],
+        "intellij-ue-2022.2": ["@jsr305_annotations//jar"],
+        "intellij-ue-2022.3": ["@jsr305_annotations//jar"],
+        "intellij-ue-2023.1": ["@jsr305_annotations//jar"],
+        "intellij-ue-2023.2": ["@jsr305_annotations//jar"],
+        "intellij-ue-2023.3": ["@jsr305_annotations//jar"],
+        "intellij-ue-2024.1": ["@jsr305_annotations//jar"],
+        "intellij-ue-2024.2": ["@jsr305_annotations//jar"],
+        "android-studio-2022.2": ["@jsr305_annotations//jar"],
+        "android-studio-2022.3": ["@jsr305_annotations//jar"],
+        "android-studio-2023.1": ["@jsr305_annotations//jar"],
+        "android-studio-2023.2": ["@jsr305_annotations//jar"],
+        # We default to intellij-latest when no plugin api is selected.
+        "default": [":bundled_jsr305"],
+    }),
+)
+
+# The version of jsr305 bundled with the IntelliJ plugin API.
+java_library(
+    name = "bundled_jsr305",
+    neverlink = 1,
+    visibility = ["//visibility:private"],
+    exports = select_from_plugin_api_directory(
+        android_studio = [":jsr305"],
+        clion = [":jsr305"],
+        intellij = [":jsr305"],
+    ),
 )
 
 # The version of truth bundled with the IntelliJ plugin API.
@@ -1016,90 +1068,6 @@ java_library(
     ),
 )
 
-# IntelliJ maven plugin
-java_library(
-    name = "maven",
-    neverlink = 1,
-    exports = select_from_plugin_api_directory(
-        android_studio = [],
-        clion = [],
-        intellij = [":maven"],
-    ),
-)
-
-java_library(
-    name = "maven_for_tests",
-    testonly = 1,
-    exports = select_from_plugin_api_directory(
-        android_studio = [],
-        clion = [],
-        intellij = [":maven_bundled_plugins"],
-    ),
-)
-
-# IntelliJ maven model plugin
-java_library(
-    name = "maven_model",
-    neverlink = 1,
-    exports = select_from_plugin_api_directory(
-        android_studio = [],
-        clion = [],
-        intellij = [":maven_model"],
-    ),
-)
-
-java_library(
-    name = "maven_model_for_tests",
-    testonly = 1,
-    exports = select_from_plugin_api_directory(
-        android_studio = [],
-        clion = [],
-        intellij = [":maven_model"],
-    ),
-)
-
-# IntelliJ yaml plugin
-java_library(
-    name = "yaml",
-    neverlink = 1,
-    exports = select_from_plugin_api_directory(
-        android_studio = [],
-        clion = [],
-        intellij = [":yaml"],
-    ),
-)
-
-java_library(
-    name = "yaml_for_tests",
-    testonly = 1,
-    exports = select_from_plugin_api_directory(
-        android_studio = [],
-        clion = [],
-        intellij = [":yaml"],
-    ),
-)
-
-# IntelliJ gradle plugin
-java_library(
-    name = "gradle",
-    neverlink = 1,
-    exports = select_from_plugin_api_directory(
-        android_studio = [],
-        clion = [],
-        intellij = [":gradle"],
-    ),
-)
-
-java_library(
-    name = "gradle_for_tests",
-    testonly = 1,
-    exports = select_from_plugin_api_directory(
-        android_studio = [],
-        clion = [],
-        intellij = [":gradle"],
-    ),
-)
-
 # IntelliJ DatabaseTools plugin
 java_library(
     name = "database_tools",
@@ -1143,27 +1111,6 @@ java_library(
         clion = [],
         intellij = [],
         intellij_ue = [":javaee"],
-    ),
-)
-
-# IntelliJ Markdown plugin
-java_library(
-    name = "markdown",
-    neverlink = 1,
-    exports = select_from_plugin_api_directory(
-        android_studio = [],
-        clion = [],
-        intellij = [":markdown"],
-    ),
-)
-
-java_library(
-    name = "markdown_for_tests",
-    testonly = 1,
-    exports = select_from_plugin_api_directory(
-        android_studio = [],
-        clion = [],
-        intellij = [":markdown"],
     ),
 )
 

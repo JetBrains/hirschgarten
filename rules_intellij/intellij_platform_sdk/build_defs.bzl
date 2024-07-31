@@ -26,18 +26,18 @@ INDIRECT_IJ_PRODUCTS = {
     # Indirect ij_product mapping for Bazel Plugin OSS
     # The old names for -oss-oldest-stable and -oss-latest-stable were
     # -oss-stable and -oss-beta respectively.
-    "intellij-oss-oldest-stable": "intellij-2024.1",
-    "intellij-oss-latest-stable": "intellij-2024.2",
+    "intellij-oss-oldest-stable": "intellij-2023.3",
+    "intellij-oss-latest-stable": "intellij-2024.1",
     "intellij-oss-under-dev": "intellij-2024.2",
-    "intellij-ue-oss-oldest-stable": "intellij-ue-2024.1",
-    "intellij-ue-oss-latest-stable": "intellij-ue-2024.2",
+    "intellij-ue-oss-oldest-stable": "intellij-ue-2023.3",
+    "intellij-ue-oss-latest-stable": "intellij-ue-2024.1",
     "intellij-ue-oss-under-dev": "intellij-ue-2024.2",
     "android-studio-oss-oldest-stable": "android-studio-2023.1",
     "android-studio-oss-latest-stable": "android-studio-2023.2",
     "android-studio-oss-under-dev": "android-studio-2023.2",
-    "clion-oss-oldest-stable": "clion-2024.1",
-    "clion-oss-latest-stable": "clion-2024.2",
-    "clion-oss-under-dev": "clion-2024.2",
+    "clion-oss-oldest-stable": "clion-2023.3",
+    "clion-oss-latest-stable": "clion-2024.1",
+    "clion-oss-under-dev": "clion-2024.1",
     # Indirect ij_product mapping for Cloud Code Plugin OSS
     "intellij-cc-oldest-stable": "intellij-2022.3",
     "intellij-cc-latest-stable": "intellij-2022.3",
@@ -397,7 +397,7 @@ def _do_select_for_plugin_api(params):
         if ij_product == "default":
             select_params["//conditions:default"] = value
         else:
-            select_params["//intellij_platform_sdk:" + ij_product] = value
+            select_params["@rules_intellij//intellij_platform_sdk:" + ij_product] = value
 
     return select(
         select_params,
@@ -686,7 +686,7 @@ def select_for_channel(channel_map):
     if channel_map.keys() != [CHANNEL_STABLE, CHANNEL_BETA, CHANNEL_CANARY, CHANNEL_FREEFORM]:
         fail("channel_map must contain exactly %s, %s and %s" % (CHANNEL_STABLE, CHANNEL_BETA, CHANNEL_CANARY, CHANNEL_FREEFORM))
     select_map = {
-        ("//intellij_platform_sdk:%s" % indirect_product): channel_map[channel]
+        ("@rules_intellij//intellij_platform_sdk:%s" % indirect_product): channel_map[channel]
         for indirect_product, channel in INDIRECT_PRODUCT_CHANNELS.items()
     }
 
@@ -697,7 +697,7 @@ def select_for_channel(channel_map):
     # Add directly specified IDE versions which some builds use:
     select_map.update(
         {
-            ("//intellij_platform_sdk:%s" % direct_product): channel_map[INDIRECT_PRODUCT_CHANNELS[indirect_product]]
+            ("@rules_intellij//intellij_platform_sdk:%s" % direct_product): channel_map[INDIRECT_PRODUCT_CHANNELS[indirect_product]]
             for direct_product, indirect_product in inverse_ij_products.items()
         },
     )
@@ -705,7 +705,7 @@ def select_for_channel(channel_map):
     # Some IDE versions are not in a channel, but users would still like to build and test them:
     select_map.update(
         {
-            ("//intellij_platform_sdk:%s" % direct_product): channel_map[CHANNEL_FREEFORM]
+            ("@rules_intellij//intellij_platform_sdk:%s" % direct_product): channel_map[CHANNEL_FREEFORM]
             for direct_product in DIRECT_IJ_PRODUCTS.keys()
             if direct_product not in inverse_ij_products
         },

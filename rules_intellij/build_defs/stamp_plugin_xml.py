@@ -210,11 +210,7 @@ def main():
     else:
       with open(args.version_file) as f:
         version_value = f.read().strip()
-    # Since we may release different versions that target different plugin api
-    # versions simultaneously, we append the name of the api_version to the
-    # plugin version.
-    version_text = dom.createTextNode(version_value + "-api-version-" +
-                                      _parse_major_version(api_version))
+    version_text = dom.createTextNode(version_value)
     version_element.appendChild(version_text)
 
   if args.stamp_since_build or args.stamp_until_build:
@@ -224,13 +220,7 @@ def main():
     idea_version_element = dom.createElement("idea-version")
     new_elements.append(idea_version_element)
 
-    if is_eap:
-      # IU211.6693.111 >> since_build=211.6693 and until_build=211.6693.*
-      build_version = _strip_build_number(
-          _strip_product_code(api_version))
-    else:
-      # IU211.6693.111 >> since_build=211 and until_build=211.*
-      build_version = _parse_major_version(api_version)
+    build_version = _parse_major_version(api_version)
 
     if args.stamp_since_build:
       if build_version in since_build_numbers.keys():
