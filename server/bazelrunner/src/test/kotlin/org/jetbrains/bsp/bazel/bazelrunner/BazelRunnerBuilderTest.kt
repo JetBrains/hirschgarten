@@ -15,6 +15,10 @@ import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.junit.jupiter.api.Test
+import io.kotest.matchers.collections.containExactly
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import kotlin.io.path.Path
 
 fun String.bsp() = BuildTargetIdentifier(this)
@@ -41,10 +45,15 @@ val bazelRunner = BazelRunner(contextProvider, null, Path("workspaceRoot"))
 
 class BazelRunnerBuilderTest {
   @Test
-  fun blah() {
+  fun `most bare bones build without targets (even though it's not correct)`() {
     val builder = bazelRunner.commandBuilder()
 
-    builder.build().withUseBuildFlags(false)
-
+    builder.build().withUseBuildFlags(false).dump() shouldContainExactly listOf(
+      "bazel",
+      "build",
+      "--override_repository=bazelbsp_aspect=.bazelbsp",
+      BazelFlag.toolTag()
+    )
   }
+
 }

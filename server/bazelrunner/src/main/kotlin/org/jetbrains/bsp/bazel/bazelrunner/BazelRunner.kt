@@ -47,6 +47,21 @@ class BazelRunner(
     )
   }
 
+  fun prepareBazelCommand(
+    command: String,
+    flags: List<String>,
+    arguments: List<String>,
+    useBuildFlags: Boolean = true,
+  ): List<String> {
+    val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
+    val usedBuildFlags = if (useBuildFlags) buildFlags(workspaceContext) else emptyList()
+    val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath.value
+    val defaultFlags = listOf(repositoryOverride(Constants.ASPECT_REPOSITORY, relativeDotBspFolderPath.pathString))
+    val processArgs =
+      listOf(bazel(workspaceContext)) + command + usedBuildFlags + defaultFlags + flags + arguments
+    return processArgs
+  }
+
   fun runBazelCommand(
     command: String,
     flags: List<String>,
@@ -56,12 +71,7 @@ class BazelRunner(
     parseProcessOutput: Boolean,
     useBuildFlags: Boolean = true,
   ): BazelProcess {
-    val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
-    val usedBuildFlags = if (useBuildFlags) buildFlags(workspaceContext) else emptyList()
-    val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath.value
-    val defaultFlags = listOf(repositoryOverride(Constants.ASPECT_REPOSITORY, relativeDotBspFolderPath.pathString))
-    val processArgs =
-      listOf(bazel(workspaceContext)) + command + usedBuildFlags + defaultFlags + flags + arguments
+    val processArgs = prepareBazelCommand(command, flags, arguments, useBuildFlags)
     logInvocation(processArgs, environment, originId)
     val processBuilder = ProcessBuilder(processArgs)
     processBuilder.environment() += environment

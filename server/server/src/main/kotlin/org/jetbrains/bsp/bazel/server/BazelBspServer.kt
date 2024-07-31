@@ -187,7 +187,7 @@ class BazelBspServer(
     val bspServerApi =
       BspServerApi { client: JoinedBuildClient ->
         val bspClientLogger = BspClientLogger(client)
-        val bazelRunner = BazelRunner(workspaceContextProvider, bspClientLogger, workspaceRoot, bspInfo.bazelBspDir().toString())
+        val bazelRunner = BazelRunner(workspaceContextProvider, bspClientLogger, workspaceRoot)
         val bazelInfo = createBazelInfo(bazelRunner)
         val bazelPathsResolver = BazelPathsResolver(bazelInfo)
         val compilationManager =

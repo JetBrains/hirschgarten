@@ -87,6 +87,8 @@ open class BazelRunnerBuilder internal constructor(private val bazelRunner: Baze
     return this
   }
 
+  fun dump(): List<String> = bazelRunner.prepareBazelCommand(bazelCommand, flags, programArguments, useBuildFlags)
+
   fun executeBazelCommand(originId: String? = null, parseProcessOutput: Boolean = true): BazelProcess =
     bazelRunner.runBazelCommand(
       bazelCommand,
