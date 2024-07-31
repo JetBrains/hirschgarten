@@ -1,3 +1,7 @@
+#
+# This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
+# It was modified by JetBrains s.r.o. and contributors
+#
 package(default_visibility = ["//java:__subpackages__"])
 
 java_library(name = "empty")

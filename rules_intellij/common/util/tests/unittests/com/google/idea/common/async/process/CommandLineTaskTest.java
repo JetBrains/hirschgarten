@@ -1,4 +1,7 @@
 /*
+ * This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
+ * It was modified by JetBrains s.r.o. and contributors
+ *
  * Copyright 2023 The Bazel Authors. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

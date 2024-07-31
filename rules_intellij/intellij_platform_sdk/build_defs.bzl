@@ -1,3 +1,7 @@
+#
+# This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
+# It was modified by JetBrains s.r.o. and contributors
+#
 """Convenience methods for plugin_api."""
 
 load("@rules_java//java:defs.bzl", "java_import")

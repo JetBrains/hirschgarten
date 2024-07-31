@@ -1,3 +1,7 @@
+#
+# This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
+# It was modified by JetBrains s.r.o. and contributors
+#
 """Lists of package_groups to be used externally as visibilities in BUILD files targets."""
 
 # Visibility labels lists

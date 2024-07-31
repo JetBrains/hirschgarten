@@ -1,3 +1,7 @@
+#
+# This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
+# It was modified by JetBrains s.r.o. and contributors
+#
 workspace(name = "intellij_with_bazel")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
