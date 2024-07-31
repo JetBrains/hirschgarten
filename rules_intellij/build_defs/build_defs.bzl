@@ -5,13 +5,13 @@ load(
     ":intellij_plugin.bzl",
     _intellij_plugin = "intellij_plugin",
     _intellij_plugin_library = "intellij_plugin_library",
-    _optional_plugin_xml = "optional_plugin_xml",
+    _optional_plugin_dep = "optional_plugin_dep",
 )
 
 # Re-export these symbols
 intellij_plugin = _intellij_plugin
 intellij_plugin_library = _intellij_plugin_library
-optional_plugin_xml = _optional_plugin_xml
+optional_plugin_dep = _optional_plugin_dep
 
 def merged_plugin_xml(name, srcs, **kwargs):
     """Merges N plugin.xml files together."""
@@ -70,7 +70,7 @@ def stamped_plugin_xml(
       application_info_json: A product info file, if provided, overrides the default.
       **kwargs: Any additional arguments to pass to the final target.
     """
-    stamp_tool = "//build_defs:stamp_plugin_xml"
+    stamp_tool = "@rules_intellij//build_defs:stamp_plugin_xml"
 
     api_version_txt_name = name + "_api_version"
     api_version_txt(
@@ -168,8 +168,8 @@ def api_version_txt(name, check_eap, application_info_json = None, **kwargs):
       **kwargs: Any additional arguments to pass to the final target.
     """
     if application_info_json == None:
-        application_info_json = "//intellij_platform_sdk:application_info_json"
-    api_version_txt_tool = "//build_defs:api_version_txt"
+        application_info_json = "@rules_intellij//intellij_platform_sdk:application_info_json"
+    api_version_txt_tool = "@rules_intellij//build_defs:api_version_txt"
 
     args = [
         "./$(location {api_version_txt_tool})",
@@ -313,7 +313,7 @@ _plugin_deploy_zip = rule(
         "srcs": attr.label_list(mandatory = True, providers = []),
         "zip_filename": attr.string(mandatory = True),
         "_zip_plugin_files": attr.label(
-            default = Label("//build_defs:zip_plugin_files"),
+            default = Label("@rules_intellij//build_defs:zip_plugin_files"),
             executable = True,
             cfg = "exec",
         ),

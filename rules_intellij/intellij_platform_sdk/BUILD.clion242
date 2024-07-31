@@ -22,10 +22,8 @@ package(default_visibility = ["//visibility:public"])
 
 java_import(
     name = "sdk",
-    jars = glob([
-            "lib/*.jar",
-            "lib/modules/*.jar"
-        ],
+    jars = glob(
+        ["lib/*.jar"],
         exclude = [
             # mockito-extensions needs to be removed from this jar.
             "lib/testFramework.jar",
@@ -33,7 +31,7 @@ java_import(
     ),
     tags = ["intellij-provided-by-sdk"],
     exports = [":jars_without_mockito_extensions"],
-    deps = ["@error_prone_annotations//jar"],
+    deps = ["@rules_intellij_maven//:com_google_errorprone_error_prone_annotations"],
 )
 
 no_mockito_extensions(
