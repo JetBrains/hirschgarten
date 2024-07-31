@@ -1,3 +1,8 @@
+#
+# This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
+# It was modified by JetBrains s.r.o. and contributors
+#
+
 """IntelliJ plugin debug target rule used for debugging IntelliJ plugins.
 
 Creates a plugin target debuggable from IntelliJ. Any files in
