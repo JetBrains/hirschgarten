@@ -5,10 +5,9 @@ module(
 bazel_dep(
     name = "rules_intellij",
 )
-git_override(
-    module_name = "rules_intellij",
-    commit = "277ee403b4911d95e9642efefb6577b43346f546",
-    remote = "https://github.com/agluszak/rules_intellij.git",
+local_path_override(
+    module_name="rules_inteij",
+    path="rules_intellij"
 )
 
 bazel_dep(name = "rules_kotlin", version = "1.9.6")
