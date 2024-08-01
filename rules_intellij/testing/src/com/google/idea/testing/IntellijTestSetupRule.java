@@ -112,8 +112,7 @@ public class IntellijTestSetupRule extends ExternalResource {
         return;
       }
       list =
-          DELETE_ON_EXIT_HOOK_DOT_FILES
-              .stream()
+          DELETE_ON_EXIT_HOOK_DOT_FILES.stream()
               .filter(p -> p instanceof String)
               .map(p -> (String) p)
               .collect(Collectors.toList());

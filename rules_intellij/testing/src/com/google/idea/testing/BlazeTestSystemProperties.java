@@ -82,11 +82,14 @@ public class BlazeTestSystemProperties {
 
     // Tests fail if they access files outside of the project roots and other system directories.
     // Ensure runfiles and platform api are allowed.
-    // Note: We want this access to be true for all tests so we don't dispose the disposable explicitly,
+    // Note: We want this access to be true for all tests so we don't dispose the disposable
+    // explicitly,
     // but we need to dispose it at some point, otherwise application leak checker will be sad.
     // Because of that it's registered as a child of some parent disposable which should be
-    // disposed once all the tests are finished. For example, application is a good choice: ApplicationManager.getApplication()
-    Disposable disposable = Disposer.newDisposable("BlazeTestSystemProperties#configureSystemProperties");
+    // disposed once all the tests are finished. For example, application is a good choice:
+    // ApplicationManager.getApplication()
+    Disposable disposable =
+        Disposer.newDisposable("BlazeTestSystemProperties#configureSystemProperties");
     Disposer.register(testSuiteParentDisposable, disposable);
     VfsRootAccess.allowRootAccess(disposable, RUNFILES_PATH);
     String platformApi = getPlatformApiPath();
@@ -123,7 +126,8 @@ public class BlazeTestSystemProperties {
       return "CLion";
     } else {
       // TODO fix
-//      throw new RuntimeException("Unable to determine platform prefix for build: " + buildNumber);
+      //      throw new RuntimeException("Unable to determine platform prefix for build: " +
+      // buildNumber);
       return "Idea";
     }
   }

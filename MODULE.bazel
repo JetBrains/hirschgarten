@@ -6,8 +6,8 @@ bazel_dep(
     name = "rules_intellij",
 )
 local_path_override(
-    module_name="rules_inteij",
-    path="rules_intellij"
+    module_name = "rules_intellij",
+    path = "rules_intellij",
 )
 
 bazel_dep(name = "rules_kotlin", version = "1.9.6")

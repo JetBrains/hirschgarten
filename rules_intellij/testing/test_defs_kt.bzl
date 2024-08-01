@@ -82,7 +82,6 @@ def _generate_test_suite_impl(ctx):
         content = contents,
     )
 
-
 _generate_test_suite = rule(
     implementation = _generate_test_suite_impl,
     attrs = {
@@ -174,8 +173,8 @@ def _generate_directory(ctx):
 generate_directory = rule(
     implementation = _generate_directory,
     attrs = {
-        "dir": attr.string()
-    }
+        "dir": attr.string(),
+    },
 )
 
 def intellij_integration_test_suite(

@@ -198,12 +198,12 @@ def api_version_txt(name, check_eap, application_info_json = None, **kwargs):
     )
 
 def _transition_impl(settings, attr):
-    return {"//command_line_option:javacopt" : attr.java_copts}
+    return {"//command_line_option:javacopt": attr.java_copts}
 
 _java_copts_transition = transition(
     implementation = _transition_impl,
     inputs = [],
-    outputs = ["//command_line_option:javacopt"]
+    outputs = ["//command_line_option:javacopt"],
 )
 
 repackaged_files_data = provider()

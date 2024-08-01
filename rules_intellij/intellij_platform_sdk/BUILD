@@ -387,6 +387,7 @@ config_setting(
         "define": "ij_product=intellij-ue-2023.1",
     },
 )
+
 config_setting(
     name = "android-studio-latest",
     values = {
@@ -655,7 +656,7 @@ config_setting(
 config_setting(
     name = "clion-2023.2-mac",
     values = {
-        "cpu": "darwin_x86_64", #todo how about m1?
+        "cpu": "darwin_x86_64",  #todo how about m1?
         "define": "ij_product=clion-2023.2",
     },
 )
@@ -696,7 +697,7 @@ config_setting(
 config_setting(
     name = "clion-2023.3-mac",
     values = {
-        "cpu": "darwin_x86_64", #todo how about m1?
+        "cpu": "darwin_x86_64",  #todo how about m1?
         "define": "ij_product=clion-2023.3",
     },
 )
@@ -748,6 +749,10 @@ config_setting(
 # There will be additional versions added in the future
 java_library(
     name = "plugin_api_internal",
+    data = [
+        ":application_info_json",
+        ":bin",
+    ],
     visibility = ["//visibility:private"],
     exports = select_from_plugin_api_directory(
         android_studio = [
@@ -770,7 +775,6 @@ java_library(
             ":platform_images",
         ],
     ),
-    data = [":application_info_json", ":bin"]
 )
 
 filegroup(
@@ -811,10 +815,10 @@ java_library(
     visibility = ["//visibility:public"],
     exports = [
         "//third_party:truth",
-        "@bytebuddy_agent//jar",
         "@bytebuddy//jar",
+        "@bytebuddy_agent//jar",
         "@mockito//jar",
-        "@objenesis//jar"
+        "@objenesis//jar",
     ],
 )
 

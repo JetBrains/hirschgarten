@@ -294,14 +294,14 @@ PERFORMANCE_PLUGIN_242_URL = "https://www.jetbrains.com/intellij-repository/snap
 
 http_jar(
     name = "performance_2024_2",
-    url = PERFORMANCE_PLUGIN_242_URL,
     integrity = "sha256-P3lIU4P5/gh2ey6ds5QClEKtOSWhtzoleNSKz9QOcMs=",
+    url = PERFORMANCE_PLUGIN_242_URL,
 )
 
 CODE_WITH_ME_242_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/cwm/cwm-host/242.18071.24-EAP-SNAPSHOT/cwm-host-242.18071.24-EAP-SNAPSHOT.jar"
 
 http_jar(
     name = "code_with_me_2024_2",
-    url = CODE_WITH_ME_242_URL,
     integrity = "sha256-4bs5Eg3uIY1L4IVK/pNjqNovP8lbo81dzUYe3HVf6xI=",
+    url = CODE_WITH_ME_242_URL,
 )
