@@ -57,5 +57,11 @@ public suspend fun showBspToolWindow(project: Project) {
   }
 }
 
-private val Project.bspToolWindowId: String
+val Project.bspToolWindowId: String
   get() = this.assets.presentableName
+
+val Project.bspToolWindowIdOrNull: String?
+  get() {
+    if (!isBspProject) return null
+    return bspToolWindowId
+  }
