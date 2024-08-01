@@ -23,16 +23,13 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.components.ComponentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.serviceContainer.ComponentManagerImpl;
+import com.intellij.testFramework.UITestUtil;
 import com.intellij.testFramework.fixtures.CodeInsightTestUtil;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import com.intellij.testFramework.UITestUtil;
-import com.intellij.ui.IconManager;
-import com.intellij.ui.icons.CoreIconManager;
-
-import javax.swing.*;
 import java.util.List;
+import javax.swing.*;
 
 /**
  * Provides SDK compatibility shims for base plugin API classes, available to all IDEs during
@@ -59,6 +56,6 @@ public final class BaseSdkTestCompat {
 
   /** #api222 */
   public static void replaceIdeEventQueueSafely() {
-      UITestUtil.replaceIdeEventQueueSafely();
+    UITestUtil.replaceIdeEventQueueSafely();
   }
 }

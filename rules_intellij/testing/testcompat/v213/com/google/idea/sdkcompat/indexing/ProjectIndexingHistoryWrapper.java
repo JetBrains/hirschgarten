@@ -96,6 +96,7 @@ public class ProjectIndexingHistoryWrapper {
   public ProjectIndexingHistory getProjectIndexingHistory() {
     return projectIndexingHistory;
   }
+
   /**
    * #api212: review fields and consider inlining this class into IndexingLoggerTest since new
    * versions only add/remove fields, and we can just omit @Override (with an @SuppressWarnings and
@@ -156,6 +157,7 @@ public class ProjectIndexingHistoryWrapper {
       return ImmutableMap.of();
     }
   }
+
   /**
    * #api212: review fields and consider inlining this class into IndexingLoggerTest since new
    * versions only add/remove fields, and we can just omit @Override (with an @SuppressWarnings and

@@ -20,7 +20,6 @@ package com.google.idea.testing;
 
 import com.intellij.mock.MockApplication;
 import com.intellij.mock.MockProject;
-import com.intellij.mock.MockApplication;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.ExtensionPointName;
@@ -29,7 +28,6 @@ import com.intellij.openapi.util.Disposer;
 import org.junit.Assert;
 import org.junit.rules.ExternalResource;
 import org.picocontainer.MutablePicoContainer;
-
 
 /**
  * A lightweight IntelliJ test rule.
@@ -48,7 +46,8 @@ public final class IntellijRule extends ExternalResource {
     application = TestUtils.createMockApplication(testDisposable);
     Assert.assertSame(application, ApplicationManager.getApplication());
     Assert.assertSame(
-        application.getPicoContainer(), ((MockApplication) ApplicationManager.getApplication()).getPicoContainer());
+        application.getPicoContainer(),
+        ((MockApplication) ApplicationManager.getApplication()).getPicoContainer());
     project = TestUtils.mockProject(application.getPicoContainer(), testDisposable);
   }
 

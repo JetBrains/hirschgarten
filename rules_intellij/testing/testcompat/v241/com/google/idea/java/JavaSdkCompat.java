@@ -32,7 +32,7 @@ import com.intellij.testFramework.IdeaTestUtil;
 public final class JavaSdkCompat {
   private JavaSdkCompat() {}
 
-  /** #api233  to inline */
+  /** #api233 to inline */
   public static Sdk getUniqueMockJdk(LanguageLevel languageLevel) {
     var jdk = IdeaTestUtil.getMockJdk(languageLevel.toJavaVersion());
     var modificator = jdk.getSdkModificator();

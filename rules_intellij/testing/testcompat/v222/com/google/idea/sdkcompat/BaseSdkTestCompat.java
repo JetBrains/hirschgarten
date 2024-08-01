@@ -23,14 +23,11 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.components.ComponentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.serviceContainer.ComponentManagerImpl;
+import com.intellij.testFramework.TestRunnerUtil;
 import com.intellij.testFramework.fixtures.CodeInsightTestUtil;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
-import com.intellij.testFramework.TestRunnerUtil;
-import com.intellij.ui.CoreIconManager;
-import com.intellij.ui.IconManager;
-
 import java.util.List;
 
 /**
@@ -58,6 +55,6 @@ public final class BaseSdkTestCompat {
 
   /** #api222 */
   public static void replaceIdeEventQueueSafely() {
-      TestRunnerUtil.replaceIdeEventQueueSafely();
+    TestRunnerUtil.replaceIdeEventQueueSafely();
   }
 }

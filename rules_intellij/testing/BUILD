@@ -183,11 +183,11 @@ java_library(
         "//intellij_platform_sdk:plugin_api_for_tests",
         "@rules_intellij_maven//:org_junit_jupiter_junit_jupiter",
         "@rules_intellij_maven//:org_junit_jupiter_junit_jupiter_api",
+        "@rules_intellij_maven//:org_junit_platform_junit_platform_console",
         "@rules_intellij_maven//:org_junit_platform_junit_platform_engine",
         "@rules_intellij_maven//:org_junit_platform_junit_platform_launcher",
-        "@rules_intellij_maven//:org_junit_platform_junit_platform_console",
-        "@rules_intellij_maven//:org_junit_platform_junit_platform_suite_engine",
         "@rules_intellij_maven//:org_junit_platform_junit_platform_suite_api",
+        "@rules_intellij_maven//:org_junit_platform_junit_platform_suite_engine",
     ],
 )
 

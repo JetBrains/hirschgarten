@@ -30,7 +30,7 @@ public abstract class ProjectRootManagerExWrapper extends ProjectRootManagerEx {
 
   @Override
   public @NotNull AutoCloseable withRootsChange(
-          @NotNull RootsChangeRescanningInfo rootsChangeRescanningInfo) {
+      @NotNull RootsChangeRescanningInfo rootsChangeRescanningInfo) {
     return new AutoCloseable() {
       @Override
       public void close() throws Exception {}

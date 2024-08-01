@@ -36,8 +36,6 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.serviceContainer.ComponentManagerImpl;
 import com.intellij.testFramework.ServiceContainerUtil;
 import org.picocontainer.MutablePicoContainer;
-import com.intellij.mock.MockApplication;
-import com.intellij.mock.MockProject;
 
 /** Utility class for registering project services, application services and extensions. */
 public class ServiceHelper {
@@ -171,7 +169,6 @@ public class ServiceHelper {
       Disposer.register(parentDisposable, (Disposable) implementation);
     }
     Disposer.register(
-        parentDisposable,
-        () -> BaseSdkTestCompat.unregisterComponent(componentManager, key));
+        parentDisposable, () -> BaseSdkTestCompat.unregisterComponent(componentManager, key));
   }
 }

@@ -31,6 +31,7 @@ import com.intellij.util.containers.MultiMap;
  */
 public final class JavaSdkCompat {
   private JavaSdkCompat() {}
+
   /** #api233 to inline */
   public static Sdk getUniqueMockJdk(LanguageLevel languageLevel) {
     MockSdk jdk = (MockSdk) IdeaTestUtil.getMockJdk(languageLevel.toJavaVersion());
@@ -42,10 +43,10 @@ public final class JavaSdkCompat {
   /** #api233 to remove */
   public static Sdk getNonJavaMockSdk() {
     return new MockSdk(
-            /* name= */ "",
-            /* homePath= */ "",
-            /* versionString= */ "",
-            /* roots= */ MultiMap.empty(),
-            UnknownSdkType.getInstance(""));
+        /* name= */ "",
+        /* homePath= */ "",
+        /* versionString= */ "",
+        /* roots= */ MultiMap.empty(),
+        UnknownSdkType.getInstance(""));
   }
 }
