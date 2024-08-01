@@ -139,7 +139,7 @@
                      description="Wrap libraries inside modules to form a proper dependency graph between libraries"
                      key="bsp.wrap.libraries.inside.modules"/>
 
-        <statusBarWidgetFactory id="BspDocumentTargetsWidget"
+        <statusBarWidgetFactory id="BspFileTargetsWidget"
                                 implementation="org.jetbrains.plugins.bsp.ui.widgets.file.targets.BspFileTargetsWidgetFactory"/>
 
         <toolWindowAllowlist id="BSP"/>
