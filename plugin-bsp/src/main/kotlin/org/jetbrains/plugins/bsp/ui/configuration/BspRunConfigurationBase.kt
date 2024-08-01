@@ -31,7 +31,7 @@ public abstract class BspRunConfigurationBase(
     }
 
   public var env: EnvironmentVariablesData = EnvironmentVariablesData.DEFAULT
-  public var runHandler: BspRunHandler = BspRunHandler.getRunHandler(targets)
+  public lateinit var runHandler: BspRunHandler
 
   override fun getConfigurationEditor(): SettingsEditor<out BspRunConfigurationBase> = BspRunConfigurationEditor(this)
 
