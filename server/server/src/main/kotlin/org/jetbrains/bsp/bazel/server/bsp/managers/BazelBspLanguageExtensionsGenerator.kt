@@ -52,7 +52,7 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
 
   private fun calculateProperties(): Properties {
     val props = Properties()
-    props["file.resource.loader.path"] = aspectsPath.toAbsolutePath().toString()
+    props["resource.loader.file.path"] = aspectsPath.toAbsolutePath().toString()
     props.setProperty("runtime.log.logsystem.class", "org.apache.velocity.runtime.log.NullLogSystem")
     return props
   }
