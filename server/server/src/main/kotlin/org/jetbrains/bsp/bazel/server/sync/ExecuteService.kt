@@ -110,8 +110,8 @@ class ExecuteService(
       command.options.add(BazelFlag.testFilter(testFilter))
     }
 
-    (command as HasEnvironment).environment.putAll(params.environmentVariables)
-    (command as HasProgramArguments).programArguments.addAll(params.arguments)
+    params.environmentVariables?.let { (command as HasEnvironment).environment.putAll(it) }
+    params.arguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
     command.options.add(BazelFlag.color(true))
     command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
     (command as HasMultipleTargets).addTargetsFromSpec(targetsSpec)
@@ -145,9 +145,9 @@ class ExecuteService(
         run(bspId) {
           options.add(BazelFlag.color(true))
           additionalOptions?.let { options.addAll(it) }
-          environment.putAll(params.environmentVariables)
-          workingDirectory = Path(params.workingDirectory)
-          programArguments.addAll(params.arguments)
+          params.environmentVariables?.let { environment.putAll(it) }
+          params.workingDirectory?.let { workingDirectory = Path(it) }
+          params.arguments?.let { programArguments.addAll(it) }
         }
       }
     val bazelProcessResult = bazelRunner.runBazelCommand(command, originId = params.originId).waitAndGetResult(cancelChecker)
