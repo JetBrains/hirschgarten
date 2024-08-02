@@ -4,11 +4,16 @@ import ch.epfl.scala.bsp4j.RunParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.CommandLineState
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.ui.RunContentManager
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.connection.connection
+import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.BspTaskEventsService
 import org.jetbrains.plugins.bsp.services.BspTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
@@ -54,8 +59,12 @@ public abstract class BspCommandLineStateBase(
       }
     }
 
-    computationStarter.complete(Unit)
-    handler.startNotify()
+    BspCoroutineService.getInstance(project).start {
+      computationStarter.complete(Unit)
+      withContext(Dispatchers.EDT) {
+        RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
+      }
+    }
 
     return handler
   }
