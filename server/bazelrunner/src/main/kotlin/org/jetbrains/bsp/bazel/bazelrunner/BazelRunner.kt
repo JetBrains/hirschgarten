@@ -115,7 +115,7 @@ class BazelRunner(
     directory: Path?,
     originId: String?,
   ) {
-    "Invoking: ${processEnv?.let { envToString(it) }} ${directory?.let { "cd $it &&" }} ${
+    "Invoking: ${processEnv?.let { envToString(it) } ?: ""} ${directory?.let { "cd $it &&" } ?: ""} ${
       processArgs.joinToString(
         "' '",
         "'",
