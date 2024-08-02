@@ -115,10 +115,11 @@ class BazelRunner(
     directory: Path?,
     originId: String?,
   ) {
-    val envString  = processEnv?.let { envToString(it) }
+    val envString = processEnv?.let { envToString(it) }
     val directoryString = directory?.let { "cd $it &&" }
     val processArgsString = processArgs.joinToString("' '", "'", "'")
-    listOfNotNull("Invoking:", envString, directoryString, processArgsString).joinToString(" ")
+    listOfNotNull("Invoking:", envString, directoryString, processArgsString)
+      .joinToString(" ")
       .also { LOGGER.info(it) }
       .also { bspClientLogger?.copy(originId = originId)?.message(it) }
   }
