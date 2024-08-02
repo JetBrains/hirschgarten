@@ -145,7 +145,10 @@ public class BuildTargetTree(
       }
 
   private fun generateChildrenTargetNodes(pathToIdentifierMap: Map<String?, List<BuildTargetTreeIdentifier>>): List<TreeNode> =
-    pathToIdentifierMap[null]?.map { generateTargetNode(it) } ?: emptyList()
+    pathToIdentifierMap[null]
+      ?.sortedBy { it.displayName }
+      ?.map { generateTargetNode(it) }
+      ?: emptyList()
 
   private fun generateTargetNode(identifier: BuildTargetTreeIdentifier): DefaultMutableTreeNode =
     DefaultMutableTreeNode(

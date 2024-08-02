@@ -27,7 +27,10 @@ import org.jetbrains.plugins.bsp.ui.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 import javax.swing.Icon
 
-private const val ID = "org.jetbrains.bsp.BspFileTargetsWidget"
+/**
+ * Make sure this id matches the one of the extension registration <statusBarWidgetFactory/> in the plugin.xml file
+ */
+private const val WIDGET_ID = "BspFileTargetsWidget"
 
 public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
   init {
@@ -38,13 +41,13 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
     }
   }
 
-  override fun ID(): String = ID
+  override fun ID(): String = WIDGET_ID
 
   override fun getWidgetState(file: VirtualFile?): WidgetState =
     if (file == null) {
-      inactiveWidgetState(project.assets.icon)
+      inactiveWidgetState(project.assets.targetIcon)
     } else {
-      activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, project.assets.icon)
+      activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file, project.assets.targetIcon)
     }
 
   private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
@@ -103,7 +106,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
 }
 
 public class BspFileTargetsWidgetFactory : StatusBarWidgetFactory {
-  override fun getId(): String = ID
+  override fun getId(): String = WIDGET_ID
 
   override fun getDisplayName(): String = BspPluginBundle.message("widget.factory.display.name")
 
@@ -116,6 +119,8 @@ public class BspFileTargetsWidgetFactory : StatusBarWidgetFactory {
   }
 
   override fun canBeEnabledOn(statusBar: StatusBar): Boolean = true
+
+  override fun isEnabledByDefault(): Boolean = true
 }
 
 internal fun Project.updateBspFileTargetsWidget() {

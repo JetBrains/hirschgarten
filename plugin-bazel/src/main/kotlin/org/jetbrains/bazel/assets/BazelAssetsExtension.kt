@@ -1,6 +1,5 @@
 package org.jetbrains.bazel.assets
 
-import com.intellij.openapi.util.IconLoader
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
@@ -11,8 +10,7 @@ internal class BazelAssetsExtension : BuildToolAssetsExtension {
 
   override val presentableName: String = "Bazel"
 
-  override val icon: Icon = BazelPluginIcons.bazel
-
-  override val targetIcon: Icon = IconLoader.getIcon("/icons/bazel.svg", javaClass)
-  override val invalidTargetIcon: Icon = IconLoader.getIcon("/icons/redBazel.svg", javaClass)
+  override val targetIcon: Icon = BazelPluginIcons.bazel
+  override val errorTargetIcon: Icon = BazelPluginIcons.bazelError
+  override val toolWindowIcon: Icon = BazelPluginIcons.bazelToolWindow
 }

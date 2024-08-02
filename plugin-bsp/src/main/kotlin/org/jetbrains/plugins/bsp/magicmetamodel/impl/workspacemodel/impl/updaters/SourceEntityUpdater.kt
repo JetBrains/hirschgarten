@@ -9,21 +9,48 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 
-internal open class SourceEntityUpdater(val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
-  WorkspaceModelEntityWithParentModuleUpdater<GenericSourceRoot, SourceRootEntity> {
+internal open class SourceEntityUpdater(
+  val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
+  val workspaceModelEntityFolderMarkerExists: Boolean = false,
+) : WorkspaceModelEntityWithParentModuleUpdater<GenericSourceRoot, SourceRootEntity> {
   private val contentRootEntityUpdater = ContentRootEntityUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntities(entitiesToAdd: List<GenericSourceRoot>, parentModuleEntity: ModuleEntity): List<SourceRootEntity> {
-    val contentRootEntities = addContentRootEntities(entitiesToAdd, parentModuleEntity)
-
-    return (contentRootEntities zip entitiesToAdd).map { (contentRootEntity, entryToAdd) ->
-      addSourceRootEntity(
-        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
-        contentRootEntity,
-        entryToAdd,
-      )
+    return if (workspaceModelEntityFolderMarkerExists) {
+      val commonContentRoot = addSingleContentRootEntity(entitiesToAdd, parentModuleEntity) ?: return emptyList()
+      entitiesToAdd.map { addSourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, commonContentRoot, it) }
+    } else {
+      val contentRootEntities = addContentRootEntities(entitiesToAdd, parentModuleEntity)
+      (contentRootEntities zip entitiesToAdd).map { (contentRootEntity, entryToAdd) ->
+        addSourceRootEntity(
+          workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
+          contentRootEntity,
+          entryToAdd,
+        )
+      }
     }
   }
+
+  /**
+   * this is specifically used for the workspacemodel module in hirschgarten
+   */
+  private fun addSingleContentRootEntity(entitiesToAdd: List<GenericSourceRoot>, parentModuleEntity: ModuleEntity): ContentRootEntity? {
+    if (entitiesToAdd.isEmpty()) return null
+
+    val commonContentRoot = calculateCommonContentRoot(entitiesToAdd) ?: return null
+
+    return contentRootEntityUpdater.addEntity(commonContentRoot, parentModuleEntity)
+  }
+
+  private fun calculateCommonContentRoot(sourceRoots: List<GenericSourceRoot>) =
+    when (sourceRoots.size) {
+      0 -> null
+      else ->
+        ContentRoot(
+          path = sourceRoots.first().sourcePath.parent,
+          excludedPaths = sourceRoots.flatMap { it.excludedPaths },
+        )
+    }
 
   private fun addContentRootEntities(entitiesToAdd: List<GenericSourceRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> {
     val contentRoots =

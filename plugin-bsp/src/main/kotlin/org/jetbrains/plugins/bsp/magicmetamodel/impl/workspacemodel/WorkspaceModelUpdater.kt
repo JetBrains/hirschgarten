@@ -29,6 +29,7 @@ public data class ModuleDetails(
   val moduleDependencies: List<BuildTargetIdentifier>,
   val defaultJdkName: String?,
   val jvmBinaryJars: List<JvmBinaryJarsItem>,
+  val workspaceModelEntitiesFolderMarker: Boolean = false,
 )
 
 internal data class ModuleName(val name: String)

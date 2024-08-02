@@ -57,7 +57,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
 
     for (target in runConfiguration.targets) {
       val module = target.getModule(environment.project) ?: continue
-      OrderEnumerator.orderEntries(module).librariesOnly().withoutSdk().forEachLibrary { library ->
+      OrderEnumerator.orderEntries(module).librariesOnly().recursively().withoutSdk().forEachLibrary { library ->
         // Use URLs directly because getFiles will be empty until everything is indexed.
         library
           .getUrls(OrderRootType.CLASSES)

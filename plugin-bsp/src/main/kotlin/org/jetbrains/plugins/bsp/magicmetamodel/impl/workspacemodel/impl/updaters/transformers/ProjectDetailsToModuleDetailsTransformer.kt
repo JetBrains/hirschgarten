@@ -4,6 +4,8 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 
+private const val WORKSPACE_MODEL_ENTITIES_FOLDER_MARKER = "workspace-model-entities-folder-marker"
+
 internal class ProjectDetailsToModuleDetailsTransformer(
   private val projectDetails: ProjectDetails,
   private val libraryGraph: LibraryGraph,
@@ -33,6 +35,8 @@ internal class ProjectDetailsToModuleDetailsTransformer(
       moduleDependencies = allDependencies.moduleDependencies.toList(),
       defaultJdkName = projectDetails.defaultJdkName,
       jvmBinaryJars = jvmBinaryJarsIndex[targetId].orEmpty(),
+      workspaceModelEntitiesFolderMarker =
+        resourcesIndex[targetId].orEmpty().flatMap { it.resources }.any { it.endsWith(WORKSPACE_MODEL_ENTITIES_FOLDER_MARKER) },
     )
   }
 }

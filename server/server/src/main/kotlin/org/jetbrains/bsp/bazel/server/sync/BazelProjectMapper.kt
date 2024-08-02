@@ -36,6 +36,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.notExists
+import kotlin.io.path.toPath
 
 class BazelProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
@@ -258,11 +259,20 @@ class BazelProjectMapper(
   private fun calculateProjectLevelKotlinStdlibsLibrary(targetsToImport: Sequence<TargetInfo>): Library? {
     val kotlinStdlibsJars = calculateProjectLevelKotlinStdlibsJars(targetsToImport)
 
+    // rules_kotlin does not expose source jars for jvm stdlibs, so this is the way they can be retrieved for now
+    val inferredSourceJars =
+      kotlinStdlibsJars
+        .map { it.toPath() }
+        .map { it.parent.resolve(it.fileName.toString().replace(".jar", "-sources.jar")) }
+        .filter { it.exists() }
+        .map { it.toUri() }
+        .toSet()
+
     return if (kotlinStdlibsJars.isNotEmpty()) {
       Library(
         label = Label.parse("rules_kotlin_kotlin-stdlibs"),
         outputs = kotlinStdlibsJars,
-        sources = emptySet(),
+        sources = inferredSourceJars,
         dependencies = emptyList(),
       )
     } else {

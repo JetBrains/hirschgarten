@@ -28,6 +28,7 @@ public data class JavaModule(
   val scalaAddendum: ScalaAddendum? = null,
   val javaAddendum: JavaAddendum? = null,
   val androidAddendum: AndroidAddendum? = null,
+  val workspaceModelEntitiesFolderMarker: Boolean = false,
 ) : WorkspaceModelEntity(),
   Module {
   override fun toState(): ModuleState =

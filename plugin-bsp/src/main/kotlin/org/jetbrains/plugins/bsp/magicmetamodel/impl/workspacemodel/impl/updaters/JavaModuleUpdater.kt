@@ -45,7 +45,12 @@ internal class JavaModuleWithSourcesUpdater(
       // all module-level libraries are treated as project-level libraries for memory efficiency
       entityToAdd.moduleLevelLibraries?.let { libraryEntityUpdater.addEntities(it) }
 
-      val javaSourceEntityUpdater = JavaSourceEntityUpdater(workspaceModelEntityUpdaterConfig)
+      val javaSourceEntityUpdater =
+        JavaSourceEntityUpdater(
+          workspaceModelEntityUpdaterConfig,
+          entityToAdd.workspaceModelEntitiesFolderMarker,
+        )
+
       javaSourceEntityUpdater.addEntities(entityToAdd.sourceRoots, moduleEntity)
 
       val javaResourceEntityUpdater = JavaResourceEntityUpdater(workspaceModelEntityUpdaterConfig)

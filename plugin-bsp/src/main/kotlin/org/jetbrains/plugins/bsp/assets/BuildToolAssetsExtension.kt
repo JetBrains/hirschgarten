@@ -10,11 +10,17 @@ import javax.swing.Icon
 public interface BuildToolAssetsExtension : WithBuildToolId {
   public val presentableName: String
 
-  public val icon: Icon
-
+  /** Target icon, shown next to individual targets in the tool window */
   public val targetIcon: Icon
 
-  public val invalidTargetIcon: Icon
+  /**
+   * Icon for target-related errors, including invalid targets.
+   * Can be equal to `AllIcons.General.Error` if a suitable icon is unavailable.
+   */
+  public val errorTargetIcon: Icon
+
+  /** Icon for the tool window */
+  public val toolWindowIcon: Icon
 
   public companion object {
     internal val ep =

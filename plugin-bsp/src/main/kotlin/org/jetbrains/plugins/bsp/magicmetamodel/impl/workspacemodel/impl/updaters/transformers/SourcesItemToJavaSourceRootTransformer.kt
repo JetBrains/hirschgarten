@@ -6,10 +6,11 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.net.URI
+import kotlin.io.path.toPath
 
 internal data class BuildTargetAndSourceItem(val buildTarget: BuildTarget, val sourcesItem: SourcesItem)
 
-internal class SourcesItemToJavaSourceRootTransformer :
+internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModelEntitiesFolderMarker: Boolean = false) :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
   private val sourceRootType = SourceRootTypeId("java-source")
   private val testSourceRootType = SourceRootTypeId("java-test")
@@ -18,15 +19,25 @@ internal class SourcesItemToJavaSourceRootTransformer :
     val sourceRoots = getSourceRootsAsURIs(inputEntity.sourcesItem)
     val rootType = inferRootType(inputEntity.buildTarget)
 
-    return SourceItemToSourceRootTransformer
-      .transform(inputEntity.sourcesItem.sources)
-      .map { toJavaSourceRoot(it, sourceRoots, rootType) }
+    return if (workspaceModelEntitiesFolderMarker) {
+      sourceRoots.map { it.toJavaSourceRoot(rootType) }
+    } else {
+      SourceItemToSourceRootTransformer.transform(inputEntity.sourcesItem.sources).map { toJavaSourceRoot(it, sourceRoots, rootType) }
+    }
   }
 
   private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> = sourcesItem.roots.orEmpty().map { it.safeCastToURI() }
 
   private fun inferRootType(buildTarget: BuildTarget): SourceRootTypeId =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
+
+  private fun URI.toJavaSourceRoot(rootType: SourceRootTypeId): JavaSourceRoot =
+    JavaSourceRoot(
+      sourcePath = toPath(),
+      generated = false,
+      packagePrefix = "",
+      rootType = rootType,
+    )
 
   private fun toJavaSourceRoot(
     sourceRoot: SourceRoot,

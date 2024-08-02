@@ -41,7 +41,7 @@ public suspend fun registerBspToolWindow(project: Project) {
   if (currentToolWindow == null) {
     withContext(Dispatchers.EDT) {
       toolWindowManager.registerToolWindow(project.bspToolWindowId) {
-        this.icon = project.assets.icon
+        this.icon = project.assets.toolWindowIcon
         this.anchor = ToolWindowAnchor.RIGHT
         this.canCloseContent = false
         this.contentFactory = BspAllTargetsWidgetFactory()
@@ -50,5 +50,18 @@ public suspend fun registerBspToolWindow(project: Project) {
   }
 }
 
-public val Project.bspToolWindowId: String
+public suspend fun showBspToolWindow(project: Project) {
+  val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(project.bspToolWindowId) ?: return
+  withContext(Dispatchers.EDT) {
+    toolWindow.show()
+  }
+}
+
+val Project.bspToolWindowId: String
   get() = this.assets.presentableName
+
+val Project.bspToolWindowIdOrNull: String?
+  get() {
+    if (!isBspProject) return null
+    return bspToolWindowId
+  }

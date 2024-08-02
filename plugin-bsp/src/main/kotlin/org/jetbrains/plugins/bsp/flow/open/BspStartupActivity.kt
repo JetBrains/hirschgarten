@@ -13,6 +13,7 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspWorkspace
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.server.connection.DefaultBspConnection
 import org.jetbrains.plugins.bsp.server.connection.connection
@@ -43,7 +44,7 @@ public class BspStartupActivity : ProjectActivity {
     BspStartupActivityTracker.startConfigurationPhase(this)
     executeEveryTime()
 
-    if (!(workspaceModel as WorkspaceModelImpl).loadedFromCache) {
+    if (!isBspProjectInitialized || !(workspaceModel as WorkspaceModelImpl).loadedFromCache) {
       executeForNewProject()
     }
 
@@ -62,6 +63,7 @@ public class BspStartupActivity : ProjectActivity {
     log.debug("Executing BSP startup activities only for new project")
     try {
       runSync(this)
+      isBspProjectInitialized = true
     } catch (e: Exception) {
       val bspSyncConsole = BspConsoleService.getInstance(this).bspSyncConsole
       log.info("BSP sync has failed", e)

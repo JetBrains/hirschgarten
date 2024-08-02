@@ -6,6 +6,9 @@ kt_jvm_library(
         "main/gen/**/*.kt",
         "main/kotlin/**/*.kt",
     ]),
+    resources = glob([
+        "main/resources/workspace-model-entities-folder-marker",
+    ]),
     visibility = ["//visibility:public"],
     deps = [
         "@maven//:ch_epfl_scala_bsp4j",

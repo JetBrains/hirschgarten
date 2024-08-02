@@ -33,7 +33,7 @@ private class ListsUpdater(private val project: Project, private val targetPanel
     loadedTargetsPanel =
       BspPanelComponent(
         targetIcon = project.assets.targetIcon,
-        invalidTargetIcon = project.assets.invalidTargetIcon,
+        invalidTargetIcon = project.assets.errorTargetIcon,
         buildToolId = project.buildToolId,
         toolName = project.assets.presentableName,
         targets = temporaryTargetUtils.allTargetIds().mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) },
