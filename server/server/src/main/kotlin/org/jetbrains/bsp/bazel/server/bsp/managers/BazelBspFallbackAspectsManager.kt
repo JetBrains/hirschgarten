@@ -11,12 +11,15 @@ class BazelBspFallbackAspectsManager(
 ) {
   fun getAllPossibleTargets(cancelChecker: CancelChecker): List<Label> {
     val targets = workspaceContextProvider.currentWorkspaceContext().targets
+    val command =
+      bazelRunner.buildBazelCommand {
+        query {
+          addTargetsFromSpec(targets)
+          options.addAll(listOf("--output=label", "--keep_going"))
+        }
+      }
     return bazelRunner
-      .commandBuilder()
-      .query()
-      .withTargets(targets)
-      .withBazelArguments(listOf("--output=label", "--keep_going"))
-      .executeBazelCommand(parseProcessOutput = false)
+      .runBazelCommand(command, logProcessOutput = false)
       .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
       .stdoutLines
       .map { Label.parse(it) }

@@ -2,11 +2,8 @@ package org.jetbrains.bsp.bazel.bazelrunner
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
-import org.jetbrains.bsp.bazel.workspacecontext.extraFlags
 import java.nio.file.Path
-import kotlin.io.path.pathString
 
 interface HasProgramArguments {
   // Will be forwarded directly to `bazel run <target> -- <arguments>` or set using `--test_arg=<arg>` for `bazel test`
@@ -18,6 +15,7 @@ interface HasEnvironment {
   // In case of `bazel build`, it will be set using `--action_env=<name=value>`
   // `bazel run` needs to be set up inside the ProcessBuilder
   val environment: MutableMap<String, String>
+
   // In case of `bazel test, it will be set using `--test_env=<name>`
   // In case of `bazel build`, it will be set using `--action_env=<name>`
   // In case of `bazel run` the environment is always inherited
@@ -32,16 +30,17 @@ interface HasWorkingDirectory {
 interface HasMultipleTargets {
   // Will be added as `bazel <command> -- target1 target2 ...`
   val targets: MutableList<BuildTargetIdentifier>
+
   // Will be added as `bazel <command> -- <targets> -target1 -target2 ...`
   val excludedTargets: MutableList<BuildTargetIdentifier>
 
-  fun withTargetsFromSpec(targetsSpec: TargetsSpec) {
+  fun addTargetsFromSpec(targetsSpec: TargetsSpec) {
     targets.addAll(targetsSpec.values)
     excludedTargets.addAll(targetsSpec.excludedValues)
   }
 
   fun targetCommandLine(): List<String> {
-    val commandLine = mutableListOf<String>()
+    val commandLine = mutableListOf<String>("--")
     commandLine.addAll(targets.map { it.uri })
     commandLine.addAll(excludedTargets.map { "-${it.uri}" })
     return commandLine
@@ -55,24 +54,30 @@ interface HasSingleTarget {
 // See https://bazel.build/reference/command-line-reference#commands
 abstract class BazelCommand(val bazelBinary: String) {
   // See https://bazel.build/reference/command-line-reference#startup-options
-  val startupOptions: MutableList<String> = mutableListOf(BazelFlag.toolTag())
+  val startupOptions: MutableList<String> = mutableListOf()
 
   // See https://bazel.build/reference/command-line-reference#options-common-to-all-commands and command-specific options
-  val options: MutableList<String> = mutableListOf()
+  val options: MutableList<String> = mutableListOf(BazelFlag.toolTag())
 
   abstract fun makeCommandLine(): List<String>
 
   // See https://bazel.build/reference/command-line-reference#flag--build_event_binary_file
-  fun withBes(besOutputFile: Path) {
-    options.addAll(listOf(
-      "--build_event_binary_file=${besOutputFile.toAbsolutePath()}",
-      "--bes_outerr_buffer_size=10",
-      "--isatty=true",
-    ))
+  fun useBes(besOutputFile: Path) {
+    options.addAll(
+      listOf(
+        "--build_event_binary_file=${besOutputFile.toAbsolutePath()}",
+        "--bes_outerr_buffer_size=10",
+        "--isatty=true",
+      ),
+    )
   }
 
-  class Run(bazelBinary: String, override val target: BuildTargetIdentifier) : BazelCommand(bazelBinary), HasProgramArguments,
-    HasEnvironment, HasSingleTarget, HasWorkingDirectory {
+  class Run(bazelBinary: String, override val target: BuildTargetIdentifier) :
+    BazelCommand(bazelBinary),
+    HasProgramArguments,
+    HasEnvironment,
+    HasSingleTarget,
+    HasWorkingDirectory {
     override val programArguments: MutableList<String> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
@@ -96,7 +101,10 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
-  class Build(bazelBinary: String) : BazelCommand(bazelBinary), HasEnvironment, HasMultipleTargets {
+  class Build(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasEnvironment,
+    HasMultipleTargets {
     override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
     override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
@@ -108,16 +116,19 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("build")
       commandLine.addAll(options)
-      commandLine.addAll(environment.map { (key, value) -> "--action_env=$key=$value }" })
+      commandLine.addAll(environment.map { (key, value) -> "--action_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--action_env=$it" })
-      commandLine.add("--")
       commandLine.addAll(targetCommandLine())
 
       return commandLine
     }
   }
 
-  class Test(bazelBinary: String) : BazelCommand(bazelBinary), HasEnvironment, HasMultipleTargets, HasProgramArguments {
+  class Test(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasEnvironment,
+    HasMultipleTargets,
+    HasProgramArguments {
     override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
     override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
@@ -130,17 +141,20 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("test")
       commandLine.addAll(options)
-      commandLine.addAll(environment.map { (key, value) -> "--test_env=$key=$value }" })
+      commandLine.addAll(environment.map { (key, value) -> "--test_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--test_env=$it" })
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
-      commandLine.add("--")
       commandLine.addAll(targetCommandLine())
 
       return commandLine
     }
   }
 
-  class Coverage(bazelBinary: String) : BazelCommand(bazelBinary), HasEnvironment, HasMultipleTargets, HasProgramArguments {
+  class Coverage(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasEnvironment,
+    HasMultipleTargets,
+    HasProgramArguments {
     override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
     override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
@@ -153,10 +167,9 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("coverage")
       commandLine.addAll(options)
-      commandLine.addAll(environment.map { (key, value) -> "--test_env=$key=$value }" })
+      commandLine.addAll(environment.map { (key, value) -> "--test_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--test_env=$it" })
       commandLine.addAll(programArguments.map { "--test_arg=$it" })
-      commandLine.add("--")
       commandLine.addAll(targetCommandLine())
 
       return commandLine
@@ -164,7 +177,9 @@ abstract class BazelCommand(val bazelBinary: String) {
   }
 
   // TODO: perhaps it's possible to install multiple targets at once?
-  class MobileInstall(bazelBinary: String, override val target: BuildTargetIdentifier): BazelCommand(bazelBinary), HasSingleTarget {
+  class MobileInstall(bazelBinary: String, override val target: BuildTargetIdentifier) :
+    BazelCommand(bazelBinary),
+    HasSingleTarget {
     override fun makeCommandLine(): List<String> {
       val commandLine = mutableListOf<String>(bazelBinary)
 
@@ -177,7 +192,9 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
-  class Query(bazelBinary: String) : BazelCommand(bazelBinary), HasMultipleTargets {
+  class Query(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasMultipleTargets {
     override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
     override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
 
@@ -193,7 +210,9 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
-  class CQuery(bazelBinary: String) : BazelCommand(bazelBinary), HasMultipleTargets {
+  class CQuery(bazelBinary: String) :
+    BazelCommand(bazelBinary),
+    HasMultipleTargets {
     override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
     override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
 
@@ -230,36 +249,4 @@ abstract class BazelCommand(val bazelBinary: String) {
   class ModPath(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "path"))
 
   class ModShowRepo(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "show_repo"))
-}
-
-class BazelRunnerCommandBuilder internal constructor(private val bazelRunner: BazelRunner) {
-
-  private val workspaceContext = bazelRunner.workspaceContextProvider.currentWorkspaceContext()
-  private val bazelBinary = workspaceContext.bazelBinary.value.pathString
-  private val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath.value
-  private val workspaceBazelOptions = workspaceContext.buildFlags.values + workspaceContext.extraFlags + BazelFlag.repositoryOverride(Constants.ASPECT_REPOSITORY, relativeDotBspFolderPath.pathString)
-
-  fun clean() = BazelCommand.Clean(bazelBinary)
-
-  fun info() = BazelCommand.Info(bazelBinary)
-
-  fun run(target: BuildTargetIdentifier) = BazelCommand.Run(bazelBinary, target).apply { options.addAll(workspaceBazelOptions) }
-
-  fun graph() = BazelCommand.ModGraph(bazelBinary)
-
-  fun path() = BazelCommand.ModPath(bazelBinary)
-
-  fun showRepo() = BazelCommand.ModShowRepo(bazelBinary)
-
-  fun query() = BazelCommand.Query(bazelBinary)
-
-  fun cquery() = BazelCommand.CQuery(bazelBinary).apply { options.addAll(workspaceBazelOptions) }
-
-  fun build() = BazelCommand.Build(bazelBinary).apply { options.addAll(workspaceBazelOptions) }
-
-  fun mobileInstall(target: BuildTargetIdentifier) = BazelCommand.MobileInstall(bazelBinary, target).apply { options.addAll(workspaceBazelOptions) }
-
-  fun test() = BazelCommand.Test(bazelBinary).apply { options.addAll(workspaceBazelOptions) }
-
-  fun coverage() = BazelCommand.Coverage(bazelBinary).apply { options.addAll(workspaceBazelOptions) }
 }

@@ -33,14 +33,18 @@ class BazelBspCompilationManager(
     val bepReader = BepReader(bepServer)
     return try {
       bepReader.start()
+      val command =
+        bazelRunner.buildBazelCommand {
+          build {
+            options.addAll(extraFlags)
+            addTargetsFromSpec(targetSpecs)
+            this.environment.putAll(environment)
+            useBes(bepReader.eventFile.toPath().toAbsolutePath())
+          }
+        }
       val result =
         bazelRunner
-          .commandBuilder()
-          .build()
-          .withBazelArguments(extraFlags)
-          .withTargets(targetSpecs)
-          .withEnvironment(environment)
-          .executeBazelBesCommand(originId, bepReader.eventFile.toPath().toAbsolutePath())
+          .runBazelCommand(command, originId = originId)
           .waitAndGetResult(cancelChecker, true)
       bepReader.finishBuild()
       bepReader.await()

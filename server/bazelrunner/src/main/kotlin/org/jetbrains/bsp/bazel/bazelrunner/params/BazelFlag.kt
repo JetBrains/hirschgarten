@@ -14,6 +14,7 @@ object BazelFlag {
 
   @JvmStatic fun buildManualTests(): String = flag("build_manual_tests")
 
+  // Use file:// uri scheme for output paths in the build events.
   @JvmStatic fun buildEventBinaryPathConversion(enabled: Boolean): String =
     arg(
       "build_event_binary_file_path_conversion",
