@@ -56,4 +56,21 @@ class BazelRunnerBuilderTest {
     )
   }
 
+  @Test
+  fun `build with targets`() {
+    val builder = bazelRunner.commandBuilder()
+
+    builder.build().withTargets(mockContext.targets).dump() shouldContainExactly listOf(
+      "bazel",
+      "build",
+      "flag1", "flag2",
+      "--override_repository=bazelbsp_aspect=.bazelbsp",
+      BazelFlag.toolTag(),
+       "--", "in1", "in2", "-ex1", "-ex2"
+
+    )
+  }
+
+
 }
+

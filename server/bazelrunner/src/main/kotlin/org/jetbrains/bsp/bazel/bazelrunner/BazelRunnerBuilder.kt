@@ -1,9 +1,7 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.google.common.collect.ImmutableList
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bsp.bazel.bazelrunner.params.BazelQueryKindParameters
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelArgumentsUtils
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import java.nio.file.Path
@@ -55,30 +53,6 @@ open class BazelRunnerBuilder internal constructor(private val bazelRunner: Baze
   open fun withTargets(includedTargets: List<BuildTargetIdentifier>, excludedTargets: List<BuildTargetIdentifier>): BazelRunnerBuilder? {
     val joinedTargets = BazelArgumentsUtils.joinBazelTargets(includedTargets, excludedTargets)
     programArguments.add(joinedTargets)
-    return this
-  }
-
-  fun withMnemonic(bazelTargets: List<String>, languageIds: List<String>): BazelRunnerBuilder {
-    val argument = BazelArgumentsUtils.getMnemonicWithJoinedTargets(bazelTargets, languageIds)
-    programArguments.add(argument)
-    return this
-  }
-
-  fun withKind(bazelParameter: BazelQueryKindParameters): BazelRunnerBuilder = withKinds(ImmutableList.of(bazelParameter))
-
-  fun withKinds(bazelParameters: List<BazelQueryKindParameters>): BazelRunnerBuilder {
-    val argument = BazelArgumentsUtils.getQueryKindForPatternsAndExpressions(bazelParameters)
-    programArguments.add(argument)
-    return this
-  }
-
-  fun withKindsAndExcept(parameters: BazelQueryKindParameters, exception: String): BazelRunnerBuilder {
-    val argument =
-      BazelArgumentsUtils.getQueryKindForPatternsAndExpressionsWithException(
-        listOf(parameters),
-        exception,
-      )
-    programArguments.add(argument)
     return this
   }
 

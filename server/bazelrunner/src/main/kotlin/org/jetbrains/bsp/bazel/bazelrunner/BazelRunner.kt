@@ -11,7 +11,7 @@ import java.nio.file.Path
 import kotlin.io.path.pathString
 
 class BazelRunner(
-  private val workspaceContextProvider: WorkspaceContextProvider,
+  val workspaceContextProvider: WorkspaceContextProvider,
   private val bspClientLogger: BspClientLogger?,
   val workspaceRoot: Path?,
 ) {
@@ -19,7 +19,34 @@ class BazelRunner(
     private val LOGGER = LogManager.getLogger(BazelRunner::class.java)
   }
 
-  fun commandBuilder(): BazelRunnerCommandBuilder = BazelRunnerCommandBuilder(this)
+  fun buildAndRunCommand(originId: String? = null, parseProcessOutput: Boolean = true, builder: BazelRunnerCommandBuilder.() -> Unit): BazelProcess {
+    val command = BazelRunnerCommandBuilder(this).apply(builder).build()
+    return runBazelCommand(command, originId, parseProcessOutput)
+  }
+
+  fun runBazelCommand(command: BazelCommand, originId: String? = null, parseProcessOutput: Boolean = true): BazelProcess {
+    val processArgs = command.makeCommandLine()
+    val processBuilder = ProcessBuilder(processArgs)
+    workspaceRoot?.let { processBuilder.directory(it.toFile()) }
+
+
+    // Run needs to be handled separately because the resulting process is not run in the sandbox
+    if (command is BazelCommand.Run) {
+      command.workingDirectory?.let { processBuilder.directory(it.toFile()) }
+      processBuilder.environment() += command.environment
+      logInvocation(processArgs, command.environment, command.workingDirectory, originId)
+    } else {
+      logInvocation(processArgs, null, null, originId)
+    }
+
+    val process = processBuilder.start()
+    val outputLogger = bspClientLogger.takeIf { parseProcessOutput }?.copy(originId = originId)
+
+    return BazelProcess(
+      process,
+      outputLogger
+    )
+  }
 
   fun runBazelCommandBes(
     command: String,
@@ -88,11 +115,13 @@ class BazelRunner(
 
   private fun logInvocation(
     processArgs: List<String>,
-    processEnv: Map<String, String>,
+    processEnv: Map<String, String>?,
+    directory: Path?,
     originId: String?,
   ) {
-    "Invoking: ${envToString(processEnv)} ${processArgs.joinToString(" ")}"
+    "Invoking: ${processEnv?.let { envToString(it)} } ${directory?.let { "cd $it &&" }} ${processArgs.joinToString("' '", "'", "'")}"
       .also { LOGGER.info(it) }
+      // TODO: does it make sense to also log here?
       .also { bspClientLogger?.copy(originId = originId)?.message(it) }
   }
 

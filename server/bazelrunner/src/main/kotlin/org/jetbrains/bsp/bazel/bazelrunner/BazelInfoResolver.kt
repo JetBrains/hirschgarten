@@ -15,10 +15,9 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
 
   private fun bazelInfoFromBazel(cancelChecker: CancelChecker): BazelInfo {
     val isBzlModEnabled = calculateBzlModEnabled(cancelChecker)
-    val processResult =
-      bazelRunner
-        .commandBuilder()
-        .info()
+    val command =
+      bazelRunner.commandBuilder().info()
+    val processResult    .info()
         .executeBazelCommand()
         .waitAndGetResult(cancelChecker, true)
     return parseBazelInfo(processResult, isBzlModEnabled)
@@ -56,14 +55,13 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
 
   // this method does a small check whether bzlmod is enabled in the project
   // by running an arbitrary a bazel mod command and check for ok status code
-  private fun calculateBzlModEnabled(cancelChecker: CancelChecker) =
-    bazelRunner
-      .commandBuilder()
-      .showRepo()
-      .executeBazelCommand(parseProcessOutput = false)
-      .waitAndGetResult(cancelChecker)
-      .statusCode ==
-      StatusCode.OK
+  private fun calculateBzlModEnabled(cancelChecker: CancelChecker): Boolean {
+    val command = bazelRunner.buildAndRunCommand {
+      it.
+    }
+    return bazelRunner.runBazelCommand(command).waitAndGetResult(cancelChecker)
+      .statusCode == StatusCode.OK
+  }
 
   companion object {
     private val InfoLinePattern = "([\\w-]+): (.*)".toRegex()
