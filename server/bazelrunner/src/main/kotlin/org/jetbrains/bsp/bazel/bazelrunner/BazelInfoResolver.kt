@@ -55,13 +55,12 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
 
   // this method does a small check whether bzlmod is enabled in the project
   // by running an arbitrary a bazel mod command and check for ok status code
-  private fun calculateBzlModEnabled(cancelChecker: CancelChecker): Boolean {
-    val command = bazelRunner.buildAndRunCommand {
-      it.
-    }
-    return bazelRunner.runBazelCommand(command).waitAndGetResult(cancelChecker)
+  private fun calculateBzlModEnabled(cancelChecker: CancelChecker): Boolean =
+    bazelRunner.buildAndRunCommand(parseProcessOutput = false) {
+      showRepo()
+    }.waitAndGetResult(cancelChecker)
       .statusCode == StatusCode.OK
-  }
+
 
   companion object {
     private val InfoLinePattern = "([\\w-]+): (.*)".toRegex()
