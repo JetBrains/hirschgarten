@@ -5,7 +5,7 @@ import org.apache.velocity.app.VelocityEngine
 import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import java.io.StringWriter
 import java.nio.file.Path
-import java.util.*
+import java.util.Properties
 
 class TemplateWriter(private val resourcePath: Path) {
   private val velocityEngine: VelocityEngine = VelocityEngine()
@@ -17,7 +17,7 @@ class TemplateWriter(private val resourcePath: Path) {
   private val properties: Properties
     get() {
       val props = Properties()
-      props["file.resource.loader.path"] = resourcePath.toAbsolutePath().toString()
+      props["resource.loader.file.path"] = resourcePath.toAbsolutePath().toString()
       props.setProperty("runtime.log.logsystem.class", "org.apache.velocity.runtime.log.NullLogSystem")
       return props
     }
