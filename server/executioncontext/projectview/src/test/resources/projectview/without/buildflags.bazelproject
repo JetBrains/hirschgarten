@@ -12,6 +12,6 @@ targets:
 
 bazel_binary: path/to/bazel
 
-build_manual_targets: false
+allow_manual_targets_sync: false
 
 import_depth: 0

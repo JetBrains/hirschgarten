@@ -28,9 +28,9 @@ kt_test(
 )
 
 kt_test(
-    name = "BuildManualTargetsSpecMapperTest",
+    name = "AllowManualTargetsSyncSpecMapperTest",
     size = "small",
-    src = "BuildManualTargetsSpecMapperTest.kt",
+    src = "AllowManualTargetsSyncSpecMapperTest.kt",
     associates = [
         "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],

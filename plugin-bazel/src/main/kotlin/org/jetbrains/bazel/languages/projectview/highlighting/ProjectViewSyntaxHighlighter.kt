@@ -35,7 +35,7 @@ object ProjectViewSyntaxHighlighter : SyntaxHighlighterBase() {
       ProjectViewTokenTypes.ANDROID_MIN_SDK_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
       ProjectViewTokenTypes.GENERATED_ANDROID_RESOURCE_DIRECTORIES_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
       ProjectViewTokenTypes.TS_CONFIG_RULES_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
-      ProjectViewTokenTypes.BUILD_MANUAL_TARGETS_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
+      ProjectViewTokenTypes.ALLOW_MANUAL_TARGETS_SYNC to ProjectViewHighlightingColors.KEYWORD,
       ProjectViewTokenTypes.ENABLED_RULES_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
       ProjectViewTokenTypes.PRODUCE_TRACE_LOG_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
       ProjectViewTokenTypes.INT to ProjectViewHighlightingColors.NUMBER,

@@ -5,9 +5,9 @@ import org.jetbrains.bsp.bazel.commons.escapeNewLines
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ExperimentalAddTransitiveCompileTimeJarsParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ExperimentalUseLibOverModSectionParser
+import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewBazelBinarySectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewBuildFlagsSectionParser
-import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewBuildManualTargetsSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewDeriveTargetsFromDirectoriesSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewDirectoriesSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewEnabledRulesSectionParser
@@ -38,7 +38,7 @@ open class DefaultProjectViewParser : ProjectViewParser {
         targets = ProjectViewTargetsSectionParser.parse(rawSections),
         bazelBinary = ProjectViewBazelBinarySectionParser.parse(rawSections),
         buildFlags = ProjectViewBuildFlagsSectionParser.parse(rawSections),
-        buildManualTargets = ProjectViewBuildManualTargetsSectionParser.parse(rawSections),
+        allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSectionParser.parse(rawSections),
         directories = ProjectViewDirectoriesSectionParser.parse(rawSections),
         deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSectionParser.parse(rawSections),
         importDepth = ProjectViewImportDepthSectionParser.parse(rawSections),

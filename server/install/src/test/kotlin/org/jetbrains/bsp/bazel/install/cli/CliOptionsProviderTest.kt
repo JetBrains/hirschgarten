@@ -398,8 +398,8 @@ class CliOptionsProviderTest {
     }
 
     @Nested
-    @DisplayName("cliOptions.projectViewCliOptions.buildManualTargets test")
-    inner class BuildManualTargetsTest {
+    @DisplayName("cliOptions.projectViewCliOptions.allowManualTargetsSync test")
+    inner class AllowManualTargetsSyncTest {
       @Test
       fun `should return success if build manual targets are specified`() {
         // given
@@ -410,8 +410,8 @@ class CliOptionsProviderTest {
         val cliOptions = provider.getOptions()
 
         // then
-        val expectedBuildManualTargets = true
-        cliOptions.projectViewCliOptions?.buildManualTargets shouldBe expectedBuildManualTargets
+        val expectedAllowManualTargetsSync = true
+        cliOptions.projectViewCliOptions?.allowManualTargetsSync shouldBe expectedAllowManualTargetsSync
       }
     }
 
@@ -426,7 +426,7 @@ class CliOptionsProviderTest {
 
       // then
 
-      cliOptions.projectViewCliOptions?.buildManualTargets shouldBe null
+      cliOptions.projectViewCliOptions?.allowManualTargetsSync shouldBe null
     }
 
     @Nested
@@ -627,7 +627,7 @@ class CliOptionsProviderTest {
       val expectedBuildFlags = listOf("--build_flag1=value1", "--build_flag1=value2", "--build_flag1=value3")
       cliOptions.projectViewCliOptions?.buildFlags shouldBe expectedBuildFlags
 
-      cliOptions.projectViewCliOptions?.buildManualTargets shouldBe true
+      cliOptions.projectViewCliOptions?.allowManualTargetsSync shouldBe true
 
       val expectedDirs =
         listOf(

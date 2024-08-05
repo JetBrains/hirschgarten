@@ -3,9 +3,9 @@ package org.jetbrains.bsp.bazel.projectview.generator
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildManualTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
@@ -37,7 +37,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = null,
@@ -71,7 +71,7 @@ class DefaultProjectViewGeneratorTest {
             ),
           bazelBinary = null,
           buildFlags = null,
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = null,
@@ -104,7 +104,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
           buildFlags = null,
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = null,
@@ -139,7 +139,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = null,
@@ -170,7 +170,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -214,7 +214,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
           importDepth = null,
@@ -242,7 +242,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = ProjectViewImportDepthSection(3),
@@ -270,7 +270,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = null,
@@ -284,7 +284,7 @@ class DefaultProjectViewGeneratorTest {
       // then
       val expectedGeneratedString =
         """
-                |build_manual_targets: true
+                |allow_manual_targets_sync: true
                 |
         """.trimMargin()
       generatedString shouldBe expectedGeneratedString
@@ -298,7 +298,7 @@ class DefaultProjectViewGeneratorTest {
           targets = ProjectViewTargetsSection(emptyList(), emptyList()),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
           buildFlags = ProjectViewBuildFlagsSection(emptyList()),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories = ProjectViewDirectoriesSection(emptyList(), emptyList()),
           deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
           importDepth = ProjectViewImportDepthSection(3),
@@ -318,7 +318,7 @@ class DefaultProjectViewGeneratorTest {
 
         build_flags:
         
-        build_manual_targets: true
+        allow_manual_targets_sync: true
         
         directories:
         
@@ -353,7 +353,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = null,
@@ -407,7 +407,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -446,7 +446,7 @@ class DefaultProjectViewGeneratorTest {
             --build_flag2=value2
             --build_flag3=value3
 
-        build_manual_targets: true
+        allow_manual_targets_sync: true
 
         directories:
             included_dir1
@@ -507,7 +507,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -546,7 +546,7 @@ class DefaultProjectViewGeneratorTest {
             --build_flag2=value2
             --build_flag3=value3
 
-        build_manual_targets: true
+        allow_manual_targets_sync: true
 
         directories:
             included_dir1
@@ -592,7 +592,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -631,7 +631,7 @@ class DefaultProjectViewGeneratorTest {
             --build_flag2=value2
             --build_flag3=value3
 
-        build_manual_targets: true
+        allow_manual_targets_sync: true
 
         directories:
             included_dir1
@@ -658,7 +658,7 @@ class DefaultProjectViewGeneratorTest {
           targets = ProjectViewTargetsSection(emptyList(), emptyList()),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
           buildFlags = ProjectViewBuildFlagsSection(emptyList()),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories = ProjectViewDirectoriesSection(emptyList(), emptyList()),
           deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
           importDepth = ProjectViewImportDepthSection(3),
@@ -678,7 +678,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
           buildFlags = null,
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories = null,
           deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
           importDepth = ProjectViewImportDepthSection(3),
@@ -713,7 +713,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories = null,
           deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
           importDepth = null,
@@ -759,7 +759,7 @@ class DefaultProjectViewGeneratorTest {
                 "--build_flag3=value3",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(false),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -796,7 +796,7 @@ class DefaultProjectViewGeneratorTest {
           targets = null,
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("/path/to/bazel")),
           buildFlags = null,
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = null,

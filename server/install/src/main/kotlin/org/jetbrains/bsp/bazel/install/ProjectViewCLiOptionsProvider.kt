@@ -5,9 +5,9 @@ import org.jetbrains.bsp.bazel.install.cli.CliOptions
 import org.jetbrains.bsp.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bsp.bazel.projectview.generator.DefaultProjectViewGenerator
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildManualTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
@@ -32,7 +32,7 @@ object ProjectViewCLiOptionsProvider {
       directories = toDirectoriesSection(projectViewCliOptions),
       deriveTargetsFromDirectories = toDeriveTargetFlagSection(projectViewCliOptions),
       importDepth = toImportDepthSection(projectViewCliOptions),
-      buildManualTargets = toBuildManualTargetsSection(projectViewCliOptions),
+      allowManualTargetsSync = toAllowManualTargetsSyncSection(projectViewCliOptions),
       enabledRules = toEnabledRulesSection(projectViewCliOptions),
       ideJavaHomeOverride = toIdeJavaHomeOverrideSection(projectViewCliOptions),
       useLibOverModSection = null, // Experimental flag, no need to be configurable via CLI
@@ -57,8 +57,8 @@ object ProjectViewCLiOptionsProvider {
     return ProjectViewTargetsSection(includedTargets, excludedTargets)
   }
 
-  private fun toBuildManualTargetsSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewBuildManualTargetsSection? =
-    projectViewCliOptions?.buildManualTargets?.let(::ProjectViewBuildManualTargetsSection)
+  private fun toAllowManualTargetsSyncSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewAllowManualTargetsSyncSection? =
+    projectViewCliOptions?.allowManualTargetsSync?.let(::ProjectViewAllowManualTargetsSyncSection)
 
   private fun toDirectoriesSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewDirectoriesSection? =
     when {

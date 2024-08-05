@@ -53,7 +53,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         .argName("targets")
         .desc(
           "Add targets to the generated project view file, you can read more about it here:" +
-            " https://github.com/JetBrains/bazel-bsp/tree/master/executioncontext/projectview#targets.",
+            " https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#targets",
         ).build()
     cliParserOptions.addOption(targetsOption)
 
@@ -65,7 +65,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         .argName("excluded targets")
         .desc(
           "Add excluded targets to the generated project view file, you can read more about it here:" +
-            " https://github.com/JetBrains/bazel-bsp/tree/master/executioncontext/projectview#targets.",
+            " https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#targets",
         ).build()
     cliParserOptions.addOption(excludedTargetsOption)
 
@@ -77,7 +77,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         .argName("flags")
         .desc(
           "Add build flags to the generated project view file, you can read more about it here:" +
-            " https://github.com/JetBrains/bazel-bsp/tree/master/executioncontext/projectview#build_flags.",
+            " https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#build_flags",
         ).build()
     cliParserOptions.addOption(buildFlagsOption)
 
@@ -89,7 +89,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         .argName("path")
         .desc(
           "Add bazel path to the generated project view file, you can read more about it here: " +
-            "https://github.com/JetBrains/bazel-bsp/tree/master/executioncontext/projectview#bazel_binary.",
+            "https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#bazel_binary",
         ).build()
     cliParserOptions.addOption(bazelBinaryOption)
 
@@ -116,10 +116,10 @@ class CliOptionsProvider(private val args: Array<String>) {
     val manualTargetsOption =
       Option
         .builder(BUILD_MANUAL_TARGETS_OPT)
-        .longOpt("build-manual-targets")
+        .longOpt("allow-manual-targets-sync")
         .desc(
           "Add build manual target to the generated project view file, you can read more about it here: " +
-            "https://github.com/JetBrains/bazel-bsp/tree/master/executioncontext/projectview#build_manual_targets.",
+            "https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#allow_manual_targets_sync",
         ).build()
     cliParserOptions.addOption(manualTargetsOption)
 
@@ -131,7 +131,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         .argName("directories")
         .desc(
           "Add directories to the generated project view file, you can read more about it here: " +
-            "https://github.com/JetBrains/bazel-bsp/tree/master/executioncontext/projectview#directories.",
+            "https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#directories",
         ).build()
     cliParserOptions.addOption(directoriesOption)
 
@@ -143,7 +143,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         .argName("excluded directories")
         .desc(
           "Add excluded directories to the generated project view file, you can read more about it here: " +
-            "https://github.com/JetBrains/bazel-bsp/tree/master/executioncontext/projectview#directories.",
+            "https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#directories",
         ).build()
     cliParserOptions.addOption(excludedDirectoriesOption)
 
@@ -153,7 +153,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         .longOpt("derive-targets-from-directories")
         .desc(
           "Add derive_targets_from_directories to the generated project view file, you can read more about it here: " +
-            "https://github.com/JetBrains/bazel-bsp/tree/master/executioncontext/projectview#derive_targets_from_directories.",
+            "https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#derive_targets_from_directories",
         ).build()
     cliParserOptions.addOption(deriveTargetsFromDirectoriesOption)
 
@@ -165,7 +165,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         .argName("value")
         .desc(
           "Add import depth to to the generated project view file, you can read more about it here:" +
-            " https://github.com/JetBrains/bazel-bsp/tree/master/executioncontext/projectview#import_depth.",
+            " https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#import_depth",
         ).build()
     cliParserOptions.addOption(importDepthOption)
 
@@ -252,7 +252,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         targets = targets(cmd),
         excludedTargets = excludedTargets(cmd),
         buildFlags = buildFlags(cmd),
-        buildManualTargets = buildManualTargets(cmd),
+        allowManualTargetsSync = allowManualTargetsSync(cmd),
         directories = directories(cmd),
         excludedDirectories = excludedDirectories(cmd),
         deriveTargetsFromDirectories = deriveTargetsFlag(cmd),
@@ -292,7 +292,7 @@ class CliOptionsProvider(private val args: Array<String>) {
 
   private fun debuggerAddress(cmd: CommandLine): String? = cmd.getOptionValue(DEBUGGER_ADDRESS_SHORT_OPT)
 
-  private fun buildManualTargets(cmd: CommandLine): Boolean = cmd.hasOption(BUILD_MANUAL_TARGETS_OPT)
+  private fun allowManualTargetsSync(cmd: CommandLine): Boolean = cmd.hasOption(BUILD_MANUAL_TARGETS_OPT)
 
   private fun importDepth(cmd: CommandLine): Int? = cmd.getOptionValue(IMPORT_DEPTH_SHORT_OPT)?.toInt()
 

@@ -3,8 +3,8 @@ package org.jetbrains.bsp.bazel.projectview.parser.sections
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalUseLibOverModSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildManualTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
@@ -63,11 +63,13 @@ object ProjectViewDeriveTargetsFromDirectoriesSectionParser :
     ProjectViewDeriveTargetsFromDirectoriesSection(value)
 }
 
-object ProjectViewBuildManualTargetsSectionParser :
-  ProjectViewSingletonSectionParser<Boolean, ProjectViewBuildManualTargetsSection>(ProjectViewBuildManualTargetsSection.SECTION_NAME) {
+object ProjectViewAllowManualTargetsSyncSectionParser :
+  ProjectViewSingletonSectionParser<Boolean, ProjectViewAllowManualTargetsSyncSection>(
+    ProjectViewAllowManualTargetsSyncSection.SECTION_NAME,
+  ) {
   override fun mapRawValue(rawValue: String): Boolean = rawValue.toBoolean()
 
-  override fun createInstance(value: Boolean): ProjectViewBuildManualTargetsSection = ProjectViewBuildManualTargetsSection(value)
+  override fun createInstance(value: Boolean): ProjectViewAllowManualTargetsSyncSection = ProjectViewAllowManualTargetsSyncSection(value)
 }
 
 object ProjectViewImportDepthSectionParser :

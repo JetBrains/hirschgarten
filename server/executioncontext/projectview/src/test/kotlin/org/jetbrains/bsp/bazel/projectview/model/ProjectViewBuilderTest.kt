@@ -2,9 +2,9 @@ package org.jetbrains.bsp.bazel.projectview.model
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildManualTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
@@ -33,7 +33,7 @@ class ProjectViewBuilderTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = null,
@@ -67,7 +67,7 @@ class ProjectViewBuilderTest {
               ),
             bazelBinary = ProjectViewBazelBinarySection(Paths.get("path/to/bazel")),
             buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag1=value1", "--build_flag2=value2")),
-            buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+            allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
                 listOf(
@@ -98,7 +98,7 @@ class ProjectViewBuilderTest {
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("path/to/bazel")),
           buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag1=value1", "--build_flag2=value2")),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -138,7 +138,7 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag1=value1", "--build_flag2=value2"),
               ),
-            buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+            allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
                 listOf(
@@ -172,7 +172,7 @@ class ProjectViewBuilderTest {
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("path/to/bazel")),
           buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag1=value1", "--build_flag2=value2")),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -209,7 +209,7 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag1=value1", "--build_flag2=value2"),
               ),
-            buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+            allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
                 listOf(
@@ -233,7 +233,7 @@ class ProjectViewBuilderTest {
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("path/to/bazel")),
           buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag1=value1", "--build_flag2=value2")),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -273,7 +273,7 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag1.1=value1.1", "--build_flag1.2=value1.2"),
               ),
-            buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+            allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
                 listOf(
@@ -309,7 +309,7 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag2.1=value2.1", "--build_flag2.2=value2.2"),
               ),
-            buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+            allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
                 listOf(
@@ -353,7 +353,7 @@ class ProjectViewBuilderTest {
                 "--build_flag2.2=value2.2",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -399,7 +399,7 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag1.1=value1.1", "--build_flag1.2=value1.2"),
               ),
-            buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+            allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
                 listOf(
@@ -537,7 +537,7 @@ class ProjectViewBuilderTest {
                 "--build_flag4.2=value4.2",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -589,7 +589,7 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag1.1=value1.1", "--build_flag1.2=value1.2"),
               ),
-            buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+            allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
                 listOf(
@@ -639,7 +639,7 @@ class ProjectViewBuilderTest {
               ),
             bazelBinary = ProjectViewBazelBinarySection(Paths.get("imported3/path/to/bazel")),
             buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag3.1=value3.1")),
-            buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+            allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
                 listOf(
@@ -727,7 +727,7 @@ class ProjectViewBuilderTest {
                 "--build_flag4.2=value4.2",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(

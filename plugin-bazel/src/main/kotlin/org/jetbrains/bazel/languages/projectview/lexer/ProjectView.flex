@@ -56,7 +56,7 @@ ESCAPE_SEQUENCE = \\[^]
 "android_min_sdk"                        { return ProjectViewTokenTypes.ANDROID_MIN_SDK_KEYWORD; }
 "generated_android_resource_directories" { return ProjectViewTokenTypes.GENERATED_ANDROID_RESOURCE_DIRECTORIES_KEYWORD; }
 "ts_config_rules"                        { return ProjectViewTokenTypes.TS_CONFIG_RULES_KEYWORD; }
-"build_manual_targets"                   { return ProjectViewTokenTypes.BUILD_MANUAL_TARGETS_KEYWORD; }
+"allow_manual_targets_sync"              { return ProjectViewTokenTypes.ALLOW_MANUAL_TARGETS_SYNC; }
 "enabled_rules"                          { return ProjectViewTokenTypes.ENABLED_RULES_KEYWORD; }
 "produce_trace_log"                      { return ProjectViewTokenTypes.PRODUCE_TRACE_LOG_KEYWORD; }
 

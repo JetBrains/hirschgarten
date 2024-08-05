@@ -125,7 +125,8 @@ class ProjectResolver(
           }
     }.toList()
 
-  private fun WorkspaceContext.shouldAddBuildAffectingFlags(willBeBuilt: Boolean): Boolean = this.buildManualTargets.value || !willBeBuilt
+  private fun WorkspaceContext.shouldAddBuildAffectingFlags(willBeBuilt: Boolean): Boolean =
+    this.allowManualTargetsSync.value || !willBeBuilt
 
   fun releaseMemory() {
     bazelPathsResolver.clear()

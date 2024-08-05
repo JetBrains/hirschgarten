@@ -4,9 +4,9 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildManualTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
@@ -109,14 +109,14 @@ class DefaultProjectViewParserTest {
     @Test
     fun `should return empty build manual targets section for file without build manual targets section`() {
       // given
-      val projectViewFilePath = Path("/projectview/without/build_manual_targets.bazelproject")
+      val projectViewFilePath = Path("/projectview/without/allow_manual_targets_sync.bazelproject")
 
       // when
       val projectView = parser.parse(projectViewFilePath)
 
       // then
 
-      projectView.buildManualTargets shouldBe null
+      projectView.allowManualTargetsSync shouldBe null
     }
 
     @Test
@@ -160,7 +160,7 @@ class DefaultProjectViewParserTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = null,
@@ -201,7 +201,7 @@ class DefaultProjectViewParserTest {
                 "--build_flag1.2=value1.2",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(false),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -256,7 +256,7 @@ class DefaultProjectViewParserTest {
                 "--build_flag4.3=value4.3",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(false),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -315,7 +315,7 @@ class DefaultProjectViewParserTest {
                 "--build_flag7.3=value7.3",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -363,7 +363,7 @@ class DefaultProjectViewParserTest {
                 "--build_flag8.3=value8.3",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(true),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -422,7 +422,7 @@ class DefaultProjectViewParserTest {
                 "--build_flag5.2=value5.2",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(false),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -487,7 +487,7 @@ class DefaultProjectViewParserTest {
                 "--build_flag4.3=value4.3",
               ),
             ),
-          buildManualTargets = ProjectViewBuildManualTargetsSection(false),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
           directories =
             ProjectViewDirectoriesSection(
               listOf(
@@ -528,7 +528,7 @@ class DefaultProjectViewParserTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
-          buildManualTargets = null,
+          allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
           importDepth = null,

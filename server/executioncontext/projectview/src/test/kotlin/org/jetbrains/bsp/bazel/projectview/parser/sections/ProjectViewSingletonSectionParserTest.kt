@@ -3,8 +3,8 @@ package org.jetbrains.bsp.bazel.projectview.parser.sections
 import io.kotest.assertions.throwables.shouldNotThrowAnyUnit
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildManualTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSection
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
@@ -22,7 +22,7 @@ class ProjectViewSingletonSectionParserTest<V, T : ProjectViewSingletonSection<V
     fun data(): List<Arguments> =
       listOf(
         bazelBinarySectionArguments(),
-        buildManualTargetsSectionArguments(),
+        allowManualTargetsSyncSectionArguments(),
       )
 
     private fun bazelBinarySectionArguments(): Arguments {
@@ -39,14 +39,14 @@ class ProjectViewSingletonSectionParserTest<V, T : ProjectViewSingletonSection<V
       return Arguments.of(parser, rawValueConstructor, sectionConstructor, sectionName)
     }
 
-    private fun buildManualTargetsSectionArguments(): Arguments {
-      val parser = ProjectViewBuildManualTargetsSectionParser
+    private fun allowManualTargetsSyncSectionArguments(): Arguments {
+      val parser = ProjectViewAllowManualTargetsSyncSectionParser
       val rawValueConstructor = { _: String -> "false" }
       val sectionConstructor =
         createSectionConstructor(
           rawValueConstructor,
           { value: Boolean ->
-            ProjectViewBuildManualTargetsSection(
+            ProjectViewAllowManualTargetsSyncSection(
               value,
             )
           },
