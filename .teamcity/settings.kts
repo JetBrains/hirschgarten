@@ -28,8 +28,12 @@ object ProjectTriggerRules {
     +:/server/**
     +:*
     -:**.md
+    -:**.txt
     -:**.yml
+    -:**.yaml
     -:LICENSE
+    -:LICENCE
+    -:CODEOWNERS
     -:/.teamcity/**
     """.trimIndent()
 
@@ -38,8 +42,12 @@ object ProjectTriggerRules {
     +:/plugin-bsp/**
     +:*
     -:**.md
+    -:**.txt
     -:**.yml
+    -:**.yaml
     -:LICENSE
+    -:LICENCE
+    -:CODEOWNERS
     -:/.teamcity/**
     """.trimIndent()
 
@@ -48,8 +56,12 @@ object ProjectTriggerRules {
     +:/plugin-bazel/**
     +:*
     -:**.md
+    -:**.txt
     -:**.yml
+    -:**.yaml
     -:LICENSE
+    -:LICENCE
+    -:CODEOWNERS
     -:/.teamcity/**
     """.trimIndent()
 
@@ -57,8 +69,12 @@ object ProjectTriggerRules {
     """
     +:/rules_intellij/**
     -:**.md
+    -:**.txt
     -:**.yml
+    -:**.yaml
     -:LICENSE
+    -:LICENCE
+    -:CODEOWNERS
     -:/.teamcity/**
     """.trimIndent()
 }
@@ -74,7 +90,11 @@ project {
     """
     +:*
     -:**.md
+    -:**.txt
     -:LICENSE
+    -:LICENSE
+    -:LICENCE
+    -:CODEOWNERS
     """.trimIndent()
 
   buildType(BazelFormat.GitHub)
