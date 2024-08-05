@@ -1,0 +1,11 @@
+<application>
+    <component name="UpdatesConfigurable">
+        <option name="LAST_BUILD_CHECKED" value="IU-242.20224.159" />
+        <option name="LAST_TIME_CHECKED" value="1722707168175" />
+        <option name="OBSOLETE_CUSTOM_REPOSITORIES_CLEAN_NEEDED" value="false" />
+        <pluginHosts>
+            <item value="https://plugins.jetbrains.com/plugins/nightly/20329" />
+            <item value="https://plugins.jetbrains.com/plugins/nightly/22977" />
+        </pluginHosts>
+    </component>
+</application>
