@@ -79,9 +79,12 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
 
 internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<Path> =
   sourceRoots
+    .asSequence()
+    .filter { !it.generated }
     .mapNotNull {
       restoreSourceRootFromPackagePrefix(it)
     }.distinct()
+    .toList()
 
 private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): Path? {
   if (sourceRoot.sourcePath.isDirectory()) return null
@@ -92,16 +95,13 @@ private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): Path
 }
 
 internal fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<Path>, projectBasePath: Path): List<String> =
-  dummyJavaModuleSourceRoots.mapNotNull { calculateDummyJavaModuleName(it, projectBasePath) }
+  dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it, projectBasePath) }
 
-internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String? {
-  val absoluteSourceRoot = sourceRoot.toAbsolutePath()
-  val absoluteProjectBasePath = projectBasePath.toAbsolutePath()
-  // Don't create dummy Java modules for source roots outside the project directory so that they aren't indexed
-  if (!absoluteSourceRoot.startsWith(absoluteProjectBasePath)) return null
+internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
+  val absoluteSourceRoot = sourceRoot.toAbsolutePath().toString()
+  val absoluteProjectBasePath = projectBasePath.toAbsolutePath().toString()
   return absoluteSourceRoot
-    .toString()
-    .substringAfter(absoluteProjectBasePath.toString())
+    .substringAfter(absoluteProjectBasePath)
     .trim { it == File.separatorChar }
     .replaceDots()
     .replace(File.separator, ".")
