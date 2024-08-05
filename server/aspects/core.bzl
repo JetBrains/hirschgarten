@@ -69,8 +69,19 @@ def _get_forwarded_deps(target, ctx):
         return collect_targets_from_attrs(ctx.rule.attr, ["deps"])
     return []
 
+def _is_analysis_test(target):
+    """Returns if the target is an analysis test.
+
+    Rules created with analysis_test=True cannot create write actions, so the
+    aspect should skip them.
+    """
+    return AnalysisTestResultInfo in target
+
+
 def _bsp_target_info_aspect_impl(target, ctx):
     if target.label.name.endswith(".semanticdb"):
+        return []
+    if _is_analysis_test(target):
         return []
 
     rule_attrs = ctx.rule.attr
