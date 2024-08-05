@@ -56,6 +56,6 @@ import_depth: 0
 build_flags:
 
 # Flag specifying if targets with `manual` tag should be built.
-build_manual_targets: false
+allow_manual_targets_sync: false
 
-# For more information on these options, see https://github.com/JetBrains/bazel-bsp/blob/master/executioncontext/projectview/README.md
+# For more information on these options, see https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md

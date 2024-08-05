@@ -231,15 +231,17 @@ class ExecuteService(
   private fun selectModules(cancelChecker: CancelChecker, targets: List<BuildTargetIdentifier>): List<Module> {
     val project = projectProvider.get(cancelChecker)
     val modules = BspMappings.getModules(project, targets)
-    return modules.filter { isBuildable(it) }
+    val ignoreManualTag = targets.size == 1
+    return modules.filter { isBuildable(it, ignoreManualTag) }
   }
 
-  private fun isBuildable(m: Module): Boolean = !m.isSynthetic && !m.tags.contains(Tag.NO_BUILD) && isBuildableIfManual(m)
+  private fun isBuildable(m: Module, ignoreManualTag: Boolean = true): Boolean =
+    !m.isSynthetic && !m.tags.contains(Tag.NO_BUILD) && (ignoreManualTag || isBuildableIfManual(m))
 
   private fun isBuildableIfManual(m: Module): Boolean =
     (
       !m.tags.contains(Tag.MANUAL) ||
-        workspaceContextProvider.currentWorkspaceContext().buildManualTargets.value
+        workspaceContextProvider.currentWorkspaceContext().allowManualTargetsSync.value
     )
 }
 

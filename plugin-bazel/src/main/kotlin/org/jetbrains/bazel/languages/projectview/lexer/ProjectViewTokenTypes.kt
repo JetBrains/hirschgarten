@@ -22,7 +22,7 @@ object ProjectViewTokenTypes {
   @JvmField
   val BOOL = ProjectViewTokenType("BOOL")
 
-  // Keywords: https://github.com/JetBrains/bazel-bsp/blob/master/executioncontext/projectview/README.md
+  // Keywords: https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md
   @JvmField
   val IMPORT_KEYWORD = ProjectViewTokenType("import")
 
@@ -87,7 +87,7 @@ object ProjectViewTokenTypes {
   val TS_CONFIG_RULES_KEYWORD = ProjectViewTokenType("ts_config_rules")
 
   @JvmField
-  val BUILD_MANUAL_TARGETS_KEYWORD = ProjectViewTokenType("build_minimal_targets")
+  val ALLOW_MANUAL_TARGETS_SYNC = ProjectViewTokenType("allow_manual_targets_sync")
 
   @JvmField
   val ENABLED_RULES_KEYWORD = ProjectViewTokenType("enabled_rules")

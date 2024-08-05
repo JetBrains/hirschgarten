@@ -1441,7 +1441,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           BuildTargetIdentifier("scala-reflect-2.12.14.jar"),
         ),
         BuildTargetCapabilities().also {
-          it.canCompile = false
+          it.canCompile = true
           it.canTest = false
           it.canRun = false
           it.canDebug = false
@@ -1459,7 +1459,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("java"),
         emptyList(),
         BuildTargetCapabilities().also {
-          it.canCompile = false
+          it.canCompile = true
           it.canTest = false
           it.canRun = false
           it.canDebug = false
@@ -1481,10 +1481,10 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           BuildTargetIdentifier("scala-reflect-2.12.14.jar"),
         ),
         BuildTargetCapabilities().also {
-          it.canCompile = false
+          it.canCompile = true
           it.canTest = false
-          it.canRun = false
-          it.canDebug = false
+          it.canRun = true
+          it.canDebug = true
         },
       )
     manualTargetScalaBinary.displayName = "$targetPrefix//manual_target:scala_binary"
@@ -1499,10 +1499,10 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("java"),
         emptyList(),
         BuildTargetCapabilities().also {
-          it.canCompile = false
+          it.canCompile = true
           it.canTest = false
-          it.canRun = false
-          it.canDebug = false
+          it.canRun = true
+          it.canDebug = true
         },
       )
     manualTargetJavaBinary.displayName = "$targetPrefix//manual_target:java_binary"
@@ -1521,10 +1521,10 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           BuildTargetIdentifier("scala-reflect-2.12.14.jar"),
         ),
         BuildTargetCapabilities().also {
-          it.canCompile = false
-          it.canTest = false
+          it.canCompile = true
+          it.canTest = true
           it.canRun = false
-          it.canDebug = false
+          it.canDebug = true
         },
       )
     manualTargetScalaTest.displayName = "$targetPrefix//manual_target:scala_test"
@@ -1539,10 +1539,10 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("java"),
         emptyList(),
         BuildTargetCapabilities().also {
-          it.canCompile = false
-          it.canTest = false
+          it.canCompile = true
+          it.canTest = true
           it.canRun = false
-          it.canDebug = false
+          it.canDebug = true
         },
       )
     manualTargetJavaTest.displayName = "$targetPrefix//manual_target:java_test"

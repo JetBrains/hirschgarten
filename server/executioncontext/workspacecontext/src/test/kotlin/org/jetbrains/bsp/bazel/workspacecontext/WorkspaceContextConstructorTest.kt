@@ -3,9 +3,9 @@ package org.jetbrains.bsp.bazel.workspacecontext
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildManualTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
@@ -57,7 +57,7 @@ class WorkspaceContextConstructorTest {
                 ),
               ),
             bazelBinary = ProjectViewBazelBinarySection(Path("/path/to/bazel")),
-            buildManualTargets = ProjectViewBuildManualTargetsSection(false),
+            allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
             importDepth = ProjectViewImportDepthSection(3),
             enabledRules = ProjectViewEnabledRulesSection(listOf("rules_scala")),
           ).build()
@@ -106,8 +106,8 @@ class WorkspaceContextConstructorTest {
       val expectedDotBazelBspDirPathSpec = DotBazelBspDirPathSpec(workspaceRoot.toAbsolutePath().resolve(".bazelbsp"))
       workspaceContext.dotBazelBspDirPath shouldBe expectedDotBazelBspDirPathSpec
 
-      val expectedBuildManualTargetsSpec = BuildManualTargetsSpec(false)
-      workspaceContext.buildManualTargets shouldBe expectedBuildManualTargetsSpec
+      val expectedAllowManualTargetsSyncSpec = AllowManualTargetsSyncSpec(false)
+      workspaceContext.allowManualTargetsSync shouldBe expectedAllowManualTargetsSyncSpec
 
       val expectedImportDepthSpec = ImportDepthSpec(3)
       workspaceContext.importDepth shouldBe expectedImportDepthSpec

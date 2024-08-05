@@ -243,7 +243,7 @@ _We are working on it, you can expect support for this section in future release
 
 ---
 
-#### build_manual_targets
+#### allow_manual_targets_sync
 
 A flag specifying if targets with `manual` tag should be built.
 Flag is boolean value, so it can take either true or false. In the first case targets with `manual` tag will be build,
@@ -251,8 +251,8 @@ otherwise they will not.
 
 ##### example:
 
-build_manual_targets: true
+allow_manual_targets_sync: true
 
 ##### default:
 
-build_manual_targets: false
+allow_manual_targets_sync: false

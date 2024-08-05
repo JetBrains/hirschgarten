@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.projectview.generator.sections
 
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildManualTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
@@ -17,7 +17,7 @@ abstract class ProjectViewSingletonSectionGenerator<in T : ProjectViewSingletonS
 
 object ProjectViewBazelBinarySectionGenerator : ProjectViewSingletonSectionGenerator<ProjectViewBazelBinarySection>()
 
-object ProjectViewBuildManualTargetsSectionGenerator : ProjectViewSingletonSectionGenerator<ProjectViewBuildManualTargetsSection>()
+object ProjectViewAllowManualTargetsSyncSectionGenerator : ProjectViewSingletonSectionGenerator<ProjectViewAllowManualTargetsSyncSection>()
 
 object ProjectViewDeriveTargetsFromDirectoriesSectionGenerator : ProjectViewSingletonSectionGenerator<ProjectViewDeriveTargetsFromDirectoriesSection>()
 

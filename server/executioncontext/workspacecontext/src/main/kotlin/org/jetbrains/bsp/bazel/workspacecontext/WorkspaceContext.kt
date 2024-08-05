@@ -43,9 +43,9 @@ data class WorkspaceContext(
   /**
    * If true targets with `manual` tag will be built
    *
-   * Obtained from `ProjectView` simply by mapping 'build_manual_targets' section.
+   * Obtained from `ProjectView` simply by mapping 'allow_manual_targets_sync' section.
    */
-  val buildManualTargets: BuildManualTargetsSpec,
+  val allowManualTargetsSync: AllowManualTargetsSyncSpec,
   /**
    * Path to the `.bazelbsp` dir in the project root
    *
@@ -88,7 +88,7 @@ class WorkspaceContextConstructor(workspaceRoot: Path) : ExecutionContextConstru
       directories = directoriesSpecExtractor.fromProjectView(projectView),
       buildFlags = BuildFlagsSpecExtractor.fromProjectView(projectView),
       bazelBinary = BazelBinarySpecExtractor.fromProjectView(projectView),
-      buildManualTargets = BuildManualTargetsSpecExtractor.fromProjectView(projectView),
+      allowManualTargetsSync = AllowManualTargetsSyncSpecExtractor.fromProjectView(projectView),
       dotBazelBspDirPath = dotBazelBspDirPathSpecExtractor.fromProjectView(projectView),
       importDepth = ImportDepthSpecExtractor.fromProjectView(projectView),
       enabledRules = EnabledRulesSpecExtractor.fromProjectView(projectView),

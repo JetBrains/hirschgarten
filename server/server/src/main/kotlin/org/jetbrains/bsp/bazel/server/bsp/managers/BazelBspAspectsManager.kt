@@ -63,9 +63,9 @@ class BazelBspAspectsManager(
         color(true),
         curses(false),
       )
-    val buildManualTargetsFlags = if (shouldBuildManualFlags) listOf(buildManualTests()) else emptyList()
+    val allowManualTargetsSyncFlags = if (shouldBuildManualFlags) listOf(buildManualTests()) else emptyList()
 
-    val flagsToUse = defaultFlags + buildManualTargetsFlags
+    val flagsToUse = defaultFlags + allowManualTargetsSyncFlags
 
     return bazelBspCompilationManager
       .buildTargetsWithBep(

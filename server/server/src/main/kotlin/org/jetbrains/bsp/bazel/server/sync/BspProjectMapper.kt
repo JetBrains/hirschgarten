@@ -224,9 +224,9 @@ class BspProjectMapper(
   }
 
   private fun inferCapabilities(module: Module): BuildTargetCapabilities {
-    val canCompile = !module.tags.contains(Tag.NO_BUILD) && isBuildableIfManual(module)
-    val canTest = module.tags.contains(Tag.TEST) && !module.tags.contains(Tag.MANUAL)
-    val canRun = module.tags.contains(Tag.APPLICATION) && !module.tags.contains(Tag.MANUAL)
+    val canCompile = !module.tags.contains(Tag.NO_BUILD)
+    val canTest = module.tags.contains(Tag.TEST)
+    val canRun = module.tags.contains(Tag.APPLICATION)
     val canDebug = canRun || canTest // runnable and testable targets should be debuggable
     return BuildTargetCapabilities().also {
       it.canCompile = canCompile
@@ -235,12 +235,6 @@ class BspProjectMapper(
       it.canDebug = canDebug
     }
   }
-
-  private fun isBuildableIfManual(module: Module): Boolean =
-    (
-      !module.tags.contains(Tag.MANUAL) ||
-        workspaceContextProvider.currentWorkspaceContext().buildManualTargets.value
-    )
 
   private fun applyLanguageData(module: Module, buildTarget: BuildTarget) {
     val plugin = languagePluginsService.getPlugin(module.languages)

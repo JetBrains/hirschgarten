@@ -19,9 +19,9 @@ data class ProjectViewBazelBinarySection(override val value: Path) : ProjectView
   }
 }
 
-data class ProjectViewBuildManualTargetsSection(override val value: Boolean) : ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
+data class ProjectViewAllowManualTargetsSyncSection(override val value: Boolean) : ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
   companion object {
-    const val SECTION_NAME = "build_manual_targets"
+    const val SECTION_NAME = "allow_manual_targets_sync"
   }
 }
 
