@@ -97,6 +97,14 @@ bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_python", version = "0.34.0")
 
+# Needed for codecanvas
+python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
+python.toolchain(
+    ignore_root_user_error = True,
+    is_default = True,
+    python_version = "3.12",
+)
+
 bazel_dep(
     name = "bsp-testkit2",
     dev_dependency = True,
