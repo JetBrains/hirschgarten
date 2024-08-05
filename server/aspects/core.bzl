@@ -77,7 +77,6 @@ def _is_analysis_test(target):
     """
     return AnalysisTestResultInfo in target
 
-
 def _bsp_target_info_aspect_impl(target, ctx):
     if target.label.name.endswith(".semanticdb"):
         return []
