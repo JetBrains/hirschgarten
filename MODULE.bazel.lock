@@ -152,31 +152,6 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
-    "//server:non_module_deps.bzl%bazel_bep": {
-      "general": {
-        "bzlTransitiveDigest": "Kvc9vnfm7XE2Dg1jo6jTK0IrOhQAKuBRFTtFBbDU+II=",
-        "usagesDigest": "OQNnXG7uXtvhC7XtMI7LMnEEvov20pNjLBF27t/GLjo=",
-        "recordedFileInputs": {},
-        "recordedDirentsInputs": {},
-        "envVariables": {},
-        "generatedRepoSpecs": {
-          "bazel_bep": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
-            "ruleClassName": "http_jar",
-            "attributes": {
-              "url": "https://github.com/agluszak/bazel-bep-proto/releases/download/5.4.1/bazel-bep-protobuf.jar"
-            }
-          }
-        },
-        "recordedRepoMappingEntries": [
-          [
-            "",
-            "bazel_tools",
-            "bazel_tools"
-          ]
-        ]
-      }
-    },
     "@@apple_support~//crosstool:setup.bzl%apple_cc_configure_extension": {
       "general": {
         "bzlTransitiveDigest": "PjIds3feoYE8SGbbIq2SFTZy3zmxeO2tQevJZNDo7iY=",

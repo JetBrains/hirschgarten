@@ -2,6 +2,8 @@ module(
     name = "hirschgarten",
 )
 
+http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+
 bazel_dep(
     name = "rules_intellij",
 )
@@ -86,13 +88,15 @@ use_repo(
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 
 # Required until Bazel repo upstreams it's rules_jvm_external fix and there's a new release
-bazel_bep = use_extension("//server:non_module_deps.bzl", "bazel_bep")
-use_repo(
-    bazel_bep,
-    "bazel_bep",
+BAZEL_BEP_VERSION = "5.4.1"
+
+http_jar(
+    name = "bazel_bep",
+    integrity = "sha256-z7XAsDOW3Ha8zrcg1ZP/8+7Azg4MNzUFQAtUBvjl75U=",
+    url = "https://github.com/agluszak/bazel-bep-proto/releases/download/%s/bazel-bep-protobuf.jar" % BAZEL_BEP_VERSION,
 )
 
-bazel_dep(name = "rules_proto", version = "5.3.0-21.7")
+bazel_dep(name = "rules_proto", version = "6.0.0")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_python", version = "0.34.0")
@@ -129,14 +133,10 @@ single_version_override(
     version = "1.0.0-rc6",
 )
 
-http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
-
 http_jar(
     name = "ktfmt",
     url = "https://repo1.maven.org/maven2/com/facebook/ktfmt/0.51/ktfmt-0.51-jar-with-dependencies.jar",
 )
-
-http_file = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_file")
 
 http_jar(
     name = "ktlint",
