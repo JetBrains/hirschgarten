@@ -30,5 +30,8 @@ public object BspFeatureFlags {
     get() = Registry.`is`(RETRIEVE_TARGETS_FOR_FILE_FROM_ANCESTORS)
 
   public val isWrapLibrariesInsideModulesEnabled: Boolean
-    get() = Registry.`is`(WRAP_LIBRARIES_INSIDE_MODULES)
+    get() = Registry.`is`(WRAP_LIBRARIES_INSIDE_MODULES) || isKotlinPluginK2Mode
+
+  internal val isKotlinPluginK2Mode: Boolean
+    get() = System.getProperty("idea.kotlin.plugin.use.k2", "false").toBoolean()
 }
