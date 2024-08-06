@@ -163,7 +163,7 @@ object ServerGitHub : Project({
         buildType(BazelE2eTests.AndroidKotlinProjectGitHub)
         buildType(BazelE2eTests.ScalaProjectGitHub)
         buildType(BazelE2eTests.KotlinProjectGitHub)
-        buildType(BazelE2ePluginTests.GitHub)
+//        buildType(BazelE2ePluginTests.GitHub)
         buildType(BazelBenchmark.GitHub)
       }
 
@@ -175,6 +175,14 @@ object ServerGitHub : Project({
 
   // initialize all build steps for bazel-bsp
   allSteps.forEach { buildType(it) }
+
+  // add plugin BSP plugin benchmark as dependency
+  allSteps.last().dependencies {
+    snapshot(IntellijBenchmark.GitHub) {
+      onDependencyFailure = FailureAction.ADD_PROBLEM
+      onDependencyCancel = FailureAction.ADD_PROBLEM
+    }
+  }
 
   // make all the builds depend on formater
   allSteps.dropLast(1).forEach {
@@ -207,7 +215,7 @@ object ServerGitHub : Project({
       RelativeId("GitHubE2eTestsServerE2eAndroidProjectTest"),
       RelativeId("GitHubE2eTestsServerE2eAndroidKotlinProjectTest"),
       RelativeId("GitHubE2eTestsServerE2eEnabledRulesTest"),
-      RelativeId("GitHubE2eTestsServerPluginRun"),
+//      RelativeId("GitHubE2eTestsServerPluginRun"),
       RelativeId("GitHubBenchmarkServer10targets"),
       RelativeId("GitHubServerResults"),
     )
@@ -236,7 +244,7 @@ object ServerSpace : Project({
         buildType(BazelE2eTests.AndroidKotlinProjectSpace)
         buildType(BazelE2eTests.ScalaProjectSpace)
         buildType(BazelE2eTests.KotlinProjectSpace)
-        buildType(BazelE2ePluginTests.Space)
+//        buildType(BazelE2ePluginTests.Space)
         buildType(BazelBenchmark.Space)
       }
 
@@ -248,6 +256,14 @@ object ServerSpace : Project({
 
   // initialize all build steps for bazel-bsp
   allSteps.forEach { buildType(it) }
+
+  // add plugin BSP plugin benchmark as dependency
+  allSteps.last().dependencies {
+    snapshot(IntellijBenchmark.Space) {
+      onDependencyFailure = FailureAction.ADD_PROBLEM
+      onDependencyCancel = FailureAction.ADD_PROBLEM
+    }
+  }
 
   // make all the builds depend on formater
   allSteps.dropLast(1).forEach {
@@ -280,7 +296,7 @@ object ServerSpace : Project({
       RelativeId("SpaceE2eTestsServerE2eAndroidProjectTest"),
       RelativeId("SpaceE2eTestsServerE2eAndroidKotlinProjectTest"),
       RelativeId("SpaceE2eTestsServerE2eEnabledRulesTest"),
-      RelativeId("SpaceE2eTestsServerPluginRun"),
+//      RelativeId("SpaceE2eTestsServerPluginRun"),
       RelativeId("SpaceBenchmarkServer10targets"),
       RelativeId("SpaceServerResults"),
     )
@@ -442,6 +458,14 @@ object PluginBazelGitHub : Project({
   // initialize all build steps for intellij-bsp
   allSteps.forEach { buildType(it) }
 
+  // add plugin BSP plugin benchmark as dependency
+  allSteps.last().dependencies {
+    snapshot(IntellijBenchmark.GitHub) {
+      onDependencyFailure = FailureAction.ADD_PROBLEM
+      onDependencyCancel = FailureAction.ADD_PROBLEM
+    }
+  }
+
   // make all the builds depend on formater
   allSteps.dropLast(1).forEach {
     it.dependencies {
@@ -495,6 +519,14 @@ object PluginBazelSpace : Project({
 
   // initialize all build steps for intellij-bsp
   allSteps.forEach { buildType(it) }
+
+  // add plugin BSP plugin benchmark as dependency
+  allSteps.last().dependencies {
+    snapshot(IntellijBenchmark.Space) {
+      onDependencyFailure = FailureAction.ADD_PROBLEM
+      onDependencyCancel = FailureAction.ADD_PROBLEM
+    }
+  }
 
   // make all the builds depend on formatter
   allSteps.dropLast(1).forEach {
