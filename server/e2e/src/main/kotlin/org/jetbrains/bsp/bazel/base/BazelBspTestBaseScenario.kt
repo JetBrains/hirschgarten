@@ -102,8 +102,10 @@ abstract class BazelBspTestBaseScenario {
     } finally {
       val logFile = Path(workspaceDir).resolve("all.log").toFile()
       // Print all files in that directory
-      log.info("Log file: ${logFile.absolutePath}")
-      logFile.readLines().forEach { log.info(it) }
+      if (logFile.exists()) {
+        log.info("Log file: ${logFile.absolutePath}")
+        logFile.readLines().forEach { log.info(it) }
+      }
     }
 
     when (scenarioStepsExecutionResult) {

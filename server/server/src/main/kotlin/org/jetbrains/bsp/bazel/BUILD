@@ -11,6 +11,8 @@ sonatype_java_export(
         "//server/commons",
         "//server/install:install-lib",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
+        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
     ],
 )
 

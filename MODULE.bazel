@@ -31,10 +31,10 @@ maven.install(
         "com.google.code.gson:gson:2.10.1",
         "com.google.guava:guava:31.0.1-jre",
         "com.google.protobuf:protobuf-java:3.25.4",
-        "com.jetbrains.intellij.tools:ide-metrics-collector-starter:242.18071.24-EAP-SNAPSHOT",
-        "com.jetbrains.intellij.tools:ide-metrics-collector:242.18071.24-EAP-SNAPSHOT",
-        "com.jetbrains.intellij.tools:ide-starter-junit5:242.18071.24-EAP-SNAPSHOT",
-        "com.jetbrains.intellij.tools:ide-starter-squashed:242.18071.24-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-metrics-collector-starter:242.20224.159-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-metrics-collector:242.20224.159-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-starter-junit5:242.20224.159-EAP-SNAPSHOT",
+        "com.jetbrains.intellij.tools:ide-starter-squashed:242.20224.159-EAP-SNAPSHOT",
         "commons-cli:commons-cli:jar:1.8.0",
         "commons-io:commons-io:jar:2.16.1",
         "io.grpc:grpc-protobuf:1.65.1",
@@ -54,8 +54,6 @@ maven.install(
         "org.apache.logging.log4j:log4j-api:2.23.1",
         "org.apache.logging.log4j:log4j-core:2.23.1",
         "org.apache.velocity:velocity-engine-core:2.3",
-        "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1",
-        "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1",
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1",
         "org.junit.jupiter:junit-jupiter:5.10.3",
         "org.junit.platform:junit-platform-console:1.10.3",
@@ -64,9 +62,6 @@ maven.install(
         "org.kodein.di:kodein-di:7.22.0",
         "org.scala-lang:scala-library:2.13.14",
         "org.slf4j:slf4j-nop:2.0.13",  # cannot be 2.0.0+ unless slf4j-api dependency in velocity-engine-core is 2.0.0+
-    ],
-    excluded_artifacts = [
-        #             "org.jetbrains.kotlinx:kotlinx-coroutines-core",
     ],
     fail_if_repin_required = True,
     generate_compat_repositories = True,
@@ -78,9 +73,40 @@ maven.install(
         "https://www.jetbrains.com/intellij-repository/snapshots",
     ],
 )
+maven.artifact(
+    artifact = "kotlinx-coroutines-core",
+    group = "org.jetbrains.kotlinx",
+    neverlink = True,
+    version = "1.8.1",
+)
+maven.artifact(
+    artifact = "kotlinx-coroutines-core-jvm",
+    group = "org.jetbrains.kotlinx",
+    neverlink = True,
+    version = "1.8.1",
+)
+maven.artifact(
+    name = "server_maven",
+    artifact = "kotlinx-coroutines-core",
+    group = "org.jetbrains.kotlinx",
+    version = "1.8.1",
+)
+maven.artifact(
+    name = "server_maven",
+    artifact = "kotlinx-coroutines-core-jvm",
+    group = "org.jetbrains.kotlinx",
+    version = "1.8.1",
+)
+maven.artifact(
+    name = "server_maven",
+    artifact = "kotlinx-coroutines-test",
+    group = "org.jetbrains.kotlinx",
+    version = "1.8.1",
+)
 use_repo(
     maven,
     "maven",
+    "server_maven",
     # TODO: also should not be required
     jna = "net_java_dev_jna_jna",
 )
