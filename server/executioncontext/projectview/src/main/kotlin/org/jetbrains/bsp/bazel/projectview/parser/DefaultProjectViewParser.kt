@@ -16,6 +16,7 @@ import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewImportDept
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewTargetsSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewSectionSplitter
+import java.nio.file.Path
 import kotlin.io.path.Path
 
 /**
@@ -24,7 +25,7 @@ import kotlin.io.path.Path
  * @see ProjectViewParser
  * @see ProjectViewSectionSplitter
  */
-open class DefaultProjectViewParser : ProjectViewParser {
+open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : ProjectViewParser {
   private val log = LogManager.getLogger(DefaultProjectViewParser::class.java)
 
   override fun parse(projectViewFileContent: String): ProjectView {
@@ -55,10 +56,19 @@ open class DefaultProjectViewParser : ProjectViewParser {
       .asSequence()
       .map { it.sectionBody }
       .map(String::trim)
-      .map(::Path)
+      .map(::toProjectViewPath)
       .onEach { log.debug("Parsing imported file {}.", it) }
       .map(this::parse)
       .toList()
+
+  private fun toProjectViewPath(projectViewPathStr: String): Path {
+    val currentPath = Path(projectViewPathStr)
+    return when {
+      currentPath.isAbsolute -> currentPath
+      workspaceRoot != null -> workspaceRoot.resolve(currentPath)
+      else -> currentPath
+    }
+  }
 
   companion object {
     private const val IMPORT_STATEMENT = "import"

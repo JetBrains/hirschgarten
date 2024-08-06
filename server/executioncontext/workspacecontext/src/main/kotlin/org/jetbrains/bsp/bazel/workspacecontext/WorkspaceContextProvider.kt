@@ -10,7 +10,7 @@ interface WorkspaceContextProvider {
   fun currentWorkspaceContext(): WorkspaceContext
 }
 
-class DefaultWorkspaceContextProvider(workspaceRoot: Path, private val projectViewPath: Path) : WorkspaceContextProvider {
+class DefaultWorkspaceContextProvider(private val workspaceRoot: Path, private val projectViewPath: Path) : WorkspaceContextProvider {
   private val workspaceContextConstructor = WorkspaceContextConstructor(workspaceRoot)
 
   override fun currentWorkspaceContext(): WorkspaceContext {
@@ -23,7 +23,7 @@ class DefaultWorkspaceContextProvider(workspaceRoot: Path, private val projectVi
     if (projectViewPath.notExists()) {
       generateEmptyProjectView()
     }
-    return DefaultProjectViewParser().parse(projectViewPath)
+    return DefaultProjectViewParser(workspaceRoot).parse(projectViewPath)
   }
 
   private fun generateEmptyProjectView() {

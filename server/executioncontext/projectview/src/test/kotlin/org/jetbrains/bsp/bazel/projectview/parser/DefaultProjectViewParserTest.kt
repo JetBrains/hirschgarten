@@ -3,6 +3,7 @@ package org.jetbrains.bsp.bazel.projectview.parser
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
@@ -25,7 +26,7 @@ class DefaultProjectViewParserTest {
   @BeforeEach
   fun beforeEach() {
     // given
-    parser = ProjectViewParserTestMock
+    parser = ProjectViewParserTestMock()
   }
 
   @Nested
@@ -537,6 +538,38 @@ class DefaultProjectViewParserTest {
         )
 
       projectView shouldBe expectedProjectView
+    }
+  }
+
+  @Nested
+  @DisplayName("fun parse(projectViewString): ProjectView with workspace root tests")
+  internal inner class ParseProjectViewFilePathWithWorkspaceRootTest {
+    @Test
+    fun `should return failure for imported file with relative path not in workspace root`() {
+      // given
+      val workspacePath = Path("/fake/root")
+      val projectViewFilePath = Path("/projectview/file10ImportsEmptyWithRelativePath.bazelproject")
+
+      // when
+      val parser = ProjectViewParserTestMock(workspacePath)
+
+      // then
+      val exception = shouldThrow<NoSuchFileException> { parser.parse(projectViewFilePath) }
+      exception.message shouldBe "/fake/root/projectview/empty.bazelproject"
+    }
+
+    @Test
+    fun `should parse normally for imported file with relative in workspace root`() {
+      // given
+      val workspacePath = Path("/")
+      val projectViewFilePath = Path("/projectview/file10ImportsEmptyWithRelativePath.bazelproject")
+
+      // when
+      val parser = ProjectViewParserTestMock(workspacePath)
+      val projectView = parser.parse(projectViewFilePath)
+
+      // then
+      projectView shouldNotBe null
     }
   }
 }
