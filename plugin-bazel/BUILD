@@ -46,9 +46,8 @@ stamped_plugin_xml(
 
 java_binary(
     name = "intellij-bazel_exclude",
-    srcs = ["//plugin-bazel:DummySourceForExclude.java"],
     main_class = "DummySourceForExclude",
-    deps = [
+    runtime_deps = [
         "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
@@ -71,9 +70,8 @@ intellij_plugin(
 
 java_binary(
     name = "intellij-bazel_exclude_debug",
-    srcs = ["//plugin-bazel:DummySourceForExclude.java"],
     main_class = "DummySourceForExclude",
-    deps = [
+    runtime_deps = [
         "@maven//:io_opentelemetry_opentelemetry_api",
         "@maven//:io_opentelemetry_opentelemetry_exporter_otlp",
         "@maven//:io_opentelemetry_opentelemetry_extension_kotlin",
@@ -118,9 +116,8 @@ intellij_plugin_debug_target(
 
 java_binary(
     name = "intellij-bazel-debug_exclude",
-    srcs = ["//plugin-bazel:DummySourceForExclude.java"],
     main_class = "DummySourceForExclude",
-    deps = [
+    runtime_deps = [
         "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:org_apache_velocity_velocity_engine_core",
