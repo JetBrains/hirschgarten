@@ -1,6 +1,4 @@
 #!/bin/bash
-# Download the plugin
-# TODO use this instead for Marketplace release versions?: https://www.jetbrains.com/help/idea/work-inside-remote-project.html#plugins
 
 PLUGIN_DIR=$(realpath "$CANVAS_IDE_HOME/../ide-plugins")
 mkdir -p $PLUGIN_DIR # avoid errors when run in warmup?
