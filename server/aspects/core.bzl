@@ -1,3 +1,5 @@
+# Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+
 load("//aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS")
 load("//aspects:utils/utils.bzl", "abs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups")
 
