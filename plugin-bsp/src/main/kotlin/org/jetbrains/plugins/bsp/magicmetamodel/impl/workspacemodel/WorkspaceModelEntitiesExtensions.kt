@@ -15,3 +15,5 @@ public fun LanguageIds.includesAndroid(): Boolean = contains("android")
 public fun LanguageIds.includesJavaOrScala(): Boolean = includesJava() || includesScala()
 
 public fun LanguageIds.isJvmTarget(): Boolean = (includesJava() || includesKotlin() || includesScala()) && !includesAndroid()
+
+public fun LanguageIds.isJvmOrAndroidTarget(): Boolean = includesJava() || includesKotlin() || includesScala() || includesAndroid()

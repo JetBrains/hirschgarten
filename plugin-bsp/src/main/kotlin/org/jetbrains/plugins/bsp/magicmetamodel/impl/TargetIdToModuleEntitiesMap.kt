@@ -14,6 +14,7 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetail
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesPython
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmOrAndroidTarget
 import java.nio.file.Path
 
 internal object TargetIdToModuleEntitiesMap {
@@ -51,12 +52,16 @@ internal object TargetIdToModuleEntitiesMap {
             val module =
               if (moduleDetails.target.languageIds.includesPython()) {
                 moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
-              } else {
+              } else if (moduleDetails.target.languageIds.isJvmOrAndroidTarget()) {
                 moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
+              } else {
+                return@async null
               }
             it to module
           }
         }.awaitAll()
+        .asSequence()
+        .filterNotNull()
         .toMap()
     }
   }
