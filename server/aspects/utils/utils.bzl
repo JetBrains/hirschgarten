@@ -1,3 +1,5 @@
+# Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+
 def abs(num):
     if num < 0:
         return -num
@@ -66,10 +68,7 @@ def create_struct(**kwargs):
     return struct(**d)
 
 def update_sync_output_groups(groups_dict, key, new_set):
-    update_set_in_dict(groups_dict, key + "-transitive-deps", new_set)
-
-def update_set_in_dict(input_dict, key, other_set):
-    input_dict[key] = depset(transitive = [input_dict.get(key, depset()), other_set])
+    groups_dict[key] = depset(transitive = [groups_dict.get(key, depset()), new_set])
 
 def get_aspect_ids(ctx, target):
     """Returns the all aspect ids, filtering out self."""
