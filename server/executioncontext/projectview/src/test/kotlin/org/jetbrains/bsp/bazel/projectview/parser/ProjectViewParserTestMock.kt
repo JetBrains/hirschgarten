@@ -9,7 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createTempFile
 
-object ProjectViewParserTestMock : DefaultProjectViewParser() {
+class ProjectViewParserTestMock(workspaceRoot: Path? = null) : DefaultProjectViewParser(workspaceRoot) {
   override fun parse(projectViewFilePath: Path): ProjectView = copyResourcesFileToTmpFile(projectViewFilePath).let { super.parse(it) }
 
   private fun copyResourcesFileToTmpFile(resourcesFile: Path): Path {
