@@ -1,3 +1,5 @@
+# Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+
 load("//aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS")
 load("//aspects:utils/utils.bzl", "abs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups")
 
@@ -69,8 +71,16 @@ def _get_forwarded_deps(target, ctx):
         return collect_targets_from_attrs(ctx.rule.attr, ["deps"])
     return []
 
+def _is_analysis_test(target):
+    """Returns if the target is an analysis test.
+
+    Rules created with analysis_test=True cannot create write actions, so the
+    aspect should skip them.
+    """
+    return AnalysisTestResultInfo in target
+
 def _bsp_target_info_aspect_impl(target, ctx):
-    if target.label.name.endswith(".semanticdb"):
+    if target.label.name.endswith(".semanticdb") or _is_analysis_test(target):
         return []
 
     rule_attrs = ctx.rule.attr
