@@ -64,7 +64,7 @@ class ProjectResolver(
       val buildAspectResult =
         measured(
           "Building project with aspect",
-        ) { buildProjectWithAspect(cancelChecker, workspaceContext, keepDefaultOutputGroups = build) }
+        ) { buildProjectWithAspect(cancelChecker, workspaceContext, build) }
       val aspectOutputs =
         measured(
           "Reading aspect output paths",
@@ -90,18 +90,19 @@ class ProjectResolver(
   private fun buildProjectWithAspect(
     cancelChecker: CancelChecker,
     workspaceContext: WorkspaceContext,
-    keepDefaultOutputGroups: Boolean,
+    build: Boolean,
   ): BazelBspAspectsManagerResult {
-    val outputGroups =
-      listOf(BSP_INFO_OUTPUT_GROUP, ARTIFACTS_OUTPUT_GROUP, RUST_ANALYZER_OUTPUT_GROUP)
-        .map { if (keepDefaultOutputGroups) "+$it" else it }
+    val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, ARTIFACTS_OUTPUT_GROUP, RUST_ANALYZER_OUTPUT_GROUP)
+    if (build) {
+      outputGroups.add(GENERATED_JARS_OUTPUT_GROUP)
+    }
 
     return bazelBspAspectsManager.fetchFilesFromOutputGroups(
       cancelChecker = cancelChecker,
       targetSpecs = workspaceContext.targets,
       aspect = ASPECT_NAME,
-      outputGroups = outputGroups,
-      shouldBuildManualFlags = workspaceContext.shouldAddBuildAffectingFlags(keepDefaultOutputGroups),
+      outputGroups = outputGroups.map { if (build) "+$it" else it },
+      shouldBuildManualFlags = workspaceContext.shouldAddBuildAffectingFlags(build),
       isRustEnabled = workspaceContext.isRustEnabled,
     )
   }
@@ -135,8 +136,9 @@ class ProjectResolver(
 
   companion object {
     private const val ASPECT_NAME = "bsp_target_info_aspect"
-    private const val BSP_INFO_OUTPUT_GROUP = "bsp-target-info-transitive-deps"
-    private const val ARTIFACTS_OUTPUT_GROUP = "external-deps-resolve-transitive-deps"
+    private const val BSP_INFO_OUTPUT_GROUP = "bsp-target-info"
+    private const val ARTIFACTS_OUTPUT_GROUP = "external-deps-resolve"
+    private const val GENERATED_JARS_OUTPUT_GROUP = "generated-jars-resolve"
     private const val RUST_ANALYZER_OUTPUT_GROUP = "rust_analyzer_crate_spec"
   }
 }
