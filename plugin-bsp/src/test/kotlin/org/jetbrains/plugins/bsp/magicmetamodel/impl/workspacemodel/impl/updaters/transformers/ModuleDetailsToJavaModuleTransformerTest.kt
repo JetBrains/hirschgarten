@@ -253,7 +253,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         classJars = listOf("jar:///m2/repo.maven.apache.org/test2/2.0.0/test2-2.0.0.jar!/"),
       )
 
-    val expectedJavaAddendum = JavaAddendum(languageVersion = javaVersion)
+    val expectedJavaAddendum = JavaAddendum(languageVersion = javaVersion, javacOptions = emptyList())
 
     val expectedJavaModule =
       JavaModule(

@@ -13,6 +13,7 @@ import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
@@ -59,6 +60,8 @@ import org.jetbrains.plugins.bsp.extension.points.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.flow.open.projectSyncHook
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.TargetIdToModuleEntitiesMap
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Module
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
@@ -105,6 +108,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private var builder: MutableEntityStorage? = null
 
   private var uniqueJavaHomes: Set<String>? = null
+
+  private lateinit var javacOptions: Map<String, String>
 
   private var pythonSdks: Set<PythonSdk>? = null
 
@@ -433,6 +438,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
           workspaceModelUpdater.loadLibraries(project.temporaryTargetUtils.getAllLibraries())
           workspaceModelUpdater
             .loadDirectories(projectDetails.directories, projectDetails.outputPathUris, virtualFileUrlManager)
+          calculateAllJavacOptions(modulesToLoad)
         }
       }
     }
@@ -453,6 +459,18 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
   private fun DirectoryItem.toVirtualFileUrl(virtualFileUrlManager: VirtualFileUrlManager): VirtualFileUrl =
     virtualFileUrlManager.getOrCreateFromUrl(uri)
 
+  private fun calculateAllJavacOptions(modulesToLoad: List<Module>) {
+    javacOptions =
+      modulesToLoad
+        .asSequence()
+        .filterIsInstance<JavaModule>()
+        .mapNotNull { module ->
+          module.javaAddendum?.javacOptions?.takeIf { it.isNotEmpty() }?.let { javacOptions ->
+            module.getModuleName() to javacOptions.joinToString(" ")
+          }
+        }.toMap()
+  }
+
   private suspend fun postprocessingSubtask() {
     // This order is strict as now SDKs also use the workspace model,
     // updating jdks before applying the project model will render the action to fail.
@@ -461,6 +479,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     applyChangesOnWorkspaceModel()
     project.temporaryTargetUtils.fireListeners()
     addBspFetchedJdks()
+    addBspFetchedJavacOptions()
 
     if (BspFeatureFlags.isPythonSupportEnabled) {
       addBspFetchedPythonSdks()
@@ -588,6 +607,12 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       else -> false
     }
 
+  private suspend fun addBspFetchedJavacOptions() =
+    writeAction {
+      val javacOptions = JavacConfiguration.getOptions(project, JavacConfiguration::class.java)
+      javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
+    }
+
   private fun onCancel(e: Exception) {
     cancelOnFuture.cancel(true)
     bspSyncConsole.finishTask(taskId, e.message ?: "", FailureResultImpl(e))
@@ -678,13 +703,14 @@ public fun calculateProjectDetailsWithCapabilities(
         server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))
       }
 
-    // We use javacOptions only do build dependency tree based on classpath
-    // If workspace/libraries endpoint is available (like in bazel-bsp)
-    // we don't need javacOptions at all. For other servers (like SBT)
-    // we still need to retrieve it
-    // There's no capability for javacOptions
+    // We use javacOptions only to build the dependency tree based on the classpath.
+    // If the workspace/libraries endpoint is NOT available (like SBT), we need to retrieve it.
+    // If a server supports buildTarget/jvmCompileClasspath, then the classpath won't be passed via this endpoint
+    // (see https://build-server-protocol.github.io/docs/extensions/java#javacoptionsitem).
+    // In this case we can use this request to retrieve the javac options without the overhead of passing the whole classpath.
+    // There's no capability for javacOptions.
     val javacOptionsFuture =
-      if (libraries == null) {
+      if (libraries == null || buildServerCapabilities.jvmCompileClasspathProvider) {
         query(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
           server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
         }

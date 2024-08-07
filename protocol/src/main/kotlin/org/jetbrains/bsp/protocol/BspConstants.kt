@@ -11,4 +11,6 @@ public const val BSP_CLIENT_VERSION: String = "2024.1-EAP"
 public const val BSP_VERSION: String = "2.1.0"
 
 public val CLIENT_CAPABILITIES: BuildClientCapabilities =
-  BuildClientCapabilities(listOf("java", "kotlin", "scala", "python"))
+  BuildClientCapabilities(listOf("java", "kotlin", "scala", "python")).apply {
+    jvmCompileClasspathReceiver = true
+  }

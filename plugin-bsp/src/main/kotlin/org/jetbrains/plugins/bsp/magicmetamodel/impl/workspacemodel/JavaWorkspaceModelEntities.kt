@@ -2,8 +2,6 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bsp.protocol.AndroidTargetType
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.ModuleState
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.toState
 import java.nio.file.Path
 
 public data class JavaSourceRoot(
@@ -31,20 +29,6 @@ public data class JavaModule(
   val workspaceModelEntitiesFolderMarker: Boolean = false,
 ) : WorkspaceModelEntity(),
   Module {
-  override fun toState(): ModuleState =
-    ModuleState(
-      module = genericModuleInfo.toState(),
-      baseDirContentRoot = baseDirContentRoot?.let(ContentRoot::toState),
-      sourceRoots = sourceRoots.map { it.toState() },
-      resourceRoots = resourceRoots.map { it.toState() },
-      libraries = moduleLevelLibraries?.map { it.toState() },
-      jvmJdkName = jvmJdkName,
-      jvmBinaryJars = jvmBinaryJars.map { it.toString() },
-      kotlinAddendum = kotlinAddendum?.toState(),
-      scalaAddendum = scalaAddendum?.toState(),
-      androidAddendum = androidAddendum?.toState(),
-    )
-
   override fun getModuleName(): String = genericModuleInfo.name
 }
 
@@ -56,7 +40,7 @@ public data class KotlinAddendum(
 
 public data class ScalaAddendum(val scalaSdkName: String)
 
-public data class JavaAddendum(val languageVersion: String)
+public data class JavaAddendum(val languageVersion: String, val javacOptions: List<String>)
 
 public data class AndroidAddendum(
   val androidSdkName: String,
