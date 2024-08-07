@@ -1,6 +1,6 @@
-# Bump Version
+# Version bumps
 
-If you want to bump version (for example, before a release) you should do this in the following places:
+If you want to bump the version (for example, before a release), you should do this in the following places:
 
 - `central-sync/VERSION`
 - `maven_coordinates` in `server/src/main/kotlin/org/jetbrains/bsp/bazel/BUILD`

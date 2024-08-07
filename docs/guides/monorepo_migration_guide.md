@@ -4,7 +4,7 @@ This guide will help you migrate your unpublished branches from the old reposito
 
 ## Prerequisites
 
-1. Python 3.6 or higher installed on your system
+1. Python 3.6 or higher is installed on your system
 2. Ensure you have Git installed and configured on your system.
 3. Install `git-filter-repo`. You can do this by running:
    - On macOS: `brew install git-filter-repo`
