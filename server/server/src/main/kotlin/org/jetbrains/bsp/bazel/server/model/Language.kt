@@ -7,7 +7,15 @@ enum class Language(
   dependentNames: Set<String> = hashSetOf(),
 ) {
   SCALA("scala", hashSetOf(".scala")),
-  JAVA("java", hashSetOf(".java"), binaryTargets = setOf("java_binary")),
+  JAVA(
+    "java",
+    hashSetOf(".java"),
+    binaryTargets =
+      setOf(
+        "java_binary",
+        "intellij_plugin_debug_target", // a workaround to register this target type as Java module in IntelliJ IDEA
+      ),
+  ),
   KOTLIN("kotlin", hashSetOf(".kt"), setOf("kt_jvm_binary"), hashSetOf(JAVA.id)),
   CPP("cpp", hashSetOf(".C", ".cc", ".cpp", ".CPP", ".c++", ".cp", "cxx", ".h", ".hpp")),
   PYTHON("python", hashSetOf(".py")),
