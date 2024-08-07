@@ -1,18 +1,20 @@
 #!/bin/bash
-# Download the plugin
-# TODO use this instead for Marketplace release versions?: https://www.jetbrains.com/help/idea/work-inside-remote-project.html#plugins
 
 PLUGIN_DIR=$(realpath "$CANVAS_IDE_HOME/../ide-plugins")
 mkdir -p $PLUGIN_DIR # avoid errors when run in warmup?
 
-# BSP and Bazel plugin nightly channel
-curl -L -o $PLUGIN_DIR/bsp-plugin.zip "https://plugins.jetbrains.com/plugin/download?rel=true&pluginId=org.jetbrains.bsp&channel=nightly&takeLatestUpdate=true"
-curl -L -o $PLUGIN_DIR/bazel-plugin.zip "https://plugins.jetbrains.com/plugin/download?rel=true&pluginId=org.jetbrains.bazel&channel=nightly&takeLatestUpdate=true"
+install_nightly_plugin() {
+    local plugin_id=$1
+    local plugin_zip="${PLUGIN_DIR}/${plugin_id}.zip"
 
-# Unzip the plugin to the plugins directory of the IDE
-unzip $PLUGIN_DIR/bsp-plugin.zip -d $PLUGIN_DIR/
-unzip $PLUGIN_DIR/bazel-plugin.zip -d $PLUGIN_DIR/
+    curl -L -o $plugin_zip "https://plugins.jetbrains.com/plugin/download?rel=true&pluginId=${plugin_id}&channel=nightly&takeLatestUpdate=true"
+    unzip $plugin_zip -d "${PLUGIN_DIR}/"
+    rm $plugin_zip
+}
 
-# Remove the .zip file
-rm $PLUGIN_DIR/bsp-plugin.zip
-rm $PLUGIN_DIR/bazel-plugin.zip
+install_nightly_plugin "org.jetbrains.bsp"
+install_nightly_plugin "org.jetbrains.bazel"
+install_nightly_plugin "org.intellij.scala"
+
+# release channel plugins
+$CANVAS_IDE_HOME/bin/remote-dev-server.sh installPlugins DevKit
