@@ -5,7 +5,6 @@ import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.ModuleState
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
 
@@ -155,7 +154,5 @@ internal fun BuildTargetCapabilities.toModuleCapabilities() =
   ModuleCapabilities(canRun == true, canTest == true, canCompile == true, canDebug == true)
 
 public interface Module {
-  public fun toState(): ModuleState
-
   public fun getModuleName(): String
 }

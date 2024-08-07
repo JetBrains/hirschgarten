@@ -141,7 +141,12 @@ internal class ModuleDetailsToJavaModuleTransformer(
   }
 
   private fun toJavaAddendum(inputEntity: ModuleDetails): JavaAddendum? =
-    extractJvmBuildTarget(inputEntity.target)?.javaVersion?.let { JavaAddendum(languageVersion = it) }
+    extractJvmBuildTarget(inputEntity.target)?.javaVersion?.let {
+      JavaAddendum(
+        languageVersion = it,
+        javacOptions = inputEntity.javacOptions?.options.orEmpty(),
+      )
+    }
 
   private fun toAndroidAddendum(inputEntity: ModuleDetails): AndroidAddendum? {
     val androidBuildTarget = extractAndroidBuildTarget(inputEntity.target) ?: return null
