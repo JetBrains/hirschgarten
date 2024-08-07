@@ -5,7 +5,7 @@ This approach allows us to maintain the Git history of existing repositories whi
 
 ## Prerequisites
 
-1. Python 3.6 or higher installed on your system
+1. Python 3.6 or higher is installed on your system
 2. Ensure you have Git installed and configured on your system.
 3. Install `git-filter-repo`. You can do this by running:
    - On macOS: `brew install git-filter-repo`
@@ -63,17 +63,17 @@ Where:
 
 7. **Code Review:**
     - When you are ready to merge the new component, request Code Review normally
-    - If you want to preserve commit history of the new component, the usual "Squash and rebase" method won't work since it'll remove all the individual commits
+    - If you want to preserve the commit history of the new component, the usual "Squash and rebase" method won't work since it'll remove all the individual commits
     - Therefore, when ready to merge, ask repo admin to go to Hirschgarten's [Space Code settings](https://code.jetbrains.team/p/bazel/repositories/hirschgarten/edit?tab=info) page and:
       * Open "Protected branches -> +:refs/heads/main"
-      * Disable "Enforce linear history" toggle
-      * Enable "Allow merge commits" checkbox
-      * Merge the branch from Code Review page with "Merge" method
+      * Disable the "Enforce linear history" toggle
+      * Enable the "Allow merge commits" checkbox
+      * Merge the branch from the Code Review page with the "Merge" method
       * Return "Enforce linear history" and "Allow merge commits" options to their default values
 
 8. **CI/CD:**
     - Be default, changes to new folder won't trigger CI
-    - To check new component against all CI pipeline - run them manually on the main/unmerged branches
+    - To check a new component against all CI pipelines - run them manually on the main/unmerged branches
     - If you want particular tests from current CI to trigger - make necessary changes to CI trigger rules
     - Review Space Code Quality Gates settings to make sure the new component's folder will/won't require it
     - Add new pipelines/individual tests for this new component in both Hirschgarten's TC configuration and buildserver configuration repo
@@ -84,5 +84,5 @@ Where:
 ## Troubleshooting
 
 - If the script fails to run, ensure all prerequisites are installed correctly
-- If branches are skipped unexpectedly, check that your local clone of the repository has the branches checked-out locally
+- If branches are skipped unexpectedly, check that your local clone of the repository has the branches checked out locally
 - For persistent issues, review the script's output for error messages and/or consult with the script's maintainer
