@@ -30,7 +30,7 @@ maven.install(
         "com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2",
         "com.google.code.gson:gson:2.10.1",
         "com.google.guava:guava:31.0.1-jre",
-        "com.google.protobuf:protobuf-java:3.25.4",
+        "com.google.protobuf:protobuf-java:4.27.3",
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:242.20224.159-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-metrics-collector:242.20224.159-EAP-SNAPSHOT",
         "com.jetbrains.intellij.tools:ide-starter-junit5:242.20224.159-EAP-SNAPSHOT",
