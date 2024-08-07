@@ -4,6 +4,8 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.vfs.VfsUtilCore
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
@@ -15,9 +17,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetI
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
-import java.net.URI
-import kotlin.io.path.Path
-import kotlin.io.path.toPath
 
 internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? =
@@ -37,19 +36,20 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     element.parent is StarlarkExpressionStatement && element.parent.parent is StarlarkFile
 
   private fun PsiElement.calculateMarkerInfo(): Info? =
-    containingFile.virtualFile?.url?.let { url ->
-      val targetId = calculateTargetId(url) ?: return null
+    containingFile.virtualFile?.let { virtualFile ->
+      val targetId = calculateTargetId(virtualFile) ?: return null
 
       val realTargetId = project.temporaryTargetUtils.allTargetIds().firstOrNull { it.uri.endsWith(targetId) }
       val targetInfo = realTargetId?.let { project.temporaryTargetUtils.getBuildTargetInfoForId(it) }
       calculateLineMarkerInfo(targetInfo).takeIf { it.actions.isNotEmpty() }
     }
 
-  private fun PsiElement.calculateTargetId(buildFileUrl: String): String? {
+  private fun PsiElement.calculateTargetId(buildFile: VirtualFile): String? {
     val targetName = getTargetName() ?: return null
-    val projectBaseDirectory = Path(project.rootDir.path)
-    val targetBaseDirectory = URI.create(buildFileUrl).toPath().parent
-    val relativeTargetBaseDirectory = projectBaseDirectory.relativize(targetBaseDirectory)
+    val projectBaseDirectory = project.rootDir
+    val targetBaseDirectory = buildFile.parent ?: return null
+    val relativeTargetBaseDirectory = VfsUtilCore.getRelativePath(targetBaseDirectory, projectBaseDirectory) ?: return null
+
     return "@//$relativeTargetBaseDirectory:$targetName"
   }
 
