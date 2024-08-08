@@ -7,8 +7,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.util.messages.Topic
 import org.jetbrains.kotlin.tooling.core.Interner
 import org.jetbrains.kotlin.tooling.core.WeakInterner
@@ -90,7 +92,12 @@ public class BspWorkspaceWatcher(private val project: Project) {
     }
   }
 
-  private fun shouldRefreshProjectView(events: List<VFileEvent>): Boolean = events.any { it is VFileCreateEvent }
+  private fun shouldRefreshProjectView(events: List<VFileEvent>): Boolean =
+    events.any {
+      it is VFileCreateEvent ||
+        it is VFileCopyEvent ||
+        it is VFileMoveEvent
+    }
 }
 
 public interface BspWorkspaceListener {
