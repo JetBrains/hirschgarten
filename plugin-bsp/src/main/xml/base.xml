@@ -83,6 +83,8 @@
 
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
+        <workspaceModel.fileIndexContributor
+                implementation="org.jetbrains.plugins.bsp.workspace.DummyModuleExclusionWorkspaceFileIndexContributor"/>
 
         <java.programPatcher implementation="org.jetbrains.plugins.bsp.jvm.BspJvmEnvironmentProgramPatcher"/>
         <java.elementFinder implementation="org.jetbrains.plugins.bsp.services.GeneratedClassFinder"/>
