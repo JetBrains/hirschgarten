@@ -118,6 +118,15 @@ def get_jvm_provider(target):
         return target[JavaInfo]
     return None
 
+def get_javac_opts(ctx):
+    # Copy the list so that it's possible to append to it
+    javac_opts = [opt for opt in getattr(ctx.rule.attr, "javacopts", [])]
+    for export in getattr(ctx.rule.attr, "add_exports", []):
+        javac_opts.append("--add-exports=" + export + "=ALL-UNNAMED")
+    for open in getattr(ctx.rule.attr, "add_opens", []):
+        javac_opts.append("--add-opens=" + open + "=ALL-UNNAMED")
+    return javac_opts
+
 def extract_jvm_info(target, ctx, output_groups, **kwargs):
     provider = get_jvm_provider(target)
     if not provider:
@@ -139,7 +148,7 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
 
     generated_jars, resolve_files_generated_jars = get_generated_jars(provider)
 
-    javac_opts = getattr(ctx.rule.attr, "javacopts", [])
+    javac_opts = get_javac_opts(ctx)
     jvm_flags = getattr(ctx.rule.attr, "jvm_flags", [])
     args = getattr(ctx.rule.attr, "args", [])
     main_class = getattr(ctx.rule.attr, "main_class", None)

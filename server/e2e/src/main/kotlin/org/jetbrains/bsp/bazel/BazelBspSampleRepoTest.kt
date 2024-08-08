@@ -8,6 +8,9 @@ import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.DependencySourcesResult
 import ch.epfl.scala.bsp4j.InverseSourcesParams
 import ch.epfl.scala.bsp4j.InverseSourcesResult
+import ch.epfl.scala.bsp4j.JavacOptionsItem
+import ch.epfl.scala.bsp4j.JavacOptionsParams
+import ch.epfl.scala.bsp4j.JavacOptionsResult
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import ch.epfl.scala.bsp4j.JvmMainClass
@@ -40,7 +43,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
-  private val testClient = createTestkitClient()
+  private val testClient = createTestkitClient(jvmClasspathReceiver = true)
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-95
   @JvmStatic
@@ -58,6 +61,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       scalaTestClasses(),
       jvmRunEnvironment(),
       jvmTestEnvironment(),
+      javacOptionsResult(),
     )
 
   private fun resolveProject(): BazelBspTestScenarioStep =
@@ -313,10 +317,19 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     environmentVariablesJavaTestSources.roots = listOf("file://\$WORKSPACE/")
 
+    val targetWithJavacExportsJavaLibrary =
+      SourceItem("file://\$WORKSPACE/target_with_javac_exports/JavaLibrary.java", SourceItemKind.FILE, false)
+    val targetWithJavacExportsJavaLibrarySources =
+      SourcesItem(
+        BuildTargetIdentifier("$targetPrefix//target_with_javac_exports:java_library"),
+        listOf(targetWithJavacExportsJavaLibrary),
+      )
+    targetWithJavacExportsJavaLibrarySources.roots = listOf("file://\$WORKSPACE/")
+
     val sourcesParams = SourcesParams(expectedTargetIdentifiers())
     val expectedSourcesResult =
       SourcesResult(
-        listOf(
+        listOfNotNull(
           targetWithoutArgsSources,
           targetWithoutJvmFlagsSources,
           targetWithoutMainClassSources,
@@ -337,6 +350,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           manualTargetTestScalaTestSources,
           environmentVariablesJavaBinarySources,
           environmentVariablesJavaTestSources,
+          targetWithJavacExportsJavaLibrarySources.takeIf { majorBazelVersion > 5 },
         ),
       )
     return BazelBspTestScenarioStep("sources results") {
@@ -406,10 +420,12 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       ResourcesItem(BuildTargetIdentifier("$targetPrefix//environment_variables:java_binary"), emptyList())
     val environmentVariablesJavaTest =
       ResourcesItem(BuildTargetIdentifier("$targetPrefix//environment_variables:java_test"), emptyList())
+    val targetWithJavacExportsJavaLibrary =
+      ResourcesItem(BuildTargetIdentifier("$targetPrefix//target_with_javac_exports:java_library"), emptyList())
 
     val expectedResourcesResult =
       ResourcesResult(
-        listOf(
+        listOfNotNull(
           targetWithResources,
           javaTargetsSubpackageJavaLibrary,
           javaTargetsJavaBinary,
@@ -430,6 +446,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           manualTargetScalaTest,
           environmentVariablesJavaBinary,
           environmentVariablesJavaTest,
+          targetWithJavacExportsJavaLibrary.takeIf { majorBazelVersion > 5 },
         ),
       )
     val resourcesParams = ResourcesParams(expectedTargetIdentifiers())
@@ -645,9 +662,15 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         BuildTargetIdentifier("$targetPrefix//environment_variables:java_test"),
         emptyList(),
       )
+    val targetWithJavacExportsJavaLibrary =
+      DependencySourcesItem(
+        BuildTargetIdentifier("$targetPrefix//target_with_javac_exports:java_library"),
+        emptyList(),
+      )
+
     val expectedDependencies =
       DependencySourcesResult(
-        listOf(
+        listOfNotNull(
           javaTargetsJavaBinary,
           javaTargetsJavaBinaryWithFlag,
           javaTargetsJavaLibrary,
@@ -668,6 +691,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           manualTargetScalaTest,
           environmentVariablesJavaBinary,
           environmentVariablesJavaTest,
+          targetWithJavacExportsJavaLibrary.takeIf { majorBazelVersion > 5 },
         ),
       )
     val dependencySourcesParams = DependencySourcesParams(expectedTargetIdentifiers())
@@ -689,7 +713,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val params = JvmRunEnvironmentParams(expectedTargetIdentifiers())
     val expectedResult =
       JvmRunEnvironmentResult(
-        listOf(
+        listOfNotNull(
           JvmEnvironmentItem(
             BuildTargetIdentifier("$targetPrefix//java_targets:java_binary"),
             listOf(),
@@ -840,7 +864,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           },
           JvmEnvironmentItem(
             BuildTargetIdentifier("$targetPrefix//manual_target:scala_test"),
-            listOf(
+            listOfNotNull(
               "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_library/scala-library-2.12.14.jar",
               "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_reflect/scala-reflect-2.12.14.jar",
               "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scalactic/scalactic_2.12-3.2.9.jar",
@@ -915,6 +939,15 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           ).apply {
             mainClasses = listOf(JvmMainClass("manual_target.TestJavaBinary", emptyList()))
           },
+          JvmEnvironmentItem(
+            BuildTargetIdentifier("$targetPrefix//target_with_javac_exports:java_library"),
+            emptyList(),
+            emptyList(),
+            "\$WORKSPACE",
+            mapOf(),
+          ).apply {
+            mainClasses = emptyList()
+          }.takeIf { majorBazelVersion > 5 },
         ),
       )
     return BazelBspTestScenarioStep(
@@ -927,7 +960,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val params = JvmTestEnvironmentParams(expectedTargetIdentifiers())
     val expectedResult =
       JvmTestEnvironmentResult(
-        listOf(
+        listOfNotNull(
           JvmEnvironmentItem(
             BuildTargetIdentifier("$targetPrefix//java_targets:java_binary"),
             listOf(),
@@ -1153,11 +1186,53 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           ).apply {
             mainClasses = listOf(JvmMainClass("manual_target.TestJavaBinary", emptyList()))
           },
+          JvmEnvironmentItem(
+            BuildTargetIdentifier("$targetPrefix//target_with_javac_exports:java_library"),
+            emptyList(),
+            emptyList(),
+            "\$WORKSPACE",
+            mapOf(),
+          ).apply {
+            mainClasses = emptyList()
+          }.takeIf { majorBazelVersion > 5 },
         ),
       )
     return BazelBspTestScenarioStep(
       "jvm test environment results",
     ) { testClient.testJvmTestEnvironment(30.seconds, params, expectedResult) }
+  }
+
+  private fun javacOptionsResult(): BazelBspTestScenarioStep {
+    val stepName = "javac options results"
+    if (majorBazelVersion == 5) return BazelBspTestScenarioStep(stepName) {}
+    val targetWithJavacExportsIdentifier = BuildTargetIdentifier("$targetPrefix//target_with_javac_exports:java_library")
+    val params = JavacOptionsParams(listOf(targetWithJavacExportsIdentifier))
+    val bazelArch =
+      if (System.getProperty("os.name").lowercase().startsWith("mac")) {
+        "darwin_arm64"
+      } else {
+        "k8"
+      }
+
+    val expectedResult =
+      JavacOptionsResult(
+        listOf(
+          JavacOptionsItem(
+            targetWithJavacExportsIdentifier,
+            listOf(
+              "-XepDisableAllChecks",
+              "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED",
+              "--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+              "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+            ),
+            emptyList(),
+            "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/__main__/bazel-out/$bazelArch-fastbuild/bin/target_with_javac_exports/libjava_library.jar",
+          ),
+        ),
+      )
+    return BazelBspTestScenarioStep(
+      stepName,
+    ) { testClient.testJavacOptions(30.seconds, params, expectedResult) }
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
@@ -1586,8 +1661,26 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     environmentVariablesJavaTest.dataKind = "jvm"
     environmentVariablesJavaTest.data = jvmBuildTarget
 
+    val targetWithJavacExportsJavaLibrary =
+      BuildTarget(
+        BuildTargetIdentifier("$targetPrefix//target_with_javac_exports:java_library"),
+        listOf("library"),
+        listOf("java"),
+        emptyList(),
+        BuildTargetCapabilities().also {
+          it.canCompile = true
+          it.canTest = false
+          it.canRun = false
+          it.canDebug = false
+        },
+      )
+    targetWithJavacExportsJavaLibrary.displayName = "$targetPrefix//target_with_javac_exports:java_library"
+    targetWithJavacExportsJavaLibrary.baseDirectory = "file://\$WORKSPACE/target_with_javac_exports/"
+    targetWithJavacExportsJavaLibrary.dataKind = "jvm"
+    targetWithJavacExportsJavaLibrary.data = jvmBuildTarget
+
     return WorkspaceBuildTargetsResult(
-      listOf(
+      listOfNotNull(
         javaTargetsJavaBinary,
         javaTargetsJavaBinaryWithFlag,
         scalaTargetsScalaBinary,
@@ -1608,6 +1701,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         manualTargetScalaTest,
         environmentVariablesJavaLibrary,
         environmentVariablesJavaTest,
+        targetWithJavacExportsJavaLibrary.takeIf { majorBazelVersion > 5 },
       ),
     )
   }
