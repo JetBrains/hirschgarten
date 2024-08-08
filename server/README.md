@@ -35,7 +35,7 @@ Might be useful during development
 #### Using the install script
 
 1. Be inside this project
-2. Run `bazel run //install -- <installer flags>` (`--help` is available)
+2. Run `bazel run //server/install:install -- <installer flags>` (`--help` is available)
 
 #### Using coursier
 
