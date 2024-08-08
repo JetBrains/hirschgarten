@@ -1,14 +1,13 @@
 package org.jetbrains.plugins.bsp.workspace
 
-import com.intellij.openapi.project.ProjectLocator
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.isFile
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.moduleEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
+import kotlin.collections.contains
 
 private val SOURCE_EXTENSIONS = listOf("java", "kt", "scala")
 
@@ -26,20 +25,14 @@ class DummyModuleExclusionWorkspaceFileIndexContributor : WorkspaceFileIndexCont
   ) {
     if (entity.entitySource != BspDummyEntitySource) return
     val contentRootUrl = entity.contentRoots.single().url
+    // Since we register the exclusion at contentRootUrl,
+    // it will be overridden if we add a file as a file-based source root at a subdirectory of contentRootUrl.
     registrar.registerExclusionCondition(
       root = contentRootUrl,
-      condition = { it.isUnderDummyModule() },
+      condition = { it.isSourceFile() },
       entity = entity,
     )
   }
 
-  private fun VirtualFile.isUnderDummyModule(): Boolean {
-    val extension = this.extension ?: return false
-    // Don't exclude files like README.md just because they're under the dummy module
-    if (extension.lowercase() !in SOURCE_EXTENSIONS) return false
-    val project = ProjectLocator.getInstance().guessProjectForFile(this) ?: return false
-    // Don't honor the exclusions here (second parameter) in order to avoid infinite recursion
-    val module = ProjectFileIndex.getInstance(project).getModuleForFile(this, false) ?: return false
-    return module.moduleEntity?.entitySource == BspDummyEntitySource
-  }
+  private fun VirtualFile.isSourceFile(): Boolean = isFile && extension?.lowercase() in SOURCE_EXTENSIONS
 }
