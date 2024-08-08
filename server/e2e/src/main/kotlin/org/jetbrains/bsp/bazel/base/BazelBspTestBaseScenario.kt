@@ -19,6 +19,7 @@ abstract class BazelBspTestBaseScenario {
   protected val bazelBinary = System.getenv("BIT_BAZEL_BINARY")
   protected val workspaceDir = System.getenv("BIT_WORKSPACE_DIR")
 
+  val majorBazelVersion: Int = calculateMajorBazelVersion()
   val targetPrefix = calculateTargetPrefix()
 
   open fun additionalServerInstallArguments(): Array<String> = emptyArray()
@@ -27,16 +28,16 @@ abstract class BazelBspTestBaseScenario {
     installServer()
   }
 
-  // check: https://github.com/bazelbuild/intellij/blob/adb358670a7fc6ad51808486dc03f4605f83dcd3/aspect/testing/tests/src/com/google/idea/blaze/aspect/integration/BazelInvokingIntegrationTestRunner.java#L132
-  private fun calculateTargetPrefix(): String {
+  private fun calculateMajorBazelVersion(): Int {
     val dirName = Path(bazelBinary).parent.name
     // With bzlmod enabled the directory name is something like:
     // rules_bazel_integration_test~0.18.0~bazel_binaries~build_bazel_bazel_6_3_2
     val bazelPart = if (dirName.contains("~")) dirName.split("~")[3] else dirName
-    val majorVersion = bazelPart.split("_")[3].toIntOrNull()
-    // null for .bazelversion, we can assume that it's > 6, so we can return "@" anyway
-    return if (majorVersion != null && majorVersion < 6) "" else "@"
+    return bazelPart.split("_")[3].toIntOrNull() ?: 100
   }
+
+  // check: https://github.com/bazelbuild/intellij/blob/adb358670a7fc6ad51808486dc03f4605f83dcd3/aspect/testing/tests/src/com/google/idea/blaze/aspect/integration/BazelInvokingIntegrationTestRunner.java#L132
+  private fun calculateTargetPrefix(): String = if (majorBazelVersion < 6) "" else "@"
 
   protected open fun installServer() {
     Install.main(
