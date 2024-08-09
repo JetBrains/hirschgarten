@@ -70,8 +70,10 @@ private class AndroidFacetEntityUpdater(private val workspaceModelEntityUpdaterC
       }
 
     val updatedParentModuleEntity =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
-        this.facets += entity
+      workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder {
+        it.modifyModuleEntity(parentModuleEntity) {
+          this.facets += entity
+        }
       }
     return updatedParentModuleEntity.facets.last()
   }

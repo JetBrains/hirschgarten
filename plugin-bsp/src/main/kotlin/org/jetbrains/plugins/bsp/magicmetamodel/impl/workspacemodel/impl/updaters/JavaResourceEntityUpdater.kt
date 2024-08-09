@@ -7,7 +7,6 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.modifyContentRootEntity
 import com.intellij.platform.workspace.jps.entities.modifySourceRootEntity
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
@@ -22,14 +21,13 @@ internal class JavaResourceEntityUpdater(private val workspaceModelEntityUpdater
     val sourceRoots =
       (entitiesToAdd zip contentRootEntities).map { (entityToAdd, contentRootEntity) ->
         addSourceRootEntity(
-          workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
           contentRootEntity,
           entityToAdd,
           parentModuleEntity,
         )
       }
     return sourceRoots.map { sourceRoot ->
-      addJavaResourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, sourceRoot)
+      addJavaResourceRootEntity(sourceRoot)
     }
   }
 
@@ -45,7 +43,6 @@ internal class JavaResourceEntityUpdater(private val workspaceModelEntityUpdater
   }
 
   private fun addSourceRootEntity(
-    builder: MutableEntityStorage,
     contentRootEntity: ContentRootEntity,
     entityToAdd: ResourceRoot,
     parentModuleEntity: ModuleEntity,
@@ -58,14 +55,16 @@ internal class JavaResourceEntityUpdater(private val workspaceModelEntityUpdater
       )
 
     val updatedContentRootEntity =
-      builder.modifyContentRootEntity(contentRootEntity) {
-        this.sourceRoots += entity
+      workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { builder ->
+        builder.modifyContentRootEntity(contentRootEntity) {
+          this.sourceRoots += entity
+        }
       }
 
     return updatedContentRootEntity.sourceRoots.last()
   }
 
-  private fun addJavaResourceRootEntity(builder: MutableEntityStorage, sourceRoot: SourceRootEntity): JavaResourceRootPropertiesEntity {
+  private fun addJavaResourceRootEntity(sourceRoot: SourceRootEntity): JavaResourceRootPropertiesEntity {
     val entity =
       JavaResourceRootPropertiesEntity(
         generated = DEFAULT_GENERATED,
@@ -73,10 +72,11 @@ internal class JavaResourceEntityUpdater(private val workspaceModelEntityUpdater
         entitySource = sourceRoot.entitySource,
       )
 
-    val updatedSourceRoot =
+    val updatedSourceRoot = workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { builder ->
       builder.modifySourceRootEntity(sourceRoot) {
         this.javaResourceRoots += entity
       }
+    }
 
     return updatedSourceRoot.javaResourceRoots.last()
   }

@@ -15,7 +15,6 @@ import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.jps.entities.customImlData
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
@@ -37,9 +36,9 @@ internal class ModuleEntityUpdater(
   private val defaultDependencies: List<ModuleDependencyItem> = ArrayList(),
 ) : WorkspaceModelEntityWithoutParentModuleUpdater<GenericModuleInfo, ModuleEntity> {
   override fun addEntity(entityToAdd: GenericModuleInfo): ModuleEntity =
-    addModuleEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
+    addModuleEntity(entityToAdd)
 
-  private fun addModuleEntity(builder: MutableEntityStorage, entityToAdd: GenericModuleInfo): ModuleEntity {
+  private fun addModuleEntity(entityToAdd: GenericModuleInfo): ModuleEntity {
     val associatesDependencies = entityToAdd.associates.map { toModuleDependencyItemModuleDependency(it) }
     val (libraryModulesDependencies, librariesDependencies) =
       entityToAdd.librariesDependencies.partition {
@@ -65,7 +64,7 @@ internal class ModuleEntityUpdater(
         this.type = entityToAdd.type
       }
 
-    val moduleEntity = builder.addEntity(moduleEntityBuilder)
+    val moduleEntity = workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { it.addEntity(moduleEntityBuilder) }
 
     val imlData =
       ModuleCustomImlDataEntity(
@@ -77,8 +76,10 @@ internal class ModuleEntityUpdater(
       }
 
     // TODO: use a separate entity instead of imlData
-    return builder.modifyModuleEntity(moduleEntity) {
-      this.customImlData = imlData
+    return workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder {
+      it.modifyModuleEntity(moduleEntity) {
+        this.customImlData = imlData
+      }
     }
   }
 
@@ -133,12 +134,11 @@ internal fun toLibraryDependency(intermediateLibraryDependency: IntermediateLibr
 
 internal class WorkspaceModuleRemover(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModuleEntityRemover<ModuleName> {
-  override fun removeEntity(entityToRemove: ModuleName) {
+  override fun removeEntity(entityToRemove: ModuleName): Unit = workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { builder ->
     // TODO https://youtrack.jetbrains.com/issue/BAZEL-634
-    val moduleToRemove =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.resolve(ModuleId(entityToRemove.name))!!
+    val moduleToRemove = builder.resolve(ModuleId(entityToRemove.name))!!
 
-    workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(moduleToRemove)
+    builder.removeEntity(moduleToRemove)
   }
 
   override fun clear() {
@@ -147,8 +147,8 @@ internal class WorkspaceModuleRemover(private val workspaceModelEntityUpdaterCon
     removeEntities(BspProjectDirectoriesEntity::class.java)
   }
 
-  private fun <E : WorkspaceEntity> removeEntities(entityClass: Class<E>) {
-    val allEntities = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.entities(entityClass)
-    allEntities.forEach { workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.removeEntity(it) }
+  private fun <E : WorkspaceEntity> removeEntities(entityClass: Class<E>) = workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { builder ->
+    val allEntities = builder.entities(entityClass)
+    allEntities.forEach { builder.removeEntity(it) }
   }
 }

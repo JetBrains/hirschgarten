@@ -83,10 +83,12 @@ internal class WorkspaceModelUpdaterImpl(
         excludedRoots = excludedDirectories,
         entitySource = BspEntitySource,
       )
-    workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(entity)
+    workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { it.addEntity(entity) }
   }
 
-  private fun Module.isAlreadyAdded() = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(getModuleName()))
+  private fun Module.isAlreadyAdded() = workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder {
+    it.contains(ModuleId(getModuleName()))
+  }
 
   override fun removeModule(module: ModuleName) {
     workspaceModuleRemover.removeEntity(module)

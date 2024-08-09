@@ -20,8 +20,10 @@ internal class JvmBinaryJarsEntityUpdater(private val workspaceModelEntityUpdate
         jars = jvmBinaryJars,
       )
     val updatedParentModuleEntity =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
-        this.jvmBinaryJarsEntity = entity
+      workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder {
+        it.modifyModuleEntity(parentModuleEntity) {
+          this.jvmBinaryJarsEntity = entity
+        }
       }
 
     return updatedParentModuleEntity.jvmBinaryJarsEntity ?: error("jvmBinaryJarsEntity was not added properly")

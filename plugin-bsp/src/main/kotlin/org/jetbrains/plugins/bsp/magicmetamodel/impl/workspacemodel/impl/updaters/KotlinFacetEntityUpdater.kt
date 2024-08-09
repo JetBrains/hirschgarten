@@ -105,8 +105,10 @@ internal class KotlinFacetEntityUpdater(
     kotlinSettingsEntity: KotlinSettingsEntity.Builder,
   ): KotlinSettingsEntity {
     val updatedParentModuleEntity =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
-        this.kotlinSettings += kotlinSettingsEntity
+      workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder {
+        it.modifyModuleEntity(parentModuleEntity) {
+          this.kotlinSettings += kotlinSettingsEntity
+        }
       }
 
     return updatedParentModuleEntity.kotlinSettings.last()

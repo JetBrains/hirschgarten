@@ -32,7 +32,7 @@ internal class GeneratedJavaSourceEntityUpdater(private val workspaceModelEntity
           entitySource = BspEntitySource,
         )
       }.map {
-        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(it)
+        workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { builder -> builder.addEntity(it) }
       }
   }
 }

@@ -5,7 +5,6 @@ import com.intellij.java.workspace.entities.javaSourceRoots
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.modifySourceRootEntity
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 
@@ -32,7 +31,6 @@ internal class JavaSourceEntityUpdater(
 
     return (sourceRootEntities zip entitiesToAdd).map { (sourceRootEntity, entityToAdd) ->
       addJavaSourceRootEntity(
-        workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
         sourceRootEntity,
         entityToAdd,
       )
@@ -40,7 +38,6 @@ internal class JavaSourceEntityUpdater(
   }
 
   private fun addJavaSourceRootEntity(
-    builder: MutableEntityStorage,
     sourceRoot: SourceRootEntity,
     entityToAdd: JavaSourceRoot,
   ): JavaSourceRootPropertiesEntity {
@@ -51,10 +48,11 @@ internal class JavaSourceEntityUpdater(
         entitySource = sourceRoot.entitySource,
       )
 
-    val updatedSourceRoot =
+    val updatedSourceRoot = workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { builder ->
       builder.modifySourceRootEntity(sourceRoot) {
         this.javaSourceRoots = listOf(entity)
       }
+    }
 
     return updatedSourceRoot.javaSourceRoots.last()
   }

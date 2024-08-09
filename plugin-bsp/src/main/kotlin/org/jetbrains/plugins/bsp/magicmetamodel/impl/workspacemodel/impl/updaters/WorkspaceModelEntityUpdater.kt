@@ -8,12 +8,20 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.WorkspaceModelEntity
 import java.nio.file.Path
 
-internal data class WorkspaceModelEntityUpdaterConfig(
-  val workspaceEntityStorageBuilder: MutableEntityStorage,
+internal class WorkspaceModelEntityUpdaterConfig(
+  private val workspaceEntityStorageBuilder: MutableEntityStorage,
   val virtualFileUrlManager: VirtualFileUrlManager,
   val projectBasePath: Path,
   val project: Project,
-)
+) {
+  private val workspaceEntityStorageBuilderLock = Any()
+
+  inline fun <R> withWorkspaceEntityStorageBuilder(block: (MutableEntityStorage) -> R): R {
+    synchronized(workspaceEntityStorageBuilderLock) {
+      return block(workspaceEntityStorageBuilder)
+    }
+  }
+}
 
 internal sealed interface WorkspaceModelEntityUpdater<in E : WorkspaceModelEntity, out R : WorkspaceEntity>
 

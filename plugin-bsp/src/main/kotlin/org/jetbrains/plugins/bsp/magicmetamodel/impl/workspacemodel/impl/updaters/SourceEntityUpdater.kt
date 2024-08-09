@@ -4,7 +4,6 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.modifyContentRootEntity
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericSourceRoot
@@ -18,12 +17,11 @@ internal open class SourceEntityUpdater(
   override fun addEntities(entitiesToAdd: List<GenericSourceRoot>, parentModuleEntity: ModuleEntity): List<SourceRootEntity> {
     return if (workspaceModelEntityFolderMarkerExists) {
       val commonContentRoot = addSingleContentRootEntity(entitiesToAdd, parentModuleEntity) ?: return emptyList()
-      entitiesToAdd.map { addSourceRootEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, commonContentRoot, it) }
+      entitiesToAdd.map { addSourceRootEntity(commonContentRoot, it) }
     } else {
       val contentRootEntities = addContentRootEntities(entitiesToAdd, parentModuleEntity)
       (contentRootEntities zip entitiesToAdd).map { (contentRootEntity, entryToAdd) ->
         addSourceRootEntity(
-          workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
           contentRootEntity,
           entryToAdd,
         )
@@ -65,7 +63,6 @@ internal open class SourceEntityUpdater(
   }
 
   private fun addSourceRootEntity(
-    builder: MutableEntityStorage,
     contentRootEntity: ContentRootEntity,
     entityToAdd: GenericSourceRoot,
   ): SourceRootEntity {
@@ -77,8 +74,10 @@ internal open class SourceEntityUpdater(
       )
 
     val updatedContentRootEntity =
-      builder.modifyContentRootEntity(contentRootEntity) {
-        this.sourceRoots += entity
+      workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder {
+        it.modifyContentRootEntity(contentRootEntity) {
+          this.sourceRoots += entity
+        }
       }
 
     return updatedContentRootEntity.sourceRoots.last()

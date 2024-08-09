@@ -6,7 +6,6 @@ import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
 import com.intellij.platform.workspace.storage.EntitySource
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
@@ -25,16 +24,15 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
   //    return addLibraryEntity(builder, entityToAdd, tableId, entitySource)
   //  }
   override fun addEntity(entityToAdd: Library): LibraryEntity =
-    addProjectLibraryEntity(workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder, entityToAdd)
+    addProjectLibraryEntity(entityToAdd)
 
-  private fun addProjectLibraryEntity(builder: MutableEntityStorage, entityToAdd: Library): LibraryEntity {
+  private fun addProjectLibraryEntity(entityToAdd: Library): LibraryEntity {
     val tableId = LibraryTableId.ProjectLibraryTableId
     val entitySource = calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig)
-    return addLibraryEntity(builder, entityToAdd, tableId, entitySource)
+    return addLibraryEntity(entityToAdd, tableId, entitySource)
   }
 
   private fun addLibraryEntity(
-    builder: MutableEntityStorage,
     entityToAdd: Library,
     tableId: LibraryTableId,
     entitySource: EntitySource,
@@ -49,10 +47,12 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
         this.excludedRoots = arrayListOf()
       }
 
-    val foundLibrary = builder.resolve(LibraryId(entityToAdd.displayName, tableId))
-    if (foundLibrary != null) return foundLibrary
+    workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { builder ->
+      val foundLibrary = builder.resolve(LibraryId(entityToAdd.displayName, tableId))
+      if (foundLibrary != null) return foundLibrary
 
-    return builder.addEntity(libraryEntity)
+      return builder.addEntity(libraryEntity)
+    }
   }
 
   private fun toLibrarySourcesRoots(entityToAdd: Library): List<LibraryRoot> =

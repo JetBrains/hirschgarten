@@ -38,8 +38,10 @@ internal class AndroidAddendumEntityUpdater(private val workspaceModelEntityUpda
       }
 
     val updatedParentModuleEntity =
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.modifyModuleEntity(parentModuleEntity) {
-        this.androidAddendumEntity = entity
+      workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder {
+        it.modifyModuleEntity(parentModuleEntity) {
+          this.androidAddendumEntity = entity
+        }
       }
     return updatedParentModuleEntity.androidAddendumEntity ?: error("androidAddendumEntity was not added properly")
   }

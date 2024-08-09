@@ -8,7 +8,6 @@ import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.android.sdk.AndroidSdkType
@@ -32,7 +31,6 @@ internal class JavaModuleWithSourcesUpdater(
     val moduleEntity = moduleEntityUpdater.addEntity(entityToAdd.genericModuleInfo)
 
     addJavaModuleSettingsEntity(
-      builder = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       entityToAdd = entityToAdd,
       moduleEntity = moduleEntity,
     )
@@ -109,7 +107,6 @@ internal class JavaModuleWithSourcesUpdater(
   }
 
   private fun addJavaModuleSettingsEntity(
-    builder: MutableEntityStorage,
     entityToAdd: JavaModule,
     moduleEntity: ModuleEntity,
   ) {
@@ -132,8 +129,10 @@ internal class JavaModuleWithSourcesUpdater(
         this.languageLevelId = LanguageLevel.parse(entityToAdd.javaAddendum?.languageVersion)?.name
       }
 
-    builder.modifyModuleEntity(moduleEntity) {
-      this.javaSettings = entity
+    workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { builder ->
+      builder.modifyModuleEntity(moduleEntity) {
+        this.javaSettings = entity
+      }
     }
   }
 

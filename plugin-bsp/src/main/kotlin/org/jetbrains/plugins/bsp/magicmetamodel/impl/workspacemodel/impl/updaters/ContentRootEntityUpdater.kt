@@ -4,7 +4,6 @@ import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.jps.entities.ExcludeUrlEntity
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
-import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
 
@@ -12,13 +11,11 @@ internal class ContentRootEntityUpdater(private val workspaceModelEntityUpdaterC
   WorkspaceModelEntityWithParentModuleUpdater<ContentRoot, ContentRootEntity> {
   override fun addEntities(entitiesToAdd: List<ContentRoot>, parentModuleEntity: ModuleEntity): List<ContentRootEntity> =
     addContentRootEntities(
-      workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder,
       parentModuleEntity,
       entitiesToAdd,
     )
 
   private fun addContentRootEntities(
-    builder: MutableEntityStorage,
     moduleEntity: ModuleEntity,
     entitiesToAdd: List<ContentRoot>,
   ): List<ContentRootEntity> {
@@ -27,10 +24,11 @@ internal class ContentRootEntityUpdater(private val workspaceModelEntityUpdaterC
         createContentRootEntity(moduleEntity, entityToAdd)
       }
 
-    val updatedModuleEntity =
+    val updatedModuleEntity = workspaceModelEntityUpdaterConfig.withWorkspaceEntityStorageBuilder { builder ->
       builder.modifyModuleEntity(moduleEntity) {
         contentRoots += contentRootEntities
       }
+    }
 
     return updatedModuleEntity.contentRoots.takeLast(contentRootEntities.size)
   }
