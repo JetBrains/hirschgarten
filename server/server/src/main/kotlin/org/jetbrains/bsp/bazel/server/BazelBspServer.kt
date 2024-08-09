@@ -166,7 +166,7 @@ class BazelBspServer(
         bazelInfo,
         bspClientLogger,
       )
-    val targetInfoReader = TargetInfoReader()
+    val targetInfoReader = TargetInfoReader(bspClientLogger)
 
     val projectResolver =
       ProjectResolver(
