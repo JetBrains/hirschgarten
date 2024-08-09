@@ -35,7 +35,7 @@ public data class ModuleDetails(
 internal data class ModuleName(val name: String)
 
 internal interface WorkspaceModelUpdater {
-  fun loadModules(moduleEntities: List<Module>) = moduleEntities.forEach { loadModule(it) }
+  fun loadModules(moduleEntities: List<Module>)
 
   fun loadModule(module: Module)
 
