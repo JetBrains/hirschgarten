@@ -5,16 +5,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import okio.IOException
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.model.Label
 import java.nio.file.Path
 import kotlin.io.path.reader
 
-class TargetInfoReader {
+class TargetInfoReader(private val bspClientLogger: BspClientLogger) {
   fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetInfo> =
     runBlocking(Dispatchers.Default) {
       files.map { file -> async { readFromFile(file) } }.awaitAll()
-    }.groupBy { it.id }
+    }.asSequence()
+      .filterNotNull()
+      .groupBy { it.id }
       // If any aspect has already been run on the build graph, it created shadow graph
       // containing new nodes of the same labels as the original ones. In particular,
       // this happens for all protobuf targets, for which a built-in aspect "bazel_java_proto_aspect"
@@ -27,15 +31,21 @@ class TargetInfoReader {
         it.value.filter(TargetInfo::hasJvmTargetInfo).minByOrNull { targetInfo -> targetInfo.serializedSize } ?: it.value.first()
       }.mapKeys { Label.parse(it.key) }
 
-  private fun readFromFile(file: Path): TargetInfo {
+  private fun readFromFile(file: Path): TargetInfo? {
     val builder = TargetInfo.newBuilder()
     val parser =
       TextFormat.Parser
         .newBuilder()
         .setAllowUnknownFields(true)
         .build()
-    file.reader().use {
-      parser.merge(it, builder)
+    try {
+      file.reader().use {
+        parser.merge(it, builder)
+      }
+    } catch (e: IOException) {
+      // Can happen if one output path is a prefix of another, then Bazel can't create both
+      bspClientLogger.error("[WARN] Could not read target info $file: ${e.message}")
+      return null
     }
     return builder.build()
   }
