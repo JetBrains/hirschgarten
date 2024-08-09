@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.server.tasks
 
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
@@ -29,6 +30,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
         collectProject(SYNC_TASK_ID, shouldBuildProject)
       } finally {
         BspSyncStatusService.getInstance(project).finishSync()
+        ProjectView.getInstance(project).refresh()
       }
     }
 
