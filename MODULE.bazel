@@ -122,7 +122,7 @@ http_jar(
     url = "https://github.com/agluszak/bazel-bep-proto/releases/download/%s/bazel-bep-protobuf.jar" % BAZEL_BEP_VERSION,
 )
 
-bazel_dep(name = "rules_proto", version = "6.0.0")
+bazel_dep(name = "rules_proto", version = "6.0.2")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_python", version = "0.34.0")
