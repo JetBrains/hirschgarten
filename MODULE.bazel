@@ -19,7 +19,7 @@ register_toolchains(
 )
 
 bazel_dep(name = "rules_java", version = "7.8.0")
-bazel_dep(name = "rules_jvm_external", version = "6.2")
+bazel_dep(name = "rules_jvm_external",version = "6.2")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
