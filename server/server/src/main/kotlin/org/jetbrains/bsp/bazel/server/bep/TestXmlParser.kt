@@ -38,8 +38,6 @@ data class TestSuite(
   val errors: Int,
   @JacksonXmlProperty(isAttribute = true)
   val time: Double,
-  @JacksonXmlProperty(isAttribute = true)
-  val id: Int,
   @JacksonXmlElementWrapper(useWrapping = false)
   @JacksonXmlProperty(localName = "testcase")
   val testcase: List<TestCase> = emptyList(),
