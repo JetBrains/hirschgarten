@@ -44,7 +44,7 @@ maven.install(
         "io.kotest:kotest-assertions-shared-jvm:5.9.1",
         "io.kotest:kotest-common-jvm:5.9.1",
         "io.opentelemetry.semconv:opentelemetry-semconv:1.25.0-alpha",
-        "io.opentelemetry:opentelemetry-api:1.40.0",
+        "io.opentelemetry:opentelemetry-api:1.41.0",
         "io.opentelemetry:opentelemetry-exporter-otlp:1.40.0",
         "io.opentelemetry:opentelemetry-extension-kotlin:1.40.0",
         "io.opentelemetry:opentelemetry-sdk-trace:1.40.0",
