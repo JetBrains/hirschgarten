@@ -9,6 +9,8 @@ pull-requests:
     dependencies: "org.junit.jupiter:*"
   - group-id: kotest
     dependencies: "io.kotest:*"
+  - group-id: opentelemetry
+    dependencies: "io.opentelemetry:*"
   - title: "[maintenance] updated ${dependencyId} to ${versionTo}"
 search-paths:
   - path-patterns:
