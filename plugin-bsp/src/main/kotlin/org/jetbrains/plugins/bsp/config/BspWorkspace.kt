@@ -5,20 +5,23 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.vcs.BranchChangeListener
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileCopyEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
+import com.intellij.ui.tree.TreeVisitor
 import com.intellij.util.messages.Topic
+import com.intellij.util.ui.tree.TreeUtil
 import org.jetbrains.kotlin.tooling.core.Interner
 import org.jetbrains.kotlin.tooling.core.WeakInterner
+import javax.swing.tree.TreePath
 
 @Service(Service.Level.PROJECT)
 public class BspWorkspace(public val project: Project) : Disposable {
   private var initialized = false
-  private val bspWorkspaceWatcher = BspWorkspaceWatcher(project)
   public val interner: Interner = WeakInterner()
 
   @Synchronized
@@ -26,7 +29,7 @@ public class BspWorkspace(public val project: Project) : Disposable {
     if (!initialized) {
       BspProjectAware.initialize(this)
       BspProjectModuleBuildTasksTracker.initialize(this)
-      bspWorkspaceWatcher.listenForConfigChanges()
+      BspExternalServicesSubscriber(project).subscribe()
       initialized = true
     }
   }
@@ -65,8 +68,13 @@ internal class BspSyncStatusService(private val project: Project) {
   }
 }
 
-public class BspWorkspaceWatcher(private val project: Project) {
-  public fun listenForConfigChanges() {
+public class BspExternalServicesSubscriber(private val project: Project) {
+  public fun subscribe() {
+    subscribeForConfigChanges()
+    subscribeForBranchChanges()
+  }
+
+  public fun subscribeForConfigChanges() {
     project.messageBus.connect().subscribe(
       VirtualFileManager.VFS_CHANGES,
       object : BulkFileListener {
@@ -88,7 +96,7 @@ public class BspWorkspaceWatcher(private val project: Project) {
             vFile.name in projectAwareExtension.eligibleConfigFileNames ||
               projectAwareExtension.eligibleConfigFileExtensions.contains(vFile.extension)
           )
-      } ?: false
+      } == true
     }
   }
 
@@ -98,6 +106,37 @@ public class BspWorkspaceWatcher(private val project: Project) {
         it is VFileCopyEvent ||
         it is VFileMoveEvent
     }
+
+  private fun subscribeForBranchChanges() {
+    val projectView = ProjectView.getInstance(project)
+
+    // this visitor will traverse first the main project root, which has 2 elements in its path,
+    // therefore, we stop right after it finishes visiting this project root
+    val rootNoteExpandVisitor =
+      object : TreeVisitor {
+        override fun visit(treePath: TreePath): TreeVisitor.Action =
+          if (treePath.pathCount == 1) {
+            TreeVisitor.Action.CONTINUE
+          } else {
+            TreeVisitor.Action.INTERRUPT
+          }
+      }
+
+    project.messageBus.connect().subscribe(
+      BranchChangeListener.VCS_BRANCH_CHANGED,
+      object : BranchChangeListener {
+        override fun branchWillChange(branchName: String) {}
+
+        override fun branchHasChanged(branchName: String) {
+          // automatically expand the project view tree's root node on branch change event
+          // TODO: remove this workaround once this bug is fixed from the platform side
+          // https://youtrack.jetbrains.com/issue/IJPL-160019/Restore-workspace-when-switching-branches-collapses-root-in-project-tree-view-when-switching-between-local-branches
+          val pane = projectView.currentProjectViewPane ?: return
+          TreeUtil.expand(pane.tree, rootNoteExpandVisitor) {}
+        }
+      },
+    )
+  }
 }
 
 public interface BspWorkspaceListener {
