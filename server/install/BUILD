@@ -18,5 +18,8 @@ kt_jvm_binary(
         "//server/install:install-lib",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
         "@maven//:org_slf4j_slf4j_nop",  # fixes BAZEL-806
+        # Needed because the installer injects its own classpath as the one to be used by the installed server
+        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
     ],
 )
