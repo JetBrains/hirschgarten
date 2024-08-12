@@ -18,6 +18,7 @@ import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProviderImpl
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.diagnostic.telemetry.helpers.use
@@ -495,6 +496,7 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
       addBspFetchedAndroidSdks()
     }
 
+    VirtualFileManager.getInstance().asyncRefresh()
     project.refreshKotlinHighlighting()
   }
 
