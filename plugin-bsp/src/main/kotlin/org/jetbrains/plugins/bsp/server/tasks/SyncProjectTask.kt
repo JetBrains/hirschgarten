@@ -34,7 +34,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
       }
     }
 
-  private fun preSync() {
+  private suspend fun preSync() {
     log.debug("Running pre sync tasks")
     BspSyncStatusService.getInstance(project).startSync()
     saveAllFiles()
