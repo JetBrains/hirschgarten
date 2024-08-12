@@ -20,8 +20,8 @@ public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) 
     val project = e.project
 
     if (project != null) {
-      saveAllFiles()
       BspCoroutineService.getInstance(project).start {
+        saveAllFiles()
         actionPerformed(project, e)
       }
     } else {

@@ -10,12 +10,14 @@ import com.intellij.build.events.MessageEvent
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.build.events.impl.SuccessResultImpl
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
@@ -172,9 +174,8 @@ public suspend fun runBuildTargetTask(
     }
   }
 
-// TODO https://youtrack.jetbrains.com/issue/BAZEL-630
-public fun saveAllFiles() {
-  ApplicationManager.getApplication().invokeAndWait {
+public suspend fun saveAllFiles() {
+  withContext(Dispatchers.EDT) {
     FileDocumentManager.getInstance().saveAllDocuments()
   }
 }
