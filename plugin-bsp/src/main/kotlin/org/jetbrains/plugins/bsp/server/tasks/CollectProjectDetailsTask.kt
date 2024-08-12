@@ -47,6 +47,8 @@ import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
+import org.jetbrains.kotlin.analysis.api.platform.analysisMessageBus
+import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTopics
 import org.jetbrains.plugins.bsp.android.AndroidSdk
 import org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension
 import org.jetbrains.plugins.bsp.android.androidSdkGetterExtension
@@ -492,6 +494,8 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     if (BspFeatureFlags.isAndroidSupportEnabled) {
       addBspFetchedAndroidSdks()
     }
+
+    project.refreshKotlinHighlighting()
   }
 
   private suspend fun addBspFetchedJdks() =
@@ -611,6 +615,14 @@ public class CollectProjectDetailsTask(project: Project, private val taskId: Any
     writeAction {
       val javacOptions = JavacConfiguration.getOptions(project, JavacConfiguration::class.java)
       javacOptions.ADDITIONAL_OPTIONS_OVERRIDE = this.javacOptions
+    }
+
+  /**
+   * Workaround for https://youtrack.jetbrains.com/issue/KT-70632
+   */
+  private suspend fun Project.refreshKotlinHighlighting() =
+    writeAction {
+      analysisMessageBus.syncPublisher(KotlinModificationTopics.GLOBAL_MODULE_STATE_MODIFICATION).onModification()
     }
 
   private fun onCancel(e: Exception) {
