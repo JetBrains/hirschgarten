@@ -8,3 +8,4 @@ server/e2e/test-resources/rust-project/bazel-rust-project
 server/e2e/test-resources/android-project/bazel-android-project
 server/e2e/test-resources/android-kotlin-project/bazel-android-kotlin-project
 rules_intellij
+rules_sonatype
