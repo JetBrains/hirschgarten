@@ -46,19 +46,22 @@ public class BspWorkspace(public val project: Project) : Disposable {
 internal class BspSyncStatusService(private val project: Project) {
   private var isCanceled = false
 
-  var isSyncInProgress: Boolean = false
-    private set
+  private var _isSyncInProgress: Boolean = false
+
+  val isSyncInProgress: Boolean
+    @Synchronized get() = _isSyncInProgress
 
   @Synchronized
   fun startSync() {
+    if (_isSyncInProgress) throw SyncAlreadyInProgressException()
     isCanceled = false
-    isSyncInProgress = true
+    _isSyncInProgress = true
     project.messageBus.syncPublisher(BspWorkspaceListener.TOPIC).syncStarted()
   }
 
   @Synchronized
   fun finishSync() {
-    isSyncInProgress = false
+    _isSyncInProgress = false
     project.messageBus.syncPublisher(BspWorkspaceListener.TOPIC).syncFinished(isCanceled)
   }
 
@@ -72,6 +75,8 @@ internal class BspSyncStatusService(private val project: Project) {
     fun getInstance(project: Project): BspSyncStatusService = project.getService(BspSyncStatusService::class.java)
   }
 }
+
+class SyncAlreadyInProgressException : IllegalStateException()
 
 public class BspExternalServicesSubscriber(private val project: Project) {
   public fun subscribe() {
