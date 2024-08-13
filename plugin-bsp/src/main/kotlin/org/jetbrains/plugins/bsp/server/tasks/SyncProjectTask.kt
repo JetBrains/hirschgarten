@@ -22,7 +22,9 @@ private const val SYNC_TASK_ID = "bsp-sync-project"
 private val log = logger<SyncProjectTask>()
 
 public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Project", project) {
-  public suspend fun execute(shouldBuildProject: Boolean): Unit =
+  public suspend fun execute(shouldBuildProject: Boolean) {
+    if (BspSyncStatusService.getInstance(project).isSyncInProgress) return
+
     bspTracer.spanBuilder("bsp.sync.project.ms").useWithScope {
       try {
         log.debug("Starting sync project task")
@@ -33,6 +35,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
         ProjectView.getInstance(project).refresh()
       }
     }
+  }
 
   private suspend fun preSync() {
     log.debug("Running pre sync tasks")
