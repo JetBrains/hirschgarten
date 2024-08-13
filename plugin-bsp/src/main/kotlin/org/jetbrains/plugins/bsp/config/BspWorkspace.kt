@@ -46,19 +46,24 @@ public class BspWorkspace(public val project: Project) : Disposable {
 internal class BspSyncStatusService(private val project: Project) {
   private var isCanceled = false
 
-  var isSyncInProgress: Boolean = false
-    private set
+  private var _isSyncInProgress: Boolean = false
 
-  @Synchronized
+  val isSyncInProgress: Boolean
+    @Synchronized
+    get() = _isSyncInProgress
+
   fun startSync() {
-    isCanceled = false
-    isSyncInProgress = true
+    synchronized(this) {
+      isCanceled = false
+      _isSyncInProgress = true
+    }
     project.messageBus.syncPublisher(BspWorkspaceListener.TOPIC).syncStarted()
   }
 
-  @Synchronized
   fun finishSync() {
-    isSyncInProgress = false
+    synchronized(this) {
+      _isSyncInProgress = false
+    }
     project.messageBus.syncPublisher(BspWorkspaceListener.TOPIC).syncFinished(isCanceled)
   }
 
