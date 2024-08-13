@@ -10,6 +10,7 @@ import kotlinx.coroutines.job
 import kotlinx.coroutines.runInterruptible
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspSyncStatusService
+import org.jetbrains.plugins.bsp.config.SyncAlreadyInProgressException
 import org.jetbrains.plugins.bsp.performance.testing.bspTracer
 import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
@@ -26,11 +27,15 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
     if (BspSyncStatusService.getInstance(project).isSyncInProgress) return
 
     bspTracer.spanBuilder("bsp.sync.project.ms").useWithScope {
+      var syncAlreadyInProgress = false
       try {
         log.debug("Starting sync project task")
         preSync()
         collectProject(SYNC_TASK_ID, shouldBuildProject)
+      } catch (_: SyncAlreadyInProgressException) {
+        syncAlreadyInProgress = true
       } finally {
+        if (syncAlreadyInProgress) return@useWithScope
         BspSyncStatusService.getInstance(project).finishSync()
         ProjectView.getInstance(project).refresh()
       }
