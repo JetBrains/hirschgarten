@@ -18,7 +18,15 @@ import kotlin.collections.contains
 
 private val SOURCE_EXTENSIONS = listOf("java", "kt", "scala", "py")
 
-private fun VirtualFile.isSourceFile(): Boolean = isFile && extension?.lowercase() in SOURCE_EXTENSIONS
+private fun VirtualFile.isSourceFile(): Boolean {
+  val isFile =
+    try {
+      this.isFile
+    } catch (_: UnsupportedOperationException) {
+      false
+    }
+  return isFile && extension?.lowercase() in SOURCE_EXTENSIONS
+}
 
 /**
  * If a source file is added to the dummy module but isn't added to any other module, then we should not attempt to index/analyze it.
