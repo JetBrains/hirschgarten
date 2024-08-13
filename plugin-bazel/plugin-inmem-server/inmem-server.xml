@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="org.jetbrains.bsp">
+        <startBuiltInServerExtension implementation="org.jetbrains.plugins.bsp.inmemserver.InMemServerProviderImpl"/>
+    </extensions>
+</idea-plugin>

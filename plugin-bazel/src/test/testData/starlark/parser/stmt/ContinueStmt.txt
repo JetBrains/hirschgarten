@@ -1,0 +1,3 @@
+FILE
+  StarlarkContinueStatement(CONTINUE_STATEMENT)
+    PsiElement(Starlark:continue)('continue')

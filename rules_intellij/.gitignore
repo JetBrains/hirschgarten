@@ -1,0 +1,7 @@
+bazel-*
+!bazel-buildifier
+.project
+.ijwb/
+.aswb/
+.clwb/
+MODULE.bazel.lock
