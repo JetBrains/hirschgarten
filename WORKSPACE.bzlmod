@@ -2,9 +2,10 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
 
 # ======================================================================================================================
-# io_bazel_rules_scala - required by bazel_sonatype
+# io_bazel_rules_scala - required by rules_sonatype
 
 IO_BAZEL_RULES_SCALA_TAG = "6.6.0"
 
@@ -33,20 +34,14 @@ load("@io_bazel_rules_scala//scala:scala.bzl", "scala_repositories")
 scala_repositories()
 
 # ======================================================================================================================
-# bazel_sonatype - for publish
+# rules_sonatype - for publish
 
-BAZEL_SONATYPE_TAG = "1.1.1"
-
-BAZEL_SONATYPE_SHA = "6d1bc7da15dae958274df944eb46e9757e14187cda6decd66fc1aeeb1ea21758"
-
-http_archive(
-    name = "bazel_sonatype",
-    sha256 = BAZEL_SONATYPE_SHA,
-    strip_prefix = "bazel-sonatype-{}".format(BAZEL_SONATYPE_TAG),
-    url = "https://github.com/JetBrains/bazel-sonatype/archive/v{}.zip".format(BAZEL_SONATYPE_TAG),
+local_repository(
+    name = "rules_sonatype",
+    path = "rules_sonatype",
 )
 
 # --------------------------------------------------------------------------------------------------------------------
-load("@bazel_sonatype//:defs.bzl", "sonatype_dependencies")
+load("@rules_sonatype//:defs.bzl", "sonatype_dependencies")
 
 sonatype_dependencies()
