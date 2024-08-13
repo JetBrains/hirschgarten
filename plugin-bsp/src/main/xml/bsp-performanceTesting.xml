@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.jetbrains">
+        <performancePlugin.commandProvider implementation="org.jetbrains.plugins.bsp.performance.testing.BazelCommandProvider"/>
+    </extensions>
+</idea-plugin>

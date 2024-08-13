@@ -1,0 +1,11 @@
+package org.jetbrains.plugins.bsp.config
+
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.util.IconLoader
+
+internal object BspPluginIcons {
+  val bsp = IconLoader.getIcon("/icons/bsp.svg", BspPluginIcons::class.java)
+
+  val reload = AllIcons.Actions.Refresh
+  val disconnect = AllIcons.Actions.Suspend
+}

@@ -1,0 +1,11 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="org.jetbrains.bsp">
+        <bspRunHandler implementation="org.jetbrains.plugins.bsp.intellij.IntellijPluginRunHandler" />
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.intellij.BuildPluginBeforeRunTaskProvider" />
+        <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.intellij.CopyPluginToSandboxBeforeRunTaskProvider" />
+        <programRunner implementation="org.jetbrains.plugins.bsp.intellij.IntellijPluginDebuggerRunner" />
+        <notificationGroup displayType="BALLOON" id="CopyPluginToSandboxBeforeRunTaskProvider"/>
+    </extensions>
+</idea-plugin>

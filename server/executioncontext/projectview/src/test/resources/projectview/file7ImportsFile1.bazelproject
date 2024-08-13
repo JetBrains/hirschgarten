@@ -1,0 +1,20 @@
+import /projectview/file1.bazelproject
+
+targets:
+    //included_target7.1
+    -//excluded_target7.1
+    -//excluded_target7.2
+
+bazel_binary: path7/to/bazel
+
+build_flags:
+    --build_flag7.1=value7.1
+    --build_flag7.2=value7.2
+    --build_flag7.3=value7.3
+
+allow_manual_targets_sync: true
+
+
+derive_targets_from_directories: false
+
+import_depth: 7
