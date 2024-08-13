@@ -9,3 +9,12 @@ kt_test(
         "//server/bazelrunner",
     ],
 )
+
+kt_test(
+    name = "BazelRunnerBuilderTest",
+    size = "small",
+    src = "BazelRunnerBuilderTest.kt",
+    deps = [
+        "//server/bazelrunner",
+    ],
+)

@@ -15,14 +15,16 @@ object ClasspathQuery {
     bazelRunner: BazelRunner,
   ): JvmClasspath {
     val queryFile = bspInfo.bazelBspDir().resolve("aspects/runtime_classpath_query.bzl")
+    val command =
+      bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = true) {
+        cquery {
+          targets.add(target)
+          options.addAll(listOf("--starlark:file=$queryFile", "--output=starlark"))
+        }
+      }
     val cqueryResult =
       bazelRunner
-        .commandBuilder()
-        .cquery()
-        .withUseBuildFlags()
-        .withTargets(listOf(target.uri))
-        .withFlags(listOf("--starlark:file=$queryFile", "--output=starlark"))
-        .executeBazelCommand(parseProcessOutput = false)
+        .runBazelCommand(command, logProcessOutput = false)
         .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
     if (cqueryResult.isNotSuccess) throw RuntimeException("Could not query target '${target.uri}' for runtime classpath")
     try {

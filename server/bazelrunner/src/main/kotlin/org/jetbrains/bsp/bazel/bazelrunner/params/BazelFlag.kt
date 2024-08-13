@@ -4,6 +4,8 @@ import org.jetbrains.bsp.bazel.commons.Constants.NAME
 import org.jetbrains.bsp.bazel.commons.Constants.VERSION
 
 object BazelFlag {
+  @JvmStatic fun runUnder(command: String) = arg("run_under", command)
+
   @JvmStatic fun color(enabled: Boolean) = arg("color", if (enabled) "yes" else "no")
 
   @JvmStatic fun keepGoing() = flag("keep_going")
@@ -14,6 +16,7 @@ object BazelFlag {
 
   @JvmStatic fun buildManualTests(): String = flag("build_manual_tests")
 
+  // Use file:// uri scheme for output paths in the build events.
   @JvmStatic fun buildEventBinaryPathConversion(enabled: Boolean): String =
     arg(
       "build_event_binary_file_path_conversion",

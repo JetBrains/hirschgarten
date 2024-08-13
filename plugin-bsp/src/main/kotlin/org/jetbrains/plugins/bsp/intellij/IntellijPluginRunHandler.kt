@@ -1,14 +1,13 @@
 package org.jetbrains.plugins.bsp.intellij
 
-import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.JavaCommandLineState
 import com.intellij.execution.configurations.JavaParameters
+import com.intellij.execution.configurations.ParametersList
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.application.PathManager
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.JavaSdkType
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
@@ -23,35 +22,35 @@ import org.jetbrains.idea.devkit.run.IdeaLicenseHelper
 import org.jetbrains.idea.devkit.run.loadProductInfo
 import org.jetbrains.idea.devkit.run.resolveIdeHomeVariable
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
+import org.jetbrains.plugins.bsp.run.BspRunHandler
+import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import java.io.File
 import java.io.IOException
 import java.nio.file.Path
 
 internal val INTELLIJ_PLUGIN_SANDBOX_KEY: Key<Path> = Key.create("INTELLIJ_PLUGIN_SANDBOX_KEY")
-private const val INTELLIJ_PLUGIN_TAG = "intellij-plugin"
 
-public class IntellijPluginRunHandler : BspRunHandler {
-  override fun canRun(targets: List<BuildTargetInfo>): Boolean = targets.all { it.tags.contains(INTELLIJ_PLUGIN_TAG) }
+class IntellijPluginRunHandler(private val configuration: BspRunConfiguration) : BspRunHandler {
+  init {
+    configuration.beforeRunTasks =
+      listOfNotNull(
+        BuildPluginBeforeRunTaskProvider().createTask(configuration),
+        CopyPluginToSandboxBeforeRunTaskProvider().createTask(configuration),
+      )
+  }
 
-  override fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> =
-    listOf(
-      BuildPluginBeforeRunTaskProvider().createTask(configuration),
-      CopyPluginToSandboxBeforeRunTaskProvider().createTask(configuration),
-    ).map { checkNotNull(it) { "Couldn't create before run task" } }
+  override val state: IntellijPluginRunHandlerState = IntellijPluginRunHandlerState()
+
+  override val name: String = "IntelliJ Plugin Run Handler"
 
   // Mostly copied from org.jetbrains.idea.devkit.run.PluginRunConfiguration
-  override fun getRunProfileState(
-    project: Project,
-    executor: Executor,
-    environment: ExecutionEnvironment,
-    configuration: BspRunConfigurationBase,
-  ): RunProfileState {
+  override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     val ideaJdk =
-      findNewestIdeaJdk()
-        ?: throw ExecutionException(BspPluginBundle.message("console.task.exception.no.intellij.platform.plugin.sdk"))
+      state.intellijSdkName?.let { findIdeaJdk(it) } ?: throw ExecutionException(
+        BspPluginBundle.message(
+          "console.task.exception.no.intellij.platform.plugin.sdk",
+        ),
+      )
 
     var sandboxHome =
       (ideaJdk.sdkAdditionalData as Sandbox).sandboxHome
@@ -74,10 +73,11 @@ public class IntellijPluginRunHandler : BspRunHandler {
         val ideaJdkHome = checkNotNull(ideaJdk.homePath)
 
         val params = JavaParameters()
+        fillParameterList(params.programParametersList, state.programArguments)
 
         val vm = params.vmParametersList
 
-        // TODO add parameters from run config UI here
+        fillParameterList(vm, state.javaVmOptions)
 
         vm.defineProperty(PathManager.PROPERTY_CONFIG_PATH, canonicalSandbox + File.separator + "config")
         vm.defineProperty(PathManager.PROPERTY_SYSTEM_PATH, canonicalSandbox + File.separator + "system")
@@ -119,10 +119,19 @@ public class IntellijPluginRunHandler : BspRunHandler {
     }
   }
 
-  // TODO select Idea JDK via run config UI
-  private fun findNewestIdeaJdk(): Sdk? {
+  private fun fillParameterList(parameterList: ParametersList, parameters: String?) {
+    if (!parameters.isNullOrEmpty()) {
+      for (parameter in parameters.split(" ")) {
+        if (parameter.isNotEmpty()) {
+          parameterList.add(parameter)
+        }
+      }
+    }
+  }
+
+  private fun findIdeaJdk(name: String): Sdk? {
     val jdkType = IdeaJdk.getInstance()
     val jdks = ProjectJdkTable.getInstance().getSdksOfType(jdkType)
-    return jdks.maxWithOrNull(jdkType.comparator)
+    return jdks.firstOrNull { it.name == name }
   }
 }

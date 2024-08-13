@@ -1,11 +1,11 @@
-package org.jetbrains.plugins.bsp.ui.configuration
+package org.jetbrains.plugins.bsp.run
 
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessOutputType
 import java.io.OutputStream
 import java.util.concurrent.CompletableFuture
 
-public class BspProcessHandler<T>(private val requestFuture: CompletableFuture<T>) : ProcessHandler() {
+class BspProcessHandler(private val requestFuture: CompletableFuture<*>) : ProcessHandler() {
   override fun startNotify() {
     super.startNotify()
     requestFuture.handle { _, error ->
@@ -20,7 +20,7 @@ public class BspProcessHandler<T>(private val requestFuture: CompletableFuture<T
 
   override fun destroyProcessImpl() {
     requestFuture.cancel(true)
-    super.notifyProcessTerminated(1)
+    notifyProcessTerminated(1)
   }
 
   override fun detachProcessImpl() {

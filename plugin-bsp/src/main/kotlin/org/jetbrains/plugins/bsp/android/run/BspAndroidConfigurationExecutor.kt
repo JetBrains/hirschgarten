@@ -14,11 +14,13 @@ import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.RunContentDescriptor
+import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.getModule
-import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
+import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
+import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 import com.android.tools.idea.project.getPackageName as getApplicationIdFromManifest
 
 public class BspAndroidConfigurationExecutor(private val environment: ExecutionEnvironment) : AndroidConfigurationExecutor {
@@ -85,7 +87,9 @@ public class BspAndroidConfigurationExecutor(private val environment: ExecutionE
   private fun getApplicationId(): String? {
     val bspRunConfiguration = environment.runProfile as? BspRunConfiguration ?: return null
     val target = bspRunConfiguration.targets.singleOrNull() ?: return null
-    val module = target.getModule(environment.project) ?: return null
+    val targetInfo =
+      environment.project.service<TemporaryTargetUtils>().getBuildTargetInfoForId(target)
+    val module = targetInfo?.getModule(environment.project) ?: return null
     return getApplicationIdFromManifest(module)
   }
 

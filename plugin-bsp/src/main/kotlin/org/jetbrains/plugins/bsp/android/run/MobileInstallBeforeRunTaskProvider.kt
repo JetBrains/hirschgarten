@@ -13,7 +13,7 @@ import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
+import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 
 private val PROVIDER_ID = Key.create<MobileInstallBeforeRunTaskProvider.Task>("MobileInstallBeforeRunTaskProvider")
 
@@ -40,9 +40,9 @@ public class MobileInstallBeforeRunTaskProvider : BeforeRunTaskProvider<MobileIn
     task: Task,
   ): Boolean {
     val runConfiguration = environment.runProfile as? BspRunConfiguration ?: return false
-    if (runConfiguration.runHandler !is AndroidBspRunHandler) return false
+    if (runConfiguration.handler !is AndroidBspRunHandler) return false
 
-    val targetId = runConfiguration.targets.singleOrNull()?.id ?: return false
+    val targetId = runConfiguration.targets.singleOrNull() ?: return false
     val deviceFuture = environment.getCopyableUserData(DEVICE_FUTURE_KEY) ?: return false
 
     val startType =

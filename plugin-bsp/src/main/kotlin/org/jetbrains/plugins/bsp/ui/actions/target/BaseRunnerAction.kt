@@ -48,7 +48,7 @@ public abstract class BaseRunnerAction(
       }
     } catch (e: Exception) {
       withContext(Dispatchers.EDT) {
-        Messages.showErrorDialog(project, e.message, BspPluginBundle.message("widget.side.menu.error.title"))
+        Messages.showErrorDialog(project, e.toString(), BspPluginBundle.message("widget.side.menu.error.title"))
       }
     }
   }
