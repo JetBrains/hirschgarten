@@ -7,10 +7,13 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.elementType
+import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
+import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
@@ -19,18 +22,18 @@ import org.jetbrains.plugins.bsp.ui.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 
 internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
-  override fun getInfo(element: PsiElement): Info? =
-    if (element.project.isBspProject && element.shouldAddMarker()) {
-      element.calculateMarkerInfo()
-    } else {
-      null
-    }
+  override fun getInfo(element: PsiElement): Info? {
+    val grandParent = element.parent.parent
+    return element.shouldAddMarker(grandParent).ifTrue { grandParent.calculateMarkerInfo() }
+  }
 
-  private fun PsiElement.shouldAddMarker(): Boolean =
-    when (this) {
-      is StarlarkCallExpression -> isTopLevelCall(this)
-      else -> false
-    }
+  private fun PsiElement.shouldAddMarker(grandParent: PsiElement): Boolean =
+    this.project.isBspProject &&
+      this.elementType == StarlarkTokenTypes.IDENTIFIER &&
+      grandParent is StarlarkCallExpression &&
+      isTopLevelCall(
+        grandParent,
+      )
 
   private fun isTopLevelCall(element: PsiElement): Boolean =
     element.parent is StarlarkExpressionStatement && element.parent.parent is StarlarkFile
@@ -69,8 +72,7 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     if (this == null) {
       emptyList()
     } else {
-      DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList() +
-        BuildTargetAction(this.id)
+      DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList() + BuildTargetAction(this.id)
     }
 }
 
