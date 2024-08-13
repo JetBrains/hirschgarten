@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.isJvmTarget
+import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.actions.target.BspRunnerAction
 import org.jetbrains.plugins.bsp.ui.actions.target.BuildTargetAction
@@ -17,7 +18,6 @@ import org.jetbrains.plugins.bsp.ui.actions.target.RunTargetAction
 import org.jetbrains.plugins.bsp.ui.actions.target.RunWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.actions.target.TestTargetAction
 import org.jetbrains.plugins.bsp.ui.actions.target.TestWithLocalJvmRunnerAction
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
 import java.awt.Component
@@ -115,7 +115,7 @@ public fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, v
     addAction(TestTargetAction(target, verboseText = verboseText))
   }
 
-  if (target.capabilities.canDebug && BspRunHandler.getRunHandler(listOf(target)).canDebug(listOf(target))) {
+  if (target.capabilities.canDebug && BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null) {
     addAction(
       RunTargetAction(
         targetInfo = target,

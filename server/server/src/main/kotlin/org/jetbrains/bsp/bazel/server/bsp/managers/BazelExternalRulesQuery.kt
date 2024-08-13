@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.apache.logging.log4j.LogManager
@@ -32,29 +33,37 @@ class BazelExternalRulesQueryImpl(
       enabledRules.isNotEmpty() -> BazelEnabledRulesQueryImpl(enabledRules).fetchExternalRuleNames(cancelChecker)
       isBzlModEnabled ->
         BazelBzlModExternalRulesQueryImpl(bazelRunner).fetchExternalRuleNames(cancelChecker) +
-          BazelWorkspaceExternalRulesQueryImpl(bazelRunner).fetchExternalRuleNames(cancelChecker)
+          BazelWorkspaceExternalRulesQueryImpl(
+            bazelRunner,
+          ).fetchExternalRuleNames(cancelChecker)
+
       else -> BazelWorkspaceExternalRulesQueryImpl(bazelRunner).fetchExternalRuleNames(cancelChecker)
     }
 }
 
 class BazelWorkspaceExternalRulesQueryImpl(private val bazelRunner: BazelRunner) : BazelExternalRulesQuery {
   override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> =
-    bazelRunner
-      .commandBuilder()
-      .query()
-      .withArgument("//external:*")
-      .withFlags(listOf("--output=xml", "--order_output=no"))
-      .executeBazelCommand(parseProcessOutput = false)
-      .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
-      .let { result ->
-        if (result.isNotSuccess) {
-          log.warn("Bazel query failed with output: '${result.stderr.escapeNewLines()}'")
-          null
-        } else {
-          result.stdout.readXML(log)?.calculateEligibleRules()
+    bazelRunner.run {
+      val command =
+        buildBazelCommand {
+          query {
+            targets.add(BuildTargetIdentifier("//external:*"))
+            options.addAll(listOf("--output=xml", "--order_output=no"))
+          }
         }
-      }?.removeRulesDisabledFromAutoDetection()
-      .orEmpty()
+
+      runBazelCommand(command, logProcessOutput = false)
+        .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
+        .let { result ->
+          if (result.isNotSuccess) {
+            log.warn("Bazel query failed with output: '${result.stderr.escapeNewLines()}'")
+            null
+          } else {
+            result.stdout.readXML(log)?.calculateEligibleRules()
+          }
+        }?.removeRulesDisabledFromAutoDetection()
+        .orEmpty()
+    }
 
   private fun Document.calculateEligibleRules(): List<String> {
     val xPath = XPathFactory.newInstance().newXPath()
@@ -84,12 +93,13 @@ class BazelBzlModExternalRulesQueryImpl(private val bazelRunner: BazelRunner) : 
   private val gson = Gson()
 
   override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> {
+    val command =
+      bazelRunner.buildBazelCommand {
+        graph { options.add("--output=json") }
+      }
     val bzlmodGraphJson =
       bazelRunner
-        .commandBuilder()
-        .graph()
-        .withFlag("--output=json")
-        .executeBazelCommand(parseProcessOutput = false)
+        .runBazelCommand(command, logProcessOutput = false)
         .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
         .let { result ->
           if (result.isNotSuccess) {
@@ -100,10 +110,7 @@ class BazelBzlModExternalRulesQueryImpl(private val bazelRunner: BazelRunner) : 
           }
         } as? JsonObject
     return try {
-      gson
-        .fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
-        .getAllDirectRuleDependencies()
-        .removeRulesDisabledFromAutoDetection()
+      gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java).getAllDirectRuleDependencies().removeRulesDisabledFromAutoDetection()
     } catch (e: Throwable) {
       log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
       emptyList()

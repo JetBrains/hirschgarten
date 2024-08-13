@@ -18,8 +18,8 @@
         <extensionPoint qualifiedName="org.jetbrains.bsp.androidFacetEntityUpdaterExtension"
                         interface="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunHandler"
-                        interface="org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler"
+        <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunHandlerProvider"
+                        interface="org.jetbrains.plugins.bsp.run.BspRunHandlerProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspProjectOpenProcessorExtension"
                         interface="org.jetbrains.plugins.bsp.flow.open.BspProjectOpenProcessorExtension"
@@ -40,7 +40,7 @@
                         interface="org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunConfigurationExtension"
-                        interface="org.jetbrains.plugins.bsp.ui.configuration.run.BspRunConfigurationExtensionManager"
+                        interface="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationExtensionManager"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.invalidTargetsProviderExtension"
                         interface="org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension"
@@ -63,7 +63,9 @@
         <connectionDetailsProviderExtension
                 implementation="org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
-        <bspRunHandler implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler" order="last"/>
+        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler$JvmBspRunHandlerProvider"/>
+        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspRunHandlerProvider" order="last"/>
+        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspTestHandlerProvider" order="last"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -76,8 +78,7 @@
 
         <commandLineInspectionProjectConfigurator
                 implementation="org.jetbrains.plugins.bsp.flow.open.BspCommandLineInspectionConfigurator"/>
-        <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationType"/>
-        <configurationType implementation="org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType"/>
+        <configurationType implementation="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationType"/>
 
         <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
 

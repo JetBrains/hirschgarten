@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.configuration.run
+package org.jetbrains.plugins.bsp.run.task
 
 import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TestFinish
@@ -12,11 +12,11 @@ import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
-import org.jetbrains.plugins.bsp.services.BspTaskListener
-import org.jetbrains.plugins.bsp.services.TaskId
-import org.jetbrains.plugins.bsp.ui.configuration.BspProcessHandler
+import org.jetbrains.plugins.bsp.run.BspProcessHandler
+import org.jetbrains.plugins.bsp.run.BspTaskListener
+import org.jetbrains.plugins.bsp.run.TaskId
 
-public class BspTestTaskListener(private val handler: BspProcessHandler<out Any>) : BspTaskListener {
+class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
 
   init {

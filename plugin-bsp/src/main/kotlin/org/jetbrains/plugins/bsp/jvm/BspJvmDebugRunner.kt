@@ -22,7 +22,7 @@ import com.intellij.xdebugger.XDebugSession
 import com.intellij.xdebugger.XDebuggerManager
 import com.intellij.xdebugger.impl.XDebugSessionImpl
 import org.jdom.Element
-import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfiguration
+import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import java.util.concurrent.atomic.AtomicReference
 
 public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
@@ -32,12 +32,12 @@ public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
     // if target cannot be debugged, do not offer debugging it
     if (executorId != DefaultDebugExecutor.EXECUTOR_ID) return false
     if (profile !is BspRunConfiguration) return false
-    return profile.runHandler is JvmBspRunHandler
+    return profile.handler is JvmBspRunHandler
   }
 
   override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
     // cast should always succeed, because canRun(...) checks for it
-    val debugState = state as JvmBspRunHandler.JvmDebugHandlerState
+    val debugState = state as JvmDebugHandlerState
     val connection = debugState.remoteConnection
     return attachVM(state, environment, connection)
   }

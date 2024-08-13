@@ -5,47 +5,41 @@ import com.android.tools.idea.execution.common.AndroidConfigurationExecutorRunPr
 import com.android.tools.idea.execution.common.DeployableToDevice
 import com.android.tools.idea.run.editor.DeployTargetContext
 import com.google.common.util.concurrent.ListenableFuture
-import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.includesAndroid
-import org.jetbrains.plugins.bsp.ui.configuration.BspRunConfigurationBase
-import org.jetbrains.plugins.bsp.ui.configuration.run.BspRunHandler
+import org.jetbrains.plugins.bsp.run.BspRunHandler
+import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
+import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 
 /**
  * Key for storing the target Android device inside an [ExecutionEnvironment]
  */
-public val DEVICE_FUTURE_KEY: Key<ListenableFuture<IDevice>> = Key.create("DEVICE_FUTURE_KEY")
+val DEVICE_FUTURE_KEY: Key<ListenableFuture<IDevice>> = Key.create("DEVICE_FUTURE_KEY")
 
-public class AndroidBspRunHandler : BspRunHandler {
-  override fun canRun(targets: List<BuildTargetInfo>): Boolean =
-    BspFeatureFlags.isAndroidSupportEnabled &&
-      targets.size == 1 &&
-      targets.all {
-        it.languageIds.includesAndroid() && !it.capabilities.canTest
-      }
-
-  override fun prepareRunConfiguration(configuration: BspRunConfigurationBase) {
+class AndroidBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHandler {
+  init {
     configuration.putUserData(DeployableToDevice.KEY, true)
+    val provider = MobileInstallBeforeRunTaskProvider()
+    val mobileInstallTask = provider.createTask(configuration)
+    configuration.beforeRunTasks = listOf(mobileInstallTask)
   }
 
-  override fun getRunProfileState(
-    project: Project,
-    executor: Executor,
-    environment: ExecutionEnvironment,
-    configuration: BspRunConfigurationBase,
-  ): RunProfileState {
-    val deployTargetContext = DeployTargetContext()
-    val deployTarget = deployTargetContext.currentDeployTargetProvider.getDeployTarget(project)
+  override val state: AndroidBspRunConfigurationState = AndroidBspRunConfigurationState
 
-    val deviceFutures = deployTarget.getDevices(project).get()
+  override val name: String = "Android BSP Run Handler"
+
+  override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
+    val deployTargetContext = DeployTargetContext()
+    val deployTarget = deployTargetContext.currentDeployTargetProvider.getDeployTarget(configuration.project)
+
+    val deviceFutures = deployTarget.getDevices(configuration.project).get()
     if (deviceFutures.isEmpty()) {
       throw ExecutionException(BspPluginBundle.message("console.task.mobile.no.target.device"))
     } else if (deviceFutures.size > 1) {
@@ -60,9 +54,15 @@ public class AndroidBspRunHandler : BspRunHandler {
     return AndroidConfigurationExecutorRunProfileState(androidConfigurationExecutor)
   }
 
-  override fun getBeforeRunTasks(configuration: BspRunConfigurationBase): List<BeforeRunTask<*>> {
-    val provider = MobileInstallBeforeRunTaskProvider()
-    val mobileInstallTask = provider.createTask(configuration) ?: return emptyList()
-    return listOf(mobileInstallTask)
+  class AndroidBspRunHandlerProvider : BspRunHandlerProvider {
+    override val id: String = "AndroidBspRunHandlerProvider"
+
+    override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = AndroidBspRunHandler(configuration)
+
+    override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
+      BspFeatureFlags.isAndroidSupportEnabled &&
+        targetInfos.singleOrNull()?.let { it.languageIds.includesAndroid() && !it.capabilities.canTest } ?: false
+
+    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = targetInfos.all { it.capabilities.canDebug }
   }
 }

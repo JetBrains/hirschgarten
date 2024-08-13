@@ -35,13 +35,16 @@ object InverseSourcesQuery {
   ): List<String> {
     val packageLabel = fileLabel.replace(":.*".toRegex(), ":*")
     val consistentLabelsArg = listOfNotNull(if (bazelRelease.major >= 6) "--consistent_labels" else null) // #bazel5
+    val command =
+      bazelRunner.buildBazelCommand {
+        query {
+          options.addAll(consistentLabelsArg)
+          options.add("attr('srcs', $fileLabel, $packageLabel)")
+        }
+      }
     val targetLabelsQuery =
       bazelRunner
-        .commandBuilder()
-        .query()
-        .withArgument("attr('srcs', $fileLabel, $packageLabel)")
-        .withArguments(consistentLabelsArg)
-        .executeBazelCommand(null)
+        .runBazelCommand(command, logProcessOutput = false)
         .waitAndGetResult(cancelChecker)
     if (targetLabelsQuery.statusCode == StatusCode.OK) {
       return targetLabelsQuery.stdoutLines
@@ -61,12 +64,15 @@ object InverseSourcesQuery {
     bazelRunner: BazelRunner,
     cancelChecker: CancelChecker,
   ): String? {
+    val command =
+      bazelRunner.buildBazelCommand {
+        query {
+          targets.add(BuildTargetIdentifier(relativePath.toString()))
+        }
+      }
     val fileLabelResult =
       bazelRunner
-        .commandBuilder()
-        .query()
-        .withTargets(listOf(relativePath.toString()))
-        .executeBazelCommand(null)
+        .runBazelCommand(command, logProcessOutput = false)
         .waitAndGetResult(cancelChecker)
     return if (fileLabelResult.statusCode == StatusCode.OK && fileLabelResult.stdoutLines.size == 1) {
       fileLabelResult.stdoutLines.first()

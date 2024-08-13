@@ -4,7 +4,7 @@ import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
-import org.jetbrains.plugins.bsp.ui.configuration.BspTestConfigurationType
+import org.jetbrains.plugins.bsp.run.config.BspRunConfigurationType
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.getBuildTargetName
 
 public class TestTargetAction(
@@ -31,5 +31,5 @@ public class TestTargetAction(
     },
     isDebugAction = isDebugAction,
   ) {
-  override fun getConfigurationType(project: Project): ConfigurationType = BspTestConfigurationType()
+  override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType()
 }

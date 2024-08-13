@@ -20,10 +20,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.run.BspTaskListener
+import org.jetbrains.plugins.bsp.run.TaskId
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.services.BspTaskEventsService
-import org.jetbrains.plugins.bsp.services.BspTaskListener
-import org.jetbrains.plugins.bsp.services.TaskId
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.UUID
