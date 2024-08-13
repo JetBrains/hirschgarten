@@ -1,4 +1,4 @@
-load("@bazel_sonatype//:defs.bzl", "sonatype_java_export")
+load("@rules_sonatype//:defs.bzl", "sonatype_java_export")
 
 sonatype_java_export(
     name = "bsp",

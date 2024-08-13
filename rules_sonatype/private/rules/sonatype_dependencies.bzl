@@ -2,7 +2,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 def sonatype_dependencies():
     maven_install(
-        name = "bazel_sonatype_deps",
+        name = "rules_sonatype_deps",
         artifacts = [
             "org.sonatype.spice.zapper:spice-zapper:1.3",
             "org.wvlet.airframe:airframe-http_2.13:20.12.1",
@@ -13,7 +13,6 @@ def sonatype_dependencies():
         ],
         generate_compat_repositories = True,
         repositories = [
-            "https://jcenter.bintray.com/",
             "https://maven.google.com",
             "https://repo1.maven.org/maven2",
         ],
