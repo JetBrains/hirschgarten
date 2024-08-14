@@ -10,8 +10,12 @@ interface WorkspaceContextProvider {
   fun currentWorkspaceContext(): WorkspaceContext
 }
 
-class DefaultWorkspaceContextProvider(private val workspaceRoot: Path, private val projectViewPath: Path) : WorkspaceContextProvider {
-  private val workspaceContextConstructor = WorkspaceContextConstructor(workspaceRoot)
+class DefaultWorkspaceContextProvider(
+  private val workspaceRoot: Path,
+  private val projectViewPath: Path,
+  dotBazelBspDirPath: Path,
+) : WorkspaceContextProvider {
+  private val workspaceContextConstructor = WorkspaceContextConstructor(workspaceRoot, dotBazelBspDirPath)
 
   override fun currentWorkspaceContext(): WorkspaceContext {
     val projectView = ensureProjectViewExistsAndParse()

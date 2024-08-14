@@ -23,7 +23,8 @@ class WorkspaceContextConstructorTest {
     fun `should return success if project view is valid`() {
       // given
       val workspaceRoot = Path("path/to/workspace")
-      val constructor = WorkspaceContextConstructor(workspaceRoot)
+      val dotBazelBspDirPath = Path("path/to/bazelbsp")
+      val constructor = WorkspaceContextConstructor(workspaceRoot, dotBazelBspDirPath)
       val projectView =
         ProjectView
           .Builder(
@@ -103,7 +104,7 @@ class WorkspaceContextConstructorTest {
       val expectedBazelBinarySpec = BazelBinarySpec(Path("/path/to/bazel"))
       workspaceContext.bazelBinary shouldBe expectedBazelBinarySpec
 
-      val expectedDotBazelBspDirPathSpec = DotBazelBspDirPathSpec(workspaceRoot.toAbsolutePath().resolve(".bazelbsp"))
+      val expectedDotBazelBspDirPathSpec = DotBazelBspDirPathSpec(Path("path/to/bazelbsp"))
       workspaceContext.dotBazelBspDirPath shouldBe expectedDotBazelBspDirPathSpec
 
       val expectedAllowManualTargetsSyncSpec = AllowManualTargetsSyncSpec(false)

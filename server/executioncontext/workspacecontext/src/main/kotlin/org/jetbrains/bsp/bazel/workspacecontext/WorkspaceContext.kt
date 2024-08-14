@@ -74,8 +74,8 @@ data class WorkspaceContext(
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
 ) : ExecutionContext()
 
-class WorkspaceContextConstructor(workspaceRoot: Path) : ExecutionContextConstructor<WorkspaceContext> {
-  private val dotBazelBspDirPathSpecExtractor = DotBazelBspDirPathSpecExtractor(workspaceRoot)
+class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
+  ExecutionContextConstructor<WorkspaceContext> {
   private val directoriesSpecExtractor = DirectoriesSpecExtractor(workspaceRoot)
 
   private val log = LogManager.getLogger(WorkspaceContextConstructor::class.java)
@@ -89,7 +89,7 @@ class WorkspaceContextConstructor(workspaceRoot: Path) : ExecutionContextConstru
       buildFlags = BuildFlagsSpecExtractor.fromProjectView(projectView),
       bazelBinary = BazelBinarySpecExtractor.fromProjectView(projectView),
       allowManualTargetsSync = AllowManualTargetsSyncSpecExtractor.fromProjectView(projectView),
-      dotBazelBspDirPath = dotBazelBspDirPathSpecExtractor.fromProjectView(projectView),
+      dotBazelBspDirPath = DotBazelBspDirPathSpec(dotBazelBspDirPath),
       importDepth = ImportDepthSpecExtractor.fromProjectView(projectView),
       enabledRules = EnabledRulesSpecExtractor.fromProjectView(projectView),
       ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpecExtractor.fromProjectView(projectView),

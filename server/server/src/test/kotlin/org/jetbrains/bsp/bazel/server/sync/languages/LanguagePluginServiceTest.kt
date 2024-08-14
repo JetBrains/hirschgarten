@@ -33,11 +33,13 @@ class LanguagePluginServiceTest {
   private lateinit var languagePluginsService: LanguagePluginsService
   private lateinit var workspaceRoot: Path
   private lateinit var projectViewFile: Path
+  private lateinit var dotBazelBspDirPath: Path
 
   @BeforeEach
   fun beforeEach() {
     workspaceRoot = createTempDirectory("workspaceRoot")
     projectViewFile = workspaceRoot.resolve("projectview.bazelproject")
+    dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
     val bazelInfo =
       BasicBazelInfo(
         execRoot = "",
@@ -46,7 +48,7 @@ class LanguagePluginServiceTest {
         release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
         false,
       )
-    val provider = DefaultWorkspaceContextProvider(Paths.get(""), projectViewFile)
+    val provider = DefaultWorkspaceContextProvider(Paths.get(""), projectViewFile, dotBazelBspDirPath)
     val bazelPathsResolver = BazelPathsResolver(bazelInfo)
     val jdkResolver = JdkResolver(bazelPathsResolver, JdkVersionResolver())
     val javaLanguagePlugin = JavaLanguagePlugin(provider, bazelPathsResolver, jdkResolver)
