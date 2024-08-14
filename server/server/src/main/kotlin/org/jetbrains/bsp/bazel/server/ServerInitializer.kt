@@ -62,6 +62,7 @@ object ServerInitializer {
         DefaultWorkspaceContextProvider(
           workspaceRoot = Path(cliArgs.bazelWorkspaceRoot),
           projectViewPath = Path(cliArgs.projectViewPath),
+          dotBazelBspDirPath = rootDir,
         )
       val bspIntegrationData =
         BspIntegrationData(

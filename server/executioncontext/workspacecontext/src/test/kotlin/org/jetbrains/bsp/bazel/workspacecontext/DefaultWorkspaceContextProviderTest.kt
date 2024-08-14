@@ -15,11 +15,13 @@ import kotlin.io.path.writeText
 class DefaultWorkspaceContextProviderTest {
   private lateinit var workspaceRoot: Path
   private lateinit var projectViewFile: Path
+  private lateinit var dotBazelBspDirPath: Path
 
   @BeforeEach
   fun beforeEach() {
     workspaceRoot = createTempDirectory("workspaceRoot")
     projectViewFile = workspaceRoot.resolve("projectview.bazelproject")
+    dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
   }
 
   @Test
@@ -33,7 +35,7 @@ class DefaultWorkspaceContextProviderTest {
       """.trimMargin(),
     )
 
-    val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile)
+    val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile, dotBazelBspDirPath)
 
     // when
     val workspaceContext = provider.currentWorkspaceContext()
@@ -46,7 +48,7 @@ class DefaultWorkspaceContextProviderTest {
   fun `should generate an empty project view file if the file doesn't exist`() {
     // given
     projectViewFile.deleteIfExists()
-    val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile)
+    val provider = DefaultWorkspaceContextProvider(workspaceRoot, projectViewFile, dotBazelBspDirPath)
 
     // when
     val workspaceContext = provider.currentWorkspaceContext()

@@ -46,15 +46,6 @@ kt_test(
 )
 
 kt_test(
-    name = "DotBazelBspDirPathSpecMapperTest",
-    size = "small",
-    src = "DotBazelBspDirPathSpecMapperTest.kt",
-    associates = [
-        "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
-    ],
-)
-
-kt_test(
     name = "ImportDepthSpecMapperTest",
     size = "small",
     src = "ImportDepthSpecMapperTest.kt",

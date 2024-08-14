@@ -150,6 +150,7 @@ private fun startServer(
     DefaultWorkspaceContextProvider(
       workspaceRoot = workspace,
       projectViewPath = directory.resolve("projectview.bazelproject"),
+      dotBazelBspDirPath = bspInfo.bazelBspDir(),
     )
   val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspace, telemetryConfig)
   return bspServer.buildServer(bspIntegrationData)
