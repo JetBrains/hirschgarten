@@ -57,7 +57,7 @@ maven.install(
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1",
         "org.junit.jupiter:junit-jupiter:5.10.3",
         "org.junit.platform:junit-platform-console:1.10.3",
-        "org.junit.platform:junit-platform-suite-api:1.10.3",
+        "org.junit.platform:junit-platform-suite-api:1.11.0",
         "org.junit.platform:junit-platform-suite-engine:1.10.3",
         "org.kodein.di:kodein-di:7.22.0",
         "org.scala-lang:scala-library:2.13.14",
