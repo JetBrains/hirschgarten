@@ -1,6 +1,6 @@
+load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 
 exports_files(["main/resources/META-INF/base.xml"])
 
