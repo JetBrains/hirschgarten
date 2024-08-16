@@ -762,7 +762,7 @@ class BazelProjectMapper(
   private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { Label.parse(it.id) }
 
   private fun inferLanguages(target: TargetInfo): Set<Language> {
-    val languagesForTarget = Language.all().filter { isBinaryTargetOfLanguage(target.kind, it) }.toHashSet()
+    val languagesForTarget = Language.all().filter { isTargetKindOfLanguage(target.kind, it) }.toHashSet()
     val languagesForSources =
       target.sourcesList
         .flatMap { source: FileLocation ->
@@ -776,7 +776,7 @@ class BazelProjectMapper(
       file.relativePath.endsWith(it)
     }
 
-  private fun isBinaryTargetOfLanguage(kind: String, language: Language): Boolean = language.binaryTargets.contains(kind)
+  private fun isTargetKindOfLanguage(kind: String, language: Language): Boolean = language.targetKinds.contains(kind)
 
   private fun Label.toDirectoryUri(): URI {
     val isWorkspace = bazelPathsResolver.isRelativeWorkspacePath(value)
