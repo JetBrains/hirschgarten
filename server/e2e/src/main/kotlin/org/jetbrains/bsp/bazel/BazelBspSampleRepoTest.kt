@@ -762,6 +762,15 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             mainClasses = emptyList()
           },
           JvmEnvironmentItem(
+            BuildTargetIdentifier("$targetPrefix//java_targets:java_library_exported"),
+            listOf(),
+            emptyList(),
+            "\$WORKSPACE",
+            mapOf(),
+          ).apply {
+            mainClasses = emptyList()
+          },
+          JvmEnvironmentItem(
             BuildTargetIdentifier("$targetPrefix//scala_targets:scala_binary"),
             listOf(
               "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_library/scala-library-2.12.14.jar",
@@ -1001,6 +1010,15 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           },
           JvmEnvironmentItem(
             BuildTargetIdentifier("$targetPrefix//java_targets/subpackage:java_library"),
+            listOf(),
+            emptyList(),
+            "\$WORKSPACE",
+            mapOf(),
+          ).apply {
+            mainClasses = emptyList()
+          },
+          JvmEnvironmentItem(
+            BuildTargetIdentifier("$targetPrefix//java_targets:java_library_exported"),
             listOf(),
             emptyList(),
             "\$WORKSPACE",
@@ -1490,7 +1508,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//java_targets:java_library_exported"),
         listOf("library"),
-        emptyList(),
+        listOf("java"),
         listOf(
           BuildTargetIdentifier("$targetPrefix//java_targets/subpackage:java_library"),
           BuildTargetIdentifier("$targetPrefix//java_targets:java_library_exported_output_jars"),
@@ -1504,6 +1522,8 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       )
     javaTargetsJavaLibraryExported.displayName = "$targetPrefix//java_targets:java_library_exported"
     javaTargetsJavaLibraryExported.baseDirectory = "file://\$WORKSPACE/java_targets/"
+    javaTargetsJavaLibraryExported.dataKind = "jvm"
+    javaTargetsJavaLibraryExported.data = jvmBuildTarget
 
     val manualTargetScalaLibrary =
       BuildTarget(
