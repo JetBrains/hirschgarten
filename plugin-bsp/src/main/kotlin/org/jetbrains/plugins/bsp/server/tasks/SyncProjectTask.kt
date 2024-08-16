@@ -6,8 +6,6 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.job
-import kotlinx.coroutines.runInterruptible
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspSyncStatusService
 import org.jetbrains.plugins.bsp.config.SyncAlreadyInProgressException
@@ -50,36 +48,37 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
 
   private suspend fun collectProject(taskId: String, buildProject: Boolean) =
     coroutineScope {
-      log.debug("Collecting project details")
-      val collectProjectDetailsTask = CollectProjectDetailsTask(project, taskId)
-      // Use weak reference for the cancellation callback so that it doesn't prevent GC
-      val collectProjectDetailsTaskRef = WeakReference(collectProjectDetailsTask)
-
       val syncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-      syncConsole.startTask(
-        taskId = taskId,
-        title = BspPluginBundle.message("console.task.sync.title"),
-        message = BspPluginBundle.message("console.task.sync.in.progress"),
-        cancelAction = { collectProjectDetailsTaskRef.get()?.onCancel() },
-      )
-      log.debug("Connecting to the server")
-      runInterruptible {
-        project.connection.connect(taskId) { errorMessage ->
-          collectProjectDetailsTaskRef.get()?.cancelExecution()
-          coroutineContext.job.cancel(cause = CancellationException(errorMessage))
-        }
-      }
       try {
-        log.debug("Running CollectProjectDetailsTask")
-        collectProjectDetailsTask.execute(
-          name = "Syncing...",
-          cancelable = true,
-          buildProject = buildProject,
+        log.debug("Collecting project details")
+        val collectProjectDetailsTask =
+          CollectProjectDetailsTask(
+            project = project,
+            taskId = taskId,
+            buildProject = buildProject,
+            cancelable = true,
+            name = "Syncing...",
+            cs = this,
+          )
+        // Use weak reference for the cancellation callback so that it doesn't prevent GC
+        val collectProjectDetailsTaskRef = WeakReference(collectProjectDetailsTask)
+        project.connection.connect(taskId)
+        syncConsole.startTask(
+          taskId = taskId,
+          title = BspPluginBundle.message("console.task.sync.title"),
+          message = BspPluginBundle.message("console.task.sync.in.progress"),
+          cancelAction = { collectProjectDetailsTaskRef.get()?.onCancel() },
         )
+        log.debug("Running CollectProjectDetailsTask")
+        collectProjectDetailsTask.execute()
         syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.success"))
       } catch (e: Exception) {
-        log.debug("BSP sync failed")
-        syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.failed"), FailureResultImpl(e))
+        if (e is CancellationException) {
+          syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.cancelled"), FailureResultImpl())
+        } else {
+          log.debug("BSP sync failed")
+          syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.failed"), FailureResultImpl(e))
+        }
       }
 
       BspToolWindowService.getInstance(project).doDeepPanelReload()

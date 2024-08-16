@@ -378,7 +378,7 @@ public class BuildTaskConsole(
       }
 
       override fun update(e: AnActionEvent) {
-        e.presentation.isEnabled = tasksInProgress.isEmpty()
+        e.presentation.isEnabled = redoAction != null && tasksInProgress.isEmpty()
       }
 
       override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT

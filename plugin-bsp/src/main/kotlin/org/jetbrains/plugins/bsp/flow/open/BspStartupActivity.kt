@@ -48,7 +48,6 @@ public class BspStartupActivity : ProjectActivity {
       executeForNewProject()
     }
 
-    postActivity()
     BspStartupActivityTracker.stopConfigurationPhase(this)
   }
 
@@ -57,6 +56,7 @@ public class BspStartupActivity : ProjectActivity {
     registerBspToolWindow(this)
     updateBspFileTargetsWidget()
     RunConfigurationProducersDisabler(this)
+    BspWorkspace.getInstance(this).initialize()
   }
 
   private suspend fun Project.executeForNewProject() {
@@ -102,10 +102,5 @@ public class BspStartupActivity : ProjectActivity {
         CloseProjectWindowHelper().windowClosing(project)
       }
     }
-  }
-
-  private fun Project.postActivity() {
-    log.info("Executing BSP startup activity")
-    BspWorkspace.getInstance(this).initialize()
   }
 }

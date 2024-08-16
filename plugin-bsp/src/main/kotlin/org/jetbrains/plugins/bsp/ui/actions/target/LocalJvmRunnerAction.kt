@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspProjectModuleBuildTasksTracker
@@ -29,7 +28,7 @@ public abstract class LocalJvmRunnerAction(
   icon: Icon? = null,
   private val isDebugMode: Boolean = false,
 ) : BaseRunnerAction(targetInfo, text, icon, isDebugMode) {
-  public abstract fun getEnvironment(project: Project): JvmEnvironmentItem?
+  public abstract suspend fun getEnvironment(project: Project): JvmEnvironmentItem?
 
   override suspend fun getRunnerSettings(project: Project, buildTargetInfo: BuildTargetInfo): RunnerAndConfigurationSettings? {
     val module = targetInfo.getModule(project) ?: return null
@@ -75,7 +74,7 @@ public abstract class LocalJvmRunnerAction(
   private suspend fun queryJvmEnvironment(project: Project, bspSyncConsole: TaskConsole) =
     try {
       withContext(Dispatchers.IO) {
-        val job = async { runInterruptible { getEnvironment(project) } }
+        val job = async { getEnvironment(project) }
         bspSyncConsole.startTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
           BspPluginBundle.message("console.task.query.jvm.environment.title"),
@@ -94,12 +93,12 @@ public abstract class LocalJvmRunnerAction(
         bspSyncConsole.finishTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
           BspPluginBundle.message("console.task.query.jvm.environment.cancel"),
-          FailureResultImpl(BspPluginBundle.message("console.task.query.jvm.environment.cancel")),
+          FailureResultImpl(),
         )
       } else {
         bspSyncConsole.finishTask(
           RETRIEVE_JVM_ENVIRONMENT_ID,
-          BspPluginBundle.message("console.task.query.jvm.environment.failure"),
+          BspPluginBundle.message("console.task.query.jvm.environment.failed"),
           FailureResultImpl(e),
         )
       }

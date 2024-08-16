@@ -8,15 +8,15 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.server.connection.connection
 
 public abstract class BspServerTask<T>(private val taskName: String, protected val project: Project) {
-  protected fun connectAndExecuteWithServer(task: (JoinedBuildServer, BazelBuildServerCapabilities) -> T?): T? =
+  protected suspend fun connectAndExecuteWithServer(task: suspend (JoinedBuildServer, BazelBuildServerCapabilities) -> T?): T? =
     project.connection.runWithServer(task)
 }
 
 public abstract class BspServerSingleTargetTask<T>(taskName: String, project: Project) : BspServerTask<T>(taskName, project) {
-  public fun connectAndExecute(targetId: BuildTargetIdentifier): T? =
+  public suspend fun connectAndExecute(targetId: BuildTargetIdentifier): T? =
     connectAndExecuteWithServer { server, capabilities -> executeWithServer(server, capabilities, targetId) }
 
-  protected abstract fun executeWithServer(
+  protected abstract suspend fun executeWithServer(
     server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetId: BuildTargetIdentifier,
@@ -25,16 +25,16 @@ public abstract class BspServerSingleTargetTask<T>(taskName: String, project: Pr
 
 public abstract class BspServerMultipleTargetsTask<T>(taskName: String, project: Project) :
   BspServerSingleTargetTask<T>(taskName, project) {
-  protected override fun executeWithServer(
+  protected override suspend fun executeWithServer(
     server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetId: BuildTargetIdentifier,
   ): T = executeWithServer(server, capabilities, listOf(targetId))
 
-  public fun connectAndExecute(targetsIds: List<BuildTargetIdentifier>): T? =
+  public suspend fun connectAndExecute(targetsIds: List<BuildTargetIdentifier>): T? =
     connectAndExecuteWithServer { server, capabilities -> executeWithServer(server, capabilities, targetsIds) }
 
-  protected abstract fun executeWithServer(
+  protected abstract suspend fun executeWithServer(
     server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetsIds: List<BuildTargetIdentifier>,
