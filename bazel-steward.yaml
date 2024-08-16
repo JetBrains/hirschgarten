@@ -7,6 +7,8 @@ pull-requests:
     dependencies: "io.grpc:*"
   - group-id: junit-jupiter
     dependencies: "org.junit.jupiter:*"
+  - group-id: junit-platform
+    dependencies: "org.junit.platform:*"
   - group-id: kotest
     dependencies: "io.kotest:*"
   - group-id: opentelemetry
