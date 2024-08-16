@@ -11,6 +11,7 @@ import com.intellij.execution.runners.ProgramRunner
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
+import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.BazelTestParamsData
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -22,7 +23,6 @@ import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import org.jetbrains.plugins.bsp.run.state.GenericTestState
 import org.jetbrains.plugins.bsp.run.task.BspTestTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
-import java.util.concurrent.CompletableFuture
 
 class BspTestCommandLineState(
   environment: ExecutionEnvironment,
@@ -55,7 +55,7 @@ class BspTestCommandLineState(
 
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspTestTaskListener(handler)
 
-  override fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities): CompletableFuture<*> {
+  override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
     if (configuration.targets.isEmpty() || capabilities.testProvider == null) {
       throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
     }
@@ -68,6 +68,6 @@ class BspTestCommandLineState(
     params.environmentVariables = state.env.envs
     params.dataKind = BazelTestParamsData.DATA_KIND
     params.data = BazelTestParamsData(false, state.testFilter) // TODO: handle coverage
-    return server.buildTargetTest(params)
+    server.buildTargetTest(params).await()
   }
 }

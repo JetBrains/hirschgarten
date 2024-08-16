@@ -7,6 +7,7 @@ import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.util.io.await
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
@@ -26,7 +27,6 @@ import org.jetbrains.plugins.bsp.run.state.GenericRunState
 import org.jetbrains.plugins.bsp.run.task.BspRunTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
 import java.util.UUID
-import java.util.concurrent.CompletableFuture
 
 class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHandler {
   override val name: String = "Jvm BSP Run Handler"
@@ -76,7 +76,7 @@ class JvmDebugHandlerState(
 
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
-  override fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities): CompletableFuture<*> {
+  override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
     if (!capabilities.runWithDebugProvider) {
       throw ExecutionException("BSP server does not support running")
     }
@@ -91,6 +91,6 @@ class JvmDebugHandlerState(
     val remoteDebugData = RemoteDebugData("jdwp", portForDebug!!)
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
-    return server.buildTargetRunWithDebug(runWithDebugParams)
+    server.buildTargetRunWithDebug(runWithDebugParams).await()
   }
 }

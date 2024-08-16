@@ -14,7 +14,7 @@ public interface BspConnection {
    * Establish a connection with the server, and initialize server.
    * If the connection is already established no actions should be performed.
    */
-  public fun connect(taskId: Any, errorCallback: (String) -> Unit = {})
+  public fun connect(taskId: Any)
 
   /**
    * Disconnect from the server,
@@ -26,7 +26,7 @@ public interface BspConnection {
    * Executes a task on server, taking care of the connection to the server and
    * making sure that the newest available server is used (by calling [ConnectionDetailsProviderExtension.provideNewConnectionDetails])
    */
-  public fun <T> runWithServer(task: (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T): T
+  public suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T): T
 
   /**
    * Returns *true* if connection is active ([connect] was called, but [disconnect] wasn't)

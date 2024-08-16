@@ -9,7 +9,7 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 
 public class JvmTestEnvironmentTask(project: Project) :
   BspServerSingleTargetTask<JvmTestEnvironmentResult>("jvmTestEnvironment", project) {
-  override fun executeWithServer(
+  override suspend fun executeWithServer(
     server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetId: BuildTargetIdentifier,

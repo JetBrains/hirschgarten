@@ -69,8 +69,11 @@ abstract class EnvironmentCreator(private val projectRootDir: Path) {
 
   private fun createDir(rootDir: Path, name: String): Path {
     val dir = rootDir.resolve(name)
-
-    return Files.createDirectories(dir)
+    try {
+      Files.createDirectories(dir)
+    } catch (_: FileAlreadyExistsException) {
+    }
+    return dir
   }
 
   private fun createBspDiscoveryDetailsFile(dotBspDir: Path, discoveryDetails: BspConnectionDetails) {

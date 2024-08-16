@@ -172,8 +172,6 @@
         <action id="Bsp.BuildAndResyncAction"
                 class="org.jetbrains.plugins.bsp.ui.actions.registered.BuildAndResyncAction"
                 icon="/icons/buildAndResync.svg"/>
-        <action id="Bsp.ConnectAction" class="org.jetbrains.plugins.bsp.ui.actions.registered.ConnectAction"
-                icon="/icons/connect.svg"/>
         <action id="Bsp.Compile.CompileProjectWithBspAction"
                 class="org.jetbrains.plugins.bsp.building.action.CompileProjectWithBspAction"
                 icon="AllIcons.Actions.Compile"/>

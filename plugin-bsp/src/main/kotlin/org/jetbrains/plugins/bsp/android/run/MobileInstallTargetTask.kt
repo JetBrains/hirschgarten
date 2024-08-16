@@ -9,6 +9,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import kotlinx.coroutines.future.asDeferred
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
@@ -16,13 +17,13 @@ import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.server.tasks.BspServerSingleTargetTask
 import org.jetbrains.plugins.bsp.server.tasks.BspTaskStatusLogger
-import org.jetbrains.plugins.bsp.server.tasks.doesCompletableFutureGetThrowCancelledException
 import org.jetbrains.plugins.bsp.server.tasks.saveAllFiles
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
+import kotlin.coroutines.cancellation.CancellationException
 
 public class MobileInstallTargetTask(
   project: Project,
@@ -31,7 +32,7 @@ public class MobileInstallTargetTask(
 ) : BspServerSingleTargetTask<MobileInstallResult>("mobile install target", project) {
   private val log = logger<MobileInstallTargetTask>()
 
-  override fun executeWithServer(
+  override suspend fun executeWithServer(
     server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetId: BuildTargetIdentifier,
@@ -46,8 +47,8 @@ public class MobileInstallTargetTask(
         ?: return MobileInstallResult(StatusCode.ERROR)
     val mobileInstallParams = createMobileInstallParams(targetId, originId, targetDeviceSerialNumber)
 
-    val mobileInstallFuture = server.buildTargetMobileInstall(mobileInstallParams)
-    return BspTaskStatusLogger(mobileInstallFuture, bspBuildConsole, originId, cancelOn) { statusCode }.getResult()
+    val mobileInstallDeferred = server.buildTargetMobileInstall(mobileInstallParams).asDeferred()
+    return BspTaskStatusLogger(mobileInstallDeferred, bspBuildConsole, originId) { statusCode }.getResult()
   }
 
   private fun startMobileInstallConsoleTask(
@@ -112,7 +113,7 @@ public suspend fun runMobileInstallTargetTask(
     }
   } catch (e: Exception) {
     when {
-      doesCompletableFutureGetThrowCancelledException(e) ->
+      e is CancellationException ->
         MobileInstallResult(StatusCode.CANCELLED)
 
       else -> {

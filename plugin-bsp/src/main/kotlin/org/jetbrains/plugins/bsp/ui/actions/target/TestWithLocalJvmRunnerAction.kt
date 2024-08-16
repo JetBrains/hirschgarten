@@ -31,6 +31,6 @@ public class TestWithLocalJvmRunnerAction(
     },
     isDebugMode = isDebugMode,
   ) {
-  override fun getEnvironment(project: Project): JvmEnvironmentItem? =
+  override suspend fun getEnvironment(project: Project): JvmEnvironmentItem? =
     JvmTestEnvironmentTask(project).connectAndExecute(targetInfo.id)?.items?.first()
 }

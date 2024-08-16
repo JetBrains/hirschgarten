@@ -16,7 +16,12 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
@@ -28,116 +33,114 @@ import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.UUID
 import java.util.concurrent.CancellationException
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
 
 public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<CompileResult>("build targets", project) {
   private val log = logger<BuildTargetTask>()
 
-  protected override fun executeWithServer(
+  protected override suspend fun executeWithServer(
     server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
     targetsIds: List<BuildTargetIdentifier>,
-  ): CompileResult {
-    val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
-    val originId = "build-" + UUID.randomUUID().toString()
-    val cancelOn = CompletableFuture<Void>()
+  ): CompileResult =
+    coroutineScope {
+      val bspBuildConsole = BspConsoleService.getInstance(project).bspBuildConsole
+      val originId = "build-" + UUID.randomUUID().toString()
 
-    val taskListener =
-      object : BspTaskListener {
-        override fun onTaskStart(
-          taskId: TaskId,
-          parentId: TaskId?,
-          message: String,
-          data: Any?,
-        ) {
-          if (parentId == null) {
-            bspBuildConsole.startSubtask(originId, taskId, message)
-          } else {
-            bspBuildConsole.startSubtask(taskId, parentId, message)
-          }
-        }
-
-        override fun onTaskProgress(
-          taskId: TaskId,
-          message: String,
-          data: Any?,
-        ) {
-          bspBuildConsole.addMessage(taskId, message)
-        }
-
-        override fun onTaskFinish(
-          taskId: TaskId,
-          message: String,
-          status: StatusCode,
-          data: Any?,
-        ) {
-          when (data) {
-            is CompileReport -> {
-              if (data.errors > 0 || status == StatusCode.ERROR) {
-                bspBuildConsole.finishSubtask(taskId, message, FailureResultImpl())
-              } else if (status == StatusCode.CANCELLED) {
-                bspBuildConsole.finishSubtask(taskId, message, SkippedResultImpl())
-              } else {
-                bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
-              }
+      val taskListener =
+        object : BspTaskListener {
+          override fun onTaskStart(
+            taskId: TaskId,
+            parentId: TaskId?,
+            message: String,
+            data: Any?,
+          ) {
+            if (parentId == null) {
+              bspBuildConsole.startSubtask(originId, taskId, message)
+            } else {
+              bspBuildConsole.startSubtask(taskId, parentId, message)
             }
+          }
 
-            else -> bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
+          override fun onTaskProgress(
+            taskId: TaskId,
+            message: String,
+            data: Any?,
+          ) {
+            bspBuildConsole.addMessage(taskId, message)
+          }
+
+          override fun onTaskFinish(
+            taskId: TaskId,
+            message: String,
+            status: StatusCode,
+            data: Any?,
+          ) {
+            when (data) {
+              is CompileReport -> {
+                if (data.errors > 0 || status == StatusCode.ERROR) {
+                  bspBuildConsole.finishSubtask(taskId, message, FailureResultImpl())
+                } else if (status == StatusCode.CANCELLED) {
+                  bspBuildConsole.finishSubtask(taskId, message, SkippedResultImpl())
+                } else {
+                  bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
+                }
+              }
+
+              else -> bspBuildConsole.finishSubtask(taskId, message, SuccessResultImpl())
+            }
+          }
+
+          override fun onDiagnostic(
+            textDocument: String,
+            buildTarget: String,
+            line: Int,
+            character: Int,
+            severity: MessageEvent.Kind,
+            message: String,
+          ) {
+            bspBuildConsole.addDiagnosticMessage(
+              originId,
+              textDocument,
+              line,
+              character,
+              message,
+              severity,
+            )
+          }
+
+          override fun onLogMessage(message: String) {
+            bspBuildConsole.addMessage(originId, message)
           }
         }
 
-        override fun onDiagnostic(
-          textDocument: String,
-          buildTarget: String,
-          line: Int,
-          character: Int,
-          severity: MessageEvent.Kind,
-          message: String,
-        ) {
-          bspBuildConsole.addDiagnosticMessage(
-            originId,
-            textDocument,
-            line,
-            character,
-            message,
-            severity,
-          )
-        }
+      BspTaskEventsService.getInstance(project).saveListener(originId, taskListener)
 
-        override fun onLogMessage(message: String) {
-          bspBuildConsole.addMessage(originId, message)
-        }
+      startBuildConsoleTask(targetsIds, bspBuildConsole, originId, this)
+      val compileParams = createCompileParams(targetsIds, originId)
+
+      try {
+        val buildDeferred = async { server.buildTargetCompile(compileParams).await() }
+        return@coroutineScope BspTaskStatusLogger(buildDeferred, bspBuildConsole, originId) { statusCode }.getResult()
+      } finally {
+        BspTaskEventsService.getInstance(project).removeListener(originId)
       }
-
-    BspTaskEventsService.getInstance(project).saveListener(originId, taskListener)
-
-    startBuildConsoleTask(targetsIds, bspBuildConsole, originId, cancelOn)
-    val compileParams = createCompileParams(targetsIds, originId)
-
-    try {
-      val buildFuture = server.buildTargetCompile(compileParams)
-      return BspTaskStatusLogger(buildFuture, bspBuildConsole, originId, cancelOn) { statusCode }.getResult()
-    } finally {
-      BspTaskEventsService.getInstance(project).removeListener(originId)
     }
-  }
 
   private fun startBuildConsoleTask(
     targetIds: List<BuildTargetIdentifier>,
     bspBuildConsole: TaskConsole,
     originId: String,
-    cancelOn: CompletableFuture<Void>,
+    cs: CoroutineScope,
   ) {
     val startBuildMessage = calculateStartBuildMessage(targetIds)
 
-    bspBuildConsole.startTask(originId, BspPluginBundle.message("console.task.build.title"), startBuildMessage, {
-      cancelOn.cancel(true)
-    }) {
-      BspCoroutineService.getInstance(project).start {
-        runBuildTargetTask(targetIds, project, log)
-      }
-    }
+    bspBuildConsole.startTask(
+      taskId = originId,
+      title = BspPluginBundle.message("console.task.build.title"),
+      message = startBuildMessage,
+      cancelAction = { cs.cancel() },
+      redoAction = { BspCoroutineService.getInstance(project).start { runBuildTargetTask(targetIds, project, log) } },
+    )
   }
 
   private fun calculateStartBuildMessage(targetIds: List<BuildTargetIdentifier>): String =
@@ -165,7 +168,7 @@ public suspend fun runBuildTargetTask(
     }
   } catch (e: Exception) {
     when {
-      doesCompletableFutureGetThrowCancelledException(e) -> CompileResult(StatusCode.CANCELLED)
+      e is CancellationException -> CompileResult(StatusCode.CANCELLED)
 
       else -> {
         log.error(e)
@@ -179,6 +182,3 @@ public suspend fun saveAllFiles() {
     FileDocumentManager.getInstance().saveAllDocuments()
   }
 }
-
-public fun doesCompletableFutureGetThrowCancelledException(e: Exception): Boolean =
-  (e is ExecutionException || e is InterruptedException) && e.cause is CancellationException

@@ -2,24 +2,24 @@ package org.jetbrains.plugins.bsp.run
 
 import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessOutputType
+import kotlinx.coroutines.Deferred
 import java.io.OutputStream
-import java.util.concurrent.CompletableFuture
 
-class BspProcessHandler(private val requestFuture: CompletableFuture<*>) : ProcessHandler() {
+class BspProcessHandler(private val runDeferred: Deferred<*>) : ProcessHandler() {
   override fun startNotify() {
     super.startNotify()
-    requestFuture.handle { _, error ->
-      if (error != null) {
-        notifyTextAvailable(error.toString(), ProcessOutputType.STDERR)
-        notifyProcessTerminated(1)
-      } else {
+    runDeferred.invokeOnCompletion { e ->
+      if (e == null) {
         notifyProcessTerminated(0)
+      } else {
+        notifyTextAvailable(e.toString(), ProcessOutputType.STDERR)
+        notifyProcessTerminated(1)
       }
     }
   }
 
   override fun destroyProcessImpl() {
-    requestFuture.cancel(true)
+    runDeferred.cancel()
     notifyProcessTerminated(1)
   }
 

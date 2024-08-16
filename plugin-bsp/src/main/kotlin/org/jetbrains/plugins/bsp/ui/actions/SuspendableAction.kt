@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.server.tasks.saveAllFiles
@@ -13,7 +14,9 @@ import javax.swing.Icon
 
 private val log = logger<SuspendableAction>()
 
-public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) : AnAction(text, icon) {
+public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
+  AnAction(text, icon),
+  DumbAware {
   public constructor(text: String, icon: Icon? = null) : this({ text }, icon)
 
   final override fun actionPerformed(e: AnActionEvent) {

@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.run.commandLine
 import ch.epfl.scala.bsp4j.RunParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.util.io.await
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
@@ -13,7 +14,6 @@ import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import org.jetbrains.plugins.bsp.run.state.GenericRunState
 import org.jetbrains.plugins.bsp.run.task.BspRunTaskListener
 import org.jetbrains.plugins.bsp.services.OriginId
-import java.util.concurrent.CompletableFuture
 
 internal class BspRunCommandLineState(
   environment: ExecutionEnvironment,
@@ -24,7 +24,7 @@ internal class BspRunCommandLineState(
 
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
-  override fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities): CompletableFuture<*> {
+  override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
     if (configuration.targets.singleOrNull() == null || capabilities.runProvider == null) {
       throw ExecutionException(BspPluginBundle.message("bsp.run.error.cannotRun"))
     }
@@ -35,6 +35,6 @@ internal class BspRunCommandLineState(
     runParams.arguments = transformProgramArguments(runState.programArguments)
     runParams.environmentVariables = runState.env.envs
     runParams.workingDirectory = runState.workingDirectory
-    return server.buildTargetRun(runParams)
+    server.buildTargetRun(runParams).await()
   }
 }
