@@ -125,7 +125,7 @@ http_jar(
 bazel_dep(name = "rules_proto", version = "6.0.2")
 bazel_dep(name = "rules_cc", version = "0.0.9")
 bazel_dep(name = "platforms", version = "0.0.10")
-bazel_dep(name = "rules_python", version = "0.34.0")
+bazel_dep(name = "rules_python", version = "0.35.0")
 
 # Needed for codecanvas
 python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
