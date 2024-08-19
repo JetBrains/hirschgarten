@@ -44,7 +44,7 @@ class BazelBspCompilationManager(
         }
       val result =
         bazelRunner
-          .runBazelCommand(command, originId = originId)
+          .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid)
           .waitAndGetResult(cancelChecker, true)
       bepReader.finishBuild()
       bepReader.await()

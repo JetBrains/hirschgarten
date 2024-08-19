@@ -120,7 +120,12 @@ class ExecuteService(
     val result =
       withBepServer(params.originId, params.targets.single()) { bepReader ->
         command.useBes(bepReader.eventFile.toPath().toAbsolutePath())
-        bazelRunner.runBazelCommand(command, originId = params.originId).waitAndGetResult(cancelChecker, true)
+        bazelRunner
+          .runBazelCommand(
+            command,
+            originId = params.originId,
+            serverPidFuture = bepReader.serverPid,
+          ).waitAndGetResult(cancelChecker, true)
       }
 
     return TestResult(result.statusCode).apply {
@@ -150,7 +155,13 @@ class ExecuteService(
           params.arguments?.let { programArguments.addAll(it) }
         }
       }
-    val bazelProcessResult = bazelRunner.runBazelCommand(command, originId = params.originId).waitAndGetResult(cancelChecker)
+    val bazelProcessResult =
+      bazelRunner
+        .runBazelCommand(
+          command,
+          originId = params.originId,
+          serverPidFuture = null,
+        ).waitAndGetResult(cancelChecker)
     return RunResult(bazelProcessResult.statusCode).apply { originId = originId }
   }
 
@@ -234,7 +245,7 @@ class ExecuteService(
       }
 
     val bazelProcessResult =
-      bazelRunner.runBazelCommand(command, originId = params.originId).waitAndGetResult(cancelChecker)
+      bazelRunner.runBazelCommand(command, originId = params.originId, serverPidFuture = null).waitAndGetResult(cancelChecker)
     return MobileInstallResult(bazelProcessResult.statusCode, params.originId)
   }
 
@@ -247,7 +258,7 @@ class ExecuteService(
             useBes(bepReader.eventFile.toPath().toAbsolutePath())
           }
         }
-      bazelRunner.runBazelCommand(command).waitAndGetResult(cancelChecker)
+      bazelRunner.runBazelCommand(command, serverPidFuture = bepReader.serverPid).waitAndGetResult(cancelChecker)
     }
     return CleanCacheResult(true)
   }
@@ -269,7 +280,7 @@ class ExecuteService(
           }
         }
       bazelRunner
-        .runBazelCommand(command, originId = originId)
+        .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid)
         .waitAndGetResult(cancelChecker, true)
     }
   }

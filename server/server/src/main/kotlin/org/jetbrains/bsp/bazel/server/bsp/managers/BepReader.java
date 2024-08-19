@@ -21,6 +21,7 @@ public class BepReader {
 
   private final CompletableFuture<Boolean> bazelBuildFinished;
   private final CompletableFuture<Boolean> bepReaderFinished;
+  private final CompletableFuture<Long> serverPid;
 
   private final Logger logger = LogManager.getLogger(BepReader.class);
 
@@ -31,11 +32,14 @@ public class BepReader {
                 logger.info("Start listening to BEP events");
                 var stream = new FileInputStream(eventFile);
                 BuildEventStreamProtos.BuildEvent event = null;
+                // It's important not to use the short-circuited ||, so that the events are parsed
+                // every time the loop condition is checked
                 while (!bazelBuildFinished.isDone()
-                    || (event = BuildEventStreamProtos.BuildEvent.parseDelimitedFrom(stream))
+                    | (event = BuildEventStreamProtos.BuildEvent.parseDelimitedFrom(stream))
                         != null) {
                   if (event != null) {
                     bepServer.handleBuildEventStreamProtosEvent(event);
+                    setServerPid(event);
                   } else {
                     Thread.sleep(50);
                   }
@@ -50,6 +54,16 @@ public class BepReader {
         .start();
   }
 
+  private void setServerPid(BuildEventStreamProtos.BuildEvent event) {
+    if (event.hasStarted() && !serverPid.isDone()) {
+      serverPid.complete(event.getStarted().getServerPid());
+    }
+  }
+
+  public CompletableFuture<Long> getServerPid() {
+    return serverPid;
+  }
+
   public void finishBuild() {
     bazelBuildFinished.complete(true);
   }
@@ -62,6 +76,7 @@ public class BepReader {
     this.bepServer = bepServer;
     this.bazelBuildFinished = new CompletableFuture<>();
     this.bepReaderFinished = new CompletableFuture<>();
+    this.serverPid = new CompletableFuture<>();
     var attrs =
         PosixFilePermissions.asFileAttribute(
             Stream.of(PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_READ)

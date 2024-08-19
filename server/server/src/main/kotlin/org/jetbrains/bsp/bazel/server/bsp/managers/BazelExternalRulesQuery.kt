@@ -52,7 +52,7 @@ class BazelWorkspaceExternalRulesQueryImpl(private val bazelRunner: BazelRunner)
           }
         }
 
-      runBazelCommand(command, logProcessOutput = false)
+      runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
         .let { result ->
           if (result.isNotSuccess) {
@@ -99,7 +99,7 @@ class BazelBzlModExternalRulesQueryImpl(private val bazelRunner: BazelRunner) : 
       }
     val bzlmodGraphJson =
       bazelRunner
-        .runBazelCommand(command, logProcessOutput = false)
+        .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
         .let { result ->
           if (result.isNotSuccess) {

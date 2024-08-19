@@ -9,8 +9,13 @@ import org.jetbrains.bsp.bazel.commons.Format
 import org.jetbrains.bsp.bazel.commons.Stopwatch
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import java.time.Duration
+import java.util.concurrent.CompletableFuture
 
-class BazelProcess internal constructor(private val process: Process, private val logger: BspClientLogger? = null) {
+class BazelProcess internal constructor(
+  private val process: Process,
+  private val logger: BspClientLogger? = null,
+  private val serverPidFuture: CompletableFuture<Long>?,
+) {
   fun waitAndGetResult(cancelChecker: CancelChecker, ensureAllOutputRead: Boolean = false): BazelProcessResult {
     val stopwatch = Stopwatch.start()
     val outputProcessor: OutputProcessor =
@@ -28,7 +33,7 @@ class BazelProcess internal constructor(private val process: Process, private va
         }
       }
 
-    val exitCode = outputProcessor.waitForExit(cancelChecker)
+    val exitCode = outputProcessor.waitForExit(cancelChecker, serverPidFuture, logger)
     val duration = stopwatch.stop()
     logCompletion(exitCode, duration)
     return BazelProcessResult(outputProcessor.stdoutCollector, outputProcessor.stderrCollector, exitCode)
