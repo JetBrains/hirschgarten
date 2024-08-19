@@ -19,7 +19,7 @@ class BazelBspFallbackAspectsManager(
         }
       }
     return bazelRunner
-      .runBazelCommand(command, logProcessOutput = false)
+      .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
       .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
       .stdoutLines
       .map { Label.parse(it) }

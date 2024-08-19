@@ -18,7 +18,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
     val command = bazelRunner.buildBazelCommand { info() }
     val processResult =
       bazelRunner
-        .runBazelCommand(command)
+        .runBazelCommand(command, serverPidFuture = null)
         .waitAndGetResult(cancelChecker, true)
     return parseBazelInfo(processResult, isBzlModEnabled)
   }
@@ -58,7 +58,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
   private fun calculateBzlModEnabled(cancelChecker: CancelChecker): Boolean =
     bazelRunner
       .buildBazelCommand { showRepo() }
-      .let { bazelRunner.runBazelCommand(it, logProcessOutput = false) }
+      .let { bazelRunner.runBazelCommand(it, logProcessOutput = false, serverPidFuture = null) }
       .waitAndGetResult(cancelChecker)
       .statusCode == StatusCode.OK
 

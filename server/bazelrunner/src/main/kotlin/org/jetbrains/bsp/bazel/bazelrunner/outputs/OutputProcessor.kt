@@ -2,10 +2,12 @@ package org.jetbrains.bsp.bazel.bazelrunner.outputs
 
 import com.google.common.base.Charsets
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
@@ -55,12 +57,20 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
     executorService.submit(runnable).also { runningProcessors.add(it) }
   }
 
-  fun waitForExit(cancelChecker: CancelChecker): Int {
+  fun waitForExit(
+    cancelChecker: CancelChecker,
+    serverPidFuture: CompletableFuture<Long>?,
+    logger: BspClientLogger?,
+  ): Int {
     var isFinished = false
     while (!isFinished) {
       isFinished = process.waitFor(500, TimeUnit.MILLISECONDS)
       if (cancelChecker.isCanceled) {
         process.destroy()
+        serverPidFuture
+          ?.get()
+          ?.let { Runtime.getRuntime().exec("kill -SIGINT $it").waitFor() }
+          ?: logger?.error("Could not cancel the task. Bazel server needs to be interrupted manually.")
       }
     }
     // Return values of waitFor() and waitFor(long, TimeUnit) differ

@@ -8,6 +8,7 @@ import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.bazel.workspacecontext.extraFlags
 import java.nio.file.Path
+import java.util.concurrent.CompletableFuture
 import kotlin.io.path.pathString
 
 class BazelRunner(
@@ -84,6 +85,7 @@ class BazelRunner(
     command: BazelCommand,
     originId: String? = null,
     logProcessOutput: Boolean = true,
+    serverPidFuture: CompletableFuture<Long>?,
   ): BazelProcess {
     val processArgs = command.makeCommandLine()
     val processBuilder = ProcessBuilder(processArgs)
@@ -104,6 +106,7 @@ class BazelRunner(
     return BazelProcess(
       process,
       outputLogger,
+      serverPidFuture,
     )
   }
 

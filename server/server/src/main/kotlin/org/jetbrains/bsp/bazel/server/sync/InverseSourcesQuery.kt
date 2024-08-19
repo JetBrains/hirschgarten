@@ -44,7 +44,7 @@ object InverseSourcesQuery {
       }
     val targetLabelsQuery =
       bazelRunner
-        .runBazelCommand(command, logProcessOutput = false)
+        .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult(cancelChecker)
     if (targetLabelsQuery.statusCode == StatusCode.OK) {
       return targetLabelsQuery.stdoutLines
@@ -72,7 +72,7 @@ object InverseSourcesQuery {
       }
     val fileLabelResult =
       bazelRunner
-        .runBazelCommand(command, logProcessOutput = false)
+        .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult(cancelChecker)
     return if (fileLabelResult.statusCode == StatusCode.OK && fileLabelResult.stdoutLines.size == 1) {
       fileLabelResult.stdoutLines.first()
