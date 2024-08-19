@@ -137,7 +137,7 @@ class ExecuteService(
   private fun runImpl(
     cancelChecker: CancelChecker,
     params: RunParams,
-    additionalOptions: List<String>? = null,
+    additionalProgramArguments: List<String>? = null,
   ): RunResult {
     val targets = selectTargets(cancelChecker, listOf(params.target))
     val bspId = targets.singleOrResponseError(params.target)
@@ -149,7 +149,7 @@ class ExecuteService(
       bazelRunner.buildBazelCommand {
         run(bspId) {
           options.add(BazelFlag.color(true))
-          additionalOptions?.let { options.addAll(it) }
+          additionalProgramArguments?.let { programArguments.addAll(it) }
           params.environmentVariables?.let { environment.putAll(it) }
           params.workingDirectory?.let { workingDirectory = Path(it) }
           params.arguments?.let { programArguments.addAll(it) }
@@ -173,12 +173,11 @@ class ExecuteService(
   fun runWithDebug(cancelChecker: CancelChecker, params: RunWithDebugParams): RunResult {
     fun jdwpArgument(port: Int): String =
       // all used options are defined in https://docs.oracle.com/javase/8/docs/technotes/guides/jpda/conninv.html#Invocation
-      "--jvmopt=\"-agentlib:jdwp=" +
+      "--jvm_flag=-agentlib:jdwp=" +
         "transport=dt_socket," +
         "server=n," +
         "suspend=y," +
-        "address=localhost:$port," +
-        "\""
+        "address=localhost:$port"
 
     fun generateRunArguments(debugType: DebugType?): List<String> =
       when (debugType) {
