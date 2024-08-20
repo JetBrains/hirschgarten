@@ -5,6 +5,7 @@ import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspSyncStatusService
@@ -55,10 +56,9 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
           CollectProjectDetailsTask(
             project = project,
             taskId = taskId,
-            buildProject = buildProject,
-            cancelable = true,
             name = "Syncing...",
-            cs = this,
+            cancelable = true,
+            buildProject = buildProject,
           )
         // Use weak reference for the cancellation callback so that it doesn't prevent GC
         val collectProjectDetailsTaskRef = WeakReference(collectProjectDetailsTask)
@@ -66,12 +66,15 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
           taskId = taskId,
           title = BspPluginBundle.message("console.task.sync.title"),
           message = BspPluginBundle.message("console.task.sync.in.progress"),
-          cancelAction = { collectProjectDetailsTaskRef.get()?.onCancel() },
+          cancelAction = {
+            BspSyncStatusService.getInstance(project).cancel()
+            coroutineContext.cancel()
+          },
         )
         log.debug("Connecting to the server")
         project.connection.connect(taskId)
         log.debug("Running CollectProjectDetailsTask")
-        collectProjectDetailsTask.execute()
+        collectProjectDetailsTaskRef.get()?.execute()
         syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.success"))
       } catch (e: Exception) {
         if (e is CancellationException) {
@@ -84,10 +87,4 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
 
       BspToolWindowService.getInstance(project).doDeepPanelReload()
     }
-
-  private fun CollectProjectDetailsTask.onCancel() {
-    log.debug("Cancelling BSP sync")
-    BspSyncStatusService.getInstance(project).cancel()
-    this.cancelExecution()
-  }
 }
