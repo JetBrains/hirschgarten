@@ -88,6 +88,10 @@ class BazelProjectMapper(
       measure("Create no source libraries") {
         calculateNoSourceLibraries(targetsToImport, workspaceContext)
       }
+    val srcJarLibraries =
+      measure("Create srcjar libraries") {
+        calculateSrcJarLibraries(targetsToImport)
+      }
     val annotationProcessorLibraries =
       measure("Create AP libraries") {
         annotationProcessorLibraries(targetsToImport)
@@ -121,6 +125,7 @@ class BazelProjectMapper(
       measure("Merge libraries from deps") {
         concatenateMaps(
           noSourceLibraries,
+          srcJarLibraries,
           annotationProcessorLibraries,
           kotlinStdlibsMapper,
           kotlincPluginLibrariesMapper,
@@ -219,8 +224,35 @@ class BazelProjectMapper(
     if (!workspaceContext.experimentalUseLibOverModSection.value) return emptyMap()
     return targetsToImport
       .filterNot { hasKnownSources(it) }
-      .map { target ->
+      .associate { target ->
         Label.parse(target.id) to listOf(createLibrary(Label.parse(target.id + "_output_jars"), target))
+      }
+  }
+
+  private fun calculateSrcJarLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
+    val srcJarByLabel = HashMap<Label, Library>()
+    return targetsToImport
+      .mapNotNull { target ->
+        val srcJars =
+          target.generatedSourcesList
+            .filter { it.relativePath.endsWith(".srcjar") }
+            .map { bazelPathsResolver.resolveUri(it) }
+        if (srcJars.isEmpty()) return@mapNotNull null
+
+        val libraries =
+          srcJars.map { uri ->
+            val label = syntheticLabel(uri.toString())
+            srcJarByLabel.computeIfAbsent(label) {
+              Library(
+                label = label,
+                outputs = emptySet(),
+                sources = setOf(uri),
+                dependencies = emptyList(),
+                interfaceJars = emptySet(),
+              )
+            }
+          }
+        Label.parse(target.id) to libraries
       }.toMap()
   }
 
@@ -798,6 +830,7 @@ class BazelProjectMapper(
         .map(bazelPathsResolver::resolve)
         .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
         .filter { it.exists() }
+        .filter { !it.name.endsWith(".srcjar") }
 
     val sourceRoots = (sources + generatedSources).mapNotNull(languagePlugin::calculateSourceRoot)
     return SourceSet(
