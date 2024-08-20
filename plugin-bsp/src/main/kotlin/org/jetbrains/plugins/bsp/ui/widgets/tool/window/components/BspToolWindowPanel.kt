@@ -79,7 +79,7 @@ public class BspToolWindowPanel(project: Project) : SimpleToolWindowPanel(true, 
   }
 
   private fun showCurrentPanel(listsUpdater: ListsUpdater) {
-    setToolWindowContent(listsUpdater.loadedTargetsPanel.wrappedInScrollPane())
+    setToolWindowContent(listsUpdater.loadedTargetsPanel.withScrollAndSearch())
   }
 
   private fun setToolWindowContent(component: JComponent) {

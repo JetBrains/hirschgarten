@@ -9,6 +9,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
+import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.event.MouseListener
 import javax.swing.Icon
@@ -92,14 +93,16 @@ public class BspPanelComponent private constructor(
     this.repaint()
   }
 
-  public fun wrappedInScrollPane(): JBScrollPane {
+  public fun withScrollAndSearch(): JPanel {
+    val panel = JPanel(BorderLayout())
     val scrollPane = JBScrollPane(this)
     targetSearch.searchBarPanel.let {
       it.isEnabled = true
       it.registerShortcutsOn(scrollPane)
-      scrollPane.setColumnHeaderView(it)
+      panel.add(it, BorderLayout.NORTH)
     }
-    return scrollPane
+    panel.add(scrollPane, BorderLayout.CENTER)
+    return panel
   }
 
   /**
