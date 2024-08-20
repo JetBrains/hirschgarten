@@ -4,7 +4,7 @@ INTELLIJ_BSP_PLUGIN_ZIP = "plugin-bsp/intellij-bsp.zip"
 
 INTELLIJ_BAZEL_PLUGIN_ZIP = "plugin-bazel/intellij-bazel.zip"
 
-PLATFORM_VERSION = "242.19890.14"
+PLATFORM_VERSION = "242.21829.40"
 
 kt_test(
     name = "performance-testing",
