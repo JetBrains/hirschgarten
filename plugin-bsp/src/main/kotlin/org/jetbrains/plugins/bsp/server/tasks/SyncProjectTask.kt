@@ -62,13 +62,14 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
           )
         // Use weak reference for the cancellation callback so that it doesn't prevent GC
         val collectProjectDetailsTaskRef = WeakReference(collectProjectDetailsTask)
-        project.connection.connect(taskId)
         syncConsole.startTask(
           taskId = taskId,
           title = BspPluginBundle.message("console.task.sync.title"),
           message = BspPluginBundle.message("console.task.sync.in.progress"),
           cancelAction = { collectProjectDetailsTaskRef.get()?.onCancel() },
         )
+        log.debug("Connecting to the server")
+        project.connection.connect(taskId)
         log.debug("Running CollectProjectDetailsTask")
         collectProjectDetailsTask.execute()
         syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.success"))
