@@ -160,6 +160,12 @@
                 implementation="org.jetbrains.plugins.bsp.services.BspKotlinProjectConfigurator"
                 order="first"
         />
+
+        <!--suppress PluginXmlValidity -->
+        <supportsKotlinPluginMode supportsK2="true"/>
+
+        <!-- this is left for backward-compatibility with the first versions of 242,
+        it can be removed later -->
         <!--suppress PluginXmlValidity -->
         <supportsKotlinK2Mode/>
     </extensions>
