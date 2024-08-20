@@ -32,11 +32,10 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
@@ -82,7 +81,6 @@ import org.jetbrains.plugins.bsp.performance.testing.bspTracer
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
-import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.utils.SdkUtils
@@ -96,6 +94,8 @@ import java.util.concurrent.ExecutionException
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.io.path.Path
 
+private const val COLLECT_PROJECT_TASK_ID = "bsp-collect-project-task"
+
 public data class PythonSdk(
   val name: String,
   val interpreterUri: String,
@@ -108,7 +108,6 @@ public class CollectProjectDetailsTask(
   private val name: String,
   private val cancelable: Boolean,
   private val buildProject: Boolean,
-  private val cs: CoroutineScope,
 ) : BspServerTask<ProjectDetails>("collect project details", project) {
   private val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
 
@@ -124,14 +123,12 @@ public class CollectProjectDetailsTask(
 
   private var androidSdks: Set<AndroidSdk>? = null
 
-  private val launchedTask: Deferred<Unit> = cs.async(start = CoroutineStart.LAZY) { delayedExecution() }
-
   public suspend fun execute() {
     saveAllFiles()
-    launchedTask.await()
+    doExecute()
   }
 
-  private suspend fun delayedExecution() {
+  private suspend fun doExecute() {
     withBackgroundProgress(project, name, cancelable) {
       reportSequentialProgress { reporter ->
         val projectDetails =
@@ -194,7 +191,7 @@ public class CollectProjectDetailsTask(
     try {
       bspSyncConsole.startSubtask(
         this.taskId,
-        importSubtaskId,
+        COLLECT_PROJECT_TASK_ID,
         BspPluginBundle.message("console.task.model.collect.in.progress"),
       )
 
@@ -205,17 +202,24 @@ public class CollectProjectDetailsTask(
           buildServerCapabilities = capabilities,
           projectRootDir = project.rootDir.url,
           buildProject = buildProject,
-          cs = cs,
         )
 
-      bspSyncConsole.finishSubtask(importSubtaskId, BspPluginBundle.message("console.task.model.collect.success"))
+      bspSyncConsole.finishSubtask(COLLECT_PROJECT_TASK_ID, BspPluginBundle.message("console.task.model.collect.success"))
 
       projectDetails
     } catch (e: Exception) {
       if (e is CancellationException) {
-        bspSyncConsole.finishSubtask(importSubtaskId, BspPluginBundle.message("console.task.model.collect.cancelled"), FailureResultImpl())
+        bspSyncConsole.finishSubtask(
+          COLLECT_PROJECT_TASK_ID,
+          BspPluginBundle.message("console.task.model.collect.cancelled"),
+          FailureResultImpl(),
+        )
       } else {
-        bspSyncConsole.finishSubtask(importSubtaskId, BspPluginBundle.message("console.task.model.collect.failed"), FailureResultImpl(e))
+        bspSyncConsole.finishSubtask(
+          COLLECT_PROJECT_TASK_ID,
+          BspPluginBundle.message("console.task.model.collect.failed"),
+          FailureResultImpl(e),
+        )
       }
       throw e
     }
@@ -594,10 +598,6 @@ public class CollectProjectDetailsTask(
     writeAction {
       analysisMessageBus.syncPublisher(KotlinModificationTopics.GLOBAL_MODULE_STATE_MODIFICATION).onModification()
     }
-
-  public fun cancelExecution() {
-    launchedTask.cancel()
-  }
 }
 
 @Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")
@@ -607,150 +607,150 @@ public suspend fun calculateProjectDetailsWithCapabilities(
   buildServerCapabilities: BazelBuildServerCapabilities,
   projectRootDir: String,
   buildProject: Boolean,
-  cs: CoroutineScope,
-): ProjectDetails {
-  val log = logger<Any>()
+): ProjectDetails =
+  coroutineScope {
+    val log = logger<Any>()
 
-  suspend fun <Result> query(
-    check: Boolean,
-    queryName: String,
-    doQuery: () -> CompletableFuture<Result>,
-  ): Result? =
-    try {
-      if (check) {
-        withContext(Dispatchers.IO) { doQuery().await() }
+    suspend fun <Result> query(
+      check: Boolean,
+      queryName: String,
+      doQuery: () -> CompletableFuture<Result>,
+    ): Result? =
+      try {
+        if (check) {
+          withContext(Dispatchers.IO) { doQuery().await() }
+        } else {
+          null
+        }
+      } catch (e: Exception) {
+        when (e) {
+          is CancellationException -> log.info("Query $queryName is cancelled")
+          else -> log.warn("Query $queryName failed", e)
+        }
+        throw e
+      }
+
+    fun <Result> asyncQuery(
+      check: Boolean,
+      queryName: String,
+      doQuery: () -> CompletableFuture<Result>,
+    ): Deferred<Result?> = async { query(check, queryName, doQuery) }
+
+    suspend fun queryBuildTargets(): WorkspaceBuildTargetsResult? =
+      if (!buildProject) {
+        query(true, "workspace/buildTargets") { server.workspaceBuildTargets() }
       } else {
-        null
+        query(true, "workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }
       }
+
+    try {
+      val workspaceBuildTargetsResult = queryBuildTargets() ?: throw IllegalStateException("query build target is not successful")
+
+      val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
+
+      val sourcesResult =
+        asyncQuery(true, "buildTarget/sources") {
+          server.buildTargetSources(SourcesParams(allTargetsIds))
+        }
+
+      // We have to check == true because bsp4j uses non-primitive Boolean (which is Boolean? in Kotlin)
+      val resourcesResult =
+        asyncQuery(buildServerCapabilities.resourcesProvider == true, "buildTarget/resources") {
+          server.buildTargetResources(ResourcesParams(allTargetsIds))
+        }
+
+      val dependencySourcesResult =
+        asyncQuery(buildServerCapabilities.dependencySourcesProvider == true, "buildTarget/dependencySources") {
+          server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds))
+        }
+
+      val javaTargetIds = calculateJavaTargetIds(workspaceBuildTargetsResult)
+      val scalaTargetIds = calculateScalaTargetIds(workspaceBuildTargetsResult)
+      val libraries: WorkspaceLibrariesResult? =
+        query(buildServerCapabilities.workspaceLibrariesProvider, "workspace/libraries") {
+          (server as BazelBuildServer).workspaceLibraries()
+        }
+
+      val directoriesResult =
+        query(buildServerCapabilities.workspaceDirectoriesProvider, "workspace/directories") {
+          (server as BazelBuildServer).workspaceDirectories()
+        }
+
+      val jvmBinaryJarsResult =
+        query(
+          BspFeatureFlags.isAndroidSupportEnabled &&
+            buildServerCapabilities.jvmBinaryJarsProvider &&
+            javaTargetIds.isNotEmpty(),
+          "buildTarget/jvmBinaryJars",
+        ) {
+          server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))
+        }
+
+      // We use javacOptions only to build the dependency tree based on the classpath.
+      // If the workspace/libraries endpoint is NOT available (like SBT), we need to retrieve it.
+      // If a server supports buildTarget/jvmCompileClasspath, then the classpath won't be passed via this endpoint
+      // (see https://build-server-protocol.github.io/docs/extensions/java#javacoptionsitem).
+      // In this case we can use this request to retrieve the javac options without the overhead of passing the whole classpath.
+      // There's no capability for javacOptions.
+      val javacOptionsResult =
+        if (libraries == null || buildServerCapabilities.jvmCompileClasspathProvider) {
+          asyncQuery(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
+            server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
+          }
+        } else {
+          null
+        }
+
+      // Same for Scala
+      val scalacOptionsResult =
+        if (libraries == null) {
+          asyncQuery(scalaTargetIds.isNotEmpty() && BspFeatureFlags.isScalaSupportEnabled, "buildTarget/scalacOptions") {
+            server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
+          }
+        } else {
+          null
+        }
+
+      val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
+      val pythonOptionsResult =
+        asyncQuery(pythonTargetsIds.isNotEmpty() && BspFeatureFlags.isPythonSupportEnabled, "buildTarget/pythonOptions") {
+          server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetsIds))
+        }
+
+      val outputPathsResult =
+        asyncQuery(buildServerCapabilities.outputPathsProvider == true, "buildTarget/outputPaths") {
+          server.buildTargetOutputPaths(OutputPathsParams(allTargetsIds))
+        }
+
+      project.projectSyncHook?.onSync(project, server)
+
+      ProjectDetails(
+        targetIds = allTargetsIds,
+        targets = workspaceBuildTargetsResult.targets.toSet(),
+        sources = sourcesResult.await()?.items ?: emptyList(),
+        resources = resourcesResult.await()?.items ?: emptyList(),
+        dependenciesSources = dependencySourcesResult.await()?.items ?: emptyList(),
+        javacOptions = javacOptionsResult?.await()?.items ?: emptyList(),
+        scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
+        pythonOptions = pythonOptionsResult.await()?.items ?: emptyList(),
+        outputPathUris = outputPathsResult.await()?.obtainDistinctUris() ?: emptyList(),
+        libraries = libraries?.libraries,
+        directories =
+          directoriesResult
+            ?: WorkspaceDirectoriesResult(listOf(DirectoryItem(projectRootDir)), emptyList()),
+        jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
+      )
     } catch (e: Exception) {
-      when (e) {
-        is CancellationException -> log.info("Query $queryName is cancelled")
-        else -> log.warn("Query $queryName failed", e)
+      // TODO the type xd
+      if (e is CancellationException || e is ExecutionException && e.cause is CancellationException) {
+        log.debug("calculateProjectDetailsWithCapabilities has been cancelled", e)
+      } else {
+        log.error("calculateProjectDetailsWithCapabilities has failed", e)
       }
+
       throw e
     }
-
-  suspend fun <Result> asyncQuery(
-    check: Boolean,
-    queryName: String,
-    doQuery: () -> CompletableFuture<Result>,
-  ) = cs.async { query(check, queryName, doQuery) }
-
-  suspend fun queryBuildTargets(): WorkspaceBuildTargetsResult? =
-    if (!buildProject) {
-      query(true, "workspace/buildTargets") { server.workspaceBuildTargets() }
-    } else {
-      query(true, "workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }
-    }
-
-  try {
-    val workspaceBuildTargetsResult = queryBuildTargets() ?: throw IllegalStateException("query build target is not successful")
-
-    val allTargetsIds = calculateAllTargetsIds(workspaceBuildTargetsResult)
-
-    val sourcesResult =
-      asyncQuery(true, "buildTarget/sources") {
-        server.buildTargetSources(SourcesParams(allTargetsIds))
-      }
-
-    // We have to check == true because bsp4j uses non-primitive Boolean (which is Boolean? in Kotlin)
-    val resourcesResult =
-      asyncQuery(buildServerCapabilities.resourcesProvider == true, "buildTarget/resources") {
-        server.buildTargetResources(ResourcesParams(allTargetsIds))
-      }
-
-    val dependencySourcesResult =
-      asyncQuery(buildServerCapabilities.dependencySourcesProvider == true, "buildTarget/dependencySources") {
-        server.buildTargetDependencySources(DependencySourcesParams(allTargetsIds))
-      }
-
-    val javaTargetIds = calculateJavaTargetIds(workspaceBuildTargetsResult)
-    val scalaTargetIds = calculateScalaTargetIds(workspaceBuildTargetsResult)
-    val libraries: WorkspaceLibrariesResult? =
-      query(buildServerCapabilities.workspaceLibrariesProvider, "workspace/libraries") {
-        (server as BazelBuildServer).workspaceLibraries()
-      }
-
-    val directoriesResult =
-      query(buildServerCapabilities.workspaceDirectoriesProvider, "workspace/directories") {
-        (server as BazelBuildServer).workspaceDirectories()
-      }
-
-    val jvmBinaryJarsResult =
-      query(
-        BspFeatureFlags.isAndroidSupportEnabled &&
-          buildServerCapabilities.jvmBinaryJarsProvider &&
-          javaTargetIds.isNotEmpty(),
-        "buildTarget/jvmBinaryJars",
-      ) {
-        server.buildTargetJvmBinaryJars(JvmBinaryJarsParams(javaTargetIds))
-      }
-
-    // We use javacOptions only to build the dependency tree based on the classpath.
-    // If the workspace/libraries endpoint is NOT available (like SBT), we need to retrieve it.
-    // If a server supports buildTarget/jvmCompileClasspath, then the classpath won't be passed via this endpoint
-    // (see https://build-server-protocol.github.io/docs/extensions/java#javacoptionsitem).
-    // In this case we can use this request to retrieve the javac options without the overhead of passing the whole classpath.
-    // There's no capability for javacOptions.
-    val javacOptionsResult =
-      if (libraries == null || buildServerCapabilities.jvmCompileClasspathProvider) {
-        asyncQuery(javaTargetIds.isNotEmpty(), "buildTarget/javacOptions") {
-          server.buildTargetJavacOptions(JavacOptionsParams(javaTargetIds))
-        }
-      } else {
-        null
-      }
-
-    // Same for Scala
-    val scalacOptionsResult =
-      if (libraries == null) {
-        asyncQuery(scalaTargetIds.isNotEmpty() && BspFeatureFlags.isScalaSupportEnabled, "buildTarget/scalacOptions") {
-          server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
-        }
-      } else {
-        null
-      }
-
-    val pythonTargetsIds = calculatePythonTargetsIds(workspaceBuildTargetsResult)
-    val pythonOptionsResult =
-      asyncQuery(pythonTargetsIds.isNotEmpty() && BspFeatureFlags.isPythonSupportEnabled, "buildTarget/pythonOptions") {
-        server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetsIds))
-      }
-
-    val outputPathsResult =
-      asyncQuery(buildServerCapabilities.outputPathsProvider == true, "buildTarget/outputPaths") {
-        server.buildTargetOutputPaths(OutputPathsParams(allTargetsIds))
-      }
-
-    project.projectSyncHook?.onSync(project, server)
-
-    return ProjectDetails(
-      targetIds = allTargetsIds,
-      targets = workspaceBuildTargetsResult.targets.toSet(),
-      sources = sourcesResult.await()?.items ?: emptyList(),
-      resources = resourcesResult.await()?.items ?: emptyList(),
-      dependenciesSources = dependencySourcesResult.await()?.items ?: emptyList(),
-      javacOptions = javacOptionsResult?.await()?.items ?: emptyList(),
-      scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
-      pythonOptions = pythonOptionsResult.await()?.items ?: emptyList(),
-      outputPathUris = outputPathsResult.await()?.obtainDistinctUris() ?: emptyList(),
-      libraries = libraries?.libraries,
-      directories =
-        directoriesResult
-          ?: WorkspaceDirectoriesResult(listOf(DirectoryItem(projectRootDir)), emptyList()),
-      jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
-    )
-  } catch (e: Exception) {
-    // TODO the type xd
-    if (e is CancellationException || e is ExecutionException && e.cause is CancellationException) {
-      log.debug("calculateProjectDetailsWithCapabilities has been cancelled", e)
-    } else {
-      log.error("calculateProjectDetailsWithCapabilities has failed", e)
-    }
-
-    throw e
   }
-}
 
 private fun calculateAllTargetsIds(workspaceBuildTargetsResult: WorkspaceBuildTargetsResult): List<BuildTargetIdentifier> =
   workspaceBuildTargetsResult.targets.map { it.id }
