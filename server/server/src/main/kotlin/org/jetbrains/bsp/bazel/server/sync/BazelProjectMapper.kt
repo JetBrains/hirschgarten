@@ -84,9 +84,9 @@ class BazelProjectMapper(
       measure("Targets as libraries") {
         targets - targetsToImport.map { Label.parse(it.id) }.toSet()
       }
-    val noSourceLibraries =
-      measure("Create no source libraries") {
-        calculateNoSourceLibraries(targetsToImport, workspaceContext)
+    val outputJarsLibraries =
+      measure("Create output jars libraries") {
+        calculateOutputJarsLibraries(targetsToImport, workspaceContext)
       }
     val annotationProcessorLibraries =
       measure("Create AP libraries") {
@@ -120,7 +120,7 @@ class BazelProjectMapper(
     val librariesFromDeps =
       measure("Merge libraries from deps") {
         concatenateMaps(
-          noSourceLibraries,
+          outputJarsLibraries,
           annotationProcessorLibraries,
           kotlinStdlibsMapper,
           kotlincPluginLibrariesMapper,
@@ -212,17 +212,21 @@ class BazelProjectMapper(
         maps.flatMap { it[key].orEmpty() }
       }
 
-  private fun calculateNoSourceLibraries(
+  private fun calculateOutputJarsLibraries(
     targetsToImport: Sequence<TargetInfo>,
     workspaceContext: WorkspaceContext,
   ): Map<Label, List<Library>> {
     if (!workspaceContext.experimentalUseLibOverModSection.value) return emptyMap()
     return targetsToImport
-      .filterNot { hasKnownSources(it) }
+      .filter { shouldCreateOutputJarsLibrary(it) }
       .map { target ->
         Label.parse(target.id) to listOf(createLibrary(Label.parse(target.id + "_output_jars"), target))
       }.toMap()
   }
+
+  private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
+    targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
+      !hasKnownSources(targetInfo)
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
