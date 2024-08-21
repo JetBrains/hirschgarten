@@ -81,6 +81,7 @@ import org.jetbrains.plugins.bsp.performance.testing.bspTracer
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
+import org.jetbrains.plugins.bsp.server.client.importSubtaskId
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.utils.SdkUtils
@@ -93,8 +94,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.io.path.Path
-
-private const val COLLECT_PROJECT_TASK_ID = "bsp-collect-project-task"
 
 public data class PythonSdk(
   val name: String,
@@ -191,7 +190,7 @@ public class CollectProjectDetailsTask(
     try {
       bspSyncConsole.startSubtask(
         this.taskId,
-        COLLECT_PROJECT_TASK_ID,
+        importSubtaskId,
         BspPluginBundle.message("console.task.model.collect.in.progress"),
       )
 
@@ -204,19 +203,19 @@ public class CollectProjectDetailsTask(
           buildProject = buildProject,
         )
 
-      bspSyncConsole.finishSubtask(COLLECT_PROJECT_TASK_ID, BspPluginBundle.message("console.task.model.collect.success"))
+      bspSyncConsole.finishSubtask(importSubtaskId, BspPluginBundle.message("console.task.model.collect.success"))
 
       projectDetails
     } catch (e: Exception) {
       if (e is CancellationException) {
         bspSyncConsole.finishSubtask(
-          COLLECT_PROJECT_TASK_ID,
+          importSubtaskId,
           BspPluginBundle.message("console.task.model.collect.cancelled"),
           FailureResultImpl(),
         )
       } else {
         bspSyncConsole.finishSubtask(
-          COLLECT_PROJECT_TASK_ID,
+          importSubtaskId,
           BspPluginBundle.message("console.task.model.collect.failed"),
           FailureResultImpl(e),
         )
