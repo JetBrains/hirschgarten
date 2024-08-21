@@ -14,7 +14,6 @@ import org.jetbrains.plugins.bsp.performance.testing.bspTracer
 import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
-import java.lang.ref.WeakReference
 import java.util.concurrent.CancellationException
 
 private const val SYNC_TASK_ID = "bsp-sync-project"
@@ -60,8 +59,6 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
             cancelable = true,
             buildProject = buildProject,
           )
-        // Use weak reference for the cancellation callback so that it doesn't prevent GC
-        val collectProjectDetailsTaskRef = WeakReference(collectProjectDetailsTask)
         syncConsole.startTask(
           taskId = taskId,
           title = BspPluginBundle.message("console.task.sync.title"),
@@ -74,7 +71,7 @@ public class SyncProjectTask(project: Project) : BspServerTask<Unit>("Sync Proje
         log.debug("Connecting to the server")
         project.connection.connect(taskId)
         log.debug("Running CollectProjectDetailsTask")
-        collectProjectDetailsTaskRef.get()?.execute()
+        collectProjectDetailsTask.execute()
         syncConsole.finishTask(taskId, BspPluginBundle.message("console.task.sync.success"))
       } catch (e: Exception) {
         if (e is CancellationException) {
