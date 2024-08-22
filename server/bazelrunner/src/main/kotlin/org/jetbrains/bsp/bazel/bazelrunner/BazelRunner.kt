@@ -67,6 +67,15 @@ class BazelRunner(
     val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath.value
 
     command.options.add(repositoryOverride(Constants.ASPECT_REPOSITORY, relativeDotBspFolderPath.pathString))
+    // These options are the same as in Google's Bazel plugin for IntelliJ
+    // They make the output suitable for display in the console
+    command.options.addAll(
+      listOf(
+        "--curses=no",
+        "--color=yes",
+        "--noprogress_in_terminal_title",
+      ),
+    )
 
     val workspaceBazelOptions = workspaceContext.buildFlags.values + workspaceContext.extraFlags
 
