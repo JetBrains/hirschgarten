@@ -71,6 +71,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
 
           override fun onTaskFinish(
             taskId: TaskId,
+            parentId: TaskId?,
             message: String,
             status: StatusCode,
             data: Any?,

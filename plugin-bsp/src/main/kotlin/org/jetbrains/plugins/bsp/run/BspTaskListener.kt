@@ -35,6 +35,7 @@ public interface BspTaskListener {
 
   public fun onTaskFinish(
     taskId: TaskId,
+    parentId: TaskId?,
     message: String,
     status: StatusCode,
     data: Any?,

@@ -99,9 +99,9 @@ class BepServer(
       val bspClientTestNotifier = BspClientTestNotifier(bspClient, originId)
       val testResult = event.testResult
 
-      val parentId = TaskId(UUID.randomUUID().toString())
+      val taskId = TaskId(UUID.randomUUID().toString())
 
-      bspClientTestNotifier.beginTestTarget(target, parentId)
+      bspClientTestNotifier.beginTestTarget(target, taskId)
 
       // TODO: this is the place where we could parse the test result and produce individual test events
       // TODO: there's some other interesting data
@@ -127,18 +127,18 @@ class BepServer(
       val coverageReportUri = testResult.testActionOutputList.find { it.name == "test.lcov" }?.uri
       if (coverageReportUri != null) {
         bspClient.onBuildPublishOutput(
-          PublishOutputParams(originId, parentId, target, TestCoverageReport.DATA_KIND, TestCoverageReport(coverageReportUri)),
+          PublishOutputParams(originId, taskId, target, TestCoverageReport.DATA_KIND, TestCoverageReport(coverageReportUri)),
         )
       }
 
       val testXmlUri = testResult.testActionOutputList.find { it.name == "test.xml" }?.uri
       if (testXmlUri != null) {
         // Test cases identified and sent to the client by TestXmlParser.
-        TestXmlParser(parentId, bspClientTestNotifier).parseAndReport(testXmlUri)
+        TestXmlParser(taskId, bspClientTestNotifier).parseAndReport(testXmlUri)
       } else {
         // Send a generic notification if individual tests cannot be processed.
         val childId = TaskId(UUID.randomUUID().toString())
-        childId.parents = listOf(parentId.id)
+        childId.parents = listOf(taskId.id)
         bspClientTestNotifier.startTest("Test", childId)
         bspClientTestNotifier.finishTest("Test", childId, testStatus, "Test finished")
       }
@@ -159,7 +159,7 @@ class BepServer(
           skipped,
         )
 
-      bspClientTestNotifier.endTestTarget(testReport, parentId)
+      bspClientTestNotifier.endTestTarget(testReport, taskId)
     }
   }
 
