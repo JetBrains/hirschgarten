@@ -106,9 +106,18 @@
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
 
-        <formattingService implementation="org.jetbrains.bazel.languages.starlark.services.StarlarkFormattingService"/>
+        <formattingService implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
 
         <runLineMarkerContributor implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor" language="Starlark" />
+
+        <projectConfigurable
+                parentId="tools"
+                instance="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurable"
+                provider="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurableProvider"
+                id="org.jetbrains.bazel.settings.BuildifierConfigurable"
+                displayName="Buildifier"
+                nonDefaultProject="false" />
+
     </extensions>
 
     <actions>
