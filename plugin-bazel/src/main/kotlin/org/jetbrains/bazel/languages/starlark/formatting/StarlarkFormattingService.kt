@@ -1,4 +1,4 @@
-package org.jetbrains.bazel.languages.starlark.services
+package org.jetbrains.bazel.languages.starlark.formatting
 
 import com.intellij.codeInsight.hint.HintManager
 import com.intellij.codeInsight.hint.HintManagerImpl
@@ -21,6 +21,7 @@ import com.intellij.psi.util.PsiEditorUtil
 import com.intellij.ui.LightweightHint
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
+import org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfiguration
 
 private val LOG = logger<StarlarkFormattingService>()
 private const val NOTIFICATION_GROUP_ID = "Buildifier"
@@ -29,20 +30,24 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
   override fun getFeatures(): Set<Feature> = emptySet()
 
   override fun canFormat(file: PsiFile): Boolean {
+    val buildifierConfiguration = BuildifierConfiguration.getBuildifierConfiguration(file.project)
+    if (!buildifierConfiguration.enabledOnReformat) return false
+
     val virtualFile = file.virtualFile ?: return false
     return FileTypeRegistry.getInstance().isFileOfType(virtualFile, StarlarkFileType)
   }
 
   override fun createFormattingTask(request: AsyncFormattingRequest): FormattingTask? {
-    // TODO: buildifier settings (https://youtrack.jetbrains.com/issue/BAZEL-927/settings-page-for-buildifier)
-    val buildifierPath = "buildifier"
+    val formattingContext = request.context
+    val project = formattingContext.project
+    val buildifierConfiguration = BuildifierConfiguration.getBuildifierConfiguration(project)
 
     if (!checkDocumentExists(request)) {
       LOG.warn("Document for file ${request.context.containingFile.name} is null")
       return null
     }
 
-    val handler = createProcessHandler(request, buildifierPath) ?: return null
+    val handler = createProcessHandler(request, buildifierConfiguration) ?: return null
 
     return object : FormattingTask {
       override fun run() {
@@ -72,12 +77,16 @@ internal class StarlarkFormattingService : AsyncDocumentFormattingService() {
     return document != null
   }
 
-  private fun createProcessHandler(request: AsyncFormattingRequest, buildifierPath: String): CapturingProcessHandler? {
+  private fun createProcessHandler(
+    request: AsyncFormattingRequest,
+    buildifierConfiguration: BuildifierConfiguration,
+  ): CapturingProcessHandler? {
     val ioFile = request.ioFile ?: return null
+    val executablePath = buildifierConfiguration.pathToExecutable ?: return null
     val commandLine =
       GeneralCommandLine()
         .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-        .withExePath(buildifierPath)
+        .withExePath(executablePath)
         .withInput(ioFile)
         .withWorkDirectory(ioFile.parent)
 
