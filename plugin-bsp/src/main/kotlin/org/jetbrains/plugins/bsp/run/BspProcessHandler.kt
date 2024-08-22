@@ -5,7 +5,7 @@ import com.intellij.execution.process.ProcessOutputType
 import kotlinx.coroutines.Deferred
 import java.io.OutputStream
 
-class BspProcessHandler(private val runDeferred: Deferred<*>) : ProcessHandler() {
+open class BspProcessHandler(private val runDeferred: Deferred<*>) : ProcessHandler() {
   override fun startNotify() {
     super.startNotify()
     runDeferred.invokeOnCompletion { e ->

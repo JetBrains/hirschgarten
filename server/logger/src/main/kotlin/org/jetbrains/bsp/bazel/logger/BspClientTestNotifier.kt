@@ -17,10 +17,11 @@ import ch.epfl.scala.bsp4j.TestTask
 class BspClientTestNotifier(private val bspClient: BuildClient, private val originId: String) {
   /**
    * Notifies the client about starting a single test or a test suite
+   * The presence or lack of parent's taskId indicates whether it's a test case or a test suite.
    *
    * @param isSuite     `true` if a test suite has been started, `false` if it was a single test instead
    * @param displayName display name of the started test / test suite
-   * @param taskId      TaskId of the started test / test suite
+   * @param taskId      TaskId of the started test - when parentsId is not empty / test suite - otherwise
    */
   fun startTest(displayName: String?, taskId: TaskId) {
     val testStart = TestStart(displayName)
@@ -32,10 +33,9 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
   }
 
   /**
-   * Notifies the client about finishing a single test or a test suite
+   * Notifies the client about finishing a single test or a test suite.
+   * The presence or lack of parent's taskId indicates whether it's a test case or a test suite.
    *
-   * @param isSuite     `true` if a test suite has been finished, `false` if it was a single
-   * test instead. **For test suites, using `finishTestSuite` is recommended**
    * @param displayName display name of the finished test / test suite
    * @param taskId      TaskId of the finished test / test suite
    * @param status      status of the performed test (does not matter for test suites)

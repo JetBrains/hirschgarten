@@ -121,6 +121,7 @@ public class BspClient(
     val taskId = params.taskId.id
     log.debug("Got task finish: $params")
     val originId = params.originId ?: return // TODO
+    val maybeParent = params.taskId.parents?.firstOrNull()
 
     val data: Any? =
       when (params.dataKind) {
@@ -142,7 +143,7 @@ public class BspClient(
     val status = params.status
 
     BspTaskEventsService.getInstance(project).withListener(originId) {
-      onTaskFinish(taskId, params.message.orEmpty(), status, data)
+      onTaskFinish(taskId, maybeParent, params.message.orEmpty(), status, data)
     }
   }
 
