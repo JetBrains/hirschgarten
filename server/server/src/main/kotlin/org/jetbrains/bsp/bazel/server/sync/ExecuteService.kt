@@ -10,7 +10,6 @@ import ch.epfl.scala.bsp4j.RunResult
 import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestResult
-import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
@@ -30,7 +29,6 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BepReader
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.BspMappings.toBspId
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.model.isJavaOrKotlin
@@ -54,7 +52,6 @@ class ExecuteService(
   private val bspClientLogger: BspClientLogger,
   private val bazelPathsResolver: BazelPathsResolver,
   private val additionalBuildTargetsProvider: AdditionalAndroidBuildTargetsProvider,
-  private val hasAnyProblems: MutableMap<Label, Set<TextDocumentIdentifier>>,
 ) {
   private val gson = Gson()
 
@@ -63,7 +60,7 @@ class ExecuteService(
     target: BuildTargetIdentifier?,
     body: (BepReader) -> T,
   ): T {
-    val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot, hasAnyProblems)
+    val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
     val server = BepServer(compilationManager.client, diagnosticsService, originId, target, bazelPathsResolver)
     val bepReader = BepReader(server)
 
@@ -80,7 +77,7 @@ class ExecuteService(
     val targets = selectTargets(cancelChecker, params.targets)
 
     return if (targets.isNotEmpty()) {
-      val result = build(cancelChecker, targets, params.originId)
+      val result = build(cancelChecker, targets, params.originId, params.arguments ?: emptyList())
       CompileResult(result.statusCode).apply { originId = params.originId }
     } else {
       CompileResult(StatusCode.ERROR).apply { originId = params.originId }
@@ -266,6 +263,7 @@ class ExecuteService(
     cancelChecker: CancelChecker,
     bspIds: List<BuildTargetIdentifier>,
     originId: String,
+    additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
     val allTargets = bspIds + getAdditionalBuildTargets(cancelChecker, bspIds)
     // TODO: what if there's more than one target?
@@ -274,6 +272,7 @@ class ExecuteService(
       val command =
         bazelRunner.buildBazelCommand {
           build {
+            options.addAll(additionalArguments)
             targets.addAll(allTargets)
             useBes(bepReader.eventFile.toPath().toAbsolutePath())
           }

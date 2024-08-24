@@ -342,6 +342,7 @@ class BazelRunnerBuilderTest {
         BazelFlag.toolTag(),
         "--build_event_binary_file=/dev/null",
         "--bes_outerr_buffer_size=10",
+        "--build_event_publish_all_actions",
         "--override_repository=bazelbsp_aspect=.bazelbsp",
         "--curses=no",
         "--color=yes",

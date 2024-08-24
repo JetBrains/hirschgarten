@@ -1,11 +1,9 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
-import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.server.bep.BepServer
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.protocol.JoinedBuildClient
@@ -16,7 +14,6 @@ import java.nio.file.Path
 class BazelBspCompilationManager(
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
-  private val hasAnyProblems: MutableMap<Label, Set<TextDocumentIdentifier>>,
   val client: JoinedBuildClient,
   val workspaceRoot: Path,
 ) {
@@ -28,7 +25,7 @@ class BazelBspCompilationManager(
     environment: List<Pair<String, String>> = emptyList(),
   ): BepBuildResult {
     val target = targetSpecs.values.firstOrNull()
-    val diagnosticsService = DiagnosticsService(workspaceRoot, hasAnyProblems)
+    val diagnosticsService = DiagnosticsService(workspaceRoot)
     val bepServer = BepServer(client, diagnosticsService, originId, target, bazelPathsResolver)
     val bepReader = BepReader(bepServer)
     return try {

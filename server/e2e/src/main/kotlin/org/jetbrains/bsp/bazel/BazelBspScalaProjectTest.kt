@@ -19,10 +19,11 @@ import ch.epfl.scala.bsp4j.ScalacOptionsResult
 import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import kotlinx.coroutines.future.await
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
-import java.util.*
+import java.util.UUID
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -151,6 +152,30 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     }
   }
 
+  // All expected diagnostics must be present, but there can be more
+  private fun checkDiagnostics(
+    params: CompileParams,
+    expectedResult: CompileResult,
+    expectedDiagnostics: List<PublishDiagnosticsParams>,
+  ) {
+    val transformedParams = testClient.applyJsonTransform(params)
+    testClient.test(60.seconds) { session, _ ->
+      session.client.clearDiagnostics()
+      val result = session.server.buildTargetCompile(transformedParams).await()
+      expectedDiagnostics.forEach { expected ->
+        session.client.publishDiagnosticsNotifications
+          .find { actual ->
+            actual.originId == expected.originId &&
+              actual.buildTarget == expected.buildTarget &&
+              actual.textDocument == expected.textDocument
+          }?.let {
+            testClient.assertJsonEquals(expected, it)
+          } ?: error("Expected diagnostics $expected not found. Actual diagnostics: ${session.client.publishDiagnosticsNotifications}")
+      }
+      testClient.assertJsonEquals(expectedResult, result)
+    }
+  }
+
   private fun compileWithWarnings(): BazelBspTestScenarioStep {
     val expectedTargetIdentifiers = expectedTargetIdentifiers().filter { it.uri != "bsp-workspace-root" }
     val compileParams = CompileParams(expectedTargetIdentifiers)
@@ -177,9 +202,9 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
     expectedCompilerResult.originId = compileParams.originId
 
     return BazelBspTestScenarioStep("compile results") {
-      testClient.testCompile(60.seconds, compileParams, expectedCompilerResult, listOf(expectedDiagnosticsParam))
-      // second compile should not lose the diagnostics
-      testClient.testCompile(60.seconds, compileParams, expectedCompilerResult, listOf(expectedDiagnosticsParam))
+      checkDiagnostics(compileParams, expectedCompilerResult, listOf(expectedDiagnosticsParam))
+      // The second build call publishes no diagnostics. Diagnostics are supposed to be cached on the client side.
+      checkDiagnostics(compileParams, expectedCompilerResult, listOf())
     }
   }
 }

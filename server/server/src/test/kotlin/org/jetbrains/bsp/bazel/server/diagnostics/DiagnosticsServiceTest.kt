@@ -5,13 +5,10 @@ import ch.epfl.scala.bsp4j.DiagnosticSeverity
 import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import ch.epfl.scala.bsp4j.Range
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotest.matchers.collections.shouldHaveSize
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
-import java.util.concurrent.ConcurrentHashMap
 import ch.epfl.scala.bsp4j.Diagnostic as BspDiagnostic
 import ch.epfl.scala.bsp4j.Position as BspPosition
 
@@ -32,15 +29,15 @@ class DiagnosticsServiceTest {
       """.trimIndent()
 
     // when
-    val diagnostics = extractDiagnostics(output, "//path/to/package:test")
+    val diagnostics = extractDiagnostics(output, Label.parse("//path/to/package:test"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/BUILD"),
-          BuildTargetIdentifier("//path/to/package:test"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//path/to/package:test"),
+          errorDiagnostic(
             Position(12, 37),
             "in java_test rule //path/to/package:test: target '//path/to/another/package:lib' is not visible from target '//path/to/package:test'. Check the visibility declaration of the former target if you think the dependency is legitimate",
           ),
@@ -81,15 +78,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, "//path/to/package:test")
+    val diagnostics = extractDiagnostics(output, Label.parse("//path/to/package:test"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
-          BuildTargetIdentifier("//path/to/package:test"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//path/to/package:test"),
+          errorDiagnostic(
             Position(3, 18),
             """type mismatch;
                   | found   : String("test")
@@ -143,15 +140,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, "//path/to/package:test")
+    val diagnostics = extractDiagnostics(output, Label.parse("//path/to/package:test"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/Test1.scala"),
-          BuildTargetIdentifier("//path/to/package:test"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//path/to/package:test"),
+          errorDiagnostic(
             Position(21, 21),
             """type mismatch;
                   |  found   : Int(42)
@@ -161,10 +158,10 @@ class DiagnosticsServiceTest {
             """.trimMargin(),
           ),
         ),
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/Test2.scala"),
-          BuildTargetIdentifier("//path/to/package:test"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//path/to/package:test"),
+          errorDiagnostic(
             Position(37, 18),
             """type mismatch;
                   |  found   : String("test")
@@ -216,15 +213,15 @@ class DiagnosticsServiceTest {
             |FAILED: Build did NOT complete successfully
       """.trimMargin()
     // when
-    val diagnostics = extractDiagnostics(output, "//path/to/package:test")
+    val diagnostics = extractDiagnostics(output, Label.parse("//path/to/package:test"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
-          BuildTargetIdentifier("//path/to/package:test"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//path/to/package:test"),
+          errorDiagnostic(
             Position(21, 21),
             """type mismatch;
                   |  found   : Int(42)
@@ -233,7 +230,7 @@ class DiagnosticsServiceTest {
                   |                    ^
             """.trimMargin(),
           ),
-          ErrorDiagnostic(
+          errorDiagnostic(
             Position(37, 18),
             """type mismatch;
                   |  found   : String("test")
@@ -284,24 +281,24 @@ class DiagnosticsServiceTest {
 
     // when
     val diagnostics =
-      extractDiagnostics(output, "//server/src/test/java/org/jetbrains/bsp/bazel/server/diagnostics:diagnostics")
+      extractDiagnostics(output, Label.parse("//server/src/test/java/org/jetbrains/bsp/bazel/server/diagnostics:diagnostics"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier(
             "file:///user/workspace/server/src/test/java/org/jetbrains/bsp/bazel/server/diagnostics/DiagnosticsServiceTest.kt",
           ),
-          BuildTargetIdentifier("//server/src/test/java/org/jetbrains/bsp/bazel/server/diagnostics:diagnostics"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//server/src/test/java/org/jetbrains/bsp/bazel/server/diagnostics:diagnostics"),
+          errorDiagnostic(
             Position(12, 18),
             """type mismatch: inferred type is String but Int was expected
                   |val int: Int = "STRING"
                   |^
             """.trimMargin(),
           ),
-          ErrorDiagnostic(
+          errorDiagnostic(
             Position(13, 24),
             """the integer literal does not conform to the expected type String
                   |val string: String = 1
@@ -339,15 +336,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, "//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/project/src/main/scala/com/example/project/File1.scala"),
-          BuildTargetIdentifier("//project/src/main/scala/com/example/project:project"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          errorDiagnostic(
             Position(11, 18),
             """type mismatch;
                   |  found   : String("sd")
@@ -356,7 +353,7 @@ class DiagnosticsServiceTest {
                   |                 ^
             """.trimMargin(),
           ),
-          WarningDiagnostic(
+          warningDiagnostic(
             Position(11, 7),
             """local val x in method promote is never used
                    |  val x: Int = "sd"
@@ -364,17 +361,17 @@ class DiagnosticsServiceTest {
             """.trimMargin(),
           ),
         ),
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/project/src/main/scala/com/example/project/File2.scala"),
-          BuildTargetIdentifier("//project/src/main/scala/com/example/project:project"),
-          WarningDiagnostic(
+          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          warningDiagnostic(
             Position(26, 24),
             """private val versionsWriter in object File2 is never used
                    |  private implicit val versionsWriter: ConfigWriter[Versions] = deriveWriter[Versions]
                    |                       ^
             """.trimMargin(),
           ),
-          WarningDiagnostic(
+          warningDiagnostic(
             Position(28, 22),
             """private val File2ProtocolWriter in object File2 is never used
                    |private implicit val File2ProtocolWriter: ConfigWriter[File2Protocol] =
@@ -410,15 +407,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, "//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/Hello.scala"),
-          BuildTargetIdentifier("//project/src/main/scala/com/example/project:project"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          errorDiagnostic(
             Position(19, 20),
             """|Type Mismatch Error
                        |Found:    ("Hello" : String)
@@ -463,15 +460,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, "//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/Hello.scala"),
-          BuildTargetIdentifier("//project/src/main/scala/com/example/project:project"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          errorDiagnostic(
             Position(18, 20),
             """|Type Mismatch Error
                        |Found:    ("Hello" : String)
@@ -480,7 +477,7 @@ class DiagnosticsServiceTest {
                        |longer explanation available when compiling with `-explain`
             """.trimMargin(),
           ),
-          ErrorDiagnostic(
+          errorDiagnostic(
             Position(19, 20),
             """|Type Mismatch Error
                        |Found:    ("Hello" : String)
@@ -516,15 +513,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, "//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/drd/messaging/src/main/scala/bots/Bot.scala"),
-          BuildTargetIdentifier("//project/src/main/scala/com/example/project:project"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          errorDiagnostic(
             Position(143, 26),
             """|Not Found Error
                        |Not found: makeMessage
@@ -532,7 +529,7 @@ class DiagnosticsServiceTest {
                        |longer explanation available when compiling with `-explain`
             """.trimMargin(),
           ),
-          ErrorDiagnostic(
+          errorDiagnostic(
             Position(153, 22),
             """|Not Found Error
                        |Not found: type Message
@@ -569,17 +566,17 @@ class DiagnosticsServiceTest {
 
     // when
     val diagnostics =
-      extractDiagnostics(output, "//intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool")
+      extractDiagnostics(output, Label.parse("//intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier(
             "file:///user/workspace/intellij/release-tool/src/main/scala/com/intellij/releasetool/PluginResolver.scala",
           ),
-          BuildTargetIdentifier("//intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool"),
-          WarningDiagnostic(
+          BuildTargetIdentifier("@//intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool"),
+          warningDiagnostic(
             Position(14, 5),
             """match may not be exhaustive.
                    |It would fail on the following inputs: Bundled(_), BundledCrossVersion(_, _, _), Direct(_), Empty(), FromSources(_, _), Versioned((x: String forSome x not in "com.intellijUpdaterPlugin"), _, _)
@@ -588,12 +585,12 @@ class DiagnosticsServiceTest {
             """.trimMargin(),
           ),
         ),
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier(
             "file:///user/workspace/intellij/release-tool/src/main/scala/com/intellij/releasetool/Json.scala",
           ),
-          BuildTargetIdentifier("//intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool"),
-          WarningDiagnostic(
+          BuildTargetIdentifier("@//intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool"),
+          warningDiagnostic(
             Position(29, 37),
             """trait ScalaObjectMapper in package scala is deprecated (since 2.12.1): ScalaObjectMapper is deprecated because Manifests are not supported in Scala3, you might want to use ClassTagExtensions as a replacement
                    |    val m = new ObjectMapper() with ScalaObjectMapper
@@ -627,24 +624,24 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, "//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier(
             "file:///user/workspace/server/src/main/java/org/jetbrains/bsp/bazel/server/sync/ProjectResolver.java",
           ),
-          BuildTargetIdentifier("//project/src/main/scala/com/example/project:project"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          errorDiagnostic(
             Position(20, 8),
             """symbol not found org.jetbrains.bsp.bazel.server.bsp.config.ProjectViewProvider
                    |import org.jetbrains.bsp.bazel.server.bsp.config.ProjectViewProvider;
                    |       ^
             """.trimMargin(),
           ),
-          ErrorDiagnostic(
+          errorDiagnostic(
             Position(37, 7),
             """could not resolve ProjectViewProvider
                    |      ProjectViewProvider projectViewProvider,
@@ -683,15 +680,15 @@ class DiagnosticsServiceTest {
       """.trimIndent()
 
     // when
-    val diagnostics = extractDiagnostics(output, "//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
 
     // then
     val expected =
       listOf(
-        PublishDiagnosticsParams(
+        publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/server/src/main/java/org/jetbrains/bsp/bazel/server/bep/BepServer.java"),
-          BuildTargetIdentifier("//project/src/main/scala/com/example/project:project"),
-          ErrorDiagnostic(
+          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          errorDiagnostic(
             Position(55, 34),
             """
             cannot find symbol
@@ -706,167 +703,7 @@ class DiagnosticsServiceTest {
     diagnostics shouldContainExactlyInAnyOrder expected
   }
 
-  @Test
-  fun `should clear former diagnostics`() {
-    val service = DiagnosticsService(workspacePath, ConcurrentHashMap())
-    val output =
-      """
-            |Loading:
-            |Loading: 0 packages loaded
-            |Analyzing: target //path/to/package:test (0 packages loaded, 0 targets configured)
-            |INFO: Analyzed target //path/to/package:test (0 packages loaded, 0 targets configured).
-            |INFO: Found 1 target...
-            |[0 / 3] [Prepa] BazelWorkspaceStatusAction stable-status.txt
-            |ERROR: /user/workspace/path/to/package/BUILD:12:37: scala //path/to/package:test failed: (Exit 1): scalac failed: error executing command bazel-out/darwin-opt-exec-2B5CBBC6/bin/external/io_bazel_rules_scala/src/java/io/bazel/rulesscala/scalac/scalac @bazel-out/darwin-fastbuild/bin/path/to/package/test.jar-0.params
-            |path/to/package/Test.scala:3: error: type mismatch;
-            | found   : String("test")
-            | required: Int
-            |  val foo: Int = "test"
-            |                 ^
-            |one error found
-            |Build failed
-            |java.lang.RuntimeException: Build failed
-            |  at io.bazel.rulesscala.scalac.ScalacWorker.compileScalaSources(ScalacWorker.java:280)
-            |  at io.bazel.rulesscala.scalac.ScalacWorker.work(ScalacWorker.java:63)
-            |  at io.bazel.rulesscala.worker.Worker.persistentWorkerMain(Worker.java:92)
-            |  at io.bazel.rulesscala.worker.Worker.workerMain(Worker.java:46)
-            |  at io.bazel.rulesscala.scalac.ScalacWorker.main(ScalacWorker.java:26)
-            |Target //path/to/package:test failed to build
-            |Use --verbose_failures to see the command lines of failed build steps.
-            |INFO: Elapsed time: 0.220s, Critical Path: 0.09s
-            |INFO: 2 processes: 2 internal.
-            |FAILED: Build did NOT complete successfully
-      """.trimMargin()
-
-    service.bspState.keys.shouldBeEmpty()
-    val diagnosticsBeforeError = service.clearFormerDiagnostics(Label.parse("//path/to/package:test"))
-    diagnosticsBeforeError.shouldBeEmpty()
-
-    // Extract the diagnostics from BEP, there's an error in `Test.scala` of "//path/to/package:test".
-    service.extractDiagnostics(output, "//path/to/package:test", null, false)
-
-    // Assert that state is updated
-    service.bspState.keys.shouldHaveSize(1)
-    service.bspState[Label.parse("//path/to/package:test")] shouldContainExactlyInAnyOrder
-      setOf(
-        TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
-      )
-
-    // Verify we can get `PublishDiagnosticsParams` to clear up previously published diagnostics,
-    // and the state (getBspState()) has updated to have no problems.
-    val diagnosticsAfterError = service.clearFormerDiagnostics(Label.parse("//path/to/package:test"))
-    val expected =
-      listOf(
-        PublishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
-          BuildTargetIdentifier("@//path/to/package:test"),
-        ),
-      )
-    diagnosticsAfterError shouldContainExactlyInAnyOrder expected
-    service.bspState.keys.shouldBeEmpty()
-  }
-
-  @Test
-  fun `should clear partial former diagnostics`() {
-    val service = DiagnosticsService(workspacePath, ConcurrentHashMap())
-    val output1 =
-      """
-            |Loading:
-            |Loading: 0 packages loaded
-            |Analyzing: target //path/to/package:test (0 packages loaded, 0 targets configured)
-            |INFO: Analyzed target //path/to/package:test (0 packages loaded, 0 targets configured).
-            |INFO: Found 1 target...
-            |[0 / 3] [Prepa] BazelWorkspaceStatusAction stable-status.txt
-            |ERROR: /user/workspace/path/to/package/BUILD:12:37: scala //path/to/package:test failed: (Exit 1): scalac failed: error executing command bazel-out/darwin-opt-exec-2B5CBBC6/bin/external/io_bazel_rules_scala/src/java/io/bazel/rulesscala/scalac/scalac @bazel-out/darwin-fastbuild/bin/path/to/package/test.jar-0.params
-            |path/to/package/Test.scala:3: error: type mismatch;
-            | found   : String("test")
-            | required: Int
-            |  val foo: Int = "test"
-            |                 ^
-            |one error found
-            |Build failed
-            |java.lang.RuntimeException: Build failed
-            |  at io.bazel.rulesscala.scalac.ScalacWorker.compileScalaSources(ScalacWorker.java:280)
-            |  at io.bazel.rulesscala.scalac.ScalacWorker.work(ScalacWorker.java:63)
-            |  at io.bazel.rulesscala.worker.Worker.persistentWorkerMain(Worker.java:92)
-            |  at io.bazel.rulesscala.worker.Worker.workerMain(Worker.java:46)
-            |  at io.bazel.rulesscala.scalac.ScalacWorker.main(ScalacWorker.java:26)
-            |Target //path/to/package:test failed to build
-            |Use --verbose_failures to see the command lines of failed build steps.
-            |INFO: Elapsed time: 0.220s, Critical Path: 0.09s
-            |INFO: 2 processes: 2 internal.
-            |FAILED: Build did NOT complete successfully
-      """.trimMargin()
-
-    val output2 =
-      """
-            |Loading:
-            |Loading: 0 packages loaded
-            |Analyzing: target //path/to/package2:test (0 packages loaded, 0 targets configured)
-            |INFO: Analyzed target //path/to/package2:test (0 packages loaded, 0 targets configured).
-            |INFO: Found 1 target...
-            |[0 / 3] [Prepa] BazelWorkspaceStatusAction stable-status.txt
-            |ERROR: /user/workspace/path/to/package2/BUILD:12:37: scala //path/to/package2:test failed: (Exit 1): scalac failed: error executing command bazel-out/darwin-opt-exec-2B5CBBC6/bin/external/io_bazel_rules_scala/src/java/io/bazel/rulesscala/scalac/scalac @bazel-out/darwin-fastbuild/bin/path/to/package/test.jar-0.params
-            |path/to/package2/Test.scala:3: error: type mismatch;
-            | found   : String("test")
-            | required: Int
-            |  val foo: Int = "test"
-            |                 ^
-            |one error found
-            |Build failed
-            |java.lang.RuntimeException: Build failed
-            |  at io.bazel.rulesscala.scalac.ScalacWorker.compileScalaSources(ScalacWorker.java:280)
-            |  at io.bazel.rulesscala.scalac.ScalacWorker.work(ScalacWorker.java:63)
-            |  at io.bazel.rulesscala.worker.Worker.persistentWorkerMain(Worker.java:92)
-            |  at io.bazel.rulesscala.worker.Worker.workerMain(Worker.java:46)
-            |  at io.bazel.rulesscala.scalac.ScalacWorker.main(ScalacWorker.java:26)
-            |Target //path/to/package:test failed to build
-            |Use --verbose_failures to see the command lines of failed build steps.
-            |INFO: Elapsed time: 0.220s, Critical Path: 0.09s
-            |INFO: 2 processes: 2 internal.
-            |FAILED: Build did NOT complete successfully
-      """.trimMargin()
-
-    service.clearFormerDiagnostics(Label.parse("//path/to/package:test")).shouldBeEmpty()
-    service.clearFormerDiagnostics(Label.parse("//path/to/package2:test")).shouldBeEmpty()
-
-    val expected =
-      listOf(
-        PublishDiagnosticsParams(
-          TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
-          BuildTargetIdentifier("@//path/to/package:test"),
-        ),
-      )
-
-    service.extractDiagnostics(output1, "//path/to/package:test", null, false)
-    service.extractDiagnostics(output2, "//path/to/package2:test", null, false)
-
-    // Assert that state is updated
-    service.bspState.keys shouldContainExactlyInAnyOrder
-      listOf(
-        Label.parse("//path/to/package:test"),
-        Label.parse("//path/to/package2:test"),
-      )
-    service.bspState[Label.parse("//path/to/package:test")] shouldContainExactlyInAnyOrder
-      setOf(
-        TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
-      )
-    service.bspState[Label.parse("//path/to/package2:test")] shouldContainExactlyInAnyOrder
-      setOf(
-        TextDocumentIdentifier("file:///user/workspace/path/to/package2/Test.scala"),
-      )
-
-    // Get PublishDiagnosticsParam with empty diagnositcs for "//path/to/package:test"
-    val empty = service.clearFormerDiagnostics(Label.parse("//path/to/package:test"))
-    empty shouldContainExactlyInAnyOrder expected
-    // clearFormerDiagnostics shouldn't clear up for "//path/to/package2:test"
-    service.bspState.keys shouldContainExactlyInAnyOrder
-      listOf(
-        Label.parse("//path/to/package2:test"),
-      )
-  }
-
-  private fun PublishDiagnosticsParams(
+  private fun publishDiagnosticsParams(
     textDocument: TextDocumentIdentifier,
     buildTarget: BuildTargetIdentifier,
     vararg diagnostics: BspDiagnostic,
@@ -876,12 +713,12 @@ class DiagnosticsServiceTest {
       buildTarget,
       diagnostics.asList(),
       true,
-    )
+    ).apply { originId = "originId" }
 
-  private fun ErrorDiagnostic(position: Position, message: String): BspDiagnostic =
+  private fun errorDiagnostic(position: Position, message: String): BspDiagnostic =
     createDiagnostic(position, message, DiagnosticSeverity.ERROR)
 
-  private fun WarningDiagnostic(position: Position, message: String): BspDiagnostic =
+  private fun warningDiagnostic(position: Position, message: String): BspDiagnostic =
     createDiagnostic(position, message, DiagnosticSeverity.WARNING)
 
   private fun createDiagnostic(
@@ -893,6 +730,6 @@ class DiagnosticsServiceTest {
     return BspDiagnostic(Range(adjustedPosition, adjustedPosition), message).apply { this.severity = severity }
   }
 
-  private fun extractDiagnostics(output: String, buildTarget: String): List<PublishDiagnosticsParams>? =
-    DiagnosticsService(workspacePath, ConcurrentHashMap()).extractDiagnostics(output, buildTarget, null, false)
+  private fun extractDiagnostics(output: String, buildTarget: Label): List<PublishDiagnosticsParams> =
+    DiagnosticsService(workspacePath).extractDiagnostics(output, buildTarget, "originId")
 }

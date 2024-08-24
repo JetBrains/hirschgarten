@@ -48,7 +48,6 @@ class BazelRunner(
         .Build(bazelBinary)
         .apply { builder() }
         .also { inheritWorkspaceOptions = true }
-        .also { inheritWorkspaceOptions = true }
 
     fun mobileInstall(target: BuildTargetIdentifier, builder: BazelCommand.MobileInstall.() -> Unit = {}) =
       BazelCommand.MobileInstall(bazelBinary, target).apply { builder() }.also { inheritWorkspaceOptions = true }
