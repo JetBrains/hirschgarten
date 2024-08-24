@@ -52,7 +52,6 @@ class IdeClasspathResolverTest {
     val resolver =
       IdeClasspathResolver(
         label = Label.parse("@//path/to/target:targetName"),
-        bazelPathsResolver = bazelPathsResolver,
         compileClasspath = compileClasspath.asSequence(),
         runtimeClasspath = runtimeClasspath.asSequence(),
       )

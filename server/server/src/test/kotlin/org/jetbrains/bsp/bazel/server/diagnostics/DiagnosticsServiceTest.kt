@@ -759,7 +759,7 @@ class DiagnosticsServiceTest {
       listOf(
         PublishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
-          BuildTargetIdentifier("//path/to/package:test"),
+          BuildTargetIdentifier("@//path/to/package:test"),
         ),
       )
     diagnosticsAfterError shouldContainExactlyInAnyOrder expected
@@ -834,7 +834,7 @@ class DiagnosticsServiceTest {
       listOf(
         PublishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/package/Test.scala"),
-          BuildTargetIdentifier("//path/to/package:test"),
+          BuildTargetIdentifier("@//path/to/package:test"),
         ),
       )
 

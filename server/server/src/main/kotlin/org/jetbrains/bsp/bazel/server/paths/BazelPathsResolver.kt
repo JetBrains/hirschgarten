@@ -87,28 +87,6 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   fun relativePathToExecRootAbsolute(path: String): Path = Paths.get(bazelInfo.execRoot, path)
 
-  fun isRelativeWorkspacePath(label: String): Boolean = bazelInfo.release.isRelativeWorkspacePath(label)
-
-  fun extractExternalPath(label: String): String {
-    require(label[0] == '@')
-    val externalName = label.substring(1)
-    val externalSplit = externalName.split("//", limit = 2)
-    require(externalSplit.size == 2) { "Label does not contain //" }
-
-    val parts = externalSplit[1].split(":".toRegex()).toTypedArray()
-    require(parts.size == 2) { "Label $label didn't contain exactly one ':'" }
-
-    return "external/${externalSplit[0]}/${parts[0]}"
-  }
-
-  fun extractRelativePath(label: String): String {
-    require(bazelInfo.release.isRelativeWorkspacePath(label)) { "$label didn't start with correct prefix" }
-    val labelWithoutPrefix = bazelInfo.release.stripPrefix(label)
-    val parts = labelWithoutPrefix.split(":".toRegex()).toTypedArray()
-    require(parts.size == 2) { "Label $label didn't contain exactly one ':'" }
-    return parts[0]
-  }
-
   fun clear() {
     uris.clear()
     paths.clear()

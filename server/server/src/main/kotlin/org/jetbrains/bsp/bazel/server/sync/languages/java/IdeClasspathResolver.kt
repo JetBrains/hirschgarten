@@ -1,24 +1,16 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.java
 
 import org.jetbrains.bsp.bazel.server.model.Label
-import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import java.net.URI
 
 class IdeClasspathResolver(
   private val label: Label,
-  private val bazelPathsResolver: BazelPathsResolver,
   runtimeClasspath: Sequence<URI>,
   compileClasspath: Sequence<URI>,
 ) {
-  private val runtimeJars: Set<String>
-  private val runtimeMavenJarSuffixes: Set<String>
-  private val compileJars: Sequence<String>
-
-  init {
-    runtimeJars = runtimeClasspath.map { it.toString() }.toSet()
-    runtimeMavenJarSuffixes = runtimeJars.mapNotNull(::toMavenSuffix).toSet()
-    compileJars = compileClasspath.map { it.toString() }
-  }
+  private val runtimeJars: Set<String> = runtimeClasspath.map { it.toString() }.toSet()
+  private val runtimeMavenJarSuffixes: Set<String> = runtimeJars.mapNotNull(::toMavenSuffix).toSet()
+  private val compileJars: Sequence<String> = compileClasspath.map { it.toString() }
 
   fun resolve(): Sequence<URI> =
     compileJars
@@ -55,8 +47,8 @@ class IdeClasspathResolver(
   }
 
   private fun isItJarOfTheCurrentTarget(jar: String): Boolean {
-    val targetPath = bazelPathsResolver.extractRelativePath(label.value)
-    val targetJar = "$targetPath/${label.targetName()}.jar"
+    val targetPath = label.targetPath
+    val targetJar = "$targetPath/${label.targetName}.jar"
 
     return jar.endsWith(targetJar)
   }
@@ -66,12 +58,10 @@ class IdeClasspathResolver(
 
     fun resolveIdeClasspath(
       label: Label,
-      bazelPathsResolver: BazelPathsResolver,
       runtimeClasspath: List<URI>,
       compileClasspath: List<URI>,
     ) = IdeClasspathResolver(
       label,
-      bazelPathsResolver,
       runtimeClasspath.asSequence(),
       compileClasspath.asSequence(),
     ).resolve().toList()
