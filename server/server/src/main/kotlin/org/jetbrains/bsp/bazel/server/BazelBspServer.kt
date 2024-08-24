@@ -98,7 +98,6 @@ class BazelBspServer(
         bspClientLogger = bspClientLogger,
         bazelPathsResolver = bazelPathsResolver,
         additionalBuildTargetsProvider = additionalBuildTargetsProvider,
-        hasAnyProblems = bspState,
       )
     return BazelServices(
       serverLifetime,
@@ -190,7 +189,7 @@ class BazelBspServer(
         val bazelInfo = createBazelInfo(bazelRunner)
         val bazelPathsResolver = BazelPathsResolver(bazelInfo)
         val compilationManager =
-          BazelBspCompilationManager(bazelRunner, bazelPathsResolver, bspState, client, workspaceRoot)
+          BazelBspCompilationManager(bazelRunner, bazelPathsResolver, client, workspaceRoot)
         bspServerData(
           bspClientLogger,
           bazelRunner,

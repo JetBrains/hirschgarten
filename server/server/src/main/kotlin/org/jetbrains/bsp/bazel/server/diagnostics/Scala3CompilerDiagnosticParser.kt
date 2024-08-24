@@ -1,5 +1,7 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
+import ch.epfl.scala.bsp4j.DiagnosticSeverity
+
 object Scala3CompilerDiagnosticParser : Parser {
   override fun tryParse(output: Output): List<Diagnostic> = listOfNotNull(tryParseOne(output))
 
@@ -21,13 +23,13 @@ object Scala3CompilerDiagnosticParser : Parser {
   fun tryParseOne(output: Output): Diagnostic? =
     tryTake(output, DiagnosticHeader)
       ?.let { match ->
-        val level = if (match.groupValues[1].contains("Error")) Level.Error else Level.Warning
+        val level = if (match.groupValues[1].contains("Error")) DiagnosticSeverity.ERROR else DiagnosticSeverity.WARNING
         val path = match.groupValues[2].trim()
         val line = match.groupValues[3].toInt()
         val messageLines = collectMessageLines(match.groupValues[1].trim(), output)
         val column = match.groupValues[4].toIntOrNull() ?: tryFindColumnNumber(messageLines) ?: 1
         val message = messageLines.joinToString("\n")
-        Diagnostic(Position(line, column), message, level, path, output.targetLabel)
+        Diagnostic(Position(line, column), message, path, output.targetLabel, level)
       }
 
   private fun collectMessageLines(header: String, output: Output): List<String> {

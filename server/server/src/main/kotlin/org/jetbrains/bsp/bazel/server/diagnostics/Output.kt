@@ -1,6 +1,8 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
-class Output(private val lines: List<String>, val targetLabel: String) {
+import org.jetbrains.bsp.bazel.server.model.Label
+
+class Output(private val lines: List<String>, val targetLabel: Label) {
   private var pointer = 0
 
   fun nonEmpty(): Boolean = pointer < lines.size

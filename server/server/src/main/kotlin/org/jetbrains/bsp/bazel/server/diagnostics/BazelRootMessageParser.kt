@@ -1,7 +1,10 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
+import ch.epfl.scala.bsp4j.DiagnosticSeverity
+import org.jetbrains.bsp.bazel.server.model.Label
+
 object BazelRootMessageParser : Parser {
-  private const val TargetLabel = """(//[\w/.-]*:[\w/.-]+)"""
+  private const val TARGET_LABEL = """(//[\w/.-]*:[\w/.-]+)"""
 
   override fun tryParse(output: Output): List<Diagnostic> = findErrorInBUILD(output) ?: findWarningsInInfoMessage(output) ?: emptyList()
 
@@ -18,7 +21,7 @@ object BazelRootMessageParser : Parser {
       :\              # ": " separator
       (               # beginning of the error message (4)
       (?:.*           # part of actual error message wrapped with label into optional group
-      $TargetLabel    # target label (5)
+      $TARGET_LABEL    # target label (5)
       )?              # make target label optional
       .*              # part of actual error message
       )               # end of the error message (4)
@@ -34,12 +37,12 @@ object BazelRootMessageParser : Parser {
       }
   }
 
-  private fun createError(match: MatchResult, targetLabel: String): Diagnostic {
+  private fun createError(match: MatchResult, targetLabel: Label): Diagnostic {
     val path = match.groupValues[1]
     val line = match.groupValues[2].toInt()
     val column = match.groupValues[3].toIntOrNull() ?: 1
     val message = match.groupValues[4]
-    return Diagnostic(Position(line, column), message, Level.Error, path, targetLabel)
+    return Diagnostic(Position(line, column), message, path, targetLabel, DiagnosticSeverity.ERROR)
   }
 
   private val InfoMessage =
@@ -47,7 +50,7 @@ object BazelRootMessageParser : Parser {
       ^               # start of line
       INFO:\          # info indicator
       .*?             # part of actual message
-      $TargetLabel    # target label (1)
+      $TARGET_LABEL    # target label (1)
       .*              # part of actual message
       $               # end of line
     """.toRegex(RegexOption.COMMENTS)

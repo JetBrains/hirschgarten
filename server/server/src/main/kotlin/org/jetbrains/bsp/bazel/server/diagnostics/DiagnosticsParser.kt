@@ -1,23 +1,25 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
-class DiagnosticsParser {
-  fun parse(
-    bazelOutput: String,
-    target: String,
-    onlyKnownFiles: Boolean,
-  ): List<Diagnostic> {
+import org.jetbrains.bsp.bazel.server.model.Label
+
+interface DiagnosticsParser {
+  fun parse(bazelOutput: String, target: Label): List<Diagnostic>
+}
+
+class DiagnosticsParserImpl : DiagnosticsParser {
+  override fun parse(bazelOutput: String, target: Label): List<Diagnostic> {
     val output = prepareOutput(bazelOutput, target)
-    val diagnostics = collectDiagnostics(output, onlyKnownFiles)
+    val diagnostics = collectDiagnostics(output)
     return deduplicate(diagnostics)
   }
 
-  private fun prepareOutput(bazelOutput: String, target: String): Output {
+  private fun prepareOutput(bazelOutput: String, target: Label): Output {
     val lines = bazelOutput.lines()
     val relevantLines = lines.filterNot { line -> IgnoredLines.any { it.matches(line) } }
     return Output(relevantLines, target)
   }
 
-  private fun collectDiagnostics(output: Output, onlyKnownFiles: Boolean): List<Diagnostic> {
+  private fun collectDiagnostics(output: Output): List<Diagnostic> {
     val diagnostics = mutableListOf<Diagnostic>()
     while (output.nonEmpty()) {
       for (parser in Parsers) {
@@ -29,12 +31,11 @@ class DiagnosticsParser {
       }
     }
 
-    if (diagnostics.isEmpty() && !onlyKnownFiles) {
+    if (diagnostics.isEmpty()) {
       diagnostics.add(
         Diagnostic(
           position = Position(0, 0),
           message = output.fullOutput(),
-          level = Level.Error,
           fileLocation = "<unknown>",
           targetLabel = output.targetLabel,
         ),
