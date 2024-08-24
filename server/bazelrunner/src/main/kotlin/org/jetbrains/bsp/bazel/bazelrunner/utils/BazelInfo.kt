@@ -13,20 +13,6 @@ interface BazelInfo {
 }
 
 data class BazelRelease(val major: Int) {
-  fun isRelativeWorkspacePath(label: String) =
-    when (major) {
-      in 0..3 -> throw RuntimeException("Unsupported Bazel version, use Bazel 4 or newer")
-      in 4..5 -> label.startsWith("//")
-      else -> label.startsWith("@//") || label.startsWith("@@//")
-    }
-
-  fun stripPrefix(label: String) =
-    when (major) {
-      in 0..3 -> throw RuntimeException("Unsupported Bazel version, use Bazel 4 or newer")
-      in 4..5 -> label.removePrefix("//")
-      else -> label.dropWhile { it == '@' }.removePrefix("//")
-    }
-
   companion object {
     fun fromReleaseString(versionString: String): BazelRelease? = VERSION_REGEX.find(versionString)?.toBazelRelease()
 

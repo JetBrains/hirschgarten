@@ -20,6 +20,7 @@ import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.SourceSet
 import org.jetbrains.bsp.bazel.server.model.Tag
+import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
@@ -43,7 +44,6 @@ class BazelProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetKindResolver: TargetKindResolver,
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
-  private val bazelInfo: BazelInfo,
   private val bspClientLogger: BspClientLogger,
 ) {
   private fun <T> measure(description: String, body: () -> T): T = tracer.spanBuilder(description).use { body() }
@@ -315,9 +315,9 @@ class BazelProjectMapper(
 
   private fun calculateScalaLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
     val projectLevelScalaSdkLibraries = calculateProjectLevelScalaLibraries()
-    val scalaTargets = targetsToImport.filter { it.hasScalaTargetInfo() }.map { Label.parse(it.id) }
+    val scalaTargets = targetsToImport.filter { it.hasScalaTargetInfo() }.map { it.label() }
     return scalaTargets.associateWith {
-      languagePluginsService.scalaLanguagePlugin.scalaSdks[it.value]
+      languagePluginsService.scalaLanguagePlugin.scalaSdks[it]
         ?.compilerJars
         ?.mapNotNull {
           projectLevelScalaSdkLibraries[it]
@@ -684,7 +684,7 @@ class BazelProjectMapper(
     }
 
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =
-    bazelInfo.release.isRelativeWorkspacePath(target.id) &&
+    target.label().isMainWorkspace &&
       (
         hasKnownSources(target) ||
           target.kind in
@@ -783,10 +783,10 @@ class BazelProjectMapper(
   private fun isTargetKindOfLanguage(kind: String, language: Language): Boolean = language.targetKinds.contains(kind)
 
   private fun Label.toDirectoryUri(): URI {
-    val isWorkspace = bazelPathsResolver.isRelativeWorkspacePath(value)
+    val isMainWorkspace = this.isMainWorkspace
     val path =
-      if (isWorkspace) bazelPathsResolver.extractRelativePath(value) else bazelPathsResolver.extractExternalPath(value)
-    return bazelPathsResolver.pathToDirectoryUri(path, isWorkspace)
+      if (isMainWorkspace) targetPath else toExternalPath()
+    return bazelPathsResolver.pathToDirectoryUri(path, isMainWorkspace)
   }
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
@@ -838,7 +838,7 @@ class BazelProjectMapper(
 
   private fun removeDotBazelBspTarget(targets: List<Label>): List<Label> =
     targets.filter {
-      bazelInfo.release.isRelativeWorkspacePath(it.value) && !bazelInfo.release.stripPrefix(it.value).startsWith(".bazelbsp")
+      it.isMainWorkspace && !it.value.startsWith("@//.bazelbsp")
     }
 
   private fun createRustExternalModules(

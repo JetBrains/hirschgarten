@@ -479,7 +479,6 @@ class BspProjectMapper(
     val ideClasspath =
       IdeClasspathResolver.resolveIdeClasspath(
         label = targetLabel,
-        bazelPathsResolver = bazelPathsResolver,
         runtimeClasspath = resolveClasspath(classPathFromQuery.runtime_classpath),
         compileClasspath = resolveClasspath(classPathFromQuery.compile_classpath),
       )

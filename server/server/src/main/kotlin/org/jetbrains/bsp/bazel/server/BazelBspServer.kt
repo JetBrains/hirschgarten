@@ -163,7 +163,6 @@ class BazelBspServer(
         bazelPathsResolver,
         targetKindResolver,
         kotlinAndroidModulesMerger,
-        bazelInfo,
         bspClientLogger,
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)

@@ -18,7 +18,6 @@ class BazelReleaseTest {
 
     // then
     release?.major shouldBe 4
-    release?.isRelativeWorkspacePath("//abc") shouldBe true
   }
 
   @Test
@@ -28,8 +27,6 @@ class BazelReleaseTest {
 
     // then
     release?.major shouldBe 6
-    release?.isRelativeWorkspacePath("@//abc") shouldBe true
-    release?.isRelativeWorkspacePath("@@//abc") shouldBe true
   }
 
   @Test

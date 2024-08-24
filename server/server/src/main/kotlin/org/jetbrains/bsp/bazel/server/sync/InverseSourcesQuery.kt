@@ -6,6 +6,7 @@ import ch.epfl.scala.bsp4j.StatusCode
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bsp.bazel.server.model.Label
 import java.nio.file.Path
 
 object InverseSourcesQuery {
@@ -21,7 +22,7 @@ object InverseSourcesQuery {
           emptyList(),
         )
     val listOfLabels = targetLabels(fileLabel, bazelRunner, bazelInfo, cancelChecker)
-    return InverseSourcesResult(listOfLabels.map { BuildTargetIdentifier(it) })
+    return InverseSourcesResult(listOfLabels.map { BuildTargetIdentifier(it.value) })
   }
 
   /**
@@ -32,7 +33,7 @@ object InverseSourcesQuery {
     bazelRunner: BazelRunner,
     bazelRelease: BazelRelease,
     cancelChecker: CancelChecker,
-  ): List<String> {
+  ): List<Label> {
     val packageLabel = fileLabel.replace(":.*".toRegex(), ":*")
     val consistentLabelsArg = listOfNotNull(if (bazelRelease.major >= 6) "--consistent_labels" else null) // #bazel5
     val command =
@@ -47,7 +48,7 @@ object InverseSourcesQuery {
         .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
         .waitAndGetResult(cancelChecker)
     if (targetLabelsQuery.statusCode == StatusCode.OK) {
-      return targetLabelsQuery.stdoutLines
+      return targetLabelsQuery.stdoutLines.map { Label.parse(it) }
     } else {
       error("Could not retrieve inverse sources")
     }
