@@ -123,4 +123,57 @@ class JVMLanguagePluginParserTest {
     // then
     calculatedSourceRoot shouldBe sourceDir
   }
+
+  @Test
+  fun `should return source dir for package name not matching the dir, but with 'src main java' within parent path`() {
+    // given
+
+    val fileContent =
+      """
+            |package com.example
+            |
+            |public class Test {
+            |}
+            |
+      """.trimMargin()
+
+    val sourceRoot = tempRoot.resolve("src/main/java")
+    val sourceDir = Files.createDirectories(sourceRoot.resolve("dir1/dir2/dir3/"))
+
+    val sourceFile = Files.createFile(sourceDir.resolve("File.java"))
+    sourceFile.writeText(fileContent)
+
+    // when
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+
+    // then
+    calculatedSourceRoot shouldBe sourceRoot
+  }
+
+  @Test
+  fun `should return source dir for Scala package object`() {
+    // given
+    val packageName = "dir1.dir2"
+    val packageObjectName = "dir3"
+    val fileContent =
+      """
+            |package $packageName
+            |
+            |package object $packageObjectName {
+            |}
+            |
+      """.trimMargin()
+
+    val sourceRoot = tempRoot.resolve("src/main/scala")
+    val sourceDir = Files.createDirectories(sourceRoot.resolve("dir1/dir2/dir3/"))
+
+    val sourceFile = Files.createFile(sourceDir.resolve("package.scala"))
+    sourceFile.writeText(fileContent)
+
+    // when
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+
+    // then
+    calculatedSourceRoot shouldBe sourceRoot
+  }
 }
