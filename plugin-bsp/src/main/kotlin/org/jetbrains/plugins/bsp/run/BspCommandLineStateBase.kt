@@ -10,9 +10,7 @@ import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import org.jetbrains.plugins.bsp.server.connection.connection
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.services.BspTaskEventsService
-import org.jetbrains.plugins.bsp.services.OriginId
+import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 
 abstract class BspCommandLineStateBase(environment: ExecutionEnvironment, protected val originId: OriginId) :
   CommandLineState(environment) {

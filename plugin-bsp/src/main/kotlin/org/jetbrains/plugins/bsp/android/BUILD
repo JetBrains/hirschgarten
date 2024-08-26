@@ -1,20 +1,19 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
-    name = "workspacemodel",
+    name = "android",
     srcs = glob([
-        "main/gen/**/*.kt",
-        "main/kotlin/**/*.kt",
-    ]),
-    resources = glob([
-        "main/resources/workspace-model-entities-folder-marker",
+        "**/*.java",
+        "**/*.kt",
     ]),
     visibility = ["//visibility:public"],
     deps = [
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/utils",
+        "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/utils",
-        "//protocol",
+        "@rules_intellij//third_party/android",
     ],
 )

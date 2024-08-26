@@ -11,7 +11,7 @@ import com.intellij.openapi.externalSystem.autoimport.ExternalSystemRefreshStatu
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.plugins.bsp.server.tasks.SyncProjectTask
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
+import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 
 public interface BspProjectAwareExtension {
   public fun getProjectId(projectPath: VirtualFile): ExternalSystemProjectId

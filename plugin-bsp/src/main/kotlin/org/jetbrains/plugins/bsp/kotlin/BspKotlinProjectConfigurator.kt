@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.services
+package org.jetbrains.plugins.bsp.kotlin
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project

@@ -1,10 +1,9 @@
-package org.jetbrains.plugins.bsp.services
+package org.jetbrains.plugins.bsp.run
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.run.BspTaskListener
 import java.util.concurrent.ConcurrentHashMap
 
 internal typealias OriginId = String

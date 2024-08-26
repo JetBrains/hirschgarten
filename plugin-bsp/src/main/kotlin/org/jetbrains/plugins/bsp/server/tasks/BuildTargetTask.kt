@@ -177,9 +177,3 @@ public suspend fun runBuildTargetTask(
       }
     }
   }
-
-public suspend fun saveAllFiles() {
-  withContext(Dispatchers.EDT) {
-    FileDocumentManager.getInstance().saveAllDocuments()
-  }
-}

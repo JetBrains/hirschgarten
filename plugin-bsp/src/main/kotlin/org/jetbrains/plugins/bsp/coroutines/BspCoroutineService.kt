@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.services
+package org.jetbrains.plugins.bsp.coroutines
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service

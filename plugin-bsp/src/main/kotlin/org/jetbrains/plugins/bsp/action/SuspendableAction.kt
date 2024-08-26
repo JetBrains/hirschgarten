@@ -4,15 +4,25 @@ import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.server.tasks.saveAllFiles
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
+import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import javax.swing.Icon
 
 private val log = logger<SuspendableAction>()
+
+public suspend fun saveAllFiles() {
+  withContext(Dispatchers.EDT) {
+    FileDocumentManager.getInstance().saveAllDocuments()
+  }
+}
+
 
 public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
   AnAction(text, icon),
