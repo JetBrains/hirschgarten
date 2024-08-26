@@ -1,12 +1,11 @@
 package configurations.server
 
 import configurations.BaseConfiguration
-import jetbrains.buildServer.configs.kotlin.v2019_2.BuildSteps
+import configurations.Utils
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
@@ -14,16 +13,13 @@ open class E2ETest(
   vcsRoot: GitVcsRoot,
   targets: String,
   failureConditions: FailureConditions.() -> Unit = {},
-  steps: (BuildSteps.() -> Unit)? = null,
   requirements: (Requirements.() -> Unit)? = null,
 ) : BaseConfiguration.BaseBuildType(
     name = "[e2e tests] $targets",
     vcsRoot = vcsRoot,
     failureConditions = failureConditions,
-    setupSteps = true,
     artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-testlogs/** => testlogs.zip",
     steps = {
-      steps?.invoke(this)
       bazel {
         this.name = "test $targets"
         this.command = "test"
@@ -32,7 +28,11 @@ open class E2ETest(
         this.arguments =
           "--sandbox_writable_path=/home/teamcity/.cache --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
         logging = BazelStep.Verbosity.Diagnostic
-        param("toolPath", "/usr/local/bin")
+        toolPath = "/usr/local/bin"
+        logging = BazelStep.Verbosity.Diagnostic
+        Utils.DockerParams.get().forEach { (key, value) ->
+          param(key, value)
+        }
       }
     },
     requirements = requirements,
@@ -56,18 +56,6 @@ open class LocalJdk(vcsRoot: GitVcsRoot) :
   E2ETest(
     vcsRoot = vcsRoot,
     targets = "//server/e2e:local_jdk_test",
-    steps = {
-      script {
-        this.name = "set JDK to 17"
-        scriptContent =
-          """
-          #!/bin/bash
-          set -euxo pipefail
-
-          echo "##teamcity[setParameter name='env.JAVA_HOME' value='%env.JDK_17_0%']"
-          """.trimIndent()
-      }
-    },
   )
 
 object LocalJdkGitHub : LocalJdk(
