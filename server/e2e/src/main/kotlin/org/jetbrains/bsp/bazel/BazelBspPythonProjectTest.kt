@@ -54,7 +54,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = false
+          it.canDebug = true
         },
       )
     exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
@@ -90,7 +90,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = true
           it.canRun = false
-          it.canDebug = false
+          it.canDebug = true
         },
       )
     exampleExampleTestBuildTarget.displayName = "$targetPrefix//test:test"

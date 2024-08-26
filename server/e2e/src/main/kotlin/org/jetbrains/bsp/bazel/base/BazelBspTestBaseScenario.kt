@@ -93,16 +93,17 @@ abstract class BazelBspTestBaseScenario {
 
   fun executeScenario() {
     log.info("Running scenario...")
-    var scenarioStepsExecutionResult: Boolean? = null
+    val scenarioStepsExecutionResult: Boolean?
     try {
       scenarioStepsExecutionResult = executeScenarioSteps()
       log.info("Running scenario done.")
     } finally {
       val logFile = Path(workspaceDir).resolve("all.log").toFile()
-      // Print all files in that directory
       if (logFile.exists()) {
-        log.info("Log file: ${logFile.absolutePath}")
-        logFile.readLines().forEach { log.info(it) }
+        // Because we are in a sandbox there's no easy way to get the log file content after the test run - so we print it here.
+        log.info("Log file content:\n${logFile.readText()}")
+      } else {
+        log.warn("Log file not found.")
       }
     }
 
