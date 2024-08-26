@@ -6,7 +6,6 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
@@ -15,7 +14,6 @@ open class BaseBuildType(
   vcsRoot: GitVcsRoot,
   steps: BuildSteps.() -> Unit,
   artifactRules: String = "",
-  setupSteps: Boolean = false,
   failureConditions: FailureConditions.() -> Unit = {},
   requirements: (Requirements.() -> Unit)? = null,
 ) : BuildType({
@@ -91,25 +89,6 @@ open class BaseBuildType(
       }
     }
 
-    if (setupSteps) {
-      steps {
-        script {
-          this.name = "Coursier"
-
-          scriptContent =
-            """
-            #!/bin/bash
-            set -euxo pipefail
-                                
-            #install coursier
-            curl -fL "https://github.com/coursier/coursier/releases/download/v2.1.5/cs-x86_64-pc-linux.gz" | gzip -d > cs 
-            sudo mv cs /usr/bin/cs
-            
-            sudo chmod +x "/usr/bin/cs"
-            """.trimIndent()
-        }
-      }
-    }
     this.steps(steps)
   })
 

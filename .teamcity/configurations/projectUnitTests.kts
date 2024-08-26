@@ -1,21 +1,24 @@
-package configurations.server
+package configurations
 
-import configurations.BaseConfiguration
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 open class UnitTests(vcsRoot: GitVcsRoot) :
   BaseConfiguration.BaseBuildType(
-    name = "[unit tests] server unit tests",
-    setupSteps = true,
+    name = "[unit tests] project unit tests",
     artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-testlogs/** => testlogs.zip",
     steps = {
       bazel {
         name = "bazel test //..."
         command = "test"
-        targets = "//server/..."
+        targets = "//..."
         arguments = "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
-        param("toolPath", "/usr/local/bin")
+        toolPath = "/usr/local/bin"
+        logging = BazelStep.Verbosity.Diagnostic
+        Utils.DockerParams.get().forEach { (key, value) ->
+          param(key, value)
+        }
       }
     },
     vcsRoot = vcsRoot,
