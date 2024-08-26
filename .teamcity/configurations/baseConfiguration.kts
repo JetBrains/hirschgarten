@@ -15,7 +15,6 @@ open class BaseBuildType(
   vcsRoot: GitVcsRoot,
   steps: BuildSteps.() -> Unit,
   artifactRules: String = "",
-  setupSteps: Boolean = false,
   failureConditions: FailureConditions.() -> Unit = {},
   requirements: (Requirements.() -> Unit)? = null,
 ) : BuildType({
@@ -91,25 +90,6 @@ open class BaseBuildType(
       }
     }
 
-    if (setupSteps) {
-      steps {
-        script {
-          this.name = "Coursier"
-
-          scriptContent =
-            """
-            #!/bin/bash
-            set -euxo pipefail
-                                
-            #install coursier
-            curl -fL "https://github.com/coursier/coursier/releases/download/v2.1.5/cs-x86_64-pc-linux.gz" | gzip -d > cs 
-            sudo mv cs /usr/bin/cs
-            
-            sudo chmod +x "/usr/bin/cs"
-            """.trimIndent()
-        }
-      }
-    }
     this.steps(steps)
   })
 
