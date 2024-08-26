@@ -172,3 +172,31 @@ object ScalaProjectGitHub : ScalaProject(
 object ScalaProjectSpace : ScalaProject(
   vcsRoot = BaseConfiguration.SpaceVcs,
 )
+
+open class PythonProject(vcsRoot: GitVcsRoot) :
+  E2ETest(
+    vcsRoot = vcsRoot,
+    targets = "//server/e2e:python_project_test",
+  )
+
+object PythonProjectGitHub : PythonProject(
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object PythonProjectSpace : PythonProject(
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)
+
+open class JavaDiagnostics(vcsRoot: GitVcsRoot) :
+  E2ETest(
+    vcsRoot = vcsRoot,
+    targets = "//server/e2e:java_diagnostics_test",
+  )
+
+object JavaDiagnosticsGitHub : JavaDiagnostics(
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object JavaDiagnosticsSpace : JavaDiagnostics(
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)

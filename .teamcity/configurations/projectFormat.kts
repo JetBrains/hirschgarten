@@ -4,9 +4,9 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.ScriptBuildStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-open class FormatChecker(vcsRoot: GitVcsRoot, name: String) :
+open class FormatChecker(vcsRoot: GitVcsRoot) :
   BaseConfiguration.BaseBuildType(
-    name = name,
+    name = "[format] check formatting",
     steps = {
       script {
         this.name = "checking formatting with buildifier"
@@ -23,11 +23,9 @@ open class FormatChecker(vcsRoot: GitVcsRoot, name: String) :
   )
 
 object GitHub : FormatChecker(
-  name = "[format] GH formatter",
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object Space : FormatChecker(
-  name = "[format] Space formatter",
   vcsRoot = BaseConfiguration.SpaceVcs,
 )
