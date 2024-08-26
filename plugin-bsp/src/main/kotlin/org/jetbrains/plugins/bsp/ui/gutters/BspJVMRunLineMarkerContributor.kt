@@ -47,14 +47,13 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
         temporaryTargetUtils
           .getTargetsForFile(url, project)
           .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
-          .filter { it.capabilities.canRun || it.capabilities.canTest || it.capabilities.canDebug }
       calculateLineMarkerInfo(targetInfos)
     }
 
   private fun calculateLineMarkerInfo(targetInfos: List<BuildTargetInfo>): Info? =
     targetInfos
+      .flatMap { it.calculateEligibleActions() }
       .takeIf { it.isNotEmpty() }
-      ?.flatMap { it.calculateEligibleActions() }
       ?.let {
         BspLineMakerInfo(
           text = "Run",
