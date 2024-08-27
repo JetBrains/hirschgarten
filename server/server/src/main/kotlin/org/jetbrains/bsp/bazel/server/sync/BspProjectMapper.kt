@@ -109,6 +109,7 @@ class BspProjectMapper(
         testProvider = TestProvider(languageNames),
         outputPathsProvider = true,
         dependencySourcesProvider = true,
+        dependencyModulesProvider = true,
         inverseSourcesProvider = true,
         resourcesProvider = true,
         jvmRunEnvironmentProvider = true,
