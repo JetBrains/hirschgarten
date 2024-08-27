@@ -6,16 +6,14 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.building.action.isBuildInProgress
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspSyncStatusService
-import org.jetbrains.plugins.bsp.server.tasks.SyncProjectTask
+import org.jetbrains.plugins.bsp.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 
 public class ResyncAction :
   SuspendableAction({ BspPluginBundle.message("resync.action.text") }),
   DumbAware {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    SyncProjectTask(project).execute(
-      shouldBuildProject = false,
-    )
+    ProjectSyncTask(project).sync(buildProject = false)
   }
 
   override fun update(project: Project, e: AnActionEvent) {

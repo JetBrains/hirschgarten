@@ -30,6 +30,7 @@ import java.net.URI
 import java.nio.file.Path
 import java.util.jar.JarFile
 import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.Path
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.deleteIfExists
@@ -70,6 +71,7 @@ class BazelTest {
     val context =
       Starter
         .newContext(projectName, testCase)
+        .executeRightAfterIdeOpened(true)
         .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
         .patchPathVariable()
     installPlugin(context, System.getProperty("bsp.benchmark.bsp.plugin.zip"))
@@ -78,10 +80,11 @@ class BazelTest {
     val commands =
       CommandChain()
         .startRecordingMaxMemory()
-        .openBspToolWindow()
         .takeScreenshot("startSync")
         .waitForBazelSync()
         .recordMemory("bsp.used.after.sync.mb")
+        .openBspToolWindow()
+        .takeScreenshot("openBspToolWindow")
         .stopRecordingMaxMemory()
         .waitForSmartMode()
         .recordMemory("bsp.used.after.indexing.mb")

@@ -10,7 +10,6 @@ import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.LibraryItem
-import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 
 public typealias TargetNameReformatProvider = (BuildTargetInfo) -> String
@@ -32,9 +31,7 @@ public data class ProjectDetails(
   val javacOptions: List<JavacOptionsItem>,
   val scalacOptions: List<ScalacOptionsItem>,
   val pythonOptions: List<PythonOptionsItem>,
-  val outputPathUris: List<String>,
   val libraries: List<LibraryItem>?,
-  val directories: WorkspaceDirectoriesResult = WorkspaceDirectoriesResult(emptyList(), emptyList()),
   var defaultJdkName: String? = null,
   var jvmBinaryJars: List<JvmBinaryJarsItem> = emptyList(),
 )

@@ -23,13 +23,14 @@ import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.flow.sync.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.plugins.bsp.server.connection.TimeoutHandler
 import org.jetbrains.plugins.bsp.services.BspTaskEventsService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 
-public const val importSubtaskId: String = "import-subtask-id"
+const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
 
-public class BspClient(
+class BspClient(
   private val bspSyncConsole: TaskConsole,
   private val bspBuildConsole: TaskConsole,
   private val timeoutHandler: TimeoutHandler,
@@ -211,7 +212,7 @@ public class BspClient(
     if (originId?.startsWith("build") == true || originId?.startsWith("mobile-install") == true) {
       bspBuildConsole.addMessage(originId, message)
     } else {
-      bspSyncConsole.addMessage(originId ?: importSubtaskId, message)
+      bspSyncConsole.addMessage(originId ?: BASE_PROJECT_SYNC_SUBTASK_ID, message)
     }
     bspLogger.info(message)
   }
