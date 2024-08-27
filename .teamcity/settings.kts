@@ -77,19 +77,21 @@ object GitHub : Project({
   allSteps.forEach { buildType(it) }
 
   // setup trigger for bazel-bsp pipeline
-  allSteps.last().triggers {
-    vcs {
-      branchFilter = ProjectBranchFilters.githubBranchFilter
+//  allSteps.last().triggers {
+//    vcs {
+//      branchFilter = ProjectBranchFilters.githubBranchFilter
 //      triggerRules = ProjectTriggerRules.triggerRules
-    }
-  }
+//    }
+//  }
 
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
       RelativeId("GitHubFormatCheckFormatting"),
-      RelativeId("GitHubBuildProjectBuild"),
+      RelativeId("GitHubBuildBuildProject"),
       RelativeId("GitHubUnitTestsProjectUnitTests"),
+      RelativeId("GitHubBenchmarkServer10targets"),
+      RelativeId("GitHubBenchmarkPluginBsp10targets"),
       RelativeId("GitHubE2eTestsServerE2eSampleRepoTest"),
       RelativeId("GitHubE2eTestsServerE2eLocalJdkTest"),
       RelativeId("GitHubE2eTestsServerE2eRemoteJdkTest"),
@@ -100,7 +102,6 @@ object GitHub : Project({
       RelativeId("GitHubE2eTestsServerE2eKotlinProjectTest"),
       RelativeId("GitHubE2eTestsServerE2ePythonProjectTest"),
       RelativeId("GitHubE2eTestsServerE2eJavaDiagnosticsTest"),
-      RelativeId("GitHubBenchmark10targets"),
       RelativeId("GitHubResults"),
     )
 })
@@ -145,19 +146,21 @@ object Space : Project({
   allSteps.forEach { buildType(it) }
 
   // setup trigger for bazel-bsp pipeline
-  allSteps.last().triggers {
-    vcs {
-      branchFilter = ProjectBranchFilters.githubBranchFilter
+//  allSteps.last().triggers {
+//    vcs {
+//      branchFilter = ProjectBranchFilters.spaceBranchFilter
 //      triggerRules = ProjectTriggerRules.triggerRules
-    }
-  }
+//    }
+//  }
 
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
       RelativeId("SpaceFormatCheckFormatting"),
-      RelativeId("SpaceBuildProjectBuild"),
+      RelativeId("SpaceBuildBuildProject"),
       RelativeId("SpaceUnitTestsProjectUnitTests"),
+      RelativeId("SpaceBenchmarkServer10targets"),
+      RelativeId("SpaceBenchmarkPluginBsp10targets"),
       RelativeId("SpaceE2eTestsServerE2eSampleRepoTest"),
       RelativeId("SpaceE2eTestsServerE2eLocalJdkTest"),
       RelativeId("SpaceE2eTestsServerE2eRemoteJdkTest"),
@@ -168,7 +171,6 @@ object Space : Project({
       RelativeId("SpaceE2eTestsServerE2eKotlinProjectTest"),
       RelativeId("SpaceE2eTestsServerE2ePythonProjectTest"),
       RelativeId("SpaceE2eTestsServerE2eJavaDiagnosticsTest"),
-      RelativeId("SpaceBenchmark10targets"),
       RelativeId("SpaceResults"),
     )
 })
