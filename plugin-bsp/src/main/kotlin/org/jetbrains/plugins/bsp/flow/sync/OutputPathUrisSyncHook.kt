@@ -11,18 +11,35 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.bspBuildToolId
 import org.jetbrains.plugins.bsp.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
+import org.jetbrains.plugins.bsp.ui.console.syncConsole
+import org.jetbrains.plugins.bsp.ui.console.withSubtask
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
+
+private const val OUTPUT_PATH_URIS_SUBTASK_ID = "output-path-uris-id"
 
 class OutputPathUrisSyncHook : ProjectSyncHook {
   override val buildToolId: BuildToolId = bspBuildToolId
 
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
+    environment.progressReporter.indeterminateStep(BspPluginBundle.message("progress.bar.output.path.uris.sync")) {
+      environment.project.syncConsole.withSubtask(
+        environment.taskId,
+        subtaskId = OUTPUT_PATH_URIS_SUBTASK_ID,
+        message = BspPluginBundle.message("console.task.output.path.uris.sync"),
+      ) {
+        execute(environment)
+      }
+    }
+  }
+
+  private suspend fun execute(environment: ProjectSyncHookEnvironment) {
     coroutineScope {
       val outputPaths =
         environment.server.queryOutputPaths(

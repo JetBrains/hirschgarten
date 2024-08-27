@@ -161,8 +161,7 @@ class BuildServerMock(
 
   override fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult> = wrapInFuture(workspaceLibrariesResult)
 
-  override fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult> =
-    wrapInFuture(workspaceNonModuleTargetsResult)
+  override fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult> = wrapInFuture(workspaceNonModuleTargetsResult)
 
   override fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult> = wrapInFuture(workspaceDirectoriesResult)
 
