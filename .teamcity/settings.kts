@@ -40,7 +40,7 @@ project {
 object GitHub : Project({
   name = "GitHub"
   id(name.toExtId())
-  vcsRoot(BaseConfiguration.GitHubVcs)
+  vcsRoot(BaseConfiguration.GHVcs)
 
 // setup pipeline chain for bazel-bsp
   val allSteps =
@@ -109,7 +109,7 @@ object GitHub : Project({
 object Space : Project({
   name = "Space"
   id(name.toExtId())
-  vcsRoot(BaseConfiguration.SpaceVcs)
+  vcsRoot(BaseConfiguration.SpaceCodeVcs)
 
 // setup pipeline chain for bazel-bsp
   val allSteps =

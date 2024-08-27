@@ -24,9 +24,9 @@ open class Build(vcsRoot: GitVcsRoot) :
   )
 
 object GitHub : Build(
-  vcsRoot = BaseConfiguration.GitHubVcs,
+  vcsRoot = BaseConfiguration.GHVcs,
 )
 
 object Space : Build(
-  vcsRoot = BaseConfiguration.SpaceVcs,
+  vcsRoot = BaseConfiguration.SpaceCodeVcs,
 )

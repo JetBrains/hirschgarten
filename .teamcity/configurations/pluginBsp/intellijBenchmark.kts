@@ -30,9 +30,9 @@ open class Benchmark(vcsRoot: GitVcsRoot) :
   )
 
 object GitHub : Benchmark(
-  vcsRoot = BaseConfiguration.GitHubVcs,
+  vcsRoot = BaseConfiguration.GHVcs,
 )
 
 object Space : Benchmark(
-  vcsRoot = BaseConfiguration.SpaceVcs,
+  vcsRoot = BaseConfiguration.SpaceCodeVcs,
 )
