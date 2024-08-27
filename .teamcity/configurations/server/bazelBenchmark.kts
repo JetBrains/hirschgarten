@@ -1,9 +1,9 @@
 package configurations.server
 
-import configurations.Utils
 import configurations.BaseConfiguration
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
+import configurations.Utils
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
