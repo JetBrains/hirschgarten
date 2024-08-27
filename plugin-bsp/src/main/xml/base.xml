@@ -84,6 +84,9 @@
         <projectService serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"
                         serviceImplementation="org.jetbrains.plugins.bsp.services.BspBaseProjectDirectories"
                         overrides="true"/>
+        <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
+                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspExternalAnnotationsManager"
+                        overrides="true"/>
 
         <commandLineInspectionProjectConfigurator
                 implementation="org.jetbrains.plugins.bsp.flow.open.BspCommandLineInspectionConfigurator"/>
