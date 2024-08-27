@@ -9,6 +9,12 @@ public interface BazelBuildServer {
   @JsonRequest("workspace/libraries")
   public fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult>
 
+  /**
+   * Returns the list of all targets in the workspace that are neither modules nor libraries, but should be displayed in the UI.
+   */
+  @JsonRequest("workspace/nonModuleTargets")
+  public fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult>
+
   @JsonRequest("workspace/directories")
   public fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult>
 

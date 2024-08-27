@@ -43,6 +43,7 @@ import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
+import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
@@ -83,6 +84,11 @@ class ProjectSyncService(
   fun workspaceBuildLibraries(cancelChecker: CancelChecker): WorkspaceLibrariesResult {
     val project = projectProvider.get(cancelChecker)
     return bspMapper.workspaceLibraries(project)
+  }
+
+  fun workspaceNonModuleTargets(cancelChecker: CancelChecker): NonModuleTargetsResult {
+    val project = projectProvider.get(cancelChecker)
+    return bspMapper.workspaceNonModuleTargets(project)
   }
 
   fun workspaceDirectories(cancelChecker: CancelChecker): WorkspaceDirectoriesResult {

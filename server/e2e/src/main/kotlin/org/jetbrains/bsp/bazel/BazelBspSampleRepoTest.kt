@@ -37,8 +37,10 @@ import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -62,6 +64,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       jvmRunEnvironment(),
       jvmTestEnvironment(),
       javacOptionsResult(),
+      nonModuleTargets(),
     )
 
   private fun resolveProject(): BazelBspTestScenarioStep =
@@ -1251,6 +1254,55 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     return BazelBspTestScenarioStep(
       stepName,
     ) { testClient.testJavacOptions(30.seconds, params, expectedResult) }
+  }
+
+  fun nonModuleTargets(): BazelBspTestScenarioStep {
+    val expectedTargets =
+      NonModuleTargetsResult(
+        listOf(
+          BuildTarget(
+            BuildTargetIdentifier("@//genrule:foo"),
+            listOf("no-ide"),
+            emptyList(),
+            emptyList(),
+            BuildTargetCapabilities().also {
+              it.canCompile = true
+              it.canTest = false
+              it.canRun = false
+              it.canDebug = false
+            },
+          ).also {
+            it.displayName = "@//genrule:foo"
+            it.baseDirectory = "file://$workspaceDir/genrule/"
+          },
+          BuildTarget(
+            BuildTargetIdentifier("@//target_with_resources:resources"),
+            listOf("no-ide"),
+            emptyList(),
+            emptyList(),
+            BuildTargetCapabilities().also {
+              it.canCompile = true
+              it.canTest = false
+              it.canRun = false
+              it.canDebug = false
+            },
+          ).also {
+            it.displayName = "@//target_with_resources:resources"
+            it.baseDirectory = "file://$workspaceDir/target_with_resources/"
+          },
+        ),
+      )
+
+    val client = createBazelClient()
+
+    return BazelBspTestScenarioStep(
+      "non module targets",
+    ) {
+      client.test(30.seconds) { session, _ ->
+        val targets = session.server.workspaceNonModuleTargets().await()
+        client.assertJsonEquals(expectedTargets, targets)
+      }
+    }
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {

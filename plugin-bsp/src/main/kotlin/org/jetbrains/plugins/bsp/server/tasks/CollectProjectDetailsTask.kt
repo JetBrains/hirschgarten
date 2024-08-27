@@ -324,7 +324,11 @@ class CollectProjectDetailsTask(
 
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
-            val targetIdToTargetInfo = projectDetails.targets.associate { it.id to it.toBuildTargetInfo() }
+            val targetIdToTargetInfo =
+              (projectDetails.targets + projectDetails.nonModuleTargets).associate {
+                it.id to
+                  it.toBuildTargetInfo()
+              }
             val targetIdToModuleEntityMap =
               TargetIdToModuleEntitiesMap(
                 projectDetails = projectDetails,
@@ -523,6 +527,11 @@ public suspend fun calculateProjectDetailsWithCapabilities(
           (server as BazelBuildServer).workspaceLibraries()
         }
 
+      val nonModuleTargets =
+        queryIf(buildServerCapabilities.workspaceNonModuleTargetsProvider, "workspace/nonModuleTargets") {
+          (server as BazelBuildServer).workspaceNonModuleTargets()
+        }
+
       val jvmBinaryJarsResult =
         queryIf(
           BspFeatureFlags.isAndroidSupportEnabled &&
@@ -574,6 +583,7 @@ public suspend fun calculateProjectDetailsWithCapabilities(
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
         pythonOptions = pythonOptionsResult.await()?.items ?: emptyList(),
         libraries = libraries?.libraries,
+        nonModuleTargets = nonModuleTargets?.nonModuleTargets ?: emptyList(),
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
       )
     } catch (e: Exception) {

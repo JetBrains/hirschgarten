@@ -17,6 +17,7 @@ import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
+import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.SourceSet
 import org.jetbrains.bsp.bazel.server.model.Tag
@@ -194,12 +195,16 @@ class BazelProjectMapper(
       }
     val allModules = mergedModulesFromBazel + rustExternalModules
 
+    val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
+    val nonModuleTargets = createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace })
+
     return Project(
       workspaceRoot,
       allModules.toList(),
       sourceToTarget,
       librariesToImport,
       invalidTargets,
+      nonModuleTargets,
       bazelInfo.release,
     )
   }
@@ -528,6 +533,18 @@ class BazelProjectMapper(
     )
   }
 
+  private fun createNonModuleTargets(targets: Map<Label, TargetInfo>): List<NonModuleTarget> =
+    targets
+      .filter { !isWorkspaceTarget(it.value) }
+      .map { (label, targetInfo) ->
+        NonModuleTarget(
+          label = label,
+          languages = inferLanguages(targetInfo),
+          tags = targetKindResolver.resolveTags(targetInfo),
+          baseDirectory = label.toDirectoryUri(),
+        )
+      }
+
   private fun createLibraries(targets: Map<Label, TargetInfo>): Map<Label, Library> =
     targets
       .mapValues { (targetId, targetInfo) ->
@@ -836,7 +853,7 @@ class BazelProjectMapper(
   private fun collectInheritedEnvs(targetInfo: TargetInfo): Map<String, String> =
     targetInfo.envInheritList.associateWith { System.getenv(it) }
 
-  private fun removeDotBazelBspTarget(targets: List<Label>): List<Label> =
+  private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {
       it.isMainWorkspace && !it.value.startsWith("@//.bazelbsp")
     }

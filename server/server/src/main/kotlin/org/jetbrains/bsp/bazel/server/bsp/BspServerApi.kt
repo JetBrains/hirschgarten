@@ -55,6 +55,7 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
+import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
@@ -387,6 +388,13 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
   override fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult> =
     runner.handleRequest("libraries") { cancelChecker: CancelChecker ->
       projectSyncService.workspaceBuildLibraries(
+        cancelChecker,
+      )
+    }
+
+  override fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult> =
+    runner.handleRequest("nonModuleTargets") { cancelChecker: CancelChecker ->
+      projectSyncService.workspaceNonModuleTargets(
         cancelChecker,
       )
     }
