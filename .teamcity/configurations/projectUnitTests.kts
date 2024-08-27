@@ -25,9 +25,9 @@ open class UnitTests(vcsRoot: GitVcsRoot) :
   )
 
 object GitHub : UnitTests(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object Space : UnitTests(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )

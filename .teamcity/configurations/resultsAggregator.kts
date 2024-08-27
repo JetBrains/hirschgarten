@@ -41,9 +41,9 @@ open class Aggregator(vcsRoot: GitVcsRoot) :
   })
 
 object GitHub : Aggregator(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object Space : Aggregator(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )

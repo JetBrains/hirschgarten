@@ -45,11 +45,11 @@ open class SampleRepo(vcsRoot: GitVcsRoot) :
   )
 
 object SampleRepoGitHub : SampleRepo(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object SampleRepoSpace : SampleRepo(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class LocalJdk(vcsRoot: GitVcsRoot) :
@@ -59,11 +59,11 @@ open class LocalJdk(vcsRoot: GitVcsRoot) :
   )
 
 object LocalJdkGitHub : LocalJdk(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object LocalJdkSpace : LocalJdk(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class RemoteJdk(vcsRoot: GitVcsRoot) :
@@ -73,11 +73,11 @@ open class RemoteJdk(vcsRoot: GitVcsRoot) :
   )
 
 object RemoteJdkGitHub : RemoteJdk(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object RemoteJdkSpace : RemoteJdk(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class ServerDownloadsBazelisk(vcsRoot: GitVcsRoot) :
@@ -92,11 +92,11 @@ open class ServerDownloadsBazelisk(vcsRoot: GitVcsRoot) :
   )
 
 object ServerDownloadsBazeliskGitHub : ServerDownloadsBazelisk(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object ServerDownloadsBazeliskSpace : ServerDownloadsBazelisk(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class KotlinProject(vcsRoot: GitVcsRoot) :
@@ -106,11 +106,11 @@ open class KotlinProject(vcsRoot: GitVcsRoot) :
   )
 
 object KotlinProjectGitHub : KotlinProject(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object KotlinProjectSpace : KotlinProject(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class AndroidProject(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
@@ -125,7 +125,7 @@ open class AndroidProject(vcsRoot: GitVcsRoot, requirements: (Requirements.() ->
   )
 
 object AndroidProjectGitHub : AndroidProject(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
   requirements = {
     endsWith("cloud.amazon.agent-name-prefix", "-Large")
     equals("container.engine.osType", "linux")
@@ -133,7 +133,7 @@ object AndroidProjectGitHub : AndroidProject(
 )
 
 object AndroidProjectSpace : AndroidProject(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class AndroidKotlinProject(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
@@ -148,7 +148,7 @@ open class AndroidKotlinProject(vcsRoot: GitVcsRoot, requirements: (Requirements
   )
 
 object AndroidKotlinProjectGitHub : AndroidKotlinProject(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
   requirements = {
     endsWith("cloud.amazon.agent-name-prefix", "-Large")
     equals("container.engine.osType", "linux")
@@ -156,7 +156,7 @@ object AndroidKotlinProjectGitHub : AndroidKotlinProject(
 )
 
 object AndroidKotlinProjectSpace : AndroidKotlinProject(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class ScalaProject(vcsRoot: GitVcsRoot) :
@@ -166,11 +166,11 @@ open class ScalaProject(vcsRoot: GitVcsRoot) :
   )
 
 object ScalaProjectGitHub : ScalaProject(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object ScalaProjectSpace : ScalaProject(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class PythonProject(vcsRoot: GitVcsRoot) :
@@ -180,11 +180,11 @@ open class PythonProject(vcsRoot: GitVcsRoot) :
   )
 
 object PythonProjectGitHub : PythonProject(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object PythonProjectSpace : PythonProject(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )
 
 open class JavaDiagnostics(vcsRoot: GitVcsRoot) :
@@ -194,9 +194,9 @@ open class JavaDiagnostics(vcsRoot: GitVcsRoot) :
   )
 
 object JavaDiagnosticsGitHub : JavaDiagnostics(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object JavaDiagnosticsSpace : JavaDiagnostics(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )

@@ -23,9 +23,9 @@ open class FormatChecker(vcsRoot: GitVcsRoot) :
   )
 
 object GitHub : FormatChecker(
-  vcsRoot = BaseConfiguration.GHVcs,
+  vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
 object Space : FormatChecker(
-  vcsRoot = BaseConfiguration.SpaceCodeVcs,
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )

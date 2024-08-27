@@ -92,7 +92,7 @@ open class BaseBuildType(
     this.steps(steps)
   })
 
-object GHVcs : GitVcsRoot({
+object GitHubVcs : GitVcsRoot({
   name = "hirschgarten-github"
   url = "https://github.com/JetBrains/hirschgarten.git"
   branch = "main"
@@ -106,7 +106,7 @@ object GHVcs : GitVcsRoot({
   param("tokenType", "permanent")
 })
 
-object SpaceCodeVcs : GitVcsRoot({
+object SpaceVcs : GitVcsRoot({
   name = "hirschgarten-space"
   url = "https://git.jetbrains.team/bazel/hirschgarten.git"
   branch = "main"
