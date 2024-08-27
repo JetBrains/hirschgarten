@@ -10,6 +10,7 @@ data class Project(
   val sourceToTarget: Map<URI, Label>,
   val libraries: Map<Label, Library>,
   val invalidTargets: List<Label>,
+  val nonModuleTargets: List<NonModuleTarget>, // targets that should be displayed in the project view but are neither modules nor libraries
   val bazelRelease: BazelRelease,
 ) {
   private val moduleMap: Map<Label, Module> = modules.associateBy(Module::label)

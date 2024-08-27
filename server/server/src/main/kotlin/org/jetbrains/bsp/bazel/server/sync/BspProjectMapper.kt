@@ -66,6 +66,7 @@ import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
+import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
@@ -81,6 +82,7 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
@@ -116,6 +118,7 @@ class BspProjectMapper(
         jvmTestEnvironmentProvider = true,
         workspaceLibrariesProvider = true,
         workspaceDirectoriesProvider = true,
+        workspaceNonModuleTargetsProvider = true,
         workspaceInvalidTargetsProvider = true,
         runWithDebugProvider = true,
         jvmBinaryJarsProvider = true,
@@ -130,7 +133,7 @@ class BspProjectMapper(
   }
 
   fun workspaceTargets(project: Project): WorkspaceBuildTargetsResult {
-    val buildTargets = project.modules.map(::toBuildTarget)
+    val buildTargets = project.modules.map { it.toBuildTarget() }
     return WorkspaceBuildTargetsResult(buildTargets)
   }
 
@@ -162,6 +165,14 @@ class BspProjectMapper(
         }
       }
     return WorkspaceLibrariesResult(libraries)
+  }
+
+  fun workspaceNonModuleTargets(project: Project): NonModuleTargetsResult {
+    val nonModuleTargets =
+      project.nonModuleTargets.map {
+        it.toBuildTarget()
+      }
+    return NonModuleTargetsResult(nonModuleTargets)
   }
 
   fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {
@@ -202,14 +213,33 @@ class BspProjectMapper(
       uri = this.toUri().toString(),
     )
 
-  private fun toBuildTarget(module: Module): BuildTarget {
-    val label = BspMappings.toBspId(module)
+  private fun NonModuleTarget.toBuildTarget(): BuildTarget {
+    val label = BspMappings.toBspId(this.label)
+    val languages = languages.flatMap(Language::allNames).distinct()
+    val capabilities = inferCapabilities(tags)
+    val tags = tags.mapNotNull(BspMappings::toBspTag)
+    val baseDirectory = BspMappings.toBspUri(baseDirectory)
+    val buildTarget =
+      BuildTarget(
+        label,
+        tags,
+        languages,
+        emptyList(),
+        capabilities,
+      )
+    buildTarget.displayName = label.uri
+    buildTarget.baseDirectory = baseDirectory
+    return buildTarget
+  }
+
+  private fun Module.toBuildTarget(): BuildTarget {
+    val label = BspMappings.toBspId(this)
     val dependencies =
-      module.directDependencies.map(BspMappings::toBspId)
-    val languages = module.languages.flatMap(Language::allNames).distinct()
-    val capabilities = inferCapabilities(module)
-    val tags = module.tags.mapNotNull(BspMappings::toBspTag)
-    val baseDirectory = BspMappings.toBspUri(module.baseDirectory)
+      directDependencies.map(BspMappings::toBspId)
+    val languages = languages.flatMap(Language::allNames).distinct()
+    val capabilities = inferCapabilities(tags)
+    val tags = tags.mapNotNull(BspMappings::toBspTag)
+    val baseDirectory = BspMappings.toBspUri(baseDirectory)
     val buildTarget =
       BuildTarget(
         label,
@@ -220,14 +250,14 @@ class BspProjectMapper(
       )
     buildTarget.displayName = label.uri
     buildTarget.baseDirectory = baseDirectory
-    applyLanguageData(module, buildTarget)
+    applyLanguageData(this, buildTarget)
     return buildTarget
   }
 
-  private fun inferCapabilities(module: Module): BuildTargetCapabilities {
-    val canCompile = !module.tags.contains(Tag.NO_BUILD)
-    val canTest = module.tags.contains(Tag.TEST)
-    val canRun = module.tags.contains(Tag.APPLICATION)
+  private fun inferCapabilities(tags: Set<Tag>): BuildTargetCapabilities {
+    val canCompile = !tags.contains(Tag.NO_BUILD)
+    val canTest = tags.contains(Tag.TEST)
+    val canRun = tags.contains(Tag.APPLICATION)
     val canDebug = canRun || canTest // runnable and testable targets should be debuggable
     return BuildTargetCapabilities().also {
       it.canCompile = canCompile

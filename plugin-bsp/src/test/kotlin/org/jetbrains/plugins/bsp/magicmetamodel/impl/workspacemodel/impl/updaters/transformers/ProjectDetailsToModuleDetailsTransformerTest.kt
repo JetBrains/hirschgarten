@@ -41,6 +41,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         pythonOptions = emptyList(),
         libraries = null,
         scalacOptions = emptyList(),
+        nonModuleTargets = emptyList(),
       )
 
     // when
@@ -119,6 +120,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         pythonOptions = listOf(pythonOptions),
         libraries = emptyList(),
         scalacOptions = emptyList(),
+        nonModuleTargets = emptyList(),
       )
 
     // when
@@ -269,6 +271,7 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         pythonOptions = listOf(target4PythonOptionsItem),
         libraries = emptyList(),
         scalacOptions = emptyList(),
+        nonModuleTargets = emptyList(),
       )
 
     // when
