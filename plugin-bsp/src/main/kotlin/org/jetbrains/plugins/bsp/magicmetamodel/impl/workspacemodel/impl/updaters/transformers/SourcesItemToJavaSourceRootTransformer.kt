@@ -69,9 +69,11 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
     return JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer.transform(packageDetails)
   }
 
-  private fun extractPackagePrefixFromServer(data: Any?): String? {
+  private fun extractPackagePrefixFromServer(data: Any?): String? = try {
     val gson = Gson()
     val enhancedJvmSourceItemData = gson.fromJson(data.toString(), EnhancedJvmSourceItemData::class.java)
-    return enhancedJvmSourceItemData.packagePrefix
+    enhancedJvmSourceItemData.packagePrefix
+  } catch (_: Exception) {
+    null
   }
 }

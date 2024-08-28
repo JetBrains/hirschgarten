@@ -16,7 +16,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.pathString
 
-class SourceAndPackagePrefix(val sourcePath: Path, val packagePrefix: String = "")
+data class SourceAndPackagePrefix(val sourcePath: Path, val packagePrefix: String = "")
 
 /**
  * This is a HACK for letting single source Java files to be resolved normally
@@ -40,7 +40,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
           jdkName = inputEntity.jvmJdkName,
           javaAddendum = inputEntity.javaAddendum,
         )
-      }
+      }.distinct()
   }
 
   private fun calculateDummyJavaSourceModule(
@@ -91,9 +91,9 @@ internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): L
 private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): SourceAndPackagePrefix? {
   if (sourceRoot.sourcePath.isDirectory()) return null
   val packagePrefixPath = sourceRoot.packagePrefix.replace('.', File.separatorChar)
-  val directory = sourceRoot.sourcePath.parent.pathString
-  val sourceRootString = directory.removeSuffix(packagePrefixPath)
-  if (directory == sourceRootString) return SourceAndPackagePrefix(Path(sourceRootString), sourceRoot.packagePrefix)
+  val sourceParent = sourceRoot.sourcePath.parent.pathString
+  val sourceRootString = sourceParent.removeSuffix(packagePrefixPath)
+  if (sourceParent == sourceRootString) return SourceAndPackagePrefix(Path(sourceRootString), sourceRoot.packagePrefix)
   return SourceAndPackagePrefix(Path(sourceRootString))
 }
 
