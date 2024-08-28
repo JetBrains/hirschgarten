@@ -11,39 +11,37 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.util.concurrent.CompletableFuture
-import java.util.function.BiFunction
-import java.util.function.Function
 
 class BspRequestsRunner(private val serverLifetime: BazelBspServerLifetime) {
   fun <T, R> handleRequest(
     methodName: String,
-    function: BiFunction<CancelChecker, T, R>,
+    function: (CancelChecker, T) -> R,
     arg: T,
   ): CompletableFuture<R> {
     LOGGER.info("{} call with param: {}", methodName, arg)
-    return serverIsRunning(methodName) ?: runAsync(methodName) { function.apply(it, arg) }
+    return serverIsRunning(methodName) ?: runAsync(methodName) { function(it, arg) }
   }
 
-  fun <R> handleRequest(methodName: String, supplier: Function<CancelChecker, R>): CompletableFuture<R> {
+  fun <R> handleRequest(methodName: String, function: (CancelChecker) -> R): CompletableFuture<R> {
     LOGGER.info("{} call", methodName)
     return serverIsRunning(methodName) ?: runAsync(
       methodName,
-      supplier,
+      function,
     )
   }
 
-  fun handleNotification(methodName: String, runnable: Runnable) {
+  fun handleNotification(methodName: String, function: () -> Unit) {
     LOGGER.info("{} call", methodName)
-    runnable.run()
+    function()
   }
 
   fun <R> handleRequest(
     methodName: String,
-    supplier: Function<CancelChecker, R>,
-    precondition: Function<String, CompletableFuture<R>?>,
+    supplier: (CancelChecker) -> R,
+    precondition: (String) -> CompletableFuture<R>?,
   ): CompletableFuture<R> {
     LOGGER.info("{} call", methodName)
-    return precondition.apply(methodName) ?: runAsync(methodName, supplier)
+    return precondition(methodName) ?: runAsync(methodName, supplier)
   }
 
   private fun <T> serverIsRunning(methodName: String): CompletableFuture<T>? =
@@ -77,24 +75,24 @@ class BspRequestsRunner(private val serverLifetime: BazelBspServerLifetime) {
       null
     }
 
-  private fun <T> runAsync(methodName: String, request: Function<CancelChecker, T>): CompletableFuture<T> {
+  private fun <T> runAsync(methodName: String, request: (CancelChecker) -> T): CompletableFuture<T> {
     val telemetryContext = Context.current()
-    val requestWrapped =
-      Function<CancelChecker, T> { cancelChecker ->
-        telemetryContext.makeCurrent().use { request.apply(cancelChecker) }
+    val asyncRequest =
+      CompletableFutures.computeAsync { cancelChecker ->
+        telemetryContext.makeCurrent().use { request(cancelChecker) }
       }
     return CancellableFuture
-      .from(CompletableFutures.computeAsync(requestWrapped))
-      .thenApply<Either<Throwable, T>> { right: T -> Either.forRight(right) }
-      .exceptionally { left: Throwable? -> Either.forLeft(left) }
-      .thenCompose { either: Either<Throwable, T> ->
-        if (either.isLeft) {
+      .from(asyncRequest)
+      .thenApply<Either<Throwable, T>> { Either.forRight(it) }
+      .exceptionally { Either.forLeft(it) }
+      .thenCompose {
+        if (it.isLeft) {
           failure(
             methodName,
-            either.left,
+            it.left,
           )
         } else {
-          success<T>(methodName, either.right)
+          success<T>(methodName, it.right)
         }
       }
   }
