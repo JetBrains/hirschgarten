@@ -22,5 +22,7 @@ class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
 
   fun getNameNode(): ASTNode? = node.findChildByType(StarlarkElementTypes.REFERENCE_EXPRESSION)
 
+  fun getTargetName(): String? = getArgumentList()?.getNameArgumentValue()
+
   fun getArgumentList(): StarlarkArgumentList? = findChildrenByClass(StarlarkArgumentList::class.java).firstOrNull()
 }

@@ -8,8 +8,8 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkNamedArgum
 class StarlarkArgumentList(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitArgumentList(this)
 
-  fun getNameArgumentValue() = getNameArgument()?.getArgumentStringValue()
+  fun getNameArgumentValue(): String? = getNameArgument()?.getArgumentStringValue()
 
   private fun getNameArgument(): StarlarkNamedArgumentExpression? =
-    findChildrenByClass(StarlarkNamedArgumentExpression::class.java).find { it.containsArgumentWithName("name") }
+    findChildrenByClass(StarlarkNamedArgumentExpression::class.java).find { it.isNameArgument() }
 }
