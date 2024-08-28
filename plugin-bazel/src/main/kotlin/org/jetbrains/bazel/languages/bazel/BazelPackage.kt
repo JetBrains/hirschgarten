@@ -8,9 +8,9 @@ import org.jetbrains.kotlin.utils.findIsInstanceAnd
 data class BazelPackage(val buildFile: StarlarkFile) {
   companion object {
     fun ofFile(file: PsiFile): BazelPackage? =
-      when (file) {
-        is StarlarkFile -> ofStarlarkFile(file)
-        else -> ofDirectory(file.containingDirectory)
+      when (val original = file.originalFile) {
+        is StarlarkFile -> ofStarlarkFile(original)
+        else -> ofDirectory(original.containingDirectory)
       }
 
     private fun ofStarlarkFile(starlarkFile: StarlarkFile): BazelPackage? =

@@ -6,7 +6,6 @@ import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
-import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
 import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
@@ -41,16 +40,6 @@ object SearchUtils {
       else -> true
     }
 
-  private fun StarlarkFile.searchInTopLevel(processor: Processor<StarlarkElement>, stopAt: PsiElement?): Boolean =
-    findChildrenByClass(StarlarkElement::class.java).all {
-      when (it) {
-        stopAt -> false
-        is StarlarkAssignmentStatement -> it.check(processor)
-        is StarlarkFunctionDeclaration -> processor.process(it)
-        else -> true
-      }
-    }
-
   private fun StarlarkStatementList.searchInAssignments(processor: Processor<StarlarkElement>): Boolean =
     getAssignments().all { it.check(processor) }
 
@@ -59,7 +48,4 @@ object SearchUtils {
 
   private fun StarlarkForStatement.searchInLoopVariables(processor: Processor<StarlarkElement>): Boolean =
     getLoopVariables().all { processor.process(it) }
-
-  private fun StarlarkAssignmentStatement.check(processor: Processor<StarlarkElement>): Boolean =
-    getTargetExpression()?.let { processor.process(it) } ?: true
 }

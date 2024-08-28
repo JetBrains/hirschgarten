@@ -89,6 +89,9 @@
         <annotator
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkStringAnnotator"/>
+        <annotator
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkLoadAnnotator"/>
         <completion.confidence
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionConfidence"/>
