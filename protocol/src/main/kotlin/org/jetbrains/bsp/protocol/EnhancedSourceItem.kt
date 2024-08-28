@@ -12,8 +12,8 @@ data class EnhancedSourceItem(
 
 data class EnhancedSourcesItem(
   val target: BuildTargetIdentifier,
-  val roots: List<String>,
   val sources: List<EnhancedSourceItem>,
+  val roots: List<String> = emptyList(),
 )
 
 data class EnhancedSourcesResult(

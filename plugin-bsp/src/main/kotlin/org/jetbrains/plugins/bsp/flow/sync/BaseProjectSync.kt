@@ -67,9 +67,9 @@ class BaseProjectSync(private val project: Project) {
   private fun SourcesResult.toEnhancedSourcesResult() =
     EnhancedSourcesResult(items.map { sourcesItem ->
       EnhancedSourcesItem(
-        sourcesItem.target,
-        sourcesItem.roots,
-        sourcesItem.sources.map { EnhancedSourceItem(it.uri, it.kind, it.generated) })
+        target = sourcesItem.target,
+        roots = sourcesItem.roots,
+        sources = sourcesItem.sources.map { EnhancedSourceItem(it.uri, it.kind, it.generated) })
     })
 
 

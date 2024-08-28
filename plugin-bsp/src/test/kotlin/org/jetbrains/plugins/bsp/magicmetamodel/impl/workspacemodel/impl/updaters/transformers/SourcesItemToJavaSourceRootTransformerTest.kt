@@ -9,6 +9,8 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import org.jetbrains.bsp.protocol.EnhancedSourcesItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -40,7 +42,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     // given
     val rootDir = "${projectBasePathURIStr}root/dir"
     val sourceItem =
-      SourceItem(
+      EnhancedSourceItem(
         "$rootDir/example/package/File.java",
         SourceItemKind.FILE,
         false,
@@ -58,12 +60,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
             BuildTargetCapabilities(),
           ),
         sourcesItem =
-          SourcesItem(
-            BuildTargetIdentifier("target"),
-            listOf(sourceItem),
-          ).also {
-            it.roots = sourceRoots
-          },
+          EnhancedSourcesItem(
+            target = BuildTargetIdentifier("target"),
+            sources = listOf(sourceItem),
+            roots = sourceRoots
+          ),
       )
 
     // when
@@ -86,7 +87,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     // given
     val rootDir = "${projectBasePathURIStr}root/dir"
     val sourceItem =
-      SourceItem(
+      EnhancedSourceItem(
         "$rootDir/example/package/File.java",
         SourceItemKind.FILE,
         false,
@@ -104,12 +105,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
             BuildTargetCapabilities(),
           ),
         sourcesItem =
-          SourcesItem(
-            BuildTargetIdentifier("target"),
-            listOf(sourceItem),
-          ).also {
-            it.roots = sourceRoots
-          },
+          EnhancedSourcesItem(
+            target = BuildTargetIdentifier("target"),
+            sources = listOf(sourceItem),
+            roots = sourceRoots,
+          ),
       )
 
     // when
@@ -132,7 +132,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
     // given
     val rootDir = "${projectBasePathURIStr}root/dir"
     val sourceItem =
-      SourceItem(
+      EnhancedSourceItem(
         "$rootDir/example/package/",
         SourceItemKind.DIRECTORY,
         false,
@@ -150,12 +150,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
             BuildTargetCapabilities(),
           ),
         sourcesItem =
-          SourcesItem(
-            BuildTargetIdentifier("target"),
-            listOf(sourceItem),
-          ).also {
-            it.roots = sourceRoots
-          },
+          EnhancedSourcesItem(
+            target = BuildTargetIdentifier("target"),
+            sources = listOf(sourceItem),
+            roots = sourceRoots
+          ),
       )
 
     // when
@@ -180,19 +179,19 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val anotherRootDir = "${projectBasePathURIStr}another/root/dir"
 
     val sourceItem1 =
-      SourceItem(
+      EnhancedSourceItem(
         "$rootDir/example/package/File1.java",
         SourceItemKind.FILE,
         false,
       )
     val sourceItem2 =
-      SourceItem(
+      EnhancedSourceItem(
         "$rootDir/example/package/File2.java",
         SourceItemKind.FILE,
         false,
       )
     val sourceItem3 =
-      SourceItem(
+      EnhancedSourceItem(
         "$anotherRootDir/another/example/package/",
         SourceItemKind.DIRECTORY,
         false,
@@ -214,12 +213,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
             BuildTargetCapabilities(),
           ),
         sourcesItem =
-          SourcesItem(
-            BuildTargetIdentifier("target"),
-            listOf(sourceItem1, sourceItem2, sourceItem3),
-          ).also {
-            it.roots = sourceRoots
-          },
+          EnhancedSourcesItem(
+            target = BuildTargetIdentifier("target"),
+            sources = listOf(sourceItem1, sourceItem2, sourceItem3),
+            roots = sourceRoots
+          ),
       )
 
     // when
@@ -257,19 +255,19 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val anotherRootDir = "${projectBasePathURIStr}another/root/dir"
 
     val sourceItem1 =
-      SourceItem(
+      EnhancedSourceItem(
         "$rootDir/example/package/File1.java",
         SourceItemKind.FILE,
         false,
       )
     val sourceItem2 =
-      SourceItem(
+      EnhancedSourceItem(
         "$rootDir/example/package/File2.java",
         SourceItemKind.FILE,
         false,
       )
     val sourceItem3 =
-      SourceItem(
+      EnhancedSourceItem(
         "$anotherRootDir/another/example/package/",
         SourceItemKind.DIRECTORY,
         false,
@@ -291,12 +289,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
             BuildTargetCapabilities(),
           ),
         sourcesItem =
-          SourcesItem(
-            BuildTargetIdentifier("target"),
-            listOf(sourceItem1),
-          ).also {
-            it.roots = sourceRoots
-          },
+          EnhancedSourcesItem(
+            target = BuildTargetIdentifier("target"),
+            sources = listOf(sourceItem1),
+            roots = sourceRoots,
+          ),
       )
     val buildTargetAndSourceItem2 =
       BuildTargetAndSourceItem(
@@ -309,12 +306,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
             BuildTargetCapabilities(),
           ),
         sourcesItem =
-          SourcesItem(
-            BuildTargetIdentifier("target"),
-            listOf(sourceItem2, sourceItem3),
-          ).also {
-            it.roots = sourceRoots
-          },
+          EnhancedSourcesItem(
+            target = BuildTargetIdentifier("target"),
+            sources = listOf(sourceItem2, sourceItem3),
+            roots = sourceRoots
+          ),
       )
 
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)
@@ -354,19 +350,19 @@ class SourcesItemToJavaSourceRootTransformerTest {
     val anotherRootDir = "file:///var/tmp/another/root/dir"
 
     val sourceItem1 =
-      SourceItem(
+      EnhancedSourceItem(
         "$rootDir/example/package/File1.java",
         SourceItemKind.FILE,
         false,
       )
     val sourceItem2 =
-      SourceItem(
+      EnhancedSourceItem(
         "$anotherRootDir/example/package/File2.java",
         SourceItemKind.FILE,
         false,
       )
     val sourceItem3 =
-      SourceItem(
+      EnhancedSourceItem(
         "$rootDir/another/example/package/",
         SourceItemKind.DIRECTORY,
         false,
@@ -388,12 +384,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
             BuildTargetCapabilities(),
           ),
         sourcesItem =
-          SourcesItem(
-            BuildTargetIdentifier("target"),
-            listOf(sourceItem1),
-          ).also {
-            it.roots = sourceRoots
-          },
+          EnhancedSourcesItem(
+            target = BuildTargetIdentifier("target"),
+            sources = listOf(sourceItem1),
+            roots = sourceRoots
+          ),
       )
     val buildTargetAndSourceItem2 =
       BuildTargetAndSourceItem(
@@ -406,12 +401,11 @@ class SourcesItemToJavaSourceRootTransformerTest {
             BuildTargetCapabilities(),
           ),
         sourcesItem =
-          SourcesItem(
-            BuildTargetIdentifier("target"),
-            listOf(sourceItem2, sourceItem3),
-          ).also {
-            it.roots = sourceRoots
-          },
+          EnhancedSourcesItem(
+            target = BuildTargetIdentifier("target"),
+            sources = listOf(sourceItem2, sourceItem3),
+            roots = sourceRoots
+          ),
       )
 
     val buildTargetAndSourceItems = listOf(buildTargetAndSourceItem1, buildTargetAndSourceItem2)

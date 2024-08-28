@@ -11,6 +11,8 @@ import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import org.jetbrains.bsp.protocol.EnhancedSourcesItem
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.junit.jupiter.api.DisplayName
@@ -81,9 +83,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         BuildTargetCapabilities(),
       )
     val targetSources =
-      SourcesItem(
-        targetId,
-        listOf(SourceItem("file:///root/dir/example/package/", SourceItemKind.DIRECTORY, false)),
+      EnhancedSourcesItem(
+        target = targetId,
+        sources = listOf(EnhancedSourceItem("file:///root/dir/example/package/", SourceItemKind.DIRECTORY, false)),
       )
     val targetResources =
       ResourcesItem(
@@ -161,9 +163,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         BuildTargetCapabilities(),
       )
     val target1Sources =
-      SourcesItem(
-        target1Id,
-        listOf(SourceItem("file:///root/dir1/example/package/", SourceItemKind.DIRECTORY, false)),
+      EnhancedSourcesItem(
+        target = target1Id,
+        sources = listOf(EnhancedSourceItem("file:///root/dir1/example/package/", SourceItemKind.DIRECTORY, false)),
       )
     val target1Resources =
       ResourcesItem(
@@ -192,17 +194,17 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         BuildTargetCapabilities(),
       )
     val target2Sources1 =
-      SourcesItem(
-        target2Id,
-        listOf(
-          SourceItem("file:///root/dir2/example/package/File1.java", SourceItemKind.FILE, false),
+      EnhancedSourcesItem(
+        target = target2Id,
+        sources = listOf(
+          EnhancedSourceItem("file:///root/dir2/example/package/File1.java", SourceItemKind.FILE, false),
         ),
       )
     val target2Sources2 =
-      SourcesItem(
-        target2Id,
-        listOf(
-          SourceItem("file:///root/dir2/example/package/File2.java", SourceItemKind.FILE, false),
+      EnhancedSourcesItem(
+        target = target2Id,
+        sources = listOf(
+          EnhancedSourceItem("file:///root/dir2/example/package/File2.java", SourceItemKind.FILE, false),
         ),
       )
     val target2Resources =
@@ -226,9 +228,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         BuildTargetCapabilities(),
       )
     val target3Sources =
-      SourcesItem(
-        target3Id,
-        emptyList(),
+      EnhancedSourcesItem(
+        target = target3Id,
+        sources = emptyList(),
       )
     val target3JavacOptionsItem =
       JavacOptionsItem(
@@ -248,10 +250,10 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         BuildTargetCapabilities(),
       )
     val target4Sources =
-      SourcesItem(
-        target4Id,
-        listOf(
-          SourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.FILE, false),
+      EnhancedSourcesItem(
+        target = target4Id,
+        sources = listOf(
+          EnhancedSourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.FILE, false),
         ),
       )
     val target4PythonOptionsItem =

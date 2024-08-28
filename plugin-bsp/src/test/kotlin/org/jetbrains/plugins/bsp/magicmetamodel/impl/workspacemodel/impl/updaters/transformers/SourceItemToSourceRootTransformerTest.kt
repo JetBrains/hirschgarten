@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
@@ -14,7 +15,7 @@ class SourceItemToSourceRootTransformerTest {
   @Test
   fun `should return no dirs for no sources`() {
     // given
-    val emptySourceItems = emptyList<SourceItem>()
+    val emptySourceItems = emptyList<EnhancedSourceItem>()
 
     // when
     val sourcesDirs = SourceItemToSourceRootTransformer.transform(emptySourceItems)
@@ -27,7 +28,7 @@ class SourceItemToSourceRootTransformerTest {
   fun `should return single file for single source file`() {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
-      val sourceItem = SourceItem("file:///example/source/File.java", SourceItemKind.FILE, generated)
+      val sourceItem = EnhancedSourceItem("file:///example/source/File.java", SourceItemKind.FILE, generated)
 
       // when
       val sourceDir = SourceItemToSourceRootTransformer.transform(sourceItem)
@@ -44,7 +45,7 @@ class SourceItemToSourceRootTransformerTest {
   fun `should return single dir for single source dir`() {
     testGeneratedAndNotGeneratedSources { generated ->
       // given
-      val sourceItem = SourceItem("file:///example/source/", SourceItemKind.DIRECTORY, generated)
+      val sourceItem = EnhancedSourceItem("file:///example/source/", SourceItemKind.DIRECTORY, generated)
 
       // when
       val sourceDir = SourceItemToSourceRootTransformer.transform(sourceItem)
@@ -63,10 +64,10 @@ class SourceItemToSourceRootTransformerTest {
       // given
       val sourceItems =
         listOf(
-          SourceItem("file:///example/source1/File1.java", SourceItemKind.FILE, generated),
-          SourceItem("file:///example/source1/File2.java", SourceItemKind.FILE, generated),
-          SourceItem("file:///example/source1/subpackage/File2.java", SourceItemKind.FILE, generated),
-          SourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
+          EnhancedSourceItem("file:///example/source1/File1.java", SourceItemKind.FILE, generated),
+          EnhancedSourceItem("file:///example/source1/File2.java", SourceItemKind.FILE, generated),
+          EnhancedSourceItem("file:///example/source1/subpackage/File2.java", SourceItemKind.FILE, generated),
+          EnhancedSourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
         )
 
       // when
@@ -96,9 +97,9 @@ class SourceItemToSourceRootTransformerTest {
       // given
       val sourceItems =
         listOf(
-          SourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
-          SourceItem("file:///example/source1/subpackage/", SourceItemKind.DIRECTORY, generated),
-          SourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
+          EnhancedSourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
+          EnhancedSourceItem("file:///example/source1/subpackage/", SourceItemKind.DIRECTORY, generated),
+          EnhancedSourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
         )
 
       // when
@@ -124,10 +125,10 @@ class SourceItemToSourceRootTransformerTest {
       // given
       val sourceItems =
         listOf(
-          SourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
-          SourceItem("file:///example/source1/subpackage/File1.java", SourceItemKind.FILE, generated),
-          SourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
-          SourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
+          EnhancedSourceItem("file:///example/source1/", SourceItemKind.DIRECTORY, generated),
+          EnhancedSourceItem("file:///example/source1/subpackage/File1.java", SourceItemKind.FILE, generated),
+          EnhancedSourceItem("file:///example/source2/", SourceItemKind.DIRECTORY, generated),
+          EnhancedSourceItem("file:///example/source2/File1.java", SourceItemKind.FILE, generated),
         )
 
       // when

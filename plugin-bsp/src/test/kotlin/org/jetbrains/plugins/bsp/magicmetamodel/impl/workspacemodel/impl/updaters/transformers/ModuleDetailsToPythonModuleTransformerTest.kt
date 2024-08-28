@@ -21,6 +21,8 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import org.jetbrains.bsp.protocol.EnhancedSourcesItem
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultLibraryNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
@@ -110,15 +112,15 @@ class ModuleDetailsToPythonModuleTransformerTest {
     dir1BPath.toFile().deleteOnExit()
 
     val sourcesItem =
-      SourcesItem(
-        buildTargetId,
-        listOf(
-          SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-          SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-          SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+      EnhancedSourcesItem(
+        target = buildTargetId,
+        sources = listOf(
+          EnhancedSourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
+          EnhancedSourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
+          EnhancedSourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
         ),
+        roots = listOf(projectRoot.toUri().toString())
       )
-    sourcesItem.roots = listOf(projectRoot.toUri().toString())
 
     val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File.txt")
     resourceFilePath.toFile().deleteOnExit()
@@ -255,15 +257,15 @@ class ModuleDetailsToPythonModuleTransformerTest {
     dir1BPath.toFile().deleteOnExit()
 
     val sourcesItem1 =
-      SourcesItem(
-        buildTargetId1,
-        listOf(
-          SourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-          SourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-          SourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+      EnhancedSourcesItem(
+        target = buildTargetId1,
+        sources = listOf(
+          EnhancedSourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
+          EnhancedSourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
+          EnhancedSourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
         ),
+        roots = listOf(module1Root.toUri().toString())
       )
-    sourcesItem1.roots = listOf(module1Root.toUri().toString())
 
     val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
     resourceFilePath11.toFile().deleteOnExit()
@@ -330,13 +332,13 @@ class ModuleDetailsToPythonModuleTransformerTest {
     dir1CPath.toFile().deleteOnExit()
 
     val sourcesItem2 =
-      SourcesItem(
-        buildTargetId2,
-        listOf(
-          SourceItem(dir1CPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+      EnhancedSourcesItem(
+        target = buildTargetId2,
+        sources = listOf(
+          EnhancedSourceItem(dir1CPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
         ),
+        roots = listOf(module2Root.toUri().toString())
       )
-    sourcesItem2.roots = listOf(module2Root.toUri().toString())
 
     val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")
     val resourcesItem2 =
