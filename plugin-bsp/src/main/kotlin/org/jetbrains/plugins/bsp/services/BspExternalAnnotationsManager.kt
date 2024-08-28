@@ -4,6 +4,7 @@ import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.codeInsight.ExternalAnnotationsManagerImpl
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiClass
@@ -23,7 +24,9 @@ class BspExternalAnnotationsManager(project: Project) :
     if (project.isBspProject) {
       DummyExternalAnnotationsManager()
     } else {
-      ExternalAnnotationsManagerImpl(project)
+      ExternalAnnotationsManagerImpl(project).also {
+        Disposer.register(this, it)
+      }
     }
 
   override fun hasAnnotationRootsForFile(file: VirtualFile): Boolean = delegate.hasAnnotationRootsForFile(file)
@@ -75,11 +78,7 @@ class BspExternalAnnotationsManager(project: Project) :
 
   override fun hasConfiguredAnnotationRoot(owner: PsiModifierListOwner): Boolean = delegate.hasConfiguredAnnotationRoot(owner)
 
-  override fun dispose() {
-    if (delegate is Disposable) {
-      delegate.dispose()
-    }
-  }
+  override fun dispose() {}
 }
 
 private class DummyExternalAnnotationsManager : ExternalAnnotationsManager() {
