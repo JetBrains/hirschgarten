@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.services
 
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.codeInsight.ExternalAnnotationsManagerImpl
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiAnnotation
@@ -15,7 +16,9 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 /**
  * See [YouTrack issue](https://youtrack.jetbrains.com/issue/BAZEL-1128).
  */
-class BspExternalAnnotationsManager(project: Project) : ExternalAnnotationsManager() {
+class BspExternalAnnotationsManager(project: Project) :
+  ExternalAnnotationsManager(),
+  Disposable {
   private val delegate: ExternalAnnotationsManager =
     if (project.isBspProject) {
       DummyExternalAnnotationsManager()
@@ -71,6 +74,12 @@ class BspExternalAnnotationsManager(project: Project) : ExternalAnnotationsManag
     delegate.findExternalAnnotationsFiles(listOwner)
 
   override fun hasConfiguredAnnotationRoot(owner: PsiModifierListOwner): Boolean = delegate.hasConfiguredAnnotationRoot(owner)
+
+  override fun dispose() {
+    if (delegate is Disposable) {
+      delegate.dispose()
+    }
+  }
 }
 
 private class DummyExternalAnnotationsManager : ExternalAnnotationsManager() {
