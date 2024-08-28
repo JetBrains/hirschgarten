@@ -46,7 +46,6 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.sync.ExecuteService
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.protocol.JoinedBuildClient
@@ -78,175 +77,87 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
   }
 
   override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<InitializeBuildResult> =
-    runner.handleRequest("buildInitialize", { cancelChecker: CancelChecker ->
-      projectSyncService.initialize(
-        cancelChecker,
-        initializeBuildParams,
-      )
-    }, { methodName: String ->
-      runner.serverIsNotFinished(
-        methodName,
-      )
-    })
+    runner.handleRequest(
+      methodName = "build/initialize",
+      supplier = {
+        projectSyncService.initialize(
+          cancelChecker = it,
+          initializeBuildParams = initializeBuildParams,
+        )
+      },
+      precondition = { runner.serverIsNotFinished(it) },
+    )
 
   override fun onBuildInitialized() {
-    runner.handleNotification("onBuildInitialized") { serverLifetime.initialize() }
+    runner.handleNotification("build/initialized") { serverLifetime.initialize() }
   }
 
   override fun buildShutdown(): CompletableFuture<Any> =
-    runner.handleRequest<Any>("buildShutdown", {
-      serverLifetime.finish()
-      Any()
-    }, { methodName: String ->
-      runner.serverIsInitialized(
-        methodName,
-      )
-    })
+    runner.handleRequest(
+      methodName = "build/shutdown",
+      supplier = {
+        serverLifetime.finish()
+        Any()
+      },
+      precondition = { runner.serverIsInitialized(it) },
+    )
 
   override fun onBuildExit() {
-    runner.handleNotification("onBuildExit") { serverLifetime.forceFinish() }
+    runner.handleNotification("build/exit") { serverLifetime.forceFinish() }
   }
 
   override fun workspaceBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> =
-    runner.handleRequest("workspaceBuildTargets") { cancelChecker: CancelChecker ->
+    runner.handleRequest("workspace/buildTargets") {
       projectSyncService.workspaceBuildTargets(
-        cancelChecker,
+        cancelChecker = it,
         build = false,
       )
     }
 
   override fun workspaceBuildAndGetBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> =
-    runner.handleRequest("workspaceBuildAndGetBuildTargets") { cancelChecker: CancelChecker ->
+    runner.handleRequest("workspace/buildAndGetBuildTargets") {
       projectSyncService.workspaceBuildTargets(
-        cancelChecker,
-        true,
+        cancelChecker = it,
+        build = true,
       )
     }
 
-  override fun workspaceReload(): CompletableFuture<Any> =
-    runner.handleRequest("workspaceReload") { cancelChecker: CancelChecker ->
-      projectSyncService.workspaceReload(
-        cancelChecker,
-      )
-    }
+  override fun workspaceReload(): CompletableFuture<Any> = runner.handleRequest("workspace/reload", projectSyncService::workspaceReload)
 
   override fun buildTargetSources(params: SourcesParams): CompletableFuture<SourcesResult> =
-    runner.handleRequest(
-      "buildTargetSources",
-      { cancelChecker: CancelChecker, sourcesParams: SourcesParams ->
-        projectSyncService.buildTargetSources(
-          cancelChecker,
-          sourcesParams,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/sources", projectSyncService::buildTargetSources, params)
 
   override fun buildTargetInverseSources(params: InverseSourcesParams): CompletableFuture<InverseSourcesResult> =
-    runner.handleRequest(
-      "buildTargetInverseSources",
-      { cancelChecker: CancelChecker, inverseSourcesParams: InverseSourcesParams ->
-        projectSyncService.buildTargetInverseSources(
-          cancelChecker,
-          inverseSourcesParams,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/inverseSources", projectSyncService::buildTargetInverseSources, params)
 
   override fun buildTargetDependencySources(params: DependencySourcesParams): CompletableFuture<DependencySourcesResult> =
-    runner.handleRequest(
-      "buildTargetDependencySources",
-      { cancelChecker: CancelChecker, dependencySourcesParams: DependencySourcesParams ->
-        projectSyncService.buildTargetDependencySources(
-          cancelChecker,
-          dependencySourcesParams,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/dependencySources", projectSyncService::buildTargetDependencySources, params)
 
   override fun buildTargetResources(params: ResourcesParams): CompletableFuture<ResourcesResult> =
-    runner.handleRequest(
-      "buildTargetResources",
-      { cancelChecker: CancelChecker, resourcesParams: ResourcesParams ->
-        projectSyncService.buildTargetResources(
-          cancelChecker,
-          resourcesParams,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/resources", projectSyncService::buildTargetResources, params)
 
   override fun buildTargetCompile(params: CompileParams): CompletableFuture<CompileResult> =
-    runner.handleRequest("buildTargetCompile", { cancelChecker: CancelChecker, params: CompileParams ->
-      executeService.compile(
-        cancelChecker,
-        params,
-      )
-    }, params)
+    runner.handleRequest("buildTarget/compile", executeService::compile, params)
 
   override fun buildTargetTest(params: TestParams): CompletableFuture<TestResult> =
-    runner.handleRequest("buildTargetTest", { cancelChecker: CancelChecker, params: TestParams ->
-      executeService.test(
-        cancelChecker,
-        params,
-      )
-    }, params)
+    runner.handleRequest("buildTarget/test", executeService::test, params)
 
   override fun buildTargetRun(params: RunParams): CompletableFuture<RunResult> =
-    runner.handleRequest("buildTargetRun", { cancelChecker: CancelChecker, params: RunParams ->
-      executeService.run(
-        cancelChecker,
-        params,
-      )
-    }, params)
+    runner.handleRequest("buildTarget/run", executeService::run, params)
 
   override fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult> =
-    runner.handleRequest(
-      "buildTargetRunWithDebug",
-      { cancelChecker: CancelChecker, params: RunWithDebugParams ->
-        executeService.runWithDebug(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/runWithDebug", executeService::runWithDebug, params)
 
   override fun buildTargetMobileInstall(params: MobileInstallParams): CompletableFuture<MobileInstallResult> =
-    runner.handleRequest(
-      "buildTargetMobileInstall",
-      { cancelChecker: CancelChecker, params: MobileInstallParams ->
-        executeService.mobileInstall(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/mobileInstall", executeService::mobileInstall, params)
 
   override fun buildTargetCleanCache(params: CleanCacheParams): CompletableFuture<CleanCacheResult> =
-    runner.handleRequest("buildTargetCleanCache", { cancelChecker: CancelChecker, params: CleanCacheParams ->
-      executeService.clean(
-        cancelChecker,
-        params,
-      )
-    }, params)
+    runner.handleRequest("buildTarget/cleanCache", executeService::clean, params)
 
   override fun onRunReadStdin(readParams: ReadParams) {}
 
   override fun buildTargetDependencyModules(params: DependencyModulesParams): CompletableFuture<DependencyModulesResult> =
-    runner.handleRequest(
-      "buildTargetDependencyModules",
-      { cancelChecker: CancelChecker, params: DependencyModulesParams ->
-        projectSyncService.buildTargetDependencyModules(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/dependencyModules", projectSyncService::buildTargetDependencyModules, params)
 
   override fun debugSessionStart(params: DebugSessionParams): CompletableFuture<DebugSessionAddress> {
     // TODO: https://youtrack.jetbrains.com/issue/BAZEL-239
@@ -254,170 +165,50 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
   }
 
   override fun buildTargetOutputPaths(params: OutputPathsParams): CompletableFuture<OutputPathsResult> =
-    runner.handleRequest(
-      "buildTargetOutputPaths",
-      { cancelChecker: CancelChecker, params: OutputPathsParams ->
-        projectSyncService.buildTargetOutputPaths(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/outputPaths", projectSyncService::buildTargetOutputPaths, params)
 
   override fun buildTargetScalacOptions(params: ScalacOptionsParams): CompletableFuture<ScalacOptionsResult> =
-    runner.handleRequest(
-      "buildTargetScalacOptions",
-      { cancelChecker: CancelChecker, params: ScalacOptionsParams ->
-        projectSyncService.buildTargetScalacOptions(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/scalacOptions", projectSyncService::buildTargetScalacOptions, params)
 
   override fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): CompletableFuture<ScalaTestClassesResult> =
-    runner.handleRequest(
-      "buildTargetScalaTestClasses",
-      { cancelChecker: CancelChecker, params: ScalaTestClassesParams ->
-        projectSyncService.buildTargetScalaTestClasses(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/scalaTestClasses", projectSyncService::buildTargetScalaTestClasses, params)
 
   override fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): CompletableFuture<ScalaMainClassesResult> =
-    runner.handleRequest(
-      "buildTargetScalaMainClasses",
-      { cancelChecker: CancelChecker, params: ScalaMainClassesParams ->
-        projectSyncService.buildTargetScalaMainClasses(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/scalaMainClasses", projectSyncService::buildTargetScalaMainClasses, params)
 
   override fun buildTargetJavacOptions(javacOptionsParams: JavacOptionsParams): CompletableFuture<JavacOptionsResult> =
-    runner.handleRequest(
-      "buildTargetJavacOptions",
-      { cancelChecker: CancelChecker, params: JavacOptionsParams ->
-        projectSyncService.buildTargetJavacOptions(
-          cancelChecker,
-          params,
-        )
-      },
-      javacOptionsParams,
-    )
+    runner.handleRequest("buildTarget/javacOptions", projectSyncService::buildTargetJavacOptions, javacOptionsParams)
 
   override fun buildTargetCppOptions(params: CppOptionsParams): CompletableFuture<CppOptionsResult> =
-    runner.handleRequest(
-      "buildTargetCppOptions",
-      { cancelChecker: CancelChecker, params: CppOptionsParams ->
-        projectSyncService.buildTargetCppOptions(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/cppOptions", projectSyncService::buildTargetCppOptions, params)
 
   override fun buildTargetPythonOptions(params: PythonOptionsParams): CompletableFuture<PythonOptionsResult> =
-    runner.handleRequest(
-      "buildTargetPythonOptions",
-      { cancelChecker: CancelChecker, params: PythonOptionsParams ->
-        projectSyncService.buildTargetPythonOptions(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/pythonOptions", projectSyncService::buildTargetPythonOptions, params)
 
   override fun buildTargetJvmRunEnvironment(params: JvmRunEnvironmentParams): CompletableFuture<JvmRunEnvironmentResult> =
-    runner.handleRequest(
-      "jvmRunEnvironment",
-      { cancelChecker: CancelChecker, params: JvmRunEnvironmentParams ->
-        projectSyncService.jvmRunEnvironment(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/jvmRunEnvironment", projectSyncService::jvmRunEnvironment, params)
 
   override fun buildTargetJvmCompileClasspath(params: JvmCompileClasspathParams): CompletableFuture<JvmCompileClasspathResult> =
-    runner.handleRequest(
-      "jvmCompileClasspath",
-      { cancelChecker: CancelChecker, params: JvmCompileClasspathParams ->
-        projectSyncService.jvmCompileClasspath(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/jvmCompileClasspath", projectSyncService::jvmCompileClasspath, params)
 
   override fun buildTargetJvmTestEnvironment(params: JvmTestEnvironmentParams): CompletableFuture<JvmTestEnvironmentResult> =
-    runner.handleRequest(
-      "jvmTestEnvironment",
-      { cancelChecker: CancelChecker, params: JvmTestEnvironmentParams ->
-        projectSyncService.jvmTestEnvironment(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/jvmTestEnvironment", projectSyncService::jvmTestEnvironment, params)
 
   override fun buildTargetJvmBinaryJars(params: JvmBinaryJarsParams): CompletableFuture<JvmBinaryJarsResult> =
-    runner.handleRequest(
-      "jvmBinaryJars",
-      { cancelChecker: CancelChecker, params: JvmBinaryJarsParams ->
-        projectSyncService.jvmBinaryJars(
-          cancelChecker,
-          params,
-        )
-      },
-      params,
-    )
+    runner.handleRequest("buildTarget/jvmBinaryJars", projectSyncService::jvmBinaryJars, params)
 
   override fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult> =
-    runner.handleRequest("libraries") { cancelChecker: CancelChecker ->
-      projectSyncService.workspaceBuildLibraries(
-        cancelChecker,
-      )
-    }
+    runner.handleRequest("workspace/libraries", projectSyncService::workspaceBuildLibraries)
 
   override fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult> =
-    runner.handleRequest("nonModuleTargets") { cancelChecker: CancelChecker ->
-      projectSyncService.workspaceNonModuleTargets(
-        cancelChecker,
-      )
-    }
+    runner.handleRequest("workspace/nonModuleTargets", projectSyncService::workspaceNonModuleTargets)
 
   override fun workspaceInvalidTargets(): CompletableFuture<WorkspaceInvalidTargetsResult> =
-    runner.handleRequest("invalidTargets") { cancelChecker: CancelChecker ->
-      projectSyncService.workspaceInvalidTargets(
-        cancelChecker,
-      )
-    }
+    runner.handleRequest("workspace/invalidTargets", projectSyncService::workspaceInvalidTargets)
 
   override fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult> =
-    runner.handleRequest("directories") { cancelChecker: CancelChecker ->
-      projectSyncService.workspaceDirectories(
-        cancelChecker,
-      )
-    }
+    runner.handleRequest("workspace/directories", projectSyncService::workspaceDirectories)
 
   override fun rustWorkspace(params: RustWorkspaceParams): CompletableFuture<RustWorkspaceResult> =
-    runner.handleRequest("rustWorkspace", { cancelChecker: CancelChecker, params: RustWorkspaceParams ->
-      projectSyncService.rustWorkspace(
-        cancelChecker,
-        params,
-      )
-    }, params)
+    runner.handleRequest("buildTarget/rustWorkspace", projectSyncService::rustWorkspace, params)
 }
