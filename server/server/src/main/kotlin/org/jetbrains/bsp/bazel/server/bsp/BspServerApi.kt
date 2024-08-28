@@ -149,10 +149,10 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
       { cancelChecker: CancelChecker, sourcesParams: SourcesParams ->
         projectSyncService.buildTargetEnhancedSources(
           cancelChecker,
-          sourcesParams
+          sourcesParams,
         )
       },
-      params
+      params,
     )
 
   override fun buildTargetInverseSources(params: InverseSourcesParams): CompletableFuture<InverseSourcesResult> =

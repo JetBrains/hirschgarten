@@ -77,10 +77,10 @@ import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.jetbrains.bsp.protocol.EnhancedSourcesItem
 import org.jetbrains.bsp.protocol.EnhancedSourcesResult
-import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
@@ -320,7 +320,7 @@ class BspProjectMapper(
             uri = BspMappings.toBspUri(it.source),
             kind = SourceItemKind.FILE,
             generated = false,
-            data = it.data
+            data = it.data,
           )
         }
       val generatedSourceItems =
@@ -329,15 +329,16 @@ class BspProjectMapper(
             uri = BspMappings.toBspUri(it.source),
             kind = SourceItemKind.FILE,
             generated = true,
-            data = it.data
+            data = it.data,
           )
         }
       val sourceRoots = sourceSet.sourceRoots.map(BspMappings::toBspUri)
-      val sourcesItem = EnhancedSourcesItem(
-        target = BspMappings.toBspId(module),
-        roots = sourceRoots,
-        sources = sourceItems + generatedSourceItems
-      )
+      val sourcesItem =
+        EnhancedSourcesItem(
+          target = BspMappings.toBspId(module),
+          roots = sourceRoots,
+          sources = sourceItems + generatedSourceItems,
+        )
       return sourcesItem
     }
 

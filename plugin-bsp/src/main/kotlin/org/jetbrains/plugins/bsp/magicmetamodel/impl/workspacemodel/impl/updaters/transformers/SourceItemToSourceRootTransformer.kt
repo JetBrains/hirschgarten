@@ -24,6 +24,6 @@ internal object SourceItemToSourceRootTransformer :
       generated = inputEntity.generated,
       isFile = inputEntity.kind == SourceItemKind.FILE,
       data = inputEntity.data,
-      )
+    )
   }
 }

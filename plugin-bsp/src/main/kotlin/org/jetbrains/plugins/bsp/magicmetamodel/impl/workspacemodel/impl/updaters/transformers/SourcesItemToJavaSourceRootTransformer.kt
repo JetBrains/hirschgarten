@@ -1,7 +1,6 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.BuildTarget
-import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.Gson
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bsp.protocol.EnhancedJvmSourceItemData
@@ -69,11 +68,12 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
     return JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer.transform(packageDetails)
   }
 
-  private fun extractPackagePrefixFromServer(data: Any?): String? = try {
-    val gson = Gson()
-    val enhancedJvmSourceItemData = gson.fromJson(data.toString(), EnhancedJvmSourceItemData::class.java)
-    enhancedJvmSourceItemData.packagePrefix
-  } catch (_: Exception) {
-    null
-  }
+  private fun extractPackagePrefixFromServer(data: Any?): String? =
+    try {
+      val gson = Gson()
+      val enhancedJvmSourceItemData = gson.fromJson(data.toString(), EnhancedJvmSourceItemData::class.java)
+      enhancedJvmSourceItemData.packagePrefix
+    } catch (_: Exception) {
+      null
+    }
 }

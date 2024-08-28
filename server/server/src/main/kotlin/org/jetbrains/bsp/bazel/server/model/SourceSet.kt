@@ -8,7 +8,4 @@ data class SourceSet(
   val sourceRoots: Set<URI>,
 )
 
-data class SourceWithData(
-  val source: URI,
-  val data: Any? = null,
-)
+data class SourceWithData(val source: URI, val data: Any? = null)

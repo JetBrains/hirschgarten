@@ -49,29 +49,35 @@ class BaseProjectSync(private val project: Project) {
             server.buildTargetResources(ResourcesParams(allTargetIds))
           }
 
-        val enhancedSourcesResult = asyncQueryIf(
-          (capabilities as? BazelBuildServerCapabilities)?.buildTargetEnhancedSourcesProvider == true,
-          "buildTarget/enhancedSources"
-        ) { server.buildTargetEnhancedSources(SourcesParams(allTargetIds)) }
-        val result = enhancedSourcesResult.await()
-          ?: asyncQuery("buildTarget/sources") { server.buildTargetSources(SourcesParams(allTargetIds)) }
-            .await().toEnhancedSourcesResult()
+        val enhancedSourcesResult =
+          asyncQueryIf(
+            (capabilities as? BazelBuildServerCapabilities)?.buildTargetEnhancedSourcesProvider == true,
+            "buildTarget/enhancedSources",
+          ) { server.buildTargetEnhancedSources(SourcesParams(allTargetIds)) }
+
+        val finalSourcesResult =
+          enhancedSourcesResult.await()
+            ?: asyncQuery("buildTarget/sources") { server.buildTargetSources(SourcesParams(allTargetIds)) }
+              .await()
+              .toEnhancedSourcesResult()
 
         BaseTargetInfos(
           allTargetIds = allTargetIds,
-          infos = calculateBaseTargetInfos(buildTargets, result, resourcesResult.await()),
+          infos = calculateBaseTargetInfos(buildTargets, finalSourcesResult, resourcesResult.await()),
         )
       }
     }
 
   private fun SourcesResult.toEnhancedSourcesResult() =
-    EnhancedSourcesResult(items.map { sourcesItem ->
-      EnhancedSourcesItem(
-        target = sourcesItem.target,
-        roots = sourcesItem.roots,
-        sources = sourcesItem.sources.map { EnhancedSourceItem(it.uri, it.kind, it.generated) })
-    })
-
+    EnhancedSourcesResult(
+      items.map { sourcesItem ->
+        EnhancedSourcesItem(
+          target = sourcesItem.target,
+          roots = sourcesItem.roots,
+          sources = sourcesItem.sources.map { EnhancedSourceItem(it.uri, it.kind, it.generated) },
+        )
+      },
+    )
 
   private suspend fun queryWorkspaceBuildTargets(server: JoinedBuildServer, buildProject: Boolean): List<BuildTarget> =
     coroutineScope {

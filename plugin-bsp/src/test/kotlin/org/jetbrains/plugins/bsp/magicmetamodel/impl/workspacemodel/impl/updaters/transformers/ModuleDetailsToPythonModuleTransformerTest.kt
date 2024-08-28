@@ -10,9 +10,7 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.PythonBuildTarget
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
 import com.google.gson.JsonObject
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
@@ -114,12 +112,13 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val sourcesItem =
       EnhancedSourcesItem(
         target = buildTargetId,
-        sources = listOf(
-          EnhancedSourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-          EnhancedSourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-          EnhancedSourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
-        ),
-        roots = listOf(projectRoot.toUri().toString())
+        sources =
+          listOf(
+            EnhancedSourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
+            EnhancedSourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
+            EnhancedSourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+          ),
+        roots = listOf(projectRoot.toUri().toString()),
       )
 
     val resourceFilePath = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File.txt")
@@ -259,12 +258,13 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val sourcesItem1 =
       EnhancedSourcesItem(
         target = buildTargetId1,
-        sources = listOf(
-          EnhancedSourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
-          EnhancedSourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
-          EnhancedSourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
-        ),
-        roots = listOf(module1Root.toUri().toString())
+        sources =
+          listOf(
+            EnhancedSourceItem(file1APath.toUri().toString(), SourceItemKind.FILE, false),
+            EnhancedSourceItem(file2APath.toUri().toString(), SourceItemKind.FILE, false),
+            EnhancedSourceItem(dir1BPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+          ),
+        roots = listOf(module1Root.toUri().toString()),
       )
 
     val resourceFilePath11 = createTempFile(projectBasePath.toAbsolutePath(), "resource", "File1.txt")
@@ -334,10 +334,11 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val sourcesItem2 =
       EnhancedSourcesItem(
         target = buildTargetId2,
-        sources = listOf(
-          EnhancedSourceItem(dir1CPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
-        ),
-        roots = listOf(module2Root.toUri().toString())
+        sources =
+          listOf(
+            EnhancedSourceItem(dir1CPath.toUri().toString(), SourceItemKind.DIRECTORY, false),
+          ),
+        roots = listOf(module2Root.toUri().toString()),
       )
 
     val resourceDirPath21 = Files.createTempDirectory(projectBasePath.toAbsolutePath(), "resource")

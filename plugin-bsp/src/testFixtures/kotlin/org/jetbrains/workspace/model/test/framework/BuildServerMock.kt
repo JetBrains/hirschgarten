@@ -168,7 +168,9 @@ class BuildServerMock(
   override fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult> = wrapInFuture(workspaceDirectoriesResult)
 
   override fun workspaceInvalidTargets(): CompletableFuture<WorkspaceInvalidTargetsResult> = wrapInFuture(workspaceInvalidTargetsResult)
-  override fun buildTargetEnhancedSources(params: SourcesParams): CompletableFuture<EnhancedSourcesResult> = wrapInFuture(enhancedSourcesResult)
+
+  override fun buildTargetEnhancedSources(params: SourcesParams): CompletableFuture<EnhancedSourcesResult> =
+    wrapInFuture(enhancedSourcesResult)
 
   override fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult> = wrapInFuture(runResultWithDebug)
 

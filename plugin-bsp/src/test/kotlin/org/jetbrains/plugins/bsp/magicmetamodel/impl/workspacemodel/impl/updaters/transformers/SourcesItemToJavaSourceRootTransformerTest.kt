@@ -3,9 +3,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -63,7 +61,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           EnhancedSourcesItem(
             target = BuildTargetIdentifier("target"),
             sources = listOf(sourceItem),
-            roots = sourceRoots
+            roots = sourceRoots,
           ),
       )
 
@@ -153,7 +151,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           EnhancedSourcesItem(
             target = BuildTargetIdentifier("target"),
             sources = listOf(sourceItem),
-            roots = sourceRoots
+            roots = sourceRoots,
           ),
       )
 
@@ -216,7 +214,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           EnhancedSourcesItem(
             target = BuildTargetIdentifier("target"),
             sources = listOf(sourceItem1, sourceItem2, sourceItem3),
-            roots = sourceRoots
+            roots = sourceRoots,
           ),
       )
 
@@ -309,7 +307,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           EnhancedSourcesItem(
             target = BuildTargetIdentifier("target"),
             sources = listOf(sourceItem2, sourceItem3),
-            roots = sourceRoots
+            roots = sourceRoots,
           ),
       )
 
@@ -387,7 +385,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           EnhancedSourcesItem(
             target = BuildTargetIdentifier("target"),
             sources = listOf(sourceItem1),
-            roots = sourceRoots
+            roots = sourceRoots,
           ),
       )
     val buildTargetAndSourceItem2 =
@@ -404,7 +402,7 @@ class SourcesItemToJavaSourceRootTransformerTest {
           EnhancedSourcesItem(
             target = BuildTargetIdentifier("target"),
             sources = listOf(sourceItem2, sourceItem3),
-            roots = sourceRoots
+            roots = sourceRoots,
           ),
       )
 

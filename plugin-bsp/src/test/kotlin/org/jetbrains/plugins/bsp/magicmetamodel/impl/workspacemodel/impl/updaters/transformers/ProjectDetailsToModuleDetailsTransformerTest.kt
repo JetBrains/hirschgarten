@@ -7,9 +7,7 @@ import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
 import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
-import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
-import ch.epfl.scala.bsp4j.SourcesItem
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.jetbrains.bsp.protocol.EnhancedSourcesItem
@@ -196,16 +194,18 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target2Sources1 =
       EnhancedSourcesItem(
         target = target2Id,
-        sources = listOf(
-          EnhancedSourceItem("file:///root/dir2/example/package/File1.java", SourceItemKind.FILE, false),
-        ),
+        sources =
+          listOf(
+            EnhancedSourceItem("file:///root/dir2/example/package/File1.java", SourceItemKind.FILE, false),
+          ),
       )
     val target2Sources2 =
       EnhancedSourcesItem(
         target = target2Id,
-        sources = listOf(
-          EnhancedSourceItem("file:///root/dir2/example/package/File2.java", SourceItemKind.FILE, false),
-        ),
+        sources =
+          listOf(
+            EnhancedSourceItem("file:///root/dir2/example/package/File2.java", SourceItemKind.FILE, false),
+          ),
       )
     val target2Resources =
       ResourcesItem(
@@ -252,9 +252,10 @@ class ProjectDetailsToModuleDetailsTransformerTest {
     val target4Sources =
       EnhancedSourcesItem(
         target = target4Id,
-        sources = listOf(
-          EnhancedSourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.FILE, false),
-        ),
+        sources =
+          listOf(
+            EnhancedSourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.FILE, false),
+          ),
       )
     val target4PythonOptionsItem =
       PythonOptionsItem(

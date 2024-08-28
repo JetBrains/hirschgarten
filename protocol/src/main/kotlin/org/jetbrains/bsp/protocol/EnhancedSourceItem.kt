@@ -16,11 +16,6 @@ data class EnhancedSourcesItem(
   val roots: List<String> = emptyList(),
 )
 
-data class EnhancedSourcesResult(
-  val items: List<EnhancedSourcesItem>
-)
+data class EnhancedSourcesResult(val items: List<EnhancedSourcesItem>)
 
-
-data class EnhancedJvmSourceItemData(
-  val packagePrefix: String?,
-)
+data class EnhancedJvmSourceItemData(val packagePrefix: String?)
