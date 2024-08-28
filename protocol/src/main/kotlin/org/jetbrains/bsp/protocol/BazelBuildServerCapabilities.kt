@@ -30,6 +30,7 @@ public class BazelBuildServerCapabilities(
   public val workspaceInvalidTargetsProvider: Boolean = false,
   public val runWithDebugProvider: Boolean = false,
   public val jvmBinaryJarsProvider: Boolean = false,
+  public val buildTargetEnhancedSourcesProvider: Boolean = false,
 ) : BuildServerCapabilities() {
   init {
     this.compileProvider = compileProvider

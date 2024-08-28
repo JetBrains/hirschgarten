@@ -6,11 +6,14 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
-import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
+import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import org.jetbrains.bsp.protocol.EnhancedSourcesItem
+import org.jetbrains.bsp.protocol.EnhancedSourcesResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.ui.console.syncConsole
@@ -22,7 +25,7 @@ data class BaseTargetInfos(val allTargetIds: List<BuildTargetIdentifier>, val in
 
 data class BaseTargetInfo(
   val target: BuildTarget,
-  val sources: List<SourcesItem>,
+  val sources: List<EnhancedSourcesItem>,
   val resources: List<ResourcesItem>,
 )
 
@@ -41,19 +44,34 @@ class BaseProjectSync(private val project: Project) {
       coroutineScope {
         val buildTargets = queryWorkspaceBuildTargets(server, buildProject)
         val allTargetIds = buildTargets.calculateAllTargetIds()
-
-        val sourcesResult = asyncQuery("buildTarget/sources") { server.buildTargetSources(SourcesParams(allTargetIds)) }
         val resourcesResult =
           asyncQueryIf(capabilities.resourcesProvider == true, "buildTarget/resources") {
             server.buildTargetResources(ResourcesParams(allTargetIds))
           }
 
+        val enhancedSourcesResult = asyncQueryIf(
+          (capabilities as? BazelBuildServerCapabilities)?.buildTargetEnhancedSourcesProvider == true,
+          "buildTarget/enhancedSources"
+        ) { server.buildTargetEnhancedSources(SourcesParams(allTargetIds)) }
+        val result = enhancedSourcesResult.await()
+          ?: asyncQuery("buildTarget/sources") { server.buildTargetSources(SourcesParams(allTargetIds)) }
+            .await().toEnhancedSourcesResult()
+
         BaseTargetInfos(
           allTargetIds = allTargetIds,
-          infos = calculateBaseTargetInfos(buildTargets, sourcesResult.await(), resourcesResult.await()),
+          infos = calculateBaseTargetInfos(buildTargets, result, resourcesResult.await()),
         )
       }
     }
+
+  private fun SourcesResult.toEnhancedSourcesResult() =
+    EnhancedSourcesResult(items.map { sourcesItem ->
+      EnhancedSourcesItem(
+        sourcesItem.target,
+        sourcesItem.roots,
+        sourcesItem.sources.map { EnhancedSourceItem(it.uri, it.kind, it.generated) })
+    })
+
 
   private suspend fun queryWorkspaceBuildTargets(server: JoinedBuildServer, buildProject: Boolean): List<BuildTarget> =
     coroutineScope {
@@ -70,7 +88,7 @@ class BaseProjectSync(private val project: Project) {
 
   private fun calculateBaseTargetInfos(
     buildTargets: List<BuildTarget>,
-    sourcesResult: SourcesResult,
+    sourcesResult: EnhancedSourcesResult,
     resourcesResult: ResourcesResult?,
   ): List<BaseTargetInfo> {
     val sourcesIndex = sourcesResult.toSourcesIndex()
@@ -85,7 +103,7 @@ class BaseProjectSync(private val project: Project) {
     }
   }
 
-  private fun SourcesResult.toSourcesIndex(): Map<BuildTargetIdentifier, List<SourcesItem>> = items.orEmpty().groupBy { it.target }
+  private fun EnhancedSourcesResult.toSourcesIndex(): Map<BuildTargetIdentifier, List<EnhancedSourcesItem>> = items.groupBy { it.target }
 
   private fun ResourcesResult.toResourcesIndex(): Map<BuildTargetIdentifier, List<ResourcesItem>> = items.orEmpty().groupBy { it.target }
 }

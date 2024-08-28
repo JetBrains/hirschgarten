@@ -2,13 +2,16 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.SourcesItem
+import com.google.gson.Gson
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.bsp.protocol.EnhancedJvmSourceItemData
+import org.jetbrains.bsp.protocol.EnhancedSourcesItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.net.URI
 import kotlin.io.path.toPath
 
-internal data class BuildTargetAndSourceItem(val buildTarget: BuildTarget, val sourcesItem: SourcesItem)
+internal data class BuildTargetAndSourceItem(val buildTarget: BuildTarget, val sourcesItem: EnhancedSourcesItem)
 
 internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModelEntitiesFolderMarker: Boolean = false) :
   WorkspaceModelEntityPartitionTransformer<BuildTargetAndSourceItem, JavaSourceRoot> {
@@ -26,7 +29,7 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
     }
   }
 
-  private fun getSourceRootsAsURIs(sourcesItem: SourcesItem): List<URI> = sourcesItem.roots.orEmpty().map { it.safeCastToURI() }
+  private fun getSourceRootsAsURIs(sourcesItem: EnhancedSourcesItem): List<URI> = sourcesItem.roots.orEmpty().map { it.safeCastToURI() }
 
   private fun inferRootType(buildTarget: BuildTarget): SourceRootTypeId =
     if (buildTarget.tags.contains("test")) testSourceRootType else sourceRootType
@@ -55,6 +58,8 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
   }
 
   private fun calculatePackagePrefix(sourceRoot: SourceRoot, sourceRoots: List<URI>): JavaSourceRootPackagePrefix {
+    val packagePrefixFromServer = extractPackagePrefixFromServer(sourceRoot.data)
+    if (packagePrefixFromServer != null) return JavaSourceRootPackagePrefix(packagePrefixFromServer)
     val packageDetails =
       JavaSourcePackageDetails(
         sourceURI = sourceRoot.sourcePath.let { if (sourceRoot.isFile) it.parent else it }.toUri(),
@@ -62,5 +67,11 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
       )
 
     return JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer.transform(packageDetails)
+  }
+
+  private fun extractPackagePrefixFromServer(data: Any?): String? {
+    val gson = Gson()
+    val enhancedJvmSourceItemData = gson.fromJson(data.toString(), EnhancedJvmSourceItemData::class.java)
+    return enhancedJvmSourceItemData.packagePrefix
   }
 }

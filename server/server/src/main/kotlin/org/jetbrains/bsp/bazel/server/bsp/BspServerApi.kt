@@ -49,6 +49,7 @@ import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.sync.ExecuteService
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
+import org.jetbrains.bsp.protocol.EnhancedSourcesResult
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -140,6 +141,18 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
         )
       },
       params,
+    )
+
+  override fun buildTargetEnhancedSources(params: SourcesParams): CompletableFuture<EnhancedSourcesResult> =
+    runner.handleRequest(
+      "buildTargetEnhancedSources",
+      { cancelChecker: CancelChecker, sourcesParams: SourcesParams ->
+        projectSyncService.buildTargetEnhancedSources(
+          cancelChecker,
+          sourcesParams
+        )
+      },
+      params
     )
 
   override fun buildTargetInverseSources(params: InverseSourcesParams): CompletableFuture<InverseSourcesResult> =

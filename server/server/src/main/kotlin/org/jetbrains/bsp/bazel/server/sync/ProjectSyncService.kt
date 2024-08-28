@@ -41,6 +41,7 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
 import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
 import org.jetbrains.bsp.bazel.server.model.Language
+import org.jetbrains.bsp.protocol.EnhancedSourcesResult
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
@@ -104,6 +105,11 @@ class ProjectSyncService(
   fun buildTargetSources(cancelChecker: CancelChecker, sourcesParams: SourcesParams): SourcesResult {
     val project = projectProvider.get(cancelChecker)
     return bspMapper.sources(project, sourcesParams)
+  }
+
+  fun buildTargetEnhancedSources(cancelChecker: CancelChecker, sourcesParams: SourcesParams): EnhancedSourcesResult {
+    val project = projectProvider.get(cancelChecker)
+    return bspMapper.enhancedSources(project, sourcesParams)
   }
 
   fun buildTargetResources(cancelChecker: CancelChecker, resourcesParams: ResourcesParams): ResourcesResult {

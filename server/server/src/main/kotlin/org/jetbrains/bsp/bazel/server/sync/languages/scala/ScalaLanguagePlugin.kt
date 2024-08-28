@@ -13,6 +13,7 @@ import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
+import org.jetbrains.bsp.bazel.server.model.SourceWithData
 import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
@@ -70,6 +71,8 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
   }
 
   override fun calculateSourceRoot(source: Path): Path? = JVMLanguagePluginParser.calculateJVMSourceRoot(source, true)
+
+  override fun calculateSourceData(source: Path): SourceWithData = JVMLanguagePluginParser.calculateJvmSourceData(source, true)
 
   fun toScalaTestClassesItem(module: Module): ScalaTestClassesItem? =
     if (!module.tags.contains(Tag.TEST) ||

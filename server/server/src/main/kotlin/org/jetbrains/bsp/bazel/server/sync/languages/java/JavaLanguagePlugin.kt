@@ -9,6 +9,7 @@ import org.jetbrains.bsp.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.model.SourceWithData
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
@@ -48,6 +49,8 @@ class JavaLanguagePlugin(
     }
 
   override fun calculateSourceRoot(source: Path): Path = JVMLanguagePluginParser.calculateJVMSourceRoot(source)
+
+  override fun calculateSourceData(source: Path): SourceWithData = JVMLanguagePluginParser.calculateJvmSourceData(source)
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 

@@ -1,6 +1,8 @@
 package org.jetbrains.bsp.bazel.server.sync.languages
 
+import org.jetbrains.bsp.bazel.server.model.SourceWithData
 import org.jetbrains.bsp.bazel.server.sync.languages.jvm.SourceRootGuesser
+import org.jetbrains.bsp.protocol.EnhancedJvmSourceItemData
 import java.io.File
 import java.nio.charset.Charset
 import java.nio.file.Path
@@ -9,6 +11,11 @@ import java.nio.file.Paths
 object JVMLanguagePluginParser {
   private val PACKAGE_PATTERN = Regex("^\\s*package\\s+([\\p{L}0-9_.]+)")
   private val ONE_BYTE_CHARSET = Charset.forName("ISO-8859-1")
+
+  fun calculateJvmSourceData(source: Path, multipleLines: Boolean = false): SourceWithData {
+    val sourcePackage = findPackage(source, multipleLines) ?: return SourceWithData(source.toUri())
+    return SourceWithData(source.toUri(), EnhancedJvmSourceItemData(sourcePackage))
+  }
 
   fun calculateJVMSourceRoot(source: Path, multipleLines: Boolean = false): Path {
     val sourcePackage =

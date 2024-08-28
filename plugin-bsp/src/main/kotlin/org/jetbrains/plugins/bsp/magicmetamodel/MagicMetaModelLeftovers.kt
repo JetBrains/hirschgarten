@@ -8,6 +8,7 @@ import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
+import org.jetbrains.bsp.protocol.EnhancedSourcesItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
@@ -25,7 +26,7 @@ public object DefaultLibraryNameProvider : TargetNameReformatProvider {
 public data class ProjectDetails(
   val targetIds: List<BuildTargetIdentifier>,
   val targets: Set<BuildTarget>,
-  val sources: List<SourcesItem>,
+  val sources: List<EnhancedSourcesItem>,
   val resources: List<ResourcesItem>,
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: List<JavacOptionsItem>,

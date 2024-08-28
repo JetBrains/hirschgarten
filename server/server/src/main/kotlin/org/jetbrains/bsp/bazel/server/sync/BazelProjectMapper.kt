@@ -821,10 +821,12 @@ class BazelProjectMapper(
         .filter { it.exists() }
 
     val sourceRoots = (sources + generatedSources).mapNotNull(languagePlugin::calculateSourceRoot)
+    val sourcesWithData = sources.map { languagePlugin.calculateSourceData(it) }
+    val generatedSourcesWithData = generatedSources.map { languagePlugin.calculateSourceData(it) }
     return SourceSet(
-      sources = sources.map(bazelPathsResolver::resolveUri).toSet(),
-      generatedSources = generatedSources.map(bazelPathsResolver::resolveUri).toSet(),
-      sourceRoots = sourceRoots.map(bazelPathsResolver::resolveUri).toSet(),
+      sources = sourcesWithData.toSet(),
+      generatedSources = generatedSourcesWithData.toSet(),
+      sourceRoots = sourceRoots.map { it.toUri() }.toSet(),
     )
   }
 
@@ -841,7 +843,7 @@ class BazelProjectMapper(
 
   private fun buildReverseSourceMappingForModule(module: Module): List<Pair<URI, Label>> =
     with(module) {
-      (sourceSet.sources + resources).map { Pair(it, label) }
+      (sourceSet.sources.map { it.source } + resources).map { Pair(it, label) }
     }
 
   private fun environmentItem(target: TargetInfo): Map<String, String> {

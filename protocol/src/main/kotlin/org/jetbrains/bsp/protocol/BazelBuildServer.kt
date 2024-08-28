@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.protocol
 
 import ch.epfl.scala.bsp4j.RunResult
+import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest
 import java.util.concurrent.CompletableFuture
@@ -20,6 +21,9 @@ public interface BazelBuildServer {
 
   @JsonRequest("workspace/invalidTargets")
   public fun workspaceInvalidTargets(): CompletableFuture<WorkspaceInvalidTargetsResult>
+
+  @JsonRequest("buildTarget/enhancedSources")
+  public fun buildTargetEnhancedSources(params: SourcesParams): CompletableFuture<EnhancedSourcesResult>
 
   @JsonRequest("buildTarget/runWithDebug")
   public fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult>

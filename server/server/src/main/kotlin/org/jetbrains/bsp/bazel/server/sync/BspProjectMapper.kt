@@ -77,6 +77,9 @@ import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import org.jetbrains.bsp.protocol.EnhancedSourcesItem
+import org.jetbrains.bsp.protocol.EnhancedSourcesResult
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -106,6 +109,7 @@ class BspProjectMapper(
     val languageNames = supportedLanguages.map { it.id }
     val capabilities =
       BazelBuildServerCapabilities(
+        buildTargetEnhancedSourcesProvider = true,
         compileProvider = CompileProvider(languageNames),
         runProvider = RunProvider(languageNames),
         testProvider = TestProvider(languageNames),
@@ -278,7 +282,7 @@ class BspProjectMapper(
       val sourceItems =
         sourceSet.sources.map {
           SourceItem(
-            BspMappings.toBspUri(it),
+            BspMappings.toBspUri(it.source),
             SourceItemKind.FILE,
             false,
           )
@@ -286,7 +290,7 @@ class BspProjectMapper(
       val generatedSourceItems =
         sourceSet.generatedSources.map {
           SourceItem(
-            BspMappings.toBspUri(it),
+            BspMappings.toBspUri(it.source),
             SourceItemKind.FILE,
             true,
           )
@@ -305,6 +309,46 @@ class BspProjectMapper(
         project.findModule(it)?.let(::toSourcesItem) ?: emptySourcesItem(it)
       }
     return SourcesResult(sourcesItems)
+  }
+
+  fun enhancedSources(project: Project, sourcesParams: SourcesParams): EnhancedSourcesResult {
+    fun toSourcesItem(module: Module): EnhancedSourcesItem {
+      val sourceSet = module.sourceSet
+      val sourceItems =
+        sourceSet.sources.map {
+          EnhancedSourceItem(
+            uri = BspMappings.toBspUri(it.source),
+            kind = SourceItemKind.FILE,
+            generated = false,
+            data = it.data
+          )
+        }
+      val generatedSourceItems =
+        sourceSet.generatedSources.map {
+          EnhancedSourceItem(
+            uri = BspMappings.toBspUri(it.source),
+            kind = SourceItemKind.FILE,
+            generated = true,
+            data = it.data
+          )
+        }
+      val sourceRoots = sourceSet.sourceRoots.map(BspMappings::toBspUri)
+      val sourcesItem = EnhancedSourcesItem(
+        target = BspMappings.toBspId(module),
+        roots = sourceRoots,
+        sources = sourceItems + generatedSourceItems
+      )
+      return sourcesItem
+    }
+
+    fun emptySourcesItem(label: Label): EnhancedSourcesItem = EnhancedSourcesItem(BspMappings.toBspId(label), emptyList(), emptyList())
+
+    val labels = BspMappings.toLabels(sourcesParams.targets)
+    val sourcesItems =
+      labels.map {
+        project.findModule(it)?.let(::toSourcesItem) ?: emptySourcesItem(it)
+      }
+    return EnhancedSourcesResult(sourcesItems)
   }
 
   fun resources(project: Project, resourcesParams: ResourcesParams): ResourcesResult {

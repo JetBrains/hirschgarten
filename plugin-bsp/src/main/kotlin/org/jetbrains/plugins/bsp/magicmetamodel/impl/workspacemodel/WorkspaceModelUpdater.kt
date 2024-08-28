@@ -12,13 +12,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import org.jetbrains.bsp.protocol.EnhancedSourcesItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
 import java.nio.file.Path
 
 public data class ModuleDetails(
   val target: BuildTarget,
-  val sources: List<SourcesItem>,
+  val sources: List<EnhancedSourcesItem>,
   val resources: List<ResourcesItem>,
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: JavacOptionsItem?,
