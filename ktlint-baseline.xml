@@ -4,15 +4,15 @@
         <error line="8" column="1" source="standard:no-wildcard-imports" />
     </file>
     <file name=".teamcity/configurations/pluginBsp/intellijBenchmark.kts">
-        <error line="14" column="141" source="standard:max-line-length" />
+        <error line="15" column="141" source="standard:max-line-length" />
     </file>
     <file name=".teamcity/configurations/server/bazelE2ePluginTests.kts">
         <error line="14" column="141" source="standard:max-line-length" />
     </file>
     <file name=".teamcity/settings.kts">
         <error line="1" column="1" source="standard:no-wildcard-imports" />
-        <error line="7" column="1" source="standard:no-wildcard-imports" />
-        <error line="9" column="1" source="standard:no-wildcard-imports" />
+        <error line="3" column="1" source="standard:no-wildcard-imports" />
+        <error line="5" column="1" source="standard:no-wildcard-imports" />
     </file>
     <file name="plugin-bazel/buildSrc/src/main/kotlin/versions.kt">
         <error line="1" column="1" source="standard:filename" />

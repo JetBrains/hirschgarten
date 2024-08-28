@@ -1,12 +1,12 @@
-package configurations.server
+package configurations
 
-import configurations.BaseConfiguration
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.ScriptBuildStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-open class Buildifier(vcsRoot: GitVcsRoot, name: String) :
+open class FormatChecker(vcsRoot: GitVcsRoot) :
   BaseConfiguration.BaseBuildType(
-    name = name,
+    name = "[format] check formatting",
     steps = {
       script {
         this.name = "checking formatting with buildifier"
@@ -14,17 +14,18 @@ open class Buildifier(vcsRoot: GitVcsRoot, name: String) :
           """
           bazel run //tools/format:format.check --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140
           """.trimIndent()
+        dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+        dockerPull = true
+        dockerImage = "registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest"
       }
     },
     vcsRoot = vcsRoot,
   )
 
-object GitHub : Buildifier(
-  name = "[format] GH formatter",
+object GitHub : FormatChecker(
   vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object Space : Buildifier(
-  name = "[format] Space formatter",
+object Space : FormatChecker(
   vcsRoot = BaseConfiguration.SpaceVcs,
 )
