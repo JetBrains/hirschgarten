@@ -93,8 +93,8 @@ private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): Sour
   val packagePrefixPath = sourceRoot.packagePrefix.replace('.', File.separatorChar)
   val directory = sourceRoot.sourcePath.parent.pathString
   val sourceRootString = directory.removeSuffix(packagePrefixPath)
-  if (directory == sourceRootString) return SourceAndPackagePrefix(sourceRoot.sourcePath, sourceRoot.packagePrefix)
-  return SourceAndPackagePrefix(sourceRoot.sourcePath)
+  if (directory == sourceRootString) return SourceAndPackagePrefix(Path(sourceRootString), sourceRoot.packagePrefix)
+  return SourceAndPackagePrefix(Path(sourceRootString))
 }
 
 internal fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<SourceAndPackagePrefix>, projectBasePath: Path): List<String> =
