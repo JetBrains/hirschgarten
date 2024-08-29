@@ -12,7 +12,7 @@ class DiagnosticsService(
   fun extractDiagnostics(
     bazelOutput: String,
     targetLabel: Label,
-    originId: String,
+    originId: String?,
   ): List<PublishDiagnosticsParams> {
     val parsedDiagnostics = parser.parse(bazelOutput, targetLabel)
     val events = mapper.createDiagnostics(parsedDiagnostics, originId)

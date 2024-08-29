@@ -10,7 +10,7 @@ import ch.epfl.scala.bsp4j.Position as BspPosition
 import ch.epfl.scala.bsp4j.Range as BspRange
 
 class DiagnosticBspMapper(private val workspaceRoot: Path) {
-  fun createDiagnostics(diagnostics: List<Diagnostic>, originId: String): List<PublishDiagnosticsParams> =
+  fun createDiagnostics(diagnostics: List<Diagnostic>, originId: String?): List<PublishDiagnosticsParams> =
     diagnostics
       .groupBy { Pair(it.fileLocation, it.targetLabel) }
       .map { kv ->
