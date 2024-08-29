@@ -54,7 +54,7 @@ maven.install(
         "org.apache.logging.log4j:log4j-api:2.23.1",
         "org.apache.logging.log4j:log4j-core:2.23.1",
         "org.apache.velocity:velocity-engine-core:2.3",
-        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1",
+        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2",
         "org.junit.jupiter:junit-jupiter:5.11.0",
         "org.junit.platform:junit-platform-console:1.11.0",
         "org.junit.platform:junit-platform-suite-api:1.11.0",
