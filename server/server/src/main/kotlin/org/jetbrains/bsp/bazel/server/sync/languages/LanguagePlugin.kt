@@ -4,11 +4,14 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.LanguageData
+import org.jetbrains.bsp.protocol.EnhancedSourceItemData
 import java.net.URI
 import java.nio.file.Path
 
+data class SourceRootAndData(val sourceRoot: Path, val data: EnhancedSourceItemData? = null)
+
 abstract class LanguagePlugin<T : LanguageData> {
-  open fun calculateSourceRoot(source: Path): Path? = null
+  open fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? = null
 
   open fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<URI> = emptySet()
 

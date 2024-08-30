@@ -51,7 +51,6 @@ import ch.epfl.scala.bsp4j.ScalaTestClassesResult
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.ScalacOptionsResult
-import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.SourcesParams
@@ -78,6 +77,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
@@ -277,18 +277,20 @@ class BspProjectMapper(
       val sourceSet = module.sourceSet
       val sourceItems =
         sourceSet.sources.map {
-          SourceItem(
-            BspMappings.toBspUri(it),
-            SourceItemKind.FILE,
-            false,
+          EnhancedSourceItem(
+            uri = it.source.toString(),
+            kind = SourceItemKind.FILE,
+            generated = false,
+            data = it.data,
           )
         }
       val generatedSourceItems =
         sourceSet.generatedSources.map {
-          SourceItem(
-            BspMappings.toBspUri(it),
-            SourceItemKind.FILE,
-            true,
+          EnhancedSourceItem(
+            uri = it.source.toString(),
+            kind = SourceItemKind.FILE,
+            generated = true,
+            data = it.data,
           )
         }
       val sourceRoots = sourceSet.sourceRoots.map(BspMappings::toBspUri)
