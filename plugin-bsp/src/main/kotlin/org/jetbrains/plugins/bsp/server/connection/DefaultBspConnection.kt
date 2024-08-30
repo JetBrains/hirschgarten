@@ -44,7 +44,6 @@ import java.lang.reflect.Proxy
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 
 private const val OK_EXIT_CODE = 0
@@ -152,7 +151,7 @@ internal class DefaultBspConnection(
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = CONNECT_SUBTASK_ID,
-      message = BspPluginBundle.message("console.subtask.connect")
+      message = BspPluginBundle.message("console.subtask.connect"),
     ) {
       connectOrThrowIfFailed(project.syncConsole, taskId)
     }

@@ -7,7 +7,6 @@ import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.JavacOptionsParams
 import ch.epfl.scala.bsp4j.PythonOptionsParams
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
-import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.diagnostic.thisLogger
@@ -147,18 +146,18 @@ class CollectProjectDetailsTask(
     capabilities: BazelBuildServerCapabilities,
     baseTargetInfos: BaseTargetInfos,
   ): ProjectDetails =
-      project.syncConsole.withSubtask(
-        taskId = this.taskId,
-        subtaskId = IMPORT_SUBTASK_ID,
-        message = BspPluginBundle.message("console.task.model.collect"),
-      ) {
-        calculateProjectDetailsWithCapabilities(
-          project = project,
-          server = server,
-          buildServerCapabilities = capabilities,
-          baseTargetInfos = baseTargetInfos,
-        )
-      }
+    project.syncConsole.withSubtask(
+      taskId = this.taskId,
+      subtaskId = IMPORT_SUBTASK_ID,
+      message = BspPluginBundle.message("console.task.model.collect"),
+    ) {
+      calculateProjectDetailsWithCapabilities(
+        project = project,
+        server = server,
+        buildServerCapabilities = capabilities,
+        baseTargetInfos = baseTargetInfos,
+      )
+    }
 
   private suspend fun calculateAllUniqueJdkInfosSubtask(projectDetails: ProjectDetails) =
     project.syncConsole.withSubtask(
