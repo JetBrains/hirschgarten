@@ -6,6 +6,7 @@ import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bsp.bazel.server.sync.languages.jvm.SourceRootGuesser
 import java.net.URI
 import java.nio.file.Path
@@ -41,7 +42,8 @@ class ThriftLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
 
   protected override fun applyModuleData(moduleData: ThriftModule, buildTarget: BuildTarget) {}
 
-  override fun calculateSourceRoot(source: Path): Path = SourceRootGuesser.getSourcesRoot(source)
+  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
+    SourceRootAndData(SourceRootGuesser.getSourcesRoot(source))
 
   companion object {
     private const val THRIFT_LIBRARY_RULE_NAME = "thrift_library"

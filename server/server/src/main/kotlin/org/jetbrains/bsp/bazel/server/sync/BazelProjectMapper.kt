@@ -20,6 +20,7 @@ import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.SourceSet
+import org.jetbrains.bsp.bazel.server.model.SourceWithData
 import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
@@ -820,11 +821,26 @@ class BazelProjectMapper(
         .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
         .filter { it.exists() }
 
-    val sourceRoots = (sources + generatedSources).mapNotNull(languagePlugin::calculateSourceRoot)
+    val sourceRootsAndData = sources.map { it to languagePlugin.calculateSourceRootAndAdditionalData(it) }
+    val generatedRootsAndData = generatedSources.map { it to languagePlugin.calculateSourceRootAndAdditionalData(it) }
     return SourceSet(
-      sources = sources.map(bazelPathsResolver::resolveUri).toSet(),
-      generatedSources = generatedSources.map(bazelPathsResolver::resolveUri).toSet(),
-      sourceRoots = sourceRoots.map(bazelPathsResolver::resolveUri).toSet(),
+      sources =
+        sourceRootsAndData
+          .map {
+            SourceWithData(
+              source = it.first.toUri(),
+              data = it.second?.data,
+            )
+          }.toSet(),
+      generatedSources =
+        generatedRootsAndData
+          .map {
+            SourceWithData(
+              source = it.first.toUri(),
+              data = it.second?.data,
+            )
+          }.toSet(),
+      sourceRoots = (sourceRootsAndData + generatedRootsAndData).mapNotNull { it.second?.sourceRoot?.toUri() }.toSet(),
     )
   }
 
@@ -841,7 +857,7 @@ class BazelProjectMapper(
 
   private fun buildReverseSourceMappingForModule(module: Module): List<Pair<URI, Label>> =
     with(module) {
-      (sourceSet.sources + resources).map { Pair(it, label) }
+      (sourceSet.sources.map { it.source } + resources).map { Pair(it, label) }
     }
 
   private fun environmentItem(target: TargetInfo): Map<String, String> {
