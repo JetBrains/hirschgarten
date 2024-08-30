@@ -14,7 +14,7 @@ public interface BspConnection {
    * Establish a connection with the server, and initialize server.
    * If the connection is already established no actions should be performed.
    */
-  public suspend fun connect(taskId: Any)
+  public suspend fun connect(taskId: String)
 
   /**
    * Disconnect from the server,
