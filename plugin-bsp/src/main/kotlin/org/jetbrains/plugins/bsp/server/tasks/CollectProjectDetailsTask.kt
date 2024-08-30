@@ -147,40 +147,18 @@ class CollectProjectDetailsTask(
     capabilities: BazelBuildServerCapabilities,
     baseTargetInfos: BaseTargetInfos,
   ): ProjectDetails =
-    try {
-      project.syncConsole.startSubtask(
-        this.taskId,
-        IMPORT_SUBTASK_ID,
-        BspPluginBundle.message("console.task.model.collect.in.progress"),
-      )
-
-      val projectDetails =
+      project.syncConsole.withSubtask(
+        taskId = this.taskId,
+        subtaskId = IMPORT_SUBTASK_ID,
+        message = BspPluginBundle.message("console.task.model.collect"),
+      ) {
         calculateProjectDetailsWithCapabilities(
           project = project,
           server = server,
           buildServerCapabilities = capabilities,
           baseTargetInfos = baseTargetInfos,
         )
-
-      project.syncConsole.finishSubtask(IMPORT_SUBTASK_ID, BspPluginBundle.message("console.task.model.collect.success"))
-
-      projectDetails
-    } catch (e: Exception) {
-      if (e is CancellationException) {
-        project.syncConsole.finishSubtask(
-          IMPORT_SUBTASK_ID,
-          BspPluginBundle.message("console.task.model.collect.cancelled"),
-          FailureResultImpl(),
-        )
-      } else {
-        project.syncConsole.finishSubtask(
-          IMPORT_SUBTASK_ID,
-          BspPluginBundle.message("console.task.model.collect.failed"),
-          FailureResultImpl(e),
-        )
       }
-      throw e
-    }
 
   private suspend fun calculateAllUniqueJdkInfosSubtask(projectDetails: ProjectDetails) =
     project.syncConsole.withSubtask(
