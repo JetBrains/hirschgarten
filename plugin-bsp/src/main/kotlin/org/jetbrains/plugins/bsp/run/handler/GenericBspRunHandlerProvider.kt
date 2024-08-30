@@ -12,5 +12,5 @@ class GenericBspRunHandlerProvider : BspRunHandlerProvider {
 
   override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean = targetInfos.singleOrNull()?.capabilities?.canRun ?: false
 
-  override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = false // TODO: Figure out debugging in the generic case
+  override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = false
 }

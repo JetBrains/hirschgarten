@@ -24,7 +24,7 @@ import java.awt.Component
 import java.awt.Point
 import java.awt.event.MouseEvent
 
-public class LoadedTargetsMouseListener(private val container: BuildTargetContainer, private val project: Project) : PopupHandler() {
+class LoadedTargetsMouseListener(private val container: BuildTargetContainer, private val project: Project) : PopupHandler() {
   override fun mouseClicked(mouseEvent: MouseEvent) {
     if (mouseEvent.isDoubleClick()) {
       onDoubleClick()
@@ -101,7 +101,7 @@ private fun BspRunnerAction.prepareAndPerform(project: Project) {
 }
 
 @Suppress("CognitiveComplexMethod")
-public fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, verboseText: Boolean): DefaultActionGroup {
+fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, verboseText: Boolean): DefaultActionGroup {
   if (target.capabilities.canRun) {
     addAction(
       RunTargetAction(
@@ -115,7 +115,8 @@ public fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, v
     addAction(TestTargetAction(target, verboseText = verboseText))
   }
 
-  if (target.capabilities.canDebug && BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null) {
+  // "Client-side" debugging
+  if (BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null) {
     addAction(
       RunTargetAction(
         targetInfo = target,
@@ -128,15 +129,11 @@ public fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, v
   if (target.languageIds.isJvmTarget()) {
     if (target.capabilities.canRun) {
       addAction(RunWithLocalJvmRunnerAction(target, verboseText = verboseText))
-      if (target.capabilities.canDebug) {
-        addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
-      }
+      addAction(RunWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
     }
     if (target.capabilities.canTest) {
       addAction(TestWithLocalJvmRunnerAction(target, verboseText = verboseText))
-      if (target.capabilities.canDebug) {
-        addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
-      }
+      addAction(TestWithLocalJvmRunnerAction(target, isDebugMode = true, verboseText = verboseText))
     }
   }
   return this

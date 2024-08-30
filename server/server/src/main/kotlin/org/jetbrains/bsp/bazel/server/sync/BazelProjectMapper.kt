@@ -44,7 +44,7 @@ import kotlin.io.path.toPath
 class BazelProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
-  private val targetKindResolver: TargetKindResolver,
+  private val targetTagsResolver: TargetTagsResolver,
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
 ) {
@@ -541,7 +541,7 @@ class BazelProjectMapper(
         NonModuleTarget(
           label = label,
           languages = inferLanguages(targetInfo),
-          tags = targetKindResolver.resolveTags(targetInfo),
+          tags = targetTagsResolver.resolveTags(targetInfo),
           baseDirectory = label.toDirectoryUri(),
         )
       }
@@ -757,7 +757,7 @@ class BazelProjectMapper(
     // extra libraries can override some library versions, so they should be put before
     val directDependencies = extraLibraries.map { it.label } + resolveDirectDependencies(target)
     val languages = inferLanguages(target)
-    val tags = targetKindResolver.resolveTags(target)
+    val tags = targetTagsResolver.resolveTags(target)
     val baseDirectory = label.toDirectoryUri()
     val languagePlugin = languagePluginsService.getPlugin(languages)
     val sourceSet = resolveSourceSet(target, languagePlugin)
