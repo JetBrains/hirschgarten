@@ -17,8 +17,10 @@ import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
+import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.SourceSet
+import org.jetbrains.bsp.bazel.server.model.SourceWithData
 import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
@@ -42,7 +44,7 @@ import kotlin.io.path.toPath
 class BazelProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
-  private val targetKindResolver: TargetKindResolver,
+  private val targetTagsResolver: TargetTagsResolver,
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
 ) {
@@ -194,12 +196,16 @@ class BazelProjectMapper(
       }
     val allModules = mergedModulesFromBazel + rustExternalModules
 
+    val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
+    val nonModuleTargets = createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace })
+
     return Project(
       workspaceRoot,
       allModules.toList(),
       sourceToTarget,
       librariesToImport,
       invalidTargets,
+      nonModuleTargets,
       bazelInfo.release,
     )
   }
@@ -528,6 +534,18 @@ class BazelProjectMapper(
     )
   }
 
+  private fun createNonModuleTargets(targets: Map<Label, TargetInfo>): List<NonModuleTarget> =
+    targets
+      .filter { !isWorkspaceTarget(it.value) }
+      .map { (label, targetInfo) ->
+        NonModuleTarget(
+          label = label,
+          languages = inferLanguages(targetInfo),
+          tags = targetTagsResolver.resolveTags(targetInfo),
+          baseDirectory = label.toDirectoryUri(),
+        )
+      }
+
   private fun createLibraries(targets: Map<Label, TargetInfo>): Map<Label, Library> =
     targets
       .mapValues { (targetId, targetInfo) ->
@@ -739,7 +757,7 @@ class BazelProjectMapper(
     // extra libraries can override some library versions, so they should be put before
     val directDependencies = extraLibraries.map { it.label } + resolveDirectDependencies(target)
     val languages = inferLanguages(target)
-    val tags = targetKindResolver.resolveTags(target)
+    val tags = targetTagsResolver.resolveTags(target)
     val baseDirectory = label.toDirectoryUri()
     val languagePlugin = languagePluginsService.getPlugin(languages)
     val sourceSet = resolveSourceSet(target, languagePlugin)
@@ -803,11 +821,26 @@ class BazelProjectMapper(
         .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
         .filter { it.exists() }
 
-    val sourceRoots = (sources + generatedSources).mapNotNull(languagePlugin::calculateSourceRoot)
+    val sourceRootsAndData = sources.map { it to languagePlugin.calculateSourceRootAndAdditionalData(it) }
+    val generatedRootsAndData = generatedSources.map { it to languagePlugin.calculateSourceRootAndAdditionalData(it) }
     return SourceSet(
-      sources = sources.map(bazelPathsResolver::resolveUri).toSet(),
-      generatedSources = generatedSources.map(bazelPathsResolver::resolveUri).toSet(),
-      sourceRoots = sourceRoots.map(bazelPathsResolver::resolveUri).toSet(),
+      sources =
+        sourceRootsAndData
+          .map {
+            SourceWithData(
+              source = it.first.toUri(),
+              data = it.second?.data,
+            )
+          }.toSet(),
+      generatedSources =
+        generatedRootsAndData
+          .map {
+            SourceWithData(
+              source = it.first.toUri(),
+              data = it.second?.data,
+            )
+          }.toSet(),
+      sourceRoots = (sourceRootsAndData + generatedRootsAndData).mapNotNull { it.second?.sourceRoot?.toUri() }.toSet(),
     )
   }
 
@@ -824,7 +857,7 @@ class BazelProjectMapper(
 
   private fun buildReverseSourceMappingForModule(module: Module): List<Pair<URI, Label>> =
     with(module) {
-      (sourceSet.sources + resources).map { Pair(it, label) }
+      (sourceSet.sources.map { it.source } + resources).map { Pair(it, label) }
     }
 
   private fun environmentItem(target: TargetInfo): Map<String, String> {
@@ -836,7 +869,7 @@ class BazelProjectMapper(
   private fun collectInheritedEnvs(targetInfo: TargetInfo): Map<String, String> =
     targetInfo.envInheritList.associateWith { System.getenv(it) }
 
-  private fun removeDotBazelBspTarget(targets: List<Label>): List<Label> =
+  private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {
       it.isMainWorkspace && !it.value.startsWith("@//.bazelbsp")
     }

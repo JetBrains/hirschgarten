@@ -15,10 +15,10 @@ import org.jetbrains.plugins.bsp.config.BspWorkspace
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.server.connection.DefaultBspConnection
 import org.jetbrains.plugins.bsp.server.connection.connection
 import org.jetbrains.plugins.bsp.server.connection.connectionDetailsProvider
-import org.jetbrains.plugins.bsp.server.tasks.SyncProjectTask
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.widgets.file.targets.updateBspFileTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
@@ -91,8 +91,8 @@ public class BspStartupActivity : ProjectActivity {
     if (wasFirstOpeningSuccessful) {
       if (project.isTrusted()) {
         log.info("Running BSP sync task")
-        SyncProjectTask(project).execute(
-          shouldBuildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+        ProjectSyncTask(project).sync(
+          buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
         )
       }
     } else {

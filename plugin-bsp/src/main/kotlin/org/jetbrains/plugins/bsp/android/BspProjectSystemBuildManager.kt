@@ -8,7 +8,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.plugins.bsp.config.BspWorkspaceListener
-import org.jetbrains.plugins.bsp.server.tasks.SyncProjectTask
+import org.jetbrains.plugins.bsp.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.services.BspCoroutineService
 
 public class BspProjectSystemBuildManager(private val project: Project) : ProjectSystemBuildManager {
@@ -38,9 +38,7 @@ public class BspProjectSystemBuildManager(private val project: Project) : Projec
 
   override fun compileProject() {
     BspCoroutineService.getInstance(project).start {
-      SyncProjectTask(project).execute(
-        shouldBuildProject = true,
-      )
+      ProjectSyncTask(project).sync(buildProject = true)
     }
   }
 

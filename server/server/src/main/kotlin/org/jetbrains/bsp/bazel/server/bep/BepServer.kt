@@ -35,9 +35,6 @@ import java.net.URI
 import java.nio.file.FileSystemNotFoundException
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.AbstractMap.SimpleEntry
-import java.util.ArrayDeque
-import java.util.Deque
 import java.util.UUID
 
 class BepServer(
@@ -50,7 +47,7 @@ class BepServer(
   private val bspClientLogger = BspClientLogger(bspClient)
   private val bepLogger = BepLogger(bspClientLogger)
 
-  private val startedEvents: Deque<Map.Entry<TaskId, String?>> = ArrayDeque()
+  private var startedEvent: TaskId? = null
   private val bepOutputBuilder = BepOutputBuilder(bazelPathsResolver)
 
   override fun publishLifecycleEvent(request: PublishLifecycleEventRequest, responseObserver: StreamObserver<Empty>) {
@@ -206,7 +203,7 @@ class BepServer(
       startParams.data = task
     }
     bspClient.onBuildTaskStart(startParams)
-    startedEvents.push(SimpleEntry(taskId, originId))
+    startedEvent = taskId
   }
 
   private fun processFinishedEvent(event: BuildEventStreamProtos.BuildEvent) {
@@ -216,18 +213,15 @@ class BepServer(
   }
 
   private fun consumeFinishedEvent(buildFinished: BuildEventStreamProtos.BuildFinished) {
-    if (startedEvents.isEmpty()) {
-      LOGGER.debug("No start event id was found.")
-      return
-    }
+    val taskId = startedEvent
 
-    if (startedEvents.size > 1) {
-      LOGGER.debug("More than 1 start event was found")
+    if (taskId == null) {
+      LOGGER.warn("No start event id was found. Origin id: {}", originId)
       return
     }
 
     val exitCode = ExitCodeMapper.mapExitCode(buildFinished.exitCode.code)
-    val finishParams = TaskFinishParams(startedEvents.pop().key, exitCode)
+    val finishParams = TaskFinishParams(taskId, exitCode)
     finishParams.eventTime = buildFinished.finishTimeMillis
 
     if (target != null) {
@@ -276,12 +270,12 @@ class BepServer(
   }
 
   private fun processDiagnosticText(stdErrText: String, targetLabel: Label) {
-    if (startedEvents.isNotEmpty() && stdErrText.isNotEmpty()) {
+    if (stdErrText.isNotEmpty()) {
       val events =
         diagnosticsService.extractDiagnostics(
           stdErrText,
           targetLabel,
-          startedEvents.first.value!!,
+          originId,
         )
       events.forEach {
         bspClient.onBuildPublishDiagnostics(

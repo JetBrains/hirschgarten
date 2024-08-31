@@ -39,9 +39,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
         pythonOptions = emptyList(),
-        outputPathUris = emptyList(),
         libraries = null,
         scalacOptions = emptyList(),
+        nonModuleTargets = emptyList(),
       )
 
     // when
@@ -118,9 +118,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         dependenciesSources = listOf(targetDependencySources),
         javacOptions = listOf(javacOptions),
         pythonOptions = listOf(pythonOptions),
-        outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
+        nonModuleTargets = emptyList(),
       )
 
     // when
@@ -269,9 +269,9 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         dependenciesSources = listOf(target2DependencySources, target1DependencySources),
         javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
         pythonOptions = listOf(target4PythonOptionsItem),
-        outputPathUris = emptyList(),
         libraries = emptyList(),
         scalacOptions = emptyList(),
+        nonModuleTargets = emptyList(),
       )
 
     // when

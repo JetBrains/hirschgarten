@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BspConnectionDetails
 import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.InitializeBuildParams
+import ch.epfl.scala.bsp4j.SourceItem
 import com.google.gson.JsonObject
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.process.OSProcessUtil
@@ -23,6 +24,7 @@ import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.CLIENT_CAPABILITIES
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
+import org.jetbrains.bsp.protocol.utils.EnhancedSourceItemTypeAdapter
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.BspServerProvider
@@ -357,6 +359,10 @@ internal class DefaultBspConnection(
         builder.registerTypeAdapter(
           BuildServerCapabilities::class.java,
           BazelBuildServerCapabilitiesTypeAdapter(),
+        )
+        builder.registerTypeAdapter(
+          SourceItem::class.java,
+          EnhancedSourceItemTypeAdapter(),
         )
       }.create()
 

@@ -203,7 +203,6 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
 
   private fun parseLoadValueList() {
     assertCurrentToken(StarlarkTokenTypes.LPAR)
-    val loadValueList = builder.mark()
     builder.advanceLexer()
     var firstValue = true
     while (!atToken(StarlarkTokenTypes.RPAR)) {
@@ -220,6 +219,8 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
 
       if (firstValue) {
         firstValue = false
+        parseLoadValue()
+        continue
       } else if (isIdentifierLike(builder)) {
         val namedLoadValueMarker = builder.mark()
         advanceIdentifierLike(builder)
@@ -231,10 +232,11 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
         }
         namedLoadValueMarker.rollbackTo()
       }
+      val loadValueMarker = builder.mark()
       parseLoadValue()
+      loadValueMarker.done(StarlarkElementTypes.STRING_LOAD_VALUE)
     }
     checkMatches(StarlarkTokenTypes.RPAR, StarlarkBundle.message("parser.expected.rpar"))
-    loadValueList.done(StarlarkElementTypes.LOAD_VALUE_LIST)
   }
 
   private fun parseLoadValue() =

@@ -8,6 +8,7 @@ import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import java.net.URI
@@ -69,5 +70,6 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
   override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
     javaLanguagePlugin.dependencySources(targetInfo, dependencyGraph)
 
-  override fun calculateSourceRoot(source: Path): Path? = javaLanguagePlugin.calculateSourceRoot(source)
+  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
+    javaLanguagePlugin.calculateSourceRootAndAdditionalData(source)
 }

@@ -16,6 +16,8 @@ import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.pathString
 
+public data class DummySourceRootWithPackagePrefix(val sourcePath: Path, val packagePrefix: String = "")
+
 /**
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
@@ -34,7 +36,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
       .mapNotNull {
         calculateDummyJavaSourceModule(
           name = it.second,
-          sourceRoot = it.first,
+          sourceRootWithPackagePrefix = it.first,
           jdkName = inputEntity.jvmJdkName,
           javaAddendum = inputEntity.javaAddendum,
         )
@@ -43,7 +45,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
 
   private fun calculateDummyJavaSourceModule(
     name: String,
-    sourceRoot: Path,
+    sourceRootWithPackagePrefix: DummySourceRootWithPackagePrefix,
     jdkName: String?,
     javaAddendum: JavaAddendum?,
   ) = if (name.isEmpty()) {
@@ -58,13 +60,13 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
           librariesDependencies = listOf(),
           isDummy = true,
         ),
-      baseDirContentRoot = ContentRoot(path = sourceRoot),
+      baseDirContentRoot = ContentRoot(path = sourceRootWithPackagePrefix.sourcePath),
       sourceRoots =
         listOf(
           JavaSourceRoot(
-            sourcePath = sourceRoot,
+            sourcePath = sourceRootWithPackagePrefix.sourcePath,
             generated = false,
-            packagePrefix = "",
+            packagePrefix = sourceRootWithPackagePrefix.packagePrefix,
             rootType = DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
           ),
         ),
@@ -77,7 +79,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
   }
 }
 
-internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<Path> =
+internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): List<DummySourceRootWithPackagePrefix> =
   sourceRoots
     .asSequence()
     .filter { !it.generated }
@@ -86,16 +88,20 @@ internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): L
     }.distinct()
     .toList()
 
-private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): Path? {
+private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): DummySourceRootWithPackagePrefix? {
   if (sourceRoot.sourcePath.isDirectory()) return null
   val packagePrefixPath = sourceRoot.packagePrefix.replace('.', File.separatorChar)
-  val directory = sourceRoot.sourcePath.parent
-  val sourceRootString = directory.pathString.removeSuffix(packagePrefixPath)
-  return Path(sourceRootString)
+  val sourceParent = sourceRoot.sourcePath.parent.pathString
+  val sourceRootString = sourceParent.removeSuffix(packagePrefixPath)
+  val sourceRootPath = Path(sourceRootString)
+  if (sourceParent == sourceRootString) return DummySourceRootWithPackagePrefix(sourceRootPath, sourceRoot.packagePrefix)
+  return DummySourceRootWithPackagePrefix(sourceRootPath)
 }
 
-internal fun calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots: List<Path>, projectBasePath: Path): List<String> =
-  dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it, projectBasePath) }
+internal fun calculateDummyJavaModuleNames(
+  dummyJavaModuleSourceRoots: List<DummySourceRootWithPackagePrefix>,
+  projectBasePath: Path,
+): List<String> = dummyJavaModuleSourceRoots.map { calculateDummyJavaModuleName(it.sourcePath, projectBasePath) }
 
 internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Path): String {
   val absoluteSourceRoot = sourceRoot.toAbsolutePath().toString()

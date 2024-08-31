@@ -5,7 +5,7 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 import org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionProcessor
-import org.jetbrains.bazel.languages.starlark.completion.StarlarkLookupElement
+import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLookupElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.rename.RenameUtils
 

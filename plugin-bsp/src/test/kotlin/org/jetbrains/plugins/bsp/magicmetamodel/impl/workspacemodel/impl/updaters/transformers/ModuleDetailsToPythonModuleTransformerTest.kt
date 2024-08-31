@@ -673,7 +673,7 @@ class ExtractPythonBuildTargetTest {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     buildTarget.displayName = "target name"

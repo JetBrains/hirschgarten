@@ -102,15 +102,15 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
     visitElement(node)
   }
 
-  fun visitLoadValueList(node: StarlarkLoadValueList) {
-    visitElement(node)
-  }
-
   fun visitNamedArgumentExpression(node: StarlarkNamedArgumentExpression) {
     visitElement(node)
   }
 
   fun visitNamedLoadValue(node: StarlarkNamedLoadValue) {
+    visitElement(node)
+  }
+
+  fun visitStringLoadValue(node: StarlarkStringLoadValue) {
     visitElement(node)
   }
 

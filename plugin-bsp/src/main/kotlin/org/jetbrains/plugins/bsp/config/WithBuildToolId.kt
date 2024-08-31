@@ -17,3 +17,6 @@ fun <T : WithBuildToolId> ExtensionPointName<T>.withBuildToolIdOrDefault(buildTo
   this.withBuildToolId(buildToolId)
     ?: withBuildToolId(bspBuildToolId)
     ?: error("Missing default implementation (BSP) for extension: ${this.javaClass.name}. Something is wrong.")
+
+internal fun <T : WithBuildToolId> ExtensionPointName<T>.allWithBuildToolId(buildToolId: BuildToolId): List<T> =
+  this.extensions.filter { it.buildToolId == buildToolId }

@@ -1,9 +1,5 @@
 import configurations.*
-import configurations.pluginBazel.IntellijBazelBuild
-import configurations.pluginBazel.IntellijBazelTests
 import configurations.pluginBsp.IntellijBenchmark
-import configurations.pluginBsp.IntellijBuild
-import configurations.pluginBsp.IntellijTests
 import configurations.server.*
 import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
@@ -23,51 +19,8 @@ object ProjectBranchFilters {
 }
 
 object ProjectTriggerRules {
-  val serverTriggerRules =
+  val triggerRules =
     """
-    +:/server/**
-    +:*
-    -:**.md
-    -:**.txt
-    -:**.yml
-    -:**.yaml
-    -:LICENSE
-    -:LICENCE
-    -:CODEOWNERS
-    -:/.teamcity/**
-    """.trimIndent()
-
-  val pluginBspTriggerRules =
-    """
-    +:/plugin-bsp/**
-    +:*
-    -:**.md
-    -:**.txt
-    -:**.yml
-    -:**.yaml
-    -:LICENSE
-    -:LICENCE
-    -:CODEOWNERS
-    -:/.teamcity/**
-    """.trimIndent()
-
-  val pluginBazelTriggerRules =
-    """
-    +:/plugin-bazel/**
-    +:*
-    -:**.md
-    -:**.txt
-    -:**.yml
-    -:**.yaml
-    -:LICENSE
-    -:LICENCE
-    -:CODEOWNERS
-    -:/.teamcity/**
-    """.trimIndent()
-
-  val pluginBspE2eTriggerRules =
-    """
-    +:/rules_intellij/**
     -:**.md
     -:**.txt
     -:**.yml
@@ -80,81 +33,26 @@ object ProjectTriggerRules {
 }
 
 project {
-  subProject(Server)
-  subProject(PluginBsp)
-  subProject(PluginBazel)
-  vcsRoot(BaseConfiguration.GitHubVcs)
-  vcsRoot(BaseConfiguration.SpaceVcs)
-
-  val formatterTriggerRules =
-    """
-    +:*
-    -:**.md
-    -:**.txt
-    -:LICENSE
-    -:LICENSE
-    -:LICENCE
-    -:CODEOWNERS
-    """.trimIndent()
-
-  buildType(BazelFormat.GitHub)
-
-  BazelFormat.GitHub.triggers {
-    vcs {
-      branchFilter = ProjectBranchFilters.githubBranchFilter
-      triggerRules = formatterTriggerRules
-    }
-  }
-
-  buildType(BazelFormat.Space)
-
-  BazelFormat.Space.triggers {
-    vcs {
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-      triggerRules = formatterTriggerRules
-    }
-  }
+  subProject(GitHub)
+  subProject(Space)
 }
 
-object Server : Project({
-  name = "Server"
-  id("Server".toExtId())
-
-  subProject(ServerGitHub)
-  subProject(ServerSpace)
-})
-
-object PluginBsp : Project({
-  name = "Plugin BSP"
-  id("Plugin BSP".toExtId())
-
-  subProject(PluginBspGitHub)
-  subProject(PluginBspSpace)
-})
-
-object PluginBazel : Project({
-  name = "Plugin Bazel"
-  id("Plugin Bazel".toExtId())
-
-  subProject(PluginBazelGitHub)
-  subProject(PluginBazelSpace)
-})
-
-object ServerGitHub : Project({
-
+object GitHub : Project({
   name = "GitHub"
-  id("GitHubServer".toExtId())
+  id(name.toExtId())
+  vcsRoot(BaseConfiguration.GitHubVcs)
 
-  // setup pipeline chain for bazel-bsp
+// setup pipeline chain for bazel-bsp
   val allSteps =
     sequential {
-
+      buildType(ProjectFormat.GitHub)
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
-        buildType(BazelBuild.GitHub)
-        buildType(BazelUnitTests.GitHub)
+        buildType(ProjectBuild.GitHub)
+        buildType(ProjectUnitTests.GitHub)
+        buildType(IntellijBenchmark.GitHub)
         buildType(BazelE2eTests.SampleRepoGitHub)
         buildType(BazelE2eTests.LocalJdkGitHub)
         buildType(BazelE2eTests.RemoteJdkGitHub)
@@ -163,11 +61,12 @@ object ServerGitHub : Project({
         buildType(BazelE2eTests.AndroidKotlinProjectGitHub)
         buildType(BazelE2eTests.ScalaProjectGitHub)
         buildType(BazelE2eTests.KotlinProjectGitHub)
-//        buildType(BazelE2ePluginTests.GitHub)
+        buildType(BazelE2eTests.PythonProjectGitHub)
+        buildType(BazelE2eTests.JavaDiagnosticsGitHub)
         buildType(BazelBenchmark.GitHub)
       }
 
-      buildType(ResultsAggregator.ServerGitHub, options = {
+      buildType(ResultsAggregator.GitHub, options = {
         onDependencyFailure = FailureAction.ADD_PROBLEM
         onDependencyCancel = FailureAction.ADD_PROBLEM
       })
@@ -176,66 +75,52 @@ object ServerGitHub : Project({
   // initialize all build steps for bazel-bsp
   allSteps.forEach { buildType(it) }
 
-  // add plugin BSP plugin benchmark as dependency
-  allSteps.last().dependencies {
-    snapshot(IntellijBenchmark.GitHub) {
-      onDependencyFailure = FailureAction.ADD_PROBLEM
-      onDependencyCancel = FailureAction.ADD_PROBLEM
-    }
-  }
-
-  // make all the builds depend on formater
-  allSteps.dropLast(1).forEach {
-    it.dependencies {
-      snapshot(BazelFormat.GitHub) {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }
-    }
-  }
-
   // setup trigger for bazel-bsp pipeline
   allSteps.last().triggers {
     vcs {
       branchFilter = ProjectBranchFilters.githubBranchFilter
-      triggerRules = ProjectTriggerRules.serverTriggerRules
+      triggerRules = ProjectTriggerRules.triggerRules
     }
   }
 
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
-      RelativeId("GitHubBuildServerBuild"),
-      RelativeId("GitHubUnitTestsServerUnitTests"),
+      RelativeId("GitHubFormatCheckFormatting"),
+      RelativeId("GitHubBuildBuildProject"),
+      RelativeId("GitHubUnitTestsProjectUnitTests"),
+      RelativeId("GitHubBenchmarkServer10targets"),
+      RelativeId("GitHubBenchmarkPluginBsp10targets"),
       RelativeId("GitHubE2eTestsServerE2eSampleRepoTest"),
       RelativeId("GitHubE2eTestsServerE2eLocalJdkTest"),
       RelativeId("GitHubE2eTestsServerE2eRemoteJdkTest"),
 //        RelativeId("GitHubE2eTestsServerE2eServerDownloadsBazeliskTest"),
-      RelativeId("GitHubE2eTestsServerE2eKotlinProjectTest"),
       RelativeId("GitHubE2eTestsServerE2eAndroidProjectTest"),
       RelativeId("GitHubE2eTestsServerE2eAndroidKotlinProjectTest"),
       RelativeId("GitHubE2eTestsServerE2eEnabledRulesTest"),
-//      RelativeId("GitHubE2eTestsServerPluginRun"),
-      RelativeId("GitHubBenchmarkServer10targets"),
-      RelativeId("GitHubServerResults"),
+      RelativeId("GitHubE2eTestsServerE2eKotlinProjectTest"),
+      RelativeId("GitHubE2eTestsServerE2ePythonProjectTest"),
+      RelativeId("GitHubE2eTestsServerE2eJavaDiagnosticsTest"),
+      RelativeId("GitHubResults"),
     )
 })
 
-object ServerSpace : Project({
-
+object Space : Project({
   name = "Space"
-  id("SpaceServer".toExtId())
+  id(name.toExtId())
+  vcsRoot(BaseConfiguration.SpaceVcs)
 
-  // setup pipeline chain for bazel-bsp
+// setup pipeline chain for bazel-bsp
   val allSteps =
     sequential {
-
+      buildType(ProjectFormat.Space)
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
-        buildType(BazelBuild.Space)
-        buildType(BazelUnitTests.Space)
+        buildType(ProjectBuild.Space)
+        buildType(ProjectUnitTests.Space)
+        buildType(IntellijBenchmark.Space)
         buildType(BazelE2eTests.SampleRepoSpace)
         buildType(BazelE2eTests.LocalJdkSpace)
         buildType(BazelE2eTests.RemoteJdkSpace)
@@ -244,11 +129,12 @@ object ServerSpace : Project({
         buildType(BazelE2eTests.AndroidKotlinProjectSpace)
         buildType(BazelE2eTests.ScalaProjectSpace)
         buildType(BazelE2eTests.KotlinProjectSpace)
-//        buildType(BazelE2ePluginTests.Space)
+        buildType(BazelE2eTests.PythonProjectSpace)
+        buildType(BazelE2eTests.JavaDiagnosticsSpace)
         buildType(BazelBenchmark.Space)
       }
 
-      buildType(ResultsAggregator.ServerSpace, options = {
+      buildType(ResultsAggregator.Space, options = {
         onDependencyFailure = FailureAction.ADD_PROBLEM
         onDependencyCancel = FailureAction.ADD_PROBLEM
       })
@@ -257,301 +143,32 @@ object ServerSpace : Project({
   // initialize all build steps for bazel-bsp
   allSteps.forEach { buildType(it) }
 
-  // add plugin BSP plugin benchmark as dependency
-  allSteps.last().dependencies {
-    snapshot(IntellijBenchmark.Space) {
-      onDependencyFailure = FailureAction.ADD_PROBLEM
-      onDependencyCancel = FailureAction.ADD_PROBLEM
-    }
-  }
-
-  // make all the builds depend on formater
-  allSteps.dropLast(1).forEach {
-    it.dependencies {
-      snapshot(BazelFormat.Space) {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }
-    }
-  }
-
   // setup trigger for bazel-bsp pipeline
   allSteps.last().triggers {
     vcs {
       branchFilter = ProjectBranchFilters.spaceBranchFilter
-      triggerRules = ProjectTriggerRules.serverTriggerRules
+      triggerRules = ProjectTriggerRules.triggerRules
     }
   }
 
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
-      RelativeId("SpaceBuildServerBuild"),
-      RelativeId("SpaceUnitTestsServerUnitTests"),
+      RelativeId("SpaceFormatCheckFormatting"),
+      RelativeId("SpaceBuildBuildProject"),
+      RelativeId("SpaceUnitTestsProjectUnitTests"),
+      RelativeId("SpaceBenchmarkServer10targets"),
+      RelativeId("SpaceBenchmarkPluginBsp10targets"),
       RelativeId("SpaceE2eTestsServerE2eSampleRepoTest"),
       RelativeId("SpaceE2eTestsServerE2eLocalJdkTest"),
       RelativeId("SpaceE2eTestsServerE2eRemoteJdkTest"),
 //        RelativeId("SpaceE2eTestsServerE2eServerDownloadsBazeliskTest"),
-      RelativeId("SpaceE2eTestsServerE2eKotlinProjectTest"),
       RelativeId("SpaceE2eTestsServerE2eAndroidProjectTest"),
       RelativeId("SpaceE2eTestsServerE2eAndroidKotlinProjectTest"),
       RelativeId("SpaceE2eTestsServerE2eEnabledRulesTest"),
-//      RelativeId("SpaceE2eTestsServerPluginRun"),
-      RelativeId("SpaceBenchmarkServer10targets"),
-      RelativeId("SpaceServerResults"),
-    )
-})
-
-object PluginBspGitHub : Project({
-
-  name = "GitHub"
-  id("GitHubPluginBsp".toExtId())
-
-  // setup pipeline chain for intellij-bsp
-  val allSteps =
-    sequential {
-
-      parallel(options = {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }) {
-//            buildType(IntellijDetekt.GitHub)
-        buildType(IntellijBuild.GitHub)
-        buildType(IntellijTests.GitHub)
-        buildType(IntellijBenchmark.GitHub)
-      }
-
-      buildType(ResultsAggregator.PluginBspGitHub) {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
-      }
-    }.buildTypes()
-
-  // initialize all build steps for intellij-bsp
-  allSteps.forEach { buildType(it) }
-
-  // make all the builds depend on formater
-  allSteps.dropLast(1).forEach {
-    it.dependencies {
-      snapshot(BazelFormat.GitHub) {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }
-    }
-  }
-
-  // setup trigger for intellij-bsp pipeline
-  allSteps.last().triggers {
-    vcs {
-      triggerRules = ProjectTriggerRules.pluginBspTriggerRules
-      branchFilter = ProjectBranchFilters.githubBranchFilter
-    }
-  }
-
-  //  setup trigger for intellij-bsp e2e test (benchmark) to run for rules_intellij
-  allSteps.dropLast(1).last().triggers {
-    vcs {
-      triggerRules = ProjectTriggerRules.pluginBspE2eTriggerRules
-      branchFilter = ProjectBranchFilters.githubBranchFilter
-    }
-  }
-
-  // setup display order for intellij-bsp pipeline
-  buildTypesOrderIds =
-    arrayListOf(
-//            RelativeId("GitHubFormatDetekt"),
-      RelativeId("GitHubBuildBuildPluginBsp"),
-      RelativeId("GitHubTestsPluginBspUnitTests"),
-      RelativeId("GitHubBenchmarkPluginBsp10Targets"),
-      RelativeId("GitHubPluginBspResults"),
-    )
-})
-
-object PluginBspSpace : Project({
-
-  name = "Space"
-  id("SpacePluginBsp".toExtId())
-
-  // setup pipeline chain for intellij-bsp
-  val allSteps =
-    sequential {
-
-      parallel(options = {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }) {
-//            buildType(IntellijDetekt.Space)
-        buildType(IntellijBuild.Space)
-        buildType(IntellijTests.Space)
-        buildType(IntellijBenchmark.Space)
-      }
-
-      buildType(ResultsAggregator.PluginBspSpace) {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
-      }
-    }.buildTypes()
-
-  // initialize all build steps for intellij-bsp
-  allSteps.forEach { buildType(it) }
-
-  // make all the builds depend on formater
-  allSteps.dropLast(1).forEach {
-    it.dependencies {
-      snapshot(BazelFormat.Space) {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }
-    }
-  }
-
-  // setup trigger for intellij-bsp pipeline
-  allSteps.last().triggers {
-    vcs {
-      triggerRules = ProjectTriggerRules.pluginBspTriggerRules
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-    }
-  }
-
-  //  setup trigger for intellij-bsp e2e test (benchmark) to run for rules_intellij
-  allSteps.dropLast(1).last().triggers {
-    vcs {
-      triggerRules = ProjectTriggerRules.pluginBspE2eTriggerRules
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-    }
-  }
-
-  // setup display order for intellij-bsp pipeline
-  buildTypesOrderIds =
-    arrayListOf(
-//        RelativeId("SpaceFormatDetekt"),
-      RelativeId("SpaceBuildBuildPluginBsp"),
-      RelativeId("SpaceTestsPluginBspUnitTests"),
-      RelativeId("SpaceBenchmarkPluginBsp10Targets"),
-      RelativeId("SpacePluginBspResults"),
-    )
-})
-
-object PluginBazelGitHub : Project({
-  id("GitHubPluginBazel".toExtId())
-  name = "GitHub"
-
-  // setup pipeline chain for intellij-bsp
-  val allSteps =
-    sequential {
-
-      parallel(options = {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }) {
-        buildType(IntellijBazelBuild.GitHub)
-        buildType(IntellijBazelTests.UnitTestsGitHub)
-//            buildType(IntellijBazelTests.IdeProbeGitHub)
-      }
-
-      buildType(ResultsAggregator.PluginBazelGitHub) {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
-      }
-    }.buildTypes()
-
-  // initialize all build steps for intellij-bsp
-  allSteps.forEach { buildType(it) }
-
-  // add plugin BSP plugin benchmark as dependency
-  allSteps.last().dependencies {
-    snapshot(IntellijBenchmark.GitHub) {
-      onDependencyFailure = FailureAction.ADD_PROBLEM
-      onDependencyCancel = FailureAction.ADD_PROBLEM
-    }
-  }
-
-  // make all the builds depend on formater
-  allSteps.dropLast(1).forEach {
-    it.dependencies {
-      snapshot(BazelFormat.GitHub) {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }
-    }
-  }
-
-  // setup trigger for intellij-bsp pipeline
-  allSteps.last().triggers {
-    vcs {
-      triggerRules = ProjectTriggerRules.pluginBazelTriggerRules
-      branchFilter = ProjectBranchFilters.githubBranchFilter
-    }
-  }
-
-  // setup display order for intellij-bsp pipeline
-  buildTypesOrderIds =
-    arrayListOf(
-      RelativeId("GitHubBuildBuildPluginBazel"),
-//        RelativeId("GitHubTestsPluginBazelIdeProbe"),
-      RelativeId("GitHubTestsPluginBazelUnitTests"),
-      RelativeId("GitHubPluginBazelResults"),
-    )
-})
-
-object PluginBazelSpace : Project({
-  id("SpacePluginBazel".toExtId())
-  name = "Space"
-
-  // setup pipeline chain for intellij-bsp
-  val allSteps =
-    sequential {
-
-      parallel(options = {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }) {
-        buildType(IntellijBazelBuild.Space)
-        buildType(IntellijBazelTests.UnitTestsSpace)
-//            buildType(IntellijBazelTests.IdeProbeSpace)
-      }
-
-      buildType(ResultsAggregator.PluginBazelSpace) {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
-      }
-    }.buildTypes()
-
-  // initialize all build steps for intellij-bsp
-  allSteps.forEach { buildType(it) }
-
-  // add plugin BSP plugin benchmark as dependency
-  allSteps.last().dependencies {
-    snapshot(IntellijBenchmark.Space) {
-      onDependencyFailure = FailureAction.ADD_PROBLEM
-      onDependencyCancel = FailureAction.ADD_PROBLEM
-    }
-  }
-
-  // make all the builds depend on formatter
-  allSteps.dropLast(1).forEach {
-    it.dependencies {
-      snapshot(BazelFormat.Space) {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }
-    }
-  }
-
-  // setup trigger for intellij-bsp pipeline
-  allSteps.last().triggers {
-    vcs {
-      triggerRules = ProjectTriggerRules.pluginBazelTriggerRules
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-    }
-  }
-
-  // setup display order for intellij-bsp pipeline
-  buildTypesOrderIds =
-    arrayListOf(
-      RelativeId("SpaceBuildBuildPluginBazel"),
-//        RelativeId("SpaceTestsPluginBazelIdeProbe"),
-      RelativeId("SpaceTestsPluginBazelUnitTests"),
-      RelativeId("SpacePluginBazelResults"),
+      RelativeId("SpaceE2eTestsServerE2eKotlinProjectTest"),
+      RelativeId("SpaceE2eTestsServerE2ePythonProjectTest"),
+      RelativeId("SpaceE2eTestsServerE2eJavaDiagnosticsTest"),
+      RelativeId("SpaceResults"),
     )
 })

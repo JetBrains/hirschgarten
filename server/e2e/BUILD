@@ -1,6 +1,11 @@
 load("@//server/rules/bazel_integration_test:defs.bzl", "bazel_integration_test_all_versions", "bazel_integration_test_current_version")
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "bazel_integration_test", "integration_test_utils")
 
+####################
+# SUPER IMPORTANT! #
+####################
+# Wheneven you add a new test, make sure to run `bazel run @rules_bazel_integration_test//tools:update_deleted_packages`
+
 bazel_integration_test_all_versions(
     name = "sample_repo_test",
     env = {
@@ -104,3 +109,5 @@ test_suite(
         ":server_downloads_bazelisk_test",
     ],
 )
+
+# Just a reminder - have you read the note at the top of this file?

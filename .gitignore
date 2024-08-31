@@ -3,8 +3,6 @@
 .bazelbsp/
 .bsp/
 
-.gradle/
-
 .idea/
 !.idea/icon.svg
 
@@ -19,8 +17,6 @@ bazel-bin
 bazel-hirschgarten
 bazel-out
 bazel-testlogs
-
-build/
 
 idea-flex.skeleton
 jflex-*.jar

@@ -20,8 +20,11 @@
         <bspProjectAwareExtension
                 implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
 
-        <projectSyncHook
-                implementation="org.jetbrains.bazel.flow.open.BazelProjectSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.flow.open.InvalidTargetsProjectSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook"/>
+
+        <defaultProjectSyncHooksDisabler implementation="org.jetbrains.bazel.flow.sync.BazelDefaultProjectSyncHooksDisabler"/>
+
         <invalidTargetsProviderExtension
                 implementation="org.jetbrains.bazel.flow.open.BazelInvalidTargetsProviderExtension"/>
     </extensions>
@@ -86,6 +89,9 @@
         <annotator
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkStringAnnotator"/>
+        <annotator
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkLoadAnnotator"/>
         <completion.confidence
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionConfidence"/>

@@ -51,7 +51,6 @@ import ch.epfl.scala.bsp4j.ScalaTestClassesResult
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.ScalacOptionsResult
-import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.SourcesParams
@@ -66,6 +65,7 @@ import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
+import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
@@ -77,10 +77,12 @@ import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.LibraryItem
+import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
@@ -109,12 +111,14 @@ class BspProjectMapper(
         testProvider = TestProvider(languageNames),
         outputPathsProvider = true,
         dependencySourcesProvider = true,
+        dependencyModulesProvider = true,
         inverseSourcesProvider = true,
         resourcesProvider = true,
         jvmRunEnvironmentProvider = true,
         jvmTestEnvironmentProvider = true,
         workspaceLibrariesProvider = true,
         workspaceDirectoriesProvider = true,
+        workspaceNonModuleTargetsProvider = true,
         workspaceInvalidTargetsProvider = true,
         runWithDebugProvider = true,
         jvmBinaryJarsProvider = true,
@@ -129,7 +133,7 @@ class BspProjectMapper(
   }
 
   fun workspaceTargets(project: Project): WorkspaceBuildTargetsResult {
-    val buildTargets = project.modules.map(::toBuildTarget)
+    val buildTargets = project.modules.map { it.toBuildTarget() }
     return WorkspaceBuildTargetsResult(buildTargets)
   }
 
@@ -161,6 +165,14 @@ class BspProjectMapper(
         }
       }
     return WorkspaceLibrariesResult(libraries)
+  }
+
+  fun workspaceNonModuleTargets(project: Project): NonModuleTargetsResult {
+    val nonModuleTargets =
+      project.nonModuleTargets.map {
+        it.toBuildTarget()
+      }
+    return NonModuleTargetsResult(nonModuleTargets)
   }
 
   fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {
@@ -201,14 +213,33 @@ class BspProjectMapper(
       uri = this.toUri().toString(),
     )
 
-  private fun toBuildTarget(module: Module): BuildTarget {
-    val label = BspMappings.toBspId(module)
+  private fun NonModuleTarget.toBuildTarget(): BuildTarget {
+    val label = BspMappings.toBspId(this.label)
+    val languages = languages.flatMap(Language::allNames).distinct()
+    val capabilities = inferCapabilities(tags)
+    val tags = tags.mapNotNull(BspMappings::toBspTag)
+    val baseDirectory = BspMappings.toBspUri(baseDirectory)
+    val buildTarget =
+      BuildTarget(
+        label,
+        tags,
+        languages,
+        emptyList(),
+        capabilities,
+      )
+    buildTarget.displayName = label.uri
+    buildTarget.baseDirectory = baseDirectory
+    return buildTarget
+  }
+
+  private fun Module.toBuildTarget(): BuildTarget {
+    val label = BspMappings.toBspId(this)
     val dependencies =
-      module.directDependencies.map(BspMappings::toBspId)
-    val languages = module.languages.flatMap(Language::allNames).distinct()
-    val capabilities = inferCapabilities(module)
-    val tags = module.tags.mapNotNull(BspMappings::toBspTag)
-    val baseDirectory = BspMappings.toBspUri(module.baseDirectory)
+      directDependencies.map(BspMappings::toBspId)
+    val languages = languages.flatMap(Language::allNames).distinct()
+    val capabilities = inferCapabilities(tags)
+    val tags = tags.mapNotNull(BspMappings::toBspTag)
+    val baseDirectory = BspMappings.toBspUri(baseDirectory)
     val buildTarget =
       BuildTarget(
         label,
@@ -219,15 +250,18 @@ class BspProjectMapper(
       )
     buildTarget.displayName = label.uri
     buildTarget.baseDirectory = baseDirectory
-    applyLanguageData(module, buildTarget)
+    applyLanguageData(this, buildTarget)
     return buildTarget
   }
 
-  private fun inferCapabilities(module: Module): BuildTargetCapabilities {
-    val canCompile = !module.tags.contains(Tag.NO_BUILD)
-    val canTest = module.tags.contains(Tag.TEST)
-    val canRun = module.tags.contains(Tag.APPLICATION)
-    val canDebug = canRun || canTest // runnable and testable targets should be debuggable
+  private fun inferCapabilities(tags: Set<Tag>): BuildTargetCapabilities {
+    val canCompile = !tags.contains(Tag.NO_BUILD)
+    val canTest = tags.contains(Tag.TEST)
+    val canRun = tags.contains(Tag.APPLICATION)
+    // Native-BSP debug is not supported with Bazel.
+    // It simply means that the `debugSession/start` method should not be called on any Bazel target.
+    // Enabling client-side debugging (for example, for JVM targets via JDWP) is up to the client.
+    val canDebug = false
     return BuildTargetCapabilities().also {
       it.canCompile = canCompile
       it.canTest = canTest
@@ -246,18 +280,20 @@ class BspProjectMapper(
       val sourceSet = module.sourceSet
       val sourceItems =
         sourceSet.sources.map {
-          SourceItem(
-            BspMappings.toBspUri(it),
-            SourceItemKind.FILE,
-            false,
+          EnhancedSourceItem(
+            uri = it.source.toString(),
+            kind = SourceItemKind.FILE,
+            generated = false,
+            data = it.data,
           )
         }
       val generatedSourceItems =
         sourceSet.generatedSources.map {
-          SourceItem(
-            BspMappings.toBspUri(it),
-            SourceItemKind.FILE,
-            true,
+          EnhancedSourceItem(
+            uri = it.source.toString(),
+            kind = SourceItemKind.FILE,
+            generated = true,
+            data = it.data,
           )
         }
       val sourceRoots = sourceSet.sourceRoots.map(BspMappings::toBspUri)

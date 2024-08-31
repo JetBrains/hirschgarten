@@ -50,11 +50,16 @@ public class BspJVMRunLineMarkerContributor : RunLineMarkerContributor() {
       calculateLineMarkerInfo(targetInfos)
     }
 
-  private fun calculateLineMarkerInfo(targetInfos: List<BuildTargetInfo>): Info =
-    BspLineMakerInfo(
-      text = "Run",
-      actions = targetInfos.flatMap { it.calculateEligibleActions() },
-    )
+  private fun calculateLineMarkerInfo(targetInfos: List<BuildTargetInfo>): Info? =
+    targetInfos
+      .flatMap { it.calculateEligibleActions() }
+      .takeIf { it.isNotEmpty() }
+      ?.let {
+        BspLineMakerInfo(
+          text = "Run",
+          actions = it,
+        )
+      }
 
   private fun BuildTargetInfo?.calculateEligibleActions(): List<AnAction> =
     if (this == null) {

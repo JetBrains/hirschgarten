@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.server.sync.languages
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.protocol.EnhancedSourceItemData
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,10 +41,10 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe sourceDir
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir)
   }
 
   @Test
@@ -66,10 +67,10 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe sourceRoot
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, EnhancedSourceItemData(packageName))
   }
 
   @Test
@@ -92,10 +93,10 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe sourceDir
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir, EnhancedSourceItemData(packageName))
   }
 
   @Test
@@ -118,9 +119,62 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe sourceDir
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir, EnhancedSourceItemData("com.example"))
+  }
+
+  @Test
+  fun `should return source dir for package name not matching the dir, but with 'src main java' within parent path`() {
+    // given
+
+    val fileContent =
+      """
+            |package com.example
+            |
+            |public class Test {
+            |}
+            |
+      """.trimMargin()
+
+    val sourceRoot = tempRoot.resolve("src/main/java")
+    val sourceDir = Files.createDirectories(sourceRoot.resolve("dir1/dir2/dir3/"))
+
+    val sourceFile = Files.createFile(sourceDir.resolve("File.java"))
+    sourceFile.writeText(fileContent)
+
+    // when
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
+
+    // then
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, EnhancedSourceItemData("com.example"))
+  }
+
+  @Test
+  fun `should return source dir for Scala package object`() {
+    // given
+    val packageName = "dir1.dir2"
+    val packageObjectName = "dir3"
+    val fileContent =
+      """
+            |package $packageName
+            |
+            |package object $packageObjectName {
+            |}
+            |
+      """.trimMargin()
+
+    val sourceRoot = tempRoot.resolve("src/main/scala")
+    val sourceDir = Files.createDirectories(sourceRoot.resolve("dir1/dir2/dir3/"))
+
+    val sourceFile = Files.createFile(sourceDir.resolve("package.scala"))
+    sourceFile.writeText(fileContent)
+
+    // when
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
+
+    // then
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, EnhancedSourceItemData(packageName))
   }
 }

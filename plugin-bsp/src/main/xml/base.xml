@@ -46,7 +46,13 @@
                         interface="org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectSyncHook"
-                        interface="org.jetbrains.plugins.bsp.flow.open.ProjectSyncHook"
+                        interface="org.jetbrains.plugins.bsp.flow.sync.ProjectSyncHook"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.defaultProjectSyncHooksDisabler"
+                        interface="org.jetbrains.plugins.bsp.flow.sync.DefaultProjectSyncHooksDisabler"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.projectStructureProvider"
+                        interface="org.jetbrains.plugins.bsp.projectStructure.ProjectStructureProvider"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.startBuiltInServerExtension"
                         interface="org.jetbrains.plugins.bsp.extension.points.BspServerProvider"
@@ -66,6 +72,9 @@
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler$JvmBspRunHandlerProvider" id="JvmRunHandlerProvider"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspRunHandlerProvider" order="last"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspTestHandlerProvider" order="last"/>
+        <projectSyncHook implementation="org.jetbrains.plugins.bsp.flow.sync.CollectProjectDetailsSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.plugins.bsp.flow.sync.OutputPathUrisSyncHook"/>
+        <projectStructureProvider implementation="org.jetbrains.plugins.bsp.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -74,6 +83,9 @@
 
         <projectService serviceInterface="com.intellij.openapi.project.BaseProjectDirectories"
                         serviceImplementation="org.jetbrains.plugins.bsp.services.BspBaseProjectDirectories"
+                        overrides="true"/>
+        <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
+                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspExternalAnnotationsManager"
                         overrides="true"/>
 
         <commandLineInspectionProjectConfigurator
