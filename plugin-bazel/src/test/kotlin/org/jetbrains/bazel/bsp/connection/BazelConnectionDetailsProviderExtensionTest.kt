@@ -25,7 +25,7 @@ import org.jetbrains.bazel.settings.BazelApplicationServerSettings
 import org.jetbrains.bazel.settings.BazelApplicationSettings
 import org.jetbrains.bazel.settings.BazelApplicationSettingsService
 import org.jetbrains.bsp.bazel.commons.Constants
-import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.ConnectionDetailsProviderExtension
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -66,7 +66,8 @@ open class MockProjectBaseTest : Disposable {
 }
 
 class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
-  private lateinit var extension: ConnectionDetailsProviderExtension
+  private lateinit var extension:
+    ConnectionDetailsProviderExtension
 
   private lateinit var projectRoot: VirtualFile
 

@@ -6,12 +6,12 @@ import com.intellij.openapi.externalSystem.service.execution.configuration.fragm
 import com.intellij.openapi.options.SettingsEditor
 import org.jetbrains.plugins.bsp.run.BspRunConfigurationState
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
-import org.jetbrains.plugins.bsp.ui.runconfig.HasIntellijSdkName
-import org.jetbrains.plugins.bsp.ui.runconfig.HasJavaVmOptions
-import org.jetbrains.plugins.bsp.ui.runconfig.HasProgramArguments
-import org.jetbrains.plugins.bsp.ui.runconfig.intellijSdkFragment
-import org.jetbrains.plugins.bsp.ui.runconfig.programArgumentsFragment
-import org.jetbrains.plugins.bsp.ui.runconfig.vmOptions
+import org.jetbrains.plugins.bsp.run.state.HasIntellijSdkName
+import org.jetbrains.plugins.bsp.run.state.HasJavaVmOptions
+import org.jetbrains.plugins.bsp.run.state.HasProgramArguments
+import org.jetbrains.plugins.bsp.run.state.intellijSdkFragment
+import org.jetbrains.plugins.bsp.run.state.programArgumentsFragment
+import org.jetbrains.plugins.bsp.run.state.vmOptions
 
 class IntellijPluginRunHandlerState :
   BspRunConfigurationState<IntellijPluginRunHandlerState>(),

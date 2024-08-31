@@ -23,7 +23,6 @@ public suspend fun saveAllFiles() {
   }
 }
 
-
 public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
   AnAction(text, icon),
   DumbAware {

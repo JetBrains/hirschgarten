@@ -4,7 +4,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.awt.Point
 import java.awt.event.MouseListener
 import javax.swing.DefaultListModel
@@ -54,11 +54,9 @@ public class LazySearchListDisplay(private val icon: Icon) : LazySearchDisplay()
     targets.take(TARGETS_TO_HIGHLIGHT).map {
       PrintableBuildTarget(
         it,
-        QueryHighlighter.highlight(it.getBuildTargetName(), query),
+        QueryHighlighter.highlight(it.buildTargetName, query),
       )
     }
-
-  private fun BuildTargetInfo.getBuildTargetName(): String = this.displayName ?: this.id.uri
 
   private fun maybeAddShowMoreButton(targets: Collection<BuildTargetInfo>) {
     val remainingTargets = targets.size - TARGETS_TO_HIGHLIGHT

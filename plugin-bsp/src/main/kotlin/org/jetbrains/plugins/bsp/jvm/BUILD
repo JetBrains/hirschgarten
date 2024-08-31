@@ -11,6 +11,7 @@ kt_jvm_library(
         "//plugin-bsp/jps-compilation/src:jps-compilation",
         "//plugin-bsp/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/run",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/runnerAction",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
         "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",

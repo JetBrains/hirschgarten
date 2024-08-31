@@ -27,7 +27,7 @@ import org.jetbrains.bsp.bazel.installationcontext.InstallationContextJavaPathEn
 import org.jetbrains.bsp.bazel.installationcontext.InstallationContextJavaPathEntityMapper
 import org.jetbrains.bsp.protocol.utils.parseBspConnectionDetails
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
-import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.ConnectionDetailsProviderExtension
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists

@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.buildToolId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.JComponent
 
 public interface BuildToolWindowTargetActionProviderExtension : WithBuildToolId {
@@ -15,7 +15,7 @@ public interface BuildToolWindowTargetActionProviderExtension : WithBuildToolId 
   ): List<AnAction>
 
   public companion object {
-    internal val ep: ExtensionPointName<BuildToolWindowTargetActionProviderExtension> =
+    val ep: ExtensionPointName<BuildToolWindowTargetActionProviderExtension> =
       ExtensionPointName.create("org.jetbrains.bsp.buildToolWindowTargetActionProviderExtension")
   }
 }

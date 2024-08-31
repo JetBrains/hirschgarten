@@ -11,7 +11,6 @@ kt_jvm_library(
         "//plugin-bsp/jps-compilation/src:jps-compilation",
         "//plugin-bsp/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/ui/widgets",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
         "//protocol",
         "@maven//:ch_epfl_scala_bsp4j",

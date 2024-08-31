@@ -23,7 +23,7 @@ import kotlin.time.Duration
 
 private const val MB = 1024 * 1024
 
-internal object MemoryProfiler : NotificationListener {
+object MemoryProfiler : NotificationListener {
   private val maxMemoryMb = AtomicLong()
 
   fun startRecordingMaxMemory() {

@@ -16,10 +16,10 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionS
 import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
-import org.jetbrains.plugins.bsp.ui.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? {

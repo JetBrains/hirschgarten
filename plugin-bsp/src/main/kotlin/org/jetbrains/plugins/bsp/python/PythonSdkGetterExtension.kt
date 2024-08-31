@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.extension.points
+package org.jetbrains.plugins.bsp.python
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.projectRoots.Sdk
@@ -11,7 +11,6 @@ import com.jetbrains.python.sdk.PythonSdkAdditionalData
 import com.jetbrains.python.sdk.PythonSdkType
 import com.jetbrains.python.sdk.detectSystemWideSdks
 import com.jetbrains.python.sdk.guessedLanguageLevel
-import org.jetbrains.plugins.bsp.server.tasks.PythonSdk
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import kotlin.io.path.toPath
 

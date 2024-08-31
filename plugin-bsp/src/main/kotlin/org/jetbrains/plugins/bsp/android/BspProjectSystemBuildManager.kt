@@ -8,8 +8,8 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.plugins.bsp.config.BspWorkspaceListener
+import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.flow.sync.ProjectSyncTask
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
 
 public class BspProjectSystemBuildManager(private val project: Project) : ProjectSystemBuildManager {
   @Deprecated("Do not add new uses of this method as it's error prone")

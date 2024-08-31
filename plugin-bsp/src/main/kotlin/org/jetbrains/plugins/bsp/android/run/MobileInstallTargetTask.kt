@@ -15,10 +15,10 @@ import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.server.tasks.BspServerSingleTargetTask
-import org.jetbrains.plugins.bsp.server.tasks.BspTaskStatusLogger
-import org.jetbrains.plugins.bsp.server.tasks.saveAllFiles
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
+import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.tasks.BspServerSingleTargetTask
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.tasks.BspTaskStatusLogger
+import org.jetbrains.plugins.bsp.ui.actions.saveAllFiles
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.UUID

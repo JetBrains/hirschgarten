@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.extension.points
 
 import com.intellij.openapi.extensions.ExtensionPointName
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 public interface BuildTargetClassifierExtension : WithBuildToolId {
   /**
@@ -45,7 +45,7 @@ public interface BuildTargetClassifierExtension : WithBuildToolId {
   public fun calculateBuildTargetName(buildTargetInfo: BuildTargetInfo): String
 
   public companion object {
-    internal val ep =
+    val ep =
       ExtensionPointName.create<BuildTargetClassifierExtension>("org.jetbrains.bsp.buildTargetClassifierExtension")
   }
 }

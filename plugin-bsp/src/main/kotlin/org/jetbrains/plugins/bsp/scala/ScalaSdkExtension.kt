@@ -12,6 +12,6 @@ private val ep =
     "org.jetbrains.bsp.scalaSdkExtension",
   )
 
-internal fun scalaSdkExtension(): ScalaSdkExtension? = ep.extensionList.firstOrNull()
+fun scalaSdkExtension(): ScalaSdkExtension? = ep.extensionList.firstOrNull()
 
-internal fun scalaSdkExtensionExists(): Boolean = ep.extensionList.isNotEmpty()
+fun scalaSdkExtensionExists(): Boolean = ep.extensionList.isNotEmpty()

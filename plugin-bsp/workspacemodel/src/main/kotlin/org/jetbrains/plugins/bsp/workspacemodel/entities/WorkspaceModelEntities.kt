@@ -1,10 +1,11 @@
-package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
+package org.jetbrains.plugins.bsp.workspacemodel.entities
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.LanguageIds
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
 
@@ -16,7 +17,9 @@ public data class BuildTargetInfo(
   val tags: List<String> = emptyList(),
   val languageIds: LanguageIds = emptyList(),
   val baseDirectory: String? = null,
-)
+) {
+  val buildTargetName: String = this.displayName ?: this.id.uri
+}
 
 public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
   BuildTargetInfo(
@@ -105,7 +108,7 @@ public data class GenericModuleInfo(
     associates,
   )
 
-  internal val languageIdsAsSingleEntryMap: Map<String, String>
+  val languageIdsAsSingleEntryMap: Map<String, String>
     get() =
       languageIds
         .takeUnless { it.isEmpty() }
@@ -150,7 +153,7 @@ public data class ModuleCapabilities(
   }
 }
 
-internal fun BuildTargetCapabilities.toModuleCapabilities() =
+fun BuildTargetCapabilities.toModuleCapabilities() =
   ModuleCapabilities(canRun == true, canTest == true, canCompile == true, canDebug == true)
 
 public interface Module {

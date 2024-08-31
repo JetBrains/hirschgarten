@@ -1,8 +1,8 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetTree
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.awt.event.MouseListener
 import javax.swing.Icon
 

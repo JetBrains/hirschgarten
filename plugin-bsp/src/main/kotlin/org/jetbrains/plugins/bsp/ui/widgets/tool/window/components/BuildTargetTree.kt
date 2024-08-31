@@ -13,8 +13,8 @@ import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.awt.Component
 import java.awt.event.MouseListener
 import javax.swing.Icon

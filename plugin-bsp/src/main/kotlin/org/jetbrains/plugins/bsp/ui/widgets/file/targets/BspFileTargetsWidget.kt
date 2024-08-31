@@ -21,10 +21,10 @@ import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.extension.points.targetActionProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
-import org.jetbrains.plugins.bsp.ui.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
 
 /**
@@ -123,7 +123,7 @@ public class BspFileTargetsWidgetFactory : StatusBarWidgetFactory {
   override fun isEnabledByDefault(): Boolean = true
 }
 
-internal fun Project.updateBspFileTargetsWidget() {
+fun Project.updateBspFileTargetsWidget() {
   val statusBarWidgetsManager = service<StatusBarWidgetsManager>()
   statusBarWidgetsManager.updateWidget(BspFileTargetsWidgetFactory())
 }

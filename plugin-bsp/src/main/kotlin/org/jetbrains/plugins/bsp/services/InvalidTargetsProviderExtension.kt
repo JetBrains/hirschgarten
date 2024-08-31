@@ -10,7 +10,7 @@ public interface InvalidTargetsProviderExtension : WithBuildToolId {
   public fun provideInvalidTargets(project: Project): List<BuildTargetIdentifier>
 
   public companion object {
-    internal val ep =
+    val ep =
       ExtensionPointName.create<InvalidTargetsProviderExtension>("org.jetbrains.bsp.invalidTargetsProviderExtension")
   }
 }

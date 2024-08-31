@@ -12,19 +12,17 @@ import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.awt.Point
 import java.awt.event.MouseListener
 import java.util.concurrent.Callable
 import javax.swing.Icon
 import javax.swing.JPanel
 import javax.swing.SwingConstants
-
-internal fun BuildTargetInfo.getBuildTargetName(): String = this.displayName ?: this.id.uri
 
 public class BuildTargetSearch(
   private val targetIcon: Icon,
@@ -47,7 +45,7 @@ public class BuildTargetSearch(
       SwingConstants.CENTER,
     )
 
-  private val targets = targets.sortedBy { it.getBuildTargetName() }
+  private val targets = targets.sortedBy { it.buildTargetName }
 
   private val mouseListenerBuilders = mutableSetOf<(BuildTargetContainer) -> MouseListener>()
   private val queryChangeListeners = mutableSetOf<() -> Unit>()
@@ -159,7 +157,7 @@ public class BuildTargetSearch(
     override fun call(): SearchResults =
       SearchResults(
         query,
-        targets.filter { query.containsMatchIn(it.getBuildTargetName()) },
+        targets.filter { query.containsMatchIn(it.buildTargetName) },
       )
   }
 }
