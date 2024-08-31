@@ -1262,13 +1262,13 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf(
           BuildTarget(
             BuildTargetIdentifier("@//genrule:foo"),
-            listOf("no-ide"),
+            listOf("application"),
             emptyList(),
             emptyList(),
             BuildTargetCapabilities().also {
               it.canCompile = true
               it.canTest = false
-              it.canRun = false
+              it.canRun = true
               it.canDebug = false
             },
           ).also {
@@ -1277,7 +1277,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           },
           BuildTarget(
             BuildTargetIdentifier("@//target_with_resources:resources"),
-            listOf("no-ide"),
+            emptyList(),
             emptyList(),
             emptyList(),
             BuildTargetCapabilities().also {
@@ -1330,7 +1330,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     javaTargetsJavaBinary.displayName = "$targetPrefix//java_targets:java_binary"
@@ -1348,7 +1348,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     javaTargetsJavaBinaryWithFlag.displayName = "$targetPrefix//java_targets:java_binary_with_flag"
@@ -1384,7 +1384,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     scalaTargetsScalaBinary.displayName = "$targetPrefix//scala_targets:scala_binary"
@@ -1442,7 +1442,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     targetWithoutJvmFlagsBinary.displayName = "$targetPrefix//target_without_jvm_flags:binary"
@@ -1486,7 +1486,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     targetWithoutArgsBinary.displayName = "$targetPrefix//target_without_args:binary"
@@ -1508,7 +1508,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     targetWithDependencyJavaBinary.displayName = "$targetPrefix//target_with_dependency:java_binary"
@@ -1530,7 +1530,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = true
           it.canRun = false
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     scalaTargetsScalaTest.displayName = "$targetPrefix//scala_targets:scala_test"
@@ -1548,7 +1548,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     targetWithResourcesJavaBinary.displayName = "$targetPrefix//target_with_resources:java_binary"
@@ -1631,7 +1631,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     manualTargetScalaBinary.displayName = "$targetPrefix//manual_target:scala_binary"
@@ -1649,7 +1649,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     manualTargetJavaBinary.displayName = "$targetPrefix//manual_target:java_binary"
@@ -1671,7 +1671,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = true
           it.canRun = false
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     manualTargetScalaTest.displayName = "$targetPrefix//manual_target:scala_test"
@@ -1689,7 +1689,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = true
           it.canRun = false
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     manualTargetJavaTest.displayName = "$targetPrefix//manual_target:java_test"
@@ -1707,7 +1707,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = false
           it.canRun = true
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     environmentVariablesJavaLibrary.displayName = "$targetPrefix//environment_variables:java_binary"
@@ -1725,7 +1725,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           it.canCompile = true
           it.canTest = true
           it.canRun = false
-          it.canDebug = true
+          it.canDebug = false
         },
       )
     environmentVariablesJavaTest.displayName = "$targetPrefix//environment_variables:java_test"

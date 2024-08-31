@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.server.sync.languages
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.protocol.EnhancedSourceItemData
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,10 +41,10 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe sourceDir
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir)
   }
 
   @Test
@@ -66,10 +67,10 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe sourceRoot
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, EnhancedSourceItemData(packageName))
   }
 
   @Test
@@ -92,10 +93,10 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe sourceDir
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir, EnhancedSourceItemData(packageName))
   }
 
   @Test
@@ -118,10 +119,10 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe sourceDir
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceDir, EnhancedSourceItemData("com.example"))
   }
 
   @Test
@@ -144,10 +145,10 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe sourceRoot
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, EnhancedSourceItemData("com.example"))
   }
 
   @Test
@@ -171,9 +172,9 @@ class JVMLanguagePluginParserTest {
     sourceFile.writeText(fileContent)
 
     // when
-    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRoot(sourceFile)
+    val calculatedSourceRoot = JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(sourceFile)
 
     // then
-    calculatedSourceRoot shouldBe sourceRoot
+    calculatedSourceRoot shouldBe SourceRootAndData(sourceRoot, EnhancedSourceItemData(packageName))
   }
 }

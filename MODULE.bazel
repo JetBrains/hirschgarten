@@ -18,7 +18,7 @@ register_toolchains(
     "//:kotlin_toolchain",
 )
 
-bazel_dep(name = "rules_java", version = "7.9.0")
+bazel_dep(name = "rules_java", version = "7.9.1")
 bazel_dep(name = "rules_jvm_external", version = "6.2")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
@@ -61,7 +61,6 @@ maven.install(
         "org.junit.platform:junit-platform-suite-engine:1.11.0",
         "org.kodein.di:kodein-di:7.22.0",
         "org.scala-lang:scala-library:2.13.14",
-        "org.slf4j:slf4j-nop:2.0.16",  # cannot be 2.0.0+ unless slf4j-api dependency in velocity-engine-core is 2.0.0+
     ],
     fail_if_repin_required = True,
     generate_compat_repositories = True,

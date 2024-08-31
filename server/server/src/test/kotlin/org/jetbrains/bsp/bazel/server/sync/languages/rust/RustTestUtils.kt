@@ -4,6 +4,7 @@ import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.SourceSet
+import org.jetbrains.bsp.bazel.server.model.SourceWithData
 import org.jetbrains.bsp.bazel.server.model.Tag
 import java.net.URI
 
@@ -11,7 +12,7 @@ fun createModule(
   label: String,
   directDependencies: List<Label>,
   baseDirectory: URI,
-  sources: Set<URI>,
+  sources: Set<SourceWithData>,
   rustModule: RustModule,
 ): Module =
   Module(
@@ -24,14 +25,14 @@ fun createModule(
     sourceSet =
       SourceSet(
         sources = sources,
-        generatedSources = setOf<URI>(),
-        sourceRoots = setOf<URI>(),
+        generatedSources = setOf(),
+        sourceRoots = setOf(),
       ),
-    resources = setOf<URI>(),
-    outputs = setOf<URI>(),
-    sourceDependencies = setOf<URI>(),
+    resources = setOf(),
+    outputs = setOf(),
+    sourceDependencies = setOf(),
     languageData = rustModule,
-    environmentVariables = mapOf<String, String>(),
+    environmentVariables = mapOf(),
   )
 
 fun createRustModule(
@@ -69,10 +70,12 @@ fun createTarget(moduleName: String, directDependencies: List<String>): Module {
         crateRoot = crateRoot,
         dependencies = directDependencies,
       ),
-    sources = setOf(URI.create(crateRoot)),
+    sources = setOf(URI.create(crateRoot).toSourceWithEmptyData()),
     baseDirectory = URI.create("$pathPrefix/dir$moduleName/"),
   )
 }
+
+fun URI.toSourceWithEmptyData() = SourceWithData(this)
 
 fun getModuleWithoutDependencies(features: List<String> = emptyList()): Pair<RustModule, Module> {
   val rustModule =
@@ -86,8 +89,8 @@ fun getModuleWithoutDependencies(features: List<String> = emptyList()): Pair<Rus
       label = "@//sample_target:sample_target",
       directDependencies = emptyList(),
       sources =
-        setOf<URI>(
-          URI.create("file:///path/to/sample_target/src/lib.rs"),
+        setOf(
+          URI.create("file:///path/to/sample_target/src/lib.rs").toSourceWithEmptyData(),
         ),
       baseDirectory = URI.create("file:///path/to/sample_target/"),
       rustModule = rustModule,
@@ -110,7 +113,7 @@ fun getModulesWithDependency(): List<Module> {
     createModule(
       label = "@//dirA:targetA",
       directDependencies = emptyList(),
-      sources = setOf(URI.create("file:///path/to/dirA/src/lib.rs")),
+      sources = setOf(URI.create("file:///path/to/dirA/src/lib.rs").toSourceWithEmptyData()),
       baseDirectory = URI.create("file:///path/to/dirA/"),
       rustModule = rustModuleA,
     )
@@ -125,7 +128,7 @@ fun getModulesWithDependency(): List<Module> {
     createModule(
       label = "@//dirB:targetB",
       directDependencies = listOf(moduleA.label),
-      sources = setOf(URI.create("file:///path/to/dirB/src/lib.rs")),
+      sources = setOf(URI.create("file:///path/to/dirB/src/lib.rs").toSourceWithEmptyData()),
       baseDirectory = URI.create("file:///path/to/dirB/"),
       rustModule = rustModuleB,
     )

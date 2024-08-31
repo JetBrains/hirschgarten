@@ -27,6 +27,8 @@ Please refer to our [Contribution Guidelines](CONTRIBUTING.md) for more informat
 
 For bug reports and feature requests, please use our [YouTrack project](https://youtrack.jetbrains.com/issues/BAZEL).
 
+Tasks which are rather small and do not require a lot of context can be found in the [Contributions Welcome](https://youtrack.jetbrains.com/issues?q=tag:%20%7Bcontributions-welcome%7D%20project:Bazel%20) list.
+
 ## Development
 
 For developers interested in contributing to or working on Hirschgarten:

@@ -157,6 +157,9 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     aspect_ids = get_aspect_ids(ctx, target)
 
+    default_info = target[DefaultInfo]
+    executable = default_info and default_info.files_to_run.executable != None
+
     info = dict(
         id = str(target.label),
         kind = ctx.rule.kind,
@@ -167,6 +170,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         resources = resources,
         env = getattr(rule_attrs, "env", {}),
         env_inherit = getattr(rule_attrs, "env_inherit", []),
+        executable = executable,
     )
 
     exported_properties = dict(

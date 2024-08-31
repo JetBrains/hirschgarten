@@ -12,6 +12,7 @@ import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import java.net.URI
 import java.nio.file.Path
@@ -47,7 +48,8 @@ class JavaLanguagePlugin(
       )
     }
 
-  override fun calculateSourceRoot(source: Path): Path = JVMLanguagePluginParser.calculateJVMSourceRoot(source)
+  override fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData =
+    JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(source)
 
   private fun getMainClass(jvmTargetInfo: JvmTargetInfo): String? = jvmTargetInfo.mainClass.takeUnless { jvmTargetInfo.mainClass.isBlank() }
 

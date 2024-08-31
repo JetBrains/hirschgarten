@@ -51,7 +51,6 @@ import ch.epfl.scala.bsp4j.ScalaTestClassesResult
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.ScalacOptionsResult
-import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.SourcesParams
@@ -78,6 +77,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
@@ -258,7 +258,10 @@ class BspProjectMapper(
     val canCompile = !tags.contains(Tag.NO_BUILD)
     val canTest = tags.contains(Tag.TEST)
     val canRun = tags.contains(Tag.APPLICATION)
-    val canDebug = canRun || canTest // runnable and testable targets should be debuggable
+    // Native-BSP debug is not supported with Bazel.
+    // It simply means that the `debugSession/start` method should not be called on any Bazel target.
+    // Enabling client-side debugging (for example, for JVM targets via JDWP) is up to the client.
+    val canDebug = false
     return BuildTargetCapabilities().also {
       it.canCompile = canCompile
       it.canTest = canTest
@@ -277,18 +280,20 @@ class BspProjectMapper(
       val sourceSet = module.sourceSet
       val sourceItems =
         sourceSet.sources.map {
-          SourceItem(
-            BspMappings.toBspUri(it),
-            SourceItemKind.FILE,
-            false,
+          EnhancedSourceItem(
+            uri = it.source.toString(),
+            kind = SourceItemKind.FILE,
+            generated = false,
+            data = it.data,
           )
         }
       val generatedSourceItems =
         sourceSet.generatedSources.map {
-          SourceItem(
-            BspMappings.toBspUri(it),
-            SourceItemKind.FILE,
-            true,
+          EnhancedSourceItem(
+            uri = it.source.toString(),
+            kind = SourceItemKind.FILE,
+            generated = true,
+            data = it.data,
           )
         }
       val sourceRoots = sourceSet.sourceRoots.map(BspMappings::toBspUri)

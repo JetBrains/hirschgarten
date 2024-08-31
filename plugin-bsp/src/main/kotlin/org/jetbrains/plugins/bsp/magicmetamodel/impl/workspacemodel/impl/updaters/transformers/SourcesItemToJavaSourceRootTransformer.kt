@@ -55,6 +55,8 @@ internal class SourcesItemToJavaSourceRootTransformer(private val workspaceModel
   }
 
   private fun calculatePackagePrefix(sourceRoot: SourceRoot, sourceRoots: List<URI>): JavaSourceRootPackagePrefix {
+    val packagePrefixFromData = sourceRoot.additionalData?.jvmPackagePrefix
+    if (packagePrefixFromData != null) return JavaSourceRootPackagePrefix(packagePrefixFromData)
     val packageDetails =
       JavaSourcePackageDetails(
         sourceURI = sourceRoot.sourcePath.let { if (sourceRoot.isFile) it.parent else it }.toUri(),
