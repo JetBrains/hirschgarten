@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.tasks.runBuildTargetTask
-import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import org.jetbrains.plugins.bsp.action.SuspendableAction
 
 public class BuildTargetAction(private val targetId: BuildTargetIdentifier) :
   SuspendableAction(

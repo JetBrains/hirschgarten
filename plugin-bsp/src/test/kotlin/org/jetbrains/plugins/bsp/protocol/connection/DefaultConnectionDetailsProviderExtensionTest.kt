@@ -12,8 +12,8 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.extension.points.bspBuildToolId
 import org.jetbrains.plugins.bsp.extension.points.withBuildToolIdOrDefault
-import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
-import org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.ConnectionDetailsProviderExtension
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.DefaultConnectionDetailsProviderExtension
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName

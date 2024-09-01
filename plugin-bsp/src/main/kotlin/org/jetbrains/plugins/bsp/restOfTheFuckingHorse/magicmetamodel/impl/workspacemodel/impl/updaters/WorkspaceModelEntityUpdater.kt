@@ -8,7 +8,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.plugins.bsp.workspacemodel.entities.WorkspaceModelEntity
 import java.nio.file.Path
 
-internal data class WorkspaceModelEntityUpdaterConfig(
+data class WorkspaceModelEntityUpdaterConfig(
   val workspaceEntityStorageBuilder: MutableEntityStorage,
   val virtualFileUrlManager: VirtualFileUrlManager,
   val projectBasePath: Path,

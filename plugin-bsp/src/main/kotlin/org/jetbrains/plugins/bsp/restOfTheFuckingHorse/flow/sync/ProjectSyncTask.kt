@@ -25,7 +25,7 @@ import org.jetbrains.plugins.bsp.flow.sync.ProjectSyncHook.ProjectSyncHookEnviro
 import org.jetbrains.plugins.bsp.performance.testing.bspTracer
 import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.connection
-import org.jetbrains.plugins.bsp.ui.actions.saveAllFiles
+import org.jetbrains.plugins.bsp.action.saveAllFiles
 import org.jetbrains.plugins.bsp.ui.console.syncConsole
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture

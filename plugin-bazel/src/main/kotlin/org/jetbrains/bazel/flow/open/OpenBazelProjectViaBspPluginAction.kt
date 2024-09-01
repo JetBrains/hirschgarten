@@ -12,7 +12,7 @@ import org.jetbrains.bazel.coroutines.CoroutineService
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.flow.open.BspStartupActivity
 import org.jetbrains.plugins.bsp.flow.open.initProperties
-import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import org.jetbrains.plugins.bsp.action.SuspendableAction
 
 private val ELIGIBLE_BAZEL_PROJECT_FILE_NAMES =
   listOf(

@@ -7,7 +7,7 @@ import ch.epfl.scala.bsp4j.ResourcesItem
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ResourceRoot
+import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.nio.file.Files

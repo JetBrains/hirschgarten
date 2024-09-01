@@ -25,7 +25,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.actions.registered.ResyncAction
 import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.actions.registered.isSyncInProgress
-import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import org.jetbrains.plugins.bsp.action.SuspendableAction
 import java.io.File
 import java.net.URI
 

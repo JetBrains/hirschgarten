@@ -18,7 +18,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.tasks.BspServerSingleTargetTask
 import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.tasks.BspTaskStatusLogger
-import org.jetbrains.plugins.bsp.ui.actions.saveAllFiles
+import org.jetbrains.plugins.bsp.action.saveAllFiles
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.UUID

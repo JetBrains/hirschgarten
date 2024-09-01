@@ -16,9 +16,9 @@ import org.jetbrains.plugins.bsp.magicmetamodel.DefaultLibraryNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toDefaultTargetsMap
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.GenericModuleInfo
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateLibraryDependency
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.IntermediateModuleDependency
+import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
+import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDependency
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 

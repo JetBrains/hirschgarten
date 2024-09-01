@@ -7,11 +7,11 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 import org.jetbrains.plugins.bsp.extension.points.bspBuildToolId
-import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtension
-import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtensionAdapter
-import org.jetbrains.plugins.bsp.server.connection.ConnectionDetailsProviderExtensionJavaShim
-import org.jetbrains.plugins.bsp.server.connection.DefaultConnectionDetailsProviderExtension
-import org.jetbrains.plugins.bsp.server.connection.connectionDetailsProvider
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.ConnectionDetailsProviderExtension
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.ConnectionDetailsProviderExtensionAdapter
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.ConnectionDetailsProviderExtensionJavaShim
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.DefaultConnectionDetailsProviderExtension
+import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.connectionDetailsProvider
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName

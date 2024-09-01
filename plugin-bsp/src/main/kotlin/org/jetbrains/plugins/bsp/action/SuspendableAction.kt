@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.actions
+package org.jetbrains.plugins.bsp.action
 
 import com.intellij.ide.impl.isTrusted
 import com.intellij.openapi.actionSystem.ActionUpdateThread

@@ -51,7 +51,7 @@ public interface ConnectionDetailsProviderExtension : WithBuildToolId {
   public fun provideNewConnectionDetails(project: Project, currentConnectionDetails: BspConnectionDetails?): BspConnectionDetails?
 
   public companion object {
-    internal val ep: ExtensionPointName<ConnectionDetailsProviderExtension> =
+    val ep: ExtensionPointName<ConnectionDetailsProviderExtension> =
       ExtensionPointName.create("org.jetbrains.bsp.connectionDetailsProviderExtension")
   }
 }

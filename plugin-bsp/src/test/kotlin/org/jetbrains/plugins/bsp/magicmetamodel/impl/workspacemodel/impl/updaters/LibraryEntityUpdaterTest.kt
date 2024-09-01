@@ -4,7 +4,7 @@ import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
+import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.workspace.model.matchers.entries.ExpectedLibraryEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldBeEqual
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder

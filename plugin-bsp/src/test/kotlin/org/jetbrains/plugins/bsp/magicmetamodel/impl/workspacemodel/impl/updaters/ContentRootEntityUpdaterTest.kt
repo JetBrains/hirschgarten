@@ -4,7 +4,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.update
 
 import com.intellij.platform.workspace.jps.entities.ContentRootEntity
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ContentRoot
+import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedContentRootEntity
 import org.jetbrains.workspace.model.matchers.entries.shouldContainExactlyInAnyOrder
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelWithParentJavaModuleBaseTest

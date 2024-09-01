@@ -15,7 +15,7 @@ import com.intellij.openapi.ui.Messages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import org.jetbrains.plugins.bsp.action.SuspendableAction
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
 

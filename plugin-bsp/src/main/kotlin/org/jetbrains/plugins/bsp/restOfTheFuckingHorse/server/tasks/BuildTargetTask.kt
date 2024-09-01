@@ -25,7 +25,7 @@ import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskEventsService
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
 import org.jetbrains.plugins.bsp.taskEvents.TaskId
-import org.jetbrains.plugins.bsp.ui.actions.saveAllFiles
+import org.jetbrains.plugins.bsp.action.saveAllFiles
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.UUID

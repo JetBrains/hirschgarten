@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.restOfTheFuckingHorse.server.connection.connection
-import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import org.jetbrains.plugins.bsp.action.SuspendableAction
 
 private val log = logger<DisconnectAction>()
 

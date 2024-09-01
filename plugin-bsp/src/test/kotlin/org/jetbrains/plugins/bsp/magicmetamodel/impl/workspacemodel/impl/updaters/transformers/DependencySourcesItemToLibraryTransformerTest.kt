@@ -4,7 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.Library
+import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 

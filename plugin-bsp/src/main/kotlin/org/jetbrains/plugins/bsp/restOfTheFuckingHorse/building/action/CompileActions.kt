@@ -10,7 +10,7 @@ import org.jetbrains.plugins.bsp.building.task.createAllBspOnlyModuleBuildTasks
 import org.jetbrains.plugins.bsp.building.task.createAllJpsOnlyModuleBuildTasks
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import org.jetbrains.plugins.bsp.action.SuspendableAction
 import org.jetbrains.plugins.bsp.ui.console.BspConsoleService
 
 internal abstract class CustomCompileProjectAction(text: String) : SuspendableAction(text) {
