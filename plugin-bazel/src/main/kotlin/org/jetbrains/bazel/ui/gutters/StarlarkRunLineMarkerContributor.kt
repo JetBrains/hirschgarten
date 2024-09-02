@@ -23,7 +23,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleAc
 
 internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? {
-    val grandParent = element.parent.parent
+    val grandParent = element.parent?.parent ?: return null
     return element.shouldAddMarker(grandParent).ifTrue { grandParent.calculateMarkerInfo() }
   }
 
@@ -36,7 +36,7 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
       )
 
   private fun isTopLevelCall(element: PsiElement): Boolean =
-    element.parent is StarlarkExpressionStatement && element.parent.parent is StarlarkFile
+    element.parent is StarlarkExpressionStatement && element.parent?.parent is StarlarkFile
 
   private fun PsiElement.calculateMarkerInfo(): Info? =
     containingFile.virtualFile?.let { virtualFile ->
