@@ -124,6 +124,8 @@ public class BspFileTargetsWidgetFactory : StatusBarWidgetFactory {
 }
 
 internal fun Project.updateBspFileTargetsWidget() {
-  val statusBarWidgetsManager = service<StatusBarWidgetsManager>()
-  statusBarWidgetsManager.updateWidget(BspFileTargetsWidgetFactory())
+  if (!ApplicationManager.getApplication().isHeadlessEnvironment) {
+    val statusBarWidgetsManager = service<StatusBarWidgetsManager>()
+    statusBarWidgetsManager.updateWidget(BspFileTargetsWidgetFactory::class.java)
+  }
 }
