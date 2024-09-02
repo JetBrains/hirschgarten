@@ -9,7 +9,7 @@ import com.android.tools.idea.projectsystem.SourceProvidersImpl
 import com.android.tools.idea.projectsystem.emptySourceProvider
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.createSourceProvidersForLegacyModule
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.moduleEntity
+import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.moduleEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
 
 public class BspSourceProvidersFactory : SourceProvidersFactory {

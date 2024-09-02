@@ -2,7 +2,7 @@ package org.jetbrains.bazel.extension
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.BuildTargetInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import org.junit.jupiter.api.Test
 
 class BazelBuildTargetClassifierTest {

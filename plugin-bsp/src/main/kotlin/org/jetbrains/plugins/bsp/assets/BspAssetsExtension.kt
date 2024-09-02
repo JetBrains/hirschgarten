@@ -2,8 +2,8 @@ package org.jetbrains.plugins.bsp.assets
 
 import com.intellij.icons.AllIcons
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
-import org.jetbrains.plugins.bsp.extension.points.BuildToolId
-import org.jetbrains.plugins.bsp.extension.points.bspBuildToolId
+import org.jetbrains.plugins.bsp.config.BuildToolId
+import org.jetbrains.plugins.bsp.config.bspBuildToolId
 import javax.swing.Icon
 
 public class BspAssetsExtension : BuildToolAssetsExtension {

@@ -2,7 +2,7 @@ package org.jetbrains.plugins.bsp.utils
 
 import java.security.MessageDigest
 
-internal object StringUtils {
+object StringUtils {
   /**
    * Creates a md5 hashed string from an original string
    * @param s the original string

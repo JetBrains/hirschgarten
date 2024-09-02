@@ -13,9 +13,9 @@ import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.getModule
+import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.getModule
+import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
-import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Path

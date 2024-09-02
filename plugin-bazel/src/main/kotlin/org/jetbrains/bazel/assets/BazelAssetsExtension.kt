@@ -2,7 +2,7 @@ package org.jetbrains.bazel.assets
 
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.plugins.bsp.assets.BuildToolAssetsExtension
-import org.jetbrains.plugins.bsp.extension.points.BuildToolId
+import org.jetbrains.plugins.bsp.config.BuildToolId
 import javax.swing.Icon
 
 internal class BazelAssetsExtension : BuildToolAssetsExtension {

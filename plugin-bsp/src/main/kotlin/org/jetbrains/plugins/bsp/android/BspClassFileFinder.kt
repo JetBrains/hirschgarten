@@ -7,7 +7,7 @@ import com.android.tools.idea.rendering.classloading.loaders.JarManager
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.workspaceModel.ide.toPath
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.moduleEntity
+import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.moduleEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.jvmBinaryJarsEntity
 
 public class BspClassFileFinder(private val module: Module) : ClassFileFinder {
