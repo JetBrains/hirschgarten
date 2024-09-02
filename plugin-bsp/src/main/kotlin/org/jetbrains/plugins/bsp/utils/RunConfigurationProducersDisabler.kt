@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.utils
 import com.intellij.execution.RunConfigurationProducerService
 import com.intellij.openapi.project.Project
 
-internal object RunConfigurationProducersDisabler {
+object RunConfigurationProducersDisabler {
   operator fun invoke(project: Project): Boolean =
     RunConfigurationProducerService
       .getInstance(project)

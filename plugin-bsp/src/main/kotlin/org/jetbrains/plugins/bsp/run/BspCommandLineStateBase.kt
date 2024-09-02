@@ -8,11 +8,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
+import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
-import org.jetbrains.plugins.bsp.server.connection.connection
-import org.jetbrains.plugins.bsp.services.BspCoroutineService
-import org.jetbrains.plugins.bsp.services.BspTaskEventsService
-import org.jetbrains.plugins.bsp.services.OriginId
+import org.jetbrains.plugins.bsp.taskEvents.BspTaskEventsService
+import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
+import org.jetbrains.plugins.bsp.taskEvents.OriginId
 
 abstract class BspCommandLineStateBase(environment: ExecutionEnvironment, protected val originId: OriginId) :
   CommandLineState(environment) {

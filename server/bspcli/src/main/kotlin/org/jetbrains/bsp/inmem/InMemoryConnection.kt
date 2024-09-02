@@ -15,7 +15,7 @@ import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.bsp.protocol.utils.EnhancedSourceItemTypeAdapter
-import org.jetbrains.plugins.bsp.server.connection.TelemetryContextPropagatingLauncherBuilder
+import org.jetbrains.plugins.bsp.impl.server.connection.TelemetryContextPropagatingLauncherBuilder
 import java.io.OutputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream

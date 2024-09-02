@@ -6,6 +6,7 @@ import ch.epfl.scala.bsp4j.TestFinish
 import ch.epfl.scala.bsp4j.TestStart
 import ch.epfl.scala.bsp4j.TestStatus
 import ch.epfl.scala.bsp4j.TestTask
+import com.google.idea.testing.BazelTestApplication
 import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
 import io.kotest.matchers.equals.shouldBeEqual
@@ -28,6 +29,7 @@ internal class MockBspProcessHandler : BspProcessHandler(CompletableDeferred(0))
   override fun detachProcessImpl() {}
 }
 
+@BazelTestApplication
 class BspTestTaskListenerTest {
   private lateinit var handler: MockBspProcessHandler
   private lateinit var listener: BspTestTaskListener

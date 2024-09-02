@@ -18,11 +18,11 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.run.BspCommandLineStateBase
 import org.jetbrains.plugins.bsp.run.BspProcessHandler
-import org.jetbrains.plugins.bsp.run.BspTaskListener
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import org.jetbrains.plugins.bsp.run.state.GenericTestState
 import org.jetbrains.plugins.bsp.run.task.BspTestTaskListener
-import org.jetbrains.plugins.bsp.services.OriginId
+import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
+import org.jetbrains.plugins.bsp.taskEvents.OriginId
 
 class BspTestCommandLineState(
   environment: ExecutionEnvironment,

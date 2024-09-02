@@ -7,7 +7,7 @@ import java.net.URLEncoder
  * Utility class for encoding and decoding text using URL encoding, which can be used for creating URI.
  * Directly using the encoder from `java.net` misses the case of space character.
  */
-internal object BspURLEncoder {
+object BspURLEncoder {
   /**
    * The method accepts a (maybe malformed) URI, e.g., with spaces, and returns a valid URI string.
    */
@@ -25,4 +25,4 @@ internal object BspURLEncoder {
 /**
  * This helper util accepts a (maybe malformed) URI and returns the corresponding URI object
  */
-internal fun String.safeCastToURI(): URI = URI.create(BspURLEncoder.encode(this))
+fun String.safeCastToURI(): URI = URI.create(BspURLEncoder.encode(this))

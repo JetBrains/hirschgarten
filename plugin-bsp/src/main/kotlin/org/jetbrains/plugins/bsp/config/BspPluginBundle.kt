@@ -7,7 +7,7 @@ import org.jetbrains.annotations.PropertyKey
 @NonNls
 private const val BUNDLE = "messages.BspPluginBundle"
 
-internal object BspPluginBundle : DynamicBundle(BUNDLE) {
+object BspPluginBundle : DynamicBundle(BUNDLE) {
   @JvmStatic
   fun message(
     @PropertyKey(resourceBundle = BUNDLE) key: String,

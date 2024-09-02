@@ -8,15 +8,6 @@ import com.intellij.openapi.options.SettingsEditor
 import com.intellij.util.xmlb.annotations.Attribute
 import org.jetbrains.plugins.bsp.run.BspRunConfigurationState
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
-import org.jetbrains.plugins.bsp.ui.runconfig.EnvironmentVariablesDataOptions
-import org.jetbrains.plugins.bsp.ui.runconfig.HasEnv
-import org.jetbrains.plugins.bsp.ui.runconfig.HasProgramArguments
-import org.jetbrains.plugins.bsp.ui.runconfig.HasTestFilter
-import org.jetbrains.plugins.bsp.ui.runconfig.HasWorkingDirectory
-import org.jetbrains.plugins.bsp.ui.runconfig.addEnvironmentFragment
-import org.jetbrains.plugins.bsp.ui.runconfig.addTestFilterFragment
-import org.jetbrains.plugins.bsp.ui.runconfig.programArgumentsFragment
-import org.jetbrains.plugins.bsp.ui.runconfig.workingDirectoryFragment
 
 class GenericTestState :
   BspRunConfigurationState<GenericTestState>(),

@@ -9,10 +9,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.coroutines.CoroutineService
+import org.jetbrains.plugins.bsp.action.SuspendableAction
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.flow.open.BspStartupActivity
-import org.jetbrains.plugins.bsp.flow.open.initProperties
-import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
+import org.jetbrains.plugins.bsp.impl.flow.open.initProperties
+import org.jetbrains.plugins.bsp.startup.BspStartupActivity
 
 private val ELIGIBLE_BAZEL_PROJECT_FILE_NAMES =
   listOf(

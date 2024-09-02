@@ -11,10 +11,10 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.plugins.bsp.extension.points.BuildToolId
-import org.jetbrains.plugins.bsp.flow.sync.ProjectSyncHook
-import org.jetbrains.plugins.bsp.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.plugins.bsp.flow.sync.query
+import org.jetbrains.plugins.bsp.config.BuildToolId
+import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
+import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.plugins.bsp.impl.flow.sync.query
 import org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 

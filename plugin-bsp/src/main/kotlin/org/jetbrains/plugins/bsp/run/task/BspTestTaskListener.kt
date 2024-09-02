@@ -17,8 +17,8 @@ import com.intellij.openapi.util.Key
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.plugins.bsp.run.BspProcessHandler
-import org.jetbrains.plugins.bsp.run.BspTaskListener
-import org.jetbrains.plugins.bsp.run.TaskId
+import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
+import org.jetbrains.plugins.bsp.taskEvents.TaskId
 
 class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()

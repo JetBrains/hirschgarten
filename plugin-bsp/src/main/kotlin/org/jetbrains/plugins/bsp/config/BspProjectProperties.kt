@@ -9,7 +9,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import org.jetbrains.plugins.bsp.extension.points.BuildToolId
 
 data class BspProjectPropertiesState(
   var isBspProject: Boolean = false,

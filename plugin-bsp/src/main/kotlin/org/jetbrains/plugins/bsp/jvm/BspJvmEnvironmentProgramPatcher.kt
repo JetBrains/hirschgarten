@@ -7,7 +7,7 @@ import com.intellij.execution.configurations.RunProfile
 import com.intellij.execution.runners.JavaProgramPatcher
 import com.intellij.openapi.util.UserDataHolderBase
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JPS_COMPILED_BASE_DIRECTORY
-import org.jetbrains.plugins.bsp.ui.actions.target.LocalJvmRunnerAction
+import org.jetbrains.plugins.bsp.runnerAction.LocalJvmRunnerAction
 
 public class BspJvmEnvironmentProgramPatcher : JavaProgramPatcher() {
   override fun patchJavaParameters(
