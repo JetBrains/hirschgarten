@@ -6,6 +6,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
@@ -18,7 +19,7 @@ open class E2ETest(
     name = "[e2e tests] $targets",
     vcsRoot = vcsRoot,
     failureConditions = failureConditions,
-    artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-testlogs/** => testlogs.zip",
+    artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
     steps = {
       bazel {
         this.name = "test $targets"
@@ -33,6 +34,16 @@ open class E2ETest(
         Utils.DockerParams.get().forEach { (key, value) ->
           param(key, value)
         }
+      }
+      script {
+        id = "simpleRunner"
+        scriptContent =
+          """
+          #!/bin/bash
+          set -euxo
+          
+          cp -R /home/teamcity/agent/system/.persistent_cache/bazel/_bazel_hirschuser/*/execroot/_main/bazel-out/k8-fastbuild/testlogs .
+          """.trimIndent()
       }
     },
     requirements = requirements,
