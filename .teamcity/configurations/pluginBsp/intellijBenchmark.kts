@@ -4,13 +4,14 @@ import configurations.BaseConfiguration
 import configurations.Utils
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 open class Benchmark(vcsRoot: GitVcsRoot) :
   BaseConfiguration.BaseBuildType(
     name = "[benchmark] Plugin BSP 10 targets",
     vcsRoot = vcsRoot,
-    artifactRules = "+:%system.teamcity.build.checkoutDir%/bazel-testlogs/** => testlogs.zip",
+    artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
     steps = {
       val sysArgs = "--jvmopt=\"-Dbsp.benchmark.project.path=/home/hirschuser/project_10\" --jvmopt=\"-Dbsp.benchmark.teamcity.url=https://bazel.teamcity.com\""
       bazel {
@@ -25,6 +26,16 @@ open class Benchmark(vcsRoot: GitVcsRoot) :
         Utils.DockerParams.get().forEach { (key, value) ->
           param(key, value)
         }
+      }
+      script {
+        id = "simpleRunner"
+        scriptContent =
+          """
+          #!/bin/bash
+          set -euxo
+          
+          cp -R /home/teamcity/agent/system/.persistent_cache/bazel/_bazel_hirschuser/*/execroot/_main/bazel-out/k8-fastbuild/testlogs .
+          """.trimIndent()
       }
     },
   )
