@@ -13,7 +13,9 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.sequences.shouldHaveSize
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.extension.points.bspBuildToolId
 import org.jetbrains.plugins.bsp.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
@@ -40,6 +42,7 @@ class OutputPathUrisSyncHookTest : MockProjectBaseTest() {
     hook = OutputPathUrisSyncHook()
     projectRoot = Path(project.basePath!!).toVirtualFile()
     project.rootDir = projectRoot
+    project.buildToolId = bspBuildToolId
   }
 
   @Test
