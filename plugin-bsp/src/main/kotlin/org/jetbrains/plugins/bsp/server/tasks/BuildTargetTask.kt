@@ -15,6 +15,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -166,6 +167,8 @@ public suspend fun runBuildTargetTask(
     saveAllFiles()
     withBackgroundProgress(project, "Building target(s)...") {
       BuildTargetTask(project).connectAndExecute(targetIds)
+    }.also {
+      VirtualFileManager.getInstance().asyncRefresh()
     }
   } catch (e: Exception) {
     when {

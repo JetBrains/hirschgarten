@@ -60,7 +60,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
       val targetInfo = configuration.project.service<TemporaryTargetUtils>().getBuildTargetInfoForId(target)
       val module = targetInfo?.getModule(environment.project) ?: continue
       OrderEnumerator.orderEntries(module).librariesOnly().recursively().withoutSdk().forEachLibrary { library ->
-        // Use URLs directly because getFiles will be empty until everything is indexed.
+        // Use URLs directly because getFiles will be empty until VFS refresh.
         library
           .getUrls(OrderRootType.CLASSES)
           .mapNotNull { "file://" + it.removePrefix("jar://").removeSuffix("!/") }
