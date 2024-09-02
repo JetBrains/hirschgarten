@@ -560,8 +560,6 @@ class BazelProjectMapper(
       sources = getSourceJarUris(targetInfo),
       dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
       interfaceJars = getTargetInterfaceJarsSet(targetInfo).map { it.toUri() }.toSet(),
-      // Even when those JARs don't exist yet because they aren't built yet, we still need to pass them.
-      keepNonExistentJars = intellijPluginJars.isNotEmpty(),
     )
   }
 

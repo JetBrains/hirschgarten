@@ -90,7 +90,6 @@ import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.relativeToOrNull
 import kotlin.io.path.toPath
@@ -143,26 +142,13 @@ class BspProjectMapper(
   fun workspaceLibraries(project: Project): WorkspaceLibrariesResult {
     val libraries =
       project.libraries.values.map {
-        val id = BuildTargetIdentifier(it.label.value)
-        val dependencies = it.dependencies.map { dep -> BuildTargetIdentifier(dep.value) }
-
-        if (it.keepNonExistentJars) {
-          LibraryItem(
-            id = id,
-            dependencies = dependencies,
-            ijars = it.interfaceJars.map { uri -> uri.toString() },
-            jars = it.outputs.map { uri -> uri.toString() },
-            sourceJars = it.sources.map { uri -> uri.toString() },
-          )
-        } else {
-          LibraryItem(
-            id = id,
-            dependencies = dependencies,
-            ijars = it.interfaceJars.filter { o -> o.toPath().exists() }.map { o -> o.toString() },
-            jars = it.outputs.filter { o -> o.toPath().exists() }.map { uri -> uri.toString() },
-            sourceJars = it.sources.filter { o -> o.toPath().exists() }.map { uri -> uri.toString() },
-          )
-        }
+        LibraryItem(
+          id = BuildTargetIdentifier(it.label.value),
+          dependencies = it.dependencies.map { dep -> BuildTargetIdentifier(dep.value) },
+          ijars = it.interfaceJars.map { uri -> uri.toString() },
+          jars = it.outputs.map { uri -> uri.toString() },
+          sourceJars = it.sources.map { uri -> uri.toString() },
+        )
       }
     return WorkspaceLibrariesResult(libraries)
   }
