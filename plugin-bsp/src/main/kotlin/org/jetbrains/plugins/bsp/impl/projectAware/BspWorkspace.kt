@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.impl.projectAware
 
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
@@ -15,9 +16,12 @@ import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.ui.tree.TreeVisitor
 import com.intellij.util.messages.Topic
 import com.intellij.util.ui.tree.TreeUtil
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.jetbrains.kotlin.tooling.core.Interner
 import org.jetbrains.kotlin.tooling.core.WeakInterner
 import org.jetbrains.plugins.bsp.buildTask.BspProjectModuleBuildTasksTracker
+import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import javax.swing.tree.TreePath
 
 @Service(Service.Level.PROJECT)
@@ -91,7 +95,13 @@ public class BspExternalServicesSubscriber(private val project: Project) {
       object : BulkFileListener {
         override fun after(events: MutableList<out VFileEvent>) {
           if (shouldNotifyOnEvents(events)) BspProjectAware.notify(project)
-          if (shouldRefreshProjectView(events)) ProjectView.getInstance(project).refresh()
+          if (shouldRefreshProjectView(events)) {
+            BspCoroutineService.getInstance(project).start {
+              withContext(Dispatchers.EDT) {
+                ProjectView.getInstance(project).refresh()
+              }
+            }
+          }
         }
       },
     )
