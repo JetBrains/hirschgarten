@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
-import ch.epfl.scala.bsp4j.StatusCode
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BasicBazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
@@ -10,20 +9,29 @@ import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
 import org.jetbrains.bsp.bazel.commons.escapeNewLines
 import java.nio.file.Paths
 
+private const val RELEASE = "release"
+private const val EXECUTION_ROOT = "execution_root"
+private const val OUTPUT_BASE = "output_base"
+private const val WORKSPACE = "workspace"
+private const val STARLARK_SEMANTICS = "starlark-semantics"
+
 class BazelInfoResolver(private val bazelRunner: BazelRunner) {
   fun resolveBazelInfo(cancelChecker: CancelChecker): BazelInfo = LazyBazelInfo { bazelInfoFromBazel(cancelChecker) }
 
   private fun bazelInfoFromBazel(cancelChecker: CancelChecker): BazelInfo {
-    val isBzlModEnabled = calculateBzlModEnabled(cancelChecker)
-    val command = bazelRunner.buildBazelCommand { info() }
+    val command = bazelRunner.buildBazelCommand {
+      info {
+        options.addAll(listOf(RELEASE, EXECUTION_ROOT, OUTPUT_BASE, WORKSPACE, STARLARK_SEMANTICS))
+      }
+    }
     val processResult =
       bazelRunner
         .runBazelCommand(command, serverPidFuture = null)
         .waitAndGetResult(cancelChecker, true)
-    return parseBazelInfo(processResult, isBzlModEnabled)
+    return parseBazelInfo(processResult)
   }
 
-  private fun parseBazelInfo(bazelProcessResult: BazelProcessResult, isBzlModEnabled: Boolean): BasicBazelInfo {
+  private fun parseBazelInfo(bazelProcessResult: BazelProcessResult): BasicBazelInfo {
     val outputMap =
       bazelProcessResult
         .stdoutLines
@@ -40,27 +48,28 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
             "Bazel Info output: '${bazelProcessResult.meaningfulOutput().escapeNewLines()}'",
         )
 
-    fun obtainBazelReleaseVersion() =
-      BazelRelease.fromReleaseString(extract("release"))
+    val bazelReleaseVersion =
+      BazelRelease.fromReleaseString(extract(RELEASE))
         ?: bazelRunner.workspaceRoot?.let { BazelRelease.fromBazelVersionFile(it) }.orLatestSupported()
 
+    // Idea taken from https://github.com/bazelbuild/bazel/issues/21303#issuecomment-2007628330
+    val starlarkSemantics = extract(STARLARK_SEMANTICS)
+    val isBzlModEnabled = if ("enable_bzlmod=true" in starlarkSemantics) {
+      true
+    } else if ("enable_bzlmod=false" in starlarkSemantics) {
+      false
+    } else {
+      bazelReleaseVersion.major >= 7
+    }
+
     return BasicBazelInfo(
-      execRoot = extract("execution_root"),
-      outputBase = Paths.get(extract("output_base")),
-      workspaceRoot = Paths.get(extract("workspace")),
-      release = obtainBazelReleaseVersion(),
+      execRoot = extract(EXECUTION_ROOT),
+      outputBase = Paths.get(extract(OUTPUT_BASE)),
+      workspaceRoot = Paths.get(extract(WORKSPACE)),
+      release = bazelReleaseVersion,
       isBzlModEnabled = isBzlModEnabled,
     )
   }
-
-  // this method does a small check whether bzlmod is enabled in the project
-  // by running an arbitrary a bazel mod command and check for ok status code
-  private fun calculateBzlModEnabled(cancelChecker: CancelChecker): Boolean =
-    bazelRunner
-      .buildBazelCommand { showRepo() }
-      .let { bazelRunner.runBazelCommand(it, logProcessOutput = false, serverPidFuture = null) }
-      .waitAndGetResult(cancelChecker)
-      .statusCode == StatusCode.OK
 
   companion object {
     private val InfoLinePattern = "([\\w-]+): (.*)".toRegex()
