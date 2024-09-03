@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.impl.flow.sync
 
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.ide.projectView.ProjectView
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -120,9 +121,11 @@ class ProjectSyncTask(private val project: Project) {
     diff.applyAll(PROJECT_SYNC_TASK_ID)
   }
 
-  private fun postSync() {
+  private suspend fun postSync() {
     BspSyncStatusService.getInstance(project).finishSync()
-    ProjectView.getInstance(project).refresh()
+    withContext(Dispatchers.EDT) {
+      ProjectView.getInstance(project).refresh()
+    }
   }
 }
 
