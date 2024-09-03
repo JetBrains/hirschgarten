@@ -41,6 +41,9 @@ private val log = logger<BspProjectOpenProcessor>()
 internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(bspBuildToolId) {
   override val name: String = BspPluginBundle.message("plugin.name")
 
+  override fun calculateProjectFolderToOpen(virtualFile: VirtualFile): VirtualFile =
+    throw UnsupportedOperationException("Cannot infer project folder to open for a generic BSP project")
+
   override val icon: Icon = BspPluginIcons.bsp
 
   override fun canOpenProject(file: VirtualFile): Boolean {

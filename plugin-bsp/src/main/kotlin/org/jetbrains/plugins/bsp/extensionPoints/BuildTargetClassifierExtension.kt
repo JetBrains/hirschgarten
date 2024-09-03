@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.extension.points
+package org.jetbrains.plugins.bsp.extensionPoints
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import org.jetbrains.plugins.bsp.config.BuildToolId

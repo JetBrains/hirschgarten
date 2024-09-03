@@ -3,10 +3,11 @@ package org.jetbrains.plugins.bsp.inmemserver
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import org.jetbrains.bazel.bsp.connection.DotBazelBspCreator
+import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.bsp.inmem.Connection
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.extension.points.GenericConnection
+import org.jetbrains.plugins.bsp.extensionPoints.GenericConnection
 import org.jetbrains.plugins.bsp.impl.server.client.BspClient
 import org.jetbrains.plugins.bsp.impl.server.client.BspServerProvider
 import java.nio.file.Path
@@ -23,6 +24,7 @@ class InMemServerProviderImpl : BspServerProvider {
         Connection(
           installationDirectory,
           metricsFile,
+          project.bazelProjectSettings.projectViewPath?.toAbsolutePath(),
           installationDirectory,
           bspClient,
           propagateTelemetryContext = true,

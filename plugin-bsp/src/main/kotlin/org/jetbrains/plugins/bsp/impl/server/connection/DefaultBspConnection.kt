@@ -29,7 +29,7 @@ import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.extension.points.GenericConnection
+import org.jetbrains.plugins.bsp.extensionPoints.GenericConnection
 import org.jetbrains.plugins.bsp.impl.server.chunking.ChunkingBuildServer
 import org.jetbrains.plugins.bsp.impl.server.client.BspClient
 import org.jetbrains.plugins.bsp.impl.server.client.BspServerProvider
@@ -417,6 +417,7 @@ class DefaultBspConnection(
       val currentConnectionDetails =
         connectionDetailsProviderExtension.provideNewConnectionDetails(project, connectionDetails)
       if (currentConnectionDetails != null) {
+        connectionDetails = currentConnectionDetails
         currentConnectionDetails.autoConnect(bspClient)
       } else if (!isConnected()) {
         connectionDetails?.autoConnect(bspClient)

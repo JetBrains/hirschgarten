@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction
 import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
+import org.jetbrains.plugins.bsp.extensionPoints.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.JComponent
 

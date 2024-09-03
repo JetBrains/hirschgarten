@@ -4,7 +4,7 @@
     <vendor>JetBrains</vendor>
     <extensionPoints>
         <extensionPoint qualifiedName="org.jetbrains.bsp.buildTargetClassifierExtension"
-                        interface="org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension"
+                        interface="org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.pythonSdkGetterExtension"
                         interface="org.jetbrains.plugins.bsp.python.PythonSdkGetterExtension"
@@ -37,7 +37,10 @@
                         interface="org.jetbrains.plugins.bsp.impl.server.connection.ConnectionDetailsProviderExtensionJavaShim"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.buildToolWindowTargetActionProviderExtension"
-                        interface="org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension"
+                        interface="org.jetbrains.plugins.bsp.extensionPoints.BuildToolWindowTargetActionProviderExtension"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.bspToolWindowSettingsProviderExtension"
+                        interface="org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowSettingsProviderExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunConfigurationExtension"
                         interface="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationExtensionManager"
@@ -64,7 +67,7 @@
                 implementation="org.jetbrains.plugins.bsp.assets.BspAssetsExtension"/>
 
         <buildTargetClassifierExtension
-                implementation="org.jetbrains.plugins.bsp.extension.points.DefaultBuildTargetClassifierExtension"/>
+                implementation="org.jetbrains.plugins.bsp.extensionPoints.DefaultBuildTargetClassifierExtension"/>
 
         <connectionDetailsProviderExtension
                 implementation="org.jetbrains.plugins.bsp.impl.server.connection.DefaultConnectionDetailsProviderExtension"/>
