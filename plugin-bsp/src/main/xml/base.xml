@@ -169,7 +169,7 @@
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <projectConfigurator
-                implementation="org.jetbrains.plugins.bsp.services.BspKotlinProjectConfigurator"
+                implementation="org.jetbrains.plugins.bsp.kotlin.BspKotlinProjectConfigurator"
                 order="first"
         />
 
