@@ -3,6 +3,7 @@ package org.jetbrains.bsp.bazel.server.sync
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.tracer
 import org.jetbrains.bsp.bazel.server.benchmark.use
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
@@ -27,6 +28,7 @@ class ProjectResolver(
   private val bazelInfo: BazelInfo,
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
+  private val bspClientLogger: BspClientLogger,
 ) {
   private fun <T> measured(description: String, f: () -> T): T = tracer.spanBuilder(description).use { f() }
 
@@ -39,7 +41,7 @@ class ProjectResolver(
         )
 
       val bazelExternalRulesQuery =
-        BazelExternalRulesQueryImpl(bazelRunner, bazelInfo.isBzlModEnabled, workspaceContext.enabledRules)
+        BazelExternalRulesQueryImpl(bazelRunner, bazelInfo.isBzlModEnabled, workspaceContext.enabledRules, bspClientLogger)
 
       val externalRuleNames =
         measured(
