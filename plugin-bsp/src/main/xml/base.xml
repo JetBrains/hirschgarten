@@ -90,6 +90,9 @@
         <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
                         serviceImplementation="org.jetbrains.plugins.bsp.services.BspExternalAnnotationsManager"
                         overrides="true"/>
+        <moduleService serviceInterface="com.intellij.openapi.roots.ModuleFileIndex"
+                       serviceImplementation="org.jetbrains.plugins.bsp.services.BspModuleFileIndex"
+                       overrides="true"/>
 
         <commandLineInspectionProjectConfigurator
                 implementation="org.jetbrains.plugins.bsp.impl.flow.open.BspCommandLineInspectionConfigurator"/>
