@@ -41,14 +41,16 @@ class DummyModuleExclusionWorkspaceFileIndexContributor : WorkspaceFileIndexCont
     storage: EntityStorage,
   ) {
     if (entity.entitySource != BspDummyEntitySource) return
-    val contentRootUrl = entity.contentRoots.single().url
     // Since we register the exclusion at contentRootUrl,
     // it will be overridden if we add a file as a file-based source root at a subdirectory of contentRootUrl.
-    registrar.registerExclusionCondition(
-      root = contentRootUrl,
-      condition = { it.isSourceFile() },
-      entity = entity,
-    )
+    entity.contentRoots.map { contentRoot ->
+      val contentRootUrl = contentRoot.url
+      registrar.registerExclusionCondition(
+        root = contentRootUrl,
+        condition = { it.isSourceFile() },
+        entity = entity,
+      )
+    }
   }
 }
 
