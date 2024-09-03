@@ -19,11 +19,12 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
   fun resolveBazelInfo(cancelChecker: CancelChecker): BazelInfo = LazyBazelInfo { bazelInfoFromBazel(cancelChecker) }
 
   private fun bazelInfoFromBazel(cancelChecker: CancelChecker): BazelInfo {
-    val command = bazelRunner.buildBazelCommand {
-      info {
-        options.addAll(listOf(RELEASE, EXECUTION_ROOT, OUTPUT_BASE, WORKSPACE, STARLARK_SEMANTICS))
+    val command =
+      bazelRunner.buildBazelCommand {
+        info {
+          options.addAll(listOf(RELEASE, EXECUTION_ROOT, OUTPUT_BASE, WORKSPACE, STARLARK_SEMANTICS))
+        }
       }
-    }
     val processResult =
       bazelRunner
         .runBazelCommand(command, serverPidFuture = null)
@@ -54,13 +55,14 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
 
     // Idea taken from https://github.com/bazelbuild/bazel/issues/21303#issuecomment-2007628330
     val starlarkSemantics = extract(STARLARK_SEMANTICS)
-    val isBzlModEnabled = if ("enable_bzlmod=true" in starlarkSemantics) {
-      true
-    } else if ("enable_bzlmod=false" in starlarkSemantics) {
-      false
-    } else {
-      bazelReleaseVersion.major >= 7
-    }
+    val isBzlModEnabled =
+      if ("enable_bzlmod=true" in starlarkSemantics) {
+        true
+      } else if ("enable_bzlmod=false" in starlarkSemantics) {
+        false
+      } else {
+        bazelReleaseVersion.major >= 7
+      }
 
     return BasicBazelInfo(
       execRoot = extract(EXECUTION_ROOT),
