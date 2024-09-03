@@ -113,7 +113,7 @@
         <projectViewNodeDecorator
                 implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspProjectViewNodeDecorator"/>
         <projectTaskRunner
-                implementation="org.jetbrains.plugins.bsp.impl.buildTask.BspProjectTaskRunner"/>
+                implementation="org.jetbrains.plugins.bsp.buildTask.BspProjectTaskRunner"/>
         <programRunner implementation="org.jetbrains.plugins.bsp.jvm.BspJvmDebugRunner"/>
 
         <directoryProjectConfigurator
