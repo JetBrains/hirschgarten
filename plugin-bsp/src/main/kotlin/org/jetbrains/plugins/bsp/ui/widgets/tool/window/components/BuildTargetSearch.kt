@@ -11,7 +11,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.withBuildToolId
-import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
+import org.jetbrains.plugins.bsp.extensionPoints.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay

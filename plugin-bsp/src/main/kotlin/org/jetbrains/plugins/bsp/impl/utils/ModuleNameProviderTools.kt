@@ -5,7 +5,7 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.withBuildToolIdOrDefault
-import org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.utils.StringUtils

@@ -20,7 +20,7 @@ import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager
 import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.extension.points.targetActionProvider
+import org.jetbrains.plugins.bsp.extensionPoints.targetActionProvider
 import org.jetbrains.plugins.bsp.impl.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions

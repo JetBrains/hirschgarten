@@ -21,10 +21,10 @@ import io.kotest.matchers.collections.shouldNotContainAnyOf
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.settings.BazelApplicationServerSettings
-import org.jetbrains.bazel.settings.BazelApplicationSettings
-import org.jetbrains.bazel.settings.BazelApplicationSettingsService
+import org.jetbrains.bazel.settings.BazelProjectSettings
+import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.server.connection.ConnectionDetailsProviderExtension
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -78,6 +78,7 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     extension = BazelConnectionDetailsProviderExtension()
 
     projectRoot = createTempDirectory("root").also { it.toFile().deleteOnExit() }.toVirtualFile()
+    project.rootDir = projectRoot
   }
 
   @Nested
@@ -194,7 +195,6 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     @BeforeEach
     fun beforeEach() {
       // given
-      BazelApplicationSettingsService.getInstance().settings = BazelApplicationSettings()
 
       runBlocking {
         extension.onFirstOpening(project, projectRoot)
@@ -244,18 +244,15 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     fun `should return new connection details if selected java has changed`() {
       // given
       val selectedJdk = ProjectJdkImpl("New Jdk", JavaSdk.getInstance(), "test/home/path", null)
-      val bazelApplicationSettings =
-        BazelApplicationSettings(
-          serverSettings =
-            BazelApplicationServerSettings(
-              selectedJdk = selectedJdk,
-            ),
+      val bazelProjectSettings =
+        BazelProjectSettings(
+          projectViewPath = null,
+          selectedJdk = selectedJdk,
         )
-      val bazelApplicationSettingsService = BazelApplicationSettingsService.getInstance()
 
       // when
       val connectionDetails = extension.provideNewConnectionDetails(project, null)
-      bazelApplicationSettingsService.settings = bazelApplicationSettings
+      project.bazelProjectSettings = bazelProjectSettings
       val newConnectionDetails = extension.provideNewConnectionDetails(project, connectionDetails)
 
       // then
@@ -269,19 +266,16 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
       val selectedJdk = ProjectJdkImpl("New Jdk", JavaSdk.getInstance(), "test/home/path", null)
       val customJvmOptions = listOf("-XCustomOption", "-XAnotherCustomOption")
 
-      val bazelApplicationSettings =
-        BazelApplicationSettings(
-          serverSettings =
-            BazelApplicationServerSettings(
-              selectedJdk = selectedJdk,
-              customJvmOptions = customJvmOptions,
-            ),
+      val bazelProjectSettings =
+        BazelProjectSettings(
+          projectViewPath = null,
+          selectedJdk = selectedJdk,
+          customJvmOptions = customJvmOptions,
         )
-      val bazelApplicationSettingsService = BazelApplicationSettingsService.getInstance()
 
       // when
       val connectionDetails = extension.provideNewConnectionDetails(project, null)
-      bazelApplicationSettingsService.settings = bazelApplicationSettings
+      project.bazelProjectSettings = bazelProjectSettings
       val newConnectionDetails = extension.provideNewConnectionDetails(project, connectionDetails)
 
       // then
@@ -295,28 +289,23 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
       val selectedJdk = ProjectJdkImpl("New Jdk", JavaSdk.getInstance(), "test/home/path", null)
       val initCustomJvmOptions = listOf("-XCustomOption", "-XAnotherCustomOption")
 
-      val initBazelApplicationSettings =
-        BazelApplicationSettings(
-          serverSettings =
-            BazelApplicationServerSettings(
-              selectedJdk = selectedJdk,
-              customJvmOptions = initCustomJvmOptions,
-            ),
+      val initBazelProjectSettings =
+        BazelProjectSettings(
+          projectViewPath = null,
+          selectedJdk = selectedJdk,
+          customJvmOptions = initCustomJvmOptions,
         )
-      val bazelApplicationSettingsService = BazelApplicationSettingsService.getInstance()
-      bazelApplicationSettingsService.settings = initBazelApplicationSettings
+      project.bazelProjectSettings = initBazelProjectSettings
       val connectionDetails = extension.provideNewConnectionDetails(project, null)
 
       // when
-      val bazelApplicationSettings =
-        BazelApplicationSettings(
-          serverSettings =
-            BazelApplicationServerSettings(
-              selectedJdk = selectedJdk,
-              customJvmOptions = emptyList(),
-            ),
+      val bazelProjectSettings =
+        BazelProjectSettings(
+          projectViewPath = null,
+          selectedJdk = selectedJdk,
+          customJvmOptions = emptyList(),
         )
-      bazelApplicationSettingsService.settings = bazelApplicationSettings
+      project.bazelProjectSettings = bazelProjectSettings
       val newConnectionDetails = extension.provideNewConnectionDetails(project, connectionDetails)
 
       // then

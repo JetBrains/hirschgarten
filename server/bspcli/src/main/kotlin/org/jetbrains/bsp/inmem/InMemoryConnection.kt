@@ -32,6 +32,7 @@ import kotlin.system.exitProcess
 class Connection(
   installationDirectory: Path,
   metricsFile: Path?,
+  projectViewFile: Path?,
   workspace: Path,
   client: BuildClient,
   propagateTelemetryContext: Boolean,
@@ -48,6 +49,7 @@ class Connection(
       workspace,
       installationDirectory,
       telemetryConfig,
+      projectViewFile,
     )
   val serverAliveFuture = serverLauncher.startListening()
 
@@ -149,13 +151,14 @@ private fun startServer(
   workspace: Path,
   directory: Path,
   telemetryConfig: TelemetryConfig,
+  projectViewFile: Path?,
 ): Launcher<JoinedBuildClient> {
   val bspInfo = BspInfo(directory)
   val bspIntegrationData = BspIntegrationData(serverIn, clientOut, serverExecutor, null)
   val workspaceContextProvider =
     DefaultWorkspaceContextProvider(
       workspaceRoot = workspace,
-      projectViewPath = directory.resolve("projectview.bazelproject"),
+      projectViewPath = projectViewFile ?: directory.resolve("projectview.bazelproject"),
       dotBazelBspDirPath = bspInfo.bazelBspDir(),
     )
   val bspServer = BazelBspServer(bspInfo, workspaceContextProvider, workspace, telemetryConfig)

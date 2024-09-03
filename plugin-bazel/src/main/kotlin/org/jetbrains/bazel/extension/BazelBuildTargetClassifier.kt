@@ -2,7 +2,7 @@ package org.jetbrains.bazel.extension
 
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 private data class TargetIdComponents(val packagePath: String, val targetName: String)

@@ -11,8 +11,8 @@ import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.withBuildToolId
 import org.jetbrains.plugins.bsp.config.withBuildToolIdOrDefault
-import org.jetbrains.plugins.bsp.extension.points.BuildTargetClassifierExtension
-import org.jetbrains.plugins.bsp.extension.points.BuildToolWindowTargetActionProviderExtension
+import org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension
+import org.jetbrains.plugins.bsp.extensionPoints.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.awt.Component

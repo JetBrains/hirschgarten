@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.extension.points
+package org.jetbrains.plugins.bsp.extensionPoints
 
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 

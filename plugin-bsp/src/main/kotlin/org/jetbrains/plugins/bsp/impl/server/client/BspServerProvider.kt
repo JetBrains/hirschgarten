@@ -2,7 +2,7 @@ package org.jetbrains.plugins.bsp.impl.server.client
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.extension.points.GenericConnection
+import org.jetbrains.plugins.bsp.extensionPoints.GenericConnection
 import java.nio.file.Path
 
 interface BspServerProvider {

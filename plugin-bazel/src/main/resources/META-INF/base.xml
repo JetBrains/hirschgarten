@@ -17,6 +17,9 @@
         <buildToolWindowTargetActionProviderExtension
                 implementation="org.jetbrains.bazel.extension.BazelTargetActionProviderExtension"/>
 
+        <bspToolWindowSettingsProviderExtension
+                implementation="org.jetbrains.bazel.extension.BazelProjectSettingsActionProviderExtension"/>
+
         <bspProjectAwareExtension
                 implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
 
@@ -40,12 +43,6 @@
         <externalIconProvider
                 key="bazelbsp"
                 implementationClass="org.jetbrains.bazel.config.BazelExternalSystemIconProvider"/>
-
-        <applicationConfigurable
-                parentId="tools"
-                instance="org.jetbrains.bazel.settings.BazelApplicationSettingsPanel"
-                id="org.jetbrains.bazel.settings.BazelApplicationSettingsPanel"
-                displayName="Bazel"/>
 
         <fileType
                 name="Starlark"
@@ -123,6 +120,12 @@
                 id="org.jetbrains.bazel.settings.BuildifierConfigurable"
                 displayName="Buildifier"
                 nonDefaultProject="false" />
+
+        <projectConfigurable
+                parentId="build.tools"
+                instance="org.jetbrains.bazel.settings.BazelProjectSettingsConfigurable"
+                provider="org.jetbrains.bazel.settings.BazelProjectSettingsConfigurableProvider"
+        />
 
     </extensions>
 

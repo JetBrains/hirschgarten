@@ -72,6 +72,7 @@ fun main(args0: Array<String>) {
     Connection(
       installationDirectory,
       args.metricsFile,
+      null,
       args.workspace,
       BuildClient(),
       propagateTelemetryContext = false,
