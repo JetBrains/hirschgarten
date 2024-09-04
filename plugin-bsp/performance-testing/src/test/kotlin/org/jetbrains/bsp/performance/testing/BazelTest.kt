@@ -30,7 +30,6 @@ import java.net.URI
 import java.nio.file.Path
 import java.util.jar.JarFile
 import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.Path
 import kotlin.io.path.createParentDirectories
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.deleteIfExists
@@ -74,6 +73,7 @@ class BazelTest {
         .executeRightAfterIdeOpened(true)
         .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
         .patchPathVariable()
+        .patchSystemProperties()
     installPlugin(context, System.getProperty("bsp.benchmark.bsp.plugin.zip"))
     installPlugin(context, System.getProperty("bsp.benchmark.bazel.plugin.zip"))
 
@@ -217,6 +217,14 @@ class BazelTest {
     applyVMOptionsPatch {
       withEnv("PATH", path)
       withEnv("HOME", System.getProperty("user.home"))
+    }
+    return this
+  }
+
+  private fun IDETestContext.patchSystemProperties(): IDETestContext {
+    val projectViewPath = System.getProperty("bazel.project.view.file.path")
+    applyVMOptionsPatch {
+      projectViewPath?.let { addSystemProperty("bazel.project.view.file.path", it) }
     }
     return this
   }
