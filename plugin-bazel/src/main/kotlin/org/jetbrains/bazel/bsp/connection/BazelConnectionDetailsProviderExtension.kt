@@ -17,7 +17,6 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.assets.BspPluginTemplates
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.coroutines.CoroutineService
-import org.jetbrains.bazel.settings.BazelProjectSettings
 import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.bazel.settings.serverDetectedJdk
 import org.jetbrains.bsp.bazel.commons.Constants
@@ -46,6 +45,8 @@ private const val BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH = ".bsp/bazelbsp.json"
 
 private const val BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX = 0
 
+private const val PROJECT_VIEW_FILE_SYSTEM_PROPERTY = "bazel.project.view.file.path"
+
 internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProviderExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
 
@@ -62,16 +63,16 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
 
   private fun initializeProjectViewFile(project: Project) {
     val projectViewFilePath = calculateProjectViewFilePath(project)
-    setDefaultProjectViewFilePathContentIfNotExists(project, projectViewFilePath)
+    setDefaultProjectViewFilePathContentIfNotExists(projectViewFilePath)
+    project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewFilePath)
   }
 
   private fun calculateProjectViewFilePath(project: Project): Path =
     project.bazelProjectSettings.projectViewPath?.toAbsolutePath() ?: project.calculateDefaultProjectViewFile()
 
-  private fun setDefaultProjectViewFilePathContentIfNotExists(project: Project, projectViewFilePath: Path) {
+  private fun setDefaultProjectViewFilePathContentIfNotExists(projectViewFilePath: Path) {
     if (!projectViewFilePath.exists()) {
       projectViewFilePath.writeText(BspPluginTemplates.defaultBazelProjectViewContent)
-      project.bazelProjectSettings = BazelProjectSettings(projectViewPath = projectViewFilePath)
     }
   }
 
@@ -137,9 +138,7 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
         javaPath = InstallationContextJavaPathEntity(javaBin),
         debuggerAddress = null,
         bazelWorkspaceRootDir = project.rootDir.toNioPath(),
-        projectViewFilePath =
-          project.bazelProjectSettings.projectViewPath?.toAbsolutePath()
-            ?: project.calculateDefaultProjectViewFile(),
+        projectViewFilePath = calculateProjectViewFilePath(project),
       )
     val dotBazelBspCreator = DotBazelBspCreator(project.rootDir)
 
@@ -160,7 +159,9 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
     argv.addAll(BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX + 1, customJvmOptions)
   }
 
-  private fun Project.calculateDefaultProjectViewFile(): Path = rootDir.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
+  private fun Project.calculateDefaultProjectViewFile(): Path =
+    System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)?.let { Path(it) }
+      ?: rootDir.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
 
   private fun BspConnectionDetails.getProjectViewFilePath(): Path? =
     argv
