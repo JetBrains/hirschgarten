@@ -262,7 +262,7 @@ class ExecuteService(
   private fun build(
     cancelChecker: CancelChecker,
     bspIds: List<BuildTargetIdentifier>,
-    originId: String,
+    originId: String?,
     additionalArguments: List<String> = emptyList(),
   ): BazelProcessResult {
     val allTargets = bspIds + getAdditionalBuildTargets(cancelChecker, bspIds)
