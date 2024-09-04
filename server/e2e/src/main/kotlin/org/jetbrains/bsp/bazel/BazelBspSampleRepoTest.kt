@@ -3,6 +3,8 @@ package org.jetbrains.bsp.bazel
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.CompileParams
+import ch.epfl.scala.bsp4j.CompileResult
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.DependencySourcesResult
@@ -35,6 +37,7 @@ import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
+import ch.epfl.scala.bsp4j.StatusCode
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
@@ -65,6 +68,8 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       jvmTestEnvironment(),
       javacOptionsResult(),
       nonModuleTargets(),
+      buildTargetWithOriginId(),
+      buildTargetWithoutOriginId(),
     )
 
   private fun resolveProject(): BazelBspTestScenarioStep =
@@ -1256,7 +1261,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     ) { testClient.testJavacOptions(30.seconds, params, expectedResult) }
   }
 
-  fun nonModuleTargets(): BazelBspTestScenarioStep {
+  private fun nonModuleTargets(): BazelBspTestScenarioStep {
     val expectedTargets =
       NonModuleTargetsResult(
         listOf(
@@ -1302,6 +1307,36 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         val targets = session.server.workspaceNonModuleTargets().await()
         client.assertJsonEquals(expectedTargets, targets)
       }
+    }
+  }
+
+  private fun buildTargetWithOriginId(): BazelBspTestScenarioStep {
+    val targetId = BuildTargetIdentifier("$targetPrefix//java_targets:java_library")
+    val originId = "build-target-origin-id"
+    return buildTarget(targetId, originId)
+  }
+
+  private fun buildTargetWithoutOriginId(): BazelBspTestScenarioStep {
+    val targetId = BuildTargetIdentifier("$targetPrefix//java_targets:java_library")
+    return buildTarget(targetId, null)
+  }
+
+  private fun buildTarget(targetId: BuildTargetIdentifier, originId: String?): BazelBspTestScenarioStep {
+    val params =
+      CompileParams(listOf(targetId))
+        .apply { this.originId = originId }
+
+    val expectedResult =
+      CompileResult(StatusCode.OK)
+        .apply { this.originId = originId }
+
+    return BazelBspTestScenarioStep("build ${targetId.uri} with origin id: $originId") {
+      testClient.testCompile(
+        20.seconds,
+        params = params,
+        expectedResult = expectedResult,
+        expectedDiagnostics = emptyList(),
+      )
     }
   }
 
