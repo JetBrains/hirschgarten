@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 
 internal class BspStartupActivityTracker : ActivityTracker {
-  override val presentableName: String = "BSP Activity Tracker"
+  override val presentableName: String = "bsp-sync"
 
   override suspend fun awaitConfiguration(project: Project) {
     project.bspTrackerServiceState().first { !it }
