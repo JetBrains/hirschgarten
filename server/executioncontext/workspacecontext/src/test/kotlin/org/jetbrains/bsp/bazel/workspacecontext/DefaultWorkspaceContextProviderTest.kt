@@ -54,7 +54,7 @@ class DefaultWorkspaceContextProviderTest {
     val workspaceContext = provider.currentWorkspaceContext()
 
     // then
-    workspaceContext.targets shouldBe TargetsSpec(emptyList(), emptyList())
+    workspaceContext.targets shouldBe TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
     projectViewFile.exists() shouldBe true
     projectViewFile.readText().trim() shouldBe ""
   }

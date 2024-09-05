@@ -15,7 +15,7 @@ data class TargetsSpec(override val values: List<BuildTargetIdentifier>, overrid
 
 private val defaultTargetsSpec =
   TargetsSpec(
-    values = emptyList(),
+    values = listOf(BuildTargetIdentifier("//...")),
     excludedValues = emptyList(),
   )
 
