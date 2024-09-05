@@ -11,6 +11,8 @@
 
 .jps-compiled
 
+.qodana
+
 __pycache__
 
 bazel-bin
