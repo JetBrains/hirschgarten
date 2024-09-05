@@ -17,9 +17,9 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
+import org.jetbrains.plugins.bsp.action.SuspendableAction
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.ui.actions.SuspendableAction
 
 // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1158
 
