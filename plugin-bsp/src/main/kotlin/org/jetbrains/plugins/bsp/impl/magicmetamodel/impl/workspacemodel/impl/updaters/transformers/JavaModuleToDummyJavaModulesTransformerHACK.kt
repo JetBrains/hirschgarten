@@ -40,7 +40,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
           jdkName = inputEntity.jvmJdkName,
           javaAddendum = inputEntity.javaAddendum,
         )
-      }
+      }.distinctBy { it.genericModuleInfo.name }
   }
 
   private fun calculateDummyJavaSourceModule(
