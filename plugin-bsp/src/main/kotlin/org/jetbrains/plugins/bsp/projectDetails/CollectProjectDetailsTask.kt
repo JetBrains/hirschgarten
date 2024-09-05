@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.DependencySourcesParams
+import ch.epfl.scala.bsp4j.DependencySourcesResult
 import ch.epfl.scala.bsp4j.JavacOptionsParams
 import ch.epfl.scala.bsp4j.PythonOptionsParams
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
@@ -75,6 +76,7 @@ import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
 import org.jetbrains.plugins.bsp.workspacemodel.entities.toBuildTargetInfo
 import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import kotlin.io.path.Path
 
@@ -511,16 +513,29 @@ public suspend fun calculateProjectDetailsWithCapabilities(
 ): ProjectDetails =
   coroutineScope {
     try {
-      val dependencySourcesResult =
-        asyncQueryIf(buildServerCapabilities.dependencySourcesProvider == true, "buildTarget/dependencySources") {
-          server.buildTargetDependencySources(DependencySourcesParams(baseTargetInfos.allTargetIds))
-        }
-
       val javaTargetIds = baseTargetInfos.infos.calculateJavaTargetIds()
       val scalaTargetIds = baseTargetInfos.infos.calculateScalaTargetIds()
+      val pythonTargetsIds = baseTargetInfos.infos.calculatePythonTargetsIds()
       val libraries: WorkspaceLibrariesResult? =
         queryIf(buildServerCapabilities.workspaceLibrariesProvider, "workspace/libraries") {
           (server as BazelBuildServer).workspaceLibraries()
+        }
+
+      val dependencySourcesResult =
+        asyncQueryIf(buildServerCapabilities.dependencySourcesProvider == true, "buildTarget/dependencySources") {
+          val dependencySourcesTargetIds =
+            if (libraries == null) {
+              baseTargetInfos.allTargetIds
+            } else if (BspFeatureFlags.isPythonSupportEnabled) {
+              pythonTargetsIds
+            } else {
+              emptyList()
+            }
+          if (dependencySourcesTargetIds.isNotEmpty()) {
+            server.buildTargetDependencySources(DependencySourcesParams(dependencySourcesTargetIds))
+          } else {
+            CompletableFuture.completedFuture(DependencySourcesResult(emptyList()))
+          }
         }
 
       val nonModuleTargets =
@@ -563,7 +578,6 @@ public suspend fun calculateProjectDetailsWithCapabilities(
           null
         }
 
-      val pythonTargetsIds = baseTargetInfos.infos.calculatePythonTargetsIds()
       val pythonOptionsResult =
         asyncQueryIf(pythonTargetsIds.isNotEmpty() && BspFeatureFlags.isPythonSupportEnabled, "buildTarget/pythonOptions") {
           server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetsIds))
