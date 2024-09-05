@@ -17,8 +17,8 @@ bazel_dep(name = "rules_kotlin", version = "1.9.6")
 # Required until a new version supporting kotlin 2.0 is released
 git_override(
     module_name = "rules_kotlin",
+    commit = "e39c95265767de0a341360f7a28cdef8d40afc68",
     remote = "https://github.com/bazelbuild/rules_kotlin.git",
-    commit = "e39c95265767de0a341360f7a28cdef8d40afc68"
 )
 
 register_toolchains(
