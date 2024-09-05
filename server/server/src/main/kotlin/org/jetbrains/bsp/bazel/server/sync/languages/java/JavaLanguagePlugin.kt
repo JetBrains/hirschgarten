@@ -3,12 +3,9 @@ package org.jetbrains.bsp.bazel.server.sync.languages.java
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetDataKind
 import ch.epfl.scala.bsp4j.JvmBuildTarget
-import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
-import org.jetbrains.bsp.bazel.info.BspTargetInfo.JvmOutputsOrBuilder
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.JvmTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
@@ -56,24 +53,7 @@ class JavaLanguagePlugin(
   private fun getJdk(): Jdk = jdk ?: throw RuntimeException("Failed to resolve JDK for project")
 
   override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
-    targetInfo
-      .getJvmTargetInfoOrNull()
-      ?.run {
-        dependencyGraph
-          .transitiveDependenciesWithoutRootTargets(Label.parse(targetInfo.id))
-          .flatMap(::getSourceJars)
-          .map(bazelPathsResolver::resolveUri)
-          .toSet()
-      }.orEmpty()
-
-  private fun getSourceJars(targetInfo: TargetInfo): List<FileLocation> =
-    targetInfo
-      .getJvmTargetInfoOrNull()
-      ?.run { jarsOrBuilderList + generatedJarsList }
-      ?.flatMap(JvmOutputsOrBuilder::getSourceJarsList)
-      .orEmpty()
-
-  private fun TargetInfo.getJvmTargetInfoOrNull(): JvmTargetInfo? = this.takeIf(TargetInfo::hasJvmTargetInfo)?.jvmTargetInfo
+    emptySet() // Provided via workspace/libraries
 
   override fun applyModuleData(moduleData: JavaModule, buildTarget: BuildTarget) {
     val jvmBuildTarget = toJvmBuildTarget(moduleData)
