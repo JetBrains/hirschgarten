@@ -25,7 +25,7 @@ register_toolchains(
     "//:kotlin_toolchain",
 )
 
-bazel_dep(name = "rules_java", version = "7.9.1")
+bazel_dep(name = "rules_java", version = "7.10.0")
 bazel_dep(name = "rules_jvm_external", version = "6.2")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
