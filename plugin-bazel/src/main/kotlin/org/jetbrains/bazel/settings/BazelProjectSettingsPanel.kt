@@ -23,6 +23,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
+import org.jetbrains.bazel.bsp.connection.stateService
 import org.jetbrains.bazel.config.BazelPluginBundle
 import java.net.URI
 import java.nio.file.Path
@@ -145,7 +146,19 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
           val newPath = Path(textField.text)
           currentProjectSettings = currentProjectSettings.withNewProjectViewPath(newPath)
         }
+        textField.setEnabledAndHint()
       }
+
+  private fun TextFieldWithBrowseButton.setEnabledAndHint() {
+    fun applyChange() {
+      // project view file can only be set when connection file is not used
+      isEnabled = project.stateService.connectionFile == null
+    }
+    applyChange()
+    addPropertyChangeListener("enabled") { _ ->
+      applyChange()
+    }
+  }
 
   override fun createComponent(): JComponent =
     panel {

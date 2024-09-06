@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
+import org.jetbrains.bazel.bsp.connection.stateService
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
@@ -23,10 +24,19 @@ internal class LoadProjectViewFileAction :
   }
 
   override fun update(project: Project, e: AnActionEvent) {
-    if (!project.isBazelProject) return
-    val psiFile = CommonDataKeys.PSI_FILE.getData(e.dataContext) ?: return
+    e.presentation.isEnabledAndVisible = shouldShowAction(project, e)
+  }
 
-    e.presentation.isEnabledAndVisible = psiFile.isProjectViewFile() && psiFile.isDifferentProjectViewFileSelected()
+  private fun shouldShowAction(project: Project, e: AnActionEvent): Boolean {
+    val psiFile = CommonDataKeys.PSI_FILE.getData(e.dataContext) ?: return false
+    return when {
+      !project.isBazelProject -> false
+      project.stateService.connectionFile == null &&
+        // project view file can only be set when connection file is not used
+        psiFile.isProjectViewFile() &&
+        psiFile.isDifferentProjectViewFileSelected() -> return true
+      else -> false
+    }
   }
 
   private fun PsiFile.isProjectViewFile(): Boolean = virtualFile?.extension == BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION

@@ -2,7 +2,9 @@ package org.jetbrains.plugins.bsp.impl.flow.open
 
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bsp.protocol.BSP_CONNECTION_DIR
 import org.jetbrains.bsp.protocol.utils.parseBspConnectionDetails
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
@@ -11,6 +13,7 @@ import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.WithBuildToolId
 import org.jetbrains.plugins.bsp.config.bspBuildToolId
 import org.jetbrains.plugins.bsp.config.withBuildToolId
+import org.jetbrains.plugins.bsp.impl.server.connection.stateService
 import javax.swing.Icon
 
 public interface BspProjectOpenProcessorExtension : WithBuildToolId {
@@ -38,11 +41,23 @@ public interface BspProjectOpenProcessorExtension : WithBuildToolId {
 
 private val log = logger<BspProjectOpenProcessor>()
 
-internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(bspBuildToolId) {
+public class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(bspBuildToolId) {
   override val name: String = BspPluginBundle.message("plugin.name")
 
   override fun calculateProjectFolderToOpen(virtualFile: VirtualFile): VirtualFile =
-    throw UnsupportedOperationException("Cannot infer project folder to open for a generic BSP project")
+    virtualFile
+      .parent
+      .also { if (it.name != BSP_CONNECTION_DIR) error("No $BSP_CONNECTION_DIR folder found") }
+      .parent
+
+  override fun calculateBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
+    { project ->
+      if (originalVFile.isBspConnectionFile()) {
+        project.stateService.connectionFile = originalVFile
+      }
+    }
+
+  private fun VirtualFile.isBspConnectionFile() = isFile && toBuildToolId() != null
 
   override val icon: Icon = BspPluginIcons.bsp
 
@@ -56,13 +71,18 @@ internal class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(bspBuildToo
   }
 
   private fun VirtualFile.collectBuildToolIdsFromConnectionFiles(): List<BuildToolId> =
-    this
-      .findChild(BSP_CONNECTION_DIR)
-      ?.children
-      ?.mapNotNull { it.parseBspConnectionDetails() }
-      ?.map { BuildToolId(it.name) }
-      .orEmpty()
+    when {
+      this.isDirectory ->
+        this
+          .findChild(BSP_CONNECTION_DIR)
+          ?.children
+          ?.mapNotNull { it.toBuildToolId() }
+          .orEmpty()
+      else -> listOfNotNull(this.toBuildToolId())
+    }
 
   private fun BuildToolId.shouldBspProjectOpenProcessorBeAvailable(): Boolean =
     BspProjectOpenProcessorExtension.ep.withBuildToolId(this)?.shouldBspProjectOpenProcessorBeAvailable ?: true
 }
+
+fun VirtualFile.toBuildToolId(): BuildToolId? = parseBspConnectionDetails()?.name?.let { BuildToolId(it) }
