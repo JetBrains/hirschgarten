@@ -31,4 +31,8 @@ kt_test(
         "@maven//:org_apache_httpcomponents_httpclient",
         "@maven//:org_kodein_di_kodein_di",
     ],
+    exec_properties = {
+            # This test needs internet access
+            "dockerNetwork": "standard",
+        },
 )
