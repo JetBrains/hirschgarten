@@ -123,7 +123,7 @@ class CollectProjectDetailsTask(
       }
     }
 
-    if (BspFeatureFlags.isScalaSupportEnabled && scalaSdkExtensionExists()) {
+    if (scalaSdkExtensionExists()) {
       progressReporter.indeterminateStep(text = "Calculating all unique scala sdk infos") {
         calculateAllScalaSdkInfosSubtask(projectDetails)
       }
@@ -394,13 +394,10 @@ class CollectProjectDetailsTask(
     project.temporaryTargetUtils.fireListeners()
     addBspFetchedJdks()
     addBspFetchedJavacOptions()
+    addBspFetchedScalaSdks()
 
     if (BspFeatureFlags.isPythonSupportEnabled) {
       addBspFetchedPythonSdks()
-    }
-
-    if (BspFeatureFlags.isScalaSupportEnabled) {
-      addBspFetchedScalaSdks()
     }
 
     if (BspFeatureFlags.isAndroidSupportEnabled) {
@@ -571,7 +568,7 @@ public suspend fun calculateProjectDetailsWithCapabilities(
       // Same for Scala
       val scalacOptionsResult =
         if (libraries == null) {
-          asyncQueryIf(scalaTargetIds.isNotEmpty() && BspFeatureFlags.isScalaSupportEnabled, "buildTarget/scalacOptions") {
+          asyncQueryIf(scalaTargetIds.isNotEmpty(), "buildTarget/scalacOptions") {
             server.buildTargetScalacOptions(ScalacOptionsParams(scalaTargetIds))
           }
         } else {
