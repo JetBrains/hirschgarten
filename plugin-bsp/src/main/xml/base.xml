@@ -188,7 +188,7 @@
     </extensions>
 
     <actions>
-        <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.impl.actions.registered.registered.DisconnectAction"
+        <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.impl.actions.registered.DisconnectAction"
                 icon="/icons/disconnect.svg"/>
         <action id="Bsp.ResyncAction" class="org.jetbrains.plugins.bsp.impl.actions.registered.ResyncAction"
                 icon="/icons/resync.svg"/>
