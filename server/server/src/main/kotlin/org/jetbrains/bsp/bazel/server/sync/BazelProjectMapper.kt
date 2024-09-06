@@ -701,27 +701,39 @@ class BazelProjectMapper(
 
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =
     target.label().isMainWorkspace &&
+      !shouldNotImportTargetKind(target.kind) &&
       (
-        hasKnownSources(target) ||
-          target.kind in
-          setOf(
-            "java_library",
-            "java_binary",
-            "java_test",
-            "kt_jvm_library",
-            "kt_jvm_binary",
-            "kt_jvm_test",
-            "scala_library",
-            "scala_binary",
-            "scala_test",
-            "rust_test",
-            "rust_doc",
-            "rust_doc_test",
-            "android_library",
-            "android_binary",
-            "android_local_test",
-            "intellij_plugin_debug_target",
-          )
+        shouldImportTargetKind(target.kind) || hasKnownSources(target)
+      )
+
+  private fun shouldNotImportTargetKind(kind: String): Boolean =
+    kind in
+      setOf(
+        // genrules/filegroups may contain Java sources, but they don't expose any useful providers that we could use.
+        // Additionally, the same sources are often already included in a java_library, so there's no point in importing them twice.
+        "genrule",
+        "filegroup",
+      )
+
+  private fun shouldImportTargetKind(kind: String): Boolean =
+    kind in
+      setOf(
+        "java_library",
+        "java_binary",
+        "java_test",
+        "kt_jvm_library",
+        "kt_jvm_binary",
+        "kt_jvm_test",
+        "scala_library",
+        "scala_binary",
+        "scala_test",
+        "rust_test",
+        "rust_doc",
+        "rust_doc_test",
+        "android_library",
+        "android_binary",
+        "android_local_test",
+        "intellij_plugin_debug_target",
       )
 
   private fun isRustTarget(target: TargetInfo): Boolean = target.hasRustCrateInfo()
