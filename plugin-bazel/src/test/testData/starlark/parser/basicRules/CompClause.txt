@@ -34,6 +34,7 @@ FILE
         StarlarkReferenceExpression(REFERENCE_EXPRESSION)
           PsiElement(Starlark:IDENTIFIER)('key')
         PsiElement(Starlark::)(':')
+        PsiWhiteSpace(' ')
         StarlarkReferenceExpression(REFERENCE_EXPRESSION)
           PsiElement(Starlark:IDENTIFIER)('value')
       PsiWhiteSpace(' ')
