@@ -23,6 +23,7 @@ public class DefaultConnectionDetailsProviderExtension : ConnectionDetailsProvid
   override val buildToolId: BuildToolId = bspBuildToolId
 
   override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean {
+    if (project.stateService.connectionFile != null) return true
     val wizard = withContext(Dispatchers.EDT) { ImportProjectWizard(project) }
     Disposer.register(project.stateService, wizard.disposable)
 
@@ -87,5 +88,5 @@ internal class DefaultConnectionDetailsProviderExtensionService :
   }
 }
 
-private val Project.stateService: DefaultConnectionDetailsProviderExtensionService
+internal val Project.stateService: DefaultConnectionDetailsProviderExtensionService
   get() = DefaultConnectionDetailsProviderExtensionService.getInstance(this)

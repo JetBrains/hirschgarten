@@ -10,20 +10,25 @@ import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.impl.flow.open.BaseBspProjectOpenProcessor
+import org.jetbrains.plugins.bsp.impl.flow.open.BspProjectOpenProcessor
 import org.jetbrains.plugins.bsp.impl.flow.open.BspProjectOpenProcessorExtension
+import org.jetbrains.plugins.bsp.impl.flow.open.toBuildToolId
 import javax.swing.Icon
 
 internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelBspBuildToolId) {
-  override fun calculateProjectFolderToOpen(virtualFile: VirtualFile): VirtualFile {
-    var vFile = virtualFile.parent
-    while (vFile != null) {
-      if (canOpenProject(vFile)) {
-        return vFile
-      }
-      vFile = vFile.parent
+  override fun calculateProjectFolderToOpen(virtualFile: VirtualFile): VirtualFile =
+    when {
+      virtualFile.isProjectViewFile() -> findProjectFolderFromProjectViewFile(virtualFile)
+      virtualFile.isBazelBspConnectionFile() -> BspProjectOpenProcessor().calculateProjectFolderToOpen(virtualFile)
+      else -> null
+    } ?: error("Cannot find the suitable Bazel project folder to open for the given file $virtualFile.")
+
+  private tailrec fun findProjectFolderFromProjectViewFile(vFile: VirtualFile?): VirtualFile? =
+    when {
+      vFile == null -> null
+      vFile.isDirectory && canOpenProject(vFile) -> vFile
+      else -> findProjectFolderFromProjectViewFile(vFile.parent)
     }
-    error("Cannot find the suitable Bazel project folder to open for the given file $virtualFile.")
-  }
 
   override val icon: Icon = BazelPluginIcons.bazel
 
@@ -34,11 +39,16 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
 
   override fun canOpenProject(file: VirtualFile): Boolean =
     when {
-      file.isFile -> file.isProjectViewFile()
+      file.isFile -> file.isBazelBspConnectionFile() || file.isProjectViewFile()
       else -> file.children.any { it.name in BazelPluginConstants.WORKSPACE_FILE_NAMES }
     }
 
+  private fun VirtualFile.isBazelBspConnectionFile() = toBuildToolId() == bazelBspBuildToolId
+
   override fun calculateBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit {
+    if (originalVFile.isBazelBspConnectionFile()) {
+      return BspProjectOpenProcessor().calculateBeforeOpenCallback(originalVFile)
+    }
     if (originalVFile.isProjectViewFile()) {
       return { project ->
         project.bazelProjectSettings =

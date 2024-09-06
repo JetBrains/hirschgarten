@@ -52,7 +52,10 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
 
   override suspend fun onFirstOpening(project: Project, projectPath: VirtualFile): Boolean {
     project.stateService.projectPath = projectPath
-    project.stateService.connectionFile = projectPath.findFile(BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH)
+    project.stateService.connectionFile =
+      projectPath.findFile(BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH).takeIf {
+        project.bazelProjectSettings.projectViewPath == null
+      }
 
     if (project.stateService.connectionFile == null) {
       initializeProjectViewFile(project)
@@ -195,5 +198,5 @@ internal class BazelConnectionDetailsProviderExtensionService : PersistentStateC
   }
 }
 
-private val Project.stateService: BazelConnectionDetailsProviderExtensionService
+internal val Project.stateService: BazelConnectionDetailsProviderExtensionService
   get() = getService(BazelConnectionDetailsProviderExtensionService::class.java)
