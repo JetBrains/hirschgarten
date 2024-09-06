@@ -28,7 +28,6 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BepReader
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.model.BspMappings
-import org.jetbrains.bsp.bazel.server.model.BspMappings.toBspId
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.model.isJavaOrKotlin
@@ -73,20 +72,16 @@ class ExecuteService(
     }
   }
 
-  fun compile(cancelChecker: CancelChecker, params: CompileParams): CompileResult {
-    val targets = selectTargets(cancelChecker, params.targets)
-
-    return if (targets.isNotEmpty()) {
-      val result = build(cancelChecker, targets, params.originId, params.arguments ?: emptyList())
+  fun compile(cancelChecker: CancelChecker, params: CompileParams): CompileResult =
+    if (params.targets.isNotEmpty()) {
+      val result = build(cancelChecker, params.targets, params.originId, params.arguments ?: emptyList())
       CompileResult(result.statusCode).apply { originId = params.originId }
     } else {
       CompileResult(StatusCode.ERROR).apply { originId = params.originId }
     }
-  }
 
   fun test(cancelChecker: CancelChecker, params: TestParams): TestResult {
-    val targets = selectTargets(cancelChecker, params.targets)
-    val targetsSpec = TargetsSpec(targets, emptyList())
+    val targetsSpec = TargetsSpec(params.targets, emptyList())
 
     var bazelTestParamsData: BazelTestParamsData? = null
     try {
@@ -136,15 +131,14 @@ class ExecuteService(
     params: RunParams,
     additionalProgramArguments: List<String>? = null,
   ): RunResult {
-    val targets = selectTargets(cancelChecker, listOf(params.target))
-    val bspId = targets.singleOrResponseError(params.target)
+    val targets = listOf(params.target)
     val result = build(cancelChecker, targets, params.originId)
     if (result.isNotSuccess) {
       return RunResult(result.statusCode).apply { originId = originId }
     }
     val command =
       bazelRunner.buildBazelCommand {
-        run(bspId) {
+        run(params.target) {
           options.add(BazelFlag.color(true))
           additionalProgramArguments?.let { programArguments.addAll(it) }
           params.environmentVariables?.let { environment.putAll(it) }
@@ -220,9 +214,6 @@ class ExecuteService(
   }
 
   fun mobileInstall(cancelChecker: CancelChecker, params: MobileInstallParams): MobileInstallResult {
-    val targets = selectTargets(cancelChecker, listOf(params.target))
-    val target = targets.singleOrResponseError(params.target)
-
     val startType =
       when (params.startType) {
         MobileInstallStartType.NO -> "no"
@@ -233,7 +224,7 @@ class ExecuteService(
 
     val command =
       bazelRunner.buildBazelCommand {
-        mobileInstall(target) {
+        mobileInstall(params.target) {
           options.add(BazelFlag.device(params.targetDeviceSerialNumber))
           options.add(BazelFlag.start(startType))
           options.add(BazelFlag.color(true))
@@ -292,9 +283,6 @@ class ExecuteService(
       emptyList()
     }
   }
-
-  private fun selectTargets(cancelChecker: CancelChecker, targets: List<BuildTargetIdentifier>): List<BuildTargetIdentifier> =
-    selectModules(cancelChecker, targets).map { toBspId(it) }
 
   private fun selectModules(cancelChecker: CancelChecker, targets: List<BuildTargetIdentifier>): List<Module> {
     val project = projectProvider.get(cancelChecker)
