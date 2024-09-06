@@ -3,7 +3,6 @@ package org.jetbrains.plugins.bsp.run.state
 import com.intellij.execution.ui.SettingsEditorFragment
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.ui.components.JBList
-import fleet.util.indexOfOrNull
 import org.jetbrains.idea.devkit.projectRoots.IdeaJdk
 
 interface HasIntellijSdkName {
@@ -23,7 +22,7 @@ fun <T : HasIntellijSdkName> intellijSdkFragment(): SettingsEditorFragment<T, JB
       null,
       component,
       { s, c ->
-        c.selectedIndex = jdks.indexOfOrNull(s.intellijSdkName) ?: 0
+        c.selectedIndex = jdks.indexOf(s.intellijSdkName).takeIf { it >= 0 } ?: 0
       },
       { s, c ->
         s.intellijSdkName = jdks.getOrNull(c.selectedIndex)
