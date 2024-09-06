@@ -42,7 +42,7 @@ platform(
         "@bazel_tools//tools/cpp:clang",
     ],
     exec_properties = {
-        "container-image": "docker://registry.jetbrains.team/p/bazel/docker/hirschgarten-engflow@sha256:d354a81d26faa2509f43bfcbd6377620fa9e0a539db9363ceb06c1fa056f5f29",
+        "container-image": "docker://registry.jetbrains.team/p/bazel/docker/hirschgarten-engflow@sha256:ad070fa000ed131ef477ae30a3d052fe1d68294c13fccc1e42b7035fdabd00d5",
         "OSFamily": "Linux",
     },
 )

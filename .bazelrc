@@ -102,7 +102,6 @@ query --noexperimental_check_output_files
 # Setup EngFlow's Remote Cache
 build:engflow_cache --disk_cache=
 build:engflow_cache --remote_timeout=600
-build:engflow_cache --config=engflow_auth
 build:engflow_cache --remote_cache_compression=true
 build:engflow_cache --remote_download_minimal
 build:engflow_cache --remote_cache=grpcs://jasper.cluster.engflow.com
