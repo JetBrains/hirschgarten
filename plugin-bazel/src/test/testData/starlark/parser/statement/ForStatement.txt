@@ -10,7 +10,7 @@ FILE
     StarlarkReferenceExpression(REFERENCE_EXPRESSION)
       PsiElement(Starlark:IDENTIFIER)('list')
     PsiElement(Starlark::)(':')
-    PsiWhiteSpace(' ')
+    PsiWhiteSpace('\n    ')
     StarlarkStatementList(STATEMENT_LIST)
       StarlarkExpressionStatement(EXPRESSION_STATEMENT)
         StarlarkBinaryExpression(BINARY_EXPRESSION)

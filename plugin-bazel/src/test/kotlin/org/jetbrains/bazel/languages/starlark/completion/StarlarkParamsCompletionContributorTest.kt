@@ -11,7 +11,7 @@ class StarlarkParamsCompletionContributorTest : BasePlatformTestCase() {
   @Test
   fun `should complete args`() {
     // given
-    myFixture.configureByText("args.bzlmock", "")
+    myFixture.configureByText("args.bzl", "")
     myFixture.type("def foo(*a")
 
     // when
@@ -24,7 +24,7 @@ class StarlarkParamsCompletionContributorTest : BasePlatformTestCase() {
   @Test
   fun `should complete kwargs`() {
     // given
-    myFixture.configureByText("kwargs.bzlmock", "")
+    myFixture.configureByText("kwargs.bzl", "")
     myFixture.type("def foo(**k")
 
     // when
