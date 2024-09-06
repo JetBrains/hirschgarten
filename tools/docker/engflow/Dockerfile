@@ -44,10 +44,9 @@ RUN cd /home/engflow/hirschgarten \
 # Ensure proper ownership of the created directories
 USER root
 RUN chown -R engflow:engflow /home/engflow/project_10
-USER engflow
+
+# Set JAVA_HOME environment variable
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 # Set up work directory
-WORKDIR /home/engflow/workspace
-
-# Set the entrypoint
-ENTRYPOINT ["/bin/bash"]
+WORKDIR /home/engflow
