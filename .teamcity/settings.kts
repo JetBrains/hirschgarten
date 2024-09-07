@@ -32,10 +32,12 @@ object ProjectTriggerRules {
     """.trimIndent()
 }
 
-project {
-  subProject(GitHub)
-  subProject(Space)
-}
+//project {
+//  subProject(GitHub)
+//  subProject(Space)
+//}
+
+project(Space)
 
 object GitHub : Project({
   name = "GitHub"
@@ -106,8 +108,8 @@ object GitHub : Project({
 })
 
 object Space : Project({
-  name = "Space"
-  id(name.toExtId())
+//  name = "Space"
+//  id(name.toExtId())
   vcsRoot(BaseConfiguration.SpaceVcs)
 
 // setup pipeline chain for bazel-bsp
@@ -144,12 +146,12 @@ object Space : Project({
   allSteps.forEach { buildType(it) }
 
   // setup trigger for bazel-bsp pipeline
-  allSteps.last().triggers {
-    vcs {
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-      triggerRules = ProjectTriggerRules.triggerRules
-    }
-  }
+//  allSteps.last().triggers {
+//    vcs {
+//      branchFilter = ProjectBranchFilters.spaceBranchFilter
+//      triggerRules = ProjectTriggerRules.triggerRules
+//    }
+//  }
 
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =

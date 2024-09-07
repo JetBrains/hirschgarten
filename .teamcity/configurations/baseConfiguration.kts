@@ -6,6 +6,8 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.ScriptBuildStep
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
@@ -85,6 +87,18 @@ open class BaseBuildType(
                 }
               displayName = "BazelTeamCityCloud"
             }
+        }
+      }
+    }
+    if (vcsRoot.name != "hirschgarten-github") {
+      steps {
+        script {
+          this.name = "creating mTLC certificate and key"
+          scriptContent =
+            """
+          echo %engflow.mtls.certificate% > tools/engflow/mtls/engflow.crt
+          echo %engflow.mtls.key% > tools/engflow/mtls/engflow.key
+          """.trimIndent()
         }
       }
     }
