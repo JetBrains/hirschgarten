@@ -44,7 +44,7 @@ open class BaseBuildType(
     } else {
       id("Space$name".toExtId())
       requirements {
-        endsWith("cloud.amazon.agent-name-prefix", "-XLarge")
+        endsWith("cloud.amazon.agent-name-prefix", "Medium")
         equals("container.engine.osType", "linux")
       }
     }
