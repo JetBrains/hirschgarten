@@ -4,6 +4,7 @@ import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildSteps
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
+import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.ScriptBuildStep
@@ -100,6 +101,10 @@ open class BaseBuildType(
           echo %engflow.mtls.key% > tools/engflow/mtls/engflow.key
           """.trimIndent()
         }
+      }
+      params {
+        password("engflow.mtls.certificate", "credentialsJSON:7f8d6c5b-4a3e-4f2d-9e1c-2b3a4d5e6f7a", label = "engflow.mtls.certificate", description = "mTLS cert", display = ParameterDisplay.HIDDEN, readOnly = false)
+        password("engflow.mtls.key", "credentialsJSON:1a2b3c4d-5e6f-4g5h-6i7j-8k9l0m1n2o3p", label = "engflow.mtls.key", description = "mTLS key", display = ParameterDisplay.HIDDEN, readOnly = false)
       }
     }
 
