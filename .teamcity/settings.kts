@@ -85,11 +85,6 @@ object GitHub : Project({
     }
   }
 
-  params {
-    password("engflow.mtls.certificate", "credentialsJSON:cfe01063-f53c-4165-873e-e190caa29596", label = "engflow.mtls.certificate", description = "mTLS cert", display = ParameterDisplay.HIDDEN, readOnly = false)
-    password("engflow.mtls.key", "credentialsJSON:18808a6b-19e2-492f-b6a6-da22279a5fae", label = "engflow.mtls.key", description = "mTLS key", display = ParameterDisplay.HIDDEN, readOnly = false)
-  }
-
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
