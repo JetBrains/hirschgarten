@@ -29,7 +29,7 @@ toolchain(
         "@platforms//os:linux",
         "@platforms//cpu:x86_64",
     ],
-    toolchain = "//platforms/linux_x86/cc:cc-compiler-k8",
+    toolchain = "//tools/engflow/platforms/linux_x86/cc:cc-compiler-k8",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
