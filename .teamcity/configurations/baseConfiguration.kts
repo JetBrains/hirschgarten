@@ -34,7 +34,7 @@ open class BaseBuildType(
       id("GitHub$name".toExtId())
       if (requirements == null) {
         requirements {
-          endsWith("cloud.amazon.agent-name-prefix", "Medium")
+          endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Medium")
           equals("container.engine.osType", "linux")
         }
       } else {
@@ -43,7 +43,7 @@ open class BaseBuildType(
     } else {
       id("Space$name".toExtId())
       requirements {
-        endsWith("cloud.amazon.agent-name-prefix", "-XLarge")
+        endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
         equals("container.engine.osType", "linux")
       }
     }
