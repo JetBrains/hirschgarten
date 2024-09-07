@@ -32,10 +32,10 @@ object ProjectTriggerRules {
     """.trimIndent()
 }
 
-//project {
+// project {
 //  subProject(GitHub)
 //  subProject(Space)
-//}
+// }
 
 project(Space)
 

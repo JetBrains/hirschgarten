@@ -11,6 +11,10 @@ kt_test(
     size = "large",
     srcs = glob(["src/**/*.kt"]),
     classname = "org.jetbrains.bsp.performance.testing.BazelTest",
+    exec_properties = {
+        # This test needs internet access
+        "dockerNetwork": "standard",
+    },
     jvm_flags = [
         "-Dbsp.benchmark.platform.version=%s" % PLATFORM_VERSION,
         "-Dbsp.benchmark.bsp.plugin.zip=%s" % INTELLIJ_BSP_PLUGIN_ZIP,
@@ -31,8 +35,4 @@ kt_test(
         "@maven//:org_apache_httpcomponents_httpclient",
         "@maven//:org_kodein_di_kodein_di",
     ],
-    exec_properties = {
-            # This test needs internet access
-            "dockerNetwork": "standard",
-        },
 )
