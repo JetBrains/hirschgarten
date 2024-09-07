@@ -116,25 +116,60 @@ object Space : Project({
   val allSteps =
     sequential {
       buildType(ProjectFormat.Space)
-      parallel(options = {
-        onDependencyFailure = FailureAction.CANCEL
-        onDependencyCancel = FailureAction.CANCEL
-      }) {
-        buildType(ProjectBuild.Space)
-        buildType(ProjectUnitTests.Space)
-        buildType(IntellijBenchmark.Space)
-        buildType(BazelE2eTests.SampleRepoSpace)
-        buildType(BazelE2eTests.LocalJdkSpace)
-        buildType(BazelE2eTests.RemoteJdkSpace)
+
+      buildType(ProjectBuild.Space, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(ProjectUnitTests.Space, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(IntellijBenchmark.Space, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(BazelE2eTests.SampleRepoSpace, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(BazelE2eTests.LocalJdkSpace, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(BazelE2eTests.RemoteJdkSpace, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
 //            buildType(BazelE2eTests.ServerDownloadsBazeliskSpace)
-        buildType(BazelE2eTests.AndroidProjectSpace)
-        buildType(BazelE2eTests.AndroidKotlinProjectSpace)
-        buildType(BazelE2eTests.ScalaProjectSpace)
-        buildType(BazelE2eTests.KotlinProjectSpace)
-        buildType(BazelE2eTests.PythonProjectSpace)
-        buildType(BazelE2eTests.JavaDiagnosticsSpace)
-        buildType(BazelBenchmark.Space)
-      }
+      buildType(BazelE2eTests.AndroidProjectSpace, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(BazelE2eTests.AndroidKotlinProjectSpace, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(BazelE2eTests.ScalaProjectSpace, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(BazelE2eTests.KotlinProjectSpace, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(BazelE2eTests.PythonProjectSpace, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(BazelE2eTests.JavaDiagnosticsSpace, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
+      buildType(BazelBenchmark.Space, options = {
+        onDependencyFailure = FailureAction.ADD_PROBLEM
+        onDependencyCancel = FailureAction.ADD_PROBLEM
+      })
 
       buildType(ResultsAggregator.Space, options = {
         onDependencyFailure = FailureAction.ADD_PROBLEM
