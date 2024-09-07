@@ -95,8 +95,8 @@ open class BaseBuildType(
           this.name = "creating mTLC certificate and key"
           scriptContent =
             """
-            echo -e %engflow.mtls.certificate% > tools/engflow/mtls/engflow.crt
-            echo -e %engflow.mtls.key% > tools/engflow/mtls/engflow.key
+            echo "%engflow.mtls.certificate%" > tools/engflow/mtls/engflow.crt
+            echo "%engflow.mtls.key%" > tools/engflow/mtls/engflow.key
             """.trimIndent()
         }
       }
