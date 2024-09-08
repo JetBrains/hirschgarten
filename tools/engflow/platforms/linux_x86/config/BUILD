@@ -42,6 +42,7 @@ platform(
     exec_properties = {
         "container-image": "docker://registry.jetbrains.team/p/bazel/docker/hirschgarten-engflow@sha256:ad070fa000ed131ef477ae30a3d052fe1d68294c13fccc1e42b7035fdabd00d5",
         "OSFamily": "Linux",
+        "dockerNetwork": "standard"
     },
     parents = ["@local_config_platform//:host"],
 )
