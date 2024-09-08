@@ -17,4 +17,5 @@ install_nightly_plugin "org.jetbrains.bazel"
 install_nightly_plugin "org.intellij.scala"
 
 # release channel plugins
-$CANVAS_IDE_HOME/bin/remote-dev-server.sh installPlugins DevKit
+# installed in CC config
+# $CANVAS_IDE_HOME/bin/remote-dev-server.sh installPlugins DevKit
