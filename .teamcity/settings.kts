@@ -118,57 +118,57 @@ object Space : Project({
       buildType(ProjectFormat.Space)
 
       buildType(ProjectBuild.Space, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(ProjectUnitTests.Space, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(IntellijBenchmark.Space, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(BazelE2eTests.SampleRepoSpace, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(BazelE2eTests.LocalJdkSpace, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(BazelE2eTests.RemoteJdkSpace, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
 //            buildType(BazelE2eTests.ServerDownloadsBazeliskSpace)
       buildType(BazelE2eTests.AndroidProjectSpace, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(BazelE2eTests.AndroidKotlinProjectSpace, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(BazelE2eTests.ScalaProjectSpace, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(BazelE2eTests.KotlinProjectSpace, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(BazelE2eTests.PythonProjectSpace, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(BazelE2eTests.JavaDiagnosticsSpace, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
       buildType(BazelBenchmark.Space, options = {
-        onDependencyFailure = FailureAction.ADD_PROBLEM
-        onDependencyCancel = FailureAction.ADD_PROBLEM
+        onDependencyFailure = FailureAction.IGNORE
+        onDependencyCancel = FailureAction.IGNORE
       })
 
       buildType(ResultsAggregator.Space, options = {
