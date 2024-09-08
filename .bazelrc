@@ -98,3 +98,5 @@ build --noexperimental_action_cache_store_output_metadata
 build --noexperimental_check_output_files
 fetch --noexperimental_check_output_files
 query --noexperimental_check_output_files
+
+build --config=engflow
