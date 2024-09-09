@@ -9,3 +9,9 @@ junit4_kt_test(
     name = "StarlarkParamsCompletionContributorTest",
     srcs = ["StarlarkParamsCompletionContributorTest.kt"],
 )
+
+junit4_kt_test(
+    name = "StarlarkLoadedSymbolsCompletionTest",
+    srcs = ["StarlarkLoadedSymbolsCompletionTest.kt"],
+    data = ["//plugin-bazel/src/test/testData/starlark/completion"],
+)

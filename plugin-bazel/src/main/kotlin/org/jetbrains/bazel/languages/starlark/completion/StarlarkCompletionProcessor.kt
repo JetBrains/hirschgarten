@@ -32,8 +32,9 @@ class StarlarkCompletionProcessor(
       results[it] = StarlarkNamedLookupElement(namedElement, inputWrapping)
     }
 
-  private fun processLoadValue(stringLoadValue: StarlarkStringLoadValue) =
+  private fun processLoadValue(stringLoadValue: StarlarkStringLoadValue) {
     stringLoadValue.getImportedSymbolName()?.let {
-      results[it] = StarlarkLoadLookupElement(stringLoadValue)
+      results.putIfAbsent(it, StarlarkLoadLookupElement(stringLoadValue))
     }
+  }
 }
