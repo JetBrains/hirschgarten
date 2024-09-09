@@ -10,3 +10,9 @@ data class Library(
   val interfaceJars: Set<URI> = emptySet(),
   val keepNonExistentJars: Boolean = false,
 )
+
+data class GoLibrary(
+  val label: Label,
+  val goImportPath: String? = null,
+  val goRoot: URI? = null,
+)

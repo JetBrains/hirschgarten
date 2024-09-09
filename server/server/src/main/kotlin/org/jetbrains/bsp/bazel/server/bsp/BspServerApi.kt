@@ -57,6 +57,7 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.util.concurrent.CompletableFuture
@@ -199,6 +200,9 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
 
   override fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult> =
     runner.handleRequest("workspace/libraries", projectSyncService::workspaceBuildLibraries)
+
+  override fun workspaceGoLibraries(): CompletableFuture<WorkspaceGoLibrariesResult> =
+    runner.handleRequest("workspace/goLibraries", projectSyncService::workspaceBuildGoLibraries)
 
   override fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult> =
     runner.handleRequest("workspace/nonModuleTargets", projectSyncService::workspaceNonModuleTargets)

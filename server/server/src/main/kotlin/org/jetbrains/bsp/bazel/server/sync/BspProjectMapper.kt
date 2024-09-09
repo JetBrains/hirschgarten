@@ -78,12 +78,14 @@ import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.io.IOException
@@ -151,6 +153,18 @@ class BspProjectMapper(
         )
       }
     return WorkspaceLibrariesResult(libraries)
+  }
+
+  fun workspaceGoLibraries(project: Project): WorkspaceGoLibrariesResult {
+    val libraries =
+      project.goLibraries.values.map {
+        GoLibraryItem(
+          id = BuildTargetIdentifier(it.label.value),
+          goImportPath = it.goImportPath,
+          goRoot = it.goRoot,
+        )
+      }
+    return WorkspaceGoLibrariesResult(libraries)
   }
 
   fun workspaceNonModuleTargets(project: Project): NonModuleTargetsResult {

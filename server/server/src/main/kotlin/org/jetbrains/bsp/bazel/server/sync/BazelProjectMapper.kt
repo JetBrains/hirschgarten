@@ -13,6 +13,7 @@ import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.tracer
 import org.jetbrains.bsp.bazel.server.benchmark.use
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
+import org.jetbrains.bsp.bazel.server.model.GoLibrary
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Library
@@ -29,6 +30,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.bazel.workspacecontext.isGoEnabled
 import org.jetbrains.bsp.bazel.workspacecontext.isRustEnabled
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -174,6 +176,14 @@ class BazelProjectMapper(
           extraLibrariesFromJdeps.values.flatten().associateBy { it.label } +
           librariesFromTransitiveCompileTimeJars.values.flatten().associateBy { it.label }
       }
+    val goLibrariesToImport =
+      measureIf(
+        description = "Create Go libraries",
+        predicate = { workspaceContext.isGoEnabled },
+        ifFalse = emptyMap(),
+      ) {
+        createGoLibraries(targetsAsLibraries)
+      }
     val invalidTargets =
       measure("Save invalid target labels") {
         removeDotBazelBspTarget(allTargetNames) - targetsToImport.map { Label.parse(it.id) }.toSet()
@@ -204,6 +214,7 @@ class BazelProjectMapper(
       allModules.toList(),
       sourceToTarget,
       librariesToImport,
+      goLibrariesToImport,
       invalidTargets,
       nonModuleTargets,
       bazelInfo.release,
@@ -563,6 +574,23 @@ class BazelProjectMapper(
     )
   }
 
+  private fun createGoLibraries(targets: Map<Label, TargetInfo>): Map<Label, GoLibrary> =
+    targets
+      .mapValues { (targetId, targetInfo) ->
+        createGoLibrary(targetId, targetInfo)
+      }.filterValues {
+        it.isGoLibrary()
+      }
+
+  private fun GoLibrary.isGoLibrary(): Boolean = !goImportPath.isNullOrEmpty() && goRoot.toString().isNotEmpty()
+
+  private fun createGoLibrary(label: Label, targetInfo: TargetInfo): GoLibrary =
+    GoLibrary(
+      label = label,
+      goImportPath = targetInfo.goTargetInfo?.importpath,
+      goRoot = getGoRootUri(targetInfo),
+    )
+
   private fun createLibrariesFromTransitiveCompileTimeJars(
     targetsToImport: Sequence<TargetInfo>,
     workspaceContext: WorkspaceContext,
@@ -660,6 +688,8 @@ class BazelProjectMapper(
       .flatMap { it.interfaceJarsList }
       .map { bazelPathsResolver.resolve(it) }
 
+  private fun getGoRootUri(targetInfo: TargetInfo): URI = Label.parse(targetInfo.id).toDirectoryUri()
+
   private fun selectRustExternalTargetsToImport(rootTargets: Set<Label>, graph: DependencyGraph): Sequence<TargetInfo> =
     graph
       .allTargetsAtDepth(-1, rootTargets)
@@ -696,7 +726,8 @@ class BazelProjectMapper(
         it.relativePath.endsWith(".py") ||
         !it.isExternal &&
         it.relativePath.endsWith(".sh") ||
-        it.relativePath.endsWith(".rs")
+        it.relativePath.endsWith(".rs") ||
+        it.relativePath.endsWith(".go")
     }
 
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =
@@ -734,6 +765,9 @@ class BazelProjectMapper(
         "android_binary",
         "android_local_test",
         "intellij_plugin_debug_target",
+        "go_library",
+        "go_binary",
+        "go_test",
       )
 
   private fun isRustTarget(target: TargetInfo): Boolean = target.hasRustCrateInfo()

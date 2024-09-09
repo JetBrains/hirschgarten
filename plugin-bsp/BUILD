@@ -32,6 +32,12 @@ optional_plugin_dep(
 )
 
 optional_plugin_dep(
+    name = "bsp_with_go",
+    module = ["org.jetbrains.plugins.go"],
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withGo.xml",
+)
+
+optional_plugin_dep(
     name = "bsp_performance_testing",
     module = ["com.jetbrains.performancePlugin"],
     plugin_xml = "//plugin-bsp/src:main/xml/bsp-performanceTesting.xml",
@@ -54,6 +60,7 @@ intellij_plugin_library(
     optional_plugin_deps = [
         ":bsp_with_python",
         ":bsp_with_android",
+        ":bsp_with_go",
         ":bsp_performance_testing",
         ":bsp_devkit",
         ":bsp_code_with_me",
