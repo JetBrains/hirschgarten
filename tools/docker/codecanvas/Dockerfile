@@ -34,18 +34,18 @@ RUN apt-get update --quiet --quiet --yes && \
     && rm -rf /var/lib/apt/lists/*
 
 # install noVNC
-RUN git clone https://github.com/novnc/noVNC /mnt/jetbrains/system/noVNC
+RUN git clone https://github.com/novnc/noVNC noVNC
 
-# Create the EngFlow user and group
-RUN groupadd -g 1001 hirschuser \
-    && useradd -u 1001 -g hirschuser -m -s /bin/bash hirschuser
-
-RUN chown -R hirschuser:hirschuser /home/hirschuser
-
-ENV HOME=/home/hirschuser
-
-## Set up work directory
-WORKDIR /home/hirschuser
-
-# Switch to the hirschuser user
-USER hirschuser
+## Create the EngFlow user and group
+#RUN groupadd -g 1001 hirschuser \
+#    && useradd -u 1001 -g hirschuser -m -s /bin/bash hirschuser
+#
+#RUN chown -R hirschuser:hirschuser /home/hirschuser
+#
+#ENV HOME=/home/hirschuser
+#
+### Set up work directory
+#WORKDIR /home/hirschuser
+#
+## Switch to the hirschuser user
+#USER hirschuser
