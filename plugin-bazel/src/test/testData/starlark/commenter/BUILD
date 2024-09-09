@@ -1,5 +1,5 @@
 filegroup(
     name = "commenter",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
+    srcs = glob(["*.bzl"]),
+    visibility = ["//plugin-bazel/src/test:__subpackages__"],
 )

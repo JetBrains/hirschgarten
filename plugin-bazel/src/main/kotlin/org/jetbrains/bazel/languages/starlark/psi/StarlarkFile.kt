@@ -30,8 +30,9 @@ class StarlarkFile(viewProvider: FileViewProvider) :
 
   fun searchInTopLevel(processor: Processor<StarlarkElement>, stopAt: PsiElement?): Boolean {
     val children = findChildrenByClass(StarlarkElement::class.java).toList()
-    return keepSearchingWhenAllNamedElementsNotMatched(children, processor, stopAt) ||
-      keepSearchingWhenAllLoadSymbolsNotMatched(children, processor, stopAt)
+    val namedElementSearchResult = keepSearchingWhenAllNamedElementsNotMatched(children, processor, stopAt)
+    val loadSymbolSearchResult = keepSearchingWhenAllLoadSymbolsNotMatched(children, processor, stopAt)
+    return namedElementSearchResult && loadSymbolSearchResult
   }
 
   private fun keepSearchingWhenAllNamedElementsNotMatched(
