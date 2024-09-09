@@ -9,6 +9,7 @@ import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.cpp.CppLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.go.GoLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JdkResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JdkVersionResolver
@@ -59,6 +60,7 @@ class LanguagePluginServiceTest {
     val pythonLanguagePlugin = PythonLanguagePlugin(bazelPathsResolver)
     val rustLanguagePlugin = RustLanguagePlugin(bazelPathsResolver)
     val androidLanguagePlugin = AndroidLanguagePlugin(javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
+    val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver)
     languagePluginsService =
       LanguagePluginsService(
         scalaLanguagePlugin,
@@ -69,6 +71,7 @@ class LanguagePluginServiceTest {
         pythonLanguagePlugin,
         rustLanguagePlugin,
         androidLanguagePlugin,
+        goLanguagePlugin,
       )
   }
 
@@ -142,6 +145,18 @@ class LanguagePluginServiceTest {
 
       // when
       val plugin = languagePluginsService.getPlugin(languages) as? ThriftLanguagePlugin
+
+      // then
+      plugin shouldNotBe null
+    }
+
+    @Test
+    fun `should return GoLanguagePlugin for Go Language`() {
+      // given
+      val languages: Set<Language> = hashSetOf(Language.GO)
+
+      // when
+      val plugin = languagePluginsService.getPlugin(languages) as? GoLanguagePlugin
 
       // then
       plugin shouldNotBe null

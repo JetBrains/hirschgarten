@@ -102,6 +102,9 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
 val WorkspaceContext.isAndroidEnabled: Boolean
   get() = "rules_android" in enabledRules.values
 
+val WorkspaceContext.isGoEnabled: Boolean
+  get() = listOf("rules_go", "io_bazel_rules_go").any { it in enabledRules.values }
+
 val WorkspaceContext.isRustEnabled: Boolean
   get() = "rules_rust" in enabledRules.values
 

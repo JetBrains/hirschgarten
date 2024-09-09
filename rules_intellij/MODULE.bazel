@@ -203,12 +203,14 @@ java_import(
 )
 """
 
-GO_PLUGIN_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_242_PLUGIN_REPOSITORY_VERSION, SDK_242_PLUGIN_REPOSITORY_VERSION)
+GO_PLUGIN_242_VERSION = "242.21829.142"
+
+GO_PLUGIN_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (GO_PLUGIN_242_VERSION, GO_PLUGIN_242_VERSION)
 
 http_archive(
     name = "go_2024_2",
     build_file_content = _GO_BUILD_FILE_242,
-    integrity = "sha256-3RXmQPPLyRmZ6mvfrvGBJ451rQ+wtfQmzv18O1znQQQ=",
+    integrity = "sha256-W8EDplm2vdrvGceI2/ury5ZBfrEyAJsECtb5G94+h9E=",
     url = GO_PLUGIN_242_URL,
 )
 

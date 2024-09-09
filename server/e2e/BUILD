@@ -87,6 +87,12 @@ bazel_integration_test_current_version(
 )
 
 bazel_integration_test_current_version(
+    name = "go_project_test",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspGoProjectTest",
+    workspace_path = "test-resources/go-project",
+)
+
+bazel_integration_test_current_version(
     name = "java_diagnostics_test",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:JavaDiagnosticsTest",
     workspace_path = "test-resources/java-diagnostics-project",
@@ -100,6 +106,7 @@ test_suite(
         ":android_kotlin_project_test",
         ":android_project_test",
         ":enabled_rules_test",
+        ":go_project_test",
         ":java_diagnostics_test",
         ":local_jdk_test",
         ":python_project_test",

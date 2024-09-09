@@ -54,6 +54,7 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
+import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.util.concurrent.CompletableFuture
@@ -81,6 +82,7 @@ class BuildServerMock(
   private val javacOptionsResult: JavacOptionsResult? = null,
   private val cppOptionsResult: CppOptionsResult? = null,
   private val workspaceLibrariesResult: WorkspaceLibrariesResult? = null,
+  private val workspaceGoLibrariesResult: WorkspaceGoLibrariesResult? = null,
   private val workspaceNonModuleTargetsResult: NonModuleTargetsResult? = null,
   private val workspaceDirectoriesResult: WorkspaceDirectoriesResult? = null,
   private val workspaceInvalidTargetsResult: WorkspaceInvalidTargetsResult? = null,
@@ -160,6 +162,8 @@ class BuildServerMock(
   override fun buildTargetCppOptions(p0: CppOptionsParams?): CompletableFuture<CppOptionsResult> = wrapInFuture(cppOptionsResult)
 
   override fun workspaceLibraries(): CompletableFuture<WorkspaceLibrariesResult> = wrapInFuture(workspaceLibrariesResult)
+
+  override fun workspaceGoLibraries(): CompletableFuture<WorkspaceGoLibrariesResult> = wrapInFuture(workspaceGoLibrariesResult)
 
   override fun workspaceNonModuleTargets(): CompletableFuture<NonModuleTargetsResult> = wrapInFuture(workspaceNonModuleTargetsResult)
 

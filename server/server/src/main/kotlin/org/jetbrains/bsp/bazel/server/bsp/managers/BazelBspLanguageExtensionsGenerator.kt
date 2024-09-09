@@ -27,6 +27,7 @@ enum class Language(
     listOf("extract_android_info", "extract_android_aar_import_info"),
     false,
   ),
+  Go("//aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true),
   ;
 
   fun toLoadStatement(): String =
@@ -92,6 +93,7 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
           Language.Kotlin -> """"@${it.ruleName}//kotlin/internal:kt_toolchain_type""""
           Language.Rust -> """"@${it.ruleName}//rust:toolchain_type""""
           Language.Android -> getAndroidToolchain()
+          Language.Go -> """"@${it.ruleName}//go:toolchain""""
           else -> null
         }
       }.joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
