@@ -95,7 +95,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     // then
     val expectedModule =
       GenericModuleInfo(
-        name = projectRootName,
+        name = "$projectRootName-intellij-dummy",
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = listOf(),
@@ -203,7 +203,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     // then
     val expectedModule1 =
       GenericModuleInfo(
-        name = projectRoot1Name,
+        name = "$projectRoot1Name-intellij-dummy",
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = listOf(),
@@ -230,7 +230,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val expectedModule2 =
       GenericModuleInfo(
-        name = projectRoot2Name,
+        name = "$projectRoot2Name-intellij-dummy",
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = listOf(),
