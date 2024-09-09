@@ -111,5 +111,8 @@ internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Pat
     .trim { it == File.separatorChar }
     .replaceDots()
     .replace(File.separator, ".")
+    .addIntelliJDummySuffix()
     .shortenTargetPath()
 }
+
+private fun String.addIntelliJDummySuffix() = "$this-intellij-dummy"
