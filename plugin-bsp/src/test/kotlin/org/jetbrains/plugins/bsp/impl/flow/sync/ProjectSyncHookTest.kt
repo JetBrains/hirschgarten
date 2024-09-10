@@ -22,6 +22,14 @@ private class TestProjectSyncHook(override val buildToolId: BuildToolId) : Proje
   }
 }
 
+private class DisabledTestProjectSyncHook(override val buildToolId: BuildToolId) : ProjectSyncHook {
+  override fun isEnabled(project: Project): Boolean = false
+
+  override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
+    // nothing to do, it's a test and it's even not enabled
+  }
+}
+
 private class TestDefaultProjectSyncDisabler(private val toDisable: List<Class<out ProjectSyncHook>>) : DefaultProjectSyncHooksDisabler {
   override val buildToolId: BuildToolId = testBuildToolId
 
@@ -41,9 +49,12 @@ class ProjectSyncHookTest : MockProjectBaseTest() {
     }
 
     @Test
-    fun `should return all the default project sync hooks if no disabler is defined`() {
+    fun `should return all enabled default project sync hooks if no disabler is defined`() {
       // when & then
+      ProjectSyncHook.ep.point.registerExtension(DisabledTestProjectSyncHook(bspBuildToolId), projectModel.disposableRule.disposable)
+
       project.defaultProjectSyncHooks.map { it::class.java } shouldContain TestProjectSyncHook::class.java
+      project.defaultProjectSyncHooks.map { it::class.java } shouldNotContain DisabledTestProjectSyncHook::class.java
     }
 
     @Test
@@ -88,9 +99,11 @@ class ProjectSyncHookTest : MockProjectBaseTest() {
       // given
       project.buildToolId = testBuildToolId
       ProjectSyncHook.ep.point.registerExtension(TestProjectSyncHook(testBuildToolId), projectModel.disposableRule.disposable)
+      ProjectSyncHook.ep.point.registerExtension(DisabledTestProjectSyncHook(testBuildToolId), projectModel.disposableRule.disposable)
 
       // when & then
       project.additionalProjectSyncHooks.map { it::class.java } shouldContain TestProjectSyncHook::class.java
+      project.additionalProjectSyncHooks.map { it::class.java } shouldNotContain DisabledTestProjectSyncHook::class.java
     }
   }
 }

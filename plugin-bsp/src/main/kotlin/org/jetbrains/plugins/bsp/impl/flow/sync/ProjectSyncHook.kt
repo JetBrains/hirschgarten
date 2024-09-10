@@ -81,8 +81,14 @@ internal val Project.defaultProjectSyncHooks: List<ProjectSyncHook>
 
     return ProjectSyncHook.ep
       .allWithBuildToolId(bspBuildToolId)
+      .filter { it.isEnabled(this) }
       .filterNot { it::class.java in disabled }
   }
 
 internal val Project.additionalProjectSyncHooks: List<ProjectSyncHook>
-  get() = if (buildToolId != bspBuildToolId) ProjectSyncHook.ep.allWithBuildToolId(buildToolId) else emptyList()
+  get() =
+    if (buildToolId != bspBuildToolId) {
+      ProjectSyncHook.ep.allWithBuildToolId(buildToolId).filter { it.isEnabled(this) }
+    } else {
+      emptyList()
+    }
