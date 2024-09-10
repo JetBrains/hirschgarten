@@ -3,7 +3,7 @@
 .bazelbsp/
 .bsp/
 
-.idea/
+.idea/*
 !.idea/icon.svg
 
 .ijwb
