@@ -543,6 +543,42 @@ class DiagnosticsServiceTest {
   }
 
   @Test
+  fun `parse scala 3 diagnostics without ExplanationID`() {
+    // given
+    val output =
+      """|-- Error: path/to/file.scala:27:10 
+         |27 |  verride type Env = MyEnv
+         |   |          ^^^^
+         |   |          end of statement expected but 'type' found
+         |-- Warning: path/to/file.scala:13:24 
+         |13 |import scala.concurrent.ExecutionContext
+         |   |                        ^^^^^^^^^^^^^^^^
+         |   |                        unused import
+      """.trimMargin()
+
+    // when
+    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
+
+    // then
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          TextDocumentIdentifier("file:///user/workspace/path/to/file.scala"),
+          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          errorDiagnostic(
+            Position(27, 10),
+            "Error\nend of statement expected but 'type' found",
+          ),
+          warningDiagnostic(
+            Position(13, 24),
+            "Warning\nunused import",
+          ),
+        ),
+      )
+    diagnostics shouldContainExactlyInAnyOrder expected
+  }
+
+  @Test
   fun `parse scala warnings`() {
     // given
     val output =
