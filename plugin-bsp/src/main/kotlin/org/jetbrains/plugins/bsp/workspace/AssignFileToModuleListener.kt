@@ -43,7 +43,6 @@ import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.impl.utils.findModuleNameProvider
-import java.util.concurrent.TimeUnit
 
 public class AssignFileToModuleListener : BulkFileListener {
   override fun after(events: MutableList<out VFileEvent>) {
