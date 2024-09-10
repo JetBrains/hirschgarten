@@ -12,7 +12,7 @@ object BazelrcFileType : LanguageFileType(BazelrcLanguage) {
 
   override fun getDescription(): String = "Bazelrc language"
 
-  override fun getDefaultExtension(): String = "blazerc"
+  override fun getDefaultExtension(): String = "bazelrc"
 
   override fun getIcon(): Icon = StarlarkLanguageIcons.bazel
 }
