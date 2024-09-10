@@ -48,7 +48,7 @@ public class BspWorkspace(public val project: Project) : Disposable {
 }
 
 @Service(Service.Level.PROJECT)
-internal class BspSyncStatusService(private val project: Project) {
+public class BspSyncStatusService(private val project: Project) {
   private var isCanceled = false
 
   private var _isSyncInProgress: Boolean = false

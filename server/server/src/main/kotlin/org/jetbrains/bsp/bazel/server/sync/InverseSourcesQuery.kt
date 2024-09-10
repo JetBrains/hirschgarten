@@ -77,7 +77,7 @@ object InverseSourcesQuery {
         .waitAndGetResult(cancelChecker)
     return if (fileLabelResult.statusCode == StatusCode.OK && fileLabelResult.stdoutLines.size == 1) {
       fileLabelResult.stdoutLines.first()
-    } else if (fileLabelResult.stderrLines.first().startsWith("ERROR: no such target '")) {
+    } else if (fileLabelResult.stderrLines.firstOrNull()?.startsWith("ERROR: no such target '") == true) {
       null
     } else {
       throw RuntimeException("Could not find file. Bazel query failed:\n ${fileLabelResult.stderrLines.joinToString { "\n" }}\n")
