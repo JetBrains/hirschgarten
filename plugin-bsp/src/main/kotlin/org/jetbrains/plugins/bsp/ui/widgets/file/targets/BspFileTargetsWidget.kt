@@ -23,6 +23,7 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.extensionPoints.targetActionProvider
 import org.jetbrains.plugins.bsp.impl.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
@@ -94,6 +95,8 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
 
   private fun BuildTargetInfo.calculatePopupGroup(): ActionGroup =
     DefaultActionGroup(id.uri, true).also {
+      it.add(CopyTargetIdAction.FromTargetInfo(this))
+      it.addSeparator()
       if (capabilities.canCompile) {
         it.add(BuildTargetAction(id))
       }

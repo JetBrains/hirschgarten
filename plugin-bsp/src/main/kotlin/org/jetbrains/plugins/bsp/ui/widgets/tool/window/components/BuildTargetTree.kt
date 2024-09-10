@@ -41,7 +41,7 @@ public class BuildTargetTree(
 
   public val treeComponent: Tree = Tree(rootNode)
 
-  override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction(this, treeComponent)
+  override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, treeComponent)
 
   init {
     treeComponent.selectionModel.selectionMode = TreeSelectionModel.SINGLE_TREE_SELECTION
