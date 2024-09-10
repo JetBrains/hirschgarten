@@ -13,7 +13,6 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowPanel
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowService
 
 public class BspAllTargetsWidgetFactory :
   ToolWindowFactory,
@@ -23,15 +22,9 @@ public class BspAllTargetsWidgetFactory :
   override fun shouldBeAvailable(project: Project): Boolean = project.isBspProject
 
   override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-    BspToolWindowService.getInstance(project).setDeepPanelReload { doCreateToolWindowContent(project, toolWindow) }
-    doCreateToolWindowContent(project, toolWindow)
-  }
-
-  private fun doCreateToolWindowContent(project: Project, toolWindow: ToolWindow) {
     val panel = BspToolWindowPanel(project)
     toolWindow.contentManager.removeAllContents(true)
-    toolWindow.contentManager.addContent(ContentFactory.getInstance().createContent(panel.component, "", false))
-    toolWindow.show()
+    toolWindow.contentManager.addContent(ContentFactory.getInstance().createContent(panel, "", false))
   }
 }
 
