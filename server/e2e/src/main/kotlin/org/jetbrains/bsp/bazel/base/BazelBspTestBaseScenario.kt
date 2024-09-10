@@ -107,16 +107,12 @@ abstract class BazelBspTestBaseScenario {
       }
     }
 
-    when (scenarioStepsExecutionResult) {
-      true -> {
-        log.info("Test passed")
-        exitProcess(SUCCESS_EXIT_CODE)
-      }
-
-      false, null -> {
-        log.fatal("Test failed")
-        exitProcess(FAIL_EXIT_CODE)
-      }
+    if (scenarioStepsExecutionResult == true) {
+      log.info("Test passed")
+      exitProcess(SUCCESS_EXIT_CODE)
+    } else {
+      log.fatal("Test failed")
+      exitProcess(FAIL_EXIT_CODE)
     }
   }
 
