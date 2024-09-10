@@ -438,47 +438,72 @@ class BazelProjectMapper(
     targetsToImport: Map<Label, TargetInfo>,
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
-  ): Map<Label, Set<Path>> =
-    runBlocking(Dispatchers.Default) {
+  ): Map<Label, Set<Path>> {
+    val jdepsJars =
+      runBlocking(Dispatchers.IO) {
+        targetsToImport.values
+          .filter { targetSupportsJdeps(it) }
+          .map { target ->
+            async {
+              Label.parse(target.id) to dependencyJarsFromJdepsFiles(target)
+            }
+          }.awaitAll()
+          .toMap()
+      }
+    val allJdepsJars =
+      jdepsJars.values
+        .asSequence()
+        .flatten()
+        .toSet()
+
+    return runBlocking(Dispatchers.Default) {
       val outputJarsFromTransitiveDepsCache = ConcurrentHashMap<Label, Set<Path>>()
       targetsToImport.values
         .filter { targetSupportsJdeps(it) }
         .map { target ->
           async {
             val targetLabel = Label.parse(target.id)
-            val jarsFromJdeps = dependencyJarsFromJdepsFiles(target)
+            val jarsFromJdeps = jdepsJars.getValue(targetLabel)
             if (jarsFromJdeps.isEmpty()) {
               return@async targetLabel to emptySet()
             }
 
-            val jarsFromDirectDependencies =
-              getAllOutputJarsFromTransitiveDeps(
+            val transitiveJdepsJars =
+              getJdepsJarsFromTransitiveDependencies(
                 targetLabel,
                 targetsToImport,
                 libraryDependencies,
                 librariesToImport,
                 outputJarsFromTransitiveDepsCache,
+                allJdepsJars,
               )
-            targetLabel to jarsFromJdeps - jarsFromDirectDependencies
+            targetLabel to jarsFromJdeps - transitiveJdepsJars
           }
         }.awaitAll()
         .toMap()
         .filterValues { it.isNotEmpty() }
     }
+  }
 
-  private fun getAllOutputJarsFromTransitiveDeps(
+  private fun getJdepsJarsFromTransitiveDependencies(
     targetOrLibrary: Label,
     targetsToImport: Map<Label, TargetInfo>,
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
     outputJarsFromTransitiveDepsCache: ConcurrentHashMap<Label, Set<Path>>,
+    allJdepsJars: Set<Path>,
   ): Set<Path> =
     outputJarsFromTransitiveDepsCache.getOrPut(targetOrLibrary) {
       val jarsFromTargets =
         targetsToImport[targetOrLibrary]?.let { getTargetOutputJarsSet(it) + getTargetInterfaceJarsSet(it) }.orEmpty()
       val jarsFromLibraries =
         librariesToImport[targetOrLibrary]?.let { it.outputs + it.interfaceJars }.orEmpty().map { Paths.get(it.path) }
-      val outputJars = (jarsFromTargets + jarsFromLibraries).toMutableSet()
+      val outputJars =
+        listOfNotNull(jarsFromTargets, jarsFromLibraries)
+          .asSequence()
+          .flatten()
+          .filter { it in allJdepsJars }
+          .toMutableSet()
 
       val dependencies =
         targetsToImport[targetOrLibrary]?.dependenciesList.orEmpty().map { Label.parse(it.id) } +
@@ -486,12 +511,13 @@ class BazelProjectMapper(
           librariesToImport[targetOrLibrary]?.dependencies.orEmpty()
 
       dependencies.flatMapTo(outputJars) { dependency ->
-        getAllOutputJarsFromTransitiveDeps(
+        getJdepsJarsFromTransitiveDependencies(
           dependency,
           targetsToImport,
           libraryDependencies,
           librariesToImport,
           outputJarsFromTransitiveDepsCache,
+          allJdepsJars,
         )
       }
       outputJars
