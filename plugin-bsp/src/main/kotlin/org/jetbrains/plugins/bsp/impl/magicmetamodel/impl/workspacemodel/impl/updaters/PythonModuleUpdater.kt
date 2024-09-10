@@ -8,10 +8,8 @@ import com.intellij.platform.workspace.jps.entities.SdkId
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.PYTHON_SDK_ID
 
-internal class PythonModuleWithSourcesUpdater(
-  private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig,
-  private val isPythonSupportEnabled: Boolean,
-) : WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
+internal class PythonModuleWithSourcesUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
+  WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
   override fun addEntity(entityToAdd: PythonModule): ModuleEntity {
     val moduleEntityUpdater =
       ModuleEntityUpdater(workspaceModelEntityUpdaterConfig, calculateModuleDefaultDependencies(entityToAdd))
@@ -28,7 +26,7 @@ internal class PythonModuleWithSourcesUpdater(
   }
 
   private fun calculateModuleDefaultDependencies(entityToAdd: PythonModule): List<ModuleDependencyItem> =
-    if (isPythonSupportEnabled && entityToAdd.sdkInfo != null) {
+    if (entityToAdd.sdkInfo != null) {
       defaultDependencies + SdkDependency(SdkId(entityToAdd.sdkInfo.toString(), PYTHON_SDK_ID))
     } else {
       defaultDependencies
@@ -50,10 +48,9 @@ internal class PythonModuleWithoutSourcesUpdater(private val workspaceModelEntit
   }
 }
 
-internal class PythonModuleUpdater(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig, isPythonSupportEnabled: Boolean) :
+internal class PythonModuleUpdater(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {
-  private val pythonModuleWithSourcesUpdater =
-    PythonModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled)
+  private val pythonModuleWithSourcesUpdater = PythonModuleWithSourcesUpdater(workspaceModelEntityUpdaterConfig)
   private val pythonModuleWithoutSourcesUpdater = PythonModuleWithoutSourcesUpdater(workspaceModelEntityUpdaterConfig)
 
   override fun addEntity(entityToAdd: PythonModule): ModuleEntity =

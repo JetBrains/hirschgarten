@@ -39,7 +39,8 @@ internal class WorkspaceModelUpdaterImpl(
     )
   private val javaModuleUpdater =
     JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
-  private val pythonModuleUpdater = PythonModuleUpdater(workspaceModelEntityUpdaterConfig, isPythonSupportEnabled)
+  private val pythonModuleUpdater: PythonModuleUpdater? =
+    if (isPythonSupportEnabled) PythonModuleUpdater(workspaceModelEntityUpdaterConfig) else null
 
   private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
   private val javaModuleToDummyJavaModulesTransformerHACK =
@@ -52,7 +53,7 @@ internal class WorkspaceModelUpdaterImpl(
         javaModuleUpdater.addEntities(dummyJavaModules.filterNot { it.isAlreadyAdded() })
         javaModuleUpdater.addEntity(module)
       }
-      is PythonModule -> pythonModuleUpdater.addEntity(module)
+      is PythonModule -> pythonModuleUpdater?.addEntity(module)
     }
   }
 
