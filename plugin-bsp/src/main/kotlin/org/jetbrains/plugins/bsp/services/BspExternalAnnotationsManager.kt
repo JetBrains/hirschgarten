@@ -1,7 +1,9 @@
 package org.jetbrains.plugins.bsp.services
 
-import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.codeInsight.ExternalAnnotationsManagerImpl
+import com.intellij.codeInsight.ModCommandAwareExternalAnnotationsManager
+import com.intellij.modcommand.ModCommand
+import com.intellij.modcommand.ModNothing
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
@@ -10,6 +12,7 @@ import com.intellij.psi.PsiAnnotation
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.PsiNameValuePair
 import org.jetbrains.plugins.bsp.config.isBspProject
@@ -18,11 +21,11 @@ import org.jetbrains.plugins.bsp.config.isBspProject
  * See [YouTrack issue](https://youtrack.jetbrains.com/issue/BAZEL-1128).
  */
 class BspExternalAnnotationsManager(project: Project) :
-  ExternalAnnotationsManager(),
+  ModCommandAwareExternalAnnotationsManager(PsiManager.getInstance(project)),
   Disposable {
-  private val delegate: ExternalAnnotationsManager =
+  private val delegate: ModCommandAwareExternalAnnotationsManager =
     if (project.isBspProject) {
-      DummyExternalAnnotationsManager()
+      DummyExternalAnnotationsManager(PsiManager.getInstance(project))
     } else {
       ExternalAnnotationsManagerImpl(project).also {
         Disposer.register(this, it)
@@ -79,9 +82,20 @@ class BspExternalAnnotationsManager(project: Project) :
   override fun hasConfiguredAnnotationRoot(owner: PsiModifierListOwner): Boolean = delegate.hasConfiguredAnnotationRoot(owner)
 
   override fun dispose() {}
+
+  override fun isUnderAnnotationRoot(file: VirtualFile): Boolean = delegate.isUnderAnnotationRoot(file)
+
+  override fun deannotateModCommand(listOwner: List<PsiModifierListOwner>, annotationFQNs: List<String>): ModCommand =
+    delegate.deannotateModCommand(listOwner, annotationFQNs)
+
+  override fun editExternalAnnotationModCommand(
+    listOwner: PsiModifierListOwner,
+    annotationFQN: String,
+    value: Array<out PsiNameValuePair>?,
+  ): ModCommand = delegate.editExternalAnnotationModCommand(listOwner, annotationFQN, value)
 }
 
-private class DummyExternalAnnotationsManager : ExternalAnnotationsManager() {
+private class DummyExternalAnnotationsManager(psiManager: PsiManager) : ModCommandAwareExternalAnnotationsManager(psiManager) {
   override fun hasAnnotationRootsForFile(file: VirtualFile): Boolean = false
 
   override fun isExternalAnnotation(annotation: PsiAnnotation): Boolean = false
@@ -120,4 +134,14 @@ private class DummyExternalAnnotationsManager : ExternalAnnotationsManager() {
   override fun findExternalAnnotationsFiles(listOwner: PsiModifierListOwner): List<PsiFile>? = null
 
   override fun hasConfiguredAnnotationRoot(owner: PsiModifierListOwner): Boolean = false
+
+  override fun isUnderAnnotationRoot(file: VirtualFile): Boolean = false
+
+  override fun deannotateModCommand(listOwner: List<PsiModifierListOwner>, annotationFQNs: List<String>): ModCommand = ModNothing()
+
+  override fun editExternalAnnotationModCommand(
+    listOwner: PsiModifierListOwner,
+    annotationFQN: String,
+    value: Array<out PsiNameValuePair>?,
+  ): ModCommand = ModNothing()
 }
