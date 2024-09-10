@@ -10,6 +10,7 @@ import com.goide.vgo.project.workspaceModel.entities.VgoDependencyEntity
 import com.goide.vgo.project.workspaceModel.entities.VgoStandaloneModuleEntity
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.SequentialProgressReporter
@@ -24,7 +25,6 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
@@ -72,7 +72,7 @@ class GoProjectSync : ProjectSyncHook {
     environment.diff.workspaceModelDiff.addPostApplyAction {
       calculateAndAddGoSdk(environment.progressReporter, goTargets, environment.project, environment.taskId)
       restoreGoModulesRegistry(environment.project)
-      enableGoSupportInTargets(environment.project, environment.taskId)
+      enableGoSupportInTargets(goTargets, environment.project, environment.taskId)
     }
   }
 
@@ -87,7 +87,7 @@ class GoProjectSync : ProjectSyncHook {
     val resourceContentRootEntities = getResourceContentRootEntities(target, virtualFileUrlManager)
     return builder.addEntity(
       ModuleEntity(
-        name = target.target.displayName,
+        name = target.moduleName,
         dependencies =
           target.target.dependencies.map {
             ModuleDependency(
@@ -105,6 +105,9 @@ class GoProjectSync : ProjectSyncHook {
       },
     )
   }
+
+  private val BaseTargetInfo.moduleName: String
+    get() = this.target.displayName
 
   private fun getSourceContentRootEntities(
     target: BaseTargetInfo,
@@ -243,21 +246,24 @@ class GoProjectSync : ProjectSyncHook {
     VgoWorkspaceModelUpdater(project).restoreModulesRegistry()
   }
 
-  private suspend fun enableGoSupportInTargets(project: Project, taskId: String) =
-    project.syncConsole.withSubtask(
-      taskId,
-      "enable-go-support-in-targets",
-      BspPluginBundle.message("console.task.model.add.go.support.in.targets"),
-    ) {
-      val workspaceModel = WorkspaceModel.getInstance(project)
-      workspaceModel.currentSnapshot.entities(ModuleEntity::class.java).forEach { moduleEntity ->
-        moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
-          writeAction {
-            module.enableGoSupport()
-          }
-        }
+  private suspend fun enableGoSupportInTargets(
+    goTargets: List<BaseTargetInfo>,
+    project: Project,
+    taskId: String,
+  ) = project.syncConsole.withSubtask(
+    taskId,
+    "enable-go-support-in-targets",
+    BspPluginBundle.message("console.task.model.add.go.support.in.targets"),
+  ) {
+    val moduleManager = ModuleManager.getInstance(project)
+    for (goTarget in goTargets) {
+      val moduleName = goTarget.moduleName
+      val module = moduleManager.findModuleByName(moduleName) ?: continue
+      writeAction {
+        module.enableGoSupport()
       }
     }
+  }
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1155
   private fun Module.enableGoSupport() {
