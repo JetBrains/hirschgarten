@@ -1,18 +1,11 @@
 package org.jetbrains.plugins.bsp.workspace
 
-import com.intellij.openapi.application.runReadAction
-import com.intellij.openapi.fileTypes.FileType
-import com.intellij.openapi.fileTypes.PlainTextFileType
-import com.intellij.openapi.fileTypes.impl.FileTypeOverrider
-import com.intellij.openapi.project.ProjectLocator
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
-import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
 import kotlin.collections.contains
 
@@ -49,23 +42,5 @@ class DummyModuleExclusionWorkspaceFileIndexContributor : WorkspaceFileIndexCont
       condition = { it.isSourceFile() },
       entity = entity,
     )
-  }
-}
-
-/**
- * Make sure the files we excluded aren't parsed
- */
-class ExcludedFileTypeOverrider : FileTypeOverrider {
-  override fun getOverriddenFileType(file: VirtualFile): FileType? {
-    if (!file.isSourceFile()) return null
-    val project = ProjectLocator.getInstance().guessProjectForFile(file) ?: return null
-    if (!project.isBspProject) return null
-    val projectFileIndex = ProjectFileIndex.getInstance(project)
-    val excluded = runReadAction { projectFileIndex.isExcluded(file) }
-    return if (excluded) {
-      PlainTextFileType.INSTANCE
-    } else {
-      null
-    }
   }
 }
