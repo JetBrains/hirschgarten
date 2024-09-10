@@ -26,6 +26,7 @@ object TargetIdToModuleEntitiesMap {
     moduleNameProvider: TargetNameReformatProvider,
     libraryNameProvider: TargetNameReformatProvider,
     hasDefaultPythonInterpreter: Boolean,
+    isPythonSupportEnabled: Boolean,
     isAndroidSupportEnabled: Boolean,
   ): Map<BuildTargetIdentifier, Module> {
     val moduleDetailsToJavaModuleTransformer =
@@ -36,13 +37,17 @@ object TargetIdToModuleEntitiesMap {
         projectBasePath,
         isAndroidSupportEnabled,
       )
-    val moduleDetailsToPythonModuleTransformer =
-      ModuleDetailsToPythonModuleTransformer(
-        targetIdToTargetInfo,
-        moduleNameProvider,
-        libraryNameProvider,
-        hasDefaultPythonInterpreter,
-      )
+    val moduleDetailsToPythonModuleTransformer: ModuleDetailsToPythonModuleTransformer? =
+      if (isPythonSupportEnabled) {
+        ModuleDetailsToPythonModuleTransformer(
+          targetIdToTargetInfo,
+          moduleNameProvider,
+          libraryNameProvider,
+          hasDefaultPythonInterpreter,
+        )
+      } else {
+        null
+      }
 
     return runBlocking(Dispatchers.Default) {
       projectDetails.targetIds
@@ -51,7 +56,7 @@ object TargetIdToModuleEntitiesMap {
             val moduleDetails = targetIdToModuleDetails.getValue(it)
             val module =
               if (moduleDetails.target.languageIds.includesPython()) {
-                moduleDetailsToPythonModuleTransformer.transform(moduleDetails)
+                moduleDetailsToPythonModuleTransformer?.transform(moduleDetails) ?: return@async null
               } else if (moduleDetails.target.languageIds.isJvmOrAndroidTarget()) {
                 moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
               } else {

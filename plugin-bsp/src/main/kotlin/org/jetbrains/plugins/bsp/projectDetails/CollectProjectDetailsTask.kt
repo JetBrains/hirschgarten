@@ -336,6 +336,7 @@ class CollectProjectDetailsTask(
                 moduleNameProvider = moduleNameProvider,
                 libraryNameProvider = libraryNameProvider,
                 hasDefaultPythonInterpreter = BspFeatureFlags.isPythonSupportEnabled,
+                isPythonSupportEnabled = BspFeatureFlags.isPythonSupportEnabled,
                 isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
               )
 
