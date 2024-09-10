@@ -84,6 +84,7 @@ class BazelBspServer(
         bspInfo = bspInfo,
       )
 
+    println("nothing")
     val serverLifetime = BazelBspServerLifetime(workspaceContextProvider)
     val bspRequestsRunner = BspRequestsRunner(serverLifetime)
     val telemetryConfigWithLogger = telemetryConfig.copy(bspClientLogger = bspClientLogger)

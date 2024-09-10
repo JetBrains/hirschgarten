@@ -1492,7 +1492,7 @@
     },
     "@@rules_go~//go:extensions.bzl%go_sdk": {
       "os:linux,arch:amd64": {
-        "bzlTransitiveDigest": "BIPkvdZe1e2YYwOmO4UCaGnZsevdlmRUZQ88ydEIj5E=",
+        "bzlTransitiveDigest": "pdOK6RRBMR027dLrMyVZU1jYQKeGj8IKaFCYndQ/3WQ=",
         "usagesDigest": "66UQYQZkLXNCWaMHCLGhb386mA1l6Uswbb6rqM9S73I=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1731,7 +1731,7 @@
     },
     "@@rules_go~//go/private:extensions.bzl%non_module_dependencies": {
       "general": {
-        "bzlTransitiveDigest": "L6bo2wWqIq6Gwdd9dg0eO33PB0AczCYGbMllYXY4QtA=",
+        "bzlTransitiveDigest": "l+Sgi6TCa13UShOMa0j/W8Yrofyh+7oKtViu8JSCgIQ=",
         "usagesDigest": "/do8Y+NJBDFlPQnWT6iFp1oDtxSM0mUABzn2rLM2hys=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -2210,7 +2210,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "XWgrD/Lf032OWb1SoBndiXKiZCgqsiclSfBTGF1mM/I=",
+        "bzlTransitiveDigest": "HiObLY51zwLOYBacYleCgBiSB8GDbgDhBKJbQ1lkoww=",
         "usagesDigest": "moHoYY1OP7kHaHHJ5EAvm+zksRZt5n3lvjcOhYhq7uY=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "031e35d03dde03ae6305fe4b3d1f58ad7bdad857379752deede0f93649991b8a",
