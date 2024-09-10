@@ -33,7 +33,7 @@ public class BuildTargetSearch(
 ) : BuildTargetContainer {
   public val targetSearchPanel: JPanel = JPanel(VerticalLayout(0))
 
-  override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction(this, targetSearchPanel)
+  override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, targetSearchPanel)
 
   private val searchListDisplay = LazySearchListDisplay(targetIcon)
   private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, buildToolId)

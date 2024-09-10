@@ -11,19 +11,28 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetCo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.JComponent
 
-public class CopyTargetIdAction(private val container: BuildTargetContainer, component: JComponent) :
-  AnAction({ BspPluginBundle.message("widget.copy.target.id") }, AllIcons.Actions.Copy) {
-  init {
-    registerCustomShortcutSet(CommonShortcuts.getCopy(), component)
+sealed class CopyTargetIdAction : AnAction({ BspPluginBundle.message("widget.copy.target.id") }, AllIcons.Actions.Copy) {
+  override fun actionPerformed(e: AnActionEvent) {
+    getTargetInfo()?.copyIdToClipboard()
   }
 
-  override fun actionPerformed(e: AnActionEvent) {
-    container.getSelectedBuildTarget()?.copyIdToClipboard()
-  }
+  protected abstract fun getTargetInfo(): BuildTargetInfo?
 
   private fun BuildTargetInfo.copyIdToClipboard() {
     val clipboard = CopyPasteManager.getInstance()
     val transferable = TextTransferable(this.id.uri as CharSequence)
     clipboard.setContents(transferable)
+  }
+
+  class FromContainer(private val container: BuildTargetContainer, component: JComponent) : CopyTargetIdAction() {
+    init {
+      registerCustomShortcutSet(CommonShortcuts.getCopy(), component)
+    }
+
+    override fun getTargetInfo(): BuildTargetInfo? = container.getSelectedBuildTarget()
+  }
+
+  class FromTargetInfo(private val targetInfo: BuildTargetInfo) : CopyTargetIdAction() {
+    override fun getTargetInfo(): BuildTargetInfo = targetInfo
   }
 }
