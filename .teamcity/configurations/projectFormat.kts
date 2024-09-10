@@ -16,7 +16,7 @@ open class FormatChecker(vcsRoot: GitVcsRoot) :
           """.trimIndent()
         dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
         dockerPull = true
-        dockerImage = "registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest"
+        dockerImage = "registry.jetbrains.team/p/bazel/docker/hirschgarten-e2e:latest"
       }
     },
     vcsRoot = vcsRoot,
