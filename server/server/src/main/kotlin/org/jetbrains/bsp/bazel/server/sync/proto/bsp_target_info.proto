@@ -123,6 +123,8 @@ message AndroidAarImportInfo {
 message GoTargetInfo {
   string importpath = 1;
   FileLocation sdk_home_path = 2;
+  repeated FileLocation generated_sources = 3;
+  repeated FileLocation generated_libraries = 4;
 }
 
 message TargetInfo {

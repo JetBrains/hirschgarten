@@ -203,6 +203,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
       GoBuildTarget(
         sdkHomePath = URI("file:///go_sdk/"),
         importPath = info.importPath,
+        generatedLibraries = emptyList(),
       )
     val sources =
       listOf(SourcesItem(info.targetId, listOf(SourceItem("file:///root/${info.importPath}", SourceItemKind.forValue(1), false))))

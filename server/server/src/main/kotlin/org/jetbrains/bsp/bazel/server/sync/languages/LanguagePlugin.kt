@@ -13,6 +13,8 @@ data class SourceRootAndData(val sourceRoot: Path, val data: EnhancedSourceItemD
 abstract class LanguagePlugin<T : LanguageData> {
   open fun calculateSourceRootAndAdditionalData(source: Path): SourceRootAndData? = null
 
+  open fun calculateAdditionalSources(targetInfo: BspTargetInfo.TargetInfo): List<BspTargetInfo.FileLocation> = listOf()
+
   open fun resolveAdditionalResources(targetInfo: BspTargetInfo.TargetInfo): Set<URI> = emptySet()
 
   open fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>) {}

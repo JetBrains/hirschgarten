@@ -29,7 +29,7 @@ enum class Language(
     setOf("android_binary", "android_library", "android_local_test"),
     hashSetOf(JAVA.id),
   ),
-  GO("go", hashSetOf(".go")),
+  GO("go", hashSetOf(".go"), setOf("go_binary")),
   ;
 
   val allNames: Set<String> = dependentNames + id
