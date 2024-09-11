@@ -14,7 +14,7 @@ public interface BspConnection {
    * Establish a connection with the server, and initialize server.
    * If the connection is already established no actions should be performed.
    */
-  public suspend fun connect(taskId: Any)
+  public suspend fun connect()
 
   /**
    * Disconnect from the server,
@@ -35,20 +35,14 @@ public interface BspConnection {
   public fun isConnected(): Boolean
 }
 
-var Project.connection: BspConnection
-  get() = findOrCreateConnection().also { connection = it }
-  set(value) {
-    BspConnectionService.getInstance(this).connection = value
-  }
-
-private fun Project.findOrCreateConnection(): BspConnection =
-  BspConnectionService.getInstance(this).connection ?: DefaultBspConnection(this, connectionDetailsProvider)
+val Project.connection: BspConnection
+  get() = BspConnectionService.getInstance(this).connection
 
 @Service(Service.Level.PROJECT)
-internal class BspConnectionService {
-  var connection: BspConnection? = null
+private class BspConnectionService(project: Project) {
+  val connection: BspConnection = DefaultBspConnection(project, project.connectionDetailsProvider)
 
-  internal companion object {
+  companion object {
     fun getInstance(project: Project): BspConnectionService = project.getService(BspConnectionService::class.java)
   }
 }

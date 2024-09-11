@@ -26,6 +26,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.impl.actions.registered.ResyncAction
 import org.jetbrains.plugins.bsp.impl.actions.registered.isSyncInProgress
+import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
 import java.io.File
 import java.net.URI
 
@@ -37,6 +38,7 @@ public abstract class TaskConsole(
   private val taskView: BuildProgressListener,
   private val basePath: String,
   private val buildToolName: String,
+  private val project: Project,
 ) {
   protected val tasksInProgress: MutableList<Any> = mutableListOf()
   private val subtaskParentMap: LinkedHashMap<Any, SubtaskParents> = linkedMapOf()
@@ -134,6 +136,10 @@ public abstract class TaskConsole(
     subtaskParentMap.entries.removeAll { it.value.rootTask == taskId }
     val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, result)
     taskView.onEvent(taskId, event)
+  }
+
+  @Synchronized
+  public fun finishAllTasks(message: String, result: EventResult = SuccessResultImpl()) {
   }
 
   /**
@@ -337,6 +343,21 @@ public abstract class TaskConsole(
 
   private inner class CancelAction(private val doCancelAction: () -> Unit, private val taskId: Any) :
     DumbAwareAction({ "Stop" }, BspPluginIcons.disconnect) {
+    init {
+      project.messageBus.connect().subscribe(
+        BspWorkspaceListener.TOPIC,
+        object : BspWorkspaceListener {
+          override fun syncStarted() {}
+
+          override fun syncFinished(canceled: Boolean) {}
+
+          override fun allTasksCancelled() {
+            doCancelAction()
+          }
+        },
+      )
+    }
+
     override fun actionPerformed(e: AnActionEvent) {
       doCancelAction()
     }
@@ -353,7 +374,8 @@ public class SyncTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   buildToolName: String,
-) : TaskConsole(taskView, basePath, buildToolName) {
+  project: Project,
+) : TaskConsole(taskView, basePath, buildToolName, project) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
     object : SuspendableAction({ BspPluginBundle.message("resync.action.text") }, BspPluginIcons.reload) {
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -370,7 +392,8 @@ public class BuildTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   buildToolName: String,
-) : TaskConsole(taskView, basePath, buildToolName) {
+  project: Project,
+) : TaskConsole(taskView, basePath, buildToolName, project) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
     object : AnAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
       override fun actionPerformed(e: AnActionEvent) {

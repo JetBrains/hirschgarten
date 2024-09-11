@@ -17,8 +17,6 @@ import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
-import org.jetbrains.plugins.bsp.impl.server.connection.DefaultBspConnection
-import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.impl.server.connection.connectionDetailsProvider
 import org.jetbrains.plugins.bsp.ui.widgets.file.targets.updateBspFileTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
@@ -82,8 +80,6 @@ public class BspStartupActivity : ProjectActivity {
 
   private suspend fun runSync(project: Project) {
     log.info("Running BSP sync")
-
-    project.connection = DefaultBspConnection(project, project.connectionDetailsProvider)
 
     val wasFirstOpeningSuccessful = project.connectionDetailsProvider.onFirstOpening(project, project.rootDir)
     log.debug("Was onFirstOpening successful: $wasFirstOpeningSuccessful")

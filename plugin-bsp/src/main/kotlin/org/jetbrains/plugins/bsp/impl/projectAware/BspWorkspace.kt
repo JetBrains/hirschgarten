@@ -165,6 +165,8 @@ public interface BspWorkspaceListener {
 
   public fun syncFinished(canceled: Boolean)
 
+  public fun allTasksCancelled() {}
+
   public companion object {
     public val TOPIC: Topic<BspWorkspaceListener> = Topic(BspWorkspaceListener::class.java)
   }
