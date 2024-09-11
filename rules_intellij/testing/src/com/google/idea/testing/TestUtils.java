@@ -19,24 +19,7 @@
 package com.google.idea.testing;
 
 import com.google.common.base.StandardSystemProperty;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.intellij.mock.MockApplication;
-import com.intellij.mock.MockProject;
-import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.client.ClientAppSessionsManager;
-import com.intellij.openapi.client.ClientSessionsManager;
-import com.intellij.openapi.fileTypes.FileTypeManager;
-import com.intellij.openapi.vfs.encoding.EncodingManager;
-import com.intellij.openapi.vfs.encoding.EncodingManagerImpl;
-import com.intellij.util.pico.DefaultPicoContainer;
 import java.io.File;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import javax.annotation.Nullable;
-import org.picocontainer.PicoContainer;
 
 /** Test utilities. */
 public final class TestUtils {
@@ -111,42 +94,5 @@ public final class TestUtils {
       return System.getenv(name);
     }
     return propValue;
-  }
-
-  private static class MyMockApplication extends MockApplication {
-    private final ExecutorService executor = MoreExecutors.newDirectExecutorService();
-
-    MyMockApplication(Disposable parentDisposable) {
-      super(parentDisposable);
-    }
-
-    @Override
-    public void invokeLater(Runnable runnable, ModalityState state) {
-      runnable.run();
-    }
-
-    @Override
-    public Future<?> executeOnPooledThread(Runnable action) {
-      return executor.submit(action);
-    }
-
-    @Override
-    public <T> Future<T> executeOnPooledThread(Callable<T> action) {
-      return executor.submit(action);
-    }
-  }
-
-  public static MockApplication createMockApplication(Disposable parentDisposable) {
-    final MyMockApplication instance = new MyMockApplication(parentDisposable);
-    ApplicationManager.setApplication(instance, FileTypeManager::getInstance, parentDisposable);
-    instance.registerService(EncodingManager.class, EncodingManagerImpl.class);
-    instance.registerService(ClientSessionsManager.class, ClientAppSessionsManager.class);
-    return instance;
-  }
-
-  public static MockProject mockProject(
-      @Nullable PicoContainer container, Disposable parentDisposable) {
-    container = container != null ? container : new DefaultPicoContainer();
-    return new MockProject(container, parentDisposable);
   }
 }

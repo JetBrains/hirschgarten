@@ -410,11 +410,7 @@ def intellij_plugin(name, deps, plugin_xml, plugin_deps = [], optional_plugin_de
         deploy_jar = deploy_jar,
         jar_name = jar_name or (name + ".jar"),
         deps = deps,
-        restrict_deps =
-            select({
-                "@rules_intellij//intellij_platform_sdk:android-studio-intellij-ext": restrict_deps,
-                "//conditions:default": False,
-            }),
+        restrict_deps = False,
         restricted_deps = deps if restrict_deps else [],
         plugin_xml = plugin_xml,
         plugin_deps = plugin_deps,

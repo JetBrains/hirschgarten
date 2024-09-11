@@ -59,7 +59,7 @@ class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunH
           (it.languageIds.includesAndroid() && it.capabilities.canTest)
       }
 
-    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = targetInfos.singleOrNull()?.capabilities?.canDebug ?: false
+    override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
   }
 }
 

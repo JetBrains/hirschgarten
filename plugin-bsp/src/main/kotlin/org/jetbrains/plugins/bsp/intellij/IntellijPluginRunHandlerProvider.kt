@@ -16,5 +16,5 @@ class IntellijPluginRunHandlerProvider : BspRunHandlerProvider {
     targetInfos.singleOrNull()?.tags?.contains(INTELLIJ_PLUGIN_TAG)
       ?: false
 
-  override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = targetInfos.all { it.capabilities.canDebug }
+  override fun canDebug(targetInfos: List<BuildTargetInfo>): Boolean = canRun(targetInfos)
 }

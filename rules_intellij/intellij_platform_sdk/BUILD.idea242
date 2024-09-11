@@ -20,8 +20,6 @@
 #
 # Plugin source jars for IntelliJ CE, accessed remotely.
 
-load("@rules_intellij//intellij_platform_sdk:build_defs.bzl", "no_mockito_extensions")
-
 package(default_visibility = ["//visibility:public"])
 
 java_import(
@@ -29,28 +27,11 @@ java_import(
     jars = glob([
             "lib/*.jar",
             "lib/modules/*.jar"
-        ],
-        exclude = [
-            # mockito-extensions needs to be removed from this jar.
-            "lib/testFramework.jar",
-        ],
+        ]
     ),
     tags = ["intellij-provided-by-sdk"],
-    exports = [":jars_without_mockito_extensions"],
     deps = ["@rules_intellij_maven//:com_google_errorprone_error_prone_annotations"],
 )
-
-no_mockito_extensions(
-    name = "jars_without_mockito_extensions",
-    jars = ["lib/testFramework.jar"],
-)
-
-java_import(
-    name = "guava",
-    jars = ["lib/lib.jar", "lib/lib-client.jar"],
-)
-
-java_library(name = "jsr305")  # not bundled
 
 java_import(
     name = "java",
@@ -62,27 +43,6 @@ java_import(
     jars = glob(["plugins/platform-images/lib/*.jar"]),
 )
 
-#api232
-java_import(
-    name = "devkit",
-    jars = [],
-)
-
-java_import(
-    name = "coverage",
-    jars = glob(["plugins/coverage/lib/*.jar"]),
-)
-
-java_import(
-    name = "hg4idea",
-    jars = glob(["plugins/hg4idea/lib/hg4idea.jar"]),
-)
-
-java_import(
-    name = "intellilang",
-    jars = [],
-)
-
 java_import(
     name = "kotlin",
     jars = glob(["plugins/Kotlin/lib/*.jar"]),
@@ -91,33 +51,6 @@ java_import(
 filegroup(
     name = "kotlinc_version",
     srcs = ["plugins/Kotlin/kotlinc/build.txt"],
-)
-
-java_import(
-    name = "junit",
-    jars = glob(["plugins/junit/lib/*.jar"]),
-)
-
-java_import(
-    name = "terminal",
-    jars = glob(["plugins/terminal/lib/terminal.jar"]),
-)
-
-java_import(
-    name = "shared_indexes",
-    jars = [
-        "plugins/indexing-shared/lib/indexing-shared.jar",
-    ],
-)
-
-java_import(
-    name = "git4idea",
-    jars = glob(["plugins/vcs-git/lib/*.jar"]),
-)
-
-java_import(
-    name = "cwm",
-    jars = glob(["plugins/cwm-plugin/lib/*.jar"]),
 )
 
 # The plugins required by IJwB. We need to include them
