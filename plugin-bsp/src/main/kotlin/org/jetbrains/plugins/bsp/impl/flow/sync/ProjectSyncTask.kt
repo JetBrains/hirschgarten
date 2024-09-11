@@ -109,9 +109,6 @@ class ProjectSyncTask(private val project: Project) {
   }
 
   private suspend fun executeSyncHooks(progressReporter: SequentialProgressReporter, buildProject: Boolean) {
-    log.debug("Connecting to the server")
-    project.connection.connect(PROJECT_SYNC_TASK_ID)
-
     val diff = AllProjectStructuresProvider(project).newDiff()
     project.connection.runWithServer { server, capabilities ->
       bspTracer.spanBuilder("collect.project.details.ms").use {

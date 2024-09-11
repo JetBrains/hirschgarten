@@ -13,7 +13,9 @@ import com.intellij.build.events.impl.SuccessResultImpl
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.Project
 import io.kotest.matchers.maps.shouldContainExactly
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
 
@@ -86,7 +88,11 @@ private class MockProgressEventListener : BuildProgressListener {
     }
 }
 
-class TestTaskConsole(taskView: BuildProgressListener, basePath: String) : TaskConsole(taskView, basePath, "build tool") {
+class TestTaskConsole(
+  taskView: BuildProgressListener,
+  basePath: String,
+  project: Project,
+) : TaskConsole(taskView, basePath, "build tool", project) {
   override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
     object : AnAction({ "test" }) {
       override fun actionPerformed(e: AnActionEvent) {}
@@ -95,14 +101,14 @@ class TestTaskConsole(taskView: BuildProgressListener, basePath: String) : TaskC
     }
 }
 
-class TaskConsoleTest {
+class TaskConsoleTest : WorkspaceModelBaseTest() {
   @Test
   fun `should start the task, start 3 subtasks, put 2 messages and for each subtask and finish the task (the happy path)`() {
     // given
     val buildProcessListener = MockProgressEventListener()
     val basePath = "/project/"
     // when
-    val taskConsole = TestTaskConsole(buildProcessListener, basePath)
+    val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
     taskConsole.addMessage("task before start", "message before start - should be omitted")
 
@@ -161,7 +167,7 @@ class TaskConsoleTest {
     val basePath = "/project/"
 
     // when
-    val taskConsole = TestTaskConsole(buildProcessListener, basePath)
+    val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
     taskConsole.startTask("task-1", "Task 1", "Processing...")
     taskConsole.startTask("task-2", "Task 2", "Processing...")
@@ -197,7 +203,7 @@ class TaskConsoleTest {
     val basePath = "/project/"
 
     // when
-    val taskConsole = TestTaskConsole(buildProcessListener, basePath)
+    val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
     taskConsole.startTask("task-1", "Task 1", "Processing...")
     taskConsole.startTask("task-1", "Task 1", "This event should be ignored")
@@ -222,7 +228,7 @@ class TaskConsoleTest {
     val basePath = "/project/"
 
     // when
-    val taskConsole = TestTaskConsole(buildProcessListener, basePath)
+    val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
     taskConsole.addMessage("task", "Message 0") // should be omitted - task not yet started
 
@@ -271,7 +277,7 @@ class TaskConsoleTest {
       }
 
     val diagnosticListener = MockProgressEventListener()
-    val taskConsole = TestTaskConsole(diagnosticListener, basePath)
+    val taskConsole = TestTaskConsole(diagnosticListener, basePath, project)
 
     // when
     taskConsole.startTask("origin", "Test", "started")
@@ -351,7 +357,7 @@ class TaskConsoleTest {
     val basePath = "/project/"
 
     // when
-    val taskConsole = TestTaskConsole(buildProcessListener, basePath)
+    val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
     taskConsole.startTask("root", "Root task", "Root started")
     taskConsole.startSubtask("root", "child", "Child started")
@@ -395,7 +401,7 @@ class TaskConsoleTest {
     val basePath = "/project/"
 
     // when
-    val taskConsole = TestTaskConsole(buildProcessListener, basePath)
+    val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
     taskConsole.startTask("root", "Root task", "Root started")
     taskConsole.startSubtask("root", "subtask1", "Subtask 1 started")
@@ -429,7 +435,7 @@ class TaskConsoleTest {
     val basePath = "/project/"
 
     // when
-    val taskConsole = TestTaskConsole(buildProcessListener, basePath)
+    val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
     taskConsole.startTask("root", "Root task", "Root started")
     taskConsole.startSubtask("root", "subtask1", "Subtask 1 started")
     taskConsole.startSubtask("subtask1", "subtask2", "Subtask 2 started")
@@ -474,7 +480,7 @@ class TaskConsoleTest {
     val basePath = "/project/"
 
     // when
-    val taskConsole = TestTaskConsole(buildProcessListener, basePath)
+    val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
     taskConsole.startTask("root", "Root task", "Root started")
     taskConsole.startSubtask("root", "subtask1", "Subtask 1 started")
