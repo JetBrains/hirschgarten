@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.u
 import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.plugins.bsp.impl.magicmetamodel.extensions.allSubdirectoriesSequence
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaSourceRoot
@@ -10,6 +11,7 @@ import org.jetbrains.plugins.bsp.impl.utils.replaceDots
 import org.jetbrains.plugins.bsp.impl.utils.shortenTargetPath
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -27,11 +29,13 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
   WorkspaceModelEntityPartitionTransformer<JavaModule, JavaModule> {
   internal companion object {
     val DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE = SourceRootTypeId("java-source")
+    val DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE = SourceRootTypeId("java-resource")
   }
 
   override fun transform(inputEntity: JavaModule): List<JavaModule> {
     val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity.sourceRoots)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
+    val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, dummyJavaModuleSourceRoots, projectBasePath)
     return dummyJavaModuleSourceRoots
       .zip(dummyJavaModuleNames)
       .mapNotNull {
@@ -40,6 +44,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
           sourceRootWithPackagePrefix = it.first,
           jdkName = inputEntity.jvmJdkName,
           javaAddendum = inputEntity.javaAddendum,
+          resourceRootPath = dummyJavaResourcePath,
         )
       }.distinctBy { it.genericModuleInfo.name }
   }
@@ -49,6 +54,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
     sourceRootWithPackagePrefix: DummySourceRootWithPackagePrefix,
     jdkName: String?,
     javaAddendum: JavaAddendum?,
+    resourceRootPath: Path? = null,
   ) = if (name.isEmpty()) {
     null
   } else {
@@ -71,12 +77,78 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
             rootType = DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
           ),
         ),
-      resourceRoots = listOf(),
+      resourceRoots =
+        if (resourceRootPath != null) {
+          listOf(
+            ResourceRoot(
+              resourcePath = resourceRootPath,
+              rootType = DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+            ),
+          )
+        } else {
+          listOf()
+        },
       moduleLevelLibraries = listOf(),
       jvmJdkName = jdkName,
       kotlinAddendum = null,
       javaAddendum = javaAddendum,
     )
+  }
+}
+
+internal fun calculateDummyResourceRootPath(
+  entity: JavaModule,
+  dummySources: List<DummySourceRootWithPackagePrefix>,
+  projectBasePath: Path,
+): Path? {
+  val resourceRoots = entity.resourceRoots
+  if (entity.resourceRoots.isEmpty()) return null
+  val moduleRoot = entity.baseDirContentRoot?.path ?: return null
+
+  fun Path.reversedPaths() = allSubdirectoriesSequence().toList().reversed().asSequence()
+
+  fun Sequence<Path>.findCommonParentsWith(list: Sequence<Path>): Sequence<Path> {
+    val lastCommon = zip(list) { a, b -> a == b }.lastIndexOf(true)
+    return take(lastCommon + 1)
+  }
+
+  fun <T> List<T>.foldPathsToCommonParent(list: Sequence<Path>, operation: (T) -> Sequence<Path>) =
+    fold(list) { acc, element -> acc.findCommonParentsWith(operation(element)) }
+
+  fun Path.isDescendantOf(ancestor: Path) = toAbsolutePath().startsWith(ancestor.toAbsolutePath())
+
+  fun getImmediateChildFromAncestorOrNull(path: Path, ancestor: Path): Path? =
+    if (!path.isDescendantOf(ancestor)) {
+      null
+    } else {
+      ancestor.resolve(path.toAbsolutePath().getName(ancestor.toAbsolutePath().nameCount))
+    }
+
+  val firstResourcePaths = resourceRoots.first().resourcePath.reversedPaths()
+  // We calculate common parent among all module resources
+  val commonResourcesPaths = resourceRoots.foldPathsToCommonParent(firstResourcePaths) { it.resourcePath.reversedPaths() }
+  val resourcesRootPath =
+    if (dummySources.isNotEmpty()) {
+      // We try to calculate common paths parent between sources and resources and checks if it's still inside module root
+      val firstSourcePaths = dummySources.first().sourcePath.reversedPaths()
+      val commonSourcePaths = dummySources.foldPathsToCommonParent(firstSourcePaths) { it.sourcePath.reversedPaths() }
+      val commonRoot = commonResourcesPaths.findCommonParentsWith(commonSourcePaths).last()
+      if (commonRoot.isDescendantOf(moduleRoot)) {
+        getImmediateChildFromAncestorOrNull(commonResourcesPaths.last(), commonRoot)
+      } else {
+        null
+      }
+    } else {
+      // If they are no sources present, we just take the immediate child of module root with all the resources inside
+      if (commonResourcesPaths.last() == moduleRoot) {
+        moduleRoot
+      } else {
+        getImmediateChildFromAncestorOrNull(commonResourcesPaths.last(), moduleRoot)
+      }
+    }
+  // We will take the path if it's inside projectBasePath
+  return resourcesRootPath?.takeIf { path ->
+    resourceRoots.none { it.resourcePath == path } && path.isDescendantOf(projectBasePath)
   }
 }
 
