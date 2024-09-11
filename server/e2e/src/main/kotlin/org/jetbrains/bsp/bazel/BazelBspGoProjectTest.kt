@@ -178,6 +178,7 @@ object BazelBspGoProjectTest : BazelBspTestBaseScenario() {
       GoBuildTarget(
         sdkHomePath = sdkHomePath,
         importPath = importPath,
+        generatedLibraries = emptyList(),
       )
 
     val buildTargetData =
