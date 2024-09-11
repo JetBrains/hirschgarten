@@ -4,6 +4,6 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadV
 import javax.swing.Icon
 
 class StarlarkLoadLookupElement(val element: StarlarkStringLoadValue) : StarlarkLookupElement(element.getImportedSymbolName() ?: "") {
-  override val getIcon: Icon?
+  override val icon: Icon?
     get() = element.getIcon(0)
 }

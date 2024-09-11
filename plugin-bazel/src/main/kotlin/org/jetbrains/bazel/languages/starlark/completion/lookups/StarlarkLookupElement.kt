@@ -10,7 +10,7 @@ abstract class StarlarkLookupElement(val name: String, private val wrapping: Sta
 
   override fun renderElement(presentation: LookupElementPresentation) {
     presentation.itemText = name
-    presentation.icon = getIcon
+    presentation.icon = icon
   }
 
   override fun handleInsert(context: InsertionContext) {
@@ -31,5 +31,5 @@ abstract class StarlarkLookupElement(val name: String, private val wrapping: Sta
     }
   }
 
-  abstract val getIcon: Icon?
+  abstract val icon: Icon?
 }

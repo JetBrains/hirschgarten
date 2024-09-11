@@ -1,12 +1,53 @@
-@file:Suppress("WildcardImport", "LongMethod")
-
 package org.jetbrains.bazel.languages.starlark.elements
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.languages.starlark.psi.expressions.*
-import org.jetbrains.bazel.languages.starlark.psi.functions.*
-import org.jetbrains.bazel.languages.starlark.psi.statements.*
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkBinaryExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkConditionalExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictCompExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDoubleStarExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkEmptyExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFloatLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGeneratorExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkIntegerLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkKeyValueExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListCompExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkPrefixExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSliceExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSliceItem
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStarExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkStarArgumentExpression
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkKeywordVariadicParameter
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkMandatoryParameter
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkOptionalParameter
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameterList
+import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkVariadicParameter
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAugAssignmentStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkBreakStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkContinueStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkIfStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkNamedLoadValue
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkReturnStatement
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadValue
 
 object StarlarkElementTypes {
   val ASSIGNMENT_STATEMENT = StarlarkElementType("ASSIGNMENT_STATEMENT")
@@ -24,11 +65,13 @@ object StarlarkElementTypes {
   val STATEMENT_LIST = StarlarkElementType("STATEMENT_LIST")
 
   val FUNCTION_DECLARATION = StarlarkElementType("FUNCTION_DECLARATION")
-  val NAMED_PARAMETER = StarlarkElementType("NAMED_PARAMETER")
+  val MANDATORY_PARAMETER = StarlarkElementType("MANDATORY_PARAMETER")
+  val OPTIONAL_PARAMETER = StarlarkElementType("OPTIONAL_PARAMETER")
+  val VARIADIC_PARAMETER = StarlarkElementType("VARIADIC_PARAMETER")
+  val KEYWORD_VARIADIC_PARAMETER = StarlarkElementType("KEYWORD_VARIADIC_PARAMETER")
   val PARAMETER_LIST = StarlarkElementType("PARAMETER_LIST")
-  val SINGLE_STAR_PARAMETER = StarlarkElementType("SINGLE_STAR_PARAMETER")
-  val TUPLE_PARAMETER = StarlarkElementType("TUPLE_PARAMETER")
 
+  val ARGUMENT_EXPRESSION = StarlarkElementType("ARGUMENT_EXPRESSION")
   val ARGUMENT_LIST = StarlarkElementType("ARGUMENT_LIST")
   val BINARY_EXPRESSION = StarlarkElementType("BINARY_EXPRESSION")
   val CALL_EXPRESSION = StarlarkElementType("CALL_EXPRESSION")
@@ -74,11 +117,13 @@ object StarlarkElementTypes {
       STATEMENT_LIST -> StarlarkStatementList(node)
 
       FUNCTION_DECLARATION -> StarlarkFunctionDeclaration(node)
-      NAMED_PARAMETER -> StarlarkNamedParameter(node)
+      MANDATORY_PARAMETER -> StarlarkMandatoryParameter(node)
+      OPTIONAL_PARAMETER -> StarlarkOptionalParameter(node)
+      VARIADIC_PARAMETER -> StarlarkVariadicParameter(node)
+      KEYWORD_VARIADIC_PARAMETER -> StarlarkKeywordVariadicParameter(node)
       PARAMETER_LIST -> StarlarkParameterList(node)
-      SINGLE_STAR_PARAMETER -> StarlarkSingleStarParameter(node)
-      TUPLE_PARAMETER -> StarlarkTupleParameter(node)
 
+      ARGUMENT_EXPRESSION -> StarlarkArgumentExpression(node)
       ARGUMENT_LIST -> StarlarkArgumentList(node)
       BINARY_EXPRESSION -> StarlarkBinaryExpression(node)
       CALL_EXPRESSION -> StarlarkCallExpression(node)
