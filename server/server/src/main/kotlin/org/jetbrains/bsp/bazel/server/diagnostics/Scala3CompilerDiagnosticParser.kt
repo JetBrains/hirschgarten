@@ -8,7 +8,7 @@ object Scala3CompilerDiagnosticParser : Parser {
   private val DiagnosticHeader =
     """
       ^--\       # "-- " diagnostic start 
-      \[E\d+\]   # "[E008]" code 
+      (?:\[E\d+\])?   # "[E008]" optional explanation id
       ([^:]+): # (1) type of diagnostic
       ([^:]+):(\d+):(\d+) # (2) path, (3) line, (4) column
       [\s-]*$ # " -----------------" ending 
