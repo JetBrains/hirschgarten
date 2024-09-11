@@ -12,10 +12,7 @@ java_library(
     name = "android_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2024.1": ["@android_2024_1//:android"],
-        "intellij-ue-2024.1": ["@android_2024_1//:android"],
         "intellij-2024.2": ["@android_2024_2//:android"],
-        "intellij-ue-2024.2": ["@android_2024_2//:android"],
         "default": [],
     }),
 )

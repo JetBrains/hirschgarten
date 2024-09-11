@@ -34,7 +34,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.List;
-import javax.annotation.Nullable;
 
 /**
  * Test utilities specific to running IntelliJ integration tests in a blaze/bazel environment. To be
@@ -114,7 +113,6 @@ public class BlazeTestSystemProperties {
     setIfEmpty("idea.force.use.core.classloader", "true");
   }
 
-  @Nullable
   private static String determinePlatformPrefix(String buildNumber) {
     if (buildNumber.startsWith("AI")) { // Android Studio
       return "AndroidStudio";
@@ -132,7 +130,6 @@ public class BlazeTestSystemProperties {
     }
   }
 
-  @Nullable
   private static String readApiVersionNumber() {
     String apiVersionFilePath = System.getProperty("blaze.idea.api.version.file");
     String runfilesWorkspaceRoot = System.getProperty("user.dir");
@@ -153,7 +150,6 @@ public class BlazeTestSystemProperties {
     }
   }
 
-  @Nullable
   private static String getPlatformApiPath() {
     String platformJar = PathManager.getJarPathForClass(Application.class);
     if (platformJar == null) {
@@ -204,7 +200,7 @@ public class BlazeTestSystemProperties {
     setIfEmpty(property, path.getPath());
   }
 
-  private static void setIfEmpty(String property, @Nullable String value) {
+  private static void setIfEmpty(String property, String value) {
     if (value == null) {
       return;
     }

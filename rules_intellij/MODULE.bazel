@@ -46,47 +46,6 @@ maven.install(
         "org.junit.platform:junit-platform-console:1.10.2",
         "org.junit.platform:junit-platform-suite-engine:1.10.2",
         "org.junit.platform:junit-platform-suite-api:1.10.2",
-        "junit:junit:4.13.2",
-        "org.mockito:mockito-core:5.8.0",
-        "org.objenesis:objenesis:3.3",
-        "net.bytebuddy:byte-buddy:1.14.0",
-        "net.bytebuddy:byte-buddy-agent:1.14.10",
-        "com.google.flogger:flogger:0.8",
-        "com.google.flogger:flogger-system-backend:0.8",
-        "com.googlecode.java-diff-utils:diffutils:1.3.0",
-        # Usually, we'd get this from the JetBrains SDK, but the bundled one not aware of Bazel platforms,
-        # so it fails on certain setups.
-        "net.java.dev.jna:jna:5.14.0",
-        "com.google.auto.value:auto-value-annotations:1.10.2",
-        "com.google.auto.value:auto-value:1.10.4",
-        "com.google.code.findbugs:jsr305:3.0.2",
-        "com.google.code.gson:gson:2.10.1",
-        "com.google.errorprone:error_prone_annotations:2.20.0",
-        "com.google.guava:guava:33.0.0-jre",  # changed to jre
-        "com.google.truth:truth:1.1.5",
-        "com.google.truth.extensions:truth-java8-extension:1.1.5",
-        "com.google.api.grpc:proto-google-common-protos:2.34.0",
-        "com.google.j2objc:j2objc-annotations:2.8",
-        "com.google.guava:failureaccess:1.0.2",
-        # Apparently bumping grpc to >= 1.58 causes a dependency cycle
-        "io.grpc:grpc-netty:1.57.0",
-        "io.grpc:grpc-stub:1.57.0",
-        "io.grpc:grpc-api:1.57.0",
-        "io.grpc:grpc-protobuf:1.57.0",
-        "io.grpc:grpc-protobuf-lite:1.57.0",
-        "io.grpc:grpc-core:1.57.0",
-        "io.netty:netty-common:4.1.97.Final",
-        "io.netty:netty-transport-classes-epoll:4.1.97.Final",
-        "io.netty:netty-transport-native-epoll:4.1.97.Final",
-        "io.netty:netty-transport-native-unix-common:4.1.97.Final",
-        "io.netty:netty-transport-classes-kqueue:4.1.97.Final",
-        "io.netty:netty-transport:4.1.97.Final",
-        "org.apache.tomcat:annotations-api:6.0.53",
-    ],
-    exclusions = [
-        # Required because of https://github.com/bazelbuild/rules_jvm_external/issues/966
-        "io.grpc:grpc-util",
-        "io.grpc:grpc-core",
     ],
     fail_if_repin_required = True,
     generate_compat_repositories = True,
@@ -94,60 +53,42 @@ maven.install(
 )
 use_repo(
     maven,
-    "com_google_api_grpc_proto_google_common_protos",
-    "com_google_guava_failureaccess",
-    "com_google_guava_guava",
-    "com_google_j2objc_j2objc_annotations",
-    "io_grpc_grpc_api",
-    "io_grpc_grpc_core",
-    "io_grpc_grpc_netty",
-    "io_grpc_grpc_protobuf",
-    "io_grpc_grpc_protobuf_lite",
-    "io_grpc_grpc_stub",
-    "io_netty_netty_common",
-    "io_netty_netty_transport",
-    "io_netty_netty_transport_classes_epoll",
-    "io_netty_netty_transport_classes_kqueue",
-    "io_netty_netty_transport_native_epoll",
-    "io_netty_netty_transport_native_unix_common",
-    "org_apache_tomcat_annotations_api",
     "rules_intellij_maven",
-    auto_value = "com_google_auto_value_auto_value",
-    auto_value_annotations = "com_google_auto_value_auto_value_annotations",
-    bytebuddy = "net_bytebuddy_byte_buddy",
-    bytebuddy_agent = "net_bytebuddy_byte_buddy_agent",  # Can it be `bytebuddy-agent`? (not a legal identifier)
-    diffutils = "com_googlecode_java_diff_utils_diffutils",
-    error_prone_annotations = "com_google_errorprone_error_prone_annotations",
-    flogger = "com_google_flogger_flogger",
-    flogger_system_backend = "com_google_flogger_flogger_system_backend",
-    gson = "com_google_code_gson_gson",
-    jna = "net_java_dev_jna_jna",
-    jsr305_annotations = "com_google_code_findbugs_jsr305",
-    junit = "junit_junit",
-    mockito = "org_mockito_mockito_core",
-    objenesis = "org_objenesis_objenesis",
-    truth = "com_google_truth_truth",
-    truth8 = "com_google_truth_extensions_truth_java8_extension",
 )
 
 http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
 
-SDK_242_PLUGIN_REPOSITORY_VERSION = "242.21829.40"
+SDK_242_PLUGIN_REPOSITORY_VERSION = "242.21829.142"
 
-SDK_242_INTELLIJ_REPOSITORY_VERSION = "242.21829.40"
+SDK_242_INTELLIJ_REPOSITORY_VERSION = "242.21829.142"
+
+SDK_243_PLUGIN_REPOSITORY_VERSION = "242.21829.142"  # 243 plugins are not available yet
+
+SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.12818-EAP-CANDIDATE-SNAPSHOT"
 
 # The plugin api for intellij_ce_2024_2. This is required to build IJwB and run integration tests.
 IC_242_URL = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_242_INTELLIJ_REPOSITORY_VERSION, SDK_242_INTELLIJ_REPOSITORY_VERSION)
 
-IC_242_CHECKSUM = "sha256-51/+0yoN2SdrvHAgJov2ARjeSJ5n0q1cRB+ppWAm/PE="
+IC_242_CHECKSUM = "sha256-6a2Gt7u/rIAahj+pFHFFSepQEJaLJ4Rt5IFiGvvenx4="
 
 http_archive(
     name = "intellij_ce_2024_2",
     build_file = "@rules_intellij//intellij_platform_sdk:BUILD.idea242",
     integrity = IC_242_CHECKSUM,
     url = IC_242_URL,
+)
+
+IC_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+
+IC_243_CHECKSUM = "sha256-3lya1EXP4EgDWGZxXtOqX1AafeC9eIsip0xhoTuAy7w="
+
+http_archive(
+    name = "intellij_ce_2024_3",
+    build_file = "@rules_intellij//intellij_platform_sdk:BUILD.idea243",
+    integrity = IC_243_CHECKSUM,
+    url = IC_243_URL,
 )
 
 DEVKIT_BUILD_FILE = """
@@ -158,11 +99,9 @@ java_import(
 )
 """
 
-DEVKIT_242_VERSION = "242.21829.3"
+DEVKIT_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_242_PLUGIN_REPOSITORY_VERSION, SDK_242_PLUGIN_REPOSITORY_VERSION)
 
-DEVKIT_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (DEVKIT_242_VERSION, DEVKIT_242_VERSION)
-
-DEVKIT_242_SHA = "498bfd08ed0cc9b39e2ffcb392a133474a07fe4f377cf48d4a5da3d1a55379e5"
+DEVKIT_242_SHA = "bf72f615b34fe07d7ba65ee5fa22f0e02d14b619f6bce4cd68de488f768ccde4"
 
 http_archive(
     name = "devkit_2024_2",
@@ -171,7 +110,18 @@ http_archive(
     url = DEVKIT_242_URL,
 )
 
-_PYTHON_CE_242_BUILD_FILE = """
+DEVKIT_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
+
+DEVKIT_243_SHA = "bf72f615b34fe07d7ba65ee5fa22f0e02d14b619f6bce4cd68de488f768ccde4"
+
+http_archive(
+    name = "devkit_2024_3",
+    build_file_content = DEVKIT_BUILD_FILE,
+    sha256 = DEVKIT_243_SHA,
+    url = DEVKIT_243_URL,
+)
+
+_PYTHON_CE_BUILD_FILE = """
 java_import(
     name = "python",
     jars = glob(["python-ce/lib/*.jar", "python-ce/lib/modules/*.jar"]),
@@ -184,18 +134,29 @@ filegroup(
 )
 """
 
-PYTHON_PLUGIN_242_CHECKSUM = "sha256-Xg8Md+jgoRfxi6mdBsXNpQXejJF0zvKoN9Zh0P9+TWo="
+PYTHON_PLUGIN_242_CHECKSUM = "sha256-D+sIYC34u1FGIidj9EpdpEYAwG2Y1wo5mLO3lEfUakk="
 
 PYTHON_PLUGIN_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_242_PLUGIN_REPOSITORY_VERSION, SDK_242_PLUGIN_REPOSITORY_VERSION)
 
 http_archive(
     name = "python_2024_2",
-    build_file_content = _PYTHON_CE_242_BUILD_FILE,
+    build_file_content = _PYTHON_CE_BUILD_FILE,
     integrity = PYTHON_PLUGIN_242_CHECKSUM,
     url = PYTHON_PLUGIN_242_URL,
 )
 
-_GO_BUILD_FILE_242 = """
+PYTHON_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
+
+PYTHON_PLUGIN_243_CHECKSUM = "sha256-D+sIYC34u1FGIidj9EpdpEYAwG2Y1wo5mLO3lEfUakk="
+
+http_archive(
+    name = "python_2024_3",
+    build_file_content = _PYTHON_CE_BUILD_FILE,
+    integrity = PYTHON_PLUGIN_243_CHECKSUM,
+    url = PYTHON_PLUGIN_243_URL,
+)
+
+_GO_BUILD_FILE = """
 java_import(
     name = "go",
     jars = glob(["go-plugin/lib/*.jar", "go-plugin/lib/modules/*.jar"]),
@@ -203,15 +164,22 @@ java_import(
 )
 """
 
-GO_PLUGIN_242_VERSION = "242.21829.142"
-
-GO_PLUGIN_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (GO_PLUGIN_242_VERSION, GO_PLUGIN_242_VERSION)
+GO_PLUGIN_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_242_PLUGIN_REPOSITORY_VERSION, SDK_242_PLUGIN_REPOSITORY_VERSION)
 
 http_archive(
     name = "go_2024_2",
-    build_file_content = _GO_BUILD_FILE_242,
+    build_file_content = _GO_BUILD_FILE,
     integrity = "sha256-W8EDplm2vdrvGceI2/ury5ZBfrEyAJsECtb5G94+h9E=",
     url = GO_PLUGIN_242_URL,
+)
+
+GO_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
+
+http_archive(
+    name = "go_2024_3",
+    build_file_content = _GO_BUILD_FILE,
+    integrity = "sha256-W8EDplm2vdrvGceI2/ury5ZBfrEyAJsECtb5G94+h9E=",
+    url = GO_PLUGIN_243_URL,
 )
 
 _ANDRIOD_PLUGIN_BUILD_FILE = """
@@ -224,13 +192,24 @@ java_import(
 
 ANDROID_PLUGIN_242_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_242_PLUGIN_REPOSITORY_VERSION, SDK_242_PLUGIN_REPOSITORY_VERSION)
 
-ANDROID_PLUGIN_242_CHECKSUM = "sha256-BbLJHc+qPWNZvg7ihkFdgssBKF4H/bFhcKx5aKx85UE="
+ANDROID_PLUGIN_242_CHECKSUM = "sha256-97J1s4qGCiR+1xfxW6n+OUv1Y66MRiRyALd7cJwIuBA="
 
 http_archive(
     name = "android_2024_2",
     build_file_content = _ANDRIOD_PLUGIN_BUILD_FILE,
     integrity = ANDROID_PLUGIN_242_CHECKSUM,
     url = ANDROID_PLUGIN_242_URL,
+)
+
+ANDROID_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
+
+ANDROID_PLUGIN_243_CHECKSUM = "sha256-97J1s4qGCiR+1xfxW6n+OUv1Y66MRiRyALd7cJwIuBA="
+
+http_archive(
+    name = "android_2024_3",
+    build_file_content = _ANDRIOD_PLUGIN_BUILD_FILE,
+    integrity = ANDROID_PLUGIN_243_CHECKSUM,
+    url = ANDROID_PLUGIN_243_URL,
 )
 
 PERFORMANCE_PLUGIN_242_URL = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_242_INTELLIJ_REPOSITORY_VERSION, SDK_242_INTELLIJ_REPOSITORY_VERSION)
@@ -243,12 +222,32 @@ http_jar(
     url = PERFORMANCE_PLUGIN_242_URL,
 )
 
-CODE_WITH_ME_CHECKSUM = "sha256-iheyPDf5lXMBEj8uQVurH4Nvbv4z4qyejt0FNxqN8so="
+PERFORMANCE_PLUGIN_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+
+PERFORMANCE_PLUGIN_243_SHA = "94527fac90b2f93bce2b4b5cad9d02d7dcc9c11c95d648681d5f41142a75f045"
+
+http_jar(
+    name = "performance_2024_3",
+    sha256 = PERFORMANCE_PLUGIN_243_SHA,
+    url = PERFORMANCE_PLUGIN_243_URL,
+)
+
+CODE_WITH_ME_242_CHECKSUM = "sha256-iheyPDf5lXMBEj8uQVurH4Nvbv4z4qyejt0FNxqN8so="
 
 CODE_WITH_ME_242_URL = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_242_INTELLIJ_REPOSITORY_VERSION, SDK_242_INTELLIJ_REPOSITORY_VERSION)
 
 http_jar(
     name = "code_with_me_2024_2",
-    integrity = CODE_WITH_ME_CHECKSUM,
+    integrity = CODE_WITH_ME_242_CHECKSUM,
     url = CODE_WITH_ME_242_URL,
+)
+
+CODE_WITH_ME_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+
+CODE_WITH_ME_243_CHECKSUM = "sha256-89BS+rc1GPso08HaevriCTfDlvlyPf6Xu7rmw1qct/Q="
+
+http_jar(
+    name = "code_with_me_2024_3",
+    integrity = CODE_WITH_ME_243_CHECKSUM,
+    url = CODE_WITH_ME_243_URL,
 )
