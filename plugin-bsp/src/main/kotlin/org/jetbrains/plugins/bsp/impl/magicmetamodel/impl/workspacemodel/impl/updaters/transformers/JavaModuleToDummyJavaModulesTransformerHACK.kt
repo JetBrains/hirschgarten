@@ -14,6 +14,7 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.isDirectory
+import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 
 public data class DummySourceRootWithPackagePrefix(val sourcePath: Path, val packagePrefix: String = "")
@@ -89,7 +90,7 @@ internal fun calculateDummyJavaSourceRoots(sourceRoots: List<JavaSourceRoot>): L
     .toList()
 
 private fun restoreSourceRootFromPackagePrefix(sourceRoot: JavaSourceRoot): DummySourceRootWithPackagePrefix? {
-  if (sourceRoot.sourcePath.isDirectory()) return null
+  if (sourceRoot.sourcePath.notExists() || sourceRoot.sourcePath.isDirectory()) return null
   val packagePrefixPath = sourceRoot.packagePrefix.replace('.', File.separatorChar)
   val sourceParent = sourceRoot.sourcePath.parent.pathString
   val sourceRootString = sourceParent.removeSuffix(packagePrefixPath)
@@ -115,4 +116,4 @@ internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Pat
     .shortenTargetPath()
 }
 
-private fun String.addIntelliJDummySuffix() = "$this-intellij-dummy"
+private fun String.addIntelliJDummySuffix() = "$this-intellij-generated"
