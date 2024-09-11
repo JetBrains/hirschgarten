@@ -38,6 +38,7 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
   private val displayChangeListeners = mutableListOf<() -> Unit>()
   private val queryChangeListeners = mutableListOf<(Regex) -> Unit>()
 
+  private var matchCase: Boolean by AtomicBoolean(::onQueryChange)
   private var displayAsTree: Boolean by AtomicBoolean(::displayAsTreeChanged)
   private var regexMode: Boolean by AtomicBoolean(::onQueryChange)
 
@@ -56,6 +57,15 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
 
   private fun prepareTextField(): ExtendableTextField {
     val newField = ExtendableTextField()
+    val matchCaseExtension =
+      TextComponentExtension.Switch(
+        // MatchCaseHovered icon matches the ShowAsTree icon better than the normal Regex; on new UI both icons look the same
+        icon = AllIcons.Actions.MatchCaseHovered,
+        valueGetter = { matchCase },
+        valueSetter = { matchCase = it },
+        parentComponent = newField,
+        tooltip = BspPluginBundle.message("widget.target.search.match.case"),
+      )
     val regexExtension =
       TextComponentExtension.Switch(
         // RegexHovered icon matches the ShowAsTree icon better than the normal Regex; on new UI both icons look the same
@@ -83,6 +93,7 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
       addExtension(searchLoadingExtension)
       addExtension(treeExtension)
       addExtension(regexExtension)
+      addExtension(matchCaseExtension)
       addExtension(clearExtension)
       this.document.addDocumentListener(SimpleDocumentListener(::onQueryChange))
     }
@@ -129,12 +140,14 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
     toggleRegexAction.registerCustomShortcutSet(REGEX_SHORTCUT_SET, component)
   }
 
-  public fun getCurrentSearchQuery(): Regex =
-    if (regexMode) {
-      textField.text.toRegex()
-    } else {
-      textField.text.toRegex(RegexOption.LITERAL)
-    }
+  public fun getCurrentSearchQuery(): Regex {
+    val options =
+      setOfNotNull(
+        if (!matchCase) RegexOption.IGNORE_CASE else null,
+        if (!regexMode) RegexOption.LITERAL else null,
+      )
+    return textField.text.toRegex(options)
+  }
 
   public fun isDisplayAsTreeChosen(): Boolean = displayAsTree
 
