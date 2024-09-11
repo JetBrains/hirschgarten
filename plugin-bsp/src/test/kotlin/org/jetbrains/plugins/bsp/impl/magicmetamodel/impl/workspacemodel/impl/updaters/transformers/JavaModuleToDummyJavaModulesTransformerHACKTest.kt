@@ -14,7 +14,9 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDependency
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
+import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.name
@@ -115,6 +117,207 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
             ),
           ),
         resourceRoots = listOf(),
+        moduleLevelLibraries = emptyList(),
+        jvmJdkName = null,
+        kotlinAddendum = null,
+      )
+
+    javaModules shouldContainExactlyInAnyOrder (
+      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
+    )
+  }
+
+  private fun createTempDirectoryAndDeleteItOnExit(path: Path, prefix: String) =
+    createTempDirectory(path, prefix).also {
+      it.toFile().deleteOnExit()
+    }
+
+  @Test
+  fun `should return dummy module with sources and with resources in common path`() {
+    // given
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
+    val projectRootName = projectRoot.name
+    val javaVersion = "11"
+
+    val givenModule =
+      GenericModuleInfo(
+        name = projectRootName,
+        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        modulesDependencies = emptyList(),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+      )
+    val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
+    val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
+    val javaPath = createTempDirectoryAndDeleteItOnExit(mainPath, "java")
+    val packageA1Path = createTempDirectoryAndDeleteItOnExit(javaPath, "packageA1")
+    val packageA2Path = createTempDirectoryAndDeleteItOnExit(packageA1Path, "packageA2")
+    val file1APath = kotlin.io.path.createTempFile(packageA2Path, "File1", ".java")
+    file1APath.toFile().deleteOnExit()
+    val file2APath = kotlin.io.path.createTempFile(packageA2Path, "File2", ".java")
+    file2APath.toFile().deleteOnExit()
+    val resourcesPath = createTempDirectoryAndDeleteItOnExit(mainPath, "resources")
+    val messagesPath = createTempDirectoryAndDeleteItOnExit(resourcesPath, "messages")
+    val resourceFilePath = kotlin.io.path.createTempFile(messagesPath, "Resources", ".properties")
+    resourceFilePath.toFile().deleteOnExit()
+    val packagePrefix = "${packageA1Path.fileName}.${packageA2Path.fileName}"
+
+    val givenJavaModule =
+      JavaModule(
+        genericModuleInfo = givenModule,
+        baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
+        sourceRoots =
+          listOf(
+            JavaSourceRoot(
+              sourcePath = file1APath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = packagePrefix,
+              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+            ),
+            JavaSourceRoot(
+              sourcePath = file2APath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = packagePrefix,
+              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+            ),
+          ),
+        resourceRoots =
+          listOf(
+            ResourceRoot(
+              resourcePath = resourceFilePath.toAbsolutePath(),
+              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+            ),
+          ),
+        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
+        jvmJdkName = javaVersion,
+        kotlinAddendum = null,
+      )
+
+    // when
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(givenJavaModule)
+
+    // then
+    val expectedModule =
+      GenericModuleInfo(
+        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}-intellij-dummy",
+        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        modulesDependencies = listOf(),
+        librariesDependencies = listOf(),
+      )
+
+    val expectedJavaModule =
+      JavaModule(
+        genericModuleInfo = expectedModule,
+        baseDirContentRoot = ContentRoot(path = javaPath.toAbsolutePath()),
+        sourceRoots =
+          listOf(
+            JavaSourceRoot(
+              sourcePath = javaPath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = "",
+              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+            ),
+          ),
+        resourceRoots =
+          listOf(
+            ResourceRoot(
+              resourcePath = resourcesPath.toAbsolutePath(),
+              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+            ),
+          ),
+        moduleLevelLibraries = emptyList(),
+        jvmJdkName = null,
+        kotlinAddendum = null,
+      )
+
+    javaModules shouldContainExactlyInAnyOrder (
+      listOf(expectedJavaModule) to { actual, expected -> validateJavaModule(actual, expected) }
+    )
+  }
+
+  @Test
+  fun `should return dummy module with sources and with no resources outside project root`() {
+    // given
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
+    val projectRootName = projectRoot.name
+    val javaVersion = "11"
+
+    val givenModule =
+      GenericModuleInfo(
+        name = projectRootName,
+        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        modulesDependencies = emptyList(),
+        librariesDependencies = listOf(IntermediateLibraryDependency("@maven//:lib1")),
+      )
+    val srcPath = createTempDirectoryAndDeleteItOnExit(projectRoot, "src")
+    val mainPath = createTempDirectoryAndDeleteItOnExit(srcPath, "main")
+    val javaPath = createTempDirectoryAndDeleteItOnExit(mainPath, "java")
+    val packageA1Path = createTempDirectoryAndDeleteItOnExit(javaPath, "packageA1")
+    val packageA2Path = createTempDirectoryAndDeleteItOnExit(packageA1Path, "packageA2")
+    val file1APath = kotlin.io.path.createTempFile(packageA2Path, "File1", ".java")
+    file1APath.toFile().deleteOnExit()
+    val file2APath = kotlin.io.path.createTempFile(packageA2Path, "File2", ".java")
+    file2APath.toFile().deleteOnExit()
+    val resourceFilePath = kotlin.io.path.createTempFile(projectBasePath.toAbsolutePath().parent, "Resources", ".properties")
+    resourceFilePath.toFile().deleteOnExit()
+    val packagePrefix = "${packageA1Path.fileName}.${packageA2Path.fileName}"
+
+    val givenJavaModule =
+      JavaModule(
+        genericModuleInfo = givenModule,
+        baseDirContentRoot = ContentRoot(path = projectRoot.toAbsolutePath()),
+        sourceRoots =
+          listOf(
+            JavaSourceRoot(
+              sourcePath = file1APath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = packagePrefix,
+              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+            ),
+            JavaSourceRoot(
+              sourcePath = file2APath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = packagePrefix,
+              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+            ),
+          ),
+        resourceRoots =
+          listOf(
+            ResourceRoot(
+              resourcePath = resourceFilePath.toAbsolutePath(),
+              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+            ),
+          ),
+        moduleLevelLibraries = listOf(Library(displayName = "lib1")),
+        jvmJdkName = javaVersion,
+        kotlinAddendum = null,
+      )
+
+    // when
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(givenJavaModule)
+
+    // then
+    val expectedModule =
+      GenericModuleInfo(
+        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}-intellij-dummy",
+        type = ModuleTypeId(StdModuleTypes.JAVA.id),
+        modulesDependencies = listOf(),
+        librariesDependencies = listOf(),
+      )
+
+    val expectedJavaModule =
+      JavaModule(
+        genericModuleInfo = expectedModule,
+        baseDirContentRoot = ContentRoot(path = javaPath.toAbsolutePath()),
+        sourceRoots =
+          listOf(
+            JavaSourceRoot(
+              sourcePath = javaPath.toAbsolutePath(),
+              generated = false,
+              packagePrefix = "",
+              rootType = JavaModuleToDummyJavaModulesTransformerHACK.DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE,
+            ),
+          ),
+        resourceRoots = emptyList(),
         moduleLevelLibraries = emptyList(),
         jvmJdkName = null,
         kotlinAddendum = null,
