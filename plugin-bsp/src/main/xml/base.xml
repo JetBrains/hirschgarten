@@ -51,6 +51,12 @@
         <extensionPoint qualifiedName="org.jetbrains.bsp.projectSyncHook"
                         interface="org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.projectPreSyncHook"
+                        interface="org.jetbrains.plugins.bsp.impl.flow.sync.ProjectPreSyncHook"
+                        dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.projectPostSyncHook"
+                        interface="org.jetbrains.plugins.bsp.impl.flow.sync.ProjectPostSyncHook"
+                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.defaultProjectSyncHooksDisabler"
                         interface="org.jetbrains.plugins.bsp.impl.flow.sync.DefaultProjectSyncHooksDisabler"
                         dynamic="true"/>

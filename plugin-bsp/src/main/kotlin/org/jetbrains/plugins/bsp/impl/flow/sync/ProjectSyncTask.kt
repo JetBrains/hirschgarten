@@ -85,8 +85,26 @@ class ProjectSyncTask(private val project: Project) {
   private suspend fun doSync(buildProject: Boolean) {
     withBackgroundProgress(project, "Syncing project...", true) {
       reportSequentialProgress {
+        executePreSyncHooks(it)
         executeSyncHooks(it, buildProject)
+        executePostSyncHooks(it)
       }
+    }
+  }
+
+  private suspend fun executePreSyncHooks(progressReporter: SequentialProgressReporter) {
+    val environment =
+      ProjectPreSyncHook.ProjectPreSyncHookEnvironment(
+        project = project,
+        taskId = PROJECT_SYNC_TASK_ID,
+        progressReporter = progressReporter,
+      )
+
+    project.defaultProjectPreSyncHooks.forEach {
+      it.onPreSync(environment)
+    }
+    project.additionalProjectPreSyncHooks.forEach {
+      it.onPreSync(environment)
     }
   }
 
@@ -119,6 +137,22 @@ class ProjectSyncTask(private val project: Project) {
     }
 
     diff.applyAll(PROJECT_SYNC_TASK_ID)
+  }
+
+  private suspend fun executePostSyncHooks(progressReporter: SequentialProgressReporter) {
+    val environment =
+      ProjectPostSyncHook.ProjectPostSyncHookEnvironment(
+        project = project,
+        taskId = PROJECT_SYNC_TASK_ID,
+        progressReporter = progressReporter,
+      )
+
+    project.defaultProjectPostSyncHooks.forEach {
+      it.onPostSync(environment)
+    }
+    project.additionalProjectPostSyncHooks.forEach {
+      it.onPostSync(environment)
+    }
   }
 
   private suspend fun postSync() {
