@@ -113,6 +113,19 @@
 
         <runLineMarkerContributor implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor" language="Starlark" />
 
+        <fileType
+                name="Bazelrc"
+                implementationClass="org.jetbrains.bazel.languages.bazelrc.BazelrcFileType"
+                fieldName="INSTANCE"
+                language="Bazelrc"
+                fileNames=".bazelrc"
+                extensions="bazelrc"
+        />
+
+        <lang.syntaxHighlighterFactory
+                language="Bazelrc"
+                implementationClass="org.jetbrains.bazel.languages.bazelrc.highlighting.BazelrcSyntaxHighlighterFactory"/>
+
         <projectConfigurable
                 parentId="tools"
                 instance="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurable"
