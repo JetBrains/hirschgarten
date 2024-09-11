@@ -4,7 +4,7 @@
         <error line="8" column="1" source="standard:no-wildcard-imports" />
     </file>
     <file name=".teamcity/configurations/pluginBsp/intellijBenchmark.kts">
-        <error line="16" column="141" source="standard:max-line-length" />
+        <error line="18" column="141" source="standard:max-line-length" />
     </file>
     <file name=".teamcity/settings.kts">
         <error line="1" column="1" source="standard:no-wildcard-imports" />
