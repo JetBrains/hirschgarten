@@ -11,5 +11,8 @@ class StarlarkFunctionDeclaration(node: ASTNode) : StarlarkNamedElement(node) {
 
   override fun getIcon(flags: Int): Icon? = PlatformIcons.FUNCTION_ICON
 
-  fun getParameters(): List<StarlarkNamedParameter> = findChildByClass(StarlarkParameterList::class.java)?.getParameters().orEmpty()
+  fun getNamedParameters(): List<StarlarkParameter> =
+    getParameters().filter { it is StarlarkMandatoryParameter || it is StarlarkOptionalParameter }
+
+  fun getParameters(): List<StarlarkParameter> = findChildByClass(StarlarkParameterList::class.java)?.getParameters().orEmpty()
 }

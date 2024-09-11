@@ -45,10 +45,6 @@ class FunctionParsing(context: ParsingContext) : Parsing(context) {
           break
         }
       }
-      if (atToken(StarlarkTokenTypes.LPAR)) {
-        parseParameterSubList()
-        continue
-      }
       val isStarParameter = atAnyOfTokens(listOf(StarlarkTokenTypes.MULT, StarlarkTokenTypes.EXP))
       if (!parseParameter(endToken)) {
         if (afterStarParameter) {
@@ -71,20 +67,16 @@ class FunctionParsing(context: ParsingContext) : Parsing(context) {
 
   private fun parseParameter(endToken: IElementType): Boolean {
     val parameter = builder.mark()
-    var isStarParameter = false
+    var parameterType = StarlarkElementTypes.MANDATORY_PARAMETER
     if (atToken(StarlarkTokenTypes.MULT)) {
       builder.advanceLexer()
-      if (atToken(StarlarkTokenTypes.COMMA) || atToken(endToken)) {
-        parameter.done(StarlarkElementTypes.SINGLE_STAR_PARAMETER)
-        return true
-      }
-      isStarParameter = true
+      parameterType = StarlarkElementTypes.VARIADIC_PARAMETER
     } else if (atToken(StarlarkTokenTypes.EXP)) {
       builder.advanceLexer()
-      isStarParameter = true
+      parameterType = StarlarkElementTypes.KEYWORD_VARIADIC_PARAMETER
     }
     if (matchToken(StarlarkTokenTypes.IDENTIFIER)) {
-      if (!isStarParameter && matchToken(StarlarkTokenTypes.EQ)) {
+      if (parameterType == StarlarkElementTypes.MANDATORY_PARAMETER && matchToken(StarlarkTokenTypes.EQ)) {
         if (!context.expressionParser.parseSingleExpression(isTarget = false)) {
           val invalidElements = builder.mark()
           while (!atAnyOfTokens(listOf(endToken, StarlarkTokenTypes.LINE_BREAK, StarlarkTokenTypes.COMMA, null))) {
@@ -92,8 +84,11 @@ class FunctionParsing(context: ParsingContext) : Parsing(context) {
           }
           invalidElements.error(StarlarkBundle.message("parser.expected.expression"))
         }
+        parameter.done(StarlarkElementTypes.OPTIONAL_PARAMETER)
+        return true
       }
-      parameter.done(StarlarkElementTypes.NAMED_PARAMETER)
+      parameter.done(parameterType)
+      return true
     } else {
       parameter.rollbackTo()
       if (atToken(endToken)) {
@@ -106,35 +101,5 @@ class FunctionParsing(context: ParsingContext) : Parsing(context) {
       invalidElements.error(StarlarkBundle.message("parser.expected.formal.param.name"))
       return atToken(endToken) || atToken(StarlarkTokenTypes.COMMA)
     }
-    return true
-  }
-
-  private fun parseParameterSubList() {
-    assertCurrentToken(StarlarkTokenTypes.LPAR)
-    val tuple = builder.mark()
-    builder.advanceLexer()
-    while (true) {
-      if (atToken(StarlarkTokenTypes.IDENTIFIER)) {
-        val parameter = builder.mark()
-        builder.advanceLexer()
-        parameter.done(StarlarkElementTypes.NAMED_PARAMETER)
-      } else if (atToken(StarlarkTokenTypes.LPAR)) {
-        parseParameterSubList()
-      }
-      if (atToken(StarlarkTokenTypes.RPAR)) {
-        builder.advanceLexer()
-        break
-      }
-      if (!atToken(StarlarkTokenTypes.COMMA)) {
-        builder.error(StarlarkBundle.message("parser.expected.comma.lpar.rpar"))
-        break
-      }
-      builder.advanceLexer()
-    }
-    if (atToken(StarlarkTokenTypes.EQ)) {
-      builder.advanceLexer()
-      context.expressionParser.parseSingleExpression(isTarget = false)
-    }
-    tuple.done(StarlarkElementTypes.TUPLE_PARAMETER)
   }
 }

@@ -98,7 +98,9 @@
         <completion.contributor
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkParamsCompletionContributor"/>
-
+        <completion.contributor
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"/>
         <fileType
                 name="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType"

@@ -7,30 +7,30 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class StarlarkLoadedSymbolsCompletionTest : StarlarkCompletionTestCase() {
+class StarlarkArgumentCompletionTest : StarlarkCompletionTestCase() {
   @Test
-  fun `should complete loaded symbols in top level`() {
+  fun `should complete arguments in function call (excluding variadic ones)`() {
     // given
-    myFixture.configureByFile("LoadCompletionInTopLevel.bzl")
-    myFixture.type("sym")
+    myFixture.configureByFile("ArgumentCompletion.bzl")
+    myFixture.type("ar")
 
     // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainOnly listOf("some_symbol", "another_symbol")
+    lookups shouldContainOnly listOf("bar = ", "arg = ")
   }
 
   @Test
-  fun `should complete loaded symbols in function`() {
+  fun `should not complete arguments that are already passed`() {
     // given
-    myFixture.configureByFile("LoadCompletionInFunction.bzl")
-    myFixture.type("sym")
+    myFixture.configureByFile("PassedArgumentCompletion.bzl")
+    myFixture.type("ar")
 
     // when
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainOnly listOf("some_symbol", "another_symbol")
+    lookups shouldContainOnly listOf("arg = ", "dar = ")
   }
 }

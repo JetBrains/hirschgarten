@@ -440,10 +440,13 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
           }
           namedArgumentMarker.rollbackTo()
         }
+        val argumentMarker = builder.mark()
         if (!parseSingleExpression(isTarget = false)) {
           builder.error(StarlarkBundle.message("parser.expected.expression"))
+          argumentMarker.rollbackTo()
           break
         }
+        argumentMarker.done(StarlarkElementTypes.ARGUMENT_EXPRESSION)
       }
     }
     checkMatches(StarlarkTokenTypes.RPAR, StarlarkBundle.message("parser.expected.rpar"))

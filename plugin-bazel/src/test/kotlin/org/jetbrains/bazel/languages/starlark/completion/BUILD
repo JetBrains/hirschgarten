@@ -14,4 +14,12 @@ junit4_kt_test(
     name = "StarlarkLoadedSymbolsCompletionTest",
     srcs = ["StarlarkLoadedSymbolsCompletionTest.kt"],
     data = ["//plugin-bazel/src/test/testData/starlark/completion"],
+    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
+)
+
+junit4_kt_test(
+    name = "StarlarkArgumentCompletionTest",
+    srcs = ["StarlarkArgumentCompletionTest.kt"],
+    data = ["//plugin-bazel/src/test/testData/starlark/completion"],
+    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
 )
