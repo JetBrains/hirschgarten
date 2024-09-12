@@ -31,9 +31,3 @@ internal interface WorkspaceModelEntityWithoutParentModuleUpdater<in E : Workspa
 
   fun addEntity(entityToAdd: E): R
 }
-
-internal interface WorkspaceModuleEntityRemover<in E> {
-  fun removeEntity(entityToRemove: E)
-
-  fun clear()
-}
