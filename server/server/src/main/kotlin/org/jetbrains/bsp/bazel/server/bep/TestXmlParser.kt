@@ -138,7 +138,7 @@ class TestXmlParser(private var parentId: TaskId, private var bspClientTestNotif
     val suiteTaskId = TaskId(UUID.randomUUID().toString())
     suiteTaskId.parents = emptyList()
 
-    val suiteData = JUnitStyleTestCaseData(suite.time, null, suite.systemErr?.toString(), null, null)
+    val suiteData = JUnitStyleTestSuiteData(suite.time, null, suite.systemErr?.toString())
     val suiteStatus =
       when {
         suite.failures > 0 -> TestStatus.FAILED
@@ -155,7 +155,7 @@ class TestXmlParser(private var parentId: TaskId, private var bspClientTestNotif
       suiteTaskId,
       suiteStatus,
       suite.systemOut.toString(),
-      JUnitStyleTestCaseData.DATA_KIND,
+      JUnitStyleTestSuiteData.DATA_KIND,
       suiteData,
     )
   }

@@ -11,6 +11,7 @@ import com.intellij.execution.testframework.sm.ServiceMessageBuilder
 import com.intellij.openapi.util.Key
 import io.kotest.matchers.equals.shouldBeEqual
 import kotlinx.coroutines.CompletableDeferred
+import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.plugins.bsp.run.BspProcessHandler
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -97,12 +98,22 @@ class BspTestTaskListenerTest {
   @Test
   fun `task-finish with test suite`() {
     // given
+    val durationSeconds = 1.23456
     val taskId = "task-id"
-    val data = TestFinish("testSuite", TestStatus.PASSED)
-    val expectedText = ServiceMessageBuilder.testSuiteFinished(data.displayName).addAttribute("nodeId", taskId).toString()
+    val testFinishData = TestFinish("testSuite", TestStatus.PASSED)
+    testFinishData.data = JUnitStyleTestSuiteData(durationSeconds, null, null)
+    testFinishData.dataKind = JUnitStyleTestSuiteData.DATA_KIND
+
+    val expectedDurationMillis = (1234).toLong()
+    val expectedText =
+      ServiceMessageBuilder
+        .testSuiteFinished(testFinishData.displayName)
+        .addAttribute("nodeId", taskId)
+        .addAttribute("duration", expectedDurationMillis.toString())
+        .toString()
 
     // when
-    listener.onTaskFinish(taskId = taskId, parentId = null, message = "", data = data, status = StatusCode.OK)
+    listener.onTaskFinish(taskId = taskId, parentId = null, message = "", data = testFinishData, status = StatusCode.OK)
 
     // then
     handler.latestText shouldBeEqual expectedText

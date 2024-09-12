@@ -19,6 +19,8 @@ import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.jetbrains.plugins.bsp.run.BspProcessHandler
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
 import org.jetbrains.plugins.bsp.taskEvents.TaskId
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListener {
   private val ansiEscapeDecoder = AnsiEscapeDecoder()
@@ -149,12 +151,7 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
   }
 
   private fun processTestCaseFinish(taskId: TaskId, data: TestFinish): ServiceMessageBuilder {
-    val details =
-      if (data.dataKind == JUnitStyleTestCaseData.DATA_KIND) {
-        gson.fromJson(data.data as JsonObject, JUnitStyleTestCaseData::class.java)
-      } else {
-        null
-      }
+    val details = extractTestFinishData<JUnitStyleTestCaseData>(data, JUnitStyleTestCaseData.DATA_KIND)
 
     checkTestStatus(taskId, data, details)
 
@@ -162,25 +159,39 @@ class BspTestTaskListener(private val handler: BspProcessHandler) : BspTaskListe
       .testFinished(data.displayName)
       .addNodeId(taskId)
       .addMessage(data.message)
+      .addTime(details?.time)
   }
 
   private fun processTestSuiteFinish(taskId: TaskId, data: TestFinish): ServiceMessageBuilder {
-    val details =
-      if (data.dataKind == JUnitStyleTestSuiteData.DATA_KIND) {
-        gson.fromJson(data.data as JsonObject, JUnitStyleTestSuiteData::class.java)
-      } else {
-        null
-      }
+    val details = extractTestFinishData<JUnitStyleTestSuiteData>(data, JUnitStyleTestSuiteData.DATA_KIND)
 
     details?.systemOut?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDOUT) }
     details?.systemErr?.let { handler.notifyTextAvailable(it, ProcessOutputType.STDERR) }
     return ServiceMessageBuilder
       .testSuiteFinished(data.displayName)
       .addNodeId(taskId)
+      .addTime(details?.time)
   }
 
   private fun ServiceMessageBuilder.addNodeId(nodeId: String): ServiceMessageBuilder = this.addAttribute("nodeId", nodeId)
 
   private fun ServiceMessageBuilder.addMessage(message: String?): ServiceMessageBuilder =
     message?.takeIf { it.isNotEmpty() }?.let { this.addAttribute("message", it) } ?: this
+
+  private fun ServiceMessageBuilder.addTime(time: Double?): ServiceMessageBuilder =
+    time
+      ?.takeIf { it.isFinite() }
+      ?.toDuration(DurationUnit.SECONDS)
+      ?.inWholeMilliseconds
+      ?.let { this.addAttribute("duration", it.toString()) }
+      ?: this
+
+  private inline fun <reified Data> extractTestFinishData(testFinishData: TestFinish, kind: String): Data? =
+    if (testFinishData.data is Data) {
+      testFinishData.data as Data
+    } else if (testFinishData.dataKind == kind) {
+      gson.fromJson(testFinishData.data as JsonObject, Data::class.java)
+    } else {
+      null
+    }
 }
