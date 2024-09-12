@@ -11,7 +11,7 @@ import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.bspBuildToolId
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.impl.server.connection.BspConnection
-import org.jetbrains.plugins.bsp.impl.server.connection.connection
+import org.jetbrains.plugins.bsp.impl.server.connection.setMockTestConnection
 import org.jetbrains.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.DisplayName
@@ -25,7 +25,7 @@ private val mockBuildServer =
   )
 
 private class BspConnectionMock : BspConnection {
-  override suspend fun connect(taskId: Any) {
+  override suspend fun connect() {
     // it's a mock, nothing to do
   }
 
@@ -48,7 +48,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
   fun `should call all enabled pre-sync, sync and post-sync hooks for bsp project`() {
     // given
     project.buildToolId = bspBuildToolId
-    project.connection = BspConnectionMock()
+    project.setMockTestConnection(BspConnectionMock())
 
     // pre-sync hooks
     val preSyncHook = TestProjectPreSyncHook(bspBuildToolId)
@@ -88,7 +88,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
   fun `should call all enabled pre-sync, sync and post-sync hooks for non-bsp project`() {
     // given
     project.buildToolId = testBuildToolId
-    project.connection = BspConnectionMock()
+    project.setMockTestConnection(BspConnectionMock())
 
     // pre-sync hooks
     val defaultPreSyncHook = TestProjectPreSyncHook(bspBuildToolId)

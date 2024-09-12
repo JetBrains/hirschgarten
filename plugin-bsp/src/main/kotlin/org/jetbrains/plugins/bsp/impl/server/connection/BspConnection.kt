@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.impl.server.connection
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import org.jetbrains.annotations.TestOnly
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
@@ -38,9 +39,20 @@ public interface BspConnection {
 val Project.connection: BspConnection
   get() = BspConnectionService.getInstance(this).connection
 
+/**
+ * the method should be solely used for mocking the project's BSP connection in tests.
+ */
+@TestOnly
+fun Project.setMockTestConnection(newConnection: BspConnection) {
+  BspConnectionService.getInstance(this).connection = newConnection
+}
+
 @Service(Service.Level.PROJECT)
 private class BspConnectionService(project: Project) {
-  val connection: BspConnection = DefaultBspConnection(project, project.connectionDetailsProvider)
+  var connection: BspConnection = DefaultBspConnection(project, project.connectionDetailsProvider)
+    @Synchronized get
+
+    @Synchronized set
 
   companion object {
     fun getInstance(project: Project): BspConnectionService = project.getService(BspConnectionService::class.java)
