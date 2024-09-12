@@ -11,10 +11,7 @@ abstract class AndroidProjectSystemProviderAdapter : AndroidProjectSystemProvide
 
   abstract val projectSystemCompat: AndroidProjectSystem
 
-  override val projectSystem: AndroidProjectSystem
-    get() = projectSystemCompat
+  override fun projectSystemFactory(project: Project): AndroidProjectSystem = projectSystemCompat
 
-  override fun isApplicable(): Boolean {
-    return isApplicableCompat()
-  }
+  override fun isApplicable(project: Project): Boolean = isApplicableCompat()
 }

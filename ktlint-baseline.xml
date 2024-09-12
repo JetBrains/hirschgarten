@@ -99,6 +99,12 @@
     <file name="protocol/src/main/kotlin/org/jetbrains/bsp/protocol/WorkspaceInvalidTargets.kt">
         <error line="1" column="1" source="standard:filename" />
     </file>
+    <file name="sdkcompat/v242/Dummy.kt">
+        <error line="1" column="1" source="standard:no-empty-file" />
+    </file>
+    <file name="sdkcompat/v243/Dummy.kt">
+        <error line="1" column="1" source="standard:no-empty-file" />
+    </file>
     <file name="server/e2e/test-resources/kotlin-project/plugin_allopen_test/User.kt">
         <error line="3" column="1" source="standard:no-wildcard-imports" />
     </file>
