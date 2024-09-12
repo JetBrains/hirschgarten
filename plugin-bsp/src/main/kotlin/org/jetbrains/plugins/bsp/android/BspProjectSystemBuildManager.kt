@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
+import org.jetbrains.sdkcompat.android.buildResult
 
 public class BspProjectSystemBuildManager(private val project: Project) : ProjectSystemBuildManager {
   @Deprecated("Do not add new uses of this method as it's error prone")
@@ -30,7 +31,7 @@ public class BspProjectSystemBuildManager(private val project: Project) : Projec
 
         override fun syncFinished(canceled: Boolean) {
           val status = if (canceled) BuildStatus.CANCELLED else BuildStatus.SUCCESS
-          buildListener.buildCompleted(BuildResult(BuildMode.COMPILE_OR_ASSEMBLE, status, System.currentTimeMillis()))
+          buildListener.buildCompleted(buildResult(BuildMode.COMPILE_OR_ASSEMBLE, status))
         }
       },
     )

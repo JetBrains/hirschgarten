@@ -11,24 +11,13 @@ import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.createSourceProvidersForLegacyModule
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.moduleEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
+import org.jetbrains.sdkcompat.android.sourceProviderImpl
 
 public class BspSourceProvidersFactory : SourceProvidersFactory {
   override fun createSourceProvidersFor(facet: AndroidFacet): SourceProviders {
     val sourceProvider = createSourceProviderForModule(facet) ?: return createSourceProvidersForLegacyModule(facet)
 
-    return SourceProvidersImpl(
-      mainIdeaSourceProvider = sourceProvider,
-      currentSourceProviders = listOf(sourceProvider),
-      currentUnitTestSourceProviders = listOf(sourceProvider),
-      currentAndroidTestSourceProviders = listOf(sourceProvider),
-      currentTestFixturesSourceProviders = listOf(sourceProvider),
-      currentAndSomeFrequentlyUsedInactiveSourceProviders = listOf(sourceProvider),
-      mainAndFlavorSourceProviders = listOf(sourceProvider),
-      generatedSources = emptySourceProvider(ScopeType.MAIN),
-      generatedUnitTestSources = emptySourceProvider(ScopeType.UNIT_TEST),
-      generatedAndroidTestSources = emptySourceProvider(ScopeType.ANDROID_TEST),
-      generatedTestFixturesSources = emptySourceProvider(ScopeType.TEST_FIXTURES),
-    )
+    return sourceProviderImpl(sourceProvider)
   }
 
   private fun createSourceProviderForModule(facet: AndroidFacet): NamedIdeaSourceProvider? {
