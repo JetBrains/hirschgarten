@@ -31,7 +31,7 @@ class BazelCommandCompletionProvider : CompletionProvider<CompletionParameters>(
           psiElement().beforeLeaf(psiElement(BazelrcTokenTypes.COMMAND)),
         )
 
-    // TODO(mtoader): Find a nicer way of building this, and the "set of correct flag with type / value for command" ?
+    // TODO(BAZEL-1195): Find a nicer way of building this, and the "set of correct flag with type / value for command" ?
     //    Maybe parsing the bazel help output on project sync?
     val knownCommandsToDescriptions =
       mapOf(
