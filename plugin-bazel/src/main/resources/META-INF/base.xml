@@ -144,6 +144,10 @@
 
         <projectViewNodeDecorator
                 implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator"/>
+        <referencesSearch
+                implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher"/>
+        <usageTypeProvider
+                implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider"/>
 
     </extensions>
 
