@@ -10,7 +10,6 @@ import com.goide.vgo.project.workspaceModel.entities.VgoDependencyEntity
 import com.goide.vgo.project.workspaceModel.entities.VgoStandaloneModuleEntity
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.util.progress.SequentialProgressReporter
@@ -25,6 +24,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModule
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractGoBuildTarget
@@ -57,22 +57,24 @@ class GoProjectSync : ProjectSyncHook {
     val idToGoTargetMap = goTargets.associateBy({ it.target.id }, { it })
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
 
-    goTargets.forEach {
-      val moduleEntity =
-        addModuleEntityFromTarget(
-          builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
-          target = it,
-          virtualFileUrlManager = virtualFileUrlManager,
-        )
-      val vgoModule = prepareVgoModule(environment, it, moduleEntity.symbolicId, virtualFileUrlManager, idToGoTargetMap)
-      environment.diff.workspaceModelDiff.mutableEntityStorage
-        .addEntity(vgoModule)
-    }
+    val moduleEntities =
+      goTargets.map {
+        val moduleEntity =
+          addModuleEntityFromTarget(
+            builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
+            target = it,
+            virtualFileUrlManager = virtualFileUrlManager,
+          )
+        val vgoModule = prepareVgoModule(environment, it, moduleEntity.symbolicId, virtualFileUrlManager, idToGoTargetMap)
+        environment.diff.workspaceModelDiff.mutableEntityStorage
+          .addEntity(vgoModule)
+        moduleEntity
+      }
 
     environment.diff.workspaceModelDiff.addPostApplyAction {
       calculateAndAddGoSdk(environment.progressReporter, goTargets, environment.project, environment.taskId)
       restoreGoModulesRegistry(environment.project)
-      enableGoSupportInTargets(goTargets, environment.project, environment.taskId)
+      enableGoSupportInTargets(moduleEntities, environment.project, environment.taskId)
     }
   }
 
@@ -247,7 +249,7 @@ class GoProjectSync : ProjectSyncHook {
   }
 
   private suspend fun enableGoSupportInTargets(
-    goTargets: List<BaseTargetInfo>,
+    moduleEntities: List<ModuleEntity>,
     project: Project,
     taskId: String,
   ) = project.syncConsole.withSubtask(
@@ -255,12 +257,12 @@ class GoProjectSync : ProjectSyncHook {
     "enable-go-support-in-targets",
     BspPluginBundle.message("console.task.model.add.go.support.in.targets"),
   ) {
-    val moduleManager = ModuleManager.getInstance(project)
-    for (goTarget in goTargets) {
-      val moduleName = goTarget.moduleName
-      val module = moduleManager.findModuleByName(moduleName) ?: continue
-      writeAction {
-        module.enableGoSupport()
+    val workspaceModel = WorkspaceModel.getInstance(project)
+    moduleEntities.forEach { moduleEntity ->
+      moduleEntity.findModule(workspaceModel.currentSnapshot)?.let { module ->
+        writeAction {
+          module.enableGoSupport()
+        }
       }
     }
   }
