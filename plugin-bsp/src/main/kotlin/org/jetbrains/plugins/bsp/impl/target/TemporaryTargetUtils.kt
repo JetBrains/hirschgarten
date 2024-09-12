@@ -115,6 +115,9 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
   public fun getBuildTargetInfoForId(buildTargetIdentifier: BuildTargetIdentifier): BuildTargetInfo? =
     targetIdToTargetInfo[buildTargetIdentifier]
 
+  public fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module) =
+    getTargetIdForModuleId(module.name)?.let { getBuildTargetInfoForId(it) }
+
   public fun getAllLibraries(): List<Library> = libraries
 
   public fun isLibraryModule(name: String): Boolean = name in libraryModulesLookupTable
