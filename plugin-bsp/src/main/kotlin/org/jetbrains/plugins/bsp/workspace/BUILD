@@ -9,6 +9,7 @@ kt_jvm_library(
     deps = [
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/utils",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],

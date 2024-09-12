@@ -42,7 +42,8 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
 
   // we must use URI as comparing URI path strings is susceptible to errors.
   // e.g., file:/test and file:///test should be similar in the URI world
-  private var fileToTargetId: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
+  var fileToTargetId: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
+    private set
   private var libraries: List<Library> = emptyList()
   private var libraryModules: List<JavaModule> = emptyList()
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
