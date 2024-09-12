@@ -53,8 +53,6 @@ filegroup(
     srcs = ["plugins/Kotlin/kotlinc/build.txt"],
 )
 
-# The plugins required by IJwB. We need to include them
-# when running integration tests.
 java_import(
     name = "bundled_plugins",
     jars = glob([
@@ -62,7 +60,6 @@ java_import(
         "plugins/junit/lib/*.jar",
         "plugins/properties/lib/*.jar",
     ]),
-    tags = ["intellij-provided-by-sdk"],
 )
 
 filegroup(

@@ -1,4 +1,4 @@
-package org.jetbrains.sdkcompat.android
+package org.jetbrains.bsp.sdkcompat.android
 
 import com.android.tools.idea.projectsystem.ProjectSystemBuildManager
 
@@ -6,4 +6,4 @@ import com.android.tools.idea.projectsystem.ProjectSystemBuildManager
 fun buildResult(
   buildMode: ProjectSystemBuildManager.BuildMode,
   status: ProjectSystemBuildManager.BuildStatus,
-): ProjectSystemBuildManager.BuildResult = ProjectSystemBuildManager.BuildResult(buildMode, status, System.currentTimeMillis())
+): ProjectSystemBuildManager.BuildResult = ProjectSystemBuildManager.BuildResult(buildMode, status)

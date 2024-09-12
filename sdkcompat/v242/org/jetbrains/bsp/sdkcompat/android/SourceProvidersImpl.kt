@@ -1,4 +1,4 @@
-package org.jetbrains.sdkcompat.android
+package org.jetbrains.bsp.sdkcompat.android
 
 import com.android.tools.idea.projectsystem.NamedIdeaSourceProvider
 import com.android.tools.idea.projectsystem.ScopeType

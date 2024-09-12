@@ -7,10 +7,10 @@ import com.android.tools.idea.projectsystem.ProjectSystemBuildManager.BuildStatu
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.bsp.sdkcompat.android.buildResult
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
-import org.jetbrains.sdkcompat.android.buildResult
 
 public class BspProjectSystemBuildManager(private val project: Project) : ProjectSystemBuildManager {
   @Deprecated("Do not add new uses of this method as it's error prone")
