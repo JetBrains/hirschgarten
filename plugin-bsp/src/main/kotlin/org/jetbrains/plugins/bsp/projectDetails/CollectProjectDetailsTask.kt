@@ -73,12 +73,16 @@ import org.jetbrains.plugins.bsp.python.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
+import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
+import org.jetbrains.plugins.bsp.utils.isSourceFile
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
 import org.jetbrains.plugins.bsp.workspacemodel.entities.toBuildTargetInfo
+import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import kotlin.io.path.Path
+import kotlin.io.path.toPath
 
 class CollectProjectDetailsTask(
   project: Project,
@@ -387,7 +391,7 @@ class CollectProjectDetailsTask(
         }.toMap()
   }
 
-  suspend fun postprocessingSubtask(progressReporter: SequentialProgressReporter) {
+  suspend fun postprocessingSubtask() {
     // This order is strict as now SDKs also use the workspace model,
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
@@ -407,6 +411,7 @@ class CollectProjectDetailsTask(
 
     VirtualFileManager.getInstance().asyncRefresh()
     project.refreshKotlinHighlighting()
+    checkOverlappingSources()
   }
 
   private suspend fun addBspFetchedJdks() =
@@ -500,6 +505,32 @@ class CollectProjectDetailsTask(
     writeAction {
       analysisMessageBus.syncPublisher(KotlinModificationTopics.GLOBAL_MODULE_STATE_MODIFICATION).onModification()
     }
+
+  private fun checkOverlappingSources() {
+    val fileToTargetId = project.temporaryTargetUtils.fileToTargetId
+    for ((file, targetIds) in fileToTargetId) {
+      if (targetIds.size <= 1) continue
+      if (!file.isSourceFile()) continue
+      warnOverlappingSources(targetIds[0], targetIds[1], file)
+      break
+    }
+  }
+
+  private fun warnOverlappingSources(
+    firstTargetId: BuildTargetIdentifier,
+    secondTargetId: BuildTargetIdentifier,
+    source: URI,
+  ) {
+    BspBalloonNotifier.warn(
+      BspPluginBundle.message("widget.collect.targets.overlapping.sources.title"),
+      BspPluginBundle.message(
+        "widget.collect.targets.overlapping.sources.message",
+        firstTargetId.uri,
+        secondTargetId.uri,
+        source.toPath().fileName,
+      ),
+    )
+  }
 }
 
 @Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")

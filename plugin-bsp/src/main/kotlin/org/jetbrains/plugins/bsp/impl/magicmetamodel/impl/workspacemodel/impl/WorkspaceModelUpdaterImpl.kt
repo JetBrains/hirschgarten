@@ -7,14 +7,12 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.ModuleName
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModuleUpdater
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModuleRemover
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.JavaModuleToDummyJavaModulesTransformerHACK
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
@@ -42,7 +40,6 @@ internal class WorkspaceModelUpdaterImpl(
   private val pythonModuleUpdater: PythonModuleUpdater? =
     if (isPythonSupportEnabled) PythonModuleUpdater(workspaceModelEntityUpdaterConfig) else null
 
-  private val workspaceModuleRemover = WorkspaceModuleRemover(workspaceModelEntityUpdaterConfig)
   private val javaModuleToDummyJavaModulesTransformerHACK =
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath)
 
@@ -76,12 +73,4 @@ internal class WorkspaceModelUpdaterImpl(
   }
 
   private fun Module.isAlreadyAdded() = workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.contains(ModuleId(getModuleName()))
-
-  override fun removeModule(module: ModuleName) {
-    workspaceModuleRemover.removeEntity(module)
-  }
-
-  override fun clear() {
-    workspaceModuleRemover.clear()
-  }
 }

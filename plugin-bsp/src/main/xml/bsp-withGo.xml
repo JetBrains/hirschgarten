@@ -1,4 +1,9 @@
 <idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <runLineMarkerContributor
+            implementationClass="org.jetbrains.plugins.bsp.ui.gutters.BspGoRunLineMarkerContributor"
+            language="go"/>
+  </extensions>
   <extensions defaultExtensionNs="org.jetbrains.bsp">
     <goSdkGetterExtension
       implementation="org.jetbrains.plugins.bsp.extension.points.GoSdkGetter" />

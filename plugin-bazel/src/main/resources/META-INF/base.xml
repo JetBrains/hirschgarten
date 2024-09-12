@@ -43,6 +43,7 @@
         <externalIconProvider
                 key="bazelbsp"
                 implementationClass="org.jetbrains.bazel.config.BazelExternalSystemIconProvider"/>
+        <projectModelModifier implementation="org.jetbrains.bazel.flow.modify.BazelProjectModelModifier"/>
 
         <fileType
                 name="Starlark"
@@ -152,6 +153,10 @@
 
         <projectViewNodeDecorator
                 implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator"/>
+        <referencesSearch
+                implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkStringUsageSearcher"/>
+        <usageTypeProvider
+                implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider"/>
 
     </extensions>
 
