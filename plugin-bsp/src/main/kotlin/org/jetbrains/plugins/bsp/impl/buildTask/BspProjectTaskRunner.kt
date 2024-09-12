@@ -57,10 +57,7 @@ public class BspProjectTaskRunner : ProjectTaskRunner() {
 
   private fun obtainTargetsToBuild(project: Project, tasks: List<ModuleBuildTask>): List<BuildTargetInfo> {
     val temporaryTargetUtils = project.temporaryTargetUtils
-    return tasks
-      .map { it.module.name }
-      .mapNotNull { temporaryTargetUtils.getTargetIdForModuleId(it) }
-      .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
+    return tasks.mapNotNull { temporaryTargetUtils.getBuildTargetInfoForModule(it.module) }
   }
 
   @OptIn(ExperimentalCoroutinesApi::class)
