@@ -18,10 +18,8 @@ import org.jetbrains.plugins.bsp.runnerAction.BspRunnerAction
 import org.jetbrains.plugins.bsp.runnerAction.RunTargetAction
 import org.jetbrains.plugins.bsp.runnerAction.TestTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetSearch
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.awt.Component
-import java.awt.Point
 import java.awt.event.MouseEvent
 
 class LoadedTargetsMouseListener(private val container: BuildTargetContainer, private val project: Project) : PopupHandler() {
@@ -42,14 +40,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
     x: Int,
     y: Int,
   ) {
-    selectTargetIfSearchListIsDisplayed(Point(x, y))
     showPopup(component, x, y)
-  }
-
-  private fun selectTargetIfSearchListIsDisplayed(point: Point) {
-    if (container is BuildTargetSearch) {
-      container.selectAtLocationIfListDisplayed(point)
-    }
   }
 
   private fun showPopup(
