@@ -7,6 +7,7 @@ import com.intellij.psi.PsiReferenceBase
 import org.jetbrains.bazel.languages.starlark.completion.StarlarkCompletionProcessor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
+import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 
 class StarlarkLoadReference(element: StarlarkStringLiteralExpression, val loadedFileReference: BazelLabelReference) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), false) {
@@ -24,5 +25,11 @@ class StarlarkLoadReference(element: StarlarkStringLiteralExpression, val loaded
     val processor = StarlarkCompletionProcessor(mutableMapOf(), element, element.getQuote())
     loadedFile.searchInTopLevel(processor, null)
     return processor.results.values.toTypedArray()
+  }
+
+  override fun handleElementRename(newElementName: String): PsiElement {
+    val newNode = StarlarkElementGenerator(element.project).createStringLiteral(newElementName)
+    element.node.replaceChild(element.node.firstChildNode, newNode)
+    return element
   }
 }
