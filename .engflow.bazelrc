@@ -1,0 +1,37 @@
+# Setup EngFlow's Remote Cache
+build:engflow_cache --disk_cache=
+build:engflow_cache --remote_timeout=600
+# if uncomment an do build //... results in
+# "Config value 'engflow_auth' is not defined in any .rc file"
+# build:engflow_cache --config=engflow_auth
+build:engflow_cache --remote_cache_compression=true
+build:engflow_cache --remote_download_minimal
+build:engflow_cache --remote_cache=grpcs://jasper.cluster.engflow.com
+build:engflow_cache --bes_backend=grpcs://jasper.cluster.engflow.com
+build:engflow_cache --bes_results_url=https://jasper.cluster.engflow.com/invocation/
+
+# Setup EngFlow's Remote Execution
+build:engflow --config=engflow_cache
+build:engflow --define=EXECUTOR=remote
+build:engflow --experimental_inmemory_dotd_files
+build:engflow --experimental_inmemory_jdeps_files
+build:engflow --nolegacy_important_outputs
+build:engflow --grpc_keepalive_time=30s
+build:engflow --host_platform=//tools/platforms/linux_x86/config:platform
+build:engflow --platforms=//tools/platforms/linux_x86/config:platform
+build:engflow --extra_toolchains=//tools/platforms/linux_x86/config:cc-toolchain
+build:engflow --extra_execution_platforms=//tools/platforms/linux_x86/config:platform
+build:engflow --crosstool_top=//tools/platforms/linux_x86/cc:toolchain
+build:engflow --host_crosstool_top=//tools/platforms/linux_x86/cc:toolchain
+build:engflow --cpu=k8
+build:engflow --host_cpu=k8
+build:engflow --compiler=clang
+build:engflow --host_compiler=clang
+build:engflow --remote_executor=grpcs://jasper.cluster.engflow.com
+build:engflow --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
+build:engflow --test_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=0
+build:engflow --test_env=CC=/usr/bin/cc
+
+# Authenticate to the EngFlow cluster using mTLS certificate
+build:engflow --tls_client_certificate=tools/mtls/engflow.crt
+build:engflow --tls_client_key=tools/mtls/engflow.key

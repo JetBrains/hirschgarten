@@ -19,4 +19,4 @@ EOF
 fi
 
 vncserver :1 &
-/mnt/jetbrains/system/noVNC/utils/novnc_proxy --vnc localhost:5901 --listen localhost:6081
+/mnt/noVNC/utils/novnc_proxy --vnc localhost:5901 --listen localhost:6081

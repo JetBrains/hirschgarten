@@ -1,3 +1,4 @@
+.bazelrc.user
 .DS_Store
 
 .bazelbsp/
@@ -24,3 +25,5 @@ idea-flex.skeleton
 jflex-*.jar
 
 projectview.bazelproject
+tools/mtls/*
+!tools/mtls/.gitkeep
