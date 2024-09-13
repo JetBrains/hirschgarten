@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.console
 
+import com.google.common.base.Throwables.getStackTraceAsString
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.DefaultBuildDescriptor
 import com.intellij.build.FilePosition
@@ -130,7 +131,12 @@ public abstract class TaskConsole(
     result: EventResult,
   ) {
     if (result is FailureResultImpl) {
-      result.failures.forEach { log.error(it.message, it.error) }
+      result.failures.forEach {
+        log.error(it.message, it.error)
+        it.error?.let { error ->
+          addMessage(taskId, getStackTraceAsString(error))
+        }
+      }
     }
     tasksInProgress.remove(taskId)
     subtaskParentMap.entries.removeAll { it.value.rootTask == taskId }
