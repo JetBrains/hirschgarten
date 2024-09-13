@@ -38,6 +38,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.exists
+import kotlin.io.path.extension
 import kotlin.io.path.inputStream
 import kotlin.io.path.name
 import kotlin.io.path.notExists
@@ -912,6 +913,7 @@ class BazelProjectMapper(
       target.generatedSourcesList
         .toSet()
         .map(bazelPathsResolver::resolve)
+        .filter { it.extension != "srcjar" }
         .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
         .filter { it.exists() }
 
