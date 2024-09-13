@@ -29,6 +29,7 @@ public class BazelBuildServerCapabilities(
   public val workspaceDirectoriesProvider: Boolean = false,
   public val workspaceInvalidTargetsProvider: Boolean = false,
   public val runWithDebugProvider: Boolean = false,
+  public val testWithDebugProvider: Boolean = false,
   public val jvmBinaryJarsProvider: Boolean = false,
 ) : BuildServerCapabilities() {
   init {
