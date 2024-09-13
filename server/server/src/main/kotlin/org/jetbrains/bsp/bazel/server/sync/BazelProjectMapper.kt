@@ -87,7 +87,9 @@ class BazelProjectMapper(
       }
     val targetsAsLibraries =
       measure("Targets as libraries") {
-        targets - targetsToImport.map { Label.parse(it.id) }.toSet()
+        val libraries = targets - targetsToImport.map { Label.parse(it.id) }.toSet()
+        val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport)
+        usedLibraries
       }
     val outputJarsLibraries =
       measure("Create output jars libraries") {
