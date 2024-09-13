@@ -202,7 +202,10 @@ class StatementParsing(context: ParsingContext) : Parsing(context) {
   }
 
   private fun parseLoadValueList() {
-    assertCurrentToken(StarlarkTokenTypes.LPAR)
+    if (!atToken(StarlarkTokenTypes.LPAR)) {
+      builder.error(StarlarkBundle.message("parser.expected.lpar"))
+      return
+    }
     builder.advanceLexer()
     var firstValue = true
     while (!atToken(StarlarkTokenTypes.RPAR)) {
