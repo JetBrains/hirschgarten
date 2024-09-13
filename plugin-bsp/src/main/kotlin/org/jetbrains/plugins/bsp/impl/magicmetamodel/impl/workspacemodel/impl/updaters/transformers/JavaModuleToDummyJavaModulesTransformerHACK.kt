@@ -118,7 +118,7 @@ internal fun calculateDummyResourceRootPath(
   fun Path.isDescendantOf(ancestor: Path) = toAbsolutePath().startsWith(ancestor.toAbsolutePath())
 
   fun getImmediateChildFromAncestorOrNull(path: Path, ancestor: Path): Path? =
-    if (!path.isDescendantOf(ancestor)) {
+    if (path == ancestor || !path.isDescendantOf(ancestor)) {
       null
     } else {
       ancestor.resolve(path.toAbsolutePath().getName(ancestor.toAbsolutePath().nameCount))
