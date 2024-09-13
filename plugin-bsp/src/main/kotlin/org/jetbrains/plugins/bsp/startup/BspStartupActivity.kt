@@ -1,13 +1,12 @@
 package org.jetbrains.plugins.bsp.startup
 
 import com.intellij.build.events.impl.FailureResultImpl
-import com.intellij.ide.impl.isTrusted
-import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.backend.workspace.workspaceModel
+import com.intellij.util.application
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
@@ -18,6 +17,7 @@ import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.impl.server.connection.connectionDetailsProvider
+import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.file.targets.updateBspFileTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
@@ -42,9 +42,9 @@ public class BspStartupActivity : ProjectActivity {
     BspStartupActivityTracker.startConfigurationPhase(this)
     executeEveryTime()
 
-    if (!isBspProjectInitialized || !(workspaceModel as WorkspaceModelImpl).loadedFromCache) {
-      executeForNewProject()
-    }
+    executeForNewProject()
+
+    resyncProjectIfNeeded()
 
     BspStartupActivityTracker.stopConfigurationPhase(this)
   }
@@ -60,8 +60,9 @@ public class BspStartupActivity : ProjectActivity {
   private suspend fun Project.executeForNewProject() {
     log.debug("Executing BSP startup activities only for new project")
     try {
-      runSync(this)
-      isBspProjectInitialized = true
+      if (!isBspProjectInitialized || !(workspaceModel as WorkspaceModelImpl).loadedFromCache) {
+        isBspProjectInitialized = runOnFirstOpening()
+      }
     } catch (e: Exception) {
       val bspSyncConsole = BspConsoleService.getInstance(this).bspSyncConsole
       log.info("BSP sync has failed", e)
@@ -78,25 +79,34 @@ public class BspStartupActivity : ProjectActivity {
     }
   }
 
-  private suspend fun runSync(project: Project) {
-    log.info("Running BSP sync")
-
-    val wasFirstOpeningSuccessful = project.connectionDetailsProvider.onFirstOpening(project, project.rootDir)
+  private suspend fun Project.runOnFirstOpening(): Boolean {
+    val wasFirstOpeningSuccessful = connectionDetailsProvider.onFirstOpening(this, rootDir)
     log.debug("Was onFirstOpening successful: $wasFirstOpeningSuccessful")
 
-    if (wasFirstOpeningSuccessful) {
-      if (project.isTrusted()) {
-        log.info("Running BSP sync task")
-        ProjectSyncTask(project).sync(
-          buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
-        )
-      }
-    } else {
-      log.info("Cancelling BSP sync. Closing the project window")
-      // TODO https://youtrack.jetbrains.com/issue/BAZEL-623
-      AppUIExecutor.onUiThread().execute {
-        CloseProjectWindowHelper().windowClosing(project)
-      }
+    if (!wasFirstOpeningSuccessful) {
+      handleFailedFirstOpening()
+      return false
+    }
+
+    return true
+  }
+
+  private fun Project.handleFailedFirstOpening() {
+    log.info("Cancelling BSP sync. Closing the project window")
+    // TODO https://youtrack.jetbrains.com/issue/BAZEL-623
+    application.invokeLater {
+      CloseProjectWindowHelper().windowClosing(this)
     }
   }
+
+  private suspend fun Project.resyncProjectIfNeeded() {
+    if (isBspProjectInitialized && isProjectInIncompleteState()) {
+      log.info("Running BSP sync task")
+      ProjectSyncTask(this).sync(
+        buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+      )
+    }
+  }
+
+  private fun Project.isProjectInIncompleteState() = temporaryTargetUtils.allTargetIds().isEmpty()
 }
