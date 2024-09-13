@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-# tools
-# TODO move it to a docker image
-echo "Install bazelisk"
-npm install -g @bazel/bazelisk
-
 echo "Install plugins"
 .codecanvas/installPlugins.sh
 
