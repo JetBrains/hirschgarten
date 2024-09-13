@@ -1,0 +1,14 @@
+common --incompatible_use_plus_in_repo_names
+
+# unclosed quote should match to EOL
+"build --protocopt=--fatal_warnings
+build --disk_cache=~/.cache/bazel
+
+'build:batch' --noshow_loading_progress
+build:batch --noshow_progress
+
+# config name should match to eol
+"query:batch --noshow_progress
+
+# COMMAND: "unknown ", CONFIG: " b at ch"
+"unknown : b at ch" --noshow_progress
