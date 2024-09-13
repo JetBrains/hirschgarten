@@ -15,39 +15,44 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.withBuildToolId
 import org.jetbrains.plugins.bsp.extensionPoints.bspToolWindowSettingsProvider
+import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
-import javax.swing.JComponent
 import javax.swing.SwingConstants
 
-private class ListsUpdater(private val project: Project, private val targetPanelUpdater: (ListsUpdater) -> Unit) {
-  var loadedTargetsPanel: BspPanelComponent
-    private set
-  val targetFilter = TargetFilter { rerenderComponents() }
-  val searchBarPanel = SearchBarPanel()
+public class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
+  private val targetFilter = TargetFilter { rerenderComponents() }
+  private val searchBarPanel = SearchBarPanel()
+  private var loadedTargetsPanel: BspPanelComponent
 
   init {
-    val invalidTargets =
-      InvalidTargetsProviderExtension.ep
-        .withBuildToolId(project.buildToolId)
-        ?.provideInvalidTargets(project)
-        .orEmpty()
+    val actionManager = ActionManager.getInstance()
     val temporaryTargetUtils = project.temporaryTargetUtils
-    loadedTargetsPanel =
-      BspPanelComponent(
-        targetIcon = project.assets.targetIcon,
-        invalidTargetIcon = project.assets.errorTargetIcon,
-        buildToolId = project.buildToolId,
-        toolName = project.assets.presentableName,
-        targets = temporaryTargetUtils.allTargetIds().mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) },
-        invalidTargets = invalidTargets,
-        searchBarPanel = searchBarPanel,
-      )
-    loadedTargetsPanel.addMouseListener { LoadedTargetsMouseListener(it, project) }
+
+    loadedTargetsPanel = createLoadedTargetsPanel(project, temporaryTargetUtils)
+
+    val defaultActions = actionManager.getAction("Bsp.ActionsToolbar")
+    val actionGroup =
+      DefaultActionGroup().apply {
+        addAll(defaultActions)
+        addSeparator()
+        add(FilterActionGroup(targetFilter))
+        addSettingsActionIfAvailable(project)
+      }
+
+    val actionToolbar =
+      actionManager.createActionToolbar("Bsp Toolbar", actionGroup, true).apply {
+        targetComponent = this@BspToolWindowPanel.component
+        orientation = SwingConstants.HORIZONTAL
+      }
+
+    this.toolbar = actionToolbar.component
+    setContent(loadedTargetsPanel.withScrollAndSearch())
+
     temporaryTargetUtils.registerListener {
       ApplicationManager.getApplication().invokeLater {
         rerenderComponents()
@@ -55,49 +60,37 @@ private class ListsUpdater(private val project: Project, private val targetPanel
     }
   }
 
-  fun rerenderComponents() {
+  private fun createLoadedTargetsPanel(project: Project, temporaryTargetUtils: TemporaryTargetUtils): BspPanelComponent {
+    val invalidTargets =
+      InvalidTargetsProviderExtension.ep
+        .withBuildToolId(project.buildToolId)
+        ?.provideInvalidTargets(project)
+        .orEmpty()
+
+    return BspPanelComponent(
+      targetIcon = project.assets.targetIcon,
+      invalidTargetIcon = project.assets.errorTargetIcon,
+      buildToolId = project.buildToolId,
+      toolName = project.assets.presentableName,
+      targets = temporaryTargetUtils.allTargetIds().mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) },
+      invalidTargets = invalidTargets,
+      searchBarPanel = searchBarPanel,
+    ).apply {
+      addMouseListener { LoadedTargetsMouseListener(it, project) }
+    }
+  }
+
+  private fun rerenderComponents() {
     val temporaryTargetUtils = project.temporaryTargetUtils
     searchBarPanel.clearAllListeners()
-    loadedTargetsPanel =
-      loadedTargetsPanel
-        .createNewWithTargets(targetFilter.getMatchingLoadedTargets(temporaryTargetUtils))
-    targetPanelUpdater(this@ListsUpdater)
-  }
-}
-
-public class BspToolWindowPanel(project: Project) : SimpleToolWindowPanel(true, true) {
-  init {
-    val actionManager = ActionManager.getInstance()
-    val listsUpdater = ListsUpdater(project, this::showCurrentPanel)
-
-    val defaultActions = actionManager.getAction("Bsp.ActionsToolbar")
-
-    val actionGroup = DefaultActionGroup()
-    actionGroup.addAll(defaultActions)
-    actionGroup.addSeparator()
-    actionGroup.add(FilterActionGroup(listsUpdater.targetFilter))
-    actionGroup.addSettingsActionIfAvailable(project)
-
-    val actionToolbar = actionManager.createActionToolbar("Bsp Toolbar", actionGroup, true)
-    actionToolbar.targetComponent = this.component
-    actionToolbar.setOrientation(SwingConstants.HORIZONTAL)
-    this.toolbar = actionToolbar.component
-
-    showCurrentPanel(listsUpdater)
+    loadedTargetsPanel = loadedTargetsPanel.createNewWithTargets(targetFilter.getMatchingLoadedTargets(temporaryTargetUtils))
+    setContent(loadedTargetsPanel.withScrollAndSearch())
   }
 
   private fun DefaultActionGroup.addSettingsActionIfAvailable(project: Project) {
     val settingsActionProvider = project.bspToolWindowSettingsProvider ?: return
     addSeparator()
     add(BspToolWindowSettingsAction(settingsActionProvider.getSettingsName()))
-  }
-
-  private fun showCurrentPanel(listsUpdater: ListsUpdater) {
-    setToolWindowContent(listsUpdater.loadedTargetsPanel.withScrollAndSearch())
-  }
-
-  private fun setToolWindowContent(component: JComponent) {
-    this.setContent(component)
   }
 }
 
