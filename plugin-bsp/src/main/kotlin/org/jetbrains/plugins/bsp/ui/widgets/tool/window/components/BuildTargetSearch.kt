@@ -17,7 +17,6 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDis
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
-import java.awt.Point
 import java.awt.event.MouseListener
 import java.util.concurrent.Callable
 import javax.swing.Icon
@@ -35,7 +34,7 @@ public class BuildTargetSearch(
 
   override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, targetSearchPanel)
 
-  private val searchListDisplay = LazySearchListDisplay(targetIcon)
+  private val searchListDisplay = LazySearchListDisplay(targetIcon, buildToolId)
   private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, buildToolId)
 
   private var displayedSearchPanel: JPanel? = null
@@ -139,13 +138,6 @@ public class BuildTargetSearch(
       new.addMouseListener(listenerBuilder)
     }
     return new
-  }
-
-  // Fixes https://youtrack.jetbrains.com/issue/BAZEL-522
-  public fun selectAtLocationIfListDisplayed(location: Point) {
-    if (!searchBarPanel.isDisplayAsTreeChosen()) {
-      searchListDisplay.selectAtLocation(location)
-    }
   }
 
   override fun getTargetActions(project: Project, buildTargetInfo: BuildTargetInfo): List<AnAction> =

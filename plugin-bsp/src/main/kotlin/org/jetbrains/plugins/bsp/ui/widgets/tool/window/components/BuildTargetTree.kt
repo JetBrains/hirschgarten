@@ -34,6 +34,10 @@ public class BuildTargetTree(
   private val targets: Collection<BuildTargetInfo>,
   private val invalidTargets: List<BuildTargetIdentifier>,
   private val labelHighlighter: (String) -> String = { it },
+  private val bspBuildTargetClassifier: BuildTargetClassifierExtension =
+    BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(
+      buildToolId,
+    ),
 ) : BuildTargetContainer {
   private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
   private val cellRenderer = TargetTreeCellRenderer(targetIcon, invalidTargetIcon, labelHighlighter)
@@ -52,8 +56,6 @@ public class BuildTargetTree(
   }
 
   private fun generateTree() {
-    val bspBuildTargetClassifier = BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
-
     generateTreeFromIdentifiers(
       targets.map {
         BuildTargetTreeIdentifier(
@@ -190,13 +192,19 @@ public class BuildTargetTree(
   }
 
   override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetTree =
-    createNewWithTargetsAndHighlighter(newTargets, labelHighlighter)
+    createNewWithTargetsAndHighlighter(newTargets, bspBuildTargetClassifier = null, labelHighlighter)
 
   public fun createNewWithTargetsAndHighlighter(
     newTargets: Collection<BuildTargetInfo>,
+    bspBuildTargetClassifier: BuildTargetClassifierExtension? = null,
     labelHighlighter: (String) -> String,
   ): BuildTargetTree {
-    val new = BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, newTargets, emptyList(), labelHighlighter)
+    val new =
+      if (bspBuildTargetClassifier != null) {
+        BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, newTargets, emptyList(), labelHighlighter, bspBuildTargetClassifier)
+      } else {
+        BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, newTargets, emptyList(), labelHighlighter)
+      }
     for (listenerBuilder in this.mouseListenerBuilders) {
       new.addMouseListener(listenerBuilder)
     }
