@@ -23,6 +23,15 @@ class StarlarkElementGenerator(val project: Project) {
     return nameNode
   }
 
+  fun createStringLiteral(contents: String): ASTNode {
+    val dummyFile = createDummyFile("\"$contents\"")
+    val stringNode = dummyFile.node.firstChildNode.firstChildNode.firstChildNode
+    if (stringNode.elementType !== StarlarkTokenTypes.STRING) {
+      error("Expected elementType to be STRING while creating dummy file")
+    }
+    return stringNode
+  }
+
   private fun createDummyFile(contents: String): PsiFile {
     val factory = PsiFileFactory.getInstance(project)
     val virtualFile = LightVirtualFile(DUMMY_FILENAME, StarlarkFileType, contents)
