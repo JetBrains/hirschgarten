@@ -1,0 +1,23 @@
+common --incompatible_use_plus_in_repo_names
+
+build --protocopt=--fatal_warnings
+build --disk_cache=~/.cache/bazel
+
+# comment
+build:batch --ui_event_filters=-stderra
+build:batch --noshow_loading_progress
+build:batch --noshow_progress
+
+# comment
+# comment
+cquery:batch --ui_event_filters=-info,-stderr
+cquery:batch --noshow_loading_progress
+cquery:batch --noshow_progress
+
+# comment
+query:batch --ui_event_filters=-info,-stderr
+query:batch --noshow_loading_progress
+query:batch --noshow_progress
+
+unknown flag
+unknown:config flag
