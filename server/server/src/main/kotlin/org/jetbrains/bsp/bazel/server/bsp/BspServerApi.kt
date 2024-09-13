@@ -56,6 +56,7 @@ import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.bsp.protocol.TestWithDebugParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
@@ -142,6 +143,9 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
 
   override fun buildTargetTest(params: TestParams): CompletableFuture<TestResult> =
     runner.handleRequest("buildTarget/test", executeService::test, params)
+
+  override fun buildTargetTestWithDebug(params: TestWithDebugParams): CompletableFuture<TestResult> =
+    runner.handleRequest("buildTarget/testWithDebug", executeService::testWithDebug, params)
 
   override fun buildTargetRun(params: RunParams): CompletableFuture<RunResult> =
     runner.handleRequest("buildTarget/run", executeService::run, params)

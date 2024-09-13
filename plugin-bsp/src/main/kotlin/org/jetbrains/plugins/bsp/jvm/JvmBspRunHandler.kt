@@ -3,7 +3,6 @@ package org.jetbrains.plugins.bsp.jvm
 import ch.epfl.scala.bsp4j.RunParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
@@ -36,7 +35,7 @@ class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunH
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
       executor is DefaultDebugExecutor -> {
-        JvmRunWithDebugHandlerState(environment, UUID.randomUUID().toString(), state)
+        JvmRunWithDebugCommandLineState(environment, UUID.randomUUID().toString(), state)
       }
 
       else -> {
@@ -63,17 +62,12 @@ class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunH
   }
 }
 
-class JvmRunWithDebugHandlerState(
+class JvmRunWithDebugCommandLineState(
   environment: ExecutionEnvironment,
   originId: OriginId,
   val settings: GenericRunState,
-) : BspCommandLineStateBase(environment, originId) {
-  val remoteConnection: RemoteConnection =
-    RemoteConnection(true, "localhost", "0", true)
-
-  private val portForDebug: Int?
-    get() = remoteConnection.debuggerAddress?.toInt()
-
+) : BspCommandLineStateBase(environment, originId),
+  JvmDebuggableCommandLineState {
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
   override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
