@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.jvm
 
-import ch.epfl.scala.bsp4j.RunParams
+import ch.epfl.scala.bsp4j.TestParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RemoteConnection
@@ -11,43 +11,43 @@ import com.intellij.util.io.await
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
-import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.bsp.protocol.TestWithDebugParams
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.run.BspCommandLineStateBase
 import org.jetbrains.plugins.bsp.run.BspProcessHandler
 import org.jetbrains.plugins.bsp.run.BspRunHandler
 import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
-import org.jetbrains.plugins.bsp.run.commandLine.BspRunCommandLineState
+import org.jetbrains.plugins.bsp.run.commandLine.BspTestCommandLineState
 import org.jetbrains.plugins.bsp.run.commandLine.transformProgramArguments
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
-import org.jetbrains.plugins.bsp.run.state.GenericRunState
+import org.jetbrains.plugins.bsp.run.state.GenericTestState
 import org.jetbrains.plugins.bsp.run.task.BspRunTaskListener
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
 import org.jetbrains.plugins.bsp.taskEvents.OriginId
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.util.UUID
 
-class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHandler {
-  override val name: String = "Jvm BSP Run Handler"
+class JvmBspTestHandler(private val configuration: BspRunConfiguration) : BspRunHandler {
+  override val name: String = "Jvm BSP Test Handler"
 
-  override val state = GenericRunState()
+  override val state = GenericTestState()
 
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
       executor is DefaultDebugExecutor -> {
-        JvmRunWithDebugHandlerState(environment, UUID.randomUUID().toString(), state)
+        JvmTestWithDebugHandlerState(environment, UUID.randomUUID().toString(), state)
       }
 
       else -> {
-        BspRunCommandLineState(environment, UUID.randomUUID().toString(), state)
+        BspTestCommandLineState(environment, UUID.randomUUID().toString(), state)
       }
     }
 
-  class JvmBspRunHandlerProvider : BspRunHandlerProvider {
-    override val id: String = "JvmBspRunHandlerProvider"
+  class JvmBspTestHandlerProvider : BspRunHandlerProvider {
+    override val id: String = "JvmBspTestHandlerProvider"
 
-    override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = JvmBspRunHandler(configuration)
+    override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = JvmBspTestHandler(configuration)
 
     // Explanation for this logic:
     // Because we have android_local_test with mocked Android classes, which should be run, well, locally,
@@ -63,10 +63,10 @@ class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunH
   }
 }
 
-class JvmRunWithDebugHandlerState(
+class JvmTestWithDebugHandlerState(
   environment: ExecutionEnvironment,
   originId: OriginId,
-  val settings: GenericRunState,
+  val settings: GenericTestState,
 ) : BspCommandLineStateBase(environment, originId) {
   val remoteConnection: RemoteConnection =
     RemoteConnection(true, "localhost", "0", true)
@@ -77,20 +77,20 @@ class JvmRunWithDebugHandlerState(
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
   override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
-    if (!capabilities.runWithDebugProvider) {
-      throw ExecutionException("BSP server does not support running")
+    if (!capabilities.testWithDebugProvider) {
+      throw ExecutionException("BSP server does not support testing with debugging")
     }
 
     val configuration = environment.runProfile as BspRunConfiguration
-    val targetId = configuration.targets.single()
-    val runParams = RunParams(targetId)
-    runParams.originId = originId
-    runParams.workingDirectory = settings.workingDirectory
-    runParams.arguments = transformProgramArguments(settings.programArguments)
-    runParams.environmentVariables = settings.env.envs
+    val targetIds = configuration.targets
+    val testParams = TestParams(targetIds)
+    testParams.originId = originId
+    testParams.workingDirectory = settings.workingDirectory
+    testParams.arguments = transformProgramArguments(settings.programArguments)
+    testParams.environmentVariables = settings.env.envs
     val remoteDebugData = RemoteDebugData("jdwp", portForDebug!!)
-    val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
+    val testWithDebugParams = TestWithDebugParams(originId, testParams, remoteDebugData)
 
-    server.buildTargetRunWithDebug(runWithDebugParams).await()
+    server.buildTargetTestWithDebug(testWithDebugParams).await()
   }
 }
