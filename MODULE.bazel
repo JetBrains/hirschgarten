@@ -91,25 +91,25 @@ maven.artifact(
     artifact = "kotlinx-coroutines-core-jvm",
     group = "org.jetbrains.kotlinx",
     neverlink = True,
-    version = "1.8.1",
+    version = "1.9.0",
 )
 maven.artifact(
     name = "server_maven",
     artifact = "kotlinx-coroutines-core",
     group = "org.jetbrains.kotlinx",
-    version = "1.8.1",
+    version = "1.9.0",
 )
 maven.artifact(
     name = "server_maven",
     artifact = "kotlinx-coroutines-core-jvm",
     group = "org.jetbrains.kotlinx",
-    version = "1.8.1",
+    version = "1.9.0",
 )
 maven.artifact(
     name = "server_maven",
     artifact = "kotlinx-coroutines-test",
     group = "org.jetbrains.kotlinx",
-    version = "1.8.1",
+    version = "1.9.0",
 )
 use_repo(
     maven,
