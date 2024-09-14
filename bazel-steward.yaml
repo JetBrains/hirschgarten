@@ -13,6 +13,8 @@ pull-requests:
     dependencies: "io.kotest:*"
   - group-id: opentelemetry
     dependencies: "io.opentelemetry:*"
+  - group-id: kotlinx-coroutines
+    dependencies: "kotlinx-coroutines-*"
   - title: "[maintenance] updated ${dependencyId} to ${versionTo}"
 search-paths:
   - path-patterns:
