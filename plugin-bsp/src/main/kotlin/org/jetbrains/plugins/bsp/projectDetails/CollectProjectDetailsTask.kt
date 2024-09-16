@@ -511,6 +511,7 @@ class CollectProjectDetailsTask(
     for ((file, targetIds) in fileToTargetId) {
       if (targetIds.size <= 1) continue
       if (!file.isSourceFile()) continue
+      if (IGNORED_NAMES_FOR_OVERLAPPING_SOURCES.any { file.path.endsWith(it) }) continue
       warnOverlappingSources(targetIds[0], targetIds[1], file)
       break
     }
@@ -530,6 +531,10 @@ class CollectProjectDetailsTask(
         source.toPath().fileName,
       ),
     )
+  }
+
+  private companion object {
+    private val IGNORED_NAMES_FOR_OVERLAPPING_SOURCES = listOf("empty.kt")
   }
 }
 
