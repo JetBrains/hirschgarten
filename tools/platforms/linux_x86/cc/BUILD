@@ -70,6 +70,10 @@ filegroup(
 # the "${CPU}" entry in the toolchains attribute.
 cc_toolchain_suite(
     name = "toolchain",
+    tags = [
+        "manual",
+        "no-ide",
+    ],
     toolchains = {
         "k8|clang": ":cc-compiler-k8",
         "k8": ":cc-compiler-k8",
