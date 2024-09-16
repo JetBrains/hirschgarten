@@ -139,17 +139,13 @@
 
         <projectConfigurable
                 parentId="tools"
-                instance="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurable"
-                provider="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurableProvider"
-                id="org.jetbrains.bazel.settings.BuildifierConfigurable"
-                displayName="Buildifier"
-                nonDefaultProject="false" />
-
-        <projectConfigurable
-                parentId="build.tools"
                 instance="org.jetbrains.bazel.settings.BazelProjectSettingsConfigurable"
-                provider="org.jetbrains.bazel.settings.BazelProjectSettingsConfigurableProvider"
-        />
+                provider="org.jetbrains.bazel.settings.BazelProjectSettingsConfigurableProvider">
+            <configurable
+                    instance="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurable"
+                    provider="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurableProvider"
+                    displayName="Buildifier"/>
+        </projectConfigurable>
 
         <projectViewNodeDecorator
                 implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator"/>
