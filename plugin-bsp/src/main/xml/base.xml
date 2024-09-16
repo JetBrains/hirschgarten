@@ -99,6 +99,7 @@
         <moduleService serviceInterface="com.intellij.openapi.roots.ModuleFileIndex"
                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspModuleFileIndex"
                        overrides="true"/>
+        <virtualFileSystem order="first" id="bsp" implementationClass="org.jetbrains.plugins.bsp.services.BspCaseSensitiveFileSystem" key="file"/>
 
         <commandLineInspectionProjectConfigurator
                 implementation="org.jetbrains.plugins.bsp.impl.flow.open.BspCommandLineInspectionConfigurator"/>

@@ -10,7 +10,6 @@ kt_jvm_library(
         "//plugin-bsp/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/extensionPoints",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/run",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
     ],
 )

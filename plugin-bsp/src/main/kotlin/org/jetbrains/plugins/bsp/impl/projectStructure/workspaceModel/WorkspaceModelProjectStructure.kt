@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.projectStructure.workspaceModel
 
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.project.Project
+import com.intellij.platform.backend.workspace.StorageReplacement
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.impl.WorkspaceModelInternal
 import com.intellij.platform.diagnostic.telemetry.helpers.use
@@ -18,6 +19,7 @@ import org.jetbrains.plugins.bsp.performance.bspTracer
 import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresDiff
 import org.jetbrains.plugins.bsp.projectStructure.ProjectStructureDiff
 import org.jetbrains.plugins.bsp.projectStructure.ProjectStructureProvider
+import org.jetbrains.plugins.bsp.services.withCaseSensitiveFileSystem
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 
@@ -41,19 +43,25 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
           snapshot.builder.replaceBySource({ it.isBspRelevant() }, mutableEntityStorage)
         }
         val storageReplacement = snapshot.getStorageReplacement()
-        writeAction {
-          val workspaceModelUpdated =
-            bspTracer.spanBuilder("replaceprojectmodel.in.apply.on.workspace.model.ms").use {
-              workspaceModel.replaceProjectModel(storageReplacement)
-            }
-          if (!workspaceModelUpdated) {
-            error("Project model is not updated successfully. Try `reload` action to recalculate the project model.")
-          }
+        withCaseSensitiveFileSystem {
+          doApplyChangesOnWorkspaceModel(workspaceModel, storageReplacement)
         }
       }
     }
 
     postApplyActions.forEach { it() }
+  }
+
+  private suspend fun doApplyChangesOnWorkspaceModel(workspaceModel: WorkspaceModelInternal, storageReplacement: StorageReplacement) {
+    writeAction {
+      val workspaceModelUpdated =
+        bspTracer.spanBuilder("replaceprojectmodel.in.apply.on.workspace.model.ms").use {
+          workspaceModel.replaceProjectModel(storageReplacement)
+        }
+      if (!workspaceModelUpdated) {
+        error("Project model is not updated successfully. Try `reload` action to recalculate the project model.")
+      }
+    }
   }
 
   private fun EntitySource.isBspRelevant() =
