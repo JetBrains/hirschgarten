@@ -23,13 +23,10 @@ import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import java.util.concurrent.CompletableFuture
 import kotlin.io.path.Path
 
 @DisplayName("OutputPathUrisSyncHook tests")
 class OutputPathUrisSyncHookTest : MockProjectBaseTest() {
-  private val cancelOn: CompletableFuture<Void> = CompletableFuture<Void>().newIncompleteFuture()
-
   private lateinit var hook: OutputPathUrisSyncHook
   private lateinit var projectRoot: VirtualFile
 

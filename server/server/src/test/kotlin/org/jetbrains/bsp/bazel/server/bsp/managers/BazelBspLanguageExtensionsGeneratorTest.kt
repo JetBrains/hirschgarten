@@ -28,10 +28,6 @@ class BazelBspLanguageExtensionsGeneratorTest {
     override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> = ruleNames
   }
 
-  internal class CancelCheckerMock : CancelChecker {
-    override fun checkCanceled() {}
-  }
-
   private val defaultFileContent =
     """ load("//aspects:rules/java/java_info.bzl","extract_java_toolchain","extract_java_runtime")
             load("//aspects:rules/jvm/jvm_info.bzl","extract_jvm_info")
