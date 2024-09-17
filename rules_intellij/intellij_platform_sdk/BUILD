@@ -37,11 +37,8 @@ config_setting(
 )
 
 config_setting(
-    name = "intellij-2024.2-mac",
-    values = {
-        "define": "ij_product=intellij-2024.2",
-        "cpu": "darwin_x86_64",
-    },
+    name = "intellij-2024.3",
+    values = {"define": "ij_product=intellij-2024.3"},
 )
 
 # The purpose of this rule is to hide the versioning

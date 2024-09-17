@@ -9,6 +9,7 @@ java_library(
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
         "intellij-2024.2": ["@devkit_2024_2//:devkit"],
+        "intellij-2024.3": ["@devkit_2024_3//:devkit"],
         "default": [],
     }),
 )

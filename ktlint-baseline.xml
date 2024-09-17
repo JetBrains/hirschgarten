@@ -33,6 +33,12 @@
     <file name="plugin-bsp/performance-testing/src/test/kotlin/org/jetbrains/bsp/performance/testing/publishTeamCityArtifacts.kt">
         <error line="1" column="1" source="standard:filename" />
     </file>
+    <file name="plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/android/sdkcompat/v242/Dummy.kt">
+        <error line="1" column="1" source="standard:no-empty-file" />
+    </file>
+    <file name="plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/android/sdkcompat/v243/Dummy.kt">
+        <error line="1" column="1" source="standard:no-empty-file" />
+    </file>
     <file name="plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/impl/flow/open/GenericBspProjectOpenProcessorTest.kt">
         <error line="153" column="141" source="standard:max-line-length" />
     </file>
@@ -98,6 +104,12 @@
     </file>
     <file name="protocol/src/main/kotlin/org/jetbrains/bsp/protocol/WorkspaceInvalidTargets.kt">
         <error line="1" column="1" source="standard:filename" />
+    </file>
+    <file name="sdkcompat/v242/Dummy.kt">
+        <error line="1" column="1" source="standard:no-empty-file" />
+    </file>
+    <file name="sdkcompat/v243/Dummy.kt">
+        <error line="1" column="1" source="standard:no-empty-file" />
     </file>
     <file name="server/e2e/test-resources/kotlin-project/plugin_allopen_test/User.kt">
         <error line="3" column="1" source="standard:no-wildcard-imports" />
