@@ -6,11 +6,10 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.isBspProject
 
-public class BspAndroidProjectSystemProvider(private val project: Project) : AndroidProjectSystemProvider {
+public class BspAndroidProjectSystemProvider : AndroidProjectSystemProvider {
   override val id: String = "org.jetbrains.plugins.bsp.android.BspAndroidProjectSystemProvider"
 
-  override val projectSystem: AndroidProjectSystem
-    get() = BspAndroidProjectSystem(project)
+  override fun isApplicable(project: Project): Boolean = BspFeatureFlags.isAndroidSupportEnabled && project.isBspProject
 
-  override fun isApplicable(): Boolean = BspFeatureFlags.isAndroidSupportEnabled && project.isBspProject
+  override fun projectSystemFactory(project: Project): AndroidProjectSystem = BspAndroidProjectSystem(project)
 }

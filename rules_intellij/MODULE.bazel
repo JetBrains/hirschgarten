@@ -64,9 +64,9 @@ SDK_242_PLUGIN_REPOSITORY_VERSION = "242.21829.142"
 
 SDK_242_INTELLIJ_REPOSITORY_VERSION = "242.21829.142"
 
-SDK_243_PLUGIN_REPOSITORY_VERSION = "242.21829.142"  # 243 plugins are not available yet
+SDK_243_PLUGIN_REPOSITORY_VERSION = "243.12818.47"
 
-SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.12818-EAP-CANDIDATE-SNAPSHOT"
+SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.12818.47-EAP-SNAPSHOT"
 
 # The plugin api for intellij_ce_2024_2. This is required to build IJwB and run integration tests.
 IC_242_URL = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_242_INTELLIJ_REPOSITORY_VERSION, SDK_242_INTELLIJ_REPOSITORY_VERSION)
@@ -82,7 +82,7 @@ http_archive(
 
 IC_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
-IC_243_CHECKSUM = "sha256-3lya1EXP4EgDWGZxXtOqX1AafeC9eIsip0xhoTuAy7w="
+IC_243_CHECKSUM = "sha256-Dvr/rKw5swcY9RJanPOpXEyyU4IsJk87w04nhJJJJbA="
 
 http_archive(
     name = "intellij_ce_2024_3",
@@ -112,7 +112,7 @@ http_archive(
 
 DEVKIT_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
-DEVKIT_243_SHA = "bf72f615b34fe07d7ba65ee5fa22f0e02d14b619f6bce4cd68de488f768ccde4"
+DEVKIT_243_SHA = "cfeb4a1760b72fd9051ef808dd514781c78839f93bc42c1ba029c39a8e2bcd90"
 
 http_archive(
     name = "devkit_2024_3",
@@ -147,7 +147,7 @@ http_archive(
 
 PYTHON_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
-PYTHON_PLUGIN_243_CHECKSUM = "sha256-D+sIYC34u1FGIidj9EpdpEYAwG2Y1wo5mLO3lEfUakk="
+PYTHON_PLUGIN_243_CHECKSUM = "sha256-4VJEMxcrNBPznzIEFmCroWCGpXH/9EFXKjLuH9dwAw0="
 
 http_archive(
     name = "python_2024_3",
@@ -178,7 +178,7 @@ GO_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/o
 http_archive(
     name = "go_2024_3",
     build_file_content = _GO_BUILD_FILE,
-    integrity = "sha256-W8EDplm2vdrvGceI2/ury5ZBfrEyAJsECtb5G94+h9E=",
+    integrity = "sha256-PJb9zHxstS4sMoCpP7b33USu92lZJnnD4vul5JDDHT4=",
     url = GO_PLUGIN_243_URL,
 )
 
@@ -203,7 +203,7 @@ http_archive(
 
 ANDROID_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
-ANDROID_PLUGIN_243_CHECKSUM = "sha256-97J1s4qGCiR+1xfxW6n+OUv1Y66MRiRyALd7cJwIuBA="
+ANDROID_PLUGIN_243_CHECKSUM = "sha256-UAi9Kf0FVk/UK2/DdUygMwDKTpfAIhVB81q4UlFqINY="
 
 http_archive(
     name = "android_2024_3",
