@@ -12,12 +12,12 @@ import java.util.concurrent.TimeUnit
 
 class LibraryGraphTest {
   @Nested
-  class LibraryGraphTransitiveDependenciesTest {
+  inner class LibraryGraphTransitiveDependenciesTest {
     @Test
     fun `should return empty set for no libraries`() {
       // given
       val target =
-        org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockTarget(
+        mockTarget(
           id = "target",
           dependencies = emptyList(),
         )
@@ -36,17 +36,17 @@ class LibraryGraphTest {
     fun `should return direct libraries if libraries dont have dependencies`() {
       // given
       val target =
-        org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockTarget(
+        mockTarget(
           id = "target",
           dependencies = listOf("lib1", "lib2"),
         )
       val libraries =
         listOf(
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib1",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib2",
             emptyList(),
           ),
@@ -69,45 +69,45 @@ class LibraryGraphTest {
     fun `should return all transitive dependencies`() {
       // given
       val target =
-        org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockTarget(
+        mockTarget(
           id = "target",
           dependencies = listOf("lib1", "lib2"),
         )
       val libraries =
         listOf(
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib1",
             listOf("lib3"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib2",
             listOf("lib4"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib3",
             listOf("lib5", "lib6"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib4",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib5",
             listOf("lib7"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib6",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib7",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "not included lib 1",
             listOf("not included lib 2"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "not included lib 2",
             emptyList(),
           ),
@@ -135,45 +135,45 @@ class LibraryGraphTest {
     fun `should return all transitive dependencies including workspace targets`() {
       // given
       val target =
-        org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockTarget(
+        mockTarget(
           id = "target1",
           dependencies = listOf("lib1", "lib2"),
         )
       val libraries =
         listOf(
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib1",
             listOf("lib3"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib2",
             listOf("lib4"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib3",
             listOf("lib5", "lib6", "target2"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib4",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib5",
             listOf("lib7"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib6",
             listOf("target3"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib7",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "not included lib 1",
             listOf("not included lib 2"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "not included lib 2",
             emptyList(),
           ),
@@ -206,13 +206,13 @@ class LibraryGraphTest {
     fun `should return all transitive dependencies for complex graph in under 30 secs (old impl was failing)`() {
       // given
       val target =
-        org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockTarget(
+        mockTarget(
           id = "target",
           dependencies = (1..1000).map { "lib$it" },
         )
       val libraries =
         (1..1000).map {
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib$it",
             (it + 1..1000).map { depId -> "lib$depId" },
           )
@@ -229,12 +229,12 @@ class LibraryGraphTest {
   }
 
   @Nested
-  class LibraryGraphDirectDependenciesTest {
+  inner class LibraryGraphDirectDependenciesTest {
     @Test
     fun `should return empty set for no libraries`() {
       // given
       val target =
-        org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockTarget(
+        mockTarget(
           id = "target",
           dependencies = emptyList(),
         )
@@ -253,17 +253,17 @@ class LibraryGraphTest {
     fun `should return direct libraries if libraries dont have dependencies`() {
       // given
       val target =
-        org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockTarget(
+        mockTarget(
           id = "target",
           dependencies = listOf("lib1", "lib2"),
         )
       val libraries =
         listOf(
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib1",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib2",
             emptyList(),
           ),
@@ -286,45 +286,45 @@ class LibraryGraphTest {
     fun `should return all direct dependencies`() {
       // given
       val target =
-        org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockTarget(
+        mockTarget(
           id = "target",
           dependencies = listOf("lib1", "lib2"),
         )
       val libraries =
         listOf(
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib1",
             listOf("lib3"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib2",
             listOf("lib4"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib3",
             listOf("lib5", "lib6"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib4",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib5",
             listOf("lib7"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib6",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib7",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "not included lib 1",
             listOf("not included lib 2"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "not included lib 2",
             emptyList(),
           ),
@@ -347,37 +347,37 @@ class LibraryGraphTest {
     fun `should return all direct dependencies including workspace targets`() {
       // given
       val target =
-        org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockTarget(
+        mockTarget(
           id = "target1",
           dependencies = listOf("lib1", "lib2", "target2", "target3"),
         )
       val libraries =
         listOf(
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib1",
             listOf("lib3"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib2",
             listOf("lib4"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib3",
             listOf("lib5", "lib6"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib4",
             emptyList(),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "lib5",
             listOf("lib7"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "not included lib 1",
             listOf("not included lib 2"),
           ),
-          org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.mockLibraryItem(
+          mockLibraryItem(
             "not included lib 2",
             emptyList(),
           ),
