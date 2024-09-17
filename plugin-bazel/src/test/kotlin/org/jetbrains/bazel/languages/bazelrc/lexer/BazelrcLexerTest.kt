@@ -7,7 +7,7 @@ class BazelrcLexerTest : LexerTestCase() {
   @Test
   fun `should lex a simple command`() {
     "build --strip=never" shouldLexTo
-      listOf("Bazelrc:COMMAND", "WHITE_SPACE", "Bazelrc:FLAG")
+      listOf("Bazelrc:COMMAND", "WHITE_SPACE", "Bazelrc:FLAG", "Bazelrc:=", "Bazelrc:VALUE")
   }
 
   @Test
@@ -16,7 +16,15 @@ class BazelrcLexerTest : LexerTestCase() {
     val code = "build:memcheck  --test_timeout=3600"
 
     code shouldLexTo
-      listOf("Bazelrc:COMMAND", "Bazelrc::", "Bazelrc:CONFIG", "WHITE_SPACE", "Bazelrc:FLAG")
+      listOf(
+        "Bazelrc:COMMAND",
+        "Bazelrc::",
+        "Bazelrc:CONFIG",
+        "WHITE_SPACE",
+        "Bazelrc:FLAG",
+        "Bazelrc:=",
+        "Bazelrc:VALUE",
+      )
   }
 
   @Test
@@ -31,9 +39,11 @@ class BazelrcLexerTest : LexerTestCase() {
         "Bazelrc::",
         "Bazelrc:CONFIG",
         "WHITE_SPACE",
-        "Bazelrc:FLAG",
+        "Bazelrc:VALUE",
         "WHITE_SPACE",
         "Bazelrc:FLAG",
+        "Bazelrc:=",
+        "Bazelrc:VALUE",
       )
   }
 
@@ -50,45 +60,8 @@ class BazelrcLexerTest : LexerTestCase() {
         "Bazelrc:'",
         "WHITE_SPACE",
         "Bazelrc:FLAG",
-      )
-  }
-
-  @Test
-  fun `handle double quotes and spaces`() {
-    // given
-    val code =
-      """
-      |"build:a a a a" --test_timeout=3600
-      """.trimMargin()
-
-    // when & then
-    code shouldLexTo
-      listOf(
-        "Bazelrc:\"",
-        "Bazelrc:COMMAND",
-        "Bazelrc::",
-        "Bazelrc:CONFIG",
-        "Bazelrc:\"",
-        "WHITE_SPACE",
-        "Bazelrc:FLAG",
-      )
-  }
-
-  @Test
-  fun `handle single quotes and spaces`() {
-    // given
-    val code = "'build:a a a a' --test_timeout=3600"
-
-    // when & then
-    code shouldLexTo
-      listOf(
-        "Bazelrc:'",
-        "Bazelrc:COMMAND",
-        "Bazelrc::",
-        "Bazelrc:CONFIG",
-        "Bazelrc:'",
-        "WHITE_SPACE",
-        "Bazelrc:FLAG",
+        "Bazelrc:=",
+        "Bazelrc:VALUE",
       )
   }
 
@@ -112,6 +85,8 @@ class BazelrcLexerTest : LexerTestCase() {
         "Bazelrc:COMMAND",
         "WHITE_SPACE",
         "Bazelrc:FLAG",
+        "Bazelrc:=",
+        "Bazelrc:VALUE",
       )
   }
 
@@ -137,20 +112,56 @@ class BazelrcLexerTest : LexerTestCase() {
       )
   }
 
-  @Test fun `bibi`() {
+  @Test
+  fun `flag list respect continuations`() {
     val code =
       """
-      |"asdfa dsf asdf asdf asdf asdf asdf
-      |asdfasd
-      """.trimMargin()
+      'build' \
+        --test_timeout 3600 \
+        --asdf=asdf asdf asdf
+      """.trimIndent()
 
-    // when & then
     code shouldLexTo
       listOf(
-        "Bazelrc:\"",
+        "Bazelrc:'",
         "Bazelrc:COMMAND",
+        "Bazelrc:'",
         "WHITE_SPACE",
+        "Bazelrc:FLAG",
+        "WHITE_SPACE",
+        "Bazelrc:VALUE",
+        "WHITE_SPACE",
+        "Bazelrc:FLAG",
+        "Bazelrc:=",
+        "Bazelrc:VALUE",
+        "WHITE_SPACE",
+        "Bazelrc:VALUE",
+        "WHITE_SPACE",
+        "Bazelrc:VALUE",
+      )
+  }
+
+  @Test
+  fun `flags are tokenized at =`() {
+    val code = "'build' --test_timeout 3600 --asdf=asdf asdf asdf"
+
+    code shouldLexTo
+      listOf(
+        "Bazelrc:'",
         "Bazelrc:COMMAND",
+        "Bazelrc:'",
+        "WHITE_SPACE",
+        "Bazelrc:FLAG",
+        "WHITE_SPACE",
+        "Bazelrc:VALUE",
+        "WHITE_SPACE",
+        "Bazelrc:FLAG",
+        "Bazelrc:=",
+        "Bazelrc:VALUE",
+        "WHITE_SPACE",
+        "Bazelrc:VALUE",
+        "WHITE_SPACE",
+        "Bazelrc:VALUE",
       )
   }
 

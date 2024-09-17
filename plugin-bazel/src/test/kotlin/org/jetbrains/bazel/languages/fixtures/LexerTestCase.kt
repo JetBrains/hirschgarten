@@ -5,8 +5,9 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.testFramework.PlatformLiteFixture
 import io.kotest.assertions.withClue
 import io.kotest.matchers.equals.shouldBeEqual
-import io.kotest.matchers.string.shouldMatch
+import io.kotest.matchers.string.shouldHaveLength
 import org.jetbrains.kotlin.backend.common.push
+import org.jetbrains.kotlin.psi.psiUtil.quoteIfNeeded
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
@@ -33,31 +34,35 @@ abstract class LexerTestCase : PlatformLiteFixture() {
 
     var idx = 0
     var tokenPos = 0
-    withClue("$lexemes vs $expectedTokens") {
-      while (idx < lexemes.size) {
-        if (idx >= expectedTokens.size) {
-          val remainingTokens = StringBuilder()
+    withClue("\nLexed tokens: ${lexemes.map { Pair(it.first, code.substring(it.second, it.third).quoteIfNeeded()) }}") {
+      withClue("Expected tokens: $expectedTokens") {
+        withClue("lexed tokens assert: listOf(\n${lexemes.joinToString(",\n") { """"${it.first}"""" }}\n)") {
           while (idx < lexemes.size) {
-            remainingTokens.append("\"${lexemes[idx].first}\", ")
+            if (idx >= expectedTokens.size) {
+              val remainingTokens = StringBuilder()
+              while (idx < lexemes.size) {
+                remainingTokens.append("\"${lexemes[idx].first}\", ")
+                idx++
+              }
+              withClue("Too many tokens. Following tokens: $remainingTokens") {
+                remainingTokens shouldHaveLength 0
+              }
+            }
+
+            withClue("Token offset mismatch at position $idx") {
+              tokenPos shouldBeEqual lexemes[idx].second
+            }
+            withClue("Token mismatch at position $idx") {
+              expectedTokens[idx] shouldBeEqual lexemes[idx].first.toString()
+            }
+
+            tokenPos = lexemes[idx].third
             idx++
           }
-          withClue("Too many tokens. Following tokens: $remainingTokens") {
-            remainingTokens shouldMatch ""
-          }
-        }
 
-        withClue("Token offset mismatch at position $idx") {
-          tokenPos shouldBeEqual lexemes[idx].second
+          if (idx < expectedTokens.size) fail("Not enough tokens")
         }
-        withClue("Token mismatch at position $idx") {
-          expectedTokens[idx] shouldBeEqual lexemes[idx].first.toString()
-        }
-
-        tokenPos = lexemes[idx].third
-        idx++
       }
-
-      if (idx < expectedTokens.size) fail("Not enough tokens")
     }
   }
 }

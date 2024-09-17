@@ -5,8 +5,17 @@ import com.intellij.testFramework.ParsingTestCase
 import org.jetbrains.bazel.languages.bazelrc.parser.BazelrcParserDefinition
 import kotlin.io.path.pathString
 
-abstract class BazelrcParsingTestCase(baseDir: String) : ParsingTestCase(baseDir, "bazelrc", BazelrcParserDefinition()) {
+abstract class BazelrcParsingTestCase(baseDir: String, val dumpTree: Boolean = false) :
+  ParsingTestCase(baseDir, "bazelrc", BazelrcParserDefinition()) {
   override fun getTestDataPath(): String = Runfiles.runfilesPath("/plugin-bazel/src/test/testData/bazelrc/parser/").pathString
+
+  override fun doTest(p0: Boolean, p1: Boolean) {
+    if (dumpTree) {
+      dumpParseTree()
+    } else {
+      super.doTest(p0, p1)
+    }
+  }
 
   fun dumpParseTree() {
     val name = this.testName

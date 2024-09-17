@@ -13,6 +13,7 @@ import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 open class Parsing(private val root: IElementType, val builder: PsiBuilder) : PsiBuilder by builder {
   companion object {
     private val commandPrefixes = TokenSet.orSet(BazelrcTokenSets.COMMANDS, BazelrcTokenSets.QUOTES)
+    private val flagPrefixes = TokenSet.create(BazelrcTokenTypes.FLAG, BazelrcTokenTypes.EQ, BazelrcTokenTypes.VALUE)
 
     @JvmStatic
     protected fun advanceError(builder: PsiBuilder, message: String) {
@@ -39,7 +40,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
     val lineMarker = mark()
     parseCommand()
-    while (!eof() && atToken(BazelrcTokenTypes.FLAG)) {
+    while (!eof() && atAnyOfTokens(flagPrefixes)) {
       parseFlag()
     }
     lineMarker.done(BazelrcElementTypes.LINE)
@@ -63,7 +64,13 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
   }
 
   private fun parseFlag() {
-    advanceLexer()
+    val flag = mark()
+
+    matchToken(BazelrcTokenTypes.FLAG)
+    matchToken(BazelrcTokenTypes.EQ)
+    matchToken(BazelrcTokenTypes.VALUE)
+
+    flag.done(BazelrcElementTypes.FLAG)
   }
 
   private fun atToken(tokenType: IElementType?): Boolean = builder.tokenType === tokenType

@@ -6,4 +6,8 @@ open class BazelrcElementVisitor : PsiElementVisitor() {
   fun visitLine(node: BazelrcLine) {
     visitElement(node)
   }
+
+  fun visitFlag(node: BazelrcFlag) {
+    visitElement(node)
+  }
 }

@@ -16,7 +16,7 @@ import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes;
 
 NL=[\r\n]
 SPACE=[\ \t]
-COMMENT=#[^\r\n]*
+COMMENT=#({SOFT_NL} | [^\r\n])*
 
 SOFT_NL=\\\r?\n
 SQ=[']
@@ -32,18 +32,14 @@ COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
 %xstate CMD_SQ, CONFIG_SQ
 
 %xstate FLAGS
+%xstate VALUE
+%xstate FLAG_DQ, VALUE_DQ
+%xstate FLAG_SQ, VALUE_SQ
 
 %%
 
-//
-//"adsfa adsf adsf asd: adsfasdfasd asdfasdf
-//
-//asdfas:
-
-// [(Bazelrc:", 0, 1), (Bazelrc:COMMAND, 1, 20), (Bazelrc::, 20, 21), (Bazelrc:CONFIG, 21, 42), (BAD_CHARACTER, 42, 53)]
-
 <YYINITIAL> {
-    [{SPACE}{NL}]+                              { return TokenType.WHITE_SPACE; }
+    ({SOFT_NL} | [{SPACE}{NL}])+                { return TokenType.WHITE_SPACE; }
     {COMMENT}+                                  { return BazelrcTokenTypes.COMMENT; }
 
     [^]                                         { yybegin(CMD); yypushback(1); }
@@ -52,10 +48,9 @@ COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
 <CMD> {
     {SQ}                                        { yybegin(CMD_SQ); return BazelrcTokenTypes.SINGLE_QUOTE; }
     {DQ}                                        { yybegin(CMD_DQ); return BazelrcTokenTypes.DOUBLE_QUOTE; }
+    {COLON}                                     { yybegin(CONFIG); return BazelrcTokenTypes.COLON; }
 
     {COMMAND}+                                  { return BazelrcTokenTypes.COMMAND; }
-
-    {COLON}                                     { yybegin(CONFIG); return BazelrcTokenTypes.COLON; }
 
     {SPACE}+                                    { yybegin(FLAGS); return TokenType.WHITE_SPACE; }
 
@@ -63,21 +58,22 @@ COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
 }
 
 <CONFIG>  {
-    ({SOFT_NL} | [^{SPACE}{NL}] )+              { yybegin(FLAGS); return BazelrcTokenTypes.CONFIG; }
+    {COLON}                                     { yybegin(CONFIG); return BazelrcTokenTypes.COLON; }
+
+    {SQ}                                        { yybegin(CONFIG_SQ); return BazelrcTokenTypes.SINGLE_QUOTE; }
+    {DQ}                                        { yybegin(CONFIG_DQ); return BazelrcTokenTypes.DOUBLE_QUOTE; }
+
+    ({SOFT_NL} | [^{SQ}{DQ}{SPACE}{NL}] )+      { yybegin(FLAGS); return BazelrcTokenTypes.CONFIG; }
+
+    [^]                                         { yybegin(FLAGS); yypushback(1); }
 }
 
 <CMD_DQ> {
     (\\{DQ} | [{SPACE}{SQ}] | {COMMAND})+      { return BazelrcTokenTypes.COMMAND; }
+
     {COLON}                                    { yybegin(CONFIG_DQ); return BazelrcTokenTypes.COLON;}
 
     {DQ}                                       { yybegin(FLAGS); return BazelrcTokenTypes.DOUBLE_QUOTE; }
-}
-
-<CMD_SQ> {
-    (\\{SQ} | [{SPACE}{DQ}] | {COMMAND})+      { return BazelrcTokenTypes.COMMAND; }
-    {COLON}                                    { yybegin(CONFIG_SQ); return BazelrcTokenTypes.COLON;}
-
-    {SQ}                                       { yybegin(FLAGS); return BazelrcTokenTypes.SINGLE_QUOTE; }
 }
 
 <CONFIG_DQ> {
@@ -92,23 +88,71 @@ COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
     {SQ}                                        { yybegin(FLAGS); return BazelrcTokenTypes.SINGLE_QUOTE; }
 }
 
+<CMD_SQ> {
+    (\\{SQ} | [{SPACE}{DQ}] | {COMMAND})+      { return BazelrcTokenTypes.COMMAND; }
+    {COLON}                                    { yybegin(CONFIG_SQ); return BazelrcTokenTypes.COLON;}
+
+    {SQ}                                       { yybegin(FLAGS); return BazelrcTokenTypes.SINGLE_QUOTE; }
+}
+
 <CMD, CONFIG, CMD_SQ, CONFIG_SQ, CMD_DQ, CONFIG_DQ> {
     {NL}+[{SPACE}{NL}]*                         { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
     [^]                                         { yybegin(FLAGS); yypushback(1); }
 }
 
 <FLAGS> {
-    ({SOFT_NL} | [^{SPACE}{NL}])+               { return BazelrcTokenTypes.FLAG; }
+    "-" ({SOFT_NL} | [^={SQ}{DQ}{SPACE}{NL}])+  { return BazelrcTokenTypes.FLAG; }
+    "="                                         { yybegin(VALUE); return BazelrcTokenTypes.EQ; }
 
-    {DQ} ( {SOFT_NL} | \\{DQ} | [^{NL}{DQ}] )*  { return BazelrcTokenTypes.FLAG; }
-    {SQ} ( {SOFT_NL} | \\{SQ} | [^{NL}{SQ}] )*  { return BazelrcTokenTypes.FLAG; }
+    {DQ}                                        { yybegin(FLAG_DQ); return BazelrcTokenTypes.DOUBLE_QUOTE; }
+    {SQ}                                        { yybegin(FLAG_SQ); return BazelrcTokenTypes.SINGLE_QUOTE; }
 
-    {SPACE}+                                    { return TokenType.WHITE_SPACE; }
+    ({SOFT_NL} | {SPACE})+                      { return TokenType.WHITE_SPACE; }
 
     {COMMENT}+                                  { yybegin(YYINITIAL); return BazelrcTokenTypes.COMMENT; }
     {SPACE}* {NL}+ [{SPACE} {NL}]*              { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
 
-//    [^]                                         { return TokenType.BAD_CHARACTER; }
+    [^]                                         { yybegin(VALUE); yypushback(1); }
 }
 
+<VALUE> {
+    {DQ}                                        { yybegin(VALUE_DQ); return BazelrcTokenTypes.DOUBLE_QUOTE; }
+    {SQ}                                        { yybegin(VALUE_SQ); return BazelrcTokenTypes.SINGLE_QUOTE; }
+
+    ({SOFT_NL} | [^{DQ}{SQ}{SPACE}{NL}])+        { return BazelrcTokenTypes.VALUE; }
+    ({SOFT_NL} | {SPACE})+                      { yybegin(FLAGS); return TokenType.WHITE_SPACE; }
+
+    {COMMENT}+                                  { yybegin(YYINITIAL); return BazelrcTokenTypes.COMMENT; }
+    {SPACE}* {NL}+ [{SPACE} {NL}]*              { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
+}
+
+<FLAG_DQ> {
+    "-" ({SOFT_NL} | \\{DQ} | [^={DQ}{NL}])+    { return BazelrcTokenTypes.FLAG; }
+    "="                                         { yybegin(VALUE_DQ); return BazelrcTokenTypes.EQ; }
+    {DQ}                                        { yybegin(FLAGS); return BazelrcTokenTypes.DOUBLE_QUOTE; }
+
+    [^]                                         { yybegin(FLAGS); yypushback(1); }
+}
+
+<VALUE_DQ> {
+    ({SOFT_NL} | \\{DQ} | [^{DQ}{NL}])+         { return BazelrcTokenTypes.VALUE; }
+    {DQ}                                        { yybegin(FLAGS); return BazelrcTokenTypes.DOUBLE_QUOTE; }
+
+    [^]                                         { yybegin(FLAGS); yypushback(1); }
+}
+
+<FLAG_SQ> {
+    "-" ({SOFT_NL} | \\{SQ} | [^={SQ}{NL}])+    { return BazelrcTokenTypes.FLAG; }
+    "="                                         { yybegin(VALUE_SQ); return BazelrcTokenTypes.EQ; }
+    {SQ}                                        { yybegin(FLAGS); return BazelrcTokenTypes.SINGLE_QUOTE; }
+
+    [^]                                         { yybegin(FLAGS); yypushback(1); }
+}
+
+<VALUE_SQ> {
+    ({SOFT_NL} | \\{SQ} | [^{SQ}{NL}])+         { return BazelrcTokenTypes.VALUE; }
+    {SQ}                                        { yybegin(FLAGS); return BazelrcTokenTypes.SINGLE_QUOTE; }
+
+    [^]                                         { yybegin(FLAGS); yypushback(1); }
+}
 // [^]                                         { return TokenType.BAD_CHARACTER; }
