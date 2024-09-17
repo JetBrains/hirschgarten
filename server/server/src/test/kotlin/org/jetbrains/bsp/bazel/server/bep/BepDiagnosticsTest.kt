@@ -18,6 +18,7 @@ import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.PublishOutputParams
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import java.nio.file.Files
@@ -121,6 +122,7 @@ src/build/NotCompiling.java:4: error: cannot find symbol
     assertEquals(1, client.buildPublishDiagnostics.size)
   }
 
+  @Test
   fun `unsuccessful compilation gives errors`() {
     val client = MockBuildClient()
     val server = newBepServer(client)
