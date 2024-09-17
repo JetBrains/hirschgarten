@@ -1,7 +1,13 @@
-load("@//plugin-bazel/rules/kotlin:junit4.bzl", "junit4_kt_test")
+load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkLexerTest",
-    srcs = ["StarlarkLexerTest.kt"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/fixtures"],
+    src = "StarlarkLexerTest.kt",
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/fixtures",
+    ],
 )

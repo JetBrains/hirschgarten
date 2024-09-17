@@ -1,15 +1,16 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
+load(":commons.bzl", "kt_test")
 
-DEPS = [
-    "@maven//:io_kotest_kotest_assertions_api_jvm",
-    "@maven//:io_kotest_kotest_assertions_core_jvm",
-    "@maven//:io_kotest_kotest_assertions_shared_jvm",
-    "@maven//:io_kotest_kotest_common_jvm",
-    "//plugin-bazel/src:intellij-bazel",
-    "//plugin-bsp/src:intellij-bsp",
+INTELLIJ_DEPS = [
     "@rules_intellij//testing:lib",
     "@rules_intellij//intellij_platform_sdk:plugin_api_for_tests",
+    # Usually, we'd get this from the JetBrains SDK, but the bundled one not aware of Bazel platforms,
+    # so it fails on certain setups.
     "@jna//jar",
+]
+
+INTELLIJ_RUNTIME_DEPS = [
+    "@rules_intellij//intellij_platform_sdk:bundled_plugins",
+    "@rules_intellij//intellij_platform_sdk:plugin_api_for_tests",
 ]
 
 JVM_FLAGS = [
@@ -64,36 +65,14 @@ PKGS = [
 
 ADD_OPENS_FLAGS = ["--add-opens=" + pkg + "=ALL-UNNAMED" for pkg in PKGS]
 
-def junit4_kt_test(name, srcs, classname = "", deps = [], runtime_deps = [], **kwargs):
-    if (classname == ""):
-        classname = _guess_classname(name)
-
-    kt_jvm_test(
-        name = name,
-        args = ["--select-class=" + classname, "--fail-if-no-tests"],
-        test_class = classname,
-        srcs = srcs,
-        deps = deps + DEPS,
-        runtime_deps = runtime_deps + [
-            "@rules_intellij//intellij_platform_sdk:bundled_plugins",
-            "@rules_intellij//intellij_platform_sdk:plugin_api_for_tests",
-            "//plugin-bazel:intellij-bazel",
-            "//plugin-bsp:intellij-bsp",
-        ],
-        jvm_flags = JVM_FLAGS + ADD_OPENS_FLAGS,
+def kt_intellij_junit4_test(deps = [], runtime_deps = [], jvm_flags = [], **kwargs):
+    """Test macro which adds all the necessary things to run the test with IntelliJ IDEA fixtures.
+    All the test fixtures defined for IntelliJ IDEA support only Junit4, so if you want to use one of them
+    (e.g. UsefulTestCase) please use this macro.
+    """
+    kt_test(
+        deps = INTELLIJ_DEPS + deps,
+        runtime_deps = INTELLIJ_RUNTIME_DEPS + runtime_deps,
+        jvm_flags = JVM_FLAGS + ADD_OPENS_FLAGS + jvm_flags,
         **kwargs
     )
-
-def _guess_classname(name):
-    package = _guess_class_package()
-
-    return package + "." + name
-
-def _guess_class_package():
-    package_name = native.package_name()
-    package_name_without_last_slash = package_name.rstrip("/")
-    _, _, package_name_without_org = package_name_without_last_slash.partition("/org/")
-    real_package_name_with_slashes = "org/" + package_name_without_org
-    package_name_with_dots = real_package_name_with_slashes.replace("/", ".")
-
-    return package_name_with_dots

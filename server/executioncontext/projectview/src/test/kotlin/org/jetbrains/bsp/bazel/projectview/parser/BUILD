@@ -1,7 +1,7 @@
-load("@//server/rules/kotlin:junit5.bzl", "kt_test")
+load("@//rules/testing:junit5.bzl", "kt_junit5_test")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
-kt_test(
+kt_junit5_test(
     name = "DefaultProjectViewParserTest",
     size = "small",
     src = "DefaultProjectViewParserTest.kt",

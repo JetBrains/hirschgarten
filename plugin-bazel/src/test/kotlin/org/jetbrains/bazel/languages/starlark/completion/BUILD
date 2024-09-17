@@ -1,25 +1,45 @@
-load("@//plugin-bazel/rules/kotlin:junit4.bzl", "junit4_kt_test")
+load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "BazelGlobalFunctionCompletionContributorTest",
-    srcs = ["BazelGlobalFunctionCompletionContributorTest.kt"],
+    src = "BazelGlobalFunctionCompletionContributorTest.kt",
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = ["//plugin-bazel:intellij-bazel"],
 )
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkParamsCompletionContributorTest",
-    srcs = ["StarlarkParamsCompletionContributorTest.kt"],
+    src = "StarlarkParamsCompletionContributorTest.kt",
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = ["//plugin-bazel:intellij-bazel"],
 )
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkLoadedSymbolsCompletionTest",
-    srcs = ["StarlarkLoadedSymbolsCompletionTest.kt"],
+    src = "StarlarkLoadedSymbolsCompletionTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/completion"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
 )
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkArgumentCompletionTest",
-    srcs = ["StarlarkArgumentCompletionTest.kt"],
+    src = "StarlarkArgumentCompletionTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/completion"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
 )
