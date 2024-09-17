@@ -5,13 +5,11 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.time.Duration
 
-public class TimeoutHandler(private val timeProvider: () -> Duration) {
-  public constructor(constantTime: Duration) : this({ constantTime })
-
+class TimeoutHandler(private val timeProvider: () -> Duration) {
   private var timer = CompletableFuture<Void>()
   private var timeoutFuture = CompletableFuture<Void>().apply { complete(null) }
 
-  public fun getUnfinishedTimeoutFuture(): CompletableFuture<Void> {
+  fun getUnfinishedTimeoutFuture(): CompletableFuture<Void> {
     if (timeoutFuture.isDone) {
       timeoutFuture = CompletableFuture<Void>()
       resetTimer()
@@ -19,7 +17,7 @@ public class TimeoutHandler(private val timeProvider: () -> Duration) {
     return timeoutFuture
   }
 
-  public fun resetTimer() {
+  fun resetTimer() {
     timer.cancel(true)
     timer = createTimerAndStart()
   }

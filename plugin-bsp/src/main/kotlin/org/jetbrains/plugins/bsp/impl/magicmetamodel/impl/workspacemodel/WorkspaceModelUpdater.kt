@@ -18,7 +18,7 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
 import java.nio.file.Path
 
-public data class ModuleDetails(
+data class ModuleDetails(
   val target: BuildTarget,
   val sources: List<SourcesItem>,
   val resources: List<ResourcesItem>,
@@ -33,8 +33,6 @@ public data class ModuleDetails(
   val jvmBinaryJars: List<JvmBinaryJarsItem>,
   val workspaceModelEntitiesFolderMarker: Boolean = false,
 )
-
-data class ModuleName(val name: String)
 
 interface WorkspaceModelUpdater {
   fun loadModules(moduleEntities: List<Module>) = moduleEntities.forEach { loadModule(it) }

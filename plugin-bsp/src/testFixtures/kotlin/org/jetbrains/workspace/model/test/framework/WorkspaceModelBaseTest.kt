@@ -11,7 +11,6 @@ import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
-import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
@@ -23,12 +22,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
 
-private val JAVA_ROOT_TYPE = SourceRootTypeId("java-source")
 private const val JAVA_SDK_NAME = "11"
 private const val JAVA_SDK_TYPE = "JavaSDK"
 
 @BazelTestApplication
-public open class WorkspaceModelBaseTest {
+open class WorkspaceModelBaseTest {
   protected lateinit var workspaceEntityStorageBuilder: MutableEntityStorage
 
   @JvmField
@@ -66,7 +64,7 @@ public open class WorkspaceModelBaseTest {
     WriteAction.compute<Unit, Throwable> { workspaceModel.updateProjectModel { updater(it) } }
   }
 
-  public fun addEmptyJavaModuleEntity(name: String, entityStorage: MutableEntityStorage): ModuleEntity =
+  fun addEmptyJavaModuleEntity(name: String, entityStorage: MutableEntityStorage): ModuleEntity =
     entityStorage.addEntity(
       ModuleEntity(
         name = name,
@@ -82,11 +80,11 @@ public open class WorkspaceModelBaseTest {
     )
 }
 
-public abstract class WorkspaceModelWithParentModuleBaseTest : WorkspaceModelBaseTest() {
+abstract class WorkspaceModelWithParentModuleBaseTest : WorkspaceModelBaseTest() {
   protected lateinit var parentModuleEntity: ModuleEntity
 
   private val parentModuleName = "test-module-root"
-  public abstract val parentModuleType: ModuleTypeId
+  abstract val parentModuleType: ModuleTypeId
 
   @BeforeEach
   override fun beforeEach() {
@@ -111,10 +109,10 @@ public abstract class WorkspaceModelWithParentModuleBaseTest : WorkspaceModelBas
     )
 }
 
-public abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
+abstract class WorkspaceModelWithParentJavaModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
   override val parentModuleType = ModuleTypeId("JAVA_MODULE")
 }
 
-public abstract class WorkspaceModelWithParentPythonModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
+abstract class WorkspaceModelWithParentPythonModuleBaseTest : WorkspaceModelWithParentModuleBaseTest() {
   override val parentModuleType = ModuleTypeId("PYTHON_MODULE")
 }
