@@ -1,4 +1,4 @@
-load("@//server/rules/kotlin:junit5.bzl", "kt_test")
+load("@//rules/testing:junit5.bzl", "kt_junit5_test")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
@@ -10,7 +10,7 @@ kt_jvm_library(
     ],
 )
 
-kt_test(
+kt_junit5_test(
     name = "RustPackageResolverTest",
     size = "small",
     src = "RustPackageResolverTest.kt",
@@ -20,7 +20,7 @@ kt_test(
     ],
 )
 
-kt_test(
+kt_junit5_test(
     name = "RustDependencyResolverTest",
     size = "small",
     src = "RustDependencyResolverTest.kt",
@@ -30,7 +30,7 @@ kt_test(
     ],
 )
 
-kt_test(
+kt_junit5_test(
     name = "RustLanguagePluginTest",
     size = "small",
     src = "RustLanguagePluginTest.kt",

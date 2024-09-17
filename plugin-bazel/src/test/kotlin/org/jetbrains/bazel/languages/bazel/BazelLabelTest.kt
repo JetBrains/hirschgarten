@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.bazel
 
 import io.kotest.matchers.shouldBe
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class BazelLabelTest {
   @Test

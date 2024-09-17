@@ -1,6 +1,6 @@
-load("@//server/rules/kotlin:junit5.bzl", "kt_test")
+load("@//rules/testing:junit5.bzl", "kt_junit5_test")
 
-kt_test(
+kt_junit5_test(
     name = "BazelReleaseTest",
     size = "small",
     src = "BazelReleaseTest.kt",
@@ -10,7 +10,7 @@ kt_test(
     ],
 )
 
-kt_test(
+kt_junit5_test(
     name = "BazelRunnerBuilderTest",
     size = "small",
     src = "BazelRunnerBuilderTest.kt",

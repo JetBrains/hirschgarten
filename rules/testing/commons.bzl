@@ -1,6 +1,15 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_test")
 
-def kt_test(name, src, classname = "", deps = [], runtime_deps = [], **kwargs):
+KOTEST_DEPS = [
+    "@maven//:io_kotest_kotest_assertions_api_jvm",
+    "@maven//:io_kotest_kotest_assertions_core_jvm",
+    "@maven//:io_kotest_kotest_assertions_shared_jvm",
+    "@maven//:io_kotest_kotest_common_jvm",
+]
+
+def kt_test(name, src, classname = "", deps = [], **kwargs):
+    """Just a simple wrapper around native kt_jvm_test rule. It sets up test class and delivers all kotest deps"""
+
     if type(src) != "string":
         fail("'src' has to be a string with file name!")
 
@@ -9,17 +18,9 @@ def kt_test(name, src, classname = "", deps = [], runtime_deps = [], **kwargs):
 
     kt_jvm_test(
         name = name,
-        main_class = "org.junit.platform.console.ConsoleLauncher",
         args = ["--select-class=" + classname, "--fail-if-no-tests"],
         srcs = [src],
-        deps = deps + [
-            "@maven//:org_junit_jupiter_junit_jupiter",
-            "@maven//:org_junit_platform_junit_platform_console",
-            "@maven//:io_kotest_kotest_assertions_api_jvm",
-            "@maven//:io_kotest_kotest_assertions_core_jvm",
-            "@maven//:io_kotest_kotest_assertions_shared_jvm",
-            "@maven//:io_kotest_kotest_common_jvm",
-        ],
+        deps = KOTEST_DEPS + deps,
         **kwargs
     )
 

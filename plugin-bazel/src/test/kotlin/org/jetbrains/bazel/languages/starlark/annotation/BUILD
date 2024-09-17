@@ -1,15 +1,27 @@
-load("@//plugin-bazel/rules/kotlin:junit4.bzl", "junit4_kt_test")
+load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkFunctionAnnotatorTest",
-    srcs = ["StarlarkFunctionAnnotatorTest.kt"],
+    src = "StarlarkFunctionAnnotatorTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/annotation:FunctionAnnotatorTestData.bzl"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
 )
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkStringAnnotatorTest",
-    srcs = ["StarlarkStringAnnotatorTest.kt"],
+    src = "StarlarkStringAnnotatorTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/annotation:StringAnnotatorTestData.bzl"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
 )

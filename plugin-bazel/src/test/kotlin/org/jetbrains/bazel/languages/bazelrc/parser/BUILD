@@ -1,8 +1,14 @@
-load("@//plugin-bazel/rules/kotlin:junit4.bzl", "junit4_kt_test")
+load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "BazelrcParsingTest",
-    srcs = ["BazelrcParsingTest.kt"],
+    src = "BazelrcParsingTest.kt",
     data = ["//plugin-bazel/src/test/testData/bazelrc/parser"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/bazelrc/fixtures"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/bazelrc/fixtures",
+    ],
 )

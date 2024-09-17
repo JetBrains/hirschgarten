@@ -1,36 +1,66 @@
-load("@//plugin-bazel/rules/kotlin:junit4.bzl", "junit4_kt_test")
+load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkParsingBasicRulesTest",
-    srcs = ["StarlarkParsingBasicRulesTest.kt"],
+    src = "StarlarkParsingBasicRulesTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/parser/basicRules"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
 )
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkParsingComplexTest",
-    srcs = ["StarlarkParsingComplexTest.kt"],
+    src = "StarlarkParsingComplexTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/parser/complex"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
 )
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkParsingExpressionTest",
-    srcs = ["StarlarkParsingExpressionTest.kt"],
+    src = "StarlarkParsingExpressionTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/parser/expression"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
 )
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkParsingStatementTest",
-    srcs = ["StarlarkParsingStatementTest.kt"],
+    src = "StarlarkParsingStatementTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/parser/statement"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
 )
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkParsingStmtTest",
-    srcs = ["StarlarkParsingStmtTest.kt"],
+    src = "StarlarkParsingStmtTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/parser/stmt"],
-    deps = ["//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = [
+        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
 )

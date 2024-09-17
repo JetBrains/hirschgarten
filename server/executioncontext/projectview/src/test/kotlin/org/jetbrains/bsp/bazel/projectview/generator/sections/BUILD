@@ -1,6 +1,6 @@
-load("@//server/rules/kotlin:junit5.bzl", "kt_test")
+load("@//rules/testing:junit5.bzl", "kt_junit5_test")
 
-kt_test(
+kt_junit5_test(
     name = "ProjectViewExcludableListSectionGeneratorTest",
     size = "small",
     src = "ProjectViewExcludableListSectionGeneratorTest.kt",
@@ -9,7 +9,7 @@ kt_test(
     ],
 )
 
-kt_test(
+kt_junit5_test(
     name = "ProjectViewListSectionGeneratorTest",
     size = "small",
     src = "ProjectViewListSectionGeneratorTest.kt",
@@ -18,7 +18,7 @@ kt_test(
     ],
 )
 
-kt_test(
+kt_junit5_test(
     name = "ProjectViewSingletonSectionGeneratorTest",
     size = "small",
     src = "ProjectViewSingletonSectionGeneratorTest.kt",

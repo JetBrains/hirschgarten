@@ -1,7 +1,11 @@
-load("@//plugin-bazel/rules/kotlin:junit4.bzl", "junit4_kt_test")
+load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
 
-junit4_kt_test(
+kt_intellij_junit4_test(
     name = "StarlarkCommenterTest",
-    srcs = ["StarlarkCommenterTest.kt"],
+    src = "StarlarkCommenterTest.kt",
     data = ["//plugin-bazel/src/test/testData/starlark/commenter"],
+    runtime_deps = [
+        "//plugin-bsp:intellij-bsp",
+    ],
+    deps = ["//plugin-bazel:intellij-bazel"],
 )
