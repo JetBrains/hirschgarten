@@ -154,39 +154,7 @@ class DefaultBspConnection(
   }
 
   private suspend fun ensureConnected() {
-    coroutineScope {
-      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-
-      bspSyncConsole.startTask(
-        taskId = CONNECT_TASK_ID,
-        title = BspPluginBundle.message("console.task.auto.connect.title"),
-        message = BspPluginBundle.message("console.task.auto.connect.in.progress"),
-        cancelAction = { coroutineContext.cancel() },
-      )
-
-      try {
-        connectOrThrowIfFailed()
-        bspSyncConsole.finishTask(CONNECT_TASK_ID, BspPluginBundle.message("console.task.auto.connect.success"))
-      } catch (e: Exception) {
-        if (e is CancellationException) {
-          bspSyncConsole.finishTask(
-            taskId = CONNECT_TASK_ID,
-            message = BspPluginBundle.message("console.task.auto.connect.cancelled"),
-            result = SkippedResultImpl(),
-          )
-        } else {
-          bspSyncConsole.finishTask(
-            taskId = CONNECT_TASK_ID,
-            message = BspPluginBundle.message("console.task.auto.connect.failed"),
-            result = FailureResultImpl(e),
-          )
-          throw e
-        }
-      }
-    }
-  }
-
-  private suspend fun connectOrThrowIfFailed() {
+    log.debug("ensuring the connection is established")
     val bspClient = createBspClient()
     val inMemoryConnection =
       BspServerProvider.getBspServer()?.getConnection(
@@ -208,37 +176,74 @@ class DefaultBspConnection(
   }
 
   private suspend fun BspConnectionDetails.connect(bspClient: BspClient) {
-    disconnect()
-    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.addMessage(CONNECT_TASK_ID, BspPluginBundle.message("console.task.connect.message.in.progress"))
-    log.info("Connecting to server with connection details: $this")
-    val process = createAndStartProcessAndAddDisconnectActions(this)
+    coroutineScope {
+      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+      try {
+        bspSyncConsole.startTask(
+          taskId = CONNECT_TASK_ID,
+          title = BspPluginBundle.message("console.task.auto.connect.title"),
+          message = BspPluginBundle.message("console.task.auto.connect.in.progress"),
+          cancelAction = { coroutineContext.cancel() },
+        )
 
-    BspCoroutineService.getInstance(project).start {
-      handleErrorOnExit(process, project)
+        disconnect()
+        bspSyncConsole.addMessage(CONNECT_TASK_ID, BspPluginBundle.message("console.task.connect.message.in.progress"))
+        log.info("Connecting to server with connection details: $this")
+        val process = createAndStartProcessAndAddDisconnectActions(this@connect)
+
+        BspCoroutineService.getInstance(project).start {
+          handleErrorOnExit(process, project)
+        }
+
+        bspProcess = process
+        bspSyncConsole.addMessage(CONNECT_TASK_ID, BspPluginBundle.message("console.task.connect.message.success"))
+
+        initializeServer(process, bspClient)
+
+        bspSyncConsole.finishTask(CONNECT_TASK_ID, BspPluginBundle.message("console.task.auto.connect.success"))
+      } catch (e: Exception) {
+        if (e is CancellationException) {
+          bspSyncConsole.finishTask(
+            taskId = CONNECT_TASK_ID,
+            message = BspPluginBundle.message("console.task.auto.connect.cancelled"),
+            result = SkippedResultImpl(),
+          )
+        } else {
+          bspSyncConsole.finishTask(
+            taskId = CONNECT_TASK_ID,
+            message = BspPluginBundle.message("console.task.auto.connect.failed"),
+            result = FailureResultImpl(e),
+          )
+          throw e
+        }
+      }
     }
-
-    bspProcess = process
-    bspSyncConsole.addMessage(CONNECT_TASK_ID, BspPluginBundle.message("console.task.connect.message.success"))
-
-    initializeServer(process, bspClient)
   }
 
   private suspend fun connectBuiltIn(connection: GenericConnection) {
-    val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
-    bspSyncConsole.addMessage(taskId = CONNECT_TASK_ID, message = BspPluginBundle.message("console.task.connect.message.in.progress"))
-    disconnectActions.add { connection.shutdown() }
-    bspSyncConsole.addMessage(CONNECT_TASK_ID, BspPluginBundle.message("console.task.connect.message.success"))
-    bspSyncConsole.addMessage(
-      CONNECT_TASK_ID,
-      BspPluginBundle.message("console.message.initialize.server.in.progress"),
-    )
-    server = connection.server.wrapInChunkingServerIfRequired()
-    capabilities = server?.initializeAndObtainCapabilities()
-    bspSyncConsole.addMessage(
-      CONNECT_TASK_ID,
-      BspPluginBundle.message("console.message.initialize.server.success"),
-    )
+    coroutineScope {
+      val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+      bspSyncConsole.startTask(
+        taskId = CONNECT_TASK_ID,
+        title = BspPluginBundle.message("console.task.auto.connect.title"),
+        message = BspPluginBundle.message("console.task.auto.connect.in.progress"),
+        cancelAction = { coroutineContext.cancel() },
+      )
+      bspSyncConsole.addMessage(taskId = CONNECT_TASK_ID, message = BspPluginBundle.message("console.task.connect.message.in.progress"))
+      disconnectActions.add { connection.shutdown() }
+      bspSyncConsole.addMessage(CONNECT_TASK_ID, BspPluginBundle.message("console.task.connect.message.success"))
+      bspSyncConsole.addMessage(
+        CONNECT_TASK_ID,
+        BspPluginBundle.message("console.message.initialize.server.in.progress"),
+      )
+      server = connection.server.wrapInChunkingServerIfRequired()
+      capabilities = server?.initializeAndObtainCapabilities()
+      bspSyncConsole.addMessage(
+        CONNECT_TASK_ID,
+        BspPluginBundle.message("console.message.initialize.server.success"),
+      )
+      bspSyncConsole.finishTask(CONNECT_TASK_ID, BspPluginBundle.message("console.task.auto.connect.success"))
+    }
   }
 
   private fun createBspClient(): BspClient {
