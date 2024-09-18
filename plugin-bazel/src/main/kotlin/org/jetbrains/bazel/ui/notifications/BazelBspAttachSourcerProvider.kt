@@ -16,6 +16,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import java.net.URI
 import kotlin.io.path.toPath
@@ -29,7 +30,7 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
 
     override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback {
       val mmmLibraries = getAllMMMLibraries(project)
-      val fileManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
+      val fileManager = WorkspaceModel.getInstance(project).bspVirtualFileUrlManager()
       val libraries = orderEntries.mapNotNull { it.library }.distinct()
       val modelsToCommit =
         libraries.mapNotNull { library ->
