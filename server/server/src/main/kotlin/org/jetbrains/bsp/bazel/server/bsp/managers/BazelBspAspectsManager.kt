@@ -3,6 +3,7 @@ package org.jetbrains.bsp.bazel.server.bsp.managers
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.buildManualTests
+import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.buildTagFilters
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.keepGoing
@@ -62,6 +63,7 @@ class BazelBspAspectsManager(
         keepGoing(),
         color(true),
         curses(false),
+        buildTagFilters(listOf("-no-ide")),
       )
     val allowManualTargetsSyncFlags = if (shouldBuildManualFlags) listOf(buildManualTests()) else emptyList()
 
