@@ -44,24 +44,17 @@ import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.impl.utils.findModuleNameProvider
+import org.jetbrains.plugins.bsp.utils.isSourceFile
 
 public class AssignFileToModuleListener : BulkFileListener {
   override fun after(events: MutableList<out VFileEvent>) {
     // if the list has multiple events, it means an external operation (like Git) and resync is probably required anyway
     events.singleOrNull()?.let {
-      it.getAffectedProjects().forEach { project -> it.process(project) }
+      val file = it.getAffectedFile()
+      if (file?.isSourceFile() == true) {
+        file.getRelatedProjects().forEach { project -> it.process(project) }
+      }
     }
-  }
-}
-
-private fun VFileEvent.getAffectedProjects(): List<Project> {
-  val projectManager = ProjectManager.getInstance()
-  val projectLocator = ProjectLocator.getInstance()
-  val file = this.getAffectedFile()
-  return when {
-    file == null -> emptyList()
-    file.isValid -> projectLocator.getProjectsForFile(file).filterNotNull().filter { it.doWeCareAboutIt() }
-    else -> projectManager.openProjects.filter { it.doWeCareAboutIt() } // the project locator would return an empty list
   }
 }
 
@@ -76,6 +69,16 @@ private fun VFileEvent.getAffectedFile(): VirtualFile? {
       else -> null
     }
   return if (file?.isDirectory == false) file else null
+}
+
+private fun VirtualFile.getRelatedProjects(): List<Project> {
+  val projectManager = ProjectManager.getInstance()
+  val projectLocator = ProjectLocator.getInstance()
+  return if (this.isValid) {
+    projectLocator.getProjectsForFile(this).filterNotNull().filter { it.doWeCareAboutIt() }
+  } else {
+    projectManager.openProjects.filter { it.doWeCareAboutIt() } // the project locator would return an empty list
+  }
 }
 
 private fun Project.doWeCareAboutIt(): Boolean = this.isBspProject && this.isTrusted()
