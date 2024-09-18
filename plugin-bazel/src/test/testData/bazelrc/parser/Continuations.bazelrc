@@ -1,0 +1,14 @@
+build --flag_a
+
+build \
+  --flag_a \
+  --flag_b=asdfas \
+  --flag_c asdfa --flag_d=asdfas
+
+build:asdfa \
+  --flag_a \
+  --flag_b=asdfas \
+  --flag_c asdfa --flag_d=asdfas
+
+# command includes continuations \
+build --flag_a
