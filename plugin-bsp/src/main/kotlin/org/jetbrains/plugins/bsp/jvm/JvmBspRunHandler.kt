@@ -55,7 +55,7 @@ class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunH
     // TODO: perhaps better solved by having a tag
     override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean =
       targetInfos.all {
-        (it.languageIds.isJvmTarget() && !it.capabilities.canTest) ||
+        it.languageIds.isJvmTarget() ||
           (it.languageIds.includesAndroid() && it.capabilities.canTest)
       }
 

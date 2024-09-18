@@ -27,6 +27,7 @@ import java.nio.file.Path
 class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, private val bazelPathsResolver: BazelPathsResolver) :
   LanguagePlugin<ScalaModule>() {
   var scalaSdks: Map<Label, ScalaSdk> = emptyMap()
+  var scalaTestJars: Map<Label, Set<URI>> = emptyMap()
 
   override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>) {
     scalaSdks =
@@ -35,6 +36,17 @@ class ScalaLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, pr
           { it.label() },
           ScalaSdkResolver(bazelPathsResolver)::resolveSdk,
         ).filterValuesNotNull()
+    scalaTestJars =
+      targets
+        .filter { it.hasScalaTargetInfo() }
+        .associateBy(
+          { it.label() },
+          {
+            it.scalaTargetInfo.scalatestClasspathList
+              .map(bazelPathsResolver::resolveUri)
+              .toSet()
+          },
+        )
   }
 
   private fun <K, V> Map<K, V?>.filterValuesNotNull(): Map<K, V> = filterValues { it != null }.mapValues { it.value!! }

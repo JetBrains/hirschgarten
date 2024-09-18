@@ -109,7 +109,7 @@ class CollectProjectDetailsTask(
     val projectDetails =
       progressReporter.sizedStep(workSize = 50, text = BspPluginBundle.message("progress.bar.collect.project.details")) {
         collectModel(server, capabilities, baseTargetInfos)
-      } ?: return
+      }
 
     progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.jdk.infos")) {
       calculateAllUniqueJdkInfosSubtask(projectDetails)
