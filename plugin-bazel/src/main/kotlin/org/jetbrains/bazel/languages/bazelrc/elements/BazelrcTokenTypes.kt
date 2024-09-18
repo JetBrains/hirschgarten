@@ -22,4 +22,10 @@ object BazelrcTokenTypes {
 
   @JvmField
   val FLAG = BazelrcTokenType("FLAG")
+
+  @JvmField
+  val EQ = BazelrcTokenType("=")
+
+  @JvmField
+  val VALUE = BazelrcTokenType("VALUE")
 }

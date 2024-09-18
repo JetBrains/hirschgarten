@@ -6,4 +6,6 @@ class BazelrcParsingTest : BazelrcParsingTestCase("") {
   fun testBasic() = doTest(true, true)
 
   fun testQuoting() = doTest(true, true)
+
+  fun testContinuations() = doTest(true, true)
 }
