@@ -3,6 +3,7 @@ package org.jetbrains.bsp.bazel.server.sync.languages.java
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import java.net.URI
+import kotlin.io.path.exists
 import kotlin.io.path.toPath
 
 class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private val jdkVersionResolver: JdkVersionResolver) {
@@ -58,7 +59,12 @@ class JdkResolver(private val bazelPathsResolver: BazelPathsResolver, private va
   }
 
   private inner class JdkCandidate(private val data: JdkCandidateData) {
-    val version = data.javaHome?.let { jdkVersionResolver.resolve(it.toPath()) }?.toString()
+    val version =
+      data.javaHome
+        ?.toPath()
+        ?.takeIf { it.exists() }
+        ?.let { jdkVersionResolver.resolve(it) }
+        ?.toString()
     val javaHome by data::javaHome
     val isRuntime by data::isRuntime
     val isComplete = javaHome != null && version != null
