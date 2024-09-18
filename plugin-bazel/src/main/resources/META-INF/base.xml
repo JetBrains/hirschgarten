@@ -133,6 +133,10 @@
                 language="Bazelrc"
                 implementationClass="org.jetbrains.bazel.languages.bazelrc.parser.BazelrcParserDefinition"/>
 
+        <lang.quoteHandler
+                language="Bazelrc"
+                implementationClass="org.jetbrains.bazel.languages.bazelrc.matching.BazelrcQuoteHandler"/>
+
         <completion.contributor
                 language="Bazelrc"
                 implementationClass="org.jetbrains.bazel.languages.bazelrc.completion.BazelrcCompletionContributor"/>

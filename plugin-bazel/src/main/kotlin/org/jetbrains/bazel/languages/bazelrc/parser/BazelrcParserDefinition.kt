@@ -13,13 +13,13 @@ import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.bazelrc.BazelrcLanguage
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcElementTypes
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenSets
-import org.jetbrains.bazel.languages.bazelrc.lexer.BazelrcHighlightingLexer
+import org.jetbrains.bazel.languages.bazelrc.lexer.BazelrcLexer
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFile
 
 class BazelrcParserDefinition : ParserDefinition {
   private val file = IFileElementType(BazelrcLanguage)
 
-  override fun createLexer(project: Project?): Lexer = BazelrcHighlightingLexer()
+  override fun createLexer(project: Project?): Lexer = BazelrcLexer()
 
   override fun createParser(project: Project?): PsiParser =
     PsiParser { root, builder ->

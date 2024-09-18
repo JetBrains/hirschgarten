@@ -207,7 +207,18 @@ class BazelrcQuotingLexerTest : LexerTestCase() {
       )
   }
 
+  @Test fun `a`() {
+    val code =
+      """
+      "query:batch --noshow_progress
+
+      "unknown : b at ch" --noshow_progress
+      """.trimIndent()
+
+    code shouldLexTo listOf()
+  }
+
   private infix fun String.shouldLexTo(expectedTokens: List<String>) {
-    super.doLexerTest(this, BazelrcHighlightingLexer(), expectedTokens)
+    super.doLexerTest(this, BazelrcLexer(), expectedTokens)
   }
 }
