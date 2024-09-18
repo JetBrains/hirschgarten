@@ -30,7 +30,7 @@ import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.Tag
-import org.jetbrains.bsp.bazel.server.model.isJavaOrKotlin
+import org.jetbrains.bsp.bazel.server.model.isJvmLanguages
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -181,7 +181,7 @@ class ExecuteService(
         null -> {
         } // not a debug request, nothing to check
         is DebugType.JDWP ->
-          if (!moduleToRun.isJavaOrKotlin()) {
+          if (!moduleToRun.isJvmLanguages()) {
             throw RuntimeException("JDWP debugging is only available for Java and Kotlin targets")
           } else {
           }

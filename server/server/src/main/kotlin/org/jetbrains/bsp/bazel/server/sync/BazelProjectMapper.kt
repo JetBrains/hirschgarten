@@ -342,18 +342,27 @@ class BazelProjectMapper(
       }
 
   private fun calculateScalaLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
-    val projectLevelScalaSdkLibraries = calculateProjectLevelScalaLibraries()
+    val projectLevelScalaSdkLibraries = calculateProjectLevelScalaSdkLibraries()
+    val projectLevelScalaTestLibraries = calculateProjectLevelScalaTestLibraries()
     val scalaTargets = targetsToImport.filter { it.hasScalaTargetInfo() }.map { it.label() }
     return scalaTargets.associateWith {
-      languagePluginsService.scalaLanguagePlugin.scalaSdks[it]
-        ?.compilerJars
-        ?.mapNotNull {
-          projectLevelScalaSdkLibraries[it]
-        }.orEmpty()
+      val sdkLibraries =
+        languagePluginsService.scalaLanguagePlugin.scalaSdks[it]
+          ?.compilerJars
+          ?.mapNotNull {
+            projectLevelScalaSdkLibraries[it]
+          }.orEmpty()
+      val testLibraries =
+        languagePluginsService.scalaLanguagePlugin.scalaTestJars[it]
+          ?.mapNotNull {
+            projectLevelScalaTestLibraries[it]
+          }.orEmpty()
+
+      (sdkLibraries + testLibraries).distinct()
     }
   }
 
-  private fun calculateProjectLevelScalaLibraries(): Map<URI, Library> =
+  private fun calculateProjectLevelScalaSdkLibraries(): Map<URI, Library> =
     getProjectLevelScalaSdkLibrariesJars().associateWith {
       Library(
         label = Label.parse(Paths.get(it).name),
@@ -362,6 +371,19 @@ class BazelProjectMapper(
         dependencies = emptyList(),
       )
     }
+
+  private fun calculateProjectLevelScalaTestLibraries(): Map<URI, Library> =
+    languagePluginsService.scalaLanguagePlugin.scalaTestJars.values
+      .flatten()
+      .toSet()
+      .associateWith {
+        Library(
+          label = Label.parse(Paths.get(it).name),
+          outputs = setOf(it),
+          sources = emptySet(),
+          dependencies = emptyList(),
+        )
+      }
 
   private fun getProjectLevelScalaSdkLibrariesJars(): Set<URI> =
     languagePluginsService.scalaLanguagePlugin.scalaSdks.values
