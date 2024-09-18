@@ -15,6 +15,7 @@ import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.bspBuildToolId
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
+import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
@@ -47,7 +48,7 @@ class OutputPathUrisSyncHook : ProjectSyncHook {
     }
 
   private fun List<OutputPathsItem>.toEntity(project: Project): BspProjectDirectoriesEntity.Builder {
-    val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
+    val virtualFileUrlManager = WorkspaceModel.getInstance(project).bspVirtualFileUrlManager()
     val projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager)
 
     return BspProjectDirectoriesEntity(

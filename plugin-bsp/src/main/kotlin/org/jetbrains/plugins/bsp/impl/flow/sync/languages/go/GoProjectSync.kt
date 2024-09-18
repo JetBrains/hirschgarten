@@ -38,6 +38,7 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
 import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
+import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.RawUriToDirectoryPathTransformer
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
@@ -55,7 +56,7 @@ class GoProjectSync : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHook.ProjectSyncHookEnvironment) {
     val goTargets = environment.baseTargetInfos.calculateGoTargets()
     val idToGoTargetMap = goTargets.associateBy({ it.target.id }, { it })
-    val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
+    val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).bspVirtualFileUrlManager()
 
     val moduleEntities =
       goTargets.map {
