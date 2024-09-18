@@ -1,12 +1,12 @@
 package org.jetbrains.plugins.bsp.startup
 
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.util.application
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
@@ -46,6 +46,8 @@ public class BspStartupActivity : ProjectActivity {
 
     resyncProjectIfNeeded()
 
+    isBspProjectInitialized = true
+
     BspStartupActivityTracker.stopConfigurationPhase(this)
   }
 
@@ -61,7 +63,7 @@ public class BspStartupActivity : ProjectActivity {
     log.debug("Executing BSP startup activities only for new project")
     try {
       if (!isBspProjectInitialized || !(workspaceModel as WorkspaceModelImpl).loadedFromCache) {
-        isBspProjectInitialized = runOnFirstOpening()
+        runOnFirstOpening()
       }
     } catch (e: Exception) {
       val bspSyncConsole = BspConsoleService.getInstance(this).bspSyncConsole
@@ -79,28 +81,25 @@ public class BspStartupActivity : ProjectActivity {
     }
   }
 
-  private suspend fun Project.runOnFirstOpening(): Boolean {
+  private suspend fun Project.runOnFirstOpening() {
     val wasFirstOpeningSuccessful = connectionDetailsProvider.onFirstOpening(this, rootDir)
     log.debug("Was onFirstOpening successful: $wasFirstOpeningSuccessful")
 
     if (!wasFirstOpeningSuccessful) {
       handleFailedFirstOpening()
-      return false
     }
-
-    return true
   }
 
   private fun Project.handleFailedFirstOpening() {
     log.info("Cancelling BSP sync. Closing the project window")
     // TODO https://youtrack.jetbrains.com/issue/BAZEL-623
-    application.invokeLater {
+    AppUIExecutor.onUiThread().execute {
       CloseProjectWindowHelper().windowClosing(this)
     }
   }
 
   private suspend fun Project.resyncProjectIfNeeded() {
-    if (isBspProjectInitialized && isProjectInIncompleteState()) {
+    if (isProjectInIncompleteState()) {
       log.info("Running BSP sync task")
       ProjectSyncTask(this).sync(
         buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
