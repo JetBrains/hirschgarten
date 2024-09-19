@@ -16,7 +16,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonSdkInfo
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericSourceRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDependency
@@ -115,7 +115,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies =
                   listOf(
                     ModuleDependency(
@@ -345,7 +345,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies =
                   listOf(
                     ModuleDependency(
@@ -373,7 +373,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module2",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies =
                   listOf(
                     ModuleDependency(
@@ -551,7 +551,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies = emptyList(),
               ) {
                 type = ModuleTypeId("PYTHON_MODULE")
@@ -618,7 +618,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies = emptyList(),
               ) {
                 type = ModuleTypeId("PYTHON_MODULE")
@@ -629,7 +629,7 @@ internal class PythonModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module2",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies = emptyList(),
               ) {
                 type = ModuleTypeId("PYTHON_MODULE")

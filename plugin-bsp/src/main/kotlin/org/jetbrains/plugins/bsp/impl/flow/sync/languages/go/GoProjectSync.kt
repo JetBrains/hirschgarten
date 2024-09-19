@@ -40,8 +40,11 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
 import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.RawUriToDirectoryPathTransformer
+import org.jetbrains.plugins.bsp.impl.utils.findModuleNameProvider
+import org.jetbrains.plugins.bsp.impl.utils.orDefault
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspModuleEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import kotlin.io.path.toPath
 
 private const val GO_SOURCE_ROOT_TYPE = "go-source"
@@ -57,16 +60,23 @@ class GoProjectSync : ProjectSyncHook {
     val goTargets = environment.baseTargetInfos.calculateGoTargets()
     val idToGoTargetMap = goTargets.associateBy({ it.target.id }, { it })
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).bspVirtualFileUrlManager()
+    val moduleNameProvider = environment.project.findModuleNameProvider().orDefault()
 
     val moduleEntities =
       goTargets.map {
+        val moduleName = moduleNameProvider(BuildTargetInfo(id = it.target.id))
+        val moduleSourceEntity = BspModuleEntitySource(moduleName)
+
         val moduleEntity =
           addModuleEntityFromTarget(
             builder = environment.diff.workspaceModelDiff.mutableEntityStorage,
             target = it,
+            moduleName = moduleName,
+            entitySource = moduleSourceEntity,
             virtualFileUrlManager = virtualFileUrlManager,
           )
-        val vgoModule = prepareVgoModule(environment, it, moduleEntity.symbolicId, virtualFileUrlManager, idToGoTargetMap)
+        val vgoModule =
+          prepareVgoModule(environment, it, moduleEntity.symbolicId, virtualFileUrlManager, idToGoTargetMap, moduleSourceEntity)
         environment.diff.workspaceModelDiff.mutableEntityStorage
           .addEntity(vgoModule)
         moduleEntity
@@ -84,13 +94,15 @@ class GoProjectSync : ProjectSyncHook {
   private fun addModuleEntityFromTarget(
     builder: MutableEntityStorage,
     target: BaseTargetInfo,
+    moduleName: String,
+    entitySource: BspModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): ModuleEntity {
-    val sourceContentRootEntities = getSourceContentRootEntities(target, virtualFileUrlManager)
-    val resourceContentRootEntities = getResourceContentRootEntities(target, virtualFileUrlManager)
+    val sourceContentRootEntities = getSourceContentRootEntities(target, entitySource, virtualFileUrlManager)
+    val resourceContentRootEntities = getResourceContentRootEntities(target, entitySource, virtualFileUrlManager)
     return builder.addEntity(
       ModuleEntity(
-        name = target.moduleName,
+        name = moduleName,
         dependencies =
           target.target.dependencies.map {
             ModuleDependency(
@@ -100,7 +112,7 @@ class GoProjectSync : ProjectSyncHook {
               productionOnTest = true,
             )
           },
-        entitySource = BspEntitySource,
+        entitySource = entitySource,
       ) {
         // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1153
         this.type = ModuleTypeId("WEB_MODULE")
@@ -109,11 +121,9 @@ class GoProjectSync : ProjectSyncHook {
     )
   }
 
-  private val BaseTargetInfo.moduleName: String
-    get() = this.target.displayName
-
   private fun getSourceContentRootEntities(
     target: BaseTargetInfo,
+    entitySource: BspModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.sources.flatMap {
@@ -123,12 +133,12 @@ class GoProjectSync : ProjectSyncHook {
           SourceRootEntity(
             url = sourceUrl,
             rootTypeId = SourceRootTypeId(inferRootType(target.target)),
-            entitySource = BspEntitySource,
+            entitySource = entitySource,
           )
         ContentRootEntity(
           url = sourceUrl,
           excludedPatterns = ArrayList(),
-          entitySource = BspEntitySource,
+          entitySource = entitySource,
         ) {
           this.excludedUrls = listOf()
           this.sourceRoots = listOf(sourceRootEntity)
@@ -141,6 +151,7 @@ class GoProjectSync : ProjectSyncHook {
 
   private fun getResourceContentRootEntities(
     target: BaseTargetInfo,
+    entitySource: BspModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): List<ContentRootEntity.Builder> =
     target.resources.flatMap {
@@ -150,12 +161,12 @@ class GoProjectSync : ProjectSyncHook {
           SourceRootEntity(
             url = resourceUrl,
             rootTypeId = SourceRootTypeId(GO_RESOURCE_ROOT_TYPE),
-            entitySource = BspEntitySource,
+            entitySource = entitySource,
           )
         ContentRootEntity(
           url = resourceUrl,
           excludedPatterns = listOf(),
-          entitySource = BspEntitySource,
+          entitySource = entitySource,
         ) {
           this.excludedUrls = listOf()
           this.sourceRoots = listOf(resourceRootEntity)
@@ -169,6 +180,7 @@ class GoProjectSync : ProjectSyncHook {
     moduleId: ModuleId,
     virtualFileUrlManager: VirtualFileUrlManager,
     idToGoTargetMap: Map<BuildTargetIdentifier, BaseTargetInfo>,
+    entitySource: BspModuleEntitySource,
   ): VgoStandaloneModuleEntity.Builder {
     val goBuildInfo = extractGoBuildTarget(inputEntity.target)
 
@@ -179,7 +191,7 @@ class GoProjectSync : ProjectSyncHook {
           goDependencyBuildInfo?.let { goDepBuildInfo ->
             VgoDependencyEntity(
               importPath = goDepBuildInfo.importPath,
-              entitySource = BspEntitySource,
+              entitySource = entitySource,
               isMainModule = false,
               internal = true,
             ) {
@@ -193,7 +205,7 @@ class GoProjectSync : ProjectSyncHook {
       queryGoLibraries(environment)?.libraries?.map {
         VgoDependencyEntity(
           importPath = it.goImportPath ?: "",
-          entitySource = BspEntitySource,
+          entitySource = entitySource,
           isMainModule = false,
           internal = false,
         ) {
@@ -203,7 +215,7 @@ class GoProjectSync : ProjectSyncHook {
 
     return VgoStandaloneModuleEntity(
       moduleId = moduleId,
-      entitySource = BspEntitySource,
+      entitySource = entitySource,
       importPath = goBuildInfo?.importPath ?: "",
       root = virtualFileUrlManager.getOrCreateFromUrl(inputEntity.target.baseDirectory),
     ) {

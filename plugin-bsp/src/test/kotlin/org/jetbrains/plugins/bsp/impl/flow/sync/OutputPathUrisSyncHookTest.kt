@@ -72,6 +72,7 @@ class OutputPathUrisSyncHookTest : MockProjectBaseTest() {
         hook.onSync(
           ProjectSyncHookEnvironment(
             project = project,
+            syncScope = FullProjectSync,
             server = server,
             capabilities = capabilities,
             diff = diff,

@@ -2,7 +2,7 @@ package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.u
 
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaSourceRoot
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GeneratedJavaSourceRootEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.PackageNameId
 import java.nio.file.Path
@@ -29,7 +29,7 @@ internal class GeneratedJavaSourceEntityUpdater(private val workspaceModelEntity
         GeneratedJavaSourceRootEntity(
           packageNameId = PackageNameId(packageName),
           sourceRoots = sourceRootUrls,
-          entitySource = BspEntitySource,
+          entitySource = BspProjectEntitySource,
         )
       }.map {
         workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(it)

@@ -9,7 +9,7 @@ import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 
 internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
@@ -74,7 +74,7 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
 
 internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
   when {
-    !JpsFeatureFlags.isJpsCompilationEnabled -> BspEntitySource
+    !JpsFeatureFlags.isJpsCompilationEnabled -> BspProjectEntitySource
     else ->
       LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
         workspaceModelEntityUpdaterConfig.project,

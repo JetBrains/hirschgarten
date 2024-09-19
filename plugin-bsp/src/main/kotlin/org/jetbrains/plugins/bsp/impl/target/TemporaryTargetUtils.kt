@@ -37,7 +37,8 @@ public data class TemporaryTargetUtilsState(
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
 public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState> {
-  private var targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
+  var targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
+    private set
   private var moduleIdToBuildTargetId: Map<String, BuildTargetIdentifier> = emptyMap()
 
   // we must use URI as comparing URI path strings is susceptible to errors.

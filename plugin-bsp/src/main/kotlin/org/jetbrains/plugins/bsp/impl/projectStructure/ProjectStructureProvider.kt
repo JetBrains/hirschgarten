@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.projectStructure
 
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncScope
 
 /**
  * Represents a diff (snapshot) of the underlying project structure which should be updated during sync in the
@@ -11,8 +12,16 @@ interface ProjectStructureDiff {
   /**
    * Applies the changes on the underlying project structure.
    * Method implementation is responsible for getting the write lock if needed.
+   *
+   * @param project project for which diff is applied
+   * @param syncScope defines the scope of the sync for which the diff is applied
+   * @param taskId id of the console parent task (sync console)
    */
-  suspend fun apply(project: Project, taskId: String)
+  suspend fun apply(
+    project: Project,
+    syncScope: ProjectSyncScope,
+    taskId: String,
+  )
 }
 
 /**
@@ -26,8 +35,8 @@ class AllProjectStructuresDiff(private val project: Project, diffs: List<Project
   fun <TDiff : ProjectStructureDiff> diffOfType(diffClazz: Class<TDiff>): TDiff =
     diffs[diffClazz] as? TDiff ?: error("Cannot find a ProjectStructureDiff of type: ${diffClazz.simpleName}")
 
-  suspend fun applyAll(taskId: String) {
-    diffs.values.forEach { it.apply(project, taskId) }
+  suspend fun applyAll(syncScope: ProjectSyncScope, taskId: String) {
+    diffs.values.forEach { it.apply(project, syncScope, taskId) }
   }
 }
 

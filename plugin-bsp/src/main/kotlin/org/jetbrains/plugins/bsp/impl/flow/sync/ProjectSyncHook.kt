@@ -44,6 +44,7 @@ interface ProjectSyncHook : WithBuildToolId {
    */
   data class ProjectSyncHookEnvironment(
     val project: Project,
+    val syncScope: ProjectSyncScope,
     val server: JoinedBuildServer,
     val capabilities: BazelBuildServerCapabilities,
     val diff: AllProjectStructuresDiff,

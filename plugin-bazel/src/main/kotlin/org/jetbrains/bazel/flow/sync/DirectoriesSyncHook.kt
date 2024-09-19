@@ -13,8 +13,8 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookE
 import org.jetbrains.plugins.bsp.impl.flow.sync.query
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 
 class DirectoriesSyncHook : ProjectSyncHook {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
@@ -36,7 +36,7 @@ class DirectoriesSyncHook : ProjectSyncHook {
       projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager),
       includedRoots = includedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) },
       excludedRoots = excludedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) },
-      entitySource = BspEntitySource,
+      entitySource = BspProjectEntitySource,
     )
   }
 }

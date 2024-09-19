@@ -56,6 +56,7 @@ import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
@@ -120,6 +121,14 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
       projectSyncService.workspaceBuildTargets(
         cancelChecker = it,
         build = true,
+      )
+    }
+
+  override fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): CompletableFuture<WorkspaceBuildTargetsResult> =
+    runner.handleRequest("workspace/buildTargetsPartial") {
+      projectSyncService.workspaceBuildTargetsPartial(
+        cancelChecker = it,
+        targetsToSync = params.targets,
       )
     }
 

@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.server.sync
 
 import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.CppOptionsParams
 import ch.epfl.scala.bsp4j.CppOptionsResult
 import ch.epfl.scala.bsp4j.DependencyModulesParams
@@ -79,6 +80,16 @@ class ProjectSyncService(
 
   fun workspaceBuildTargets(cancelChecker: CancelChecker, build: Boolean): WorkspaceBuildTargetsResult {
     val project = projectProvider.refreshAndGet(cancelChecker, build = build)
+    return bspMapper.workspaceTargets(project)
+  }
+
+  fun workspaceBuildTargetsPartial(cancelChecker: CancelChecker, targetsToSync: List<BuildTargetIdentifier>): WorkspaceBuildTargetsResult {
+    val project =
+      projectProvider.loadFromBazel(
+        cancelChecker = cancelChecker,
+        build = false,
+        targetsToSync = targetsToSync,
+      )
     return bspMapper.workspaceTargets(project)
   }
 

@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.impl.flow.sync
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.projectView.ProjectView
@@ -36,8 +37,14 @@ private const val PROJECT_SYNC_TASK_ID = "project-sync"
 
 private val log = logger<ProjectSyncTask>()
 
+sealed interface ProjectSyncScope
+
+data object FullProjectSync : ProjectSyncScope
+
+data class PartialProjectSync(val targetsToSync: List<BuildTargetIdentifier>) : ProjectSyncScope
+
 class ProjectSyncTask(private val project: Project) {
-  suspend fun sync(buildProject: Boolean) {
+  suspend fun sync(syncScope: ProjectSyncScope, buildProject: Boolean) {
     if (project.isTrusted()) {
       coroutineScope {
         bspTracer.spanBuilder("bsp.sync.project.ms").useWithScope {
@@ -55,7 +62,7 @@ class ProjectSyncTask(private val project: Project) {
             )
 
             preSync()
-            doSync(buildProject)
+            doSync(syncScope, buildProject)
 
             project.syncConsole.finishTask(PROJECT_SYNC_TASK_ID, BspPluginBundle.message("console.task.sync.success"))
           } catch (e: CancellationException) {
@@ -89,11 +96,11 @@ class ProjectSyncTask(private val project: Project) {
     saveAllFiles()
   }
 
-  private suspend fun doSync(buildProject: Boolean) {
+  private suspend fun doSync(syncScope: ProjectSyncScope, buildProject: Boolean) {
     withBackgroundProgress(project, "Syncing project...", true) {
       reportSequentialProgress {
         executePreSyncHooks(it)
-        executeSyncHooks(it, buildProject)
+        executeSyncHooks(it, syncScope, buildProject)
         executePostSyncHooks(it)
       }
     }
@@ -115,11 +122,15 @@ class ProjectSyncTask(private val project: Project) {
     }
   }
 
-  private suspend fun executeSyncHooks(progressReporter: SequentialProgressReporter, buildProject: Boolean) {
+  private suspend fun executeSyncHooks(
+    progressReporter: SequentialProgressReporter,
+    syncScope: ProjectSyncScope,
+    buildProject: Boolean,
+  ) {
     val diff = AllProjectStructuresProvider(project).newDiff()
     project.connection.runWithServer { server, capabilities ->
       bspTracer.spanBuilder("collect.project.details.ms").use {
-        val baseTargetInfos = BaseProjectSync(project).execute(buildProject, server, capabilities, PROJECT_SYNC_TASK_ID)
+        val baseTargetInfos = BaseProjectSync(project).execute(syncScope, buildProject, server, capabilities, PROJECT_SYNC_TASK_ID)
         val environment =
           ProjectSyncHookEnvironment(
             project = project,
@@ -129,6 +140,7 @@ class ProjectSyncTask(private val project: Project) {
             taskId = PROJECT_SYNC_TASK_ID,
             progressReporter = progressReporter,
             baseTargetInfos = baseTargetInfos,
+            syncScope = syncScope,
           )
 
         project.defaultProjectSyncHooks.forEach {
@@ -140,7 +152,7 @@ class ProjectSyncTask(private val project: Project) {
       }
     }
 
-    diff.applyAll(PROJECT_SYNC_TASK_ID)
+    diff.applyAll(syncScope, PROJECT_SYNC_TASK_ID)
   }
 
   private suspend fun executePostSyncHooks(progressReporter: SequentialProgressReporter) {

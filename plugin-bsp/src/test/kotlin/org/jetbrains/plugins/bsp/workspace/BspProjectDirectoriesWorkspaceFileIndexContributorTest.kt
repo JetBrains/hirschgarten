@@ -13,8 +13,8 @@ import com.intellij.workspaceModel.ide.toPath
 import io.kotest.inspectors.shouldForAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -72,7 +72,7 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = emptyList(),
         excludedRoots = emptyList(),
-        entitySource = BspEntitySource,
+        entitySource = BspProjectEntitySource,
       )
 
     // when
@@ -103,7 +103,7 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = listOf(projectRoot),
         excludedRoots = emptyList(),
-        entitySource = BspEntitySource,
+        entitySource = BspProjectEntitySource,
       )
 
     // when
@@ -135,7 +135,7 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = listOf(dir1),
         excludedRoots = emptyList(),
-        entitySource = BspEntitySource,
+        entitySource = BspProjectEntitySource,
       )
 
     // when
@@ -167,7 +167,7 @@ class BspProjectDirectoriesWorkspaceFileIndexContributorTest : WorkspaceModelBas
         projectRoot = projectBasePath.toVirtualFileUrl(virtualFileUrlManager),
         includedRoots = listOf(dir1),
         excludedRoots = listOf(dir1Dir3, dir4),
-        entitySource = BspEntitySource,
+        entitySource = BspProjectEntitySource,
       )
 
     // when
