@@ -101,7 +101,7 @@
                        overrides="true"/>
 
         <commandLineInspectionProjectConfigurator
-                implementation="org.jetbrains.plugins.bsp.impl.flow.open.BspCommandLineInspectionConfigurator"/>
+                implementation="org.jetbrains.plugins.bsp.startup.BspCommandLineInspectionConfigurator"/>
         <configurationType implementation="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationType"/>
 
         <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
