@@ -9,7 +9,7 @@ import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.Languag
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
 
-public data class BuildTargetInfo(
+data class BuildTargetInfo(
   val id: BuildTargetIdentifier,
   val displayName: String? = null,
   val dependencies: List<BuildTargetIdentifier> = emptyList(),
@@ -21,7 +21,7 @@ public data class BuildTargetInfo(
   val buildTargetName: String = this.displayName ?: this.id.uri
 }
 
-public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
+fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
   BuildTargetInfo(
     id = id,
     displayName = displayName,
@@ -32,33 +32,33 @@ public fun BuildTarget.toBuildTargetInfo(): BuildTargetInfo =
     baseDirectory = baseDirectory,
   )
 
-public abstract class WorkspaceModelEntity
+abstract class WorkspaceModelEntity
 
-public data class ContentRoot(val path: Path, val excludedPaths: List<Path> = ArrayList()) : WorkspaceModelEntity()
+data class ContentRoot(val path: Path, val excludedPaths: List<Path> = ArrayList()) : WorkspaceModelEntity()
 
-public interface ResourceRootEntity
+interface ResourceRootEntity
 
-public interface EntityDependency
+interface EntityDependency
 
-public data class GenericSourceRoot(
+data class GenericSourceRoot(
   val sourcePath: Path,
   val rootType: SourceRootTypeId,
   val excludedPaths: List<Path> = ArrayList(),
 ) : WorkspaceModelEntity()
 
-public data class ResourceRoot(val resourcePath: Path, val rootType: SourceRootTypeId) :
+data class ResourceRoot(val resourcePath: Path, val rootType: SourceRootTypeId) :
   WorkspaceModelEntity(),
   ResourceRootEntity
 
-public data class Library(
+data class Library(
   val displayName: String,
   val iJars: List<String> = listOf(),
   val sourceJars: List<String> = listOf(),
   val classJars: List<String> = listOf(),
 ) : WorkspaceModelEntity(),
   ResourceRootEntity {
-  public companion object {
-    public fun formatJarString(jar: String): String =
+  companion object {
+    fun formatJarString(jar: String): String =
       if (jar.endsWith(".jar")) {
         "jar://${jar.safeCastToURI().path}!/"
       } else {
@@ -68,18 +68,18 @@ public data class Library(
   }
 }
 
-public data class IntermediateModuleDependency(val moduleName: String) :
+data class IntermediateModuleDependency(val moduleName: String) :
   WorkspaceModelEntity(),
   EntityDependency
 
-public data class IntermediateLibraryDependency(val libraryName: String, val isProjectLevelLibrary: Boolean = false) :
+data class IntermediateLibraryDependency(val libraryName: String, val isProjectLevelLibrary: Boolean = false) :
   WorkspaceModelEntity(),
   EntityDependency
 
 /**
 This class holds basic module data that are not language-specific
  */
-public data class GenericModuleInfo(
+data class GenericModuleInfo(
   val name: String,
   val type: ModuleTypeId,
   val modulesDependencies: List<IntermediateModuleDependency>,
@@ -124,20 +124,13 @@ public data class GenericModuleInfo(
   }
 }
 
-public data class ModuleCapabilities(
+data class ModuleCapabilities(
   val canRun: Boolean = false,
   val canTest: Boolean = false,
   val canCompile: Boolean = false,
   val canDebug: Boolean = false,
 ) {
-  public constructor(map: Map<String, String>) : this(
-    map[KEYS.CAN_RUN.name]?.toBoolean() ?: false,
-    map[KEYS.CAN_TEST.name]?.toBoolean() ?: false,
-    map[KEYS.CAN_COMPILE.name]?.toBoolean() ?: false,
-    map[KEYS.CAN_DEBUG.name]?.toBoolean() ?: false,
-  )
-
-  public fun asMap(): Map<String, String> =
+  fun asMap(): Map<String, String> =
     mapOf(
       KEYS.CAN_RUN.name to canRun.toString(),
       KEYS.CAN_DEBUG.name to canDebug.toString(),
@@ -156,6 +149,6 @@ public data class ModuleCapabilities(
 fun BuildTargetCapabilities.toModuleCapabilities() =
   ModuleCapabilities(canRun == true, canTest == true, canCompile == true, canDebug == true)
 
-public interface Module {
-  public fun getModuleName(): String
+interface Module {
+  fun getModuleName(): String
 }

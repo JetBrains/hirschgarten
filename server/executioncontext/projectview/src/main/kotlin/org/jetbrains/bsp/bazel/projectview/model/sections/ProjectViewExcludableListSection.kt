@@ -3,7 +3,7 @@ package org.jetbrains.bsp.bazel.projectview.model.sections
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import java.nio.file.Path
 
-sealed class ProjectViewExcludableListSection<T> constructor(sectionName: String) : ProjectViewListSection<T>(sectionName) {
+sealed class ProjectViewExcludableListSection<T>(sectionName: String) : ProjectViewListSection<T>(sectionName) {
   abstract val excludedValues: List<T>
 }
 

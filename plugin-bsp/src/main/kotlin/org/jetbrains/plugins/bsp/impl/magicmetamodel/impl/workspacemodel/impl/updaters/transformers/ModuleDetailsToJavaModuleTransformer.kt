@@ -168,12 +168,10 @@ internal class ModuleDetailsToJavaModuleTransformer(
   }
 }
 
-public fun String.javaVersionToJdkName(projectName: String): String = "$projectName-$this"
+fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
 
-public fun String.scalaVersionToScalaSdkName(): String = "scala-sdk-$this"
+fun String.projectNameToBaseJdkName(): String = "$this-jdk"
 
-public fun String.projectNameToBaseJdkName(): String = "$this-jdk"
+fun String.projectNameToJdkName(javaHomeUri: String): String = projectNameToBaseJdkName() + "-" + StringUtils.md5Hash(javaHomeUri, 5)
 
-public fun String.projectNameToJdkName(javaHomeUri: String): String = projectNameToBaseJdkName() + "-" + StringUtils.md5Hash(javaHomeUri, 5)
-
-public fun String.androidJarToAndroidSdkName(): String = "android-sdk-" + StringUtils.md5Hash(this, 5)
+fun String.androidJarToAndroidSdkName(): String = "android-sdk-" + StringUtils.md5Hash(this, 5)

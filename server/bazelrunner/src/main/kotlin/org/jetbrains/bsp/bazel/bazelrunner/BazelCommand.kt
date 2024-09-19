@@ -40,7 +40,7 @@ interface HasMultipleTargets {
   }
 
   fun targetCommandLine(): List<String> {
-    val commandLine = mutableListOf<String>("--")
+    val commandLine = mutableListOf("--")
     commandLine.addAll(targets.map { it.uri })
     commandLine.addAll(excludedTargets.map { "-${it.uri}" })
     return commandLine
@@ -111,7 +111,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
 
     override fun makeCommandLine(): List<String> {
-      val commandLine = mutableListOf<String>(bazelBinary)
+      val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
       commandLine.add("build")
@@ -136,7 +136,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val programArguments: MutableList<String> = mutableListOf()
 
     override fun makeCommandLine(): List<String> {
-      val commandLine = mutableListOf<String>(bazelBinary)
+      val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
       commandLine.add("test")
@@ -162,7 +162,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val programArguments: MutableList<String> = mutableListOf()
 
     override fun makeCommandLine(): List<String> {
-      val commandLine = mutableListOf<String>(bazelBinary)
+      val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
       commandLine.add("coverage")
@@ -181,7 +181,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     BazelCommand(bazelBinary),
     HasSingleTarget {
     override fun makeCommandLine(): List<String> {
-      val commandLine = mutableListOf<String>(bazelBinary)
+      val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
       commandLine.add("mobile-install")
@@ -199,7 +199,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
 
     override fun makeCommandLine(): List<String> {
-      val commandLine = mutableListOf<String>(bazelBinary)
+      val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
       commandLine.add("query")
@@ -217,7 +217,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
 
     override fun makeCommandLine(): List<String> {
-      val commandLine = mutableListOf<String>(bazelBinary)
+      val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
       commandLine.add("cquery")
@@ -230,7 +230,7 @@ abstract class BazelCommand(val bazelBinary: String) {
 
   abstract class SimpleCommand(bazelBinary: String, val command: List<String>) : BazelCommand(bazelBinary) {
     override fun makeCommandLine(): List<String> {
-      val commandLine = mutableListOf<String>(bazelBinary)
+      val commandLine = mutableListOf(bazelBinary)
 
       commandLine.addAll(startupOptions)
       commandLine.addAll(command)
