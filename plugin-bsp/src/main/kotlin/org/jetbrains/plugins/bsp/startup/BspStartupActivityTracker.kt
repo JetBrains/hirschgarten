@@ -2,7 +2,6 @@ package org.jetbrains.plugins.bsp.startup
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.serviceAsync
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.backend.observation.ActivityTracker
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +18,6 @@ internal class BspStartupActivityTracker : ActivityTracker {
   override suspend fun isInProgress(project: Project): Boolean = project.bspTrackerServiceState().value
 
   internal companion object {
-    val log = logger<BspStartupActivityTracker>()
-
     suspend fun startConfigurationPhase(project: Project) {
       project.bspTrackerServiceState().update { true }
     }

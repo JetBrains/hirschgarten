@@ -17,12 +17,4 @@ data class Project(
   private val moduleMap: Map<Label, Module> = modules.associateBy(Module::label)
 
   fun findModule(label: Label): Module? = moduleMap[label]
-
-//    fun findNonExternalModules(): List<Module> {
-//        val rustExternalModules = modules.filter {
-//            it.languageData is RustModule &&
-//            it.languageData.isExternalModule
-//        }
-//        return modules - rustExternalModules.toSet()
-//    }
 }

@@ -5,7 +5,7 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.awt.event.MouseListener
 import javax.swing.JPanel
 
-public abstract class LazySearchDisplay {
+abstract class LazySearchDisplay {
   protected val component: JPanel = JPanel(VerticalLayout(0))
 
   protected var targets: List<BuildTargetInfo> = emptyList()
@@ -13,13 +13,13 @@ public abstract class LazySearchDisplay {
 
   private var isOutdated = true
 
-  public fun updateSearch(newTargets: List<BuildTargetInfo>, newQuery: Regex) {
+  fun updateSearch(newTargets: List<BuildTargetInfo>, newQuery: Regex) {
     targets = newTargets
     query = newQuery
     isOutdated = true
   }
 
-  public fun get(): JPanel {
+  fun get(): JPanel {
     rerenderIfOutdated()
     return component
   }
@@ -31,23 +31,16 @@ public abstract class LazySearchDisplay {
     }
   }
 
-  public fun isEmpty(): Boolean = targets.isEmpty()
+  fun isEmpty(): Boolean = targets.isEmpty()
 
   protected abstract fun rerender()
 
-  public abstract fun addMouseListener(mouseListener: MouseListener)
+  abstract fun addMouseListener(mouseListener: MouseListener)
 
-  public abstract fun getSelectedBuildTarget(): BuildTargetInfo?
-
-  protected data class PrintableBuildTarget(
-    val buildTarget: BuildTargetInfo,
-    var displayName: String = buildTarget.let { it.displayName ?: it.id.uri },
-  ) {
-    override fun toString(): String = buildTarget.displayName ?: buildTarget.id.uri
-  }
+  abstract fun getSelectedBuildTarget(): BuildTargetInfo?
 
   protected object QueryHighlighter {
-    public fun highlight(text: String, query: Regex): String =
+    fun highlight(text: String, query: Regex): String =
       if (query.pattern.isNotEmpty() && query.containsMatchIn(text)) {
         "<html>${highlightAllOccurrences(text, query)}</html>"
       } else {

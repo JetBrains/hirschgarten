@@ -144,10 +144,6 @@ public abstract class TaskConsole(
     taskView.onEvent(taskId, event)
   }
 
-  @Synchronized
-  public fun finishAllTasks(message: String, result: EventResult = SuccessResultImpl()) {
-  }
-
   /**
    * Displays start of a subtask in this console
    *
