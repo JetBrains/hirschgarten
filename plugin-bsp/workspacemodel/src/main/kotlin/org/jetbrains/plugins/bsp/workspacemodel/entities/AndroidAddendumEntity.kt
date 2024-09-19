@@ -27,7 +27,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
 
   //region generated code
   @GeneratedCodeApiVersion(3)
-  public interface Builder : WorkspaceEntity.Builder<AndroidAddendumEntity> {
+  interface Builder : WorkspaceEntity.Builder<AndroidAddendumEntity> {
     override var entitySource: EntitySource
     var androidSdkName: String
     var androidTargetType: AndroidTargetType
@@ -38,11 +38,11 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
     var module: ModuleEntity.Builder
   }
 
-  public companion object : EntityType<AndroidAddendumEntity, Builder>() {
+  companion object : EntityType<AndroidAddendumEntity, Builder>() {
     @JvmOverloads
     @JvmStatic
     @JvmName("create")
-    public operator fun invoke(
+    operator fun invoke(
       androidSdkName: String,
       androidTargetType: AndroidTargetType,
       resourceDirectories: List<VirtualFileUrl>,
@@ -64,12 +64,12 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
 }
 
 //region generated code
-public fun MutableEntityStorage.modifyAndroidAddendumEntity(
+fun MutableEntityStorage.modifyAndroidAddendumEntity(
   entity: AndroidAddendumEntity,
   modification: AndroidAddendumEntity.Builder.() -> Unit,
 ): AndroidAddendumEntity = modifyEntity(AndroidAddendumEntity.Builder::class.java, entity, modification)
 
-public var ModuleEntity.Builder.androidAddendumEntity: @Child AndroidAddendumEntity.Builder?
+var ModuleEntity.Builder.androidAddendumEntity: @Child AndroidAddendumEntity.Builder?
   by WorkspaceEntity.extensionBuilder(AndroidAddendumEntity::class.java)
 //endregion
 

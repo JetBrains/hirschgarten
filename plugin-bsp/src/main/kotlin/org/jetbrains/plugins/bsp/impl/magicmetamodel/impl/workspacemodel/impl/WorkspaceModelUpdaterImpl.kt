@@ -14,8 +14,8 @@ import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.up
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModuleUpdater
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.JavaModuleToDummyJavaModulesTransformerHACK
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
 import java.nio.file.Path
@@ -67,7 +67,7 @@ internal class WorkspaceModelUpdaterImpl(
             .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         includedRoots = includedDirectories,
         excludedRoots = excludedDirectories,
-        entitySource = BspEntitySource,
+        entitySource = BspProjectEntitySource,
       )
     workspaceModelEntityUpdaterConfig.workspaceEntityStorageBuilder.addEntity(entity)
   }

@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bsp.sdkcompat.android.buildResult
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
+import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
 
@@ -39,7 +40,7 @@ public class BspProjectSystemBuildManager(private val project: Project) : Projec
 
   override fun compileProject() {
     BspCoroutineService.getInstance(project).start {
-      ProjectSyncTask(project).sync(buildProject = true)
+      ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = true)
     }
   }
 

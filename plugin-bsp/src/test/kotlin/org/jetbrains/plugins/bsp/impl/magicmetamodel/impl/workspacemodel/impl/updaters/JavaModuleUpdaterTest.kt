@@ -25,7 +25,7 @@ import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaSourceRoot
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
@@ -157,7 +157,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies =
                   listOf(
                     ModuleDependency(
@@ -199,7 +199,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                   JavaModuleSettingsEntity(
                     inheritedCompilerOutput = false,
                     excludeOutput = true,
-                    entitySource = BspEntitySource,
+                    entitySource = BspProjectEntitySource,
                   ) {
                     this.compilerOutput = Path("compiler/output").toVirtualFileUrl(virtualFileUrlManager)
                   }
@@ -498,7 +498,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies =
                   listOf(
                     ModuleDependency(
@@ -540,7 +540,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                   JavaModuleSettingsEntity(
                     inheritedCompilerOutput = false,
                     excludeOutput = true,
-                    entitySource = BspEntitySource,
+                    entitySource = BspProjectEntitySource,
                   ) {
                     this.compilerOutput = Path("compiler/output1").toVirtualFileUrl(virtualFileUrlManager)
                   }
@@ -552,7 +552,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module2",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies =
                   listOf(
                     ModuleDependency(
@@ -579,7 +579,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
                   JavaModuleSettingsEntity(
                     inheritedCompilerOutput = false,
                     excludeOutput = true,
-                    entitySource = BspEntitySource,
+                    entitySource = BspProjectEntitySource,
                   ) {
                     this.compilerOutput = Path("compiler/output2").toVirtualFileUrl(virtualFileUrlManager)
                   }
@@ -807,7 +807,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies = emptyList(),
               ) {
                 type = ModuleTypeId("JAVA_MODULE")
@@ -889,7 +889,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module1",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies = emptyList(),
               ) {
                 type = ModuleTypeId("JAVA_MODULE")
@@ -900,7 +900,7 @@ internal class JavaModuleUpdaterTest : WorkspaceModelBaseTest() {
             moduleEntity =
               ModuleEntity(
                 name = "module2",
-                entitySource = BspEntitySource,
+                entitySource = BspProjectEntitySource,
                 dependencies = emptyList(),
               ) {
                 type = ModuleTypeId("JAVA_MODULE")

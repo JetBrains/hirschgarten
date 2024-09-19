@@ -53,6 +53,7 @@ import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
@@ -90,6 +91,7 @@ class BuildServerMock(
   private val mobileInstallResult: MobileInstallResult? = null,
   private val jvmBinaryJarsResult: JvmBinaryJarsResult? = null,
   private val workspaceBuildTargetsResultAndBuild: WorkspaceBuildTargetsResult? = null,
+  private val workspaceBuildTargetsPartial: WorkspaceBuildTargetsResult? = null,
   private val pythonOptionsResult: PythonOptionsResult? = null,
   private val rustWorkspaceResult: RustWorkspaceResult? = null,
 ) : JoinedBuildServer {
@@ -181,6 +183,9 @@ class BuildServerMock(
 
   override fun workspaceBuildAndGetBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> =
     wrapInFuture(workspaceBuildTargetsResultAndBuild)
+
+  override fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): CompletableFuture<WorkspaceBuildTargetsResult> =
+    wrapInFuture(workspaceBuildTargetsPartial)
 
   override fun buildTargetPythonOptions(pythonOptionsParams: PythonOptionsParams?): CompletableFuture<PythonOptionsResult> =
     wrapInFuture(pythonOptionsResult)

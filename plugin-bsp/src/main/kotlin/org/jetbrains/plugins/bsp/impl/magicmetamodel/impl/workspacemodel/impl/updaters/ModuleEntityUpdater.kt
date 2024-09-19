@@ -23,7 +23,7 @@ import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDependency
@@ -84,7 +84,7 @@ internal class ModuleEntityUpdater(
     when {
       entityToAdd.isDummy -> BspDummyEntitySource
       !JpsFeatureFlags.isJpsCompilationEnabled ||
-        entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspEntitySource
+        entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspModuleEntitySource(entityToAdd.name)
 
       else ->
         LegacyBridgeJpsEntitySourceFactory.createEntitySourceForModule(

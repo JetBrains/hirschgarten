@@ -2,6 +2,10 @@ package org.jetbrains.plugins.bsp.workspacemodel.entities
 
 import com.intellij.platform.workspace.storage.EntitySource
 
-public object BspEntitySource : EntitySource
+sealed interface BspEntitySource : EntitySource
 
-public object BspDummyEntitySource : EntitySource
+data object BspProjectEntitySource : BspEntitySource
+
+class BspModuleEntitySource(val moduleName: String) : BspEntitySource
+
+data object BspDummyEntitySource : BspEntitySource

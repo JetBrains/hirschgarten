@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.actions.target.BuildTargetAction
+import org.jetbrains.plugins.bsp.impl.flow.sync.actions.ResyncTargetAction
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
@@ -72,7 +73,8 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     if (this == null) {
       emptyList()
     } else {
-      DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList() + BuildTargetAction(this.id)
+      listOf(ResyncTargetAction(id)) + DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList() +
+        BuildTargetAction(this.id)
     }
 }
 

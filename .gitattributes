@@ -5,3 +5,5 @@ MODULE.bazel.lock merge=bazel-lockfile-merge
 # intellij testing platform uses enhanced syntax in files in tests (tags with information about autocompletion)
 # https://github.com/aspect-build/rules_lint/blob/main/docs/formatting.md#ignoring-files-explicitly
 plugin-bazel/src/test/testData/**/*.bzl rules-lint-ignored
+# exclude all generated sources
+**/gen/** rules-lint-ignored

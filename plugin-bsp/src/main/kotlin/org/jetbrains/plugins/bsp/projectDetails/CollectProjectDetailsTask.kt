@@ -44,6 +44,8 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
+import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
+import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncScope
 import org.jetbrains.plugins.bsp.impl.flow.sync.asyncQueryIf
 import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.ProjectDetails
@@ -102,6 +104,7 @@ class CollectProjectDetailsTask(
 
   suspend fun execute(
     server: JoinedBuildServer,
+    syncScope: ProjectSyncScope,
     capabilities: BazelBuildServerCapabilities,
     progressReporter: SequentialProgressReporter,
     baseTargetInfos: BaseTargetInfos,
@@ -141,7 +144,7 @@ class CollectProjectDetailsTask(
     }
 
     progressReporter.sizedStep(workSize = 25, text = BspPluginBundle.message("progress.bar.update.internal.model")) {
-      updateInternalModelSubtask(projectDetails)
+      updateInternalModelSubtask(projectDetails, syncScope)
     }
   }
 
@@ -297,7 +300,7 @@ class CollectProjectDetailsTask(
       )
     }
 
-  private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails) {
+  private suspend fun updateInternalModelSubtask(projectDetails: ProjectDetails, syncScope: ProjectSyncScope) {
     project.syncConsole.withSubtask(
       taskId,
       "calculate-project-structure",
@@ -327,10 +330,18 @@ class CollectProjectDetailsTask(
 
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
-            val targetIdToTargetInfo =
+            val syncedTargetIdToTargetInfo =
               (projectDetails.targets + projectDetails.nonModuleTargets).associate {
                 it.id to
                   it.toBuildTargetInfo()
+              }
+
+            val targetIdToTargetInfo =
+              if (syncScope is FullProjectSync) {
+                syncedTargetIdToTargetInfo
+              } else {
+                project.temporaryTargetUtils.targetIdToTargetInfo +
+                  syncedTargetIdToTargetInfo
               }
             val targetIdToModuleEntityMap =
               TargetIdToModuleEntitiesMap(
@@ -345,14 +356,15 @@ class CollectProjectDetailsTask(
                 isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
               )
 
-            project.temporaryTargetUtils.saveTargets(
-              targetIdToTargetInfo,
-              targetIdToModuleEntityMap,
-              targetIdToModuleDetails,
-              libraries,
-              libraryModules,
-            )
-
+            if (syncScope is FullProjectSync) {
+              project.temporaryTargetUtils.saveTargets(
+                targetIdToTargetInfo,
+                targetIdToModuleEntityMap,
+                targetIdToModuleDetails,
+                libraries,
+                libraryModules,
+              )
+            }
             targetIdToModuleEntityMap
           }
 

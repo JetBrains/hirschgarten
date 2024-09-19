@@ -45,7 +45,7 @@ public interface GeneratedJavaSourceRootEntity : WorkspaceEntity {
       return builder
     }
   }
-  //endregion
+//endregion
 }
 
 //region generated code

@@ -12,6 +12,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.plugins.bsp.building.syncConsole
 import org.jetbrains.plugins.bsp.building.withSubtask
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
@@ -28,6 +29,7 @@ data class BaseTargetInfo(
 
 class BaseProjectSync(private val project: Project) {
   suspend fun execute(
+    syncScope: ProjectSyncScope,
     buildProject: Boolean,
     server: JoinedBuildServer,
     capabilities: BuildServerCapabilities,
@@ -39,7 +41,7 @@ class BaseProjectSync(private val project: Project) {
       message = BspPluginBundle.message("console.task.base.sync"),
     ) {
       coroutineScope {
-        val buildTargets = queryWorkspaceBuildTargets(server, buildProject)
+        val buildTargets = queryWorkspaceBuildTargets(server, syncScope, buildProject)
         val allTargetIds = buildTargets.calculateAllTargetIds()
 
         val sourcesResult = asyncQuery("buildTarget/sources") { server.buildTargetSources(SourcesParams(allTargetIds)) }
@@ -55,10 +57,20 @@ class BaseProjectSync(private val project: Project) {
       }
     }
 
-  private suspend fun queryWorkspaceBuildTargets(server: JoinedBuildServer, buildProject: Boolean): List<BuildTarget> =
+  private suspend fun queryWorkspaceBuildTargets(
+    server: JoinedBuildServer,
+    syncScope: ProjectSyncScope,
+    buildProject: Boolean,
+  ): List<BuildTarget> =
     coroutineScope {
       val result =
-        if (buildProject) {
+        // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1237
+        // PartialProjectSync is used only in ResyncTargetAction, which is visible only for bazel-bsp project
+        if (syncScope is PartialProjectSync) {
+          query("workspace/buildTargetsPartial") {
+            server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
+          }
+        } else if (buildProject) {
           query("workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }
         } else {
           query("workspace/buildTargets") { server.workspaceBuildTargets() }

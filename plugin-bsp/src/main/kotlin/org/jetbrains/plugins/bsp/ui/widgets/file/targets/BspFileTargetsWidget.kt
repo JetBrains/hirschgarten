@@ -22,6 +22,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.extensionPoints.targetActionProvider
 import org.jetbrains.plugins.bsp.impl.actions.target.BuildTargetAction
+import org.jetbrains.plugins.bsp.impl.flow.sync.actions.ResyncTargetAction
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
@@ -95,6 +96,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
 
   private fun BuildTargetInfo.calculatePopupGroup(): ActionGroup =
     DefaultActionGroup(id.uri, true).also {
+      it.add(ResyncTargetAction(id))
       it.add(CopyTargetIdAction.FromTargetInfo(this))
       it.addSeparator()
       if (capabilities.canCompile) {

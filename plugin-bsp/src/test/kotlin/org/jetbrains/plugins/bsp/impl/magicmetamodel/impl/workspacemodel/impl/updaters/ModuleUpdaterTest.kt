@@ -13,7 +13,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDependency
@@ -119,7 +119,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
               ),
-            entitySource = BspEntitySource,
+            entitySource = BspProjectEntitySource,
           ) {
             type = ModuleTypeId("JAVA_MODULE")
           },
@@ -223,7 +223,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
               ),
-            entitySource = BspEntitySource,
+            entitySource = BspProjectEntitySource,
           ) {
             type = ModuleTypeId("JAVA_MODULE")
           },
@@ -253,7 +253,7 @@ internal class ModuleUpdaterTest : WorkspaceModelBaseTest() {
                 SdkDependency(SdkId("11", "JavaSDK")),
                 ModuleSourceDependency,
               ),
-            entitySource = BspEntitySource,
+            entitySource = BspProjectEntitySource,
           ) {
             type = ModuleTypeId("JAVA_MODULE")
           },

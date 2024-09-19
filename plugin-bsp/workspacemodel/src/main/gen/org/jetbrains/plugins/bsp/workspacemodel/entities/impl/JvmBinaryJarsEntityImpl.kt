@@ -3,11 +3,13 @@ package org.jetbrains.plugins.bsp.workspacemodel.entities.impl
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
+import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
+import com.intellij.platform.workspace.storage.annotations.Child
 import com.intellij.platform.workspace.storage.impl.EntityLink
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
@@ -26,24 +28,17 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.JvmBinaryJarsEntity
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) :
-  WorkspaceEntityBase(
-    dataSource,
-  ),
-  JvmBinaryJarsEntity {
+internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEntityData) : JvmBinaryJarsEntity,
+  WorkspaceEntityBase(dataSource) {
+
   private companion object {
     internal val MODULE_CONNECTION_ID: ConnectionId =
-      ConnectionId.create(
-        ModuleEntity::class.java,
-        JvmBinaryJarsEntity::class.java,
-        ConnectionId.ConnectionType.ONE_TO_ONE,
-        false,
-      )
+      ConnectionId.create(ModuleEntity::class.java, JvmBinaryJarsEntity::class.java, ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
-    private val connections =
-      listOf<ConnectionId>(
-        MODULE_CONNECTION_ID,
-      )
+    private val connections = listOf<ConnectionId>(
+      MODULE_CONNECTION_ID,
+    )
+
   }
 
   override val jars: List<VirtualFileUrl>
@@ -61,13 +56,13 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
       return dataSource.entitySource
     }
 
-  override fun connectionIdList(): List<ConnectionId> = connections
+  override fun connectionIdList(): List<ConnectionId> {
+    return connections
+  }
+
 
   internal class Builder(result: JvmBinaryJarsEntityData?) :
-    ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(
-      result,
-    ),
-    JvmBinaryJarsEntity.Builder {
+    ModifiableWorkspaceEntityBase<JvmBinaryJarsEntity, JvmBinaryJarsEntityData>(result), JvmBinaryJarsEntity.Builder {
     internal constructor() : this(JvmBinaryJarsEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -112,7 +107,9 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
       }
     }
 
-    override fun connectionIdList(): List<ConnectionId> = connections
+    override fun connectionIdList(): List<ConnectionId> {
+      return connections
+    }
 
     override fun afterModification() {
       val collection_jars = getEntityData().jars
@@ -129,12 +126,14 @@ internal class JvmBinaryJarsEntityImpl(private val dataSource: JvmBinaryJarsEnti
       updateChildToParentReferences(parents)
     }
 
+
     override var entitySource: EntitySource
       get() = getEntityData().entitySource
       set(value) {
         checkModificationAllowed()
         getEntityData(true).entitySource = value
         changedProperty.add("entitySource")
+
       }
 
     private val jarsUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
@@ -221,10 +220,9 @@ internal class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity
     }
   }
 
-  override fun getMetadata(): EntityMetadata =
-    MetadataStorageImpl.getMetadataByTypeFqn(
-      "org.jetbrains.plugins.bsp.workspacemodel.entities.JvmBinaryJarsEntity",
-    ) as EntityMetadata
+  override fun getMetadata(): EntityMetadata {
+    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.plugins.bsp.workspacemodel.entities.JvmBinaryJarsEntity") as EntityMetadata
+  }
 
   override fun clone(): JvmBinaryJarsEntityData {
     val clonedEntity = super.clone()
@@ -233,12 +231,15 @@ internal class JvmBinaryJarsEntityData : WorkspaceEntityData<JvmBinaryJarsEntity
     return clonedEntity
   }
 
-  override fun getEntityInterface(): Class<out WorkspaceEntity> = JvmBinaryJarsEntity::class.java
+  override fun getEntityInterface(): Class<out WorkspaceEntity> {
+    return JvmBinaryJarsEntity::class.java
+  }
 
-  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> =
-    JvmBinaryJarsEntity(jars, entitySource) {
+  override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
+    return JvmBinaryJarsEntity(jars, entitySource) {
       parents.filterIsInstance<ModuleEntity.Builder>().singleOrNull()?.let { this.module = it }
     }
+  }
 
   override fun getRequiredParents(): List<Class<out WorkspaceEntity>> {
     val res = mutableListOf<Class<out WorkspaceEntity>>()

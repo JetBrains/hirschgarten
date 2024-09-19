@@ -16,6 +16,7 @@ class CollectProjectDetailsSyncHook : ProjectSyncHook {
       capabilities = environment.capabilities,
       progressReporter = environment.progressReporter,
       baseTargetInfos = environment.baseTargetInfos,
+      syncScope = environment.syncScope,
     )
     environment.diff.workspaceModelDiff.addPostApplyAction { task.postprocessingSubtask() }
   }

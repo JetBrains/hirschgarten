@@ -19,13 +19,16 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.GoBuildTarget
+import org.jetbrains.plugins.bsp.config.bspBuildToolId
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
+import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
-import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.workspace.model.test.framework.BuildServerMock
 import org.jetbrains.workspace.model.test.framework.MockProjectBaseTest
 import org.junit.jupiter.api.BeforeEach
@@ -69,6 +72,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   @BeforeEach
   override fun beforeEach() {
     // given
+    project.buildToolId = bspBuildToolId
     hook = GoProjectSync()
   }
 
@@ -85,13 +89,14 @@ class GoProjectSyncTest : MockProjectBaseTest() {
       reportSequentialProgress { reporter ->
         val environment =
           ProjectSyncHook.ProjectSyncHookEnvironment(
-            project,
-            server,
-            capabilities,
-            diff,
-            "test",
-            reporter,
-            goTestTargets.baseTargetInfos,
+            project = project,
+            syncScope = FullProjectSync,
+            server = server,
+            capabilities = capabilities,
+            diff = diff,
+            taskId = "test",
+            progressReporter = reporter,
+            baseTargetInfos = goTestTargets.baseTargetInfos,
           )
         hook.onSync(environment)
       }
@@ -121,13 +126,14 @@ class GoProjectSyncTest : MockProjectBaseTest() {
       reportSequentialProgress { reporter ->
         val environment =
           ProjectSyncHook.ProjectSyncHookEnvironment(
-            project,
-            server,
-            capabilities,
-            diff,
-            "test",
-            reporter,
-            goTestTargets.baseTargetInfos,
+            project = project,
+            syncScope = FullProjectSync,
+            server = server,
+            capabilities = capabilities,
+            diff = diff,
+            taskId = "test",
+            progressReporter = reporter,
+            baseTargetInfos = goTestTargets.baseTargetInfos,
           )
         hook.onSync(environment)
       }
@@ -214,8 +220,8 @@ class GoProjectSyncTest : MockProjectBaseTest() {
 
   private fun generateVgoStandaloneResult(info: GeneratedTargetInfo, expectedRoot: VirtualFileUrl): ExpectedVgoStandaloneModuleEntity =
     ExpectedVgoStandaloneModuleEntity(
-      moduleId = ModuleId(info.targetId.toString()),
-      entitySource = BspEntitySource,
+      moduleId = ModuleId(info.targetId.uri),
+      entitySource = BspProjectEntitySource,
       importPath = info.importPath,
       root = expectedRoot,
     )
@@ -227,7 +233,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
   ): ExpectedVgoDependencyEntity =
     ExpectedVgoDependencyEntity(
       importPath = dependencyInfo.importPath,
-      entitySource = BspEntitySource,
+      entitySource = BspProjectEntitySource,
       isMainModule = false,
       internal = true,
       module = generateVgoStandaloneResult(parentInfo, expectedRoot),

@@ -14,6 +14,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.impl.server.connection.connectionDetailsProvider
@@ -102,6 +103,7 @@ public class BspStartupActivity : ProjectActivity {
     if (isProjectInIncompleteState()) {
       log.info("Running BSP sync task")
       ProjectSyncTask(this).sync(
+        syncScope = FullProjectSync,
         buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
       )
     }

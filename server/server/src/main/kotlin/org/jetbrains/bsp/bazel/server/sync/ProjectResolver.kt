@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
@@ -13,6 +14,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGen
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.bazel.workspacecontext.isRustEnabled
@@ -32,7 +34,11 @@ class ProjectResolver(
 ) {
   private fun <T> measured(description: String, f: () -> T): T = tracer.spanBuilder(description).use { f() }
 
-  fun resolve(cancelChecker: CancelChecker, build: Boolean): Project =
+  fun resolve(
+    cancelChecker: CancelChecker,
+    build: Boolean,
+    requestedTargetsToSync: List<BuildTargetIdentifier>?,
+  ): Project =
     tracer.spanBuilder("Resolve project").use {
       val workspaceContext =
         measured(
@@ -61,10 +67,12 @@ class ProjectResolver(
         bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages)
       }
 
+      val targetsToSync = requestedTargetsToSync?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
+
       val buildAspectResult =
         measured(
           "Building project with aspect",
-        ) { buildProjectWithAspect(cancelChecker, workspaceContext, build) }
+        ) { buildProjectWithAspect(cancelChecker, workspaceContext, build, targetsToSync) }
       val aspectOutputs =
         measured(
           "Reading aspect output paths",
@@ -91,6 +99,7 @@ class ProjectResolver(
     cancelChecker: CancelChecker,
     workspaceContext: WorkspaceContext,
     build: Boolean,
+    targetsToSync: TargetsSpec,
   ): BazelBspAspectsManagerResult {
     val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, ARTIFACTS_OUTPUT_GROUP, RUST_ANALYZER_OUTPUT_GROUP)
     if (build) {
@@ -99,7 +108,7 @@ class ProjectResolver(
 
     return bazelBspAspectsManager.fetchFilesFromOutputGroups(
       cancelChecker = cancelChecker,
-      targetSpecs = workspaceContext.targets,
+      targetSpecs = targetsToSync,
       aspect = ASPECT_NAME,
       outputGroups = outputGroups.map { if (build) "+$it" else it },
       shouldBuildManualFlags = workspaceContext.shouldAddBuildAffectingFlags(build),

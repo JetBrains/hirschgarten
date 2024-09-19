@@ -12,6 +12,7 @@ import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.impl.actions.target.RunWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.impl.actions.target.TestWithLocalJvmRunnerAction
+import org.jetbrains.plugins.bsp.impl.flow.sync.actions.ResyncTargetAction
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
 import org.jetbrains.plugins.bsp.runnerAction.BspRunnerAction
@@ -60,6 +61,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
 
   private fun calculatePopupGroup(target: BuildTargetInfo): ActionGroup =
     DefaultActionGroup().apply {
+      addAction(ResyncTargetAction(target.id))
       addAction(container.copyTargetIdAction)
       addSeparator()
       if (target.capabilities.canCompile) {
