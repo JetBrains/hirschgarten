@@ -6,6 +6,7 @@ kt_jvm_library(
     srcs = select_for_plugin_api({
         "intellij-2024.2": glob([
             "org/jetbrains/bsp/sdkcompat/android/**",
+            "org/jetbrains/bsp/sdkcompat/flow/open/**",
         ]),
         "intellij-2024.3": ["Dummy.kt"],
     }),
