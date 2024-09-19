@@ -497,8 +497,8 @@ class BazelProjectMapper(
               Label.parse(target.id) to dependencyJarsFromJdepsFiles(target)
             }
           }.awaitAll()
-          .toMap()
-      }
+      }.filter { it.second.isNotEmpty() }.toMap()
+
     val allJdepsJars =
       jdepsJars.values
         .asSequence()
@@ -507,16 +507,9 @@ class BazelProjectMapper(
 
     return runBlocking(Dispatchers.Default) {
       val outputJarsFromTransitiveDepsCache = ConcurrentHashMap<Label, Set<Path>>()
-      targetsToImport.values
-        .filter { targetSupportsJdeps(it) }
-        .map { target ->
+      jdepsJars
+        .map { (targetLabel, jarsFromJdeps) ->
           async {
-            val targetLabel = Label.parse(target.id)
-            val jarsFromJdeps = jdepsJars.getValue(targetLabel)
-            if (jarsFromJdeps.isEmpty()) {
-              return@async targetLabel to emptySet()
-            }
-
             val transitiveJdepsJars =
               getJdepsJarsFromTransitiveDependencies(
                 targetLabel,
