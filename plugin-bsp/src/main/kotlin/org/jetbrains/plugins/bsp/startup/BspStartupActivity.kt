@@ -4,14 +4,12 @@ import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
@@ -31,14 +29,8 @@ private val log = logger<BspStartupActivity>()
  * @see BspProjectOpenProcessor for additional actions that
  * may run when a project is being imported for the first time.
  */
-public class BspStartupActivity : ProjectActivity {
-  override suspend fun execute(project: Project) {
-    if (project.isBspProject) {
-      project.executeForBspProject()
-    }
-  }
-
-  private suspend fun Project.executeForBspProject() {
+public class BspStartupActivity : BspProjectActivity() {
+  override suspend fun Project.executeForBspProject() {
     log.info("Executing BSP startup activity for project: $this")
     BspStartupActivityTracker.startConfigurationPhase(this)
     executeEveryTime()
