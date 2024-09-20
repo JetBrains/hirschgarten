@@ -215,20 +215,21 @@ class BazelrcQuotingLexerTest : LexerTestCase() {
       "unknown : b at ch" --noshow_progress
       """.trimIndent()
 
-    code shouldLexTo listOf(
-      "Bazelrc:\"",
-      "Bazelrc:COMMAND",
-      "Bazelrc::",
-      "Bazelrc:CONFIG",
-      "WHITE_SPACE",
-      "Bazelrc:\"",
-      "Bazelrc:COMMAND",
-      "Bazelrc::",
-      "Bazelrc:CONFIG",
-      "Bazelrc:\"",
-      "WHITE_SPACE",
-      "Bazelrc:FLAG"
-    )
+    code shouldLexTo
+      listOf(
+        "Bazelrc:\"",
+        "Bazelrc:COMMAND",
+        "Bazelrc::",
+        "Bazelrc:CONFIG",
+        "WHITE_SPACE",
+        "Bazelrc:\"",
+        "Bazelrc:COMMAND",
+        "Bazelrc::",
+        "Bazelrc:CONFIG",
+        "Bazelrc:\"",
+        "WHITE_SPACE",
+        "Bazelrc:FLAG",
+      )
   }
 
   private infix fun String.shouldLexTo(expectedTokens: List<String>) {
