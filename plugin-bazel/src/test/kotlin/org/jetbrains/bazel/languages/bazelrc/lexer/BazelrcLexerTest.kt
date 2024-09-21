@@ -6,8 +6,16 @@ import org.junit.Test
 class BazelrcLexerTest : LexerTestCase() {
   @Test
   fun `should lex a simple command`() {
-    "build --strip=never" shouldLexTo
-      listOf("Bazelrc:COMMAND", "WHITE_SPACE", "Bazelrc:FLAG", "Bazelrc:=", "Bazelrc:VALUE")
+    val code = "build --strip=never"
+
+    code shouldLexTo
+      listOf(
+        "Bazelrc:COMMAND",
+        "WHITE_SPACE",
+        "Bazelrc:FLAG",
+        "Bazelrc:=",
+        "Bazelrc:VALUE",
+      )
   }
 
   @Test
@@ -165,7 +173,32 @@ class BazelrcLexerTest : LexerTestCase() {
       )
   }
 
+  @Test
+  fun `imports are lexed`() {
+    val code =
+      """
+      try-import %workspace%/.engflow.bazelrc
+      
+      import %workspace%/.engflow.bazelrc
+      
+      build
+      """.trimIndent()
+
+    code shouldLexTo
+      listOf(
+        "Bazelrc:IMPORT",
+        "WHITE_SPACE",
+        "Bazelrc:VALUE",
+        "WHITE_SPACE",
+        "Bazelrc:IMPORT",
+        "WHITE_SPACE",
+        "Bazelrc:VALUE",
+        "WHITE_SPACE",
+        "Bazelrc:COMMAND",
+      )
+  }
+
   private infix fun String.shouldLexTo(expectedTokens: List<String>) {
-    doLexerTest(this, BazelrcHighlightingLexer(), expectedTokens)
+    doLexerTest(this, BazelrcLexer(), expectedTokens)
   }
 }

@@ -27,6 +27,8 @@ COLON=[:]
 COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
 
 // lexing states:
+%xstate IMPORT
+
 %xstate CMD, CONFIG
 %xstate CMD_DQ, CONFIG_DQ
 %xstate CMD_SQ, CONFIG_SQ
@@ -42,7 +44,20 @@ COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
     ({SOFT_NL} | [{SPACE}{NL}])+                { return TokenType.WHITE_SPACE; }
     {COMMENT}+                                  { return BazelrcTokenTypes.COMMENT; }
 
+    "import" | "try-import"                     { yybegin(IMPORT); return BazelrcTokenTypes.IMPORT; }
+
     [^]                                         { yybegin(CMD); yypushback(1); }
+}
+
+<IMPORT> {
+    ({SOFT_NL} | [{SPACE}])+                        { return TokenType.WHITE_SPACE; }
+
+    {SOFT_NL} | [^{SQ}{DQ}{SPACE}{NL}]+             { return BazelrcTokenTypes.VALUE; }
+
+    {SQ} ({SOFT_NL} | \\{SQ} | [^{SQ}{NL}])* {SQ}?  { return BazelrcTokenTypes.VALUE; }
+    {DQ} ({SOFT_NL} | \\{DQ} | [^{DQ}{NL}])* {DQ}?  { return BazelrcTokenTypes.VALUE; }
+
+    [^]                                             { yybegin(YYINITIAL); yypushback(1); }
 }
 
 <CMD> {

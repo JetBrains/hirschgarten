@@ -8,4 +8,7 @@ class BazelrcParsingTest : BazelrcParsingTestCase("") {
   fun testQuoting() = doTest(true, true)
 
   fun testContinuations() = doTest(true, true)
+
+  // the test case generates parsing errors on purpose
+  fun testImports() = doTest(true, false)
 }

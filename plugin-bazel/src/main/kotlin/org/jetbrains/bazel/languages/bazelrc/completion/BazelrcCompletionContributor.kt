@@ -5,9 +5,11 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
+import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns.psiElement
+import com.intellij.psi.tree.TokenSet
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.bazelrc.BazelrcLanguage
@@ -16,20 +18,21 @@ import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFile
 
 class BazelrcCompletionContributor : CompletionContributor() {
   init {
-    extend(CompletionType.BASIC, BazelCommandCompletionProvider.psiElementPattern, BazelCommandCompletionProvider())
-    extend(CompletionType.BASIC, BazelConfigCompletionProvider.psiElementPattern, BazelConfigCompletionProvider())
+    extend(CompletionType.BASIC, BazelCommandCompletionProvider.psiPattern, BazelCommandCompletionProvider())
+    extend(CompletionType.BASIC, BazelImportCompletionProvider.psiPattern, BazelImportCompletionProvider())
+    extend(CompletionType.BASIC, BazelConfigCompletionProvider.psiPattern, BazelConfigCompletionProvider())
   }
 }
 
+val importOrCommandTokens = TokenSet.create(BazelrcTokenTypes.COMMAND, BazelrcTokenTypes.IMPORT)
+
 class BazelCommandCompletionProvider : CompletionProvider<CompletionParameters>() {
   companion object {
-    val psiElementPattern =
-      psiElement()
-        .withLanguage(BazelrcLanguage)
-        .andOr(
-          psiElement(BazelrcTokenTypes.COMMAND),
-          psiElement().beforeLeaf(psiElement(BazelrcTokenTypes.COMMAND)),
-        )
+    val psiPattern =
+      psiElement().withLanguage(BazelrcLanguage).andOr(
+        psiElement().withElementType(importOrCommandTokens),
+        psiElement().atStartOf(psiElement().withElementType(importOrCommandTokens)),
+      )
 
     // TODO(BAZEL-1195): Find a nicer way of building this, and the "set of correct flag with type / value for command" ?
     //    Maybe parsing the bazel help output on project sync?
@@ -66,7 +69,11 @@ class BazelCommandCompletionProvider : CompletionProvider<CompletionParameters>(
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    knownCommandsToDescriptions.forEach { result.addElement(functionLookupElement(it.key, it.value)) }
+    result.run {
+      addAllElements(
+        knownCommandsToDescriptions.map { (key, value) -> functionLookupElement(key, value) },
+      )
+    }
   }
 
   private fun functionLookupElement(name: String, description: String): LookupElement =
@@ -79,7 +86,7 @@ class BazelCommandCompletionProvider : CompletionProvider<CompletionParameters>(
 
 private class BazelConfigCompletionProvider : CompletionProvider<CompletionParameters>() {
   companion object {
-    val psiElementPattern =
+    val psiPattern =
       psiElement()
         .withLanguage(BazelrcLanguage)
         .andOr(
@@ -93,9 +100,11 @@ private class BazelConfigCompletionProvider : CompletionProvider<CompletionParam
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    val rcFile = parameters.originalFile as? BazelrcFile
-
-    rcFile?.findDeclaredConfigs()?.forEach { result.addElement(functionLookupElement(it)) }
+    (parameters.originalFile as? BazelrcFile)?.let {
+      result.run {
+        addAllElements(it.findDeclaredConfigs().map { functionLookupElement(it) })
+      }
+    }
   }
 
   private fun functionLookupElement(name: String): LookupElement =
@@ -103,4 +112,38 @@ private class BazelConfigCompletionProvider : CompletionProvider<CompletionParam
       .create(name)
       .withBoldness(true)
       .withIcon(BazelPluginIcons.bazel)
+}
+
+class BazelImportCompletionProvider : CompletionProvider<CompletionParameters>() {
+  companion object {
+    val psiPattern =
+      psiElement().withLanguage(BazelrcLanguage).andOr(
+        psiElement().withElementType(importOrCommandTokens),
+        psiElement().atStartOf(psiElement().withElementType(importOrCommandTokens)),
+      )
+
+    val importKeywordAndDescriptions =
+      mapOf(
+        "import" to "add a required import statement",
+        "try-import" to "adds an optional import statement",
+      )
+  }
+
+  override fun addCompletions(
+    parameters: CompletionParameters,
+    context: ProcessingContext,
+    result: CompletionResultSet,
+  ) {
+    result.run {
+      addAllElements(
+        importKeywordAndDescriptions.map { (keyword, description) ->
+          LookupElementBuilder
+            .create(keyword)
+            .withTailText(" $description", true)
+            .withIcon(BazelPluginIcons.bazelConfig)
+            .withAutoCompletionPolicy(AutoCompletionPolicy.ALWAYS_AUTOCOMPLETE)
+        },
+      )
+    }
+  }
 }
