@@ -9,6 +9,7 @@ import com.intellij.psi.tree.IElementType;
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes;
 
 @SuppressWarnings("UnnecessaryUnicodeEscape")
+
 class _BazelrcLexer implements FlexLexer {
 
   /** This character denotes the end of file */
@@ -19,144 +20,159 @@ class _BazelrcLexer implements FlexLexer {
 
   /** lexical states */
   public static final int YYINITIAL = 0;
-
-  public static final int CMD = 2;
-  public static final int CONFIG = 4;
-  public static final int CMD_DQ = 6;
-  public static final int CONFIG_DQ = 8;
-  public static final int CMD_SQ = 10;
-  public static final int CONFIG_SQ = 12;
-  public static final int FLAGS = 14;
-  public static final int VALUE = 16;
-  public static final int FLAG_DQ = 18;
-  public static final int VALUE_DQ = 20;
-  public static final int FLAG_SQ = 22;
-  public static final int VALUE_SQ = 24;
+  public static final int IMPORT = 2;
+  public static final int CMD = 4;
+  public static final int CONFIG = 6;
+  public static final int CMD_DQ = 8;
+  public static final int CONFIG_DQ = 10;
+  public static final int CMD_SQ = 12;
+  public static final int CONFIG_SQ = 14;
+  public static final int FLAGS = 16;
+  public static final int VALUE = 18;
+  public static final int FLAG_DQ = 20;
+  public static final int VALUE_DQ = 22;
+  public static final int FLAG_SQ = 24;
+  public static final int VALUE_SQ = 26;
 
   /**
-   * ZZ_LEXSTATE[l] is the state in the DFA for the lexical state l ZZ_LEXSTATE[l+1] is the state in
-   * the DFA for the lexical state l at the beginning of a line l is of the form l = 2*k, k a non
-   * negative integer
+   * ZZ_LEXSTATE[l] is the state in the DFA for the lexical state l
+   * ZZ_LEXSTATE[l+1] is the state in the DFA for the lexical state l
+   *                  at the beginning of a line
+   * l is of the form l = 2*k, k a non negative integer
    */
   private static final int ZZ_LEXSTATE[] = {
-    0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12
+     0,  0,  1,  1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6,  7,  7, 
+     8,  8,  9,  9, 10, 10, 11, 11, 12, 12, 13, 13
   };
 
-  /** Top-level table for translating characters to character classes */
-  private static final int[] ZZ_CMAP_TOP = zzUnpackcmap_top();
+  /**
+   * Top-level table for translating characters to character classes
+   */
+  private static final int [] ZZ_CMAP_TOP = zzUnpackcmap_top();
 
-  private static final String ZZ_CMAP_TOP_PACKED_0 = "\1\0\u10ff\u0100";
+  private static final String ZZ_CMAP_TOP_PACKED_0 =
+    "\1\0\u10ff\u0100";
 
-  private static int[] zzUnpackcmap_top() {
-    int[] result = new int[4352];
+  private static int [] zzUnpackcmap_top() {
+    int [] result = new int[4352];
     int offset = 0;
     offset = zzUnpackcmap_top(ZZ_CMAP_TOP_PACKED_0, offset, result);
     return result;
   }
 
-  private static int zzUnpackcmap_top(String packed, int offset, int[] result) {
-    int i = 0; /* index in packed string  */
-    int j = offset; /* index in unpacked array */
+  private static int zzUnpackcmap_top(String packed, int offset, int [] result) {
+    int i = 0;       /* index in packed string  */
+    int j = offset;  /* index in unpacked array */
     int l = packed.length();
     while (i < l) {
       int count = packed.charAt(i++);
       int value = packed.charAt(i++);
-      do result[j++] = value;
-      while (--count > 0);
+      do result[j++] = value; while (--count > 0);
     }
     return j;
   }
 
-  /** Second-level tables for translating characters to character classes */
-  private static final int[] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
+
+  /**
+   * Second-level tables for translating characters to character classes
+   */
+  private static final int [] ZZ_CMAP_BLOCKS = zzUnpackcmap_blocks();
 
   private static final String ZZ_CMAP_BLOCKS_PACKED_0 =
-      "\11\0\1\1\1\2\2\0\1\3\22\0\1\1\1\0"
-          + "\1\4\1\5\3\0\1\6\5\0\1\7\14\0\1\10"
-          + "\2\0\1\11\36\0\1\12\u01a3\0";
+    "\11\0\1\1\1\2\2\0\1\3\22\0\1\1\1\0"+
+    "\1\4\1\5\3\0\1\6\5\0\1\7\14\0\1\10"+
+    "\2\0\1\11\36\0\1\12\14\0\1\13\3\0\1\14"+
+    "\1\0\1\15\1\16\1\0\1\17\1\0\1\20\4\0"+
+    "\1\21\u0186\0";
 
-  private static int[] zzUnpackcmap_blocks() {
-    int[] result = new int[512];
+  private static int [] zzUnpackcmap_blocks() {
+    int [] result = new int[512];
     int offset = 0;
     offset = zzUnpackcmap_blocks(ZZ_CMAP_BLOCKS_PACKED_0, offset, result);
     return result;
   }
 
-  private static int zzUnpackcmap_blocks(String packed, int offset, int[] result) {
-    int i = 0; /* index in packed string  */
-    int j = offset; /* index in unpacked array */
+  private static int zzUnpackcmap_blocks(String packed, int offset, int [] result) {
+    int i = 0;       /* index in packed string  */
+    int j = offset;  /* index in unpacked array */
     int l = packed.length();
     while (i < l) {
       int count = packed.charAt(i++);
       int value = packed.charAt(i++);
-      do result[j++] = value;
-      while (--count > 0);
+      do result[j++] = value; while (--count > 0);
     }
     return j;
   }
 
-  /** Translates DFA states to action switch labels. */
-  private static final int[] ZZ_ACTION = zzUnpackAction();
+  /**
+   * Translates DFA states to action switch labels.
+   */
+  private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-      "\15\0\1\1\1\2\1\3\1\1\1\4\1\5\1\6"
-          + "\1\7\1\10\1\11\1\4\1\12\1\6\1\13\1\14"
-          + "\1\11\1\12\1\4\1\15\1\16\1\17\1\4\2\20"
-          + "\1\4\1\21\1\22\1\4\2\20\1\23\1\2\1\24"
-          + "\1\25\1\26\1\23\1\27\1\23\1\30\1\5\1\31"
-          + "\1\30\1\32\1\30\1\6\1\33\2\30\1\6\1\34"
-          + "\2\30\1\0\1\3\10\0\1\25\2\35\1\2\1\0"
-          + "\1\30\1\0\2\30\1\0\2\35\1\0\2\35\5\0"
-          + "\1\5\4\0";
+    "\16\0\1\1\1\2\1\3\3\1\1\4\1\2\1\5"+
+    "\3\4\1\6\1\7\1\10\1\11\1\12\1\13\1\6"+
+    "\1\14\1\10\1\15\1\16\1\13\1\14\1\6\1\17"+
+    "\1\20\1\21\1\6\2\22\1\6\1\23\1\24\1\6"+
+    "\2\22\1\25\1\2\1\26\1\27\1\30\1\25\1\31"+
+    "\1\25\1\4\1\7\1\32\1\4\1\33\1\4\1\10"+
+    "\1\34\2\4\1\10\1\35\2\4\1\0\1\3\4\0"+
+    "\3\4\7\0\1\27\2\36\1\4\1\0\2\4\1\0"+
+    "\2\36\1\0\2\36\11\0\1\7\10\0\1\37";
 
-  private static int[] zzUnpackAction() {
-    int[] result = new int[100];
+  private static int [] zzUnpackAction() {
+    int [] result = new int[122];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
   }
 
-  private static int zzUnpackAction(String packed, int offset, int[] result) {
-    int i = 0; /* index in packed string  */
-    int j = offset; /* index in unpacked array */
+  private static int zzUnpackAction(String packed, int offset, int [] result) {
+    int i = 0;       /* index in packed string  */
+    int j = offset;  /* index in unpacked array */
     int l = packed.length();
     while (i < l) {
       int count = packed.charAt(i++);
       int value = packed.charAt(i++);
-      do result[j++] = value;
-      while (--count > 0);
+      do result[j++] = value; while (--count > 0);
     }
     return j;
   }
 
-  /** Translates a state to a row index in the transition table */
-  private static final int[] ZZ_ROWMAP = zzUnpackRowMap();
+
+  /**
+   * Translates a state to a row index in the transition table
+   */
+  private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-      "\0\0\0\13\0\26\0\41\0\54\0\67\0\102\0\115"
-          + "\0\130\0\143\0\156\0\171\0\204\0\217\0\232\0\245"
-          + "\0\260\0\273\0\306\0\321\0\217\0\217\0\217\0\334"
-          + "\0\347\0\217\0\217\0\217\0\347\0\362\0\375\0\321"
-          + "\0\217\0\217\0\u0108\0\u0113\0\u011e\0\u0129\0\217\0\217"
-          + "\0\u0134\0\u013f\0\u014a\0\217\0\u0155\0\217\0\u0160\0\217"
-          + "\0\u016b\0\217\0\u0176\0\u0181\0\u018c\0\217\0\u0197\0\217"
-          + "\0\u01a2\0\u01ad\0\217\0\u01b8\0\u01c3\0\u01ce\0\217\0\u01d9"
-          + "\0\u01e4\0\260\0\u01ef\0\u01fa\0\u0205\0\u0210\0\u021b\0\u0226"
-          + "\0\u0231\0\u023c\0\u0176\0\u0247\0\u016b\0\u0252\0\u025d\0\u0268"
-          + "\0\u0273\0\u027e\0\u0289\0\u0294\0\u029f\0\u01ad\0\u02aa\0\u02b5"
-          + "\0\u01ce\0\u02c0\0\u02cb\0\u02d6\0\u02e1\0\u02ec\0\u02f7\0\u0302"
-          + "\0\u030d\0\u0318\0\u0323\0\u032e";
+    "\0\0\0\22\0\44\0\66\0\110\0\132\0\154\0\176"+
+    "\0\220\0\242\0\264\0\306\0\330\0\352\0\374\0\u010e"+
+    "\0\u0120\0\u0132\0\u0144\0\u0156\0\u0168\0\u017a\0\374\0\u018c"+
+    "\0\u019e\0\u01b0\0\u01c2\0\u01d4\0\u01e6\0\374\0\374\0\374"+
+    "\0\u01f8\0\u020a\0\374\0\374\0\374\0\u020a\0\u021c\0\u022e"+
+    "\0\u01e6\0\374\0\374\0\u0240\0\u0252\0\u0264\0\u0276\0\374"+
+    "\0\374\0\u0288\0\u029a\0\u02ac\0\374\0\u02be\0\374\0\u02d0"+
+    "\0\374\0\u02e2\0\374\0\u02f4\0\u0306\0\u0318\0\374\0\u032a"+
+    "\0\374\0\u033c\0\u034e\0\374\0\u0360\0\u0372\0\u0384\0\374"+
+    "\0\u0396\0\u03a8\0\u0132\0\u03ba\0\u03cc\0\u03de\0\u03f0\0\u02f4"+
+    "\0\374\0\u0402\0\u0414\0\u0426\0\u0438\0\u044a\0\u045c\0\u046e"+
+    "\0\u0480\0\u0492\0\u04a4\0\u02e2\0\u04b6\0\u04c8\0\u04da\0\u04ec"+
+    "\0\u04fe\0\u0510\0\u034e\0\u0522\0\u0534\0\u0384\0\u0546\0\u0558"+
+    "\0\u056a\0\u057c\0\u058e\0\u05a0\0\u05b2\0\u05c4\0\u05d6\0\u05e8"+
+    "\0\u05fa\0\u060c\0\u061e\0\u0630\0\u0642\0\u0654\0\u0666\0\u0678"+
+    "\0\u0144\0\374";
 
-  private static int[] zzUnpackRowMap() {
-    int[] result = new int[100];
+  private static int [] zzUnpackRowMap() {
+    int [] result = new int[122];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
   }
 
-  private static int zzUnpackRowMap(String packed, int offset, int[] result) {
-    int i = 0; /* index in packed string  */
-    int j = offset; /* index in unpacked array */
+  private static int zzUnpackRowMap(String packed, int offset, int [] result) {
+    int i = 0;  /* index in packed string  */
+    int j = offset;  /* index in unpacked array */
     int l = packed.length() - 1;
     while (i < l) {
       int high = packed.charAt(i++) << 16;
@@ -165,80 +181,95 @@ class _BazelrcLexer implements FlexLexer {
     return j;
   }
 
-  /** The transition table of the DFA */
-  private static final int[] ZZ_TRANS = zzUnpacktrans();
+  /**
+   * The transition table of the DFA
+   */
+  private static final int [] ZZ_TRANS = zzUnpacktrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-      "\1\16\3\17\1\16\1\20\4\16\1\21\1\22\1\23"
-          + "\2\24\1\25\1\22\1\26\1\22\1\27\1\22\1\30"
-          + "\1\31\1\32\2\24\1\33\1\31\1\34\1\31\1\35"
-          + "\1\31\1\36\2\37\2\40\1\41\3\37\1\42\1\37"
-          + "\1\43\2\44\2\40\1\41\3\44\1\32\1\44\1\45"
-          + "\2\46\2\40\2\46\1\47\1\46\1\50\1\46\1\51"
-          + "\2\52\2\40\2\52\1\47\1\52\1\32\1\52\1\53"
-          + "\1\54\1\55\2\40\1\56\1\57\1\60\1\61\1\54"
-          + "\1\62\1\63\1\64\1\65\2\40\1\66\1\67\1\70"
-          + "\3\64\1\71\4\32\1\41\2\32\1\72\1\32\1\73"
-          + "\1\32\2\74\2\32\1\41\5\74\1\75\6\32\1\47"
-          + "\1\76\1\32\1\77\1\32\2\100\2\32\2\100\1\47"
-          + "\3\100\1\101\14\0\3\17\6\0\1\102\2\20\2\0"
-          + "\6\20\1\103\2\0\1\17\1\104\7\0\1\22\4\0"
-          + "\1\22\1\0\1\22\1\0\1\22\1\30\1\0\1\23"
-          + "\12\0\3\40\7\0\1\22\1\0\1\22\1\105\1\0"
-          + "\1\22\1\0\1\22\1\0\1\22\1\30\1\31\4\0"
-          + "\1\31\1\0\3\31\1\36\1\31\1\0\1\31\1\106"
-          + "\1\0\1\31\1\0\3\31\1\36\2\37\3\0\3\37"
-          + "\1\0\1\37\1\43\3\37\1\107\4\37\1\0\1\37"
-          + "\1\43\2\44\3\0\3\44\1\0\1\44\1\45\3\44"
-          + "\1\110\4\44\1\0\1\44\1\45\2\46\2\0\2\46"
-          + "\1\0\1\46\1\0\1\46\1\51\3\46\1\111\4\46"
-          + "\1\0\1\46\1\51\2\52\2\0\2\52\1\0\1\52"
-          + "\1\0\1\52\1\53\3\52\1\112\4\52\1\0\1\52"
-          + "\1\53\1\0\1\55\2\40\6\0\1\113\2\57\2\0"
-          + "\6\57\1\114\1\115\4\0\1\115\1\0\2\115\1\0"
-          + "\1\116\2\0\1\117\1\120\7\0\1\64\4\0\1\64"
-          + "\1\0\3\64\1\121\1\0\1\65\2\40\6\0\1\122"
-          + "\1\67\1\57\2\0\1\57\1\67\1\57\3\67\1\123"
-          + "\1\64\1\0\1\124\1\125\1\0\1\64\1\0\3\64"
-          + "\1\121\2\126\3\0\4\126\1\0\1\127\2\74\3\0"
-          + "\5\74\1\75\3\74\1\130\6\74\1\75\2\131\2\0"
-          + "\2\131\1\0\2\131\1\0\1\132\2\100\2\0\2\100"
-          + "\1\0\3\100\1\101\3\100\1\133\6\100\1\101\3\20"
-          + "\1\134\6\20\1\103\2\0\1\17\12\0\1\22\12\0"
-          + "\1\31\12\0\1\37\12\0\1\44\12\0\1\46\12\0"
-          + "\1\52\10\0\3\57\1\135\6\57\1\114\1\115\1\0"
-          + "\1\115\1\136\1\0\1\115\1\0\2\115\1\0\1\116"
-          + "\1\0\1\117\10\0\1\113\2\0\1\117\10\0\1\64"
-          + "\1\0\1\64\1\137\1\0\1\64\1\0\3\64\1\121"
-          + "\2\0\1\140\1\141\7\0\1\67\1\57\1\67\1\142"
-          + "\1\57\1\67\1\57\3\67\1\123\1\64\1\140\3\0"
-          + "\1\64\1\0\3\64\1\71\2\0\1\124\10\0\3\126"
-          + "\1\143\5\126\1\0\1\127\2\0\1\74\10\0\3\131"
-          + "\1\144\5\131\1\0\1\132\2\0\1\100\12\0\1\20"
-          + "\12\0\1\57\12\0\1\115\12\0\1\64\11\0\1\140"
-          + "\10\0\1\122\2\0\1\140\12\0\1\67\12\0\1\126"
-          + "\12\0\1\131\10\0";
+    "\1\17\3\20\1\17\1\21\4\17\1\22\1\23\4\17"+
+    "\1\24\1\17\1\25\1\26\2\27\1\30\1\25\1\31"+
+    "\3\25\1\32\7\25\1\33\1\34\2\35\1\36\1\33"+
+    "\1\37\1\33\1\40\1\33\1\41\7\33\1\42\1\43"+
+    "\2\35\1\44\1\42\1\45\1\42\1\46\1\42\1\47"+
+    "\7\42\2\50\2\51\1\52\3\50\1\53\1\50\1\54"+
+    "\7\50\2\55\2\51\1\52\3\55\1\43\1\55\1\56"+
+    "\7\55\2\57\2\51\2\57\1\60\1\57\1\61\1\57"+
+    "\1\62\7\57\2\63\2\51\2\63\1\60\1\63\1\43"+
+    "\1\63\1\64\7\63\1\65\1\66\2\51\1\67\1\70"+
+    "\1\71\1\72\1\65\1\73\1\74\7\65\1\75\1\76"+
+    "\2\51\1\77\1\100\1\101\3\75\1\102\7\75\4\43"+
+    "\1\52\2\43\1\103\1\43\1\104\10\43\2\105\2\43"+
+    "\1\52\5\105\1\106\7\105\6\43\1\60\1\107\1\43"+
+    "\1\110\10\43\2\111\2\43\2\111\1\60\3\111\1\112"+
+    "\7\111\23\0\3\20\6\0\1\113\7\0\2\21\2\0"+
+    "\6\21\1\114\7\21\2\0\1\20\1\115\32\0\1\116"+
+    "\24\0\1\117\2\0\1\25\4\0\1\25\1\0\13\25"+
+    "\1\0\1\26\10\0\1\120\7\0\2\30\2\0\1\121"+
+    "\5\30\1\122\7\30\2\31\2\0\2\31\1\121\3\31"+
+    "\1\123\7\31\1\25\1\0\1\26\1\124\1\0\1\25"+
+    "\1\0\13\25\1\33\4\0\1\33\1\0\1\33\1\0"+
+    "\1\33\1\41\7\33\1\0\1\34\21\0\3\51\16\0"+
+    "\1\33\1\0\1\33\1\125\1\0\1\33\1\0\1\33"+
+    "\1\0\1\33\1\41\7\33\1\42\4\0\1\42\1\0"+
+    "\3\42\1\47\10\42\1\0\1\42\1\126\1\0\1\42"+
+    "\1\0\3\42\1\47\7\42\2\50\3\0\3\50\1\0"+
+    "\1\50\1\54\12\50\1\127\4\50\1\0\1\50\1\54"+
+    "\7\50\2\55\3\0\3\55\1\0\1\55\1\56\12\55"+
+    "\1\130\4\55\1\0\1\55\1\56\7\55\2\57\2\0"+
+    "\2\57\1\0\1\57\1\0\1\57\1\62\12\57\1\131"+
+    "\4\57\1\0\1\57\1\62\7\57\2\63\2\0\2\63"+
+    "\1\0\1\63\1\0\1\63\1\64\12\63\1\132\4\63"+
+    "\1\0\1\63\1\64\7\63\1\0\1\66\2\51\6\0"+
+    "\1\120\7\0\2\70\2\0\6\70\1\133\7\70\1\134"+
+    "\4\0\1\134\1\0\2\134\1\0\1\135\7\134\2\0"+
+    "\1\26\1\124\16\0\1\75\4\0\1\75\1\0\3\75"+
+    "\1\136\7\75\1\0\1\76\2\51\6\0\1\137\7\0"+
+    "\1\100\1\70\2\0\1\70\1\100\1\70\3\100\1\140"+
+    "\7\100\1\75\1\0\1\141\1\142\1\0\1\75\1\0"+
+    "\3\75\1\136\7\75\2\143\3\0\4\143\1\0\1\144"+
+    "\7\143\2\105\3\0\5\105\1\106\12\105\1\145\6\105"+
+    "\1\106\7\105\2\146\2\0\2\146\1\0\2\146\1\0"+
+    "\1\147\7\146\2\111\2\0\2\111\1\0\3\111\1\112"+
+    "\12\111\1\150\6\111\1\112\7\111\3\21\1\151\6\21"+
+    "\1\114\7\21\2\0\1\20\35\0\1\152\24\0\1\153"+
+    "\3\30\1\154\6\30\1\122\7\30\3\31\1\155\6\31"+
+    "\1\123\7\31\2\0\1\26\21\0\1\33\21\0\1\42"+
+    "\21\0\1\50\21\0\1\55\21\0\1\57\21\0\1\63"+
+    "\17\0\3\70\1\156\6\70\1\133\7\70\1\134\1\0"+
+    "\1\134\1\157\1\0\1\134\1\0\2\134\1\0\1\135"+
+    "\7\134\1\75\1\0\1\75\1\160\1\0\1\75\1\0"+
+    "\3\75\1\136\7\75\2\0\1\161\1\162\16\0\1\100"+
+    "\1\70\1\100\1\163\1\70\1\100\1\70\3\100\1\140"+
+    "\7\100\1\75\1\161\3\0\1\75\1\0\3\75\1\102"+
+    "\7\75\2\0\1\141\17\0\3\143\1\164\5\143\1\0"+
+    "\1\144\7\143\2\0\1\105\17\0\3\146\1\165\5\146"+
+    "\1\0\1\147\7\146\2\0\1\111\21\0\1\21\34\0"+
+    "\1\166\13\0\1\167\14\0\1\30\21\0\1\31\21\0"+
+    "\1\70\21\0\1\134\21\0\1\75\20\0\1\161\10\0"+
+    "\1\137\11\0\1\161\21\0\1\100\21\0\1\143\21\0"+
+    "\1\146\36\0\1\170\15\0\1\171\26\0\1\172\1\0";
 
-  private static int[] zzUnpacktrans() {
-    int[] result = new int[825];
+  private static int [] zzUnpacktrans() {
+    int [] result = new int[1674];
     int offset = 0;
     offset = zzUnpacktrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
   }
 
-  private static int zzUnpacktrans(String packed, int offset, int[] result) {
-    int i = 0; /* index in packed string  */
-    int j = offset; /* index in unpacked array */
+  private static int zzUnpacktrans(String packed, int offset, int [] result) {
+    int i = 0;       /* index in packed string  */
+    int j = offset;  /* index in unpacked array */
     int l = packed.length();
     while (i < l) {
       int count = packed.charAt(i++);
       int value = packed.charAt(i++);
       value--;
-      do result[j++] = value;
-      while (--count > 0);
+      do result[j++] = value; while (--count > 0);
     }
     return j;
   }
+
 
   /* error codes */
   private static final int ZZ_UNKNOWN_ERROR = 0;
@@ -252,33 +283,34 @@ class _BazelrcLexer implements FlexLexer {
     "Error: pushback value was too large"
   };
 
-  /** ZZ_ATTRIBUTE[aState] contains the attributes of state {@code aState} */
-  private static final int[] ZZ_ATTRIBUTE = zzUnpackAttribute();
+  /**
+   * ZZ_ATTRIBUTE[aState] contains the attributes of state {@code aState}
+   */
+  private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-      "\15\0\1\11\6\1\3\11\2\1\3\11\4\1\2\11"
-          + "\4\1\2\11\3\1\1\11\1\1\1\11\1\1\1\11"
-          + "\1\1\1\11\3\1\1\11\1\1\1\11\2\1\1\11"
-          + "\3\1\1\11\2\1\1\0\1\1\10\0\4\1\1\0"
-          + "\1\1\1\0\2\1\1\0\2\1\1\0\2\1\5\0"
-          + "\1\1\4\0";
+    "\16\0\1\11\7\1\1\11\6\1\3\11\2\1\3\11"+
+    "\4\1\2\11\4\1\2\11\3\1\1\11\1\1\1\11"+
+    "\1\1\1\11\1\1\1\11\3\1\1\11\1\1\1\11"+
+    "\2\1\1\11\3\1\1\11\2\1\1\0\1\1\4\0"+
+    "\1\11\2\1\7\0\4\1\1\0\2\1\1\0\2\1"+
+    "\1\0\2\1\11\0\1\1\10\0\1\11";
 
-  private static int[] zzUnpackAttribute() {
-    int[] result = new int[100];
+  private static int [] zzUnpackAttribute() {
+    int [] result = new int[122];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
   }
 
-  private static int zzUnpackAttribute(String packed, int offset, int[] result) {
-    int i = 0; /* index in packed string  */
-    int j = offset; /* index in unpacked array */
+  private static int zzUnpackAttribute(String packed, int offset, int [] result) {
+    int i = 0;       /* index in packed string  */
+    int j = offset;  /* index in unpacked array */
     int l = packed.length();
     while (i < l) {
       int count = packed.charAt(i++);
       int value = packed.charAt(i++);
-      do result[j++] = value;
-      while (--count > 0);
+      do result[j++] = value; while (--count > 0);
     }
     return j;
   }
@@ -292,9 +324,8 @@ class _BazelrcLexer implements FlexLexer {
   /** the current lexical state */
   private int zzLexicalState = YYINITIAL;
 
-  /**
-   * this buffer contains the current text to be matched and is the source of the yytext() string
-   */
+  /** this buffer contains the current text to be matched and is
+      the source of the yytext() string */
   private CharSequence zzBuffer = "";
 
   /** the textposition at the last accepting state */
@@ -306,7 +337,8 @@ class _BazelrcLexer implements FlexLexer {
   /** startRead marks the beginning of the yytext() string in the buffer */
   private int zzStartRead;
 
-  /** endRead marks the last character in the buffer, that has been read from input */
+  /** endRead marks the last character in the buffer, that has been read
+      from input */
   private int zzEndRead;
 
   /** zzAtEOF == true <=> the scanner is at the EOF */
@@ -332,31 +364,33 @@ class _BazelrcLexer implements FlexLexer {
   @SuppressWarnings("unused")
   private boolean zzEOFDone;
 
+
   /**
    * Creates a new scanner
    *
-   * @param in the java.io.Reader to read input from.
+   * @param   in  the java.io.Reader to read input from.
    */
   _BazelrcLexer(java.io.Reader in) {
     this.zzReader = in;
   }
+
 
   /** Returns the maximum size of the scanner buffer, which limits the size of tokens. */
   private int zzMaxBufferLen() {
     return Integer.MAX_VALUE;
   }
 
-  /** Whether the scanner buffer can grow to accommodate a larger token. */
+  /**  Whether the scanner buffer can grow to accommodate a larger token. */
   private boolean zzCanGrow() {
     return true;
   }
 
-  /** Translates raw input code points to DFA table row */
+  /**
+   * Translates raw input code points to DFA table row
+   */
   private static int zzCMap(int input) {
     int offset = input & 255;
-    return offset == input
-        ? ZZ_CMAP_BLOCKS[offset]
-        : ZZ_CMAP_BLOCKS[ZZ_CMAP_TOP[input >> 8] | offset];
+    return offset == input ? ZZ_CMAP_BLOCKS[offset] : ZZ_CMAP_BLOCKS[ZZ_CMAP_TOP[input >> 8] | offset];
   }
 
   public final int getTokenStart() {
@@ -370,7 +404,7 @@ class _BazelrcLexer implements FlexLexer {
   public void reset(CharSequence buffer, int start, int end, int initialState) {
     zzBuffer = buffer;
     zzCurrentPos = zzMarkedPos = zzStartRead = start;
-    zzAtEOF = false;
+    zzAtEOF  = false;
     zzAtBOL = true;
     zzEndRead = end;
     yybegin(initialState);
@@ -379,17 +413,22 @@ class _BazelrcLexer implements FlexLexer {
   /**
    * Refills the input buffer.
    *
-   * @return {@code false}, iff there was new input.
-   * @exception java.io.IOException if any I/O-Error occurs
+   * @return      {@code false}, iff there was new input.
+   *
+   * @exception   java.io.IOException  if any I/O-Error occurs
    */
   private boolean zzRefill() throws java.io.IOException {
     return true;
   }
 
-  /** Returns the current lexical state. */
+
+  /**
+   * Returns the current lexical state.
+   */
   public final int yystate() {
     return zzLexicalState;
   }
+
 
   /**
    * Enters a new lexical state
@@ -400,73 +439,91 @@ class _BazelrcLexer implements FlexLexer {
     zzLexicalState = newState;
   }
 
-  /** Returns the text matched by the current regular expression. */
+
+  /**
+   * Returns the text matched by the current regular expression.
+   */
   public final CharSequence yytext() {
     return zzBuffer.subSequence(zzStartRead, zzMarkedPos);
   }
 
+
   /**
-   * Returns the character at position {@code pos} from the matched text.
+   * Returns the character at position {@code pos} from the
+   * matched text.
    *
-   * <p>It is equivalent to yytext().charAt(pos), but faster
+   * It is equivalent to yytext().charAt(pos), but faster
    *
-   * @param pos the position of the character to fetch. A value from 0 to yylength()-1.
+   * @param pos the position of the character to fetch.
+   *            A value from 0 to yylength()-1.
+   *
    * @return the character at position pos
    */
   public final char yycharat(int pos) {
-    return zzBuffer.charAt(zzStartRead + pos);
+    return zzBuffer.charAt(zzStartRead+pos);
   }
 
-  /** Returns the length of the matched text region. */
+
+  /**
+   * Returns the length of the matched text region.
+   */
   public final int yylength() {
-    return zzMarkedPos - zzStartRead;
+    return zzMarkedPos-zzStartRead;
   }
+
 
   /**
    * Reports an error that occurred while scanning.
    *
-   * <p>In a wellformed scanner (no or only correct usage of yypushback(int) and a match-all
-   * fallback rule) this method will only be called with things that "Can't Possibly Happen". If
-   * this method is called, something is seriously wrong (e.g. a JFlex bug producing a faulty
-   * scanner etc.).
+   * In a wellformed scanner (no or only correct usage of
+   * yypushback(int) and a match-all fallback rule) this method
+   * will only be called with things that "Can't Possibly Happen".
+   * If this method is called, something is seriously wrong
+   * (e.g. a JFlex bug producing a faulty scanner etc.).
    *
-   * <p>Usual syntax/scanner level error handling should be done in error fallback rules.
+   * Usual syntax/scanner level error handling should be done
+   * in error fallback rules.
    *
-   * @param errorCode the code of the errormessage to display
+   * @param   errorCode  the code of the errormessage to display
    */
   private void zzScanError(int errorCode) {
     String message;
     try {
       message = ZZ_ERROR_MSG[errorCode];
-    } catch (ArrayIndexOutOfBoundsException e) {
+    }
+    catch (ArrayIndexOutOfBoundsException e) {
       message = ZZ_ERROR_MSG[ZZ_UNKNOWN_ERROR];
     }
 
     throw new Error(message);
   }
 
+
   /**
    * Pushes the specified amount of characters back into the input stream.
    *
-   * <p>They will be read again by then next call of the scanning method
+   * They will be read again by then next call of the scanning method
    *
-   * @param number the number of characters to be read again. This number must not be greater than
-   *     yylength()!
+   * @param number  the number of characters to be read again.
+   *                This number must not be greater than yylength()!
    */
-  public void yypushback(int number) {
-    if (number > yylength()) zzScanError(ZZ_PUSHBACK_2BIG);
+  public void yypushback(int number)  {
+    if ( number > yylength() )
+      zzScanError(ZZ_PUSHBACK_2BIG);
 
     zzMarkedPos -= number;
   }
 
+
   /**
-   * Resumes scanning until the next regular expression is matched, the end of input is encountered
-   * or an I/O-Error occurs.
+   * Resumes scanning until the next regular expression is matched,
+   * the end of input is encountered or an I/O-Error occurs.
    *
-   * @return the next token
-   * @exception java.io.IOException if any I/O-Error occurs
+   * @return      the next token
+   * @exception   java.io.IOException  if any I/O-Error occurs
    */
-  public IElementType advance() throws java.io.IOException {
+  public IElementType advance() throws java.io.IOException
+  {
     int zzInput;
     int zzAction;
 
@@ -476,9 +533,9 @@ class _BazelrcLexer implements FlexLexer {
     int zzEndReadL = zzEndRead;
     CharSequence zzBufferL = zzBuffer;
 
-    int[] zzTransL = ZZ_TRANS;
-    int[] zzRowMapL = ZZ_ROWMAP;
-    int[] zzAttrL = ZZ_ATTRIBUTE;
+    int [] zzTransL = ZZ_TRANS;
+    int [] zzRowMapL = ZZ_ROWMAP;
+    int [] zzAttrL = ZZ_ATTRIBUTE;
 
     while (true) {
       zzMarkedPosL = zzMarkedPos;
@@ -491,48 +548,52 @@ class _BazelrcLexer implements FlexLexer {
 
       // set up zzAction for empty match case:
       int zzAttributes = zzAttrL[zzState];
-      if ((zzAttributes & 1) == 1) {
+      if ( (zzAttributes & 1) == 1 ) {
         zzAction = zzState;
       }
 
-      zzForAction:
-      {
+
+      zzForAction: {
         while (true) {
 
           if (zzCurrentPosL < zzEndReadL) {
             zzInput = Character.codePointAt(zzBufferL, zzCurrentPosL);
             zzCurrentPosL += Character.charCount(zzInput);
-          } else if (zzAtEOF) {
+          }
+          else if (zzAtEOF) {
             zzInput = YYEOF;
             break zzForAction;
-          } else {
+          }
+          else {
             // store back cached positions
-            zzCurrentPos = zzCurrentPosL;
-            zzMarkedPos = zzMarkedPosL;
+            zzCurrentPos  = zzCurrentPosL;
+            zzMarkedPos   = zzMarkedPosL;
             boolean eof = zzRefill();
             // get translated positions and possibly new buffer
-            zzCurrentPosL = zzCurrentPos;
-            zzMarkedPosL = zzMarkedPos;
-            zzBufferL = zzBuffer;
-            zzEndReadL = zzEndRead;
+            zzCurrentPosL  = zzCurrentPos;
+            zzMarkedPosL   = zzMarkedPos;
+            zzBufferL      = zzBuffer;
+            zzEndReadL     = zzEndRead;
             if (eof) {
               zzInput = YYEOF;
               break zzForAction;
-            } else {
+            }
+            else {
               zzInput = Character.codePointAt(zzBufferL, zzCurrentPosL);
               zzCurrentPosL += Character.charCount(zzInput);
             }
           }
-          int zzNext = zzTransL[zzRowMapL[zzState] + zzCMap(zzInput)];
+          int zzNext = zzTransL[ zzRowMapL[zzState] + zzCMap(zzInput) ];
           if (zzNext == -1) break zzForAction;
           zzState = zzNext;
 
           zzAttributes = zzAttrL[zzState];
-          if ((zzAttributes & 1) == 1) {
+          if ( (zzAttributes & 1) == 1 ) {
             zzAction = zzState;
             zzMarkedPosL = zzCurrentPosL;
-            if ((zzAttributes & 8) == 8) break zzForAction;
+            if ( (zzAttributes & 8) == 8 ) break zzForAction;
           }
+
         }
       }
 
@@ -542,238 +603,170 @@ class _BazelrcLexer implements FlexLexer {
       if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
         zzAtEOF = true;
         return null;
-      } else {
+      }
+      else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1:
-            {
-              yybegin(CMD);
-              yypushback(1);
+            { yybegin(CMD); yypushback(1);
             }
-            // fall through
-          case 30:
-            break;
+          // fall through
+          case 32: break;
           case 2:
-            {
-              return TokenType.WHITE_SPACE;
+            { return TokenType.WHITE_SPACE;
             }
-            // fall through
-          case 31:
-            break;
+          // fall through
+          case 33: break;
           case 3:
-            {
-              return BazelrcTokenTypes.COMMENT;
+            { return BazelrcTokenTypes.COMMENT;
             }
-            // fall through
-          case 32:
-            break;
+          // fall through
+          case 34: break;
           case 4:
-            {
-              return BazelrcTokenTypes.COMMAND;
+            { return BazelrcTokenTypes.VALUE;
             }
-            // fall through
-          case 33:
-            break;
+          // fall through
+          case 35: break;
           case 5:
-            {
-              yybegin(FLAGS);
-              return TokenType.WHITE_SPACE;
+            { yybegin(YYINITIAL); yypushback(1);
             }
-            // fall through
-          case 34:
-            break;
+          // fall through
+          case 36: break;
           case 6:
-            {
-              yybegin(FLAGS);
-              yypushback(1);
+            { return BazelrcTokenTypes.COMMAND;
             }
-            // fall through
-          case 35:
-            break;
+          // fall through
+          case 37: break;
           case 7:
-            {
-              yybegin(CMD_DQ);
-              return BazelrcTokenTypes.DOUBLE_QUOTE;
+            { yybegin(FLAGS); return TokenType.WHITE_SPACE;
             }
-            // fall through
-          case 36:
-            break;
+          // fall through
+          case 38: break;
           case 8:
-            {
-              yybegin(CMD_SQ);
-              return BazelrcTokenTypes.SINGLE_QUOTE;
+            { yybegin(FLAGS); yypushback(1);
             }
-            // fall through
-          case 37:
-            break;
+          // fall through
+          case 39: break;
           case 9:
-            {
-              yybegin(CONFIG);
-              return BazelrcTokenTypes.COLON;
+            { yybegin(CMD_DQ); return BazelrcTokenTypes.DOUBLE_QUOTE;
             }
-            // fall through
-          case 38:
-            break;
+          // fall through
+          case 40: break;
           case 10:
-            {
-              yybegin(FLAGS);
-              return BazelrcTokenTypes.CONFIG;
+            { yybegin(CMD_SQ); return BazelrcTokenTypes.SINGLE_QUOTE;
             }
-            // fall through
-          case 39:
-            break;
+          // fall through
+          case 41: break;
           case 11:
-            {
-              yybegin(CONFIG_DQ);
-              return BazelrcTokenTypes.DOUBLE_QUOTE;
+            { yybegin(CONFIG); return BazelrcTokenTypes.COLON;
             }
-            // fall through
-          case 40:
-            break;
+          // fall through
+          case 42: break;
           case 12:
-            {
-              yybegin(CONFIG_SQ);
-              return BazelrcTokenTypes.SINGLE_QUOTE;
+            { yybegin(FLAGS); return BazelrcTokenTypes.CONFIG;
             }
-            // fall through
-          case 41:
-            break;
+          // fall through
+          case 43: break;
           case 13:
-            {
-              yybegin(YYINITIAL);
-              return TokenType.WHITE_SPACE;
+            { yybegin(CONFIG_DQ); return BazelrcTokenTypes.DOUBLE_QUOTE;
             }
-            // fall through
-          case 42:
-            break;
+          // fall through
+          case 44: break;
           case 14:
-            {
-              yybegin(FLAGS);
-              return BazelrcTokenTypes.DOUBLE_QUOTE;
+            { yybegin(CONFIG_SQ); return BazelrcTokenTypes.SINGLE_QUOTE;
             }
-            // fall through
-          case 43:
-            break;
+          // fall through
+          case 45: break;
           case 15:
-            {
-              yybegin(CONFIG_DQ);
-              return BazelrcTokenTypes.COLON;
+            { yybegin(YYINITIAL); return TokenType.WHITE_SPACE;
             }
-            // fall through
-          case 44:
-            break;
+          // fall through
+          case 46: break;
           case 16:
-            {
-              return BazelrcTokenTypes.CONFIG;
+            { yybegin(FLAGS); return BazelrcTokenTypes.DOUBLE_QUOTE;
             }
-            // fall through
-          case 45:
-            break;
+          // fall through
+          case 47: break;
           case 17:
-            {
-              yybegin(FLAGS);
-              return BazelrcTokenTypes.SINGLE_QUOTE;
+            { yybegin(CONFIG_DQ); return BazelrcTokenTypes.COLON;
             }
-            // fall through
-          case 46:
-            break;
+          // fall through
+          case 48: break;
           case 18:
-            {
-              yybegin(CONFIG_SQ);
-              return BazelrcTokenTypes.COLON;
+            { return BazelrcTokenTypes.CONFIG;
             }
-            // fall through
-          case 47:
-            break;
+          // fall through
+          case 49: break;
           case 19:
-            {
-              yybegin(VALUE);
-              yypushback(1);
+            { yybegin(FLAGS); return BazelrcTokenTypes.SINGLE_QUOTE;
             }
-            // fall through
-          case 48:
-            break;
+          // fall through
+          case 50: break;
           case 20:
-            {
-              yybegin(FLAG_DQ);
-              return BazelrcTokenTypes.DOUBLE_QUOTE;
+            { yybegin(CONFIG_SQ); return BazelrcTokenTypes.COLON;
             }
-            // fall through
-          case 49:
-            break;
+          // fall through
+          case 51: break;
           case 21:
-            {
-              yybegin(YYINITIAL);
-              return BazelrcTokenTypes.COMMENT;
+            { yybegin(VALUE); yypushback(1);
             }
-            // fall through
-          case 50:
-            break;
+          // fall through
+          case 52: break;
           case 22:
-            {
-              yybegin(FLAG_SQ);
-              return BazelrcTokenTypes.SINGLE_QUOTE;
+            { yybegin(FLAG_DQ); return BazelrcTokenTypes.DOUBLE_QUOTE;
             }
-            // fall through
-          case 51:
-            break;
+          // fall through
+          case 53: break;
           case 23:
-            {
-              yybegin(VALUE);
-              return BazelrcTokenTypes.EQ;
+            { yybegin(YYINITIAL); return BazelrcTokenTypes.COMMENT;
             }
-            // fall through
-          case 52:
-            break;
+          // fall through
+          case 54: break;
           case 24:
-            {
-              return BazelrcTokenTypes.VALUE;
+            { yybegin(FLAG_SQ); return BazelrcTokenTypes.SINGLE_QUOTE;
             }
-            // fall through
-          case 53:
-            break;
+          // fall through
+          case 55: break;
           case 25:
-            {
-              yybegin(VALUE_DQ);
-              return BazelrcTokenTypes.DOUBLE_QUOTE;
+            { yybegin(VALUE); return BazelrcTokenTypes.EQ;
             }
-            // fall through
-          case 54:
-            break;
+          // fall through
+          case 56: break;
           case 26:
-            {
-              yybegin(VALUE_SQ);
-              return BazelrcTokenTypes.SINGLE_QUOTE;
+            { yybegin(VALUE_DQ); return BazelrcTokenTypes.DOUBLE_QUOTE;
             }
-            // fall through
-          case 55:
-            break;
+          // fall through
+          case 57: break;
           case 27:
-            {
-              yybegin(VALUE_DQ);
-              return BazelrcTokenTypes.EQ;
+            { yybegin(VALUE_SQ); return BazelrcTokenTypes.SINGLE_QUOTE;
             }
-            // fall through
-          case 56:
-            break;
+          // fall through
+          case 58: break;
           case 28:
-            {
-              yybegin(VALUE_SQ);
-              return BazelrcTokenTypes.EQ;
+            { yybegin(VALUE_DQ); return BazelrcTokenTypes.EQ;
             }
-            // fall through
-          case 57:
-            break;
+          // fall through
+          case 59: break;
           case 29:
-            {
-              return BazelrcTokenTypes.FLAG;
+            { yybegin(VALUE_SQ); return BazelrcTokenTypes.EQ;
             }
-            // fall through
-          case 58:
-            break;
+          // fall through
+          case 60: break;
+          case 30:
+            { return BazelrcTokenTypes.FLAG;
+            }
+          // fall through
+          case 61: break;
+          case 31:
+            { yybegin(IMPORT); return BazelrcTokenTypes.IMPORT;
+            }
+          // fall through
+          case 62: break;
           default:
             zzScanError(ZZ_NO_MATCH);
-        }
+          }
       }
     }
   }
+
+
 }

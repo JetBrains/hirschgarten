@@ -1,6 +1,9 @@
 package org.jetbrains.bazel.languages.bazelrc.elements
 
 object BazelrcTokenTypes {
+  @JvmField
+  val IMPORT = BazelrcTokenType("IMPORT")
+
   // Comment
   @JvmField
   val COMMENT = BazelrcTokenType("COMMENT")
