@@ -144,7 +144,7 @@
                 implementationClass="org.jetbrains.bazel.languages.bazelrc.completion.BazelrcCompletionContributor"/>
 
         <projectConfigurable
-                parentId="tools"
+                parentId="build.tools"
                 instance="org.jetbrains.bazel.settings.BazelProjectSettingsConfigurable"
                 provider="org.jetbrains.bazel.settings.BazelProjectSettingsConfigurableProvider">
             <configurable
