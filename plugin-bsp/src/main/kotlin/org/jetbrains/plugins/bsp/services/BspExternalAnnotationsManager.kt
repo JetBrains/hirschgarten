@@ -106,7 +106,7 @@ private class DummyExternalAnnotationsManager(psiManager: PsiManager) : ModComma
 
   override fun isExternalAnnotationWritable(listOwner: PsiModifierListOwner, annotationFQN: String): Boolean = false
 
-  override fun findExternalAnnotations(listOwner: PsiModifierListOwner): Array<out PsiAnnotation>? = null
+  override fun findExternalAnnotations(listOwner: PsiModifierListOwner): Array<out PsiAnnotation> = emptyArray()
 
   override fun findDefaultConstructorExternalAnnotations(aClass: PsiClass): List<PsiAnnotation>? = null
 
