@@ -1,28 +1,25 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.search
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonShortcuts
-import com.intellij.openapi.actionSystem.CustomShortcutSet
+import com.intellij.openapi.keymap.KeymapUtil
 import com.intellij.openapi.observable.properties.AtomicProperty
 import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.fields.ExtendableTextField
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspShortcuts
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.SimpleDocumentListener
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.TextComponentExtension
 import java.awt.BorderLayout
-import java.awt.event.ActionEvent
-import java.awt.event.KeyEvent
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.KeyStroke
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-public class SearchBarPanel : JPanel(BorderLayout()) {
-  public var inProgress: Boolean by AtomicBoolean {
+class SearchBarPanel : JPanel(BorderLayout()) {
+  var inProgress: Boolean by AtomicBoolean {
     repaintLoading()
   }
 
@@ -42,10 +39,16 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
   private var displayAsTree: Boolean by AtomicBoolean(::displayAsTreeChanged)
   private var regexMode: Boolean by AtomicBoolean(::onQueryChange)
 
+  private val focusFindAction = SimpleAction { textField.requestFocus() }
+  private val toggleMatchCaseAction = SimpleAction { matchCase = !matchCase }
+  private val toggleRegexAction = SimpleAction { regexMode = !regexMode }
+
   private val textFieldComponent = JBTextField()
 
   init {
     add(textField)
+    toggleMatchCaseAction.registerCustomShortcutSet(BspShortcuts.matchCase, this)
+    toggleRegexAction.registerCustomShortcutSet(BspShortcuts.regexMode, this)
   }
 
   private fun repaintLoading() {
@@ -64,7 +67,11 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
         valueGetter = { matchCase },
         valueSetter = { matchCase = it },
         parentComponent = newField,
-        tooltip = BspPluginBundle.message("widget.target.search.match.case"),
+        tooltip =
+          BspPluginBundle.message(
+            "widget.target.search.match.case",
+            KeymapUtil.getFirstKeyboardShortcutText(BspShortcuts.matchCase),
+          ),
       )
     val regexExtension =
       TextComponentExtension.Switch(
@@ -73,7 +80,7 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
         valueGetter = { regexMode },
         valueSetter = { regexMode = it },
         parentComponent = newField,
-        tooltip = BspPluginBundle.message("widget.target.search.regex"),
+        tooltip = BspPluginBundle.message("widget.target.search.regex", KeymapUtil.getFirstKeyboardShortcutText(BspShortcuts.regexMode)),
       )
     val treeExtension =
       TextComponentExtension.Switch(
@@ -90,6 +97,8 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
         tooltip = BspPluginBundle.message("widget.target.search.clear"),
       )
     return newField.apply {
+      this.emptyText.text =
+        BspPluginBundle.message("widget.target.search.hint", KeymapUtil.getFirstKeyboardShortcutText(CommonShortcuts.getFind()))
       addExtension(searchLoadingExtension)
       addExtension(treeExtension)
       addExtension(regexExtension)
@@ -119,28 +128,26 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
     textFieldComponent.isEnabled = enabled
   }
 
-  public fun registerDisplayChangeListener(onChange: () -> Unit) {
+  fun registerDisplayChangeListener(onChange: () -> Unit) {
     displayChangeListeners.add(onChange)
   }
 
-  public fun registerQueryChangeListener(onChange: (Regex) -> Unit) {
+  fun registerQueryChangeListener(onChange: (Regex) -> Unit) {
     queryChangeListeners.add(onChange)
   }
 
-  public fun clearAllListeners() {
+  fun clearAllListeners() {
     displayChangeListeners.clear()
     queryChangeListeners.clear()
   }
 
-  public fun registerShortcutsOn(component: JComponent) {
-    val focusFindAction = SimpleAction { textField.requestFocus() }
-    focusFindAction.registerCustomShortcutSet(FIND_SHORTCUT_SET, component)
-
-    val toggleRegexAction = SimpleAction { regexMode = !regexMode }
-    toggleRegexAction.registerCustomShortcutSet(REGEX_SHORTCUT_SET, component)
+  fun registerSearchShortcutsOn(component: JComponent) {
+    focusFindAction.registerCustomShortcutSet(CommonShortcuts.getFind(), component)
+    toggleMatchCaseAction.registerCustomShortcutSet(BspShortcuts.matchCase, component)
+    toggleRegexAction.registerCustomShortcutSet(BspShortcuts.regexMode, component)
   }
 
-  public fun getCurrentSearchQuery(): Regex {
+  fun getCurrentSearchQuery(): Regex {
     val options =
       setOfNotNull(
         if (!matchCase) RegexOption.IGNORE_CASE else null,
@@ -149,9 +156,9 @@ public class SearchBarPanel : JPanel(BorderLayout()) {
     return textField.text.toRegex(options)
   }
 
-  public fun isDisplayAsTreeChosen(): Boolean = displayAsTree
+  fun isDisplayAsTreeChosen(): Boolean = displayAsTree
 
-  public fun isEmpty(): Boolean = textField.text.isEmpty()
+  fun isEmpty(): Boolean = textField.text.isEmpty()
 }
 
 private class AtomicBoolean(private val changeListener: (() -> Unit)?) : ReadWriteProperty<SearchBarPanel, Boolean> {
@@ -168,14 +175,3 @@ private class AtomicBoolean(private val changeListener: (() -> Unit)?) : ReadWri
     changeListener?.invoke()
   }
 }
-
-private class SimpleAction(private val action: () -> Unit) : AnAction() {
-  override fun actionPerformed(e: AnActionEvent) {
-    action()
-  }
-}
-
-private val FIND_SHORTCUT_SET = CommonShortcuts.getFind()
-
-// regex shortcut is hardcoded - couldn't find this shortcut defined anywhere in the platform
-private val REGEX_SHORTCUT_SET = CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK))
