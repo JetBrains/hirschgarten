@@ -24,7 +24,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
 import javax.swing.SwingConstants
 
-public class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
+class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
   private val targetFilter = TargetFilter { rerenderComponents() }
   private val searchBarPanel = SearchBarPanel()
   private var loadedTargetsPanel: BspPanelComponent
@@ -76,7 +76,7 @@ public class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(tr
       invalidTargets = invalidTargets,
       searchBarPanel = searchBarPanel,
     ).apply {
-      addMouseListener { LoadedTargetsMouseListener(it, project) }
+      registerPopupHandler { LoadedTargetsMouseListener(it, project) }
     }
   }
 

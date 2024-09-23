@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.panels.VerticalLayout
 import com.intellij.util.concurrency.NonUrgentExecutor
@@ -13,29 +14,28 @@ import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.withBuildToolId
 import org.jetbrains.plugins.bsp.extensionPoints.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchListDisplay
-import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchTreeDisplay
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
-import java.awt.event.MouseListener
 import java.util.concurrent.Callable
 import javax.swing.Icon
+import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
-public class BuildTargetSearch(
+class BuildTargetSearch(
   private val targetIcon: Icon,
   private val buildToolId: BuildToolId,
   private val toolName: String,
   targets: Collection<BuildTargetInfo>,
-  public val searchBarPanel: SearchBarPanel,
+  val searchBarPanel: SearchBarPanel,
 ) : BuildTargetContainer {
-  public val targetSearchPanel: JPanel = JPanel(VerticalLayout(0))
+  private val targetSearchPanel: JPanel = JPanel(VerticalLayout(0))
 
   override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, targetSearchPanel)
 
-  private val searchListDisplay = LazySearchListDisplay(targetIcon, buildToolId)
-  private val searchTreeDisplay = LazySearchTreeDisplay(targetIcon, buildToolId)
+  private val searchListDisplay = LazySearchDisplay(targetIcon, buildToolId, showAsTree = false)
+  private val searchTreeDisplay = LazySearchDisplay(targetIcon, buildToolId, showAsTree = true)
 
   private var displayedSearchPanel: JPanel? = null
   private val noResultsInfoComponent =
@@ -46,7 +46,7 @@ public class BuildTargetSearch(
 
   private val targets = targets.sortedBy { it.buildTargetName }
 
-  private val mouseListenerBuilders = mutableSetOf<(BuildTargetContainer) -> MouseListener>()
+  private var popupHandlerBuilder: ((BuildTargetContainer) -> PopupHandler)? = null
   private val queryChangeListeners = mutableSetOf<() -> Unit>()
 
   init {
@@ -69,7 +69,7 @@ public class BuildTargetSearch(
    * @return `true` if search is in progress, or its results are ready,
    * `false` if nothing is currently being searched for
    */
-  public fun isSearchActive(): Boolean = !searchBarPanel.isEmpty()
+  fun isSearchActive(): Boolean = !searchBarPanel.isEmpty()
 
   private fun conductSearch(query: Regex) {
     if (isSearchActive()) {
@@ -115,10 +115,12 @@ public class BuildTargetSearch(
 
   override fun isEmpty(): Boolean = targets.isEmpty()
 
-  override fun addMouseListener(listenerBuilder: (BuildTargetContainer) -> MouseListener) {
-    mouseListenerBuilders.add(listenerBuilder)
-    searchListDisplay.addMouseListener(listenerBuilder(this))
-    searchTreeDisplay.addMouseListener(listenerBuilder(this))
+  override fun getComponent(): JComponent = targetSearchPanel
+
+  override fun registerPopupHandler(popupHandlerBuilder: (BuildTargetContainer) -> PopupHandler) {
+    this.popupHandlerBuilder = popupHandlerBuilder
+    searchListDisplay.registerPopupHandler(popupHandlerBuilder(this))
+    searchTreeDisplay.registerPopupHandler(popupHandlerBuilder(this))
   }
 
   /**
@@ -126,17 +128,19 @@ public class BuildTargetSearch(
    *
    * @param listener function to be triggered
    */
-  public fun addQueryChangeListener(listener: () -> Unit) {
+  fun addQueryChangeListener(listener: () -> Unit) {
     queryChangeListeners.add(listener)
   }
 
   override fun getSelectedBuildTarget(): BuildTargetInfo? = chooseTargetSearchPanel().getSelectedBuildTarget()
 
+  override fun selectTopTargetAndFocus() {
+    chooseTargetSearchPanel().selectTopTargetAndFocus()
+  }
+
   override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetSearch {
     val new = BuildTargetSearch(targetIcon, buildToolId, toolName, newTargets, searchBarPanel)
-    for (listenerBuilder in this.mouseListenerBuilders) {
-      new.addMouseListener(listenerBuilder)
-    }
+    popupHandlerBuilder?.let { new.registerPopupHandler(it) }
     return new
   }
 
