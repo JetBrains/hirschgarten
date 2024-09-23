@@ -27,7 +27,7 @@ open class E2ETest(
         this.targets = targets
         // This fixes FileUtils.getCacheDirectory in integration tests
         this.arguments =
-          "--sandbox_writable_path=/home/hirschuser/.cache --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+          "--sandbox_writable_path=/home/hirschuser/.cache ${Utils.CommonParams.BazelCiSpecificArgs}"
         logging = BazelStep.Verbosity.Diagnostic
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
