@@ -1,5 +1,6 @@
 package configurations
 
+import configurations.Utils
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
@@ -13,10 +14,21 @@ open class UnitTests(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit
     requirements = requirements,
     steps = {
       bazel {
-        name = "bazel test //..."
+        name = "bazel test //... -//plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/..."
         command = "test"
-        targets = "//..."
-        arguments = "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+        targets = "//... -//plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/..."
+        arguments = Utils.CommonParams.BazelCiSpecificArgs
+        toolPath = "/usr/local/bin"
+        logging = BazelStep.Verbosity.Diagnostic
+        Utils.DockerParams.get().forEach { (key, value) ->
+          param(key, value)
+        }
+      }
+      bazel {
+        name = "bazel test //plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/..."
+        command = "test"
+        targets = "//plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/..."
+        arguments = Utils.CommonParams.BazelCiSpecificArgs + " --jobs 1"
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
         Utils.DockerParams.get().forEach { (key, value) ->

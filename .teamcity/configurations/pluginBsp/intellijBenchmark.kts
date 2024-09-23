@@ -22,7 +22,7 @@ open class Benchmark(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit
         command = "test"
         targets = "//plugin-bsp/performance-testing"
         arguments =
-          "--jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/ --action_env=PATH --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+          "--jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/ --action_env=PATH ${Utils.CommonParams.BazelCiSpecificArgs}"
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
         Utils.DockerParams.get().forEach { (key, value) ->
