@@ -568,21 +568,25 @@ class BspProjectMapper(
 
   fun buildDependencyModules(project: Project, params: DependencyModulesParams): DependencyModulesResult {
     val targetSet = params.targets.toSet()
+    val cache = mutableMapOf<String, List<DependencyModule>>()
     val dependencyModulesItems =
       project.modules.filter { targetSet.contains(BuildTargetIdentifier(it.label.value)) }.map { module ->
         val buildTargetId = BuildTargetIdentifier(module.label.value)
+        val moduleDependencies = DependencyMapper.allModuleDependencies(project, module)
         val moduleItems =
-          DependencyMapper.allModuleDependencies(project, module).flatMap { libraryDep ->
-            if (libraryDep.outputs.isNotEmpty()) {
-              val mavenDependencyModule = DependencyMapper.extractMavenDependencyInfo(libraryDep)
-              val dependencyModule = DependencyModule(libraryDep.label.value, mavenDependencyModule?.version ?: "")
-              if (mavenDependencyModule != null) {
-                dependencyModule.data = mavenDependencyModule
-                dependencyModule.dataKind = DependencyModuleDataKind.MAVEN
+          moduleDependencies.flatMap { libraryDep ->
+            cache.getOrPut(libraryDep.label.value) {
+              if (libraryDep.outputs.isNotEmpty()) {
+                val mavenDependencyModule = DependencyMapper.extractMavenDependencyInfo(libraryDep)
+                val dependencyModule = DependencyModule(libraryDep.label.value, mavenDependencyModule?.version ?: "")
+                if (mavenDependencyModule != null) {
+                  dependencyModule.data = mavenDependencyModule
+                  dependencyModule.dataKind = DependencyModuleDataKind.MAVEN
+                }
+                listOf(dependencyModule)
+              } else {
+                emptyList()
               }
-              listOf(dependencyModule)
-            } else {
-              emptyList()
             }
           }
         DependencyModulesItem(buildTargetId, moduleItems)
