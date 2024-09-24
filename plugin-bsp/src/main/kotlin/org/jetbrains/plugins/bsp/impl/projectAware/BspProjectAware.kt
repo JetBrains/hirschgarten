@@ -48,6 +48,7 @@ public abstract class BspProjectAware(private val workspace: BspWorkspace) : Ext
         }
 
         override fun syncFinished(canceled: Boolean) {
+          ProjectViewUtil.expandTopLevel(workspace.project)
           listener.onProjectReloadFinish(
             if (canceled) {
               ExternalSystemRefreshStatus.CANCEL

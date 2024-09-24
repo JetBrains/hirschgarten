@@ -22,7 +22,6 @@ import org.jetbrains.kotlin.tooling.core.Interner
 import org.jetbrains.kotlin.tooling.core.WeakInterner
 import org.jetbrains.plugins.bsp.buildTask.BspProjectModuleBuildTasksTracker
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import javax.swing.tree.TreePath
 
 @Service(Service.Level.PROJECT)
 public class BspWorkspace(public val project: Project) : Disposable {
@@ -129,20 +128,6 @@ public class BspExternalServicesSubscriber(private val project: Project) {
     }
 
   private fun subscribeForBranchChanges() {
-    val projectView = ProjectView.getInstance(project)
-
-    // this visitor will traverse first the main project root, which has 2 elements in its path,
-    // therefore, we stop right after it finishes visiting this project root
-    val rootNoteExpandVisitor =
-      object : TreeVisitor {
-        override fun visit(treePath: TreePath): TreeVisitor.Action =
-          if (treePath.pathCount == 1) {
-            TreeVisitor.Action.CONTINUE
-          } else {
-            TreeVisitor.Action.INTERRUPT
-          }
-      }
-
     project.messageBus.connect().subscribe(
       BranchChangeListener.VCS_BRANCH_CHANGED,
       object : BranchChangeListener {
@@ -152,8 +137,7 @@ public class BspExternalServicesSubscriber(private val project: Project) {
           // automatically expand the project view tree's root node on branch change event
           // TODO: remove this workaround once this bug is fixed from the platform side
           // https://youtrack.jetbrains.com/issue/IJPL-160019/Restore-workspace-when-switching-branches-collapses-root-in-project-tree-view-when-switching-between-local-branches
-          val pane = projectView.currentProjectViewPane ?: return
-          TreeUtil.expand(pane.tree, rootNoteExpandVisitor) {}
+          ProjectViewUtil.expandTopLevel(project)
         }
       },
     )
@@ -169,5 +153,24 @@ public interface BspWorkspaceListener {
 
   public companion object {
     public val TOPIC: Topic<BspWorkspaceListener> = Topic(BspWorkspaceListener::class.java)
+  }
+}
+
+internal object ProjectViewUtil {
+  fun expandTopLevel(project: Project) {
+    val projectView = ProjectView.getInstance(project)
+
+    // this visitor will traverse first the main project root, which has 2 elements in its path,
+    // therefore, we stop right after it finishes visiting this project root
+    val rootNoteExpandVisitor =
+      TreeVisitor { treePath ->
+        if (treePath.pathCount == 1) {
+          TreeVisitor.Action.CONTINUE
+        } else {
+          TreeVisitor.Action.INTERRUPT
+        }
+      }
+    val pane = projectView.currentProjectViewPane ?: return
+    TreeUtil.expand(pane.tree, rootNoteExpandVisitor) {}
   }
 }
