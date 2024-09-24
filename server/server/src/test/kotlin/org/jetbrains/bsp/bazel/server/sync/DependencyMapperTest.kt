@@ -160,4 +160,56 @@ class DependencyMapperTest {
 
     foundLibraries shouldBe setOf(lib1, lib2, lib3, lib4)
   }
+
+  @Test
+  fun `should gather deps transitively quickly`() {
+    // Make sure we can traverse a large, dense dependency list quickly.
+    // Large enough to time out if using a non-optimized traversal algorithm.
+    val libCount = 10000
+    val allLibraries = mutableListOf<Library>()
+    for (i in 0..libCount - 1) {
+      val deps = mutableListOf<Label>()
+      for (j in 0..i - 1) {
+        deps.add(allLibraries[j].label)
+      }
+      allLibraries.add(
+        Library(
+          Label.parse("@maven//:org_scala_lang_scala_library" + i),
+          emptySet(),
+          emptySet(),
+          deps,
+        ),
+      )
+    }
+
+    val jarUri =
+      URI.create(
+        "$cacheLocation/bin/external/maven/org/scala-lang/scala-library/2.13.11/processed_scala-library-2.13.11.jar",
+      )
+    val jarSourcesUri =
+      URI.create(
+        "$cacheLocation/bin/external/maven/org/scala-lang/scala-library/2.13.11/scala-library-2.13.11-sources.jar",
+      )
+    val libraries = allLibraries.associate({ it.label to it })
+    val currentUri = Paths.get(".").toUri()
+    val project = Project(currentUri, emptyList(), emptyMap(), libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val module =
+      Module(
+        Label.parse(""),
+        true,
+        listOf(allLibraries[libCount - 1].label),
+        emptySet(),
+        emptySet(),
+        currentUri,
+        SourceSet(emptySet(), emptySet(), emptySet()),
+        emptySet(),
+        emptySet(),
+        emptySet(),
+        null,
+        emptyMap(),
+      )
+    val foundLibraries = DependencyMapper.allModuleDependencies(project, module)
+
+    foundLibraries shouldBe allLibraries.toSet()
+  }
 }
