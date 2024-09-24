@@ -8,7 +8,7 @@ import javax.swing.Icon
 internal class BazelAssetsExtension : BuildToolAssetsExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
 
-  override val presentableName: String = "Bazel"
+  override val presentableName: String = "Bazelzzz"
 
   override val targetIcon: Icon = BazelPluginIcons.bazel
   override val errorTargetIcon: Icon = BazelPluginIcons.bazelError
