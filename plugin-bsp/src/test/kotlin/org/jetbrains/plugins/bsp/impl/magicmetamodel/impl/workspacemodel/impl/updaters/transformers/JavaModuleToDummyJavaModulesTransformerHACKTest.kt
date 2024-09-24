@@ -100,7 +100,8 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
         name = "$projectRootName-intellij-generated",
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
-        librariesDependencies = listOf(),
+        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
+        languageIds = listOf("java", "kotlin", "scala"),
       )
 
     val expectedJavaModule =
@@ -118,8 +119,8 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
           ),
         resourceRoots = listOf(),
         moduleLevelLibraries = emptyList(),
-        jvmJdkName = null,
-        kotlinAddendum = null,
+        jvmJdkName = givenJavaModule.jvmJdkName,
+        kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
 
     javaModules shouldContainExactlyInAnyOrder (
@@ -201,7 +202,8 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
         name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}-intellij-generated",
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
-        librariesDependencies = listOf(),
+        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
+        languageIds = listOf("java", "scala", "kotlin"),
       )
 
     val expectedJavaModule =
@@ -225,8 +227,8 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
             ),
           ),
         moduleLevelLibraries = emptyList(),
-        jvmJdkName = null,
-        kotlinAddendum = null,
+        jvmJdkName = givenJavaModule.jvmJdkName,
+        kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
 
     javaModules shouldContainExactlyInAnyOrder (
@@ -301,7 +303,8 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
         name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}-intellij-generated",
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
-        librariesDependencies = listOf(),
+        librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
+        languageIds = listOf("java", "scala", "kotlin"),
       )
 
     val expectedJavaModule =
@@ -319,8 +322,8 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
           ),
         resourceRoots = emptyList(),
         moduleLevelLibraries = emptyList(),
-        jvmJdkName = null,
-        kotlinAddendum = null,
+        jvmJdkName = givenJavaModule.jvmJdkName,
+        kotlinAddendum = givenJavaModule.kotlinAddendum,
       )
 
     javaModules shouldContainExactlyInAnyOrder (

@@ -4,7 +4,6 @@ import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.extensions.allSubdirectoriesSequence
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaAddendum
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.plugins.bsp.impl.utils.replaceDots
@@ -42,8 +41,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
         calculateDummyJavaSourceModule(
           name = it.second,
           sourceRootWithPackagePrefix = it.first,
-          jdkName = inputEntity.jvmJdkName,
-          javaAddendum = inputEntity.javaAddendum,
+          javaModule = inputEntity,
           resourceRootPath = dummyJavaResourcePath,
         )
       }.distinctBy { it.genericModuleInfo.name }
@@ -52,8 +50,7 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
   private fun calculateDummyJavaSourceModule(
     name: String,
     sourceRootWithPackagePrefix: DummySourceRootWithPackagePrefix,
-    jdkName: String?,
-    javaAddendum: JavaAddendum?,
+    javaModule: JavaModule,
     resourceRootPath: Path? = null,
   ) = if (name.isEmpty()) {
     null
@@ -64,8 +61,9 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
           name = name,
           type = ModuleTypeId(StdModuleTypes.JAVA.id),
           modulesDependencies = listOf(),
-          librariesDependencies = listOf(),
+          librariesDependencies = javaModule.genericModuleInfo.librariesDependencies,
           isDummy = true,
+          languageIds = listOf("java", "scala", "kotlin"),
         ),
       baseDirContentRoot = ContentRoot(path = sourceRootWithPackagePrefix.sourcePath),
       sourceRoots =
@@ -89,9 +87,9 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
           listOf()
         },
       moduleLevelLibraries = listOf(),
-      jvmJdkName = jdkName,
-      kotlinAddendum = null,
-      javaAddendum = javaAddendum,
+      jvmJdkName = javaModule.jvmJdkName,
+      kotlinAddendum = javaModule.kotlinAddendum,
+      javaAddendum = javaModule.javaAddendum,
     )
   }
 }
