@@ -7,3 +7,5 @@ MODULE.bazel.lock merge=bazel-lockfile-merge
 plugin-bazel/src/test/testData/**/*.bzl rules-lint-ignored
 # exclude all generated sources
 **/gen/** rules-lint-ignored
+# exclude all TC config files in .teamcity
+.teamcity/** rules-lint-ignored
