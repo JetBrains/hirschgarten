@@ -53,11 +53,17 @@ object DependencyMapper {
     val toResolve = mutableListOf<Label>()
     toResolve.addAll(module.directDependencies)
     val accumulator = HashSet<Library>()
+    val allSeenTargets = toResolve.toMutableSet()
     while (toResolve.isNotEmpty()) {
       val lib = project.libraries[toResolve.removeLast()]
       if (lib != null && !accumulator.contains(lib)) {
         accumulator.add(lib)
-        toResolve.addAll(lib.dependencies)
+        allSeenTargets.add(lib.label)
+        for (dep in lib.dependencies) {
+          if (allSeenTargets.add(dep)) {
+            toResolve.add(dep)
+          }
+        }
       }
     }
     return accumulator
