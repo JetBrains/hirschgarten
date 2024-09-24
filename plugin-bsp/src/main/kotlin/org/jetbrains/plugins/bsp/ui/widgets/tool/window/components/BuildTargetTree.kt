@@ -3,21 +3,25 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
+import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.PlatformIcons
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.config.default
 import org.jetbrains.plugins.bsp.config.withBuildToolId
 import org.jetbrains.plugins.bsp.config.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.extensionPoints.BuildToolWindowTargetActionProviderExtension
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspShortcuts
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.awt.Component
-import java.awt.event.MouseListener
 import javax.swing.Icon
+import javax.swing.JComponent
 import javax.swing.JTree
 import javax.swing.SwingConstants
 import javax.swing.tree.DefaultMutableTreeNode
@@ -27,23 +31,27 @@ import javax.swing.tree.TreeNode
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
-public class BuildTargetTree(
+class BuildTargetTree(
   private val targetIcon: Icon,
   private val invalidTargetIcon: Icon,
   private val buildToolId: BuildToolId,
   private val targets: Collection<BuildTargetInfo>,
   private val invalidTargets: List<BuildTargetIdentifier>,
   private val labelHighlighter: (String) -> String = { it },
-  private val bspBuildTargetClassifier: BuildTargetClassifierExtension =
-    BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(
-      buildToolId,
-    ),
+  private val showAsList: Boolean = false,
 ) : BuildTargetContainer {
   private val rootNode = DefaultMutableTreeNode(DirectoryNodeData("[root]"))
   private val cellRenderer = TargetTreeCellRenderer(targetIcon, invalidTargetIcon, labelHighlighter)
-  private val mouseListenerBuilders = mutableSetOf<(BuildTargetContainer) -> MouseListener>()
+  private var popupHandlerBuilder: ((BuildTargetContainer) -> PopupHandler)? = null
 
-  public val treeComponent: Tree = Tree(rootNode)
+  val treeComponent: Tree = Tree(rootNode)
+
+  private val bspBuildTargetClassifier =
+    if (showAsList) {
+      BuildTargetClassifierExtension.ep.default()
+    } else {
+      BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
+    }
 
   override val copyTargetIdAction: CopyTargetIdAction = CopyTargetIdAction.FromContainer(this, treeComponent)
 
@@ -176,9 +184,37 @@ public class BuildTargetTree(
 
   override fun isEmpty(): Boolean = rootNode.isLeaf
 
-  override fun addMouseListener(listenerBuilder: (BuildTargetContainer) -> MouseListener) {
-    mouseListenerBuilders.add(listenerBuilder)
-    treeComponent.addMouseListener(listenerBuilder(this))
+  override fun getComponent(): JComponent = treeComponent
+
+  override fun registerPopupHandler(popupHandlerBuilder: (BuildTargetContainer) -> PopupHandler) {
+    this.popupHandlerBuilder = popupHandlerBuilder
+    val newPopupHandler = popupHandlerBuilder(this).also { it.registerKeyboardShortcutForPopup() }
+    treeComponent.addMouseListener(newPopupHandler)
+  }
+
+  private fun PopupHandler.registerKeyboardShortcutForPopup() {
+    val popupAction =
+      SimpleAction {
+        val selectionPath = treeComponent.selectionPath ?: return@SimpleAction
+        val directoryIsSelected = (selectionPath.lastPathComponent as? DefaultMutableTreeNode)?.isLeaf == false
+        if (directoryIsSelected) {
+          // Normally, this is a built-in feature of a Tree.
+          //   However, it stops working out-of-the-box since its keyboard shortcut has been overridden.
+          selectionPath.toggleExpansion()
+        } else {
+          val selectedPoint = selectionPath.let { treeComponent.getPathBounds(it)?.location } ?: return@SimpleAction
+          this.invokePopup(treeComponent, selectedPoint.x, selectedPoint.y)
+        }
+      }
+    popupAction.registerCustomShortcutSet(BspShortcuts.openTargetContextMenu, treeComponent)
+  }
+
+  private fun TreePath.toggleExpansion() {
+    if (treeComponent.isCollapsed(this)) {
+      treeComponent.expandPath(this)
+    } else {
+      treeComponent.collapsePath(this)
+    }
   }
 
   override fun getSelectedBuildTarget(): BuildTargetInfo? {
@@ -191,23 +227,26 @@ public class BuildTargetTree(
     }
   }
 
-  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetTree =
-    createNewWithTargetsAndHighlighter(newTargets, bspBuildTargetClassifier = null, labelHighlighter)
+  override fun selectTopTargetAndFocus() {
+    treeComponent.selectionRows = intArrayOf(0)
+    treeComponent.requestFocus()
+  }
 
-  public fun createNewWithTargetsAndHighlighter(
-    newTargets: Collection<BuildTargetInfo>,
-    bspBuildTargetClassifier: BuildTargetClassifierExtension? = null,
-    labelHighlighter: (String) -> String,
-  ): BuildTargetTree {
+  override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetTree =
+    createNewWithTargetsAndHighlighter(newTargets, labelHighlighter)
+
+  fun createNewWithTargetsAndHighlighter(newTargets: Collection<BuildTargetInfo>, labelHighlighter: (String) -> String): BuildTargetTree {
     val new =
-      if (bspBuildTargetClassifier != null) {
-        BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, newTargets, emptyList(), labelHighlighter, bspBuildTargetClassifier)
-      } else {
-        BuildTargetTree(targetIcon, invalidTargetIcon, buildToolId, newTargets, emptyList(), labelHighlighter)
-      }
-    for (listenerBuilder in this.mouseListenerBuilders) {
-      new.addMouseListener(listenerBuilder)
-    }
+      BuildTargetTree(
+        targetIcon = targetIcon,
+        invalidTargetIcon = invalidTargetIcon,
+        buildToolId = buildToolId,
+        targets = newTargets,
+        invalidTargets = emptyList(),
+        labelHighlighter = labelHighlighter,
+        showAsList = showAsList,
+      )
+    popupHandlerBuilder?.let { new.registerPopupHandler(it) }
     return new
   }
 

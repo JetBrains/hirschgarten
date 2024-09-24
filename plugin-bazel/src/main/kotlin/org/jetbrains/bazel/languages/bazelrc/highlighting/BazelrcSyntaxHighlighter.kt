@@ -9,18 +9,19 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.tree.IElementType
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
-import org.jetbrains.bazel.languages.bazelrc.lexer.BazelrcHighlightingLexer
+import org.jetbrains.bazel.languages.bazelrc.lexer.BazelrcLexer
 
 object BazelrcSyntaxHighlighter : SyntaxHighlighterBase() {
   private val keys =
     mapOf(
       BazelrcTokenTypes.COMMENT to BazelrcHighlightingColors.COMMENT,
-      BazelrcTokenTypes.COMMAND to BazelrcHighlightingColors.KEYWORD,
+      BazelrcTokenTypes.IMPORT to BazelrcHighlightingColors.IMPORT,
+      BazelrcTokenTypes.COMMAND to BazelrcHighlightingColors.COMMAND,
       BazelrcTokenTypes.CONFIG to BazelrcHighlightingColors.IDENTIFIER,
       BazelrcTokenTypes.FLAG to BazelrcHighlightingColors.STRING,
     )
 
-  override fun getHighlightingLexer(): Lexer = BazelrcHighlightingLexer()
+  override fun getHighlightingLexer(): Lexer = BazelrcLexer()
 
   override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> = pack(keys[tokenType])
 }

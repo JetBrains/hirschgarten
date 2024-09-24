@@ -207,7 +207,32 @@ class BazelrcQuotingLexerTest : LexerTestCase() {
       )
   }
 
+  @Test fun `unclosed quoted line ends at newline`() {
+    val code =
+      """
+      "query:batch --noshow_progress
+
+      "unknown : b at ch" --noshow_progress
+      """.trimIndent()
+
+    code shouldLexTo
+      listOf(
+        "Bazelrc:\"",
+        "Bazelrc:COMMAND",
+        "Bazelrc::",
+        "Bazelrc:CONFIG",
+        "WHITE_SPACE",
+        "Bazelrc:\"",
+        "Bazelrc:COMMAND",
+        "Bazelrc::",
+        "Bazelrc:CONFIG",
+        "Bazelrc:\"",
+        "WHITE_SPACE",
+        "Bazelrc:FLAG",
+      )
+  }
+
   private infix fun String.shouldLexTo(expectedTokens: List<String>) {
-    super.doLexerTest(this, BazelrcHighlightingLexer(), expectedTokens)
+    super.doLexerTest(this, BazelrcLexer(), expectedTokens)
   }
 }

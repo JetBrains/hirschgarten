@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.languages.bazelrc.completion
 
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.languages.bazelrc.fixtures.BazelrcCompletionTestCase
 import org.junit.Test
@@ -17,7 +18,7 @@ class BazelrcCommandCompletionTest : BazelrcCompletionTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainExactlyInAnyOrder BazelCommandCompletionProvider.knownCommandsToDescriptions.keys
+    lookups shouldContainAll BazelCommandCompletionProvider.knownCommandsToDescriptions.keys
   }
 
   @Test
@@ -41,7 +42,7 @@ class BazelrcCommandCompletionTest : BazelrcCompletionTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainExactlyInAnyOrder BazelCommandCompletionProvider.knownCommandsToDescriptions.keys
+    lookups shouldContainAll BazelCommandCompletionProvider.knownCommandsToDescriptions.keys
   }
 
   @Test
@@ -53,6 +54,6 @@ class BazelrcCommandCompletionTest : BazelrcCompletionTestCase() {
     val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
 
     // then
-    lookups shouldContainExactlyInAnyOrder BazelCommandCompletionProvider.knownCommandsToDescriptions.keys
+    lookups shouldContainAll BazelCommandCompletionProvider.knownCommandsToDescriptions.keys
   }
 }

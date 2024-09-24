@@ -2,16 +2,18 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspShortcuts
+import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.awt.BorderLayout
 import java.awt.Component
-import java.awt.event.MouseListener
 import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -21,7 +23,7 @@ import javax.swing.SwingConstants
  * Panel containing target tree and target search components, both containing the same collection of build targets.
  * `BspPanelComponent` extends [JPanel], which makes it possible to use it directly as a UI component
  */
-public class BspPanelComponent private constructor(
+class BspPanelComponent private constructor(
   private val targetIcon: Icon,
   private val toolName: String,
   private val targetTree: BuildTargetTree,
@@ -33,6 +35,8 @@ public class BspPanelComponent private constructor(
       SwingConstants.CENTER,
     )
 
+  private var currentContainer: BuildTargetContainer? = null
+
   /**
    * @param targetIcon icon which will be shown next to valid build targets in this panel
    * @param invalidTargetIcon icon which will be shown next to invalid build targets in this panel
@@ -42,7 +46,7 @@ public class BspPanelComponent private constructor(
    * @param invalidTargets collection of invalid targets this panel will contain
    * @param searchBarPanel searchbar panel responsible for providing user's search queries
    */
-  public constructor(
+  constructor(
     targetIcon: Icon,
     invalidTargetIcon: Icon,
     buildToolId: BuildToolId,
@@ -58,61 +62,63 @@ public class BspPanelComponent private constructor(
   )
 
   init {
-    targetSearch.addQueryChangeListener { onSearchQueryUpdate() }
-    replacePanelContent(null, chooseNewContent())
+    targetSearch.addQueryChangeListener { updatePanelContent() }
+    updatePanelContent()
   }
 
-  private fun onSearchQueryUpdate() {
-    val newPanelContent = chooseNewContent()
-    val oldPanelContent = getCurrentContent()
+  private fun updatePanelContent() {
+    val newContainer = chooseNewContainer()
+    val newPanelContent = newContainer?.getComponent() ?: emptyTreeMessage
+    val oldPanelContent = getCurrentPanelContent()
 
-    if (newPanelContent != oldPanelContent) {
-      replacePanelContent(oldPanelContent, newPanelContent)
-    }
+    replacePanelContent(oldPanelContent, newPanelContent)
+    currentContainer = newContainer
   }
 
-  private fun chooseNewContent(): JComponent =
+  private fun chooseNewContainer(): BuildTargetContainer? =
     when {
-      targetTree.isEmpty() -> emptyTreeMessage
-      targetSearch.isSearchActive() -> targetSearch.targetSearchPanel
-      else -> targetTree.treeComponent
+      targetTree.isEmpty() -> null
+      targetSearch.isSearchActive() -> targetSearch
+      else -> targetTree
     }
 
-  private fun getCurrentContent(): Component? =
+  private fun getCurrentPanelContent(): Component? =
     try {
       this.getComponent(0)
     } catch (_: ArrayIndexOutOfBoundsException) {
-      log.warn("Sidebar widget panel does not have enough children")
       null
     }
 
   private fun replacePanelContent(oldContent: Component?, newContent: JComponent) {
-    oldContent?.let { this.remove(it) }
-    this.add(newContent)
-    this.revalidate()
-    this.repaint()
+    if (oldContent != newContent) {
+      oldContent?.let { this.remove(it) }
+      this.add(newContent)
+      this.revalidate()
+      this.repaint()
+    }
   }
 
-  public fun withScrollAndSearch(): JPanel {
+  fun withScrollAndSearch(): JPanel {
     val panel = JPanel(BorderLayout())
     val scrollPane = JBScrollPane(this)
     targetSearch.searchBarPanel.let {
       it.isEnabled = true
-      it.registerShortcutsOn(scrollPane)
+      it.registerSearchShortcutsOn(scrollPane)
+      registerMoveDownShortcut(it)
       panel.add(it, BorderLayout.NORTH)
     }
     panel.add(scrollPane, BorderLayout.CENTER)
     return panel
   }
 
-  /**
-   * Adds a mouse listener to this panel's target tree and target search components
-   *
-   * @param listenerBuilder mouse listener builder
-   */
-  public fun addMouseListener(listenerBuilder: (BuildTargetContainer) -> MouseListener) {
-    targetTree.addMouseListener(listenerBuilder)
-    targetSearch.addMouseListener(listenerBuilder)
+  private fun registerMoveDownShortcut(searchBarPanel: SearchBarPanel) {
+    val action = SimpleAction { currentContainer?.selectTopTargetAndFocus() }
+    action.registerCustomShortcutSet(BspShortcuts.fromSearchBarToTargets, searchBarPanel)
+  }
+
+  fun registerPopupHandler(popupHandlerBuilder: (BuildTargetContainer) -> PopupHandler) {
+    targetTree.registerPopupHandler(popupHandlerBuilder)
+    targetSearch.registerPopupHandler(popupHandlerBuilder)
   }
 
   /**
@@ -122,7 +128,7 @@ public class BspPanelComponent private constructor(
    * @param targets collection of build targets which the new panel will contain
    * @return newly created panel
    */
-  public fun createNewWithTargets(targets: Collection<BuildTargetInfo>): BspPanelComponent =
+  fun createNewWithTargets(targets: Collection<BuildTargetInfo>): BspPanelComponent =
     BspPanelComponent(
       targetIcon,
       toolName,
