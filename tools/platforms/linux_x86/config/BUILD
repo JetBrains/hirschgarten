@@ -40,7 +40,7 @@ platform(
         "@bazel_tools//tools/cpp:clang",
     ],
     exec_properties = {
-        "container-image": "docker://registry.jetbrains.team/p/bazel/docker/hirschgarten-engflow@sha256:ce451df571a8d2abde5d5dcc428cc7acfc58783e4780503dbd968640a5e2e861",
+        "container-image": "docker://registry.jetbrains.team/p/bazel/docker/hirschgarten-engflow@sha256:537d31d8e6f0c41ee33eb831a720d3e01c6e6877763284df0c603e90387709ef",
         "OSFamily": "Linux",
     },
     parents = ["@local_config_platform//:host"],
