@@ -240,6 +240,8 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
+  class Version(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("version"))
+
   class Info(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("info"))
 
   class Clean(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("clean"))

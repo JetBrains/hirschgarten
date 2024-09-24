@@ -6,7 +6,6 @@ import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.bazelrunner.utils.LazyBazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
-import org.jetbrains.bsp.bazel.commons.escapeNewLines
 import java.nio.file.Paths
 
 private const val RELEASE = "release"
@@ -40,13 +39,11 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
           InfoLinePattern.matchEntire(line)?.let { it.groupValues[1] to it.groupValues[2] }
         }.toMap()
 
-    fun BazelProcessResult.meaningfulOutput() = if (isNotSuccess) stderr else stdout
-
     fun extract(name: String): String =
       outputMap[name]
         ?: error(
           "Failed to resolve $name from bazel info in ${bazelRunner.workspaceRoot}. " +
-            "Bazel Info output: '${bazelProcessResult.meaningfulOutput().escapeNewLines()}'",
+            "Bazel Info output: '${bazelProcessResult.stderrLines.joinToString("\n")}'",
         )
 
     val bazelReleaseVersion =

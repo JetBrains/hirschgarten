@@ -29,6 +29,8 @@ class BazelRunner(
 
     fun info(builder: BazelCommand.Info.() -> Unit = {}) = BazelCommand.Info(bazelBinary).apply { builder() }
 
+    fun version(builder: BazelCommand.Version.() -> Unit = {}) = BazelCommand.Version(bazelBinary).apply { builder() }
+
     fun run(target: BuildTargetIdentifier, builder: BazelCommand.Run.() -> Unit = {}) =
       BazelCommand.Run(bazelBinary, target).apply { builder() }.also { inheritWorkspaceOptions = true }
 

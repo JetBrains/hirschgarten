@@ -185,6 +185,7 @@ class BazelBspServer(
       BspServerApi { client: JoinedBuildClient ->
         val bspClientLogger = BspClientLogger(client)
         val bazelRunner = BazelRunner(workspaceContextProvider, bspClientLogger, workspaceRoot)
+        verifyBazelVersion(bazelRunner)
         val bazelInfo = createBazelInfo(bazelRunner)
         val bazelPathsResolver = BazelPathsResolver(bazelInfo)
         val compilationManager =
@@ -220,5 +221,15 @@ class BazelBspServer(
     bspServerApi.init(client)
 
     return launcher
+  }
+
+  fun verifyBazelVersion(bazelRunner: BazelRunner) {
+    val command = bazelRunner.buildBazelCommand { version {} }
+    bazelRunner
+      .runBazelCommand(command, serverPidFuture = null)
+      .waitAndGetResult({}, true)
+      .also {
+        if (it.isNotSuccess) error("Incompatible Bazel version detected.\n${it.stderrLines.joinToString("\n")}")
+      }
   }
 }
