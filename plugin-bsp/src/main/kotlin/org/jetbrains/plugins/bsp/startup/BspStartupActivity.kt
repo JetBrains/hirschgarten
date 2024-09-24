@@ -101,5 +101,6 @@ public class BspStartupActivity : BspProjectActivity() {
     }
   }
 
-  private fun Project.isProjectInIncompleteState() = temporaryTargetUtils.allTargetIds().isEmpty()
+  private fun Project.isProjectInIncompleteState() =
+    temporaryTargetUtils.allTargetIds().isEmpty() || !(workspaceModel as WorkspaceModelImpl).loadedFromCache
 }
