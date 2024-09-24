@@ -566,33 +566,8 @@ class BspProjectMapper(
     return ScalaMainClassesResult(items)
   }
 
-  fun buildDependencyModules(project: Project, params: DependencyModulesParams): DependencyModulesResult {
-    val targetSet = params.targets.toSet()
-    val cache = mutableMapOf<String, List<DependencyModule>>()
-    val dependencyModulesItems =
-      project.modules.filter { targetSet.contains(BuildTargetIdentifier(it.label.value)) }.map { module ->
-        val buildTargetId = BuildTargetIdentifier(module.label.value)
-        val moduleDependencies = DependencyMapper.allModuleDependencies(project, module)
-        val moduleItems =
-          moduleDependencies.flatMap { libraryDep ->
-            cache.getOrPut(libraryDep.label.value) {
-              if (libraryDep.outputs.isNotEmpty()) {
-                val mavenDependencyModule = DependencyMapper.extractMavenDependencyInfo(libraryDep)
-                val dependencyModule = DependencyModule(libraryDep.label.value, mavenDependencyModule?.version ?: "")
-                if (mavenDependencyModule != null) {
-                  dependencyModule.data = mavenDependencyModule
-                  dependencyModule.dataKind = DependencyModuleDataKind.MAVEN
-                }
-                listOf(dependencyModule)
-              } else {
-                emptyList()
-              }
-            }
-          }
-        DependencyModulesItem(buildTargetId, moduleItems)
-      }
-    return DependencyModulesResult(dependencyModulesItems)
-  }
+  fun buildDependencyModules(project: Project, params: DependencyModulesParams): DependencyModulesResult =
+    buildDependencyModulesStatic(project, params)
 
   fun rustWorkspace(project: Project, params: RustWorkspaceParams): RustWorkspaceResult {
     val allRustModules = project.modules.filter { Language.RUST in it.languages }
@@ -603,5 +578,37 @@ class BspProjectMapper(
     val toRustWorkspaceResult = languagePluginsService.rustLanguagePlugin::toRustWorkspaceResult
 
     return toRustWorkspaceResult(requestedModules, allRustModules)
+  }
+
+  companion object {
+    @JvmStatic
+    fun buildDependencyModulesStatic(project: Project, params: DependencyModulesParams): DependencyModulesResult {
+      val targetSet = params.targets.toSet()
+      val cache = mutableMapOf<String, List<DependencyModule>>()
+      val dependencyModulesItems =
+        project.modules.filter { targetSet.contains(BuildTargetIdentifier(it.label.value)) }.map { module ->
+          val buildTargetId = BuildTargetIdentifier(module.label.value)
+          val moduleDependencies = DependencyMapper.allModuleDependencies(project, module)
+          // moduleDependencies are sorted here to have a deterministic output (used in tests) and not strictly necessary.
+          val moduleItems =
+            moduleDependencies.sortedBy { it.label.value }.flatMap { libraryDep ->
+              cache.getOrPut(libraryDep.label.value) {
+                if (libraryDep.outputs.isNotEmpty()) {
+                  val mavenDependencyModule = DependencyMapper.extractMavenDependencyInfo(libraryDep)
+                  val dependencyModule = DependencyModule(libraryDep.label.value, mavenDependencyModule?.version ?: "")
+                  if (mavenDependencyModule != null) {
+                    dependencyModule.data = mavenDependencyModule
+                    dependencyModule.dataKind = DependencyModuleDataKind.MAVEN
+                  }
+                  listOf(dependencyModule)
+                } else {
+                  emptyList()
+                }
+              }
+            }
+          DependencyModulesItem(buildTargetId, moduleItems)
+        }
+      return DependencyModulesResult(dependencyModulesItems)
+    }
   }
 }
