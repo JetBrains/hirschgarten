@@ -23,7 +23,6 @@ import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.impl.flow.sync.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.plugins.bsp.impl.server.connection.TimeoutHandler
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskEventsService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
@@ -212,7 +211,7 @@ class BspClient(
     if (originId?.startsWith("build") == true || originId?.startsWith("mobile-install") == true) {
       bspBuildConsole.addMessage(originId, message)
     } else {
-      bspSyncConsole.addMessage(originId ?: BASE_PROJECT_SYNC_SUBTASK_ID, message)
+      bspSyncConsole.addMessage(originId, message)
     }
     bspLogger.info(message)
   }

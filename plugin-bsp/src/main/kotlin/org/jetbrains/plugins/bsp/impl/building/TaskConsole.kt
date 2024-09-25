@@ -27,7 +27,10 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.impl.actions.registered.ResyncAction
 import org.jetbrains.plugins.bsp.impl.actions.registered.isSyncInProgress
+import org.jetbrains.plugins.bsp.impl.flow.sync.BASE_PROJECT_SYNC_SUBTASK_ID
+import org.jetbrains.plugins.bsp.impl.flow.sync.PROJECT_SYNC_TASK_ID
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
+import org.jetbrains.plugins.bsp.impl.server.connection.CONNECT_TASK_ID
 import java.io.File
 import java.net.URI
 
@@ -291,15 +294,25 @@ public abstract class TaskConsole(
    * @param message message to be added. New line will be inserted at its end if it's not present there already
    */
   @Synchronized
-  public fun addMessage(taskId: Any, message: String) {
-    maybeGetRootTask(taskId)?.let {
+  public fun addMessage(taskId: Any?, message: String) {
+    val taskIdOrDefault = taskId ?: getDefaultTaskId() ?: return
+    maybeGetRootTask(taskIdOrDefault)?.let {
       doIfTaskInProgress(it) {
         if (message.isNotBlank()) {
-          doAddMessage(taskId, message)
+          doAddMessage(taskIdOrDefault, message)
         }
       }
     }
   }
+
+  private val defaultTaskIds =
+    listOf(
+      BASE_PROJECT_SYNC_SUBTASK_ID,
+      CONNECT_TASK_ID,
+      PROJECT_SYNC_TASK_ID,
+    )
+
+  private fun getDefaultTaskId() = defaultTaskIds.firstOrNull { tasksInProgress.contains(it) }
 
   private fun doAddMessage(taskId: Any, message: String) {
     val messageToSend = prepareTextToPrint(message)

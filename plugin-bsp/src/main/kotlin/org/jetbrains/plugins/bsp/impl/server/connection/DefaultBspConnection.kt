@@ -128,7 +128,7 @@ private class CancelableInvocationHandlerWithTimeout(
 }
 
 private val log = logger<DefaultBspConnection>()
-private const val CONNECT_TASK_ID = "bsp-autoconnect"
+const val CONNECT_TASK_ID = "bsp-autoconnect"
 
 class DefaultBspConnection(
   private val project: Project,
