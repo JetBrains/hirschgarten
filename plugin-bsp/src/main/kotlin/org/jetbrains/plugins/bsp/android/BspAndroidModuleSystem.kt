@@ -18,6 +18,7 @@ import com.android.tools.idea.projectsystem.ScopeType
 import com.android.tools.idea.rendering.StudioModuleDependencies
 import com.android.tools.idea.res.AndroidDependenciesCache
 import com.android.tools.idea.res.MainContentRootSampleDataDirectoryProvider
+import com.android.tools.idea.util.androidFacet
 import com.android.tools.idea.util.toPathString
 import com.android.tools.module.ModuleDependencies
 import com.intellij.openapi.module.Module
@@ -94,7 +95,7 @@ public class BspAndroidModuleSystem(override val module: Module) :
   override fun getResolveScope(scopeType: ScopeType): GlobalSearchScope = module.getModuleWithDependenciesAndLibrariesScope(false)
 
   override val usesCompose: Boolean
-    get() = true
+    get() = module.androidFacet != null
 
   override val moduleDependencies: ModuleDependencies get() = StudioModuleDependencies(module)
 }
