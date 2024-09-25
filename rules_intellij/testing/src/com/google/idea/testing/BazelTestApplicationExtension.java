@@ -6,13 +6,11 @@ package com.google.idea.testing;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.testFramework.junit5.impl.TestApplicationExtension;
-import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-public class BazelTestApplicationExtension
-    implements BeforeAllCallback, AfterEachCallback, AfterAllCallback {
+public class BazelTestApplicationExtension implements BeforeAllCallback, AfterEachCallback {
   private final TestApplicationExtension testApplicationExtension = new TestApplicationExtension();
 
   @Override
@@ -27,10 +25,5 @@ public class BazelTestApplicationExtension
   @Override
   public void afterEach(ExtensionContext extensionContext) {
     testApplicationExtension.afterEach(extensionContext);
-  }
-
-  @Override
-  public void afterAll(ExtensionContext extensionContext) {
-    testApplicationExtension.afterAll(extensionContext);
   }
 }

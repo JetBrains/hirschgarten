@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.run.commandLine
 import ch.epfl.scala.bsp4j.RunParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.util.io.await
+import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.plugins.bsp.config.BspPluginBundle

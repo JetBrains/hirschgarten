@@ -5,7 +5,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmRunEnvironmentParams
 import ch.epfl.scala.bsp4j.JvmRunEnvironmentResult
 import com.intellij.openapi.project.Project
-import com.intellij.util.io.await
+import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 
 public class JvmRunEnvironmentTask(project: Project) : BspServerSingleTargetTask<JvmRunEnvironmentResult>("jvmRunEnvironment", project) {
