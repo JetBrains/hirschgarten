@@ -34,6 +34,7 @@ java_library(
         "@rules_intellij_maven//:org_junit_platform_junit_platform_launcher",
         "@rules_intellij_maven//:org_junit_platform_junit_platform_suite_api",
         "@rules_intellij_maven//:org_junit_platform_junit_platform_suite_engine",
+        "@rules_intellij_maven//:org_junit_vintage_junit_vintage_engine",
     ],
 )
 

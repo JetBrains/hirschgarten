@@ -20,7 +20,7 @@ DIRECT_IJ_PRODUCTS = {
     ),
     "intellij-2024.3": struct(
         ide = "intellij",
-        directory = "intellij_ue_2024_3",
+        directory = "intellij_ce_2024_3",
     ),
 }
 
