@@ -135,6 +135,10 @@
                 language="Bazelrc"
                 implementationClass="org.jetbrains.bazel.languages.bazelrc.parser.BazelrcParserDefinition"/>
 
+        <lang.commenter
+                language="Bazelrc"
+                implementationClass="org.jetbrains.bazel.languages.bazelrc.commenter.BazelrcCommenter"/>
+
         <lang.quoteHandler
                 language="Bazelrc"
                 implementationClass="org.jetbrains.bazel.languages.bazelrc.matching.BazelrcQuoteHandler"/>
@@ -142,6 +146,7 @@
         <completion.contributor
                 language="Bazelrc"
                 implementationClass="org.jetbrains.bazel.languages.bazelrc.completion.BazelrcCompletionContributor"/>
+
 
         <projectConfigurable
                 parentId="build.tools"
