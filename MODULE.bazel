@@ -12,14 +12,7 @@ local_path_override(
     path = "rules_intellij",
 )
 
-bazel_dep(name = "rules_kotlin", version = "1.9.6")
-
-# Required until a new version supporting kotlin 2.0 is released
-git_override(
-    module_name = "rules_kotlin",
-    commit = "e39c95265767de0a341360f7a28cdef8d40afc68",
-    remote = "https://github.com/bazelbuild/rules_kotlin.git",
-)
+bazel_dep(name = "rules_kotlin", version = "2.0.0")
 
 register_toolchains(
     "//:kotlin_toolchain",
@@ -164,7 +157,7 @@ single_version_override(
     patches = [
         "tools/format/use-ktlint.patch",
     ],
-    version = "1.0.0-rc6",
+    version = "1.0.1",
 )
 
 http_jar(
@@ -179,7 +172,7 @@ http_jar(
 
 http_jar(
     name = "google_java_format",
-    url = "https://github.com/google/google-java-format/releases/download/v1.22.0/google-java-format-1.22.0-all-deps.jar",
+    url = "https://github.com/google/google-java-format/releases/download/v1.23.0/google-java-format-1.23.0-all-deps.jar",
 )
 
 bazel_dep(
