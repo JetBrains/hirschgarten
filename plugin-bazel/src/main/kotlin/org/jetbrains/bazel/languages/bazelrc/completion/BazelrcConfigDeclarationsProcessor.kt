@@ -29,7 +29,7 @@ class BazelrcConfigDeclarationsProcessor(private val inputElement: BazelrcLine) 
   fun processElement(current: BazelrcElement) =
     when (current) {
       is BazelrcLine -> processLine(current)
-      is org.jetbrains.bazel.languages.bazelrc.psi.BazelrcImport -> processImport(current)
+      is BazelrcImport -> processImport(current)
       else -> {}
     }
 
