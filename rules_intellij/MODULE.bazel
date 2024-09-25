@@ -29,7 +29,7 @@ use_repo(python, "python_3_12", "python_versions")
 
 bazel_dep(
     name = "rules_kotlin",
-    version = "1.9.6",
+    version = "2.0.0",
 )
 bazel_dep(
     name = "bazel_skylib",
