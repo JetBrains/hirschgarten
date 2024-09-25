@@ -21,20 +21,14 @@ class BazelrcImportReference(
 ) : FileReference(referenceSet, range, index, text) {
   override fun innerResolve(caseSensitive: Boolean, containingFile: PsiFile): Array<out ResolveResult?> =
     when {
-      index > 0 -> {
+      text == "%workspace%" && index == 0 ->
+        arrayOf(PsiUtil.findFileSystemItem(element.project, element.project.rootDir)).filterNotNull()
+
+      else -> {
         val virtualFiles = contexts.mapNotNull { it.virtualFile?.findChild(text) }
-        val psiElements = virtualFiles.mapNotNull { PsiUtil.findFileSystemItem(element.project, it) }
-
-        PsiElementResolveResult.createResults(psiElements)
+        virtualFiles.mapNotNull { PsiUtil.findFileSystemItem(element.project, it) }
       }
-
-      text == "%workspace%" ->
-        PsiElementResolveResult.createResults(
-          arrayOf(PsiUtil.findFileSystemItem(element.project, element.project.rootDir)).filterNotNull(),
-        )
-
-      else -> PsiElementResolveResult.EMPTY_ARRAY
-    }
+    }.let(PsiElementResolveResult::createResults)
 }
 
 class BazelrcImportFileReferenceSet(importSpec: BazelrcImport) :

@@ -50,4 +50,32 @@ class BazelrcConfigCompletionTest : BazelrcCompletionTestCase() {
     // then
     lookups shouldContainOnly listOf("config1", "config2")
   }
+
+  @Test
+  fun `should suggest configs from imports`() {
+    // given
+    myFixture.createFile(".deep.bazelrc", "info:deep-config")
+    myFixture.createFile(
+      ".immediate.bazelrc",
+      """
+        |import .deep.bazelrc
+        |
+        |info:immediate
+      """.trimMargin(),
+    )
+    myFixture.configureByText(
+      ".test.bazelrc",
+      """
+      |import .immediate.bazelrc
+      |
+      |info:<caret>
+      """.trimMargin(),
+    )
+
+    // when
+    val lookups = myFixture.completeBasic().flatMap { it.allLookupStrings }
+
+    // then
+    lookups shouldContainOnly listOf("deep-config", "immediate")
+  }
 }

@@ -9,5 +9,9 @@ import org.jetbrains.bazel.languages.bazelrc.BazelrcLanguage
 class BazelrcFile(viewProvider: FileViewProvider) : PsiFileBase(viewProvider, BazelrcLanguage) {
   override fun getFileType(): FileType = BazelrcFileType
 
-  fun findDeclaredConfigs(): Set<String> = this.findChildrenByClass(BazelrcLine::class.java).mapNotNull(BazelrcLine::configName).toSet()
+  val imports: Array<BazelrcImport>
+    get() = this.findChildrenByClass(BazelrcImport::class.java)
+
+  val lines: Array<BazelrcLine>
+    get() = this.findChildrenByClass(BazelrcLine::class.java)
 }

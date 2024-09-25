@@ -9,6 +9,8 @@ import org.jetbrains.bazel.languages.bazelrc.references.BazelrcImportFileReferen
 class BazelrcImport(node: ASTNode) : BazelrcBaseElement(node) {
   override fun acceptVisitor(visitor: BazelrcElementVisitor) = visitor.visitImport(this)
 
+  override fun getReference(): PsiReference? = references.last()
+
   override fun getReferences(): Array<out PsiReference?> = BazelrcImportFileReferenceSet(this).allReferences
 
   fun getImportPath(): PsiElement? = findChildByType<PsiElement>(BazelrcTokenTypes.VALUE)

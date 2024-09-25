@@ -10,11 +10,13 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.tree.TokenSet
+import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.assets.BazelPluginIcons
 import org.jetbrains.bazel.languages.bazelrc.BazelrcLanguage
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFile
+import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
 
 class BazelrcCompletionContributor : CompletionContributor() {
   init {
@@ -100,10 +102,10 @@ private class BazelConfigCompletionProvider : CompletionProvider<CompletionParam
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    (parameters.originalFile as? BazelrcFile)?.let {
-      result.run {
-        addAllElements(it.findDeclaredConfigs().map { functionLookupElement(it) })
-      }
+    PsiTreeUtil.getParentOfType<BazelrcLine>(parameters.position, BazelrcLine::class.java)?.run {
+      val processor = BazelrcConfigDeclarationsProcessor(this)
+      processor.processFile(this.containingFile?.originalFile as? BazelrcFile)
+      result.addAllElements(processor.results.keys.map { functionLookupElement(it) })
     }
   }
 
