@@ -31,10 +31,13 @@ Follow these steps to get your development environment ready.
    Then click "OK" again.  
    <img src="../files/DEVELOPMENT_SETUP_3.png" width="600">
 7) In the target view, expand the `plugin-bazel` subtree.  
-   Right-click "plugin-bazel-with-server-debug" and click "Run".  
+   Right-click `plugin-bazel-with-server-debug` and click `Run`.  
    You'll receive an error `Could not find an IntelliJ Platform Plugin SDK.`  
    Dismiss the error.  
-   <img src="../files/DEVELOPMENT_SETUP_4.png" width="600">  
+   <img src="../files/DEVELOPMENT_SETUP_4.png" width="600">
+   **Note**: if you are interested in Bazel BSP connection flow, please use `plugin-bazel/plugin-bazel-debug` instead, 
+   as `plugin-bazel/plugin-bazel-with-server-debug` will bypass the normal BSP connection flow.
+   If you are only interested in BSP plugin, please use `plugin-bsp/plugin-bsp-debug`.
 8) In the upper right corner you'll see a new run configuration.  
    Click on it and select "Edit Configurations..."  
    <img src="../files/DEVELOPMENT_SETUP_5.png" width="600">  
