@@ -11,7 +11,6 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 
 internal class BazelBspUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
   override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID
@@ -20,10 +19,8 @@ internal class BazelBspUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware
 
   override fun isLinkedProject(project: Project, externalProjectPath: String): Boolean = project.isBspProject
 
-  override fun linkAndLoadProject(project: Project, externalProjectPath: String) {
-    BspCoroutineService.getInstance(project).start {
-      BazelBspOpenProjectProvider().linkProjectCompat(getProjectFile(externalProjectPath), project)
-    }
+  override suspend fun linkAndLoadProjectAsync(project: Project, externalProjectPath: String) {
+    BazelBspOpenProjectProvider().linkProjectCompat(getProjectFile(externalProjectPath), project)
   }
 
   private fun getProjectFile(projectFilePath: String): VirtualFile {
