@@ -64,16 +64,25 @@ import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.util.concurrent.CompletableFuture
 
 class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> BazelServices) : JoinedBuildServer {
+  private lateinit var client: JoinedBuildClient
   private lateinit var serverLifetime: BazelBspServerLifetime
   private lateinit var runner: BspRequestsRunner
+
   private lateinit var projectSyncService: ProjectSyncService
   private lateinit var executeService: ExecuteService
 
-  fun init(client: JoinedBuildClient) {
-    val serverContainer = bazelServicesBuilder(client)
+  fun init(
+    client: JoinedBuildClient,
+    serverLifetime: BazelBspServerLifetime,
+    runner: BspRequestsRunner,
+  ) {
+    this.client = client
+    this.serverLifetime = serverLifetime
+    this.runner = runner
+  }
 
-    this.serverLifetime = serverContainer.serverLifetime
-    this.runner = serverContainer.bspRequestsRunner
+  private fun initServices() {
+    val serverContainer = bazelServicesBuilder(client)
     this.projectSyncService = serverContainer.projectSyncService
     this.executeService = serverContainer.executeService
   }
@@ -82,6 +91,7 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
     runner.handleRequest(
       methodName = "build/initialize",
       supplier = {
+        initServices()
         projectSyncService.initialize(
           cancelChecker = it,
           initializeBuildParams = initializeBuildParams,

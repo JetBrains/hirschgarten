@@ -80,8 +80,6 @@ class BazelBspServer(
         bspInfo = bspInfo,
       )
 
-    val serverLifetime = BazelBspServerLifetime(workspaceContextProvider)
-    val bspRequestsRunner = BspRequestsRunner(serverLifetime)
     val telemetryConfigWithLogger = telemetryConfig.copy(bspClientLogger = bspClientLogger)
     val projectSyncService = ProjectSyncService(bspProjectMapper, projectProvider, telemetryConfigWithLogger)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
@@ -96,8 +94,6 @@ class BazelBspServer(
         additionalBuildTargetsProvider = additionalBuildTargetsProvider,
       )
     return BazelServices(
-      serverLifetime,
-      bspRequestsRunner,
       projectSyncService,
       executeService,
     )
@@ -218,7 +214,9 @@ class BazelBspServer(
     val launcher = builder.create()
 
     val client = launcher.remoteProxy
-    bspServerApi.init(client)
+    val serverLifetime = BazelBspServerLifetime(workspaceContextProvider)
+    val bspRequestsRunner = BspRequestsRunner(serverLifetime)
+    bspServerApi.init(client, serverLifetime, bspRequestsRunner)
 
     return launcher
   }

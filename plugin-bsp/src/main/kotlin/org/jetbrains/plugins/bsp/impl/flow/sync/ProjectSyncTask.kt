@@ -33,7 +33,7 @@ import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 
-private const val PROJECT_SYNC_TASK_ID = "project-sync"
+const val PROJECT_SYNC_TASK_ID = "project-sync"
 
 private val log = logger<ProjectSyncTask>()
 
