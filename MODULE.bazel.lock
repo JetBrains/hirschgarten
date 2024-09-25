@@ -132,8 +132,8 @@
     "https://bcr.bazel.build/modules/rules_python/0.23.1/MODULE.bazel": "49ffccf0511cb8414de28321f5fcf2a31312b47c40cc21577144b7447f2bf300",
     "https://bcr.bazel.build/modules/rules_python/0.27.1/MODULE.bazel": "65dc875cc1a06c30d5bbdba7ab021fd9e551a6579e408a3943a61303e2228a53",
     "https://bcr.bazel.build/modules/rules_python/0.34.0/MODULE.bazel": "1d623d026e075b78c9fde483a889cda7996f5da4f36dffb24c246ab30f06513a",
-    "https://bcr.bazel.build/modules/rules_python/0.35.0/MODULE.bazel": "c3657951764cdcdb5a7370d5e885fad5e8c1583320aad18d46f9f110d2c22755",
-    "https://bcr.bazel.build/modules/rules_python/0.35.0/source.json": "8fd2681b96184fa441f07f7d58462361366c216ce920f6c3e3c42c27e02c3931",
+    "https://bcr.bazel.build/modules/rules_python/0.36.0/MODULE.bazel": "a4ce1ccea92b9106c7d16ab9ee51c6183107e78ba4a37aa65055227b80cd480c",
+    "https://bcr.bazel.build/modules/rules_python/0.36.0/source.json": "b79cbb7b2ae1751949e2f6ee6692822e4ffd13ca1e959ce99abec4ac7666162a",
     "https://bcr.bazel.build/modules/rules_python/0.4.0/MODULE.bazel": "9208ee05fd48bf09ac60ed269791cf17fb343db56c8226a720fbb1cdf467166c",
     "https://bcr.bazel.build/modules/stardoc/0.5.1/MODULE.bazel": "1a05d92974d0c122f5ccf09291442580317cdd859f07a8655f1db9a60374f9f8",
     "https://bcr.bazel.build/modules/stardoc/0.5.3/MODULE.bazel": "c7f6948dae6999bf0db32c1858ae345f112cacf98f174c7a8bb707e41b974f1c",
@@ -2216,8 +2216,8 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "BT+sTJVMq/OH9DaPFudJh5n62RQTbbZPAd3ijnTFZsc=",
-        "usagesDigest": "moHoYY1OP7kHaHHJ5EAvm+zksRZt5n3lvjcOhYhq7uY=",
+        "bzlTransitiveDigest": "XfboK1dnVkAAv18g1/yVYhg5DzQXROY5runRPbjfKpw=",
+        "usagesDigest": "Uu+eQolCXDoyIgvFjLDBDgjgBSkRuuldwUQnjKYjsz8=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "031e35d03dde03ae6305fe4b3d1f58ad7bdad857379752deede0f93649991b8a",
           "@@rules_python~//tools/publish/requirements_windows.txt": "15472d5a28e068d31ba9e2dc389459698afaff366e9db06e15890283a3ea252e",
