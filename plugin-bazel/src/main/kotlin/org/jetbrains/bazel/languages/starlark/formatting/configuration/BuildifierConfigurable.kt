@@ -36,10 +36,12 @@ class BuildifierConfigurable(val project: Project) : BoundConfigurable(BazelPlug
   private val buildifierExecutablePathField =
     TextFieldWithBrowseButton().apply {
       addBrowseFolderListener(
-        BazelPluginBundle.message("buildifier.select.path.to.executable"),
-        null,
         project,
-        FileChooserDescriptorFactory.createSingleFileOrExecutableAppDescriptor(),
+        FileChooserDescriptorFactory
+          .createSingleFileOrExecutableAppDescriptor()
+          .withTitle(
+            BazelPluginBundle.message("buildifier.select.path.to.executable"),
+          ).withDescription(null),
       )
     }
 
