@@ -39,7 +39,7 @@ class BazelrcConfigDeclarationsProcessor(private val inputElement: BazelrcLine) 
     }
   }
 
-  private fun processImport(element: org.jetbrains.bazel.languages.bazelrc.psi.BazelrcImport) {
+  private fun processImport(element: BazelrcImport) {
     processFile(element.reference?.resolve() as? BazelrcFile)
   }
 }
