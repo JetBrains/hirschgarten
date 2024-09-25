@@ -13,4 +13,7 @@
     <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.android.run.MobileInstallBeforeRunTaskProvider" />
     <programRunner implementation="org.jetbrains.plugins.bsp.android.run.BspAndroidProgramRunner" />
   </extensions>
+  <extensions defaultExtensionNs="com.android.tools.idea">
+    <rendering.tokens.buildSystemFilePreviewServices implementation="org.jetbrains.plugins.bsp.android.BspBuildSystemFilePreviewServices"/>
+  </extensions>
 </idea-plugin>

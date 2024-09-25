@@ -9,6 +9,7 @@ import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.workspaceModel.ide.toPath
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.moduleEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.jvmBinaryJarsEntity
+import kotlin.io.path.exists
 
 public class BspClassFileFinder(private val module: Module) : ClassFileFinder {
   private val jarManager = JarManager.getInstance(module.project)
@@ -31,6 +32,7 @@ public class BspClassFileFinder(private val module: Module) : ClassFileFinder {
     return binaryJars.jars
       .asSequence()
       .map { it.toPath() }
+      .filter { it.exists() }
       .mapNotNull { binaryJar ->
         jarManager.loadFileFromJar(binaryJar, classFilePath)?.let { classFileContent ->
           ClassContent.fromJarEntryContent(binaryJar.toFile(), classFileContent)
