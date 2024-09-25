@@ -4,8 +4,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcElement
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFile
+import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcImport
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
-import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 
 class BazelrcConfigDeclarationsProcessor(private val inputElement: BazelrcLine) : Processor<BazelrcElement> {
   var seenFiles = mutableSetOf<VirtualFile>()
@@ -19,7 +19,7 @@ class BazelrcConfigDeclarationsProcessor(private val inputElement: BazelrcLine) 
 
   fun processFile(file: BazelrcFile?) {
     file?.virtualFile?.apply {
-      seenFiles.add(this).ifTrue {
+      if (seenFiles.add(this)) {
         file.imports.map(::processElement)
         file.lines.map(::processElement)
       }
