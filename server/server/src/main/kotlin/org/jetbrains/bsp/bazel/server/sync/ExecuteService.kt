@@ -164,7 +164,7 @@ class ExecuteService(
   fun runWithDebug(cancelChecker: CancelChecker, params: RunWithDebugParams): RunResult {
     fun jdwpArgument(port: Int): String =
       // all used options are defined in https://docs.oracle.com/javase/8/docs/technotes/guides/jpda/conninv.html#Invocation
-      "--jvm_flag=-agentlib:jdwp=" +
+      "--wrapper_script_flag=--jvm_flag=-agentlib:jdwp=" +
         "transport=dt_socket," +
         "server=n," +
         "suspend=y," +
