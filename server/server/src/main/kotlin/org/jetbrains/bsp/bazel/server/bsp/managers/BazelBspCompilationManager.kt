@@ -1,5 +1,8 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.server.bep.BepServer
@@ -29,23 +32,28 @@ class BazelBspCompilationManager(
     val bepServer = BepServer(client, diagnosticsService, originId, target, bazelPathsResolver)
     val bepReader = BepReader(bepServer)
     return try {
-      bepReader.start()
-      val command =
-        bazelRunner.buildBazelCommand {
-          build {
-            options.addAll(extraFlags)
-            addTargetsFromSpec(targetSpecs)
-            this.environment.putAll(environment)
-            useBes(bepReader.eventFile.toPath().toAbsolutePath())
+      runBlocking {
+        val readerFuture =
+          async(Dispatchers.Default) {
+            bepReader.start()
           }
-        }
-      val result =
-        bazelRunner
-          .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid)
-          .waitAndGetResult(cancelChecker, true)
-      bepReader.finishBuild()
-      bepReader.await()
-      BepBuildResult(result, bepServer.bepOutput)
+        val command =
+          bazelRunner.buildBazelCommand {
+            build {
+              options.addAll(extraFlags)
+              addTargetsFromSpec(targetSpecs)
+              this.environment.putAll(environment)
+              useBes(bepReader.eventFile.toPath().toAbsolutePath())
+            }
+          }
+        val result =
+          bazelRunner
+            .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid)
+            .waitAndGetResult(cancelChecker, true)
+        bepReader.finishBuild()
+        readerFuture.await()
+        BepBuildResult(result, bepServer.bepOutput)
+      }
     } finally {
       bepReader.finishBuild()
     }

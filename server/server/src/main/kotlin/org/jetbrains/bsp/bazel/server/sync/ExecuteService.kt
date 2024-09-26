@@ -12,6 +12,9 @@ import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestResult
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.eclipse.lsp4j.jsonrpc.ResponseErrorException
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseError
@@ -63,12 +66,17 @@ class ExecuteService(
     val server = BepServer(compilationManager.client, diagnosticsService, originId, target, bazelPathsResolver)
     val bepReader = BepReader(server)
 
-    try {
-      bepReader.start()
-      return body(bepReader)
-    } finally {
-      bepReader.finishBuild()
-      bepReader.await()
+    return runBlocking {
+      val reader =
+        async(Dispatchers.Default) {
+          bepReader.start()
+        }
+      try {
+        return@runBlocking body(bepReader)
+      } finally {
+        bepReader.finishBuild()
+        reader.await()
+      }
     }
   }
 
