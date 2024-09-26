@@ -1,96 +1,59 @@
-package org.jetbrains.bsp.bazel.server.bsp.managers;
+package org.jetbrains.bsp.bazel.server.bsp.managers
 
-import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.bsp.bazel.server.bep.BepServer;
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
+import org.jetbrains.bsp.bazel.server.bep.BepServer
+import org.jetbrains.bsp.bazel.server.bsp.utils.DelimitedMessageReader
+import java.io.FileInputStream
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermission
+import java.nio.file.attribute.PosixFilePermissions
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
 
-public class BepReader {
-  private final BepServer bepServer;
-  private final File eventFile;
+class BepReader(private val bepServer: BepServer) {
+  val eventFile = Files.createTempFile("bazel-bsp-binary", null, filePermissions).toFile()
+  val serverPid = CompletableFuture<Long>()
 
-  private final CompletableFuture<Boolean> bazelBuildFinished;
-  private final CompletableFuture<Boolean> bepReaderFinished;
-  private final CompletableFuture<Long> serverPid;
+  private val bazelBuildFinished: AtomicBoolean = AtomicBoolean(false)
+  private val logger: Logger = LogManager.getLogger(BepReader::class.java)
 
-  private final Logger logger = LogManager.getLogger(BepReader.class);
+  suspend fun start() =
+    withContext(Dispatchers.Default) {
+      logger.info("Start listening to BEP events")
+      val reader =
+        DelimitedMessageReader(
+          FileInputStream(eventFile),
+          BuildEventStreamProtos.BuildEvent.parser(),
+        )
+      var event: BuildEventStreamProtos.BuildEvent? = null
+      do {
+        event = reader.nextMessage()
+        if (event != null) {
+          bepServer.handleBuildEventStreamProtosEvent(event)
+          setServerPid(event)
+        }
+      } while (!bazelBuildFinished.get() || event != null)
+      logger.info("BEP events listening finished")
+    }
 
-  public void start() {
-    new Thread(
-            () -> {
-              try {
-                logger.info("Start listening to BEP events");
-                var stream = new FileInputStream(eventFile);
-                BuildEventStreamProtos.BuildEvent event = null;
-                // It's important not to use the short-circuited ||, so that the events are parsed
-                // every time the loop condition is checked
-                while (!bazelBuildFinished.isDone()
-                    | (event = BuildEventStreamProtos.BuildEvent.parseDelimitedFrom(stream))
-                        != null) {
-                  if (event != null) {
-                    bepServer.handleBuildEventStreamProtosEvent(event);
-                    setServerPid(event);
-                  } else {
-                    Thread.sleep(50);
-                  }
-                }
-                logger.info("BEP events listening finished");
-              } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
-              } finally {
-                bepReaderFinished.complete(true);
-              }
-            })
-        .start();
-  }
-
-  private void setServerPid(BuildEventStreamProtos.BuildEvent event) {
-    if (event.hasStarted() && !serverPid.isDone()) {
-      serverPid.complete(event.getStarted().getServerPid());
+  private fun setServerPid(event: BuildEventStreamProtos.BuildEvent) {
+    if (event.hasStarted() && !serverPid.isDone) {
+      serverPid.complete(event.getStarted().getServerPid())
     }
   }
 
-  public CompletableFuture<Long> getServerPid() {
-    return serverPid;
+  fun finishBuild() {
+    bazelBuildFinished.set(true)
   }
 
-  public void finishBuild() {
-    bazelBuildFinished.complete(true);
-  }
-
-  public void await() throws ExecutionException, InterruptedException {
-    bepReaderFinished.get();
-  }
-
-  public BepReader(BepServer bepServer) {
-    this.bepServer = bepServer;
-    this.bazelBuildFinished = new CompletableFuture<>();
-    this.bepReaderFinished = new CompletableFuture<>();
-    this.serverPid = new CompletableFuture<>();
-    var attrs =
-        PosixFilePermissions.asFileAttribute(
-            Stream.of(PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_READ)
-                .collect(Collectors.toSet()));
-    File file;
-    try {
-      file = Files.createTempFile("bazel-bsp-binary", null, attrs).toFile();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-    eventFile = file;
-  }
-
-  public File getEventFile() {
-    return eventFile;
+  companion object {
+    private val filePermissions =
+      PosixFilePermissions.asFileAttribute(
+        setOf(PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_READ),
+      )
   }
 }
