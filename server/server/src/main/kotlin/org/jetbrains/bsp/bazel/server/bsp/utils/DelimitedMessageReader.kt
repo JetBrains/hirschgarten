@@ -11,7 +11,16 @@ import kotlinx.coroutines.yield
 import java.io.InputStream
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * Handles reading messages from a delimited input source when the source is being simultaneously written to (by another process for example)
+ */
 class DelimitedMessageReader<MessageType : Message>(private val inputStream: InputStream, private val parser: Parser<MessageType>) {
+  /**
+   * Returns the next message if available.
+   * If there is no input available, the function returns instantly.
+   * If there is data, the function will block until the full message is received
+   * InvalidProtocolBufferException will be thrown if a timeout occurs waiting for the full message to be received
+   */
   suspend fun nextMessage(): MessageType? {
     if (inputStream.available() <= 0) {
       return null
@@ -79,7 +88,7 @@ class DelimitedMessageReader<MessageType : Message>(private val inputStream: Inp
             return@withTimeout byte
           }
         }
-        //Can't ever get here, but the compiler is being tricky
+        // Can't ever get here, but the compiler is being tricky
         throw IllegalStateException()
       }
     }
