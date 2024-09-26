@@ -12,6 +12,14 @@ local_path_override(
     path = "rules_intellij",
 )
 
+bazel_dep(
+    name = "rules_sonatype"
+)
+local_path_override(
+    module_name = "rules_sonatype",
+    path = "sonatype_kt",
+)
+
 bazel_dep(name = "rules_kotlin", version = "2.0.0")
 
 register_toolchains(
