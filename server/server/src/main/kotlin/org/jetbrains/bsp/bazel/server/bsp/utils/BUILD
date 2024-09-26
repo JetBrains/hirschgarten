@@ -12,7 +12,7 @@ kt_jvm_library(
         "//server/commons",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/info",
         "@maven//:io_grpc_grpc_protobuf",
-        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
     ],
 )
 

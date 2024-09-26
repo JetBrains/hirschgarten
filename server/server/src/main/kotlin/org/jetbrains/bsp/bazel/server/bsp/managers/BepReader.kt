@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 
 class BepReader(private val bepServer: BepServer) {
-  val eventFile = Files.createTempFile("bazel-bsp-binary", null, filePermissions).toFile()
+  val eventFile = Files.createTempFile("bazel-bep-output", null, filePermissions).toFile()
   val serverPid = CompletableFuture<Long>()
 
   private val bazelBuildFinished: AtomicBoolean = AtomicBoolean(false)
