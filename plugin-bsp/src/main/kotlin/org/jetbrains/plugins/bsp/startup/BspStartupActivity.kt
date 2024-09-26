@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.startup
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import com.intellij.platform.backend.workspace.workspaceModel
@@ -101,5 +102,7 @@ public class BspStartupActivity : BspProjectActivity() {
     }
   }
 
-  private fun Project.isProjectInIncompleteState() = temporaryTargetUtils.allTargetIds().isEmpty()
+  private fun Project.isProjectInIncompleteState(): Boolean {
+    return temporaryTargetUtils.allTargetIds().isEmpty() || ModuleManager.getInstance(this).modules.isEmpty()
+  }
 }
