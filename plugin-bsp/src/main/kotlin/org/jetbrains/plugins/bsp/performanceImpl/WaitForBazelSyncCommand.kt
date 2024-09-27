@@ -30,7 +30,7 @@ internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackComman
         BspWorkspaceListener.TOPIC,
         object : BspWorkspaceListener {
           override fun syncStarted() {
-            runBlocking { syncFinished.send(Unit) }
+            runBlocking { syncStarted.send(Unit) }
           }
 
           override fun syncFinished(canceled: Boolean) {
