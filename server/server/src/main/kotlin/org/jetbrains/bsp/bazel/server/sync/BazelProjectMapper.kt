@@ -247,14 +247,17 @@ class BazelProjectMapper(
     if (!workspaceContext.experimentalUseLibOverModSection.value) return emptyMap()
     return targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
-      .map { target ->
-        Label.parse(target.id) to listOf(createLibrary(Label.parse(target.id + "_output_jars"), target))
+      .mapNotNull { target ->
+        createLibrary(Label.parse(target.id + "_output_jars"), target)?.let { library ->
+          Label.parse(target.id) to listOf(library)
+        }
       }.toMap()
   }
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
     targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
-      !hasKnownSources(targetInfo)
+      targetInfo.hasJvmTargetInfo() &&
+      !hasKnownJvmSources(targetInfo)
 
   private fun annotationProcessorLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
@@ -627,18 +630,25 @@ class BazelProjectMapper(
 
   private fun createLibraries(targets: Map<Label, TargetInfo>): Map<Label, Library> =
     targets
-      .mapValues { (targetId, targetInfo) ->
-        createLibrary(targetId, targetInfo)
-      }.filterValues { it.interfaceJars.isNotEmpty() || it.sources.isNotEmpty() || it.outputs.isNotEmpty() }
+      .asSequence()
+      .mapNotNull { (targetId, targetInfo) ->
+        createLibrary(targetId, targetInfo)?.let { library ->
+          targetId to library
+        }
+      }.toMap()
 
-  private fun createLibrary(label: Label, targetInfo: TargetInfo): Library {
-    val intellijPluginJars = getIntellijPluginJars(targetInfo)
+  private fun createLibrary(label: Label, targetInfo: TargetInfo): Library? {
+    val outputs = getTargetOutputJarUris(targetInfo) + getAndroidAarUris(targetInfo) + getIntellijPluginJars(targetInfo)
+    val sources = getSourceJarUris(targetInfo)
+    val interfaceJars = getTargetInterfaceJarsSet(targetInfo).map { it.toUri() }.toSet()
+    if (outputs.isEmpty() && sources.isEmpty() && interfaceJars.isEmpty()) return null
+
     return Library(
       label = label,
-      outputs = getTargetOutputJarUris(targetInfo) + getAndroidAarUris(targetInfo) + intellijPluginJars,
-      sources = getSourceJarUris(targetInfo),
+      outputs = outputs,
+      sources = sources,
       dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
-      interfaceJars = getTargetInterfaceJarsSet(targetInfo).map { it.toUri() }.toSet(),
+      interfaceJars = interfaceJars,
     )
   }
 
@@ -785,12 +795,16 @@ class BazelProjectMapper(
             .toSet()
       }
 
-  private fun hasKnownSources(targetInfo: TargetInfo) =
+  private fun hasKnownJvmSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
       it.relativePath.endsWith(".java") ||
         it.relativePath.endsWith(".kt") ||
-        it.relativePath.endsWith(".scala") ||
-        !it.isExternal &&
+        it.relativePath.endsWith(".scala")
+    }
+
+  private fun hasKnownNonJvmSources(targetInfo: TargetInfo) =
+    targetInfo.sourcesList.any {
+      !it.isExternal &&
         it.relativePath.endsWith(".py") ||
         !it.isExternal &&
         it.relativePath.endsWith(".sh") ||
@@ -800,43 +814,37 @@ class BazelProjectMapper(
 
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =
     target.label().isMainWorkspace &&
-      !shouldNotImportTargetKind(target.kind) &&
       (
-        shouldImportTargetKind(target.kind) || hasKnownSources(target)
+        shouldImportTargetKind(target.kind) ||
+          target.hasJvmTargetInfo() &&
+          hasKnownJvmSources(target) ||
+          hasKnownNonJvmSources(target)
       )
 
-  private fun shouldNotImportTargetKind(kind: String): Boolean =
-    kind in
-      setOf(
-        // genrules/filegroups may contain Java sources, but they don't expose any useful providers that we could use.
-        // Additionally, the same sources are often already included in a java_library, so there's no point in importing them twice.
-        "genrule",
-        "filegroup",
-      )
+  private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds
 
-  private fun shouldImportTargetKind(kind: String): Boolean =
-    kind in
-      setOf(
-        "java_library",
-        "java_binary",
-        "java_test",
-        "kt_jvm_library",
-        "kt_jvm_binary",
-        "kt_jvm_test",
-        "scala_library",
-        "scala_binary",
-        "scala_test",
-        "rust_test",
-        "rust_doc",
-        "rust_doc_test",
-        "android_library",
-        "android_binary",
-        "android_local_test",
-        "intellij_plugin_debug_target",
-        "go_library",
-        "go_binary",
-        "go_test",
-      )
+  private val workspaceTargetKinds =
+    setOf(
+      "java_library",
+      "java_binary",
+      "java_test",
+      "kt_jvm_library",
+      "kt_jvm_binary",
+      "kt_jvm_test",
+      "scala_library",
+      "scala_binary",
+      "scala_test",
+      "rust_test",
+      "rust_doc",
+      "rust_doc_test",
+      "android_library",
+      "android_binary",
+      "android_local_test",
+      "intellij_plugin_debug_target",
+      "go_library",
+      "go_binary",
+      "go_test",
+    )
 
   private fun isRustTarget(target: TargetInfo): Boolean = target.hasRustCrateInfo()
 
