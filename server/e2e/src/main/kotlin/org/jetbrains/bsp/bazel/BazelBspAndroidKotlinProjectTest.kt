@@ -36,7 +36,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
         jvmBuildTarget = jvmBuildTargetData,
       )
 
-    val androidJar = "file://\$BAZEL_OUTPUT_BASE_PATH/external/androidsdk/platforms/android-34/android.jar"
+    val androidJar = "file://\$BAZEL_OUTPUT_BASE_PATH/external/androidsdk/platforms/android-34/androidZZZ.jar"
 
     val appAndroidBuildTargetData =
       AndroidBuildTarget(
