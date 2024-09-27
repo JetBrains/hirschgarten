@@ -29,6 +29,6 @@ kt_jvm_library(
         "@maven//:com_google_protobuf_protobuf_java",
         "@maven//:io_grpc_grpc_stub",
         "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",
-        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
     ],
 )

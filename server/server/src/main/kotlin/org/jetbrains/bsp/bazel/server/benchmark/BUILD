@@ -14,6 +14,6 @@ kt_jvm_library(
         "@maven//:io_opentelemetry_opentelemetry_sdk",
         "@maven//:io_opentelemetry_opentelemetry_sdk_trace",
         "@maven//:io_opentelemetry_semconv_opentelemetry_semconv",
-        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
     ],
 )
