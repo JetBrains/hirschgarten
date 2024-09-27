@@ -9,9 +9,9 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.buildToolIdOrNull
-import org.jetbrains.plugins.bsp.impl.actions.registered.isSyncInProgress
 import org.jetbrains.plugins.bsp.impl.flow.sync.PartialProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
 
 class ResyncTargetAction(private val targetId: BuildTargetIdentifier) :
   SuspendableAction({ BspPluginBundle.message("target.partial.sync.action.text") }, BspPluginIcons.reload) {

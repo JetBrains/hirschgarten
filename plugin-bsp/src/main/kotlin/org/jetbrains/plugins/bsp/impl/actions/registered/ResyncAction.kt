@@ -7,7 +7,7 @@ import org.jetbrains.plugins.bsp.building.action.isBuildInProgress
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
-import org.jetbrains.plugins.bsp.impl.projectAware.BspSyncStatusService
+import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
 
 public class ResyncAction : SuspendableAction({ BspPluginBundle.message("resync.action.text") }) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
@@ -18,5 +18,3 @@ public class ResyncAction : SuspendableAction({ BspPluginBundle.message("resync.
     e.presentation.isEnabled = !project.isSyncInProgress() && !project.isBuildInProgress()
   }
 }
-
-internal fun Project.isSyncInProgress() = BspSyncStatusService.getInstance(this).isSyncInProgress

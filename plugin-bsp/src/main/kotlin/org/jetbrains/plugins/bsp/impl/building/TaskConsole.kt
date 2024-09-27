@@ -26,10 +26,10 @@ import org.jetbrains.plugins.bsp.building.action.isBuildInProgress
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import org.jetbrains.plugins.bsp.impl.actions.registered.ResyncAction
-import org.jetbrains.plugins.bsp.impl.actions.registered.isSyncInProgress
 import org.jetbrains.plugins.bsp.impl.flow.sync.BASE_PROJECT_SYNC_SUBTASK_ID
 import org.jetbrains.plugins.bsp.impl.flow.sync.PROJECT_SYNC_TASK_ID
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
+import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
 import org.jetbrains.plugins.bsp.impl.server.connection.CONNECT_TASK_ID
 import java.io.File
 import java.net.URI

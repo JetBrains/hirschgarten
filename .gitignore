@@ -27,3 +27,6 @@ jflex-*.jar
 projectview.bazelproject
 tools/mtls/*
 !tools/mtls/.gitkeep
+
+# perf test
+out
