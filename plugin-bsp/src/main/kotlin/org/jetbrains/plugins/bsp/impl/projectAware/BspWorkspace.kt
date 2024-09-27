@@ -144,6 +144,8 @@ public class BspExternalServicesSubscriber(private val project: Project) {
   }
 }
 
+fun Project.isSyncInProgress() = BspSyncStatusService.getInstance(this).isSyncInProgress
+
 public interface BspWorkspaceListener {
   public fun syncStarted()
 
