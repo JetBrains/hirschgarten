@@ -1293,6 +1293,36 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
             it.displayName = "@//target_with_resources:resources"
             it.baseDirectory = "file://$workspaceDir/target_with_resources/"
           },
+          BuildTarget(
+            BuildTargetIdentifier("@//target_without_java_info:filegroup"),
+            listOf("application"),
+            listOf("java"),
+            emptyList(),
+            BuildTargetCapabilities().also {
+              it.canCompile = true
+              it.canTest = false
+              it.canRun = true
+              it.canDebug = false
+            },
+          ).also {
+            it.displayName = "@//target_without_java_info:filegroup"
+            it.baseDirectory = "file://$workspaceDir/target_without_java_info/"
+          },
+          BuildTarget(
+            BuildTargetIdentifier("@//target_without_java_info:genrule"),
+            listOf("application"),
+            listOf("java", "kotlin"),
+            emptyList(),
+            BuildTargetCapabilities().also {
+              it.canCompile = true
+              it.canTest = false
+              it.canRun = true
+              it.canDebug = false
+            },
+          ).also {
+            it.displayName = "@//target_without_java_info:genrule"
+            it.baseDirectory = "file://$workspaceDir/target_without_java_info/"
+          },
         ),
       )
 
