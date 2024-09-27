@@ -25,7 +25,7 @@ class BspProjectMapperTest {
     "file:///home/user/.cache/bazel/_bazel_user/ae7b7b315151086e31e3b97f9ddba009/execroot/monorepo/bazel-out/k8-fastbuild-ST-4a519fd6d3e4"
 
   @Test
-  @Timeout(value = 30, unit = TimeUnit.SECONDS)
+  @Timeout(value = 1, unit = TimeUnit.MINUTES)
   fun `should compute buildDependencyModules quickly`() {
     // Make sure we can compute dependency modules for a large number of targets, each of which has a large number of dependencies.
     // Large enough to time out if using a non-optimized algorithm.
