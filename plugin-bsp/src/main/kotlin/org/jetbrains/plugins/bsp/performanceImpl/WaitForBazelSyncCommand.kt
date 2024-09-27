@@ -11,7 +11,7 @@ import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
 import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 
-private const val SYNC_START_TIMEOUT_MS = 10000L
+private const val SYNC_START_TIMEOUT_MS = 60000L
 
 internal class WaitForBazelSyncCommand(text: String, line: Int) : PlaybackCommandCoroutineAdapter(text, line) {
   companion object {
