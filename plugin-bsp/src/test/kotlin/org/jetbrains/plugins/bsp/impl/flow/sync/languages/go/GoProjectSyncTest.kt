@@ -25,7 +25,6 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
@@ -181,7 +180,7 @@ class GoProjectSyncTest : MockProjectBaseTest() {
             BaseTargetInfo(it.target, it.sources, it.resources)
           },
       )
-    val virtualFileUrlManager = WorkspaceModel.getInstance(project).bspVirtualFileUrlManager()
+    val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
     val expectedRoot = URI.create("file:///targets_base_dir").toPath().toVirtualFileUrl(virtualFileUrlManager)
     val expectedVgoStandaloneEntities = targetInfos.map { generateVgoStandaloneResult(it, expectedRoot) }

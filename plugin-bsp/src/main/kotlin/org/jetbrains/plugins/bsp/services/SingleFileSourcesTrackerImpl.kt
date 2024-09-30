@@ -16,7 +16,6 @@ import com.intellij.platform.backend.workspace.virtualFile
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.storage.VersionedStorageChange
 import com.intellij.util.text.nullize
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 
 /**
  * Provides single file source information to the IntelliJ platform.
@@ -27,7 +26,7 @@ internal class SingleFileSourcesTrackerImpl(private val project: Project) : Sing
   private val singleFileSourceData = SingleFileSourceData()
   private val moduleManager = ModuleManager.getInstance(project)
   private val workspaceModel = WorkspaceModel.getInstance(project)
-  private val virtualFileUrlManager = workspaceModel.bspVirtualFileUrlManager()
+  private val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
   private val supportedFileExtensions = listOf("java", "kt", "kts")
 
   private val lock = Any()
