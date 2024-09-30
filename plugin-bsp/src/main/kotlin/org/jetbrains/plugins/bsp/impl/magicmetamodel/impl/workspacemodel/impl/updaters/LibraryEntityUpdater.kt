@@ -58,7 +58,7 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
   private fun toLibrarySourcesRoots(entityToAdd: Library): List<LibraryRoot> =
     entityToAdd.sourceJars.map {
       LibraryRoot(
-        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUrl(Library.formatJarString(it)),
+        url = Library.formatJarString(it).toResolvedVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         type = LibraryRootTypeId.SOURCES,
       )
     }
@@ -66,7 +66,7 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
   private fun toLibraryClassesRoots(entityToAdd: Library): List<LibraryRoot> =
     entityToAdd.classJars.ifEmpty { entityToAdd.iJars }.map {
       LibraryRoot(
-        url = workspaceModelEntityUpdaterConfig.virtualFileUrlManager.getOrCreateFromUrl(Library.formatJarString(it)),
+        url = Library.formatJarString(it).toResolvedVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
         type = LibraryRootTypeId.COMPILED,
       )
     }
