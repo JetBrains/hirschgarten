@@ -12,7 +12,7 @@ open class FormatChecker(vcsRoot: GitVcsRoot) :
         this.name = "checking formatting with buildifier"
         scriptContent =
           """
-          bazel run //tools/format:format.check --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140
+          bazel run //tools/format:format.check ${Utils.CommonParams.BazelCiSpecificArgs}
           """.trimIndent()
         dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
         dockerPull = true
