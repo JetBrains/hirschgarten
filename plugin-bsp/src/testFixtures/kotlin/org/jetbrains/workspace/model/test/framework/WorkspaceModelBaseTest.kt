@@ -18,7 +18,6 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.workspaceModel.updateProjectModel
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
@@ -49,7 +48,7 @@ open class WorkspaceModelBaseTest {
     get() = WorkspaceModel.getInstance(project)
 
   protected val virtualFileUrlManager: VirtualFileUrlManager
-    get() = workspaceModel.bspVirtualFileUrlManager()
+    get() = workspaceModel.getVirtualFileUrlManager()
 
   protected fun <T : Any> runTestWriteAction(action: () -> T): T {
     lateinit var result: T

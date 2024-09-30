@@ -11,7 +11,6 @@ import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
 import org.jetbrains.plugins.bsp.impl.flow.sync.query
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
@@ -30,7 +29,7 @@ class DirectoriesSyncHook : ProjectSyncHook {
   }
 
   private fun WorkspaceDirectoriesResult.toEntity(project: Project): BspProjectDirectoriesEntity.Builder {
-    val virtualFileUrlManager = WorkspaceModel.getInstance(project).bspVirtualFileUrlManager()
+    val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
 
     return BspProjectDirectoriesEntity(
       projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager),

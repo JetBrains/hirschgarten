@@ -52,7 +52,6 @@ import org.jetbrains.plugins.bsp.impl.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
@@ -370,7 +369,7 @@ class CollectProjectDetailsTask(
 
         bspTracer.spanBuilder("load.modules.ms").use {
           val workspaceModel = WorkspaceModel.getInstance(project)
-          val virtualFileUrlManager = workspaceModel.bspVirtualFileUrlManager()
+          val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
             WorkspaceModelUpdater.create(
@@ -479,7 +478,7 @@ class CollectProjectDetailsTask(
       runInterruptible {
         pythonSdkGetterExtension.getPythonSdk(
           pythonSdk,
-          WorkspaceModel.getInstance(project).bspVirtualFileUrlManager(),
+          WorkspaceModel.getInstance(project).getVirtualFileUrlManager(),
         )
       }
 
