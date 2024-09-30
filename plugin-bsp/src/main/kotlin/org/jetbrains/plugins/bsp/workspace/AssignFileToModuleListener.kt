@@ -38,7 +38,6 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.bspVirtualFileUrlManager
 import org.jetbrains.plugins.bsp.impl.projectAware.BspSyncStatusService
 import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
@@ -125,7 +124,7 @@ private suspend fun processFileCreated(
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
-  val url = file.toVirtualFileUrl(workspaceModel.bspVirtualFileUrlManager())
+  val url = file.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   getTargetsForFile(project, url)
     ?.mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
     ?.forEach { url.addToModule(workspaceModel, it, file.extension) }
@@ -139,7 +138,7 @@ private suspend fun processFileRemoved(
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
-  val url = file.toVirtualFileUrl(workspaceModel.bspVirtualFileUrlManager())
+  val url = file.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   targetUtils
     .getTargetsForFile(file, project)
     .mapNotNull { it.toModuleEntity(storage, moduleNameProvider, targetUtils) }
@@ -156,7 +155,7 @@ private suspend fun processFileMoved(
   storage: ImmutableEntityStorage,
   moduleNameProvider: TargetNameReformatProvider,
 ) {
-  val url = file.toVirtualFileUrl(workspaceModel.bspVirtualFileUrlManager())
+  val url = file.toVirtualFileUrl(workspaceModel.getVirtualFileUrlManager())
   val inverseSourcesResult = getTargetsForFile(project, url) ?: return
   val applicableModules =
     inverseSourcesResult

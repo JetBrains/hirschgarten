@@ -120,6 +120,8 @@
         <postStartupActivity
                 implementation="org.jetbrains.plugins.bsp.startup.BspStartupActivity"/>
 
+        <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.runnerAction.BuildBeforeLocalRunTaskProvider" />
+
         <treeStructureProvider implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspTreeStructureProvider"/>
         <projectViewNodeDecorator
                 implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspProjectViewNodeDecorator"/>
