@@ -53,7 +53,8 @@
                 fieldName="INSTANCE"
                 language="Starlark"
                 fileNames="BUILD;WORKSPACE"
-                extensions="bzl;bazel;bzlmod"/>
+                extensions="bzl;bazel;bzlmod"
+                patterns="*.bzl.template"/>
         <enterBetweenBracesDelegate
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.indentation.StarlarkEnterBetweenBracesHandler"/>
