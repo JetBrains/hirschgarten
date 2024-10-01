@@ -135,14 +135,19 @@ class DefaultBspConnection(
   private val connectionDetailsProviderExtension: ConnectionDetailsProviderExtension,
 ) : BspConnection {
   private var connectionDetails: BspConnectionDetails? = null
+
+  @Volatile
   private var server: JoinedBuildServer? = null
   private var capabilities: BazelBuildServerCapabilities? = null
+
+  @Volatile
   private var bspProcess: Process? = null
   private val disconnectActions: MutableList<() -> Unit> = mutableListOf()
   private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
   private val mutex = Mutex()
 
   override suspend fun connect() {
+    if (isConnected()) return // Fast path to avoid waiting for mutex
     mutex.withLock {
       try {
         ensureConnected()
@@ -155,6 +160,7 @@ class DefaultBspConnection(
 
   private suspend fun ensureConnected() {
     log.debug("ensuring the connection is established")
+    if (isConnected()) return
     val bspClient = createBspClient()
     val inMemoryConnection =
       BspServerProvider.getBspServer()?.getConnection(
@@ -169,7 +175,7 @@ class DefaultBspConnection(
       if (newConnectionDetails != null) {
         connectionDetails = newConnectionDetails
         newConnectionDetails.connect(bspClient)
-      } else if (!isConnected()) {
+      } else {
         connectionDetails?.connect(bspClient)
       }
     }
@@ -409,16 +415,17 @@ class DefaultBspConnection(
     return task(server, capabilities)
   }
 
-  override fun disconnect() {
-    if (isConnected()) {
+  override suspend fun disconnect() {
+    if (!isConnected()) return // Fast path to avoid waiting for mutex
+    mutex.withLock {
+      if (!isConnected()) return
       val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
       throwExceptionWithSuppressedIfOccurred(exceptions)
+      bspProcess?.destroy().also { bspProcess = null }
+      disconnectActions.clear()
+      server = null
+      capabilities = null
     }
-
-    bspProcess?.destroy().also { bspProcess = null }
-    disconnectActions.clear()
-    server = null
-    capabilities = null
   }
 
   private fun executeDisconnectActionsAndCollectExceptions(disconnectActions: List<() -> Unit>): List<Throwable> =
@@ -444,7 +451,12 @@ class DefaultBspConnection(
     }
   }
 
-  override fun isConnected(): Boolean = bspProcess?.isAlive == true
+  override fun isConnected(): Boolean {
+    bspProcess?.let { bspProcess ->
+      return bspProcess.isAlive
+    }
+    return server != null
+  }
 }
 
 private fun Process.logErrorOutputs(project: Project) {

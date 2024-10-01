@@ -29,7 +29,7 @@ private class BspConnectionMock : BspConnection {
     // it's a mock, nothing to do
   }
 
-  override fun disconnect() {
+  override suspend fun disconnect() {
     // it's a mock, nothing to do
   }
 

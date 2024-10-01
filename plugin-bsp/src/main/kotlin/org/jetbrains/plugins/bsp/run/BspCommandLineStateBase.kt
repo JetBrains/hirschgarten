@@ -28,16 +28,20 @@ abstract class BspCommandLineStateBase(environment: ExecutionEnvironment, protec
 
     val bspCoroutineService = BspCoroutineService.getInstance(project)
 
+    lateinit var handler: BspProcessHandler
     // We have to start runDeferred later, because we need to register the listener first
     // Otherwise, we might miss some events
     val runDeferred =
       bspCoroutineService.startAsync(lazy = true) {
         project.connection.runWithServer { server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities ->
+          withContext(Dispatchers.EDT) {
+            RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
+          }
           startBsp(server, capabilities)
         }
       }
 
-    val handler = BspProcessHandler(runDeferred)
+    handler = BspProcessHandler(runDeferred)
     val runListener = createAndAddTaskListener(handler)
 
     with(BspTaskEventsService.getInstance(project)) {
@@ -47,12 +51,7 @@ abstract class BspCommandLineStateBase(environment: ExecutionEnvironment, protec
       }
     }
 
-    BspCoroutineService.getInstance(project).start {
-      runDeferred.start()
-      withContext(Dispatchers.EDT) {
-        RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
-      }
-    }
+    runDeferred.start()
 
     return handler
   }
