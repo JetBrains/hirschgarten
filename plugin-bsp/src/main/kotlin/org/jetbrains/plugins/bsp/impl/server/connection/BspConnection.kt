@@ -21,7 +21,7 @@ public interface BspConnection {
    * Disconnect from the server,
    * perform cleanup actions (like killing the process, closing resources).
    */
-  public fun disconnect()
+  public suspend fun disconnect()
 
   /**
    * Executes a task on server, taking care of the connection to the server and
