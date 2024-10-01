@@ -37,15 +37,22 @@ class BazelBspAspectsManager(
     ruleLanguages.filter { it.language.isTemplate }.forEach {
       val outputFile = aspectsPath.resolve(it.language.toAspectRelativePath())
       val templateFilePath = it.language.toAspectTemplateRelativePath()
+      val kotlinEnabled = Language.Kotlin in ruleLanguages.map { it.language }
       val variableMap =
         mapOf(
           "ruleName" to it.ruleName,
           "addTransitiveCompileTimeJars" to
-            if (workspaceContext.experimentalAddTransitiveCompileTimeJars.value) "True" else "False",
+            workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
+          "loadKtJvmProvider" to
+            if (kotlinEnabled) """load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider")""" else "",
+          "getKtJvmProvider" to
+            if (kotlinEnabled) "get_kt_jvm_provider(target)" else "None",
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }
   }
+
+  private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"
 
   fun fetchFilesFromOutputGroups(
     cancelChecker: CancelChecker,
