@@ -4,12 +4,15 @@ load("//aspects:utils/utils.bzl", "convert_struct_to_dict", "create_struct", "ma
 
 KOTLIN_TOOLCHAIN_TYPE = "@${ruleName}//kotlin/internal:kt_toolchain_type"
 
-def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
-    if KtJvmInfo not in target:
-        return None, None
+def get_kt_jvm_provider(target):
+    if KtJvmInfo in target:
+        return target[KtJvmInfo]
+    return None
 
-    # Only supports JVM platform now
-    provider = target[KtJvmInfo]
+def extract_kotlin_info(target, ctx, dep_targets, **kwargs):
+    provider = get_kt_jvm_provider(target)
+    if provider == None:
+        return None, None
 
     language_version = getattr(provider, "language_version", None)
     api_version = language_version
