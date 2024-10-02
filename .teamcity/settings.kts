@@ -2,6 +2,7 @@ import configurations.*
 import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project
+import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.finishBuildTrigger
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 
 version = "2024.03"
@@ -74,10 +75,17 @@ object GitHub : Project({
   allSteps.forEach { buildType(it) }
 
   // setup trigger for bazel-bsp pipeline
-  allSteps.last().triggers {
+  ProjectFormat.GitHub.triggers {
     vcs {
       branchFilter = ProjectBranchFilters.githubBranchFilter
       triggerRules = ProjectTriggerRules.triggerRules
+    }
+  }
+
+  ResultsAggregator.GitHub.triggers {
+    finishBuildTrigger {
+      buildType = "${ProjectFormat.GitHub.id}"
+      successfulOnly = true
     }
   }
 
@@ -141,10 +149,17 @@ object Space : Project({
   allSteps.forEach { buildType(it) }
 
   // setup trigger for bazel-bsp pipeline
-  allSteps.last().triggers {
+  ProjectFormat.Space.triggers {
     vcs {
       branchFilter = ProjectBranchFilters.spaceBranchFilter
       triggerRules = ProjectTriggerRules.triggerRules
+    }
+  }
+
+  ResultsAggregator.Space.triggers {
+    finishBuildTrigger {
+      buildType = "${ProjectFormat.Space.id}"
+      successfulOnly = true
     }
   }
 
