@@ -1,6 +1,4 @@
 import configurations.*
-import configurations.pluginBsp.IntellijBenchmark
-import configurations.server.*
 import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project
@@ -52,18 +50,18 @@ object GitHub : Project({
       }) {
         buildType(ProjectBuild.GitHub)
         buildType(ProjectUnitTests.GitHub)
-        buildType(IntellijBenchmark.GitHub)
-        buildType(BazelE2eTests.SampleRepoGitHub)
-        buildType(BazelE2eTests.LocalJdkGitHub)
-        buildType(BazelE2eTests.RemoteJdkGitHub)
-//            buildType(BazelE2eTests.ServerDownloadsBazeliskGitHub)
-        buildType(BazelE2eTests.AndroidProjectGitHub)
-        buildType(BazelE2eTests.AndroidKotlinProjectGitHub)
-        buildType(BazelE2eTests.ScalaProjectGitHub)
-        buildType(BazelE2eTests.KotlinProjectGitHub)
-        buildType(BazelE2eTests.PythonProjectGitHub)
-        buildType(BazelE2eTests.JavaDiagnosticsGitHub)
-        buildType(BazelBenchmark.GitHub)
+        buildType(PluginBenchmark.GitHub)
+        buildType(ServerE2eTests.SampleRepoGitHub)
+        buildType(ServerE2eTests.LocalJdkGitHub)
+        buildType(ServerE2eTests.RemoteJdkGitHub)
+//            buildType(ServerE2eTests.ServerDownloadsBazeliskGitHub)
+        buildType(ServerE2eTests.AndroidProjectGitHub)
+        buildType(ServerE2eTests.AndroidKotlinProjectGitHub)
+        buildType(ServerE2eTests.ScalaProjectGitHub)
+        buildType(ServerE2eTests.KotlinProjectGitHub)
+        buildType(ServerE2eTests.PythonProjectGitHub)
+        buildType(ServerE2eTests.JavaDiagnosticsGitHub)
+        buildType(ServerBenchmark.GitHub)
       }
 
       buildType(ResultsAggregator.GitHub, options = {
@@ -86,22 +84,21 @@ object GitHub : Project({
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
-      RelativeId("GitHubFormatCheckFormatting"),
-      RelativeId("GitHubBuildBuildProject"),
-      RelativeId("GitHubUnitTestsProjectUnitTests"),
-      RelativeId("GitHubBenchmarkServer10targets"),
-      RelativeId("GitHubBenchmarkPluginBsp10targets"),
-      RelativeId("GitHubE2eTestsServerE2eSampleRepoTest"),
-      RelativeId("GitHubE2eTestsServerE2eLocalJdkTest"),
-      RelativeId("GitHubE2eTestsServerE2eRemoteJdkTest"),
-//        RelativeId("GitHubE2eTestsServerE2eServerDownloadsBazeliskTest"),
-      RelativeId("GitHubE2eTestsServerE2eAndroidProjectTest"),
-      RelativeId("GitHubE2eTestsServerE2eAndroidKotlinProjectTest"),
-      RelativeId("GitHubE2eTestsServerE2eEnabledRulesTest"),
-      RelativeId("GitHubE2eTestsServerE2eKotlinProjectTest"),
-      RelativeId("GitHubE2eTestsServerE2ePythonProjectTest"),
-      RelativeId("GitHubE2eTestsServerE2eJavaDiagnosticsTest"),
-      RelativeId("GitHubResults"),
+      ProjectFormat.GitHub,
+      ProjectBuild.GitHub,
+      ProjectUnitTests.GitHub,
+      PluginBenchmark.GitHub,
+      ServerE2eTests.SampleRepoGitHub,
+      ServerE2eTests.LocalJdkGitHub,
+      ServerE2eTests.RemoteJdkGitHub,
+      // ServerE2eTests.ServerDownloadsBazeliskGitHub,
+      ServerE2eTests.AndroidProjectGitHub,
+      ServerE2eTests.AndroidKotlinProjectGitHub,
+      ServerE2eTests.ScalaProjectGitHub,
+      ServerE2eTests.KotlinProjectGitHub,
+      ServerE2eTests.PythonProjectGitHub,
+      ServerE2eTests.JavaDiagnosticsGitHub,
+      ServerBenchmark.GitHub,
     )
 })
 
@@ -120,18 +117,18 @@ object Space : Project({
       }) {
         buildType(ProjectBuild.Space)
         buildType(ProjectUnitTests.Space)
-        buildType(IntellijBenchmark.Space)
-        buildType(BazelE2eTests.SampleRepoSpace)
-        buildType(BazelE2eTests.LocalJdkSpace)
-        buildType(BazelE2eTests.RemoteJdkSpace)
-//            buildType(BazelE2eTests.ServerDownloadsBazeliskSpace)
-        buildType(BazelE2eTests.AndroidProjectSpace)
-        buildType(BazelE2eTests.AndroidKotlinProjectSpace)
-        buildType(BazelE2eTests.ScalaProjectSpace)
-        buildType(BazelE2eTests.KotlinProjectSpace)
-        buildType(BazelE2eTests.PythonProjectSpace)
-        buildType(BazelE2eTests.JavaDiagnosticsSpace)
-        buildType(BazelBenchmark.Space)
+        buildType(PluginBenchmark.Space)
+        buildType(ServerE2eTests.SampleRepoSpace)
+        buildType(ServerE2eTests.LocalJdkSpace)
+        buildType(ServerE2eTests.RemoteJdkSpace)
+//            buildType(ServerE2eTests.ServerDownloadsBazeliskSpace)
+        buildType(ServerE2eTests.AndroidProjectSpace)
+        buildType(ServerE2eTests.AndroidKotlinProjectSpace)
+        buildType(ServerE2eTests.ScalaProjectSpace)
+        buildType(ServerE2eTests.KotlinProjectSpace)
+        buildType(ServerE2eTests.PythonProjectSpace)
+        buildType(ServerE2eTests.JavaDiagnosticsSpace)
+        buildType(ServerBenchmark.Space)
       }
 
       buildType(ResultsAggregator.Space, options = {
@@ -154,21 +151,20 @@ object Space : Project({
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
     arrayListOf(
-      RelativeId("SpaceFormatCheckFormatting"),
-      RelativeId("SpaceBuildBuildProject"),
-      RelativeId("SpaceUnitTestsProjectUnitTests"),
-      RelativeId("SpaceBenchmarkServer10targets"),
-      RelativeId("SpaceBenchmarkPluginBsp10targets"),
-      RelativeId("SpaceE2eTestsServerE2eSampleRepoTest"),
-      RelativeId("SpaceE2eTestsServerE2eLocalJdkTest"),
-      RelativeId("SpaceE2eTestsServerE2eRemoteJdkTest"),
-//        RelativeId("SpaceE2eTestsServerE2eServerDownloadsBazeliskTest"),
-      RelativeId("SpaceE2eTestsServerE2eAndroidProjectTest"),
-      RelativeId("SpaceE2eTestsServerE2eAndroidKotlinProjectTest"),
-      RelativeId("SpaceE2eTestsServerE2eEnabledRulesTest"),
-      RelativeId("SpaceE2eTestsServerE2eKotlinProjectTest"),
-      RelativeId("SpaceE2eTestsServerE2ePythonProjectTest"),
-      RelativeId("SpaceE2eTestsServerE2eJavaDiagnosticsTest"),
-      RelativeId("SpaceResults"),
+      ProjectFormat.Space,
+      ProjectBuild.Space,
+      ProjectUnitTests.Space,
+      PluginBenchmark.Space,
+      ServerE2eTests.SampleRepoSpace,
+      ServerE2eTests.LocalJdkSpace,
+      ServerE2eTests.RemoteJdkSpace,
+      // ServerE2eTests.ServerDownloadsBazeliskSpace,
+      ServerE2eTests.AndroidProjectSpace,
+      ServerE2eTests.AndroidKotlinProjectSpace,
+      ServerE2eTests.ScalaProjectSpace,
+      ServerE2eTests.KotlinProjectSpace,
+      ServerE2eTests.PythonProjectSpace,
+      ServerE2eTests.JavaDiagnosticsSpace,
+      ServerBenchmark.Space,
     )
 })

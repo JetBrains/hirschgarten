@@ -1,5 +1,5 @@
-# https://jetbrains.team/p/bazel/packages/container/docker-private/hirschgarten-benchmarks,kyuhhhhhhhhhhhhhhhhhhhhyyyyyyyyyyyyyyyyyyyyyyyyyy
-# to build and push this image locally run `build-and-push.sh benchmarks %space.git.credentials%` from `tools/docker` folder
+# https://jetbrains.team/p/bazel/packages/container/docker/hirschgarten-benchmarks-synthetic
+# to build and push this image locally run `build-and-push.sh benchmarks-synthetic` from `tools/docker` folder
 
 FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
@@ -14,18 +14,14 @@ RUN chown -R hirschuser:hirschuser /home/hirschuser
 # Switch to the non-root user
 USER hirschuser
 
-# Clone projects for benchmarking
-RUN --mount=type=secret,id=space_git_credentials,uid=1001 \
-    cd /home/hirschuser \
-    && git clone --depth 1 https://$(cat /run/secrets/space_git_credentials)@git.jetbrains.team/dl/Datalore.git \
-    && git clone --depth 1 https://github.com/JetBrains/hirschgarten.git \
-    && git clone --depth 1 https://github.com/bazelbuild/bazel.git \
-    && git clone --depth 1 https://github.com/grpc/grpc-java.git \
-    && git clone --depth 1 https://github.com/JetBrains/bazel-bsp.git
+# Clone hirschgarten repository
+RUN git clone --depth 1 https://github.com/JetBrains/hirschgarten.git /home/hirschuser/hirschgarten
 
 RUN cd /home/hirschuser/hirschgarten \
     && bazel run //server/bspcli:generator -- /home/hirschuser/project_1000 1000 --targetssize 1 \
     && bazel run //server/bspcli:generator -- /home/hirschuser/project_5000 5000 --targetssize 1 \
     && bazel run //server/bspcli:generator -- /home/hirschuser/project_10000 10000 --targetssize 1 \
     && bazel run //server/bspcli:generator -- /home/hirschuser/project_20000 20000 --targetssize 1 \
-    && bazel run //server/bspcli:generator -- /home/hirschuser/project_1 1 --targetssize 50000
+    && bazel run //server/bspcli:generator -- /home/hirschuser/project_1 1 --targetssize 50000 \
+    && cd /home/hirschuser \
+    && rm -rf /home/hirschuser/hirschgarten
