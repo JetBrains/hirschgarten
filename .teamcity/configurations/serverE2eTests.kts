@@ -1,7 +1,5 @@
-package configurations.server
+package configurations
 
-import configurations.BaseConfiguration
-import configurations.Utils
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
@@ -30,7 +28,6 @@ open class E2ETest(
           "--sandbox_writable_path=/home/hirschuser/.cache ${Utils.CommonParams.BazelCiSpecificArgs}"
         logging = BazelStep.Verbosity.Diagnostic
         toolPath = "/usr/local/bin"
-        logging = BazelStep.Verbosity.Diagnostic
         Utils.DockerParams.get().forEach { (key, value) ->
           param(key, value)
         }

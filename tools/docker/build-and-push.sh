@@ -10,11 +10,10 @@ FOLDER_NAME=$1
 DATE_TAG=$(date +%d%m%y)
 
 # Set registry and image name based on folder
-if [ "$FOLDER_NAME" == "benchmarks" ]; then
+if [ "$FOLDER_NAME" == "benchmarks-organic" ]; then
 	REGISTRY="registry.jetbrains.team/p/bazel/docker-private"
-	IMAGE_NAME="hirschgarten-benchmarks"
 
-	# Check if space_git_credentials is provided for benchmarks
+	# Check if space_git_credentials is provided for benchmarks-organic
 	if [ $# -lt 2 ]; then
 		echo "Error: space_git_credentials is required for benchmarks"
 		exit 1
@@ -22,9 +21,9 @@ if [ "$FOLDER_NAME" == "benchmarks" ]; then
 	SPACE_GIT_CREDENTIALS=$2
 else
 	REGISTRY="registry.jetbrains.team/p/bazel/docker"
-	IMAGE_NAME="hirschgarten-$FOLDER_NAME"
 fi
 
+IMAGE_NAME="hirschgarten-$FOLDER_NAME"
 FULL_IMAGE_NAME="$REGISTRY/$IMAGE_NAME"
 
 # Function to check if we're logged in
@@ -45,9 +44,9 @@ handle_login() {
 
 # Function to build the Docker image
 build_image() {
-	if [ "$FOLDER_NAME" == "benchmarks" ]; then
-		if ! docker build --secret id=space_git_credentials,src=<(echo "$SPACE_GIT_CREDENTIALS") -t $FULL_IMAGE_NAME:$DATE_TAG .; then
-			echo "Docker build failed for benchmarks. Exiting."
+	if [ "$FOLDER_NAME" == "benchmarks-organic" ]; then
+		if ! docker build --no-cache --secret id=space_git_credentials,src=<(echo "$SPACE_GIT_CREDENTIALS") -t $FULL_IMAGE_NAME:$DATE_TAG .; then
+			echo "Docker build failed for benchmarks-organic. Exiting."
 			exit 1
 		fi
 	else
