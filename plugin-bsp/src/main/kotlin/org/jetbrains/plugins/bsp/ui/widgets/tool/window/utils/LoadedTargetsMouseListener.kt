@@ -108,8 +108,11 @@ fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, verboseT
     addAction(TestTargetAction(target, verboseText = verboseText))
   }
 
+  // targets which cant be run or tested cant be debugged as well
+  val canBeExecuted = target.capabilities.canRun || target.capabilities.canTest
+  val canBeHandled = BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
   // "Client-side" debugging
-  if (BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null) {
+  if (canBeExecuted && canBeHandled) {
     addAction(
       RunTargetAction(
         targetInfo = target,
