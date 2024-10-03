@@ -86,6 +86,7 @@ object GitHub : Project({
     finishBuildTrigger {
       buildType = "${ProjectFormat.GitHub.id}"
       successfulOnly = true
+      branchFilter = ProjectBranchFilters.githubBranchFilter
     }
   }
 
@@ -160,6 +161,7 @@ object Space : Project({
     finishBuildTrigger {
       buildType = "${ProjectFormat.Space.id}"
       successfulOnly = true
+      branchFilter = ProjectBranchFilters.spaceBranchFilter
     }
   }
 
