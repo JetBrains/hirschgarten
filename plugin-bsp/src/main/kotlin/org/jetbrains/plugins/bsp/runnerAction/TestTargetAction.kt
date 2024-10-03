@@ -30,5 +30,5 @@ public class TestTargetAction(
     },
     isDebugAction = isDebugAction,
   ) {
-  override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType()
+  override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType(project)
 }
