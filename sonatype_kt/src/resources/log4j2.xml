@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Basic Log4j configuration which displays logs in STDOUT. -->
+<Configuration>
+    <Appenders>
+        <Console name="consoleAppender" follow="true">
+            <PatternLayout pattern="%d [%t] %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="consoleAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>

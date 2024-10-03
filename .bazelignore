@@ -10,4 +10,5 @@ server/e2e/test-resources/android-kotlin-project/bazel-android-kotlin-project
 server/e2e/test-resources/java-diagnostics-project/bazel-java-diagnostics-project
 rules_intellij
 rules_sonatype
+sonatype_kt
 .jps-compiled

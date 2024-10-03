@@ -11,7 +11,7 @@ SonatypePublishInfo = provider(
 _TEMPLATE = """#!/usr/bin/env bash
 
 echo "Uploading {coordinates} to {maven_repo}"
-./uploader {user} {password} {maven_repo} {profile} {coordinates} {artifact} {source} {doc} {pom}
+./uploader -u {user} -p {password} -r {maven_repo} -pn {profile} -c {coordinates} -pj {artifact} -psj {source} -pdj {doc} -ppom {pom}
 """
 
 _RULES_JVM_TEMPLATE = """#!/usr/bin/env bash

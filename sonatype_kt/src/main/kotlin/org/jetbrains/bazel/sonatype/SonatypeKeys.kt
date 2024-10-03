@@ -1,37 +1,12 @@
 package org.jetbrains.bazel.sonatype
 
-import org.apache.commons.cli.CommandLine
-import org.apache.commons.cli.CommandLineParser
-import org.apache.commons.cli.DefaultParser
-import org.apache.commons.cli.HelpFormatter
-import org.apache.commons.cli.Option
-import org.apache.commons.cli.Options
-import org.apache.commons.cli.ParseException
+import org.apache.commons.cli.*
 import kotlin.system.exitProcess
 
-
 object SonatypeKeys {
-  fun parseArguments(args: Array<String>): Pair<String, SonatypeConfig> {
-    if (args.isEmpty()) {
-      printHelpAndExit("No command specified. Available commands: open, publish")
-    }
-
-    val command = args[0].lowercase()
-    val commandArgs = args.copyOfRange(1, args.size)
-
-    return when (command) {
-      "open" -> Pair(command, parseOpenPublishOptions(commandArgs, isPublish = false))
-      "publish" -> Pair(command, parseOpenPublishOptions(commandArgs, isPublish = true))
-      else -> {
-        printHelpAndExit("Unknown command: $command. Available commands: open, publish")
-      }
-    }
-  }
-
-  private fun parseOpenPublishOptions(args: Array<String>, isPublish: Boolean): SonatypeConfig {
+  fun parseArguments(args: Array<String>): SonatypeConfig {
     val options = Options()
 
-    // Common options
     options.addOption(Option.builder("u")
       .longOpt("username")
       .hasArg()
@@ -89,35 +64,33 @@ object SonatypeKeys {
       .build())
 
     // Publish-specific options
-    if (isPublish) {
-      options.addOption(Option.builder("pj")
-        .longOpt("project-jar")
-        .hasArg()
-        .desc("Path to project jar")
-        .required(true)
-        .build())
+    options.addOption(Option.builder("pj")
+      .longOpt("project-jar")
+      .hasArg()
+      .desc("Path to project jar")
+      .required(true)
+      .build())
 
-      options.addOption(Option.builder("psj")
-        .longOpt("project-sources-jar")
-        .hasArg()
-        .desc("Path to project sources jar")
-        .required(true)
-        .build())
+    options.addOption(Option.builder("psj")
+      .longOpt("project-sources-jar")
+      .hasArg()
+      .desc("Path to project sources jar")
+      .required(true)
+      .build())
 
-      options.addOption(Option.builder("pdj")
-        .longOpt("project-docs-jar")
-        .hasArg()
-        .desc("Path to project docs jar")
-        .required(true)
-        .build())
+    options.addOption(Option.builder("pdj")
+      .longOpt("project-docs-jar")
+      .hasArg()
+      .desc("Path to project docs jar")
+      .required(true)
+      .build())
 
-      options.addOption(Option.builder("ppom")
-        .longOpt("project-pom")
-        .hasArg()
-        .desc("Path to project pom file")
-        .required(true)
-        .build())
-    }
+    options.addOption(Option.builder("ppom")
+      .longOpt("project-pom")
+      .hasArg()
+      .desc("Path to project pom file")
+      .required(true)
+      .build())
 
     val parser: CommandLineParser = DefaultParser()
     val formatter = HelpFormatter()
@@ -126,7 +99,9 @@ object SonatypeKeys {
     try {
       cmd = parser.parse(options, args)
     } catch (e: ParseException) {
-      formatter.printHelp("sonatype-cli $isPublish", options)
+      println("Args: ${args.joinToString(" ")}")
+      println(e.message)
+      formatter.printHelp("sonatype-cli", options)
       exitProcess(1)
     }
 
@@ -144,10 +119,10 @@ object SonatypeKeys {
     val timeoutMillis = cmd.getOptionValue("timeout")?.toIntOrNull() ?: 60 * 60 * 1000
     val logLevel = cmd.getOptionValue("log-level") ?: "info"
 
-    val projectJar = if (isPublish) cmd.getOptionValue("project-jar") else ""
-    val projectSourcesJar = if (isPublish) cmd.getOptionValue("project-sources-jar") else ""
-    val projectDocsJar = if (isPublish) cmd.getOptionValue("project-docs-jar") else ""
-    val projectPom = if (isPublish) cmd.getOptionValue("project-pom") else ""
+    val projectJar = cmd.getOptionValue("project-jar")
+    val projectSourcesJar = cmd.getOptionValue("project-sources-jar")
+    val projectDocsJar = cmd.getOptionValue("project-docs-jar")
+    val projectPom = cmd.getOptionValue("project-pom")
 
     return SonatypeConfig(
       username = username,
@@ -163,11 +138,5 @@ object SonatypeKeys {
       projectDocsJar = projectDocsJar,
       projectPom = projectPom
     )
-  }
-
-  private fun printHelpAndExit(message: String): Nothing {
-    println(message)
-    println("Available commands: open, publish")
-    exitProcess(1)
   }
 }
