@@ -110,6 +110,7 @@ object GitHub : Project({
       ServerE2eTests.JavaDiagnosticsGitHub,
       ServerE2eTests.ManualTargetsGitHub,
       ServerBenchmark.GitHub,
+      ResultsAggregator.GitHub
     )
 })
 
@@ -187,5 +188,6 @@ object Space : Project({
       ServerE2eTests.JavaDiagnosticsSpace,
       ServerE2eTests.ManualTargetsSpace,
       ServerBenchmark.Space,
+      ResultsAggregator.Space
     )
 })
