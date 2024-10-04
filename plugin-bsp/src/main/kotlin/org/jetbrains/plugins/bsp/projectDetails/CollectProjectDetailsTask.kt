@@ -45,6 +45,7 @@ import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
+import org.jetbrains.plugins.bsp.impl.flow.sync.PartialProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncScope
 import org.jetbrains.plugins.bsp.impl.flow.sync.asyncQueryIf
 import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
@@ -362,6 +363,15 @@ class CollectProjectDetailsTask(
                 targetIdToModuleDetails,
                 libraries,
                 libraryModules,
+              )
+            }
+            if (syncScope is PartialProjectSync) {
+              project.temporaryTargetUtils.saveTargets(
+                project.temporaryTargetUtils.targetIdToTargetInfo,
+                targetIdToModuleEntityMap,
+                targetIdToModuleDetails,
+                project.temporaryTargetUtils.libraries + libraries,
+                project.temporaryTargetUtils.libraryModules + libraryModules,
               )
             }
             targetIdToModuleEntityMap

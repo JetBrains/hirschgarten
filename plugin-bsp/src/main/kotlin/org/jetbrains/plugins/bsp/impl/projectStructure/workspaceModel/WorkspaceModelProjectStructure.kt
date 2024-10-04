@@ -25,6 +25,7 @@ import org.jetbrains.plugins.bsp.projectStructure.ProjectStructureDiff
 import org.jetbrains.plugins.bsp.projectStructure.ProjectStructureProvider
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspModuleEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntityStorage) : ProjectStructureDiff {
@@ -73,6 +74,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
     }
 
   private fun EntitySource.isBspRelevantForPartialSync(project: Project, syncScope: PartialProjectSync): Boolean {
+    if (this is BspProjectEntitySource) return true
     val moduleNameProvider = project.findModuleNameProvider().orDefault()
     val targetsToSyncNames = syncScope.targetsToSync.map { moduleNameProvider(BuildTargetInfo(id = it)) }
 

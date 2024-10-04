@@ -81,7 +81,7 @@ class BazelBspServer(
       )
 
     val telemetryConfigWithLogger = telemetryConfig.copy(bspClientLogger = bspClientLogger)
-    val projectSyncService = ProjectSyncService(bspProjectMapper, projectProvider, telemetryConfigWithLogger)
+    val projectSyncService = ProjectSyncService(bspProjectMapper, projectProvider, telemetryConfigWithLogger, bspClientLogger)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(

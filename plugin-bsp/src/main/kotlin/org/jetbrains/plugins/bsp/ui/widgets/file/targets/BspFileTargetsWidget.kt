@@ -62,7 +62,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
   }
 
   private fun inactiveWidgetState(icon: Icon): WidgetState {
-    val state = WidgetState(BspPluginBundle.message("widget.tooltip.text.inactive"), "", false)
+    val state = WidgetState("resync file", "resync file", true)
     state.icon = icon
 
     return state
@@ -87,6 +87,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
   }
 
   private fun calculatePopupGroup(file: VirtualFile): ActionGroup {
+    return DefaultActionGroup(listOf(HeheSync(file)))
     val targetIds = project.temporaryTargetUtils.getTargetsForFile(file, project)
     val targets = targetIds.mapNotNull { project.temporaryTargetUtils.getBuildTargetInfoForId(it) }
     val groups = targets.map { it.calculatePopupGroup() }

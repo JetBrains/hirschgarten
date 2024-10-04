@@ -45,8 +45,8 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
   // e.g., file:/test and file:///test should be similar in the URI world
   var fileToTargetId: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
     private set
-  private var libraries: List<Library> = emptyList()
-  private var libraryModules: List<JavaModule> = emptyList()
+  var libraries: List<Library> = emptyList()
+  var libraryModules: List<JavaModule> = emptyList()
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
   private var listeners: List<() -> Unit> = emptyList()

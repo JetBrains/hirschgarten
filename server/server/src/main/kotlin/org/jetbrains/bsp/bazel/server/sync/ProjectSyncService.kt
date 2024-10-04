@@ -39,6 +39,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.JsonObject
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
 import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
 import org.jetbrains.bsp.bazel.server.model.Language
@@ -55,6 +56,7 @@ class ProjectSyncService(
   private val bspMapper: BspProjectMapper,
   private val projectProvider: ProjectProvider,
   private val telemetryConfig: TelemetryConfig,
+  private val bspClientLogger: BspClientLogger
 ) {
   private lateinit var clientCapabilities: BuildClientCapabilities
 
@@ -85,9 +87,8 @@ class ProjectSyncService(
 
   fun workspaceBuildTargetsPartial(cancelChecker: CancelChecker, targetsToSync: List<BuildTargetIdentifier>): WorkspaceBuildTargetsResult {
     val project =
-      projectProvider.loadFromBazel(
+      projectProvider.updateAndGet(
         cancelChecker = cancelChecker,
-        build = false,
         targetsToSync = targetsToSync,
       )
     return bspMapper.workspaceTargets(project)
