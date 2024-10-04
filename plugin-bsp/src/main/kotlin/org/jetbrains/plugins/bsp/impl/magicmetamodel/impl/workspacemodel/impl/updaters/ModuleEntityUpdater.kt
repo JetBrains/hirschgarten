@@ -24,6 +24,7 @@ import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspModuleEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectModelExternalSource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDependency
@@ -93,7 +94,7 @@ internal class ModuleEntityUpdater(
             JpsPaths
               .getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)
               .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-          externalSource = null,
+          externalSource = BspProjectModelExternalSource,
           moduleFileName = entityToAdd.name + ModuleManagerEx.IML_EXTENSION,
         )
     }
