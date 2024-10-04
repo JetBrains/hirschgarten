@@ -4,7 +4,7 @@ import com.intellij.openapi.util.IconLoader
 import javax.swing.Icon
 
 @Suppress("unused") // should be able to provide us with all available icons
-internal object BazelPluginIcons {
+object BazelPluginIcons {
   val bazel: Icon = IconLoader.getIcon("/icons/bazel.svg", javaClass)
   val bazelConfig: Icon = IconLoader.getIcon("/icons/bazelConfig.svg", javaClass)
   val bazelDirectory: Icon = IconLoader.getIcon("/icons/bazelDirectory.svg", javaClass)
