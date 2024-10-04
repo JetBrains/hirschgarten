@@ -208,3 +208,17 @@ object JavaDiagnosticsGitHub : JavaDiagnostics(
 object JavaDiagnosticsSpace : JavaDiagnostics(
   vcsRoot = BaseConfiguration.SpaceVcs,
 )
+
+open class ManualTargets(vcsRoot: GitVcsRoot) :
+  E2ETest(
+    vcsRoot = vcsRoot,
+    targets = "//server/e2e:allow_manual_targets_sync_test",
+  )
+
+object ManualTargetsGitHub : ManualTargets(
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object ManualTargetsSpace : ManualTargets(
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)
