@@ -111,13 +111,10 @@ class ProjectResolver(
       targetSpecs = targetsToSync,
       aspect = ASPECT_NAME,
       outputGroups = outputGroups.map { if (build) "+$it" else it },
-      shouldBuildManualFlags = workspaceContext.shouldAddBuildAffectingFlags(build),
+      shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
       isRustEnabled = workspaceContext.isRustEnabled,
     )
   }
-
-  private fun WorkspaceContext.shouldAddBuildAffectingFlags(willBeBuilt: Boolean): Boolean =
-    this.allowManualTargetsSync.value || !willBeBuilt
 
   fun releaseMemory() {
     bazelPathsResolver.clear()

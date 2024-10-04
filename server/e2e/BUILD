@@ -98,11 +98,18 @@ bazel_integration_test_current_version(
     workspace_path = "test-resources/java-diagnostics-project",
 )
 
+bazel_integration_test_all_versions(
+    name = "allow_manual_targets_sync_test",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspAllowManualTargetsSyncTest",
+    workspace_path = "test-resources/allow-manual-targets-sync-project",
+)
+
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
     # we need to include all of them manually because of the "manual" tag
     tests = [
+        ":allow_manual_targets_sync_test",
         ":android_kotlin_project_test",
         ":android_project_test",
         ":enabled_rules_test",
