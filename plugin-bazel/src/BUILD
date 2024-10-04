@@ -38,6 +38,7 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets:assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config:config",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines:coroutines",
         "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
         "@rules_intellij//third_party/android",
