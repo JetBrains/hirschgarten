@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.impl.flow.sync
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.build.events.impl.FailureResultImpl
+import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.EDT
@@ -65,11 +66,11 @@ class ProjectSyncTask(private val project: Project) {
             doSync(syncScope, buildProject)
 
             project.syncConsole.finishTask(PROJECT_SYNC_TASK_ID, BspPluginBundle.message("console.task.sync.success"))
-          } catch (e: CancellationException) {
+          } catch (_: CancellationException) {
             project.syncConsole.finishTask(
               PROJECT_SYNC_TASK_ID,
               BspPluginBundle.message("console.task.sync.cancelled"),
-              FailureResultImpl(),
+              SkippedResultImpl(),
             )
           } catch (_: SyncAlreadyInProgressException) {
             syncAlreadyInProgress = true
