@@ -59,7 +59,7 @@ class BazelBspAspectsManager(
     targetSpecs: TargetsSpec,
     aspect: String,
     outputGroups: List<String>,
-    shouldBuildManualFlags: Boolean,
+    shouldSyncManualFlags: Boolean,
     isRustEnabled: Boolean,
   ): BazelBspAspectsManagerResult {
     if (targetSpecs.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), isFailure = false)
@@ -72,7 +72,7 @@ class BazelBspAspectsManager(
         curses(false),
         buildTagFilters(listOf("-no-ide")),
       )
-    val allowManualTargetsSyncFlags = if (shouldBuildManualFlags) listOf(buildManualTests()) else emptyList()
+    val allowManualTargetsSyncFlags = if (shouldSyncManualFlags) listOf(buildManualTests()) else emptyList()
 
     val flagsToUse = defaultFlags + allowManualTargetsSyncFlags
 
