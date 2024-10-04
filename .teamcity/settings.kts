@@ -62,6 +62,7 @@ object GitHub : Project({
         buildType(ServerE2eTests.KotlinProjectGitHub)
         buildType(ServerE2eTests.PythonProjectGitHub)
         buildType(ServerE2eTests.JavaDiagnosticsGitHub)
+        buildType(ServerE2eTests.ManualTargetsGitHub)
         buildType(ServerBenchmark.GitHub)
       }
 
@@ -107,6 +108,7 @@ object GitHub : Project({
       ServerE2eTests.KotlinProjectGitHub,
       ServerE2eTests.PythonProjectGitHub,
       ServerE2eTests.JavaDiagnosticsGitHub,
+      ServerE2eTests.ManualTargetsGitHub,
       ServerBenchmark.GitHub,
     )
 })
@@ -137,6 +139,7 @@ object Space : Project({
         buildType(ServerE2eTests.KotlinProjectSpace)
         buildType(ServerE2eTests.PythonProjectSpace)
         buildType(ServerE2eTests.JavaDiagnosticsSpace)
+        buildType(ServerE2eTests.ManualTargetsSpace)
         buildType(ServerBenchmark.Space)
       }
 
@@ -182,6 +185,7 @@ object Space : Project({
       ServerE2eTests.KotlinProjectSpace,
       ServerE2eTests.PythonProjectSpace,
       ServerE2eTests.JavaDiagnosticsSpace,
+      ServerE2eTests.ManualTargetsSpace,
       ServerBenchmark.Space,
     )
 })
