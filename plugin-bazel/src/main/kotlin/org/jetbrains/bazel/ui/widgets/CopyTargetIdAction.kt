@@ -29,8 +29,10 @@ import org.jetbrains.plugins.bsp.config.rootDir
  */
 internal class CopyTargetIdAction : SuspendableAction({ BazelPluginBundle.message("editor.action.copy.target.id") }) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    val psiElement = readAction { e.getPsiElement() }
-    performCopyTargetIdAction(psiElement)
+    readAction {
+      val psiElement = e.getPsiElement()
+      performCopyTargetIdAction(psiElement)
+    }
   }
 
   private fun performCopyTargetIdAction(psiElement: PsiElement?) {
