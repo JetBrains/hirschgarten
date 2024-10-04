@@ -641,7 +641,7 @@ class BazelProjectMapper(
     val outputs = getTargetOutputJarUris(targetInfo) + getAndroidAarUris(targetInfo) + getIntellijPluginJars(targetInfo)
     val sources = getSourceJarUris(targetInfo)
     val interfaceJars = getTargetInterfaceJarsSet(targetInfo).map { it.toUri() }.toSet()
-    if (outputs.isEmpty() && sources.isEmpty() && interfaceJars.isEmpty()) return null
+    if (isEmptyJarList(outputs) && isEmptyJarList(interfaceJars) && sources.isEmpty()) return null
 
     return Library(
       label = label,
@@ -651,6 +651,8 @@ class BazelProjectMapper(
       interfaceJars = interfaceJars,
     )
   }
+
+  private fun isEmptyJarList(jars: Collection<URI>): Boolean = jars.isEmpty() || jars.singleOrNull()?.toPath()?.name == "empty.jar"
 
   private fun createGoLibraries(targets: Map<Label, TargetInfo>): Map<Label, GoLibrary> =
     targets
