@@ -18,6 +18,7 @@ open class BaseBuildType(
   failureConditions: FailureConditions.() -> Unit = {},
   requirements: (Requirements.() -> Unit)? = null,
   params: ParametrizedWithType.() -> Unit = {},
+  dockerSupport: DockerSupportFeature.() -> Unit = {},
 ) : BuildType({
 
     this.name = name
@@ -50,6 +51,8 @@ open class BaseBuildType(
         equals("container.engine.osType", "linux")
       }
     }
+
+    this.features.dockerSupport(dockerSupport)
 
     features {
       perfmon {

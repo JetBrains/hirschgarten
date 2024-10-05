@@ -7,6 +7,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.qodana
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
+
 open class Analyze(vcsRoot: GitVcsRoot) :
     BaseConfiguration.BaseBuildType(
         name = "[analysis] Qodana",
@@ -41,7 +42,7 @@ open class Analyze(vcsRoot: GitVcsRoot) :
             qodana {
                 name = "run qodana"
                 id = "run_qodana"
-                reportAsTests = true
+                reportAsTests = false
                 linter = customLinter {
                     image = Utils.CommonParams.DockerQodanaImage
                 }
@@ -64,8 +65,14 @@ open class Analyze(vcsRoot: GitVcsRoot) :
         vcsRoot = vcsRoot,
         params = {
             password("qodana.cloud.token", "credentialsJSON:d57ead0e-b567-440d-817e-f92e084a1cc0", label = "qodana.cloud.token", description = "Qodana token for Hirschgarten statistics", display = ParameterDisplay.HIDDEN)
-        }
-)
+        },
+        dockerSupport = {
+            loginToRegistry = on {
+            dockerRegistryId = "PROJECT_EXT_3"
+            }
+        },
+        failureConditions = { executionTimeoutMin = 30 }
+    )
 
 object GitHub : Analyze(
     vcsRoot = BaseConfiguration.GitHubVcs,
