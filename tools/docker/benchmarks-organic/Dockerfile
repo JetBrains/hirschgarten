@@ -1,5 +1,5 @@
 # https://jetbrains.team/p/bazel/packages/container/docker-private/hirschgarten-benchmarks-organic
-# to build and push this image locally run `build-and-push.sh benchmarks-organic %space.git.credentials%` from `tools/docker` folder
+# to build and push this image locally run `build-and-push.sh benchmarks-organic private %space.git.credentials%` from `tools/docker` folder
 
 FROM registry.jetbrains.team/p/bazel/docker/hirschgarten-base:latest
 
