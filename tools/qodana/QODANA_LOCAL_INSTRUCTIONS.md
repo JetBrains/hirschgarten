@@ -1,29 +1,26 @@
-## Run Qodana locally
+# Run Qodana locally
 
-### Pull container for 2024.2
-In order to be able to pull container from qodana registry, go to https://jetbrains.team/p/sa/packages/container/containers/qodana-jvm?v=sha256%3A317b7742b0b738dfc1a996900035c72f1a5b0757ffa2ad5287d5390598f0a87f , click "Connect" in top right corner and follow the instructions
+## Make sure all commands and files are run from the folder tools/qodana in the terminal
 
-`docker pull registry.jetbrains.team/p/sa/containers/qodana-jvm:2024.2-nightly`
+### Connect to our docker registry
+1) Go to https://jetbrains.team/p/bazel/packages/container/docker-private
+2) Click "Connect" in the top right corner and follow the instructions
 
-### Create jetbrains/qodana_bazel container based on tools/qodana/Dockerfile
+### Build plugin and create pre-requisite folders
 
-`docker build -t "jetbrains/qodana_bazel" tools/qodana`
-
-### (optional) Create docker volume for persisting bazel cache
-Creating shared volume for bazel cache will greatly improve build speed
-
-`docker volume create bazel_cache`
-
-In order to use it, add `-v bazel_cache:/root/.cache/bazel \` to run.qodana.sh script
+Run `./prepare_qodana.sh`  
+Re-run the script if you made changes to code and want to check Qodana's result for updated plugin
 
 ### Provide $QODANA_TOKEN value
-Obtain qodana token from https://qodana.cloud/teams/3rwQe and add it to env variables
 
-`export QODANA_TOKEN=<token value>`
+1) Go to https://qodana.cloud/teams/3rwQe
+2) Click on three dot button on `Hirschgarten`
+3) Copy token from "Project token" field
+4) Run `export QODANA_TOKEN=<token value>`
 
 ### Run qodana
-Modify --cpus, --memory and --memory-swap params according to your capacities and run command:
 
-`tools/qodana/run_qodana.sh`
-
-In order to display report instead of saving it, add `-p 8080:8080` parameter to `docker run` invocation and change `--save-report` parameter to `--show-report` 
+1) Run `./run_qodana.sh` to get only local results  
+They will be displayed at http://localhost:8080/ after run finishes and before you ctrl+c the container
+2) Run `./run_qodana.sh online` to send results to qodana.cloud  
+Results will be displayed at https://qodana.cloud/projects/3Xj1D (don't forget to choose your branch to see a relevant report)

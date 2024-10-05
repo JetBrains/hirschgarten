@@ -1,4 +1,5 @@
 import configurations.*
+import jetbrains.buildServer.configs.kotlin.v10.buildSteps.Qodana
 import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project
@@ -64,6 +65,7 @@ object GitHub : Project({
         buildType(ServerE2eTests.JavaDiagnosticsGitHub)
         buildType(ServerE2eTests.ManualTargetsGitHub)
         buildType(ServerBenchmark.GitHub)
+        buildType(StaticAnalysis.GitHub)
       }
 
       buildType(ResultsAggregator.GitHub, options = {
@@ -110,7 +112,8 @@ object GitHub : Project({
       ServerE2eTests.JavaDiagnosticsGitHub,
       ServerE2eTests.ManualTargetsGitHub,
       ServerBenchmark.GitHub,
-      ResultsAggregator.GitHub
+      StaticAnalysis.GitHub,
+      ResultsAggregator.GitHub,
     )
 })
 
@@ -142,6 +145,7 @@ object Space : Project({
         buildType(ServerE2eTests.JavaDiagnosticsSpace)
         buildType(ServerE2eTests.ManualTargetsSpace)
         buildType(ServerBenchmark.Space)
+        buildType(StaticAnalysis.Space)
       }
 
       buildType(ResultsAggregator.Space, options = {
@@ -188,6 +192,7 @@ object Space : Project({
       ServerE2eTests.JavaDiagnosticsSpace,
       ServerE2eTests.ManualTargetsSpace,
       ServerBenchmark.Space,
-      ResultsAggregator.Space
+      StaticAnalysis.Space,
+      ResultsAggregator.Space,
     )
 })

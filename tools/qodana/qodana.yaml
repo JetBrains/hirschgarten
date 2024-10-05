@@ -1,0 +1,19 @@
+version: "1.0"
+profile:
+  name: qodana.recommended
+exclude:
+  - name: QodanaSanity
+    paths:
+      - plugin-bazel/src/test/testData/bazelrc
+      - plugin-bazel/src/test/testData/starlark
+      - server/aspects/rules/jvm/jvm_info.bzl.template
+  - name: All
+    paths:
+      - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/projectview/lexer/_ProjectViewLexer.java
+      - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java
+  - name: CheckDependencyLicenses
+include:
+  - name: QodanaSanity
+failureConditions:
+  severityThresholds:
+    critical: 1
