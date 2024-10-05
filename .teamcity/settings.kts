@@ -1,5 +1,4 @@
 import configurations.*
-import jetbrains.buildServer.configs.kotlin.v10.buildSteps.Qodana
 import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project

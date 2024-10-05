@@ -13,14 +13,24 @@ open class Benchmark(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit
     requirements = requirements,
     artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
     steps = {
-      val sysArgs = "--jvmopt=\"-Dbsp.benchmark.project.path=/home/hirschuser/project_10\" --jvmopt=\"-Dbsp.benchmark.teamcity.url=https://bazel.teamcity.com\""
       bazel {
+        val url = "--jvmopt=\"-Dbsp.benchmark.teamcity.url=https://bazel.teamcity.com\""
+        val projectNameArg = "--jvmopt=\"-Dbsp.benchmark.project.name=benchmark_10_targets\""
+        val reportErrors = "--jvmopt=\"-DDO_NOT_REPORT_ERRORS=true\""
+        val projectPath =
+          "--jvmopt=\"-Dbsp.benchmark.project.path=/home/hirschuser/project_10\""
+        val cachePath = "--jvmopt=\"-Dbsp.benchmark.cache.directory=%system.teamcity.build.tempDir%\""
+        val memArg = "--jvmopt=\"-Xmx12g\""
+        val sandboxArg = "--sandbox_writable_path=/"
+        val actionEnvArg = "--action_env=PATH"
+
+        val sysArgs = "$url $projectNameArg $reportErrors $projectPath $cachePath $memArg $sandboxArg $actionEnvArg"
+
         name = "run benchmark"
         id = "run_benchmark"
         command = "test"
         targets = "//plugin-bsp/performance-testing"
-        arguments =
-          "--jvmopt=\"-Xmx12g\" $sysArgs --sandbox_writable_path=/ --action_env=PATH ${Utils.CommonParams.BazelCiSpecificArgs}"
+        arguments = "$sysArgs ${Utils.CommonParams.BazelCiSpecificArgs}"
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
         Utils.DockerParams.get().forEach { (key, value) ->
