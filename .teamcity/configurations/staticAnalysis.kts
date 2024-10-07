@@ -12,7 +12,7 @@ open class Analyze(vcsRoot: GitVcsRoot) :
     BaseConfiguration.BaseBuildType(
         name = "[analysis] Qodana",
         requirements = {
-          endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Medium")
+          endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
           equals("container.engine.osType", "linux")
         },
         steps = {
