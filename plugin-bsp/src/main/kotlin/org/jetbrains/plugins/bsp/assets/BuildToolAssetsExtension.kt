@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.assets
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.WithBuildToolId
-import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.config.buildToolIdOrDefault
 import org.jetbrains.plugins.bsp.config.withBuildToolIdOrDefault
 import javax.swing.Icon
 
@@ -29,4 +29,4 @@ public interface BuildToolAssetsExtension : WithBuildToolId {
 }
 
 public val Project.assets: BuildToolAssetsExtension
-  get() = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(buildToolId)
+  get() = BuildToolAssetsExtension.ep.withBuildToolIdOrDefault(buildToolIdOrDefault)
