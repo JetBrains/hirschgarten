@@ -11,7 +11,7 @@ docker_args=(
 	-v "$(pwd)/plugins/intellij-bazel:/opt/idea/custom-plugins/intellij-bazel"
 	-v "$(pwd)/plugins/intellij-bsp:/opt/idea/custom-plugins/intellij-bsp"
 	-v "$(pwd)/results/:/data/results"
-	-v "$(pwd)/cache:/root/.cache"
+	-v "/tmp/.qodana-cache:/root/.cache"
 	--cpus="10"
 	--memory="31g"
 	--memory-swap="32g"
