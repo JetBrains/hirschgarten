@@ -11,6 +11,10 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 open class Analyze(vcsRoot: GitVcsRoot) :
     BaseConfiguration.BaseBuildType(
         name = "[analysis] Qodana",
+        requirements = {
+          endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Medium")
+          equals("container.engine.osType", "linux")
+        },
         steps = {
             bazel {
                 name = "build plugins"
