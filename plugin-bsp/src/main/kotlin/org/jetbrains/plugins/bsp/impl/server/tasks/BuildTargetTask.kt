@@ -152,6 +152,7 @@ public class BuildTargetTask(project: Project) : BspServerMultipleTargetsTask<Co
   private fun createCompileParams(targetIds: List<BuildTargetIdentifier>, originId: String) =
     CompileParams(targetIds).apply {
       this.originId = originId
+      this.arguments = listOf("--keep_going")
     }
 }
 

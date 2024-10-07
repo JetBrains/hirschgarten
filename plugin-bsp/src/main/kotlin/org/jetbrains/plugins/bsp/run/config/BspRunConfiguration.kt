@@ -18,7 +18,7 @@ import org.jetbrains.plugins.bsp.run.BspRunHandler
 import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
 
 class BspRunConfiguration(private val project: Project, name: String) :
-  LocatableConfigurationBase<RunProfileState>(project, BspRunConfigurationType(), name),
+  LocatableConfigurationBase<RunProfileState>(project, BspRunConfigurationType(project), name),
   RunConfigurationWithSuppressedDefaultDebugAction,
   SMRunnerConsolePropertiesProvider,
   DumbAware {

@@ -399,13 +399,21 @@ class DefaultBspConnection(
       )
     val dataJson = JsonObject()
     dataJson.addProperty("clientClassesRootDir", "$projectBaseDir/out")
-    getOtlpEndPoint()?.let {
+    getOpenTelemetryEndPoint()?.let {
       dataJson.addProperty("openTelemetryEndpoint", it)
     }
     params.data = dataJson
 
     return params
   }
+
+  private fun getOpenTelemetryEndPoint(): String? =
+    try {
+      // TODO 243: replace with com.intellij.platform.diagnostic.telemetry.OtlpConfiguration.getTraceEndpoint after updating to next EAP
+      getOtlpEndPoint()
+    } catch (_: NoSuchMethodError) {
+      null
+    }
 
   override suspend fun <T> runWithServer(task: suspend (server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) -> T): T {
     connect()

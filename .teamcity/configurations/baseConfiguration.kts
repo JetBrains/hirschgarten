@@ -4,6 +4,7 @@ import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildSteps
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
+import jetbrains.buildServer.configs.kotlin.v2019_2.ParametrizedWithType
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
@@ -16,11 +17,14 @@ open class BaseBuildType(
   artifactRules: String = "",
   failureConditions: FailureConditions.() -> Unit = {},
   requirements: (Requirements.() -> Unit)? = null,
+  params: ParametrizedWithType.() -> Unit = {},
+  dockerSupport: DockerSupportFeature.() -> Unit = {},
 ) : BuildType({
 
     this.name = name
     this.artifactRules = artifactRules
     this.failureConditions(failureConditions)
+    this.params(params)
 
     failureConditions {
       executionTimeoutMin = 60
@@ -47,6 +51,8 @@ open class BaseBuildType(
         equals("container.engine.osType", "linux")
       }
     }
+
+    this.features.dockerSupport(dockerSupport)
 
     features {
       perfmon {

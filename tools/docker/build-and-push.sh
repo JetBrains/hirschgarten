@@ -2,29 +2,29 @@
 
 # Check if folder name is provided
 if [ $# -eq 0 ]; then
-	echo "Usage: $0 <folder_name> [space_git_credentials]"
+	echo "Usage: $0 <folder_name> [private] [space_git_credentials]"
 	exit 1
 fi
 
 FOLDER_NAME=$1
 DATE_TAG=$(date +%d%m%y)
+PRIVATE=false
+SPACE_GIT_CREDENTIALS=""
 
-# Set registry and image name based on folder
-if [ "$FOLDER_NAME" == "benchmarks" ]; then
+# Check if 'private' flag is passed
+if [[ "$2" == "private" ]]; then
+	PRIVATE=true
 	REGISTRY="registry.jetbrains.team/p/bazel/docker-private"
-	IMAGE_NAME="hirschgarten-benchmarks"
 
-	# Check if space_git_credentials is provided for benchmarks
-	if [ $# -lt 2 ]; then
-		echo "Error: space_git_credentials is required for benchmarks"
-		exit 1
+	# Check if space_git_credentials is provided
+	if [ $# -eq 3 ]; then
+		SPACE_GIT_CREDENTIALS=$3
 	fi
-	SPACE_GIT_CREDENTIALS=$2
 else
 	REGISTRY="registry.jetbrains.team/p/bazel/docker"
-	IMAGE_NAME="hirschgarten-$FOLDER_NAME"
 fi
 
+IMAGE_NAME="hirschgarten-$FOLDER_NAME"
 FULL_IMAGE_NAME="$REGISTRY/$IMAGE_NAME"
 
 # Function to check if we're logged in
@@ -45,16 +45,17 @@ handle_login() {
 
 # Function to build the Docker image
 build_image() {
-	if [ "$FOLDER_NAME" == "benchmarks" ]; then
-		if ! docker build --secret id=space_git_credentials,src=<(echo "$SPACE_GIT_CREDENTIALS") -t $FULL_IMAGE_NAME:$DATE_TAG .; then
-			echo "Docker build failed for benchmarks. Exiting."
-			exit 1
-		fi
-	else
-		if ! docker build -t $FULL_IMAGE_NAME:$DATE_TAG .; then
-			echo "Docker build failed. Exiting."
-			exit 1
-		fi
+	local build_command="docker build"
+
+	if $PRIVATE && [ -n "$SPACE_GIT_CREDENTIALS" ]; then
+		build_command+=" --no-cache --secret id=space_git_credentials,src=<(echo \"$SPACE_GIT_CREDENTIALS\")"
+	fi
+
+	build_command+=" -t $FULL_IMAGE_NAME:$DATE_TAG ."
+
+	if ! eval $build_command; then
+		echo "Docker build failed. Exiting."
+		exit 1
 	fi
 
 	# Tag the image with 'latest'
