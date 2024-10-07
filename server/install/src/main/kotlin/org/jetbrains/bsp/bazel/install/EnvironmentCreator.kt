@@ -3,26 +3,26 @@ package org.jetbrains.bsp.bazel.install
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.google.gson.GsonBuilder
 import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
-import kotlin.io.path.copyTo
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.createDirectory
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.deleteRecursively
+import kotlin.io.path.isDirectory
+import kotlin.io.path.name
+import kotlin.io.path.notExists
+import kotlin.io.path.readText
 
 abstract class EnvironmentCreator(private val projectRootDir: Path) {
   abstract fun create()
 
   protected fun createDotBazelBsp(): Path {
-    removeOldDotBazelBspIfExists()
-
     val bazelBspDir = createDir(projectRootDir, Constants.DOT_BAZELBSP_DIR_NAME)
     createDotBazelBspFiles(bazelBspDir)
     return bazelBspDir
-  }
-
-  private fun removeOldDotBazelBspIfExists() {
-    val oldBazelBspDir = projectRootDir.resolve(Constants.DOT_BAZELBSP_DIR_NAME)
-    oldBazelBspDir.toFile().deleteRecursively()
   }
 
   private fun createDotBazelBspFiles(dotBazelBspDir: Path) {
@@ -44,13 +44,15 @@ abstract class EnvironmentCreator(private val projectRootDir: Path) {
 
   private fun copyAspectsFromResources(aspectsJarPath: String, destinationPath: Path) =
     javaClass.getResource(aspectsJarPath)?.let {
-      val fileSystem = FileSystems.newFileSystem(it.toURI(), emptyMap<String, String>())
-      copyFileTree(fileSystem.getPath(aspectsJarPath), destinationPath)
-      fileSystem.close()
+      FileSystems.newFileSystem(it.toURI(), emptyMap<String, String>()).use { fileSystem ->
+        copyFileTree(fileSystem.getPath(aspectsJarPath), destinationPath)
+      }
     } ?: error("Missing aspects resource")
 
-  private fun copyFileTree(source: Path, destination: Path): Unit =
+  private fun copyFileTree(source: Path, destination: Path) {
     Files.walk(source).forEach { copyUsingRelativePath(source, it, destination) }
+    Files.walk(destination).forEach { deleteExtraFileUsingRelativePath(source, it, destination) }
+  }
 
   private fun copyUsingRelativePath(
     sourcePrefix: Path,
@@ -58,8 +60,31 @@ abstract class EnvironmentCreator(private val projectRootDir: Path) {
     destination: Path,
   ) {
     val sourceRelativePath = sourcePrefix.relativize(source).toString()
-    val destinationAbsolutePath = Paths.get(destination.toString(), sourceRelativePath)
-    source.copyTo(destinationAbsolutePath, overwrite = true)
+    val destinationAbsolutePath = destination.resolve(sourceRelativePath)
+    if (source.isDirectory()) {
+      if (!destinationAbsolutePath.isDirectory()) {
+        destinationAbsolutePath.deleteIfExists()
+        destinationAbsolutePath.createDirectory()
+      }
+    } else {
+      destinationAbsolutePath.writeIfDifferent(source.readText())
+    }
+  }
+
+  @OptIn(ExperimentalPathApi::class)
+  private fun deleteExtraFileUsingRelativePath(
+    source: Path,
+    destination: Path,
+    destinationPrefix: Path,
+  ) {
+    val destinationRelativePath = destinationPrefix.relativize(destination).toString()
+    val sourceAbsolutePath = source.resolve(destinationRelativePath)
+    // extension.bzl is written in BazelBspLanguageExtensionsGenerator, we don't have to delete it
+    if (destinationRelativePath == Constants.EXTENSIONS_BZL) return
+    // Templates are expanded inside TemplateWriter, we don't have to delete them
+    if (sourceAbsolutePath.notExists() && sourceAbsolutePath.resolveSibling("${sourceAbsolutePath.name}.template").notExists()) {
+      destination.deleteRecursively()
+    }
   }
 
   protected fun createDotBsp(discoveryDetails: BspConnectionDetails) {
