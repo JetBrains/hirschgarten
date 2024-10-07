@@ -3,7 +3,7 @@
 # create folders to mount in qodana
 mkdir plugins
 mkdir results
-mkdir cache
+mkdir /tmp/cache
 
 # build plugins
 cd ../..
