@@ -105,7 +105,7 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     }
 
   private fun createNewExtensionsFile(fileContent: String) {
-    val file = aspectsPath.resolve("extensions.bzl")
+    val file = aspectsPath.resolve(Constants.EXTENSIONS_BZL)
     file.writeIfDifferent(fileContent)
   }
 }
