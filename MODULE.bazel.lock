@@ -1705,7 +1705,7 @@
         ]
       },
       "os:osx,arch:aarch64": {
-        "bzlTransitiveDigest": "C4IL8fLcr8MQTJX1IqQ31k0IE3m3QOltaAy3YlcAiVs=",
+        "bzlTransitiveDigest": "YgeuOKJhqCsatGS1M1SxD5Rt8VYWWwP52RAiNKQUEEc=",
         "usagesDigest": "66UQYQZkLXNCWaMHCLGhb386mA1l6Uswbb6rqM9S73I=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
