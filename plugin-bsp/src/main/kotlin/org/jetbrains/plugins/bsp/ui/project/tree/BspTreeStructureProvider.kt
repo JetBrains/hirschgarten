@@ -11,9 +11,11 @@ import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
@@ -71,7 +73,7 @@ class BspDirectoryNode(
   }
 
   private fun PsiDirectory.calculateChildrenNodes(project: Project, settings: ViewSettings?): Collection<AbstractTreeNode<*>> =
-    if (project.isBspProjectInitialized) {
+    if (project.isBspProjectInitialized && !(project.workspaceModel as WorkspaceModelImpl).loadedFromCache) {
       emptyList()
     } else {
       children.mapNotNull { psiChild ->
