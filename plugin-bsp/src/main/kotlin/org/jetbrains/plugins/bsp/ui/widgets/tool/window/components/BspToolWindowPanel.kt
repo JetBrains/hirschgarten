@@ -116,7 +116,9 @@ private class BspToolWindowSettingsAction(private val settingsDisplayName: Strin
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val showSettingsUtil = ShowSettingsUtil.getInstance()
-    showSettingsUtil.showSettingsDialog(project, settingsDisplayName)
+    withContext(Dispatchers.EDT) {
+      showSettingsUtil.showSettingsDialog(project, settingsDisplayName)
+    }
   }
 }
 
