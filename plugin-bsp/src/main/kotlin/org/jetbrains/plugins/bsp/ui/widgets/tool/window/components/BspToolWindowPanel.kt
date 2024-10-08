@@ -2,18 +2,25 @@ package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.options.ShowSettingsUtil
-import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jetbrains.plugins.bsp.action.SuspendableAction
 import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.withBuildToolId
+import org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowConfigFileProviderExtension
+import org.jetbrains.plugins.bsp.extensionPoints.bspToolWindowConfigFileProvider
 import org.jetbrains.plugins.bsp.extensionPoints.bspToolWindowSettingsProvider
 import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
@@ -22,6 +29,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.LoadedTargetsMouseListener
+import java.nio.file.Path
 import javax.swing.SwingConstants
 
 class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, true) {
@@ -42,6 +50,7 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
         addSeparator()
         add(FilterActionGroup(targetFilter))
         addSettingsActionIfAvailable(project)
+        addConfigFileOpeningActionIfAvailable(project)
       }
 
     val actionToolbar =
@@ -92,18 +101,42 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
     addSeparator()
     add(BspToolWindowSettingsAction(settingsActionProvider.getSettingsName()))
   }
+
+  private fun DefaultActionGroup.addConfigFileOpeningActionIfAvailable(project: Project) {
+    val configFileProvider = project.bspToolWindowConfigFileProvider ?: return
+    addSeparator()
+    add(BspToolWindowConfigFileOpenAction(configFileProvider))
+  }
 }
 
 private class BspToolWindowSettingsAction(private val settingsDisplayName: String) :
-  DumbAwareAction(
+  SuspendableAction(
     { BspPluginBundle.message("widget.settings.popup.message", settingsDisplayName) },
     AllIcons.General.Settings,
   ) {
-  override fun actionPerformed(e: AnActionEvent) {
-    val project = e.project ?: return
+  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val showSettingsUtil = ShowSettingsUtil.getInstance()
     showSettingsUtil.showSettingsDialog(project, settingsDisplayName)
   }
+}
 
-  override fun getActionUpdateThread() = ActionUpdateThread.BGT
+private class BspToolWindowConfigFileOpenAction(private val configFileProvider: BspToolWindowConfigFileProviderExtension) :
+  SuspendableAction(
+    { BspPluginBundle.message("widget.config.file.popup.message", configFileProvider.getConfigFileGenericName()) },
+    AllIcons.Actions.MenuOpen,
+  ) {
+  override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
+    val configFile = configFileProvider.getConfigFile(project)
+    e.presentation.isEnabled = configFile != null
+    withContext(Dispatchers.EDT) {
+      configFile?.getPsiFile(project)?.navigate(true)
+    }
+  }
+}
+
+private fun Path.getPsiFile(project: Project): PsiFile? {
+  val virtualFileManager = VirtualFileManager.getInstance()
+  val virtualFile =
+    virtualFileManager.findFileByNioPath(this) ?: return null
+  return PsiManager.getInstance(project).findFile(virtualFile)
 }

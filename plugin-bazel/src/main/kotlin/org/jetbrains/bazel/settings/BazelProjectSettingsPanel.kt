@@ -139,7 +139,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
         textField.addBrowseFolderListener(
           project,
           FileChooserDescriptorFactory
-            .createSingleFileOrFolderDescriptor()
+            .createSingleFileDescriptor()
             .withTitle(
               "Select Path",
             ).withDescription("Select the path for your project view file."),
