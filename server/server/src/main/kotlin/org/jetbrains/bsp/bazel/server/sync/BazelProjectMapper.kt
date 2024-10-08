@@ -31,6 +31,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModule
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.isGoEnabled
+import org.jetbrains.bsp.bazel.workspacecontext.isPythonEnabled
 import org.jetbrains.bsp.bazel.workspacecontext.isRustEnabled
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -205,7 +206,7 @@ class BazelProjectMapper(
         predicate = { workspaceContext.isRustEnabled },
         ifFalse = emptySequence(),
       ) {
-        selectRustExternalTargetsToImport(rootTargets, dependencyGraph)
+        selectRustExternalTargetsToImport(rootTargets, dependencyGraph, workspaceContext)
       }
     val rustExternalModules =
       measureIf(
@@ -218,7 +219,8 @@ class BazelProjectMapper(
     val allModules = mergedModulesFromBazel + rustExternalModules
 
     val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
-    val nonModuleTargets = createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace })
+    val nonModuleTargets =
+      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace }, workspaceContext)
 
     return Project(
       workspaceRoot,
@@ -616,9 +618,9 @@ class BazelProjectMapper(
     )
   }
 
-  private fun createNonModuleTargets(targets: Map<Label, TargetInfo>): List<NonModuleTarget> =
+  private fun createNonModuleTargets(targets: Map<Label, TargetInfo>, workspaceContext: WorkspaceContext): List<NonModuleTarget> =
     targets
-      .filter { !isWorkspaceTarget(it.value) }
+      .filter { !isWorkspaceTarget(it.value, workspaceContext) }
       .map { (label, targetInfo) ->
         NonModuleTarget(
           label = label,
@@ -770,11 +772,15 @@ class BazelProjectMapper(
 
   private fun getGoRootUri(targetInfo: TargetInfo): URI = Label.parse(targetInfo.id).toDirectoryUri()
 
-  private fun selectRustExternalTargetsToImport(rootTargets: Set<Label>, graph: DependencyGraph): Sequence<TargetInfo> =
+  private fun selectRustExternalTargetsToImport(
+    rootTargets: Set<Label>,
+    graph: DependencyGraph,
+    workspaceContext: WorkspaceContext,
+  ): Sequence<TargetInfo> =
     graph
       .allTargetsAtDepth(-1, rootTargets)
       .asSequence()
-      .filter { !isWorkspaceTarget(it) && isRustTarget(it) }
+      .filter { !isWorkspaceTarget(it, workspaceContext) && isRustTarget(it) }
 
   private fun selectTargetsToImport(
     workspaceContext: WorkspaceContext,
@@ -785,7 +791,7 @@ class BazelProjectMapper(
       .allTargetsAtDepth(
         workspaceContext.importDepth.value,
         rootTargets,
-      ).filter { isWorkspaceTarget(it) }
+      ).filter { isWorkspaceTarget(it, workspaceContext) }
       .asSequence()
 
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
@@ -804,23 +810,30 @@ class BazelProjectMapper(
         it.relativePath.endsWith(".scala")
     }
 
-  private fun hasKnownNonJvmSources(targetInfo: TargetInfo) =
+  private fun hasKnownPythonSources(targetInfo: TargetInfo) =
+    targetInfo.sourcesList.any {
+      !it.isExternal && it.relativePath.endsWith(".py")
+    }
+
+  private fun hasOtherKnownSources(targetInfo: TargetInfo) =
     targetInfo.sourcesList.any {
       !it.isExternal &&
-        it.relativePath.endsWith(".py") ||
-        !it.isExternal &&
         it.relativePath.endsWith(".sh") ||
         it.relativePath.endsWith(".rs") ||
         it.relativePath.endsWith(".go")
     }
 
-  private fun isWorkspaceTarget(target: TargetInfo): Boolean =
+  // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
+  private fun isWorkspaceTarget(target: TargetInfo, workspaceContext: WorkspaceContext): Boolean =
     target.label().isMainWorkspace &&
       (
         shouldImportTargetKind(target.kind) ||
           target.hasJvmTargetInfo() &&
           hasKnownJvmSources(target) ||
-          hasKnownNonJvmSources(target)
+          workspaceContext.isPythonEnabled &&
+          target.hasPythonTargetInfo() &&
+          hasKnownPythonSources(target) ||
+          hasOtherKnownSources(target)
       )
 
   private fun shouldImportTargetKind(kind: String): Boolean = kind in workspaceTargetKinds

@@ -108,6 +108,9 @@ val WorkspaceContext.isGoEnabled: Boolean
 val WorkspaceContext.isRustEnabled: Boolean
   get() = "rules_rust" in enabledRules.values
 
+val WorkspaceContext.isPythonEnabled: Boolean
+  get() = "rules_python" in enabledRules.values
+
 val WorkspaceContext.extraFlags: List<String>
   get() =
     if (isAndroidEnabled) {
