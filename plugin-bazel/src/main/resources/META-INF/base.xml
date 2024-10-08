@@ -20,6 +20,9 @@
         <bspToolWindowSettingsProviderExtension
                 implementation="org.jetbrains.bazel.extension.BazelProjectSettingsActionProviderExtension"/>
 
+        <bspToolWindowConfigFileProviderExtension
+                implementation="org.jetbrains.bazel.extension.BazelToolWindowConfigFileProviderExtension"/>
+
         <bspProjectAwareExtension
                 implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
 
