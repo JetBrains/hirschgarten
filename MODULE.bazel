@@ -57,7 +57,7 @@ maven.install(
         "org.apache.logging.log4j:log4j-core:2.24.1",
         "org.apache.velocity:velocity-engine-core:2.4",
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3",
-        "org.junit.jupiter:junit-jupiter:5.11.1",
+        "org.junit.jupiter:junit-jupiter:5.11.2",
         "org.junit.platform:junit-platform-console:1.11.2",
         "org.junit.platform:junit-platform-suite-api:1.11.2",
         "org.junit.platform:junit-platform-suite-engine:1.11.2",
@@ -124,7 +124,7 @@ http_jar(
 )
 
 bazel_dep(name = "rules_proto", version = "6.0.2")
-bazel_dep(name = "rules_cc", version = "0.0.12")
+bazel_dep(name = "rules_cc", version = "0.0.10")
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_python", version = "0.36.0")
 
