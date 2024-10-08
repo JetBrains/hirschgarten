@@ -152,7 +152,7 @@ class DefaultBspConnection(
       try {
         ensureConnected()
       } catch (e: Exception) {
-        disconnect()
+        disconnectWithAcquiredLock()
         throw e
       }
     }
@@ -192,7 +192,7 @@ class DefaultBspConnection(
           cancelAction = { coroutineContext.cancel() },
         )
 
-        disconnect()
+        disconnectWithAcquiredLock()
         bspSyncConsole.addMessage(CONNECT_TASK_ID, BspPluginBundle.message("console.task.connect.message.in.progress"))
         log.info("Connecting to server with connection details: $this")
         val process = createAndStartProcessAndAddDisconnectActions(this@connect)
@@ -426,14 +426,18 @@ class DefaultBspConnection(
   override suspend fun disconnect() {
     if (!isConnected()) return // Fast path to avoid waiting for mutex
     mutex.withLock {
-      if (!isConnected()) return
-      val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
-      throwExceptionWithSuppressedIfOccurred(exceptions)
-      bspProcess?.destroy().also { bspProcess = null }
-      disconnectActions.clear()
-      server = null
-      capabilities = null
+      disconnectWithAcquiredLock()
     }
+  }
+
+  private fun disconnectWithAcquiredLock() {
+    if (!isConnected()) return
+    val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
+    throwExceptionWithSuppressedIfOccurred(exceptions)
+    bspProcess?.destroy().also { bspProcess = null }
+    disconnectActions.clear()
+    server = null
+    capabilities = null
   }
 
   private fun executeDisconnectActionsAndCollectExceptions(disconnectActions: List<() -> Unit>): List<Throwable> =
