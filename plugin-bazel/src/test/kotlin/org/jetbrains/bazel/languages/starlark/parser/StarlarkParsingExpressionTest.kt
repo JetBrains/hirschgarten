@@ -7,6 +7,8 @@ class StarlarkParsingExpressionTest : StarlarkParsingTestCase("expression") {
 
   fun testIfExpression() = doTest(true)
 
+  fun testKeywordExpression() = doTest(true)
+
   fun testLambdaExpression() = doTest(true)
 
   fun testPrimaryExpression() = doTest(true)

@@ -90,6 +90,15 @@ object StarlarkTokenTypes {
   @JvmField
   val RETURN_KEYWORD = StarlarkTokenType("return")
 
+  @JvmField
+  val NONE_KEYWORD = StarlarkTokenType("None")
+
+  @JvmField
+  val TRUE_KEYWORD = StarlarkTokenType("True")
+
+  @JvmField
+  val FALSE_KEYWORD = StarlarkTokenType("False")
+
   // Possible future keywords
   @JvmField
   val AS_KEYWORD = StarlarkTokenType("as")
