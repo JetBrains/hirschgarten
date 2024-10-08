@@ -2,6 +2,14 @@
 
 ## Make sure all commands and files are run from the folder tools/qodana in the terminal
 
+### Prerequisites
+
+1) Docker Desktop installed (macOS)  
+Alternatively you can use Orbstack (`brew install orbstack`), which works better on macOS
+2) At least 32GB RAM  
+You should allow docker container to use at least 28GB of memory in Docker Desktop settings
+3) Bazel Team permissions to access `Hirschgarten` project on qodana.cloud
+
 ### Connect to our docker registry
 1) Go to https://jetbrains.team/p/bazel/packages/container/docker-private
 2) Click "Connect" in the top right corner and follow the instructions
