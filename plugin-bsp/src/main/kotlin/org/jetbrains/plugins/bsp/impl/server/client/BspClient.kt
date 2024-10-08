@@ -23,6 +23,7 @@ import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.impl.flow.sync.PROJECT_SYNC_TASK_ID
 import org.jetbrains.plugins.bsp.impl.server.connection.TimeoutHandler
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskEventsService
 import org.jetbrains.plugins.bsp.ui.console.TaskConsole
@@ -217,11 +218,11 @@ class BspClient(
   }
 
   private fun addDiagnosticToConsole(params: PublishDiagnosticsParams) {
-    if (params.originId != null && params.textDocument != null) {
+    if (params.textDocument != null) {
       val targetConsole = if (params.originId?.startsWith("build") == true) bspBuildConsole else bspSyncConsole
       params.diagnostics.forEach {
         targetConsole.addDiagnosticMessage(
-          params.originId,
+          params.originId ?: PROJECT_SYNC_TASK_ID,
           params.textDocument.uri,
           it.range.start.line,
           it.range.start.character,
