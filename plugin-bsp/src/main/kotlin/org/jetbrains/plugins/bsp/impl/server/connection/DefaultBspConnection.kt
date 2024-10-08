@@ -147,7 +147,6 @@ class DefaultBspConnection(
   private val mutex = Mutex()
 
   override suspend fun connect() {
-    if (isConnected()) return // Fast path to avoid waiting for mutex
     mutex.withLock {
       try {
         ensureConnected()
@@ -160,7 +159,6 @@ class DefaultBspConnection(
 
   private suspend fun ensureConnected() {
     log.debug("ensuring the connection is established")
-    if (isConnected()) return
     val bspClient = createBspClient()
     val inMemoryConnection =
       BspServerProvider.getBspServer()?.getConnection(
@@ -169,13 +167,15 @@ class DefaultBspConnection(
         bspClient,
       )
     if (inMemoryConnection != null) {
-      connectBuiltIn(inMemoryConnection)
+      if (!isConnected()) {
+        connectBuiltIn(inMemoryConnection)
+      }
     } else {
       val newConnectionDetails = connectionDetailsProviderExtension.provideNewConnectionDetails(project, connectionDetails)
       if (newConnectionDetails != null) {
         connectionDetails = newConnectionDetails
         newConnectionDetails.connect(bspClient)
-      } else {
+      } else if (!isConnected()) {
         connectionDetails?.connect(bspClient)
       }
     }
