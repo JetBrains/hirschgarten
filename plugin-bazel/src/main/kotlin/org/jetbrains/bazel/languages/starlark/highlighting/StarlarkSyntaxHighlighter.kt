@@ -26,6 +26,7 @@ object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
       StarlarkTokenTypes.CONTINUE_KEYWORD to StarlarkHighlightingColors.KEYWORD,
       StarlarkTokenTypes.PASS_KEYWORD to StarlarkHighlightingColors.KEYWORD,
       StarlarkTokenTypes.LOAD_KEYWORD to StarlarkHighlightingColors.KEYWORD,
+      StarlarkTokenTypes.FROM_KEYWORD to StarlarkHighlightingColors.KEYWORD,
       // boolean operators
       StarlarkTokenTypes.OR_KEYWORD to StarlarkHighlightingColors.KEYWORD,
       StarlarkTokenTypes.AND_KEYWORD to StarlarkHighlightingColors.KEYWORD,
@@ -38,12 +39,16 @@ object StarlarkSyntaxHighlighter : SyntaxHighlighterBase() {
       StarlarkTokenTypes.RPAR to StarlarkHighlightingColors.PARENTHESES,
       StarlarkTokenTypes.LBRACE to StarlarkHighlightingColors.BRACKETS,
       StarlarkTokenTypes.RBRACE to StarlarkHighlightingColors.BRACKETS,
-      // random
+      // literals
       StarlarkTokenTypes.INT to StarlarkHighlightingColors.NUMBER,
       StarlarkTokenTypes.FLOAT to StarlarkHighlightingColors.NUMBER,
-      StarlarkTokenTypes.IDENTIFIER to StarlarkHighlightingColors.IDENTIFIER,
       StarlarkTokenTypes.STRING to StarlarkHighlightingColors.STRING,
       StarlarkTokenTypes.BYTES to StarlarkHighlightingColors.STRING,
+      StarlarkTokenTypes.NONE_KEYWORD to StarlarkHighlightingColors.KEYWORD,
+      StarlarkTokenTypes.TRUE_KEYWORD to StarlarkHighlightingColors.KEYWORD,
+      StarlarkTokenTypes.FALSE_KEYWORD to StarlarkHighlightingColors.KEYWORD,
+      // random
+      StarlarkTokenTypes.IDENTIFIER to StarlarkHighlightingColors.IDENTIFIER,
       StarlarkTokenTypes.COMMENT to StarlarkHighlightingColors.LINE_COMMENT,
     )
 

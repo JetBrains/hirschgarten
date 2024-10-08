@@ -84,6 +84,9 @@ ESCAPE_SEQUENCE = \\[^]
 "or"          { return StarlarkTokenTypes.OR_KEYWORD; }
 "pass"        { return StarlarkTokenTypes.PASS_KEYWORD; }
 "return"      { return StarlarkTokenTypes.RETURN_KEYWORD; }
+"None"        { return StarlarkTokenTypes.NONE_KEYWORD; }
+"True"        { return StarlarkTokenTypes.TRUE_KEYWORD; }
+"False"       { return StarlarkTokenTypes.FALSE_KEYWORD; }
 
 "as"          { return StarlarkTokenTypes.AS_KEYWORD; }
 "assert"      { return StarlarkTokenTypes.ASSERT_KEYWORD; }
