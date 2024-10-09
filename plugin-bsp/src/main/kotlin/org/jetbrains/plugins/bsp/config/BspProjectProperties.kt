@@ -15,7 +15,7 @@ data class BspProjectPropertiesState(
   var isInitialized: Boolean = false,
   var rootDirUrl: String? = null,
   var buildToolId: String? = null,
-  var openedTimesSinceLastResync: Int = 0,
+  var openedTimesSinceLastStartupResync: Int = 0,
 )
 
 @Service(Service.Level.PROJECT)
@@ -27,21 +27,26 @@ class BspProjectProperties : PersistentStateComponent<BspProjectPropertiesState>
   var isBspProject: Boolean = false
   var rootDir: VirtualFile? = null
   var buildToolId: BuildToolId? = null
-  var openedTimesSinceLastResync: Int = 0
+
+  /**
+   * if the opened times since the last startup resync is equal to 1,
+   * it indicates it is the first successful startup project open.
+   */
+  var openedTimesSinceLastStartupResync: Int = 0
 
   override fun getState(): BspProjectPropertiesState? =
     BspProjectPropertiesState(
       isBspProject = isBspProject,
       rootDirUrl = rootDir?.url,
       buildToolId = buildToolId?.id,
-      openedTimesSinceLastResync = openedTimesSinceLastResync,
+      openedTimesSinceLastStartupResync = this@BspProjectProperties.openedTimesSinceLastStartupResync,
     )
 
   override fun loadState(state: BspProjectPropertiesState) {
     isBspProject = state.isBspProject
     rootDir = state.rootDirUrl?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
     buildToolId = state.buildToolId?.let { BuildToolId(it) }
-    openedTimesSinceLastResync = state.openedTimesSinceLastResync
+    this@BspProjectProperties.openedTimesSinceLastStartupResync = state.openedTimesSinceLastStartupResync
   }
 }
 
@@ -54,10 +59,10 @@ public var Project.isBspProject: Boolean
     bspProjectProperties.isBspProject = value
   }
 
-public var Project.openedTimesSinceLastResync: Int
-  get() = bspProjectProperties.openedTimesSinceLastResync
+public var Project.openedTimesSinceLastStartupResync: Int
+  get() = bspProjectProperties.openedTimesSinceLastStartupResync
   set(value) {
-    bspProjectProperties.openedTimesSinceLastResync = value
+    bspProjectProperties.openedTimesSinceLastStartupResync = value
   }
 
 public var Project.rootDir: VirtualFile
