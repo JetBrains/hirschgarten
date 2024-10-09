@@ -11,6 +11,10 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 open class Analyze(vcsRoot: GitVcsRoot) :
     BaseConfiguration.BaseBuildType(
         name = "[analysis] Qodana",
+        requirements = {
+          endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
+          equals("container.engine.osType", "linux")
+        },
         steps = {
             bazel {
                 name = "build plugins"
@@ -42,7 +46,7 @@ open class Analyze(vcsRoot: GitVcsRoot) :
             qodana {
                 name = "run qodana"
                 id = "run_qodana"
-                reportAsTests = false
+                reportAsTests = true
                 linter = customLinter {
                     image = Utils.CommonParams.DockerQodanaImage
                 }

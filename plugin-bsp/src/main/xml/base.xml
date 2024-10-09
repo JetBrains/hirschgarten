@@ -42,6 +42,9 @@
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspToolWindowSettingsProviderExtension"
                         interface="org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowSettingsProviderExtension"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.bspToolWindowConfigFileProviderExtension"
+                        interface="org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowConfigFileProviderExtension"
+                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunConfigurationExtension"
                         interface="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationExtensionManager"
                         dynamic="true"/>

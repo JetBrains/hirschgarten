@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.indentation
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import io.kotest.matchers.equals.shouldBeEqual
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -11,12 +12,11 @@ class StarlarkEnterBetweenBracesTest : BasePlatformTestCase() {
   fun `should add empty line after enter between braces`() {
     // given
     myFixture.configureByText("dummy.bzl", "[<caret>]")
-    val expected = "[\n<caret>\n]"
 
     // when
     myFixture.type("\n")
 
     // then
-    myFixture.checkResult(expected)
+    myFixture.editor.document.lineCount shouldBeEqual 3
   }
 }

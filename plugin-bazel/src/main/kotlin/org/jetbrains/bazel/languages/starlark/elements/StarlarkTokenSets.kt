@@ -53,6 +53,9 @@ object StarlarkTokenSets {
       StarlarkTokenTypes.LBRACE,
       StarlarkTokenTypes.STRING,
       StarlarkTokenTypes.BYTES,
+      StarlarkTokenTypes.NONE_KEYWORD,
+      StarlarkTokenTypes.TRUE_KEYWORD,
+      StarlarkTokenTypes.FALSE_KEYWORD,
     )
 
   val ENDS_OF_STATEMENT = TokenSet.create(StarlarkTokenTypes.STATEMENT_BREAK, StarlarkTokenTypes.SEMICOLON)

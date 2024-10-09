@@ -20,6 +20,9 @@
         <bspToolWindowSettingsProviderExtension
                 implementation="org.jetbrains.bazel.extension.BazelProjectSettingsActionProviderExtension"/>
 
+        <bspToolWindowConfigFileProviderExtension
+                implementation="org.jetbrains.bazel.extension.BazelToolWindowConfigFileProviderExtension"/>
+
         <bspProjectAwareExtension
                 implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
 
@@ -77,6 +80,7 @@
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesProvider"/>
         <lang.foldingBuilder language="Starlark" implementationClass="org.jetbrains.bazel.languages.starlark.folding.StarlarkFoldingBuilder"/>
+        <lineIndentProvider implementation="org.jetbrains.bazel.languages.starlark.indentation.StarlarkLineIndentProvider"/>
         <colorSettingsPage
                 implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage"/>
         <additionalTextAttributes

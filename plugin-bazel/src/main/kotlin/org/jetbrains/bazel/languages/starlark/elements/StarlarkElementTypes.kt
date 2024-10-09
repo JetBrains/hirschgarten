@@ -9,6 +9,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictCompEx
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDoubleStarExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkEmptyExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFalseLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFloatLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGeneratorExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkIntegerLiteralExpression
@@ -16,6 +17,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkKeyValueEx
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListCompExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkNoneLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkPrefixExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
@@ -25,6 +27,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStarExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTrueLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
@@ -80,6 +83,7 @@ object StarlarkElementTypes {
   val DICT_LITERAL_EXPRESSION = StarlarkElementType("DICT_LITERAL_EXPRESSION")
   val DOUBLE_STAR_EXPRESSION = StarlarkElementType("DOUBLE_STAR_EXPRESSION")
   val EMPTY_EXPRESSION = StarlarkElementType("EMPTY_EXPRESSION")
+  val FALSE_LITERAL_EXPRESSION = StarlarkElementType("FALSE_LITERAL_EXPRESSION")
   val FLOAT_LITERAL_EXPRESSION = StarlarkElementType("FLOAT_LITERAL_EXPRESSION")
   val GENERATOR_EXPRESSION = StarlarkElementType("GENERATOR_EXPRESSION")
   val TARGET_EXPRESSION = StarlarkElementType("TARGET_EXPRESSION")
@@ -89,6 +93,7 @@ object StarlarkElementTypes {
   val LIST_COMP_EXPRESSION = StarlarkElementType("LIST_COMP_EXPRESSION")
   val LIST_LITERAL_EXPRESSION = StarlarkElementType("LIST_LITERAL_EXPRESSION")
   val NAMED_ARGUMENT_EXPRESSION = StarlarkElementType("NAMED_ARGUMENT_EXPRESSION")
+  val NONE_LITERAL_EXPRESSION = StarlarkElementType("NONE_LITERAL_EXPRESSION")
   val PARENTHESIZED_EXPRESSION = StarlarkElementType("PARENTHESIZED_EXPRESSION")
   val PREFIX_EXPRESSION = StarlarkElementType("PREFIX_EXPRESSION")
   val REFERENCE_EXPRESSION = StarlarkElementType("REFERENCE_EXPRESSION")
@@ -98,6 +103,7 @@ object StarlarkElementTypes {
   val STAR_EXPRESSION = StarlarkElementType("STAR_EXPRESSION")
   val STRING_LITERAL_EXPRESSION = StarlarkElementType("STRING_LITERAL_EXPRESSION")
   val SUBSCRIPTION_EXPRESSION = StarlarkElementType("SUBSCRIPTION_EXPRESSION")
+  val TRUE_LITERAL_EXPRESSION = StarlarkElementType("TRUE_LITERAL_EXPRESSION")
   val TUPLE_EXPRESSION = StarlarkElementType("TUPLE_EXPRESSION")
 
   fun createElement(node: ASTNode): PsiElement =
@@ -132,6 +138,7 @@ object StarlarkElementTypes {
       DICT_LITERAL_EXPRESSION -> StarlarkDictLiteralExpression(node)
       DOUBLE_STAR_EXPRESSION -> StarlarkDoubleStarExpression(node)
       EMPTY_EXPRESSION -> StarlarkEmptyExpression(node)
+      FALSE_LITERAL_EXPRESSION -> StarlarkFalseLiteralExpression(node)
       FLOAT_LITERAL_EXPRESSION -> StarlarkFloatLiteralExpression(node)
       GENERATOR_EXPRESSION -> StarlarkGeneratorExpression(node)
       INTEGER_LITERAL_EXPRESSION -> StarlarkIntegerLiteralExpression(node)
@@ -140,6 +147,7 @@ object StarlarkElementTypes {
       LIST_COMP_EXPRESSION -> StarlarkListCompExpression(node)
       LIST_LITERAL_EXPRESSION -> StarlarkListLiteralExpression(node)
       NAMED_ARGUMENT_EXPRESSION -> StarlarkNamedArgumentExpression(node)
+      NONE_LITERAL_EXPRESSION -> StarlarkNoneLiteralExpression(node)
       PARENTHESIZED_EXPRESSION -> StarlarkParenthesizedExpression(node)
       PREFIX_EXPRESSION -> StarlarkPrefixExpression(node)
       REFERENCE_EXPRESSION -> StarlarkReferenceExpression(node)
@@ -150,6 +158,7 @@ object StarlarkElementTypes {
       STRING_LITERAL_EXPRESSION -> StarlarkStringLiteralExpression(node)
       SUBSCRIPTION_EXPRESSION -> StarlarkSubscriptionExpression(node)
       TARGET_EXPRESSION -> StarlarkTargetExpression(node)
+      TRUE_LITERAL_EXPRESSION -> StarlarkTrueLiteralExpression(node)
       TUPLE_EXPRESSION -> StarlarkTupleExpression(node)
 
       else -> error("Unknown element type: $type")

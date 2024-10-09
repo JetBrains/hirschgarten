@@ -36,6 +36,8 @@ RUN apt-get update --quiet --quiet --yes && \
     android-sdk \
     openjdk-17-jdk-headless \
     protobuf-compiler \
+    jq \
+    wget \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 

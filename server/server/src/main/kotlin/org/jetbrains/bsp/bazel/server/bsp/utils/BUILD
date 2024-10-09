@@ -19,5 +19,8 @@ kt_jvm_library(
 kt_jvm_library(
     name = "fileutils",
     srcs = ["FileUtils.kt"],
-    visibility = ["//server/server:__subpackages__"],
+    visibility = [
+        "//server/install/src/main/kotlin/org/jetbrains/bsp/bazel/install:__subpackages__",
+        "//server/server:__subpackages__",
+    ],
 )

@@ -8,6 +8,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictCompEx
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDictLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkDoubleStarExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkEmptyExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFalseLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkFloatLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkGeneratorExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkIntegerLiteralExpression
@@ -15,6 +16,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkKeyValueEx
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkLambdaExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListCompExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkListLiteralExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkNoneLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkParenthesizedExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkPrefixExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
@@ -24,6 +26,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStarExpres
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkSubscriptionExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
+import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTrueLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkArgumentExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
@@ -106,6 +109,10 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
     visitElement(node)
   }
 
+  fun visitFalseLiteralExpression(node: StarlarkFalseLiteralExpression) {
+    visitElement(node)
+  }
+
   fun visitFloatLiteralExpression(node: StarlarkFloatLiteralExpression) {
     visitElement(node)
   }
@@ -155,6 +162,10 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
   }
 
   fun visitNamedLoadValue(node: StarlarkNamedLoadValue) {
+    visitElement(node)
+  }
+
+  fun visitNoneLiteralExpression(node: StarlarkNoneLiteralExpression) {
     visitElement(node)
   }
 
@@ -231,6 +242,10 @@ open class StarlarkElementVisitor : PsiElementVisitor() {
   }
 
   fun visitTargetExpression(node: StarlarkTargetExpression) {
+    visitElement(node)
+  }
+
+  fun visitTrueLiteralExpression(node: StarlarkTrueLiteralExpression) {
     visitElement(node)
   }
 

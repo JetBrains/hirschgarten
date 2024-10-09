@@ -75,5 +75,8 @@ public var Project.buildToolId: BuildToolId
     bspProjectProperties.buildToolId = value
   }
 
+public val Project.buildToolIdOrDefault: BuildToolId
+  get() = bspProjectProperties.buildToolId ?: bspBuildToolId
+
 public val Project.buildToolIdOrNull: BuildToolId?
   get() = bspProjectProperties.buildToolId
