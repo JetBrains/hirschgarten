@@ -107,7 +107,7 @@
                 implementation="org.jetbrains.plugins.bsp.startup.BspCommandLineInspectionConfigurator"/>
         <configurationType implementation="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationType"/>
 
-        <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
+        <notificationGroup id="Bazel" displayType="STICKY_BALLOON"/>
 
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
