@@ -37,5 +37,5 @@ bazel_dep(name = "rules_scala", repo_name = "io_bazel_rules_scala")
 git_override(
     module_name = "rules_scala",
     remote = "https://github.com/mbland/rules_scala.git",
-    commit = "b648d0b52750f0a69ce5255f7f96be63529d5eea",
+    commit = "5b10f095758cb8a4bfe93b3686a1aa87ae6d4642",
 )
