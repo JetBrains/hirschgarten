@@ -43,7 +43,7 @@
                 implementation="org.jetbrains.bazel.flow.open.CheckSlowPluginsStartupActivity"/>
 
         <externalSystemUnlinkedProjectAware
-                id="Bazel BSP"
+                id="Bazel"
                 implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
         <externalIconProvider
                 key="bazelbsp"
