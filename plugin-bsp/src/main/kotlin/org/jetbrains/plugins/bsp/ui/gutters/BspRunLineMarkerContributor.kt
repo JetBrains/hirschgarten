@@ -4,6 +4,7 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
@@ -33,12 +34,13 @@ public abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
         temporaryTargetUtils
           .getTargetsForFile(url, project)
           .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
-      calculateLineMarkerInfo(targetInfos)
+      val singleTestFilter = if (this.parent is KtNamedFunction) (this.parent as KtNamedFunction).name else null
+      calculateLineMarkerInfo(targetInfos, singleTestFilter)
     }
 
-  private fun calculateLineMarkerInfo(targetInfos: List<BuildTargetInfo>): Info? =
+  private fun calculateLineMarkerInfo(targetInfos: List<BuildTargetInfo>, singleTestFilter: String?): Info? =
     targetInfos
-      .flatMap { it.calculateEligibleActions() }
+      .flatMap { it.calculateEligibleActions(singleTestFilter) }
       .takeIf { it.isNotEmpty() }
       ?.let {
         BspLineMakerInfo(
@@ -47,10 +49,10 @@ public abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
         )
       }
 
-  private fun BuildTargetInfo?.calculateEligibleActions(): List<AnAction> =
+  private fun BuildTargetInfo?.calculateEligibleActions(singleTestFilter: String?): List<AnAction> =
     if (this == null) {
       emptyList()
     } else {
-      DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList()
+      DefaultActionGroup().fillWithEligibleActions(this, false, singleTestFilter).childActionsOrStubs.toList()
     }
 }

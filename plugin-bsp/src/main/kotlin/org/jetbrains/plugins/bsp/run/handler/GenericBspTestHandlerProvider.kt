@@ -8,7 +8,7 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 public class GenericBspTestHandlerProvider : BspRunHandlerProvider {
   override val id: String = "GenericBspTestHandlerProvider"
 
-  override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = GenericBspTestHandler()
+  override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = GenericBspTestHandler(configuration)
 
   override fun canRun(targetInfos: List<BuildTargetInfo>): Boolean = targetInfos.all { it.capabilities.canTest }
 

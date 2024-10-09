@@ -94,7 +94,11 @@ private fun BspRunnerAction.prepareAndPerform(project: Project) {
 }
 
 @Suppress("CognitiveComplexMethod")
-fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, verboseText: Boolean): DefaultActionGroup {
+fun DefaultActionGroup.fillWithEligibleActions(
+  target: BuildTargetInfo,
+  verboseText: Boolean,
+  singleTestFilter: String? = null,
+): DefaultActionGroup {
   if (target.capabilities.canRun) {
     addAction(
       RunTargetAction(
@@ -105,7 +109,7 @@ fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, verboseT
   }
 
   if (target.capabilities.canTest) {
-    addAction(TestTargetAction(target, verboseText = verboseText))
+    addAction(TestTargetAction(target, verboseText = verboseText, singleTestFilter = singleTestFilter))
   }
 
   // targets which cant be run or tested cant be debugged as well

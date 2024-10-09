@@ -11,6 +11,7 @@ public class TestTargetAction(
   text: (() -> String)? = null,
   isDebugAction: Boolean = false,
   verboseText: Boolean = false,
+  private val singleTestFilter: String? = null,
 ) : BspRunnerAction(
     targetInfo = targetInfo,
     text = {
@@ -30,5 +31,5 @@ public class TestTargetAction(
     },
     isDebugAction = isDebugAction,
   ) {
-  override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType(project)
+  override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType(project, singleTestFilter)
 }

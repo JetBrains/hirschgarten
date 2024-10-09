@@ -10,17 +10,24 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import javax.swing.Icon
 
 class BspRunConfigurationType : SimpleConfigurationType {
-  constructor() : this(BspPluginIcons.bsp)
-  constructor(project: Project) : this(project.assets.toolWindowIcon)
+  constructor() : this(BspPluginIcons.bsp, null)
+  constructor(project: Project, singleTestFilter: String? = null) : this(project.assets.toolWindowIcon, singleTestFilter)
 
-  private constructor(icon: Icon) : super(
+  private val singleTestFilter: String?
+
+  private constructor(icon: Icon, singleTestFilterValue: String?) : super(
     id = ID,
     name = BspPluginBundle.message("runconfig.run.name"),
     description = BspPluginBundle.message("runconfig.run.description"),
     icon = NotNullLazyValue.createValue { icon },
-  )
+  ) {
+    singleTestFilter = singleTestFilterValue
+  }
 
-  override fun createTemplateConfiguration(project: Project): RunConfiguration = BspRunConfiguration(project, "")
+  override fun createConfiguration(name: String?, template: RunConfiguration): RunConfiguration =
+    super.createConfiguration(name, createTemplateConfiguration(template.project))
+
+  override fun createTemplateConfiguration(project: Project): RunConfiguration = BspRunConfiguration(project, "", singleTestFilter)
 
   companion object {
     const val ID: String = "BspRunConfiguration"
