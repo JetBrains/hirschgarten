@@ -17,9 +17,17 @@ class BspProjectViewNodeDecorator(private val project: Project) : ProjectViewNod
 
   private fun decorateForBsp(node: ProjectViewNode<*>, data: PresentationData) {
     if (node is PsiDirectoryNode) {
-      data.clearPresentation()
+      data.removeJavaHackSourceRoot()
     }
   }
+
+  private fun PresentationData.removeJavaHackSourceRoot() {
+    if (isJavaHackNode()) {
+      clearPresentation()
+    }
+  }
+
+  private fun PresentationData.isJavaHackNode() = locationString == "sources root"
 
   private fun PresentationData.clearPresentation() {
     clearText()
