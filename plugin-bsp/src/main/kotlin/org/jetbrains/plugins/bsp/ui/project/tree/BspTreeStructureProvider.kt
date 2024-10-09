@@ -18,7 +18,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import org.jetbrains.plugins.bsp.config.isBspProject
-import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
+import org.jetbrains.plugins.bsp.config.openedTimesSinceLastResync
 import org.jetbrains.plugins.bsp.config.rootDir
 
 public class BspTreeStructureProvider : TreeStructureProvider {
@@ -73,7 +73,7 @@ class BspDirectoryNode(
   }
 
   private fun PsiDirectory.calculateChildrenNodes(project: Project, settings: ViewSettings?): Collection<AbstractTreeNode<*>> =
-    if (project.isBspProjectInitialized && !(project.workspaceModel as WorkspaceModelImpl).loadedFromCache) {
+    if (project.openedTimesSinceLastResync == 1 || (project.workspaceModel as WorkspaceModelImpl).loadedFromCache) {
       emptyList()
     } else {
       children.mapNotNull { psiChild ->
