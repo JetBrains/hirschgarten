@@ -77,7 +77,7 @@ class TestXmlParserTest {
     val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 5
@@ -176,7 +176,7 @@ class TestXmlParserTest {
     val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 14
@@ -281,7 +281,7 @@ class TestXmlParserTest {
     val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 18
@@ -391,7 +391,7 @@ class TestXmlParserTest {
     val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 17
@@ -511,7 +511,7 @@ class TestXmlParserTest {
     val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
 
     // then
     client.taskStartCalls.size shouldBe 2
