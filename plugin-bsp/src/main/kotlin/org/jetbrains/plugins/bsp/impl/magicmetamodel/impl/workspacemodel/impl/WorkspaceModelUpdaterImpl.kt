@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl
 
+import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
@@ -42,6 +43,11 @@ internal class WorkspaceModelUpdaterImpl(
 
   private val javaModuleToDummyJavaModulesTransformerHACK =
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath)
+
+  init {
+    // store generated IML files outside the project directory
+    ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
+  }
 
   override fun loadModule(module: Module) {
     when (module) {
