@@ -18,7 +18,7 @@ public class RunTargetAction(
         text()
       } else if (isDebugAction) {
         BspPluginBundle.message(
-          "target.debug.action.text",
+          "target.debug.run.action.text",
           if (verboseText) targetInfo.buildTargetName else "",
         )
       } else {

@@ -95,31 +95,20 @@ private fun BspRunnerAction.prepareAndPerform(project: Project) {
 
 @Suppress("CognitiveComplexMethod")
 fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, verboseText: Boolean): DefaultActionGroup {
+  val canBeDebugged = BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
+
   if (target.capabilities.canRun) {
-    addAction(
-      RunTargetAction(
-        targetInfo = target,
-        verboseText = verboseText,
-      ),
-    )
+    addAction(RunTargetAction(target, verboseText = verboseText))
+    if (canBeDebugged) {
+      addAction(RunTargetAction(target, isDebugAction = true, verboseText = verboseText))
+    }
   }
 
   if (target.capabilities.canTest) {
     addAction(TestTargetAction(target, verboseText = verboseText))
-  }
-
-  // targets which cant be run or tested cant be debugged as well
-  val canBeExecuted = target.capabilities.canRun || target.capabilities.canTest
-  val canBeHandled = BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
-  // "Client-side" debugging
-  if (canBeExecuted && canBeHandled) {
-    addAction(
-      RunTargetAction(
-        targetInfo = target,
-        isDebugAction = true,
-        verboseText = verboseText,
-      ),
-    )
+    if (canBeDebugged) {
+      addAction(TestTargetAction(target, isDebugAction = true, verboseText = verboseText))
+    }
   }
 
   if (target.languageIds.isJvmTarget()) {

@@ -3,7 +3,6 @@ package org.jetbrains.plugins.bsp.jvm
 import ch.epfl.scala.bsp4j.RunParams
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.Executor
-import com.intellij.execution.configurations.RemoteConnection
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
@@ -12,7 +11,6 @@ import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.plugins.bsp.run.BspCommandLineStateBase
 import org.jetbrains.plugins.bsp.run.BspProcessHandler
 import org.jetbrains.plugins.bsp.run.BspRunHandler
 import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
@@ -28,7 +26,7 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.includesAndroid
 import org.jetbrains.plugins.bsp.workspacemodel.entities.isJvmTarget
 import java.util.UUID
 
-class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHandler {
+class JvmBspRunHandler : BspRunHandler {
   override val name: String = "Jvm BSP Run Handler"
 
   override val state = GenericRunState()
@@ -36,7 +34,7 @@ class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunH
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     when {
       executor is DefaultDebugExecutor -> {
-        JvmDebugHandlerState(environment, UUID.randomUUID().toString(), state)
+        JvmRunWithDebugCommandLineState(environment, UUID.randomUUID().toString(), state)
       }
 
       else -> {
@@ -47,7 +45,7 @@ class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunH
   class JvmBspRunHandlerProvider : BspRunHandlerProvider {
     override val id: String = "JvmBspRunHandlerProvider"
 
-    override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = JvmBspRunHandler(configuration)
+    override fun createRunHandler(configuration: BspRunConfiguration): BspRunHandler = JvmBspRunHandler()
 
     // Explanation for this logic:
     // Because we have android_local_test with mocked Android classes, which should be run, well, locally,
@@ -63,17 +61,11 @@ class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunH
   }
 }
 
-class JvmDebugHandlerState(
+class JvmRunWithDebugCommandLineState(
   environment: ExecutionEnvironment,
   originId: OriginId,
   val settings: GenericRunState,
-) : BspCommandLineStateBase(environment, originId) {
-  val remoteConnection: RemoteConnection =
-    RemoteConnection(true, "localhost", "0", true)
-
-  private val portForDebug: Int?
-    get() = remoteConnection.debuggerAddress?.toInt()
-
+) : JvmDebuggableCommandLineState(environment, originId) {
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspRunTaskListener(handler)
 
   override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
@@ -88,7 +80,7 @@ class JvmDebugHandlerState(
     runParams.workingDirectory = settings.workingDirectory
     runParams.arguments = transformProgramArguments(settings.programArguments)
     runParams.environmentVariables = settings.env.envs
-    val remoteDebugData = RemoteDebugData("jdwp", portForDebug!!)
+    val remoteDebugData = RemoteDebugData("jdwp", getConnectionPort())
     val runWithDebugParams = RunWithDebugParams(originId, runParams, remoteDebugData)
 
     server.buildTargetRunWithDebug(runWithDebugParams).await()

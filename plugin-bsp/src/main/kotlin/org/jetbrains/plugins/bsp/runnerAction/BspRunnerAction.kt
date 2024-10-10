@@ -13,7 +13,7 @@ abstract class BspRunnerAction(
   targetInfo: BuildTargetInfo,
   text: () -> String,
   icon: Icon? = null,
-  private val isDebugAction: Boolean = false,
+  isDebugAction: Boolean = false,
 ) : BaseRunnerAction(targetInfo, text, icon, isDebugAction) {
   abstract fun getConfigurationType(project: Project): ConfigurationType
 
@@ -32,7 +32,6 @@ abstract class BspRunnerAction(
     val targetDisplayName = targetInfo.buildTargetName
     val actionNameKey =
       when {
-        isDebugAction -> "target.debug.config.name"
         this is TestTargetAction -> "target.test.config.name"
         else -> "target.run.config.name"
       }
