@@ -29,7 +29,7 @@ public class BspAndroidProjectSystem(override val project: Project) : AndroidPro
 
   override fun allowsFileCreation(): Boolean = true
 
-  override fun getAndroidFacetsWithPackageName(project: Project, packageName: String): Collection<AndroidFacet> =
+  override fun getAndroidFacetsWithPackageName(packageName: String): Collection<AndroidFacet> =
     ProjectFacetManager
       .getInstance(project)
       .getFacets(AndroidFacet.ID)

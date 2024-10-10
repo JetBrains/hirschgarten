@@ -45,7 +45,7 @@ class BspExternalAnnotationsManager(project: Project) :
   override fun isExternalAnnotationWritable(listOwner: PsiModifierListOwner, annotationFQN: String): Boolean =
     delegate.isExternalAnnotationWritable(listOwner, annotationFQN)
 
-  override fun findExternalAnnotations(listOwner: PsiModifierListOwner): Array<out PsiAnnotation>? =
+  override fun findExternalAnnotations(listOwner: PsiModifierListOwner): Array<out PsiAnnotation> =
     delegate.findExternalAnnotations(listOwner)
 
   override fun findDefaultConstructorExternalAnnotations(aClass: PsiClass): List<PsiAnnotation>? =
