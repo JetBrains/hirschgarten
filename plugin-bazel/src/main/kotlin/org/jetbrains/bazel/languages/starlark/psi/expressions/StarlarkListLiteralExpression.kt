@@ -12,6 +12,7 @@ import org.jetbrains.bazel.languages.starlark.rename.StarlarkElementGenerator
 class StarlarkListLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitListLiteralExpression(this)
 
+  @Suppress("UnusedSymbol")
   fun getElementAt(index: Int): StarlarkElement? = getElements().getOrNull(index)
 
   fun getElements(): List<StarlarkElement> = PsiTreeUtil.getChildrenOfTypeAsList(this, StarlarkElement::class.java)

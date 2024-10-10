@@ -5,10 +5,7 @@ import kotlinx.collections.immutable.persistentSetOf
 
 var flagsByName = mutableMapOf<String, BazelFlag<*>>()
 
-fun flagByName(name: String): BazelFlag<*>? {
-  val x = flags.javaClass
-  return flagsByName[name]
-}
+fun flagByName(name: String): BazelFlag<*>? = flagsByName[name]
 
 data class BazelFlag<T>(
   val name: String,

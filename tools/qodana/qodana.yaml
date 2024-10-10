@@ -9,10 +9,16 @@ exclude:
       - server/aspects/rules/jvm/jvm_info.bzl.template
   - name: All
     paths:
+      - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/bazelrc/lexer/_BazelrcLexer.java
       - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/projectview/lexer/_ProjectViewLexer.java
       - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java
+      - plugin-bsp/workspacemodel/src/main/kotlin/org/jetbrains/plugins/bsp/workspacemodel/entities/GeneratedJavaSourceRootEntity.kt
+      - plugin-bsp/workspacemodel/src/main/gen
   - name: CheckDependencyLicenses
-  - name: KotlinInvalidBundleOrProperty
+  - name: UnstableApiUsage
+  - name: RedundantVisibilityModifier
+  - name: RegExpRedundantEscape
+  - name: RegExpRepeatedSpace
 include:
   - name: QodanaSanity
 failureConditions:

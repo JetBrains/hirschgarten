@@ -85,10 +85,6 @@ fun <T : HasWorkingDirectory> workingDirectoryFragment(
   ) { false }
   val workingDirectoryField = TextFieldWithBrowseButton(textField)
   workingDirectoryField.addBrowseFolderListener(
-    ExecutionBundle.message(
-      "select.working.directory.message",
-    ),
-    null,
     configuration.project,
     FileChooserDescriptorFactory.createSingleFolderDescriptor(),
     TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT,
