@@ -3,8 +3,8 @@ package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.u
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaSourceRoot
 import java.net.URI
 import kotlin.io.path.toPath
 

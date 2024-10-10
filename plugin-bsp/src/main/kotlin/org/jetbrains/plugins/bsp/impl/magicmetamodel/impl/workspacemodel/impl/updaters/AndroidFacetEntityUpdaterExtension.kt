@@ -12,7 +12,7 @@ import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.android.facet.AndroidFacetConfiguration
 import org.jetbrains.android.facet.AndroidFacetType
 import org.jetbrains.bsp.protocol.AndroidTargetType
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
 
 internal interface AndroidFacetEntityUpdaterExtension {
   fun createAndroidFacetEntityUpdater(

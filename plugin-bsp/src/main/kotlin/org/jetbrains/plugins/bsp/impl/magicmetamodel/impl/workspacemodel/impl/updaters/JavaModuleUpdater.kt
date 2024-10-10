@@ -13,11 +13,11 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.android.sdk.AndroidSdkType
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesAndroid
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesJava
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesKotlin
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
+import org.jetbrains.plugins.bsp.workspacemodel.entities.includesAndroid
+import org.jetbrains.plugins.bsp.workspacemodel.entities.includesJava
+import org.jetbrains.plugins.bsp.workspacemodel.entities.includesKotlin
 import java.nio.file.Path
 
 internal class JavaModuleWithSourcesUpdater(
@@ -69,7 +69,7 @@ internal class JavaModuleWithSourcesUpdater(
 
     if (isAndroidSupportEnabled && entityToAdd.androidAddendum != null) {
       val androidAddendumEntityUpdater = AndroidAddendumEntityUpdater(workspaceModelEntityUpdaterConfig)
-      androidAddendumEntityUpdater.addEntity(entityToAdd.androidAddendum, moduleEntity)
+      androidAddendumEntityUpdater.addEntity(entityToAdd.androidAddendum!!, moduleEntity)
     }
 
     if (isAndroidSupportEnabled && entityToAdd.genericModuleInfo.languageIds.includesAndroid()) {
@@ -95,7 +95,7 @@ internal class JavaModuleWithSourcesUpdater(
       )
     }
     entityToAdd.jvmJdkName?.also {
-      returnDependencies.add(SdkDependency(SdkId(entityToAdd.jvmJdkName, "JavaSDK")))
+      returnDependencies.add(SdkDependency(SdkId(it, "JavaSDK")))
     }
     entityToAdd.scalaAddendum?.also { addendum ->
       returnDependencies.add(
@@ -161,7 +161,7 @@ internal class JavaModuleWithoutSourcesUpdater(private val workspaceModelEntityU
   private fun calculateJavaModuleDependencies(entityToAdd: JavaModule): List<ModuleDependencyItem> =
     entityToAdd.jvmJdkName
       ?.let {
-        listOf(SdkDependency(SdkId(entityToAdd.jvmJdkName, "JavaSDK")))
+        listOf(SdkDependency(SdkId(it, "JavaSDK")))
       } ?: listOf()
 }
 

@@ -12,8 +12,6 @@ import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunWithDebugParams
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesAndroid
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.run.BspCommandLineStateBase
 import org.jetbrains.plugins.bsp.run.BspProcessHandler
 import org.jetbrains.plugins.bsp.run.BspRunHandler
@@ -26,6 +24,8 @@ import org.jetbrains.plugins.bsp.run.task.BspRunTaskListener
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
 import org.jetbrains.plugins.bsp.taskEvents.OriginId
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.includesAndroid
+import org.jetbrains.plugins.bsp.workspacemodel.entities.isJvmTarget
 import java.util.UUID
 
 class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHandler {

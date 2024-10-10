@@ -26,12 +26,12 @@ import org.jetbrains.plugins.bsp.impl.magicmetamodel.DefaultLibraryNameProvider
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonLibrary
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonSdkInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericSourceRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonLibrary
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonModule
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonSdkInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
