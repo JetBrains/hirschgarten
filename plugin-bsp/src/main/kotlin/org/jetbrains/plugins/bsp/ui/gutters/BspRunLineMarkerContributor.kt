@@ -3,8 +3,11 @@ package org.jetbrains.plugins.bsp.ui.gutters
 import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.plugins.bsp.config.BuildToolId
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
@@ -34,13 +37,17 @@ public abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
         temporaryTargetUtils
           .getTargetsForFile(url, project)
           .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
-      val singleTestFilter = (this.parent as? KtNamedFunction)?.name
-      calculateLineMarkerInfo(targetInfos, singleTestFilter)
+      val singleTestFilter = if (project.buildToolId == BuildToolId("bazelbsp")) (this.parent as? KtNamedFunction)?.name else null
+      calculateLineMarkerInfo(project, targetInfos, singleTestFilter)
     }
 
-  private fun calculateLineMarkerInfo(targetInfos: List<BuildTargetInfo>, singleTestFilter: String?): Info? =
+  private fun calculateLineMarkerInfo(
+    project: Project,
+    targetInfos: List<BuildTargetInfo>,
+    singleTestFilter: String?,
+  ): Info? =
     targetInfos
-      .flatMap { it.calculateEligibleActions(singleTestFilter) }
+      .flatMap { it.calculateEligibleActions(project, singleTestFilter) }
       .takeIf { it.isNotEmpty() }
       ?.let {
         BspLineMakerInfo(
@@ -49,10 +56,10 @@ public abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
         )
       }
 
-  private fun BuildTargetInfo?.calculateEligibleActions(singleTestFilter: String?): List<AnAction> =
+  private fun BuildTargetInfo?.calculateEligibleActions(project: Project, singleTestFilter: String?): List<AnAction> =
     if (this == null) {
       emptyList()
     } else {
-      DefaultActionGroup().fillWithEligibleActions(this, false, singleTestFilter).childActionsOrStubs.toList()
+      DefaultActionGroup().fillWithEligibleActions(project, this, false, singleTestFilter).childActionsOrStubs.toList()
     }
 }

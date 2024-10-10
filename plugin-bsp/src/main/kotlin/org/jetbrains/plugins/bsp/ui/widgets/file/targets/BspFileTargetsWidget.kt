@@ -102,7 +102,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
       if (capabilities.canCompile) {
         it.add(BuildTargetAction(id))
       }
-      it.fillWithEligibleActions(this, false)
+      it.fillWithEligibleActions(project, this, false)
       it.addSeparator()
       it.addAll(project.targetActionProvider?.getTargetActions(component, project, this).orEmpty())
     }
