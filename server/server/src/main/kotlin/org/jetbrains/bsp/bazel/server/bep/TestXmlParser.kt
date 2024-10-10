@@ -90,8 +90,8 @@ class TestResultDetail {
   var content: String? = null
 }
 
-class TestXmlParser(private var parentId: TaskId, private var bspClientTestNotifier: BspClientTestNotifier) {
-  private val fallbackTestXmlParser = FallbackTestXmlParser(parentId, bspClientTestNotifier)
+class TestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
+  private val fallbackTestXmlParser = FallbackTestXmlParser(bspClientTestNotifier)
 
   /**
    * Processes a test result xml file, reporting suite and test case results as task start and finish notifications.
@@ -100,12 +100,14 @@ class TestXmlParser(private var parentId: TaskId, private var bspClientTestNotif
    */
   fun parseAndReport(testXmlUri: String) {
     val testSuites = parseTestXml(testXmlUri, TestSuites::class.java)
-    testSuites?.testsuite?.forEach { suite ->
-      processSuite(suite)
-    } ?: let {
-      parseTestXml(testXmlUri, FallbackTestXmlParser.IncompleteTestSuites::class.java)
-    }?.testsuite?.forEach { suite ->
-      fallbackTestXmlParser.processIncompleteInfoSuite(suite)
+    if (testSuites != null) {
+      testSuites.testsuite.forEach { processSuite(it) }
+    } else {
+      val fallbackTestSuites =
+        parseTestXml(testXmlUri, FallbackTestXmlParser.IncompleteTestSuites::class.java)
+      fallbackTestSuites?.testsuite?.forEach {
+        fallbackTestXmlParser.processIncompleteInfoSuite(it)
+      }
     }
   }
 
@@ -227,7 +229,7 @@ class TestXmlParser(private var parentId: TaskId, private var bspClientTestNotif
 /** Bazel has a separate way of parsing JUnit4 and JUnit5 test results into a xml file, resulting in
  * incomplete data about the latter.
  * **/
-private class FallbackTestXmlParser(private var parentId: TaskId, private var bspClientTestNotifier: BspClientTestNotifier) {
+private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClientTestNotifier) {
   @JacksonXmlRootElement(localName = "testsuites")
   data class IncompleteTestSuites(
     @JacksonXmlElementWrapper(useWrapping = false)
@@ -260,8 +262,18 @@ private class FallbackTestXmlParser(private var parentId: TaskId, private var bs
     val skipped: TestResultDetail? = null,
   )
 
-  // A Bazel target is represented by a test suite containing one test case
   fun processIncompleteInfoSuite(suite: IncompleteTestSuite) {
+    val containsJunit5 = suite.systemOut?.let(Junit5TestVisualOutputParser::textContainsJunit5VisualOutput)
+    if (containsJunit5 == true) {
+      val parser = Junit5TestVisualOutputParser(bspClientTestNotifier)
+      parser.processTestOutput(suite.systemOut)
+    } else {
+      defaultIncompleteInfoSuiteProcessing(suite)
+    }
+  }
+
+  // A Bazel target is represented by a test suite containing one test case
+  private fun defaultIncompleteInfoSuiteProcessing(suite: IncompleteTestSuite) {
     val suiteTaskId = TaskId(UUID.randomUUID().toString())
     suiteTaskId.parents = emptyList()
     val suiteStatus =
