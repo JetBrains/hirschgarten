@@ -17,6 +17,7 @@ class StarlarkReferenceExpression(node: ASTNode) :
 
   override fun getReference(): PsiReference? =
     when {
+      isThrowaway() -> null
       hasParentOfType(StarlarkElementTypes.CALL_EXPRESSION) && !isBeforeDot() -> null
       else -> StarlarkLocalVariableReference(this, false)
     }
@@ -28,4 +29,6 @@ class StarlarkReferenceExpression(node: ASTNode) :
   private fun hasParentOfType(type: StarlarkElementType): Boolean = node.treeParent?.elementType == type
 
   private fun isBeforeDot(): Boolean = node.treeNext?.text == "."
+
+  private fun isThrowaway(): Boolean = name == "_"
 }
