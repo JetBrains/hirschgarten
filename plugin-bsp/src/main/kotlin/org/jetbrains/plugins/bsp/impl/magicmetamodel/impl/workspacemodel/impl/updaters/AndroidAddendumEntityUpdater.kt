@@ -7,7 +7,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import org.jetbrains.bsp.protocol.AndroidTargetType.APP
 import org.jetbrains.bsp.protocol.AndroidTargetType.LIBRARY
 import org.jetbrains.bsp.protocol.AndroidTargetType.TEST
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.AndroidAddendum
+import org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendum
 import org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendumEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidTargetType
 import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity

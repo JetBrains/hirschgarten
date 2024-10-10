@@ -9,7 +9,7 @@ import ch.epfl.scala.bsp4j.SourcesItem
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaSourceRoot
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaSourceRoot
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI

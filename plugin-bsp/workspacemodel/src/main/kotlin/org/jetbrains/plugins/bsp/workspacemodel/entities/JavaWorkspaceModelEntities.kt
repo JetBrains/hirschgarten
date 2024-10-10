@@ -1,13 +1,7 @@
-package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel
+package org.jetbrains.plugins.bsp.workspacemodel.entities
 
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.bsp.protocol.AndroidTargetType
-import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
-import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
-import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
-import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
-import org.jetbrains.plugins.bsp.workspacemodel.entities.WorkspaceModelEntity
 import java.nio.file.Path
 
 public data class JavaSourceRoot(

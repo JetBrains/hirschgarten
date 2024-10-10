@@ -5,8 +5,8 @@ import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.jps.entities.ModuleSourceDependency
 import com.intellij.platform.workspace.jps.entities.SdkDependency
 import com.intellij.platform.workspace.jps.entities.SdkId
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonSdkInfo.Companion.PYTHON_SDK_ID
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonModule
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonSdkInfo.Companion.PYTHON_SDK_ID
 
 internal class PythonModuleWithSourcesUpdater(private val workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig) :
   WorkspaceModelEntityWithoutParentModuleUpdater<PythonModule, ModuleEntity> {

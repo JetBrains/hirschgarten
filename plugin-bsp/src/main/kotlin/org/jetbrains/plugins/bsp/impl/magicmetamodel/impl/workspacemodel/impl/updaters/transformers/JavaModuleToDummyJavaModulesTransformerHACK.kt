@@ -4,12 +4,12 @@ import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.extensions.allSubdirectoriesSequence
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.plugins.bsp.impl.utils.replaceDots
 import org.jetbrains.plugins.bsp.impl.utils.shortenTargetPath
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
 import java.io.File
 import java.nio.file.Path

@@ -1,10 +1,4 @@
-package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel
-
-import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
-import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericSourceRoot
-import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
-import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
-import org.jetbrains.plugins.bsp.workspacemodel.entities.WorkspaceModelEntity
+package org.jetbrains.plugins.bsp.workspacemodel.entities
 
 public data class PythonSdkInfo(val version: String, val originalName: String) {
   override fun toString(): String = "$originalName$SEPARATOR$version"

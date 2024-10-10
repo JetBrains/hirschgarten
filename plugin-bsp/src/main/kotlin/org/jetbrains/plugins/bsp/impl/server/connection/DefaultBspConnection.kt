@@ -33,6 +33,7 @@ import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.bsp.protocol.utils.EnhancedSourceItemTypeAdapter
 import org.jetbrains.plugins.bsp.building.BspConsoleService
+import org.jetbrains.plugins.bsp.building.TaskConsole
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
@@ -41,7 +42,6 @@ import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
 import org.jetbrains.plugins.bsp.impl.server.chunking.ChunkingBuildServer
 import org.jetbrains.plugins.bsp.impl.server.client.BspClient
 import org.jetbrains.plugins.bsp.impl.server.client.BspServerProvider
-import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.InputStream
 import java.io.OutputStream
