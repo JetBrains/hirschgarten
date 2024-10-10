@@ -38,12 +38,6 @@ class StarlarkDebugConfiguration(
     XmlSerializer.deserializeInto(options, element)
   }
 
-  override fun clone(): StarlarkDebugConfiguration =
-    super
-      .clone()
-      .let { StarlarkDebugConfiguration(it.project, it.factory, it.name) }
-      .also { it.options.starlarkDebugTarget = this.options.starlarkDebugTarget }
-
   override fun getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState =
     StarlarkDebugConfigurationState(project, getTarget(), environment)
 

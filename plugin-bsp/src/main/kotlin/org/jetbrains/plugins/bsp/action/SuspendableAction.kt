@@ -15,6 +15,7 @@ import javax.swing.Icon
 
 private val log = logger<SuspendableAction>()
 
+@Suppress("UnstableApiUsage")
 public suspend fun saveAllFiles() {
   writeAction {
     FileDocumentManager.getInstance().saveAllDocuments()

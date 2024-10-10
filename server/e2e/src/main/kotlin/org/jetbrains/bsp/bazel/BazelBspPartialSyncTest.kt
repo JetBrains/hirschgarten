@@ -40,6 +40,15 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
 
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> = listOf(runInitialSyncAndPartialSync())
 
+  private fun createJvmBuildTarget(): JvmBuildTarget {
+    val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
+    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
+    return JvmBuildTarget().also {
+      it.javaHome = javaHome
+      it.javaVersion = "11"
+    }
+  }
+
   private fun runInitialSyncAndPartialSync(): BazelBspTestScenarioStep =
     BazelBspTestScenarioStep("should do an initial sync on 1 target and then partial sync on another target") {
       testClient.test(2.minutes) { session, _ ->
@@ -67,13 +76,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
 
         // partial sync
         val partialSyncTargetId = BuildTargetIdentifier("$targetPrefix//java_targets:java_binary")
-        val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
-        val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
-        val jvmBuildTarget =
-          JvmBuildTarget().also {
-            it.javaHome = javaHome
-            it.javaVersion = "11"
-          }
+        val jvmBuildTarget = createJvmBuildTarget()
         val javaTargetsJavaBinary =
           BuildTarget(
             partialSyncTargetId,
@@ -121,13 +124,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
     }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
-    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
-    val jvmBuildTarget =
-      JvmBuildTarget().also {
-        it.javaHome = javaHome
-        it.javaVersion = "11"
-      }
+    val jvmBuildTarget = createJvmBuildTarget()
 
     val javaTargetsJavaLibrary =
       BuildTarget(

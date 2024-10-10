@@ -91,6 +91,7 @@ class BspDirectoryNode(
    * - when just successfully finish the startup resync, OR
    * - when the workspace cache is not loadable.
    */
+  @Suppress("UnstableApiUsage")
   private fun Project.shouldNotCalculateCustomNodes() =
     openedTimesSinceLastStartupResync == 1 || (workspaceModel as WorkspaceModelImpl).loadedFromCache
 

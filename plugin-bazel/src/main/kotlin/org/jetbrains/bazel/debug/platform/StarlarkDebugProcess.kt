@@ -60,8 +60,9 @@ class StarlarkDebugProcess(
   override fun createConsole(): ExecutionConsole = console
 
   fun isSuspended(): Boolean =
-    this.session
-      // if the top frame is not available, it is not a normal suspension
-      ?.let { it.isPaused && !it.isStopped && it.suspendContext?.activeExecutionStack?.topFrame != null }
-      ?: true
+    session != null &&
+      with(session) {
+        // if the top frame is not available, it is not a normal suspension
+        isPaused && !isStopped && suspendContext?.activeExecutionStack?.topFrame != null
+      }
 }

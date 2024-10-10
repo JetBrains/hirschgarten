@@ -18,7 +18,7 @@ class StarlarkExpressionCodeFragment(
       true,
     ),
   ) {
-  override fun getContext(): PsiElement? = if (context?.isValid == true) context else super.getContext()
+  override fun getContext(): PsiElement? = if (context?.isValid == true) context else super.context
 }
 
 private fun String.withExtension(): String = "$this.${StarlarkFileType.defaultExtension}"
