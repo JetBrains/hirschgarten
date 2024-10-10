@@ -12,6 +12,7 @@ import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesAndroid
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.run.BspCommandLineStateBase
@@ -29,7 +30,8 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.util.UUID
 
 class JvmBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHandler {
-  override val name: String = "Jvm BSP Run Handler"
+  private val buildToolName: String = configuration.project.assets.presentableName
+  override val name: String = "Jvm $buildToolName Run Handler"
 
   override val state = GenericRunState()
 
