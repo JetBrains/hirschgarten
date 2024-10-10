@@ -1,5 +1,7 @@
 package org.jetbrains.bsp.protocol.jpsCompilation.utils
 
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.getExternalConfigurationDir
 import java.nio.file.Path
 
 public const val JPS_COMPILED_BASE_DIRECTORY: String = ".jps-compiled"
@@ -19,5 +21,5 @@ public object JpsPaths {
       .resolve("classes")
       .resolve(moduleName)
 
-  public fun getJpsImlModulesPath(projectBasePath: Path): Path = projectBasePath.resolve(".idea").resolve("modules")
+  public fun getJpsImlModulesPath(project: Project): Path = project.getExternalConfigurationDir().resolve("modules")
 }

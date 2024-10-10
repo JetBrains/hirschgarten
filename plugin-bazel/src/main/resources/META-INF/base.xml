@@ -23,6 +23,9 @@
         <bspToolWindowConfigFileProviderExtension
                 implementation="org.jetbrains.bazel.extension.BazelToolWindowConfigFileProviderExtension"/>
 
+        <bspProjectModelExternalSource
+                implementation="org.jetbrains.bazel.extension.BazelProjectModelExternalSourceExtension"/>
+
         <bspProjectAwareExtension
                 implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
 
