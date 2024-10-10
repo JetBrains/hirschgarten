@@ -30,6 +30,7 @@ public abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
 
   abstract fun PsiElement.shouldAddMarker(): Boolean
 
+  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1316
   private fun PsiElement.calculateLineMarkerInfo(): Info? =
     containingFile.virtualFile?.let { url ->
       val temporaryTargetUtils = project.temporaryTargetUtils
