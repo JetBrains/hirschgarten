@@ -38,6 +38,8 @@ import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.bazel.workspacecontext.isAndroidEnabled
+import org.jetbrains.bsp.protocol.AnalysisDebugParams
+import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelTestParamsData
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
@@ -87,6 +89,19 @@ class ExecuteService(
     } else {
       CompileResult(StatusCode.ERROR).apply { originId = params.originId }
     }
+
+  fun analysisDebug(cancelChecker: CancelChecker, params: AnalysisDebugParams): AnalysisDebugResult {
+    val statusCode =
+      if (params.targets.isNotEmpty()) {
+        val debugFlags =
+          listOf(BazelFlag.noBuild(), BazelFlag.starlarkDebug(), BazelFlag.starlarkDebugPort(params.port))
+        val result = build(cancelChecker, params.targets, params.originId, debugFlags)
+        result.statusCode
+      } else {
+        StatusCode.ERROR
+      }
+    return AnalysisDebugResult(statusCode)
+  }
 
   fun test(cancelChecker: CancelChecker, params: TestParams): TestResult {
     val targetsSpec = TargetsSpec(params.targets, emptyList())

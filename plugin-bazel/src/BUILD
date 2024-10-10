@@ -24,6 +24,16 @@ kt_jvm_library(
 
 kt_jvm_library(
     name = "intellij-bazel",
+    visibility = ["//visibility:public"],
+    exports = [
+        "//plugin-bazel/src:intellij-bazel-unpackaged",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extension",
+    ],
+)
+
+kt_jvm_library(
+    name = "intellij-bazel-unpackaged",
     srcs = glob([
         "main/kotlin/**/*.kt",
         "main/gen/**/*.java",
