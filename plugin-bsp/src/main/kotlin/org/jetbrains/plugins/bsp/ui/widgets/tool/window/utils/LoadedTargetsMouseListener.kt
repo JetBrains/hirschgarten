@@ -117,7 +117,7 @@ fun DefaultActionGroup.fillWithEligibleActions(
         verboseText = verboseText,
         singleTestFilter = singleTestFilter,
         project = project,
-      )
+      ),
     )
   }
 

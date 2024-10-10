@@ -22,13 +22,13 @@ public class RunTargetAction(
         BspPluginBundle.message(
           "target.debug.action.text",
           if (verboseText) targetInfo.buildTargetName else "",
-          project.assets.presentableName
+          project.assets.presentableName,
         )
       } else {
         BspPluginBundle.message(
           "target.run.action.text",
           if (verboseText) targetInfo.buildTargetName else "",
-          project.assets.presentableName
+          project.assets.presentableName,
         )
       }
     },
