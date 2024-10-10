@@ -15,10 +15,10 @@ import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
+import org.jetbrains.bsp.sdkcompat.workspacemodel.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.plugins.bsp.extensionPoints.bspProjectModelExternalSource
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
@@ -87,7 +87,8 @@ internal class ModuleEntityUpdater(
         entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspModuleEntitySource(entityToAdd.name)
 
       else ->
-        LegacyBridgeJpsEntitySourceFactory.getInstance(workspaceModelEntityUpdaterConfig.project).createEntitySourceForModule(
+        LegacyBridgeJpsEntitySourceFactory.createEntitySourceForModule(
+          project = workspaceModelEntityUpdaterConfig.project,
           baseModuleDir =
             JpsPaths
               .getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.project)
