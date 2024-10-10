@@ -34,7 +34,7 @@ public abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
         temporaryTargetUtils
           .getTargetsForFile(url, project)
           .mapNotNull { temporaryTargetUtils.getBuildTargetInfoForId(it) }
-      val singleTestFilter = if (this.parent is KtNamedFunction) (this.parent as KtNamedFunction).name else null
+      val singleTestFilter = (this.parent as? KtNamedFunction)?.name
       calculateLineMarkerInfo(targetInfos, singleTestFilter)
     }
 
