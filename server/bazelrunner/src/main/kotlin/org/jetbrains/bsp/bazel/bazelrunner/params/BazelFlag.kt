@@ -43,6 +43,12 @@ object BazelFlag {
 
   @JvmStatic fun toolTag(): String = arg("tool_tag", "$NAME:$VERSION")
 
+  @JvmStatic fun starlarkDebug(): String = flag("experimental_skylark_debug")
+
+  @JvmStatic fun starlarkDebugPort(port: Int): String = arg("experimental_skylark_debug_server_port", port.toString())
+
+  @JvmStatic fun noBuild(): String = flag("nobuild")
+
   private fun arg(name: String, value: String) = String.format("--%s=%s", name, value)
 
   private fun flag(name: String) = "--$name"

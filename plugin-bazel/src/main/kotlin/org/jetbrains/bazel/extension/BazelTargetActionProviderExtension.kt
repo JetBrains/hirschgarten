@@ -3,6 +3,7 @@ package org.jetbrains.bazel.extension
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
+import org.jetbrains.bazel.debug.actions.StarlarkDebugAction
 import org.jetbrains.bazel.ui.widgets.BazelBspJumpToBuildFileAction
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.extensionPoints.BuildToolWindowTargetActionProviderExtension
@@ -16,5 +17,9 @@ class BazelTargetActionProviderExtension : BuildToolWindowTargetActionProviderEx
     component: JComponent,
     project: Project,
     buildTargetInfo: BuildTargetInfo,
-  ): List<AnAction> = listOf(BazelBspJumpToBuildFileAction(component, project, buildTargetInfo))
+  ): List<AnAction> =
+    listOfNotNull(
+      BazelBspJumpToBuildFileAction(component, project, buildTargetInfo),
+      if (StarlarkDebugAction.isApplicableTo(buildTargetInfo)) StarlarkDebugAction(buildTargetInfo.id) else null,
+    )
 }
