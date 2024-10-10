@@ -13,10 +13,14 @@ class ProjectProvider(private val projectResolver: ProjectResolver) {
     loadFromBazel(cancelChecker, build = build, null).also { project = it }
 
   @Synchronized
+  fun updateAndGet(cancelChecker: CancelChecker, targetsToSync: List<BuildTargetIdentifier>): Project =
+    loadFromBazel(cancelChecker, build = false, targetsToSync).also { project = project?.plus(it) }
+
+  @Synchronized
   fun get(cancelChecker: CancelChecker): Project = project ?: loadFromBazel(cancelChecker, false, null).also { project = it }
 
   @Synchronized
-  fun loadFromBazel(
+  private fun loadFromBazel(
     cancelChecker: CancelChecker,
     build: Boolean,
     targetsToSync: List<BuildTargetIdentifier>?,
