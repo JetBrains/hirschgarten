@@ -27,6 +27,3 @@
 8. Then open the project in IntelliJ IDEA and wait for it to import!
 
 9. Press “Build & Resync” afterwards to make sure all the dependent libraries are unzipped by Bazel.
-
-```
-```
