@@ -330,7 +330,7 @@ class CollectProjectDetailsTask(
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
             // Filter out non-module targets which cannot be run, as they are just cluttering the ui
-            val usefulNonModuleTargets = projectDetails.targets.filter { it.capabilities.canRun }
+            val usefulNonModuleTargets = projectDetails.nonModuleTargets.filter { it.capabilities.canRun }
 
             val syncedTargetIdToTargetInfo =
               (projectDetails.targets + usefulNonModuleTargets).associate {
