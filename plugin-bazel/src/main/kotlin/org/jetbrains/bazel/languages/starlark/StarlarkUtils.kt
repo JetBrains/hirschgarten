@@ -11,10 +11,7 @@ object StarlarkUtils {
   fun getNextNonWhitespaceSibling(after: ASTNode): ASTNode? = skipSiblingsForward(after, StarlarkTokenSets.WHITESPACE)
 
   fun skipSiblingsForward(node: ASTNode?, types: TokenSet): ASTNode? {
-    if (node == null) {
-      return null
-    }
-    var next = node.treeNext
+ 	var next = node?.treeNext ?: return null
     while (next != null) {
       if (!types.contains(next.elementType)) {
         return next
