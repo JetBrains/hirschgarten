@@ -2,6 +2,7 @@ package org.jetbrains.bazel.flow.modify
 
 import com.intellij.ide.util.EditorHelper
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.DependencyScope
 import com.intellij.openapi.roots.ExternalLibraryDescriptor
@@ -20,6 +21,7 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
+private val log = logger<BazelProjectModelModifier>()
 class BazelProjectModelModifier : JavaProjectModelModifier() {
   override fun addModuleDependency(
     from: Module,
@@ -50,10 +52,15 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
         ?.first { it is StarlarkListLiteralExpression } as? StarlarkListLiteralExpression
         ?: return false
     var insertSuccessful = false
-    WriteCommandAction.runWriteCommandAction(from.project) {
-      depsList.insertString(toBuildTargetInfo.buildTargetName.trimStart('@'))
-      insertSuccessful = true
+    try {
+      WriteCommandAction.runWriteCommandAction(from.project) {
+        depsList.insertString(toBuildTargetInfo.buildTargetName.trimStart('@'))
+        insertSuccessful = true
+      }
+    } catch (_: Exception) {
+      log.warn("Failed to write to BUILD file")
     }
+
     // some issues with partial sync, resort to full sync for now
     // TODO: change to full sync asap
     // val syncScope = PartialProjectSync(targetsToSync = listOf(fromBuildTargetInfo.id))
