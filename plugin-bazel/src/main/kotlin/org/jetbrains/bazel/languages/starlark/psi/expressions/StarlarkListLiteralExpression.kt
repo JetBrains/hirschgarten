@@ -54,8 +54,8 @@ class StarlarkListLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
     myNode.addChild(StarlarkElementGenerator(this.project).createTokenType("]"))
   }
 
-  private fun createComma() = StarlarkElementGenerator(this.project).createTokenType(",")
+  private fun createComma(): ASTNode = StarlarkElementGenerator(this.project).createTokenType(",")
 
-  private fun isNotActualListElementOrOpeningBracket(node: ASTNode) =
+  private fun isNotActualListElementOrOpeningBracket(node: ASTNode): Boolean =
     node is PsiWhiteSpace || node.elementType == StarlarkTokenTypes.COMMA || node.elementType == StarlarkTokenTypes.RBRACKET
 }
