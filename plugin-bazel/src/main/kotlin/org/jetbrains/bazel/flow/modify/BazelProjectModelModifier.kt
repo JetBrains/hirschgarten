@@ -40,7 +40,7 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
     val fromBuildTargetInfo = from.project.temporaryTargetUtils.getBuildTargetInfoForModule(from) ?: return false
     val toBuildTargetInfo = to.project.temporaryTargetUtils.getBuildTargetInfoForModule(to) ?: return false
     val targetBuildFile = findBuildFile(from.project, fromBuildTargetInfo) as? StarlarkFile ?: return false
-    val targetRuleName = fromBuildTargetInfo.buildTargetName.substringAfterLast(':')
+    val targetRuleName = fromBuildTargetInfo.id.uri.substringAfterLast(':')
     val ruleTarget = targetBuildFile.findRuleTarget(targetRuleName) ?: return false
     val depsList =
       ruleTarget
