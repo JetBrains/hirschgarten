@@ -14,7 +14,7 @@ import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkAssignmentS
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkLoadStatement
 
-class StarlarkFile(viewProvider: FileViewProvider) :
+open class StarlarkFile(viewProvider: FileViewProvider) :
   PsiFileBase(viewProvider, StarlarkLanguage),
   StarlarkElement {
   override fun getFileType(): FileType = StarlarkFileType

@@ -23,6 +23,9 @@
         <bspToolWindowConfigFileProviderExtension
                 implementation="org.jetbrains.bazel.extension.BazelToolWindowConfigFileProviderExtension"/>
 
+        <bspProjectModelExternalSource
+                implementation="org.jetbrains.bazel.extension.BazelProjectModelExternalSourceExtension"/>
+
         <bspProjectAwareExtension
                 implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
 
@@ -43,7 +46,7 @@
                 implementation="org.jetbrains.bazel.flow.open.CheckSlowPluginsStartupActivity"/>
 
         <externalSystemUnlinkedProjectAware
-                id="Bazel BSP"
+                id="Bazel"
                 implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
         <externalIconProvider
                 key="bazelbsp"
@@ -174,6 +177,11 @@
         <usageTypeProvider
                 implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider"/>
 
+        <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType"/>
+        <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner"/>
+
+        <registryKey defaultValue="25" description="Maximum number of attempts to connect with the Starlark debugger socket" key="bazel.starlark.debug.socket.attempts"/>
+        <registryKey defaultValue="400" description="Interval (in milliseconds) between attempts to connect with the Starlark debugger socket" key="bazel.starlark.debug.socket.interval"/>
     </extensions>
 
     <actions>

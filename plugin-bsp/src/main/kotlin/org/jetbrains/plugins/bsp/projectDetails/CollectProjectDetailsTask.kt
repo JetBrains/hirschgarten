@@ -50,16 +50,12 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.asyncQueryIf
 import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.TargetIdToModuleEntitiesMap
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesJava
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesPython
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesScala
 import org.jetbrains.plugins.bsp.impl.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.plugins.bsp.impl.server.tasks.BspServerTask
 import org.jetbrains.plugins.bsp.impl.server.tasks.SdkUtils
@@ -77,7 +73,11 @@ import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import org.jetbrains.plugins.bsp.utils.isSourceFile
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
+import org.jetbrains.plugins.bsp.workspacemodel.entities.includesJava
+import org.jetbrains.plugins.bsp.workspacemodel.entities.includesPython
+import org.jetbrains.plugins.bsp.workspacemodel.entities.includesScala
 import org.jetbrains.plugins.bsp.workspacemodel.entities.toBuildTargetInfo
 import java.net.URI
 import java.util.concurrent.CancellationException
@@ -329,8 +329,11 @@ class CollectProjectDetailsTask(
 
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
+            // Filter out non-module targets which cannot be run, as they are just cluttering the ui
+            val usefulNonModuleTargets = projectDetails.targets.filter { it.capabilities.canRun }
+
             val syncedTargetIdToTargetInfo =
-              (projectDetails.targets + projectDetails.nonModuleTargets).associate {
+              (projectDetails.targets + usefulNonModuleTargets).associate {
                 it.id to
                   it.toBuildTargetInfo()
               }

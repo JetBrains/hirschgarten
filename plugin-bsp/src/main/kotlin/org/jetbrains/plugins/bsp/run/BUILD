@@ -12,6 +12,8 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/coroutines",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
+        "@maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )

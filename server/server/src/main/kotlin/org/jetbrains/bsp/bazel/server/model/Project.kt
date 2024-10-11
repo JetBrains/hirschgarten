@@ -17,4 +17,32 @@ data class Project(
   private val moduleMap: Map<Label, Module> = modules.associateBy(Module::label)
 
   fun findModule(label: Label): Module? = moduleMap[label]
+
+  operator fun plus(project: Project): Project {
+    if (workspaceRoot !=
+      project.workspaceRoot
+    ) {
+      error("Cannot add projects with different workspace roots: $workspaceRoot and ${project.workspaceRoot}")
+    }
+    if (bazelRelease !=
+      project.bazelRelease
+    ) {
+      error("Cannot add projects with different bazel versions: $bazelRelease and ${project.bazelRelease}")
+    }
+    val newModules = modules.toSet() + project.modules.toSet()
+    val newSourceToTarget = sourceToTarget + project.sourceToTarget
+    val newLibraries = libraries + project.libraries
+    val newGoLibraries = goLibraries + project.goLibraries
+    val newInvalidTargets = invalidTargets.toSet() + project.invalidTargets.toSet()
+    val newNonModuleTargets = nonModuleTargets.toSet() + project.nonModuleTargets.toSet()
+
+    return copy(
+      modules = newModules.toList(),
+      sourceToTarget = newSourceToTarget,
+      libraries = newLibraries,
+      goLibraries = newGoLibraries,
+      invalidTargets = newInvalidTargets.toList(),
+      nonModuleTargets = newNonModuleTargets.toList(),
+    )
+  }
 }

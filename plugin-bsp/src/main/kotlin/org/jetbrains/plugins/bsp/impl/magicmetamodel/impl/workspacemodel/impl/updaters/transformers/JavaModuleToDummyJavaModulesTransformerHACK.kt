@@ -4,12 +4,12 @@ import com.intellij.openapi.module.StdModuleTypes
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.extensions.allSubdirectoriesSequence
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaSourceRoot
 import org.jetbrains.plugins.bsp.impl.utils.replaceDots
 import org.jetbrains.plugins.bsp.impl.utils.shortenTargetPath
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
 import java.io.File
 import java.nio.file.Path
@@ -35,16 +35,58 @@ public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBase
     val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity.sourceRoots)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
     val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, dummyJavaModuleSourceRoots, projectBasePath)
-    return dummyJavaModuleSourceRoots
-      .zip(dummyJavaModuleNames)
-      .mapNotNull {
-        calculateDummyJavaSourceModule(
-          name = it.second,
-          sourceRootWithPackagePrefix = it.first,
-          javaModule = inputEntity,
-          resourceRootPath = dummyJavaResourcePath,
-        )
-      }.distinctBy { it.genericModuleInfo.name }
+    return if (dummyJavaModuleNames.isEmpty() && dummyJavaResourcePath != null) {
+      val dummyModuleName = calculateDummyJavaModuleName(dummyJavaResourcePath, projectBasePath)
+      calculateDummyJavaSourceModuleWithOnlyResources(
+        name = dummyModuleName,
+        javaModule = inputEntity,
+        dummyJavaResourcePath,
+      )?.let { listOf(it) } ?: emptyList()
+    } else {
+      dummyJavaModuleSourceRoots
+        .zip(dummyJavaModuleNames)
+        .mapNotNull {
+          calculateDummyJavaSourceModule(
+            name = it.second,
+            sourceRootWithPackagePrefix = it.first,
+            javaModule = inputEntity,
+            resourceRootPath = dummyJavaResourcePath,
+          )
+        }.distinctBy { it.genericModuleInfo.name }
+    }
+  }
+
+  private fun calculateDummyJavaSourceModuleWithOnlyResources(
+    name: String,
+    javaModule: JavaModule,
+    resourcesPath: Path,
+  ) = if (name.isEmpty()) {
+    null
+  } else {
+    JavaModule(
+      genericModuleInfo =
+        GenericModuleInfo(
+          name = name,
+          type = ModuleTypeId(StdModuleTypes.JAVA.id),
+          modulesDependencies = listOf(),
+          librariesDependencies = javaModule.genericModuleInfo.librariesDependencies,
+          isDummy = true,
+          languageIds = listOf("java", "scala", "kotlin"),
+        ),
+      baseDirContentRoot = javaModule.baseDirContentRoot,
+      sourceRoots = emptyList(),
+      resourceRoots =
+        listOf(
+          ResourceRoot(
+            resourcePath = resourcesPath,
+            rootType = DUMMY_JAVA_RESOURCE_MODULE_ROOT_TYPE,
+          ),
+        ),
+      moduleLevelLibraries = listOf(),
+      jvmJdkName = javaModule.jvmJdkName,
+      kotlinAddendum = javaModule.kotlinAddendum,
+      javaAddendum = javaModule.javaAddendum,
+    )
   }
 
   private fun calculateDummyJavaSourceModule(
@@ -137,11 +179,11 @@ internal fun calculateDummyResourceRootPath(
         null
       }
     } else {
-      // If they are no sources present, we just take the immediate child of module root with all the resources inside
-      if (commonResourcesPaths.last() == moduleRoot) {
-        moduleRoot
+      // If they are no sources present, we just take the common resources root
+      if (resourceRoots.size == 1) {
+        commonResourcesPaths.last().parent
       } else {
-        getImmediateChildFromAncestorOrNull(commonResourcesPaths.last(), moduleRoot)
+        commonResourcesPaths.last()
       }
     }
   // We will take the path if it's inside projectBasePath

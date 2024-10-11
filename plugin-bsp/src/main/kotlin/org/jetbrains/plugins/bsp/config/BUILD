@@ -10,6 +10,7 @@ kt_jvm_library(
     deps = [
         "//plugin-bsp/jps-compilation/src:jps-compilation",
         "//plugin-bsp/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
+        "//plugin-bsp/src:intellij-bsp-resources",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/coroutines",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
         "//protocol",

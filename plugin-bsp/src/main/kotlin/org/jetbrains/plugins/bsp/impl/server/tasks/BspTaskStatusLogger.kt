@@ -3,8 +3,8 @@ package org.jetbrains.plugins.bsp.impl.server.tasks
 import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
 import kotlinx.coroutines.Deferred
+import org.jetbrains.plugins.bsp.building.TaskConsole
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeoutException
 

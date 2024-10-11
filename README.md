@@ -3,8 +3,9 @@
 
 # Hirschgarten Project
 
-The Hirschgarten project aims to bring state-of-the-art Bazel support to IntelliJ IDEA users.  
-Embracing The Bazel Way, this repository consolidates multiple standalone components into a monorepo structure, streamlining development and integration.
+The Hirschgarten project aims to bring a new approach for Bazel support to IntelliJ IDEA users.
+
+This repository consolidates multiple standalone components into a monorepo structure.
 
 ## Key components
 

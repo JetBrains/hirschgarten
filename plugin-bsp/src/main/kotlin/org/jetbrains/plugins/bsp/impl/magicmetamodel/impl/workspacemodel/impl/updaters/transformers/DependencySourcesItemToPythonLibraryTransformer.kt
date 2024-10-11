@@ -1,7 +1,7 @@
 package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import ch.epfl.scala.bsp4j.DependencySourcesItem
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonLibrary
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonLibrary
 
 internal object DependencySourcesItemToPythonLibraryTransformer :
   WorkspaceModelEntityPartitionTransformer<DependencySourcesItem, PythonLibrary> {

@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters
 
-import com.intellij.openapi.module.impl.ModuleManagerEx
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.DependencyScope
 import com.intellij.platform.workspace.jps.entities.LibraryDependency
@@ -16,10 +15,11 @@ import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import com.intellij.workspaceModel.ide.impl.LegacyBridgeJpsEntitySourceFactory
+import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsConstants
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
+import org.jetbrains.plugins.bsp.extensionPoints.bspProjectModelExternalSource
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
@@ -87,14 +87,12 @@ internal class ModuleEntityUpdater(
         entityToAdd.languageIds.any { it !in JpsConstants.SUPPORTED_LANGUAGES } -> BspModuleEntitySource(entityToAdd.name)
 
       else ->
-        LegacyBridgeJpsEntitySourceFactory.createEntitySourceForModule(
-          project = workspaceModelEntityUpdaterConfig.project,
+        LegacyBridgeJpsEntitySourceFactory.getInstance(workspaceModelEntityUpdaterConfig.project).createEntitySourceForModule(
           baseModuleDir =
             JpsPaths
-              .getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)
+              .getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.project)
               .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
-          externalSource = null,
-          moduleFileName = entityToAdd.name + ModuleManagerEx.IML_EXTENSION,
+          externalSource = workspaceModelEntityUpdaterConfig.project.bspProjectModelExternalSource,
         )
     }
 

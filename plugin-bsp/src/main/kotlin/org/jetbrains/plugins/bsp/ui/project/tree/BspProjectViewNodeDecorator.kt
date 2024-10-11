@@ -1,5 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.project.tree
 
+import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator
@@ -31,5 +32,6 @@ class BspProjectViewNodeDecorator(private val project: Project) : ProjectViewNod
   private fun PresentationData.clearPresentation() {
     clearText()
     locationString = ""
+    setIcon(AllIcons.Nodes.Folder)
   }
 }

@@ -104,6 +104,12 @@ bazel_integration_test_all_versions(
     workspace_path = "test-resources/allow-manual-targets-sync-project",
 )
 
+bazel_integration_test_all_versions(
+    name = "partial_sync_test",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspPartialSyncTest",
+    workspace_path = "test-resources/sample-repo",
+)
+
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
@@ -116,6 +122,7 @@ test_suite(
         ":go_project_test",
         ":java_diagnostics_test",
         ":local_jdk_test",
+        ":partial_sync_test",
         ":python_project_test",
         ":remote_jdk_test",
         ":rust_project_test",

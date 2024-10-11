@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 abstract class OutputProcessor(private val process: Process, vararg loggers: OutputHandler) {
   val stdoutCollector = OutputCollector()
@@ -68,7 +69,7 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
       if (cancelChecker.isCanceled) {
         process.destroy()
         serverPidFuture
-          ?.get()
+          ?.getOrNull() // we don't want to wait forever if server never gave us its PID
           ?.let { Runtime.getRuntime().exec("kill -SIGINT $it").waitFor() }
           ?: logger?.error("Could not cancel the task. Bazel server needs to be interrupted manually.")
       }
@@ -79,4 +80,11 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
     shutdown()
     return exitCode
   }
+
+  private fun CompletableFuture<Long>.getOrNull(): Long? =
+    try {
+      this.get(2, TimeUnit.SECONDS)
+    } catch (_: TimeoutException) {
+      null
+    }
 }

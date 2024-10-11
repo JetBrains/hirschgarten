@@ -23,10 +23,10 @@ import com.google.gson.JsonObject
 import com.intellij.build.events.MessageEvent
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import org.jetbrains.plugins.bsp.building.TaskConsole
 import org.jetbrains.plugins.bsp.impl.flow.sync.PROJECT_SYNC_TASK_ID
 import org.jetbrains.plugins.bsp.impl.server.connection.TimeoutHandler
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskEventsService
-import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 
 const val IMPORT_SUBTASK_ID: String = "import-subtask-id"
 

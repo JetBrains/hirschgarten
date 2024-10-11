@@ -6,10 +6,10 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.ModuleDetails
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonSdkInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonModule
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonSdkInfo
 
 internal class ModuleDetailsToPythonModuleTransformer(
   targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,

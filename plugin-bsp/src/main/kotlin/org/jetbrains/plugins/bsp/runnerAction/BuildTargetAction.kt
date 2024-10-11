@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.impl.actions.target
+package org.jetbrains.plugins.bsp.runnerAction
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.icons.AllIcons

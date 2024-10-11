@@ -9,17 +9,17 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.actions.target.BuildTargetAction
-import org.jetbrains.plugins.bsp.impl.actions.target.RunWithLocalJvmRunnerAction
-import org.jetbrains.plugins.bsp.impl.actions.target.TestWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.impl.flow.sync.actions.ResyncTargetAction
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
 import org.jetbrains.plugins.bsp.runnerAction.BspRunnerAction
+import org.jetbrains.plugins.bsp.runnerAction.BuildTargetAction
 import org.jetbrains.plugins.bsp.runnerAction.RunTargetAction
+import org.jetbrains.plugins.bsp.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.runnerAction.TestTargetAction
+import org.jetbrains.plugins.bsp.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.isJvmTarget
 import java.awt.Component
 import java.awt.event.MouseEvent
 

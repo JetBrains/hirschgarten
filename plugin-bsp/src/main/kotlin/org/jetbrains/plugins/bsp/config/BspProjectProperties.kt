@@ -15,6 +15,7 @@ data class BspProjectPropertiesState(
   var isInitialized: Boolean = false,
   var rootDirUrl: String? = null,
   var buildToolId: String? = null,
+  var openedTimesSinceLastStartupResync: Int = 0,
 )
 
 @Service(Service.Level.PROJECT)
@@ -24,23 +25,28 @@ data class BspProjectPropertiesState(
 )
 class BspProjectProperties : PersistentStateComponent<BspProjectPropertiesState> {
   var isBspProject: Boolean = false
-  var isInitialized: Boolean = false
   var rootDir: VirtualFile? = null
   var buildToolId: BuildToolId? = null
+
+  /**
+   * if the opened times since the last startup resync is equal to 1,
+   * it indicates it is the first successful startup project open.
+   */
+  var openedTimesSinceLastStartupResync: Int = 0
 
   override fun getState(): BspProjectPropertiesState? =
     BspProjectPropertiesState(
       isBspProject = isBspProject,
-      isInitialized = isInitialized,
       rootDirUrl = rootDir?.url,
       buildToolId = buildToolId?.id,
+      openedTimesSinceLastStartupResync = this@BspProjectProperties.openedTimesSinceLastStartupResync,
     )
 
   override fun loadState(state: BspProjectPropertiesState) {
     isBspProject = state.isBspProject
-    isInitialized = state.isInitialized
     rootDir = state.rootDirUrl?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
     buildToolId = state.buildToolId?.let { BuildToolId(it) }
+    this@BspProjectProperties.openedTimesSinceLastStartupResync = state.openedTimesSinceLastStartupResync
   }
 }
 
@@ -53,10 +59,10 @@ public var Project.isBspProject: Boolean
     bspProjectProperties.isBspProject = value
   }
 
-public var Project.isBspProjectInitialized: Boolean
-  get() = bspProjectProperties.isInitialized
+public var Project.openedTimesSinceLastStartupResync: Int
+  get() = bspProjectProperties.openedTimesSinceLastStartupResync
   set(value) {
-    bspProjectProperties.isInitialized = value
+    bspProjectProperties.openedTimesSinceLastStartupResync = value
   }
 
 public var Project.rootDir: VirtualFile

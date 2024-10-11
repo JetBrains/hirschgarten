@@ -5,9 +5,6 @@ exports_files(glob(["main/xml/*.xml"]))
 
 kt_jvm_library(
     name = "intellij-bsp",
-    resources = glob([
-        "main/resources/**",
-    ]),
     visibility = ["//visibility:public"],
     exports = [
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/android",
@@ -36,6 +33,14 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/utils",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/workspace",
     ],
+)
+
+kt_jvm_library(
+    name = "intellij-bsp-resources",
+    resources = glob([
+        "main/resources/**",
+    ]),
+    visibility = ["//visibility:public"],
 )
 
 kt_jvm_library(

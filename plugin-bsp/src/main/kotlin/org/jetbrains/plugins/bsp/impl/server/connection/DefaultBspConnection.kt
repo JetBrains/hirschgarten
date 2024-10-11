@@ -12,7 +12,6 @@ import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
-import com.intellij.platform.diagnostic.telemetry.impl.getOtlpEndPoint
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import com.intellij.util.io.awaitExit
@@ -32,7 +31,9 @@ import org.jetbrains.bsp.protocol.CLIENT_CAPABILITIES
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.bsp.protocol.utils.EnhancedSourceItemTypeAdapter
+import org.jetbrains.bsp.sdkcompat.telemetry.Endpoint
 import org.jetbrains.plugins.bsp.building.BspConsoleService
+import org.jetbrains.plugins.bsp.building.TaskConsole
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
@@ -41,7 +42,6 @@ import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
 import org.jetbrains.plugins.bsp.impl.server.chunking.ChunkingBuildServer
 import org.jetbrains.plugins.bsp.impl.server.client.BspClient
 import org.jetbrains.plugins.bsp.impl.server.client.BspServerProvider
-import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 import org.jetbrains.plugins.bsp.utils.withRealEnvs
 import java.io.InputStream
 import java.io.OutputStream
@@ -409,8 +409,7 @@ class DefaultBspConnection(
 
   private fun getOpenTelemetryEndPoint(): String? =
     try {
-      // TODO 243: replace with com.intellij.platform.diagnostic.telemetry.OtlpConfiguration.getTraceEndpoint after updating to next EAP
-      getOtlpEndPoint()
+      Endpoint.getTraceEndpoint()
     } catch (_: NoSuchMethodError) {
       null
     }

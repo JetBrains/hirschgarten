@@ -85,9 +85,8 @@ class ProjectSyncService(
 
   fun workspaceBuildTargetsPartial(cancelChecker: CancelChecker, targetsToSync: List<BuildTargetIdentifier>): WorkspaceBuildTargetsResult {
     val project =
-      projectProvider.loadFromBazel(
+      projectProvider.updateAndGet(
         cancelChecker = cancelChecker,
-        build = false,
         targetsToSync = targetsToSync,
       )
     return bspMapper.workspaceTargets(project)

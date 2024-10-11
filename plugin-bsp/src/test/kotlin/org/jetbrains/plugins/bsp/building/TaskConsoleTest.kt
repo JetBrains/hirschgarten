@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.console
+package org.jetbrains.plugins.bsp.building
 
 import com.intellij.build.BuildProgressListener
 import com.intellij.build.events.BuildEvent

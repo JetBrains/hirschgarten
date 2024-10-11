@@ -15,8 +15,8 @@ import org.jetbrains.kotlin.idea.workspaceModel.CompilerSettingsData
 import org.jetbrains.kotlin.idea.workspaceModel.KotlinSettingsEntity
 import org.jetbrains.kotlin.idea.workspaceModel.kotlinSettings
 import org.jetbrains.kotlin.platform.jvm.JvmPlatforms
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.KotlinAddendum
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
+import org.jetbrains.plugins.bsp.workspacemodel.entities.KotlinAddendum
 import java.nio.file.Path
 
 internal class KotlinFacetEntityUpdater(

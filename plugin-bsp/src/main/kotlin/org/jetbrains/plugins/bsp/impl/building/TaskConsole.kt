@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.console
+package org.jetbrains.plugins.bsp.building
 
 import com.google.common.base.Throwables.getStackTraceAsString
 import com.intellij.build.BuildProgressListener

@@ -1,13 +1,12 @@
 package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl
 
+import com.intellij.openapi.externalSystem.service.project.manage.ExternalProjectsManagerImpl
 import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleId
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonModule
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
@@ -16,8 +15,10 @@ import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.up
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.JavaModuleToDummyJavaModulesTransformerHACK
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonModule
 import java.nio.file.Path
 
 internal class WorkspaceModelUpdaterImpl(
@@ -42,6 +43,11 @@ internal class WorkspaceModelUpdaterImpl(
 
   private val javaModuleToDummyJavaModulesTransformerHACK =
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath)
+
+  init {
+    // store generated IML files outside the project directory
+    ExternalProjectsManagerImpl.getInstance(project).setStoreExternally(true)
+  }
 
   override fun loadModule(module: Module) {
     when (module) {

@@ -11,10 +11,10 @@ import org.jetbrains.plugins.bsp.impl.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesPython
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.isJvmOrAndroidTarget
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
+import org.jetbrains.plugins.bsp.workspacemodel.entities.includesPython
+import org.jetbrains.plugins.bsp.workspacemodel.entities.isJvmOrAndroidTarget
 import java.nio.file.Path
 
 object TargetIdToModuleEntitiesMap {

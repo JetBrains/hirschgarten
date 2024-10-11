@@ -1,6 +1,16 @@
 package org.jetbrains.bsp.protocol
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RunParams
+import ch.epfl.scala.bsp4j.StatusCode
+
+data class AnalysisDebugParams(
+  val originId: String,
+  val port: Int,
+  val targets: List<BuildTargetIdentifier>,
+)
+
+data class AnalysisDebugResult(val statusCode: StatusCode)
 
 public data class RemoteDebugData(val debugType: String, val port: Int)
 

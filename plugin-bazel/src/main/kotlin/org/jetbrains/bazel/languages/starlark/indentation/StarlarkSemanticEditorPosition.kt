@@ -25,11 +25,9 @@ class StarlarkSemanticEditorPosition(private var editor: EditorEx, offset: Int) 
     }
   }
 
-  fun isAt(element: IElementType): Boolean = !iterator.atEnd() && element == getType()
-
   fun isAtAnyOf(elements: List<IElementType>): Boolean = !iterator.atEnd() && elements.any { it == getType() }
 
-  fun getType(): IElementType = iterator.tokenType
+  private fun getType(): IElementType = iterator.tokenType
 
   override fun toString(): String =
     if (iterator.atEnd()) {

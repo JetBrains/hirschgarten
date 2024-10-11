@@ -48,6 +48,8 @@ import ch.epfl.scala.bsp4j.TestResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.bazel.server.sync.ExecuteService
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
+import org.jetbrains.bsp.protocol.AnalysisDebugParams
+import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -158,6 +160,9 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
 
   override fun buildTargetCompile(params: CompileParams): CompletableFuture<CompileResult> =
     runner.handleRequest("buildTarget/compile", executeService::compile, params)
+
+  override fun buildTargetAnalysisDebug(params: AnalysisDebugParams): CompletableFuture<AnalysisDebugResult> =
+    runner.handleRequest("buildTargetAnalysisDebug", executeService::analysisDebug, params)
 
   override fun buildTargetTest(params: TestParams): CompletableFuture<TestResult> =
     runner.handleRequest("buildTarget/test", executeService::test, params)

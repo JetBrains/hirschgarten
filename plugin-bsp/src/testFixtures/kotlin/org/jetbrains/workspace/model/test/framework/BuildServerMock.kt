@@ -46,6 +46,8 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import org.jetbrains.bsp.protocol.AnalysisDebugParams
+import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
@@ -87,6 +89,7 @@ class BuildServerMock(
   private val workspaceNonModuleTargetsResult: NonModuleTargetsResult? = null,
   private val workspaceDirectoriesResult: WorkspaceDirectoriesResult? = null,
   private val workspaceInvalidTargetsResult: WorkspaceInvalidTargetsResult? = null,
+  private val analysisDebugResult: AnalysisDebugResult? = null,
   private val runResultWithDebug: RunResult? = null,
   private val mobileInstallResult: MobileInstallResult? = null,
   private val jvmBinaryJarsResult: JvmBinaryJarsResult? = null,
@@ -172,6 +175,9 @@ class BuildServerMock(
   override fun workspaceDirectories(): CompletableFuture<WorkspaceDirectoriesResult> = wrapInFuture(workspaceDirectoriesResult)
 
   override fun workspaceInvalidTargets(): CompletableFuture<WorkspaceInvalidTargetsResult> = wrapInFuture(workspaceInvalidTargetsResult)
+
+  override fun buildTargetAnalysisDebug(params: AnalysisDebugParams): CompletableFuture<AnalysisDebugResult> =
+    wrapInFuture(analysisDebugResult)
 
   override fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult> = wrapInFuture(runResultWithDebug)
 
