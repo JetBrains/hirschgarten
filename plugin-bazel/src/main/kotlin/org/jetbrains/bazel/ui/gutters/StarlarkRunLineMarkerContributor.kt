@@ -4,6 +4,7 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -45,7 +46,7 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
 
       val realTargetId = project.temporaryTargetUtils.allTargetIds().firstOrNull { it.uri.endsWith(targetId) }
       val targetInfo = realTargetId?.let { project.temporaryTargetUtils.getBuildTargetInfoForId(it) }
-      calculateLineMarkerInfo(targetInfo).takeIf { it.actions.isNotEmpty() }
+      calculateLineMarkerInfo(project, targetInfo).takeIf { it.actions.isNotEmpty() }
     }
 
   private fun PsiElement.calculateTargetId(buildFile: VirtualFile): String? {
@@ -63,17 +64,17 @@ internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
     return visitor.identifier
   }
 
-  private fun calculateLineMarkerInfo(targetInfo: BuildTargetInfo?): Info =
+  private fun calculateLineMarkerInfo(project: Project, targetInfo: BuildTargetInfo?): Info =
     Info(
       AllIcons.Actions.Execute,
-      targetInfo.calculateEligibleActions().toTypedArray(),
+      targetInfo.calculateEligibleActions(project).toTypedArray(),
     ) { "Run" }
 
-  private fun BuildTargetInfo?.calculateEligibleActions(): List<AnAction> =
+  private fun BuildTargetInfo?.calculateEligibleActions(project: Project): List<AnAction> =
     if (this == null) {
       emptyList()
     } else {
-      listOf(ResyncTargetAction(id)) + DefaultActionGroup().fillWithEligibleActions(this, true).childActionsOrStubs.toList() +
+      listOf(ResyncTargetAction(id)) + DefaultActionGroup().fillWithEligibleActions(project, this, true).childActionsOrStubs.toList() +
         BuildTargetAction(this.id)
     }
 }
