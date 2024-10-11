@@ -24,8 +24,7 @@ class StarlarkListLiteralExpression(node: ASTNode) : StarlarkBaseElement(node) {
    * modified method from `com.jetbrains.python.psi.impl.PyElementGeneratorImpl.insertItemIntoList`
    */
   fun insertString(toInsert: String) {
-    val toInsert = StarlarkElementGenerator(this.project).createStringLiteral(toInsert)
-    val add = toInsert
+    val add = StarlarkElementGenerator(this.project).createStringLiteral(toInsert)
     val exprNode = this.node
     val closingTokens = exprNode.getChildren(TokenSet.create(StarlarkTokenTypes.LBRACKET, StarlarkTokenTypes.LPAR))
     if (closingTokens.isEmpty()) {
