@@ -5,6 +5,7 @@ import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
+import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTargetExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkTupleExpression
 
@@ -17,6 +18,8 @@ class StarlarkAssignmentStatement(node: ASTNode) : StarlarkBaseElement(node) {
     getTargetExpression()?.let { processor.process(it) }
       ?: getTupleExpression()?.getTargetExpressions()?.all { processor.process(it) }
       ?: true
+
+  fun isTopLevel(): Boolean = parent is StarlarkFile
 
   private fun getTargetExpression(): StarlarkTargetExpression? = findChildByClass(StarlarkTargetExpression::class.java)
 
