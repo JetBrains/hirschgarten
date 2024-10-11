@@ -3,7 +3,10 @@ load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
 kt_intellij_junit4_test(
     name = "StarlarkFunctionAnnotatorTest",
     src = "StarlarkFunctionAnnotatorTest.kt",
-    data = ["//plugin-bazel/src/test/testData/starlark/annotation:FunctionAnnotatorTestData.bzl"],
+    data = [
+        "//plugin-bazel/src/test/testData/starlark/annotation:FunctionAnnotatorTestData.bzl",
+        "//plugin-bazel/src/test/testData/starlark/annotation:UnresolvedNamedArgumentsAnnotatorTestData.bzl",
+    ],
     runtime_deps = [
         "//plugin-bsp:intellij-bsp",
     ],
