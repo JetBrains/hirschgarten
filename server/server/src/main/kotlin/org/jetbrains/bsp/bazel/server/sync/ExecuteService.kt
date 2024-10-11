@@ -33,8 +33,9 @@ import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.Tag
-import org.jetbrains.bsp.bazel.server.model.isJvmLanguages
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.generateRunArguments
+import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.verifyDebugRequest
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.bazel.workspacecontext.isAndroidEnabled
@@ -44,8 +45,8 @@ import org.jetbrains.bsp.protocol.BazelTestParamsData
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
-import org.jetbrains.bsp.protocol.RemoteDebugData
 import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.bsp.protocol.TestWithDebugParams
 import kotlin.io.path.Path
 
 class ExecuteService(
@@ -103,50 +104,19 @@ class ExecuteService(
     return AnalysisDebugResult(statusCode)
   }
 
-  fun test(cancelChecker: CancelChecker, params: TestParams): TestResult {
-    val targetsSpec = TargetsSpec(params.targets, emptyList())
+  fun run(cancelChecker: CancelChecker, params: RunParams): RunResult = runImpl(cancelChecker, params)
 
-    var bazelTestParamsData: BazelTestParamsData? = null
-    try {
-      if (params.dataKind == BazelTestParamsData.DATA_KIND) {
-        bazelTestParamsData = gson.fromJson(params.data as JsonObject, BazelTestParamsData::class.java)
-      }
-    } catch (e: Exception) {
-      bspClientLogger.warn("Failed to parse BazelTestParamsData: $e")
-    }
+  /**
+   * If `debugArguments` is empty, run task will be executed normally without any debugging options
+   */
+  fun runWithDebug(cancelChecker: CancelChecker, params: RunWithDebugParams): RunResult {
+    val modules = selectModules(cancelChecker, listOf(params.runParams.target))
+    val singleModule = modules.singleOrResponseError(params.runParams.target)
+    val requestedDebugType = JvmDebugType.fromDebugData(params.debug)
+    val debugArguments = generateRunArguments(requestedDebugType)
+    verifyDebugRequest(requestedDebugType, singleModule)
 
-    val command =
-      when (bazelTestParamsData?.coverage) {
-        true -> bazelRunner.buildBazelCommand { coverage() }
-        else -> bazelRunner.buildBazelCommand { test() }
-      }
-
-    bazelTestParamsData?.testFilter?.let { testFilter ->
-      command.options.add(BazelFlag.testFilter(testFilter))
-    }
-
-    params.environmentVariables?.let { (command as HasEnvironment).environment.putAll(it) }
-    params.arguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
-    command.options.add(BazelFlag.color(true))
-    command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
-    (command as HasMultipleTargets).addTargetsFromSpec(targetsSpec)
-
-    // TODO: handle multiple targets
-    val result =
-      withBepServer(params.originId, params.targets.single()) { bepReader ->
-        command.useBes(bepReader.eventFile.toPath().toAbsolutePath())
-        bazelRunner
-          .runBazelCommand(
-            command,
-            originId = params.originId,
-            serverPidFuture = bepReader.serverPid,
-          ).waitAndGetResult(cancelChecker, true)
-      }
-
-    return TestResult(result.statusCode).apply {
-      originId = originId
-      data = result // TODO: why do we return the entire result? and no `dataKind`?
-    }
+    return runImpl(cancelChecker, params.runParams, debugArguments)
   }
 
   private fun runImpl(
@@ -179,60 +149,69 @@ class ExecuteService(
     return RunResult(bazelProcessResult.statusCode).apply { originId = originId }
   }
 
-  fun run(cancelChecker: CancelChecker, params: RunParams): RunResult = runImpl(cancelChecker, params)
+  fun test(cancelChecker: CancelChecker, params: TestParams): TestResult = testImpl(cancelChecker, params)
 
   /**
-   * If `debugArguments` is empty, run task will be executed normally without any debugging options
+   * If `debugArguments` is empty, test task will be executed normally without any debugging options
    */
-  fun runWithDebug(cancelChecker: CancelChecker, params: RunWithDebugParams): RunResult {
-    fun jdwpArgument(port: Int): String =
-      // all used options are defined in https://docs.oracle.com/javase/8/docs/technotes/guides/jpda/conninv.html#Invocation
-      "--wrapper_script_flag=--jvm_flag=-agentlib:jdwp=" +
-        "transport=dt_socket," +
-        "server=n," +
-        "suspend=y," +
-        "address=localhost:$port"
-
-    fun generateRunArguments(debugType: DebugType?): List<String> =
-      when (debugType) {
-        is DebugType.JDWP -> listOf(jdwpArgument(debugType.port))
-        else -> emptyList()
-      }
-
-    fun verifyDebugRequest(debugType: DebugType?, moduleToRun: Module) =
-      when (debugType) {
-        null -> {
-        } // not a debug request, nothing to check
-        is DebugType.JDWP ->
-          if (!moduleToRun.isJvmLanguages()) {
-            throw RuntimeException("JDWP debugging is only available for Java and Kotlin targets")
-          } else {
-          }
-
-        is DebugType.UNKNOWN -> throw RuntimeException("Unknown debug type: ${debugType.name}")
-      }
-
-    val modules = selectModules(cancelChecker, listOf(params.runParams.target))
-    val singleModule = modules.singleOrResponseError(params.runParams.target)
-    val requestedDebugType = DebugType.fromDebugData(params.debug)
+  fun testWithDebug(cancelChecker: CancelChecker, params: TestWithDebugParams): TestResult {
+    val modules = selectModules(cancelChecker, params.testParams.targets)
+    val singleModule = modules.singleOrResponseError(params.testParams.targets.first())
+    val requestedDebugType = JvmDebugType.fromDebugData(params.debug)
     val debugArguments = generateRunArguments(requestedDebugType)
     verifyDebugRequest(requestedDebugType, singleModule)
 
-    return runImpl(cancelChecker, params.runParams, debugArguments)
+    return testImpl(cancelChecker, params.testParams, debugArguments)
   }
 
-  private sealed interface DebugType {
-    data class UNKNOWN(val name: String) : DebugType // debug type unknown
+  private fun testImpl(
+    cancelChecker: CancelChecker,
+    params: TestParams,
+    additionalProgramArguments: List<String>? = emptyList(),
+  ): TestResult {
+    val targetsSpec = TargetsSpec(params.targets, emptyList())
 
-    data class JDWP(val port: Int) : DebugType // used for Java and Kotlin
+    var bazelTestParamsData: BazelTestParamsData? = null
+    try {
+      if (params.dataKind == BazelTestParamsData.DATA_KIND) {
+        bazelTestParamsData = gson.fromJson(params.data as JsonObject, BazelTestParamsData::class.java)
+      }
+    } catch (e: Exception) {
+      bspClientLogger.warn("Failed to parse BazelTestParamsData: $e")
+    }
 
-    companion object {
-      fun fromDebugData(params: RemoteDebugData?): DebugType? =
-        when (params?.debugType?.lowercase()) {
-          null -> null
-          "jdwp" -> JDWP(params.port)
-          else -> UNKNOWN(params.debugType)
-        }
+    val command =
+      when (bazelTestParamsData?.coverage) {
+        true -> bazelRunner.buildBazelCommand { coverage() }
+        else -> bazelRunner.buildBazelCommand { test() }
+      }
+
+    bazelTestParamsData?.testFilter?.let { testFilter ->
+      command.options.add(BazelFlag.testFilter(testFilter))
+    }
+
+    params.environmentVariables?.let { (command as HasEnvironment).environment.putAll(it) }
+    params.arguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
+    additionalProgramArguments?.let { (command as HasProgramArguments).programArguments.addAll(it) }
+    command.options.add(BazelFlag.color(true))
+    command.options.add(BazelFlag.buildEventBinaryPathConversion(false))
+    (command as HasMultipleTargets).addTargetsFromSpec(targetsSpec)
+
+    // TODO: handle multiple targets
+    val result =
+      withBepServer(params.originId, params.targets.single()) { bepReader ->
+        command.useBes(bepReader.eventFile.toPath().toAbsolutePath())
+        bazelRunner
+          .runBazelCommand(
+            command,
+            originId = params.originId,
+            serverPidFuture = bepReader.serverPid,
+          ).waitAndGetResult(cancelChecker, true)
+      }
+
+    return TestResult(result.statusCode).apply {
+      originId = originId
+      data = result // TODO: why do we return the entire result? and no `dataKind`?
     }
   }
 
