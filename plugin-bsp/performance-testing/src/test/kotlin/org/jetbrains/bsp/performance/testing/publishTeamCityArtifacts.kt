@@ -2,6 +2,9 @@ package org.jetbrains.bsp.performance.testing
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
+import com.intellij.ide.starter.ci.teamcity.TeamCityClient
+import com.intellij.ide.starter.ci.teamcity.asTeamCity
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.models.IDEStartResult

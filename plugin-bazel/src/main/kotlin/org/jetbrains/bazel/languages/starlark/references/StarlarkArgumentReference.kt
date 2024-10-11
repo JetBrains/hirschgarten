@@ -24,7 +24,7 @@ open class StarlarkArgumentReference(element: StarlarkArgumentElement, range: Te
       .toTypedArray()
   }
 
-  protected fun resolveFunction(): StarlarkFunctionDeclaration? = getFunctionCall()?.reference?.resolve() as? StarlarkFunctionDeclaration
+  fun resolveFunction(): StarlarkFunctionDeclaration? = getFunctionCall()?.reference?.resolve() as? StarlarkFunctionDeclaration
 
   private fun getArgumentNames(): Set<String> = getFunctionCall()?.getArgumentList()?.getArgumentNames() ?: emptySet()
 

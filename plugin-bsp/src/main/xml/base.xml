@@ -183,7 +183,7 @@
         <iconMapper mappingFile="BSPIconMappings.json"/>
 
         <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
-
+        <editorNotificationProvider implementation="org.jetbrains.plugins.bsp.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">

@@ -67,7 +67,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
       if (target.capabilities.canCompile) {
         addAction(BuildTargetAction(target.id))
       }
-      fillWithEligibleActions(target, false)
+      fillWithEligibleActions(project, target, false)
       container.getTargetActions(project, target).map {
         addAction(it)
         addSeparator()
@@ -79,8 +79,8 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
       when {
-        it.capabilities.canTest -> TestTargetAction(targetInfo = it).prepareAndPerform(project)
-        it.capabilities.canRun -> RunTargetAction(targetInfo = it).prepareAndPerform(project)
+        it.capabilities.canTest -> TestTargetAction(project = project, targetInfo = it).prepareAndPerform(project)
+        it.capabilities.canRun -> RunTargetAction(project = project, targetInfo = it).prepareAndPerform(project)
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
@@ -94,18 +94,31 @@ private fun BspRunnerAction.prepareAndPerform(project: Project) {
 }
 
 @Suppress("CognitiveComplexMethod")
-fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, verboseText: Boolean): DefaultActionGroup {
+fun DefaultActionGroup.fillWithEligibleActions(
+  project: Project,
+  target: BuildTargetInfo,
+  verboseText: Boolean,
+  singleTestFilter: String? = null,
+): DefaultActionGroup {
   if (target.capabilities.canRun) {
     addAction(
       RunTargetAction(
         targetInfo = target,
         verboseText = verboseText,
+        project = project,
       ),
     )
   }
 
   if (target.capabilities.canTest) {
-    addAction(TestTargetAction(target, verboseText = verboseText))
+    addAction(
+      TestTargetAction(
+        targetInfo = target,
+        verboseText = verboseText,
+        singleTestFilter = singleTestFilter,
+        project = project,
+      ),
+    )
   }
 
   // targets which cant be run or tested cant be debugged as well
@@ -118,6 +131,7 @@ fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, verboseT
         targetInfo = target,
         isDebugAction = true,
         verboseText = verboseText,
+        project = project,
       ),
     )
   }

@@ -46,7 +46,7 @@ open class Analyze(vcsRoot: GitVcsRoot) :
             qodana {
                 name = "run qodana"
                 id = "run_qodana"
-                reportAsTests = true
+                reportAsTests = false
                 linter = customLinter {
                     image = Utils.CommonParams.DockerQodanaImage
                 }

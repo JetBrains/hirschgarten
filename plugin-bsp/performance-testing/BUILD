@@ -1,10 +1,9 @@
+load("//:versions.bzl", "BENCHMARK_VERSION")
 load("//plugin-bsp/rules/kotlin:junit5.bzl", "kt_test")
 
 INTELLIJ_BSP_PLUGIN_ZIP = "plugin-bsp/intellij-bsp.zip"
 
 INTELLIJ_BAZEL_PLUGIN_ZIP = "plugin-bazel/intellij-bazel.zip"
-
-PLATFORM_VERSION = "242.21829.40"
 
 kt_test(
     name = "performance-testing",
@@ -12,7 +11,7 @@ kt_test(
     srcs = glob(["src/**/*.kt"]),
     classname = "org.jetbrains.bsp.performance.testing.BazelTest",
     jvm_flags = [
-        "-Dbsp.benchmark.platform.version=%s" % PLATFORM_VERSION,
+        "-Dbsp.benchmark.platform.version=%s" % BENCHMARK_VERSION,
         "-Dbsp.benchmark.bsp.plugin.zip=%s" % INTELLIJ_BSP_PLUGIN_ZIP,
         "-Dbsp.benchmark.bazel.plugin.zip=%s" % INTELLIJ_BAZEL_PLUGIN_ZIP,
     ],

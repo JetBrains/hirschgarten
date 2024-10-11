@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.performance.testing
 
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -64,9 +65,12 @@ class BazelTest {
     val projectInfo = getProjectInfoFromSystemProperties()
     val projectName = System.getProperty("bsp.benchmark.project.name") ?: "hirschgarten"
     val testCase =
-      TestCase(IdeProductProvider.IC, projectInfo)
-        .withBuildNumber(System.getProperty("bsp.benchmark.platform.version"))
-        .useEAP()
+      TestCase(IdeProductProvider.IC, projectInfo).let { testCase ->
+        // TODO replace with .useEAP(buildNumber: String) when it becomes public
+        val useEAP = testCase.javaClass.getDeclaredMethod("useEAP", String::class.java)
+        useEAP.isAccessible = true
+        useEAP.invoke(testCase, System.getProperty("bsp.benchmark.platform.version")) as TestCase<*>
+      }
     val context =
       Starter
         .newContext(projectName, testCase)
