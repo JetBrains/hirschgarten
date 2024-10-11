@@ -22,6 +22,7 @@ import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
 private val log = logger<BazelProjectModelModifier>()
+
 class BazelProjectModelModifier : JavaProjectModelModifier() {
   override fun addModuleDependency(
     from: Module,
