@@ -11,16 +11,19 @@ import ch.epfl.scala.bsp4j.TaskId
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 import ch.epfl.scala.bsp4j.TestFinish
+import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStatus
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.equals.shouldNotBeEqual
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
-import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -514,33 +517,45 @@ class TestXmlParserTest {
     TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
 
     // then
-    client.taskStartCalls.size shouldBe 2
-    client.taskFinishCalls.size shouldBe 2
+    client.taskStartCalls.size shouldBe 5
+    client.taskFinishCalls.size shouldBe 5
 
-    val expectedNames = listOf("src/test/kotlin/org/jetbrains/simple/TripleTest", "TripleTest")
+    val expectedNames = listOf(
+      "TripleTest",
+      "testFailure()",
+      "testIgnored()",
+      "testSuccess()",
+    )
 
-    client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    client.taskFinishCalls.count { it.data is TestReport } shouldBe 1
+
+    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+    testFinishes.size shouldBe 4
+
+    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
     client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
 
-    client.taskFinishCalls.map {
+    testFinishes.forEach {
       val data = (it.data as TestFinish)
       when (data.displayName) {
-        "src/test/kotlin/org/jetbrains/simple/TripleTest" -> {
-          it.taskId.parents shouldBeEqual emptyList()
-          data.status shouldBe TestStatus.FAILED
-          (data.data as JUnitStyleTestSuiteData).systemOut shouldNotBe null
-        }
-
         "TripleTest" -> {
-          it.taskId.parents shouldNotBeEqual emptyList()
+          it.taskId.parents.shouldBeNull()
+        }
+        "testFailure()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldNotBeEmpty()
           data.status shouldBe TestStatus.FAILED
           val details = (data.data as JUnitStyleTestCaseData)
-          details.errorContent shouldBe null
           details.errorMessage shouldNotBe null
-          details.errorType shouldBe null
         }
-
-        else -> {
+        "testIgnored()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldNotBeEmpty()
+          data.status shouldBe TestStatus.SKIPPED
+        }
+        "testSuccess()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldNotBeEmpty()
           data.status shouldBe TestStatus.PASSED
         }
       }
