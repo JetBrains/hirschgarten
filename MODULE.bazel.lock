@@ -7351,7 +7351,7 @@
     "@@rules_scala~//scala/extensions:config.bzl%scala_config": {
       "general": {
         "bzlTransitiveDigest": "e7shkZzxuDiAcXpgTAXqE6sAZa1IEgIyaULqAZPfyEQ=",
-        "usagesDigest": "rlsZYD1jH3bbeHml/g7b5LZ9lAOi3anmaDhsLIDrG74=",
+        "usagesDigest": "ZIU/yXDukgbduBeql4XSogKxMX2Ww9xv4i3dqwIC0T0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {
@@ -7367,7 +7367,7 @@
               "scala_versions": [
                 "2.13.14"
               ],
-              "enable_compiler_dependency_tracking": true
+              "enable_compiler_dependency_tracking": false
             }
           }
         },
@@ -7380,7 +7380,7 @@
     },
     "@@rules_scala~//scala/extensions:deps.bzl%scala_deps": {
       "general": {
-        "bzlTransitiveDigest": "i2eeQAUz4qgXzBg3AtOPIu/68hnL+n52IWbJESSzILg=",
+        "bzlTransitiveDigest": "Xe81GOVzwb2YTR1Vrm8zJ3kR5n18c9n5W17ZL3Lz9wk=",
         "usagesDigest": "mIEsptiDZ+fm3R1CPZO/IfIBCYV32aTehVrFFGOFB50=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

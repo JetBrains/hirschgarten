@@ -4438,9 +4438,35 @@
         ]
       }
     },
+    "@@rules_scala~//scala/extensions:config.bzl%scala_config": {
+      "general": {
+        "bzlTransitiveDigest": "yloKxWqLOVqHoLH2OAJByBoLyoSuXNkLJrV1qeBgjT8=",
+        "usagesDigest": "0rK1pwbQUI8nVJ4I+ZsZ7Lk8jmon6rPZzgNSOtqo63o=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {
+          "ENABLE_COMPILER_DEPENDENCY_TRACKING": null,
+          "SCALA_VERSION": null
+        },
+        "generatedRepoSpecs": {
+          "io_bazel_rules_scala_config": {
+            "bzlFile": "@@rules_scala~//:scala_config.bzl",
+            "ruleClassName": "_config_repository",
+            "attributes": {
+              "scala_version": "2.13.14",
+              "scala_versions": [
+                "2.13.14"
+              ],
+              "enable_compiler_dependency_tracking": false
+            }
+          }
+        },
+        "recordedRepoMappingEntries": []
+      }
+    },
     "@@rules_scala~//scala/extensions:deps.bzl%scala_deps": {
       "general": {
-        "bzlTransitiveDigest": "i2eeQAUz4qgXzBg3AtOPIu/68hnL+n52IWbJESSzILg=",
+        "bzlTransitiveDigest": "R9sD1UnWElEcIywJ1bY6SAIunUMACzq5a/xtpMrqTTQ=",
         "usagesDigest": "mIEsptiDZ+fm3R1CPZO/IfIBCYV32aTehVrFFGOFB50=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

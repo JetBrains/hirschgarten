@@ -6,7 +6,7 @@ intellij_integration_test_suite(
     srcs = glob([
         "**/*.kt",
     ]),
-    associates = ["//plugin-bsp/src:intellij-bsp"],
+    associates = ["@//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl:impl"],
     test_package_root = "org.jetbrains",
     runtime_deps = [
         "//plugin-bsp:intellij-bsp",

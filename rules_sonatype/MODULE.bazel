@@ -14,7 +14,7 @@ maven.install(
     artifacts = [
         "org.sonatype.spice.zapper:spice-zapper:1.3",
         "org.wvlet.airframe:airframe-http_2.13:20.12.1",
-        "org.scala-lang.modules:scala-java8-compat_2.13:0.9.1",
+        "org.scala-lang.modules:scala-java8-compat_2.13:1.0.2",
         "org.wvlet.airframe:airspec_2.13:20.12.1",
         "org.backuity.clist:clist-core_2.13:3.5.1",
         "org.backuity.clist:clist-macros_2.13:3.5.1",
@@ -37,5 +37,16 @@ bazel_dep(name = "rules_scala", repo_name = "io_bazel_rules_scala")
 git_override(
     module_name = "rules_scala",
     remote = "https://github.com/mbland/rules_scala.git",
-    commit = "5b10f095758cb8a4bfe93b3686a1aa87ae6d4642",
+    commit = "ab9c86c88dd8ba1948e2cce22a1984440167e1e2",
 )
+
+scala_config = use_extension(
+    "@io_bazel_rules_scala//scala/extensions:config.bzl",
+    "scala_config",
+)
+
+scala_config.settings(
+    scala_version = "2.13.14",
+)
+
+use_repo(scala_config, "io_bazel_rules_scala_config")
