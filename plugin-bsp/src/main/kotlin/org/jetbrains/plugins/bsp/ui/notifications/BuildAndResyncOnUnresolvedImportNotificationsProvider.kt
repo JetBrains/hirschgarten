@@ -8,6 +8,7 @@ import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotificationProvider
+import com.intellij.ui.EditorNotifications
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.idea.util.isJavaFileType
 import org.jetbrains.kotlin.idea.util.isKotlinFileType
@@ -24,8 +25,11 @@ import java.util.function.Function
 import javax.swing.JComponent
 
 class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotificationProvider {
+  private val disableNotificationForFile = mutableSetOf<VirtualFile>()
+
   override fun collectNotificationData(project: Project, file: VirtualFile): Function<in FileEditor, out JComponent?>? {
     if (!project.isBspProject) return null
+    if (file in disableNotificationForFile) return null
     if (project.isSyncInProgress()) return null
     if (BspFeatureFlags.isBuildProjectOnSyncEnabled) return null
 
@@ -66,16 +70,21 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
         reference.multiResolve(false).isEmpty()
       }
   }
-}
 
-private class BuildAndResyncOnUnresolvedImportEditorPanel(project: Project, fileEditor: FileEditor) :
-  EditorNotificationPanel(fileEditor, Status.Warning) {
-  init {
-    text = BspPluginBundle.message("notification.unresolved.imports")
+  private inner class BuildAndResyncOnUnresolvedImportEditorPanel(project: Project, fileEditor: FileEditor) :
+    EditorNotificationPanel(fileEditor, Status.Warning) {
+    init {
+      text = BspPluginBundle.message("notification.unresolved.imports")
 
-    createActionLabel(BspPluginBundle.message("build.and.resync.action.text")) {
-      BspCoroutineService.getInstance(project).start {
-        ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = true)
+      createActionLabel(BspPluginBundle.message("build.and.resync.action.text")) {
+        BspCoroutineService.getInstance(project).start {
+          ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = true)
+        }
+      }
+      val virtualFile = fileEditor.file
+      setCloseAction {
+        disableNotificationForFile.add(virtualFile)
+        EditorNotifications.getInstance(project).updateNotifications(this@BuildAndResyncOnUnresolvedImportNotificationsProvider)
       }
     }
   }
