@@ -85,6 +85,7 @@
                 implementation="org.jetbrains.plugins.bsp.impl.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler$JvmBspRunHandlerProvider" id="JvmRunHandlerProvider"/>
+        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.JvmBspTestHandler$JvmBspTestHandlerProvider" id="JvmTestHandlerProvider"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspRunHandlerProvider" order="last"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspTestHandlerProvider" order="last"/>
         <projectSyncHook implementation="org.jetbrains.plugins.bsp.projectDetails.CollectProjectDetailsSyncHook"/>

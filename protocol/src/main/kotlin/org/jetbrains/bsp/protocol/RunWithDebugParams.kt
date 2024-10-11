@@ -12,9 +12,7 @@ data class AnalysisDebugParams(
 
 data class AnalysisDebugResult(val statusCode: StatusCode)
 
-public data class RemoteDebugData(val debugType: String, val port: Int)
-
-public data class RunWithDebugParams(
+data class RunWithDebugParams(
   val originId: String,
   val runParams: RunParams,
   val debug: RemoteDebugData?,
