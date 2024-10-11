@@ -39,7 +39,6 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
   }
 
   private fun tryAddingModuleDependencyToBuildFile(from: Module, to: Module): Boolean {
-    return false
     val fromBuildTargetInfo = from.project.temporaryTargetUtils.getBuildTargetInfoForModule(from) ?: return false
     val toBuildTargetInfo = to.project.temporaryTargetUtils.getBuildTargetInfoForModule(to) ?: return false
     val targetBuildFile = findBuildFile(from.project, fromBuildTargetInfo) as? StarlarkFile ?: return false
