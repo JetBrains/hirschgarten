@@ -6,5 +6,5 @@ kt_junit5_test(
     runtime_deps = [
         "//plugin-bsp:intellij-bsp",
     ],
-    deps = ["//plugin-bazel:intellij-bazel"],
+    deps = ["//plugin-bazel/src:intellij-bazel"],
 )

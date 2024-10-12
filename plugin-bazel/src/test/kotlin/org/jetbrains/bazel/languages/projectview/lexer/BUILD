@@ -7,7 +7,7 @@ kt_intellij_junit4_test(
         "//plugin-bsp:intellij-bsp",
     ],
     deps = [
-        "//plugin-bazel:intellij-bazel",
+        "//plugin-bazel/src:intellij-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/fixtures",
     ],
 )
