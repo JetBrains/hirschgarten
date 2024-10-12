@@ -103,6 +103,9 @@
         <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
                         serviceImplementation="org.jetbrains.plugins.bsp.services.BspExternalAnnotationsManager"
                         overrides="true"/>
+        <projectService serviceInterface="com.intellij.openapi.vcs.roots.VcsRootDetector"
+                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspVcsRootDetector"
+                        overrides="true"/>
         <moduleService serviceInterface="com.intellij.openapi.roots.ModuleFileIndex"
                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspModuleFileIndex"
                        overrides="true"/>
