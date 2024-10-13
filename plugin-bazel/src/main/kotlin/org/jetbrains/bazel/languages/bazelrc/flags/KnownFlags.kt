@@ -1,7 +1,6 @@
 package org.jetbrains.bazel.languages.bazelrc.flags
 
-internal object knownFlags {
-
+internal object KnownFlags {
   //   --distdir (a path; may be used multiple times)
   @Option(
     name = "distdir",
@@ -11,9 +10,10 @@ internal object knownFlags {
       Additional places to search for archives before accessing the network to 
       download them.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val distdir = Flag.Path("distdir")
 
   //   --[no]experimental_repository_cache_hardlinks (a boolean; default: "false")
@@ -25,9 +25,10 @@ internal object knownFlags {
       If set, the repository cache will hardlink the file in case of a cache hit, 
       rather than copying. This is intended to save disk space.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRepositoryCacheHardlinks = Flag.Boolean("experimentalRepositoryCacheHardlinks")
 
   //   --experimental_repository_downloader_retries (an integer; default: "0")
@@ -39,9 +40,10 @@ internal object knownFlags {
       The maximum number of attempts to retry a download error. If set to 0, retries 
       are disabled.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRepositoryDownloaderRetries = Flag.Integer("experimentalRepositoryDownloaderRetries")
 
   //   --experimental_scale_timeouts (a double; default: "1.0")
@@ -55,9 +57,10 @@ internal object knownFlags {
       external repositories can be made working on machines that are slower than the 
       rule author expected, without changing the source code
       """,
-    valueHelp = """a double"""
+    valueHelp = """a double""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalScaleTimeouts = Flag.Double("experimentalScaleTimeouts")
 
   //   --http_connector_attempts (an integer; default: "8")
@@ -66,9 +69,10 @@ internal object knownFlags {
     defaultValue = """"8"""",
     effectTags = [OptionEffectTag.BAZEL_INTERNAL_CONFIGURATION],
     help = """The maximum number of attempts for http downloads.""",
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val httpConnectorAttempts = Flag.Integer("httpConnectorAttempts")
 
   //   --http_connector_retry_max_timeout (An immutable length of time.; default: "0s")
@@ -80,9 +84,10 @@ internal object knownFlags {
       The maximum timeout for http download retries. With a value of 0, no timeout 
       maximum is defined.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val httpConnectorRetryMaxTimeout = Flag.Duration("httpConnectorRetryMaxTimeout")
 
   //   --http_timeout_scaling (a double; default: "1.0")
@@ -91,9 +96,10 @@ internal object knownFlags {
     defaultValue = """"1.0"""",
     effectTags = [OptionEffectTag.BAZEL_INTERNAL_CONFIGURATION],
     help = """Scale all timeouts related to http downloads by the given factor""",
-    valueHelp = """a double"""
+    valueHelp = """a double""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val httpTimeoutScaling = Flag.Double("httpTimeoutScaling")
 
   //   --[no]incompatible_disable_native_repo_rules (a boolean; default: "false")
@@ -107,9 +113,10 @@ internal object knownFlags {
       new_local_repository, local_config_platform, android_sdk_repository, and 
       android_ndk_repository.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisableNativeRepoRules = Flag.Boolean("incompatibleDisableNativeRepoRules")
 
   //   --repository_cache (a path; default: see description)
@@ -122,9 +129,10 @@ internal object knownFlags {
       cache to be disabled, otherwise the default of 
       '<output_user_root>/cache/repos/v1' is used
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val repositoryCache = Flag.Path("repositoryCache")
 
   //   --[no]repository_disable_download (a boolean; default: "false")
@@ -137,9 +145,10 @@ internal object knownFlags {
       repository fetching. Note that network access is not completely disabled; 
       ctx.execute could still run an arbitrary executable that accesses the Internet.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val repositoryDisableDownload = Flag.Boolean("repositoryDisableDownload")
 
   //   --[no]check_up_to_date (a boolean; default: "false")
@@ -152,9 +161,10 @@ internal object knownFlags {
       up-to-date, the build completes successfully.  If any step needs to be executed 
       an error is reported and the build fails.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val checkUpToDate = Flag.Boolean("checkUpToDate")
 
   //   --dynamic_local_execution_delay (an integer; default: "1000")
@@ -166,9 +176,10 @@ internal object knownFlags {
       How many milliseconds should local execution be delayed, if remote execution 
       was faster during a build at least once?
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val dynamicLocalExecutionDelay = Flag.Integer("dynamicLocalExecutionDelay")
 
   //   --dynamic_local_strategy (a '[name=]value1[,..,valueN]' assignment; may be used multiple times)
@@ -186,9 +197,10 @@ internal object knownFlags {
       `experimental_local_lockfree_output` is set. Takes 
       [mnemonic=]local_strategy[,local_strategy,...]
       """,
-    valueHelp = """a '[name=]value1[,..,valueN]' assignment"""
+    valueHelp = """a '[name=]value1[,..,valueN]' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val dynamicLocalStrategy = Flag.Unknown("dynamicLocalStrategy")
 
   //   --dynamic_remote_strategy (a '[name=]value1[,..,valueN]' assignment; may be used multiple times)
@@ -203,9 +215,10 @@ internal object knownFlags {
       so this flag usually does not need to be set explicitly. Takes 
       [mnemonic=]remote_strategy[,remote_strategy,...]
       """,
-    valueHelp = """a '[name=]value1[,..,valueN]' assignment"""
+    valueHelp = """a '[name=]value1[,..,valueN]' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val dynamicRemoteStrategy = Flag.Unknown("dynamicRemoteStrategy")
 
   //   --experimental_docker_image (a string; default: "")
@@ -221,9 +234,10 @@ internal object knownFlags {
       is passed verbatim to 'docker run', so it supports the same syntax and 
       mechanisms as Docker itself.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalDockerImage = Flag.Str("experimentalDockerImage")
 
   //   --[no]experimental_docker_use_customized_images (a boolean; default: "true")
@@ -238,9 +252,10 @@ internal object knownFlags {
       but you can disable it in case the automatic image customization feature 
       doesn't work in your case or you know that you don't need it.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalDockerUseCustomizedImages = Flag.Boolean("experimentalDockerUseCustomizedImages")
 
   //   --[no]experimental_dynamic_exclude_tools (a boolean; default: "true")
@@ -253,9 +268,10 @@ internal object knownFlags {
       execution. Such targets are extremely unlikely to be built incrementally and 
       thus not worth spending local cycles on.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalDynamicExcludeTools = Flag.Boolean("experimentalDynamicExcludeTools")
 
   //   --experimental_dynamic_local_load_factor (a double; default: "0")
@@ -275,9 +291,10 @@ internal object knownFlags {
       local machine in the clean build case, where the local machine does not 
       contribute much.
       """,
-    valueHelp = """a double"""
+    valueHelp = """a double""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalDynamicLocalLoadFactor = Flag.Double("experimentalDynamicLocalLoadFactor")
 
   //   --experimental_dynamic_slow_remote_time (An immutable length of time.; default: "0")
@@ -291,9 +308,10 @@ internal object knownFlags {
       problems on the remote execution system. Do not turn this on without monitoring 
       of remote execution issues.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalDynamicSlowRemoteTime = Flag.Duration("experimentalDynamicSlowRemoteTime")
 
   //   --[no]experimental_enable_docker_sandbox (a boolean; default: "false")
@@ -305,9 +323,10 @@ internal object knownFlags {
       Enable Docker-based sandboxing. This option has no effect if Docker is not 
       installed.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalEnableDockerSandbox = Flag.Boolean("experimentalEnableDockerSandbox")
 
   //   --[no]experimental_inmemory_sandbox_stashes (a boolean; default: "false")
@@ -321,9 +340,10 @@ internal object knownFlags {
       Depending on the build this flag may improve wall time. Depending on the build 
       as well this flag may use a significant amount of additional memory.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalInmemorySandboxStashes = Flag.Boolean("experimentalInmemorySandboxStashes")
 
   //   --[no]experimental_inprocess_symlink_creation (a boolean; default: "false")
@@ -333,9 +353,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.EXECUTION],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Whether to make direct file system calls to create symlink trees""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalInprocessSymlinkCreation = Flag.Boolean("experimentalInprocessSymlinkCreation")
 
   //   --[no]experimental_persistent_aar_extractor (a boolean; default: "false")
@@ -344,9 +365,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.EXECUTION],
     help = """Enable persistent aar extractor by using workers.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalPersistentAarExtractor = Flag.Boolean("experimentalPersistentAarExtractor")
 
   //   --[no]experimental_remotable_source_manifests (a boolean; default: "false")
@@ -356,16 +378,17 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.EXECUTION],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Whether to make source manifest actions remotable""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemotableSourceManifests = Flag.Boolean("experimentalRemotableSourceManifests")
 
-    // 
-  //   --experimental_sandbox_async_tree_delete_idle_threads (an integer, or a keyword ("auto", 
-  // "HOST_CPUS", "HOST_RAM"), optionally followed by an operation ([-|*]<float>) eg. "auto", 
+  //
+  //   --experimental_sandbox_async_tree_delete_idle_threads (an integer, or a keyword ("auto",
+  // "HOST_CPUS", "HOST_RAM"), optionally followed by an operation ([-|*]<float>) eg. "auto",
   // "HOST_CPUS*.5"; default: "4")
-  // 
+  //
   @Option(
     name = "experimental_sandbox_async_tree_delete_idle_threads",
     defaultValue = """"4"""",
@@ -379,15 +402,16 @@ internal object knownFlags {
     valueHelp = """      
       an integer, or a keyword ("auto", "HOST_CPUS", "HOST_RAM"), optionally followed 
       by an operation ([-|*]<float>) eg. "auto", "HOST_CPUS*.5"
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalSandboxAsyncTreeDeleteIdleThreads = Flag.Unknown("experimentalSandboxAsyncTreeDeleteIdleThreads")
 
-    // 
-  //   --experimental_sandbox_memory_limit_mb (an integer number of MBs, or "HOST_RAM", optionally 
+  //
+  //   --experimental_sandbox_memory_limit_mb (an integer number of MBs, or "HOST_RAM", optionally
   // followed by [-|*]<float>.; default: "0")
-  // 
+  //
   @Option(
     name = "experimental_sandbox_memory_limit_mb",
     defaultValue = """"0"""",
@@ -396,9 +420,10 @@ internal object knownFlags {
       If > 0, each Linux sandbox will be limited to the given amount of memory (in 
       MB). Requires cgroups v1 or v2 and permissions for the users to the cgroups dir.
       """,
-    valueHelp = """an integer number of MBs, or "HOST_RAM", optionally followed by [-|*]<float>."""
+    valueHelp = """an integer number of MBs, or "HOST_RAM", optionally followed by [-|*]<float>.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalSandboxMemoryLimitMb = Flag.Unknown("experimentalSandboxMemoryLimitMb")
 
   //   --[no]experimental_shrink_worker_pool (a boolean; default: "false")
@@ -410,9 +435,10 @@ internal object knownFlags {
       If enabled, could shrink worker pool if worker memory pressure is high. This 
       flag works only when flag experimental_total_worker_memory_limit_mb is enabled.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalShrinkWorkerPool = Flag.Boolean("experimentalShrinkWorkerPool")
 
   //   --[no]experimental_split_coverage_postprocessing (a boolean; default: "false")
@@ -421,9 +447,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.EXECUTION],
     help = """If true, then Bazel will run coverage postprocessing for test in a new spawn.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalSplitCoveragePostprocessing = Flag.Boolean("experimentalSplitCoveragePostprocessing")
 
   //   --[no]experimental_split_xml_generation (a boolean; default: "true")
@@ -436,9 +463,10 @@ internal object knownFlags {
       Bazel uses a separate action to generate a dummy test.xml file containing the 
       test log. Otherwise, Bazel generates a test.xml as part of the test action.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalSplitXmlGeneration = Flag.Boolean("experimentalSplitXmlGeneration")
 
   //   --[no]experimental_strict_fileset_output (a boolean; default: "false")
@@ -450,15 +478,16 @@ internal object knownFlags {
       If this option is enabled, filesets will treat all output artifacts as regular 
       files. They will not traverse directories or be sensitive to symlinks.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalStrictFilesetOutput = Flag.Boolean("experimentalStrictFilesetOutput")
 
-    // 
-  //   --experimental_total_worker_memory_limit_mb (an integer number of MBs, or "HOST_RAM", optionally 
+  //
+  //   --experimental_total_worker_memory_limit_mb (an integer number of MBs, or "HOST_RAM", optionally
   // followed by [-|*]<float>.; default: "0")
-  // 
+  //
   @Option(
     name = "experimental_total_worker_memory_limit_mb",
     defaultValue = """"0"""",
@@ -467,9 +496,10 @@ internal object knownFlags {
       If this limit is greater than zero idle workers might be killed if the total 
       memory usage of all  workers exceed the limit.
       """,
-    valueHelp = """an integer number of MBs, or "HOST_RAM", optionally followed by [-|*]<float>."""
+    valueHelp = """an integer number of MBs, or "HOST_RAM", optionally followed by [-|*]<float>.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalTotalWorkerMemoryLimitMb = Flag.Unknown("experimentalTotalWorkerMemoryLimitMb")
 
   //   --experimental_ui_max_stdouterr_bytes (an integer in (-1)-1073741819 range; default: "1048576")
@@ -481,9 +511,10 @@ internal object knownFlags {
       The maximum size of the stdout / stderr files that will be printed to the 
       console. -1 implies no limit.
       """,
-    valueHelp = """an integer in (-1)-1073741819 range"""
+    valueHelp = """an integer in (-1)-1073741819 range""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalUiMaxStdouterrBytes = Flag.Unknown("experimentalUiMaxStdouterrBytes")
 
   //   --[no]experimental_use_hermetic_linux_sandbox (a boolean; default: "false")
@@ -498,9 +529,10 @@ internal object knownFlags {
       filesystem different from the sandbox, then the input files will be copied 
       instead.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalUseHermeticLinuxSandbox = Flag.Boolean("experimentalUseHermeticLinuxSandbox")
 
   //   --[no]experimental_use_semaphore_for_jobs (a boolean; default: "true")
@@ -509,9 +541,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS, OptionEffectTag.EXECUTION],
     help = """If set to true, additionally use semaphore to limit number of concurrent jobs.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalUseSemaphoreForJobs = Flag.Boolean("experimentalUseSemaphoreForJobs")
 
   //   --[no]experimental_use_windows_sandbox (a tri-state (auto, yes, no); default: "false")
@@ -524,9 +557,10 @@ internal object knownFlags {
       --experimental_windows_sandbox_path must be valid and correspond to a supported 
       version of sandboxfs. If "auto", the binary may be missing or not compatible.
       """,
-    valueHelp = """a tri-state (auto, yes, no)"""
+    valueHelp = """a tri-state (auto, yes, no)""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalUseWindowsSandbox = Flag.Unknown("experimentalUseWindowsSandbox")
 
   //   --experimental_windows_sandbox_path (a string; default: "BazelSandbox.exe")
@@ -539,9 +573,10 @@ internal object knownFlags {
       --experimental_use_windows_sandbox is true. If a bare name, use the first 
       binary of that name found in the PATH.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWindowsSandboxPath = Flag.Str("experimentalWindowsSandboxPath")
 
   //   --experimental_worker_allowlist (comma-separated set of options; default: see description)
@@ -552,9 +587,10 @@ internal object knownFlags {
       If non-empty, only allow using persistent workers with the given worker key 
       mnemonic.
       """,
-    valueHelp = """comma-separated set of options"""
+    valueHelp = """comma-separated set of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWorkerAllowlist = Flag.Unknown("experimentalWorkerAllowlist")
 
   //   --[no]experimental_worker_as_resource (a boolean; default: "true")
@@ -563,9 +599,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.NO_OP],
     help = """No-op, will be removed soon.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWorkerAsResource = Flag.Boolean("experimentalWorkerAsResource")
 
   //   --[no]experimental_worker_cancellation (a boolean; default: "false")
@@ -574,15 +611,16 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.EXECUTION],
     help = """If enabled, Bazel may send cancellation requests to workers that support them.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWorkerCancellation = Flag.Boolean("experimentalWorkerCancellation")
 
-    // 
-  //   --experimental_worker_memory_limit_mb (an integer number of MBs, or "HOST_RAM", optionally 
+  //
+  //   --experimental_worker_memory_limit_mb (an integer number of MBs, or "HOST_RAM", optionally
   // followed by [-|*]<float>.; default: "0")
-  // 
+  //
   @Option(
     name = "experimental_worker_memory_limit_mb",
     defaultValue = """"0"""",
@@ -592,9 +630,10 @@ internal object knownFlags {
       of the worker exceeds the limit. If not used together with dynamic execution 
       and `--experimental_dynamic_ignore_local_signals=9`, this may crash your build.
       """,
-    valueHelp = """an integer number of MBs, or "HOST_RAM", optionally followed by [-|*]<float>."""
+    valueHelp = """an integer number of MBs, or "HOST_RAM", optionally followed by [-|*]<float>.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWorkerMemoryLimitMb = Flag.Unknown("experimentalWorkerMemoryLimitMb")
 
   //   --experimental_worker_metrics_poll_interval (An immutable length of time.; default: "5s")
@@ -606,9 +645,10 @@ internal object knownFlags {
       The interval between collecting worker metrics and possibly attempting 
       evictions. Cannot effectively be less than 1s for performance reasons.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWorkerMetricsPollInterval = Flag.Duration("experimentalWorkerMetricsPollInterval")
 
   //   --[no]experimental_worker_multiplex_sandboxing (a boolean; default: "false")
@@ -621,9 +661,10 @@ internal object knownFlags {
       directory per work request. Only workers that have the 
       'supports-multiplex-sandboxing' execution requirement will be sandboxed.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWorkerMultiplexSandboxing = Flag.Boolean("experimentalWorkerMultiplexSandboxing")
 
   //   --[no]experimental_worker_sandbox_hardening (a boolean; default: "false")
@@ -635,9 +676,10 @@ internal object knownFlags {
       If enabled, workers are run in a hardened sandbox, if the implementation allows 
       it.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWorkerSandboxHardening = Flag.Boolean("experimentalWorkerSandboxHardening")
 
   //   --[no]experimental_worker_strict_flagfiles (a boolean; default: "false")
@@ -650,9 +692,10 @@ internal object knownFlags {
       specification will cause an error. Worker arguments must have exactly one 
       @flagfile argument as the last of its list of arguments.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWorkerStrictFlagfiles = Flag.Boolean("experimentalWorkerStrictFlagfiles")
 
   //   --gc_thrashing_threshold (an integer in 0-100 range; default: "100")
@@ -665,9 +708,10 @@ internal object knownFlags {
       considers memory pressure events against its limits (--gc_thrashing_limits). If 
       set to 100, GcThrashingDetector is disabled.
       """,
-    valueHelp = """an integer in 0-100 range"""
+    valueHelp = """an integer in 0-100 range""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val gcThrashingThreshold = Flag.Unknown("gcThrashingThreshold")
 
   //   --genrule_strategy (comma-separated list of options; default: "")
@@ -680,9 +724,10 @@ internal object knownFlags {
       --spawn_strategy=<value> to control all actions or --strategy=Genrule=<value> 
       to control genrules only.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val genruleStrategy = Flag.Unknown("genruleStrategy")
 
   //   --high_priority_workers (a string; may be used multiple times)
@@ -691,9 +736,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.EXECUTION],
     help = """No-op, will be removed soon.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val highPriorityWorkers = Flag.Str("highPriorityWorkers")
 
   //   --[no]incompatible_disallow_unsound_directory_outputs (a boolean; default: "true")
@@ -707,9 +753,10 @@ internal object knownFlags {
       directory. Does not affect source directories. See 
       https://github.com/bazelbuild/bazel/issues/18646.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisallowUnsoundDirectoryOutputs = Flag.Boolean("incompatibleDisallowUnsoundDirectoryOutputs")
 
   //   --[no]incompatible_modify_execution_info_additive (a boolean; default: "false")
@@ -722,9 +769,10 @@ internal object knownFlags {
       When enabled, passing multiple --modify_execution_info flags is additive. When 
       disabled, only the last flag is taken into account.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleModifyExecutionInfoAdditive = Flag.Boolean("incompatibleModifyExecutionInfoAdditive")
 
   //   --[no]incompatible_remote_dangling_symlinks (a boolean; default: "true")
@@ -737,9 +785,10 @@ internal object knownFlags {
       If set to true, symlinks uploaded to a remote or disk cache are allowed to 
       dangle.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRemoteDanglingSymlinks = Flag.Boolean("incompatibleRemoteDanglingSymlinks")
 
   //   --[no]incompatible_remote_symlinks (a boolean; default: "true")
@@ -753,9 +802,10 @@ internal object knownFlags {
       cache. Otherwise, non-dangling relative symlinks (and only those) will be 
       uploaded as the file or directory they point to.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRemoteSymlinks = Flag.Boolean("incompatibleRemoteSymlinks")
 
   //   --[no]incompatible_sandbox_hermetic_tmp (a boolean; default: "true")
@@ -768,9 +818,10 @@ internal object knownFlags {
       mounted as /tmp rather than sharing /tmp with the host filesystem. Use 
       --sandbox_add_mount_pair=/tmp to keep seeing the host's /tmp in all sandboxes.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleSandboxHermeticTmp = Flag.Boolean("incompatibleSandboxHermeticTmp")
 
   //   --[no]internal_spawn_scheduler (a boolean; default: "false")
@@ -782,15 +833,16 @@ internal object knownFlags {
       Placeholder option so that we can tell in Blaze whether the spawn scheduler was 
       enabled.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val internalSpawnScheduler = Flag.Boolean("internalSpawnScheduler")
 
-    // 
-  //   --jobs [-j] (an integer, or a keyword ("auto", "HOST_CPUS", "HOST_RAM"), optionally followed by 
+  //
+  //   --jobs [-j] (an integer, or a keyword ("auto", "HOST_CPUS", "HOST_RAM"), optionally followed by
   // an operation ([-|*]<float>) eg. "auto", "HOST_CPUS*.5"; default: "auto")
-  // 
+  //
   @Option(
     name = "jobs",
     abbrev = 'j',
@@ -806,9 +858,10 @@ internal object knownFlags {
     valueHelp = """      
       an integer, or a keyword ("auto", "HOST_CPUS", "HOST_RAM"), optionally followed 
       by an operation ([-|*]<float>) eg. "auto", "HOST_CPUS*.5"
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val jobs = Flag.Unknown("jobs")
 
   //   --[no]keep_going [-k] (a boolean; default: "false")
@@ -822,15 +875,16 @@ internal object knownFlags {
       those that depend on it cannot be analyzed, other prerequisites of these 
       targets can be.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val keepGoing = Flag.Boolean("keepGoing")
 
-    // 
-  //   --loading_phase_threads (an integer, or a keyword ("auto", "HOST_CPUS", "HOST_RAM"), optionally 
+  //
+  //   --loading_phase_threads (an integer, or a keyword ("auto", "HOST_CPUS", "HOST_RAM"), optionally
   // followed by an operation ([-|*]<float>) eg. "auto", "HOST_CPUS*.5"; default: "auto")
-  // 
+  //
   @Option(
     name = "loading_phase_threads",
     defaultValue = """"auto"""",
@@ -844,9 +898,10 @@ internal object knownFlags {
     valueHelp = """      
       an integer, or a keyword ("auto", "HOST_CPUS", "HOST_RAM"), optionally followed 
       by an operation ([-|*]<float>) eg. "auto", "HOST_CPUS*.5"
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val loadingPhaseThreads = Flag.Unknown("loadingPhaseThreads")
 
   //   --modify_execution_info (regex=[+-]key,regex=[+-]key,...; may be used multiple times)
@@ -868,101 +923,107 @@ internal object knownFlags {
         * `Genrule=+requires-x` adds 'requires-x' to the execution info for all Genrule actions.
         * `(?!Genrule).*=-requires-x` removes `requires-x` from the execution info for all non-Genrule actions.
       """,
-    valueHelp = """regex=[+-]key,regex=[+-]key,..."""
+    valueHelp = """regex=[+-]key,regex=[+-]key,...""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val modifyExecutionInfo = Flag.Unknown("modifyExecutionInfo")
 
   //   --persistent_android_dex_desugar
   @Option(
     name = "persistent_android_dex_desugar",
     effectTags = [OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS, OptionEffectTag.EXECUTION],
-    expandsTo = [      
-      "--internal_persistent_android_dex_desugar", "--strategy=Desugar=worker", 
-      "--strategy=DexBuilder=worker"
-      ],
+    expandsTo = [
+      "--internal_persistent_android_dex_desugar", "--strategy=Desugar=worker",
+      "--strategy=DexBuilder=worker",
+    ],
     help = """Enable persistent Android dex and desugar actions by using workers.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val persistentAndroidDexDesugar = Flag.Unknown("persistentAndroidDexDesugar")
 
   //   --persistent_android_resource_processor
   @Option(
     name = "persistent_android_resource_processor",
     effectTags = [OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS, OptionEffectTag.EXECUTION],
-    expandsTo = [      
-      "--internal_persistent_busybox_tools", "--strategy=AaptPackage=worker", 
-      "--strategy=AndroidResourceParser=worker", 
-      "--strategy=AndroidResourceValidator=worker", 
-      "--strategy=AndroidResourceCompiler=worker", 
-      "--strategy=RClassGenerator=worker", "--strategy=AndroidResourceLink=worker", 
-      "--strategy=AndroidAapt2=worker", "--strategy=AndroidAssetMerger=worker", 
-      "--strategy=AndroidResourceMerger=worker", 
-      "--strategy=AndroidCompiledResourceMerger=worker", 
-      "--strategy=ManifestMerger=worker", "--strategy=AndroidManifestMerger=worker", 
-      "--strategy=Aapt2Optimize=worker", "--strategy=AARGenerator=worker", 
-      "--strategy=ProcessDatabinding=worker", 
-      "--strategy=GenerateDataBindingBaseClasses=worker"
-      ],
+    expandsTo = [
+      "--internal_persistent_busybox_tools", "--strategy=AaptPackage=worker",
+      "--strategy=AndroidResourceParser=worker",
+      "--strategy=AndroidResourceValidator=worker",
+      "--strategy=AndroidResourceCompiler=worker",
+      "--strategy=RClassGenerator=worker", "--strategy=AndroidResourceLink=worker",
+      "--strategy=AndroidAapt2=worker", "--strategy=AndroidAssetMerger=worker",
+      "--strategy=AndroidResourceMerger=worker",
+      "--strategy=AndroidCompiledResourceMerger=worker",
+      "--strategy=ManifestMerger=worker", "--strategy=AndroidManifestMerger=worker",
+      "--strategy=Aapt2Optimize=worker", "--strategy=AARGenerator=worker",
+      "--strategy=ProcessDatabinding=worker",
+      "--strategy=GenerateDataBindingBaseClasses=worker",
+    ],
     help = """Enable persistent Android resource processor by using workers.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val persistentAndroidResourceProcessor = Flag.Unknown("persistentAndroidResourceProcessor")
 
   //   --persistent_multiplex_android_dex_desugar
   @Option(
     name = "persistent_multiplex_android_dex_desugar",
     effectTags = [OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS, OptionEffectTag.EXECUTION],
-    expandsTo = [      
-      "--persistent_android_dex_desugar", 
-      "--internal_persistent_multiplex_android_dex_desugar"
-      ],
+    expandsTo = [
+      "--persistent_android_dex_desugar",
+      "--internal_persistent_multiplex_android_dex_desugar",
+    ],
     help = """Enable persistent multiplexed Android dex and desugar actions by using workers.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val persistentMultiplexAndroidDexDesugar = Flag.Unknown("persistentMultiplexAndroidDexDesugar")
 
   //   --persistent_multiplex_android_resource_processor
   @Option(
     name = "persistent_multiplex_android_resource_processor",
     effectTags = [OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS, OptionEffectTag.EXECUTION],
-    expandsTo = [      
-      "--persistent_android_resource_processor", 
-      "--modify_execution_info=AaptPackage=+supports-multiplex-workers", 
-      "--modify_execution_info=AndroidResourceParser=+supports-multiplex-workers", 
-      "--modify_execution_info=AndroidResourceValidator=+supports-multiplex-workers", 
-      "--modify_execution_info=AndroidResourceCompiler=+supports-multiplex-workers", 
-      "--modify_execution_info=RClassGenerator=+supports-multiplex-workers", 
-      "--modify_execution_info=AndroidResourceLink=+supports-multiplex-workers", 
-      "--modify_execution_info=AndroidAapt2=+supports-multiplex-workers", 
-      "--modify_execution_info=AndroidAssetMerger=+supports-multiplex-workers", 
-      "--modify_execution_info=AndroidResourceMerger=+supports-multiplex-workers", 
-      "--modify_execution_info=AndroidCompiledResourceMerger=+supports-multiplex-workers", 
-      "--modify_execution_info=ManifestMerger=+supports-multiplex-workers", 
-      "--modify_execution_info=AndroidManifestMerger=+supports-multiplex-workers", 
-      "--modify_execution_info=Aapt2Optimize=+supports-multiplex-workers", 
-      "--modify_execution_info=AARGenerator=+supports-multiplex-workers"
-      ],
+    expandsTo = [
+      "--persistent_android_resource_processor",
+      "--modify_execution_info=AaptPackage=+supports-multiplex-workers",
+      "--modify_execution_info=AndroidResourceParser=+supports-multiplex-workers",
+      "--modify_execution_info=AndroidResourceValidator=+supports-multiplex-workers",
+      "--modify_execution_info=AndroidResourceCompiler=+supports-multiplex-workers",
+      "--modify_execution_info=RClassGenerator=+supports-multiplex-workers",
+      "--modify_execution_info=AndroidResourceLink=+supports-multiplex-workers",
+      "--modify_execution_info=AndroidAapt2=+supports-multiplex-workers",
+      "--modify_execution_info=AndroidAssetMerger=+supports-multiplex-workers",
+      "--modify_execution_info=AndroidResourceMerger=+supports-multiplex-workers",
+      "--modify_execution_info=AndroidCompiledResourceMerger=+supports-multiplex-workers",
+      "--modify_execution_info=ManifestMerger=+supports-multiplex-workers",
+      "--modify_execution_info=AndroidManifestMerger=+supports-multiplex-workers",
+      "--modify_execution_info=Aapt2Optimize=+supports-multiplex-workers",
+      "--modify_execution_info=AARGenerator=+supports-multiplex-workers",
+    ],
     help = """Enable persistent multiplexed Android resource processor by using workers.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val persistentMultiplexAndroidResourceProcessor = Flag.Unknown("persistentMultiplexAndroidResourceProcessor")
 
   //   --persistent_multiplex_android_tools
   @Option(
     name = "persistent_multiplex_android_tools",
     effectTags = [OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS, OptionEffectTag.EXECUTION],
-    expandsTo = [      
-      "--internal_persistent_multiplex_busybox_tools", 
-      "--persistent_multiplex_android_resource_processor", 
-      "--persistent_multiplex_android_dex_desugar"
-      ],
+    expandsTo = [
+      "--internal_persistent_multiplex_busybox_tools",
+      "--persistent_multiplex_android_resource_processor",
+      "--persistent_multiplex_android_dex_desugar",
+    ],
     help = """      
       Enable persistent and multiplexed Android tools (dexing, desugaring, resource 
       processing).
       """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val persistentMultiplexAndroidTools = Flag.Unknown("persistentMultiplexAndroidTools")
 
   //   --[no]reuse_sandbox_directories (a boolean; default: "true")
@@ -974,9 +1035,10 @@ internal object knownFlags {
       If set to true, directories used by sandboxed non-worker execution may be 
       reused to avoid unnecessary setup costs.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val reuseSandboxDirectories = Flag.Boolean("reuseSandboxDirectories")
 
   //   --sandbox_base (a string; default: "")
@@ -990,9 +1052,10 @@ internal object knownFlags {
       build / tests have many input files. Note: You need enough RAM and free space 
       on the tmpfs to hold output and intermediate files generated by running actions.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val sandboxBase = Flag.Str("sandboxBase")
 
   //   --[no]sandbox_explicit_pseudoterminal (a boolean; default: "false")
@@ -1006,9 +1069,10 @@ internal object knownFlags {
       the sandbox in order for pseudoterminals to function. If this is causing 
       issues, this flag can be disabled to enable other groups to be used.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val sandboxExplicitPseudoterminal = Flag.Boolean("sandboxExplicitPseudoterminal")
 
   //   --sandbox_tmpfs_path (an absolute path; may be used multiple times)
@@ -1020,9 +1084,10 @@ internal object knownFlags {
       For sandboxed actions, mount an empty, writable directory at this absolute path 
       (if supported by the sandboxing implementation, ignored otherwise).
       """,
-    valueHelp = """an absolute path"""
+    valueHelp = """an absolute path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val sandboxTmpfsPath = Flag.Unknown("sandboxTmpfsPath")
 
   //   --[no]skip_incompatible_explicit_targets (a boolean; default: "false")
@@ -1036,9 +1101,10 @@ internal object knownFlags {
       skipped when this option is enabled. See: 
       https://bazel.build/extending/platforms#skipping-incompatible-targets
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val skipIncompatibleExplicitTargets = Flag.Boolean("skipIncompatibleExplicitTargets")
 
   //   --spawn_strategy (comma-separated list of options; default: "")
@@ -1053,9 +1119,10 @@ internal object knownFlags {
       value is "remote,worker,sandboxed,local". See 
       https://blog.bazel.build/2019/06/19/list-strategy.html for details.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val spawnStrategy = Flag.Unknown("spawnStrategy")
 
   //   --strategy (a '[name=]value1[,..,valueN]' assignment; may be used multiple times)
@@ -1072,9 +1139,10 @@ internal object knownFlags {
       with mnemonic Genrule). See 
       https://blog.bazel.build/2019/06/19/list-strategy.html for details.
       """,
-    valueHelp = """a '[name=]value1[,..,valueN]' assignment"""
+    valueHelp = """a '[name=]value1[,..,valueN]' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val strategy = Flag.Unknown("strategy")
 
   //   --strategy_regexp (a '<RegexFilter>=value[,value]' assignment; may be used multiple times)
@@ -1093,9 +1161,10 @@ internal object knownFlags {
       will run 'Compiling //foo/bar/baz' with the 'local' strategy, but reversing the 
       order would run it with 'sandboxed'. 
       """,
-    valueHelp = """a '<RegexFilter>=value[,value]' assignment"""
+    valueHelp = """a '<RegexFilter>=value[,value]' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val strategyRegexp = Flag.Unknown("strategyRegexp")
 
   //   --[no]use_target_platform_for_tests (a boolean; default: "false")
@@ -1107,9 +1176,10 @@ internal object knownFlags {
       If true, then Bazel will use the target platform for running tests rather than 
       the test exec group.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val useTargetPlatformForTests = Flag.Boolean("useTargetPlatformForTests")
 
   //   --worker_extra_flag (a 'name=value' assignment; may be used multiple times)
@@ -1121,16 +1191,17 @@ internal object knownFlags {
       Extra command-flags that will be passed to worker processes in addition to 
       --persistent_worker, keyed by mnemonic (e.g. --worker_extra_flag=Javac=--debug.
       """,
-    valueHelp = """a 'name=value' assignment"""
+    valueHelp = """a 'name=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val workerExtraFlag = Flag.Unknown("workerExtraFlag")
 
-    // 
-  //   --worker_max_instances ([name=]value, where value is an integer, or a keyword ("auto", 
-  // "HOST_CPUS", "HOST_RAM"), optionally followed by an operation ([-|*]<float>) eg. "auto", 
+  //
+  //   --worker_max_instances ([name=]value, where value is an integer, or a keyword ("auto",
+  // "HOST_CPUS", "HOST_RAM"), optionally followed by an operation ([-|*]<float>) eg. "auto",
   // "HOST_CPUS*.5"; may be used multiple times)
-  // 
+  //
   @Option(
     name = "worker_max_instances",
     allowMultiple = true,
@@ -1150,16 +1221,17 @@ internal object knownFlags {
       [name=]value, where value is an integer, or a keyword ("auto", "HOST_CPUS", 
       "HOST_RAM"), optionally followed by an operation ([-|*]<float>) eg. "auto", 
       "HOST_CPUS*.5"
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val workerMaxInstances = Flag.Unknown("workerMaxInstances")
 
-    // 
-  //   --worker_max_multiplex_instances ([name=]value, where value is an integer, or a keyword ("auto", 
-  // "HOST_CPUS", "HOST_RAM"), optionally followed by an operation ([-|*]<float>) eg. "auto", 
+  //
+  //   --worker_max_multiplex_instances ([name=]value, where value is an integer, or a keyword ("auto",
+  // "HOST_CPUS", "HOST_RAM"), optionally followed by an operation ([-|*]<float>) eg. "auto",
   // "HOST_CPUS*.5"; may be used multiple times)
-  // 
+  //
   @Option(
     name = "worker_max_multiplex_instances",
     allowMultiple = true,
@@ -1179,9 +1251,10 @@ internal object knownFlags {
       [name=]value, where value is an integer, or a keyword ("auto", "HOST_CPUS", 
       "HOST_RAM"), optionally followed by an operation ([-|*]<float>) eg. "auto", 
       "HOST_CPUS*.5"
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val workerMaxMultiplexInstances = Flag.Unknown("workerMaxMultiplexInstances")
 
   //   --[no]worker_multiplex (a boolean; default: "true")
@@ -1190,9 +1263,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.EXECUTION, OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS],
     help = """If enabled, workers will use multiplexing if they support it. """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val workerMultiplex = Flag.Boolean("workerMultiplex")
 
   //   --[no]worker_quit_after_build (a boolean; default: "false")
@@ -1201,9 +1275,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.EXECUTION, OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS],
     help = """If enabled, all workers quit after a build is done.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val workerQuitAfterBuild = Flag.Boolean("workerQuitAfterBuild")
 
   //   --[no]worker_sandboxing (a boolean; default: "false")
@@ -1212,9 +1287,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.EXECUTION],
     help = """If enabled, workers will be executed in a sandboxed environment.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val workerSandboxing = Flag.Boolean("workerSandboxing")
 
   //   --[no]worker_verbose (a boolean; default: "false")
@@ -1222,9 +1298,10 @@ internal object knownFlags {
     name = "worker_verbose",
     defaultValue = """"false"""",
     help = """If enabled, prints verbose messages when workers are started, shutdown, ...""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val workerVerbose = Flag.Boolean("workerVerbose")
 
   //   --android_compiler (a string; default: see description)
@@ -1232,20 +1309,26 @@ internal object knownFlags {
     name = "android_compiler",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     help = """The Android target compiler.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidCompiler = Flag.Str("androidCompiler")
 
   //   --android_crosstool_top (a build target label; default: "//external:android/crosstool")
   @Option(
     name = "android_crosstool_top",
     defaultValue = """"//external:android/crosstool"""",
-    effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.CHANGES_INPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
+    effectTags =
+      [
+        OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.CHANGES_INPUTS, OptionEffectTag.LOADING_AND_ANALYSIS,
+        OptionEffectTag.LOSES_INCREMENTAL_STATE,
+      ],
     help = """The location of the C++ compiler used for Android builds.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidCrosstoolTop = Flag.Label("androidCrosstoolTop")
 
   //   --android_grte_top (a label; default: see description)
@@ -1253,9 +1336,10 @@ internal object knownFlags {
     name = "android_grte_top",
     effectTags = [OptionEffectTag.CHANGES_INPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     help = """The Android target grte_top.""",
-    valueHelp = """a label"""
+    valueHelp = """a label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidGrteTop = Flag.Unknown("androidGrteTop")
 
   //   --android_manifest_merger (legacy, android or force_android; default: "android")
@@ -1267,9 +1351,10 @@ internal object knownFlags {
       Selects the manifest merger to use for android_binary rules. Flag to help 
       thetransition to the Android manifest merger from the legacy merger.
       """,
-    valueHelp = """legacy, android or force_android"""
+    valueHelp = """legacy, android or force_android""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidManifestMerger = Flag.OneOf("androidManifestMerger")
 
   //   --android_platforms (a build target label; default: "")
@@ -1282,9 +1367,10 @@ internal object knownFlags {
       specified, then the binary is a fat APKs, which contains native binaries for 
       each specified target platform.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidPlatforms = Flag.Label("androidPlatforms")
 
   //   --android_sdk (a build target label; default: "@bazel_tools//tools/android:sdk")
@@ -1293,9 +1379,10 @@ internal object knownFlags {
     defaultValue = """"@bazel_tools//tools/android:sdk"""",
     effectTags = [OptionEffectTag.CHANGES_INPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     help = """Specifies Android SDK/platform that is used to build Android applications.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidSdk = Flag.Label("androidSdk")
 
   //   --apple_crosstool_top (a build target label; default: "@bazel_tools//tools/cpp:toolchain")
@@ -1307,9 +1394,10 @@ internal object knownFlags {
       The label of the crosstool package to be used in Apple and Objc rules and their 
       dependencies.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val appleCrosstoolTop = Flag.Label("appleCrosstoolTop")
 
   //   --cc_output_directory_tag (a string; default: "")
@@ -1318,9 +1406,10 @@ internal object knownFlags {
     defaultValue = """""""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Specifies a suffix to be added to the configuration directory.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val ccOutputDirectoryTag = Flag.Str("ccOutputDirectoryTag")
 
   //   --compiler (a string; default: see description)
@@ -1328,15 +1417,16 @@ internal object knownFlags {
     name = "compiler",
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.EXECUTION],
     help = """The C++ compiler to use for compiling the target.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val compiler = Flag.Str("compiler")
 
-    // 
-  //   --coverage_output_generator (a build target label; default: 
+  //
+  //   --coverage_output_generator (a build target label; default:
   // "@bazel_tools//tools/test:lcov_merger")
-  // 
+  //
   @Option(
     name = "coverage_output_generator",
     defaultValue = """"@bazel_tools//tools/test:lcov_merger"""",
@@ -1346,15 +1436,16 @@ internal object knownFlags {
       must currently be a filegroup that contains a single file, the binary. Defaults 
       to '//tools/test:lcov_merger'.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val coverageOutputGenerator = Flag.Label("coverageOutputGenerator")
 
-    // 
-  //   --coverage_report_generator (a build target label; default: 
+  //
+  //   --coverage_report_generator (a build target label; default:
   // "@bazel_tools//tools/test:coverage_report_generator")
-  // 
+  //
   @Option(
     name = "coverage_report_generator",
     defaultValue = """"@bazel_tools//tools/test:coverage_report_generator"""",
@@ -1364,9 +1455,10 @@ internal object knownFlags {
       currently be a filegroup that contains a single file, the binary. Defaults to 
       '//tools/test:coverage_report_generator'.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val coverageReportGenerator = Flag.Label("coverageReportGenerator")
 
   //   --coverage_support (a build target label; default: "@bazel_tools//tools/test:coverage_support")
@@ -1378,9 +1470,10 @@ internal object knownFlags {
       Location of support files that are required on the inputs of every test action 
       that collects code coverage. Defaults to '//tools/test:coverage_support'.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val coverageSupport = Flag.Label("coverageSupport")
 
   //   --crosstool_top (a build target label; default: "@bazel_tools//tools/cpp:toolchain")
@@ -1389,9 +1482,10 @@ internal object knownFlags {
     defaultValue = """"@bazel_tools//tools/cpp:toolchain"""",
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.CHANGES_INPUTS, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """The label of the crosstool package to be used for compiling C++ code.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val crosstoolTop = Flag.Label("crosstoolTop")
 
   //   --custom_malloc (a build target label; default: see description)
@@ -1402,15 +1496,16 @@ internal object knownFlags {
       Specifies a custom malloc implementation. This setting overrides malloc 
       attributes in build rules.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val customMalloc = Flag.Label("customMalloc")
 
-    // 
-  //   --experimental_add_exec_constraints_to_targets (a '<RegexFilter>=<label1>[,<label2>,...]' 
+  //
+  //   --experimental_add_exec_constraints_to_targets (a '<RegexFilter>=<label1>[,<label2>,...]'
   // assignment; may be used multiple times)
-  // 
+  //
   @Option(
     name = "experimental_add_exec_constraints_to_targets",
     allowMultiple = true,
@@ -1424,9 +1519,10 @@ internal object knownFlags {
       //demo,-test=@platforms//cpus:x86_64 will add 'x86_64' to any target under 
       //demo except for those whose name contains 'test'.
       """,
-    valueHelp = """a '<RegexFilter>=<label1>[,<label2>,...]' assignment"""
+    valueHelp = """a '<RegexFilter>=<label1>[,<label2>,...]' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalAddExecConstraintsToTargets = Flag.Unknown("experimentalAddExecConstraintsToTargets")
 
   //   --[no]experimental_include_xcode_execution_requirements (a boolean; default: "false")
@@ -1439,9 +1535,10 @@ internal object knownFlags {
       action.  If the xcode version has a hyphenated label,  also add a 
       "requires-xcode-label:{version_label}" execution requirement.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalIncludeXcodeExecutionRequirements = Flag.Boolean("experimentalIncludeXcodeExecutionRequirements")
 
   //   --[no]experimental_prefer_mutual_xcode (a boolean; default: "true")
@@ -1454,9 +1551,10 @@ internal object knownFlags {
       If false, or if there are no mutual available versions, use the local Xcode 
       version selected via xcode-select.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalPreferMutualXcode = Flag.Boolean("experimentalPreferMutualXcode")
 
   //   --extra_execution_platforms (comma-separated list of options; default: "")
@@ -1471,9 +1569,10 @@ internal object knownFlags {
       register_execution_platforms(). This option may only be set once; later 
       instances will override earlier flag settings.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val extraExecutionPlatforms = Flag.Unknown("extraExecutionPlatforms")
 
   //   --extra_toolchains (comma-separated list of options; may be used multiple times)
@@ -1487,9 +1586,10 @@ internal object knownFlags {
       be considered before those declared in the WORKSPACE file by 
       register_toolchains().
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val extraToolchains = Flag.Unknown("extraToolchains")
 
   //   --grte_top (a label; default: see description)
@@ -1500,9 +1600,10 @@ internal object knownFlags {
       A label to a checked-in libc library. The default value is selected by the 
       crosstool toolchain, and you almost never need to override it.
       """,
-    valueHelp = """a label"""
+    valueHelp = """a label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val grteTop = Flag.Unknown("grteTop")
 
   //   --host_compiler (a string; default: see description)
@@ -1513,9 +1614,10 @@ internal object knownFlags {
       The C++ compiler to use for host compilation. It is ignored if 
       --host_crosstool_top is not set.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostCompiler = Flag.Str("hostCompiler")
 
   //   --host_crosstool_top (a build target label; default: see description)
@@ -1527,9 +1629,10 @@ internal object knownFlags {
       exec configuration. If this flag is provided, Bazel uses the default libc and 
       compiler for the given crosstool_top.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostCrosstoolTop = Flag.Label("hostCrosstoolTop")
 
   //   --host_grte_top (a label; default: see description)
@@ -1540,9 +1643,10 @@ internal object knownFlags {
       If specified, this setting overrides the libc top-level directory (--grte_top) 
       for the exec configuration.
       """,
-    valueHelp = """a label"""
+    valueHelp = """a label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostGrteTop = Flag.Unknown("hostGrteTop")
 
   //   --host_platform (a build target label; default: "@bazel_tools//tools:host_platform")
@@ -1551,9 +1655,10 @@ internal object knownFlags {
     defaultValue = """"@bazel_tools//tools:host_platform"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.CHANGES_INPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """The label of a platform rule that describes the host system.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostPlatform = Flag.Label("hostPlatform")
 
   //   --[no]incompatible_dont_enable_host_nonhost_crosstool_features (a boolean; default: "true")
@@ -1567,9 +1672,10 @@ internal object knownFlags {
       toolchain (see https://github.com/bazelbuild/bazel/issues/7407 for more 
       information).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDontEnableHostNonhostCrosstoolFeatures = Flag.Boolean("incompatibleDontEnableHostNonhostCrosstoolFeatures")
 
   //   --[no]incompatible_enable_android_toolchain_resolution (a boolean; default: "true")
@@ -1582,9 +1688,10 @@ internal object knownFlags {
       Use toolchain resolution to select the Android SDK for android rules (Starlark 
       and native)
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleEnableAndroidToolchainResolution = Flag.Boolean("incompatibleEnableAndroidToolchainResolution")
 
   //   --[no]incompatible_enable_apple_toolchain_resolution (a boolean; default: "false")
@@ -1597,9 +1704,10 @@ internal object knownFlags {
       Use toolchain resolution to select the Apple SDK for apple rules (Starlark and 
       native)
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleEnableAppleToolchainResolution = Flag.Boolean("incompatibleEnableAppleToolchainResolution")
 
   //   --[no]incompatible_enable_proto_toolchain_resolution (a boolean; default: "false")
@@ -1612,9 +1720,10 @@ internal object knownFlags {
       If true, proto lang rules define toolchains from rules_proto, rules_java, 
       rules_cc repositories.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleEnableProtoToolchainResolution = Flag.Boolean("incompatibleEnableProtoToolchainResolution")
 
   //   --[no]incompatible_make_thinlto_command_lines_standalone (a boolean; default: "true")
@@ -1628,9 +1737,10 @@ internal object knownFlags {
       command lines (see https://github.com/bazelbuild/bazel/issues/6791 for more 
       information).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleMakeThinltoCommandLinesStandalone = Flag.Boolean("incompatibleMakeThinltoCommandLinesStandalone")
 
   //   --[no]incompatible_remove_legacy_whole_archive (a boolean; default: "true")
@@ -1644,9 +1754,10 @@ internal object knownFlags {
       (see https://github.com/bazelbuild/bazel/issues/7362 for migration 
       instructions).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRemoveLegacyWholeArchive = Flag.Boolean("incompatibleRemoveLegacyWholeArchive")
 
   //   --[no]incompatible_require_ctx_in_configure_features (a boolean; default: "true")
@@ -1659,9 +1770,10 @@ internal object knownFlags {
       If true, Bazel will require 'ctx' parameter in to cc_common.configure_features 
       (see https://github.com/bazelbuild/bazel/issues/7793 for more information).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRequireCtxInConfigureFeatures = Flag.Boolean("incompatibleRequireCtxInConfigureFeatures")
 
   //   --[no]interface_shared_objects (a boolean; default: "true")
@@ -1673,15 +1785,16 @@ internal object knownFlags {
       Use interface shared objects if supported by the toolchain. All ELF toolchains 
       currently support this setting.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val interfaceSharedObjects = Flag.Boolean("interfaceSharedObjects")
 
-    // 
-  //   --ios_sdk_version (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see 
+  //
+  //   --ios_sdk_version (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see
   // description)
-  // 
+  //
   @Option(
     name = "ios_sdk_version",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE],
@@ -1689,15 +1802,16 @@ internal object knownFlags {
       Specifies the version of the iOS SDK to use to build iOS applications. If 
       unspecified, uses default iOS SDK version from 'xcode_version'.
       """,
-    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')"""
+    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val iosSdkVersion = Flag.Unknown("iosSdkVersion")
 
-    // 
-  //   --macos_sdk_version (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see 
+  //
+  //   --macos_sdk_version (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see
   // description)
-  // 
+  //
   @Option(
     name = "macos_sdk_version",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE],
@@ -1705,9 +1819,10 @@ internal object knownFlags {
       Specifies the version of the macOS SDK to use to build macOS applications. If 
       unspecified, uses default macOS SDK version from 'xcode_version'.
       """,
-    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')"""
+    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val macosSdkVersion = Flag.Unknown("macosSdkVersion")
 
   //   --minimum_os_version (a string; default: see description)
@@ -1715,9 +1830,10 @@ internal object knownFlags {
     name = "minimum_os_version",
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """The minimum OS version which your compilation targets.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val minimumOsVersion = Flag.Str("minimumOsVersion")
 
   //   --platform_mappings (a relative path; default: "")
@@ -1731,9 +1847,10 @@ internal object knownFlags {
       the main workspace root. Defaults to 'platform_mappings' (a file directly under 
       the workspace root).
       """,
-    valueHelp = """a relative path"""
+    valueHelp = """a relative path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val platformMappings = Flag.Unknown("platformMappings")
 
   //   --platforms (a build target label; default: "")
@@ -1745,9 +1862,10 @@ internal object knownFlags {
       The labels of the platform rules describing the target platforms for the 
       current command.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val platforms = Flag.Label("platforms")
 
   //   --python2_path (a string; default: see description)
@@ -1756,9 +1874,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.NO_OP],
     metadataTags = [OptionMetadataTag.DEPRECATED],
     help = """Deprecated, no-op. Disabled by `--incompatible_use_python_toolchains`.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val python2Path = Flag.Str("python2Path")
 
   //   --python3_path (a string; default: see description)
@@ -1767,9 +1886,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.NO_OP],
     metadataTags = [OptionMetadataTag.DEPRECATED],
     help = """Deprecated, no-op. Disabled by `--incompatible_use_python_toolchains`.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val python3Path = Flag.Str("python3Path")
 
   //   --python_path (a string; default: see description)
@@ -1781,9 +1901,10 @@ internal object knownFlags {
       the target platform. Deprecated; disabled by 
       --incompatible_use_python_toolchains.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val pythonPath = Flag.Str("pythonPath")
 
   //   --python_top (a build target label; default: see description)
@@ -1795,9 +1916,10 @@ internal object knownFlags {
       Python targets on the target platform. Deprecated; disabled by 
       --incompatible_use_python_toolchains.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val pythonTop = Flag.Label("pythonTop")
 
   //   --target_platform_fallback (a string; default: "")
@@ -1806,15 +1928,16 @@ internal object knownFlags {
     defaultValue = """""""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.CHANGES_INPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """This option is deprecated and has no effect.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val targetPlatformFallback = Flag.Str("targetPlatformFallback")
 
-    // 
-  //   --tvos_sdk_version (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see 
+  //
+  //   --tvos_sdk_version (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see
   // description)
-  // 
+  //
   @Option(
     name = "tvos_sdk_version",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE],
@@ -1822,15 +1945,16 @@ internal object knownFlags {
       Specifies the version of the tvOS SDK to use to build tvOS applications. If 
       unspecified, uses default tvOS SDK version from 'xcode_version'.
       """,
-    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')"""
+    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val tvosSdkVersion = Flag.Unknown("tvosSdkVersion")
 
-    // 
-  //   --watchos_sdk_version (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see 
+  //
+  //   --watchos_sdk_version (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see
   // description)
-  // 
+  //
   @Option(
     name = "watchos_sdk_version",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE],
@@ -1838,9 +1962,10 @@ internal object knownFlags {
       Specifies the version of the watchOS SDK to use to build watchOS applications. 
       If unspecified, uses default watchOS SDK version from 'xcode_version'.
       """,
-    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')"""
+    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val watchosSdkVersion = Flag.Unknown("watchosSdkVersion")
 
   //   --xcode_version (a string; default: see description)
@@ -1851,9 +1976,10 @@ internal object knownFlags {
       If specified, uses Xcode of the given version for relevant build actions. If 
       unspecified, uses the executor default version of Xcode.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val xcodeVersion = Flag.Str("xcodeVersion")
 
   //   --xcode_version_config (a build target label; default: "@bazel_tools//tools/cpp:host_xcodes")
@@ -1865,9 +1991,10 @@ internal object knownFlags {
       The label of the xcode_config rule to be used for selecting the Xcode version 
       in the build configuration.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val xcodeVersionConfig = Flag.Label("xcodeVersionConfig")
 
   //   --[no]apple_generate_dsym (a boolean; default: "false")
@@ -1876,9 +2003,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.ACTION_COMMAND_LINES],
     help = """Whether to generate debug symbol(.dSYM) file(s).""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val appleGenerateDsym = Flag.Boolean("appleGenerateDsym")
 
   //   --[no]build (a boolean; default: "true")
@@ -1892,9 +2020,10 @@ internal object knownFlags {
       package loading and analysis phases completed successfully; this mode is useful 
       for testing those phases.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val build = Flag.Boolean("build")
 
   //   --[no]build_runfile_links (a boolean; default: "true")
@@ -1906,9 +2035,10 @@ internal object knownFlags {
       If true, build runfiles symlink forests for all targets.  If false, write them 
       only when required by a local action, test or run command.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildRunfileLinks = Flag.Boolean("buildRunfileLinks")
 
   //   --[no]build_runfile_manifests (a boolean; default: "true")
@@ -1920,9 +2050,10 @@ internal object knownFlags {
       If true, write runfiles manifests for all targets. If false, omit them. Local 
       tests will fail to run when false.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildRunfileManifests = Flag.Boolean("buildRunfileManifests")
 
   //   --[no]build_test_dwp (a boolean; default: "false")
@@ -1934,9 +2065,10 @@ internal object knownFlags {
       If enabled, when building C++ tests statically and with fission the .dwp file  
       for the test binary will be automatically built as well.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildTestDwp = Flag.Boolean("buildTestDwp")
 
   //   --cc_proto_library_header_suffixes (comma-separated set of options; default: ".pb.h")
@@ -1945,9 +2077,10 @@ internal object knownFlags {
     defaultValue = """".pb.h"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Sets the suffixes of header files that a cc_proto_library creates.""",
-    valueHelp = """comma-separated set of options"""
+    valueHelp = """comma-separated set of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val ccProtoLibraryHeaderSuffixes = Flag.Unknown("ccProtoLibraryHeaderSuffixes")
 
   //   --cc_proto_library_source_suffixes (comma-separated set of options; default: ".pb.cc")
@@ -1956,9 +2089,10 @@ internal object knownFlags {
     defaultValue = """".pb.cc"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Sets the suffixes of source files that a cc_proto_library creates.""",
-    valueHelp = """comma-separated set of options"""
+    valueHelp = """comma-separated set of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val ccProtoLibrarySourceSuffixes = Flag.Unknown("ccProtoLibrarySourceSuffixes")
 
   //   --[no]experimental_proto_descriptor_sets_include_source_info (a boolean; default: "false")
@@ -1968,9 +2102,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Run extra actions for alternative Java api versions in a proto_library.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalProtoDescriptorSetsIncludeSourceInfo = Flag.Boolean("experimentalProtoDescriptorSetsIncludeSourceInfo")
 
   //   --[no]experimental_proto_extra_actions (a boolean; default: "false")
@@ -1980,9 +2115,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Run extra actions for alternative Java api versions in a proto_library.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalProtoExtraActions = Flag.Boolean("experimentalProtoExtraActions")
 
   //   --[no]experimental_save_feature_state (a boolean; default: "false")
@@ -1992,9 +2128,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Save the state of enabled and requested feautres as an output of compilation.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalSaveFeatureState = Flag.Boolean("experimentalSaveFeatureState")
 
   //   --[no]experimental_use_validation_aspect (a boolean; default: "false")
@@ -2003,9 +2140,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.EXECUTION, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Whether to run validation actions using aspect (for parallelism with tests).""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalUseValidationAspect = Flag.Boolean("experimentalUseValidationAspect")
 
   //   --fission (a set of compilation modes; default: "no")
@@ -2018,9 +2156,10 @@ internal object knownFlags {
       May be any combination of {'fastbuild', 'dbg', 'opt'} or the special values 
       'yes'  to enable all modes and 'no' to disable all modes.
       """,
-    valueHelp = """a set of compilation modes"""
+    valueHelp = """a set of compilation modes""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val fission = Flag.Unknown("fission")
 
   //   --[no]incompatible_always_include_files_in_data (a boolean; default: "true")
@@ -2034,9 +2173,10 @@ internal object knownFlags {
       to their runfiles, which matches the recommended behavior for Starlark rules 
       (https://bazel.build/extending/rules#runfiles_features_to_avoid).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleAlwaysIncludeFilesInData = Flag.Boolean("incompatibleAlwaysIncludeFilesInData")
 
   //   --[no]legacy_external_runfiles (a boolean; default: "true")
@@ -2048,9 +2188,10 @@ internal object knownFlags {
       If true, build runfiles symlink forests for external repositories under 
       .runfiles/wsname/external/repo (in addition to .runfiles/repo).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val legacyExternalRunfiles = Flag.Boolean("legacyExternalRunfiles")
 
   //   --[no]objc_generate_linkmap (a boolean; default: "false")
@@ -2059,9 +2200,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Specifies whether to generate a linkmap file.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val objcGenerateLinkmap = Flag.Boolean("objcGenerateLinkmap")
 
   //   --output_groups (comma-separated list of options; may be used multiple times)
@@ -2078,9 +2220,10 @@ internal object knownFlags {
       foo, and bar, while --output_groups=foo,bar overrides the default set such that 
       only foo and bar are built.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val outputGroups = Flag.Unknown("outputGroups")
 
   //   --[no]run_validations (a boolean; default: "true")
@@ -2092,9 +2235,10 @@ internal object knownFlags {
       Whether to run validation actions as part of the build. See 
       https://bazel.build/extending/rules#validation_actions
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val runValidations = Flag.Boolean("runValidations")
 
   //   --[no]save_temps (a boolean; default: "false")
@@ -2106,9 +2250,10 @@ internal object knownFlags {
       If set, temporary outputs from gcc will be saved.  These include .s files 
       (assembler code), .i files (preprocessed C) and .ii files (preprocessed C++).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val saveTemps = Flag.Boolean("saveTemps")
 
   //   --action_env (a 'name=value' assignment with an optional value part; may be used multiple times)
@@ -2124,9 +2269,10 @@ internal object knownFlags {
       be used multiple times; for options given for the same variable, the latest 
       wins, options for different variables accumulate.
       """,
-    valueHelp = """a 'name=value' assignment with an optional value part"""
+    valueHelp = """a 'name=value' assignment with an optional value part""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val actionEnv = Flag.Unknown("actionEnv")
 
   //   --android_cpu (a string; default: "armeabi-v7a")
@@ -2135,9 +2281,10 @@ internal object knownFlags {
     defaultValue = """"armeabi-v7a"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     help = """The Android target CPU.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidCpu = Flag.Str("androidCpu")
 
   //   --[no]android_databinding_use_androidx (a boolean; default: "true")
@@ -2150,9 +2297,10 @@ internal object knownFlags {
       Generate AndroidX-compatible data-binding files. This is only used with 
       databinding v2. This flag is a no-op.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidDatabindingUseAndroidx = Flag.Boolean("androidDatabindingUseAndroidx")
 
   //   --[no]android_databinding_use_v3_4_args (a boolean; default: "true")
@@ -2162,9 +2310,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Use android databinding v2 with 3.4.0 argument. This flag is a no-op.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidDatabindingUseV3_4Args = Flag.Boolean("androidDatabindingUseV3_4Args")
 
   //   --android_dynamic_mode (off, default or fully; default: "off")
@@ -2179,15 +2328,16 @@ internal object knownFlags {
       linked dynamically. 'off' means that all libraries will be linked in mostly 
       static mode.
       """,
-    valueHelp = """off, default or fully"""
+    valueHelp = """off, default or fully""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidDynamicMode = Flag.OneOf("androidDynamicMode")
 
-    // 
-  //   --android_manifest_merger_order (alphabetical, alphabetical_by_configuration or dependency; 
+  //
+  //   --android_manifest_merger_order (alphabetical, alphabetical_by_configuration or dependency;
   // default: "alphabetical")
-  // 
+  //
   @Option(
     name = "android_manifest_merger_order",
     defaultValue = """"alphabetical"""",
@@ -2200,9 +2350,10 @@ internal object knownFlags {
       manifests are ordered with each library's manifest coming before the manifests 
       of its dependencies.
       """,
-    valueHelp = """alphabetical, alphabetical_by_configuration or dependency"""
+    valueHelp = """alphabetical, alphabetical_by_configuration or dependency""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidManifestMergerOrder = Flag.OneOf("androidManifestMergerOrder")
 
   //   --[no]android_resource_shrinking (a boolean; default: "false")
@@ -2211,9 +2362,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Enables resource shrinking for android_binary APKs that use ProGuard.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val androidResourceShrinking = Flag.Boolean("androidResourceShrinking")
 
   //   --aspects (comma-separated list of options; may be used multiple times)
@@ -2231,9 +2383,10 @@ internal object knownFlags {
       <bzl-file-label>%<aspect_name>, for example '//tools:my_def.bzl%my_aspect', 
       where 'my_aspect' is a top-level value from a file tools/my_def.bzl
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val aspects = Flag.Unknown("aspects")
 
   //   --bep_maximum_open_remote_upload_files (an integer; default: "-1")
@@ -2242,9 +2395,10 @@ internal object knownFlags {
     defaultValue = """"-1"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Maximum number of open files allowed during BEP artifact upload.""",
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val bepMaximumOpenRemoteUploadFiles = Flag.Integer("bepMaximumOpenRemoteUploadFiles")
 
   //   --[no]build_python_zip (a tri-state (auto, yes, no); default: "auto")
@@ -2253,9 +2407,10 @@ internal object knownFlags {
     defaultValue = """"auto"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Build python executable zip; on on Windows, off on other platforms""",
-    valueHelp = """a tri-state (auto, yes, no)"""
+    valueHelp = """a tri-state (auto, yes, no)""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildPythonZip = Flag.Unknown("buildPythonZip")
 
   //   --catalyst_cpus (comma-separated list of options; may be used multiple times)
@@ -2267,9 +2422,10 @@ internal object knownFlags {
       Comma-separated list of architectures for which to build Apple Catalyst 
       binaries.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val catalystCpus = Flag.Unknown("catalystCpus")
 
   //   --[no]collect_code_coverage (a boolean; default: "false")
@@ -2284,9 +2440,10 @@ internal object knownFlags {
       should  not be specified directly - 'bazel coverage' command should be used 
       instead.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val collectCodeCoverage = Flag.Boolean("collectCodeCoverage")
 
   //   --compilation_mode [-c] (fastbuild, dbg or opt; default: "fastbuild")
@@ -2296,9 +2453,10 @@ internal object knownFlags {
     defaultValue = """"fastbuild"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.ACTION_COMMAND_LINES],
     help = """Specify the mode the binary will be built in. Values: 'fastbuild', 'dbg', 'opt'.""",
-    valueHelp = """fastbuild, dbg or opt"""
+    valueHelp = """fastbuild, dbg or opt""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val compilationMode = Flag.OneOf("compilationMode")
 
   //   --conlyopt (a string; may be used multiple times)
@@ -2307,9 +2465,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Additional option to pass to gcc when compiling C source files.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val conlyopt = Flag.Str("conlyopt")
 
   //   --copt (a string; may be used multiple times)
@@ -2318,9 +2477,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Additional options to pass to gcc.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val copt = Flag.Str("copt")
 
   //   --cpu (a string; default: "")
@@ -2329,9 +2489,10 @@ internal object knownFlags {
     defaultValue = """""""",
     effectTags = [OptionEffectTag.CHANGES_INPUTS, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """The target CPU.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val cpu = Flag.Str("cpu")
 
   //   --cs_fdo_absolute_path (a string; default: see description)
@@ -2343,9 +2504,10 @@ internal object knownFlags {
       path name of the zip file containing the profile file, a raw or an indexed LLVM 
       profile file.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val csFdoAbsolutePath = Flag.Str("csFdoAbsolutePath")
 
   //   --cs_fdo_instrument (a string; default: see description)
@@ -2358,9 +2520,10 @@ internal object knownFlags {
       file(s) will be dumped at runtime.  Using this option will also add: 
       --copt=-Wno-error 
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val csFdoInstrument = Flag.Str("csFdoInstrument")
 
   //   --cs_fdo_profile (a build target label; default: see description)
@@ -2371,9 +2534,10 @@ internal object knownFlags {
       The cs_fdo_profile representing the context sensitive profile to be used for 
       optimization.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val csFdoProfile = Flag.Label("csFdoProfile")
 
   //   --cxxopt (a string; may be used multiple times)
@@ -2382,9 +2546,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Additional option to pass to gcc when compiling C++ source files.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val cxxopt = Flag.Str("cxxopt")
 
   //   --define (a 'name=value' assignment; may be used multiple times)
@@ -2393,9 +2558,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.CHANGES_INPUTS, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Each --define option specifies an assignment for a build variable.""",
-    valueHelp = """a 'name=value' assignment"""
+    valueHelp = """a 'name=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val define = Flag.Unknown("define")
 
   //   --dynamic_mode (off, default or fully; default: "default")
@@ -2409,9 +2575,10 @@ internal object knownFlags {
       will be linked dynamically. 'off' means that all libraries will be linked in 
       mostly static mode.
       """,
-    valueHelp = """off, default or fully"""
+    valueHelp = """off, default or fully""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val dynamicMode = Flag.OneOf("dynamicMode")
 
   //   --[no]enable_fdo_profile_absolute_path (a boolean; default: "true")
@@ -2420,9 +2587,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """If set, use of fdo_absolute_profile_path will raise an error.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val enableFdoProfileAbsolutePath = Flag.Boolean("enableFdoProfileAbsolutePath")
 
   //   --[no]enable_runfiles (a tri-state (auto, yes, no); default: "auto")
@@ -2434,9 +2602,10 @@ internal object knownFlags {
       Enable runfiles symlink tree; By default, it's off on Windows, on on other 
       platforms.
       """,
-    valueHelp = """a tri-state (auto, yes, no)"""
+    valueHelp = """a tri-state (auto, yes, no)""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val enableRunfiles = Flag.Unknown("enableRunfiles")
 
   //   --experimental_action_listener (a build target label; may be used multiple times)
@@ -2449,9 +2618,10 @@ internal object knownFlags {
       Deprecated in favor of aspects. Use action_listener to attach an extra_action 
       to existing build actions.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalActionListener = Flag.Label("experimentalActionListener")
 
   //   --[no]experimental_android_compress_java_resources (a boolean; default: "false")
@@ -2461,9 +2631,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Compress Java resources in APKs""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalAndroidCompressJavaResources = Flag.Boolean("experimentalAndroidCompressJavaResources")
 
   //   --[no]experimental_android_databinding_v2 (a boolean; default: "true")
@@ -2473,9 +2644,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Use android databinding v2. This flag is a no-op.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalAndroidDatabindingV2 = Flag.Boolean("experimentalAndroidDatabindingV2")
 
   //   --[no]experimental_android_resource_shrinking (a boolean; default: "false")
@@ -2484,9 +2656,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Enables resource shrinking for android_binary APKs that use ProGuard.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalAndroidResourceShrinking = Flag.Boolean("experimentalAndroidResourceShrinking")
 
   //   --[no]experimental_android_rewrite_dexes_with_rex (a boolean; default: "false")
@@ -2496,9 +2669,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """use rex tool to rewrite dex files""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalAndroidRewriteDexesWithRex = Flag.Boolean("experimentalAndroidRewriteDexesWithRex")
 
   //   --[no]experimental_collect_code_coverage_for_generated_files (a boolean; default: "false")
@@ -2510,9 +2684,10 @@ internal object knownFlags {
       If specified, Bazel will also generate collect coverage information for 
       generated files.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCollectCodeCoverageForGeneratedFiles = Flag.Boolean("experimentalCollectCodeCoverageForGeneratedFiles")
 
   //   --[no]experimental_convenience_symlinks (normal, clean, ignore or log_only; default: "normal")
@@ -2531,9 +2706,10 @@ internal object knownFlags {
       current value of --symlink_prefix can be affected; if the prefix changes, any 
       pre-existing symlinks will be left alone.
       """,
-    valueHelp = """normal, clean, ignore or log_only"""
+    valueHelp = """normal, clean, ignore or log_only""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalConvenienceSymlinks = Flag.OneOf("experimentalConvenienceSymlinks")
 
   //   --[no]experimental_convenience_symlinks_bep_event (a boolean; default: "false")
@@ -2549,9 +2725,10 @@ internal object knownFlags {
       in your workspace. If false, then the convenienceSymlinksIdentified entry in 
       the BuildEventProtocol will be empty.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalConvenienceSymlinksBepEvent = Flag.Boolean("experimentalConvenienceSymlinksBepEvent")
 
   //   --experimental_objc_fastbuild_options (comma-separated list of options; default: "-O0,-DDEBUG=1")
@@ -2560,9 +2737,10 @@ internal object knownFlags {
     defaultValue = """"-O0,-DDEBUG=1"""",
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES],
     help = """Uses these strings as objc fastbuild compiler options.""",
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalObjcFastbuildOptions = Flag.Unknown("experimentalObjcFastbuildOptions")
 
   //   --[no]experimental_omitfp (a boolean; default: "false")
@@ -2575,16 +2753,21 @@ internal object knownFlags {
       If true, use libunwind for stack unwinding, and compile with 
       -fomit-frame-pointer and -fasynchronous-unwind-tables.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalOmitfp = Flag.Boolean("experimentalOmitfp")
 
   //   --experimental_output_paths (off, content or strip; default: "off")
   @Option(
     name = "experimental_output_paths",
     defaultValue = """"off"""",
-    effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE, OptionEffectTag.BAZEL_INTERNAL_CONFIGURATION, OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.EXECUTION],
+    effectTags =
+      [
+        OptionEffectTag.LOSES_INCREMENTAL_STATE, OptionEffectTag.BAZEL_INTERNAL_CONFIGURATION,
+        OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.EXECUTION,
+      ],
     help = """      
       Which model to use for where in the output tree rules write their outputs, 
       particularly for multi-platform / multi-configuration builds. This is highly 
@@ -2592,15 +2775,16 @@ internal object knownFlags {
       Starlark actions canopt into path mapping by adding the key 
       'supports-path-mapping' to the 'execution_requirements' dict.
       """,
-    valueHelp = """off, content or strip"""
+    valueHelp = """off, content or strip""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalOutputPaths = Flag.OneOf("experimentalOutputPaths")
 
-    // 
-  //   --experimental_override_name_platform_in_output_dir (a 'label=value' assignment; may be used 
+  //
+  //   --experimental_override_name_platform_in_output_dir (a 'label=value' assignment; may be used
   // multiple times)
-  // 
+  //
   @Option(
     name = "experimental_override_name_platform_in_output_dir",
     allowMultiple = true,
@@ -2611,9 +2795,10 @@ internal object knownFlags {
       and values is the desired shortname to use in the output path. Only used when 
       --experimental_platform_in_output_dir is true. Has highest naming priority.
       """,
-    valueHelp = """a 'label=value' assignment"""
+    valueHelp = """a 'label=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalOverrideNamePlatformInOutputDir = Flag.Unknown("experimentalOverrideNamePlatformInOutputDir")
 
   //   --[no]experimental_platform_in_output_dir (a boolean; default: "false")
@@ -2633,9 +2818,10 @@ internal object knownFlags {
       set, use a shortname based off the current platform Label. Finally, a hash of 
       the platform option is used as a last resort.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalPlatformInOutputDir = Flag.Boolean("experimentalPlatformInOutputDir")
 
   //   --[no]experimental_use_llvm_covmap (a boolean; default: "false")
@@ -2648,9 +2834,10 @@ internal object knownFlags {
       If specified, Bazel will generate llvm-cov coverage map information rather than 
       gcov when collect_code_coverage is enabled.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalUseLlvmCovmap = Flag.Boolean("experimentalUseLlvmCovmap")
 
   //   --[no]experimental_use_platforms_in_output_dir_legacy_heuristic (a boolean; default: "true")
@@ -2664,9 +2851,10 @@ internal object knownFlags {
       Note that the heuristic has known deficiencies and it is suggested to migrate 
       to relying on just --experimental_override_name_platform_in_output_dir.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalUsePlatformsInOutputDirLegacyHeuristic = Flag.Boolean("experimentalUsePlatformsInOutputDirLegacyHeuristic")
 
   //   --fat_apk_cpu (comma-separated set of options; default: "armeabi-v7a")
@@ -2680,9 +2868,10 @@ internal object knownFlags {
       flag is specified, then --android_cpu is ignored for dependencies of 
       android_binary rules.
       """,
-    valueHelp = """comma-separated set of options"""
+    valueHelp = """comma-separated set of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val fatApkCpu = Flag.Unknown("fatApkCpu")
 
   //   --[no]fat_apk_hwasan (a boolean; default: "false")
@@ -2691,9 +2880,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     help = """Whether to create HWASAN splits.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val fatApkHwasan = Flag.Boolean("fatApkHwasan")
 
   //   --fdo_instrument (a string; default: see description)
@@ -2705,9 +2895,10 @@ internal object knownFlags {
       accepts the directory name under which the raw profile file(s) will be dumped 
       at runtime.  Using this option will also add: --copt=-Wno-error 
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val fdoInstrument = Flag.Str("fdoInstrument")
 
   //   --fdo_optimize (a string; default: see description)
@@ -2722,9 +2913,10 @@ internal object knownFlags {
       corresponding package) and labels pointing to `fdo_profile` targets. This flag 
       will be superseded by the `fdo_profile` rule.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val fdoOptimize = Flag.Str("fdoOptimize")
 
   //   --fdo_prefetch_hints (a build target label; default: see description)
@@ -2732,9 +2924,10 @@ internal object knownFlags {
     name = "fdo_prefetch_hints",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Use cache prefetch hints.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val fdoPrefetchHints = Flag.Label("fdoPrefetchHints")
 
   //   --fdo_profile (a build target label; default: see description)
@@ -2742,9 +2935,10 @@ internal object knownFlags {
     name = "fdo_profile",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """The fdo_profile representing the profile to be used for optimization.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val fdoProfile = Flag.Label("fdoProfile")
 
   //   --features (a string; may be used multiple times)
@@ -2757,9 +2951,10 @@ internal object knownFlags {
       the target configuration. Specifying -<feature> will disable the feature. 
       Negative features always override positive ones. See also --host_features
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val features = Flag.Str("features")
 
   //   --[no]force_pic (a boolean; default: "false")
@@ -2772,15 +2967,16 @@ internal object knownFlags {
       links prefer PIC pre-built libraries over non-PIC libraries, and links produce 
       position-independent executables ("-pie").
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val forcePic = Flag.Boolean("forcePic")
 
-    // 
-  //   --host_action_env (a 'name=value' assignment with an optional value part; may be used multiple 
+  //
+  //   --host_action_env (a 'name=value' assignment with an optional value part; may be used multiple
   // times)
-  // 
+  //
   @Option(
     name = "host_action_env",
     allowMultiple = true,
@@ -2793,9 +2989,10 @@ internal object knownFlags {
       be used multiple times; for options given for the same variable, the latest 
       wins, options for different variables accumulate.
       """,
-    valueHelp = """a 'name=value' assignment with an optional value part"""
+    valueHelp = """a 'name=value' assignment with an optional value part""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostActionEnv = Flag.Unknown("hostActionEnv")
 
   //   --host_compilation_mode (fastbuild, dbg or opt; default: "opt")
@@ -2807,9 +3004,10 @@ internal object knownFlags {
       Specify the mode the tools used during the build will be built in. Values: 
       'fastbuild', 'dbg', 'opt'.
       """,
-    valueHelp = """fastbuild, dbg or opt"""
+    valueHelp = """fastbuild, dbg or opt""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostCompilationMode = Flag.OneOf("hostCompilationMode")
 
   //   --host_conlyopt (a string; may be used multiple times)
@@ -2821,9 +3019,10 @@ internal object knownFlags {
       Additional option to pass to the C compiler when compiling C (but not C++) 
       source files in the exec configurations.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostConlyopt = Flag.Str("hostConlyopt")
 
   //   --host_copt (a string; may be used multiple times)
@@ -2835,9 +3034,10 @@ internal object knownFlags {
       Additional options to pass to the C compiler for tools built in the exec 
       configurations.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostCopt = Flag.Str("hostCopt")
 
   //   --host_cpu (a string; default: "")
@@ -2846,9 +3046,10 @@ internal object knownFlags {
     defaultValue = """""""",
     effectTags = [OptionEffectTag.CHANGES_INPUTS, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """The host CPU.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostCpu = Flag.Str("hostCpu")
 
   //   --host_cxxopt (a string; may be used multiple times)
@@ -2860,9 +3061,10 @@ internal object knownFlags {
       Additional options to pass to C++ compiler for tools built in the exec 
       configurations.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostCxxopt = Flag.Str("hostCxxopt")
 
   //   --host_features (a string; may be used multiple times)
@@ -2875,9 +3077,10 @@ internal object knownFlags {
       the exec configuration. Specifying -<feature> will disable the feature. 
       Negative features always override positive ones.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostFeatures = Flag.Str("hostFeatures")
 
   //   --host_force_python (PY2 or PY3; default: see description)
@@ -2885,9 +3088,10 @@ internal object knownFlags {
     name = "host_force_python",
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Overrides the Python version for the exec configuration. Can be "PY2" or "PY3".""",
-    valueHelp = """PY2 or PY3"""
+    valueHelp = """PY2 or PY3""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostForcePython = Flag.OneOf("hostForcePython")
 
   //   --host_linkopt (a string; may be used multiple times)
@@ -2899,15 +3103,16 @@ internal object knownFlags {
       Additional option to pass to linker when linking tools in the exec 
       configurations.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostLinkopt = Flag.Str("hostLinkopt")
 
-    // 
-  //   --host_macos_minimum_os (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see 
+  //
+  //   --host_macos_minimum_os (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see
   // description)
-  // 
+  //
   @Option(
     name = "host_macos_minimum_os",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE],
@@ -2915,15 +3120,16 @@ internal object knownFlags {
       Minimum compatible macOS version for host targets. If unspecified, uses 
       'macos_sdk_version'.
       """,
-    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')"""
+    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostMacosMinimumOs = Flag.Unknown("hostMacosMinimumOs")
 
-    // 
-  //   --host_per_file_copt (a comma-separated list of regex expressions with prefix '-' specifying 
+  //
+  //   --host_per_file_copt (a comma-separated list of regex expressions with prefix '-' specifying
   // excluded paths followed by an @ and a comma separated list of options; may be used multiple times)
-  // 
+  //
   @Option(
     name = "host_per_file_copt",
     allowMultiple = true,
@@ -2943,9 +3149,10 @@ internal object knownFlags {
     valueHelp = """      
       a comma-separated list of regex expressions with prefix '-' specifying excluded 
       paths followed by an @ and a comma separated list of options
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostPerFileCopt = Flag.Unknown("hostPerFileCopt")
 
   //   --host_swiftcopt (a string; may be used multiple times)
@@ -2954,9 +3161,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Additional options to pass to swiftc for exec tools.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostSwiftcopt = Flag.Str("hostSwiftcopt")
 
   //   --[no]incompatible_auto_exec_groups (a boolean; default: "false")
@@ -2971,9 +3179,10 @@ internal object knownFlags {
       actions. For more information, see 
       https://github.com/bazelbuild/bazel/issues/17134.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleAutoExecGroups = Flag.Boolean("incompatibleAutoExecGroups")
 
   //   --[no]incompatible_merge_genfiles_directory (a boolean; default: "true")
@@ -2983,9 +3192,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """If true, the genfiles directory is folded into the bin directory.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleMergeGenfilesDirectory = Flag.Boolean("incompatibleMergeGenfilesDirectory")
 
   //   --[no]incompatible_use_host_features (a boolean; default: "true")
@@ -2998,9 +3208,10 @@ internal object knownFlags {
       If true, use --features only for the target configuration and --host_features 
       for the exec configuration.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleUseHostFeatures = Flag.Boolean("incompatibleUseHostFeatures")
 
   //   --[no]instrument_test_targets (a boolean; default: "false")
@@ -3014,15 +3225,16 @@ internal object knownFlags {
       instrumented. Otherwise, test rules are always excluded from coverage 
       instrumentation.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val instrumentTestTargets = Flag.Boolean("instrumentTestTargets")
 
-    // 
-  //   --instrumentation_filter (a comma-separated list of regex expressions with prefix '-' specifying 
+  //
+  //   --instrumentation_filter (a comma-separated list of regex expressions with prefix '-' specifying
   // excluded paths; default: "-/javatests[/:],-/test/java[/:]")
-  // 
+  //
   @Option(
     name = "instrumentation_filter",
     defaultValue = """"-/javatests[/:],-/test/java[/:]"""",
@@ -3036,9 +3248,10 @@ internal object knownFlags {
     valueHelp = """      
       a comma-separated list of regex expressions with prefix '-' specifying excluded 
       paths
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val instrumentationFilter = Flag.Unknown("instrumentationFilter")
 
   //   --ios_minimum_os (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see description)
@@ -3049,9 +3262,10 @@ internal object knownFlags {
       Minimum compatible iOS version for target simulators and devices. If 
       unspecified, uses 'ios_sdk_version'.
       """,
-    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')"""
+    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val iosMinimumOs = Flag.Unknown("iosMinimumOs")
 
   //   --ios_multi_cpus (comma-separated list of options; may be used multiple times)
@@ -3063,9 +3277,10 @@ internal object knownFlags {
       Comma-separated list of architectures to build an ios_application with. The 
       result is a universal binary containing all specified architectures.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val iosMultiCpus = Flag.Unknown("iosMultiCpus")
 
   //   --[no]legacy_whole_archive (a boolean; default: "true")
@@ -3081,9 +3296,10 @@ internal object knownFlags {
       linkstatic=True or '-static' in linkopts. This is for backwards compatibility 
       only. A better alternative is to use alwayslink=1 where required.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val legacyWholeArchive = Flag.Boolean("legacyWholeArchive")
 
   //   --linkopt (a string; may be used multiple times)
@@ -3092,9 +3308,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Additional option to pass to gcc when linking.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val linkopt = Flag.Str("linkopt")
 
   //   --ltobackendopt (a string; may be used multiple times)
@@ -3103,9 +3320,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Additional option to pass to the LTO backend step (under --features=thin_lto).""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val ltobackendopt = Flag.Str("ltobackendopt")
 
   //   --ltoindexopt (a string; may be used multiple times)
@@ -3114,9 +3332,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Additional option to pass to the LTO indexing step (under --features=thin_lto).""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val ltoindexopt = Flag.Str("ltoindexopt")
 
   //   --macos_cpus (comma-separated list of options; may be used multiple times)
@@ -3125,15 +3344,16 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Comma-separated list of architectures for which to build Apple macOS binaries.""",
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val macosCpus = Flag.Unknown("macosCpus")
 
-    // 
-  //   --macos_minimum_os (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see 
+  //
+  //   --macos_minimum_os (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see
   // description)
-  // 
+  //
   @Option(
     name = "macos_minimum_os",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE],
@@ -3141,9 +3361,10 @@ internal object knownFlags {
       Minimum compatible macOS version for targets. If unspecified, uses 
       'macos_sdk_version'.
       """,
-    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')"""
+    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val macosMinimumOs = Flag.Unknown("macosMinimumOs")
 
   //   --memprof_profile (a build target label; default: see description)
@@ -3151,9 +3372,10 @@ internal object knownFlags {
     name = "memprof_profile",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Use memprof profile.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val memprofProfile = Flag.Label("memprofProfile")
 
   //   --[no]objc_debug_with_GLIBCXX (a boolean; default: "false")
@@ -3165,9 +3387,10 @@ internal object knownFlags {
       If set, and compilation mode is set to 'dbg', define GLIBCXX_DEBUG,  
       GLIBCXX_DEBUG_PEDANTIC and GLIBCPP_CONCEPT_CHECKS.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val objcDebugWith_GLIBCXX = Flag.Boolean("objcDebugWith_GLIBCXX")
 
   //   --[no]objc_enable_binary_stripping (a boolean; default: "false")
@@ -3180,9 +3403,10 @@ internal object knownFlags {
       strippings will be performed if both this flag and --compilation_mode=opt are 
       specified.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val objcEnableBinaryStripping = Flag.Boolean("objcEnableBinaryStripping")
 
   //   --objccopt (a string; may be used multiple times)
@@ -3191,15 +3415,16 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES],
     help = """Additional options to pass to gcc when compiling Objective-C/C++ source files.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val objccopt = Flag.Str("objccopt")
 
-    // 
-  //   --per_file_copt (a comma-separated list of regex expressions with prefix '-' specifying excluded 
+  //
+  //   --per_file_copt (a comma-separated list of regex expressions with prefix '-' specifying excluded
   // paths followed by an @ and a comma separated list of options; may be used multiple times)
-  // 
+  //
   @Option(
     name = "per_file_copt",
     allowMultiple = true,
@@ -3218,15 +3443,16 @@ internal object knownFlags {
     valueHelp = """      
       a comma-separated list of regex expressions with prefix '-' specifying excluded 
       paths followed by an @ and a comma separated list of options
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val perFileCopt = Flag.Unknown("perFileCopt")
 
-    // 
-  //   --per_file_ltobackendopt (a comma-separated list of regex expressions with prefix '-' specifying 
+  //
+  //   --per_file_ltobackendopt (a comma-separated list of regex expressions with prefix '-' specifying
   // excluded paths followed by an @ and a comma separated list of options; may be used multiple times)
-  // 
+  //
   @Option(
     name = "per_file_ltobackendopt",
     allowMultiple = true,
@@ -3246,9 +3472,10 @@ internal object knownFlags {
     valueHelp = """      
       a comma-separated list of regex expressions with prefix '-' specifying excluded 
       paths followed by an @ and a comma separated list of options
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val perFileLtobackendopt = Flag.Unknown("perFileLtobackendopt")
 
   //   --platform_suffix (a string; default: see description)
@@ -3256,9 +3483,10 @@ internal object knownFlags {
     name = "platform_suffix",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE, OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Specifies a suffix to be added to the configuration directory.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val platformSuffix = Flag.Str("platformSuffix")
 
   //   --propeller_optimize (a build target label; default: see description)
@@ -3276,9 +3504,10 @@ internal object knownFlags {
       make these files visible to Bazel. The option must be used as: 
       --propeller_optimize=//a/b:propeller_profile
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val propellerOptimize = Flag.Label("propellerOptimize")
 
   //   --propeller_optimize_absolute_cc_profile (a string; default: see description)
@@ -3286,9 +3515,10 @@ internal object knownFlags {
     name = "propeller_optimize_absolute_cc_profile",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Absolute path name of cc_profile file for Propeller Optimized builds.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val propellerOptimizeAbsoluteCcProfile = Flag.Str("propellerOptimizeAbsoluteCcProfile")
 
   //   --propeller_optimize_absolute_ld_profile (a string; default: see description)
@@ -3296,35 +3526,38 @@ internal object knownFlags {
     name = "propeller_optimize_absolute_ld_profile",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Absolute path name of ld_profile file for Propeller Optimized builds.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val propellerOptimizeAbsoluteLdProfile = Flag.Str("propellerOptimizeAbsoluteLdProfile")
 
   //   --remote_download_all
   @Option(
     name = "remote_download_all",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
-    expandsTo = [      "--remote_download_outputs=all"],
+    expandsTo = [ "--remote_download_outputs=all"],
     help = """      
       Downloads all remote outputs to the local machine. This flag is an alias for 
       --remote_download_outputs=all.
       """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteDownloadAll = Flag.Unknown("remoteDownloadAll")
 
   //   --remote_download_minimal
   @Option(
     name = "remote_download_minimal",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
-    expandsTo = [      "--remote_download_outputs=minimal"],
+    expandsTo = [ "--remote_download_outputs=minimal"],
     help = """      
       Does not download any remote build outputs to the local machine. This flag is 
       an alias for --remote_download_outputs=minimal.
       """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteDownloadMinimal = Flag.Unknown("remoteDownloadMinimal")
 
   //   --remote_download_outputs (all, minimal or toplevel; default: "toplevel")
@@ -3339,9 +3572,10 @@ internal object knownFlags {
       targets to the local machine. Both options can significantly reduce build times 
       if network bandwidth is a bottleneck.
       """,
-    valueHelp = """all, minimal or toplevel"""
+    valueHelp = """all, minimal or toplevel""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteDownloadOutputs = Flag.OneOf("remoteDownloadOutputs")
 
   //   --remote_download_symlink_template (a string; default: "")
@@ -3357,22 +3591,24 @@ internal object knownFlags {
       These symbolic links may, for example, point to a FUSE file system that loads 
       objects from the CAS on demand.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteDownloadSymlinkTemplate = Flag.Str("remoteDownloadSymlinkTemplate")
 
   //   --remote_download_toplevel
   @Option(
     name = "remote_download_toplevel",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
-    expandsTo = [      "--remote_download_outputs=toplevel"],
+    expandsTo = [ "--remote_download_outputs=toplevel"],
     help = """      
       Only downloads remote outputs of top level targets to the local machine. This 
       flag is an alias for --remote_download_outputs=toplevel.
       """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteDownloadToplevel = Flag.Unknown("remoteDownloadToplevel")
 
   //   --repo_env (a 'name=value' assignment with an optional value part; may be used multiple times)
@@ -3386,9 +3622,10 @@ internal object knownFlags {
       way configuration information can be passed to repositories through options 
       without invalidating the action graph.
       """,
-    valueHelp = """a 'name=value' assignment with an optional value part"""
+    valueHelp = """a 'name=value' assignment with an optional value part""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val repoEnv = Flag.Unknown("repoEnv")
 
   //   --run_under (a prefix in front of command; default: see description)
@@ -3403,9 +3640,10 @@ internal object knownFlags {
       -c', 'valgrind --quiet --num-callers=20', '//package:target',  
       '//package:target --options'.
       """,
-    valueHelp = """a prefix in front of command"""
+    valueHelp = """a prefix in front of command""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val runUnder = Flag.Unknown("runUnder")
 
   //   --[no]share_native_deps (a boolean; default: "true")
@@ -3417,9 +3655,10 @@ internal object knownFlags {
       If true, native libraries that contain identical functionality will be shared 
       among different targets
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val shareNativeDeps = Flag.Boolean("shareNativeDeps")
 
   //   --[no]stamp (a boolean; default: "false")
@@ -3428,9 +3667,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Stamp binaries with the date, username, hostname, workspace information, etc.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val stamp = Flag.Boolean("stamp")
 
   //   --strip (always, sometimes or never; default: "sometimes")
@@ -3443,9 +3683,10 @@ internal object knownFlags {
       "-Wl,--strip-debug").  The default value of 'sometimes' means strip iff 
       --compilation_mode=fastbuild.
       """,
-    valueHelp = """always, sometimes or never"""
+    valueHelp = """always, sometimes or never""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val strip = Flag.OneOf("strip")
 
   //   --stripopt (a string; may be used multiple times)
@@ -3454,9 +3695,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Additional options to pass to strip when generating a '<name>.stripped' binary.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val stripopt = Flag.Str("stripopt")
 
   //   --swiftcopt (a string; may be used multiple times)
@@ -3465,9 +3707,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES],
     help = """Additional options to pass to Swift compilation.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val swiftcopt = Flag.Str("swiftcopt")
 
   //   --symlink_prefix (a string; default: see description)
@@ -3481,9 +3724,10 @@ internal object knownFlags {
       no warning is emitted. Warning: the special functionality for '/' will be 
       deprecated soon; use --experimental_convenience_symlinks=ignore instead.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val symlinkPrefix = Flag.Str("symlinkPrefix")
 
   //   --tvos_cpus (comma-separated list of options; may be used multiple times)
@@ -3492,15 +3736,16 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Comma-separated list of architectures for which to build Apple tvOS binaries.""",
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val tvosCpus = Flag.Unknown("tvosCpus")
 
-    // 
-  //   --tvos_minimum_os (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see 
+  //
+  //   --tvos_minimum_os (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see
   // description)
-  // 
+  //
   @Option(
     name = "tvos_minimum_os",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE],
@@ -3508,9 +3753,10 @@ internal object knownFlags {
       Minimum compatible tvOS version for target simulators and devices. If 
       unspecified, uses 'tvos_sdk_version'.
       """,
-    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')"""
+    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val tvosMinimumOs = Flag.Unknown("tvosMinimumOs")
 
   //   --visionos_cpus (comma-separated list of options; may be used multiple times)
@@ -3522,9 +3768,10 @@ internal object knownFlags {
       Comma-separated list of architectures for which to build Apple visionOS 
       binaries.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val visionosCpus = Flag.Unknown("visionosCpus")
 
   //   --watchos_cpus (comma-separated list of options; may be used multiple times)
@@ -3533,15 +3780,16 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Comma-separated list of architectures for which to build Apple watchOS binaries.""",
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val watchosCpus = Flag.Unknown("watchosCpus")
 
-    // 
-  //   --watchos_minimum_os (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see 
+  //
+  //   --watchos_minimum_os (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see
   // description)
-  // 
+  //
   @Option(
     name = "watchos_minimum_os",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE],
@@ -3549,9 +3797,10 @@ internal object knownFlags {
       Minimum compatible watchOS version for target simulators and devices. If 
       unspecified, uses 'watchos_sdk_version'.
       """,
-    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')"""
+    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val watchosMinimumOs = Flag.Unknown("watchosMinimumOs")
 
   //   --xbinary_fdo (a build target label; default: see description)
@@ -3564,9 +3813,10 @@ internal object knownFlags {
       --fdo_instrument/--fdo_optimize/--fdo_profile, those options will always 
       prevail as if xbinary_fdo is never specified. 
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val xbinaryFdo = Flag.Label("xbinaryFdo")
 
   //   --auto_cpu_environment_group (a build target label; default: "")
@@ -3579,9 +3829,10 @@ internal object knownFlags {
       Declare the environment_group to use for automatically mapping cpu values to 
       target_environment values.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val autoCpuEnvironmentGroup = Flag.Label("autoCpuEnvironmentGroup")
 
   //   --[no]check_bzl_visibility (a boolean; default: "true")
@@ -3590,9 +3841,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.BUILD_FILE_SEMANTICS],
     help = """If disabled, .bzl load visibility errors are demoted to warnings.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val checkBzlVisibility = Flag.Boolean("checkBzlVisibility")
 
   //   --[no]check_licenses (a boolean; default: "false")
@@ -3605,9 +3857,10 @@ internal object knownFlags {
       with distribution modes of the targets being built. By default, licenses are 
       not checked.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val checkLicenses = Flag.Boolean("checkLicenses")
 
   //   --[no]check_visibility (a boolean; default: "true")
@@ -3616,9 +3869,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.BUILD_FILE_SEMANTICS],
     help = """If disabled, visibility errors in target dependencies are demoted to warnings.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val checkVisibility = Flag.Boolean("checkVisibility")
 
   //   --[no]desugar_for_android (a boolean; default: "true")
@@ -3627,9 +3881,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     help = """Whether to desugar Java 8 bytecode before dexing.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val desugarForAndroid = Flag.Boolean("desugarForAndroid")
 
   //   --[no]desugar_java8_libs (a boolean; default: "false")
@@ -3639,9 +3894,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Whether to include supported Java 8 libraries in apps for legacy devices.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val desugarJava8Libs = Flag.Boolean("desugarJava8Libs")
 
   //   --[no]enforce_constraints (a boolean; default: "true")
@@ -3653,9 +3909,10 @@ internal object knownFlags {
       Checks the environments each target is compatible with and reports errors if 
       any target has dependencies that don't support the same environments
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val enforceConstraints = Flag.Boolean("enforceConstraints")
 
   //   --[no]experimental_check_desugar_deps (a boolean; default: "true")
@@ -3665,9 +3922,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.EAGERNESS_TO_EXIT, OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Whether to double-check correct desugaring at Android binary level.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCheckDesugarDeps = Flag.Boolean("experimentalCheckDesugarDeps")
 
   //   --[no]experimental_docker_privileged (a boolean; default: "false")
@@ -3680,9 +3938,10 @@ internal object knownFlags {
       actions. This might be required by your build, but it might also result in 
       reduced hermeticity.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalDockerPrivileged = Flag.Boolean("experimentalDockerPrivileged")
 
   //   --experimental_import_deps_checking (off, warning or error; default: "OFF")
@@ -3694,9 +3953,10 @@ internal object knownFlags {
       When enabled, check whether the dependencies of an aar_import are complete. 
       This enforcement can break the build, or can just result in warnings.
       """,
-    valueHelp = """off, warning or error"""
+    valueHelp = """off, warning or error""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalImportDepsChecking = Flag.OneOf("experimentalImportDepsChecking")
 
   //   --experimental_one_version_enforcement (off, warning or error; default: "OFF")
@@ -3709,9 +3969,10 @@ internal object knownFlags {
       version of the same class file on the classpath. This enforcement can break the 
       build, or can just result in warnings.
       """,
-    valueHelp = """off, warning or error"""
+    valueHelp = """off, warning or error""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalOneVersionEnforcement = Flag.OneOf("experimentalOneVersionEnforcement")
 
   //   --[no]experimental_sandboxfs_map_symlink_targets (a boolean; default: "false")
@@ -3720,9 +3981,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS, OptionEffectTag.EXECUTION],
     help = """No-op""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalSandboxfsMapSymlinkTargets = Flag.Boolean("experimentalSandboxfsMapSymlinkTargets")
 
   //   --experimental_strict_java_deps (off, warn, error, strict or default; default: "default")
@@ -3734,9 +3996,10 @@ internal object knownFlags {
       If true, checks that a Java target explicitly declares all directly used 
       targets as dependencies.
       """,
-    valueHelp = """off, warn, error, strict or default"""
+    valueHelp = """off, warn, error, strict or default""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalStrictJavaDeps = Flag.OneOf("experimentalStrictJavaDeps")
 
   //   --[no]incompatible_check_testonly_for_output_files (a boolean; default: "false")
@@ -3750,9 +4013,10 @@ internal object knownFlags {
       looking up the testonly of the generating rule. This matches visibility 
       checking.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleCheckTestonlyForOutputFiles = Flag.Boolean("incompatibleCheckTestonlyForOutputFiles")
 
   //   --[no]incompatible_check_visibility_for_toolchains (a boolean; default: "false")
@@ -3762,9 +4026,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.BUILD_FILE_SEMANTICS],
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """If enabled, visibility checking also applies to toolchain implementations.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleCheckVisibilityForToolchains = Flag.Boolean("incompatibleCheckVisibilityForToolchains")
 
   //   --[no]incompatible_disable_native_android_rules (a boolean; default: "false")
@@ -3777,9 +4042,10 @@ internal object knownFlags {
       If enabled, direct usage of the native Android rules is disabled. Please use 
       the Starlark Android rules from https://github.com/bazelbuild/rules_android
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisableNativeAndroidRules = Flag.Boolean("incompatibleDisableNativeAndroidRules")
 
   //   --[no]incompatible_disable_native_apple_binary_rule (a boolean; default: "false")
@@ -3789,9 +4055,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.EAGERNESS_TO_EXIT],
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """No-op. Kept here for backwards compatibility.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisableNativeAppleBinaryRule = Flag.Boolean("incompatibleDisableNativeAppleBinaryRule")
 
   //   --[no]incompatible_legacy_local_fallback (a boolean; default: "false")
@@ -3806,9 +4073,10 @@ internal object knownFlags {
       Use --strategy, --spawn_strategy, or --dynamic_local_strategy to configure 
       fallbacks instead.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleLegacyLocalFallback = Flag.Boolean("incompatibleLegacyLocalFallback")
 
   //   --[no]incompatible_python_disable_py2 (a boolean; default: "true")
@@ -3822,9 +4090,10 @@ internal object knownFlags {
       python_version=PY2, srcs_version=PY2, and srcs_version=PY2ONLY. See 
       https://github.com/bazelbuild/bazel/issues/15684 for more information.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatiblePythonDisablePy2 = Flag.Boolean("incompatiblePythonDisablePy2")
 
   //   --[no]incompatible_validate_top_level_header_inclusions (a boolean; default: "true")
@@ -3837,9 +4106,10 @@ internal object knownFlags {
       If true, Bazel will also validate top level directory header inclusions (see 
       https://github.com/bazelbuild/bazel/issues/10047 for more information).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleValidateTopLevelHeaderInclusions = Flag.Boolean("incompatibleValidateTopLevelHeaderInclusions")
 
   //   --[no]one_version_enforcement_on_java_tests (a boolean; default: "true")
@@ -3853,9 +4123,10 @@ internal object knownFlags {
       improve incremental test performance at the expense of missing potential one 
       version violations.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val oneVersionEnforcementOnJavaTests = Flag.Boolean("oneVersionEnforcementOnJavaTests")
 
   //   --python_native_rules_allowlist (a build target label; default: see description)
@@ -3866,9 +4137,10 @@ internal object knownFlags {
       An allowlist (package_group target) to use when enforcing 
       --incompatible_python_disallow_native_rules.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val pythonNativeRulesAllowlist = Flag.Label("pythonNativeRulesAllowlist")
 
   //   --sandbox_add_mount_pair (a single path or a 'source:target' pair; may be used multiple times)
@@ -3877,9 +4149,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.EXECUTION],
     help = """Add additional path pair to mount in sandbox.""",
-    valueHelp = """a single path or a 'source:target' pair"""
+    valueHelp = """a single path or a 'source:target' pair""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val sandboxAddMountPair = Flag.Unknown("sandboxAddMountPair")
 
   //   --sandbox_block_path (a string; may be used multiple times)
@@ -3888,9 +4161,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.EXECUTION],
     help = """For sandboxed actions, disallow access to this path.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val sandboxBlockPath = Flag.Str("sandboxBlockPath")
 
   //   --[no]sandbox_default_allow_network (a boolean; default: "true")
@@ -3902,9 +4176,10 @@ internal object knownFlags {
       Allow network access by default for actions; this may not work with all 
       sandboxing implementations.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val sandboxDefaultAllowNetwork = Flag.Boolean("sandboxDefaultAllowNetwork")
 
   //   --[no]sandbox_fake_hostname (a boolean; default: "false")
@@ -3913,9 +4188,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.EXECUTION],
     help = """Change the current hostname to 'localhost' for sandboxed actions.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val sandboxFakeHostname = Flag.Boolean("sandboxFakeHostname")
 
   //   --[no]sandbox_fake_username (a boolean; default: "false")
@@ -3924,9 +4200,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.EXECUTION],
     help = """Change the current username to 'nobody' for sandboxed actions.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val sandboxFakeUsername = Flag.Boolean("sandboxFakeUsername")
 
   //   --sandbox_writable_path (a string; may be used multiple times)
@@ -3938,9 +4215,10 @@ internal object knownFlags {
       For sandboxed actions, make an existing directory writable in the sandbox (if 
       supported by the sandboxing implementation, ignored otherwise).
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val sandboxWritablePath = Flag.Str("sandboxWritablePath")
 
   //   --[no]strict_filesets (a boolean; default: "false")
@@ -3952,9 +4230,10 @@ internal object knownFlags {
       If this option is enabled, filesets crossing package boundaries are reported as 
       errors.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val strictFilesets = Flag.Boolean("strictFilesets")
 
   //   --strict_proto_deps (off, warn, error, strict or default; default: "error")
@@ -3967,9 +4246,10 @@ internal object knownFlags {
       Unless OFF, checks that a proto_library target explicitly declares all directly 
       used targets as dependencies.
       """,
-    valueHelp = """off, warn, error, strict or default"""
+    valueHelp = """off, warn, error, strict or default""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val strictProtoDeps = Flag.OneOf("strictProtoDeps")
 
   //   --strict_public_imports (off, warn, error, strict or default; default: "off")
@@ -3982,9 +4262,10 @@ internal object knownFlags {
       Unless OFF, checks that a proto_library target explicitly declares all targets 
       used in 'import public' as exported.
       """,
-    valueHelp = """off, warn, error, strict or default"""
+    valueHelp = """off, warn, error, strict or default""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val strictPublicImports = Flag.OneOf("strictPublicImports")
 
   //   --[no]strict_system_includes (a boolean; default: "false")
@@ -3996,9 +4277,10 @@ internal object knownFlags {
       If true, headers found through system include paths (-isystem) are also 
       required to be declared.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val strictSystemIncludes = Flag.Boolean("strictSystemIncludes")
 
   //   --target_environment (a build target label; may be used multiple times)
@@ -4011,9 +4293,10 @@ internal object knownFlags {
       "environment" rule. If specified, all top-level targets must be compatible with 
       this environment.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val targetEnvironment = Flag.Label("targetEnvironment")
 
   //   --apk_signing_method (v1, v2, v1_v2 or v4; default: "v1_v2")
@@ -4022,9 +4305,10 @@ internal object knownFlags {
     defaultValue = """"v1_v2"""",
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Implementation to use to sign APKs""",
-    valueHelp = """v1, v2, v1_v2 or v4"""
+    valueHelp = """v1, v2, v1_v2 or v4""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val apkSigningMethod = Flag.OneOf("apkSigningMethod")
 
   //   --[no]device_debug_entitlements (a boolean; default: "true")
@@ -4036,9 +4320,10 @@ internal object knownFlags {
       If set, and compilation mode is not 'opt', objc apps will include debug 
       entitlements when signing.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val deviceDebugEntitlements = Flag.Boolean("deviceDebugEntitlements")
 
   //   --ios_signing_cert_name (a string; default: see description)
@@ -4051,9 +4336,10 @@ internal object knownFlags {
       (substring) of the certificate's common name, as per codesign's man page 
       (SIGNING IDENTITIES).
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val iosSigningCertName = Flag.Str("iosSigningCertName")
 
   //   --[no]enable_bzlmod (a boolean; default: "true")
@@ -4065,9 +4351,10 @@ internal object knownFlags {
       If true, enables the Bzlmod dependency management system, taking precedence 
       over WORKSPACE. See https://bazel.build/docs/bzlmod for more information.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val enableBzlmod = Flag.Boolean("enableBzlmod")
 
   //   --[no]enable_workspace (a boolean; default: "true")
@@ -4079,9 +4366,10 @@ internal object knownFlags {
       If true, enables the legacy WORKSPACE system for external dependencies. See 
       https://bazel.build/external/overview for more information.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val enableWorkspace = Flag.Boolean("enableWorkspace")
 
   //   --[no]experimental_action_resource_set (a boolean; default: "true")
@@ -4095,9 +4383,10 @@ internal object knownFlags {
       resource_set parameter for local execution. Otherwise it will default to 250 MB 
       for memory and 1 cpu.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalActionResourceSet = Flag.Boolean("experimentalActionResourceSet")
 
   //   --[no]experimental_bzl_visibility (a boolean; default: "true")
@@ -4111,9 +4400,10 @@ internal object knownFlags {
       top-level evaluation to set their visibility for the purpose of load() 
       statements.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalBzlVisibility = Flag.Boolean("experimentalBzlVisibility")
 
   //   --[no]experimental_cc_shared_library (a boolean; default: "false")
@@ -4126,9 +4416,10 @@ internal object knownFlags {
       If set to true, rule attributes and Starlark API methods needed for the rule 
       cc_shared_library will be available
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCcSharedLibrary = Flag.Boolean("experimentalCcSharedLibrary")
 
   //   --[no]experimental_disable_external_package (a boolean; default: "false")
@@ -4142,9 +4433,10 @@ internal object knownFlags {
       anymore. Bazel will still be unable to parse the file 'external/BUILD', but 
       globs reaching into external/ from the unnamed package will work.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalDisableExternalPackage = Flag.Boolean("experimentalDisableExternalPackage")
 
   //   --[no]experimental_enable_android_migration_apis (a boolean; default: "false")
@@ -4156,9 +4448,10 @@ internal object knownFlags {
       If set to true, enables the APIs required to support the Android Starlark 
       migration.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalEnableAndroidMigrationApis = Flag.Boolean("experimentalEnableAndroidMigrationApis")
 
   //   --[no]experimental_enable_scl_dialect (a boolean; default: "false")
@@ -4167,9 +4460,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.BUILD_FILE_SEMANTICS],
     help = """If set to true, .scl files may be used in load() statements.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalEnableSclDialect = Flag.Boolean("experimentalEnableSclDialect")
 
   //   --[no]experimental_google_legacy_api (a boolean; default: "false")
@@ -4182,9 +4476,10 @@ internal object knownFlags {
       If set to true, exposes a number of experimental pieces of Starlark build API 
       pertaining to Google legacy code.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalGoogleLegacyApi = Flag.Boolean("experimentalGoogleLegacyApi")
 
   //   --[no]experimental_isolated_extension_usages (a boolean; default: "false")
@@ -4197,9 +4492,10 @@ internal object knownFlags {
       href="https://bazel.build/rules/lib/globals/module#use_extension"><code>use_extension</code></a> 
       function.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalIsolatedExtensionUsages = Flag.Boolean("experimentalIsolatedExtensionUsages")
 
   //   --[no]experimental_java_library_export (a boolean; default: "false")
@@ -4209,9 +4505,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """If enabled, experimental_java_library_export_do_not_use module is available.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalJavaLibraryExport = Flag.Boolean("experimentalJavaLibraryExport")
 
   //   --[no]experimental_platforms_api (a boolean; default: "false")
@@ -4224,9 +4521,10 @@ internal object knownFlags {
       If set to true, enables a number of platform-related Starlark APIs useful for 
       debugging.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalPlatformsApi = Flag.Boolean("experimentalPlatformsApi")
 
   //   --[no]experimental_repo_remote_exec (a boolean; default: "false")
@@ -4236,16 +4534,21 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.BUILD_FILE_SEMANTICS, OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """If set to true, repository_rule gains some remote execution capabilities.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRepoRemoteExec = Flag.Boolean("experimentalRepoRemoteExec")
 
   //   --[no]experimental_sibling_repository_layout (a boolean; default: "false")
   @Option(
     name = "experimental_sibling_repository_layout",
     defaultValue = """"false"""",
-    effectTags = [OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.BAZEL_INTERNAL_CONFIGURATION, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
+    effectTags =
+      [
+        OptionEffectTag.ACTION_COMMAND_LINES, OptionEffectTag.BAZEL_INTERNAL_CONFIGURATION,
+        OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE,
+      ],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """      
       If set to true, non-main repositories are planted as symlinks to the main 
@@ -4254,9 +4557,10 @@ internal object knownFlags {
       freeing up ${'$'}output_base/execution_root/__main__/external for the real 
       top-level 'external' directory.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalSiblingRepositoryLayout = Flag.Boolean("experimentalSiblingRepositoryLayout")
 
   //   --[no]incompatible_allow_tags_propagation (a boolean; default: "true")
@@ -4271,9 +4575,10 @@ internal object knownFlags {
       requirements; otherwise tags are not propagated. See 
       https://github.com/bazelbuild/bazel/issues/8830 for details.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleAllowTagsPropagation = Flag.Boolean("incompatibleAllowTagsPropagation")
 
   //   --[no]incompatible_always_check_depset_elements (a boolean; default: "true")
@@ -4288,9 +4593,10 @@ internal object knownFlags {
       to check. Use tuples instead of lists in depset elements. See 
       https://github.com/bazelbuild/bazel/issues/10313 for details.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleAlwaysCheckDepsetElements = Flag.Boolean("incompatibleAlwaysCheckDepsetElements")
 
   //   --[no]incompatible_config_setting_private_default_visibility (a boolean; default: "false")
@@ -4306,9 +4612,10 @@ internal object knownFlags {
       the same visibility logic as all other rules. See 
       https://github.com/bazelbuild/bazel/issues/12933.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleConfigSettingPrivateDefaultVisibility = Flag.Boolean("incompatibleConfigSettingPrivateDefaultVisibility")
 
   //   --[no]incompatible_depset_for_java_output_source_jars (a boolean; default: "true")
@@ -4321,9 +4628,10 @@ internal object knownFlags {
       When true, Bazel no longer returns a list from 
       java_info.java_output[0].source_jars but returns a depset instead.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDepsetForJavaOutputSourceJars = Flag.Boolean("incompatibleDepsetForJavaOutputSourceJars")
 
   //   --[no]incompatible_depset_for_libraries_to_link_getter (a boolean; default: "true")
@@ -4336,9 +4644,10 @@ internal object knownFlags {
       When true, Bazel no longer returns a list from 
       linking_context.libraries_to_link but returns a depset instead.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDepsetForLibrariesToLinkGetter = Flag.Boolean("incompatibleDepsetForLibrariesToLinkGetter")
 
   //   --[no]incompatible_disable_objc_library_transition (a boolean; default: "true")
@@ -4351,9 +4660,10 @@ internal object knownFlags {
       Disable objc_library's custom transition and inherit from the top level target 
       instead
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisableObjcLibraryTransition = Flag.Boolean("incompatibleDisableObjcLibraryTransition")
 
   //   --[no]incompatible_disable_starlark_host_transitions (a boolean; default: "false")
@@ -4366,9 +4676,10 @@ internal object knownFlags {
       If set to true, rule attributes cannot set 'cfg = "host"'. Rules should set 
       'cfg = "exec"' instead.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisableStarlarkHostTransitions = Flag.Boolean("incompatibleDisableStarlarkHostTransitions")
 
   //   --[no]incompatible_disable_target_provider_fields (a boolean; default: "false")
@@ -4384,9 +4695,10 @@ internal object knownFlags {
       function, use `ctx.attr.dep[MyInfo]`. See 
       https://github.com/bazelbuild/bazel/issues/9014 for details.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisableTargetProviderFields = Flag.Boolean("incompatibleDisableTargetProviderFields")
 
   //   --[no]incompatible_disallow_empty_glob (a boolean; default: "false")
@@ -4399,9 +4711,10 @@ internal object knownFlags {
       If set to true, the default value of the `allow_empty` argument of glob() is 
       False.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisallowEmptyGlob = Flag.Boolean("incompatibleDisallowEmptyGlob")
 
   //   --[no]incompatible_disallow_legacy_py_provider (a boolean; default: "true")
@@ -4411,9 +4724,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """No-op, will be removed soon.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisallowLegacyPyProvider = Flag.Boolean("incompatibleDisallowLegacyPyProvider")
 
   //   --[no]incompatible_disallow_sdk_frameworks_attributes (a boolean; default: "false")
@@ -4426,9 +4740,10 @@ internal object knownFlags {
       If true, disallow sdk_frameworks and weak_sdk_frameworks attributes in 
       objc_library andobjc_import.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisallowSdkFrameworksAttributes = Flag.Boolean("incompatibleDisallowSdkFrameworksAttributes")
 
   //   --[no]incompatible_disallow_struct_provider_syntax (a boolean; default: "false")
@@ -4441,9 +4756,10 @@ internal object knownFlags {
       If set to true, rule implementation functions may not return a struct. They 
       must instead return a list of provider instances.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisallowStructProviderSyntax = Flag.Boolean("incompatibleDisallowStructProviderSyntax")
 
   //   --[no]incompatible_enable_deprecated_label_apis (a boolean; default: "true")
@@ -4455,9 +4771,10 @@ internal object knownFlags {
       If enabled, certain deprecated APIs (native.repository_name, 
       Label.workspace_name, Label.relative) can be used.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleEnableDeprecatedLabelApis = Flag.Boolean("incompatibleEnableDeprecatedLabelApis")
 
   //   --[no]incompatible_enforce_config_setting_visibility (a boolean; default: "true")
@@ -4471,9 +4788,10 @@ internal object knownFlags {
       config_setting is visible to every target. See 
       https://github.com/bazelbuild/bazel/issues/12932.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleEnforceConfigSettingVisibility = Flag.Boolean("incompatibleEnforceConfigSettingVisibility")
 
   //   --[no]incompatible_existing_rules_immutable_view (a boolean; default: "true")
@@ -4486,9 +4804,10 @@ internal object knownFlags {
       If set to true, native.existing_rule and native.existing_rules return 
       lightweight immutable view objects instead of mutable dicts.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleExistingRulesImmutableView = Flag.Boolean("incompatibleExistingRulesImmutableView")
 
   //   --[no]incompatible_fail_on_unknown_attributes (a boolean; default: "true")
@@ -4498,9 +4817,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """If enabled, targets that have unknown attributes set to None fail.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleFailOnUnknownAttributes = Flag.Boolean("incompatibleFailOnUnknownAttributes")
 
   //   --[no]incompatible_fix_package_group_reporoot_syntax (a boolean; default: "true")
@@ -4516,9 +4836,10 @@ internal object knownFlags {
       "//..." to obtain the old behavior. This flag requires that 
       --incompatible_package_group_has_public_syntax also be enabled.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleFixPackageGroupReporootSyntax = Flag.Boolean("incompatibleFixPackageGroupReporootSyntax")
 
   //   --[no]incompatible_java_common_parameters (a boolean; default: "true")
@@ -4531,9 +4852,10 @@ internal object knownFlags {
       If set to true, the output_jar, and host_javabase parameters in pack_sources 
       and host_javabase in compile will all be removed.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleJavaCommonParameters = Flag.Boolean("incompatibleJavaCommonParameters")
 
   //   --[no]incompatible_merge_fixed_and_default_shell_env (a boolean; default: "true")
@@ -4549,9 +4871,10 @@ internal object knownFlags {
       values passed in to 'env'. If disabled, the value of 'env' is completely 
       ignored in this case.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleMergeFixedAndDefaultShellEnv = Flag.Boolean("incompatibleMergeFixedAndDefaultShellEnv")
 
   //   --[no]incompatible_new_actions_api (a boolean; default: "true")
@@ -4564,9 +4887,10 @@ internal object knownFlags {
       If set to true, the API to create actions is only available on `ctx.actions`, 
       not on `ctx`.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleNewActionsApi = Flag.Boolean("incompatibleNewActionsApi")
 
   //   --[no]incompatible_no_attr_license (a boolean; default: "true")
@@ -4576,9 +4900,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.BUILD_FILE_SEMANTICS],
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """If set to true, disables the function `attr.license`.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleNoAttrLicense = Flag.Boolean("incompatibleNoAttrLicense")
 
   //   --[no]incompatible_no_implicit_file_export (a boolean; default: "false")
@@ -4592,9 +4917,10 @@ internal object knownFlags {
       See 
       https://github.com/bazelbuild/proposals/blob/master/designs/2019-10-24-file-visibility.md
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleNoImplicitFileExport = Flag.Boolean("incompatibleNoImplicitFileExport")
 
   //   --[no]incompatible_no_rule_outputs_param (a boolean; default: "false")
@@ -4607,9 +4933,10 @@ internal object knownFlags {
       If set to true, disables the `outputs` parameter of the `rule()` Starlark 
       function.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleNoRuleOutputsParam = Flag.Boolean("incompatibleNoRuleOutputsParam")
 
   //   --[no]incompatible_objc_alwayslink_by_default (a boolean; default: "false")
@@ -4622,9 +4949,10 @@ internal object knownFlags {
       If true, make the default value true for alwayslink attributes in objc_library 
       and objc_import.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleObjcAlwayslinkByDefault = Flag.Boolean("incompatibleObjcAlwayslinkByDefault")
 
   //   --[no]incompatible_objc_provider_remove_linking_info (a boolean; default: "false")
@@ -4634,9 +4962,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.BUILD_FILE_SEMANTICS],
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """If set to true, the ObjcProvider's APIs for linking info will be removed.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleObjcProviderRemoveLinkingInfo = Flag.Boolean("incompatibleObjcProviderRemoveLinkingInfo")
 
   //   --[no]incompatible_package_group_has_public_syntax (a boolean; default: "true")
@@ -4649,9 +4978,10 @@ internal object knownFlags {
       In package_group's `packages` attribute, allows writing "public" or "private" 
       to refer to all packages or no packages respectively.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatiblePackageGroupHasPublicSyntax = Flag.Boolean("incompatiblePackageGroupHasPublicSyntax")
 
   //   --[no]incompatible_python_disallow_native_rules (a boolean; default: "false")
@@ -4666,9 +4996,10 @@ internal object knownFlags {
       https://github.com/bazelbuild/bazel/issues/17773 for more information and 
       migration instructions.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatiblePythonDisallowNativeRules = Flag.Boolean("incompatiblePythonDisallowNativeRules")
 
   //   --[no]incompatible_require_linker_input_cc_api (a boolean; default: "true")
@@ -4682,9 +5013,10 @@ internal object knownFlags {
       of libraries_to_link. The old getters of linking_context will also be disabled 
       and just linker_inputs will be available.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRequireLinkerInputCcApi = Flag.Boolean("incompatibleRequireLinkerInputCcApi")
 
   //   --[no]incompatible_run_shell_command_string (a boolean; default: "true")
@@ -4697,9 +5029,10 @@ internal object knownFlags {
       If set to true, the command parameter of actions.run_shell will only accept 
       string
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRunShellCommandString = Flag.Boolean("incompatibleRunShellCommandString")
 
   //   --[no]incompatible_stop_exporting_language_modules (a boolean; default: "false")
@@ -4713,9 +5046,10 @@ internal object knownFlags {
       unavailable in user .bzl files and may only be called from their respective 
       rules repositories.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleStopExportingLanguageModules = Flag.Boolean("incompatibleStopExportingLanguageModules")
 
   //   --[no]incompatible_struct_has_no_methods (a boolean; default: "false")
@@ -4729,9 +5063,10 @@ internal object knownFlags {
       field namespace. Instead, use json.encode or json.encode_indent for JSON, or 
       proto.encode_text for textproto.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleStructHasNoMethods = Flag.Boolean("incompatibleStructHasNoMethods")
 
   //   --[no]incompatible_top_level_aspects_require_providers (a boolean; default: "false")
@@ -4745,9 +5080,10 @@ internal object knownFlags {
       run on top level targets whose rules' advertised providers satisfy the required 
       providers of the aspect.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleTopLevelAspectsRequireProviders = Flag.Boolean("incompatibleTopLevelAspectsRequireProviders")
 
   //   --[no]incompatible_unambiguous_label_stringification (a boolean; default: "true")
@@ -4762,9 +5098,10 @@ internal object knownFlags {
       the behavior of repr() is unchanged. See 
       https://github.com/bazelbuild/bazel/issues/15916 for more information.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleUnambiguousLabelStringification = Flag.Boolean("incompatibleUnambiguousLabelStringification")
 
   //   --[no]incompatible_use_cc_configure_from_rules_cc (a boolean; default: "false")
@@ -4778,9 +5115,10 @@ internal object knownFlags {
       Please see https://github.com/bazelbuild/bazel/issues/10134 for details and 
       migration instructions.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleUseCcConfigureFromRulesCc = Flag.Boolean("incompatibleUseCcConfigureFromRulesCc")
 
   //   --[no]incompatible_use_plus_in_repo_names (a boolean; default: "false")
@@ -4794,9 +5132,10 @@ internal object knownFlags {
       Windows; see https://github.com/bazelbuild/bazel/issues/22865 for more 
       information.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleUsePlusInRepoNames = Flag.Boolean("incompatibleUsePlusInRepoNames")
 
   //   --[no]incompatible_visibility_private_attributes_at_definition (a boolean; default: "true")
@@ -4809,9 +5148,10 @@ internal object knownFlags {
       If set to true, the visibility of private rule attributes is checked with 
       respect to the rule definition, falling back to rule usage if not visible.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleVisibilityPrivateAttributesAtDefinition = Flag.Boolean("incompatibleVisibilityPrivateAttributesAtDefinition")
 
   //   --max_computation_steps (a long integer; default: "0")
@@ -4823,9 +5163,10 @@ internal object knownFlags {
       The maximum number of Starlark computation steps that may be executed by a 
       BUILD file (zero means no limit).
       """,
-    valueHelp = """a long integer"""
+    valueHelp = """a long integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val maxComputationSteps = Flag.Unknown("maxComputationSteps")
 
   //   --nested_set_depth_limit (an integer; default: "3500")
@@ -4837,9 +5178,10 @@ internal object knownFlags {
       The maximum depth of the graph internal to a depset (also known as NestedSet), 
       above which the depset() constructor will fail.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val nestedSetDepthLimit = Flag.Integer("nestedSetDepthLimit")
 
   //   --[no]allow_analysis_failures (a boolean; default: "false")
@@ -4853,9 +5195,10 @@ internal object knownFlags {
       propagation of an instance of AnalysisFailureInfo containing the error 
       description, instead of resulting in a build failure.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val allowAnalysisFailures = Flag.Boolean("allowAnalysisFailures")
 
   //   --analysis_testing_deps_limit (an integer; default: "2000")
@@ -4868,9 +5211,10 @@ internal object knownFlags {
       with a for_analysis_testing configuration transition. Exceeding this limit will 
       result in a rule error.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val analysisTestingDepsLimit = Flag.Integer("analysisTestingDepsLimit")
 
   //   --[no]break_build_on_parallel_dex2oat_failure (a boolean; default: "false")
@@ -4883,9 +5227,10 @@ internal object knownFlags {
       If true dex2oat action failures will cause the build to break instead of 
       executing dex2oat during test runtime.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val breakBuildOnParallelDex2oatFailure = Flag.Boolean("breakBuildOnParallelDex2oatFailure")
 
   //   --[no]check_tests_up_to_date (a boolean; default: "false")
@@ -4900,15 +5245,16 @@ internal object knownFlags {
       --check_up_to_date behavior.  Using this option will also add: 
       --check_up_to_date 
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val checkTestsUpToDate = Flag.Boolean("checkTestsUpToDate")
 
-    // 
-  //   --default_test_resources (a resource name followed by equal and 1 float or 4 float, e.g 
+  //
+  //   --default_test_resources (a resource name followed by equal and 1 float or 4 float, e.g
   // memory=10,30,60,100; may be used multiple times)
-  // 
+  //
   @Option(
     name = "default_test_resources",
     allowMultiple = true,
@@ -4926,9 +5272,10 @@ internal object knownFlags {
     valueHelp = """      
       a resource name followed by equal and 1 float or 4 float, e.g 
       memory=10,30,60,100
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val defaultTestResources = Flag.Unknown("defaultTestResources")
 
   //   --[no]experimental_android_use_parallel_dex2oat (a boolean; default: "false")
@@ -4938,15 +5285,16 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Use dex2oat in parallel to possibly speed up android_test.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalAndroidUseParallelDex2oat = Flag.Boolean("experimentalAndroidUseParallelDex2oat")
 
-    // 
-  //   --flaky_test_attempts (a positive integer, the string "default", or test_regex@attempts. This 
+  //
+  //   --flaky_test_attempts (a positive integer, the string "default", or test_regex@attempts. This
   // flag may be passed more than once; may be used multiple times)
-  // 
+  //
   @Option(
     name = "flaky_test_attempts",
     allowMultiple = true,
@@ -4969,9 +5317,10 @@ internal object knownFlags {
     valueHelp = """      
       a positive integer, the string "default", or test_regex@attempts. This flag may 
       be passed more than once
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val flakyTestAttempts = Flag.Unknown("flakyTestAttempts")
 
   //   --[no]ios_memleaks (a boolean; default: "false")
@@ -4980,9 +5329,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.ACTION_COMMAND_LINES],
     help = """Enable checking for memory leaks in ios_test targets.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val iosMemleaks = Flag.Boolean("iosMemleaks")
 
   //   --ios_simulator_device (a string; default: see description)
@@ -4994,15 +5344,16 @@ internal object knownFlags {
       'iPhone 6'. You can get a list of devices by running 'xcrun simctl list 
       devicetypes' on the machine the simulator will be run on.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val iosSimulatorDevice = Flag.Str("iosSimulatorDevice")
 
-    // 
-  //   --ios_simulator_version (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see 
+  //
+  //   --ios_simulator_version (a dotted version (for example '2.3' or '3.3alpha2.4'); default: see
   // description)
-  // 
+  //
   @Option(
     name = "ios_simulator_version",
     effectTags = [OptionEffectTag.TEST_RUNNER],
@@ -5010,15 +5361,16 @@ internal object knownFlags {
       The version of iOS to run on the simulator when running or testing. This is 
       ignored for ios_test rules if a target device is specified in the rule.
       """,
-    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')"""
+    valueHelp = """a dotted version (for example '2.3' or '3.3alpha2.4')""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val iosSimulatorVersion = Flag.Unknown("iosSimulatorVersion")
 
-    // 
-  //   --local_test_jobs (an integer, or a keyword ("auto", "HOST_CPUS", "HOST_RAM"), optionally 
+  //
+  //   --local_test_jobs (an integer, or a keyword ("auto", "HOST_CPUS", "HOST_RAM"), optionally
   // followed by an operation ([-|*]<float>) eg. "auto", "HOST_CPUS*.5"; default: "auto")
-  // 
+  //
   @Option(
     name = "local_test_jobs",
     defaultValue = """"auto"""",
@@ -5033,15 +5385,16 @@ internal object knownFlags {
     valueHelp = """      
       an integer, or a keyword ("auto", "HOST_CPUS", "HOST_RAM"), optionally followed 
       by an operation ([-|*]<float>) eg. "auto", "HOST_CPUS*.5"
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val localTestJobs = Flag.Unknown("localTestJobs")
 
-    // 
-  //   --runs_per_test (a positive integer or test_regex@runs. This flag may be passed more than once; 
+  //
+  //   --runs_per_test (a positive integer or test_regex@runs. This flag may be passed more than once;
   // may be used multiple times)
-  // 
+  //
   @Option(
     name = "runs_per_test",
     allowMultiple = true,
@@ -5057,9 +5410,10 @@ internal object knownFlags {
       recently passed argument that matches takes precedence. If nothing matches, the 
       test is only run once.
       """,
-    valueHelp = """a positive integer or test_regex@runs. This flag may be passed more than once"""
+    valueHelp = """a positive integer or test_regex@runs. This flag may be passed more than once""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val runsPerTest = Flag.Unknown("runsPerTest")
 
   //   --test_env (a 'name=value' assignment with an optional value part; may be used multiple times)
@@ -5074,9 +5428,10 @@ internal object knownFlags {
       option can be used multiple times to specify several variables. Used only by 
       the 'bazel test' command.
       """,
-    valueHelp = """a 'name=value' assignment with an optional value part"""
+    valueHelp = """a 'name=value' assignment with an optional value part""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testEnv = Flag.Unknown("testEnv")
 
   //   --[no]test_keep_going (a boolean; default: "true")
@@ -5088,9 +5443,10 @@ internal object knownFlags {
       When disabled, any non-passing test will cause the entire build to stop. By 
       default all tests are run, even if some do not pass.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testKeepGoing = Flag.Boolean("testKeepGoing")
 
   //   --test_strategy (a string; default: "")
@@ -5099,9 +5455,10 @@ internal object knownFlags {
     defaultValue = """""""",
     effectTags = [OptionEffectTag.EXECUTION],
     help = """Specifies which strategy to use when running tests.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testStrategy = Flag.Str("testStrategy")
 
   //   --test_timeout (a single integer or comma-separated list of 4 integers; default: "-1")
@@ -5115,18 +5472,20 @@ internal object knownFlags {
       short, moderate, long and eternal (in that order). In either form, a value of 
       -1 tells blaze to use its default timeouts for that category.
       """,
-    valueHelp = """a single integer or comma-separated list of 4 integers"""
+    valueHelp = """a single integer or comma-separated list of 4 integers""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testTimeout = Flag.Unknown("testTimeout")
 
   //   --test_tmpdir (a path; default: see description)
   @Option(
     name = "test_tmpdir",
     help = """Specifies the base temporary directory for 'bazel test' to use.""",
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testTmpdir = Flag.Path("testTmpdir")
 
   //   --[no]zip_undeclared_test_outputs (a boolean; default: "true")
@@ -5135,9 +5494,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.TEST_RUNNER],
     help = """If true, undeclared test outputs will be archived in a zip file.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val zipUndeclaredTestOutputs = Flag.Boolean("zipUndeclaredTestOutputs")
 
   //   --[no]experimental_parallel_aquery_output (a boolean; default: "true")
@@ -5145,9 +5505,10 @@ internal object knownFlags {
     name = "experimental_parallel_aquery_output",
     defaultValue = """"true"""",
     help = """No-op.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalParallelAqueryOutput = Flag.Boolean("experimentalParallelAqueryOutput")
 
   //   --allow_yanked_versions (a string; may be used multiple times)
@@ -5165,9 +5526,10 @@ internal object knownFlags {
       environment variable. You can disable this check by using the keyword 'all' 
       (not recommended).
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val allowYankedVersions = Flag.Str("allowYankedVersions")
 
   //   --check_bazel_compatibility (error, warning or off; default: "error")
@@ -5180,9 +5542,10 @@ internal object knownFlags {
       escalate it to a resolution failure, `off` to disable the check, or `warning` 
       to print a warning when mismatch detected.
       """,
-    valueHelp = """error, warning or off"""
+    valueHelp = """error, warning or off""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val checkBazelCompatibility = Flag.OneOf("checkBazelCompatibility")
 
   //   --check_direct_dependencies (off, warning or error; default: "warning")
@@ -5196,9 +5559,10 @@ internal object knownFlags {
       `off` to disable the check, `warning` to print a warning when mismatch detected 
       or `error` to escalate it to a resolution failure.
       """,
-    valueHelp = """off, warning or error"""
+    valueHelp = """off, warning or error""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val checkDirectDependencies = Flag.OneOf("checkDirectDependencies")
 
   //   --[no]ignore_dev_dependency (a boolean; default: "false")
@@ -5212,9 +5576,10 @@ internal object knownFlags {
       dependencies are always ignored in the MODULE.bazel if it's not the root module 
       regardless of the value of this flag.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val ignoreDevDependency = Flag.Boolean("ignoreDevDependency")
 
   //   --lockfile_mode (off, update, refresh or error; default: "update")
@@ -5230,9 +5595,10 @@ internal object knownFlags {
       lockfile but throw an error if it's not up-to-date, or `off` to neither read 
       from or write to the lockfile.
       """,
-    valueHelp = """off, update, refresh or error"""
+    valueHelp = """off, update, refresh or error""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val lockfileMode = Flag.OneOf("lockfileMode")
 
   //   --override_module (an equals-separated mapping of module name to path; may be used multiple times)
@@ -5247,9 +5613,10 @@ internal object knownFlags {
       the output of `bazel info workspace`. If the given path is empty, then remove 
       any previous overrides.
       """,
-    valueHelp = """an equals-separated mapping of module name to path"""
+    valueHelp = """an equals-separated mapping of module name to path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val overrideModule = Flag.Unknown("overrideModule")
 
   //   --registry (a string; may be used multiple times)
@@ -5262,9 +5629,10 @@ internal object knownFlags {
       is important: modules will be looked up in earlier registries first, and only 
       fall back to later registries when they're missing from the earlier ones.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val registry = Flag.Str("registry")
 
   //   --vendor_dir (a path; default: see description)
@@ -5277,9 +5645,10 @@ internal object knownFlags {
       building. The path can be specified as either an absolute path or a path 
       relative to the workspace directory.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val vendorDir = Flag.Path("vendorDir")
 
   //   --cache_computed_file_digests (a long integer; default: "50000")
@@ -5293,15 +5662,16 @@ internal object knownFlags {
       be noted from file metadata. When not 0, the number indicates the size of the 
       cache as the number of file digests to be cached.
       """,
-    valueHelp = """a long integer"""
+    valueHelp = """a long integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val cacheComputedFileDigests = Flag.Unknown("cacheComputedFileDigests")
 
-    // 
-  //   --experimental_dynamic_ignore_local_signals (a comma-separated list of signal numbers; default: 
+  //
+  //   --experimental_dynamic_ignore_local_signals (a comma-separated list of signal numbers; default:
   // see description)
-  // 
+  //
   @Option(
     name = "experimental_dynamic_ignore_local_signals",
     effectTags = [OptionEffectTag.EXECUTION],
@@ -5311,9 +5681,10 @@ internal object knownFlags {
       instead. For persistent workers, this only affects signals that kill the worker 
       process.
       """,
-    valueHelp = """a comma-separated list of signal numbers"""
+    valueHelp = """a comma-separated list of signal numbers""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalDynamicIgnoreLocalSignals = Flag.Unknown("experimentalDynamicIgnoreLocalSignals")
 
   //   --[no]experimental_filter_library_jar_with_program_jar (a boolean; default: "false")
@@ -5325,9 +5696,10 @@ internal object knownFlags {
       Filter the ProGuard ProgramJar to remove any classes also present in the 
       LibraryJar.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalFilterLibraryJarWithProgramJar = Flag.Boolean("experimentalFilterLibraryJarWithProgramJar")
 
   //   --[no]experimental_inmemory_dotd_files (a boolean; default: "true")
@@ -5340,9 +5712,10 @@ internal object knownFlags {
       If enabled, C++ .d files will be passed through in memory directly from the 
       remote build nodes instead of being written to disk.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalInmemoryDotdFiles = Flag.Boolean("experimentalInmemoryDotdFiles")
 
   //   --[no]experimental_inmemory_jdeps_files (a boolean; default: "true")
@@ -5356,9 +5729,10 @@ internal object knownFlags {
       be passed through in memory directly from the remote build nodes instead of 
       being written to disk.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalInmemoryJdepsFiles = Flag.Boolean("experimentalInmemoryJdepsFiles")
 
   //   --[no]experimental_objc_include_scanning (a boolean; default: "false")
@@ -5367,9 +5741,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.EXECUTION, OptionEffectTag.CHANGES_INPUTS],
     help = """Whether to perform include scanning for objective C/C++.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalObjcIncludeScanning = Flag.Boolean("experimentalObjcIncludeScanning")
 
   //   --[no]experimental_retain_test_configuration_across_testonly (a boolean; default: "false")
@@ -5383,9 +5758,10 @@ internal object knownFlags {
       when non-test rules depend on cc_test rules. No effect if 
       --trim_test_configuration is false.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRetainTestConfigurationAcrossTestonly = Flag.Boolean("experimentalRetainTestConfigurationAcrossTestonly")
 
   //   --[no]experimental_starlark_cc_import (a boolean; default: "false")
@@ -5395,9 +5771,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """If enabled, the Starlark version of cc_import can be used.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalStarlarkCcImport = Flag.Boolean("experimentalStarlarkCcImport")
 
   //   --[no]experimental_unsupported_and_brittle_include_scanning (a boolean; default: "false")
@@ -5414,9 +5791,10 @@ internal object knownFlags {
       preprocessor conditional logic. Use at your own risk. Any issues relating to 
       this flag that are filed will be closed.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalUnsupportedAndBrittleIncludeScanning = Flag.Boolean("experimentalUnsupportedAndBrittleIncludeScanning")
 
   //   --gc_thrashing_limits (comma separated pairs of <period>:<count>; default: "1s:2,20s:3,1m:5")
@@ -5432,9 +5810,10 @@ internal object knownFlags {
       GCs within <period>, an OOM is triggered. Multiple limits can be specified 
       separated by commas.
       """,
-    valueHelp = """comma separated pairs of <period>:<count>"""
+    valueHelp = """comma separated pairs of <period>:<count>""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val gcThrashingLimits = Flag.Unknown("gcThrashingLimits")
 
   //   --[no]heuristically_drop_nodes (a boolean; default: "false")
@@ -5448,9 +5827,10 @@ internal object knownFlags {
       it is less likely that these nodes will be needed again. If so, the program 
       will re-evaluate them.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val heuristicallyDropNodes = Flag.Boolean("heuristicallyDropNodes")
 
   //   --[no]incompatible_do_not_split_linking_cmdline (a boolean; default: "true")
@@ -5464,9 +5844,10 @@ internal object knownFlags {
       also doesn't selectively decide which flags go to the param file and which 
       don't.  See https://github.com/bazelbuild/bazel/issues/7670 for details.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDoNotSplitLinkingCmdline = Flag.Boolean("incompatibleDoNotSplitLinkingCmdline")
 
   //   --[no]incremental_dexing (a boolean; default: "true")
@@ -5475,9 +5856,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS, OptionEffectTag.LOSES_INCREMENTAL_STATE],
     help = """Does most of the work for dexing separately for each Jar file.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incrementalDexing = Flag.Boolean("incrementalDexing")
 
   //   --[no]keep_state_after_build (a boolean; default: "true")
@@ -5490,15 +5872,16 @@ internal object knownFlags {
       finishes. Subsequent builds will not have any incrementality with respect to 
       this one.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val keepStateAfterBuild = Flag.Boolean("keepStateAfterBuild")
 
-    // 
-  //   --local_cpu_resources (an integer, or "HOST_CPUS", optionally followed by [-|*]<float>.; default: 
+  //
+  //   --local_cpu_resources (an integer, or "HOST_CPUS", optionally followed by [-|*]<float>.; default:
   // "HOST_CPUS")
-  // 
+  //
   @Option(
     name = "local_cpu_resources",
     defaultValue = """"HOST_CPUS"""",
@@ -5510,9 +5893,10 @@ internal object knownFlags {
       cores). By default, ("HOST_CPUS"), Bazel will query system configuration to 
       estimate the number of CPU cores available.
       """,
-    valueHelp = """an integer, or "HOST_CPUS", optionally followed by [-|*]<float>."""
+    valueHelp = """an integer, or "HOST_CPUS", optionally followed by [-|*]<float>.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val localCpuResources = Flag.Unknown("localCpuResources")
 
   //   --local_extra_resources (a named float, 'name=value'; may be used multiple times)
@@ -5529,15 +5913,16 @@ internal object knownFlags {
       "resources:<resoucename>:<amount>" format. Available CPU, RAM and resources 
       cannot be set with this flag.
       """,
-    valueHelp = """a named float, 'name=value'"""
+    valueHelp = """a named float, 'name=value'""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val localExtraResources = Flag.Unknown("localExtraResources")
 
-    // 
-  //   --local_ram_resources (an integer number of MBs, or "HOST_RAM", optionally followed by 
+  //
+  //   --local_ram_resources (an integer number of MBs, or "HOST_RAM", optionally followed by
   // [-|*]<float>.; default: "HOST_RAM*.67")
-  // 
+  //
   @Option(
     name = "local_ram_resources",
     defaultValue = """"HOST_RAM*.67"""",
@@ -5549,16 +5934,17 @@ internal object knownFlags {
       RAM). By default, ("HOST_RAM*.67"), Bazel will query system configuration to 
       estimate the amount of RAM available and will use 67% of it.
       """,
-    valueHelp = """an integer number of MBs, or "HOST_RAM", optionally followed by [-|*]<float>."""
+    valueHelp = """an integer number of MBs, or "HOST_RAM", optionally followed by [-|*]<float>.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val localRamResources = Flag.Unknown("localRamResources")
 
-    // 
-  //   --local_resources (a named double, 'name=value', where value is an integer, or a keyword ("auto", 
-  // "HOST_CPUS", "HOST_RAM"), optionally followed by an operation ([-|*]<float>) eg. "auto", 
+  //
+  //   --local_resources (a named double, 'name=value', where value is an integer, or a keyword ("auto",
+  // "HOST_CPUS", "HOST_RAM"), optionally followed by an operation ([-|*]<float>) eg. "auto",
   // "HOST_CPUS*.5"; may be used multiple times)
-  // 
+  //
   @Option(
     name = "local_resources",
     allowMultiple = true,
@@ -5577,9 +5963,10 @@ internal object knownFlags {
       a named double, 'name=value', where value is an integer, or a keyword ("auto", 
       "HOST_CPUS", "HOST_RAM"), optionally followed by an operation ([-|*]<float>) 
       eg. "auto", "HOST_CPUS*.5"
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val localResources = Flag.Unknown("localResources")
 
   //   --[no]objc_use_dotd_pruning (a boolean; default: "true")
@@ -5591,9 +5978,10 @@ internal object knownFlags {
       If set, .d files emitted by clang will be used to prune the set of inputs 
       passed into objc compiles.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val objcUseDotdPruning = Flag.Boolean("objcUseDotdPruning")
 
   //   --[no]process_headers_in_dependencies (a boolean; default: "false")
@@ -5605,9 +5993,10 @@ internal object knownFlags {
       When building a target //a:a, process headers in all targets that //a:a depends 
       on (if header processing is enabled for the toolchain).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val processHeadersInDependencies = Flag.Boolean("processHeadersInDependencies")
 
   //   --skyframe_high_water_mark_full_gc_drops_per_invocation (an integer, >= 0; default: "2147483647")
@@ -5625,9 +6014,10 @@ internal object knownFlags {
       no longer be dropped when a full GC event occurs and that retained heap 
       percentage threshold is exceeded.
       """,
-    valueHelp = """an integer, >= 0"""
+    valueHelp = """an integer, >= 0""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val skyframeHighWaterMarkFullGcDropsPerInvocation = Flag.Unknown("skyframeHighWaterMarkFullGcDropsPerInvocation")
 
   //   --skyframe_high_water_mark_minor_gc_drops_per_invocation (an integer, >= 0; default: "2147483647")
@@ -5645,9 +6035,10 @@ internal object knownFlags {
       Skyframe state will no longer be dropped when a minor GC event occurs and that 
       retained heap percentage threshold is exceeded.
       """,
-    valueHelp = """an integer, >= 0"""
+    valueHelp = """an integer, >= 0""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val skyframeHighWaterMarkMinorGcDropsPerInvocation = Flag.Unknown("skyframeHighWaterMarkMinorGcDropsPerInvocation")
 
   //   --skyframe_high_water_mark_threshold (an integer; default: "85")
@@ -5663,9 +6054,10 @@ internal object knownFlags {
       memory usage of this temporary state and (ii) more costly than reconstituting 
       the state when it is needed.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val skyframeHighWaterMarkThreshold = Flag.Integer("skyframeHighWaterMarkThreshold")
 
   //   --[no]track_incremental_state (a boolean; default: "true")
@@ -5679,9 +6071,10 @@ internal object knownFlags {
       Subsequent builds will not have any incrementality with respect to this one. 
       Usually you will want to specify --batch when setting this to false.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val trackIncrementalState = Flag.Boolean("trackIncrementalState")
 
   //   --[no]trim_test_configuration (a boolean; default: "true")
@@ -5695,9 +6088,10 @@ internal object knownFlags {
       non-test rules, but changes to test-related options will not cause non-test 
       rules to be re-analyzed.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val trimTestConfiguration = Flag.Boolean("trimTestConfiguration")
 
   //   --[no]announce_rc (a boolean; default: "false")
@@ -5706,9 +6100,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Whether to announce rc options.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val announceRc = Flag.Boolean("announceRc")
 
   //   --[no]attempt_to_print_relative_paths (a boolean; default: "false")
@@ -5720,9 +6115,10 @@ internal object knownFlags {
       When printing the location part of messages, attempt to use a path relative to 
       the workspace directory or one of the directories specified by --package_path.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val attemptToPrintRelativePaths = Flag.Boolean("attemptToPrintRelativePaths")
 
   //   --bes_backend (a string; default: "")
@@ -5736,9 +6132,10 @@ internal object knownFlags {
       schemes are grpc and grpcs (grpc with TLS enabled). If no scheme is provided, 
       Bazel assumes grpcs.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besBackend = Flag.Str("besBackend")
 
   //   --[no]bes_check_preceding_lifecycle_events (a boolean; default: "false")
@@ -5752,9 +6149,10 @@ internal object knownFlags {
       previously received InvocationAttemptStarted and BuildEnqueued events matching 
       the current tool event.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besCheckPrecedingLifecycleEvents = Flag.Boolean("besCheckPrecedingLifecycleEvents")
 
   //   --bes_header (a 'name=value' assignment; may be used multiple times)
@@ -5767,9 +6165,10 @@ internal object knownFlags {
       Multiple headers can be passed by specifying the flag multiple times. Multiple 
       values for the same name will be converted to a comma-separated list.
       """,
-    valueHelp = """a 'name=value' assignment"""
+    valueHelp = """a 'name=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besHeader = Flag.Unknown("besHeader")
 
   //   --bes_instance_name (a string; default: see description)
@@ -5780,9 +6179,10 @@ internal object knownFlags {
       Specifies the instance name under which the BES will persist uploaded BEP. 
       Defaults to null.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besInstanceName = Flag.Str("besInstanceName")
 
   //   --bes_keywords (comma-separated list of options; may be used multiple times)
@@ -5795,9 +6195,10 @@ internal object knownFlags {
       keywords published to BES ("command_name=<command_name> ", 
       "protocol_name=BEP"). Defaults to none.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besKeywords = Flag.Unknown("besKeywords")
 
   //   --[no]bes_lifecycle_events (a boolean; default: "true")
@@ -5806,9 +6207,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Specifies whether to publish BES lifecycle events. (defaults to 'true').""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besLifecycleEvents = Flag.Boolean("besLifecycleEvents")
 
   //   --bes_oom_finish_upload_timeout (An immutable length of time.; default: "10m")
@@ -5821,9 +6223,10 @@ internal object knownFlags {
       OOMing. This flag ensures termination when the JVM is severely GC thrashing and 
       cannot make progress on any user thread.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besOomFinishUploadTimeout = Flag.Duration("besOomFinishUploadTimeout")
 
   //   --bes_outerr_buffer_size (an integer; default: "10240")
@@ -5837,9 +6240,10 @@ internal object knownFlags {
       single event, even if larger than the specified value up to 
       --bes_outerr_chunk_size.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besOuterrBufferSize = Flag.Integer("besOuterrBufferSize")
 
   //   --bes_outerr_chunk_size (an integer; default: "1048576")
@@ -5851,9 +6255,10 @@ internal object knownFlags {
       Specifies the maximal size of stdout or stderr to be sent to BEP in a single 
       message.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besOuterrChunkSize = Flag.Integer("besOuterrChunkSize")
 
   //   --bes_proxy (a string; default: see description)
@@ -5863,9 +6268,10 @@ internal object knownFlags {
       Connect to the Build Event Service through a proxy. Currently this flag can 
       only be used to configure a Unix domain socket (unix:/path/to/socket).
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besProxy = Flag.Str("besProxy")
 
   //   --bes_results_url (a string; default: "")
@@ -5878,9 +6284,10 @@ internal object knownFlags {
       BES backend. Bazel will output the URL appended by the invocation id to the 
       terminal.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besResultsUrl = Flag.Str("besResultsUrl")
 
   //   --bes_system_keywords (comma-separated list of options; may be used multiple times)
@@ -5895,9 +6302,10 @@ internal object knownFlags {
       include keywords when calling PublishLifecycleEvent. Build service operators 
       using this flag should prevent users from overriding the flag value.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besSystemKeywords = Flag.Unknown("besSystemKeywords")
 
   //   --bes_timeout (An immutable length of time.; default: "0s")
@@ -5911,15 +6319,16 @@ internal object knownFlags {
       by a unit: Days (d), hours (h), minutes (m), seconds (s), and milliseconds 
       (ms). The default value is '0' which means that there is no timeout.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besTimeout = Flag.Duration("besTimeout")
 
-    // 
-  //   --bes_upload_mode (wait_for_upload_complete, nowait_for_upload_complete or fully_async; default: 
+  //
+  //   --bes_upload_mode (wait_for_upload_complete, nowait_for_upload_complete or fully_async; default:
   // "wait_for_upload_complete")
-  // 
+  //
   @Option(
     name = "bes_upload_mode",
     defaultValue = """"wait_for_upload_complete"""",
@@ -5930,9 +6339,10 @@ internal object knownFlags {
       the background. Either 'wait_for_upload_complete' (default), 
       'nowait_for_upload_complete', or 'fully_async'.
       """,
-    valueHelp = """wait_for_upload_complete, nowait_for_upload_complete or fully_async"""
+    valueHelp = """wait_for_upload_complete, nowait_for_upload_complete or fully_async""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val besUploadMode = Flag.OneOf("besUploadMode")
 
   //   --build_event_binary_file (a string; default: "")
@@ -5945,9 +6355,10 @@ internal object knownFlags {
       of the build event protocol to that file. This option implies 
       --bes_upload_mode=wait_for_upload_complete.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventBinaryFile = Flag.Str("buildEventBinaryFile")
 
   //   --[no]build_event_binary_file_path_conversion (a boolean; default: "true")
@@ -5960,15 +6371,16 @@ internal object knownFlags {
       more globally valid URIs whenever possible; if disabled, the file:// uri scheme 
       will always be used
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventBinaryFilePathConversion = Flag.Boolean("buildEventBinaryFilePathConversion")
 
-    // 
-  //   --build_event_binary_file_upload_mode (wait_for_upload_complete, nowait_for_upload_complete or 
+  //
+  //   --build_event_binary_file_upload_mode (wait_for_upload_complete, nowait_for_upload_complete or
   // fully_async; default: "wait_for_upload_complete")
-  // 
+  //
   @Option(
     name = "build_event_binary_file_upload_mode",
     defaultValue = """"wait_for_upload_complete"""",
@@ -5979,9 +6391,10 @@ internal object knownFlags {
       finish the upload in the background. Either 'wait_for_upload_complete' 
       (default), 'nowait_for_upload_complete', or 'fully_async'.
       """,
-    valueHelp = """wait_for_upload_complete, nowait_for_upload_complete or fully_async"""
+    valueHelp = """wait_for_upload_complete, nowait_for_upload_complete or fully_async""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventBinaryFileUploadMode = Flag.OneOf("buildEventBinaryFileUploadMode")
 
   //   --build_event_json_file (a string; default: "")
@@ -5993,9 +6406,10 @@ internal object knownFlags {
       If non-empty, write a JSON serialisation of the build event protocol to that 
       file. This option implies --bes_upload_mode=wait_for_upload_complete.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventJsonFile = Flag.Str("buildEventJsonFile")
 
   //   --[no]build_event_json_file_path_conversion (a boolean; default: "true")
@@ -6008,15 +6422,16 @@ internal object knownFlags {
       more globally valid URIs whenever possible; if disabled, the file:// uri scheme 
       will always be used
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventJsonFilePathConversion = Flag.Boolean("buildEventJsonFilePathConversion")
 
-    // 
-  //   --build_event_json_file_upload_mode (wait_for_upload_complete, nowait_for_upload_complete or 
+  //
+  //   --build_event_json_file_upload_mode (wait_for_upload_complete, nowait_for_upload_complete or
   // fully_async; default: "wait_for_upload_complete")
-  // 
+  //
   @Option(
     name = "build_event_json_file_upload_mode",
     defaultValue = """"wait_for_upload_complete"""",
@@ -6027,9 +6442,10 @@ internal object knownFlags {
       finish the upload in the background. Either 'wait_for_upload_complete' 
       (default), 'nowait_for_upload_complete', or 'fully_async'.
       """,
-    valueHelp = """wait_for_upload_complete, nowait_for_upload_complete or fully_async"""
+    valueHelp = """wait_for_upload_complete, nowait_for_upload_complete or fully_async""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventJsonFileUploadMode = Flag.OneOf("buildEventJsonFileUploadMode")
 
   //   --build_event_max_named_set_of_file_entries (an integer; default: "-1")
@@ -6045,9 +6461,10 @@ internal object knownFlags {
       function of the structure of the set as well as the file and uri lengths, which 
       may in turn depend on the hash function.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventMaxNamedSetOfFileEntries = Flag.Integer("buildEventMaxNamedSetOfFileEntries")
 
   //   --[no]build_event_publish_all_actions (a boolean; default: "false")
@@ -6056,9 +6473,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Whether all actions should be published.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventPublishAllActions = Flag.Boolean("buildEventPublishAllActions")
 
   //   --build_event_text_file (a string; default: "")
@@ -6070,9 +6488,10 @@ internal object knownFlags {
       If non-empty, write a textual representation of the build event protocol to 
       that file
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventTextFile = Flag.Str("buildEventTextFile")
 
   //   --[no]build_event_text_file_path_conversion (a boolean; default: "true")
@@ -6085,15 +6504,16 @@ internal object knownFlags {
       more globally valid URIs whenever possible; if disabled, the file:// uri scheme 
       will always be used
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventTextFilePathConversion = Flag.Boolean("buildEventTextFilePathConversion")
 
-    // 
-  //   --build_event_text_file_upload_mode (wait_for_upload_complete, nowait_for_upload_complete or 
+  //
+  //   --build_event_text_file_upload_mode (wait_for_upload_complete, nowait_for_upload_complete or
   // fully_async; default: "wait_for_upload_complete")
-  // 
+  //
   @Option(
     name = "build_event_text_file_upload_mode",
     defaultValue = """"wait_for_upload_complete"""",
@@ -6104,9 +6524,10 @@ internal object knownFlags {
       finish the upload in the background. Either 'wait_for_upload_complete' 
       (default), 'nowait_for_upload_complete', or 'fully_async'.
       """,
-    valueHelp = """wait_for_upload_complete, nowait_for_upload_complete or fully_async"""
+    valueHelp = """wait_for_upload_complete, nowait_for_upload_complete or fully_async""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildEventTextFileUploadMode = Flag.OneOf("buildEventTextFileUploadMode")
 
   //   --[no]debug_spawn_scheduler (a boolean; default: "false")
@@ -6114,9 +6535,10 @@ internal object knownFlags {
     name = "debug_spawn_scheduler",
     defaultValue = """"false"""",
     help = """""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val debugSpawnScheduler = Flag.Boolean("debugSpawnScheduler")
 
   //   --[no]experimental_announce_profile_path (a boolean; default: "false")
@@ -6125,9 +6547,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.BAZEL_MONITORING],
     help = """If enabled, adds the JSON profile path to the log.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalAnnounceProfilePath = Flag.Boolean("experimentalAnnounceProfilePath")
 
   //   --[no]experimental_bep_target_summary (a boolean; default: "false")
@@ -6135,9 +6558,10 @@ internal object knownFlags {
     name = "experimental_bep_target_summary",
     defaultValue = """"false"""",
     help = """Whether to publish TargetSummary events.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalBepTargetSummary = Flag.Boolean("experimentalBepTargetSummary")
 
   //   --[no]experimental_build_event_expand_filesets (a boolean; default: "false")
@@ -6146,9 +6570,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """If true, expand Filesets in the BEP when presenting output files.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalBuildEventExpandFilesets = Flag.Boolean("experimentalBuildEventExpandFilesets")
 
   //   --[no]experimental_build_event_fully_resolve_fileset_symlinks (a boolean; default: "false")
@@ -6160,9 +6585,10 @@ internal object knownFlags {
       If true, fully resolve relative Fileset symlinks in the BEP when presenting 
       output files. Requires --experimental_build_event_expand_filesets.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalBuildEventFullyResolveFilesetSymlinks = Flag.Boolean("experimentalBuildEventFullyResolveFilesetSymlinks")
 
   //   --experimental_build_event_upload_max_retries (an integer; default: "4")
@@ -6171,15 +6597,16 @@ internal object knownFlags {
     defaultValue = """"4"""",
     effectTags = [OptionEffectTag.BAZEL_INTERNAL_CONFIGURATION],
     help = """The maximum number of times Bazel should retry uploading a build event.""",
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalBuildEventUploadMaxRetries = Flag.Integer("experimentalBuildEventUploadMaxRetries")
 
-    // 
-  //   --experimental_build_event_upload_retry_minimum_delay (An immutable length of time.; default: 
+  //
+  //   --experimental_build_event_upload_retry_minimum_delay (An immutable length of time.; default:
   // "1s")
-  // 
+  //
   @Option(
     name = "experimental_build_event_upload_retry_minimum_delay",
     defaultValue = """"1s"""",
@@ -6188,9 +6615,10 @@ internal object knownFlags {
       Initial, minimum delay for exponential backoff retries when BEP upload fails. 
       (exponent: 1.6)
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalBuildEventUploadRetryMinimumDelay = Flag.Duration("experimentalBuildEventUploadRetryMinimumDelay")
 
   //   --experimental_build_event_upload_strategy (a string; default: see description)
@@ -6198,9 +6626,10 @@ internal object knownFlags {
     name = "experimental_build_event_upload_strategy",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Selects how to upload artifacts referenced in the build event protocol.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalBuildEventUploadStrategy = Flag.Str("experimentalBuildEventUploadStrategy")
 
   //   --[no]experimental_collect_load_average_in_profiler (a boolean; default: "true")
@@ -6209,9 +6638,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.BAZEL_MONITORING],
     help = """If enabled, the profiler collects the system's overall load average.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCollectLoadAverageInProfiler = Flag.Boolean("experimentalCollectLoadAverageInProfiler")
 
   //   --[no]experimental_collect_local_sandbox_action_metrics (a boolean; default: "true")
@@ -6220,9 +6650,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.EXECUTION],
     help = """Deprecated no-op.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCollectLocalSandboxActionMetrics = Flag.Boolean("experimentalCollectLocalSandboxActionMetrics")
 
   //   --[no]experimental_collect_pressure_stall_indicators (a boolean; default: "false")
@@ -6231,9 +6662,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.BAZEL_MONITORING],
     help = """If enabled, the profiler collects the Linux PSI data.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCollectPressureStallIndicators = Flag.Boolean("experimentalCollectPressureStallIndicators")
 
   //   --[no]experimental_collect_resource_estimation (a boolean; default: "false")
@@ -6245,9 +6677,10 @@ internal object knownFlags {
       If enabled, the profiler collects CPU and memory usage estimation for local 
       actions.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCollectResourceEstimation = Flag.Boolean("experimentalCollectResourceEstimation")
 
   //   --[no]experimental_collect_system_network_usage (a boolean; default: "false")
@@ -6256,9 +6689,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.BAZEL_MONITORING],
     help = """If enabled, the profiler collects the system's network usage.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCollectSystemNetworkUsage = Flag.Boolean("experimentalCollectSystemNetworkUsage")
 
   //   --[no]experimental_collect_worker_data_in_profiler (a boolean; default: "false")
@@ -6267,9 +6701,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.BAZEL_MONITORING],
     help = """If enabled, the profiler collects worker's aggregated resource data.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCollectWorkerDataInProfiler = Flag.Boolean("experimentalCollectWorkerDataInProfiler")
 
   //   --experimental_command_profile (cpu, wall, alloc or lock; default: see description)
@@ -6283,9 +6718,10 @@ internal object knownFlags {
       in the future to support additional profile types or output formats; use at 
       your own risk.
       """,
-    valueHelp = """cpu, wall, alloc or lock"""
+    valueHelp = """cpu, wall, alloc or lock""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCommandProfile = Flag.OneOf("experimentalCommandProfile")
 
   //   --[no]experimental_docker_verbose (a boolean; default: "false")
@@ -6297,9 +6733,10 @@ internal object knownFlags {
       If enabled, Bazel will print more verbose messages about the Docker sandbox 
       strategy.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalDockerVerbose = Flag.Boolean("experimentalDockerVerbose")
 
   //   --[no]experimental_materialize_param_files_directly (a boolean; default: "false")
@@ -6308,28 +6745,29 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.EXECUTION],
     help = """If materializing param files, do so with direct writes to disk.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalMaterializeParamFilesDirectly = Flag.Boolean("experimentalMaterializeParamFilesDirectly")
 
-    // 
-  //   --experimental_profile_additional_tasks (phase, action, action_check, action_lock, 
-  // action_release, action_update, action_complete, bzlmod, info, create_package, remote_execution, 
-  // local_execution, scanner, local_parse, upload_time, remote_process_time, remote_queue, 
-  // remote_setup, fetch, local_process_time, vfs_stat, vfs_dir, vfs_readlink, vfs_md5, vfs_xattr, 
-  // vfs_delete, vfs_open, vfs_read, vfs_write, vfs_glob, vfs_vmfs_stat, vfs_vmfs_dir, vfs_vmfs_read, 
-  // wait, thread_name, thread_sort_index, skyframe_eval, skyfunction, critical_path, 
-  // critical_path_component, handle_gc_notification, action_counts, action_cache_counts, 
-  // local_cpu_usage, system_cpu_usage, cpu_usage_estimation, local_memory_usage, system_memory_usage, 
-  // memory_usage_estimation, system_network_up_usage, system_network_down_usage, workers_memory_usage, 
-  // system_load_average, starlark_parser, starlark_user_fn, starlark_builtin_fn, 
-  // starlark_user_compiled_fn, starlark_repository_fn, action_fs_staging, remote_cache_check, 
-  // remote_download, remote_network, filesystem_traversal, worker_execution, worker_setup, 
-  // worker_borrow, worker_working, worker_copying_outputs, credential_helper, pressure_stall_io, 
-  // pressure_stall_memory, conflict_check, dynamic_lock, repository_fetch, repository_vendor or 
+  //
+  //   --experimental_profile_additional_tasks (phase, action, action_check, action_lock,
+  // action_release, action_update, action_complete, bzlmod, info, create_package, remote_execution,
+  // local_execution, scanner, local_parse, upload_time, remote_process_time, remote_queue,
+  // remote_setup, fetch, local_process_time, vfs_stat, vfs_dir, vfs_readlink, vfs_md5, vfs_xattr,
+  // vfs_delete, vfs_open, vfs_read, vfs_write, vfs_glob, vfs_vmfs_stat, vfs_vmfs_dir, vfs_vmfs_read,
+  // wait, thread_name, thread_sort_index, skyframe_eval, skyfunction, critical_path,
+  // critical_path_component, handle_gc_notification, action_counts, action_cache_counts,
+  // local_cpu_usage, system_cpu_usage, cpu_usage_estimation, local_memory_usage, system_memory_usage,
+  // memory_usage_estimation, system_network_up_usage, system_network_down_usage, workers_memory_usage,
+  // system_load_average, starlark_parser, starlark_user_fn, starlark_builtin_fn,
+  // starlark_user_compiled_fn, starlark_repository_fn, action_fs_staging, remote_cache_check,
+  // remote_download, remote_network, filesystem_traversal, worker_execution, worker_setup,
+  // worker_borrow, worker_working, worker_copying_outputs, credential_helper, pressure_stall_io,
+  // pressure_stall_memory, conflict_check, dynamic_lock, repository_fetch, repository_vendor or
   // unknown; may be used multiple times)
-  // 
+  //
   @Option(
     name = "experimental_profile_additional_tasks",
     allowMultiple = true,
@@ -6354,9 +6792,10 @@ internal object knownFlags {
       worker_copying_outputs, credential_helper, pressure_stall_io, 
       pressure_stall_memory, conflict_check, dynamic_lock, repository_fetch, 
       repository_vendor or unknown
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalProfileAdditionalTasks = Flag.OneOf("experimentalProfileAdditionalTasks")
 
   //   --[no]experimental_profile_include_primary_output (a boolean; default: "false")
@@ -6368,9 +6807,10 @@ internal object knownFlags {
       Includes the extra "out" attribute in action events that contains the exec path 
       to the action's primary output.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalProfileIncludePrimaryOutput = Flag.Boolean("experimentalProfileIncludePrimaryOutput")
 
   //   --[no]experimental_profile_include_target_label (a boolean; default: "false")
@@ -6379,9 +6819,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.BAZEL_MONITORING],
     help = """Includes target label in action events' JSON profile data.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalProfileIncludeTargetLabel = Flag.Boolean("experimentalProfileIncludeTargetLabel")
 
   //   --[no]experimental_record_metrics_for_all_mnemonics (a boolean; default: "false")
@@ -6393,9 +6834,10 @@ internal object knownFlags {
       largest number of executed actions. Setting this option will write statistics 
       for all mnemonics.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRecordMetricsForAllMnemonics = Flag.Boolean("experimentalRecordMetricsForAllMnemonics")
 
   //   --experimental_repository_resolved_file (a string; default: "")
@@ -6407,9 +6849,10 @@ internal object knownFlags {
       If non-empty, write a Starlark value with the resolved information of all 
       Starlark repository rules that were executed.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRepositoryResolvedFile = Flag.Str("experimentalRepositoryResolvedFile")
 
   //   --[no]experimental_run_bep_event_include_residue (a boolean; default: "false")
@@ -6422,9 +6865,10 @@ internal object knownFlags {
       contain the residue. By default, the residue is not included in run command 
       build events that could contain the residue.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRunBepEventIncludeResidue = Flag.Boolean("experimentalRunBepEventIncludeResidue")
 
   //   --[no]experimental_stream_log_file_uploads (a boolean; default: "false")
@@ -6436,9 +6880,10 @@ internal object knownFlags {
       Stream log file uploads directly to the remote storage rather than writing them 
       to disk.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalStreamLogFileUploads = Flag.Boolean("experimentalStreamLogFileUploads")
 
   //   --experimental_workspace_rules_log_file (a path; default: see description)
@@ -6448,9 +6893,10 @@ internal object knownFlags {
       Log certain Workspace Rules events into this file as delimited WorkspaceEvent 
       protos.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWorkspaceRulesLogFile = Flag.Path("experimentalWorkspaceRulesLogFile")
 
   //   --explain (a path; default: see description)
@@ -6461,9 +6907,10 @@ internal object knownFlags {
       Causes the build system to explain each executed step of the build. The 
       explanation is written to the specified log file.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val explain = Flag.Path("explain")
 
   //   --[no]generate_json_trace_profile (a tri-state (auto, yes, no); default: "auto")
@@ -6476,9 +6923,10 @@ internal object knownFlags {
       file in the output base. View profile by loading into chrome://tracing. By 
       default Bazel writes the profile for all build-like commands and query.
       """,
-    valueHelp = """a tri-state (auto, yes, no)"""
+    valueHelp = """a tri-state (auto, yes, no)""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val generateJsonTraceProfile = Flag.Unknown("generateJsonTraceProfile")
 
   //   --[no]heap_dump_on_oom (a boolean; default: "false")
@@ -6492,9 +6940,10 @@ internal object knownFlags {
       <output_base>/<invocation_id>.heapdump.hprof. This option effectively replaces 
       -XX:+HeapDumpOnOutOfMemoryError, which has no effect for manual OOMs.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val heapDumpOnOom = Flag.Boolean("heapDumpOnOom")
 
   //   --[no]ignore_unsupported_sandboxing (a boolean; default: "false")
@@ -6503,9 +6952,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.TERMINAL_OUTPUT],
     help = """Do not print a warning when sandboxed execution is not supported on this system.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val ignoreUnsupportedSandboxing = Flag.Boolean("ignoreUnsupportedSandboxing")
 
   //   --[no]legacy_important_outputs (a boolean; default: "true")
@@ -6518,9 +6968,10 @@ internal object knownFlags {
       TargetComplete event. important_outputs are required for Bazel to ResultStore 
       integration.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val legacyImportantOutputs = Flag.Boolean("legacyImportantOutputs")
 
   //   --logging (0 <= an integer <= 6; default: "3")
@@ -6529,9 +6980,10 @@ internal object knownFlags {
     defaultValue = """"3"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """The logging level.""",
-    valueHelp = """0 <= an integer <= 6"""
+    valueHelp = """0 <= an integer <= 6""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val logging = Flag.Unknown("logging")
 
   //   --[no]materialize_param_files (a boolean; default: "false")
@@ -6544,9 +6996,10 @@ internal object knownFlags {
       action execution. Useful when debugging actions. This is implied by 
       --subcommands and --verbose_failures.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val materializeParamFiles = Flag.Boolean("materializeParamFiles")
 
   //   --max_config_changes_to_show (an integer; default: "3")
@@ -6559,9 +7012,10 @@ internal object knownFlags {
       displays up to the given number of changed option names. If the number given is 
       -1, all changed options will be displayed.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val maxConfigChangesToShow = Flag.Integer("maxConfigChangesToShow")
 
   //   --max_test_output_bytes (an integer; default: "-1")
@@ -6575,9 +7029,10 @@ internal object knownFlags {
       noisy test output. The test header is included in the log size. Negative values 
       imply no limit. Output is all or nothing.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val maxTestOutputBytes = Flag.Integer("maxTestOutputBytes")
 
   //   --memory_profile (a path; default: see description)
@@ -6588,15 +7043,16 @@ internal object knownFlags {
       If set, write memory usage data to the specified file at phase ends and stable 
       heap to master log at end of build.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val memoryProfile = Flag.Path("memoryProfile")
 
-    // 
-  //   --memory_profile_stable_heap_parameters (integers, separated by a comma expected in pairs; 
+  //
+  //   --memory_profile_stable_heap_parameters (integers, separated by a comma expected in pairs;
   // default: "1,0")
-  // 
+  //
   @Option(
     name = "memory_profile_stable_heap_parameters",
     defaultValue = """"1,0"""",
@@ -6608,9 +7064,10 @@ internal object knownFlags {
       seconds to wait between GCs. Ex: 2,4,4,0 would 2 GCs with a 4sec pause, 
       followed by 4 GCs with zero second pause
       """,
-    valueHelp = """integers, separated by a comma expected in pairs"""
+    valueHelp = """integers, separated by a comma expected in pairs""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val memoryProfileStableHeapParameters = Flag.Unknown("memoryProfileStableHeapParameters")
 
   //   --output_filter (a valid Java regular expression; default: see description)
@@ -6621,9 +7078,10 @@ internal object knownFlags {
       Only shows warnings and action outputs for rules with a name matching the 
       provided regular expression.
       """,
-    valueHelp = """a valid Java regular expression"""
+    valueHelp = """a valid Java regular expression""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val outputFilter = Flag.Unknown("outputFilter")
 
   //   --profile (a path; default: see description)
@@ -6634,9 +7092,10 @@ internal object knownFlags {
       If set, profile Bazel and write data to the specified file. Use bazel 
       analyze-profile to analyze the profile.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val profile = Flag.Path("profile")
 
   //   --progress_report_interval (an integer in 0-3600 range; default: "0")
@@ -6650,9 +7109,10 @@ internal object knownFlags {
       30 seconds and after that progress is reported once every minute. When --curses 
       is enabled, progress is reported every second.
       """,
-    valueHelp = """an integer in 0-3600 range"""
+    valueHelp = """an integer in 0-3600 range""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val progressReportInterval = Flag.Unknown("progressReportInterval")
 
   //   --[no]record_full_profiler_data (a boolean; default: "false")
@@ -6666,9 +7126,10 @@ internal object knownFlags {
       profiler will record each event - resulting in more precise profiling data but 
       LARGE performance hit. Option only has effect if --profile used as well.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val recordFullProfilerData = Flag.Boolean("recordFullProfilerData")
 
   //   --remote_print_execution_messages (failure, success or all; default: "failure")
@@ -6681,9 +7142,10 @@ internal object knownFlags {
       print only on failures, `success` to print only on successes and `all` to print 
       always.
       """,
-    valueHelp = """failure, success or all"""
+    valueHelp = """failure, success or all""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remotePrintExecutionMessages = Flag.OneOf("remotePrintExecutionMessages")
 
   //   --[no]sandbox_debug (a boolean; default: "false")
@@ -6698,9 +7160,10 @@ internal object knownFlags {
       developers of Bazel or Starlark rules with debugging failures due to missing 
       input files, etc.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val sandboxDebug = Flag.Boolean("sandboxDebug")
 
   //   --show_result (an integer; default: "1")
@@ -6718,9 +7181,10 @@ internal object knownFlags {
       always. The default is one.If nothing was built for a target its results may be 
       omitted to keep the output under the threshold.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val showResult = Flag.Integer("showResult")
 
   //   --[no]slim_profile (a boolean; default: "true")
@@ -6732,9 +7196,10 @@ internal object knownFlags {
       Slims down the size of the JSON profile by merging events if the profile gets  
       too large.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val slimProfile = Flag.Boolean("slimProfile")
 
   //   --starlark_cpu_profile (a string; default: "")
@@ -6746,9 +7211,10 @@ internal object knownFlags {
       Writes into the specified file a pprof profile of CPU usage by all Starlark 
       threads.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val starlarkCpuProfile = Flag.Str("starlarkCpuProfile")
 
   //   --[no]subcommands [-s] (true, pretty_print or false; default: "false")
@@ -6762,9 +7228,10 @@ internal object knownFlags {
       --execution_log_json_file, --execution_log_binary_file (for logging subcommands 
       to a file in a tool-friendly format).
       """,
-    valueHelp = """true, pretty_print or false"""
+    valueHelp = """true, pretty_print or false""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val subcommands = Flag.OneOf("subcommands")
 
   //   --test_output (summary, errors, all or streamed; default: "summary")
@@ -6779,9 +7246,10 @@ internal object knownFlags {
       time (this will force tests to be executed locally one at a time regardless of 
       --test_strategy value).
       """,
-    valueHelp = """summary, errors, all or streamed"""
+    valueHelp = """summary, errors, all or streamed""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testOutput = Flag.OneOf("testOutput")
 
   //   --test_summary (short, terse, detailed, none or testcase; default: "short")
@@ -6797,9 +7265,10 @@ internal object knownFlags {
       resolution, do not print detailed information about failed test cases and 
       'none' to omit the summary.
       """,
-    valueHelp = """short, terse, detailed, none or testcase"""
+    valueHelp = """short, terse, detailed, none or testcase""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testSummary = Flag.OneOf("testSummary")
 
   //   --tool_tag (a string; default: "")
@@ -6808,15 +7277,16 @@ internal object knownFlags {
     defaultValue = """""""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.BAZEL_MONITORING],
     help = """A tool name to attribute this Bazel invocation to.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val toolTag = Flag.Str("toolTag")
 
-    // 
-  //   --toolchain_resolution_debug (a comma-separated list of regex expressions with prefix '-' 
+  //
+  //   --toolchain_resolution_debug (a comma-separated list of regex expressions with prefix '-'
   // specifying excluded paths; default: "-.*")
-  // 
+  //
   @Option(
     name = "toolchain_resolution_debug",
     defaultValue = """"-.*"""",
@@ -6831,15 +7301,16 @@ internal object knownFlags {
     valueHelp = """      
       a comma-separated list of regex expressions with prefix '-' specifying excluded 
       paths
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val toolchainResolutionDebug = Flag.Unknown("toolchainResolutionDebug")
 
-    // 
-  //   --ui_event_filters (Convert list of comma separated event kind to list of filters; may be used 
+  //
+  //   --ui_event_filters (Convert list of comma separated event kind to list of filters; may be used
   // multiple times)
-  // 
+  //
   @Option(
     name = "ui_event_filters",
     allowMultiple = true,
@@ -6850,9 +7321,10 @@ internal object knownFlags {
       completely with direct assignment. The set of supported event kinds include 
       INFO, DEBUG, ERROR and more.
       """,
-    valueHelp = """Convert list of comma separated event kind to list of filters"""
+    valueHelp = """Convert list of comma separated event kind to list of filters""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val uiEventFilters = Flag.Unknown("uiEventFilters")
 
   //   --[no]verbose_explanations (a boolean; default: "false")
@@ -6864,9 +7336,10 @@ internal object knownFlags {
       Increases the verbosity of the explanations issued if --explain is enabled. Has 
       no effect if --explain is not enabled.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val verboseExplanations = Flag.Boolean("verboseExplanations")
 
   //   --[no]verbose_failures (a boolean; default: "false")
@@ -6875,9 +7348,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.TERMINAL_OUTPUT],
     help = """If a command fails, print out the full command line.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val verboseFailures = Flag.Boolean("verboseFailures")
 
   //   --aspects_parameters (a 'name=value' assignment; may be used multiple times)
@@ -6893,9 +7367,10 @@ internal object knownFlags {
       times. However, it is not allowed to assign values to the same parameter more 
       than once.
       """,
-    valueHelp = """a 'name=value' assignment"""
+    valueHelp = """a 'name=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val aspectsParameters = Flag.Unknown("aspectsParameters")
 
   //   --experimental_resolved_file_instead_of_workspace (a string; default: "")
@@ -6904,9 +7379,10 @@ internal object knownFlags {
     defaultValue = """""""",
     effectTags = [OptionEffectTag.CHANGES_INPUTS],
     help = """If non-empty read the specified resolved file instead of the WORKSPACE file""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalResolvedFileInsteadOfWorkspace = Flag.Str("experimentalResolvedFileInsteadOfWorkspace")
 
   //   --flag_alias (a 'name=value' flag alias; may be used multiple times)
@@ -6918,9 +7394,10 @@ internal object knownFlags {
       Sets a shorthand name for a Starlark flag. It takes a single key-value pair in 
       the form "<key>=<value>" as an argument.
       """,
-    valueHelp = """a 'name=value' flag alias"""
+    valueHelp = """a 'name=value' flag alias""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val flagAlias = Flag.Unknown("flagAlias")
 
   //   --[no]incompatible_default_to_explicit_init_py (a boolean; default: "false")
@@ -6936,9 +7413,10 @@ internal object knownFlags {
       it is treated as false if and only if this flag is set. See 
       https://github.com/bazelbuild/bazel/issues/10076.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDefaultToExplicitInitPy = Flag.Boolean("incompatibleDefaultToExplicitInitPy")
 
   //   --[no]incompatible_py2_outputs_are_suffixed (a boolean; default: "true")
@@ -6955,9 +7433,10 @@ internal object knownFlags {
       Python 2. If you enable this option it is also recommended to enable 
       `--incompatible_py3_is_default`.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatiblePy2OutputsAreSuffixed = Flag.Boolean("incompatiblePy2OutputsAreSuffixed")
 
   //   --[no]incompatible_py3_is_default (a boolean; default: "true")
@@ -6972,9 +7451,10 @@ internal object knownFlags {
       rather than to PY2. If you set this flag it is also recommended to set 
       `--incompatible_py2_outputs_are_suffixed`.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatiblePy3IsDefault = Flag.Boolean("incompatiblePy3IsDefault")
 
   //   --[no]incompatible_use_python_toolchains (a boolean; default: "true")
@@ -6988,9 +7468,10 @@ internal object knownFlags {
       specified by the Python toolchain, rather than the runtime given by legacy 
       flags like --python_top.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleUsePythonToolchains = Flag.Boolean("incompatibleUsePythonToolchains")
 
   //   --python_version (PY2 or PY3; default: see description)
@@ -7002,9 +7483,10 @@ internal object knownFlags {
       overridden by `py_binary` and `py_test` targets (even if they don't explicitly 
       specify a version) so there is usually not much reason to supply this flag.
       """,
-    valueHelp = """PY2 or PY3"""
+    valueHelp = """PY2 or PY3""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val pythonVersion = Flag.OneOf("pythonVersion")
 
   //   --target_pattern_file (a string; default: "")
@@ -7017,9 +7499,10 @@ internal object knownFlags {
       command line. It is an error to specify a file here as well as command-line 
       patterns.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val targetPatternFile = Flag.Str("targetPatternFile")
 
   //   --experimental_circuit_breaker_strategy (failure; default: see description)
@@ -7031,9 +7514,10 @@ internal object knownFlags {
       "failure". On invalid value for the option the behavior same as the option is 
       not set.
       """,
-    valueHelp = """failure"""
+    valueHelp = """failure""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCircuitBreakerStrategy = Flag.Unknown("experimentalCircuitBreakerStrategy")
 
   //   --experimental_downloader_config (a string; default: see description)
@@ -7047,9 +7531,10 @@ internal object knownFlags {
       starting from `${'$'}1`. It is possible for multiple `rewrite` directives for 
       the same URL to be give, and in this case multiple URLs will be returned.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalDownloaderConfig = Flag.Str("experimentalDownloaderConfig")
 
   //   --[no]experimental_guard_against_concurrent_changes (a boolean; default: "false")
@@ -7061,9 +7546,10 @@ internal object knownFlags {
       uploading it to a remote cache. There may be cases where the Linux kernel 
       delays writing of files, which could cause false positives.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalGuardAgainstConcurrentChanges = Flag.Boolean("experimentalGuardAgainstConcurrentChanges")
 
   //   --[no]experimental_remote_cache_async (a boolean; default: "false")
@@ -7074,9 +7560,10 @@ internal object knownFlags {
       If true, remote cache I/O will happen in the background instead of taking place 
       as the part of a spawn.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteCacheAsync = Flag.Boolean("experimentalRemoteCacheAsync")
 
   //   --experimental_remote_cache_compression_threshold (an integer; default: "0")
@@ -7087,9 +7574,10 @@ internal object knownFlags {
       The minimum blob size required to compress/decompress with zstd. Ineffectual 
       unless --remote_cache_compression is set.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteCacheCompressionThreshold = Flag.Integer("experimentalRemoteCacheCompressionThreshold")
 
   //   --experimental_remote_cache_eviction_retries (an integer; default: "0")
@@ -7106,9 +7594,10 @@ internal object knownFlags {
       Instead, set flag --incompatible_remote_use_new_exit_code_for_lost_inputs and 
       check for the exit code 39.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteCacheEvictionRetries = Flag.Integer("experimentalRemoteCacheEvictionRetries")
 
   //   --[no]experimental_remote_cache_lease_extension (a boolean; default: "false")
@@ -7120,9 +7609,10 @@ internal object knownFlags {
       during the build by sending `FindMissingBlobs` calls periodically to remote 
       cache. The frequency is based on the value of `--experimental_remote_cache_ttl`.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteCacheLeaseExtension = Flag.Boolean("experimentalRemoteCacheLeaseExtension")
 
   //   --experimental_remote_cache_ttl (An immutable length of time.; default: "3h")
@@ -7138,18 +7628,20 @@ internal object knownFlags {
       than the real TTL since there is a gap between when the server returns the 
       digests and when Bazel receives them.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteCacheTtl = Flag.Duration("experimentalRemoteCacheTtl")
 
   //   --experimental_remote_capture_corrupted_outputs (a path; default: see description)
   @Option(
     name = "experimental_remote_capture_corrupted_outputs",
     help = """A path to a directory where the corrupted outputs will be captured to.""",
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteCaptureCorruptedOutputs = Flag.Path("experimentalRemoteCaptureCorruptedOutputs")
 
   //   --[no]experimental_remote_discard_merkle_trees (a boolean; default: "false")
@@ -7162,9 +7654,10 @@ internal object knownFlags {
       reduces memory usage significantly, but does require Bazel to recompute them 
       upon remote cache misses and retries.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteDiscardMerkleTrees = Flag.Boolean("experimentalRemoteDiscardMerkleTrees")
 
   //   --experimental_remote_downloader (a string; default: see description)
@@ -7176,9 +7669,10 @@ internal object knownFlags {
       sockets). If no schema is provided Bazel will default to grpcs. See: 
       https://github.com/bazelbuild/remote-apis/blob/master/build/bazel/remote/asset/v1/remote_asset.proto
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteDownloader = Flag.Str("experimentalRemoteDownloader")
 
   //   --[no]experimental_remote_downloader_local_fallback (a boolean; default: "false")
@@ -7186,9 +7680,10 @@ internal object knownFlags {
     name = "experimental_remote_downloader_local_fallback",
     defaultValue = """"false"""",
     help = """Whether to fall back to the local downloader if remote downloader fails.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteDownloaderLocalFallback = Flag.Boolean("experimentalRemoteDownloaderLocalFallback")
 
   //   --[no]experimental_remote_execution_keepalive (a boolean; default: "false")
@@ -7196,9 +7691,10 @@ internal object knownFlags {
     name = "experimental_remote_execution_keepalive",
     defaultValue = """"false"""",
     help = """Whether to use keepalive for remote execution calls.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteExecutionKeepalive = Flag.Boolean("experimentalRemoteExecutionKeepalive")
 
   //   --experimental_remote_failure_rate_threshold (an integer in 0-100 range; default: "10")
@@ -7211,9 +7707,10 @@ internal object knownFlags {
       window after which it stops calling to the remote cache/executor. By default 
       the value is 10. Setting this to 0 means no limitation.
       """,
-    valueHelp = """an integer in 0-100 range"""
+    valueHelp = """an integer in 0-100 range""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteFailureRateThreshold = Flag.Unknown("experimentalRemoteFailureRateThreshold")
 
   //   --experimental_remote_failure_window_interval (An immutable length of time.; default: "60s")
@@ -7228,9 +7725,10 @@ internal object knownFlags {
       seconds (s), and milliseconds (ms). If the unit is omitted, the value is 
       interpreted as seconds.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteFailureWindowInterval = Flag.Duration("experimentalRemoteFailureWindowInterval")
 
   //   --[no]experimental_remote_mark_tool_inputs (a boolean; default: "false")
@@ -7241,9 +7739,10 @@ internal object knownFlags {
       If set to true, Bazel will mark inputs as tool inputs for the remote executor. 
       This can be used to implement remote persistent workers.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteMarkToolInputs = Flag.Boolean("experimentalRemoteMarkToolInputs")
 
   //   --[no]experimental_remote_merkle_tree_cache (a boolean; default: "false")
@@ -7255,9 +7754,10 @@ internal object knownFlags {
       cache hit checking speed. The memory foot print of the cache is controlled by 
       --experimental_remote_merkle_tree_cache_size.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteMerkleTreeCache = Flag.Boolean("experimentalRemoteMerkleTreeCache")
 
   //   --experimental_remote_merkle_tree_cache_size (a long integer; default: "1000")
@@ -7271,9 +7771,10 @@ internal object knownFlags {
       set to 0  the cache size is unlimited. Optimal value varies depending on 
       project's size. Default to 1000.
       """,
-    valueHelp = """a long integer"""
+    valueHelp = """a long integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteMerkleTreeCacheSize = Flag.Unknown("experimentalRemoteMerkleTreeCacheSize")
 
   //   --experimental_remote_output_service (a string; default: see description)
@@ -7285,9 +7786,10 @@ internal object knownFlags {
       schema is provided Bazel will default to grpcs. Specify grpc:// or unix: schema 
       to disable TLS.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteOutputService = Flag.Str("experimentalRemoteOutputService")
 
   //   --experimental_remote_output_service_output_path_prefix (a string; default: "")
@@ -7300,9 +7802,10 @@ internal object knownFlags {
       used by a build will be a descendant of this path and determined by the output 
       service.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteOutputServiceOutputPathPrefix = Flag.Str("experimentalRemoteOutputServiceOutputPathPrefix")
 
   //   --[no]experimental_remote_require_cached (a boolean; default: "false")
@@ -7315,9 +7818,10 @@ internal object knownFlags {
       it allows checking whether actions that should be cached are actually cached 
       without spuriously injecting new results into the cache.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteRequireCached = Flag.Boolean("experimentalRemoteRequireCached")
 
   //   --experimental_remote_scrubbing_config (Converts to a Scrubber; default: see description)
@@ -7347,9 +7851,10 @@ internal object knownFlags {
       normalize output prefixes) and --incompatible_strict_action_env (to normalize 
       environment variables).
       """,
-    valueHelp = """Converts to a Scrubber"""
+    valueHelp = """Converts to a Scrubber""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRemoteScrubbingConfig = Flag.Unknown("experimentalRemoteScrubbingConfig")
 
   //   --experimental_worker_for_repo_fetching (off, platform, virtual or auto; default: "auto")
@@ -7361,9 +7866,10 @@ internal object knownFlags {
       is used, and the repo fetching is subject to restarts. Otherwise, uses a 
       virtual worker thread.
       """,
-    valueHelp = """off, platform, virtual or auto"""
+    valueHelp = """off, platform, virtual or auto""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWorkerForRepoFetching = Flag.OneOf("experimentalWorkerForRepoFetching")
 
   //   --[no]incompatible_remote_build_event_upload_respect_no_cache (a boolean; default: "false")
@@ -7371,9 +7877,10 @@ internal object knownFlags {
     name = "incompatible_remote_build_event_upload_respect_no_cache",
     defaultValue = """"false"""",
     help = """Deprecated. No-op. Use --remote_build_event_upload=minimal instead.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRemoteBuildEventUploadRespectNoCache = Flag.Boolean("incompatibleRemoteBuildEventUploadRespectNoCache")
 
   //   --[no]incompatible_remote_downloader_send_all_headers (a boolean; default: "true")
@@ -7385,9 +7892,10 @@ internal object knownFlags {
       Whether to send all values of a multi-valued header to the remote downloader 
       instead of just the first.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRemoteDownloaderSendAllHeaders = Flag.Boolean("incompatibleRemoteDownloaderSendAllHeaders")
 
   //   --[no]incompatible_remote_output_paths_relative_to_input_root (a boolean; default: "false")
@@ -7399,9 +7907,10 @@ internal object knownFlags {
       If set to true, output paths are relative to input root instead of working 
       directory.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRemoteOutputPathsRelativeToInputRoot = Flag.Boolean("incompatibleRemoteOutputPathsRelativeToInputRoot")
 
   //   --[no]incompatible_remote_results_ignore_disk (a boolean; default: "true")
@@ -7410,9 +7919,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """No-op""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRemoteResultsIgnoreDisk = Flag.Boolean("incompatibleRemoteResultsIgnoreDisk")
 
   //   --[no]incompatible_remote_use_new_exit_code_for_lost_inputs (a boolean; default: "true")
@@ -7424,9 +7934,10 @@ internal object knownFlags {
       If set to true, Bazel will use new exit code 39 instead of 34 if remote cache 
       evicts blobs during the build.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleRemoteUseNewExitCodeForLostInputs = Flag.Boolean("incompatibleRemoteUseNewExitCodeForLostInputs")
 
   //   --[no]remote_accept_cached (a boolean; default: "true")
@@ -7434,9 +7945,10 @@ internal object knownFlags {
     name = "remote_accept_cached",
     defaultValue = """"true"""",
     help = """Whether to accept remotely cached action results.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteAcceptCached = Flag.Boolean("remoteAcceptCached")
 
   //   --remote_build_event_upload (all or minimal; default: "minimal")
@@ -7451,9 +7963,10 @@ internal object knownFlags {
       the uri of files even if they are missing from remote cache.Default to 
       'minimal'.
       """,
-    valueHelp = """all or minimal"""
+    valueHelp = """all or minimal""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteBuildEventUpload = Flag.OneOf("remoteBuildEventUpload")
 
   //   --remote_bytestream_uri_prefix (a string; default: see description)
@@ -7467,9 +7980,10 @@ internal object knownFlags {
       remote execution service. When not set, it will default to 
       "${'$'}{hostname}/${'$'}{instance_name}".
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteBytestreamUriPrefix = Flag.Str("remoteBytestreamUriPrefix")
 
   //   --remote_cache (a string; default: see description)
@@ -7481,9 +7995,10 @@ internal object knownFlags {
       Bazel will default to grpcs. Specify grpc://, http:// or unix: schema to 
       disable TLS. See https://bazel.build/remote/caching
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteCache = Flag.Str("remoteCache")
 
   //   --[no]remote_cache_compression (a boolean; default: "false")
@@ -7494,9 +8009,10 @@ internal object knownFlags {
       If enabled, compress/decompress cache blobs with zstd when their size is at 
       least --experimental_remote_cache_compression_threshold.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteCacheCompression = Flag.Boolean("remoteCacheCompression")
 
   //   --remote_cache_header (a 'name=value' assignment; may be used multiple times)
@@ -7509,9 +8025,10 @@ internal object knownFlags {
       the flag multiple times. Multiple values for the same name will be converted to 
       a comma-separated list.
       """,
-    valueHelp = """a 'name=value' assignment"""
+    valueHelp = """a 'name=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteCacheHeader = Flag.Unknown("remoteCacheHeader")
 
   //   --remote_default_exec_properties (a 'name=value' assignment; may be used multiple times)
@@ -7523,9 +8040,10 @@ internal object knownFlags {
       Set the default exec properties to be used as the remote execution platform if 
       an execution platform does not already set exec_properties.
       """,
-    valueHelp = """a 'name=value' assignment"""
+    valueHelp = """a 'name=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteDefaultExecProperties = Flag.Unknown("remoteDefaultExecProperties")
 
   //   --remote_default_platform_properties (a string; default: "")
@@ -7538,9 +8056,10 @@ internal object knownFlags {
       value will also be used if the host platform is selected as the execution 
       platform for remote execution.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteDefaultPlatformProperties = Flag.Str("remoteDefaultPlatformProperties")
 
   //   --remote_download_regex (a valid Java regular expression; may be used multiple times)
@@ -7553,9 +8072,10 @@ internal object knownFlags {
       irrespective of --remote_download_outputs. Multiple patterns may be specified 
       by repeating this flag.
       """,
-    valueHelp = """a valid Java regular expression"""
+    valueHelp = """a valid Java regular expression""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteDownloadRegex = Flag.Unknown("remoteDownloadRegex")
 
   //   --remote_downloader_header (a 'name=value' assignment; may be used multiple times)
@@ -7568,9 +8088,10 @@ internal object knownFlags {
       specifying the flag multiple times. Multiple values for the same name will be 
       converted to a comma-separated list.
       """,
-    valueHelp = """a 'name=value' assignment"""
+    valueHelp = """a 'name=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteDownloaderHeader = Flag.Unknown("remoteDownloaderHeader")
 
   //   --remote_exec_header (a 'name=value' assignment; may be used multiple times)
@@ -7583,9 +8104,10 @@ internal object knownFlags {
       the flag multiple times. Multiple values for the same name will be converted to 
       a comma-separated list.
       """,
-    valueHelp = """a 'name=value' assignment"""
+    valueHelp = """a 'name=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteExecHeader = Flag.Unknown("remoteExecHeader")
 
   //   --remote_execution_priority (an integer; default: "0")
@@ -7596,9 +8118,10 @@ internal object knownFlags {
       The relative priority of actions to be executed remotely. The semantics of the 
       particular priority values are server-dependent.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteExecutionPriority = Flag.Integer("remoteExecutionPriority")
 
   //   --remote_executor (a string; default: see description)
@@ -7610,9 +8133,10 @@ internal object knownFlags {
       is provided Bazel will default to grpcs. Specify grpc:// or unix: schema to 
       disable TLS.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteExecutor = Flag.Str("remoteExecutor")
 
   //   --remote_grpc_log (a path; default: see description)
@@ -7626,9 +8150,10 @@ internal object knownFlags {
       following serialized protobuf message, as performed by the method 
       LogEntry.writeDelimitedTo(OutputStream).
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteGrpcLog = Flag.Path("remoteGrpcLog")
 
   //   --remote_header (a 'name=value' assignment; may be used multiple times)
@@ -7640,9 +8165,10 @@ internal object knownFlags {
       Multiple headers can be passed by specifying the flag multiple times. Multiple 
       values for the same name will be converted to a comma-separated list.
       """,
-    valueHelp = """a 'name=value' assignment"""
+    valueHelp = """a 'name=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteHeader = Flag.Unknown("remoteHeader")
 
   //   --remote_instance_name (a string; default: "")
@@ -7650,9 +8176,10 @@ internal object knownFlags {
     name = "remote_instance_name",
     defaultValue = """""""",
     help = """Value to pass as instance_name in the remote execution API.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteInstanceName = Flag.Str("remoteInstanceName")
 
   //   --[no]remote_local_fallback (a boolean; default: "false")
@@ -7663,9 +8190,10 @@ internal object knownFlags {
       Whether to fall back to standalone local execution strategy if remote execution 
       fails.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteLocalFallback = Flag.Boolean("remoteLocalFallback")
 
   //   --remote_local_fallback_strategy (a string; default: "local")
@@ -7676,9 +8204,10 @@ internal object knownFlags {
       No-op, deprecated. See https://github.com/bazelbuild/bazel/issues/7480 for 
       details.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteLocalFallbackStrategy = Flag.Str("remoteLocalFallbackStrategy")
 
   //   --remote_max_connections (an integer; default: "100")
@@ -7694,9 +8223,10 @@ internal object knownFlags {
       cache/executor, one gRPC channel could usually handle 100+ concurrent requests, 
       so Bazel could make around `--remote_max_connections * 100` concurrent requests.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteMaxConnections = Flag.Integer("remoteMaxConnections")
 
   //   --remote_proxy (a string; default: see description)
@@ -7706,9 +8236,10 @@ internal object knownFlags {
       Connect to the remote cache through a proxy. Currently this flag can only be 
       used to configure a Unix domain socket (unix:/path/to/socket).
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteProxy = Flag.Str("remoteProxy")
 
   //   --remote_result_cache_priority (an integer; default: "0")
@@ -7719,9 +8250,10 @@ internal object knownFlags {
       The relative priority of remote actions to be stored in remote cache. The 
       semantics of the particular priority values are server-dependent.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteResultCachePriority = Flag.Integer("remoteResultCachePriority")
 
   //   --remote_retries (an integer; default: "5")
@@ -7732,9 +8264,10 @@ internal object knownFlags {
       The maximum number of attempts to retry a transient error. If set to 0, retries 
       are disabled.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteRetries = Flag.Integer("remoteRetries")
 
   //   --remote_retry_max_delay (An immutable length of time.; default: "5s")
@@ -7746,9 +8279,10 @@ internal object knownFlags {
       used: Days (d), hours (h), minutes (m), seconds (s), and milliseconds (ms). If 
       the unit is omitted, the value is interpreted as seconds.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteRetryMaxDelay = Flag.Duration("remoteRetryMaxDelay")
 
   //   --remote_timeout (An immutable length of time.; default: "60s")
@@ -7761,9 +8295,10 @@ internal object knownFlags {
       can be used: Days (d), hours (h), minutes (m), seconds (s), and milliseconds 
       (ms). If the unit is omitted, the value is interpreted as seconds.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteTimeout = Flag.Duration("remoteTimeout")
 
   //   --[no]remote_upload_local_results (a boolean; default: "true")
@@ -7774,9 +8309,10 @@ internal object knownFlags {
       Whether to upload locally executed action results to the remote cache if the 
       remote cache supports it and the user is authorized to do so.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteUploadLocalResults = Flag.Boolean("remoteUploadLocalResults")
 
   //   --[no]remote_verify_downloads (a boolean; default: "true")
@@ -7787,9 +8323,10 @@ internal object knownFlags {
       If set to true, Bazel will compute the hash sum of all remote downloads and  
       discard the remotely cached values if they don't match the expected value.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val remoteVerifyDownloads = Flag.Boolean("remoteVerifyDownloads")
 
   //   --[no]allow_analysis_cache_discard (a boolean; default: "true")
@@ -7802,9 +8339,10 @@ internal object knownFlags {
       this option to false will cause bazel to exit, rather than continuing with the 
       build. This option has no effect when 'discard_analysis_cache' is also set.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val allowAnalysisCacheDiscard = Flag.Boolean("allowAnalysisCacheDiscard")
 
   //   --auto_output_filter (none, all, packages or subpackages; default: "none")
@@ -7820,9 +8358,10 @@ internal object knownFlags {
       'packages' and 'subpackages' values //java/foo and //javatests/foo are treated 
       as one package)'.
       """,
-    valueHelp = """none, all, packages or subpackages"""
+    valueHelp = """none, all, packages or subpackages""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val autoOutputFilter = Flag.OneOf("autoOutputFilter")
 
   //   --[no]build_manual_tests (a boolean; default: "false")
@@ -7833,9 +8372,10 @@ internal object knownFlags {
       Forces test targets tagged 'manual' to be built. 'manual' tests are excluded 
       from processing. This option forces them to be built (but not executed).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildManualTests = Flag.Boolean("buildManualTests")
 
   //   --build_metadata (a 'name=value' assignment; may be used multiple times)
@@ -7844,9 +8384,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.TERMINAL_OUTPUT],
     help = """Custom key-value string pairs to supply in a build event.""",
-    valueHelp = """a 'name=value' assignment"""
+    valueHelp = """a 'name=value' assignment""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildMetadata = Flag.Unknown("buildMetadata")
 
   //   --build_tag_filters (comma-separated list of options; default: "")
@@ -7860,9 +8401,10 @@ internal object knownFlags {
       option does not affect the set of tests executed with the 'test' command; those 
       are be governed by the test filtering options, for example '--test_tag_filters'
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildTagFilters = Flag.Unknown("buildTagFilters")
 
   //   --[no]build_tests_only (a boolean; default: "false")
@@ -7874,9 +8416,10 @@ internal object knownFlags {
       specified on the command line will be ignored. By default everything that was 
       requested will be built.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val buildTestsOnly = Flag.Boolean("buildTestsOnly")
 
   //   --[no]cache_test_results [-t] (a tri-state (auto, yes, no); default: "auto")
@@ -7891,9 +8434,10 @@ internal object knownFlags {
       previously failed. If set to 'yes', Bazel caches all test results except for 
       tests marked as external. If set to 'no', Bazel does not cache any test results.
       """,
-    valueHelp = """a tri-state (auto, yes, no)"""
+    valueHelp = """a tri-state (auto, yes, no)""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val cacheTestResults = Flag.Unknown("cacheTestResults")
 
   //   --color (yes, no or auto; default: "auto")
@@ -7901,9 +8445,10 @@ internal object knownFlags {
     name = "color",
     defaultValue = """"auto"""",
     help = """Use terminal controls to colorize output.""",
-    valueHelp = """yes, no or auto"""
+    valueHelp = """yes, no or auto""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val color = Flag.OneOf("color")
 
   //   --combined_report (none or lcov; default: "none")
@@ -7914,9 +8459,10 @@ internal object knownFlags {
       Specifies desired cumulative coverage report type. At this point only LCOV is 
       supported.
       """,
-    valueHelp = """none or lcov"""
+    valueHelp = """none or lcov""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val combinedReport = Flag.OneOf("combinedReport")
 
   //   --[no]compile_one_dependency (a boolean; default: "false")
@@ -7931,9 +8477,10 @@ internal object knownFlags {
       interpreted; instead of being targets to build they are source filenames.  For 
       each source filename an arbitrary target that depends on it will be built.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val compileOneDependency = Flag.Boolean("compileOneDependency")
 
   //   --config (a string; may be used multiple times)
@@ -7947,18 +8494,19 @@ internal object knownFlags {
       config sections and flag combinations they are equivalent to are located in the 
       tools/*.blazerc config files.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val config = Flag.Str("config")
 
-    // 
-  //   --credential_helper (Path to a credential helper. It may be absolute, relative to the PATH 
-  // environment variable, or %workspace%-relative. The path be optionally prefixed by a scope  followed 
-  // by an '='. The scope is a domain name, optionally with a single leading '*' wildcard component. A 
-  // helper applies to URIs matching its scope, with more specific scopes preferred. If a helper has no 
+  //
+  //   --credential_helper (Path to a credential helper. It may be absolute, relative to the PATH
+  // environment variable, or %workspace%-relative. The path be optionally prefixed by a scope  followed
+  // by an '='. The scope is a domain name, optionally with a single leading '*' wildcard component. A
+  // helper applies to URIs matching its scope, with more specific scopes preferred. If a helper has no
   // scope, it applies to every URI.; may be used multiple times)
-  // 
+  //
   @Option(
     name = "credential_helper",
     allowMultiple = true,
@@ -7985,9 +8533,10 @@ internal object knownFlags {
       single leading '*' wildcard component. A helper applies to URIs matching its 
       scope, with more specific scopes preferred. If a helper has no scope, it 
       applies to every URI.
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val credentialHelper = Flag.Unknown("credentialHelper")
 
   //   --credential_helper_cache_duration (An immutable length of time.; default: "30m")
@@ -7998,9 +8547,10 @@ internal object knownFlags {
       The default duration for which credentials supplied by a credential helper are 
       cached if the helper does not provide when the credentials expire.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val credentialHelperCacheDuration = Flag.Duration("credentialHelperCacheDuration")
 
   //   --credential_helper_timeout (An immutable length of time.; default: "10s")
@@ -8013,9 +8563,10 @@ internal object knownFlags {
       Credential helpers failing to respond within this timeout will fail the 
       invocation.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val credentialHelperTimeout = Flag.Duration("credentialHelperTimeout")
 
   //   --curses (yes, no or auto; default: "auto")
@@ -8023,9 +8574,10 @@ internal object knownFlags {
     name = "curses",
     defaultValue = """"auto"""",
     help = """Use terminal cursor controls to minimize scrolling output.""",
-    valueHelp = """yes, no or auto"""
+    valueHelp = """yes, no or auto""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val curses = Flag.OneOf("curses")
 
   //   --deleted_packages (comma-separated list of package names; may be used multiple times)
@@ -8041,9 +8593,10 @@ internal object knownFlags {
       another package_path entry.  Specifying --deleted_packages x/y avoids this 
       problem.
       """,
-    valueHelp = """comma-separated list of package names"""
+    valueHelp = """comma-separated list of package names""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val deletedPackages = Flag.Unknown("deletedPackages")
 
   //   --[no]discard_analysis_cache (a boolean; default: "false")
@@ -8054,9 +8607,10 @@ internal object knownFlags {
       Discard the analysis cache immediately after the analysis phase completes. 
       Reduces memory usage by ~10%, but makes further incremental builds slower.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val discardAnalysisCache = Flag.Boolean("discardAnalysisCache")
 
   //   --disk_cache (a path; default: see description)
@@ -8066,9 +8620,10 @@ internal object knownFlags {
       A path to a directory where Bazel can read and write actions and action 
       outputs. If the directory does not exist, it will be created.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val diskCache = Flag.Path("diskCache")
 
   //   --embed_label (a one-line string; default: "")
@@ -8076,9 +8631,10 @@ internal object knownFlags {
     name = "embed_label",
     defaultValue = """""""",
     help = """Embed source control revision or release label in binary""",
-    valueHelp = """a one-line string"""
+    valueHelp = """a one-line string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val embedLabel = Flag.Unknown("embedLabel")
 
   //   --[no]enable_platform_specific_config (a boolean; default: "false")
@@ -8092,9 +8648,10 @@ internal object knownFlags {
       freebsd, and openbsd. Enabling this flag is equivalent to using --config=linux 
       on Linux, --config=windows on Windows, etc.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val enablePlatformSpecificConfig = Flag.Boolean("enablePlatformSpecificConfig")
 
   //   --execution_log_binary_file (a path; default: see description)
@@ -8107,9 +8664,10 @@ internal object knownFlags {
       --execution_log_sort (whether to sort the execution log), --subcommands (for 
       displaying subcommands in terminal output).
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val executionLogBinaryFile = Flag.Path("executionLogBinaryFile")
 
   //   --execution_log_json_file (a path; default: see description)
@@ -8123,9 +8681,10 @@ internal object knownFlags {
       sort the execution log), --subcommands (for displaying subcommands in terminal 
       output).
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val executionLogJsonFile = Flag.Path("executionLogJsonFile")
 
   //   --[no]execution_log_sort (a boolean; default: "true")
@@ -8139,9 +8698,10 @@ internal object knownFlags {
       nondeterministic execution order. Only applies to the binary and JSON formats; 
       the compact format is never sorted.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val executionLogSort = Flag.Boolean("executionLogSort")
 
   //   --[no]expand_test_suites (a boolean; default: "true")
@@ -8156,9 +8716,10 @@ internal object knownFlags {
       this flag is useful when top-level aspects are applied at command line: then 
       they can analyze test_suite targets.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val expandTestSuites = Flag.Boolean("expandTestSuites")
 
   //   --[no]experimental_cancel_concurrent_tests (a boolean; default: "false")
@@ -8171,9 +8732,10 @@ internal object knownFlags {
       successful run. This is only useful in combination with 
       --runs_per_test_detects_flakes.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCancelConcurrentTests = Flag.Boolean("experimentalCancelConcurrentTests")
 
   //   --experimental_execution_log_compact_file (a path; default: see description)
@@ -8187,15 +8749,16 @@ internal object knownFlags {
       mutually exclusive), --execution_log_json_file (text JSON format; mutually 
       exclusive), --subcommands (for displaying subcommands in terminal output).
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalExecutionLogCompactFile = Flag.Path("experimentalExecutionLogCompactFile")
 
-    // 
-  //   --experimental_extra_action_filter (a comma-separated list of regex expressions with prefix '-' 
+  //
+  //   --experimental_extra_action_filter (a comma-separated list of regex expressions with prefix '-'
   // specifying excluded paths; default: "")
-  // 
+  //
   @Option(
     name = "experimental_extra_action_filter",
     defaultValue = """""""",
@@ -8206,9 +8769,10 @@ internal object knownFlags {
     valueHelp = """      
       a comma-separated list of regex expressions with prefix '-' specifying excluded 
       paths
-      """
+      """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalExtraActionFilter = Flag.Unknown("experimentalExtraActionFilter")
 
   //   --[no]experimental_extra_action_top_level_only (a boolean; default: "false")
@@ -8219,9 +8783,10 @@ internal object knownFlags {
       Deprecated in favor of aspects. Only schedules extra_actions for top level 
       targets.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalExtraActionTopLevelOnly = Flag.Boolean("experimentalExtraActionTopLevelOnly")
 
   //   --[no]experimental_fetch_all_coverage_outputs (a boolean; default: "false")
@@ -8233,9 +8798,10 @@ internal object knownFlags {
       If true, then Bazel fetches the entire coverage data directory for each test 
       during a coverage run.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalFetchAllCoverageOutputs = Flag.Boolean("experimentalFetchAllCoverageOutputs")
 
   //   --[no]experimental_generate_llvm_lcov (a boolean; default: "false")
@@ -8244,9 +8810,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """If true, coverage for clang will generate an LCOV report.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalGenerateLlvmLcov = Flag.Boolean("experimentalGenerateLlvmLcov")
 
   //   --[no]experimental_j2objc_header_map (a boolean; default: "true")
@@ -8254,9 +8821,10 @@ internal object knownFlags {
     name = "experimental_j2objc_header_map",
     defaultValue = """"true"""",
     help = """Whether to generate J2ObjC header map in parallel of J2ObjC transpilation.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalJ2objcHeaderMap = Flag.Boolean("experimentalJ2objcHeaderMap")
 
   //   --[no]experimental_j2objc_shorter_header_path (a boolean; default: "false")
@@ -8265,9 +8833,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Whether to generate with shorter header path (uses "_ios" instead of "_j2objc").""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalJ2objcShorterHeaderPath = Flag.Boolean("experimentalJ2objcShorterHeaderPath")
 
   //   --experimental_java_classpath (off, javabuilder or bazel; default: "javabuilder")
@@ -8275,9 +8844,10 @@ internal object knownFlags {
     name = "experimental_java_classpath",
     defaultValue = """"javabuilder"""",
     help = """Enables reduced classpaths for Java compilations.""",
-    valueHelp = """off, javabuilder or bazel"""
+    valueHelp = """off, javabuilder or bazel""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalJavaClasspath = Flag.OneOf("experimentalJavaClasspath")
 
   //   --[no]experimental_limit_android_lint_to_android_constrained_java (a boolean; default: "false")
@@ -8289,9 +8859,10 @@ internal object knownFlags {
       Limit --experimental_run_android_lint_on_java_rules to Android-compatible 
       libraries.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalLimitAndroidLintToAndroidConstrainedJava = Flag.Boolean("experimentalLimitAndroidLintToAndroidConstrainedJava")
 
   //   --[no]experimental_rule_extension_api (a boolean; default: "false")
@@ -8301,9 +8872,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.EXPERIMENTAL],
     help = """Enable experimental rule extension API and subrule APIs""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRuleExtensionApi = Flag.Boolean("experimentalRuleExtensionApi")
 
   //   --[no]experimental_run_android_lint_on_java_rules (a boolean; default: "false")
@@ -8312,15 +8884,16 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Whether to validate java_* sources.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalRunAndroidLintOnJavaRules = Flag.Boolean("experimentalRunAndroidLintOnJavaRules")
 
   //   --experimental_spawn_scheduler
   @Option(
     name = "experimental_spawn_scheduler",
-    expandsTo = [      "--internal_spawn_scheduler", "--spawn_strategy=dynamic"],
+    expandsTo = [ "--internal_spawn_scheduler", "--spawn_strategy=dynamic"],
     help = """      
       Enable dynamic execution by running actions locally and remotely in parallel. 
       Bazel spawns each action locally and remotely and picks the one that completes 
@@ -8330,7 +8903,8 @@ internal object knownFlags {
       `--strategy=<mnemonic>=dynamic` flags instead.
       """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalSpawnScheduler = Flag.Unknown("experimentalSpawnScheduler")
 
   //   --[no]experimental_windows_watchfs (a boolean; default: "false")
@@ -8341,9 +8915,10 @@ internal object knownFlags {
       If true, experimental Windows support for --watchfs is enabled. Otherwise 
       --watchfsis a non-op on Windows. Make sure to also enable --watchfs.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalWindowsWatchfs = Flag.Boolean("experimentalWindowsWatchfs")
 
   //   --[no]explicit_java_test_deps (a boolean; default: "false")
@@ -8355,9 +8930,10 @@ internal object knownFlags {
       accidentally obtaining from the TestRunner's deps. Only works for bazel right 
       now.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val explicitJavaTestDeps = Flag.Boolean("explicitJavaTestDeps")
 
   //   --[no]fetch (a boolean; default: "true")
@@ -8369,22 +8945,24 @@ internal object knownFlags {
       will utilize any cached version of the dependency, and if none exists, the 
       command will result in failure.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val fetch = Flag.Boolean("fetch")
 
-    // 
-  //   --google_auth_scopes (comma-separated list of options; default: 
+  //
+  //   --google_auth_scopes (comma-separated list of options; default:
   // "https://www.googleapis.com/auth/cloud-platform")
-  // 
+  //
   @Option(
     name = "google_auth_scopes",
     defaultValue = """"https://www.googleapis.com/auth/cloud-platform"""",
     help = """A comma-separated list of Google Cloud authentication scopes.""",
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val googleAuthScopes = Flag.Unknown("googleAuthScopes")
 
   //   --google_credentials (a string; default: see description)
@@ -8394,9 +8972,10 @@ internal object knownFlags {
       Specifies the file to get authentication credentials from. See 
       https://cloud.google.com/docs/authentication for details.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val googleCredentials = Flag.Str("googleCredentials")
 
   //   --[no]google_default_credentials (a boolean; default: "false")
@@ -8407,9 +8986,10 @@ internal object knownFlags {
       Whether to use 'Google Application Default Credentials' for authentication. See 
       https://cloud.google.com/docs/authentication for details. Disabled by default.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val googleDefaultCredentials = Flag.Boolean("googleDefaultCredentials")
 
   //   --grpc_keepalive_time (An immutable length of time.; default: see description)
@@ -8424,9 +9004,10 @@ internal object knownFlags {
       owner before enabling this setting. For example to set a value of 30 seconds to 
       this flag, it should be done as this --grpc_keepalive_time=30s
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val grpcKeepaliveTime = Flag.Duration("grpcKeepaliveTime")
 
   //   --grpc_keepalive_timeout (An immutable length of time.; default: "20s")
@@ -8440,18 +9021,20 @@ internal object knownFlags {
       second granularity; it is an error to set a value less than one second. If 
       keep-alive pings are disabled, then this setting is ignored.
       """,
-    valueHelp = """An immutable length of time."""
+    valueHelp = """An immutable length of time.""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val grpcKeepaliveTimeout = Flag.Duration("grpcKeepaliveTimeout")
 
   //   --host_java_launcher (a build target label; default: see description)
   @Option(
     name = "host_java_launcher",
     help = """The Java launcher used by tools that are executed during a build.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostJavaLauncher = Flag.Label("hostJavaLauncher")
 
   //   --host_javacopt (a string; may be used multiple times)
@@ -8462,9 +9045,10 @@ internal object knownFlags {
       Additional options to pass to javac when building tools that are executed 
       during a build.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostJavacopt = Flag.Str("hostJavacopt")
 
   //   --host_jvmopt (a string; may be used multiple times)
@@ -8476,9 +9060,10 @@ internal object knownFlags {
       during  the build. These options will get added to the VM startup options of 
       each  java_binary target.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostJvmopt = Flag.Str("hostJvmopt")
 
   //   --[no]incompatible_check_sharding_support (a boolean; default: "true")
@@ -8492,9 +9077,10 @@ internal object knownFlags {
       TEST_SHARD_STATUS_FILE. If false, a test runner that does not support sharding 
       will lead to all tests running in each shard.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleCheckShardingSupport = Flag.Boolean("incompatibleCheckShardingSupport")
 
   //   --[no]incompatible_disable_non_executable_java_binary (a boolean; default: "false")
@@ -8507,9 +9093,10 @@ internal object knownFlags {
       If true, java_binary is always executable. create_executable attribute is 
       removed.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisableNonExecutableJavaBinary = Flag.Boolean("incompatibleDisableNonExecutableJavaBinary")
 
   //   --[no]incompatible_disallow_symlink_file_to_dir (a boolean; default: "true")
@@ -8519,9 +9106,10 @@ internal object knownFlags {
     effectTags = [OptionEffectTag.LOADING_AND_ANALYSIS],
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """No-op.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDisallowSymlinkFileToDir = Flag.Boolean("incompatibleDisallowSymlinkFileToDir")
 
   //   --[no]incompatible_dont_use_javasourceinfoprovider (a boolean; default: "false")
@@ -8530,9 +9118,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     metadataTags = [OptionMetadataTag.INCOMPATIBLE_CHANGE],
     help = """No-op""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleDontUseJavasourceinfoprovider = Flag.Boolean("incompatibleDontUseJavasourceinfoprovider")
 
   //   --[no]incompatible_exclusive_test_sandboxed (a boolean; default: "true")
@@ -8544,9 +9133,10 @@ internal object knownFlags {
       If true, exclusive tests will run with sandboxed strategy. Add 'local' tag to 
       force an exclusive test run locally
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleExclusiveTestSandboxed = Flag.Boolean("incompatibleExclusiveTestSandboxed")
 
   //   --[no]incompatible_strict_action_env (a boolean; default: "false")
@@ -8561,9 +9151,10 @@ internal object knownFlags {
       specific environment variables from the client, but note that doing so can 
       prevent cross-user caching if a shared cache is used.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatibleStrictActionEnv = Flag.Boolean("incompatibleStrictActionEnv")
 
   //   --j2objc_translation_flags (comma-separated list of options; may be used multiple times)
@@ -8571,25 +9162,27 @@ internal object knownFlags {
     name = "j2objc_translation_flags",
     allowMultiple = true,
     help = """Additional options to pass to the J2ObjC tool.""",
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val j2objcTranslationFlags = Flag.Unknown("j2objcTranslationFlags")
 
   //   --java_debug
   @Option(
     name = "java_debug",
-    expandsTo = [      
-      "--test_arg=--wrapper_script_flag=--debug", "--test_output=streamed", 
-      "--test_strategy=exclusive", "--test_timeout=9999", "--nocache_test_results"
-      ],
+    expandsTo = [
+      "--test_arg=--wrapper_script_flag=--debug", "--test_output=streamed",
+      "--test_strategy=exclusive", "--test_timeout=9999", "--nocache_test_results",
+    ],
     help = """      
       Causes the Java virtual machine of a java test to wait for a connection from a 
       JDWP-compliant debugger (such as jdb) before starting the test. Implies 
       -test_output=streamed.
       """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val javaDebug = Flag.Unknown("javaDebug")
 
   //   --[no]java_deps (a boolean; default: "true")
@@ -8600,9 +9193,10 @@ internal object knownFlags {
       Generate dependency information (for now, compile-time classpath) per Java 
       target.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val javaDeps = Flag.Boolean("javaDeps")
 
   //   --[no]java_header_compilation (a boolean; default: "true")
@@ -8610,9 +9204,10 @@ internal object knownFlags {
     name = "java_header_compilation",
     defaultValue = """"true"""",
     help = """Compile ijars directly from source.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val javaHeaderCompilation = Flag.Boolean("javaHeaderCompilation")
 
   //   --java_language_version (a string; default: "")
@@ -8620,9 +9215,10 @@ internal object knownFlags {
     name = "java_language_version",
     defaultValue = """""""",
     help = """The Java language version""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val javaLanguageVersion = Flag.Str("javaLanguageVersion")
 
   //   --java_launcher (a build target label; default: see description)
@@ -8633,9 +9229,10 @@ internal object knownFlags {
       the empty string, the JDK launcher is used. The "launcher" attribute overrides 
       this flag. 
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val javaLauncher = Flag.Label("javaLauncher")
 
   //   --java_runtime_version (a string; default: "local_jdk")
@@ -8643,9 +9240,10 @@ internal object knownFlags {
     name = "java_runtime_version",
     defaultValue = """"local_jdk"""",
     help = """The Java runtime version""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val javaRuntimeVersion = Flag.Str("javaRuntimeVersion")
 
   //   --javacopt (a string; may be used multiple times)
@@ -8653,9 +9251,10 @@ internal object knownFlags {
     name = "javacopt",
     allowMultiple = true,
     help = """Additional options to pass to javac.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val javacopt = Flag.Str("javacopt")
 
   //   --jvmopt (a string; may be used multiple times)
@@ -8666,9 +9265,10 @@ internal object knownFlags {
       Additional options to pass to the Java VM. These options will get added to the 
       VM startup options of each java_binary target.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val jvmopt = Flag.Str("jvmopt")
 
   //   --legacy_main_dex_list_generator (a build target label; default: see description)
@@ -8678,9 +9278,10 @@ internal object knownFlags {
       Specifies a binary to use to generate the list of classes that must be in the 
       main dex when compiling legacy multidex.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val legacyMainDexListGenerator = Flag.Label("legacyMainDexListGenerator")
 
   //   --local_termination_grace_seconds (an integer; default: "15")
@@ -8691,24 +9292,26 @@ internal object knownFlags {
       Time to wait between terminating a local process due to timeout and forcefully 
       shutting it down.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val localTerminationGraceSeconds = Flag.Integer("localTerminationGraceSeconds")
 
   //   --optimizing_dexer (a build target label; default: see description)
   @Option(
     name = "optimizing_dexer",
     help = """Specifies a binary to use to do dexing without sharding.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val optimizingDexer = Flag.Label("optimizingDexer")
 
-    // 
-  //   --override_repository (an equals-separated mapping of repository name to path; may be used 
+  //
+  //   --override_repository (an equals-separated mapping of repository name to path; may be used
   // multiple times)
-  // 
+  //
   @Option(
     name = "override_repository",
     allowMultiple = true,
@@ -8720,9 +9323,10 @@ internal object knownFlags {
       workspace root, which is the output of `bazel info workspace`. If the given 
       path is empty, then remove any previous overrides.
       """,
-    valueHelp = """an equals-separated mapping of repository name to path"""
+    valueHelp = """an equals-separated mapping of repository name to path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val overrideRepository = Flag.Unknown("overrideRepository")
 
   //   --package_path (colon-separated list of options; default: "%workspace%")
@@ -8734,9 +9338,10 @@ internal object knownFlags {
       '%workspace%' are relative to the enclosing workspace. If omitted or empty, the 
       default is the output of 'bazel info default-package-path'.
       """,
-    valueHelp = """colon-separated list of options"""
+    valueHelp = """colon-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val packagePath = Flag.Unknown("packagePath")
 
   //   --plugin (a build target label; may be used multiple times)
@@ -8744,9 +9349,10 @@ internal object knownFlags {
     name = "plugin",
     allowMultiple = true,
     help = """Plugins to use in the build. Currently works with java_plugin.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val plugin = Flag.Label("plugin")
 
   //   --[no]progress_in_terminal_title (a boolean; default: "false")
@@ -8757,9 +9363,10 @@ internal object knownFlags {
       Show the command progress in the terminal title. Useful to see what bazel is 
       doing when having multiple terminal tabs.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val progressInTerminalTitle = Flag.Boolean("progressInTerminalTitle")
 
   //   --proguard_top (a build target label; default: see description)
@@ -8769,9 +9376,10 @@ internal object knownFlags {
       Specifies which version of ProGuard to use for code removal when building a 
       Java binary.
       """,
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val proguardTop = Flag.Label("proguardTop")
 
   //   --proto_compiler (a build target label; default: "@bazel_tools//tools/proto:protoc")
@@ -8780,9 +9388,10 @@ internal object knownFlags {
     defaultValue = """"@bazel_tools//tools/proto:protoc"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """The label of the proto-compiler.""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val protoCompiler = Flag.Label("protoCompiler")
 
   //   --proto_toolchain_for_cc (a build target label; default: "@bazel_tools//tools/proto:cc_toolchain")
@@ -8791,51 +9400,55 @@ internal object knownFlags {
     defaultValue = """"@bazel_tools//tools/proto:cc_toolchain"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Label of proto_lang_toolchain() which describes how to compile C++ protos""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val protoToolchainForCc = Flag.Label("protoToolchainForCc")
 
-    // 
-  //   --proto_toolchain_for_j2objc (a build target label; default: 
+  //
+  //   --proto_toolchain_for_j2objc (a build target label; default:
   // "@bazel_tools//tools/j2objc:j2objc_proto_toolchain")
-  // 
+  //
   @Option(
     name = "proto_toolchain_for_j2objc",
     defaultValue = """"@bazel_tools//tools/j2objc:j2objc_proto_toolchain"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Label of proto_lang_toolchain() which describes how to compile j2objc protos""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val protoToolchainForJ2objc = Flag.Label("protoToolchainForJ2objc")
 
-    // 
-  //   --proto_toolchain_for_java (a build target label; default: 
+  //
+  //   --proto_toolchain_for_java (a build target label; default:
   // "@bazel_tools//tools/proto:java_toolchain")
-  // 
+  //
   @Option(
     name = "proto_toolchain_for_java",
     defaultValue = """"@bazel_tools//tools/proto:java_toolchain"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Label of proto_lang_toolchain() which describes how to compile Java protos""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val protoToolchainForJava = Flag.Label("protoToolchainForJava")
 
-    // 
-  //   --proto_toolchain_for_javalite (a build target label; default: 
+  //
+  //   --proto_toolchain_for_javalite (a build target label; default:
   // "@bazel_tools//tools/proto:javalite_toolchain")
-  // 
+  //
   @Option(
     name = "proto_toolchain_for_javalite",
     defaultValue = """"@bazel_tools//tools/proto:javalite_toolchain"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS, OptionEffectTag.LOADING_AND_ANALYSIS],
     help = """Label of proto_lang_toolchain() which describes how to compile JavaLite protos""",
-    valueHelp = """a build target label"""
+    valueHelp = """a build target label""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val protoToolchainForJavalite = Flag.Label("protoToolchainForJavalite")
 
   //   --protocopt (a string; may be used multiple times)
@@ -8844,9 +9457,10 @@ internal object knownFlags {
     allowMultiple = true,
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """Additional options to pass to the protobuf compiler.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val protocopt = Flag.Str("protocopt")
 
   //   --[no]runs_per_test_detects_flakes (a boolean; default: "false")
@@ -8857,9 +9471,10 @@ internal object knownFlags {
       If true, any shard in which at least one run/attempt passes and at least one 
       run/attempt fails gets a FLAKY status.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val runsPerTestDetectsFlakes = Flag.Boolean("runsPerTestDetectsFlakes")
 
   //   --shell_executable (a path; default: see description)
@@ -8875,9 +9490,10 @@ internal object knownFlags {
       /bin/bash). Note that using a shell that is not compatible with bash may lead 
       to build failures or runtime failures of the generated binaries.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val shellExecutable = Flag.Path("shellExecutable")
 
   //   --[no]show_loading_progress (a boolean; default: "true")
@@ -8885,9 +9501,10 @@ internal object knownFlags {
     name = "show_loading_progress",
     defaultValue = """"true"""",
     help = """If enabled, causes Bazel to print "Loading package:" messages.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val showLoadingProgress = Flag.Boolean("showLoadingProgress")
 
   //   --[no]show_progress (a boolean; default: "true")
@@ -8895,9 +9512,10 @@ internal object knownFlags {
     name = "show_progress",
     defaultValue = """"true"""",
     help = """Display progress messages during a build.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val showProgress = Flag.Boolean("showProgress")
 
   //   --show_progress_rate_limit (a double; default: "0.2")
@@ -8905,9 +9523,10 @@ internal object knownFlags {
     name = "show_progress_rate_limit",
     defaultValue = """"0.2"""",
     help = """Minimum number of seconds between progress messages in the output.""",
-    valueHelp = """a double"""
+    valueHelp = """a double""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val showProgressRateLimit = Flag.Double("showProgressRateLimit")
 
   //   --[no]show_timestamps (a boolean; default: "false")
@@ -8915,9 +9534,10 @@ internal object knownFlags {
     name = "show_timestamps",
     defaultValue = """"false"""",
     help = """Include timestamps in messages""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val showTimestamps = Flag.Boolean("showTimestamps")
 
   //   --test_arg (a string; may be used multiple times)
@@ -8930,9 +9550,10 @@ internal object knownFlags {
       multiple tests are executed, each of them will receive identical arguments. 
       Used only by the 'bazel test' command.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testArg = Flag.Str("testArg")
 
   //   --test_filter (a string; default: see description)
@@ -8942,9 +9563,10 @@ internal object knownFlags {
       Specifies a filter to forward to the test framework.  Used to limit the tests 
       run. Note that this does not affect which targets are built.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testFilter = Flag.Str("testFilter")
 
   //   --test_lang_filters (comma-separated list of options; default: "")
@@ -8959,9 +9581,10 @@ internal object knownFlags {
       rule, e.g. one of 'cc', 'java', 'py', etc. This option affects 
       --build_tests_only behavior and the test command.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testLangFilters = Flag.Unknown("testLangFilters")
 
   //   --test_result_expiration (an integer; default: "-1")
@@ -8969,9 +9592,10 @@ internal object knownFlags {
     name = "test_result_expiration",
     defaultValue = """"-1"""",
     help = """This option is deprecated and has no effect.""",
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testResultExpiration = Flag.Integer("testResultExpiration")
 
   //   --[no]test_runner_fail_fast (a boolean; default: "false")
@@ -8982,15 +9606,16 @@ internal object knownFlags {
       Forwards fail fast option to the test runner. The test runner should stop 
       execution upon first failure.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testRunnerFailFast = Flag.Boolean("testRunnerFailFast")
 
-    // 
-  //   --test_sharding_strategy (explicit, disabled or forced=k where k is the number of shards to 
+  //
+  //   --test_sharding_strategy (explicit, disabled or forced=k where k is the number of shards to
   // enforce; default: "explicit")
-  // 
+  //
   @Option(
     name = "test_sharding_strategy",
     defaultValue = """"explicit"""",
@@ -9000,15 +9625,16 @@ internal object knownFlags {
       sharding. 'forced=k' to enforce 'k' shards for testing regardless of the 
       'shard_count' BUILD attribute.
       """,
-    valueHelp = """explicit, disabled or forced=k where k is the number of shards to enforce"""
+    valueHelp = """explicit, disabled or forced=k where k is the number of shards to enforce""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testShardingStrategy = Flag.Unknown("testShardingStrategy")
 
-    // 
-  //   --test_size_filters (comma-separated list of values: small, medium, large or enormous; default: 
+  //
+  //   --test_size_filters (comma-separated list of values: small, medium, large or enormous; default:
   // "")
-  // 
+  //
   @Option(
     name = "test_size_filters",
     defaultValue = """""""",
@@ -9018,9 +9644,10 @@ internal object knownFlags {
       found that contain at least one included size and do not contain any excluded 
       sizes. This option affects --build_tests_only behavior and the test command.
       """,
-    valueHelp = """comma-separated list of values: small, medium, large or enormous"""
+    valueHelp = """comma-separated list of values: small, medium, large or enormous""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testSizeFilters = Flag.Unknown("testSizeFilters")
 
   //   --test_tag_filters (comma-separated list of options; default: "")
@@ -9033,15 +9660,16 @@ internal object knownFlags {
       found that contain at least one included tag and do not contain any excluded 
       tags. This option affects --build_tests_only behavior and the test command.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testTagFilters = Flag.Unknown("testTagFilters")
 
-    // 
-  //   --test_timeout_filters (comma-separated list of values: short, moderate, long or eternal; 
+  //
+  //   --test_timeout_filters (comma-separated list of values: short, moderate, long or eternal;
   // default: "")
-  // 
+  //
   @Option(
     name = "test_timeout_filters",
     defaultValue = """""""",
@@ -9052,18 +9680,20 @@ internal object knownFlags {
       contain any excluded timeouts. This option affects --build_tests_only behavior 
       and the test command.
       """,
-    valueHelp = """comma-separated list of values: short, moderate, long or eternal"""
+    valueHelp = """comma-separated list of values: short, moderate, long or eternal""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testTimeoutFilters = Flag.Unknown("testTimeoutFilters")
 
   //   --tls_certificate (a string; default: see description)
   @Option(
     name = "tls_certificate",
     help = """Specify a path to a TLS certificate that is trusted to sign server certificates.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val tlsCertificate = Flag.Str("tlsCertificate")
 
   //   --tls_client_certificate (a string; default: see description)
@@ -9073,9 +9703,10 @@ internal object knownFlags {
       Specify the TLS client certificate to use; you also need to provide a client 
       key to enable client authentication.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val tlsClientCertificate = Flag.Str("tlsClientCertificate")
 
   //   --tls_client_key (a string; default: see description)
@@ -9085,9 +9716,10 @@ internal object knownFlags {
       Specify the TLS client key to use; you also need to provide a client 
       certificate to enable client authentication.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val tlsClientKey = Flag.Str("tlsClientKey")
 
   //   --tool_java_language_version (a string; default: "")
@@ -9098,9 +9730,10 @@ internal object knownFlags {
       The Java language version used to execute the tools that are needed during a 
       build
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val toolJavaLanguageVersion = Flag.Str("toolJavaLanguageVersion")
 
   //   --tool_java_runtime_version (a string; default: "remotejdk_11")
@@ -9108,9 +9741,10 @@ internal object knownFlags {
     name = "tool_java_runtime_version",
     defaultValue = """"remotejdk_11"""",
     help = """The Java runtime version used to execute tools during the build""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val toolJavaRuntimeVersion = Flag.Str("toolJavaRuntimeVersion")
 
   //   --ui_actions_shown (an integer; default: "8")
@@ -9123,9 +9757,10 @@ internal object knownFlags {
       shown on a separate line. The progress bar always shows at least one one, all 
       numbers less than 1 are mapped to 1.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val uiActionsShown = Flag.Integer("uiActionsShown")
 
   //   --[no]use_ijars (a boolean; default: "true")
@@ -9137,9 +9772,10 @@ internal object knownFlags {
       will result in faster incremental compilation, but error messages can be 
       different.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val useIjars = Flag.Boolean("useIjars")
 
   //   --[no]watchfs (a boolean; default: "false")
@@ -9153,9 +9789,10 @@ internal object knownFlags {
       --experimental_windows_watchfs. On any OS: The behavior is undefined if your 
       workspace is on a network file system, and files are edited on a remote machine.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val watchfs = Flag.Boolean("watchfs")
 
   //   --workspace_status_command (a path; default: "")
@@ -9168,9 +9805,10 @@ internal object knownFlags {
       the full specification. Also see tools/buildstamp/get_workspace_status for an 
       example.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val workspaceStatusCommand = Flag.Path("workspaceStatusCommand")
 
   //   --[no]run (a boolean; default: "true")
@@ -9179,9 +9817,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.AFFECTS_OUTPUTS],
     help = """If false, skip running the command line constructed for the built target.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val run = Flag.Boolean("run")
 
   //   --script_path (a path; default: see description)
@@ -9195,9 +9834,10 @@ internal object knownFlags {
       'bazel run //foo' in that the bazel lock is released and the executable is 
       connected to the terminal's stdin.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val scriptPath = Flag.Path("scriptPath")
 
   //   --[no]configure (a boolean; default: "False")
@@ -9206,9 +9846,10 @@ internal object knownFlags {
     defaultValue = """"False"""",
     effectTags = [OptionEffectTag.CHANGES_INPUTS],
     help = """Only sync repositories marked as 'configure' for system-configuration purpose.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val configure = Flag.Boolean("configure")
 
   //   --only (a string; may be used multiple times)
@@ -9220,9 +9861,10 @@ internal object knownFlags {
       If this option is given, only sync the repositories specified with this option. 
       Still consider all (or all configure-like, of --configure is given) outdated.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val only = Flag.Str("only")
 
   //   --[no]async (a boolean; default: "false")
@@ -9235,9 +9877,10 @@ internal object knownFlags {
       be safe to execute new commands in the same client, even though the deletion 
       may continue in the background.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val async = Flag.Boolean("async")
 
   //   --[no]expunge (a boolean; default: "false")
@@ -9250,16 +9893,17 @@ internal object knownFlags {
       includes all bazel-created temporary and build output files, and stops the 
       bazel server if it is running.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val expunge = Flag.Boolean("expunge")
 
   //   --expunge_async
   @Option(
     name = "expunge_async",
     effectTags = [OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS],
-    expandsTo = [      "--expunge", "--async"],
+    expandsTo = [ "--expunge", "--async"],
     help = """      
       If specified, clean asynchronously removes the entire working tree for this 
       bazel instance, which includes all bazel-created temporary and build output 
@@ -9268,7 +9912,8 @@ internal object knownFlags {
       though the deletion may continue in the background.
       """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val expungeAsync = Flag.Unknown("expungeAsync")
 
   //   --[no]all (a boolean; default: "false")
@@ -9280,9 +9925,10 @@ internal object knownFlags {
       Fetches all external repositories necessary for building any target or 
       repository. Only works when --enable_bzlmod is on.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val all = Flag.Boolean("all")
 
   //   --[no]force (a boolean; default: "false")
@@ -9294,9 +9940,10 @@ internal object knownFlags {
       Ignore existing repository if any and force fetch the repository again. Only 
       works when --enable_bzlmod is on.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val force = Flag.Boolean("force")
 
   //   --repo (a string; may be used multiple times)
@@ -9309,9 +9956,10 @@ internal object knownFlags {
       {@apparent_repo_name} or {@@canonical_repo_name}. Only works when 
       --enable_bzlmod is on.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val repo = Flag.Str("repo")
 
   //   --[no]print_relative_test_log_paths (a boolean; default: "false")
@@ -9325,9 +9973,10 @@ internal object knownFlags {
       invocation with a different configuration can cause the target of this symlink 
       to change, making the path printed previously no longer useful.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val printRelativeTestLogPaths = Flag.Boolean("printRelativeTestLogPaths")
 
   //   --[no]test_verbose_timeout_warnings (a boolean; default: "false")
@@ -9339,9 +9988,10 @@ internal object knownFlags {
       If true, print additional warnings when the actual test execution time does not 
       match the timeout defined by the test (whether implied or explicit).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val testVerboseTimeoutWarnings = Flag.Boolean("testVerboseTimeoutWarnings")
 
   //   --[no]verbose_test_summary (a boolean; default: "true")
@@ -9353,9 +10003,10 @@ internal object knownFlags {
       If true, print additional information (timing, number of failed runs, etc) in 
       the test summary.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val verboseTestSummary = Flag.Boolean("verboseTestSummary")
 
   //   --aspect_deps (off, conservative or precise; default: "conservative")
@@ -9375,9 +10026,10 @@ internal object knownFlags {
       precise: the decision whether to compute an aspect is decided in the analysis 
       phase, which is not run during 'bazel query'.
       """,
-    valueHelp = """off, conservative or precise"""
+    valueHelp = """off, conservative or precise""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val aspectDeps = Flag.OneOf("aspectDeps")
 
   //   --[no]consistent_labels (a boolean; default: "false")
@@ -9393,9 +10045,10 @@ internal object knownFlags {
       emit apparent repository names (relative to the main repository) instead to 
       make the output more readable.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val consistentLabels = Flag.Boolean("consistentLabels")
 
   //   --[no]experimental_explicit_aspects (a boolean; default: "false")
@@ -9407,9 +10060,10 @@ internal object knownFlags {
       aquery, cquery: whether to include aspect-generated actions in the output. 
       query: no-op (aspects are always followed).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalExplicitAspects = Flag.Boolean("experimentalExplicitAspects")
 
   //   --[no]graph:factored (a boolean; default: "true")
@@ -9422,9 +10076,10 @@ internal object knownFlags {
       topologically-equivalent nodes will be merged together and their labels 
       concatenated. This option is only applicable to --output=graph.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val graph_factored = Flag.Boolean("graph_factored")
 
   //   --graph:node_limit (an integer; default: "512")
@@ -9437,9 +10092,10 @@ internal object knownFlags {
       labels will be truncated; -1 means no truncation.  This option is only 
       applicable to --output=graph.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val graph_nodeLimit = Flag.Integer("graph_nodeLimit")
 
   //   --[no]implicit_deps (a boolean; default: "true")
@@ -9453,9 +10109,10 @@ internal object knownFlags {
       specified in the BUILD file but added by bazel. For cquery, this option 
       controls filtering resolved toolchains.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val implicitDeps = Flag.Boolean("implicitDeps")
 
   //   --[no]include_artifacts (a boolean; default: "true")
@@ -9467,9 +10124,10 @@ internal object knownFlags {
       Includes names of the action inputs and outputs in the output (potentially 
       large).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val includeArtifacts = Flag.Boolean("includeArtifacts")
 
   //   --[no]include_aspects (a boolean; default: "true")
@@ -9481,9 +10139,10 @@ internal object knownFlags {
       aquery, cquery: whether to include aspect-generated actions in the output. 
       query: no-op (aspects are always followed).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val includeAspects = Flag.Boolean("includeAspects")
 
   //   --[no]include_commandline (a boolean; default: "true")
@@ -9495,9 +10154,10 @@ internal object knownFlags {
       Includes the content of the action command lines in the output (potentially 
       large).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val includeCommandline = Flag.Boolean("includeCommandline")
 
   //   --[no]include_file_write_contents (a boolean; default: "false")
@@ -9509,9 +10169,10 @@ internal object knownFlags {
       Include the file contents for the FileWrite, SourceSymlinkManifest, and 
       RepoMappingManifest actions (potentially large). 
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val includeFileWriteContents = Flag.Boolean("includeFileWriteContents")
 
   //   --[no]include_param_files (a boolean; default: "false")
@@ -9524,9 +10185,10 @@ internal object knownFlags {
       Note: Enabling this flag will automatically enable the --include_commandline 
       flag.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val includeParamFiles = Flag.Boolean("includeParamFiles")
 
   //   --[no]incompatible_package_group_includes_double_slash (a boolean; default: "true")
@@ -9539,9 +10201,10 @@ internal object knownFlags {
       If enabled, when outputting package_group's `packages` attribute, the leading 
       `//` will not be omitted.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val incompatiblePackageGroupIncludesDoubleSlash = Flag.Boolean("incompatiblePackageGroupIncludesDoubleSlash")
 
   //   --[no]infer_universe_scope (a boolean; default: "false")
@@ -9559,9 +10222,10 @@ internal object knownFlags {
       --universe_scope is set, then this option's value is ignored. Note: this option 
       applies only to `query` (i.e. not `cquery`).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val inferUniverseScope = Flag.Boolean("inferUniverseScope")
 
   //   --[no]line_terminator_null (a boolean; default: "false")
@@ -9570,9 +10234,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.TERMINAL_OUTPUT],
     help = """Whether each format is terminated with \0 instead of newline.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val lineTerminatorNull = Flag.Boolean("lineTerminatorNull")
 
   //   --[no]nodep_deps (a boolean; default: "true")
@@ -9586,9 +10251,10 @@ internal object knownFlags {
       "visibility". Run and parse the output of `info build-language` to learn about 
       all the "nodep" attributes in the build language.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val nodepDeps = Flag.Boolean("nodepDeps")
 
   //   --output (a string; default: "text")
@@ -9600,9 +10266,10 @@ internal object knownFlags {
       The format in which the aquery results should be printed. Allowed values for 
       aquery are: text, textproto, proto, streamed_proto, jsonproto.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val output = Flag.Str("output")
 
   //   --[no]proto:default_values (a boolean; default: "true")
@@ -9615,9 +10282,10 @@ internal object knownFlags {
       are included; otherwise they are omitted. This option is applicable to 
       --output=proto
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val proto_defaultValues = Flag.Boolean("proto_defaultValues")
 
   //   --[no]proto:definition_stack (a boolean; default: "false")
@@ -9629,9 +10297,10 @@ internal object knownFlags {
       Populate the definition_stack proto field, which records for each rule instance 
       the Starlark call stack at the moment the rule's class was defined.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val proto_definitionStack = Flag.Boolean("proto_definitionStack")
 
   //   --[no]proto:flatten_selects (a boolean; default: "true")
@@ -9644,9 +10313,10 @@ internal object knownFlags {
       types the flattened representation is a list containing each value of the 
       select map exactly once. Scalar types are flattened to null.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val proto_flattenSelects = Flag.Boolean("proto_flattenSelects")
 
   //   --[no]proto:include_attribute_source_aspects (a boolean; default: "false")
@@ -9658,9 +10328,10 @@ internal object knownFlags {
       Populate the source_aspect_name proto field of each Attribute with the source 
       aspect that the attribute came from (empty string if it did not).
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val proto_includeAttributeSourceAspects = Flag.Boolean("proto_includeAttributeSourceAspects")
 
   //   --[no]proto:include_synthetic_attribute_hash (a boolean; default: "false")
@@ -9669,9 +10340,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.TERMINAL_OUTPUT],
     help = """Whether or not to calculate and populate the ${'$'}internal_attr_hash attribute.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val proto_includeSyntheticAttributeHash = Flag.Boolean("proto_includeSyntheticAttributeHash")
 
   //   --[no]proto:instantiation_stack (a boolean; default: "false")
@@ -9683,9 +10355,10 @@ internal object knownFlags {
       Populate the instantiation call stack of each rule. Note that this requires the 
       stack to be present
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val proto_instantiationStack = Flag.Boolean("proto_instantiationStack")
 
   //   --[no]proto:locations (a boolean; default: "true")
@@ -9694,9 +10367,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.TERMINAL_OUTPUT],
     help = """Whether to output location information in proto output at all.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val proto_locations = Flag.Boolean("proto_locations")
 
   //   --proto:output_rule_attrs (comma-separated list of options; default: "all")
@@ -9709,9 +10383,10 @@ internal object knownFlags {
       attributes. Set to empty string to not output any attribute. This option is 
       applicable to --output=proto.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val proto_outputRuleAttrs = Flag.Unknown("proto_outputRuleAttrs")
 
   //   --[no]proto:rule_inputs_and_outputs (a boolean; default: "true")
@@ -9720,9 +10395,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.TERMINAL_OUTPUT],
     help = """Whether or not to populate the rule_input and rule_output fields.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val proto_ruleInputsAndOutputs = Flag.Boolean("proto_ruleInputsAndOutputs")
 
   //   --query_file (a string; default: "")
@@ -9735,9 +10411,10 @@ internal object knownFlags {
       command line. It is an error to specify a file here as well as a command-line 
       query.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val queryFile = Flag.Str("queryFile")
 
   //   --[no]relative_locations (a boolean; default: "false")
@@ -9751,9 +10428,10 @@ internal object knownFlags {
       across machines. You can set this option to true to have a consistent result 
       across machines.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val relativeLocations = Flag.Boolean("relativeLocations")
 
   //   --[no]skyframe_state (a boolean; default: "false")
@@ -9766,9 +10444,10 @@ internal object knownFlags {
       Note: Specifying a target with --skyframe_state is currently not supported. 
       This flag is only available with --output=proto or --output=textproto.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val skyframeState = Flag.Boolean("skyframeState")
 
   //   --[no]tool_deps (a boolean; default: "true")
@@ -9789,9 +10468,10 @@ internal object knownFlags {
       exec configured targets will be returned. This option will NOT exclude resolved 
       toolchains.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val toolDeps = Flag.Boolean("toolDeps")
 
   //   --universe_scope (comma-separated list of options; default: "")
@@ -9810,9 +10490,10 @@ internal object knownFlags {
       build to break if targets parsed from the query expression are not buildable 
       with top-level options.
       """,
-    valueHelp = """comma-separated list of options"""
+    valueHelp = """comma-separated list of options""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val universeScope = Flag.Unknown("universeScope")
 
   //   --[no]autodetect_server_javabase (a boolean; default: "true")
@@ -9824,9 +10505,10 @@ internal object knownFlags {
       When --noautodetect_server_javabase is passed, Bazel does not fall back to the 
       local JDK for running the bazel server and instead exits.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val autodetectServerJavabase = Flag.Boolean("autodetectServerJavabase")
 
   //   --[no]batch (a boolean; default: "false")
@@ -9841,9 +10523,10 @@ internal object knownFlags {
       please prefer shutting down the server explicitly if you wish to avoid 
       lingering servers.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val batch = Flag.Boolean("batch")
 
   //   --[no]batch_cpu_scheduling (a boolean; default: "false")
@@ -9857,9 +10540,10 @@ internal object knownFlags {
       See 'man 2 sched_setscheduler'. If false, then Bazel does not perform a system 
       call.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val batchCpuScheduling = Flag.Boolean("batchCpuScheduling")
 
   //   --bazelrc (a string; default: see description)
@@ -9877,9 +10561,10 @@ internal object knownFlags {
       locations: the workspace directory, then the user's home directory.Note: 
       command line options will always supersede any option in bazelrc.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val bazelrc = Flag.Str("bazelrc")
 
   //   --[no]block_for_lock (a boolean; default: "true")
@@ -9891,9 +10576,10 @@ internal object knownFlags {
       When --noblock_for_lock is passed, Bazel does not wait for a running command to 
       complete, but instead exits immediately.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val blockForLock = Flag.Boolean("blockForLock")
 
   //   --[no]client_debug (a boolean; default: "false")
@@ -9905,9 +10591,10 @@ internal object knownFlags {
       If true, log debug information from the client to stderr. Changing this option 
       will not cause the server to restart.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val clientDebug = Flag.Boolean("clientDebug")
 
   //   --connect_timeout_secs (an integer; default: "30")
@@ -9916,9 +10603,10 @@ internal object knownFlags {
     defaultValue = """"30"""",
     effectTags = [OptionEffectTag.BAZEL_INTERNAL_CONFIGURATION],
     help = """The amount of time the client waits for each attempt to connect to the server""",
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val connectTimeoutSecs = Flag.Integer("connectTimeoutSecs")
 
   //   --digest_function (hash function; default: see description)
@@ -9926,9 +10614,10 @@ internal object knownFlags {
     name = "digest_function",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE, OptionEffectTag.BAZEL_INTERNAL_CONFIGURATION],
     help = """The hash function to use when computing file digests.""",
-    valueHelp = """hash function"""
+    valueHelp = """hash function""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val digestFunction = Flag.Unknown("digestFunction")
 
   //   --[no]expand_configs_in_place (a boolean; default: "true")
@@ -9942,9 +10631,10 @@ internal object knownFlags {
       fixed point expansion between normal rc options and command-line specified 
       options.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val expandConfigsInPlace = Flag.Boolean("expandConfigsInPlace")
 
   //   --failure_detail_out (a path; default: see description)
@@ -9956,9 +10646,10 @@ internal object knownFlags {
       server experiences a failure and cannot report it via gRPC, as normal. 
       Otherwise, the location will be ${'$'}{OUTPUT_BASE}/failure_detail.rawproto.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val failureDetailOut = Flag.Path("failureDetailOut")
 
   //   --[no]home_rc (a boolean; default: "true")
@@ -9967,9 +10658,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.CHANGES_INPUTS],
     help = """Whether or not to look for the home bazelrc file at ${'$'}HOME/.bazelrc""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val homeRc = Flag.Boolean("homeRc")
 
   //   --[no]idle_server_tasks (a boolean; default: "true")
@@ -9978,9 +10670,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.LOSES_INCREMENTAL_STATE, OptionEffectTag.HOST_MACHINE_RESOURCE_OPTIMIZATIONS],
     help = """Run System.gc() when the server is idle""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val idleServerTasks = Flag.Boolean("idleServerTasks")
 
   //   --[no]ignore_all_rc_files (a boolean; default: "false")
@@ -9992,9 +10685,10 @@ internal object knownFlags {
       Disables all rc files, regardless of the values of other rc-modifying flags, 
       even if these flags come later in the list of startup options.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val ignoreAllRcFiles = Flag.Boolean("ignoreAllRcFiles")
 
   //   --io_nice_level (an integer; default: "-1")
@@ -10008,9 +10702,10 @@ internal object knownFlags {
       anticipatory scheduler may only honor up to priority 4. If set to a negative 
       value, then Bazel does not perform a system call.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val ioNiceLevel = Flag.Integer("ioNiceLevel")
 
   //   --local_startup_timeout_secs (an integer; default: "120")
@@ -10019,9 +10714,10 @@ internal object knownFlags {
     defaultValue = """"120"""",
     effectTags = [OptionEffectTag.BAZEL_INTERNAL_CONFIGURATION],
     help = """The maximum amount of time the client waits to connect to the server""",
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val localStartupTimeoutSecs = Flag.Integer("localStartupTimeoutSecs")
 
   //   --macos_qos_class (a string; default: "default")
@@ -10035,9 +10731,10 @@ internal object knownFlags {
       shared among them without changes. Possible values are: user-interactive, 
       user-initiated, default, utility, and background.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val macosQosClass = Flag.Str("macosQosClass")
 
   //   --max_idle_secs (an integer; default: "10800")
@@ -10050,9 +10747,10 @@ internal object knownFlags {
       Zero means that the server will never shutdown. This is only read on 
       server-startup, changing this option will not cause the server to restart.
       """,
-    valueHelp = """an integer"""
+    valueHelp = """an integer""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val maxIdleSecs = Flag.Integer("maxIdleSecs")
 
   //   --output_base (a path; default: see description)
@@ -10071,9 +10769,10 @@ internal object knownFlags {
       same machine concurrently. See 'bazel help shutdown' on how to shutdown a Bazel 
       server.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val outputBase = Flag.Path("outputBase")
 
   //   --output_user_root (a path; default: see description)
@@ -10085,9 +10784,10 @@ internal object knownFlags {
       default, this is a function of ${'$'}USER, but by specifying a constant, build 
       outputs can be shared between collaborating users.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val outputUserRoot = Flag.Path("outputUserRoot")
 
   //   --[no]preemptible (a boolean; default: "false")
@@ -10096,9 +10796,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.EAGERNESS_TO_EXIT],
     help = """If true, the command can be preempted if another command is started.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val preemptible = Flag.Boolean("preemptible")
 
   //   --server_jvm_out (a path; default: see description)
@@ -10109,9 +10810,10 @@ internal object knownFlags {
       The location to write the server's JVM's output. If unset then defaults to a 
       location in output_base.
       """,
-    valueHelp = """a path"""
+    valueHelp = """a path""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val serverJvmOut = Flag.Path("serverJvmOut")
 
   //   --[no]shutdown_on_low_sys_mem (a boolean; default: "false")
@@ -10123,9 +10825,10 @@ internal object knownFlags {
       If max_idle_secs is set and the build server has been idle for a while, shut 
       down the server when the system is low on free RAM. Linux only.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val shutdownOnLowSysMem = Flag.Boolean("shutdownOnLowSysMem")
 
   //   --[no]system_rc (a boolean; default: "true")
@@ -10134,9 +10837,10 @@ internal object knownFlags {
     defaultValue = """"true"""",
     effectTags = [OptionEffectTag.CHANGES_INPUTS],
     help = """Whether or not to look for the system-wide bazelrc.""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val systemRc = Flag.Boolean("systemRc")
 
   //   --[no]unlimit_coredumps (a boolean; default: "false")
@@ -10150,9 +10854,10 @@ internal object knownFlags {
       Stick this flag in your bazelrc once and forget about it so that you get 
       coredumps when you actually encounter a condition that triggers them.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val unlimitCoredumps = Flag.Boolean("unlimitCoredumps")
 
   //   --[no]windows_enable_symlinks (a boolean; default: "false")
@@ -10165,9 +10870,10 @@ internal object knownFlags {
       copying. Requires Windows developer mode to be enabled and Windows 10 version 
       1703 or greater.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val windowsEnableSymlinks = Flag.Boolean("windowsEnableSymlinks")
 
   //   --[no]workspace_rc (a boolean; default: "true")
@@ -10179,9 +10885,10 @@ internal object knownFlags {
       Whether or not to look for the workspace bazelrc file at 
       ${'$'}workspace/.bazelrc
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val workspaceRc = Flag.Boolean("workspaceRc")
 
   //   --host_jvm_args (a string; may be used multiple times)
@@ -10189,25 +10896,27 @@ internal object knownFlags {
     name = "host_jvm_args",
     allowMultiple = true,
     help = """Flags to pass to the JVM executing Blaze.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostJvmArgs = Flag.Str("hostJvmArgs")
 
   //   --host_jvm_debug
   @Option(
     name = "host_jvm_debug",
-    expandsTo = [      
-      "--host_jvm_args=-Xdebug", 
-      "--host_jvm_args=-Xrunjdwp:transport=dt_socket,server=y,address=5005"
-      ],
+    expandsTo = [
+      "--host_jvm_args=-Xdebug",
+      "--host_jvm_args=-Xrunjdwp:transport=dt_socket,server=y,address=5005",
+    ],
     help = """      
       Convenience option to add some additional JVM startup flags, which cause the 
       JVM to wait during startup until you connect from a JDWP-compliant debugger 
       (like Eclipse) to port 5005.
       """,
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostJvmDebug = Flag.Unknown("hostJvmDebug")
 
   //   --host_jvm_profile (a string; default: "")
@@ -10219,9 +10928,10 @@ internal object knownFlags {
       Bazel has a list of known values that it maps to hard-coded JVM startup flags, 
       possibly searching some hardcoded paths for certain files.
       """,
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val hostJvmProfile = Flag.Str("hostJvmProfile")
 
   //   --server_javabase (a string; default: "")
@@ -10229,9 +10939,10 @@ internal object knownFlags {
     name = "server_javabase",
     defaultValue = """""""",
     help = """Path to the JVM used to execute Bazel itself.""",
-    valueHelp = """a string"""
+    valueHelp = """a string""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val serverJavabase = Flag.Str("serverJavabase")
 
   // an internal undocumented flag
@@ -10245,9 +10956,10 @@ internal object knownFlags {
       since it will speed up subsequent runs as they won't have to check a previous 
       run's cache      
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val experimentalCheckOutputFiles = Flag.Boolean("experimentalCheckOutputFiles")
 
   // an internal undocumented flag
@@ -10257,9 +10969,10 @@ internal object knownFlags {
     defaultValue = """"false"""",
     effectTags = [OptionEffectTag.NO_OP],
     help = """no-op""",
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
+  @JvmField
+  @Suppress("unused")
   val actionCacheStoreOutputMetadata = Flag.Boolean("actionCacheStoreOutputMetadata")
 
   // an internal undocumented flag
@@ -10273,7 +10986,9 @@ internal object knownFlags {
       since it will speed up subsequent runs as they won't have to check a previous 
       run's cache.
       """,
-    valueHelp = """a boolean"""
+    valueHelp = """a boolean""",
   )
-  @JvmField @Suppress("unused")
-  val experimentalCheckExternalRepositoryFiles = Flag.Boolean("experimentalCheckExternalRepositoryFiles")}
+  @JvmField
+  @Suppress("unused")
+  val experimentalCheckExternalRepositoryFiles = Flag.Boolean("experimentalCheckExternalRepositoryFiles")
+}

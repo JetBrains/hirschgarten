@@ -34,7 +34,8 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
   override fun computeDocumentation(): DocumentationResult? =
     symbolPtr.dereference().run {
       DocumentationResult.asyncDocumentation {
-        val markdownText = """
+        val markdownText =
+          """
           |
           |${flag.type()}
           |
@@ -49,13 +50,14 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
           |${flag.effects()}
           |
           |${flag.metadataTags()}
-        """.trimMargin()
+          """.trimMargin()
 
         val body = raw(DocMarkdownToHtmlConverter.convert(project, markdownText))
-        val fragment = fragment(
-          text(flag.title()).bold().wrapWith(head()),
-          body.wrapWith(body()),
-        )
+        val fragment =
+          fragment(
+            text(flag.title()).bold().wrapWith(head()),
+            body.wrapWith(body()),
+          )
 
         DocumentationResult.documentation(fragment.wrapWith(html()).toString())
       }
@@ -70,57 +72,64 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
 
     // this will take the description and massage it into a better markdown variant so that the transformed HTML is nicer
     fun Flag.help(): String =
-      option.help.trimIndent()
+      option.help
+        .trimIndent()
         .replace(reFlag) { "`${it.groups[1]?.value}`" } // -> _--asdfasd_ -> _`--asdfasd`_
         .replace(reFlagQuoted) { "`${it.groups[1]?.value}`" } // -> _'--asdfasd_' -> _`--asdfasd`_
 
+    fun Flag.title(): String =
+      this
+        .takeIf { it is Flag.Boolean }
+        ?.let { "[no]${option.name}" }
+        ?: option.name
 
-    fun Flag.title(): String = this
-      .takeIf { it is Flag.Boolean }
-      ?.let { "[no]${option.name}" }
-      ?: option.name
-
-    fun Flag.expandsTo(): String = option
-      .expandsTo
-      .takeUnless { it.isEmpty() }
-      ?.let { """
+    fun Flag.expandsTo(): String =
+      option
+        .expandsTo
+        .takeUnless { it.isEmpty() }
+        ?.let {
+          """
         |**Expands to**:
         |```commandline
         |${option.expandsTo.joinToString(" ")}
-        |```""".trimMargin() }
-      ?: ""
+        |```
+          """.trimMargin()
+        }
+        ?: ""
 
-    fun Flag.type(): String = option
-      .valueHelp
-      .takeUnless(String::isEmpty)
-      ?.let { """Type${"\n"}: `$it`""" }
-      ?: ""
+    fun Flag.type(): String =
+      option
+        .valueHelp
+        .takeUnless(String::isEmpty)
+        ?.let { """Type${"\n"}: `$it`""" }
+        ?: ""
 
-    fun Flag.default(): String = option
-      .defaultValue
-      .takeUnless(String::isEmpty)
-      ?.let { """**default**${"\n"}: `$it`""" }
-      ?: ""
+    fun Flag.default(): String =
+      option
+        .defaultValue
+        .takeUnless(String::isEmpty)
+        ?.let { """**default**${"\n"}: `$it`""" }
+        ?: ""
 
-    fun Flag.allowMultiple(): String = option
+    fun Flag.allowMultiple(): String =
+      option
         .allowMultiple
         .takeIf { it }
         ?.let { """**can be used multiples times**""" }
         ?: ""
 
-    fun Flag.effects(): String = option
-      .effectTags
-      .takeUnless { it.isEmpty() }
-      ?.let { """**Effects**: ${it.joinToString(", ") { """_${it.name.lowercase()}_""" }}""" }
-      ?: ""
+    fun Flag.effects(): String =
+      option
+        .effectTags
+        .takeUnless { it.isEmpty() }
+        ?.let { """**Effects**: ${it.joinToString(", ") { """_${it.name.lowercase()}_""" }}""" }
+        ?: ""
 
-    fun Flag.metadataTags(): String = option
-      .metadataTags
-      .takeUnless { it.isEmpty() }
-      ?.let { """**Metadata tags**: ${it.joinToString(", ") { """_${it.name.lowercase()}_""" }}""" }
-      ?: ""
+    fun Flag.metadataTags(): String =
+      option
+        .metadataTags
+        .takeUnless { it.isEmpty() }
+        ?.let { """**Metadata tags**: ${it.joinToString(", ") { """_${it.name.lowercase()}_""" }}""" }
+        ?: ""
   }
 }
-
-
-

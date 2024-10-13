@@ -9,44 +9,51 @@ sealed class Flag {
   abstract val name: String
 
   data class Unknown(override val name: String) : Flag()
+
   data class Boolean(override val name: String) : Flag()
+
   data class Integer(override val name: String) : Flag()
+
   data class Path(override val name: String) : Flag()
+
   data class Double(override val name: String) : Flag()
+
   data class Duration(override val name: String) : Flag()
+
   data class Str(override val name: String) : Flag()
+
   data class Label(override val name: String) : Flag()
+
   data class OneOf(override val name: String) : Flag()
 
   /** Lazily load and return the @Option() annotation associated with this value, if any. */
   val option: Option by object : LazyExtension<Option, Flag>() {
     override fun initValue(o: Flag): Option =
-      knownFlags.declaredFieldsMap[o.name]?.getDeclaredAnnotation(Option::class.java) ?: Option(o.name)
+      KnownFlags.declaredFieldsMap[o.name]?.getDeclaredAnnotation(Option::class.java) ?: Option(o.name)
   }
 
   companion object {
-    internal val knownFlags.declaredFieldsMap by object : LazyExtension<PersistentMap<String, Field>, knownFlags>() {
-      override fun initValue(o: knownFlags): PersistentMap<String, Field> =
-        knownFlags::class.java.declaredFields
+    internal val KnownFlags.declaredFieldsMap by object : LazyExtension<PersistentMap<String, Field>, KnownFlags>() {
+      override fun initValue(o: KnownFlags): PersistentMap<String, Field> =
+        KnownFlags::class.java.declaredFields
           .filter { it.getDeclaredAnnotation(Option::class.java) != null }
           .associateBy { it.name }
           .toPersistentMap()
     }
 
-    internal val knownFlags.allFlags by object : LazyExtension<PersistentMap<String, Flag>, knownFlags>() {
-      override fun initValue(o: knownFlags): PersistentMap<String, Flag> =
-        knownFlags.declaredFieldsMap
+    internal val KnownFlags.allFlags by object : LazyExtension<PersistentMap<String, Flag>, KnownFlags>() {
+      override fun initValue(o: KnownFlags): PersistentMap<String, Flag> =
+        KnownFlags.declaredFieldsMap
           .values
           .mapNotNull {
             it.getDeclaredAnnotation(Option::class.java)?.let { op -> Pair(it, op) }
-          }
-          .mapNotNull { (f, op) -> (f.get(o) as? Flag)?.let { flag -> Pair(flag, op) } }
+          }.mapNotNull { (f, op) -> (f.get(o) as? Flag)?.let { flag -> Pair(flag, op) } }
           .flatMap { knownFlagNames(it) }
           .toMap()
           .toPersistentMap()
     }
 
-    fun byName(name: String) = knownFlags.allFlags[name]
+    fun byName(name: String) = KnownFlags.allFlags[name]
   }
 }
 
