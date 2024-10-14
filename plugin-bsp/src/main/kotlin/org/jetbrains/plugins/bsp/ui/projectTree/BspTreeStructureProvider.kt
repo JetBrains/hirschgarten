@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.project.tree
+package org.jetbrains.plugins.bsp.ui.projectTree
 
 import com.intellij.ide.projectView.TreeStructureProvider
 import com.intellij.ide.projectView.ViewSettings
@@ -21,7 +21,7 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.openedTimesSinceLastStartupResync
 import org.jetbrains.plugins.bsp.config.rootDir
 
-public class BspTreeStructureProvider : TreeStructureProvider {
+class BspTreeStructureProvider : TreeStructureProvider {
   // We want to get rid of all the module (group) nodes from the project view tree;
   // in rare cases with complicated project (modules) structure IJ
   // doesn't know how to render the project tree,

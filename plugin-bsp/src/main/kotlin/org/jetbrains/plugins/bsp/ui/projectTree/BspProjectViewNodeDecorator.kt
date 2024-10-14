@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.project.tree
+package org.jetbrains.plugins.bsp.ui.projectTree
 
 import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
