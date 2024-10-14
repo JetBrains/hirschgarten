@@ -12,5 +12,6 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/ui/notifications",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/ui/widgets",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/utils",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/ui/widgets/fileTargets:fileTargets",
     ],
 )

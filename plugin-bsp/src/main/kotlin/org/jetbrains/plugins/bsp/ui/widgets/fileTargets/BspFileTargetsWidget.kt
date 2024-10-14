@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.ui.widgets.file.targets
+package org.jetbrains.plugins.bsp.ui.widgets.fileTargets
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.actionSystem.ActionGroup
@@ -34,7 +34,7 @@ import javax.swing.Icon
  */
 private const val WIDGET_ID = "BspFileTargetsWidget"
 
-public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
+class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
   init {
     project.temporaryTargetUtils.registerSyncListener {
       ApplicationManager.getApplication().invokeLater {
@@ -110,7 +110,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
   override fun createInstance(project: Project): StatusBarWidget = BspFileTargetsWidget(project)
 }
 
-public class BspFileTargetsWidgetFactory : StatusBarWidgetFactory {
+class BspFileTargetsWidgetFactory : StatusBarWidgetFactory {
   override fun getId(): String = WIDGET_ID
 
   override fun getDisplayName(): String = BspPluginBundle.message("widget.factory.display.name")

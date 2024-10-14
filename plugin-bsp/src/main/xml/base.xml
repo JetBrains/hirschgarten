@@ -182,7 +182,7 @@
                      key="bsp.scan.git.roots.inside.project.dir"/>
 
         <statusBarWidgetFactory id="BspFileTargetsWidget"
-                                implementation="org.jetbrains.plugins.bsp.ui.widgets.file.targets.BspFileTargetsWidgetFactory"/>
+                                implementation="org.jetbrains.plugins.bsp.ui.widgets.fileTargets.BspFileTargetsWidgetFactory"/>
 
         <toolWindowAllowlist id="BSP"/>
         <toolWindowExtractor implementation="org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspToolWindowViewModelExtractor"/>
