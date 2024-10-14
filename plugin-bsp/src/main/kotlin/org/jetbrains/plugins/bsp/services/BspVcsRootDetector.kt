@@ -5,7 +5,9 @@ import com.intellij.openapi.vcs.VcsRoot
 import com.intellij.openapi.vcs.roots.VcsRootDetector
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.config.rootDir
 
 /**
  * Hack to fix https://youtrack.jetbrains.com/issue/BAZEL-948
@@ -29,8 +31,8 @@ class BspVcsRootDetector(private val project: Project) : VcsRootDetector {
 
   private fun VcsRoot.shouldKeep(): Boolean {
     if (!project.isBspProject) return true
-    val baseDir = project.baseDir ?: return true
-    // Don't keep VCS roots inside the project base dir, e.g. basel-hirschgarten
-    return VfsUtilCore.isAncestor(path, baseDir, false)
+    if (BspFeatureFlags.isScanGitRootsInsideProjectDir) return true
+    // Don't keep VCS roots inside the project root dir, e.g. bazel-hirschgarten
+    return VfsUtilCore.isAncestor(path, project.rootDir, false)
   }
 }
