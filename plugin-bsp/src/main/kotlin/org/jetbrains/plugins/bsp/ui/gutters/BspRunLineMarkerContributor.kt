@@ -18,7 +18,7 @@ private class BspLineMakerInfo(text: String, actions: List<AnAction>) :
   override fun shouldReplace(other: RunLineMarkerContributor.Info): Boolean = true
 }
 
-public abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
+abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? = getSlowInfo(element)
 
   override fun getSlowInfo(element: PsiElement): Info? =
