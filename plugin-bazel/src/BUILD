@@ -17,6 +17,7 @@ java_proto_library(
 kt_jvm_library(
     name = "intellij-bsp",
     neverlink = True,
+    visibility = ["//plugin-bazel:__subpackages__"],
     exports = [
         "//plugin-bsp/src:intellij-bsp",
     ],
@@ -45,6 +46,12 @@ kt_jvm_library(
     deps = [
         ":intellij-bsp",
         ":starlark_annotations",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting:higlighting",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
         "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",

@@ -1,10 +1,11 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
-    name = "coroutines",
+    name = "config",
     srcs = glob(["*.kt"]),
-    visibility = ["//plugin-bsp:__subpackages__"],
+    visibility = ["//plugin-bazel:__subpackages__"],
     deps = [
+        "//plugin-bazel/src:intellij-bsp",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
 )
