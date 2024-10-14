@@ -49,7 +49,7 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
   private var libraryModules: List<JavaModule> = emptyList()
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
-  private var listeners: List<() -> Unit> = emptyList()
+  private var listeners: List<(Boolean) -> Unit> = emptyList()
 
   public fun saveTargets(
     targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
@@ -82,11 +82,11 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
 
   private fun createLibraryModulesLookupTable() = libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
-  public fun fireListeners() {
-    listeners.forEach { it() }
+  public fun fireSyncListeners(targetListChanged: Boolean) {
+    listeners.forEach { it(targetListChanged) }
   }
 
-  public fun registerListener(listener: () -> Unit) {
+  public fun registerSyncListener(listener: (targetListChanged: Boolean) -> Unit) {
     listeners += listener
   }
 
