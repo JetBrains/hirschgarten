@@ -406,12 +406,12 @@ class CollectProjectDetailsTask(
         }.toMap()
   }
 
-  suspend fun postprocessingSubtask() {
+  suspend fun postprocessingSubtask(targetListChanged: Boolean) {
     // This order is strict as now SDKs also use the workspace model,
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
-    project.temporaryTargetUtils.fireListeners()
+    project.temporaryTargetUtils.fireSyncListeners(targetListChanged)
     addBspFetchedJdks()
     addBspFetchedJavacOptions()
     addBspFetchedScalaSdks()
