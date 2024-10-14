@@ -1,25 +1,7 @@
-<!-- Keep a Changelog guide -> https://keepachangelog.com -->
+<h2>2024.3.0</h2>
 
-# intellij-bsp Changelog
+<p>We are excited to introduce the first stable release of the <a href="https://build-server-protocol.github.io/">Build Server Protocol</a> plugin for IntelliJ IDEA. This plugin serves as the core foundation for our Bazel Plugin.</p>
 
-## 2023.1.0-EAP
+<p>For a detailed changelog, visit plugin's nightly channel at the <a href="https://plugins.jetbrains.com/plugin/20329">JetBrains Marketplace</a>.</p>
 
-- First release!
-
-## 0.0.1-alpha.3
-
-### Added
-
-- everything! and fixes!
-
-## 0.0.1-alpha.2
-
-### Added
-
-- everything!
-
-## 0.0.1-alpha.1
-
-### Added
-
-- everything!
+<p>Thank you for joining us from the beginning—this is just the start!</p>
