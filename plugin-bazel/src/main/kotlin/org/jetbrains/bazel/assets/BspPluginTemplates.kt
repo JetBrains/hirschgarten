@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.assets
 
-internal object BspPluginTemplates {
+object BspPluginTemplates {
   val defaultBazelProjectViewContent =
     BspPluginTemplates::class.java
       .getResource("/templates/defaultprojectview.bazelproject")
