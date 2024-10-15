@@ -45,7 +45,7 @@ import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.impl.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.isSourceFile
 
-public class AssignFileToModuleListener : BulkFileListener {
+class AssignFileToModuleListener : BulkFileListener {
   override fun after(events: MutableList<out VFileEvent>) {
     // if the list has multiple events, it means an external operation (like Git) and resync is probably required anyway
     events.singleOrNull()?.let {
