@@ -91,7 +91,7 @@ internal class ModuleEntityUpdater(
           project = workspaceModelEntityUpdaterConfig.project,
           baseModuleDir =
             JpsPaths
-              .getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.project)
+              .getJpsImlModulesPath(workspaceModelEntityUpdaterConfig.projectBasePath)
               .toVirtualFileUrl(workspaceModelEntityUpdaterConfig.virtualFileUrlManager),
           externalSource = workspaceModelEntityUpdaterConfig.project.bspProjectModelExternalSource,
         )
