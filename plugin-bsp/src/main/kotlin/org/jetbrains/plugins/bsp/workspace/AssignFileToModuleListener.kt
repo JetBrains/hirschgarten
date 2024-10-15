@@ -37,12 +37,12 @@ import org.jetbrains.kotlin.config.KOTLIN_SOURCE_ROOT_TYPE_ID
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.impl.projectAware.BspSyncStatusService
 import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
-import org.jetbrains.plugins.bsp.impl.utils.findModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.isSourceFile
 
 class AssignFileToModuleListener : BulkFileListener {

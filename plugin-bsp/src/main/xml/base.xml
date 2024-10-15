@@ -16,7 +16,7 @@
                         interface="org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.androidFacetEntityUpdaterExtension"
-                        interface="org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
+                        interface="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunHandlerProvider"
                         interface="org.jetbrains.plugins.bsp.run.BspRunHandlerProvider"
