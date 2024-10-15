@@ -23,9 +23,9 @@ enum class Language(
   Rust("//aspects:rules/rust/rust_info.bzl", listOf("rules_rust"), listOf("extract_rust_crate_info"), false),
   Android(
     "//aspects:rules/android/android_info.bzl",
-    listOf("rules_android"),
+    listOf("rules_android", "native_rules_android"),
     listOf("extract_android_info", "extract_android_aar_import_info"),
-    false,
+    true,
   ),
   Go("//aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true),
   ;
@@ -92,16 +92,21 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
           Language.Java -> """"@bazel_tools//tools/jdk:runtime_toolchain_type""""
           Language.Kotlin -> """"@${it.ruleName}//kotlin/internal:kt_toolchain_type""""
           Language.Rust -> """"@${it.ruleName}//rust:toolchain_type""""
-          Language.Android -> getAndroidToolchain()
+          Language.Android -> getAndroidToolchain(it.ruleName)
           Language.Go -> """"@${it.ruleName}//go:toolchain""""
           else -> null
         }
       }.joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
 
-  private fun getAndroidToolchain(): String? =
+  private fun getAndroidToolchain(ruleName: String?): String? =
     when (bazelRelease.major) {
       in 0..5 -> null // No support for optional toolchains
-      else -> """config_common.toolchain_type("@bazel_tools//tools/android:sdk_toolchain_type", mandatory = False)"""
+      else ->
+        if (ruleName == "rules_android") {
+          """config_common.toolchain_type("@rules_android//toolchains/android_sdk:toolchain_type", mandatory = False)"""
+        } else {
+          """config_common.toolchain_type("@bazel_tools//tools/android:sdk_toolchain_type", mandatory = False)"""
+        }
     }
 
   private fun createNewExtensionsFile(fileContent: String) {

@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.languages.projectview.base
 
 import com.intellij.openapi.fileTypes.LanguageFileType
-import org.jetbrains.bazel.languages.starlark.StarlarkLanguageIcons
+import org.jetbrains.bazel.assets.BazelPluginIcons
 import javax.swing.Icon
 
 object ProjectViewFileType : LanguageFileType(ProjectViewLanguage) {
@@ -11,5 +11,5 @@ object ProjectViewFileType : LanguageFileType(ProjectViewLanguage) {
 
   override fun getDefaultExtension(): String = "bazelproject"
 
-  override fun getIcon(): Icon = StarlarkLanguageIcons.bazel
+  override fun getIcon(): Icon = BazelPluginIcons.bazel
 }
