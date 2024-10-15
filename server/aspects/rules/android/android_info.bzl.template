@@ -1,6 +1,6 @@
 load("//aspects:utils/utils.bzl", "create_file_location", "create_struct", "file_location")
 
-ANDROID_SDK_TOOLCHAIN_TYPE = "@bazel_tools//tools/android:sdk_toolchain_type"
+ANDROID_SDK_TOOLCHAIN_TYPE = "${androidSdkToolchainType}"
 
 def extract_android_info(target, ctx, dep_targets, **kwargs):
     if ANDROID_SDK_TOOLCHAIN_TYPE not in ctx.toolchains:
@@ -10,15 +10,24 @@ def extract_android_info(target, ctx, dep_targets, **kwargs):
     if android_sdk_toolchain == None:
         return None, None
     android_sdk_info = android_sdk_toolchain.android_sdk_info
+    if android_sdk_info == None:
+        return None, None
     android_jar = file_location(android_sdk_info.android_jar)
     if android_jar == None:
         return None, None
 
     manifest = None
     if hasattr(ctx.rule.attr, "manifest") and ctx.rule.attr.manifest:
-        manifest_files = ctx.rule.attr.manifest.files.to_list()
-        if manifest_files:
-            manifest = file_location(manifest_files[0])
+        if type(ctx.rule.attr.manifest) == "depset":
+            manifest_targets = ctx.rule.attr.manifest.to_list()
+            if manifest_targets:
+                manifest_target = manifest_targets[0]
+        else:
+            manifest_target = ctx.rule.attr.manifest
+        if type(manifest_target) == "Target":
+            manifest_files = manifest_target.files.to_list()
+            if manifest_files:
+                manifest = file_location(manifest_files[0])
 
     resource_directories_set = {}
     if hasattr(ctx.rule.attr, "resource_files"):
