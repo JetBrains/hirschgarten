@@ -13,4 +13,7 @@ object BazelrcHighlightingColors {
   val COMMENT = createTextAttributesKey("BAZELRC_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT)
   val IDENTIFIER = createTextAttributesKey("BAZELRC_IDENTIFIER", DefaultLanguageHighlighterColors.IDENTIFIER)
   val UNKNOWN_FLAG = createTextAttributesKey("BAZELRC_UNKNOWN_FLAG", CodeInsightColors.WRONG_REFERENCES_ATTRIBUTES)
+  val UNDOCUMENTED_FLAG = createTextAttributesKey("BAZELRC_UNDOCUMENTED_FLAG", CodeInsightColors.WARNINGS_ATTRIBUTES)
+  val DEPRECATED_FLAG = createTextAttributesKey("BAZELRC_DEPRECATED_FLAG", CodeInsightColors.DEPRECATED_ATTRIBUTES)
+  val NOOP_FLAG = createTextAttributesKey("BAZELRC_NOOP_FLAG", CodeInsightColors.NOT_USED_ELEMENT_ATTRIBUTES)
 }
