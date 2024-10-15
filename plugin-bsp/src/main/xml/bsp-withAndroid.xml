@@ -15,5 +15,6 @@
   </extensions>
   <extensions defaultExtensionNs="com.android.tools.idea">
     <rendering.tokens.buildSystemFilePreviewServices implementation="org.jetbrains.plugins.bsp.android.BspBuildSystemFilePreviewServices"/>
+    <projectsystem.ApplicationProjectContextProvider implementation="org.jetbrains.plugins.bsp.android.BspApplicationProjectContextProvider"/>
   </extensions>
 </idea-plugin>
