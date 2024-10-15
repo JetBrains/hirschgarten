@@ -29,7 +29,7 @@ private val log = logger<BspStartupActivity>()
  * @see BspProjectOpenProcessor for additional actions that
  * may run when a project is being imported for the first time.
  */
-public class BspStartupActivity : BspProjectActivity() {
+class BspStartupActivity : BspProjectActivity() {
   override suspend fun Project.executeForBspProject() {
     log.info("Executing BSP startup activity for project: $this")
     BspStartupActivityTracker.startConfigurationPhase(this)
