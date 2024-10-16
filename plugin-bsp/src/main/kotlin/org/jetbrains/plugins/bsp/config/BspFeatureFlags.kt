@@ -33,7 +33,7 @@ public object BspFeatureFlags {
   public val isWrapLibrariesInsideModulesEnabled: Boolean
     get() = Registry.`is`(WRAP_LIBRARIES_INSIDE_MODULES) || isKotlinPluginK2Mode
 
-  internal val isKotlinPluginK2Mode: Boolean
+  val isKotlinPluginK2Mode: Boolean
     get() = System.getProperty("idea.kotlin.plugin.use.k2", "false").toBoolean()
 
   val isScanGitRootsInsideProjectDir: Boolean
