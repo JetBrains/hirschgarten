@@ -117,7 +117,7 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
       option
         .oldName
         .takeUnless(String::isEmpty)
-        ?.let { """**old name**${"\n"}: `$it`"""}
+        ?.let { """**old name**${"\n"}: `$it`""" }
         ?: ""
 
     fun Flag.allowMultiple(): String =
