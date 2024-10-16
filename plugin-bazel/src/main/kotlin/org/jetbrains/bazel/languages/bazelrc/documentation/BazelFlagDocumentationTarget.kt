@@ -41,6 +41,8 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
           |
           |${flag.default()}
           |
+          |${flag.oldName()}
+          |
           |${flag.allowMultiple()}
           |
           |${flag.help()}
@@ -101,7 +103,7 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
       option
         .valueHelp
         .takeUnless(String::isEmpty)
-        ?.let { """Type${"\n"}: `$it`""" }
+        ?.let { """**type**${"\n"}: `$it`""" }
         ?: ""
 
     fun Flag.default(): String =
@@ -109,6 +111,13 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
         .defaultValue
         .takeUnless(String::isEmpty)
         ?.let { """**default**${"\n"}: `$it`""" }
+        ?: ""
+
+    fun Flag.oldName(): String =
+      option
+        .oldName
+        .takeUnless(String::isEmpty)
+        ?.let { """**old name**${"\n"}: `$it`"""}
         ?: ""
 
     fun Flag.allowMultiple(): String =
@@ -122,14 +131,16 @@ class BazelFlagDocumentationTarget(symbol: BazelFlagSymbol) :
       option
         .effectTags
         .takeUnless { it.isEmpty() }
-        ?.let { """**Effects**: ${it.joinToString(", ") { """_${it.name.lowercase()}_""" }}""" }
+        ?.let { it.joinToString(", ") { """_${it.name.lowercase()}_""" } }
+        ?.let { """**Effects**: $it""" }
         ?: ""
 
     fun Flag.metadataTags(): String =
       option
         .metadataTags
         .takeUnless { it.isEmpty() }
-        ?.let { """**Metadata tags**: ${it.joinToString(", ") { """_${it.name.lowercase()}_""" }}""" }
+        ?.let { it.joinToString(", ") { """_${it.name.lowercase()}_""" } }
+        ?.let { """**Metadata tags**: $it""" }
         ?: ""
   }
 }
