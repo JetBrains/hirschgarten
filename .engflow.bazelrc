@@ -1,3 +1,5 @@
+try-import %workspace%/.engflow-enabled.bazelrc
+
 # Setup EngFlow's Remote Cache
 build:engflow_cache --disk_cache=
 build:engflow_cache --remote_timeout=600
