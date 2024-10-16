@@ -76,8 +76,9 @@ class BazelTest {
         .newContext(projectName, testCase)
         .executeRightAfterIdeOpened(true)
         .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
+        .propagateSystemProperty("bazel.project.view.file.path")
         .patchPathVariable()
-        .patchSystemProperties()
+        .withKotlinPluginK2()
     installPlugin(context, System.getProperty("bsp.benchmark.bsp.plugin.zip"))
     installPlugin(context, System.getProperty("bsp.benchmark.bazel.plugin.zip"))
 
@@ -225,13 +226,11 @@ class BazelTest {
     return this
   }
 
-  private fun IDETestContext.patchSystemProperties(): IDETestContext {
-    val projectViewPath = System.getProperty("bazel.project.view.file.path")
+  // TODO: import this function from IDE starter after update
+  private fun IDETestContext.withKotlinPluginK2() =
     applyVMOptionsPatch {
-      projectViewPath?.let { addSystemProperty("bazel.project.view.file.path", it) }
+      addSystemProperty("idea.kotlin.plugin.use.k2", true)
     }
-    return this
-  }
 }
 
 private fun <T : CommandChain> T.waitForBazelSync(): T {
