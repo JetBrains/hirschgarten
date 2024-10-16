@@ -180,6 +180,9 @@
         <registryKey defaultValue="false"
                      description="Scan for Git roots inside the project directory."
                      key="bsp.scan.git.roots.inside.project.dir"/>
+        <registryKey defaultValue="false"
+                     description="Collect additional associate modules to support the case where the direct associate module does not have source"
+                     key="bsp.collect.additional.associate.modules"/>
 
         <statusBarWidgetFactory id="BspFileTargetsWidget"
                                 implementation="org.jetbrains.plugins.bsp.ui.widgets.file.targets.BspFileTargetsWidgetFactory"/>

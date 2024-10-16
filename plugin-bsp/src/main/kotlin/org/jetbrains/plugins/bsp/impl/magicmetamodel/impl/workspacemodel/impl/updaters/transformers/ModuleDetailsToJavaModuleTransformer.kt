@@ -2,13 +2,17 @@ package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.u
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
+import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
+import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.ModuleDetails
+import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.impl.utils.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.StringUtils
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendum
@@ -30,6 +34,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   moduleNameProvider: TargetNameReformatProvider,
   libraryNameProvider: TargetNameReformatProvider,
   private val projectBasePath: Path,
+  private val project: Project,
   private val isAndroidSupportEnabled: Boolean = false,
 ) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, moduleNameProvider, libraryNameProvider) {
   override val type = ModuleTypeId("JAVA_MODULE")
@@ -162,9 +167,32 @@ internal class ModuleDetailsToJavaModuleTransformer(
     }
   }
 
+  /**
+   * the final list of associate modules is additionally provided with other module names from the dependencies list
+   * of the associate list to get through the case where the associate module does not have sources and just exports
+   * other targets.
+   *
+   * this is just a workaround as it does not do analysis to provide the correct list of the necessary associates.
+   *
+   * TODO: https://youtrack.jetbrains.com/issue/BAZEL-1336/Better-way-to-know-the-target-module-list-of-associates-for-a-module
+   */
   private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetIdentifier> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
-    return kotlinBuildTarget?.associates ?: emptyList()
+    return kotlinBuildTarget
+      ?.associates
+      ?.flatMap { it.calculateAdditionalAssociateModules() + listOf(it) }
+      ?.distinct()
+      ?: emptyList()
+  }
+
+  private fun BuildTargetIdentifier.calculateAdditionalAssociateModules(): List<BuildTargetIdentifier> {
+    if (!BspFeatureFlags.isCollectingAdditionalAssociateModulesEnabled) return emptyList()
+
+    val temporaryTargetUtils = project.temporaryTargetUtils
+    project.findModuleNameProvider() ?: return emptyList()
+    val targetInfo = temporaryTargetUtils.getBuildTargetInfoForId(this) ?: return emptyList()
+
+    return targetInfo.dependencies.filter { temporaryTargetUtils.getBuildTargetInfoForId(it) != null }
   }
 }
 
