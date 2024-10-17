@@ -47,11 +47,20 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
     return KotlinModule(
       languageVersion = kotlinTargetInfo.languageVersion,
       apiVersion = kotlinTargetInfo.apiVersion,
-      associates = kotlinTargetInfo.associatesList.map { Label.parse(it) },
+      associates = (kotlinTargetInfo.associatesList.map { Label.parse(it) } + targetInfo.toAdditionalAssociateLabels()).distinct(),
       kotlincOptions = kotlinTargetInfo.toKotlincOptArguments(),
       javaModule = javaLanguagePlugin.resolveModule(targetInfo),
     )
   }
+
+  /**
+   * Sometimes, associate targets only export the necessary dependencies for associating.
+   * This method provides additional exports from the direct dependencies to be used as associates.
+   *
+   * This workaround still fails in the case where there are deeper transitive dependencies required to be associated.
+   */
+  private fun BspTargetInfo.TargetInfo.toAdditionalAssociateLabels(): List<Label> =
+    exportsFromDirectDependenciesList.map { dependency -> dependency.id.let(Label::parse) }
 
   private fun KotlinTargetInfo.toKotlincOptArguments(): List<String> = kotlincOptsList + additionalKotlinOpts()
 
