@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.bsp.impl.target
+package org.jetbrains.plugins.bsp.target
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.openapi.components.PersistentStateComponent
@@ -36,7 +36,8 @@ public data class TemporaryTargetUtilsState(
   name = "TemporaryTargetUtils",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
-public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState> {
+class TemporaryTargetUtils :
+  PersistentStateComponent<TemporaryTargetUtilsState> {
   var targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
     private set
   private var moduleIdToBuildTargetId: Map<String, BuildTargetIdentifier> = emptyMap()
@@ -51,7 +52,7 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
 
-  public fun saveTargets(
+  fun saveTargets(
     targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
     targetIdToModuleEntity: Map<BuildTargetIdentifier, Module>,
     targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
@@ -82,17 +83,17 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
 
   private fun createLibraryModulesLookupTable() = libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
-  public fun fireSyncListeners(targetListChanged: Boolean) {
+  fun fireSyncListeners(targetListChanged: Boolean) {
     listeners.forEach { it(targetListChanged) }
   }
 
-  public fun registerSyncListener(listener: (targetListChanged: Boolean) -> Unit) {
+  fun registerSyncListener(listener: (targetListChanged: Boolean) -> Unit) {
     listeners += listener
   }
 
-  public fun allTargetIds(): List<BuildTargetIdentifier> = targetIdToTargetInfo.keys.toList()
+  fun allTargetIds(): List<BuildTargetIdentifier> = targetIdToTargetInfo.keys.toList()
 
-  public fun getTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> =
+  fun getTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> =
     fileToTargetId[file.url.processUriString().safeCastToURI()]
       ?: getTargetsFromAncestorsForFile(file, project)
 
@@ -111,19 +112,19 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
     }
   }
 
-  public fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? = moduleIdToBuildTargetId[moduleId]
+  fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? = moduleIdToBuildTargetId[moduleId]
 
-  public fun getBuildTargetInfoForId(buildTargetIdentifier: BuildTargetIdentifier): BuildTargetInfo? =
+  fun getBuildTargetInfoForId(buildTargetIdentifier: BuildTargetIdentifier): BuildTargetInfo? =
     targetIdToTargetInfo[buildTargetIdentifier]
 
-  public fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module) =
+  fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module) =
     getTargetIdForModuleId(module.name)?.let { getBuildTargetInfoForId(it) }
 
-  public fun getAllLibraries(): List<Library> = libraries
+  fun getAllLibraries(): List<Library> = libraries
 
-  public fun isLibraryModule(name: String): Boolean = name in libraryModulesLookupTable
+  fun isLibraryModule(name: String): Boolean = name in libraryModulesLookupTable
 
-  public fun getAllLibraryModules(): List<JavaModule> = libraryModules
+  fun getAllLibraryModules(): List<JavaModule> = libraryModules
 
   override fun getState(): TemporaryTargetUtilsState =
     TemporaryTargetUtilsState(
@@ -145,5 +146,5 @@ public class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtil
   }
 }
 
-public val Project.temporaryTargetUtils: TemporaryTargetUtils
+val Project.temporaryTargetUtils: TemporaryTargetUtils
   get() = service<TemporaryTargetUtils>()

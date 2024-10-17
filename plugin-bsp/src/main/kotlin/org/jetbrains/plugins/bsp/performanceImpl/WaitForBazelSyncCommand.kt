@@ -9,7 +9,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
 import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
-import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 
 private const val SYNC_START_TIMEOUT_MS = 10000L
 

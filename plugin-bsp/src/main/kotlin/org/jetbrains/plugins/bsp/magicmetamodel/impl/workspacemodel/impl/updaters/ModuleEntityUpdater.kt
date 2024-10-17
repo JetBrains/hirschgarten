@@ -21,7 +21,7 @@ import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
 import org.jetbrains.bsp.sdkcompat.workspacemodel.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.plugins.bsp.extensionPoints.bspProjectModelExternalSource
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
-import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspDummyEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo

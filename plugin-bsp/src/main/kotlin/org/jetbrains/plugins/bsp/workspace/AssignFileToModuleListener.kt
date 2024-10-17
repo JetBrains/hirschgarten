@@ -39,8 +39,8 @@ import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.projectAware.BspSyncStatusService
 import org.jetbrains.plugins.bsp.impl.server.connection.connection
-import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
-import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.findModuleNameProvider
 import org.jetbrains.plugins.bsp.utils.isSourceFile

@@ -18,7 +18,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.xdebugger.impl.XDebugSessionImpl
-import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.getModule
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import com.android.tools.idea.project.getPackageName as getApplicationIdFromManifest
