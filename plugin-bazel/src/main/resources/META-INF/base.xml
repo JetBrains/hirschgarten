@@ -44,6 +44,9 @@
                 implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
         <postStartupActivity
                 implementation="org.jetbrains.bazel.flow.open.CheckSlowPluginsStartupActivity"/>
+        <postStartupActivity
+                implementation="org.jetbrains.bazel.flow.open.SuggestEnableK2StartupActivity"/>
+        <notificationGroup displayType="BALLOON" id="Enable K2 Compiler Mode with Bazel"/>
 
         <externalSystemUnlinkedProjectAware
                 id="Bazel"

@@ -3,7 +3,7 @@ package org.jetbrains.plugins.bsp.magicmetamodel
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BuildToolId
-import org.jetbrains.plugins.bsp.config.buildToolId
+import org.jetbrains.plugins.bsp.config.buildToolIdOrDefault
 import org.jetbrains.plugins.bsp.config.withBuildToolIdOrDefault
 import org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.utils.StringUtils
@@ -11,9 +11,13 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 fun Project.findModuleNameProvider(): TargetNameReformatProvider? =
   this.buildToolId.takeIf { it.id != "bsp" }?.let { createModuleNameProvider(it) }
+public fun Project.findModuleNameProvider(): TargetNameReformatProvider? =
+  this.buildToolIdOrDefault.takeIf { it.id != "bsp" }?.let { createModuleNameProvider(it) }
 
 fun Project.findLibraryNameProvider(): TargetNameReformatProvider? =
   this.buildToolId.takeIf { it.id != "bsp" }?.let { createLibraryNameProvider(it) }
+public fun Project.findLibraryNameProvider(): TargetNameReformatProvider? =
+  this.buildToolIdOrDefault.takeIf { it.id != "bsp" }?.let { createLibraryNameProvider(it) }
 
 private fun createModuleNameProvider(buildToolId: BuildToolId): TargetNameReformatProvider = createNameReformatProvider(buildToolId)
 

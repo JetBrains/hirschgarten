@@ -351,6 +351,7 @@ class CollectProjectDetailsTask(
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
                 projectBasePath = projectBasePath,
+                project = project,
                 moduleNameProvider = moduleNameProvider,
                 libraryNameProvider = libraryNameProvider,
                 hasDefaultPythonInterpreter = BspFeatureFlags.isPythonSupportEnabled,

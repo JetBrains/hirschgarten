@@ -1,3 +1,5 @@
+try-import %workspace%/.engflow-enabled.bazelrc
+
 # Setup EngFlow's Remote Cache
 build:engflow_cache --disk_cache=
 build:engflow_cache --remote_timeout=600
@@ -5,7 +7,7 @@ build:engflow_cache --remote_timeout=600
 # "Config value 'engflow_auth' is not defined in any .rc file"
 # build:engflow_cache --config=engflow_auth
 build:engflow_cache --remote_cache_compression=true
-build:engflow_cache --remote_download_minimal
+build:engflow_cache --remote_download_all
 build:engflow_cache --remote_cache=grpcs://jasper.cluster.engflow.com
 build:engflow_cache --bes_backend=grpcs://jasper.cluster.engflow.com
 build:engflow_cache --bes_results_url=https://jasper.cluster.engflow.com/invocation/

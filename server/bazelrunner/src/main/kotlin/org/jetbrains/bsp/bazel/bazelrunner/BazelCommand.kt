@@ -185,8 +185,7 @@ abstract class BazelCommand(val bazelBinary: String) {
 
       commandLine.addAll(startupOptions)
       commandLine.add("mobile-install")
-      // --tool_tag is not supported by mobile-install
-      // commandLine.addAll(options)
+      commandLine.addAll(options)
       commandLine.add(target.uri)
 
       return commandLine
