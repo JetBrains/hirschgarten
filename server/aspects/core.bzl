@@ -175,6 +175,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         env = env,
         env_inherit = getattr(rule_attrs, "env_inherit", []),
         executable = executable,
+        exports_from_direct_dependencies = list(exported_deps_from_deps),
     )
 
     exported_properties = dict(
