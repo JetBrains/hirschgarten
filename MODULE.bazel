@@ -20,7 +20,7 @@ register_toolchains(
 
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_java", version = "7.12.1")
+bazel_dep(name = "rules_java", version = "8.1.0")
 bazel_dep(name = "rules_jvm_external", version = "6.3")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
@@ -57,10 +57,10 @@ maven.install(
         "org.apache.logging.log4j:log4j-core:2.24.1",
         "org.apache.velocity:velocity-engine-core:2.4",
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3",
-        "org.junit.jupiter:junit-jupiter:5.11.2",
-        "org.junit.platform:junit-platform-console:1.11.2",
-        "org.junit.platform:junit-platform-suite-api:1.11.2",
-        "org.junit.platform:junit-platform-suite-engine:1.11.2",
+        "org.junit.jupiter:junit-jupiter:5.11.1",
+        "org.junit.platform:junit-platform-console:1.11.1",
+        "org.junit.platform:junit-platform-suite-api:1.11.1",
+        "org.junit.platform:junit-platform-suite-engine:1.11.1",
         "org.kodein.di:kodein-di:7.22.0",
         "org.scala-lang:scala-library:2.13.15",
     ],
