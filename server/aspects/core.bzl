@@ -89,16 +89,10 @@ def _bsp_target_info_aspect_impl(target, ctx):
     private_direct_dep_targets = collect_targets_from_attrs(rule_attrs, PRIVATE_COMPILE_DEPS)
     direct_deps = make_deps(direct_dep_targets, COMPILE)
 
-    exported_deps_from_deps = []
-    for dep in direct_dep_targets:
-        exported_deps_from_deps = exported_deps_from_deps + dep.bsp_info.export_deps
-
-    compile_deps = direct_deps + exported_deps_from_deps
-
     runtime_dep_targets = collect_targets_from_attrs(rule_attrs, RUNTIME_DEPS)
     runtime_deps = make_deps(runtime_dep_targets, RUNTIME)
 
-    all_deps = depset(compile_deps + runtime_deps).to_list()
+    all_deps = depset(direct_deps + runtime_deps).to_list()
 
     # Propagate my own exports
     export_deps = []
