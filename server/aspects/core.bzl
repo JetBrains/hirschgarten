@@ -79,6 +79,11 @@ def _is_analysis_test(target):
     """
     return AnalysisTestResultInfo in target
 
+def files_to_list(source):
+    if not hasattr(source, "files"):
+        return []
+    return source.files.to_list()
+
 def _bsp_target_info_aspect_impl(target, ctx):
     if target.label.name.endswith(".semanticdb") or _is_analysis_test(target):
         return []
@@ -129,7 +134,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         all_sources = [
             file_location(f)
             for t in srcs_attr
-            for f in t.files.to_list()
+            for f in files_to_list(t)
             if not f.is_directory
         ]
 
@@ -152,7 +157,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
         resources = [
             file_location(f)
             for t in resources_attr
-            for f in t.files.to_list()
+            for f in files_to_list(t)
         ]
 
     aspect_ids = get_aspect_ids(ctx, target)
