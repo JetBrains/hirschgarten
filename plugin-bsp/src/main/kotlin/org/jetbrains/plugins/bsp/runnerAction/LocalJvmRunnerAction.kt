@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmEnvironmentItem
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.RunnerAndConfigurationSettings
+import com.intellij.execution.ShortenCommandLine
 import com.intellij.execution.application.ApplicationConfiguration
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
@@ -59,6 +60,7 @@ public abstract class LocalJvmRunnerAction(
         putUserData(targetsToPreBuild, listOf(targetInfo.id))
         putUserData(includeJpsClassPaths, BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
         beforeRunTasks = createBeforeRunBuildTask(this)
+        shortenCommandLine = ShortenCommandLine.MANIFEST
       }
     val runManager = RunManagerImpl.getInstanceImpl(project)
     return RunnerAndConfigurationSettingsImpl(runManager, applicationConfiguration)
