@@ -5,6 +5,7 @@ import com.intellij.ui.components.panels.VerticalLayout
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetTree
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import java.awt.Point
 import javax.swing.Icon
 import javax.swing.JPanel
 
@@ -69,6 +70,8 @@ class LazySearchDisplay(
   fun selectTopTargetAndFocus() {
     targetTree.selectTopTargetAndFocus()
   }
+
+  fun isPointSelectable(point: Point): Boolean = targetTree.isPointSelectable(point)
 }
 
 private object QueryHighlighter {

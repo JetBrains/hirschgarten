@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import java.awt.Point
 import javax.swing.JComponent
 
 /**
@@ -44,6 +45,9 @@ interface BuildTargetContainer {
    * Selects the topmost displayed target (or directory, in case of a tree) and gives focus to this container's component
    */
   fun selectTopTargetAndFocus()
+
+  /** @return `true` if given point is either a target or a tree directory; `false` otherwise */
+  fun isPointSelectable(point: Point): Boolean
 
   /**
    * Creates a new instance of this container. The new instance will have similar mouse listeners
