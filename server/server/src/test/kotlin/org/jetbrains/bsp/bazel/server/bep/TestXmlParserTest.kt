@@ -520,12 +520,13 @@ class TestXmlParserTest {
     client.taskStartCalls.size shouldBe 5
     client.taskFinishCalls.size shouldBe 5
 
-    val expectedNames = listOf(
-      "TripleTest",
-      "testFailure()",
-      "testIgnored()",
-      "testSuccess()",
-    )
+    val expectedNames =
+      listOf(
+        "TripleTest",
+        "testFailure()",
+        "testIgnored()",
+        "testSuccess()",
+      )
 
     client.taskFinishCalls.count { it.data is TestReport } shouldBe 1
 

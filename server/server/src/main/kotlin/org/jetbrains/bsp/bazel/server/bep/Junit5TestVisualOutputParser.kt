@@ -14,9 +14,7 @@ import java.util.regex.Pattern
 /**
  * Parses the nice-looking test execution tree Junit5 produces
  */
-class Junit5TestVisualOutputParser(
-  private val bspClientTestNotifier: BspClientTestNotifier
-) {
+class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientTestNotifier) {
   fun processTestOutput(output: String) {
     val startedSuites: Stack<TestOutputLine> = Stack()
     var startedBuildTarget: StartedBuildTarget? = null
@@ -43,7 +41,7 @@ class Junit5TestVisualOutputParser(
     startedSuites: Stack<TestOutputLine>,
     previousOutputLine: TestOutputLine?,
     testingEndedMatcher: Matcher,
-    startedBuildTarget: StartedBuildTarget?
+    startedBuildTarget: StartedBuildTarget?,
   ) {
     startAndFinishTest(startedSuites, previousOutputLine!!)
     while (startedSuites.isNotEmpty()) {
@@ -56,7 +54,7 @@ class Junit5TestVisualOutputParser(
   private fun processPreviousOutputLine(
     previousOutputLine: TestOutputLine?,
     currentOutputLine: TestOutputLine,
-    startedSuites: Stack<TestOutputLine>
+    startedSuites: Stack<TestOutputLine>,
   ) {
     if (previousOutputLine != null) {
       if (currentOutputLine.indent > previousOutputLine.indent) {
@@ -68,10 +66,7 @@ class Junit5TestVisualOutputParser(
     }
   }
 
-  private fun removeAllFinishedSuites(
-    startedSuites: Stack<TestOutputLine>,
-    currentOutputLine: TestOutputLine
-  ) {
+  private fun removeAllFinishedSuites(startedSuites: Stack<TestOutputLine>, currentOutputLine: TestOutputLine) {
     while (startedSuites.isNotEmpty() && startedSuites.peek().indent >= currentOutputLine.indent) {
       finishTopmostSuite(startedSuites)
     }
@@ -96,11 +91,13 @@ class Junit5TestVisualOutputParser(
 
   private fun checkLineForTestingBeginning(line: String): StartedBuildTarget? {
     val testingStartMatcher = testingStartPattern.matcher(line)
-    return if (testingStartMatcher.find())
+    return if (testingStartMatcher.find()) {
       StartedBuildTarget(testingStartMatcher.group("target"), TaskId(testUUID())).also {
         beginTesting(it)
       }
-    else null
+    } else {
+      null
+    }
   }
 
   private fun beginTesting(startedBuildTarget: StartedBuildTarget) {
@@ -142,8 +139,7 @@ class Junit5TestVisualOutputParser(
     )
   }
 
-  private fun generateParentList(parents: Stack<TestOutputLine>): List<String> =
-    parents.toList().reversed().mapNotNull { it.taskId.id }
+  private fun generateParentList(parents: Stack<TestOutputLine>): List<String> = parents.toList().reversed().mapNotNull { it.taskId.id }
 
   private fun testUUID(): String = "test-" + UUID.randomUUID().toString()
 
@@ -168,15 +164,14 @@ private val testingEndedPattern = Pattern.compile("^Test\\hrun\\hfinished\\hafte
 private fun String.removeFormat(): String =
   this.replace(Regex("[?\\u001b]\\[[;\\d]*m"), "") // '1B' symbol appears in console output and test logs, while '?' appears in test XMLs
 
-private fun createTestCaseData(message: String): JUnitStyleTestCaseData {
-  return JUnitStyleTestCaseData(
+private fun createTestCaseData(message: String): JUnitStyleTestCaseData =
+  JUnitStyleTestCaseData(
     time = null,
     className = null,
     errorMessage = message,
     errorContent = null,
     errorType = null,
   )
-}
 
 private data class TestOutputLine(
   val name: String,
@@ -186,7 +181,4 @@ private data class TestOutputLine(
   val taskId: TaskId,
 )
 
-private data class StartedBuildTarget(
-  val uri: String,
-  val taskId: TaskId,
-)
+private data class StartedBuildTarget(val uri: String, val taskId: TaskId)
