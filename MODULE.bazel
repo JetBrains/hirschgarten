@@ -12,6 +12,21 @@ local_path_override(
     path = "rules_intellij",
 )
 
+bazel_dep(
+    name = "rules_sonatype",
+)
+local_path_override(
+    module_name = "rules_sonatype",
+    path = "rules_sonatype",
+)
+
+bazel_dep(name = "rules_scala", repo_name = "io_bazel_rules_scala")
+git_override(
+    module_name = "rules_scala",
+    commit = "0909f422b3db87c3a86385b51fa32c5ac866f16e",
+    remote = "https://github.com/mbland/rules_scala.git",
+)
+
 bazel_dep(name = "rules_kotlin", version = "2.0.0")
 
 register_toolchains(
@@ -21,7 +36,7 @@ register_toolchains(
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_java", version = "7.12.2")
-bazel_dep(name = "rules_jvm_external", version = "6.3")
+bazel_dep(name = "rules_jvm_external", version = "6.4")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
@@ -124,6 +139,12 @@ http_jar(
 )
 
 bazel_dep(name = "rules_proto", version = "6.0.2")
+bazel_dep(name = "protobuf", version = "28.2")
+single_version_override(
+    module_name = "protobuf",
+    version = "28.2",
+)
+
 bazel_dep(name = "rules_cc", version = "0.0.12")
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_python", version = "0.37.0")
