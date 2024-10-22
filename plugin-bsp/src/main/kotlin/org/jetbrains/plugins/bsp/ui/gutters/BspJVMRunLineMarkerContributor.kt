@@ -15,16 +15,18 @@ public class BspJVMRunLineMarkerContributor : BspRunLineMarkerContributor() {
     !isInsideJar() &&
       getStrictParentOfType<PsiNameIdentifierOwner>()
         ?.isClassOrMethod() ?: false
+
   private fun PsiElement.isInsideJar() = containingFile.virtualFile?.url?.startsWith("jar://") ?: false
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1316
   override fun PsiElement.getSingleTestFilter(): String? =
-    if (project.buildToolId == BuildToolId("bazelbsp"))
+    if (project.buildToolId == BuildToolId("bazelbsp")) {
       this.getStrictParentOfType<PsiNameIdentifierOwner>()?.getFunctionName()
-    else null
+    } else {
+      null
+    }
 
-  private fun PsiNameIdentifierOwner.getFunctionName(): String? =
-    if (this.isClassOrMethod()) this.name else null
+  private fun PsiNameIdentifierOwner.getFunctionName(): String? = if (this.isClassOrMethod()) this.name else null
 
   private fun PsiNameIdentifierOwner.isClassOrMethod(): Boolean =
     this is KtClassOrObject || this is KtNamedFunction || this is PsiClass || this is PsiMethod
