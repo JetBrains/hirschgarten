@@ -5,6 +5,7 @@ import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bsp.bazel.workspacecontext.NATIVE_RULES_ANDROID
 import java.nio.file.Paths
 import java.util.Properties
 
@@ -23,7 +24,7 @@ enum class Language(
   Rust("//aspects:rules/rust/rust_info.bzl", listOf("rules_rust"), listOf("extract_rust_crate_info"), false),
   Android(
     "//aspects:rules/android/android_info.bzl",
-    listOf("rules_android", "native_rules_android"),
+    listOf("rules_android", "build_bazel_rules_android", NATIVE_RULES_ANDROID),
     listOf("extract_android_info", "extract_android_aar_import_info"),
     true,
   ),
@@ -48,6 +49,7 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
 
   init {
     val props = calculateProperties()
+    org.jetbrains.bsp.bazel.server.bsp.managers.Language.Android
     velocityEngine.init(props)
   }
 
@@ -58,17 +60,17 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return props
   }
 
-  fun generateLanguageExtensions(ruleLanguages: List<RuleLanguage>) {
-    val fileContent = prepareFileContent(ruleLanguages)
+  fun generateLanguageExtensions(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>) {
+    val fileContent = prepareFileContent(ruleLanguages, toolchains)
     createNewExtensionsFile(fileContent)
   }
 
-  private fun prepareFileContent(ruleLanguages: List<RuleLanguage>) =
+  private fun prepareFileContent(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>) =
     listOf(
       "# This is a generated file, do not edit it",
       createLoadStatementsString(ruleLanguages.map { it.language }),
       createExtensionListString(ruleLanguages.map { it.language }),
-      createToolchainListString(ruleLanguages),
+      createToolchainListString(ruleLanguages, toolchains),
     ).joinToString(
       separator = "\n",
       postfix = "\n",
@@ -84,30 +86,10 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return functionNames.joinToString(prefix = "EXTENSIONS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
   }
 
-  private fun createToolchainListString(ruleLanguages: List<RuleLanguage>): String =
+  private fun createToolchainListString(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>): String =
     ruleLanguages
-      .mapNotNull {
-        when (it.language) {
-          Language.Scala -> """"@${it.ruleName}//scala:toolchain_type""""
-          Language.Java -> """"@bazel_tools//tools/jdk:runtime_toolchain_type""""
-          Language.Kotlin -> """"@${it.ruleName}//kotlin/internal:kt_toolchain_type""""
-          Language.Rust -> """"@${it.ruleName}//rust:toolchain_type""""
-          Language.Android -> getAndroidToolchain(it.ruleName)
-          Language.Go -> """"@${it.ruleName}//go:toolchain""""
-          else -> null
-        }
-      }.joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
-
-  private fun getAndroidToolchain(ruleName: String?): String? =
-    when (bazelRelease.major) {
-      in 0..5 -> null // No support for optional toolchains
-      else ->
-        if (ruleName == "rules_android") {
-          """config_common.toolchain_type("@rules_android//toolchains/android_sdk:toolchain_type", mandatory = False)"""
-        } else {
-          """config_common.toolchain_type("@bazel_tools//tools/android:sdk_toolchain_type", mandatory = False)"""
-        }
-    }
+      .mapNotNull { toolchains[it] }
+      .joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
 
   private fun createNewExtensionsFile(fileContent: String) {
     val file = aspectsPath.resolve(Constants.EXTENSIONS_BZL)
