@@ -5,6 +5,7 @@ import com.google.protobuf.Message
 import com.google.protobuf.Parser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
@@ -26,21 +27,24 @@ class DelimitedMessageReader<MessageType : Message>(private val inputStream: Inp
       return null
     }
     val size =
-      try {
-        readRawVarint32().also { size ->
-          withContext(Dispatchers.IO) {
-            withTimeout(1.seconds) {
-              while (true) {
+      readRawVarint32().also { size ->
+        withContext(Dispatchers.IO) {
+          try {
+            withTimeout(30.seconds) {
+              while (isActive) {
                 if (inputStream.available() >= size) {
                   break
                 }
                 yield()
               }
             }
+          } catch (e: TimeoutCancellationException) {
+            throw InvalidProtocolBufferException(
+              "Incomplete message received, timed out waiting for remaining message to be written: Received ${inputStream.available()} out of $size bytes",
+              e,
+            )
           }
         }
-      } catch (e: TimeoutCancellationException) {
-        throw InvalidProtocolBufferException("Incomplete message received, timed out waiting for remaining message to be written", e)
       }
     val messageArray =
       ByteArray(size).also {
@@ -52,35 +56,39 @@ class DelimitedMessageReader<MessageType : Message>(private val inputStream: Inp
   // Adapted from CodedInputStream.readRawVarint32
   private suspend fun readRawVarint32(): Int =
     withContext(Dispatchers.IO) {
-      val firstByte = readByte()
-      if (firstByte.and(0x80) == 0) {
-        return@withContext firstByte
-      }
-
-      var result = firstByte.and(0x7F)
-      for (offset in 7 until 32 step 7) {
-        val byte = readByte()
-        result = result.or(byte.and(0x7F).shl(offset))
-        if (byte.and(0x80) == 0) {
-          return@withContext result
+      try {
+        val firstByte = readByte()
+        if (firstByte.and(0x80) == 0) {
+          return@withContext firstByte
         }
-      }
 
-      // Keep reading, but not appending to the result
-      (32 until 64 step 7).forEach {
-        val byte = readByte()
-        if (byte.and(0x80) == 0) {
-          return@withContext result
+        var result = firstByte.and(0x7F)
+        for (offset in 7 until 32 step 7) {
+          val byte = readByte()
+          result = result.or(byte.and(0x7F).shl(offset))
+          if (byte.and(0x80) == 0) {
+            return@withContext result
+          }
         }
-      }
 
-      throw IllegalStateException("Invalid message size format")
+        // Keep reading, but not appending to the result
+        (32 until 64 step 7).forEach {
+          val byte = readByte()
+          if (byte.and(0x80) == 0) {
+            return@withContext result
+          }
+        }
+
+        throw IllegalStateException("Invalid message size format")
+      } catch (e: TimeoutCancellationException) {
+        throw InvalidProtocolBufferException("Incomplete message received, timed out waiting for message size to be written", e)
+      }
     }
 
   private suspend fun readByte(): Int =
     withContext(Dispatchers.IO) {
       return@withContext withTimeout(1.seconds) {
-        while (true) {
+        while (isActive) {
           val byte = inputStream.read()
           if (byte == -1) {
             yield()
