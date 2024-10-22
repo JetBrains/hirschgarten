@@ -58,7 +58,6 @@ public abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
     if (this == null) {
       emptyList()
     } else {
-      println(this)
       DefaultActionGroup().fillWithEligibleActions(project, this, false, singleTestFilter).childActionsOrStubs.toList()
     }
 }
