@@ -12,6 +12,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspFallbackAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
@@ -22,6 +23,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.isRustEnabled
 /** Responsible for querying bazel and constructing Project instance  */
 class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
+  private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
   private val bazelBspFallbackAspectsManager: BazelBspFallbackAspectsManager,
   private val workspaceContextProvider: WorkspaceContextProvider,
@@ -59,12 +61,17 @@ class ProjectResolver(
           "Mapping rule names to languages",
         ) { bazelBspAspectsManager.calculateRuleLanguages(externalRuleNames) }
 
+      val toolchains =
+        measured(
+          "Mapping languages to toolchains",
+        ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, cancelChecker) } }
+
       measured("Realizing language aspect files from templates") {
-        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext)
+        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext, toolchains)
       }
 
       measured("Generating language extensions file") {
-        bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages)
+        bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
       }
 
       val targetsToSync = requestedTargetsToSync?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets

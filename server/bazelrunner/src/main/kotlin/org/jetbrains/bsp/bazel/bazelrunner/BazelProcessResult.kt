@@ -9,7 +9,8 @@ class BazelProcessResult(
   private val stderrCollector: OutputCollector,
   private val exitCode: Int,
 ) {
-  val isNotSuccess: Boolean get() = statusCode != StatusCode.OK
+  val isSuccess: Boolean get() = statusCode == StatusCode.OK
+  val isNotSuccess: Boolean get() = !isSuccess
   val statusCode: StatusCode get() = ExitCodeMapper.mapExitCode(exitCode)
   val stdoutLines: List<String> get() = stdoutCollector.lines()
   val stdout: String get() = stdoutCollector.output()
