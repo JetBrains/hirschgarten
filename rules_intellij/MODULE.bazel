@@ -125,7 +125,7 @@ http_archive(
 _PYTHON_CE_BUILD_FILE = """
 java_import(
     name = "python",
-    jars = glob(["python-ce/lib/*.jar", "python-ce/lib/modules/*.jar"]),
+    jars = glob(["python-ce/lib/*.jar"]),
     visibility = ["//visibility:public"],
 )
 filegroup(
