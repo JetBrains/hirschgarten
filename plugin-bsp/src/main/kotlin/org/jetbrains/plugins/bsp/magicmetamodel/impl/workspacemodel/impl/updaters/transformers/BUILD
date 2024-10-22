@@ -7,7 +7,7 @@ kt_jvm_library(
     deps = [
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl/workspacemodel",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/target:target",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/target",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
         "@maven//:ch_epfl_scala_bsp4j",
         "@rules_intellij//intellij_platform_sdk:plugin_api",

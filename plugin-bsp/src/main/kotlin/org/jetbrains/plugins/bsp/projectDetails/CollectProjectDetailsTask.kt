@@ -51,7 +51,6 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
 import org.jetbrains.plugins.bsp.impl.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.plugins.bsp.impl.server.tasks.BspServerTask
 import org.jetbrains.plugins.bsp.impl.server.tasks.SdkUtils
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.findLibraryNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.findModuleNameProvider
@@ -71,6 +70,7 @@ import org.jetbrains.plugins.bsp.python.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import org.jetbrains.plugins.bsp.utils.isSourceFile
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule

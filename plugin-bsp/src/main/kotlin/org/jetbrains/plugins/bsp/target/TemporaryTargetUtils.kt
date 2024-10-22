@@ -36,8 +36,7 @@ public data class TemporaryTargetUtilsState(
   name = "TemporaryTargetUtils",
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
-class TemporaryTargetUtils :
-  PersistentStateComponent<TemporaryTargetUtilsState> {
+class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState> {
   var targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo> = emptyMap()
     private set
   private var moduleIdToBuildTargetId: Map<String, BuildTargetIdentifier> = emptyMap()
@@ -114,8 +113,7 @@ class TemporaryTargetUtils :
 
   fun getTargetIdForModuleId(moduleId: String): BuildTargetIdentifier? = moduleIdToBuildTargetId[moduleId]
 
-  fun getBuildTargetInfoForId(buildTargetIdentifier: BuildTargetIdentifier): BuildTargetInfo? =
-    targetIdToTargetInfo[buildTargetIdentifier]
+  fun getBuildTargetInfoForId(buildTargetIdentifier: BuildTargetIdentifier): BuildTargetInfo? = targetIdToTargetInfo[buildTargetIdentifier]
 
   fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module) =
     getTargetIdForModuleId(module.name)?.let { getBuildTargetInfoForId(it) }
