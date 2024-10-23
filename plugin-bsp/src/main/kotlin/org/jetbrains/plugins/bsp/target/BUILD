@@ -6,9 +6,8 @@ kt_jvm_library(
     visibility = ["//plugin-bsp:__subpackages__"],
     deps = [
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl/workspacemodel",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_code_gson_gson",
     ],

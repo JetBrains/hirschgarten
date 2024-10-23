@@ -12,9 +12,6 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.BuildTargetInfoState
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.LibraryState
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.toState
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
