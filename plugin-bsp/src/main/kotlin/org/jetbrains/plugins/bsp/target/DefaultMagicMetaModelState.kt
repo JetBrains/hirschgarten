@@ -21,9 +21,15 @@ public data class BuildTargetInfoState(
 ) : ConvertableFromState<org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo> {
   override fun fromState(): org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo =
     org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo(
-      id = ch.epfl.scala.bsp4j.BuildTargetIdentifier(id),
+      id =
+        ch.epfl.scala.bsp4j
+          .BuildTargetIdentifier(id),
       displayName = displayName,
-      dependencies = dependencies.map { ch.epfl.scala.bsp4j.BuildTargetIdentifier(it) },
+      dependencies =
+        dependencies.map {
+          ch.epfl.scala.bsp4j
+            .BuildTargetIdentifier(it)
+        },
       capabilities = capabilities.fromState(),
       tags = tags,
       languageIds = languageIds,
