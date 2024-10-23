@@ -104,3 +104,43 @@ def log(text, level):
 
 def log_warn(text):
     log(text, "WARN")
+
+def is_valid_aspect_target(target):
+    return hasattr(target, "bsp_info")
+
+def _collect_target_from_attr(rule_attrs, attr_name, result):
+    """Collects the targets from the given attr into the result."""
+    if not hasattr(rule_attrs, attr_name):
+        return
+    attr_value = getattr(rule_attrs, attr_name)
+    type_name = type(attr_value)
+    if type_name == "Target":
+        result.append(attr_value)
+    elif type_name == "list":
+        result.extend(attr_value)
+
+def collect_targets_from_attrs(rule_attrs, attrs):
+    result = []
+    for attr_name in attrs:
+        _collect_target_from_attr(rule_attrs, attr_name, result)
+    return [target for target in result if is_valid_aspect_target(target)]
+
+COMPILE_DEPS = [
+    "deps",
+    "jars",
+    "exports",
+    "associates",
+    "proc_macro_deps",
+]
+
+PRIVATE_COMPILE_DEPS = [
+    "_java_toolchain",
+    "_jvm",
+    "runtime_jdk",
+]
+
+RUNTIME_DEPS = [
+    "runtime_deps",
+]
+
+ALL_DEPS = COMPILE_DEPS + PRIVATE_COMPILE_DEPS + RUNTIME_DEPS

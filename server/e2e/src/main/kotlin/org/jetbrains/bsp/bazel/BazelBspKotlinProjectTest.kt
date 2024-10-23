@@ -130,6 +130,24 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         jvmBuildTarget = jvmBuildTargetData,
       )
 
+    val userOfExportBuildTargetData =
+      KotlinBuildTarget(
+        languageVersion = "1.9",
+        apiVersion = "1.9",
+        kotlincOptions =
+          listOf(
+            "-P",
+            "-Xlambdas=class",
+            "-Xno-source-debug-extension",
+            "-Xplugin=\$BAZEL_OUTPUT_BASE_PATH/external/com_github_jetbrains_kotlin/lib/allopen-compiler-plugin.jar",
+            "-Xsam-conversions=class",
+            "-jvm-target=1.8",
+            "plugin:org.jetbrains.kotlin.allopen:annotation=plugin.allopen.OpenForTesting",
+          ),
+        associates = listOf(),
+        jvmBuildTarget = jvmBuildTargetData,
+      )
+
     val userBuildTarget =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:user"),
@@ -172,7 +190,7 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
       )
     userOfExportBuildTarget.displayName = "@//plugin_allopen_test:user_of_export"
     userOfExportBuildTarget.baseDirectory = "file://\$WORKSPACE/plugin_allopen_test/"
-    userOfExportBuildTarget.data = userBuildTargetData
+    userOfExportBuildTarget.data = userOfExportBuildTargetData
     userOfExportBuildTarget.dataKind = "kotlin"
 
     val openForTestingExport =
