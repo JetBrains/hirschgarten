@@ -14,7 +14,8 @@ class GenericTestState :
   HasEnv,
   HasProgramArguments,
   HasWorkingDirectory,
-  HasTestFilter {
+  HasTestFilter,
+  HasBazelParams {
   @com.intellij.configurationStore.Property(description = "Test filter")
   @get:Attribute("testFilter")
   override var testFilter: String? by string()
@@ -33,6 +34,9 @@ class GenericTestState :
   @com.intellij.configurationStore.Property(description = "Environment variables")
   override var env: EnvironmentVariablesDataOptions by property(EnvironmentVariablesDataOptions())
 
+  @com.intellij.configurationStore.Property(description = "Bazel parameters")
+  override var additionalBazelParams: String? by string()
+
   override fun getEditor(configuration: BspRunConfiguration): SettingsEditor<GenericTestState> = GenericTestStateEditor(configuration)
 }
 
@@ -42,6 +46,7 @@ class GenericTestStateEditor(private val config: BspRunConfiguration) :
     SettingsEditorFragmentContainer.fragments {
       add(CommonParameterFragments.createHeader("Test Configuration"))
 
+      add(bazelParamsFragment())
       addTestFilterFragment()
       add(programArgumentsFragment())
       add(workingDirectoryFragment(config))
