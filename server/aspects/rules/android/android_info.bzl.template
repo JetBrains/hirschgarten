@@ -1,6 +1,6 @@
 load("//aspects:utils/utils.bzl", "create_file_location", "create_struct", "file_location")
 
-ANDROID_SDK_TOOLCHAIN_TYPE = "${androidSdkToolchainType}"
+ANDROID_SDK_TOOLCHAIN_TYPE = ${toolchainType}
 
 def extract_android_info(target, ctx, dep_targets, **kwargs):
     if ANDROID_SDK_TOOLCHAIN_TYPE not in ctx.toolchains:

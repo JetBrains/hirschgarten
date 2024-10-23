@@ -167,32 +167,12 @@ internal class ModuleDetailsToJavaModuleTransformer(
     }
   }
 
-  /**
-   * the final list of associate modules is additionally provided with other module names from the dependencies list
-   * of the associate list to get through the case where the associate module does not have sources and just exports
-   * other targets.
-   *
-   * this is just a workaround as it does not do analysis to provide the correct list of the necessary associates.
-   *
-   * TODO: https://youtrack.jetbrains.com/issue/BAZEL-1336/Better-way-to-know-the-target-module-list-of-associates-for-a-module
-   */
   private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetIdentifier> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
     return kotlinBuildTarget
       ?.associates
-      ?.flatMap { it.calculateAdditionalAssociateModules() + listOf(it) }
       ?.distinct()
       ?: emptyList()
-  }
-
-  private fun BuildTargetIdentifier.calculateAdditionalAssociateModules(): List<BuildTargetIdentifier> {
-    if (!BspFeatureFlags.isCollectingAdditionalAssociateModulesEnabled) return emptyList()
-
-    val temporaryTargetUtils = project.temporaryTargetUtils
-    project.findModuleNameProvider() ?: return emptyList()
-    val targetInfo = temporaryTargetUtils.getBuildTargetInfoForId(this) ?: return emptyList()
-
-    return targetInfo.dependencies.filter { temporaryTargetUtils.getBuildTargetInfoForId(it) != null }
   }
 }
 

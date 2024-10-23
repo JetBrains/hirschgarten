@@ -33,12 +33,15 @@ class BazelBspAspectsManager(
       ruleName?.let { RuleLanguage(it, language) }
     }
 
-  fun generateAspectsFromTemplates(ruleLanguages: List<RuleLanguage>, workspaceContext: WorkspaceContext) {
+  fun generateAspectsFromTemplates(
+    ruleLanguages: List<RuleLanguage>,
+    workspaceContext: WorkspaceContext,
+    toolchains: Map<RuleLanguage, String?>,
+  ) {
     ruleLanguages.filter { it.language.isTemplate }.forEach {
       val outputFile = aspectsPath.resolve(it.language.toAspectRelativePath())
       val templateFilePath = it.language.toAspectTemplateRelativePath()
       val kotlinEnabled = Language.Kotlin in ruleLanguages.map { it.language }
-      val hasAndroidRules = "rules_android" in ruleLanguages.map { it.ruleName }
       val variableMap =
         mapOf(
           "ruleName" to it.ruleName,
@@ -48,12 +51,7 @@ class BazelBspAspectsManager(
             if (kotlinEnabled) """load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider")""" else "",
           "getKtJvmProvider" to
             if (kotlinEnabled) "get_kt_jvm_provider(target)" else "None",
-          "androidSdkToolchainType" to
-            if (hasAndroidRules) {
-              "@rules_android//toolchains/android_sdk:toolchain_type"
-            } else {
-              "@bazel_tools//tools/android:sdk_toolchain_type"
-            },
+          "toolchainType" to toolchains[it].orEmpty(),
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }

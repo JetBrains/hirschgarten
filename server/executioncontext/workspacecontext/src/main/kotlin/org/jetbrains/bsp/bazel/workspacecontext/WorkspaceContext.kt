@@ -99,8 +99,14 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
   }
 }
 
+/**
+ * Used in the "enabled_rules" section in the project view file to enable support for the non-starlarkified Android rules.
+ * This rule name does not actually exist (because Bazel doesn't have a name for built-in rules).
+ */
+const val NATIVE_RULES_ANDROID = "native_rules_android"
+
 val WorkspaceContext.isAndroidEnabled: Boolean
-  get() = "rules_android" in enabledRules.values || "native_rules_android" in enabledRules.values
+  get() = listOf("rules_android", "build_bazel_rules_android", "native_rules_android").any { it in enabledRules.values }
 
 val WorkspaceContext.isGoEnabled: Boolean
   get() = listOf("rules_go", "io_bazel_rules_go").any { it in enabledRules.values }
@@ -113,7 +119,7 @@ val WorkspaceContext.isPythonEnabled: Boolean
 
 val WorkspaceContext.extraFlags: List<String>
   get() =
-    if (isAndroidEnabled) {
+    if (NATIVE_RULES_ANDROID in enabledRules.values) {
       listOf(
         BazelFlag.experimentalGoogleLegacyApi(),
         BazelFlag.experimentalEnableAndroidMigrationApis(),

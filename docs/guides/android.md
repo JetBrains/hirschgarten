@@ -29,7 +29,21 @@
    ```
    If you don't use Kotlin, then omit `rules_kotlin`.
    If you don't use the starlarkified `rules_android`, then add `native_rules_android` to the `enabled_rules` section instead.
+   
+   If you use `build_bazel_rules_android` instead of `rules_android` or `io_bazel_rules_kotlin` instead of `rules_kotlin`, 
+   then use that instead, e.g."
+   ```
+   enabled_rules:
+     build_bazel_rules_android
+     io_bazel_rules_kotlin
+   ```
 
+   If you are using an old version of `rules_android`, you may need to add the following to `.bazelrc`:
+   ```
+   build --experimental_google_legacy_api
+   build --experimental_enable_android_migration_apis
+   ```
+   in order to prevent errors like `AndroidManifestInfo is experimental and thus unavailable with the current flags`.
 7. Bazel 5 and 6 are not supported for now. Make sure they are not overridden in `.bazelversion`.
 
 8. Then open the project in IntelliJ IDEA and wait for it to import!

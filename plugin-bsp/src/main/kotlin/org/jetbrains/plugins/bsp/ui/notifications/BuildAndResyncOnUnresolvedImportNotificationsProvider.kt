@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.ui.notifications
 
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiManager
@@ -43,6 +44,7 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
   private fun hasUnresolvedImport(project: Project, file: VirtualFile): Boolean {
     // TODO Scala
     if (!file.isKotlinFileType() && !file.isJavaFileType()) return false
+    if (ProjectFileIndex.getInstance(project).isExcluded(file)) return false
     val psiFile = PsiManager.getInstance(project).findFile(file) ?: return false
     return when (psiFile) {
       is KtFile -> hasUnresolvedImport(psiFile)

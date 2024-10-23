@@ -1,54 +1,14 @@
 # Copyright 2019-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
 load("//aspects:extensions.bzl", "EXTENSIONS", "TOOLCHAINS")
-load("//aspects:utils/utils.bzl", "abs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups")
+load("//aspects:utils/utils.bzl", "ALL_DEPS", "COMPILE_DEPS", "PRIVATE_COMPILE_DEPS", "RUNTIME_DEPS", "abs", "collect_targets_from_attrs", "create_struct", "file_location", "get_aspect_ids", "update_sync_output_groups")
 
 def create_all_extension_info(target, ctx, output_groups, dep_targets):
     all_info = [create_extension_info(target = target, ctx = ctx, output_groups = output_groups, dep_targets = dep_targets) for create_extension_info in EXTENSIONS]
     return [(info, exported_properties) for info, exported_properties in all_info if info != None]
 
-def _collect_target_from_attr(rule_attrs, attr_name, result):
-    """Collects the targets from the given attr into the result."""
-    if not hasattr(rule_attrs, attr_name):
-        return
-    attr_value = getattr(rule_attrs, attr_name)
-    type_name = type(attr_value)
-    if type_name == "Target":
-        result.append(attr_value)
-    elif type_name == "list":
-        result.extend(attr_value)
-
-def is_valid_aspect_target(target):
-    return hasattr(target, "bsp_info")
-
-def collect_targets_from_attrs(rule_attrs, attrs):
-    result = []
-    for attr_name in attrs:
-        _collect_target_from_attr(rule_attrs, attr_name, result)
-    return [target for target in result if is_valid_aspect_target(target)]
-
 COMPILE = 0
 RUNTIME = 1
-
-COMPILE_DEPS = [
-    "deps",
-    "jars",
-    "exports",
-    "associates",
-    "proc_macro_deps",
-]
-
-PRIVATE_COMPILE_DEPS = [
-    "_java_toolchain",
-    "_jvm",
-    "runtime_jdk",
-]
-
-RUNTIME_DEPS = [
-    "runtime_deps",
-]
-
-ALL_DEPS = COMPILE_DEPS + PRIVATE_COMPILE_DEPS + RUNTIME_DEPS
 
 def make_dep(dep, dependency_type):
     return struct(
