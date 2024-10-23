@@ -24,7 +24,7 @@ public class TestTargetAction(
         text()
       } else if (isDebugAction) {
         BspPluginBundle.message(
-          "target.debug.action.text",
+          "target.debug.test.action.text",
           if (verboseText) targetInfo.buildTargetName else "",
           project.assets.presentableName,
         )

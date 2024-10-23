@@ -48,7 +48,6 @@ java_library(
     name = "plugin_api_internal",
     data = [
         ":application_info_json",
-        ":bin",
     ],
     visibility = ["//visibility:private"],
     exports = select_from_plugin_api_directory(
@@ -63,11 +62,6 @@ java_library(
             ":platform_images",
         ],
     ),
-)
-
-filegroup(
-    name = "bin",
-    srcs = glob(["bin/**"]),
 )
 
 # The outward facing plugin api

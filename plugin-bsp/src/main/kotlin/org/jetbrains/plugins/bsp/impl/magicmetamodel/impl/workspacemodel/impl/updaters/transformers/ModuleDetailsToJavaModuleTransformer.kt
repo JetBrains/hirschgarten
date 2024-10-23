@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.u
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
+import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
@@ -30,6 +31,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
   moduleNameProvider: TargetNameReformatProvider,
   libraryNameProvider: TargetNameReformatProvider,
   private val projectBasePath: Path,
+  private val project: Project,
   private val isAndroidSupportEnabled: Boolean = false,
 ) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, moduleNameProvider, libraryNameProvider) {
   override val type = ModuleTypeId("JAVA_MODULE")
@@ -164,7 +166,10 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun toAssociates(inputEntity: ModuleDetails): List<BuildTargetIdentifier> {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)
-    return kotlinBuildTarget?.associates ?: emptyList()
+    return kotlinBuildTarget
+      ?.associates
+      ?.distinct()
+      ?: emptyList()
   }
 }
 

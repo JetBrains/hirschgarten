@@ -100,40 +100,21 @@ fun DefaultActionGroup.fillWithEligibleActions(
   verboseText: Boolean,
   singleTestFilter: String? = null,
 ): DefaultActionGroup {
+  val canBeDebugged = BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
   if (target.capabilities.canRun) {
-    addAction(
-      RunTargetAction(
-        targetInfo = target,
-        verboseText = verboseText,
-        project = project,
-      ),
-    )
+    addAction(RunTargetAction(target, verboseText = verboseText, project = project))
+    if (canBeDebugged) {
+      addAction(RunTargetAction(target, isDebugAction = true, verboseText = verboseText, project = project))
+    }
   }
 
   if (target.capabilities.canTest) {
-    addAction(
-      TestTargetAction(
-        targetInfo = target,
-        verboseText = verboseText,
-        singleTestFilter = singleTestFilter,
-        project = project,
-      ),
-    )
-  }
-
-  // targets which cant be run or tested cant be debugged as well
-  val canBeExecuted = target.capabilities.canRun || target.capabilities.canTest
-  val canBeHandled = BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
-  // "Client-side" debugging
-  if (canBeExecuted && canBeHandled) {
-    addAction(
-      RunTargetAction(
-        targetInfo = target,
-        isDebugAction = true,
-        verboseText = verboseText,
-        project = project,
-      ),
-    )
+    addAction(TestTargetAction(target, verboseText = verboseText, project = project, singleTestFilter = singleTestFilter))
+    if (canBeDebugged) {
+      addAction(
+        TestTargetAction(target, isDebugAction = true, verboseText = verboseText, project = project, singleTestFilter = singleTestFilter),
+      )
+    }
   }
 
   if (target.languageIds.isJvmTarget()) {

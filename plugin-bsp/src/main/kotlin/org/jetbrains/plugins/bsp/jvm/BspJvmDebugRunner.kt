@@ -32,12 +32,12 @@ public class BspJvmDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
     // if target cannot be debugged, do not offer debugging it
     if (executorId != DefaultDebugExecutor.EXECUTOR_ID) return false
     if (profile !is BspRunConfiguration) return false
-    return profile.handler is JvmBspRunHandler
+    return profile.handler is JvmBspRunHandler || profile.handler is JvmBspTestHandler
   }
 
   override fun doExecute(state: RunProfileState, environment: ExecutionEnvironment): RunContentDescriptor {
-    // cast should always succeed, because canRun(...) checks for it
-    val debugState = state as JvmDebugHandlerState
+    // cast should always succeed, because canRun(...) checks for a compatible profile
+    val debugState = state as JvmDebuggableCommandLineState
     val connection = debugState.remoteConnection
     return attachVM(state, environment, connection)
   }

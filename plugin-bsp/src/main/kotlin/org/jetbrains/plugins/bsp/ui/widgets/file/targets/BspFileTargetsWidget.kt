@@ -36,7 +36,7 @@ private const val WIDGET_ID = "BspFileTargetsWidget"
 
 public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
   init {
-    project.temporaryTargetUtils.registerListener {
+    project.temporaryTargetUtils.registerSyncListener {
       ApplicationManager.getApplication().invokeLater {
         update()
       }

@@ -22,7 +22,8 @@ class BazelEnabledRulesQueryImpl(private val enabledRulesSpec: EnabledRulesSpec)
   override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> = enabledRulesSpec.values
 }
 
-private val rulesDisabledFromAutoDetection = listOf("rules_android", "rules_rust", "rules_go", "io_bazel_rules_go")
+private val rulesDisabledFromAutoDetection =
+  listOf("rules_android", "build_bazel_rules_android", "rules_rust", "rules_go", "io_bazel_rules_go")
 
 class BazelExternalRulesQueryImpl(
   private val bazelRunner: BazelRunner,

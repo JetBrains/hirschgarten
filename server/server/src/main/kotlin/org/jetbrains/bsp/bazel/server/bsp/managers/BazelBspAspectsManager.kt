@@ -33,7 +33,11 @@ class BazelBspAspectsManager(
       ruleName?.let { RuleLanguage(it, language) }
     }
 
-  fun generateAspectsFromTemplates(ruleLanguages: List<RuleLanguage>, workspaceContext: WorkspaceContext) {
+  fun generateAspectsFromTemplates(
+    ruleLanguages: List<RuleLanguage>,
+    workspaceContext: WorkspaceContext,
+    toolchains: Map<RuleLanguage, String?>,
+  ) {
     ruleLanguages.filter { it.language.isTemplate }.forEach {
       val outputFile = aspectsPath.resolve(it.language.toAspectRelativePath())
       val templateFilePath = it.language.toAspectTemplateRelativePath()
@@ -47,6 +51,7 @@ class BazelBspAspectsManager(
             if (kotlinEnabled) """load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider")""" else "",
           "getKtJvmProvider" to
             if (kotlinEnabled) "get_kt_jvm_provider(target)" else "None",
+          "toolchainType" to toolchains[it].orEmpty(),
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }

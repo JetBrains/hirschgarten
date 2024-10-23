@@ -1048,273 +1048,273 @@ class _ProjectViewLexer implements FlexLexer {
             {
               return TokenType.BAD_CHARACTER;
             }
-            // fall through
+          // fall through
           case 40:
             break;
           case 2:
             {
               return ProjectViewTokenTypes.TAB;
             }
-            // fall through
+          // fall through
           case 41:
             break;
           case 3:
             {
               return ProjectViewTokenTypes.LINE_BREAK;
             }
-            // fall through
+          // fall through
           case 42:
             break;
           case 4:
             {
               return ProjectViewTokenTypes.SPACE;
             }
-            // fall through
+          // fall through
           case 43:
             break;
           case 5:
             {
               return ProjectViewTokenTypes.STRING;
             }
-            // fall through
+          // fall through
           case 44:
             break;
           case 6:
             {
               return ProjectViewTokenTypes.COMMENT;
             }
-            // fall through
+          // fall through
           case 45:
             break;
           case 7:
             {
               return ProjectViewTokenTypes.MULT;
             }
-            // fall through
+          // fall through
           case 46:
             break;
           case 8:
             {
               return ProjectViewTokenTypes.MINUS;
             }
-            // fall through
+          // fall through
           case 47:
             break;
           case 9:
             {
               return ProjectViewTokenTypes.DOT;
             }
-            // fall through
+          // fall through
           case 48:
             break;
           case 10:
             {
               return ProjectViewTokenTypes.DIV;
             }
-            // fall through
+          // fall through
           case 49:
             break;
           case 11:
             {
               return ProjectViewTokenTypes.INT;
             }
-            // fall through
+          // fall through
           case 50:
             break;
           case 12:
             {
               return ProjectViewTokenTypes.COLON;
             }
-            // fall through
+          // fall through
           case 51:
             break;
           case 13:
             {
               return ProjectViewTokenTypes.EQ;
             }
-            // fall through
+          // fall through
           case 52:
             break;
           case 14:
             {
               return ProjectViewTokenTypes.IDENTIFIER;
             }
-            // fall through
+          // fall through
           case 53:
             break;
           case 15:
             {
               return ProjectViewTokenTypes.BOOL;
             }
-            // fall through
+          // fall through
           case 54:
             break;
           case 16:
             {
               return ProjectViewTokenTypes.IMPORT_KEYWORD;
             }
-            // fall through
+          // fall through
           case 55:
             break;
           case 17:
             {
               return ProjectViewTokenTypes.TARGETS_KEYWORD;
             }
-            // fall through
+          // fall through
           case 56:
             break;
           case 18:
             {
               return ProjectViewTokenTypes.SHARD_SYNC_KEYWORD;
             }
-            // fall through
+          // fall through
           case 57:
             break;
           case 19:
             {
               return ProjectViewTokenTypes.SYNC_FLAGS_KEYWORD;
             }
-            // fall through
+          // fall through
           case 58:
             break;
           case 20:
             {
               return ProjectViewTokenTypes.TEST_FLAGS_KEYWORD;
             }
-            // fall through
+          // fall through
           case 59:
             break;
           case 21:
             {
               return ProjectViewTokenTypes.BUILD_FLAGS_KEYWORD;
             }
-            // fall through
+          // fall through
           case 60:
             break;
           case 22:
             {
               return ProjectViewTokenTypes.DIRECTORIES_KEYWORD;
             }
-            // fall through
+          // fall through
           case 61:
             break;
           case 23:
             {
               return ProjectViewTokenTypes.BAZEL_BINARY_KEYWORD;
             }
-            // fall through
+          // fall through
           case 62:
             break;
           case 24:
             {
               return ProjectViewTokenTypes.IMPORT_DEPTH_KEYWORD;
             }
-            // fall through
+          // fall through
           case 63:
             break;
           case 25:
             {
               return ProjectViewTokenTypes.TEST_SOURCES_KEYWORD;
             }
-            // fall through
+          // fall through
           case 64:
             break;
           case 26:
             {
               return ProjectViewTokenTypes.ENABLED_RULES_KEYWORD;
             }
-            // fall through
+          // fall through
           case 65:
             break;
           case 27:
             {
               return ProjectViewTokenTypes.WORKSPACE_TYPE_KEYWORD;
             }
-            // fall through
+          // fall through
           case 66:
             break;
           case 28:
             {
               return ProjectViewTokenTypes.ANDROID_MIN_SDK_KEYWORD;
             }
-            // fall through
+          // fall through
           case 67:
             break;
           case 29:
             {
               return ProjectViewTokenTypes.EXCLUDE_LIBRARY_KEYWORD;
             }
-            // fall through
+          // fall through
           case 68:
             break;
           case 30:
             {
               return ProjectViewTokenTypes.TS_CONFIG_RULES_KEYWORD;
             }
-            // fall through
+          // fall through
           case 69:
             break;
           case 31:
             {
               return ProjectViewTokenTypes.PRODUCE_TRACE_LOG_KEYWORD;
             }
-            // fall through
+          // fall through
           case 70:
             break;
           case 32:
             {
               return ProjectViewTokenTypes.TARGET_SHARD_SIZE_KEYWORD;
             }
-            // fall through
+          // fall through
           case 71:
             break;
           case 33:
             {
               return ProjectViewTokenTypes.JAVA_LANGUAGE_LEVEL_KEYWORD;
             }
-            // fall through
+          // fall through
           case 72:
             break;
           case 34:
             {
               return ProjectViewTokenTypes.ADDITIONAL_LANGUAGES_KEYWORD;
             }
-            // fall through
+          // fall through
           case 73:
             break;
           case 35:
             {
               return ProjectViewTokenTypes.ANDROID_SDK_PLATFORM_KEYWORD;
             }
-            // fall through
+          // fall through
           case 74:
             break;
           case 36:
             {
               return ProjectViewTokenTypes.IMPORT_RUN_CONFIGURATION_KEYWORD;
             }
-            // fall through
+          // fall through
           case 75:
             break;
           case 37:
             {
               return ProjectViewTokenTypes.ALLOW_MANUAL_TARGETS_SYNC;
             }
-            // fall through
+          // fall through
           case 76:
             break;
           case 38:
             {
               return ProjectViewTokenTypes.DERIVE_TARGETS_FROM_DIRECTORIES_KEYWORD;
             }
-            // fall through
+          // fall through
           case 77:
             break;
           case 39:
             {
               return ProjectViewTokenTypes.GENERATED_ANDROID_RESOURCE_DIRECTORIES_KEYWORD;
             }
-            // fall through
+          // fall through
           case 78:
             break;
           default:

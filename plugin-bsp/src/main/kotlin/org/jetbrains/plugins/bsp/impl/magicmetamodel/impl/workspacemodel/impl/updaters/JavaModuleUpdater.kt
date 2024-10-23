@@ -63,7 +63,8 @@ internal class JavaModuleWithSourcesUpdater(
     }
 
     if (entityToAdd.genericModuleInfo.languageIds.includesKotlin()) {
-      val kotlinFacetEntityUpdater = KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
+      val kotlinFacetEntityUpdater =
+        KotlinFacetEntityUpdater(workspaceModelEntityUpdaterConfig, projectBasePath)
       kotlinFacetEntityUpdater.addEntity(entityToAdd, moduleEntity)
     }
 

@@ -52,7 +52,13 @@ class BazelRunner(
         .also { inheritWorkspaceOptions = true }
 
     fun mobileInstall(target: BuildTargetIdentifier, builder: BazelCommand.MobileInstall.() -> Unit = {}) =
-      BazelCommand.MobileInstall(bazelBinary, target).apply { builder() }.also { inheritWorkspaceOptions = true }
+      BazelCommand
+        .MobileInstall(bazelBinary, target)
+        .apply {
+          // --tool_tag is not supported by mobile-install
+          this.options.clear()
+          builder()
+        }.also { inheritWorkspaceOptions = true }
 
     fun test(builder: BazelCommand.Test.() -> Unit = {}) =
       BazelCommand.Test(bazelBinary).apply { builder() }.also { inheritWorkspaceOptions = true }

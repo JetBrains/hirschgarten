@@ -12,7 +12,7 @@ import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 
 public class BspProjectSystemSyncManager(private val project: Project) : ProjectSystemSyncManager {
   init {
-    project.temporaryTargetUtils.registerListener { notifySyncEnded(project) }
+    project.temporaryTargetUtils.registerSyncListener { notifySyncEnded(project) }
     initialNotifySyncEnded(project)
   }
 

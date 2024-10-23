@@ -17,6 +17,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspFallbackAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.AdditionalAndroidBuildTargetsProvider
@@ -146,6 +147,7 @@ class BazelBspServer(
         bazelBspCompilationManager = compilationManager,
         aspectsResolver = aspectsResolver,
       )
+    val bazelToolchainManager = BazelToolchainManager(bazelRunner, workspaceContextProvider)
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver, bazelInfo.release)
     val bazelBspFallbackAspectsManager = BazelBspFallbackAspectsManager(bazelRunner, workspaceContextProvider)
     val targetTagsResolver = TargetTagsResolver()
@@ -163,6 +165,7 @@ class BazelBspServer(
     val projectResolver =
       ProjectResolver(
         bazelBspAspectsManager = bazelBspAspectsManager,
+        bazelToolchainManager = bazelToolchainManager,
         bazelBspLanguageExtensionsGenerator = bazelBspLanguageExtensionsGenerator,
         bazelBspFallbackAspectsManager = bazelBspFallbackAspectsManager,
         workspaceContextProvider = workspaceContextProvider,
