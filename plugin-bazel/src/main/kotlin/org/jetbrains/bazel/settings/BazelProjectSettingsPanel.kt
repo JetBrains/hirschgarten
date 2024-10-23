@@ -5,7 +5,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.observable.util.whenItemSelected
 import com.intellij.openapi.observable.util.whenTextChanged
 import com.intellij.openapi.options.Configurable
@@ -25,6 +24,10 @@ import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.bsp.connection.stateService
 import org.jetbrains.bazel.config.BazelPluginBundle
+import org.jetbrains.bsp.sdkcompat.ui.addBrowseFolderListenerCompat
+import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
+import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
+import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -138,15 +141,10 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
       .also { textField ->
         val title = "Select Path"
         val description = "Select the path for your project view file."
-        textField.addBrowseFolderListener( // v243: title and description arguments were removed
+        textField.addBrowseFolderListenerCompat(
           title,
           description,
           project,
-          FileChooserDescriptorFactory
-            .createSingleFileDescriptor()
-            .withTitle(
-              title,
-            ).withDescription(description),
         )
         textField.whenTextChanged {
           val newPath = Path(textField.text)
@@ -178,7 +176,13 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   override fun isModified(): Boolean = currentProjectSettings != project.bazelProjectSettings
 
   override fun apply() {
+    val isProjectViewPathChanged = currentProjectSettings.projectViewPath != project.bazelProjectSettings.projectViewPath
     project.bazelProjectSettings = currentProjectSettings
+    if (isProjectViewPathChanged) {
+      BspCoroutineService.getInstance(project).start {
+        ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = false)
+      }
+    }
   }
 
   override fun reset() {
