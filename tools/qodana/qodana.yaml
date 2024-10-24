@@ -12,6 +12,7 @@ exclude:
       - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java
       - plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer/_ProjectViewLexer.java
       - server/example/kotlincplugin/UserIsOpenTest.kt
+    patterns:
       - "**.bzl.template"
   - name: CheckDependencyLicenses
   - name: KotlinInvalidBundleOrProperty
