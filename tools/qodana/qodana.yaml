@@ -13,10 +13,9 @@ exclude:
       - plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer/_ProjectViewLexer.java
       - server/example/kotlincplugin/UserIsOpenTest.kt
     patterns:
-      - "**.bzl.template"
+      - "**/*.bzl.template"
   - name: CheckDependencyLicenses
-  - name: KotlinInvalidBundleOrProperty
-  - name: UnnecessaryUnicodeEscape
+  - name: KotlinInvalidBundleOrProperty  - name: UnnecessaryUnicodeEscape
   - name: UnstableApiUsage
   - name: DialogTitleCapitalization
 include:
