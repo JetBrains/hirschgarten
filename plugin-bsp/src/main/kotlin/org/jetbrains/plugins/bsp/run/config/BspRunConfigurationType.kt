@@ -10,13 +10,13 @@ import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import javax.swing.Icon
 
 class BspRunConfigurationType : SimpleConfigurationType {
-  constructor() : this(BspPluginIcons.bsp)
-  constructor(project: Project) : this(project.assets.toolWindowIcon)
+  constructor() : this(BspPluginIcons.bsp, "BSP")
+  constructor(project: Project) : this(project.assets.toolWindowIcon, project.assets.presentableName)
 
-  private constructor(icon: Icon) : super(
+  private constructor(icon: Icon, buildToolName: String) : super(
     id = ID,
-    name = BspPluginBundle.message("runconfig.run.name"),
-    description = BspPluginBundle.message("runconfig.run.description"),
+    name = BspPluginBundle.message("runconfig.run.name", buildToolName),
+    description = BspPluginBundle.message("runconfig.run.description", buildToolName),
     icon = NotNullLazyValue.createValue { icon },
   )
 

@@ -21,9 +21,9 @@ import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.extensionPoints.targetActionProvider
-import org.jetbrains.plugins.bsp.impl.actions.target.BuildTargetAction
 import org.jetbrains.plugins.bsp.impl.flow.sync.actions.ResyncTargetAction
 import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.runnerAction.BuildTargetAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.fillWithEligibleActions
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
@@ -36,7 +36,7 @@ private const val WIDGET_ID = "BspFileTargetsWidget"
 
 public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project, false) {
   init {
-    project.temporaryTargetUtils.registerListener {
+    project.temporaryTargetUtils.registerSyncListener {
       ApplicationManager.getApplication().invokeLater {
         update()
       }
@@ -102,7 +102,7 @@ public class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(
       if (capabilities.canCompile) {
         it.add(BuildTargetAction(id))
       }
-      it.fillWithEligibleActions(this, false)
+      it.fillWithEligibleActions(project, this, false)
       it.addSeparator()
       it.addAll(project.targetActionProvider?.getTargetActions(component, project, this).orEmpty())
     }

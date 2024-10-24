@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.performance.testing
 
 import com.intellij.ide.starter.ci.CIServer
+import com.intellij.ide.starter.ci.teamcity.TeamCityCIServer
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -64,16 +65,20 @@ class BazelTest {
     val projectInfo = getProjectInfoFromSystemProperties()
     val projectName = System.getProperty("bsp.benchmark.project.name") ?: "hirschgarten"
     val testCase =
-      TestCase(IdeProductProvider.IC, projectInfo)
-        .withBuildNumber(System.getProperty("bsp.benchmark.platform.version"))
-        .useEAP()
+      TestCase(IdeProductProvider.IC, projectInfo).let { testCase ->
+        // TODO replace with .useEAP(buildNumber: String) when it becomes public
+        val useEAP = testCase.javaClass.getDeclaredMethod("useEAP", String::class.java)
+        useEAP.isAccessible = true
+        useEAP.invoke(testCase, System.getProperty("bsp.benchmark.platform.version")) as TestCase<*>
+      }
     val context =
       Starter
         .newContext(projectName, testCase)
         .executeRightAfterIdeOpened(true)
         .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
+        .propagateSystemProperty("bazel.project.view.file.path")
         .patchPathVariable()
-        .patchSystemProperties()
+        .withKotlinPluginK2()
     installPlugin(context, System.getProperty("bsp.benchmark.bsp.plugin.zip"))
     installPlugin(context, System.getProperty("bsp.benchmark.bazel.plugin.zip"))
 
@@ -221,13 +226,11 @@ class BazelTest {
     return this
   }
 
-  private fun IDETestContext.patchSystemProperties(): IDETestContext {
-    val projectViewPath = System.getProperty("bazel.project.view.file.path")
+  // TODO: import this function from IDE starter after update
+  private fun IDETestContext.withKotlinPluginK2() =
     applyVMOptionsPatch {
-      projectViewPath?.let { addSystemProperty("bazel.project.view.file.path", it) }
+      addSystemProperty("idea.kotlin.plugin.use.k2", true)
     }
-    return this
-  }
 }
 
 private fun <T : CommandChain> T.waitForBazelSync(): T {

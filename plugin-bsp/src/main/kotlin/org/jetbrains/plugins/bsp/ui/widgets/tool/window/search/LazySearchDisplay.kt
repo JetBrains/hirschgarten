@@ -72,26 +72,28 @@ class LazySearchDisplay(
 }
 
 private object QueryHighlighter {
-  fun highlight(text: String, query: Regex): String =
-    if (query.pattern.isNotEmpty() && query.containsMatchIn(text)) {
-      "<html>${highlightAllOccurrences(text, query)}</html>"
+  fun highlight(text: String, query: Regex): String {
+    val matches = query.findAll(text).take(text.length).toList()
+    return if (query.pattern.isNotEmpty() && matches.isNotEmpty()) {
+      "<html>${highlightAllOccurrences(text, matches)}</html>"
     } else {
       text
     }
+  }
 
-  private tailrec fun highlightAllOccurrences(
-    text: String,
-    query: Regex,
-    builtText: String = "",
-    startIndex: Int = 0,
-  ): String {
-    val foundRange =
-      query.find(text, startIndex)?.range
-        ?: return builtText + text.substring(startIndex)
-    val updatedText =
-      builtText +
-        text.substring(startIndex, foundRange.first) +
-        "<b><u>${text.substring(foundRange.first, foundRange.last + 1)}</u></b>"
-    return highlightAllOccurrences(text, query, updatedText, foundRange.last + 1)
+  private fun highlightAllOccurrences(text: String, query: List<MatchResult>): String {
+    val result = StringBuilder()
+    var lastIndex = 0
+    for (match in query) {
+      val matchStart = match.range.first
+      val matchEnd = match.range.last + 1
+      result.append(text, lastIndex, matchStart)
+      result.append("<b><u>")
+      result.append(text, matchStart, matchEnd)
+      result.append("</u></b>")
+      lastIndex = matchEnd
+    }
+    result.append(text.substring(lastIndex))
+    return result.toString()
   }
 }

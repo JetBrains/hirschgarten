@@ -14,7 +14,7 @@ open class Build(vcsRoot: GitVcsRoot) :
                 bazel {
                 val platformDot = "${platform.take(2)}.${platform.last()}"
 
-                enabled = (platform != "242")
+                // enabled = (platform != "242")
                 executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
 
                 name = "build //..."

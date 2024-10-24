@@ -6,9 +6,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.rootDir
-import org.jetbrains.plugins.bsp.ui.console.BuildTaskConsole
-import org.jetbrains.plugins.bsp.ui.console.SyncTaskConsole
-import org.jetbrains.plugins.bsp.ui.console.TaskConsole
 
 @Service(Service.Level.PROJECT)
 public class BspConsoleService(project: Project) {

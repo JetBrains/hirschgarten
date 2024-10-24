@@ -24,32 +24,29 @@ import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.DefaultLibraryNameProvider
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.DefaultModuleNameProvider
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.toDefaultTargetsMap
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaAddendum
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaSourceRoot
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.KotlinAddendum
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaAddendum
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaSourceRoot
+import org.jetbrains.plugins.bsp.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import java.net.URI
 import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.name
 import kotlin.io.path.toPath
 
 @DisplayName("ModuleDetailsToJavaModuleTransformer.transform(moduleDetails) tests")
-class ModuleDetailsToJavaModuleTransformerTest {
-  val projectBasePath: Path = Path("").toAbsolutePath()
-
+class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
   @Test
   fun `should return no java modules roots for no modules details`() {
     // given
@@ -62,6 +59,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         DefaultModuleNameProvider,
         DefaultLibraryNameProvider,
         projectBasePath,
+        project,
       ).transform(
         emptyModulesDetails,
       )
@@ -184,6 +182,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         DefaultModuleNameProvider,
         DefaultLibraryNameProvider,
         projectBasePath,
+        project,
       ).transform(
         moduleDetails,
       )
@@ -351,6 +350,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         DefaultModuleNameProvider,
         DefaultLibraryNameProvider,
         projectBasePath,
+        project,
       ).transform(moduleDetails)
 
     // then
@@ -584,6 +584,7 @@ class ModuleDetailsToJavaModuleTransformerTest {
         DefaultModuleNameProvider,
         DefaultLibraryNameProvider,
         projectBasePath,
+        project,
       ).transform(
         modulesDetails,
       )

@@ -62,9 +62,11 @@ class BspToolWindowPanel(val project: Project) : SimpleToolWindowPanel(true, tru
     this.toolbar = actionToolbar.component
     setContent(loadedTargetsPanel.withScrollAndSearch())
 
-    temporaryTargetUtils.registerListener {
-      ApplicationManager.getApplication().invokeLater {
-        rerenderComponents()
+    temporaryTargetUtils.registerSyncListener { targetListChanged ->
+      if (targetListChanged) {
+        ApplicationManager.getApplication().invokeLater {
+          rerenderComponents()
+        }
       }
     }
   }

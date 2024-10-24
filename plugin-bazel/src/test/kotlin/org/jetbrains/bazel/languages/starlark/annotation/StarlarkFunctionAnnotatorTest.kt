@@ -7,4 +7,9 @@ class StarlarkFunctionAnnotatorTest : StarlarkAnnotatorTestCase() {
     myFixture.configureByFile("FunctionAnnotatorTestData.bzl")
     myFixture.checkHighlighting(true, true, true)
   }
+
+  fun testUnresolvedNamedArgumentsAnnotator() {
+    myFixture.configureByFile("UnresolvedNamedArgumentsAnnotatorTestData.bzl")
+    myFixture.checkHighlighting(true, false, false)
+  }
 }

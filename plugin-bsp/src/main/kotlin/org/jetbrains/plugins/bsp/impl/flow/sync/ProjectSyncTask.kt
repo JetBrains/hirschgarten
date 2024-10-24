@@ -93,8 +93,8 @@ class ProjectSyncTask(private val project: Project) {
 
   private suspend fun preSync() {
     log.debug("Running pre sync tasks")
-    BspSyncStatusService.getInstance(project).startSync()
     saveAllFiles()
+    BspSyncStatusService.getInstance(project).startSync()
   }
 
   private suspend fun doSync(syncScope: ProjectSyncScope, buildProject: Boolean) {

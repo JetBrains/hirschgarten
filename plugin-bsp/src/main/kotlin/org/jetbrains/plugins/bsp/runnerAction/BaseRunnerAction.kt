@@ -39,12 +39,16 @@ public abstract class BaseRunnerAction(
       val settings = getRunnerSettings(project, buildTargetInfo) ?: return
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
       val executor = getExecutor()
-      ProgramRunner.getRunner(executor.id, settings.configuration)?.let { runner ->
+      val runner = ProgramRunner.getRunner(executor.id, settings.configuration)
+
+      if (runner != null) {
         val executionEnvironment =
           ExecutionEnvironmentBuilder(project, executor)
             .runnerAndSettings(runner, settings)
             .build()
         withContext(Dispatchers.EDT) { runner.execute(executionEnvironment) }
+      } else {
+        error("Runner not found for executor ${executor.id}")
       }
     } catch (e: Exception) {
       withContext(Dispatchers.EDT) {

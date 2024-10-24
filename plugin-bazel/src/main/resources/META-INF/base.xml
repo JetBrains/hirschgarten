@@ -23,8 +23,11 @@
         <bspToolWindowConfigFileProviderExtension
                 implementation="org.jetbrains.bazel.extension.BazelToolWindowConfigFileProviderExtension"/>
 
+        <bspProjectModelExternalSource
+                implementation="org.jetbrains.bazel.extension.BazelProjectModelExternalSourceExtension"/>
+
         <bspProjectAwareExtension
-                implementation="org.jetbrains.bazel.config.BazelBspProjectAwareExtension"/>
+                implementation="org.jetbrains.bazel.flow.open.BazelBspProjectAwareExtension"/>
 
         <projectSyncHook implementation="org.jetbrains.bazel.flow.open.InvalidTargetsProjectSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook"/>
@@ -36,18 +39,23 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="org.jetbrains.bazel.googleMigration.GooglePluginDisabler"/>
+
         <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
         <projectOpenProcessor
                 implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
         <postStartupActivity
                 implementation="org.jetbrains.bazel.flow.open.CheckSlowPluginsStartupActivity"/>
+        <postStartupActivity
+                implementation="org.jetbrains.bazel.flow.open.SuggestEnableK2StartupActivity"/>
+        <notificationGroup displayType="BALLOON" id="Enable K2 Compiler Mode with Bazel"/>
 
         <externalSystemUnlinkedProjectAware
-                id="Bazel BSP"
+                id="Bazel"
                 implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
         <externalIconProvider
                 key="bazelbsp"
-                implementationClass="org.jetbrains.bazel.config.BazelExternalSystemIconProvider"/>
+                implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"/>
         <projectModelModifier implementation="org.jetbrains.bazel.flow.modify.BazelProjectModelModifier"/>
 
         <fileType
@@ -89,6 +97,9 @@
         <additionalTextAttributes
                 scheme="Darcula"
                 file="colorSchemes/StarlarkDarcula.xml"/>
+        <annotator
+                language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkDeclarationAnnotator"/>
         <annotator
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.annotation.StarlarkFunctionAnnotator"/>
@@ -174,6 +185,11 @@
         <usageTypeProvider
                 implementation="org.jetbrains.bazel.languages.starlark.findusages.StarlarkUsageTypeProvider"/>
 
+        <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType"/>
+        <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner"/>
+
+        <registryKey defaultValue="25" description="Maximum number of attempts to connect with the Starlark debugger socket" key="bazel.starlark.debug.socket.attempts"/>
+        <registryKey defaultValue="400" description="Interval (in milliseconds) between attempts to connect with the Starlark debugger socket" key="bazel.starlark.debug.socket.interval"/>
     </extensions>
 
     <actions>

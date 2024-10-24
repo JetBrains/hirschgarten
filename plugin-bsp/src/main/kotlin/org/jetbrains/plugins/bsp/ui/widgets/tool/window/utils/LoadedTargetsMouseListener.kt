@@ -9,17 +9,17 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.ui.PopupHandler
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.actions.target.BuildTargetAction
-import org.jetbrains.plugins.bsp.impl.actions.target.RunWithLocalJvmRunnerAction
-import org.jetbrains.plugins.bsp.impl.actions.target.TestWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.impl.flow.sync.actions.ResyncTargetAction
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.isJvmTarget
 import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
 import org.jetbrains.plugins.bsp.runnerAction.BspRunnerAction
+import org.jetbrains.plugins.bsp.runnerAction.BuildTargetAction
 import org.jetbrains.plugins.bsp.runnerAction.RunTargetAction
+import org.jetbrains.plugins.bsp.runnerAction.RunWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.runnerAction.TestTargetAction
+import org.jetbrains.plugins.bsp.runnerAction.TestWithLocalJvmRunnerAction
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BuildTargetContainer
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.isJvmTarget
 import java.awt.Component
 import java.awt.event.MouseEvent
 
@@ -67,7 +67,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
       if (target.capabilities.canCompile) {
         addAction(BuildTargetAction(target.id))
       }
-      fillWithEligibleActions(target, false)
+      fillWithEligibleActions(project, target, false)
       container.getTargetActions(project, target).map {
         addAction(it)
         addSeparator()
@@ -79,8 +79,8 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
       when {
-        it.capabilities.canTest -> TestTargetAction(targetInfo = it).prepareAndPerform(project)
-        it.capabilities.canRun -> RunTargetAction(targetInfo = it).prepareAndPerform(project)
+        it.capabilities.canTest -> TestTargetAction(project = project, targetInfo = it).prepareAndPerform(project)
+        it.capabilities.canRun -> RunTargetAction(project = project, targetInfo = it).prepareAndPerform(project)
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
     }
@@ -94,32 +94,27 @@ private fun BspRunnerAction.prepareAndPerform(project: Project) {
 }
 
 @Suppress("CognitiveComplexMethod")
-fun DefaultActionGroup.fillWithEligibleActions(target: BuildTargetInfo, verboseText: Boolean): DefaultActionGroup {
+fun DefaultActionGroup.fillWithEligibleActions(
+  project: Project,
+  target: BuildTargetInfo,
+  verboseText: Boolean,
+  singleTestFilter: String? = null,
+): DefaultActionGroup {
+  val canBeDebugged = BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
   if (target.capabilities.canRun) {
-    addAction(
-      RunTargetAction(
-        targetInfo = target,
-        verboseText = verboseText,
-      ),
-    )
+    addAction(RunTargetAction(target, verboseText = verboseText, project = project))
+    if (canBeDebugged) {
+      addAction(RunTargetAction(target, isDebugAction = true, verboseText = verboseText, project = project))
+    }
   }
 
   if (target.capabilities.canTest) {
-    addAction(TestTargetAction(target, verboseText = verboseText))
-  }
-
-  // targets which cant be run or tested cant be debugged as well
-  val canBeExecuted = target.capabilities.canRun || target.capabilities.canTest
-  val canBeHandled = BspRunHandlerProvider.getRunHandlerProvider(listOf(target), isDebug = true) != null
-  // "Client-side" debugging
-  if (canBeExecuted && canBeHandled) {
-    addAction(
-      RunTargetAction(
-        targetInfo = target,
-        isDebugAction = true,
-        verboseText = verboseText,
-      ),
-    )
+    addAction(TestTargetAction(target, verboseText = verboseText, project = project, singleTestFilter = singleTestFilter))
+    if (canBeDebugged) {
+      addAction(
+        TestTargetAction(target, isDebugAction = true, verboseText = verboseText, project = project, singleTestFilter = singleTestFilter),
+      )
+    }
   }
 
   if (target.languageIds.isJvmTarget()) {

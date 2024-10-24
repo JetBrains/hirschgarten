@@ -795,7 +795,7 @@ class ExpressionParsing(context: ParsingContext) : Parsing(context) {
   }
 
   private fun getTargetOrReferenceExpression(isTarget: Boolean) =
-    if (isTarget) StarlarkElementTypes.TARGET_EXPRESSION else StarlarkElementTypes.REFERENCE_EXPRESSION
+    if (isTarget && builder.tokenText != "_") StarlarkElementTypes.TARGET_EXPRESSION else StarlarkElementTypes.REFERENCE_EXPRESSION
 
   companion object {
     private val BRACKET_OR_COMMA = TokenSet.create(StarlarkTokenTypes.RBRACKET, StarlarkTokenTypes.COMMA)

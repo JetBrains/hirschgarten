@@ -11,8 +11,6 @@ private val SLOW_PLUGINS =
   listOf(
     // Spring is slow, but oftentimes necessary
     // "com.intellij.spring",
-    "org.jetbrains.plugins.ruby",
-    "com.intellij.lang.jsgraphql",
     "com.intellij.python.django",
   )
 

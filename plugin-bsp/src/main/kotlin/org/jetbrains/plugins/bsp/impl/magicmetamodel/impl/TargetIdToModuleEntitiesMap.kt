@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.impl.magicmetamodel.impl
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -11,10 +12,10 @@ import org.jetbrains.plugins.bsp.impl.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.includesPython
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.isJvmOrAndroidTarget
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
+import org.jetbrains.plugins.bsp.workspacemodel.entities.includesPython
+import org.jetbrains.plugins.bsp.workspacemodel.entities.isJvmOrAndroidTarget
 import java.nio.file.Path
 
 object TargetIdToModuleEntitiesMap {
@@ -23,6 +24,7 @@ object TargetIdToModuleEntitiesMap {
     targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
     targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
     projectBasePath: Path,
+    project: Project,
     moduleNameProvider: TargetNameReformatProvider,
     libraryNameProvider: TargetNameReformatProvider,
     hasDefaultPythonInterpreter: Boolean,
@@ -35,6 +37,7 @@ object TargetIdToModuleEntitiesMap {
         moduleNameProvider,
         libraryNameProvider,
         projectBasePath,
+        project,
         isAndroidSupportEnabled,
       )
     val moduleDetailsToPythonModuleTransformer: ModuleDetailsToPythonModuleTransformer? =

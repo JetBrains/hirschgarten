@@ -14,12 +14,12 @@ import com.intellij.platform.workspace.jps.entities.SdkId
 import com.intellij.platform.workspace.jps.entities.SourceRootEntity
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonModule
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.PythonSdkInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericSourceRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonModule
+import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonSdkInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
 import org.jetbrains.workspace.model.matchers.entries.ExpectedModuleEntity
 import org.jetbrains.workspace.model.matchers.entries.ExpectedSourceRootEntity

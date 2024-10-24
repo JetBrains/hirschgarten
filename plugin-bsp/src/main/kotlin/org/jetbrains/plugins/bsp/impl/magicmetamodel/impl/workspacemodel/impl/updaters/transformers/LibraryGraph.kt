@@ -7,11 +7,11 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.impl.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateModuleDependency
+import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 
 data class LibraryGraphDependencies(

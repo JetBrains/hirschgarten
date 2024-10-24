@@ -12,6 +12,21 @@ local_path_override(
     path = "rules_intellij",
 )
 
+bazel_dep(
+    name = "rules_sonatype",
+)
+local_path_override(
+    module_name = "rules_sonatype",
+    path = "rules_sonatype",
+)
+
+bazel_dep(name = "rules_scala", repo_name = "io_bazel_rules_scala")
+git_override(
+    module_name = "rules_scala",
+    commit = "0909f422b3db87c3a86385b51fa32c5ac866f16e",
+    remote = "https://github.com/mbland/rules_scala.git",
+)
+
 bazel_dep(name = "rules_kotlin", version = "2.0.0")
 
 register_toolchains(
@@ -21,7 +36,7 @@ register_toolchains(
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_java", version = "8.1.0")
-bazel_dep(name = "rules_jvm_external", version = "6.3")
+bazel_dep(name = "rules_jvm_external", version = "6.4")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
@@ -57,10 +72,10 @@ maven.install(
         "org.apache.logging.log4j:log4j-core:2.24.1",
         "org.apache.velocity:velocity-engine-core:2.4",
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3",
-        "org.junit.jupiter:junit-jupiter:5.11.1",
-        "org.junit.platform:junit-platform-console:1.11.1",
-        "org.junit.platform:junit-platform-suite-api:1.11.1",
-        "org.junit.platform:junit-platform-suite-engine:1.11.1",
+        "org.junit.jupiter:junit-jupiter:5.11.2",
+        "org.junit.platform:junit-platform-console:1.11.2",
+        "org.junit.platform:junit-platform-suite-api:1.11.2",
+        "org.junit.platform:junit-platform-suite-engine:1.11.2",
         "org.kodein.di:kodein-di:7.22.0",
         "org.scala-lang:scala-library:2.13.15",
     ],
@@ -124,9 +139,15 @@ http_jar(
 )
 
 bazel_dep(name = "rules_proto", version = "6.0.2")
-bazel_dep(name = "rules_cc", version = "0.0.10")
+bazel_dep(name = "protobuf", version = "28.2")
+single_version_override(
+    module_name = "protobuf",
+    version = "28.2",
+)
+
+bazel_dep(name = "rules_cc", version = "0.0.13")
 bazel_dep(name = "platforms", version = "0.0.10")
-bazel_dep(name = "rules_python", version = "0.36.0")
+bazel_dep(name = "rules_python", version = "0.37.1")
 
 # Needed for codecanvas
 python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
@@ -161,17 +182,14 @@ single_version_override(
 )
 
 http_jar(
-    name = "ktfmt",
-    url = "https://repo1.maven.org/maven2/com/facebook/ktfmt/0.51/ktfmt-0.51-jar-with-dependencies.jar",
-)
-
-http_jar(
     name = "ktlint",
+    integrity = "sha256-qfkjvlj70yZwoX8Lcpsd+ASviC+ldAIWV0HLJuVEDKE=",
     url = "https://github.com/pinterest/ktlint/releases/download/1.3.1/ktlint",
 )
 
 http_jar(
     name = "google_java_format",
+    integrity = "sha256-fGN1rCS0glvmu+YZAOi1ixo+iUShNnqDYyEPntLQhXA=",
     url = "https://github.com/google/google-java-format/releases/download/v1.23.0/google-java-format-1.23.0-all-deps.jar",
 )
 
@@ -191,7 +209,7 @@ use_repo(buf, "rules_buf_toolchains")
 
 bazel_dep(
     name = "rules_bazel_integration_test",
-    version = "0.25.0",
+    version = "0.26.0",
     dev_dependency = True,
 )
 

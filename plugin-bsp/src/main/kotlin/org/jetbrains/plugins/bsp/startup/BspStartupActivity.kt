@@ -10,7 +10,7 @@ import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
+import org.jetbrains.plugins.bsp.config.openedTimesSinceLastStartupResync
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
@@ -39,7 +39,7 @@ public class BspStartupActivity : BspProjectActivity() {
 
     resyncProjectIfNeeded()
 
-    isBspProjectInitialized = true
+    this@executeForBspProject.openedTimesSinceLastStartupResync += 1
 
     BspStartupActivityTracker.stopConfigurationPhase(this)
   }
@@ -55,7 +55,7 @@ public class BspStartupActivity : BspProjectActivity() {
   private suspend fun Project.executeForNewProject() {
     log.debug("Executing BSP startup activities only for new project")
     try {
-      if (!isBspProjectInitialized || !(workspaceModel as WorkspaceModelImpl).loadedFromCache) {
+      if (!(workspaceModel as WorkspaceModelImpl).loadedFromCache) {
         runOnFirstOpening()
       }
     } catch (e: Exception) {
@@ -98,6 +98,7 @@ public class BspStartupActivity : BspProjectActivity() {
         syncScope = FullProjectSync,
         buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
       )
+      this@resyncProjectIfNeeded.openedTimesSinceLastStartupResync = 0
     }
   }
 

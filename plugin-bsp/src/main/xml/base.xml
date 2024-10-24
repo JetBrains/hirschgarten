@@ -45,6 +45,9 @@
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspToolWindowConfigFileProviderExtension"
                         interface="org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowConfigFileProviderExtension"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.bspProjectModelExternalSource"
+                        interface="org.jetbrains.plugins.bsp.extensionPoints.BspProjectModelExternalSourceExtension"
+                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunConfigurationExtension"
                         interface="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationExtensionManager"
                         dynamic="true"/>
@@ -82,6 +85,7 @@
                 implementation="org.jetbrains.plugins.bsp.impl.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler$JvmBspRunHandlerProvider" id="JvmRunHandlerProvider"/>
+        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.JvmBspTestHandler$JvmBspTestHandlerProvider" id="JvmTestHandlerProvider"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspRunHandlerProvider" order="last"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspTestHandlerProvider" order="last"/>
         <projectSyncHook implementation="org.jetbrains.plugins.bsp.projectDetails.CollectProjectDetailsSyncHook"/>
@@ -99,6 +103,9 @@
         <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
                         serviceImplementation="org.jetbrains.plugins.bsp.services.BspExternalAnnotationsManager"
                         overrides="true"/>
+        <projectService serviceInterface="com.intellij.openapi.vcs.roots.VcsRootDetector"
+                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspVcsRootDetector"
+                        overrides="true"/>
         <moduleService serviceInterface="com.intellij.openapi.roots.ModuleFileIndex"
                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspModuleFileIndex"
                        overrides="true"/>
@@ -107,7 +114,7 @@
                 implementation="org.jetbrains.plugins.bsp.startup.BspCommandLineInspectionConfigurator"/>
         <configurationType implementation="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationType"/>
 
-        <notificationGroup id="Bazel BSP" displayType="STICKY_BALLOON"/>
+        <notificationGroup id="Bazel" displayType="STICKY_BALLOON"/>
 
         <workspaceModel.fileIndexContributor
                 implementation="org.jetbrains.plugins.bsp.workspace.BspProjectDirectoriesWorkspaceFileIndexContributor"/>
@@ -168,8 +175,11 @@
                      description="Retrieve targets for file from its ancestors"
                      key="bsp.retrieve.targets.for.file.from.ancestors"/>
         <registryKey defaultValue="false"
-                     description="Wrap libraries inside modules to form a proper dependency graph between libraries"
+                     description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
                      key="bsp.wrap.libraries.inside.modules"/>
+        <registryKey defaultValue="false"
+                     description="Scan for Git roots inside the project directory."
+                     key="bsp.scan.git.roots.inside.project.dir"/>
 
         <statusBarWidgetFactory id="BspFileTargetsWidget"
                                 implementation="org.jetbrains.plugins.bsp.ui.widgets.file.targets.BspFileTargetsWidgetFactory"/>
@@ -180,7 +190,7 @@
         <iconMapper mappingFile="BSPIconMappings.json"/>
 
         <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
-
+        <editorNotificationProvider implementation="org.jetbrains.plugins.bsp.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
