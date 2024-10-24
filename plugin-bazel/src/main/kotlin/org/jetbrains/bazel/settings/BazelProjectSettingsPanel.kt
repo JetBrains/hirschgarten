@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.settings
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -189,7 +190,10 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     super.reset()
     projectViewPathField.text = savedProjectViewPath()
 
-    serverJdkComboBox.selectedJdk = savedJdkOrDefault()
+    ApplicationManager.getApplication().invokeLater {
+      serverJdkComboBox.selectedJdk = savedJdkOrDefault()
+    }
+
     serverCustomJvmOptions.text = savedCustomJvmOptions()
 
     currentProjectSettings = project.bazelProjectSettings
@@ -201,11 +205,11 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
       ?.pathString
       .orEmpty()
 
-  private fun savedJdkOrDefault(): Sdk =
+  private fun savedJdkOrDefault(): Sdk? =
     project.bazelProjectSettings
       .selectedJdk
       .name
-      .let { serverJdkComboBoxModel.findSdk(it) } ?: serverDetectedJdk
+      .let { serverJdkComboBoxModel.findSdk(it) }
 
   private fun savedCustomJvmOptions(): String =
     project.bazelProjectSettings
