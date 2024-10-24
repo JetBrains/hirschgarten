@@ -49,3 +49,9 @@ data class ExperimentalAddTransitiveCompileTimeJarsSection(override val value: B
     const val SECTION_NAME = "experimental_add_transitive_compile_time_jars"
   }
 }
+
+data class EnableNativeAndroidRulesSection(override val value: Boolean) : ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "enable_native_android_rules"
+  }
+}

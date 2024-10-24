@@ -1,11 +1,9 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
 import org.apache.velocity.app.VelocityEngine
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
-import org.jetbrains.bsp.bazel.workspacecontext.NATIVE_RULES_ANDROID
 import java.nio.file.Paths
 import java.util.Properties
 
@@ -24,7 +22,7 @@ enum class Language(
   Rust("//aspects:rules/rust/rust_info.bzl", listOf("rules_rust"), listOf("extract_rust_crate_info"), false),
   Android(
     "//aspects:rules/android/android_info.bzl",
-    listOf("rules_android", "build_bazel_rules_android", NATIVE_RULES_ANDROID),
+    listOf("rules_android", "build_bazel_rules_android"),
     listOf("extract_android_info", "extract_android_aar_import_info"),
     true,
   ),
@@ -40,16 +38,15 @@ enum class Language(
 
   fun toAspectRelativePath(): String = fileName.substringAfter(":")
 
-  fun toAspectTemplateRelativePath(): String = "${toAspectRelativePath()}.template"
+  fun toAspectTemplateRelativePath(): String = toAspectRelativePath() + Constants.TEMPLATE_EXTENSION
 }
 
-class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspectsResolver, private val bazelRelease: BazelRelease) {
+class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspectsResolver) {
   private val aspectsPath = Paths.get(internalAspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
   private val velocityEngine = VelocityEngine()
 
   init {
     val props = calculateProperties()
-    org.jetbrains.bsp.bazel.server.bsp.managers.Language.Android
     velocityEngine.init(props)
   }
 

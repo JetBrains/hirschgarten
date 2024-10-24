@@ -38,10 +38,10 @@ import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.generateRunArguments
 import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.verifyDebugRequest
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
-import org.jetbrains.bsp.bazel.workspacecontext.isAndroidEnabled
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
 import org.jetbrains.bsp.protocol.BazelTestParamsData
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
@@ -57,6 +57,7 @@ class ExecuteService(
   private val bspClientLogger: BspClientLogger,
   private val bazelPathsResolver: BazelPathsResolver,
   private val additionalBuildTargetsProvider: AdditionalAndroidBuildTargetsProvider,
+  private val featureFlags: FeatureFlags,
 ) {
   private val gson = Gson()
 
@@ -276,15 +277,12 @@ class ExecuteService(
     }
   }
 
-  private fun getAdditionalBuildTargets(cancelChecker: CancelChecker, bspIds: List<BuildTargetIdentifier>): List<BuildTargetIdentifier> {
-    val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
-
-    return if (workspaceContext.isAndroidEnabled) {
+  private fun getAdditionalBuildTargets(cancelChecker: CancelChecker, bspIds: List<BuildTargetIdentifier>): List<BuildTargetIdentifier> =
+    if (featureFlags.isAndroidSupportEnabled) {
       additionalBuildTargetsProvider.getAdditionalBuildTargets(cancelChecker, bspIds)
     } else {
       emptyList()
     }
-  }
 
   private fun selectModules(cancelChecker: CancelChecker, targets: List<BuildTargetIdentifier>): List<Module> {
     val project = projectProvider.get(cancelChecker)

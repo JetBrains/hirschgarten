@@ -3,8 +3,7 @@ package org.jetbrains.bsp.bazel.server.sync.languages.android
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinModule
-import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.bazel.workspacecontext.isAndroidEnabled
+import org.jetbrains.bsp.protocol.FeatureFlags
 
 /**
  * kt_android_library/kt_android_local_test with the name `foo` actually produces three targets:
@@ -20,9 +19,9 @@ import org.jetbrains.bsp.bazel.workspacecontext.isAndroidEnabled
  * Therefore, we just merge them all into a single target.
  * Also see [Android Kotlin rules implementation](https://github.com/bazelbuild/rules_kotlin/blob/a675511fdbee743c09d537c2dddfb349981ae70b/kotlin/internal/jvm/android.bzl).
  */
-class KotlinAndroidModulesMerger {
-  fun mergeKotlinAndroidModules(modules: List<Module>, workspaceContext: WorkspaceContext): List<Module> =
-    if (workspaceContext.isAndroidEnabled) doMergeKotlinAndroidModules(modules) else modules
+class KotlinAndroidModulesMerger(private val featureFlags: FeatureFlags) {
+  fun mergeKotlinAndroidModules(modules: List<Module>): List<Module> =
+    if (featureFlags.isAndroidSupportEnabled) doMergeKotlinAndroidModules(modules) else modules
 
   private fun doMergeKotlinAndroidModules(modules: List<Module>): List<Module> {
     val moduleById = modules.associateBy { it.label.value }

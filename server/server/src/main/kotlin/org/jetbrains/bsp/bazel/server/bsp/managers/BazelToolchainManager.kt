@@ -3,11 +3,9 @@ package org.jetbrains.bsp.bazel.server.bsp.managers
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bsp.bazel.workspacecontext.NATIVE_RULES_ANDROID
-import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
-import org.jetbrains.bsp.bazel.workspacecontext.isAndroidEnabled
+import org.jetbrains.bsp.protocol.FeatureFlags
 
-class BazelToolchainManager(private val bazelRunner: BazelRunner, private val workspaceContextProvider: WorkspaceContextProvider) {
+class BazelToolchainManager(private val bazelRunner: BazelRunner, private val featureFlags: FeatureFlags) {
   fun getToolchain(ruleLanguage: RuleLanguage, cancelChecker: CancelChecker): String? =
     when (ruleLanguage.language) {
       Language.Scala -> """"@${ruleLanguage.ruleName}//scala:toolchain_type""""
@@ -25,9 +23,8 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner, private val wo
    * or `@rules_android//toolchains/android_sdk:toolchain_type` depending on the version.
    */
   fun getAndroidToolchain(ruleLanguage: RuleLanguage, cancelChecker: CancelChecker): String? {
-    if (!workspaceContextProvider.currentWorkspaceContext().isAndroidEnabled) return null
-
-    if (ruleLanguage.ruleName == NATIVE_RULES_ANDROID) return NATIVE_ANDROID_TOOLCHAIN
+    if (!featureFlags.isAndroidSupportEnabled) return null
+    if (ruleLanguage.ruleName == null) return NATIVE_ANDROID_TOOLCHAIN
     val androidToolchain = """"@${ruleLanguage.ruleName}//toolchains/android_sdk:toolchain_type""""
     val androidToolchainExists =
       bazelRunner.run {

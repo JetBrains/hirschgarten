@@ -5,7 +5,7 @@ import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.SourceItem
-import com.google.gson.JsonObject
+import com.google.gson.Gson
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.execution.process.OSProcessUtil
@@ -28,12 +28,14 @@ import org.jetbrains.bsp.protocol.BSP_CLIENT_VERSION
 import org.jetbrains.bsp.protocol.BSP_VERSION
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.CLIENT_CAPABILITIES
+import org.jetbrains.bsp.protocol.InitializeBuildData
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.bsp.protocol.utils.EnhancedSourceItemTypeAdapter
 import org.jetbrains.bsp.sdkcompat.telemetry.Endpoint
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.building.TaskConsole
+import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
@@ -135,6 +137,7 @@ class DefaultBspConnection(
   private val connectionDetailsProviderExtension: ConnectionDetailsProviderExtension,
 ) : BspConnection {
   private var connectionDetails: BspConnectionDetails? = null
+  private var initializeBuildParams: InitializeBuildParams? = null
 
   @Volatile
   private var server: JoinedBuildServer? = null
@@ -145,6 +148,8 @@ class DefaultBspConnection(
   private val disconnectActions: MutableList<() -> Unit> = mutableListOf()
   private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
   private val mutex = Mutex()
+
+  private val gson = Gson()
 
   override suspend fun connect() {
     mutex.withLock {
@@ -171,7 +176,11 @@ class DefaultBspConnection(
         connectBuiltIn(inMemoryConnection)
       }
     } else {
-      val newConnectionDetails = connectionDetailsProviderExtension.provideNewConnectionDetails(project, connectionDetails)
+      val newInitializeBuildParams = createInitializeBuildParams()
+      val initializeBuildParamsChanged = initializeBuildParams != newInitializeBuildParams
+      initializeBuildParams = newInitializeBuildParams
+      val currentConnectionDetails = connectionDetails.takeIf { !initializeBuildParamsChanged }
+      val newConnectionDetails = connectionDetailsProviderExtension.provideNewConnectionDetails(project, currentConnectionDetails)
       if (newConnectionDetails != null) {
         connectionDetails = newConnectionDetails
         newConnectionDetails.connect(bspClient)
@@ -397,12 +406,13 @@ class DefaultBspConnection(
         projectBaseDir.toString(),
         CLIENT_CAPABILITIES,
       )
-    val dataJson = JsonObject()
-    dataJson.addProperty("clientClassesRootDir", "$projectBaseDir/out")
-    getOpenTelemetryEndPoint()?.let {
-      dataJson.addProperty("openTelemetryEndpoint", it)
-    }
-    params.data = dataJson
+    val initializeBuildData =
+      InitializeBuildData(
+        clientClassesRootDir = "$projectBaseDir/out",
+        openTelemetryEndpoint = getOpenTelemetryEndPoint(),
+        featureFlags = BspFeatureFlags.toBspProtocolFeatureFlags(),
+      )
+    params.data = initializeBuildData
 
     return params
   }

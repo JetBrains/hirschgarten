@@ -30,9 +30,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.bazel.workspacecontext.isGoEnabled
-import org.jetbrains.bsp.bazel.workspacecontext.isPythonEnabled
-import org.jetbrains.bsp.bazel.workspacecontext.isRustEnabled
+import org.jetbrains.bsp.protocol.FeatureFlags
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
@@ -51,6 +49,7 @@ class BazelProjectMapper(
   private val targetTagsResolver: TargetTagsResolver,
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
+  private val featureFlags: FeatureFlags,
 ) {
   private fun <T> measure(description: String, body: () -> T): T = tracer.spanBuilder(description).use { body() }
 
@@ -172,7 +171,7 @@ class BazelProjectMapper(
       }
     val mergedModulesFromBazel =
       measure("Merge Kotlin Android modules") {
-        kotlinAndroidModulesMerger.mergeKotlinAndroidModules(modulesFromBazel, workspaceContext)
+        kotlinAndroidModulesMerger.mergeKotlinAndroidModules(modulesFromBazel)
       }
     val sourceToTarget =
       measure("Build reverse sources") {
@@ -187,7 +186,7 @@ class BazelProjectMapper(
     val goLibrariesToImport =
       measureIf(
         description = "Merge all Go libraries",
-        predicate = { workspaceContext.isGoEnabled },
+        predicate = { featureFlags.isGoSupportEnabled },
         ifFalse = emptyMap(),
       ) {
         goLibrariesMapper.values
@@ -203,15 +202,15 @@ class BazelProjectMapper(
     val rustExternalTargetsToImport =
       measureIf(
         description = "Select external Rust targets",
-        predicate = { workspaceContext.isRustEnabled },
+        predicate = { featureFlags.isRustSupportEnabled },
         ifFalse = emptySequence(),
       ) {
-        selectRustExternalTargetsToImport(rootTargets, dependencyGraph, workspaceContext)
+        selectRustExternalTargetsToImport(rootTargets, dependencyGraph)
       }
     val rustExternalModules =
       measureIf(
         description = "Create Rust external modules",
-        predicate = { workspaceContext.isRustEnabled },
+        predicate = { featureFlags.isRustSupportEnabled },
         ifFalse = emptySequence(),
       ) {
         createRustExternalModules(rustExternalTargetsToImport, dependencyGraph, librariesFromDeps)
@@ -220,7 +219,7 @@ class BazelProjectMapper(
 
     val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
     val nonModuleTargets =
-      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace }, workspaceContext)
+      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace })
 
     return Project(
       workspaceRoot,
@@ -618,9 +617,9 @@ class BazelProjectMapper(
     )
   }
 
-  private fun createNonModuleTargets(targets: Map<Label, TargetInfo>, workspaceContext: WorkspaceContext): List<NonModuleTarget> =
+  private fun createNonModuleTargets(targets: Map<Label, TargetInfo>): List<NonModuleTarget> =
     targets
-      .filter { !isWorkspaceTarget(it.value, workspaceContext) }
+      .filter { !isWorkspaceTarget(it.value) }
       .map { (label, targetInfo) ->
         NonModuleTarget(
           label = label,
@@ -772,15 +771,11 @@ class BazelProjectMapper(
 
   private fun getGoRootUri(targetInfo: TargetInfo): URI = Label.parse(targetInfo.id).toDirectoryUri()
 
-  private fun selectRustExternalTargetsToImport(
-    rootTargets: Set<Label>,
-    graph: DependencyGraph,
-    workspaceContext: WorkspaceContext,
-  ): Sequence<TargetInfo> =
+  private fun selectRustExternalTargetsToImport(rootTargets: Set<Label>, graph: DependencyGraph): Sequence<TargetInfo> =
     graph
       .allTargetsAtDepth(-1, rootTargets)
       .asSequence()
-      .filter { !isWorkspaceTarget(it, workspaceContext) && isRustTarget(it) }
+      .filter { !isWorkspaceTarget(it) && isRustTarget(it) }
 
   private fun selectTargetsToImport(
     workspaceContext: WorkspaceContext,
@@ -791,7 +786,7 @@ class BazelProjectMapper(
       .allTargetsAtDepth(
         workspaceContext.importDepth.value,
         rootTargets,
-      ).filter { isWorkspaceTarget(it, workspaceContext) }
+      ).filter { isWorkspaceTarget(it) }
       .asSequence()
 
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
@@ -824,13 +819,13 @@ class BazelProjectMapper(
     }
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
-  private fun isWorkspaceTarget(target: TargetInfo, workspaceContext: WorkspaceContext): Boolean =
+  private fun isWorkspaceTarget(target: TargetInfo): Boolean =
     target.label().isMainWorkspace &&
       (
         shouldImportTargetKind(target.kind) ||
           target.hasJvmTargetInfo() &&
           hasKnownJvmSources(target) ||
-          workspaceContext.isPythonEnabled &&
+          featureFlags.isPythonSupportEnabled &&
           target.hasPythonTargetInfo() &&
           hasKnownPythonSources(target) ||
           hasOtherKnownSources(target)

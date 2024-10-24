@@ -82,7 +82,8 @@ abstract class EnvironmentCreator(private val projectRootDir: Path) {
     // extension.bzl is written in BazelBspLanguageExtensionsGenerator, we don't have to delete it
     if (destinationRelativePath == Constants.EXTENSIONS_BZL) return
     // Templates are expanded inside TemplateWriter, we don't have to delete them
-    if (sourceAbsolutePath.notExists() && sourceAbsolutePath.resolveSibling("${sourceAbsolutePath.name}.template").notExists()) {
+    val templateAbsolutePath = sourceAbsolutePath.resolveSibling(sourceAbsolutePath.name + Constants.TEMPLATE_EXTENSION)
+    if (sourceAbsolutePath.notExists() && templateAbsolutePath.notExists()) {
       destination.deleteRecursively()
     }
   }

@@ -66,7 +66,7 @@ import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.util.concurrent.CompletableFuture
 
-class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> BazelServices) : JoinedBuildServer {
+class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, InitializeBuildParams) -> BazelServices) : JoinedBuildServer {
   private lateinit var client: JoinedBuildClient
   private lateinit var serverLifetime: BazelBspServerLifetime
   private lateinit var runner: BspRequestsRunner
@@ -74,7 +74,7 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
   private lateinit var projectSyncService: ProjectSyncService
   private lateinit var executeService: ExecuteService
 
-  fun init(
+  fun initialize(
     client: JoinedBuildClient,
     serverLifetime: BazelBspServerLifetime,
     runner: BspRequestsRunner,
@@ -84,21 +84,19 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient) -> Baze
     this.runner = runner
   }
 
-  private fun initServices() {
-    val serverContainer = bazelServicesBuilder(client)
+  private fun initializeServices(initializeBuildParams: InitializeBuildParams): InitializeBuildResult {
+    val serverContainer = bazelServicesBuilder(client, initializeBuildParams)
     this.projectSyncService = serverContainer.projectSyncService
     this.executeService = serverContainer.executeService
+
+    return projectSyncService.initialize()
   }
 
   override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<InitializeBuildResult> =
     runner.handleRequest(
       methodName = "build/initialize",
       supplier = {
-        initServices()
-        projectSyncService.initialize(
-          cancelChecker = it,
-          initializeBuildParams = initializeBuildParams,
-        )
+        initializeServices(initializeBuildParams)
       },
       precondition = { runner.serverIsNotFinished(it) },
     )

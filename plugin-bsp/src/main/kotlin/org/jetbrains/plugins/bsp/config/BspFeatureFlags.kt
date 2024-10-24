@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.config
 
 import com.intellij.openapi.util.registry.Registry
+import org.jetbrains.bsp.protocol.FeatureFlags
 
 private const val PYTHON_SUPPORT = "bsp.python.support"
 private const val ANDROID_SUPPORT = "bsp.android.support"
@@ -38,4 +39,13 @@ object BspFeatureFlags {
 
   val isScanGitRootsInsideProjectDir: Boolean
     get() = Registry.`is`(SCAN_GIT_ROOTS_INSIDE_PROJECT_DIR)
+
+  fun toBspProtocolFeatureFlags(): FeatureFlags =
+    FeatureFlags(
+      isPythonSupportEnabled = isPythonSupportEnabled,
+      isAndroidSupportEnabled = isAndroidSupportEnabled,
+      isGoSupportEnabled = isGoSupportEnabled,
+      isRustSupportEnabled = false, // No corresponding registry key for now
+      isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
+    )
 }
