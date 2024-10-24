@@ -1,21 +1,40 @@
-[![JetBrains team project](http://jb.gg/badges/team.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
-# Bazel by JetBrains (experimental) for IntelliJ IDEA
+[![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+
+# Bazel by JetBrains (EAP) for IntelliJ IDEA
 
 <!-- Plugin description -->
-Bazel by JetBrains (experimental) for IntelliJ IDEA in early development.
+Bazel by JetBrains (EAP) for IntelliJ IDEA.
 
-It uses [Build Server Protocol for IntelliJ IDEA](https://plugins.jetbrains.com/plugin/20329-build-server-protocol) 
-together with [Bazel-BSP](https://github.com/JetBrains/bazel-bsp) to import bazel projects. 
+This plugin lets you import and work with Bazel projects.
 
-You can read more about the plugin [here](https://lp.jetbrains.com/new-bazel-plugin/).
-To learn more about available features please check [feature overview](https://docs.google.com/document/d/1035jfgffqD-A-LHoIE-YPFqrkKaWiRyJtuI0KRsQ-XA/edit#heading=h.ipyhfonwir0z).
+This plugin is available as public EAP (Early Access Program).
+It is tested on some large production code bases for Java and Kotlin.
+Other languages and frameworks are under development and will be supported soon.
 
-### Installation
+## Features
 
-In order to install the plugin please follow steps from the [landing page](https://lp.jetbrains.com/new-bazel-plugin/).
+- open Bazel projects by selecting a folder
+- define project views to open a focused subset of large projects
+- automatically detect project model changes and offer to synchronize
+- target tree to search for and run actions on Bazel targets
+- run and debug runnable and testable targets from target tree or gutter icons
+- test result display
+- Starlark support, including syntax highlighting, completion, navigation
+- Starlark debugging
 
+To learn more about available features, please check the [feature overview](https://jb.gg/new-bazel-feature).
 
-### Building and Running
-
-To build and run the plugin please follow steps from [intellij-platform-plugin-template](https://github.com/JetBrains/intellij-platform-plugin-template#predefined-rundebug-configurations).
 <!-- Plugin description end -->
+
+
+## Installation
+
+1. in IntelliJ IDEA, go to Preferences | Plugins
+2. Go to Marketplace tab.
+3. Then look for "Bazel" (check that the publisher is JetBrains) and click Install.
+4. Restart IntelliJ IDEA. You're ready!
+
+
+## Building, running, contributing changes
+
+Please follow the [Plugin development setup guide](https://github.com/JetBrains/hirschgarten/blob/main/docs/dev/development_setup.md)
