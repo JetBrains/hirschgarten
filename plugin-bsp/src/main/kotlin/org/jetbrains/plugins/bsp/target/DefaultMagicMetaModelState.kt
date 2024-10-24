@@ -2,34 +2,26 @@ package org.jetbrains.plugins.bsp.target
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ModuleCapabilities
-import kotlin.collections.map
 
-public interface ConvertableFromState<out T> {
-  public fun fromState(): T
+interface ConvertableFromState<out T> {
+  fun fromState(): T
 }
 
-public data class BuildTargetInfoState(
+data class BuildTargetInfoState(
   var id: String = "",
   var displayName: String? = null,
-  var dependencies: List<String> = kotlin.collections.emptyList(),
+  var dependencies: List<String> = emptyList(),
   var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState(),
-  var tags: List<String> = kotlin.collections.emptyList(),
-  var languageIds: List<String> = kotlin.collections.emptyList(),
+  var tags: List<String> = emptyList(),
+  var languageIds: List<String> = emptyList(),
   var baseDirectory: String? = null,
-) : ConvertableFromState<org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo> {
-  override fun fromState(): org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo =
-    org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo(
-      id =
-        ch.epfl.scala.bsp4j
-          .BuildTargetIdentifier(id),
+) : ConvertableFromState<BuildTargetInfo> {
+  override fun fromState(): BuildTargetInfo =
+    BuildTargetInfo(
+      id = BuildTargetIdentifier(id),
       displayName = displayName,
-      dependencies =
-        dependencies.map {
-          ch.epfl.scala.bsp4j
-            .BuildTargetIdentifier(it)
-        },
+      dependencies = dependencies.map { BuildTargetIdentifier(it) },
       capabilities = capabilities.fromState(),
       tags = tags,
       languageIds = languageIds,
@@ -37,7 +29,7 @@ public data class BuildTargetInfoState(
     )
 }
 
-public fun org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo.toState(): BuildTargetInfoState =
+fun BuildTargetInfo.toState(): BuildTargetInfoState =
   BuildTargetInfoState(
     id = id.uri,
     displayName = displayName,
@@ -48,10 +40,10 @@ public fun org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo.toS
     baseDirectory = baseDirectory,
   )
 
-public data class LibraryState(
+data class LibraryState(
   var displayName: String = "",
-  var sourceJars: List<String> = kotlin.collections.emptyList(),
-  var classJars: List<String> = kotlin.collections.emptyList(),
+  var sourceJars: List<String> = emptyList(),
+  var classJars: List<String> = emptyList(),
 ) : ConvertableFromState<org.jetbrains.plugins.bsp.workspacemodel.entities.Library> {
   override fun fromState(): org.jetbrains.plugins.bsp.workspacemodel.entities.Library =
     org.jetbrains.plugins.bsp.workspacemodel.entities.Library(
@@ -61,21 +53,21 @@ public data class LibraryState(
     )
 }
 
-public fun org.jetbrains.plugins.bsp.workspacemodel.entities.Library.toState(): LibraryState =
+fun org.jetbrains.plugins.bsp.workspacemodel.entities.Library.toState(): LibraryState =
   LibraryState(
     displayName = displayName,
     sourceJars = sourceJars,
     classJars = classJars,
   )
 
-public data class ModuleCapabilitiesState(
+data class ModuleCapabilitiesState(
   var canRun: Boolean = false,
   var canTest: Boolean = false,
   var canCompile: Boolean = false,
   var canDebug: Boolean = false,
-) : ConvertableFromState<org.jetbrains.plugins.bsp.workspacemodel.entities.ModuleCapabilities> {
-  override fun fromState(): org.jetbrains.plugins.bsp.workspacemodel.entities.ModuleCapabilities =
-    org.jetbrains.plugins.bsp.workspacemodel.entities.ModuleCapabilities(
+) : ConvertableFromState<ModuleCapabilities> {
+  override fun fromState(): ModuleCapabilities =
+    ModuleCapabilities(
       canRun = canRun,
       canTest = canTest,
       canCompile = canCompile,
@@ -83,7 +75,7 @@ public data class ModuleCapabilitiesState(
     )
 }
 
-public fun org.jetbrains.plugins.bsp.workspacemodel.entities.ModuleCapabilities.toState(): ModuleCapabilitiesState =
+fun ModuleCapabilities.toState(): ModuleCapabilitiesState =
   ModuleCapabilitiesState(
     canRun = canRun,
     canTest = canTest,

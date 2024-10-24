@@ -6,11 +6,13 @@ exclude:
     paths:
       - plugin-bazel/src/test/testData/bazelrc
       - plugin-bazel/src/test/testData/starlark
-      - server/aspects/rules/jvm/jvm_info.bzl.template
+    patterns:
+      # exclude aspects template files - qodana can't handle them
+      - "**/*.bzl.template"
   - name: All
-    paths:
-      - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/projectview/lexer/_ProjectViewLexer.java
-      - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java
+    patterns:
+      # exclude generated lexer files
+      - "**/_*.java"
   - name: CheckDependencyLicenses
   - name: KotlinInvalidBundleOrProperty
 include:
