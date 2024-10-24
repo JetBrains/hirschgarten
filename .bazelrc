@@ -94,3 +94,9 @@ fetch --noexperimental_check_output_files
 query --noexperimental_check_output_files
 
 # build --config=engflow
+
+# Required for rules_java > 8.0.0 working with android
+# Remove after bazel 8 release - the flag has been flipped for Bazel 8, which will be out next month.
+# https://github.com/bazelbuild/rules_java/issues/233
+# https://github.com/JetBrains/hirschgarten/pull/92
+build --experimental_rule_extension_api
