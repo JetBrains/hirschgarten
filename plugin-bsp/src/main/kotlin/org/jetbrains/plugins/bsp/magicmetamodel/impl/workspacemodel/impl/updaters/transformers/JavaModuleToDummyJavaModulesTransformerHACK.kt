@@ -5,7 +5,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.magicmetamodel.replaceDots
 import org.jetbrains.plugins.bsp.magicmetamodel.shortenTargetPath
-import org.jetbrains.plugins.bsp.utils.allSubdirectoriesSequence
+import org.jetbrains.plugins.bsp.utils.allAncestorsSequence
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
@@ -145,7 +145,7 @@ internal fun calculateDummyResourceRootPath(
   if (entity.resourceRoots.isEmpty()) return null
   val moduleRoot = entity.baseDirContentRoot?.path ?: return null
 
-  fun Path.reversedPaths() = allSubdirectoriesSequence().toList().reversed().asSequence()
+  fun Path.reversedPaths() = allAncestorsSequence().toList().reversed().asSequence()
 
   fun Sequence<Path>.findCommonParentsWith(list: Sequence<Path>): Sequence<Path> {
     val lastCommon = zip(list) { a, b -> a == b }.lastIndexOf(true)

@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
-import org.jetbrains.plugins.bsp.utils.allSubdirectoriesSequence
+import org.jetbrains.plugins.bsp.utils.allAncestorsSequence
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.pathString
@@ -32,7 +32,7 @@ internal object JavaSourcePackageDetailsToJavaSourceRootPackagePrefixTransformer
   private fun calculateMatchingRootPath(sourceDir: URI, sourceRoots: List<URI>): Path? =
     sourceDir
       .toPath()
-      .allSubdirectoriesSequence()
+      .allAncestorsSequence()
       .firstOrNull { doRootsContainDir(it, sourceRoots) }
 
   private fun doRootsContainDir(sourceDir: Path, sourceRoots: List<URI>): Boolean = sourceRoots.any { it.toPath() == sourceDir }

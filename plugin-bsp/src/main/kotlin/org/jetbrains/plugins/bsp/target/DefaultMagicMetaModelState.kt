@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.target
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ModuleCapabilities
 
 interface ConvertableFromState<out T> {
@@ -44,16 +45,16 @@ data class LibraryState(
   var displayName: String = "",
   var sourceJars: List<String> = emptyList(),
   var classJars: List<String> = emptyList(),
-) : ConvertableFromState<org.jetbrains.plugins.bsp.workspacemodel.entities.Library> {
-  override fun fromState(): org.jetbrains.plugins.bsp.workspacemodel.entities.Library =
-    org.jetbrains.plugins.bsp.workspacemodel.entities.Library(
+) : ConvertableFromState<Library> {
+  override fun fromState(): Library =
+    Library(
       displayName = displayName,
       sourceJars = sourceJars,
       classJars = classJars,
     )
 }
 
-fun org.jetbrains.plugins.bsp.workspacemodel.entities.Library.toState(): LibraryState =
+fun Library.toState(): LibraryState =
   LibraryState(
     displayName = displayName,
     sourceJars = sourceJars,

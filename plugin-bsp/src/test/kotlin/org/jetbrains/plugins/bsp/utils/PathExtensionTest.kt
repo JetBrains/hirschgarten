@@ -1,66 +1,45 @@
 package org.jetbrains.plugins.bsp.utils
 
 import io.kotest.matchers.sequences.shouldContainExactly
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
+import java.nio.file.Paths
 
-@org.junit.jupiter.api.DisplayName("uri.toAbsolutePath() tests")
+@DisplayName("uri.toAbsolutePath() tests")
 class PathExtensionTest {
-  @org.junit.jupiter.api.Test
+  @Test
   fun `should return sequence for empty path`() {
     // given
-    val emptyPath =
-      java.nio.file.Paths
-        .get("")
+    val emptyPath = Paths.get("")
 
     // when
-    val sequence = emptyPath.allSubdirectoriesSequence()
+    val sequence = emptyPath.allAncestorsSequence()
 
     // then
-    sequence shouldContainExactly
-      kotlin.sequences.sequenceOf(
-        java.nio.file.Paths
-          .get(""),
-      )
+    sequence shouldContainExactly sequenceOf(Paths.get(""))
   }
 
-  @org.junit.jupiter.api.Test
+  @Test
   fun `should return sequence with one element for single dir path`() {
     // given
-    val path =
-      java.nio.file.Paths
-        .get("/")
+    val path = Paths.get("/")
 
     // when
-    val sequence = path.allSubdirectoriesSequence()
+    val sequence = path.allAncestorsSequence()
 
     // then
-    sequence shouldContainExactly
-      kotlin.sequences.sequenceOf(
-        java.nio.file.Paths
-          .get("/"),
-      )
+    sequence shouldContainExactly sequenceOf(Paths.get("/"))
   }
 
-  @org.junit.jupiter.api.Test
+  @Test
   fun `should return sequence for path`() {
     // given
-    val path =
-      java.nio.file.Paths
-        .get("/path/to/dir/")
+    val path = Paths.get("/path/to/dir/")
 
     // when
-    val sequence = path.allSubdirectoriesSequence()
+    val sequence = path.allAncestorsSequence()
 
     // then
-    sequence shouldContainExactly
-      kotlin.sequences.sequenceOf(
-        java.nio.file.Paths
-          .get("/path/to/dir/"),
-        java.nio.file.Paths
-          .get("/path/to/"),
-        java.nio.file.Paths
-          .get("/path/"),
-        java.nio.file.Paths
-          .get("/"),
-      )
+    sequence shouldContainExactly sequenceOf(Paths.get("/path/to/dir/"), Paths.get("/path/to/"), Paths.get("/path/"), Paths.get("/"))
   }
 }
