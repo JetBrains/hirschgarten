@@ -15,7 +15,8 @@ exclude:
     patterns:
       - "**/*.bzl.template"
   - name: CheckDependencyLicenses
-  - name: KotlinInvalidBundleOrProperty  - name: UnnecessaryUnicodeEscape
+  - name: KotlinInvalidBundleOrProperty
+  - name: UnnecessaryUnicodeEscape
   - name: UnstableApiUsage
   - name: DialogTitleCapitalization
 include:
