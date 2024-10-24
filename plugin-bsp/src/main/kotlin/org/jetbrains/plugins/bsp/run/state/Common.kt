@@ -22,8 +22,8 @@ import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.util.ThrowableRunnable
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.XMap
-import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.bsp.sdkcompat.ui.addBrowseFolderListenerCompat
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths
