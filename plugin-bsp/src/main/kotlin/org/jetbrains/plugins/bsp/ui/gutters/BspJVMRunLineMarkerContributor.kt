@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
 
-public class BspJVMRunLineMarkerContributor : BspRunLineMarkerContributor() {
+class BspJVMRunLineMarkerContributor : BspRunLineMarkerContributor() {
   override fun PsiElement.shouldAddMarker(): Boolean =
     !isInsideJar() &&
       getStrictParentOfType<PsiNameIdentifierOwner>()

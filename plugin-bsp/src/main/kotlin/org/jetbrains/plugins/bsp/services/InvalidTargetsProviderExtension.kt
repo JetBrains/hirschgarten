@@ -6,10 +6,10 @@ import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.config.WithBuildToolId
 
 // BAZEL-831: suuuper temporary EP, later will become more generic
-public interface InvalidTargetsProviderExtension : WithBuildToolId {
+interface InvalidTargetsProviderExtension : WithBuildToolId {
   public fun provideInvalidTargets(project: Project): List<BuildTargetIdentifier>
 
-  public companion object {
+  companion object {
     val ep =
       ExtensionPointName.create<InvalidTargetsProviderExtension>("org.jetbrains.bsp.invalidTargetsProviderExtension")
   }

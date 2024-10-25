@@ -10,7 +10,7 @@ import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.bazel.ui.widgets.findBuildFile
 import org.jetbrains.concurrency.Promise
 import org.jetbrains.concurrency.resolvedPromise
-import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 
 class BazelProjectModelModifier : JavaProjectModelModifier() {
   override fun addModuleDependency(

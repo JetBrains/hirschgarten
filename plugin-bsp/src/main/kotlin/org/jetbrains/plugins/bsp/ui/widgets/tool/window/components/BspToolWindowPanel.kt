@@ -22,9 +22,9 @@ import org.jetbrains.plugins.bsp.config.withBuildToolId
 import org.jetbrains.plugins.bsp.extensionPoints.BspToolWindowConfigFileProviderExtension
 import org.jetbrains.plugins.bsp.extensionPoints.bspToolWindowConfigFileProvider
 import org.jetbrains.plugins.bsp.extensionPoints.bspToolWindowSettingsProvider
-import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
-import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension
+import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.FilterActionGroup
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter.TargetFilter
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel

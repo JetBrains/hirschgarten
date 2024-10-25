@@ -1,6 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.filter
 
-import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 public class TargetFilter(private val onFilterChange: () -> Unit) {

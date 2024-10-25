@@ -16,7 +16,7 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import java.net.URI
 import kotlin.io.path.toPath
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library as MMMLibrary
