@@ -23,6 +23,7 @@ import com.intellij.util.ThrowableRunnable
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.XMap
 import org.jetbrains.bsp.sdkcompat.ui.addBrowseFolderListenerCompat
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths
@@ -100,7 +101,7 @@ fun <T : HasWorkingDirectory> workingDirectoryFragment(
     SettingsEditorFragment(
       "workingDirectory",
       ExecutionBundle.message("run.configuration.working.directory.name"),
-      null as String?,
+      null,
       field,
       { settings, component ->
         (component.component as TextFieldWithBrowseButton).setText(settings.workingDirectory)
@@ -148,7 +149,7 @@ fun <T : HasProgramArguments> programArgumentsFragment(): SettingsEditorFragment
   val programArguments = RawCommandLineEditor()
   CommandLinePanel.setMinimumWidth(programArguments, 400)
   val message = ExecutionBundle.message("run.configuration.program.parameters.placeholder")
-  programArguments.editorField.emptyText.setText(message)
+  programArguments.editorField.emptyText.text = message
   programArguments.editorField.accessibleContext.accessibleName = message
   TextComponentEmptyText.setupPlaceholderVisibility(programArguments.editorField)
   CommonParameterFragments.setMonospaced(programArguments.textField)
@@ -160,7 +161,7 @@ fun <T : HasProgramArguments> programArgumentsFragment(): SettingsEditorFragment
     SettingsEditorFragment(
       "commandLineParameters",
       ExecutionBundle.message("run.configuration.program.parameters.name"),
-      null as String?,
+      null,
       programArguments,
       100,
       { settings, component ->
@@ -174,6 +175,44 @@ fun <T : HasProgramArguments> programArgumentsFragment(): SettingsEditorFragment
   parameters.isRemovable = false
   parameters.setEditorGetter { editor: RawCommandLineEditor -> editor.editorField }
   parameters.setHint(ExecutionBundle.message("run.configuration.program.parameters.hint"))
+
+  return parameters
+}
+
+interface HasBazelParams {
+  var additionalBazelParams: String?
+}
+
+fun <T : HasBazelParams> bazelParamsFragment(): SettingsEditorFragment<T, RawCommandLineEditor> {
+  val bazelParams = RawCommandLineEditor()
+  CommandLinePanel.setMinimumWidth(bazelParams, 400)
+  val message = BspPluginBundle.message("runconfig.bazel.params")
+  bazelParams.editorField.emptyText.text = message
+  bazelParams.editorField.accessibleContext.accessibleName = message
+  TextComponentEmptyText.setupPlaceholderVisibility(bazelParams.editorField)
+  CommonParameterFragments.setMonospaced(bazelParams.textField)
+  MacrosDialog.addMacroSupport(
+    bazelParams.editorField,
+    MacrosDialog.Filters.ALL,
+  ) { false }
+  val parameters: SettingsEditorFragment<T, RawCommandLineEditor> =
+    SettingsEditorFragment(
+      "bazelParameters",
+      BspPluginBundle.message("runconfig.bazel.params"),
+      null,
+      bazelParams,
+      100,
+      { settings, component ->
+        component.text = settings.additionalBazelParams
+      },
+      { settings, component ->
+        settings.additionalBazelParams = component.text
+      },
+      { true },
+    )
+  parameters.isRemovable = false
+  parameters.setEditorGetter { editor: RawCommandLineEditor -> editor.editorField }
+  parameters.setHint(BspPluginBundle.message("runconfig.bazel.params"))
 
   return parameters
 }
