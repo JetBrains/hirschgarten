@@ -27,7 +27,7 @@ class BspProjectViewNodeDecorator(private val project: Project) : ProjectViewNod
     }
   }
 
-  private fun PresentationData.isJavaHackNode() = locationString == "sources root" || locationString == "resources root"
+  private fun PresentationData.isJavaHackNode() = locationString?.contains("sources root") == true
 
   private fun PresentationData.clearPresentation() {
     clearText()
