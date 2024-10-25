@@ -5,8 +5,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.impl.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
+import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 interface BspRunHandlerProvider {

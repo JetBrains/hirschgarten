@@ -9,7 +9,7 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import org.jetbrains.plugins.bsp.config.isBspProject
 
-public class BspCommandLineInspectionConfigurator : CommandLineInspectionProjectConfigurator {
+class BspCommandLineInspectionConfigurator : CommandLineInspectionProjectConfigurator {
   override fun getName(): String = "Bsp Command Line Inspection"
 
   override fun getDescription(): String = "Bsp Command Line Inspection"

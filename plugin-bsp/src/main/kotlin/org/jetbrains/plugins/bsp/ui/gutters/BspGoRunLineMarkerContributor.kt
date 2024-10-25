@@ -9,7 +9,7 @@ import com.goide.psi.GoFunctionDeclaration
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 
-public class BspGoRunLineMarkerContributor : BspRunLineMarkerContributor() {
+class BspGoRunLineMarkerContributor : BspRunLineMarkerContributor() {
   override fun PsiElement.shouldAddMarker(): Boolean =
     this.elementType == GoTypes.IDENTIFIER &&
       this.parent is GoFunctionDeclaration &&

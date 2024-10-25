@@ -18,7 +18,7 @@ import org.jetbrains.concurrency.Promise
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.server.tasks.runBuildTargetTask
-import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 public class BspProjectTaskRunner : ProjectTaskRunner() {

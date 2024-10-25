@@ -16,7 +16,7 @@
                         interface="org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.androidFacetEntityUpdaterExtension"
-                        interface="org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
+                        interface="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunHandlerProvider"
                         interface="org.jetbrains.plugins.bsp.run.BspRunHandlerProvider"
@@ -132,9 +132,9 @@
 
         <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.runnerAction.BuildBeforeLocalRunTaskProvider" />
 
-        <treeStructureProvider implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspTreeStructureProvider"/>
+        <treeStructureProvider implementation="org.jetbrains.plugins.bsp.ui.projectTree.BspTreeStructureProvider"/>
         <projectViewNodeDecorator
-                implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspProjectViewNodeDecorator"/>
+                implementation="org.jetbrains.plugins.bsp.ui.projectTree.BspProjectViewNodeDecorator"/>
         <projectTaskRunner
                 implementation="org.jetbrains.plugins.bsp.buildTask.BspProjectTaskRunner"/>
         <programRunner implementation="org.jetbrains.plugins.bsp.jvm.BspJvmDebugRunner"/>
@@ -182,7 +182,7 @@
                      key="bsp.scan.git.roots.inside.project.dir"/>
 
         <statusBarWidgetFactory id="BspFileTargetsWidget"
-                                implementation="org.jetbrains.plugins.bsp.ui.widgets.file.targets.BspFileTargetsWidgetFactory"/>
+                                implementation="org.jetbrains.plugins.bsp.ui.widgets.fileTargets.BspFileTargetsWidgetFactory"/>
 
         <toolWindowAllowlist id="BSP"/>
         <toolWindowExtractor implementation="org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspToolWindowViewModelExtractor"/>
