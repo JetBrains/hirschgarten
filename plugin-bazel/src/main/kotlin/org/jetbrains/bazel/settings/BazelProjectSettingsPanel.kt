@@ -186,7 +186,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     super.reset()
     projectViewPathField.text = savedProjectViewPath()
 
-    ApplicationManager.getApplication().invokeLater {
+    ApplicationManager.getApplication().runWriteAction {
       serverJdkComboBox.selectedJdk = savedJdk()
     }
 
