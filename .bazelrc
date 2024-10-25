@@ -100,3 +100,5 @@ query --noexperimental_check_output_files
 # https://github.com/bazelbuild/rules_java/issues/233
 # https://github.com/JetBrains/hirschgarten/pull/92
 build --experimental_rule_extension_api
+fetch --experimental_rule_extension_api
+query --experimental_rule_extension_api
