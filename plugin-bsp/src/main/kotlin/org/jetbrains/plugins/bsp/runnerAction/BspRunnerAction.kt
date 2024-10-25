@@ -2,11 +2,11 @@ package org.jetbrains.plugins.bsp.runnerAction
 
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
-import com.intellij.execution.configurations.ConfigurationType
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
+import org.jetbrains.plugins.bsp.run.config.bspRunConfigurationType
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
 
@@ -16,15 +16,12 @@ abstract class BspRunnerAction(
   icon: Icon? = null,
   isDebugAction: Boolean = false,
 ) : BaseRunnerAction(targetInfo, text, icon, isDebugAction) {
-  abstract fun getConfigurationType(project: Project): ConfigurationType
-
   open fun RunnerAndConfigurationSettings.customizeRunConfiguration() {}
 
   override suspend fun getRunnerSettings(project: Project, buildTargetInfo: BuildTargetInfo): RunnerAndConfigurationSettings? {
-    val factory = getConfigurationType(project).configurationFactories.first()
     val name = calculateConfigurationName(project, buildTargetInfo)
     val settings =
-      RunManager.getInstance(project).createConfiguration(name, factory)
+      RunManager.getInstance(project).createConfiguration(name, project.bspRunConfigurationType)
     (settings.configuration as BspRunConfiguration)
       .updateTargets(listOf(buildTargetInfo.id))
 

@@ -26,3 +26,6 @@ class BspRunConfigurationType : SimpleConfigurationType {
     const val ID: String = "BspRunConfiguration"
   }
 }
+
+val Project.bspRunConfigurationType: BspRunConfigurationType
+  get() = BspRunConfigurationType(this)
