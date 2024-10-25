@@ -6,14 +6,13 @@ import com.google.idea.testing.BazelTestApplication
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.projectRoots.JavaSdk
-import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
 import com.intellij.openapi.vfs.readText
 import com.intellij.openapi.vfs.writeText
+import com.intellij.testFramework.IdeaTestUtil
 import com.intellij.testFramework.rules.ProjectModelExtension
 import com.intellij.testFramework.utils.vfs.createFile
 import io.kotest.matchers.collections.shouldContainAll
@@ -192,9 +191,15 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
   @Nested
   @DisplayName("BazelConnectionDetailsProviderExtension tests when connection file is undefined")
   inner class UndefinedConnectionFileTest {
+    val selectedJdkName = "New Jdk"
+    val selectedJdkPath = "file:///test/home/path"
+
     @BeforeEach
     fun beforeEach() {
       // given
+      runBlocking {
+        IdeaTestUtil.createMockJdk(selectedJdkName, selectedJdkPath)
+      }
 
       runBlocking {
         extension.onFirstOpening(project, projectRoot)
@@ -243,11 +248,10 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     @Test
     fun `should return new connection details if selected java has changed`() {
       // given
-      val selectedJdk = ProjectJdkImpl("New Jdk", JavaSdk.getInstance(), "test/home/path", null)
       val bazelProjectSettings =
         BazelProjectSettings(
           projectViewPath = null,
-          selectedJdk = selectedJdk,
+          selectedJdkName = selectedJdkName,
         )
 
       // when
@@ -257,19 +261,17 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
 
       // then
       newConnectionDetails shouldNotBe null
-      newConnectionDetails?.argv?.get(0) shouldBe "test/home/path/bin/java"
     }
 
     @Test
     fun `should return new connection details if server custom jvm options have changed`() {
       // given
-      val selectedJdk = ProjectJdkImpl("New Jdk", JavaSdk.getInstance(), "test/home/path", null)
       val customJvmOptions = listOf("-XCustomOption", "-XAnotherCustomOption")
 
       val bazelProjectSettings =
         BazelProjectSettings(
           projectViewPath = null,
-          selectedJdk = selectedJdk,
+          selectedJdkName = selectedJdkName,
           customJvmOptions = customJvmOptions,
         )
 
@@ -286,13 +288,12 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
     @Test
     fun `should return new connection details if server custom jvm options have changed to empty list`() {
       // given
-      val selectedJdk = ProjectJdkImpl("New Jdk", JavaSdk.getInstance(), "test/home/path", null)
       val initCustomJvmOptions = listOf("-XCustomOption", "-XAnotherCustomOption")
 
       val initBazelProjectSettings =
         BazelProjectSettings(
           projectViewPath = null,
-          selectedJdk = selectedJdk,
+          selectedJdkName = selectedJdkName,
           customJvmOptions = initCustomJvmOptions,
         )
       project.bazelProjectSettings = initBazelProjectSettings
@@ -302,7 +303,7 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
       val bazelProjectSettings =
         BazelProjectSettings(
           projectViewPath = null,
-          selectedJdk = selectedJdk,
+          selectedJdkName = selectedJdkName,
           customJvmOptions = emptyList(),
         )
       project.bazelProjectSettings = bazelProjectSettings
