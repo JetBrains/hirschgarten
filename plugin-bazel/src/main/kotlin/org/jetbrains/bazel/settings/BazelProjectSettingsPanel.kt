@@ -13,15 +13,13 @@ import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.projectRoots.JavaSdk
-import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
-import com.intellij.openapi.projectRoots.impl.ProjectJdkImpl
 import com.intellij.openapi.roots.ui.configuration.JdkComboBox
 import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.bsp.connection.stateService
 import org.jetbrains.bazel.config.BazelPluginBundle
@@ -37,18 +35,15 @@ import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
 private const val BAZEL_PROJECT_SETTINGS_ID = "bazel.project.settings"
-private const val JAVA_SDK_TYPE = "JavaSDK"
-
-internal val serverDetectedJdk = ProjectJdkImpl("Server Detected Jdk", JavaSdk.getInstance())
 
 data class BazelProjectSettings(
   val projectViewPath: Path? = null,
-  val selectedJdk: Sdk = serverDetectedJdk,
+  val selectedJdkName: String? = null,
   val customJvmOptions: List<String> = emptyList(),
 ) {
   fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings = copy(projectViewPath = newProjectViewFilePath)
 
-  fun withNewSdk(newSdk: Sdk?): BazelProjectSettings? = newSdk?.let { copy(selectedJdk = newSdk) }
+  fun withNewSdk(newSdk: String?): BazelProjectSettings? = newSdk?.let { copy(selectedJdkName = newSdk) }
 
   fun withNewCustomJvmOptions(newCustomJvmOptions: List<String>): BazelProjectSettings = copy(customJvmOptions = newCustomJvmOptions)
 }
@@ -75,7 +70,7 @@ internal class BazelProjectSettingsService :
   override fun getState(): BazelProjectSettingsState =
     BazelProjectSettingsState(
       projectViewPathUri = settings.projectViewPath?.toUri()?.toString(),
-      sdkName = settings.selectedJdk.name,
+      sdkName = settings.selectedJdkName,
       customJvmOptions = settings.customJvmOptions,
     )
 
@@ -89,7 +84,7 @@ internal class BazelProjectSettingsService :
                 URI(it),
               )
             },
-          selectedJdk = settingsState.sdkName?.let { ProjectJdkTable.getInstance().findJdk(it, JAVA_SDK_TYPE) } ?: serverDetectedJdk,
+          selectedJdkName = settingsState.sdkName,
           customJvmOptions = settingsState.customJvmOptions,
         )
     }
@@ -112,9 +107,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   private var currentProjectSettings = project.bazelProjectSettings
 
   init {
-    serverJdkComboBoxModel.addSdk(serverDetectedJdk)
     serverJdkComboBoxModel.syncSdks()
-
     serverJdkComboBox = initServerJdkComboBox()
     serverCustomJvmOptions = initServerCustomJvmOptions()
 
@@ -124,7 +117,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   private fun initServerJdkComboBox(): JdkComboBox =
     JdkComboBox(project, serverJdkComboBoxModel, null, null, null, null).apply {
       whenItemSelected {
-        currentProjectSettings = currentProjectSettings.withNewSdk(it.jdk) ?: currentProjectSettings
+        currentProjectSettings = currentProjectSettings.withNewSdk(it.jdk?.name) ?: currentProjectSettings
       }
     }
 
@@ -169,7 +162,10 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     panel {
       group(BazelPluginBundle.message("project.settings.server.title"), true) {
         row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
-        row(BazelPluginBundle.message("project.settings.server.jdk.label")) { cell(serverJdkComboBox).align(Align.FILL) }
+        row(BazelPluginBundle.message("project.settings.server.jdk.label")) {
+          cell(serverJdkComboBox).align(Align.FILL).resizableColumn()
+          contextHelp(BazelPluginBundle.message("project.settings.server.jdk.context.help.description")).align(AlignX.RIGHT)
+        }
         row(BazelPluginBundle.message("project.settings.server.jvm.options.label")) { cell(serverCustomJvmOptions).align(Align.FILL) }
       }
     }
@@ -191,7 +187,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     projectViewPathField.text = savedProjectViewPath()
 
     ApplicationManager.getApplication().invokeLater {
-      serverJdkComboBox.selectedJdk = savedJdkOrDefault()
+      serverJdkComboBox.selectedJdk = savedJdk()
     }
 
     serverCustomJvmOptions.text = savedCustomJvmOptions()
@@ -205,11 +201,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
       ?.pathString
       .orEmpty()
 
-  private fun savedJdkOrDefault(): Sdk? =
-    project.bazelProjectSettings
-      .selectedJdk
-      .name
-      .let { serverJdkComboBoxModel.findSdk(it) }
+  private fun savedJdk(): Sdk? = project.bazelProjectSettings.selectedJdkName?.let { serverJdkComboBoxModel.findSdk(it) }
 
   private fun savedCustomJvmOptions(): String =
     project.bazelProjectSettings
