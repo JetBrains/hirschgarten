@@ -22,9 +22,6 @@ class BazelEnabledRulesQueryImpl(private val enabledRulesSpec: EnabledRulesSpec)
   override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> = enabledRulesSpec.values
 }
 
-private val rulesDisabledFromAutoDetection =
-  listOf("rules_android", "build_bazel_rules_android", "rules_rust", "rules_go", "io_bazel_rules_go")
-
 class BazelExternalRulesQueryImpl(
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
@@ -68,8 +65,7 @@ class BazelWorkspaceExternalRulesQueryImpl(private val bazelRunner: BazelRunner,
           } else {
             result.stdout.readXML(log)?.calculateEligibleRules()
           }
-        }?.removeRulesDisabledFromAutoDetection()
-        .orEmpty()
+        }.orEmpty()
     }
 
   private fun Document.calculateEligibleRules(): List<String> {
@@ -120,7 +116,7 @@ class BazelBzlModExternalRulesQueryImpl(private val bazelRunner: BazelRunner, pr
           }
         } as? JsonObject
     return try {
-      gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java).getAllDirectRuleDependencies().removeRulesDisabledFromAutoDetection()
+      gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java).getAllDirectRuleDependencies()
     } catch (e: Throwable) {
       log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
       emptyList()
@@ -147,6 +143,3 @@ data class BzlmodDependency(val key: String) {
 data class BzlmodGraph(val dependencies: List<BzlmodDependency>) {
   fun getAllDirectRuleDependencies() = dependencies.map { it.toDependencyName() }
 }
-
-private fun List<String>.removeRulesDisabledFromAutoDetection(): List<String> =
-  this.filterNot { rule -> rulesDisabledFromAutoDetection.any { it in rule } }

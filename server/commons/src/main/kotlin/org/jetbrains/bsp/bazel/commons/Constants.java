@@ -18,7 +18,9 @@ public class Constants {
   public static final String WORKSPACE_FILE_NAME = "WORKSPACE";
   public static final String ASPECT_REPOSITORY = "bazelbsp_aspect";
   public static final String ASPECTS_ROOT = "aspects";
+  public static final String CORE_BZL = "core.bzl";
   public static final String EXTENSIONS_BZL = "extensions.bzl";
+  public static final String TEMPLATE_EXTENSION = ".template";
   public static final String DOT_BAZELBSP_DIR_NAME = ".bazelbsp";
   public static final String DOT_BSP_DIR_NAME = ".bsp";
   public static final String BAZELBSP_JSON_FILE_NAME = "bazelbsp.json";

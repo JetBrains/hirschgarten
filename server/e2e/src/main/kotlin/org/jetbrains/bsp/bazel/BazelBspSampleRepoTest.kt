@@ -1265,7 +1265,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf(
           BuildTargetIdentifier("$targetPrefix//java_targets:java_library_exported"),
           BuildTargetIdentifier("@guava//:guava"),
-          BuildTargetIdentifier("$targetPrefix//java_targets/subpackage:java_library"),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true

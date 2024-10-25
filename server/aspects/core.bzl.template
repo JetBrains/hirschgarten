@@ -55,8 +55,9 @@ def _bsp_target_info_aspect_impl(target, ctx):
     direct_deps = make_deps(direct_dep_targets, COMPILE)
 
     exported_deps_from_deps = []
-    for dep in direct_dep_targets:
-        exported_deps_from_deps = exported_deps_from_deps + dep.bsp_info.export_deps
+    if ${isPropagateExportsFromDepsEnabled}:
+        for dep in direct_dep_targets:
+            exported_deps_from_deps = exported_deps_from_deps + dep.bsp_info.export_deps
 
     compile_deps = direct_deps + exported_deps_from_deps
 

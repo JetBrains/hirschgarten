@@ -103,7 +103,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
     // given
     val ruleLanguages = defaultRuleLanguages
     val bazelBspLanguageExtensionsGenerator =
-      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock, bazelRelease)
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
     bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains)
@@ -123,7 +123,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
         )
     BazelExternalRulesQueryMock(listOf("rules_cc"))
     val bazelBspLanguageExtensionsGenerator =
-      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock, bazelRelease)
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
     bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains)
@@ -143,7 +143,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
         )
     BazelExternalRulesQueryMock(listOf("io_bazel_rules_go"))
     val bazelBspLanguageExtensionsGenerator =
-      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock, bazelRelease)
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
     bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains)
@@ -165,7 +165,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
           RuleLanguage("io_bazel_rules_go", Language.Go),
         )
     val bazelBspLanguageExtensionsGenerator =
-      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock, bazelRelease)
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
     bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains)
@@ -187,11 +187,10 @@ class BazelBspLanguageExtensionsGeneratorTest {
           RuleLanguage("io_bazel_rules_go", Language.Go),
         )
     val emptyBazelBspLanguageExtensionsGenerator =
-      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock, bazelRelease)
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
     val allBazelBspLanguageExtensionsGenerator =
       BazelBspLanguageExtensionsGenerator(
         internalAspectsResolverMock,
-        bazelRelease,
       )
 
     // when
