@@ -187,6 +187,10 @@ class ExecuteService(
         else -> bazelRunner.buildBazelCommand { test() }
       }
 
+    bazelTestParamsData?.additionalBazelParams?.let { additionalBazelParams ->
+      command.options.add(additionalBazelParams)
+    }
+
     bazelTestParamsData?.testFilter?.let { testFilter ->
       command.options.add(BazelFlag.testFilter(testFilter))
     }
