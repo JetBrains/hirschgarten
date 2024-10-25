@@ -850,6 +850,8 @@ class BazelProjectMapper(
       "android_library",
       "android_binary",
       "android_local_test",
+      "kt_android_library",
+      "kt_android_local_test",
       "intellij_plugin_debug_target",
       "go_library",
       "go_binary",
