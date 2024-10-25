@@ -20,7 +20,7 @@ class ImportDepthSpecMapperTest {
       val importDepthSpec = ImportDepthSpecExtractor.fromProjectView(projectView)
 
       // then
-      val expectedImportDepthSpec = ImportDepthSpec(0)
+      val expectedImportDepthSpec = ImportDepthSpec(-1)
       importDepthSpec shouldBe expectedImportDepthSpec
     }
 
