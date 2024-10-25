@@ -16,6 +16,7 @@ exclude:
       - server/aspects/rules/go/go_info.bzl.template
       - server/aspects/rules/jvm/jvm_info.bzl.template
       - server/aspects/rules/kt/kt_info.bzl.template
+      - server/aspects/core.bzl.template
   - name: CheckDependencyLicenses
   - name: KotlinInvalidBundleOrProperty
   - name: UnnecessaryUnicodeEscape
