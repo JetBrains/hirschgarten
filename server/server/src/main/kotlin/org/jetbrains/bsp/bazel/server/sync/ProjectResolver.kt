@@ -18,7 +18,7 @@ import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
-import org.jetbrains.bsp.bazel.workspacecontext.isRustEnabled
+import org.jetbrains.bsp.protocol.FeatureFlags
 
 /** Responsible for querying bazel and constructing Project instance  */
 class ProjectResolver(
@@ -33,6 +33,7 @@ class ProjectResolver(
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
   private val bspClientLogger: BspClientLogger,
+  private val featureFlags: FeatureFlags,
 ) {
   private fun <T> measured(description: String, f: () -> T): T = tracer.spanBuilder(description).use { f() }
 
@@ -119,7 +120,7 @@ class ProjectResolver(
       aspect = ASPECT_NAME,
       outputGroups = outputGroups.map { if (build) "+$it" else it },
       shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-      isRustEnabled = workspaceContext.isRustEnabled,
+      isRustEnabled = featureFlags.isRustSupportEnabled,
     )
   }
 

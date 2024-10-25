@@ -8,6 +8,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bsp.bazel.workspacecontext.BuildFlagsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.DirectoriesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.DotBazelBspDirPathSpec
+import org.jetbrains.bsp.bazel.workspacecontext.EnableNativeAndroidRules
 import org.jetbrains.bsp.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
 import org.jetbrains.bsp.bazel.workspacecontext.ExperimentalUseLibOverModSpec
@@ -34,6 +35,7 @@ val mockContext =
     ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
     experimentalUseLibOverModSection = ExperimentalUseLibOverModSpec(true),
     experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(true),
+    enableNativeAndroidRules = EnableNativeAndroidRules(false),
   )
 
 val contextProvider =

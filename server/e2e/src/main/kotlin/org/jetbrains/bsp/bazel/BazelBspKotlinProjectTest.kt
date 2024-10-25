@@ -177,7 +177,6 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         listOf("java", "kotlin"),
         listOf(
           BuildTargetIdentifier("rules_kotlin_kotlin-stdlibs"),
-          BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
           BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing_export"),
           BuildTargetIdentifier("allopen-compiler-plugin.jar"),
         ),

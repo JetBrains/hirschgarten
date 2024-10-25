@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.projectview.parser.sections
 
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.bsp.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalUseLibOverModSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
@@ -101,4 +102,13 @@ object ExperimentalAddTransitiveCompileTimeJarsParser :
 
   override fun createInstance(value: Boolean): ExperimentalAddTransitiveCompileTimeJarsSection =
     ExperimentalAddTransitiveCompileTimeJarsSection(value)
+}
+
+object EnableNativeAndroidRulesParser :
+  ProjectViewSingletonSectionParser<Boolean, EnableNativeAndroidRulesSection>(
+    EnableNativeAndroidRulesSection.SECTION_NAME,
+  ) {
+  override fun mapRawValue(rawValue: String): Boolean = rawValue.toBoolean()
+
+  override fun createInstance(value: Boolean): EnableNativeAndroidRulesSection = EnableNativeAndroidRulesSection(value)
 }

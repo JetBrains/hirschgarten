@@ -8,7 +8,6 @@ import ch.epfl.scala.bsp4j.DependencyModulesParams
 import ch.epfl.scala.bsp4j.DependencyModulesResult
 import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.DependencySourcesResult
-import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.InitializeBuildResult
 import ch.epfl.scala.bsp4j.InverseSourcesParams
 import ch.epfl.scala.bsp4j.InverseSourcesResult
@@ -37,10 +36,7 @@ import ch.epfl.scala.bsp4j.ScalacOptionsResult
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import com.google.gson.JsonObject
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
-import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
@@ -54,22 +50,9 @@ import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 class ProjectSyncService(
   private val bspMapper: BspProjectMapper,
   private val projectProvider: ProjectProvider,
-  private val telemetryConfig: TelemetryConfig,
+  private val clientCapabilities: BuildClientCapabilities,
 ) {
-  private lateinit var clientCapabilities: BuildClientCapabilities
-
-  fun initialize(cancelChecker: CancelChecker, initializeBuildParams: InitializeBuildParams): InitializeBuildResult {
-    this.clientCapabilities = initializeBuildParams.capabilities
-    setupTelemetry(initializeBuildParams)
-    return bspMapper.initializeServer(Language.all())
-  }
-
-  private fun setupTelemetry(initializeBuildParams: InitializeBuildParams) {
-    val openTelemetryEndpoint =
-      (initializeBuildParams.data as? JsonObject)?.get("openTelemetryEndpoint")?.asString
-    val telemetryConfigWithHttp = telemetryConfig.copy(openTelemetryEndpoint = openTelemetryEndpoint)
-    setupTelemetry(telemetryConfigWithHttp)
-  }
+  fun initialize(): InitializeBuildResult = bspMapper.initializeServer(Language.all())
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-639
   // We might consider doing the actual project reload in this endpoint

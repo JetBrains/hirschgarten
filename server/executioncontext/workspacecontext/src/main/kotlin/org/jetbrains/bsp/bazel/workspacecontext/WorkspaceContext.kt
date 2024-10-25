@@ -72,6 +72,7 @@ data class WorkspaceContext(
   val ideJavaHomeOverrideSpec: IdeJavaHomeOverrideSpec,
   val experimentalUseLibOverModSection: ExperimentalUseLibOverModSpec,
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
+  val enableNativeAndroidRules: EnableNativeAndroidRules,
 ) : ExecutionContext()
 
 class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
@@ -95,31 +96,14 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpecExtractor.fromProjectView(projectView),
       experimentalUseLibOverModSection = ExperimentalUseLibOverModSpecExtractor.fromProjectView(projectView),
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
+      enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
     )
   }
 }
 
-/**
- * Used in the "enabled_rules" section in the project view file to enable support for the non-starlarkified Android rules.
- * This rule name does not actually exist (because Bazel doesn't have a name for built-in rules).
- */
-const val NATIVE_RULES_ANDROID = "native_rules_android"
-
-val WorkspaceContext.isAndroidEnabled: Boolean
-  get() = listOf("rules_android", "build_bazel_rules_android", "native_rules_android").any { it in enabledRules.values }
-
-val WorkspaceContext.isGoEnabled: Boolean
-  get() = listOf("rules_go", "io_bazel_rules_go").any { it in enabledRules.values }
-
-val WorkspaceContext.isRustEnabled: Boolean
-  get() = "rules_rust" in enabledRules.values
-
-val WorkspaceContext.isPythonEnabled: Boolean
-  get() = "rules_python" in enabledRules.values
-
 val WorkspaceContext.extraFlags: List<String>
   get() =
-    if (NATIVE_RULES_ANDROID in enabledRules.values) {
+    if (enableNativeAndroidRules.value) {
       listOf(
         BazelFlag.experimentalGoogleLegacyApi(),
         BazelFlag.experimentalEnableAndroidMigrationApis(),
