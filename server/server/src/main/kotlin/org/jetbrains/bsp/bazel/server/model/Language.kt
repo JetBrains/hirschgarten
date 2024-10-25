@@ -26,7 +26,7 @@ enum class Language(
   ANDROID(
     "android",
     emptySet(),
-    setOf("android_binary", "android_library", "android_local_test"),
+    setOf("android_binary", "android_library", "android_local_test", "kt_android_library", "kt_android_local_test"),
     hashSetOf(JAVA.id),
   ),
   GO("go", hashSetOf(".go"), setOf("go_binary")),

@@ -8,6 +8,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinModule
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import java.net.URI
@@ -56,6 +57,8 @@ class AndroidLanguagePlugin(
     val resourceJavaPackage = androidTargetInfo.resourceJavaPackage.takeIf { it.isNotEmpty() }
     val assetsDirectories = bazelPathsResolver.resolveUris(androidTargetInfo.assetsDirectoriesList)
 
+    val kotlinModule: KotlinModule? = kotlinLanguagePlugin.resolveModule(targetInfo)
+
     return AndroidModule(
       androidJar = androidJar,
       androidTargetType = getAndroidTargetType(targetInfo),
@@ -63,8 +66,9 @@ class AndroidLanguagePlugin(
       resourceDirectories = resourceDirectories,
       resourceJavaPackage = resourceJavaPackage,
       assetsDirectories = assetsDirectories,
-      javaModule = javaLanguagePlugin.resolveModule(targetInfo),
-      kotlinModule = null,
+      javaModule = kotlinModule?.javaModule ?: javaLanguagePlugin.resolveModule(targetInfo),
+      kotlinModule = kotlinModule,
+      correspondingKotlinTarget = null,
     )
   }
 

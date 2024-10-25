@@ -6,7 +6,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinModule
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 /**
- * kt_android_library/kt_android_local_test with the name `foo` actually produces three targets:
+ * kt_android_library/kt_android_local_test with the name `foo` in rules_kotlin actually produces three targets:
  * - An android_library target `foo_base` with Android resources;
  * - A kt_jvm_library target `foo_kt` with Kotlin sources that depends on `foo_base`;
  * - An empty target `foo` that just depends on the two targets above.
@@ -60,7 +60,7 @@ class KotlinAndroidModulesMerger(private val featureFlags: FeatureFlags) {
         androidModule.languageData as? AndroidModule
       } else {
         parentModule.languageData as? AndroidModule
-      } ?: return null
+      }?.copy(correspondingKotlinTarget = kotlinModule.label) ?: return null
 
     val javaModule =
       androidLanguageData.javaModule?.run {
