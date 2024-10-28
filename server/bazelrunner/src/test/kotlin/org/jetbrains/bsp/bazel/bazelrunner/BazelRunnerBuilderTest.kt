@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.collections.shouldContainExactly
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.workspacecontext.AllowManualTargetsSyncSpec
+import org.jetbrains.bsp.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bsp.bazel.workspacecontext.BazelBinarySpec
 import org.jetbrains.bsp.bazel.workspacecontext.BuildFlagsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.DirectoriesSpec
@@ -36,6 +37,7 @@ val mockContext =
     experimentalUseLibOverModSection = ExperimentalUseLibOverModSpec(true),
     experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(true),
     enableNativeAndroidRules = EnableNativeAndroidRules(false),
+    androidMinSdkSpec = AndroidMinSdkSpec(null),
   )
 
 val contextProvider =

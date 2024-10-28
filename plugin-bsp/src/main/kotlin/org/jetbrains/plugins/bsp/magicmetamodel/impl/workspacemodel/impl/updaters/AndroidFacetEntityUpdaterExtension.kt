@@ -45,6 +45,8 @@ private class AndroidFacetEntityUpdater(private val workspaceModelEntityUpdaterC
     facetState.MANIFEST_FILE_RELATIVE_PATH = ""
     facetState.RES_FOLDER_RELATIVE_PATH = ""
     facetState.ASSETS_FOLDER_RELATIVE_PATH = ""
+    @Suppress("DEPRECATION")
+    facetState.ALLOW_USER_CONFIGURATION = false
 
     return addFacetEntity(facet, parentModuleEntity)
   }
