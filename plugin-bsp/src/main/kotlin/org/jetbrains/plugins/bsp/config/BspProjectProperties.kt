@@ -26,7 +26,7 @@ data class BspProjectPropertiesState(
 class BspProjectProperties : PersistentStateComponent<BspProjectPropertiesState> {
   var isBspProject: Boolean = false
   var rootDir: VirtualFile? = null
-  var buildToolId: BuildToolId? = null
+  var buildToolId: BuildToolId = bspBuildToolId
 
   /**
    * if the opened times since the last startup resync is equal to 1,
@@ -38,34 +38,34 @@ class BspProjectProperties : PersistentStateComponent<BspProjectPropertiesState>
     BspProjectPropertiesState(
       isBspProject = isBspProject,
       rootDirUrl = rootDir?.url,
-      buildToolId = buildToolId?.id,
-      openedTimesSinceLastStartupResync = this@BspProjectProperties.openedTimesSinceLastStartupResync,
+      buildToolId = buildToolId.id,
+      openedTimesSinceLastStartupResync = openedTimesSinceLastStartupResync,
     )
 
   override fun loadState(state: BspProjectPropertiesState) {
     isBspProject = state.isBspProject
     rootDir = state.rootDirUrl?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
-    buildToolId = state.buildToolId?.let { BuildToolId(it) }
-    this@BspProjectProperties.openedTimesSinceLastStartupResync = state.openedTimesSinceLastStartupResync
+    buildToolId = state.buildToolId?.let { BuildToolId(it) } ?: bspBuildToolId
+    openedTimesSinceLastStartupResync = state.openedTimesSinceLastStartupResync
   }
 }
 
-public val Project.bspProjectProperties: BspProjectProperties
+val Project.bspProjectProperties: BspProjectProperties
   get() = service<BspProjectProperties>()
 
-public var Project.isBspProject: Boolean
+var Project.isBspProject: Boolean
   get() = bspProjectProperties.isBspProject
   set(value) {
     bspProjectProperties.isBspProject = value
   }
 
-public var Project.openedTimesSinceLastStartupResync: Int
+var Project.openedTimesSinceLastStartupResync: Int
   get() = bspProjectProperties.openedTimesSinceLastStartupResync
   set(value) {
     bspProjectProperties.openedTimesSinceLastStartupResync = value
   }
 
-public var Project.rootDir: VirtualFile
+var Project.rootDir: VirtualFile
   get() =
     bspProjectProperties.rootDir
       ?: error("BSP project root dir is not set. Reimport the project to fix this.")
@@ -73,16 +73,9 @@ public var Project.rootDir: VirtualFile
     bspProjectProperties.rootDir = value
   }
 
-public var Project.buildToolId: BuildToolId
+var Project.buildToolId: BuildToolId
   get() =
     bspProjectProperties.buildToolId
-      ?: error("Project's build tool id is not set. Reimport the project to fix this.")
   set(value) {
     bspProjectProperties.buildToolId = value
   }
-
-public val Project.buildToolIdOrDefault: BuildToolId
-  get() = bspProjectProperties.buildToolId ?: bspBuildToolId
-
-public val Project.buildToolIdOrNull: BuildToolId?
-  get() = bspProjectProperties.buildToolId

@@ -11,10 +11,11 @@ import com.intellij.ui.content.ContentFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.assets.assets
+import org.jetbrains.plugins.bsp.assets.defaultAssets
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.components.BspToolWindowPanel
 
-public class BspAllTargetsWidgetFactory :
+class BspAllTargetsWidgetFactory :
   ToolWindowFactory,
   DumbAware {
   override suspend fun isApplicableAsync(project: Project): Boolean = project.isBspProject
@@ -28,8 +29,18 @@ public class BspAllTargetsWidgetFactory :
   }
 }
 
-public suspend fun registerBspToolWindow(project: Project) {
+suspend fun registerBspToolWindow(project: Project) {
   val toolWindowManager = ToolWindowManager.getInstance(project)
+  // avoid the situation of 2 similar tool windows, one having label BSP and one from another build tool name
+  if (project.bspToolWindowId != project.defaultBspToolWindowId) {
+    val defaultBspToolWindow = toolWindowManager.getToolWindow(project.defaultBspToolWindowId)
+    if (defaultBspToolWindow != null) {
+      withContext(Dispatchers.EDT) {
+        @Suppress("DEPRECATION")
+        toolWindowManager.unregisterToolWindow(project.defaultBspToolWindowId)
+      }
+    }
+  }
   val currentToolWindow = toolWindowManager.getToolWindow(project.bspToolWindowId)
   if (currentToolWindow == null) {
     withContext(Dispatchers.EDT) {
@@ -43,7 +54,7 @@ public suspend fun registerBspToolWindow(project: Project) {
   }
 }
 
-public suspend fun showBspToolWindow(project: Project) {
+suspend fun showBspToolWindow(project: Project) {
   val toolWindow = ToolWindowManager.getInstance(project).getToolWindow(project.bspToolWindowId) ?: return
   withContext(Dispatchers.EDT) {
     toolWindow.show()
@@ -52,6 +63,9 @@ public suspend fun showBspToolWindow(project: Project) {
 
 val Project.bspToolWindowId: String
   get() = this.assets.presentableName
+
+val Project.defaultBspToolWindowId: String
+  get() = this.defaultAssets.presentableName
 
 val Project.bspToolWindowIdOrNull: String?
   get() {
