@@ -92,6 +92,16 @@ http_archive(
     url = IC_243_URL,
 )
 
+IC_243_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+
+IC_243_SOURCES_CHECKSUM = "sha256-KsLsPVjv1dhV4rIIzj3zx02Ij0jqLKzvdTr9fTkoSzQ="
+
+http_jar(
+    name = "intellij_ce_2024_3_sources",
+    integrity = IC_243_SOURCES_CHECKSUM,
+    url = IC_243_SOURCES_URL,
+)
+
 DEVKIT_BUILD_FILE = """
 java_import(
     name = "devkit",
