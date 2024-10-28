@@ -73,6 +73,7 @@ data class WorkspaceContext(
   val experimentalUseLibOverModSection: ExperimentalUseLibOverModSpec,
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
   val enableNativeAndroidRules: EnableNativeAndroidRules,
+  val androidMinSdkSpec: AndroidMinSdkSpec,
 ) : ExecutionContext()
 
 class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
@@ -97,6 +98,7 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       experimentalUseLibOverModSection = ExperimentalUseLibOverModSpecExtractor.fromProjectView(projectView),
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
       enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
+      androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
     )
   }
 }

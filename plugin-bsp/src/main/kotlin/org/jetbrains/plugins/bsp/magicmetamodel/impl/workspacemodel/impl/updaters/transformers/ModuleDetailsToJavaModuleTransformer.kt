@@ -160,6 +160,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
         resourceDirectories = resourceDirectories.map { it.safeCastToURI().toPath() },
         resourceJavaPackage = resourceJavaPackage,
         assetsDirectories = assetsDirectories.map { it.safeCastToURI().toPath() },
+        androidMinSdkOverride = androidMinSdkOverride,
       )
     }
   }

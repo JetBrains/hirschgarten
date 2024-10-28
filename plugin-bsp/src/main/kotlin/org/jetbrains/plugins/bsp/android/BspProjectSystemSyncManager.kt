@@ -8,15 +8,16 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 
 public class BspProjectSystemSyncManager(private val project: Project) : ProjectSystemSyncManager {
   init {
-    project.temporaryTargetUtils.registerSyncListener { notifySyncEnded(project) }
     initialNotifySyncEnded(project)
   }
 
-  private fun notifySyncEnded(project: Project) {
+  /**
+   * Called by [BspAndroidModelUpdater] after it finishes
+   */
+  fun notifySyncEnded(project: Project) {
     DumbService.getInstance(project).smartInvokeLater {
       runWriteAction {
         project.messageBus

@@ -55,3 +55,9 @@ data class EnableNativeAndroidRulesSection(override val value: Boolean) : Projec
     const val SECTION_NAME = "enable_native_android_rules"
   }
 }
+
+data class AndroidMinSdkSection(override val value: Int) : ProjectViewSingletonSection<Int>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "android_min_sdk"
+  }
+}

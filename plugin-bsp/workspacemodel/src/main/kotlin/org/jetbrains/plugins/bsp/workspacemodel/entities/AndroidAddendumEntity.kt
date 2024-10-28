@@ -23,6 +23,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
   public val resourceDirectories: List<VirtualFileUrl>
   public val resourceJavaPackage: String?
   public val assetsDirectories: List<VirtualFileUrl>
+  public val androidMinSdkOverride: Int?
   public val module: ModuleEntity
 
   //region generated code
@@ -35,6 +36,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
     var resourceDirectories: MutableList<VirtualFileUrl>
     var resourceJavaPackage: String?
     var assetsDirectories: MutableList<VirtualFileUrl>
+    var androidMinSdkOverride: Int?
     var module: ModuleEntity.Builder
   }
 
@@ -60,7 +62,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
       return builder
     }
   }
-//endregion
+  //endregion
 }
 
 //region generated code
