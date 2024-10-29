@@ -104,7 +104,7 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
   }
 
   private fun calculateSelectedJavaBin(project: Project): Path {
-    val selectedJdkName = project.bazelProjectSettings.selectedJdkName
+    val selectedJdkName = project.bazelProjectSettings.selectedServerJdkName
     val selectedJdk = selectedJdkName?.findJDK()
     return selectedJdk?.toJavaBin() ?: InstallationContextJavaPathEntityMapper.default().value
   }
