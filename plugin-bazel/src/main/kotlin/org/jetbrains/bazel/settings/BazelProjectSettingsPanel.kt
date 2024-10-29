@@ -13,7 +13,9 @@ import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.JavaSdk
 import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.projectRoots.SdkTypeId
 import com.intellij.openapi.roots.ui.configuration.JdkComboBox
 import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
@@ -119,11 +121,13 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   }
 
   private fun initServerJdkComboBox(): JdkComboBox =
-    JdkComboBox(project, serverJdkComboBoxModel, null, null, null, null).apply {
+    JdkComboBox(project, serverJdkComboBoxModel, ::isEligibleJdk, null, null, null).apply {
       whenItemSelected {
         currentProjectSettings = currentProjectSettings.withNewServerJdkName(it.jdk?.name) ?: currentProjectSettings
       }
     }
+
+  private fun isEligibleJdk(type: SdkTypeId) = JavaSdk.getInstance().equals(type)
 
   private fun initServerCustomJvmOptions(): RawCommandLineEditor =
     RawCommandLineEditor().apply {
