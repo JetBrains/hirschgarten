@@ -20,7 +20,7 @@ class JdkVersionResolver {
   }
 
   private fun readByRunningJavaBinary(path: Path): Int? {
-    val javaPath = path.resolve("bin/java")
+    val javaPath = path.resolve("bin").resolve("java")
     if (Files.notExists(javaPath)) return null
 
     return firstLineOfJavaVersionOutput(javaPath)
