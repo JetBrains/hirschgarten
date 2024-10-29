@@ -97,7 +97,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
     return if (BspFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
       val rootDir = project.rootDir
       var iter = file.parent
-      while (VfsUtil.isAncestor(rootDir, iter, false)) {
+      while (iter != null && VfsUtil.isAncestor(rootDir, iter, false)) {
         val key = iter.url.processUriString().safeCastToURI()
         if (key in fileToTargetId) return fileToTargetId[key]!!
         iter = iter.parent
