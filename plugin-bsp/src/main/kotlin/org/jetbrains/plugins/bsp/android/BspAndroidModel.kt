@@ -5,6 +5,7 @@ import com.android.tools.idea.model.AndroidModel
 import com.android.tools.idea.model.Namespacing
 import com.android.tools.idea.model.queryMinSdkAndTargetSdkFromManifestIndex
 import com.android.tools.lint.detector.api.Desugaring
+import com.intellij.openapi.application.runReadAction
 import org.jetbrains.android.facet.AndroidFacet
 
 class BspAndroidModel(private val facet: AndroidFacet, private val androidMinSdkOverride: Int?) : AndroidModel {
@@ -20,12 +21,17 @@ class BspAndroidModel(private val facet: AndroidFacet, private val androidMinSdk
     androidMinSdkOverride?.let {
       return AndroidVersion(it)
     }
-    return facet.queryMinSdkAndTargetSdkFromManifestIndex().minSdk
+    return runReadAction {
+      facet.queryMinSdkAndTargetSdkFromManifestIndex().minSdk
+    }
   }
 
   override fun getRuntimeMinSdkVersion(): AndroidVersion = getMinSdkVersion()
 
-  override fun getTargetSdkVersion(): AndroidVersion = facet.queryMinSdkAndTargetSdkFromManifestIndex().targetSdk
+  override fun getTargetSdkVersion(): AndroidVersion =
+    runReadAction {
+      facet.queryMinSdkAndTargetSdkFromManifestIndex().targetSdk
+    }
 
   override fun getNamespacing(): Namespacing = Namespacing.DISABLED
 
