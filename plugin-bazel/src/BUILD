@@ -39,9 +39,6 @@ kt_jvm_library(
         "main/kotlin/**/*.kt",
         "main/gen/**/*.java",
     ]),
-    resources = glob([
-        "main/resources/**",
-    ]),
     visibility = ["//visibility:public"],
     deps = [
         ":intellij-bsp",
@@ -59,6 +56,14 @@ kt_jvm_library(
         "@rules_intellij//third_party/performance",
         "@rules_intellij//third_party/python",
     ],
+)
+
+kt_jvm_library(
+    name = "intellij-bazel-resources",
+    resources = glob([
+        "main/resources/**",
+    ]),
+    visibility = ["//visibility:public"],
 )
 
 intellij_integration_test_suite(

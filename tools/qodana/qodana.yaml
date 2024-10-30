@@ -15,7 +15,6 @@ exclude:
       - server/aspects
       - server/example/kotlincplugin/UserIsOpenTest.kt
   - name: CheckDependencyLicenses
-  - name: KotlinInvalidBundleOrProperty
   - name: UnnecessaryUnicodeEscape
   - name: UnstableApiUsage
   - name: DialogTitleCapitalization
