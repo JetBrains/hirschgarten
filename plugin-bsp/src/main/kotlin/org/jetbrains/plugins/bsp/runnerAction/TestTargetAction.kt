@@ -41,6 +41,6 @@ public class TestTargetAction(
   override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType(project)
 
   override fun RunnerAndConfigurationSettings.customizeRunConfiguration() {
-    (configuration as BspRunConfiguration).handler?.apply { (state as HasTestFilter).testFilter = singleTestFilter }
+    (configuration as BspRunConfiguration).handler?.apply { (state as? HasTestFilter)?.testFilter = singleTestFilter }
   }
 }
