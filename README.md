@@ -35,9 +35,8 @@ Tasks which are rather small and do not require a lot of context can be found in
 For developers interested in contributing to or working on Hirschgarten:
 
 - [Guide to start developing the plugin](docs/dev/development_setup.md)
-- [Migration guide for branches in old repositories](docs/guides/monorepo_migration_guide.md)
-- [Guide for adding new components from existing repositories](docs/guides/add_components.md)
 - Each component has its own README file in corresponding folders
+- [Guide for adding new components from existing repositories](docs/dev/add_components.md)
 
 ## Installation
 

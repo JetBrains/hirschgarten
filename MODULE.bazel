@@ -35,16 +35,16 @@ register_toolchains(
 
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_java", version = "8.1.0")
+bazel_dep(name = "rules_java", version = "8.2.0")
 bazel_dep(name = "rules_jvm_external", version = "6.4")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
         "ch.epfl.scala:bsp4j:2.2.0-M2",
-        "com.fasterxml.jackson.core:jackson-databind:2.18.0",
-        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.0",
-        "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0",
+        "com.fasterxml.jackson.core:jackson-databind:2.18.1",
+        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.1",
+        "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.1",
         "com.google.code.gson:gson:2.10.1",
         "com.google.guava:guava:31.0.1-jre",
         "com.google.protobuf:protobuf-java:4.28.3",
@@ -54,8 +54,8 @@ maven.install(
         "com.jetbrains.intellij.tools:ide-starter-squashed:242.21829.40-EAP-SNAPSHOT",
         "commons-cli:commons-cli:jar:1.9.0",
         "commons-io:commons-io:jar:2.17.0",
-        "io.grpc:grpc-protobuf:1.68.0",
-        "io.grpc:grpc-stub:1.68.0",
+        "io.grpc:grpc-protobuf:1.68.1",
+        "io.grpc:grpc-stub:1.68.1",
         "io.kotest:kotest-assertions-api-jvm:5.9.1",
         "io.kotest:kotest-assertions-core-jvm:5.9.1",
         "io.kotest:kotest-assertions-shared-jvm:5.9.1",
@@ -147,7 +147,7 @@ single_version_override(
 
 bazel_dep(name = "rules_cc", version = "0.0.13")
 bazel_dep(name = "platforms", version = "0.0.10")
-bazel_dep(name = "rules_python", version = "0.37.1")
+bazel_dep(name = "rules_python", version = "0.37.2")
 
 # Needed for codecanvas
 python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)

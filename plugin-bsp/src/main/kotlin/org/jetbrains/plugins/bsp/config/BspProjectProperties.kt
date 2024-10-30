@@ -15,6 +15,7 @@ data class BspProjectPropertiesState(
   var isInitialized: Boolean = false,
   var rootDirUrl: String? = null,
   var buildToolId: String? = null,
+  var defaultJdkName: String? = null,
   var openedTimesSinceLastStartupResync: Int = 0,
 )
 
@@ -27,6 +28,7 @@ class BspProjectProperties : PersistentStateComponent<BspProjectPropertiesState>
   var isBspProject: Boolean = false
   var rootDir: VirtualFile? = null
   var buildToolId: BuildToolId = bspBuildToolId
+  var defaultJdkName: String? = null
 
   /**
    * if the opened times since the last startup resync is equal to 1,
@@ -39,12 +41,14 @@ class BspProjectProperties : PersistentStateComponent<BspProjectPropertiesState>
       isBspProject = isBspProject,
       rootDirUrl = rootDir?.url,
       buildToolId = buildToolId.id,
+      defaultJdkName = defaultJdkName,
       openedTimesSinceLastStartupResync = openedTimesSinceLastStartupResync,
     )
 
   override fun loadState(state: BspProjectPropertiesState) {
     isBspProject = state.isBspProject
     rootDir = state.rootDirUrl?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
+    defaultJdkName = state.defaultJdkName
     buildToolId = state.buildToolId?.let { BuildToolId(it) } ?: bspBuildToolId
     openedTimesSinceLastStartupResync = state.openedTimesSinceLastStartupResync
   }
@@ -78,4 +82,11 @@ var Project.buildToolId: BuildToolId
     bspProjectProperties.buildToolId
   set(value) {
     bspProjectProperties.buildToolId = value
+  }
+
+var Project.defaultJdkName: String?
+  get() =
+    bspProjectProperties.defaultJdkName
+  set(value) {
+    bspProjectProperties.defaultJdkName = value
   }

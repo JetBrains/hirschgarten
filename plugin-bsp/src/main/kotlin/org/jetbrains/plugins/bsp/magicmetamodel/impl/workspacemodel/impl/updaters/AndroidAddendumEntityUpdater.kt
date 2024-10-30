@@ -34,6 +34,7 @@ internal class AndroidAddendumEntityUpdater(private val workspaceModelEntityUpda
         ) {
           this.manifest = entityToAdd.manifest?.toVirtualFileUrl()
           this.resourceJavaPackage = entityToAdd.resourceJavaPackage
+          this.androidMinSdkOverride = entityToAdd.androidMinSdkOverride
         }
       }
 

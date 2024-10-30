@@ -25,7 +25,7 @@ object InstallationContextJavaPathEntityMapper {
       ?.let(::appendJavaBinary)
       ?.let(::map)
 
-  private fun appendJavaBinary(javaHome: Path): Path = javaHome.resolve("bin/java")
+  private fun appendJavaBinary(javaHome: Path): Path = javaHome.resolve("bin").resolve("java")
 
   private fun map(rawJavaPath: Path): InstallationContextJavaPathEntity = InstallationContextJavaPathEntity(rawJavaPath)
 }

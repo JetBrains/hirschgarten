@@ -13,7 +13,9 @@ import com.intellij.openapi.options.ConfigurableProvider
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.JavaSdk
 import com.intellij.openapi.projectRoots.Sdk
+import com.intellij.openapi.projectRoots.SdkTypeId
 import com.intellij.openapi.roots.ui.configuration.JdkComboBox
 import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
@@ -24,6 +26,7 @@ import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.bsp.connection.stateService
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bsp.sdkcompat.ui.addBrowseFolderListenerCompat
+import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
@@ -38,19 +41,22 @@ private const val BAZEL_PROJECT_SETTINGS_ID = "bazel.project.settings"
 
 data class BazelProjectSettings(
   val projectViewPath: Path? = null,
-  val selectedJdkName: String? = null,
+  val selectedServerJdkName: String? = null,
   val customJvmOptions: List<String> = emptyList(),
 ) {
   fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings = copy(projectViewPath = newProjectViewFilePath)
 
-  fun withNewSdk(newSdk: String?): BazelProjectSettings? = newSdk?.let { copy(selectedJdkName = newSdk) }
+  fun withNewServerJdkName(newServerJdkName: String?): BazelProjectSettings? =
+    newServerJdkName?.let {
+      copy(selectedServerJdkName = newServerJdkName)
+    }
 
   fun withNewCustomJvmOptions(newCustomJvmOptions: List<String>): BazelProjectSettings = copy(customJvmOptions = newCustomJvmOptions)
 }
 
 internal data class BazelProjectSettingsState(
   var projectViewPathUri: String? = null,
-  var sdkName: String? = null,
+  var selectedServerJdkName: String? = null,
   var customJvmOptions: List<String> = emptyList(),
 ) {
   fun isEmptyState(): Boolean = this == BazelProjectSettingsState()
@@ -70,7 +76,7 @@ internal class BazelProjectSettingsService :
   override fun getState(): BazelProjectSettingsState =
     BazelProjectSettingsState(
       projectViewPathUri = settings.projectViewPath?.toUri()?.toString(),
-      sdkName = settings.selectedJdkName,
+      selectedServerJdkName = settings.selectedServerJdkName,
       customJvmOptions = settings.customJvmOptions,
     )
 
@@ -84,7 +90,7 @@ internal class BazelProjectSettingsService :
                 URI(it),
               )
             },
-          selectedJdkName = settingsState.sdkName,
+          selectedServerJdkName = settingsState.selectedServerJdkName,
           customJvmOptions = settingsState.customJvmOptions,
         )
     }
@@ -115,11 +121,13 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
   }
 
   private fun initServerJdkComboBox(): JdkComboBox =
-    JdkComboBox(project, serverJdkComboBoxModel, null, null, null, null).apply {
+    JdkComboBox(project, serverJdkComboBoxModel, ::isEligibleJdk, null, null, null).apply {
       whenItemSelected {
-        currentProjectSettings = currentProjectSettings.withNewSdk(it.jdk?.name) ?: currentProjectSettings
+        currentProjectSettings = currentProjectSettings.withNewServerJdkName(it.jdk?.name) ?: currentProjectSettings
       }
     }
+
+  private fun isEligibleJdk(type: SdkTypeId) = JavaSdk.getInstance().equals(type)
 
   private fun initServerCustomJvmOptions(): RawCommandLineEditor =
     RawCommandLineEditor().apply {
@@ -187,7 +195,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
     projectViewPathField.text = savedProjectViewPath()
 
     ApplicationManager.getApplication().runWriteAction {
-      serverJdkComboBox.selectedJdk = savedJdk()
+      serverJdkComboBox.selectedJdk = savedJdkOrDefault()
     }
 
     serverCustomJvmOptions.text = savedCustomJvmOptions()
@@ -201,7 +209,10 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
       ?.pathString
       .orEmpty()
 
-  private fun savedJdk(): Sdk? = project.bazelProjectSettings.selectedJdkName?.let { serverJdkComboBoxModel.findSdk(it) }
+  private fun savedJdkOrDefault(): Sdk? =
+    (project.bazelProjectSettings.selectedServerJdkName ?: project.defaultJdkName) ?.let {
+      serverJdkComboBoxModel.findSdk(it)
+    }
 
   private fun savedCustomJvmOptions(): String =
     project.bazelProjectSettings

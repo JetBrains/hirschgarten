@@ -5,25 +5,24 @@ import com.android.tools.idea.projectsystem.ProjectSystemSyncManager
 import com.android.tools.idea.startup.ClearResourceCacheAfterFirstBuild
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 
 public class BspProjectSystemSyncManager(private val project: Project) : ProjectSystemSyncManager {
   init {
-    project.temporaryTargetUtils.registerSyncListener { notifySyncEnded(project) }
     initialNotifySyncEnded(project)
   }
 
-  private fun notifySyncEnded(project: Project) {
-    DumbService.getInstance(project).smartInvokeLater {
-      runWriteAction {
-        project.messageBus
-          .syncPublisher(PROJECT_SYSTEM_SYNC_TOPIC)
-          .syncEnded(ProjectSystemSyncManager.SyncResult.SUCCESS)
-      }
-    }
+  /**
+   * Called by [BspAndroidModelUpdater] after it finishes
+   */
+  fun notifySyncEnded(project: Project) {
+    DumbService.getInstance(project).smartInvokeLater({
+      project.messageBus
+        .syncPublisher(PROJECT_SYSTEM_SYNC_TOPIC)
+        .syncEnded(ProjectSystemSyncManager.SyncResult.SUCCESS)
+    }, ModalityState.nonModal())
   }
 
   private fun initialNotifySyncEnded(project: Project) {
@@ -33,9 +32,9 @@ public class BspProjectSystemSyncManager(private val project: Project) : Project
     // But unfortunately, we have a race condition between us sending the initial syncEnded message
     // and ClearResourceCacheAfterFirstBuild starting to listen to PROJECT_SYSTEM_SYNC_TOPIC.
     // Therefore, we have to notify ClearResourceCacheAfterFirstBuild directly.
-    DumbService.getInstance(project).smartInvokeLater {
+    DumbService.getInstance(project).smartInvokeLater({
       ClearResourceCacheAfterFirstBuild.getInstance(project).syncSucceeded()
-    }
+    }, ModalityState.nonModal())
   }
 
   override fun syncProject(reason: ProjectSystemSyncManager.SyncReason): ListenableFuture<ProjectSystemSyncManager.SyncResult> {

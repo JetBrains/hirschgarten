@@ -251,7 +251,7 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
       val bazelProjectSettings =
         BazelProjectSettings(
           projectViewPath = null,
-          selectedJdkName = selectedJdkName,
+          selectedServerJdkName = selectedJdkName,
         )
 
       // when
@@ -271,7 +271,7 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
       val bazelProjectSettings =
         BazelProjectSettings(
           projectViewPath = null,
-          selectedJdkName = selectedJdkName,
+          selectedServerJdkName = selectedJdkName,
           customJvmOptions = customJvmOptions,
         )
 
@@ -293,7 +293,7 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
       val initBazelProjectSettings =
         BazelProjectSettings(
           projectViewPath = null,
-          selectedJdkName = selectedJdkName,
+          selectedServerJdkName = selectedJdkName,
           customJvmOptions = initCustomJvmOptions,
         )
       project.bazelProjectSettings = initBazelProjectSettings
@@ -303,7 +303,7 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
       val bazelProjectSettings =
         BazelProjectSettings(
           projectViewPath = null,
-          selectedJdkName = selectedJdkName,
+          selectedServerJdkName = selectedJdkName,
           customJvmOptions = emptyList(),
         )
       project.bazelProjectSettings = bazelProjectSettings

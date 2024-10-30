@@ -49,4 +49,5 @@ public data class AndroidAddendum(
   val resourceDirectories: List<Path>,
   val resourceJavaPackage: String?,
   val assetsDirectories: List<Path>,
+  val androidMinSdkOverride: Int?,
 ) : WorkspaceModelEntity()

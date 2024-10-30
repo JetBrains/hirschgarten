@@ -14,6 +14,7 @@ data class AndroidModule(
   val resourceDirectories: List<URI>,
   val resourceJavaPackage: String?,
   val assetsDirectories: List<URI>,
+  val androidMinSdkOverride: Int?,
   val javaModule: JavaModule?,
   val kotlinModule: KotlinModule?,
   val correspondingKotlinTarget: Label?,
