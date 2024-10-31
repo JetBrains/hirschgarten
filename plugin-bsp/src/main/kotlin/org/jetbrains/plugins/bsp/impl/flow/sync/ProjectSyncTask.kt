@@ -6,8 +6,13 @@ import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.ide.impl.isTrusted
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.project.IncompleteDependenciesService
+import com.intellij.openapi.project.IncompleteDependenciesService.IncompleteDependenciesAccessToken
 import com.intellij.openapi.project.Project
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
@@ -150,6 +155,16 @@ class ProjectSyncTask(private val project: Project) {
         project.additionalProjectSyncHooks.forEach {
           it.onSync(environment)
         }
+
+        if (buildProject) {
+          writeAction {
+            project.service<XD>().xd?.let { it.finish() }
+          }
+        } else {
+          project.service<XD>().xd = writeAction {
+            project.service<IncompleteDependenciesService>().enterIncompleteState(this)
+          }
+        }
       }
     }
 
@@ -205,3 +220,8 @@ suspend fun <Result> query(queryName: String, doQuery: () -> CompletableFuture<R
     }
     throw e
   }
+
+@Service(Service.Level.PROJECT)
+class XD {
+  var xd: IncompleteDependenciesAccessToken? = null
+}

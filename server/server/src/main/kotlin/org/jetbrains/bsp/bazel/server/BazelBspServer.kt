@@ -68,6 +68,7 @@ class BazelBspServer(
     bazelInfo: BazelInfo,
     workspaceContextProvider: WorkspaceContextProvider,
     bazelPathsResolver: BazelPathsResolver,
+    client: JoinedBuildClient,
   ): BazelServices {
     val initializeBuildData =
       gson.fromJson(initializeBuildParams.data as? JsonObject, InitializeBuildData::class.java)
@@ -102,7 +103,15 @@ class BazelBspServer(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
       )
-    val projectSyncService = ProjectSyncService(bspProjectMapper, projectProvider, initializeBuildParams.capabilities)
+    val projectSyncService = ProjectSyncService(
+      bspProjectMapper,
+      projectProvider,
+      initializeBuildParams.capabilities,
+      bazelRunner,
+      client,
+      bazelPathsResolver,
+      workspaceRoot,
+      )
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(
@@ -225,6 +234,7 @@ class BazelBspServer(
           bazelInfo,
           workspaceContextProvider,
           bazelPathsResolver,
+          client,
         )
       }
 

@@ -26,6 +26,7 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
         "@bazel_bep//jar",
         "@maven//:ch_epfl_scala_bsp4j",
+       "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:build_java_proto",
         "@maven//:com_google_protobuf_protobuf_java",
         "@maven//:io_grpc_grpc_stub",
         "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",

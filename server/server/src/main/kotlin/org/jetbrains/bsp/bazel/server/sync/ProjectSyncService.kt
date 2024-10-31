@@ -1,6 +1,11 @@
 package org.jetbrains.bsp.bazel.server.sync
 
+import com.google.devtools.build.lib.query2.proto.proto2api.Build;
+import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target;
+
 import ch.epfl.scala.bsp4j.BuildClientCapabilities
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.CppOptionsParams
 import ch.epfl.scala.bsp4j.CppOptionsResult
@@ -33,11 +38,25 @@ import ch.epfl.scala.bsp4j.ScalaTestClassesParams
 import ch.epfl.scala.bsp4j.ScalaTestClassesResult
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import ch.epfl.scala.bsp4j.ScalacOptionsResult
+import ch.epfl.scala.bsp4j.SourceItem
+import ch.epfl.scala.bsp4j.SourceItemKind
+import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bsp.bazel.server.bep.BepServer
+import org.jetbrains.bsp.bazel.server.bsp.managers.BepReader
+import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.model.Language
+import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
@@ -45,12 +64,20 @@ import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
+import java.nio.file.Path
+import kotlin.collections.firstOrNull
+import kotlin.io.path.Path
+import kotlin.io.path.exists
 
 /** A facade for all project sync related methods  */
 class ProjectSyncService(
   private val bspMapper: BspProjectMapper,
   private val projectProvider: ProjectProvider,
   private val clientCapabilities: BuildClientCapabilities,
+  private val bazelRunner: BazelRunner,
+  private val client: JoinedBuildClient,
+  private val bazelPathsResolver: BazelPathsResolver,
+  private val workspaceRoot: Path,
 ) {
   fun initialize(): InitializeBuildResult = bspMapper.initializeServer(Language.all())
 
@@ -62,8 +89,25 @@ class ProjectSyncService(
   fun workspaceReload(cancelChecker: CancelChecker): Any = Any()
 
   fun workspaceBuildTargets(cancelChecker: CancelChecker, build: Boolean): WorkspaceBuildTargetsResult {
-    val project = projectProvider.refreshAndGet(cancelChecker, build = build)
-    return bspMapper.workspaceTargets(project)
+    if (build) {
+      val project = projectProvider.refreshAndGet(cancelChecker, build = build)
+      return bspMapper.workspaceTargets(project)
+    }
+
+    val project = projectProvider.qqsync(cancelChecker, bazelRunner, workspaceRoot, bazelPathsResolver, client)
+
+
+    val a = project.qqsync.map {
+      BuildTarget(
+        BuildTargetIdentifier(it.rule.name),
+        emptyList(),
+        listOf("java"),
+        it.rule.attributeList.firstOrNull { it.name == "deps" }?.stringListValueList?.map { BuildTargetIdentifier(it) } ?: emptyList(),
+        BuildTargetCapabilities(),
+      )
+    }
+
+    return WorkspaceBuildTargetsResult(a)
   }
 
   fun workspaceBuildTargetsPartial(cancelChecker: CancelChecker, targetsToSync: List<BuildTargetIdentifier>): WorkspaceBuildTargetsResult {
@@ -102,7 +146,39 @@ class ProjectSyncService(
 
   fun buildTargetSources(cancelChecker: CancelChecker, sourcesParams: SourcesParams): SourcesResult {
     val project = projectProvider.get(cancelChecker)
-    return bspMapper.sources(project, sourcesParams)
+    if (project.modules.isNotEmpty()) return bspMapper.sources(project, sourcesParams)
+    val pp = JVMLanguagePluginParser
+//    return bspMapper.sources(project, sourcesParams)
+    println(project.qqsync.size)
+    val a = project.qqsync
+      .filter { aa ->
+        aa.rule.name in sourcesParams.targets.map { it.uri }
+      }.map { a1 ->
+        val yy = a1.rule.attributeList.firstOrNull { it.name == "srcs" }?.stringListValueList?.map { a2 ->
+          val tt = Path(a2.replace(':', '/').trim('/'))
+          workspaceRoot.resolve(tt)
+        }?.filter { it.exists() }
+          ?.map {ttt ->
+
+            pp.calculateJVMSourceRootAndAdditionalData(ttt)
+          }
+      SourcesItem(
+        BuildTargetIdentifier(a1.rule.name),
+        a1.rule.attributeList.firstOrNull { it.name == "srcs" }?.stringListValueList?.map { a2 ->
+          val tt = Path(a2.replace(':', '/').trim('/'))
+          workspaceRoot.resolve(tt)
+        }?.filter { it.exists() }
+          ?.map {ttt ->
+
+          val r = pp.calculateJVMSourceRootAndAdditionalData(ttt)
+          EnhancedSourceItem(ttt.toUri().toString(), SourceItemKind.FILE, false, r.data)
+        } ?: emptyList()
+      ).apply {
+        roots = (yy?.map { it.sourceRoot.toUri().toString() } ?: emptyList()) + (yy?.map { it.sourceRoot.toUri().toString() + "test" } ?: emptyList())
+      }
+    }
+
+    return SourcesResult(a)
   }
 
   fun buildTargetResources(cancelChecker: CancelChecker, resourcesParams: ResourcesParams): ResourcesResult {
