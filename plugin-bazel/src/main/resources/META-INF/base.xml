@@ -49,6 +49,7 @@
         <postStartupActivity
                 implementation="org.jetbrains.bazel.flow.open.SuggestEnableK2StartupActivity"/>
         <notificationGroup displayType="BALLOON" id="Enable K2 Compiler Mode with Bazel"/>
+        <notificationGroup displayType="BALLOON" id="Bazel slow plugins warning"/>
 
         <externalSystemUnlinkedProjectAware
                 id="Bazel"
