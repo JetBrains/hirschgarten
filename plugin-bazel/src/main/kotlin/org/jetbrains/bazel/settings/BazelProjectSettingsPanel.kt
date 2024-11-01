@@ -38,8 +38,9 @@ import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
 private const val BAZEL_PROJECT_SETTINGS_ID = "bazel.project.settings"
+internal const val BAZEL_PROJECT_SETTINGS_DISPLAY_NAME = "Bazel"
 
-data class BazelProjectSettings(
+internal data class BazelProjectSettings(
   val projectViewPath: Path? = null,
   val selectedServerJdkName: String? = null,
   val customJvmOptions: List<String> = emptyList(),
@@ -102,7 +103,7 @@ internal class BazelProjectSettingsService :
   }
 }
 
-class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
+internal class BazelProjectSettingsConfigurable(private val project: Project) : SearchableConfigurable {
   private val projectViewPathField: TextFieldWithBrowseButton
 
   private val serverJdkComboBoxModel: ProjectSdksModel = ProjectSdksModel()
@@ -168,7 +169,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
 
   override fun createComponent(): JComponent =
     panel {
-      group(BazelPluginBundle.message("project.settings.server.title"), true) {
+      group(BazelPluginBundle.message("project.settings.server.title"), false) {
         row(BazelPluginBundle.message("project.settings.project.view.label")) { cell(projectViewPathField).align(Align.FILL) }
         row(BazelPluginBundle.message("project.settings.server.jdk.label")) {
           cell(serverJdkComboBox).align(Align.FILL).resizableColumn()
@@ -219,7 +220,7 @@ class BazelProjectSettingsConfigurable(private val project: Project) : Searchabl
       .customJvmOptions
       .joinToString("\n")
 
-  override fun getDisplayName(): String = BazelPluginBundle.message("project.settings.display.name")
+  override fun getDisplayName(): String = BAZEL_PROJECT_SETTINGS_DISPLAY_NAME
 
   override fun getId(): String = BAZEL_PROJECT_SETTINGS_ID
 
@@ -234,8 +235,8 @@ internal class BazelProjectSettingsConfigurableProvider(private val project: Pro
   override fun createConfigurable(): Configurable = BazelProjectSettingsConfigurable(project)
 }
 
-var Project.bazelProjectSettings: BazelProjectSettings
-  get() = BazelProjectSettingsService.getInstance(this).settings
+internal var Project.bazelProjectSettings: BazelProjectSettings
+  get() = BazelProjectSettingsService.getInstance(this).settings.copy()
   set(value) {
-    BazelProjectSettingsService.getInstance(this).settings = value
+    BazelProjectSettingsService.getInstance(this).settings = value.copy()
   }
