@@ -3,15 +3,14 @@ package org.jetbrains.bazel.bsp.connection
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.extensions.PluginId
+import org.jetbrains.bazel.settings.BAZEL_PLUGIN_ID
+import org.jetbrains.bazel.settings.BSP_PLUGIN_ID
 import java.io.File
 import kotlin.io.path.name
 
 internal const val BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX = 2
 
 private const val UTIL_8_JAR_NAME = "util-8.jar"
-
-private const val BAZEL_PLUGIN_ID = "org.jetbrains.bazel"
-private const val BSP_PLUGIN_ID = "org.jetbrains.bsp"
 
 /**
  * We need to update bazel-bsp connection details classpath:

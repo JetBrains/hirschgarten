@@ -31,9 +31,9 @@ kt_jvm_library(
     srcs = glob([
         "main/kotlin/**/*.kt",
     ]),
+    associates = [":intellij-plugins"],
     visibility = ["//visibility:public"],
     deps = [
-        ":intellij-plugins",
         "//server/bspcli:in_memory_connection",
     ],
 )

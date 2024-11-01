@@ -171,6 +171,8 @@
 
         <projectConfigurable
                 parentId="build.tools"
+                id="bazel.project.settings"
+                displayName="Bazel"
                 instance="org.jetbrains.bazel.settings.BazelProjectSettingsConfigurable"
                 provider="org.jetbrains.bazel.settings.BazelProjectSettingsConfigurableProvider">
             <configurable
@@ -178,6 +180,14 @@
                     provider="org.jetbrains.bazel.languages.starlark.formatting.configuration.BuildifierConfigurableProvider"
                     displayName="Buildifier"/>
         </projectConfigurable>
+
+        <applicationConfigurable
+                parentId="bazel.project.settings"
+                id="bazel.application.settings"
+                displayName="Advanced Settings"
+                instance="org.jetbrains.bazel.settings.BazelApplicationSettingsConfigurable"
+                provider="org.jetbrains.bazel.settings.BazelApplicationSettingsConfigurableProvider"
+        />
 
         <projectViewNodeDecorator
                 implementation="org.jetbrains.bazel.settings.ProjectViewFileNodeDecorator"/>
