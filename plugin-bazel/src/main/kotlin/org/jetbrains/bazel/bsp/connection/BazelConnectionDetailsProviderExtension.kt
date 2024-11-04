@@ -8,6 +8,7 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -18,7 +19,6 @@ import org.jetbrains.bazel.assets.BspPluginTemplates
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.coroutines.CoroutineService
 import org.jetbrains.bazel.settings.bazelProjectSettings
-import org.jetbrains.bazel.settings.serverDetectedJdk
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.install.BspConnectionDetailsCreator
 import org.jetbrains.bsp.bazel.install.EnvironmentCreator
@@ -32,6 +32,7 @@ import org.jetbrains.plugins.bsp.impl.server.connection.ConnectionDetailsProvide
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
+import kotlin.io.path.isExecutable
 import kotlin.io.path.writeText
 
 class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectPath.toNioPath()) {
@@ -104,16 +105,20 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
   }
 
   private fun calculateSelectedJavaBin(project: Project): Path {
-    val selectedJdk = project.bazelProjectSettings.selectedJdk
-    return if (selectedJdk.name == serverDetectedJdk.name) {
-      InstallationContextJavaPathEntityMapper.default().value
-    } else {
-      selectedJdk.toJavaBin()
-    }
+    val selectedJdkName = project.bazelProjectSettings.selectedServerJdkName
+    val selectedJdk = selectedJdkName?.findJDK()
+    return selectedJdk?.toJavaBin() ?: InstallationContextJavaPathEntityMapper.default().value
   }
 
+  private fun String.findJDK(): Sdk? = ProjectJdkTable.getInstance().findJdk(this, "JavaSDK")
+
   private fun Sdk.toJavaBin(): Path =
-    homePath?.let { Path(it) }?.resolve("bin")?.resolve("java") ?: error("Cannot obtain jdk home path for $name")
+    homePath
+      ?.let { Path(it) }
+      ?.resolve("bin")
+      ?.resolve("java")
+      ?.takeIf { it.isExecutable() }
+      ?: error("Cannot obtain JDK executable for $name to run Bazel BSP server.\nTry another JDK.")
 
   private fun BspConnectionDetails.hasNotChanged(
     javaBin: Path,

@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.android
 
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.LanguageData
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinModule
@@ -13,6 +14,8 @@ data class AndroidModule(
   val resourceDirectories: List<URI>,
   val resourceJavaPackage: String?,
   val assetsDirectories: List<URI>,
+  val androidMinSdkOverride: Int?,
   val javaModule: JavaModule?,
   val kotlinModule: KotlinModule?,
+  val correspondingKotlinTarget: Label?,
 ) : LanguageData

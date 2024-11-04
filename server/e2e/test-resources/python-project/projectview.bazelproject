@@ -1,5 +1,0 @@
-targets:
-  //...
-
-enabled_rules:
-  rules_python

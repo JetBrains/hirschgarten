@@ -1,6 +1,8 @@
 package org.jetbrains.bsp.bazel.projectview.model
 
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.bsp.bazel.projectview.model.sections.AndroidMinSdkSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalUseLibOverModSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
@@ -44,6 +46,10 @@ data class ProjectView(
   val useLibOverModSection: ExperimentalUseLibOverModSection? = null,
   /** add transitive compile time jars to compensate for possible missing classpaths */
   val addTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJarsSection? = null,
+  /** enable native (non-starlarkified) Android rules */
+  val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
+  /** Override the minimum Android SDK version globally for the whole project */
+  val androidMinSdkSection: AndroidMinSdkSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
@@ -58,6 +64,8 @@ data class ProjectView(
     private val ideJavaHomeOverride: ProjectViewIdeJavaHomeOverrideSection? = null,
     private val useLibOverModSection: ExperimentalUseLibOverModSection? = null,
     private val addTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJarsSection? = null,
+    private val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
+    private val androidMinSdkSection: AndroidMinSdkSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -77,6 +85,8 @@ data class ProjectView(
       val ideJavaHomeOverride = combineIdeJavaHomeOverrideSection(importedProjectViews)
       val useLibOverModSection = combineUseLibOverModSection(importedProjectViews)
       val addTransitiveCompileTimeJars = combineAddTransitiveCompileTimeJarsSection(importedProjectViews)
+      val enableNativeAndroidRules = combineEnableNativeAndroidRulesSection(importedProjectViews)
+      val androidMinSdkSection = combineAndroidMinSdkSection(importedProjectViews)
 
       log.debug(
         "Building project view with combined" +
@@ -90,7 +100,10 @@ data class ProjectView(
           " enabled rules: {}," +
           " ideJavaHomeOverride: {}," +
           " useLibOverModSection: {}," +
-          " addTransitiveCompileTimeJars: {},",
+          " addTransitiveCompileTimeJars: {}," +
+          " enableNativeAndroidRules: {}," +
+          " androidMinSdkSection: {}," +
+          "", // preserve Git blame
         targets,
         bazelBinary,
         buildFlags,
@@ -102,6 +115,8 @@ data class ProjectView(
         ideJavaHomeOverride,
         useLibOverModSection,
         addTransitiveCompileTimeJars,
+        enableNativeAndroidRules,
+        androidMinSdkSection,
       )
       return ProjectView(
         targets,
@@ -115,6 +130,8 @@ data class ProjectView(
         ideJavaHomeOverride,
         useLibOverModSection,
         addTransitiveCompileTimeJars,
+        enableNativeAndroidRules,
+        androidMinSdkSection,
       )
     }
 
@@ -130,6 +147,18 @@ data class ProjectView(
       addTransitiveCompileTimeJars ?: getLastImportedSingletonValue(
         importedProjectViews,
         ProjectView::addTransitiveCompileTimeJars,
+      )
+
+    private fun combineEnableNativeAndroidRulesSection(importedProjectViews: List<ProjectView>): EnableNativeAndroidRulesSection? =
+      enableNativeAndroidRules ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::enableNativeAndroidRules,
+      )
+
+    private fun combineAndroidMinSdkSection(importedProjectViews: List<ProjectView>): AndroidMinSdkSection? =
+      androidMinSdkSection ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::androidMinSdkSection,
       )
 
     private fun combineTargetsSection(importedProjectViews: List<ProjectView>): ProjectViewTargetsSection? {

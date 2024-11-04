@@ -24,7 +24,7 @@ public class TestTargetAction(
         text()
       } else if (isDebugAction) {
         BspPluginBundle.message(
-          "target.debug.action.text",
+          "target.debug.test.action.text",
           if (verboseText) targetInfo.buildTargetName else "",
           project.assets.presentableName,
         )
@@ -41,6 +41,6 @@ public class TestTargetAction(
   override fun getConfigurationType(project: Project): ConfigurationType = BspRunConfigurationType(project)
 
   override fun RunnerAndConfigurationSettings.customizeRunConfiguration() {
-    (configuration as BspRunConfiguration).handler?.apply { (state as HasTestFilter).testFilter = singleTestFilter }
+    (configuration as BspRunConfiguration).handler?.apply { (state as? HasTestFilter)?.testFilter = singleTestFilter }
   }
 }

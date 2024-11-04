@@ -2,7 +2,6 @@ package org.jetbrains.bazel.flow.open
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.externalSystem.autolink.ExternalSystemProjectLinkListener
-import com.intellij.openapi.externalSystem.autolink.ExternalSystemUnlinkedProjectAware
 import com.intellij.openapi.externalSystem.model.ProjectSystemId
 import com.intellij.openapi.externalSystem.util.ExternalSystemBundle
 import com.intellij.openapi.project.Project
@@ -10,14 +9,15 @@ import com.intellij.openapi.ui.getPresentablePath
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.config.BazelPluginConstants
-import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.bazel.config.isBazelProject
+import org.jetbrains.bsp.sdkcompat.flow.open.ExternalSystemUnlinkedProjectAwareCompat
 
-internal class BazelBspUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware {
+internal class BazelBspUnlinkedProjectAware : ExternalSystemUnlinkedProjectAwareCompat() {
   override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID
 
   override fun isBuildFile(project: Project, buildFile: VirtualFile): Boolean = BazelBspOpenProjectProvider().isProjectFileCompat(buildFile)
 
-  override fun isLinkedProject(project: Project, externalProjectPath: String): Boolean = project.isBspProject
+  override fun isLinkedProject(project: Project, externalProjectPath: String): Boolean = project.isBazelProject
 
   override suspend fun linkAndLoadProjectAsync(project: Project, externalProjectPath: String) {
     BazelBspOpenProjectProvider().linkProjectCompat(getProjectFile(externalProjectPath), project)
@@ -38,4 +38,6 @@ internal class BazelBspUnlinkedProjectAware : ExternalSystemUnlinkedProjectAware
     listener: ExternalSystemProjectLinkListener,
     parentDisposable: Disposable,
   ) {}
+
+  override suspend fun unlinkProjectCompat(project: Project, externalProjectPath: String) {}
 }

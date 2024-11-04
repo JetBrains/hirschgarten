@@ -12,16 +12,18 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspFallbackAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
-import org.jetbrains.bsp.bazel.workspacecontext.isRustEnabled
+import org.jetbrains.bsp.protocol.FeatureFlags
 
 /** Responsible for querying bazel and constructing Project instance  */
 class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
+  private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
   private val bazelBspFallbackAspectsManager: BazelBspFallbackAspectsManager,
   private val workspaceContextProvider: WorkspaceContextProvider,
@@ -31,6 +33,7 @@ class ProjectResolver(
   private val bazelRunner: BazelRunner,
   private val bazelPathsResolver: BazelPathsResolver,
   private val bspClientLogger: BspClientLogger,
+  private val featureFlags: FeatureFlags,
 ) {
   private fun <T> measured(description: String, f: () -> T): T = tracer.spanBuilder(description).use { f() }
 
@@ -59,12 +62,17 @@ class ProjectResolver(
           "Mapping rule names to languages",
         ) { bazelBspAspectsManager.calculateRuleLanguages(externalRuleNames) }
 
+      val toolchains =
+        measured(
+          "Mapping languages to toolchains",
+        ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, cancelChecker) } }
+
       measured("Realizing language aspect files from templates") {
-        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext)
+        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext, toolchains)
       }
 
       measured("Generating language extensions file") {
-        bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages)
+        bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
       }
 
       val targetsToSync = requestedTargetsToSync?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
@@ -112,7 +120,7 @@ class ProjectResolver(
       aspect = ASPECT_NAME,
       outputGroups = outputGroups.map { if (build) "+$it" else it },
       shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-      isRustEnabled = workspaceContext.isRustEnabled,
+      isRustEnabled = featureFlags.isRustSupportEnabled,
     )
   }
 

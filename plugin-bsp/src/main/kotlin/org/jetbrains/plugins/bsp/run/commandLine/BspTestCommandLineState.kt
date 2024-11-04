@@ -63,7 +63,13 @@ class BspTestCommandLineState(
     params.arguments = transformProgramArguments(state.programArguments)
     params.environmentVariables = state.env.envs
     params.dataKind = BazelTestParamsData.DATA_KIND
-    params.data = BazelTestParamsData(false, state.testFilter) // TODO: handle coverage
+    params.data =
+      BazelTestParamsData(
+        coverage = false,
+        testFilter = state.testFilter,
+        additionalBazelParams = state.additionalBazelParams,
+      )
+    // TODO: handle coverage (BAZEL-1364)
     server.buildTargetTest(params).await()
   }
 }

@@ -6,10 +6,13 @@ import com.intellij.execution.ui.CommonParameterFragments
 import com.intellij.execution.ui.CommonTags
 import com.intellij.execution.ui.RunConfigurationFragmentedEditor
 import com.intellij.execution.ui.SettingsEditorFragment
+import com.intellij.execution.ui.SettingsEditorFragmentType
 import com.intellij.openapi.externalSystem.service.execution.configuration.addBeforeRunFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addLabeledSettingsEditorFragment
+import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.addSettingsEditorFragment
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
+import com.intellij.openapi.externalSystem.service.ui.util.SettingsFragmentInfo
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBTextField
@@ -42,14 +45,15 @@ class BspRunConfigurationEditor(private val runConfiguration: BspRunConfiguratio
       ) as SettingsEditor<BspRunConfigurationState<*>>
     Disposer.register(this@BspRunConfigurationEditor, stateEditor)
 
-    this.addLabeledSettingsEditorFragment(
-      object : LabeledSettingsFragmentInfo { // TODO: Use bundle and figure out what should be there
-        override val editorLabel: String = "Handler settings"
+    this.addSettingsEditorFragment(
+      object : SettingsFragmentInfo {
         override val settingsId: String = "bsp.state.editor"
         override val settingsName: String = "Handler settings"
         override val settingsGroup: String = "BSP"
-        override val settingsHint: String = "Handler settings hint"
-        override val settingsActionHint: String = "Handler settings action hint"
+        override val settingsPriority: Int = 1
+        override val settingsType: SettingsEditorFragmentType = SettingsEditorFragmentType.EDITOR
+        override val settingsHint: String? = null
+        override val settingsActionHint: String? = null
       },
       { stateEditor.component },
       { _, _ ->

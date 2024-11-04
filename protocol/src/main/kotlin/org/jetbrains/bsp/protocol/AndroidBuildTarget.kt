@@ -18,6 +18,7 @@ public data class AndroidBuildTarget(
   val resourceDirectories: List<String>,
   val resourceJavaPackage: String?,
   val assetsDirectories: List<String>,
+  val androidMinSdkOverride: Int? = null,
   var jvmBuildTarget: JvmBuildTarget? = null,
   var kotlinBuildTarget: KotlinBuildTarget? = null,
 )

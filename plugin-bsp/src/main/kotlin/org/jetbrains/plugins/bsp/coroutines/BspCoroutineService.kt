@@ -9,17 +9,18 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import org.jetbrains.annotations.ApiStatus
 
 @Service(Service.Level.PROJECT)
-// @ApiStatus.Internal
-public class BspCoroutineService(private val cs: CoroutineScope) {
-  public fun start(callable: suspend () -> Unit): Job = cs.launch { callable() }
+@ApiStatus.Internal
+class BspCoroutineService(private val cs: CoroutineScope) {
+  fun start(callable: suspend () -> Unit): Job = cs.launch { callable() }
 
-  public fun <T> startAsync(lazy: Boolean = false, callable: suspend () -> T): Deferred<T> =
+  fun <T> startAsync(lazy: Boolean = false, callable: suspend () -> T): Deferred<T> =
     cs.async(start = if (lazy) CoroutineStart.LAZY else CoroutineStart.DEFAULT) { callable() }
 
-  public companion object {
+  companion object {
     @JvmStatic
-    public fun getInstance(project: Project): BspCoroutineService = project.service<BspCoroutineService>()
+    fun getInstance(project: Project): BspCoroutineService = project.service<BspCoroutineService>()
   }
 }

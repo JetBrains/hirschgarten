@@ -41,6 +41,7 @@ import org.jetbrains.plugins.bsp.building.syncConsole
 import org.jetbrains.plugins.bsp.building.withSubtask
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
@@ -48,21 +49,20 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncScope
 import org.jetbrains.plugins.bsp.impl.flow.sync.asyncQueryIf
 import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.ProjectDetails
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.TargetIdToModuleEntitiesMap
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
-import org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.plugins.bsp.impl.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.plugins.bsp.impl.server.tasks.BspServerTask
 import org.jetbrains.plugins.bsp.impl.server.tasks.SdkUtils
-import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
-import org.jetbrains.plugins.bsp.impl.utils.findLibraryNameProvider
-import org.jetbrains.plugins.bsp.impl.utils.findModuleNameProvider
-import org.jetbrains.plugins.bsp.impl.utils.orDefault
+import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
+import org.jetbrains.plugins.bsp.magicmetamodel.findLibraryNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.findModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.TargetIdToModuleEntitiesMap
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ProjectDetailsToModuleDetailsTransformer
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.androidJarToAndroidSdkName
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.projectNameToJdkName
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
+import org.jetbrains.plugins.bsp.magicmetamodel.orDefault
 import org.jetbrains.plugins.bsp.performance.bspTracer
 import org.jetbrains.plugins.bsp.python.PythonSdk
 import org.jetbrains.plugins.bsp.python.PythonSdkGetterExtension
@@ -71,6 +71,7 @@ import org.jetbrains.plugins.bsp.python.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import org.jetbrains.plugins.bsp.utils.isSourceFile
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
@@ -122,6 +123,7 @@ class CollectProjectDetailsTask(
           projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
         }
       }
+      project.defaultJdkName = projectDetails.defaultJdkName
     }
 
     if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
@@ -330,7 +332,7 @@ class CollectProjectDetailsTask(
         val targetIdToModuleEntitiesMap =
           bspTracer.spanBuilder("create.target.id.to.module.entities.map.ms").use {
             // Filter out non-module targets which cannot be run, as they are just cluttering the ui
-            val usefulNonModuleTargets = projectDetails.targets.filter { it.capabilities.canRun }
+            val usefulNonModuleTargets = projectDetails.nonModuleTargets.filter { it.capabilities.canRun }
 
             val syncedTargetIdToTargetInfo =
               (projectDetails.targets + usefulNonModuleTargets).associate {
@@ -351,6 +353,7 @@ class CollectProjectDetailsTask(
                 targetIdToModuleDetails = targetIdToModuleDetails,
                 targetIdToTargetInfo = targetIdToTargetInfo,
                 projectBasePath = projectBasePath,
+                project = project,
                 moduleNameProvider = moduleNameProvider,
                 libraryNameProvider = libraryNameProvider,
                 hasDefaultPythonInterpreter = BspFeatureFlags.isPythonSupportEnabled,
@@ -375,13 +378,13 @@ class CollectProjectDetailsTask(
           val virtualFileUrlManager = workspaceModel.getVirtualFileUrlManager()
 
           val workspaceModelUpdater =
-            WorkspaceModelUpdater.create(
-              diff,
-              virtualFileUrlManager,
-              projectBasePath,
-              project,
-              BspFeatureFlags.isPythonSupportEnabled,
-              BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
+            WorkspaceModelUpdaterImpl(
+              workspaceEntityStorageBuilder = diff,
+              virtualFileUrlManager = virtualFileUrlManager,
+              projectBasePath = projectBasePath,
+              project = project,
+              isPythonSupportEnabled = BspFeatureFlags.isPythonSupportEnabled,
+              isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
             )
 
           val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
@@ -406,12 +409,12 @@ class CollectProjectDetailsTask(
         }.toMap()
   }
 
-  suspend fun postprocessingSubtask() {
+  suspend fun postprocessingSubtask(targetListChanged: Boolean) {
     // This order is strict as now SDKs also use the workspace model,
     // updating jdks before applying the project model will render the action to fail.
     // This will be handled properly after this ticket:
     // https://youtrack.jetbrains.com/issue/BAZEL-426/Configure-JDK-using-workspace-model-API-instead-of-ProjectJdkTable
-    project.temporaryTargetUtils.fireListeners()
+    project.temporaryTargetUtils.fireSyncListeners(targetListChanged)
     addBspFetchedJdks()
     addBspFetchedJavacOptions()
     addBspFetchedScalaSdks()

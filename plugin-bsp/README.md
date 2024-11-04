@@ -7,5 +7,5 @@
 
 Allows importing projects into IntelliJ IDEA using Build Server Protocol.
 
-Used by [experimental Bazel plugin](https://plugins.jetbrains.com/plugin/22977-bazel-by-jetbrains-experimental-).
+Used by [the new Bazel plugin by JetBrains](https://plugins.jetbrains.com/plugin/22977).
 <!-- Plugin description end -->

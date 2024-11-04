@@ -59,7 +59,7 @@ class LanguagePluginServiceTest {
     val thriftLanguagePlugin = ThriftLanguagePlugin(bazelPathsResolver)
     val pythonLanguagePlugin = PythonLanguagePlugin(bazelPathsResolver)
     val rustLanguagePlugin = RustLanguagePlugin(bazelPathsResolver)
-    val androidLanguagePlugin = AndroidLanguagePlugin(javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
+    val androidLanguagePlugin = AndroidLanguagePlugin(provider, javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
     val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver)
     languagePluginsService =
       LanguagePluginsService(

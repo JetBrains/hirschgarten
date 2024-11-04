@@ -15,16 +15,16 @@ import javax.swing.Icon
 
 private val log = logger<SuspendableAction>()
 
-public suspend fun saveAllFiles() {
+suspend fun saveAllFiles() {
   writeAction {
     FileDocumentManager.getInstance().saveAllDocuments()
   }
 }
 
-public abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
+abstract class SuspendableAction(text: () -> String, icon: Icon? = null) :
   AnAction(text, icon),
   DumbAware {
-  public constructor(text: String, icon: Icon? = null) : this({ text }, icon)
+  constructor(text: String, icon: Icon? = null) : this({ text }, icon)
 
   final override fun actionPerformed(e: AnActionEvent) {
     val project = e.project

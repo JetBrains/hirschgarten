@@ -8,16 +8,25 @@ import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinLanguagePlugin
+import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinModule
+import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import java.net.URI
 import java.nio.file.Path
 
 class AndroidLanguagePlugin(
+  private val workspaceContextProvider: WorkspaceContextProvider,
   private val javaLanguagePlugin: JavaLanguagePlugin,
   private val kotlinLanguagePlugin: KotlinLanguagePlugin,
   private val bazelPathsResolver: BazelPathsResolver,
 ) : LanguagePlugin<AndroidModule>() {
+  private var androidMinSdkOverride: Int? = null
+
+  override fun prepareSync(targets: Sequence<BspTargetInfo.TargetInfo>) {
+    androidMinSdkOverride = workspaceContextProvider.currentWorkspaceContext().androidMinSdkSpec.value
+  }
+
   override fun applyModuleData(moduleData: AndroidModule, buildTarget: BuildTarget) {
     val androidBuildTarget =
       with(moduleData) {
@@ -28,6 +37,7 @@ class AndroidLanguagePlugin(
           resourceDirectories = resourceDirectories.map { it.toString() },
           resourceJavaPackage = resourceJavaPackage,
           assetsDirectories = assetsDirectories.map { it.toString() },
+          androidMinSdkOverride = androidMinSdkOverride,
         )
       }
     moduleData.javaModule?.let { javaLanguagePlugin.toJvmBuildTarget(it) }?.let {
@@ -56,6 +66,8 @@ class AndroidLanguagePlugin(
     val resourceJavaPackage = androidTargetInfo.resourceJavaPackage.takeIf { it.isNotEmpty() }
     val assetsDirectories = bazelPathsResolver.resolveUris(androidTargetInfo.assetsDirectoriesList)
 
+    val kotlinModule: KotlinModule? = kotlinLanguagePlugin.resolveModule(targetInfo)
+
     return AndroidModule(
       androidJar = androidJar,
       androidTargetType = getAndroidTargetType(targetInfo),
@@ -63,8 +75,10 @@ class AndroidLanguagePlugin(
       resourceDirectories = resourceDirectories,
       resourceJavaPackage = resourceJavaPackage,
       assetsDirectories = assetsDirectories,
-      javaModule = javaLanguagePlugin.resolveModule(targetInfo),
-      kotlinModule = null,
+      androidMinSdkOverride = androidMinSdkOverride,
+      javaModule = kotlinModule?.javaModule ?: javaLanguagePlugin.resolveModule(targetInfo),
+      kotlinModule = kotlinModule,
+      correspondingKotlinTarget = null,
     )
   }
 

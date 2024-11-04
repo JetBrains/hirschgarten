@@ -72,6 +72,8 @@ data class WorkspaceContext(
   val ideJavaHomeOverrideSpec: IdeJavaHomeOverrideSpec,
   val experimentalUseLibOverModSection: ExperimentalUseLibOverModSpec,
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
+  val enableNativeAndroidRules: EnableNativeAndroidRules,
+  val androidMinSdkSpec: AndroidMinSdkSpec,
 ) : ExecutionContext()
 
 class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
@@ -95,25 +97,15 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpecExtractor.fromProjectView(projectView),
       experimentalUseLibOverModSection = ExperimentalUseLibOverModSpecExtractor.fromProjectView(projectView),
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
+      enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
+      androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
     )
   }
 }
 
-val WorkspaceContext.isAndroidEnabled: Boolean
-  get() = "rules_android" in enabledRules.values
-
-val WorkspaceContext.isGoEnabled: Boolean
-  get() = listOf("rules_go", "io_bazel_rules_go").any { it in enabledRules.values }
-
-val WorkspaceContext.isRustEnabled: Boolean
-  get() = "rules_rust" in enabledRules.values
-
-val WorkspaceContext.isPythonEnabled: Boolean
-  get() = "rules_python" in enabledRules.values
-
 val WorkspaceContext.extraFlags: List<String>
   get() =
-    if (isAndroidEnabled) {
+    if (enableNativeAndroidRules.value) {
       listOf(
         BazelFlag.experimentalGoogleLegacyApi(),
         BazelFlag.experimentalEnableAndroidMigrationApis(),

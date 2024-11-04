@@ -10,6 +10,11 @@ interface HasProgramArguments {
   val programArguments: MutableList<String>
 }
 
+interface HasAdditionalBazelOptions {
+  // Will be forwarded directly to `bazel <command> <options>`
+  val additionalBazelOptions: MutableList<String>
+}
+
 interface HasEnvironment {
   // In case of `bazel test`, it will be set using `--test_env=<name=value>`
   // In case of `bazel build`, it will be set using `--action_env=<name=value>`
@@ -77,11 +82,13 @@ abstract class BazelCommand(val bazelBinary: String) {
     HasProgramArguments,
     HasEnvironment,
     HasSingleTarget,
-    HasWorkingDirectory {
+    HasWorkingDirectory,
+    HasAdditionalBazelOptions {
     override val programArguments: MutableList<String> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
     override var workingDirectory: Path? = null
+    override val additionalBazelOptions: MutableList<String> = mutableListOf()
 
     override fun makeCommandLine(): List<String> {
       val commandLine = mutableListOf<String>()
@@ -90,6 +97,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("run")
       commandLine.addAll(options)
+      commandLine.addAll(additionalBazelOptions)
       commandLine.add(target.uri)
 
       if (programArguments.isNotEmpty()) {
@@ -128,12 +136,14 @@ abstract class BazelCommand(val bazelBinary: String) {
     BazelCommand(bazelBinary),
     HasEnvironment,
     HasMultipleTargets,
-    HasProgramArguments {
+    HasProgramArguments,
+    HasAdditionalBazelOptions {
     override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
     override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
     override val programArguments: MutableList<String> = mutableListOf()
+    override val additionalBazelOptions: MutableList<String> = mutableListOf()
 
     override fun makeCommandLine(): List<String> {
       val commandLine = mutableListOf(bazelBinary)
@@ -141,6 +151,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("test")
       commandLine.addAll(options)
+      commandLine.addAll(additionalBazelOptions)
       commandLine.addAll(environment.map { (key, value) -> "--test_env=$key=$value" })
       commandLine.addAll(inheritedEnvironment.map { "--test_env=$it" })
       commandLine.addAll(programArguments.map { "--test_arg=$it" })

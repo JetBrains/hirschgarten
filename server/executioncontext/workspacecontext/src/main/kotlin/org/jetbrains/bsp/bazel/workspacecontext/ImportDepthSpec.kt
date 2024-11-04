@@ -6,7 +6,7 @@ import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 
 data class ImportDepthSpec(override val value: Int) : ExecutionContextSingletonEntity<Int>()
 
-private val default = ImportDepthSpec(0)
+private val default = ImportDepthSpec(-1)
 
 internal object ImportDepthSpecExtractor : ExecutionContextEntityExtractor<ImportDepthSpec> {
   override fun fromProjectView(projectView: ProjectView): ImportDepthSpec =

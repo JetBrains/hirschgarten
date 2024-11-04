@@ -122,6 +122,7 @@ class BspProjectMapper(
         workspaceNonModuleTargetsProvider = true,
         workspaceInvalidTargetsProvider = true,
         runWithDebugProvider = true,
+        testWithDebugProvider = true,
         jvmBinaryJarsProvider = true,
         jvmCompileClasspathProvider = true,
       )

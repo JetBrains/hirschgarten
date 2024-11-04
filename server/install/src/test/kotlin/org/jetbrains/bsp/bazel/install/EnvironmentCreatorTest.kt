@@ -36,7 +36,7 @@ class EnvironmentCreatorTest {
 
       // then
       dotBazelBsp shouldNotBe null
-      dotBazelBsp.resolve("aspects/core.bzl").exists() shouldBeEqual true
+      dotBazelBsp.resolve("aspects/core.bzl.template").exists() shouldBeEqual true
       dotBazelBsp.resolve("aspects/rules").isDirectory() shouldBeEqual true
       dotBazelBsp.resolve("aspects/utils").isDirectory() shouldBeEqual true
       dotBazelBsp.resolve("aspects/utils/utils.bzl").exists() shouldBeEqual true

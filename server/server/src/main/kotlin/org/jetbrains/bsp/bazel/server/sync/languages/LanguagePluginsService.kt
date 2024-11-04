@@ -35,6 +35,7 @@ class LanguagePluginsService(
     thriftLanguagePlugin.prepareSync(targetInfos)
     pythonLanguagePlugin.prepareSync(targetInfos)
     rustLanguagePlugin.prepareSync(targetInfos)
+    androidLanguagePlugin.prepareSync(targetInfos)
     goLanguagePlugin.prepareSync(targetInfos)
   }
 

@@ -1,11 +1,15 @@
 package org.jetbrains.bsp.bazel.server
 
+import ch.epfl.scala.bsp4j.InitializeBuildParams
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.bsp.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
+import org.jetbrains.bsp.bazel.server.benchmark.setupTelemetry
 import org.jetbrains.bsp.bazel.server.bsp.BazelBspServerLifetime
 import org.jetbrains.bsp.bazel.server.bsp.BazelServices
 import org.jetbrains.bsp.bazel.server.bsp.BspIntegrationData
@@ -17,6 +21,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspFallbackAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.AdditionalAndroidBuildTargetsProvider
@@ -42,6 +47,8 @@ import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.FeatureFlags
+import org.jetbrains.bsp.protocol.InitializeBuildData
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
 
@@ -51,7 +58,10 @@ class BazelBspServer(
   private val workspaceRoot: Path,
   private val telemetryConfig: TelemetryConfig,
 ) {
+  private val gson = Gson()
+
   private fun bspServerData(
+    initializeBuildParams: InitializeBuildParams,
     bspClientLogger: BspClientLogger,
     bazelRunner: BazelRunner,
     compilationManager: BazelBspCompilationManager,
@@ -59,7 +69,19 @@ class BazelBspServer(
     workspaceContextProvider: WorkspaceContextProvider,
     bazelPathsResolver: BazelPathsResolver,
   ): BazelServices {
+    val initializeBuildData =
+      gson.fromJson(initializeBuildParams.data as? JsonObject, InitializeBuildData::class.java)
+        ?: InitializeBuildData()
+
+    val telemetryConfig =
+      telemetryConfig.copy(
+        bspClientLogger = bspClientLogger,
+        openTelemetryEndpoint = initializeBuildData.openTelemetryEndpoint,
+      )
+    setupTelemetry(telemetryConfig)
+
     val languagePluginsService = createLanguagePluginsService(bazelPathsResolver)
+    val featureFlags = initializeBuildData.featureFlags ?: FeatureFlags()
     val projectProvider =
       createProjectProvider(
         bspInfo = bspInfo,
@@ -70,6 +92,7 @@ class BazelBspServer(
         bazelPathsResolver = bazelPathsResolver,
         compilationManager = compilationManager,
         bspClientLogger = bspClientLogger,
+        featureFlags = featureFlags,
       )
     val bspProjectMapper =
       BspProjectMapper(
@@ -79,9 +102,7 @@ class BazelBspServer(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
       )
-
-    val telemetryConfigWithLogger = telemetryConfig.copy(bspClientLogger = bspClientLogger)
-    val projectSyncService = ProjectSyncService(bspProjectMapper, projectProvider, telemetryConfigWithLogger)
+    val projectSyncService = ProjectSyncService(bspProjectMapper, projectProvider, initializeBuildParams.capabilities)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(
@@ -92,7 +113,9 @@ class BazelBspServer(
         bspClientLogger = bspClientLogger,
         bazelPathsResolver = bazelPathsResolver,
         additionalBuildTargetsProvider = additionalBuildTargetsProvider,
+        featureFlags = featureFlags,
       )
+
     return BazelServices(
       projectSyncService,
       executeService,
@@ -113,7 +136,8 @@ class BazelBspServer(
     val thriftLanguagePlugin = ThriftLanguagePlugin(bazelPathsResolver)
     val pythonLanguagePlugin = PythonLanguagePlugin(bazelPathsResolver)
     val rustLanguagePlugin = RustLanguagePlugin(bazelPathsResolver)
-    val androidLanguagePlugin = AndroidLanguagePlugin(javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
+    val androidLanguagePlugin =
+      AndroidLanguagePlugin(workspaceContextProvider, javaLanguagePlugin, kotlinLanguagePlugin, bazelPathsResolver)
     val goLanguagePlugin = GoLanguagePlugin(bazelPathsResolver)
 
     return LanguagePluginsService(
@@ -138,6 +162,7 @@ class BazelBspServer(
     bazelPathsResolver: BazelPathsResolver,
     compilationManager: BazelBspCompilationManager,
     bspClientLogger: BspClientLogger,
+    featureFlags: FeatureFlags,
   ): ProjectProvider {
     val aspectsResolver = InternalAspectsResolver(bspInfo, bazelInfo.release)
 
@@ -145,11 +170,14 @@ class BazelBspServer(
       BazelBspAspectsManager(
         bazelBspCompilationManager = compilationManager,
         aspectsResolver = aspectsResolver,
+        workspaceContextProvider = workspaceContextProvider,
+        featureFlags = featureFlags,
       )
-    val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver, bazelInfo.release)
+    val bazelToolchainManager = BazelToolchainManager(bazelRunner, featureFlags)
+    val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
     val bazelBspFallbackAspectsManager = BazelBspFallbackAspectsManager(bazelRunner, workspaceContextProvider)
     val targetTagsResolver = TargetTagsResolver()
-    val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger()
+    val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger(featureFlags)
     val bazelProjectMapper =
       BazelProjectMapper(
         languagePluginsService,
@@ -157,12 +185,14 @@ class BazelBspServer(
         targetTagsResolver,
         kotlinAndroidModulesMerger,
         bspClientLogger,
+        featureFlags,
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 
     val projectResolver =
       ProjectResolver(
         bazelBspAspectsManager = bazelBspAspectsManager,
+        bazelToolchainManager = bazelToolchainManager,
         bazelBspLanguageExtensionsGenerator = bazelBspLanguageExtensionsGenerator,
         bazelBspFallbackAspectsManager = bazelBspFallbackAspectsManager,
         workspaceContextProvider = workspaceContextProvider,
@@ -172,13 +202,14 @@ class BazelBspServer(
         bazelRunner = bazelRunner,
         bazelPathsResolver = bazelPathsResolver,
         bspClientLogger = bspClientLogger,
+        featureFlags = featureFlags,
       )
     return ProjectProvider(projectResolver)
   }
 
   fun buildServer(bspIntegrationData: BspIntegrationData): Launcher<JoinedBuildClient> {
     val bspServerApi =
-      BspServerApi { client: JoinedBuildClient ->
+      BspServerApi { client: JoinedBuildClient, initializeBuildParams: InitializeBuildParams ->
         val bspClientLogger = BspClientLogger(client)
         val bazelRunner = BazelRunner(workspaceContextProvider, bspClientLogger, workspaceRoot)
         verifyBazelVersion(bazelRunner)
@@ -187,6 +218,7 @@ class BazelBspServer(
         val compilationManager =
           BazelBspCompilationManager(bazelRunner, bazelPathsResolver, client, workspaceRoot)
         bspServerData(
+          initializeBuildParams,
           bspClientLogger,
           bazelRunner,
           compilationManager,
@@ -216,7 +248,7 @@ class BazelBspServer(
     val client = launcher.remoteProxy
     val serverLifetime = BazelBspServerLifetime(workspaceContextProvider)
     val bspRequestsRunner = BspRequestsRunner(serverLifetime)
-    bspServerApi.init(client, serverLifetime, bspRequestsRunner)
+    bspServerApi.initialize(client, serverLifetime, bspRequestsRunner)
 
     return launcher
   }

@@ -16,6 +16,7 @@ internal object MetadataStorageImpl: MetadataStorageBase() {
         val primitiveTypeStringNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "String")
         val primitiveTypeListNotNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = false, type = "List")
         val primitiveTypeStringNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = true, type = "String")
+        val primitiveTypeIntNullable = ValueTypeMetadata.SimpleType.PrimitiveType(isNullable = true, type = "Int")
         
         var typeMetadata: StorageTypeMetadata
         
@@ -51,6 +52,7 @@ OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = 
 OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "resourceDirectories", valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))), primitive = primitiveTypeListNotNullable), withDefault = false),
 OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "resourceJavaPackage", valueType = primitiveTypeStringNullable, withDefault = false),
 OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "assetsDirectories", valueType = ValueTypeMetadata.ParameterizedType(generics = listOf(ValueTypeMetadata.SimpleType.CustomType(isNullable = false, typeMetadata = FinalClassMetadata.KnownClass(fqName = "com.intellij.platform.workspace.storage.url.VirtualFileUrl"))), primitive = primitiveTypeListNotNullable), withDefault = false),
+OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "androidMinSdkOverride", valueType = primitiveTypeIntNullable, withDefault = false),
 OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = "module", valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_ONE, entityFqName = "com.intellij.platform.workspace.jps.entities.ModuleEntity", isChild = false, isNullable = false), withDefault = false)), extProperties = listOf(ExtPropertyMetadata(isComputable = false, isOpen = false, name = "androidAddendumEntity", receiverFqn = "com.intellij.platform.workspace.jps.entities.ModuleEntity", valueType = ValueTypeMetadata.EntityReference(connectionType = ConnectionId.ConnectionType.ONE_TO_ONE, entityFqName = "org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendumEntity", isChild = true, isNullable = true), withDefault = false)), isAbstract = false)
         
         addMetadata(typeMetadata)
@@ -77,7 +79,7 @@ OwnPropertyMetadata(isComputable = false, isKey = false, isOpen = false, name = 
     }
 
     override fun initializeMetadataHash() {
-        addMetadataHash(typeFqn = "org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendumEntity", metadataHash = -990696884)
+        addMetadataHash(typeFqn = "org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendumEntity", metadataHash = 2063397091)
         addMetadataHash(typeFqn = "org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity", metadataHash = 654244471)
         addMetadataHash(typeFqn = "org.jetbrains.plugins.bsp.workspacemodel.entities.GeneratedJavaSourceRootEntity", metadataHash = -1867152896)
         addMetadataHash(typeFqn = "org.jetbrains.plugins.bsp.workspacemodel.entities.JvmBinaryJarsEntity", metadataHash = -966780690)

@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
 import org.apache.velocity.app.VelocityEngine
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
@@ -23,9 +22,9 @@ enum class Language(
   Rust("//aspects:rules/rust/rust_info.bzl", listOf("rules_rust"), listOf("extract_rust_crate_info"), false),
   Android(
     "//aspects:rules/android/android_info.bzl",
-    listOf("rules_android"),
+    listOf("rules_android", "build_bazel_rules_android"),
     listOf("extract_android_info", "extract_android_aar_import_info"),
-    false,
+    true,
   ),
   Go("//aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true),
   ;
@@ -39,10 +38,10 @@ enum class Language(
 
   fun toAspectRelativePath(): String = fileName.substringAfter(":")
 
-  fun toAspectTemplateRelativePath(): String = "${toAspectRelativePath()}.template"
+  fun toAspectTemplateRelativePath(): String = toAspectRelativePath() + Constants.TEMPLATE_EXTENSION
 }
 
-class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspectsResolver, private val bazelRelease: BazelRelease) {
+class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspectsResolver) {
   private val aspectsPath = Paths.get(internalAspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
   private val velocityEngine = VelocityEngine()
 
@@ -58,17 +57,17 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return props
   }
 
-  fun generateLanguageExtensions(ruleLanguages: List<RuleLanguage>) {
-    val fileContent = prepareFileContent(ruleLanguages)
+  fun generateLanguageExtensions(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>) {
+    val fileContent = prepareFileContent(ruleLanguages, toolchains)
     createNewExtensionsFile(fileContent)
   }
 
-  private fun prepareFileContent(ruleLanguages: List<RuleLanguage>) =
+  private fun prepareFileContent(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>) =
     listOf(
       "# This is a generated file, do not edit it",
       createLoadStatementsString(ruleLanguages.map { it.language }),
       createExtensionListString(ruleLanguages.map { it.language }),
-      createToolchainListString(ruleLanguages),
+      createToolchainListString(ruleLanguages, toolchains),
     ).joinToString(
       separator = "\n",
       postfix = "\n",
@@ -84,25 +83,10 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return functionNames.joinToString(prefix = "EXTENSIONS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
   }
 
-  private fun createToolchainListString(ruleLanguages: List<RuleLanguage>): String =
+  private fun createToolchainListString(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>): String =
     ruleLanguages
-      .mapNotNull {
-        when (it.language) {
-          Language.Scala -> """"@${it.ruleName}//scala:toolchain_type""""
-          Language.Java -> """"@bazel_tools//tools/jdk:runtime_toolchain_type""""
-          Language.Kotlin -> """"@${it.ruleName}//kotlin/internal:kt_toolchain_type""""
-          Language.Rust -> """"@${it.ruleName}//rust:toolchain_type""""
-          Language.Android -> getAndroidToolchain()
-          Language.Go -> """"@${it.ruleName}//go:toolchain""""
-          else -> null
-        }
-      }.joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
-
-  private fun getAndroidToolchain(): String? =
-    when (bazelRelease.major) {
-      in 0..5 -> null // No support for optional toolchains
-      else -> """config_common.toolchain_type("@bazel_tools//tools/android:sdk_toolchain_type", mandatory = False)"""
-    }
+      .mapNotNull { toolchains[it] }
+      .joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
 
   private fun createNewExtensionsFile(fileContent: String) {
     val file = aspectsPath.resolve(Constants.EXTENSIONS_BZL)

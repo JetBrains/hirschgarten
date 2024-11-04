@@ -13,6 +13,8 @@ import org.jetbrains.bsp.bazel.server.bep.BepOutput
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Paths
 
 data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val isFailure: Boolean)
@@ -22,18 +24,43 @@ data class RuleLanguage(val ruleName: String?, val language: Language)
 class BazelBspAspectsManager(
   private val bazelBspCompilationManager: BazelBspCompilationManager,
   private val aspectsResolver: InternalAspectsResolver,
+  private val workspaceContextProvider: WorkspaceContextProvider,
+  private val featureFlags: FeatureFlags,
 ) {
   private val aspectsPath = Paths.get(aspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
   private val templateWriter = TemplateWriter(aspectsPath)
 
   fun calculateRuleLanguages(externalRuleNames: List<String>): List<RuleLanguage> =
-    Language.values().mapNotNull { language ->
-      if (language.ruleNames.isEmpty()) return@mapNotNull RuleLanguage(null, language) // bundled in Bazel
-      val ruleName = language.ruleNames.firstOrNull { externalRuleNames.contains(it) }
-      ruleName?.let { RuleLanguage(it, language) }
-    }
+    Language
+      .values()
+      .mapNotNull { language ->
+        if (language.ruleNames.isEmpty()) return@mapNotNull RuleLanguage(null, language) // bundled in Bazel
+        val ruleName = language.ruleNames.firstOrNull { externalRuleNames.contains(it) }
+        ruleName?.let { RuleLanguage(it, language) }
+      }.removeDisabledLanguages()
+      .addNativeAndroidLanguageIfNeeded()
 
-  fun generateAspectsFromTemplates(ruleLanguages: List<RuleLanguage>, workspaceContext: WorkspaceContext) {
+  private fun List<RuleLanguage>.removeDisabledLanguages(): List<RuleLanguage> {
+    val disabledLanguages =
+      buildSet {
+        if (!featureFlags.isAndroidSupportEnabled) add(Language.Android)
+        if (!featureFlags.isGoSupportEnabled) add(Language.Go)
+        if (!featureFlags.isRustSupportEnabled) add(Language.Rust)
+      }
+    return filterNot { it.language in disabledLanguages }
+  }
+
+  private fun List<RuleLanguage>.addNativeAndroidLanguageIfNeeded(): List<RuleLanguage> {
+    if (!featureFlags.isAndroidSupportEnabled) return this
+    if (!workspaceContextProvider.currentWorkspaceContext().enableNativeAndroidRules.value) return this
+    return this.filterNot { it.language == Language.Android } + RuleLanguage(null, Language.Android)
+  }
+
+  fun generateAspectsFromTemplates(
+    ruleLanguages: List<RuleLanguage>,
+    workspaceContext: WorkspaceContext,
+    toolchains: Map<RuleLanguage, String?>,
+  ) {
     ruleLanguages.filter { it.language.isTemplate }.forEach {
       val outputFile = aspectsPath.resolve(it.language.toAspectRelativePath())
       val templateFilePath = it.language.toAspectTemplateRelativePath()
@@ -47,9 +74,16 @@ class BazelBspAspectsManager(
             if (kotlinEnabled) """load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider")""" else "",
           "getKtJvmProvider" to
             if (kotlinEnabled) "get_kt_jvm_provider(target)" else "None",
+          "toolchainType" to toolchains[it].orEmpty(),
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }
+
+    templateWriter.writeToFile(
+      Constants.CORE_BZL + Constants.TEMPLATE_EXTENSION,
+      aspectsPath.resolve(Constants.CORE_BZL),
+      mapOf("isPropagateExportsFromDepsEnabled" to featureFlags.isPropagateExportsFromDepsEnabled.toStarlarkString()),
+    )
   }
 
   private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"

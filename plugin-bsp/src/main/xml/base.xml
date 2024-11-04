@@ -16,7 +16,7 @@
                         interface="org.jetbrains.plugins.bsp.android.AndroidSdkGetterExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.androidFacetEntityUpdaterExtension"
-                        interface="org.jetbrains.plugins.bsp.impl.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
+                        interface="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtension"
                         dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspRunHandlerProvider"
                         interface="org.jetbrains.plugins.bsp.run.BspRunHandlerProvider"
@@ -85,6 +85,7 @@
                 implementation="org.jetbrains.plugins.bsp.impl.server.connection.DefaultConnectionDetailsProviderExtension"/>
 
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.JvmBspRunHandler$JvmBspRunHandlerProvider" id="JvmRunHandlerProvider"/>
+        <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.JvmBspTestHandler$JvmBspTestHandlerProvider" id="JvmTestHandlerProvider"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspRunHandlerProvider" order="last"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspTestHandlerProvider" order="last"/>
         <projectSyncHook implementation="org.jetbrains.plugins.bsp.projectDetails.CollectProjectDetailsSyncHook"/>
@@ -101,6 +102,9 @@
                         overrides="true"/>
         <projectService serviceInterface="com.intellij.codeInsight.ExternalAnnotationsManager"
                         serviceImplementation="org.jetbrains.plugins.bsp.services.BspExternalAnnotationsManager"
+                        overrides="true"/>
+        <projectService serviceInterface="com.intellij.openapi.vcs.roots.VcsRootDetector"
+                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspVcsRootDetector"
                         overrides="true"/>
         <moduleService serviceInterface="com.intellij.openapi.roots.ModuleFileIndex"
                        serviceImplementation="org.jetbrains.plugins.bsp.services.BspModuleFileIndex"
@@ -128,9 +132,9 @@
 
         <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.runnerAction.BuildBeforeLocalRunTaskProvider" />
 
-        <treeStructureProvider implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspTreeStructureProvider"/>
+        <treeStructureProvider implementation="org.jetbrains.plugins.bsp.ui.projectTree.BspTreeStructureProvider"/>
         <projectViewNodeDecorator
-                implementation="org.jetbrains.plugins.bsp.ui.project.tree.BspProjectViewNodeDecorator"/>
+                implementation="org.jetbrains.plugins.bsp.ui.projectTree.BspProjectViewNodeDecorator"/>
         <projectTaskRunner
                 implementation="org.jetbrains.plugins.bsp.buildTask.BspProjectTaskRunner"/>
         <programRunner implementation="org.jetbrains.plugins.bsp.jvm.BspJvmDebugRunner"/>
@@ -171,11 +175,14 @@
                      description="Retrieve targets for file from its ancestors"
                      key="bsp.retrieve.targets.for.file.from.ancestors"/>
         <registryKey defaultValue="false"
-                     description="Wrap libraries inside modules to form a proper dependency graph between libraries"
+                     description="Wrap libraries inside modules to form a proper dependency graph between libraries. Enabled by default with K2 mode"
                      key="bsp.wrap.libraries.inside.modules"/>
+        <registryKey defaultValue="false"
+                     description="Scan for Git roots inside the project directory."
+                     key="bsp.scan.git.roots.inside.project.dir"/>
 
         <statusBarWidgetFactory id="BspFileTargetsWidget"
-                                implementation="org.jetbrains.plugins.bsp.ui.widgets.file.targets.BspFileTargetsWidgetFactory"/>
+                                implementation="org.jetbrains.plugins.bsp.ui.widgets.fileTargets.BspFileTargetsWidgetFactory"/>
 
         <toolWindowAllowlist id="BSP"/>
         <toolWindowExtractor implementation="org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspToolWindowViewModelExtractor"/>

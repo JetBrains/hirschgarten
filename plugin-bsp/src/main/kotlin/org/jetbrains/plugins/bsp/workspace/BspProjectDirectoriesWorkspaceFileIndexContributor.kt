@@ -9,7 +9,7 @@ import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
 
-public class BspProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<BspProjectDirectoriesEntity> {
+class BspProjectDirectoriesWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<BspProjectDirectoriesEntity> {
   override val entityClass: Class<BspProjectDirectoriesEntity> = BspProjectDirectoriesEntity::class.java
 
   override fun registerFileSets(

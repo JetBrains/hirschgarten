@@ -6,6 +6,7 @@ kt_jvm_library(
         "**/*.java",
         "**/*.kt",
     ]),
+    associates = ["//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl/workspacemodel/impl/updaters/transformers"],
     visibility = ["//visibility:public"],
     deps = [
         "//plugin-bsp/jps-compilation/src:jps-compilation",
@@ -14,6 +15,8 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/assets",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/coroutines",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/performance",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/taskEvents",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/utils",

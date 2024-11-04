@@ -55,6 +55,7 @@ import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
+import org.jetbrains.bsp.protocol.TestWithDebugParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
@@ -91,6 +92,7 @@ class BuildServerMock(
   private val workspaceInvalidTargetsResult: WorkspaceInvalidTargetsResult? = null,
   private val analysisDebugResult: AnalysisDebugResult? = null,
   private val runResultWithDebug: RunResult? = null,
+  private val testResultWithDebug: TestResult? = null,
   private val mobileInstallResult: MobileInstallResult? = null,
   private val jvmBinaryJarsResult: JvmBinaryJarsResult? = null,
   private val workspaceBuildTargetsResultAndBuild: WorkspaceBuildTargetsResult? = null,
@@ -180,6 +182,8 @@ class BuildServerMock(
     wrapInFuture(analysisDebugResult)
 
   override fun buildTargetRunWithDebug(params: RunWithDebugParams): CompletableFuture<RunResult> = wrapInFuture(runResultWithDebug)
+
+  override fun buildTargetTestWithDebug(params: TestWithDebugParams): CompletableFuture<TestResult> = wrapInFuture(testResultWithDebug)
 
   override fun buildTargetMobileInstall(params: MobileInstallParams): CompletableFuture<MobileInstallResult> =
     wrapInFuture(mobileInstallResult)

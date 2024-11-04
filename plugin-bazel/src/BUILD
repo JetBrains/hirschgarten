@@ -17,6 +17,7 @@ java_proto_library(
 kt_jvm_library(
     name = "intellij-bsp",
     neverlink = True,
+    visibility = ["//plugin-bazel:__subpackages__"],
     exports = [
         "//plugin-bsp/src:intellij-bsp",
     ],
@@ -38,13 +39,16 @@ kt_jvm_library(
         "main/kotlin/**/*.kt",
         "main/gen/**/*.java",
     ]),
-    resources = glob([
-        "main/resources/**",
-    ]),
     visibility = ["//visibility:public"],
     deps = [
         ":intellij-bsp",
         ":starlark_annotations",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting:higlighting",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
         "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
@@ -52,6 +56,14 @@ kt_jvm_library(
         "@rules_intellij//third_party/performance",
         "@rules_intellij//third_party/python",
     ],
+)
+
+kt_jvm_library(
+    name = "intellij-bazel-resources",
+    resources = glob([
+        "main/resources/**",
+    ]),
+    visibility = ["//visibility:public"],
 )
 
 intellij_integration_test_suite(

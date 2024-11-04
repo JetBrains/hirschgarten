@@ -3,13 +3,11 @@ package org.jetbrains.plugins.bsp.workspacemodel.entities.impl
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.ConnectionId
 import com.intellij.platform.workspace.storage.EntitySource
-import com.intellij.platform.workspace.storage.EntityType
 import com.intellij.platform.workspace.storage.GeneratedCodeApiVersion
 import com.intellij.platform.workspace.storage.GeneratedCodeImplVersion
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import com.intellij.platform.workspace.storage.WorkspaceEntity
 import com.intellij.platform.workspace.storage.WorkspaceEntityInternalApi
-import com.intellij.platform.workspace.storage.annotations.Child
 import com.intellij.platform.workspace.storage.impl.EntityLink
 import com.intellij.platform.workspace.storage.impl.ModifiableWorkspaceEntityBase
 import com.intellij.platform.workspace.storage.impl.WorkspaceEntityBase
@@ -29,12 +27,12 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidTargetType
 @GeneratedCodeApiVersion(3)
 @GeneratedCodeImplVersion(6)
 @OptIn(WorkspaceEntityInternalApi::class)
-internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendumEntityData) : AndroidAddendumEntity,
-  WorkspaceEntityBase(dataSource) {
+internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendumEntityData) : AndroidAddendumEntity, WorkspaceEntityBase(
+  dataSource) {
 
   private companion object {
-    internal val MODULE_CONNECTION_ID: ConnectionId =
-      ConnectionId.create(ModuleEntity::class.java, AndroidAddendumEntity::class.java, ConnectionId.ConnectionType.ONE_TO_ONE, false)
+    internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, AndroidAddendumEntity::class.java,
+                                                                          ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -78,6 +76,11 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
       return dataSource.assetsDirectories
     }
 
+  override val androidMinSdkOverride: Int?
+    get() {
+      readField("androidMinSdkOverride")
+      return dataSource.androidMinSdkOverride
+    }
   override val module: ModuleEntity
     get() = snapshot.extractOneToOneParent(MODULE_CONNECTION_ID, this)!!
 
@@ -92,8 +95,8 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
   }
 
 
-  internal class Builder(result: AndroidAddendumEntityData?) :
-    ModifiableWorkspaceEntityBase<AndroidAddendumEntity, AndroidAddendumEntityData>(result), AndroidAddendumEntity.Builder {
+  internal class Builder(result: AndroidAddendumEntityData?) : ModifiableWorkspaceEntityBase<AndroidAddendumEntity, AndroidAddendumEntityData>(
+    result), AndroidAddendumEntity.Builder {
     internal constructor() : this(AndroidAddendumEntityData())
 
     override fun applyToBuilder(builder: MutableEntityStorage) {
@@ -101,7 +104,8 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
         if (existsInBuilder(builder)) {
           this.diff = builder
           return
-        } else {
+        }
+        else {
           error("Entity AndroidAddendumEntity is already created in a different builder")
         }
       }
@@ -142,7 +146,8 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
         if (_diff.extractOneToOneParent<WorkspaceEntityBase>(MODULE_CONNECTION_ID, this) == null) {
           error("Field AndroidAddendumEntity#module should be initialized")
         }
-      } else {
+      }
+      else {
         if (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)] == null) {
           error("Field AndroidAddendumEntity#module should be initialized")
         }
@@ -171,10 +176,10 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
       if (this.androidSdkName != dataSource.androidSdkName) this.androidSdkName = dataSource.androidSdkName
       if (this.androidTargetType != dataSource.androidTargetType) this.androidTargetType = dataSource.androidTargetType
       if (this.manifest != dataSource?.manifest) this.manifest = dataSource.manifest
-      if (this.resourceDirectories != dataSource.resourceDirectories) this.resourceDirectories =
-        dataSource.resourceDirectories.toMutableList()
+      if (this.resourceDirectories != dataSource.resourceDirectories) this.resourceDirectories = dataSource.resourceDirectories.toMutableList()
       if (this.resourceJavaPackage != dataSource?.resourceJavaPackage) this.resourceJavaPackage = dataSource.resourceJavaPackage
       if (this.assetsDirectories != dataSource.assetsDirectories) this.assetsDirectories = dataSource.assetsDirectories.toMutableList()
+      if (this.androidMinSdkOverride != dataSource?.androidMinSdkOverride) this.androidMinSdkOverride = dataSource.androidMinSdkOverride
       updateChildToParentReferences(parents)
     }
 
@@ -226,7 +231,8 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
         if (collection_resourceDirectories !is MutableWorkspaceList) return collection_resourceDirectories
         if (diff == null || modifiable.get()) {
           collection_resourceDirectories.setModificationUpdateAction(resourceDirectoriesUpdater)
-        } else {
+        }
+        else {
           collection_resourceDirectories.cleanModificationUpdateAction()
         }
         return collection_resourceDirectories
@@ -256,7 +262,8 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
         if (collection_assetsDirectories !is MutableWorkspaceList) return collection_assetsDirectories
         if (diff == null || modifiable.get()) {
           collection_assetsDirectories.setModificationUpdateAction(assetsDirectoriesUpdater)
-        } else {
+        }
+        else {
           collection_assetsDirectories.cleanModificationUpdateAction()
         }
         return collection_assetsDirectories
@@ -267,14 +274,23 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
         assetsDirectoriesUpdater.invoke(value)
       }
 
+    override var androidMinSdkOverride: Int??
+      get() = getEntityData().androidMinSdkOverride
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).androidMinSdkOverride = value
+        changedProperty.add("androidMinSdkOverride")
+      }
+
     override var module: ModuleEntity.Builder
       get() {
         val _diff = diff
         return if (_diff != null) {
           @OptIn(EntityStorageInstrumentationApi::class)
           ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModuleEntity.Builder)
-            ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
-        } else {
+          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
+        }
+        else {
           this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
         }
       }
@@ -290,7 +306,8 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
         }
         if (_diff != null && (value !is ModifiableWorkspaceEntityBase<*, *> || value.diff != null)) {
           _diff.updateOneToOneParentOfChild(MODULE_CONNECTION_ID, this, value)
-        } else {
+        }
+        else {
           if (value is ModifiableWorkspaceEntityBase<*, *>) {
             value.entityLinks[EntityLink(true, MODULE_CONNECTION_ID)] = this
           }
@@ -313,6 +330,7 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
   lateinit var resourceDirectories: MutableList<VirtualFileUrl>
   var resourceJavaPackage: String? = null
   lateinit var assetsDirectories: MutableList<VirtualFileUrl>
+  var androidMinSdkOverride: Int? = null
 
   internal fun isAndroidSdkNameInitialized(): Boolean = ::androidSdkName.isInitialized
   internal fun isAndroidTargetTypeInitialized(): Boolean = ::androidTargetType.isInitialized
@@ -338,7 +356,8 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
   }
 
   override fun getMetadata(): EntityMetadata {
-    return MetadataStorageImpl.getMetadataByTypeFqn("org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendumEntity") as EntityMetadata
+    return MetadataStorageImpl.getMetadataByTypeFqn(
+      "org.jetbrains.plugins.bsp.workspacemodel.entities.AndroidAddendumEntity") as EntityMetadata
   }
 
   override fun clone(): AndroidAddendumEntityData {
@@ -357,6 +376,7 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
     return AndroidAddendumEntity(androidSdkName, androidTargetType, resourceDirectories, assetsDirectories, entitySource) {
       this.manifest = this@AndroidAddendumEntityData.manifest
       this.resourceJavaPackage = this@AndroidAddendumEntityData.resourceJavaPackage
+      this.androidMinSdkOverride = this@AndroidAddendumEntityData.androidMinSdkOverride
       parents.filterIsInstance<ModuleEntity.Builder>().singleOrNull()?.let { this.module = it }
     }
   }
@@ -380,6 +400,7 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
     if (this.resourceDirectories != other.resourceDirectories) return false
     if (this.resourceJavaPackage != other.resourceJavaPackage) return false
     if (this.assetsDirectories != other.assetsDirectories) return false
+    if (this.androidMinSdkOverride != other.androidMinSdkOverride) return false
     return true
   }
 
@@ -395,6 +416,7 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
     if (this.resourceDirectories != other.resourceDirectories) return false
     if (this.resourceJavaPackage != other.resourceJavaPackage) return false
     if (this.assetsDirectories != other.assetsDirectories) return false
+    if (this.androidMinSdkOverride != other.androidMinSdkOverride) return false
     return true
   }
 
@@ -406,6 +428,7 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
     result = 31 * result + resourceDirectories.hashCode()
     result = 31 * result + resourceJavaPackage.hashCode()
     result = 31 * result + assetsDirectories.hashCode()
+    result = 31 * result + androidMinSdkOverride.hashCode()
     return result
   }
 
@@ -417,6 +440,7 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
     result = 31 * result + resourceDirectories.hashCode()
     result = 31 * result + resourceJavaPackage.hashCode()
     result = 31 * result + assetsDirectories.hashCode()
+    result = 31 * result + androidMinSdkOverride.hashCode()
     return result
   }
 }

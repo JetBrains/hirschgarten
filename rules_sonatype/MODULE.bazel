@@ -1,0 +1,50 @@
+module(
+    name = "rules_sonatype",
+)
+
+bazel_dep(name = "rules_cc", version = "0.0.12")
+bazel_dep(name = "rules_java", version = "7.12.1")
+bazel_dep(name = "bazel_features", version = "1.19.0")
+bazel_dep(name = "rules_license", version = "1.0.0")
+bazel_dep(name = "rules_jvm_external", version = "6.4")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "rules_sonatype_deps",
+    artifacts = [
+        "org.sonatype.spice.zapper:spice-zapper:1.3",
+        "org.wvlet.airframe:airframe-http_2.13:20.12.1",
+        "org.scala-lang.modules:scala-java8-compat_2.13:1.0.2",
+        "org.wvlet.airframe:airspec_2.13:20.12.1",
+        "org.backuity.clist:clist-core_2.13:3.5.1",
+        "org.backuity.clist:clist-macros_2.13:3.5.1",
+    ],
+    generate_compat_repositories = True,
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+)
+use_repo(maven, "rules_sonatype_deps")
+
+bazel_dep(name = "protobuf", version = "28.2")
+single_version_override(
+    module_name = "protobuf",
+    version = "28.2",
+)
+
+bazel_dep(name = "rules_scala", repo_name = "io_bazel_rules_scala")
+git_override(
+    module_name = "rules_scala",
+    commit = "f0bb64693313516560e0740bc4c0717311657fb1",
+    remote = "https://github.com/mbland/rules_scala.git",
+)
+
+scala_config = use_extension(
+    "@io_bazel_rules_scala//scala/extensions:config.bzl",
+    "scala_config",
+)
+scala_config.settings(
+    scala_version = "2.13.14",
+)
+use_repo(scala_config, "io_bazel_rules_scala_config")

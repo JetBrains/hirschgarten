@@ -68,6 +68,13 @@ class BazelBspLanguageExtensionsGeneratorTest {
       RuleLanguage(null, Language.Jvm),
       RuleLanguage(null, Language.Python),
     )
+  private val defaultToolchains =
+    mapOf(
+      RuleLanguage(null, Language.Java) to """"@bazel_tools//tools/jdk:runtime_toolchain_type"""",
+      RuleLanguage("io_bazel_rules_kotlin", Language.Kotlin) to """"@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type"""",
+      RuleLanguage("io_bazel_rules_scala", Language.Scala) to """"@io_bazel_rules_scala//scala:toolchain_type"""",
+      RuleLanguage("io_bazel_rules_go", Language.Go) to """"@io_bazel_rules_go//go:toolchain"""",
+    )
   private lateinit var dotBazelBspAspectsPath: Path
   private lateinit var internalAspectsResolverMock: InternalAspectsResolver
   private val bazelRelease = BazelRelease(5)
@@ -96,10 +103,10 @@ class BazelBspLanguageExtensionsGeneratorTest {
     // given
     val ruleLanguages = defaultRuleLanguages
     val bazelBspLanguageExtensionsGenerator =
-      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock, bazelRelease)
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
-    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages)
+    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains)
 
     // then
     val fileContent = getExtensionsFileContent()
@@ -116,10 +123,10 @@ class BazelBspLanguageExtensionsGeneratorTest {
         )
     BazelExternalRulesQueryMock(listOf("rules_cc"))
     val bazelBspLanguageExtensionsGenerator =
-      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock, bazelRelease)
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
-    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages)
+    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains)
 
     // then
     val fileContent = getExtensionsFileContent()
@@ -136,10 +143,10 @@ class BazelBspLanguageExtensionsGeneratorTest {
         )
     BazelExternalRulesQueryMock(listOf("io_bazel_rules_go"))
     val bazelBspLanguageExtensionsGenerator =
-      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock, bazelRelease)
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
-    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages)
+    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains)
 
     // then
     val fileContent = getExtensionsFileContent()
@@ -158,10 +165,10 @@ class BazelBspLanguageExtensionsGeneratorTest {
           RuleLanguage("io_bazel_rules_go", Language.Go),
         )
     val bazelBspLanguageExtensionsGenerator =
-      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock, bazelRelease)
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
 
     // when
-    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages)
+    bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains)
 
     // then
     val fileContent = getExtensionsFileContent()
@@ -180,22 +187,21 @@ class BazelBspLanguageExtensionsGeneratorTest {
           RuleLanguage("io_bazel_rules_go", Language.Go),
         )
     val emptyBazelBspLanguageExtensionsGenerator =
-      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock, bazelRelease)
+      BazelBspLanguageExtensionsGenerator(internalAspectsResolverMock)
     val allBazelBspLanguageExtensionsGenerator =
       BazelBspLanguageExtensionsGenerator(
         internalAspectsResolverMock,
-        bazelRelease,
       )
 
     // when
-    allBazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages)
+    allBazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, defaultToolchains)
     var fileContent = getExtensionsFileContent()
 
     // then
     fileContent shouldBeEqual allExtensionsFileContent
 
     // when
-    emptyBazelBspLanguageExtensionsGenerator.generateLanguageExtensions(defaultRuleLanguages)
+    emptyBazelBspLanguageExtensionsGenerator.generateLanguageExtensions(defaultRuleLanguages, defaultToolchains)
 
     // then
     fileContent = getExtensionsFileContent()

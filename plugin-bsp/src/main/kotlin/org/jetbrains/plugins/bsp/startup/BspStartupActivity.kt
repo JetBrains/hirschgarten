@@ -16,8 +16,8 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.impl.server.connection.connectionDetailsProvider
-import org.jetbrains.plugins.bsp.impl.target.temporaryTargetUtils
-import org.jetbrains.plugins.bsp.ui.widgets.file.targets.updateBspFileTargetsWidget
+import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
+import org.jetbrains.plugins.bsp.ui.widgets.fileTargets.updateBspFileTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
 
@@ -29,7 +29,7 @@ private val log = logger<BspStartupActivity>()
  * @see BspProjectOpenProcessor for additional actions that
  * may run when a project is being imported for the first time.
  */
-public class BspStartupActivity : BspProjectActivity() {
+class BspStartupActivity : BspProjectActivity() {
   override suspend fun Project.executeForBspProject() {
     log.info("Executing BSP startup activity for project: $this")
     BspStartupActivityTracker.startConfigurationPhase(this)

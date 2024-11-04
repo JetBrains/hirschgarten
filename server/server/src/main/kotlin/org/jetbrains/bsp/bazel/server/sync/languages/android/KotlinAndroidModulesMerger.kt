@@ -3,11 +3,10 @@ package org.jetbrains.bsp.bazel.server.sync.languages.android
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.kotlin.KotlinModule
-import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.bazel.workspacecontext.isAndroidEnabled
+import org.jetbrains.bsp.protocol.FeatureFlags
 
 /**
- * kt_android_library/kt_android_local_test with the name `foo` actually produces three targets:
+ * kt_android_library/kt_android_local_test with the name `foo` in rules_kotlin actually produces three targets:
  * - An android_library target `foo_base` with Android resources;
  * - A kt_jvm_library target `foo_kt` with Kotlin sources that depends on `foo_base`;
  * - An empty target `foo` that just depends on the two targets above.
@@ -20,9 +19,9 @@ import org.jetbrains.bsp.bazel.workspacecontext.isAndroidEnabled
  * Therefore, we just merge them all into a single target.
  * Also see [Android Kotlin rules implementation](https://github.com/bazelbuild/rules_kotlin/blob/a675511fdbee743c09d537c2dddfb349981ae70b/kotlin/internal/jvm/android.bzl).
  */
-class KotlinAndroidModulesMerger {
-  fun mergeKotlinAndroidModules(modules: List<Module>, workspaceContext: WorkspaceContext): List<Module> =
-    if (workspaceContext.isAndroidEnabled) doMergeKotlinAndroidModules(modules) else modules
+class KotlinAndroidModulesMerger(private val featureFlags: FeatureFlags) {
+  fun mergeKotlinAndroidModules(modules: List<Module>): List<Module> =
+    if (featureFlags.isAndroidSupportEnabled) doMergeKotlinAndroidModules(modules) else modules
 
   private fun doMergeKotlinAndroidModules(modules: List<Module>): List<Module> {
     val moduleById = modules.associateBy { it.label.value }
@@ -61,7 +60,7 @@ class KotlinAndroidModulesMerger {
         androidModule.languageData as? AndroidModule
       } else {
         parentModule.languageData as? AndroidModule
-      } ?: return null
+      }?.copy(correspondingKotlinTarget = kotlinModule.label) ?: return null
 
     val javaModule =
       androidLanguageData.javaModule?.run {

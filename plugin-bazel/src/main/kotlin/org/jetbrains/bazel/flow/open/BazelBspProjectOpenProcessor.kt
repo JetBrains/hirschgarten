@@ -19,6 +19,7 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
   override fun calculateProjectFolderToOpen(virtualFile: VirtualFile): VirtualFile =
     when {
       virtualFile.isProjectViewFile() -> findProjectFolderFromProjectViewFile(virtualFile)
+      virtualFile.isWorkspaceFile() -> virtualFile.parent
       virtualFile.isBazelBspConnectionFile() -> BspProjectOpenProcessor().calculateProjectFolderToOpen(virtualFile)
       else -> null
     } ?: error("Cannot find the suitable Bazel project folder to open for the given file $virtualFile.")
@@ -29,6 +30,8 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
       vFile.isDirectory && canOpenProject(vFile) -> vFile
       else -> findProjectFolderFromProjectViewFile(vFile.parent)
     }
+
+  private fun VirtualFile.isWorkspaceFile() = isFile && name in BazelPluginConstants.WORKSPACE_FILE_NAMES
 
   override val icon: Icon = BazelPluginIcons.bazel
 

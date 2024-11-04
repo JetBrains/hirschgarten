@@ -1,40 +1,84 @@
 package org.jetbrains.bazel.languages.bazelrc.flags
 
-import kotlinx.collections.immutable.ImmutableSet
-import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.toPersistentMap
+import java.lang.reflect.Field
+import kotlin.reflect.KProperty
 
-var flagsByName = mutableMapOf<String, BazelFlag<*>>()
+sealed class Flag {
+  abstract val name: String
 
-fun flagByName(name: String): BazelFlag<*>? {
-  val x = flags.javaClass
-  return flagsByName[name]
-}
+  data class Unknown(override val name: String) : Flag()
 
-data class BazelFlag<T>(
-  val name: String,
-  val description: String,
-  val default: T? = null,
-  val tags: ImmutableSet<String> = persistentSetOf(),
-  val variants: ImmutableSet<T> = persistentSetOf(),
-  val otherNames: Set<String> = persistentSetOf(),
-) {
-  init {
-    flagsByName["--$name"] = this
-    otherNames.forEach { otherName -> flagsByName["--$otherName"] = this }
+  data class Boolean(override val name: String) : Flag()
+
+  data class Integer(override val name: String) : Flag()
+
+  data class Path(override val name: String) : Flag()
+
+  data class Double(override val name: String) : Flag()
+
+  data class Duration(override val name: String) : Flag()
+
+  data class Str(override val name: String) : Flag()
+
+  data class Label(override val name: String) : Flag()
+
+  data class OneOf(override val name: String) : Flag()
+
+  /** Lazily load and return the @Option() annotation associated with this value, if any. */
+  val option: Option by object : LazyExtension<Option, Flag>() {
+    override fun initValue(o: Flag): Option =
+      KnownFlags.declaredFieldsMap[o.name]?.getDeclaredAnnotation(Option::class.java) ?: Option(o.name)
   }
 
   companion object {
-    fun boolean(
-      name: String,
-      description: String,
-      default: Boolean? = null,
-      tags: ImmutableSet<String> = persistentSetOf(),
-    ) = BazelFlag(
-      name = name,
-      otherNames = persistentSetOf("no$name"),
-      description = description,
-      default = default,
-      tags = tags,
-    )
+    internal val KnownFlags.declaredFieldsMap by object : LazyExtension<PersistentMap<String, Field>, KnownFlags>() {
+      override fun initValue(o: KnownFlags): PersistentMap<String, Field> =
+        KnownFlags::class.java.declaredFields
+          .filter { it.getDeclaredAnnotation(Option::class.java) != null }
+          .associateBy { it.name }
+          .toPersistentMap()
+    }
+
+    internal val KnownFlags.allFlags by object : LazyExtension<PersistentMap<String, Flag>, KnownFlags>() {
+      override fun initValue(o: KnownFlags): PersistentMap<String, Flag> =
+        KnownFlags.declaredFieldsMap
+          .values
+          .mapNotNull {
+            it.getDeclaredAnnotation(Option::class.java)?.let { op -> Pair(it, op) }
+          }.mapNotNull { (f, op) -> (f.get(o) as? Flag)?.let { flag -> Pair(flag, op) } }
+          .flatMap { knownFlagNames(it) }
+          .toMap()
+          .toPersistentMap()
+    }
+
+    fun byName(name: String) = KnownFlags.allFlags[name]
   }
+}
+
+fun knownFlagNames(pair: Pair<Flag, Option>): List<Pair<String, Flag>> {
+  val (flag, option) = pair
+  var names = listOf(option.name, option.oldName).filter { it.isNotEmpty() }
+
+  names =
+    when (flag) {
+      is Flag.Boolean -> names.flatMap { it -> listOf("--$it", "--no$it") }
+      else -> names.map { "--$it" }
+    }
+
+  return names.map { it to flag }
+}
+
+abstract class LazyExtension<T, This> {
+  private lateinit var value: T & Any
+
+  operator fun getValue(o: This, p: KProperty<*>): T {
+    if (!::value.isInitialized) {
+      value = initValue(o)
+    }
+    return value
+  }
+
+  abstract fun initValue(o: This): T & Any
 }
