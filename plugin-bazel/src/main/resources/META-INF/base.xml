@@ -220,5 +220,10 @@
             <add-to-group group-id="Copy.Paste.Special" anchor="after" relative-to-action="CopyReference"/>
         </action>
 
+        <action id="Bazel.ImportExternalProject" class="org.jetbrains.bazel.flow.open.actions.LinkBazelProjectFromScriptAction">
+            <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+
     </actions>
 </idea-plugin>
