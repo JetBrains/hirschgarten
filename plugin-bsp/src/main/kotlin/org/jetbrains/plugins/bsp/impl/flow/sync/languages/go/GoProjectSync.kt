@@ -50,6 +50,10 @@ private const val GO_SOURCE_ROOT_TYPE = "go-source"
 private const val GO_TEST_SOURCE_ROOT_TYPE = "go-test"
 private const val GO_RESOURCE_ROOT_TYPE = "go-resource"
 
+// looks strange, but GO plugin does not use this field extensively, so there is no GO-specific type available
+// WEB_MODULE is the "recommended" one
+private val GO_MODULE_TYPE = ModuleTypeId("WEB_MODULE")
+
 class GoProjectSync : ProjectSyncHook {
   override val buildToolId: BuildToolId = bspBuildToolId
 
@@ -113,8 +117,7 @@ class GoProjectSync : ProjectSyncHook {
           },
         entitySource = entitySource,
       ) {
-        // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1153
-        this.type = ModuleTypeId("WEB_MODULE")
+        this.type = GO_MODULE_TYPE
         this.contentRoots = sourceContentRootEntities + resourceContentRootEntities
       },
     )
