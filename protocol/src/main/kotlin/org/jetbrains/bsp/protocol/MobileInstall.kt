@@ -21,6 +21,7 @@ public data class MobileInstallParams(
   val originId: String,
   val targetDeviceSerialNumber: String,
   val startType: MobileInstallStartType,
+  val adbPath: String?,
 )
 
 public data class MobileInstallResult(val statusCode: StatusCode, var originId: String? = null)

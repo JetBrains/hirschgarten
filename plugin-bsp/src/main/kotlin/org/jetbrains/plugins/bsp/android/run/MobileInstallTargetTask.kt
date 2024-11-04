@@ -9,7 +9,8 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
-import kotlinx.coroutines.future.asDeferred
+import kotlinx.coroutines.future.await
+import org.jetbrains.android.sdk.AndroidSdkUtils
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.MobileInstallParams
 import org.jetbrains.bsp.protocol.MobileInstallResult
@@ -45,9 +46,11 @@ public class MobileInstallTargetTask(
     val targetDeviceSerialNumber =
       getTargetAndroidDeviceSerialNumber(bspBuildConsole)
         ?: return MobileInstallResult(StatusCode.ERROR)
-    val mobileInstallParams = createMobileInstallParams(targetId, originId, targetDeviceSerialNumber)
-
-    val mobileInstallDeferred = server.buildTargetMobileInstall(mobileInstallParams).asDeferred()
+    val mobileInstallDeferred =
+      BspCoroutineService.getInstance(project).startAsync(lazy = true) {
+        val mobileInstallParams = createMobileInstallParams(targetId, originId, targetDeviceSerialNumber)
+        server.buildTargetMobileInstall(mobileInstallParams).await()
+      }
     return BspTaskStatusLogger(mobileInstallDeferred, bspBuildConsole, originId) { statusCode }.getResult()
   }
 
@@ -82,6 +85,12 @@ public class MobileInstallTargetTask(
         originId = originId,
         targetDeviceSerialNumber = targetDeviceSerialNumber,
         startType = startType,
+        adbPath =
+          AndroidSdkUtils
+            .findAdb(project)
+            .adbPath
+            ?.toURI()
+            ?.toString(),
       )
     return params
   }

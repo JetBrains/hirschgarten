@@ -39,6 +39,8 @@ object BazelFlag {
 
   @JvmStatic fun start(startType: String): String = arg("start", startType)
 
+  @JvmStatic fun adb(adbPath: String): String = arg("adb", adbPath)
+
   @JvmStatic fun testFilter(filterExpression: String): String = arg("test_filter", filterExpression)
 
   @JvmStatic fun toolTag(): String = arg("tool_tag", "$NAME:$VERSION")

@@ -47,7 +47,9 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.MobileInstallStartType
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestWithDebugParams
+import java.net.URI
 import kotlin.io.path.Path
+import kotlin.io.path.toPath
 
 class ExecuteService(
   private val compilationManager: BazelBspCompilationManager,
@@ -234,6 +236,10 @@ class ExecuteService(
         mobileInstall(params.target) {
           options.add(BazelFlag.device(params.targetDeviceSerialNumber))
           options.add(BazelFlag.start(startType))
+          params.adbPath?.let { adbPath ->
+            // TODO: move safeCastToURI to a common target and use it here
+            options.add(BazelFlag.adb(URI.create(adbPath).toPath().toString()))
+          }
           options.add(BazelFlag.color(true))
         }
       }
