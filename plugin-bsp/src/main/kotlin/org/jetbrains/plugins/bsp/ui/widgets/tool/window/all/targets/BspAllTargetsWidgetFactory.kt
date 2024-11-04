@@ -33,12 +33,13 @@ public suspend fun registerBspToolWindow(project: Project) {
   val currentToolWindow = toolWindowManager.getToolWindow(project.bspToolWindowId)
   if (currentToolWindow == null) {
     withContext(Dispatchers.EDT) {
-      toolWindowManager.registerToolWindow(project.bspToolWindowId) {
-        this.icon = project.assets.toolWindowIcon
-        this.anchor = ToolWindowAnchor.RIGHT
-        this.canCloseContent = false
-        this.contentFactory = BspAllTargetsWidgetFactory()
-      }
+      toolWindowManager
+        .registerToolWindow(project.bspToolWindowId) {
+          this.icon = project.assets.toolWindowIcon
+          this.anchor = ToolWindowAnchor.RIGHT
+          this.canCloseContent = false
+          this.contentFactory = BspAllTargetsWidgetFactory()
+        }.show()
     }
   }
 }
