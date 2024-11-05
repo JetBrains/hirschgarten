@@ -42,7 +42,7 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
 
   override fun canOpenProject(file: VirtualFile): Boolean =
     when {
-      file.isFile -> file.isBazelBspConnectionFile() || file.isProjectViewFile()
+      file.isFile -> file.isBazelBspConnectionFile() || file.isProjectViewFile() || file.isWorkspaceFile()
       else -> file.children.any { it.name in BazelPluginConstants.WORKSPACE_FILE_NAMES }
     }
 
