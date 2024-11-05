@@ -15,6 +15,7 @@ private val SLOW_PLUGINS =
   listOf(
     "com.intellij.spring",
     "com.intellij.python.django",
+    "com.intellij.aop",
   )
 
 private const val NOTIFICATION_GROUP = "Bazel slow plugins warning"
