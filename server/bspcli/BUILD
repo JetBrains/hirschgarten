@@ -2,7 +2,7 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary", "kt_jvm_library")
 load("@rules_python//python:defs.bzl", "py_binary")
 load(":integration_test.bzl", "bsp_cli_on_large_project", "synthetic_bazel_project")
 
-LOG4J_CONFIG = "log4j2_bspcli.xml"
+LOG4J_CONFIG = "log4j2_bspcli.properties"
 
 filegroup(
     name = "bspcli_resources",
