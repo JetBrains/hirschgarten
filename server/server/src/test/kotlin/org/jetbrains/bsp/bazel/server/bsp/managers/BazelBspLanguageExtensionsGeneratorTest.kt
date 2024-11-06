@@ -20,7 +20,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
     fun testCreateDotBazelBsp() = createDotBazelBsp()
   }
 
-  internal class BspInfoMock(private val dotBazelBspPath: Path) : BspInfo() {
+  internal class BspInfoMock(private val dotBazelBspPath: Path, projectRootPath: Path) : BspInfo(projectRootPath) {
     override fun bazelBspDir(): Path = dotBazelBspPath
   }
 
@@ -95,7 +95,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
     val dotBazelBspPath = MockEnvironmentCreator(tempRoot).testCreateDotBazelBsp()
 
     dotBazelBspAspectsPath = dotBazelBspPath.resolve("aspects")
-    internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath), bazelRelease)
+    internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath, tempRoot), bazelRelease)
   }
 
   @Test
