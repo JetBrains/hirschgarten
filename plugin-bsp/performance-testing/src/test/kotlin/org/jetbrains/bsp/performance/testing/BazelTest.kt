@@ -156,17 +156,27 @@ class BazelTest {
 
   private fun createProjectViewFile(context: IDETestContext) {
     val projectView = context.resolvedProjectHome / "projectview.bazelproject"
-    val targetsList = System.getProperty("bsp.benchmark.target.list")
-    if (projectView.exists() && targetsList == null) return
-    projectView.writeText(
-      """
-      targets:
-        ${targetsList ?: "//..."}
-      """.trimIndent(),
-    )
+    val targets = System.getProperty("bsp.benchmark.target.list")
+    val buildFlags = System.getProperty("bsp.benchmark.build.flags")
+    if (projectView.exists() && targets == null && buildFlags == null) return
+    projectView.writeText(createTargetsSection(targets) + "\n" + createBuildFlagsSection(buildFlags))
   }
 
-  fun extractFileFromJar(
+  private fun createTargetsSection(targets: String?) =
+    """
+    targets:
+      ${targets ?: "//..."}
+    """.trimIndent()
+
+  private fun createBuildFlagsSection(buildFlags: String?): String {
+    if (buildFlags == null) return ""
+    return """
+      build_flags:
+        $buildFlags
+      """.trimIndent()
+  }
+
+  private fun extractFileFromJar(
     jarFilePath: String,
     fileName: String,
     destFilePath: String,
