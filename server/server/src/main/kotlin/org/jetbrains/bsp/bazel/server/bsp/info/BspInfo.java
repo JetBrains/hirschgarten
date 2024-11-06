@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.bazel.server.bsp.info;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class BspInfo {
 
@@ -9,10 +8,6 @@ public class BspInfo {
 
   public BspInfo(Path bspProjectRoot) {
     this.bspProjectRoot = bspProjectRoot;
-  }
-
-  public BspInfo() {
-    this(Paths.get("").toAbsolutePath().normalize());
   }
 
   public Path bspProjectRoot() {

@@ -54,15 +54,15 @@ object ServerInitializer {
     val executor = Executors.newCachedThreadPool()
     try {
       log.info("Initializing server")
-      val bspInfo = BspInfo()
-      val rootDir = bspInfo.bazelBspDir()
-      Files.createDirectories(rootDir)
-      val traceFile = rootDir.resolve(Constants.BAZELBSP_TRACE_JSON_FILE_NAME)
+      val rootDir = Path(cliArgs.bazelWorkspaceRoot)
+      val bspInfo = BspInfo(rootDir)
+      val bazelBspDir = bspInfo.bazelBspDir()
+      val traceFile = bazelBspDir.resolve(Constants.BAZELBSP_TRACE_JSON_FILE_NAME)
       val workspaceContextProvider =
         DefaultWorkspaceContextProvider(
           workspaceRoot = Path(cliArgs.bazelWorkspaceRoot),
           projectViewPath = Path(cliArgs.projectViewPath),
-          dotBazelBspDirPath = rootDir,
+          dotBazelBspDirPath = bazelBspDir,
         )
       val bspIntegrationData =
         BspIntegrationData(
