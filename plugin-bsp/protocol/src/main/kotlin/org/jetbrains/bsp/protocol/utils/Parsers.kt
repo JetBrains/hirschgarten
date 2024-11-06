@@ -9,8 +9,10 @@ import com.intellij.openapi.vfs.readText
 
 fun VirtualFile.parseBspConnectionDetails(): BspConnectionDetails? =
   try {
-    if (isFile) Gson().fromJson(this.readText(), BspConnectionDetails::class.java) else null
+    if (isJsonFile()) Gson().fromJson(this.readText(), BspConnectionDetails::class.java) else null
   } catch (e: Exception) {
     thisLogger().warn("Parsing file '$this' to BspConnectionDetails failed!", e)
     null
   }
+
+private fun VirtualFile.isJsonFile() = isFile && extension == "json"

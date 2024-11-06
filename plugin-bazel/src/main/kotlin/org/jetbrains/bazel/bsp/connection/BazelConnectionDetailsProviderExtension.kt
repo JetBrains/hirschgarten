@@ -15,7 +15,7 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.assets.BspPluginTemplates
+import org.jetbrains.bazel.assets.BazelPluginTemplates
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.coroutines.CoroutineService
 import org.jetbrains.bazel.settings.bazelProjectSettings
@@ -41,7 +41,7 @@ class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectP
   }
 }
 
-private const val DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
+internal const val DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 private const val BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH = ".bsp/bazelbsp.json"
 
 private const val BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX = 0
@@ -76,7 +76,7 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
 
   private fun setDefaultProjectViewFilePathContentIfNotExists(projectViewFilePath: Path) {
     if (!projectViewFilePath.exists()) {
-      projectViewFilePath.writeText(BspPluginTemplates.defaultBazelProjectViewContent)
+      projectViewFilePath.writeText(BazelPluginTemplates.defaultBazelProjectViewContent)
     }
   }
 

@@ -1,6 +1,7 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
 import com.intellij.icons.AllIcons
+import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -133,6 +134,7 @@ private class BspToolWindowConfigFileOpenAction(private val configFileProvider: 
     val configFile = configFileProvider.getConfigFile(project)
     e.presentation.isEnabled = configFile != null
     withContext(Dispatchers.EDT) {
+      ProjectView.getInstance(project).refresh()
       configFile?.getPsiFile(project)?.navigate(true)
     }
   }

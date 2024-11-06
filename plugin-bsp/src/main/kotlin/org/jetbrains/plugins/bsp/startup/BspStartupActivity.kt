@@ -39,7 +39,7 @@ class BspStartupActivity : BspProjectActivity() {
 
     resyncProjectIfNeeded()
 
-    this@executeForBspProject.openedTimesSinceLastStartupResync += 1
+    openedTimesSinceLastStartupResync += 1
 
     BspStartupActivityTracker.stopConfigurationPhase(this)
   }
@@ -98,7 +98,7 @@ class BspStartupActivity : BspProjectActivity() {
         syncScope = FullProjectSync,
         buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
       )
-      this@resyncProjectIfNeeded.openedTimesSinceLastStartupResync = 0
+      openedTimesSinceLastStartupResync = 0
     }
   }
 

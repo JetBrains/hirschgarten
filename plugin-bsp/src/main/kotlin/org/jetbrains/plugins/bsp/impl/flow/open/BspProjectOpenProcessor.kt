@@ -16,7 +16,7 @@ import org.jetbrains.plugins.bsp.config.withBuildToolId
 import org.jetbrains.plugins.bsp.impl.server.connection.stateService
 import javax.swing.Icon
 
-public interface BspProjectOpenProcessorExtension : WithBuildToolId {
+interface BspProjectOpenProcessorExtension : WithBuildToolId {
   /**
    * When a project is opened for the first time [com.intellij.projectImport.ProjectOpenProcessor.canOpenProject]
    * is executed on each registered processor. BSP plugin implements one as well ([org.jetbrains.plugins.bsp.impl.flow.open.BspProjectOpenProcessor]).
@@ -31,9 +31,9 @@ public interface BspProjectOpenProcessorExtension : WithBuildToolId {
    * NOTE: the mechanism works per build tool, so if there is a connection file of another build tool for which
    * [shouldBspProjectOpenProcessorBeAvailable] is `True` or an extension does not exist the BSP option will be still available.
    */
-  public val shouldBspProjectOpenProcessorBeAvailable: Boolean
+  val shouldBspProjectOpenProcessorBeAvailable: Boolean
 
-  public companion object {
+  companion object {
     internal val ep =
       ExtensionPointName.create<BspProjectOpenProcessorExtension>("org.jetbrains.bsp.bspProjectOpenProcessorExtension")
   }
@@ -41,12 +41,12 @@ public interface BspProjectOpenProcessorExtension : WithBuildToolId {
 
 private val log = logger<BspProjectOpenProcessor>()
 
-public class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(bspBuildToolId) {
+class BspProjectOpenProcessor : BaseBspProjectOpenProcessor(bspBuildToolId) {
   override val name: String = BspPluginBundle.message("plugin.name")
 
   override fun calculateProjectFolderToOpen(virtualFile: VirtualFile): VirtualFile =
     virtualFile
-      .parent
+      .let { if (it.isFile) virtualFile.parent else virtualFile }
       .also { if (it.name != BSP_CONNECTION_DIR) error("No $BSP_CONNECTION_DIR folder found") }
       .parent
 

@@ -15,7 +15,7 @@ data class TargetsSpec(override val values: List<BuildTargetIdentifier>, overrid
 
 private val defaultTargetsSpec =
   TargetsSpec(
-    values = listOf(BuildTargetIdentifier("//...")),
+    values = emptyList(),
     excludedValues = emptyList(),
   )
 
@@ -29,35 +29,36 @@ internal object TargetsSpecExtractor : ExecutionContextEntityExtractor<TargetsSp
       deriveTargetsFromDirectoriesSectionFalse(projectView)
     }
 
-  private fun deriveTargetsFromDirectoriesSectionTrue(projectView: ProjectView): TargetsSpec =
-    when {
-      projectView.directories == null -> deriveTargetsFromDirectoriesSectionFalse(projectView)
-      hasEmptyIncludedValuesAndEmptyExcludedValuesDirectories(projectView.directories!!) ->
+  private fun deriveTargetsFromDirectoriesSectionTrue(projectView: ProjectView): TargetsSpec {
+    val directories = projectView.directories ?: return deriveTargetsFromDirectoriesSectionFalse(projectView)
+    return when {
+      hasEmptyIncludedValuesAndEmptyExcludedValuesDirectories(directories) ->
         deriveTargetsFromDirectoriesSectionFalse(
           projectView,
         )
 
-      hasEmptyIncludedValuesAndNonEmptyExcludedValuesDirectories(
-        projectView.directories!!,
-      ) -> throw ExecutionContextEntityExtractorException(
+      hasEmptyIncludedValuesAndNonEmptyExcludedValuesDirectories(directories)
+      -> throw ExecutionContextEntityExtractorException(
         NAME,
         "'directories' section has no included targets.",
       )
 
-      else -> mapNotEmptyDerivedTargetSection(projectView.targets, projectView.directories!!)
+      else -> mapNotEmptyDerivedTargetSection(projectView.targets, directories)
     }
+  }
 
-  private fun deriveTargetsFromDirectoriesSectionFalse(projectView: ProjectView): TargetsSpec =
-    when {
-      projectView.targets == null -> defaultTargetsSpec
-      hasEmptyIncludedValuesAndEmptyExcludedValues(projectView.targets!!) -> defaultTargetsSpec
-      hasEmptyIncludedValuesAndNonEmptyExcludedValues(projectView.targets!!) -> throw ExecutionContextEntityExtractorException(
+  private fun deriveTargetsFromDirectoriesSectionFalse(projectView: ProjectView): TargetsSpec {
+    val targets = projectView.targets ?: return defaultTargetsSpec
+    return when {
+      hasEmptyIncludedValuesAndEmptyExcludedValues(targets) -> defaultTargetsSpec
+      hasEmptyIncludedValuesAndNonEmptyExcludedValues(targets) -> throw ExecutionContextEntityExtractorException(
         NAME,
         "'targets' section has no included targets.",
       )
 
-      else -> mapNotEmptyNotDerivedTargetsSection(projectView.targets!!)
+      else -> mapNotEmptyNotDerivedTargetsSection(targets)
     }
+  }
 
   private fun hasEmptyIncludedValuesAndEmptyExcludedValues(targetsSection: ProjectViewTargetsSection): Boolean =
     targetsSection.values.isEmpty() and targetsSection.excludedValues.isEmpty()
