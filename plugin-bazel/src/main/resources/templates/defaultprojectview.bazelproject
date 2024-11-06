@@ -15,8 +15,6 @@
 #   //install/src/main/java/org/jetbrains/bsp/bazel/install
 #   //executioncontext/projectview/...
 #   -//executioncontext/projectview/src/main/java/org/jetbrains/bsp/bazel/projectview/parser/...
-targets:
-  //...
 
 # Path to bazel which will be used to invoke bazel from the server (e.g. to build a project, or query bazel).
 #
@@ -36,12 +34,12 @@ targets:
 #   executioncontext/projectview/
 #   -executioncontext/projectview/src/main/java/org/jetbrains/bsp/bazel/projectview/parser
 #
-# directories:
-#   .
+directories:
+    .
 
 
 # Flag specifying if targets should be derived from list of directories in directories section.
-derive_targets_from_directories: false
+derive_targets_from_directories: true
 
 # How many levels of bazel targets dependencies should be imported as modules.
 # Only the targets that are present in workspace are imported.
