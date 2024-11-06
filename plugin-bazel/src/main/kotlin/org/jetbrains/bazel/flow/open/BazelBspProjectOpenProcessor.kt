@@ -50,7 +50,7 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
 
   override val icon: Icon = BazelPluginIcons.bazel
 
-  override val name: String = "Bazel"
+  override val name: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
 
   override val isStrongProjectInfoHolder: Boolean
     get() = ApplicationManager.getApplication().isHeadlessEnvironment
