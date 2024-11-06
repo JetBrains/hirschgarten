@@ -29,7 +29,7 @@ class TargetsSpecMapperTest {
         val targetsSpec = TargetsSpecExtractor.fromProjectView(projectView)
 
         // then
-        val expectedTargetsSpec = TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
+        val expectedTargetsSpec = TargetsSpec(emptyList(), emptyList())
         targetsSpec shouldBe expectedTargetsSpec
       }
 
@@ -50,7 +50,7 @@ class TargetsSpecMapperTest {
         val targetsSpec = TargetsSpecExtractor.fromProjectView(projectView)
 
         // then
-        val expectedTargetsSpec = TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
+        val expectedTargetsSpec = TargetsSpec(emptyList(), emptyList())
         targetsSpec shouldBe expectedTargetsSpec
       }
 
@@ -137,7 +137,7 @@ class TargetsSpecMapperTest {
         val targetsSpec = TargetsSpecExtractor.fromProjectView(projectView)
 
         // then
-        val expectedTargetsSpec = TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
+        val expectedTargetsSpec = TargetsSpec(emptyList(), emptyList())
         targetsSpec shouldBe expectedTargetsSpec
       }
 
@@ -159,7 +159,7 @@ class TargetsSpecMapperTest {
         val targetsSpec = TargetsSpecExtractor.fromProjectView(projectView)
 
         // then
-        val expectedTargetsSpec = TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
+        val expectedTargetsSpec = TargetsSpec(emptyList(), emptyList())
         targetsSpec shouldBe expectedTargetsSpec
       }
 
@@ -249,7 +249,7 @@ class TargetsSpecMapperTest {
         val targetsSpec = TargetsSpecExtractor.fromProjectView(projectView)
 
         // then
-        val expectedTargetsSpec = TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
+        val expectedTargetsSpec = TargetsSpec(emptyList(), emptyList())
         targetsSpec shouldBe expectedTargetsSpec
       }
 
@@ -276,7 +276,7 @@ class TargetsSpecMapperTest {
         val targetsSpec = TargetsSpecExtractor.fromProjectView(projectView)
 
         // then
-        val expectedTargetsSpec = TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
+        val expectedTargetsSpec = TargetsSpec(emptyList(), emptyList())
         targetsSpec shouldBe expectedTargetsSpec
       }
 

@@ -31,7 +31,7 @@ class DefaultWorkspaceContextProviderTest {
     projectViewFile.writeText(
       """
       |targets:
-      |  //...
+      |  //a/b/c
       """.trimMargin(),
     )
 
@@ -41,7 +41,7 @@ class DefaultWorkspaceContextProviderTest {
     val workspaceContext = provider.currentWorkspaceContext()
 
     // then
-    workspaceContext.targets shouldBe TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
+    workspaceContext.targets shouldBe TargetsSpec(listOf(BuildTargetIdentifier("//a/b/c")), emptyList())
   }
 
   @Test
@@ -54,7 +54,7 @@ class DefaultWorkspaceContextProviderTest {
     val workspaceContext = provider.currentWorkspaceContext()
 
     // then
-    workspaceContext.targets shouldBe TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList())
+    workspaceContext.targets shouldBe TargetsSpec(emptyList(), emptyList())
     projectViewFile.exists() shouldBe true
     projectViewFile.readText().trim() shouldBe ""
   }
