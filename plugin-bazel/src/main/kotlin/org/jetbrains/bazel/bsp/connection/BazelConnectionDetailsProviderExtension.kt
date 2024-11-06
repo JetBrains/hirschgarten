@@ -128,7 +128,7 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
     version == Constants.VERSION &&
       argv[BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX] == javaBin.toAbsolutePath().toString() &&
       getOptions() == customJvmOptions &&
-      getProjectViewFilePath() == project.bazelProjectSettings.projectViewPath?.toAbsolutePath() &&
+      getProjectViewFilePath() == calculateProjectViewFilePath(project) &&
       project.dotBazelBspExists()
 
   private fun Project.dotBazelBspExists() = rootDir.toNioPath().resolve(Constants.DOT_BAZELBSP_DIR_NAME).exists()
