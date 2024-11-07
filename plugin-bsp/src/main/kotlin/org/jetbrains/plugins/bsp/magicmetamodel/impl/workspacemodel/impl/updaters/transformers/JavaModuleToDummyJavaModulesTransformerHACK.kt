@@ -141,6 +141,7 @@ internal fun calculateDummyResourceRootPath(
   dummySources: List<DummySourceRootWithPackagePrefix>,
   projectBasePath: Path,
 ): Path? {
+  if (entity.androidAddendum != null) return null // Resource roots are handled already for Android
   val resourceRoots = entity.resourceRoots
   if (entity.resourceRoots.isEmpty()) return null
   val moduleRoot = entity.baseDirContentRoot?.path ?: return null
