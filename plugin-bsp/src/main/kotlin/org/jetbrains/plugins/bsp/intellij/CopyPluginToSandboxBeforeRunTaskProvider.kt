@@ -4,18 +4,16 @@ import com.intellij.execution.BeforeRunTask
 import com.intellij.execution.BeforeRunTaskProvider
 import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
-import com.intellij.notification.NotificationGroup
-import com.intellij.notification.NotificationGroupManager
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.components.service
 import com.intellij.openapi.roots.OrderEnumerator
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.util.Key
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.getModule
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModule
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
+import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 import java.io.IOException
 import java.net.URI
 import java.nio.file.Path
@@ -71,12 +69,12 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
     }
 
     if (pluginJars.isEmpty()) {
-      showError(BspPluginBundle.message("console.task.exception.no.plugin.jars"), environment)
+      showError(BspPluginBundle.message("console.task.exception.no.plugin.jars"))
       return false
     }
     for (pluginJar in pluginJars) {
       if (!pluginJar.exists()) {
-        showError(BspPluginBundle.message("console.task.exception.plugin.jar.not.found", pluginJar), environment)
+        showError(BspPluginBundle.message("console.task.exception.plugin.jar.not.found", pluginJar))
         return false
       }
       try {
@@ -90,7 +88,7 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
             pluginSandbox,
             e.message.orEmpty(),
           )
-        showError(errorMessage, environment)
+        showError(errorMessage)
         return false
       }
     }
@@ -99,11 +97,8 @@ public class CopyPluginToSandboxBeforeRunTaskProvider : BeforeRunTaskProvider<Co
   }
 
   // Throwing an ExecutionException doesn't work from before run tasks, so we have to show the notification ourselves.
-  private fun showError(message: String, environment: ExecutionEnvironment) {
+  private fun showError(message: String) {
     val title = BspPluginBundle.message("console.task.exception.copy.plugin.to.sandbox")
-    getNotificationGroup().createNotification(title, message, NotificationType.ERROR).notify(environment.project)
+    BspBalloonNotifier.warn(title, message)
   }
-
-  private fun getNotificationGroup(): NotificationGroup =
-    NotificationGroupManager.getInstance().getNotificationGroup("CopyPluginToSandboxBeforeRunTaskProvider")
 }

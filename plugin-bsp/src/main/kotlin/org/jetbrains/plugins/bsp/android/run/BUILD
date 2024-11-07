@@ -8,7 +8,9 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl/workspacemodel/util",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/run",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/ui/notifications",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/utils",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
         "@rules_intellij//third_party/android",

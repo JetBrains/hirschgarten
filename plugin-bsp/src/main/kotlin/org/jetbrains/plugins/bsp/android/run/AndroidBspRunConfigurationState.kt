@@ -1,18 +1,24 @@
 package org.jetbrains.plugins.bsp.android.run
 
-import com.intellij.openapi.options.SettingsEditor
-import com.intellij.ui.components.JBLabel
+import com.intellij.execution.ui.FragmentedSettingsEditor
+import com.intellij.execution.ui.SettingsEditorFragment
+import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import org.jetbrains.plugins.bsp.run.BspRunConfigurationState
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
-import javax.swing.JComponent
+import org.jetbrains.plugins.bsp.run.state.HasUseMobileInstall
+import org.jetbrains.plugins.bsp.run.state.useMobileInstallFragment
 
-data object AndroidBspRunConfigurationState : BspRunConfigurationState<AndroidBspRunConfigurationState>() {
-  override fun getEditor(configuration: BspRunConfiguration) =
-    object : SettingsEditor<AndroidBspRunConfigurationState>() {
-      override fun resetEditorFrom(state: AndroidBspRunConfigurationState) {}
+data object AndroidBspRunConfigurationState : BspRunConfigurationState<AndroidBspRunConfigurationState>(), HasUseMobileInstall {
+  @com.intellij.configurationStore.Property(description = "Use mobile-install")
+  override var useMobileInstall: Boolean by property(true)
 
-      override fun applyEditorTo(state: AndroidBspRunConfigurationState) {}
+  override fun getEditor(configuration: BspRunConfiguration) = AndroidBspRunConfigurationStateEditor(configuration)
+}
 
-      override fun createEditor(): JComponent = JBLabel("Android has no handler specific settings")
+class AndroidBspRunConfigurationStateEditor(config: BspRunConfiguration) :
+  FragmentedSettingsEditor<AndroidBspRunConfigurationState>(config.handler?.state as AndroidBspRunConfigurationState) {
+  override fun createFragments(): Collection<SettingsEditorFragment<AndroidBspRunConfigurationState, *>> =
+    SettingsEditorFragmentContainer.fragments {
+      add(useMobileInstallFragment())
     }
 }

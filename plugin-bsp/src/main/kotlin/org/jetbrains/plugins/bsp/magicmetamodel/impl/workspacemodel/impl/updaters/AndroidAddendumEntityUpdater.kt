@@ -29,12 +29,14 @@ internal class AndroidAddendumEntityUpdater(private val workspaceModelEntityUpda
           entitySource = parentModuleEntity.entitySource,
           androidSdkName = androidSdkName,
           androidTargetType = androidTargetType,
+          // Convert to HashMap to avoid serialization errors with a custom map type
+          manifestOverrides = HashMap(entityToAdd.manifestOverrides),
           resourceDirectories = entityToAdd.resourceDirectories.map { it.toVirtualFileUrl() },
           assetsDirectories = entityToAdd.assetsDirectories.map { it.toVirtualFileUrl() },
         ) {
           this.manifest = entityToAdd.manifest?.toVirtualFileUrl()
           this.resourceJavaPackage = entityToAdd.resourceJavaPackage
-          this.androidMinSdkOverride = entityToAdd.androidMinSdkOverride
+          this.apk = entityToAdd.apk?.toVirtualFileUrl()
         }
       }
 

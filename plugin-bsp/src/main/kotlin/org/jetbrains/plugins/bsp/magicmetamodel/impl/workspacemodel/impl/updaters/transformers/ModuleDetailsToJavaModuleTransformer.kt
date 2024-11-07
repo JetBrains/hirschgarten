@@ -157,10 +157,11 @@ internal class ModuleDetailsToJavaModuleTransformer(
         androidSdkName = androidJar.androidJarToAndroidSdkName(),
         androidTargetType = androidTargetType,
         manifest = manifest?.safeCastToURI()?.toPath(),
+        manifestOverrides = manifestOverrides,
         resourceDirectories = resourceDirectories.map { it.safeCastToURI().toPath() },
         resourceJavaPackage = resourceJavaPackage,
         assetsDirectories = assetsDirectories.map { it.safeCastToURI().toPath() },
-        androidMinSdkOverride = androidMinSdkOverride,
+        apk = apk?.safeCastToURI()?.toPath(),
       )
     }
   }

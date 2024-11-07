@@ -32,7 +32,7 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
 
   private companion object {
     internal val MODULE_CONNECTION_ID: ConnectionId = ConnectionId.create(ModuleEntity::class.java, AndroidAddendumEntity::class.java,
-                                                                          ConnectionId.ConnectionType.ONE_TO_ONE, false)
+      ConnectionId.ConnectionType.ONE_TO_ONE, false)
 
     private val connections = listOf<ConnectionId>(
       MODULE_CONNECTION_ID,
@@ -58,6 +58,11 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
       return dataSource.manifest
     }
 
+  override val manifestOverrides: Map<String, String>
+    get() {
+      readField("manifestOverrides")
+      return dataSource.manifestOverrides
+    }
   override val resourceDirectories: List<VirtualFileUrl>
     get() {
       readField("resourceDirectories")
@@ -76,11 +81,12 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
       return dataSource.assetsDirectories
     }
 
-  override val androidMinSdkOverride: Int?
+  override val apk: VirtualFileUrl?
     get() {
-      readField("androidMinSdkOverride")
-      return dataSource.androidMinSdkOverride
+      readField("apk")
+      return dataSource.apk
     }
+
   override val module: ModuleEntity
     get() = snapshot.extractOneToOneParent(MODULE_CONNECTION_ID, this)!!
 
@@ -120,6 +126,7 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
       index(this, "manifest", this.manifest)
       index(this, "resourceDirectories", this.resourceDirectories)
       index(this, "assetsDirectories", this.assetsDirectories)
+      index(this, "apk", this.apk)
       // Process linked entities that are connected without a builder
       processLinkedEntities(builder)
       checkInitialization() // TODO uncomment and check failed tests
@@ -135,6 +142,9 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
       }
       if (!getEntityData().isAndroidTargetTypeInitialized()) {
         error("Field AndroidAddendumEntity#androidTargetType should be initialized")
+      }
+      if (!getEntityData().isManifestOverridesInitialized()) {
+        error("Field AndroidAddendumEntity#manifestOverrides should be initialized")
       }
       if (!getEntityData().isResourceDirectoriesInitialized()) {
         error("Field AndroidAddendumEntity#resourceDirectories should be initialized")
@@ -176,10 +186,11 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
       if (this.androidSdkName != dataSource.androidSdkName) this.androidSdkName = dataSource.androidSdkName
       if (this.androidTargetType != dataSource.androidTargetType) this.androidTargetType = dataSource.androidTargetType
       if (this.manifest != dataSource?.manifest) this.manifest = dataSource.manifest
+      if (this.manifestOverrides != dataSource.manifestOverrides) this.manifestOverrides = dataSource.manifestOverrides.toMutableMap()
       if (this.resourceDirectories != dataSource.resourceDirectories) this.resourceDirectories = dataSource.resourceDirectories.toMutableList()
       if (this.resourceJavaPackage != dataSource?.resourceJavaPackage) this.resourceJavaPackage = dataSource.resourceJavaPackage
       if (this.assetsDirectories != dataSource.assetsDirectories) this.assetsDirectories = dataSource.assetsDirectories.toMutableList()
-      if (this.androidMinSdkOverride != dataSource?.androidMinSdkOverride) this.androidMinSdkOverride = dataSource.androidMinSdkOverride
+      if (this.apk != dataSource?.apk) this.apk = dataSource.apk
       updateChildToParentReferences(parents)
     }
 
@@ -218,6 +229,14 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
         changedProperty.add("manifest")
         val _diff = diff
         if (_diff != null) index(this, "manifest", value)
+      }
+
+    override var manifestOverrides: Map<String, String>
+      get() = getEntityData().manifestOverrides
+      set(value) {
+        checkModificationAllowed()
+        getEntityData(true).manifestOverrides = value
+        changedProperty.add("manifestOverrides")
       }
 
     private val resourceDirectoriesUpdater: (value: List<VirtualFileUrl>) -> Unit = { value ->
@@ -274,12 +293,14 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
         assetsDirectoriesUpdater.invoke(value)
       }
 
-    override var androidMinSdkOverride: Int??
-      get() = getEntityData().androidMinSdkOverride
+    override var apk: VirtualFileUrl?
+      get() = getEntityData().apk
       set(value) {
         checkModificationAllowed()
-        getEntityData(true).androidMinSdkOverride = value
-        changedProperty.add("androidMinSdkOverride")
+        getEntityData(true).apk = value
+        changedProperty.add("apk")
+        val _diff = diff
+        if (_diff != null) index(this, "apk", value)
       }
 
     override var module: ModuleEntity.Builder
@@ -288,7 +309,7 @@ internal class AndroidAddendumEntityImpl(private val dataSource: AndroidAddendum
         return if (_diff != null) {
           @OptIn(EntityStorageInstrumentationApi::class)
           ((_diff as MutableEntityStorageInstrumentation).getParentBuilder(MODULE_CONNECTION_ID, this) as? ModuleEntity.Builder)
-          ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
+            ?: (this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder)
         }
         else {
           this.entityLinks[EntityLink(false, MODULE_CONNECTION_ID)]!! as ModuleEntity.Builder
@@ -327,13 +348,15 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
   lateinit var androidSdkName: String
   lateinit var androidTargetType: AndroidTargetType
   var manifest: VirtualFileUrl? = null
+  lateinit var manifestOverrides: Map<String, String>
   lateinit var resourceDirectories: MutableList<VirtualFileUrl>
   var resourceJavaPackage: String? = null
   lateinit var assetsDirectories: MutableList<VirtualFileUrl>
-  var androidMinSdkOverride: Int? = null
+  var apk: VirtualFileUrl? = null
 
   internal fun isAndroidSdkNameInitialized(): Boolean = ::androidSdkName.isInitialized
   internal fun isAndroidTargetTypeInitialized(): Boolean = ::androidTargetType.isInitialized
+  internal fun isManifestOverridesInitialized(): Boolean = ::manifestOverrides.isInitialized
   internal fun isResourceDirectoriesInitialized(): Boolean = ::resourceDirectories.isInitialized
   internal fun isAssetsDirectoriesInitialized(): Boolean = ::assetsDirectories.isInitialized
 
@@ -373,10 +396,11 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
   }
 
   override fun createDetachedEntity(parents: List<WorkspaceEntity.Builder<*>>): WorkspaceEntity.Builder<*> {
-    return AndroidAddendumEntity(androidSdkName, androidTargetType, resourceDirectories, assetsDirectories, entitySource) {
+    return AndroidAddendumEntity(androidSdkName, androidTargetType, manifestOverrides, resourceDirectories, assetsDirectories,
+      entitySource) {
       this.manifest = this@AndroidAddendumEntityData.manifest
       this.resourceJavaPackage = this@AndroidAddendumEntityData.resourceJavaPackage
-      this.androidMinSdkOverride = this@AndroidAddendumEntityData.androidMinSdkOverride
+      this.apk = this@AndroidAddendumEntityData.apk
       parents.filterIsInstance<ModuleEntity.Builder>().singleOrNull()?.let { this.module = it }
     }
   }
@@ -397,10 +421,11 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
     if (this.androidSdkName != other.androidSdkName) return false
     if (this.androidTargetType != other.androidTargetType) return false
     if (this.manifest != other.manifest) return false
+    if (this.manifestOverrides != other.manifestOverrides) return false
     if (this.resourceDirectories != other.resourceDirectories) return false
     if (this.resourceJavaPackage != other.resourceJavaPackage) return false
     if (this.assetsDirectories != other.assetsDirectories) return false
-    if (this.androidMinSdkOverride != other.androidMinSdkOverride) return false
+    if (this.apk != other.apk) return false
     return true
   }
 
@@ -413,10 +438,11 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
     if (this.androidSdkName != other.androidSdkName) return false
     if (this.androidTargetType != other.androidTargetType) return false
     if (this.manifest != other.manifest) return false
+    if (this.manifestOverrides != other.manifestOverrides) return false
     if (this.resourceDirectories != other.resourceDirectories) return false
     if (this.resourceJavaPackage != other.resourceJavaPackage) return false
     if (this.assetsDirectories != other.assetsDirectories) return false
-    if (this.androidMinSdkOverride != other.androidMinSdkOverride) return false
+    if (this.apk != other.apk) return false
     return true
   }
 
@@ -425,10 +451,11 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
     result = 31 * result + androidSdkName.hashCode()
     result = 31 * result + androidTargetType.hashCode()
     result = 31 * result + manifest.hashCode()
+    result = 31 * result + manifestOverrides.hashCode()
     result = 31 * result + resourceDirectories.hashCode()
     result = 31 * result + resourceJavaPackage.hashCode()
     result = 31 * result + assetsDirectories.hashCode()
-    result = 31 * result + androidMinSdkOverride.hashCode()
+    result = 31 * result + apk.hashCode()
     return result
   }
 
@@ -437,10 +464,11 @@ internal class AndroidAddendumEntityData : WorkspaceEntityData<AndroidAddendumEn
     result = 31 * result + androidSdkName.hashCode()
     result = 31 * result + androidTargetType.hashCode()
     result = 31 * result + manifest.hashCode()
+    result = 31 * result + manifestOverrides.hashCode()
     result = 31 * result + resourceDirectories.hashCode()
     result = 31 * result + resourceJavaPackage.hashCode()
     result = 31 * result + assetsDirectories.hashCode()
-    result = 31 * result + androidMinSdkOverride.hashCode()
+    result = 31 * result + apk.hashCode()
     return result
   }
 }

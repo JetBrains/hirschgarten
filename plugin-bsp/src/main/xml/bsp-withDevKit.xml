@@ -6,6 +6,5 @@
         <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.intellij.BuildPluginBeforeRunTaskProvider" />
         <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.intellij.CopyPluginToSandboxBeforeRunTaskProvider" />
         <programRunner implementation="org.jetbrains.plugins.bsp.intellij.IntellijPluginDebuggerRunner" />
-        <notificationGroup displayType="BALLOON" id="CopyPluginToSandboxBeforeRunTaskProvider"/>
     </extensions>
 </idea-plugin>

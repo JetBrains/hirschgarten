@@ -20,10 +20,11 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
   public val androidSdkName: String
   public val androidTargetType: AndroidTargetType
   public val manifest: VirtualFileUrl?
+  public val manifestOverrides: Map<String, String>
   public val resourceDirectories: List<VirtualFileUrl>
   public val resourceJavaPackage: String?
   public val assetsDirectories: List<VirtualFileUrl>
-  public val androidMinSdkOverride: Int?
+  public val apk: VirtualFileUrl?
   public val module: ModuleEntity
 
   //region generated code
@@ -33,10 +34,11 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
     var androidSdkName: String
     var androidTargetType: AndroidTargetType
     var manifest: VirtualFileUrl?
+    var manifestOverrides: Map<String, String>
     var resourceDirectories: MutableList<VirtualFileUrl>
     var resourceJavaPackage: String?
     var assetsDirectories: MutableList<VirtualFileUrl>
-    var androidMinSdkOverride: Int?
+    var apk: VirtualFileUrl?
     var module: ModuleEntity.Builder
   }
 
@@ -47,6 +49,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
     operator fun invoke(
       androidSdkName: String,
       androidTargetType: AndroidTargetType,
+      manifestOverrides: Map<String, String>,
       resourceDirectories: List<VirtualFileUrl>,
       assetsDirectories: List<VirtualFileUrl>,
       entitySource: EntitySource,
@@ -55,6 +58,7 @@ public interface AndroidAddendumEntity : WorkspaceEntity {
       val builder = builder()
       builder.androidSdkName = androidSdkName
       builder.androidTargetType = androidTargetType
+      builder.manifestOverrides = manifestOverrides
       builder.resourceDirectories = resourceDirectories.toMutableWorkspaceList()
       builder.assetsDirectories = assetsDirectories.toMutableWorkspaceList()
       builder.entitySource = entitySource
