@@ -7,7 +7,7 @@ import com.intellij.openapi.application.readActionBlocking
 import com.intellij.openapi.project.Project
 import org.jetbrains.android.facet.AndroidFacet
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.moduleEntity
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.moduleEntity
 import org.jetbrains.plugins.bsp.startup.BspProjectActivity
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
@@ -36,7 +36,7 @@ class BspAndroidModelUpdater : BspProjectActivity() {
   private fun getAndroidModel(androidFacet: AndroidFacet): AndroidModel? {
     val module = androidFacet.module
     val androidAddendum = module.moduleEntity?.androidAddendumEntity ?: return null
-    val androidMinSdkOverride = androidAddendum.androidMinSdkOverride
-    return BspAndroidModel(androidFacet, androidMinSdkOverride)
+    val manifestOverrides = androidAddendum.manifestOverrides
+    return BspAndroidModel(androidFacet, manifestOverrides)
   }
 }

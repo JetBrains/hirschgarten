@@ -15,10 +15,11 @@ public data class AndroidBuildTarget(
   val androidJar: String,
   val androidTargetType: AndroidTargetType,
   val manifest: String?,
+  val manifestOverrides: Map<String, String>,
   val resourceDirectories: List<String>,
   val resourceJavaPackage: String?,
   val assetsDirectories: List<String>,
-  val androidMinSdkOverride: Int? = null,
+  val apk: String? = null,
   var jvmBuildTarget: JvmBuildTarget? = null,
   var kotlinBuildTarget: KotlinBuildTarget? = null,
 )

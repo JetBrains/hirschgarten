@@ -11,7 +11,7 @@
     <projectsystem implementation="org.jetbrains.plugins.bsp.android.BspAndroidProjectSystemProvider" order="first"/>
   </extensions>
   <extensions defaultExtensionNs="com.intellij">
-    <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.android.run.MobileInstallBeforeRunTaskProvider" />
+    <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.android.run.AndroidBeforeRunTaskProvider" />
     <programRunner implementation="org.jetbrains.plugins.bsp.android.run.BspAndroidProgramRunner" />
     <postStartupActivity implementation="org.jetbrains.plugins.bsp.android.BspAndroidModelUpdater"/>
   </extensions>

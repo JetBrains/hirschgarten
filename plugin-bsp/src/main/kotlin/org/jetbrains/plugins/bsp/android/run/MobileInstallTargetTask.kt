@@ -10,6 +10,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.guava.await
 import org.jetbrains.android.sdk.AndroidSdkUtils
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.MobileInstallParams
@@ -95,16 +96,16 @@ public class MobileInstallTargetTask(
     return params
   }
 
-  private fun getTargetAndroidDeviceSerialNumber(bspBuildConsole: TaskConsole): String? {
+  private suspend fun getTargetAndroidDeviceSerialNumber(bspBuildConsole: TaskConsole): String? {
     val launchedDevice = launchAndroidDevice(bspBuildConsole)
     return launchedDevice.serialNumber
   }
 
-  private fun launchAndroidDevice(bspBuildConsole: TaskConsole): IDevice {
+  private suspend fun launchAndroidDevice(bspBuildConsole: TaskConsole): IDevice {
     if (!deviceFuture.isDone) {
-      bspBuildConsole.addMessage(BspPluginBundle.message("console.task.mobile.waiting.for.target.device"))
+      bspBuildConsole.addMessage(BspPluginBundle.message("console.task.mobile.install.waiting.for.target.device"))
     }
-    return deviceFuture.get()
+    return deviceFuture.await()
   }
 }
 

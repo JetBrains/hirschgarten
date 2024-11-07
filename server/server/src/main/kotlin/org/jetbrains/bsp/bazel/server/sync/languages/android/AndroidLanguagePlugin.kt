@@ -34,10 +34,11 @@ class AndroidLanguagePlugin(
           androidJar = androidJar.toString(),
           androidTargetType = androidTargetType,
           manifest = manifest?.toString(),
+          manifestOverrides = manifestOverrides,
           resourceDirectories = resourceDirectories.map { it.toString() },
           resourceJavaPackage = resourceJavaPackage,
           assetsDirectories = assetsDirectories.map { it.toString() },
-          androidMinSdkOverride = androidMinSdkOverride,
+          apk = apk?.toString(),
         )
       }
     moduleData.javaModule?.let { javaLanguagePlugin.toJvmBuildTarget(it) }?.let {
@@ -62,9 +63,21 @@ class AndroidLanguagePlugin(
       } else {
         null
       }
+    val manifestOverrides =
+      androidTargetInfo.manifestOverridesMap.run {
+        androidMinSdkOverride?.let { androidMinSdkOverride ->
+          this + ("minSdkVersion" to androidMinSdkOverride.toString())
+        } ?: this
+      }
     val resourceDirectories = bazelPathsResolver.resolveUris(androidTargetInfo.resourceDirectoriesList)
     val resourceJavaPackage = androidTargetInfo.resourceJavaPackage.takeIf { it.isNotEmpty() }
     val assetsDirectories = bazelPathsResolver.resolveUris(androidTargetInfo.assetsDirectoriesList)
+    val apk =
+      if (androidTargetInfo.hasApk()) {
+        bazelPathsResolver.resolveUri(androidTargetInfo.apk)
+      } else {
+        null
+      }
 
     val kotlinModule: KotlinModule? = kotlinLanguagePlugin.resolveModule(targetInfo)
 
@@ -72,10 +85,11 @@ class AndroidLanguagePlugin(
       androidJar = androidJar,
       androidTargetType = getAndroidTargetType(targetInfo),
       manifest = manifest,
+      manifestOverrides = manifestOverrides,
       resourceDirectories = resourceDirectories,
       resourceJavaPackage = resourceJavaPackage,
       assetsDirectories = assetsDirectories,
-      androidMinSdkOverride = androidMinSdkOverride,
+      apk = apk,
       javaModule = kotlinModule?.javaModule ?: javaLanguagePlugin.resolveModule(targetInfo),
       kotlinModule = kotlinModule,
       correspondingKotlinTarget = null,

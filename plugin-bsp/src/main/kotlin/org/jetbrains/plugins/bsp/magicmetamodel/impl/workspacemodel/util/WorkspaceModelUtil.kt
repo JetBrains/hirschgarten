@@ -1,5 +1,7 @@
-package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel
+package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import com.intellij.openapi.components.service
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
@@ -8,6 +10,7 @@ import com.intellij.workspaceModel.ide.impl.legacyBridge.module.findModuleEntity
 import com.intellij.workspaceModel.ide.legacyBridge.ModuleBridge
 import org.jetbrains.plugins.bsp.magicmetamodel.findModuleNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.orDefault
+import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 val Module.moduleEntity: ModuleEntity?
@@ -21,3 +24,8 @@ fun BuildTargetInfo.getModule(project: Project): Module? {
   val moduleName = moduleNameProvider(this)
   return ModuleManager.getInstance(project).findModuleByName(moduleName)
 }
+
+fun BuildTargetIdentifier.getModule(project: Project): Module? =
+  project.service<TemporaryTargetUtils>().getBuildTargetInfoForId(this)?.getModule(project)
+
+fun BuildTargetIdentifier.getModuleEntity(project: Project): ModuleEntity? = getModule(project)?.moduleEntity

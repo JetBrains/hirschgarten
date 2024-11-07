@@ -1,31 +1,51 @@
 package org.jetbrains.plugins.bsp.android.run
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.android.ddmlib.IDevice
+import com.android.tools.deployer.Deployer
 import com.android.tools.idea.execution.common.AndroidConfigurationExecutor
+import com.android.tools.idea.execution.common.DeployOptions
 import com.android.tools.idea.execution.common.debug.DebugSessionStarter
 import com.android.tools.idea.execution.common.debug.impl.java.AndroidJavaDebugger
+import com.android.tools.idea.execution.common.deploy.deployAndHandleError
 import com.android.tools.idea.execution.common.processhandler.AndroidProcessHandler
+import com.android.tools.idea.execution.common.stats.RunStats
 import com.android.tools.idea.projectsystem.ApplicationProjectContext
+import com.android.tools.idea.run.ApkInfo
+import com.android.tools.idea.run.ApkProvider
+import com.android.tools.idea.run.ApkProvisionException
 import com.android.tools.idea.run.ShowLogcatListener
+import com.android.tools.idea.run.activity.DefaultStartActivityFlagsProvider
+import com.android.tools.idea.run.activity.launch.DefaultActivityLaunch
+import com.android.tools.idea.run.configuration.execution.ApplicationDeployerImpl
 import com.android.tools.idea.run.configuration.execution.createRunContentDescriptor
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.RunConfiguration
+import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.filters.TextConsoleBuilderFactory
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.ui.ConsoleView
 import com.intellij.execution.ui.RunContentDescriptor
-import com.intellij.openapi.components.service
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.runBlockingCancellable
+import com.intellij.openapi.project.Project
+import com.intellij.workspaceModel.ide.toPath
 import com.intellij.xdebugger.impl.XDebugSessionImpl
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.getModule
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModuleEntity
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
-import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
-import com.android.tools.idea.project.getPackageName as getApplicationIdFromManifest
+import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
+import java.nio.file.Path
+import kotlin.io.path.exists
 
-public class BspAndroidConfigurationExecutor(private val environment: ExecutionEnvironment) : AndroidConfigurationExecutor {
+class BspAndroidConfigurationExecutor(private val environment: ExecutionEnvironment) : AndroidConfigurationExecutor {
   override val configuration: RunConfiguration
     get() = environment.runProfile as RunConfiguration
+
+  private val targetId: BuildTargetIdentifier
+    get() =
+      (environment.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()
+        ?: throw ExecutionException("Couldn't get BSP target from run configuration")
 
   override fun run(indicator: ProgressIndicator): RunContentDescriptor =
     runBlockingCancellable {
@@ -38,17 +58,26 @@ public class BspAndroidConfigurationExecutor(private val environment: ExecutionE
 
       val device = getDevice()
       processHandler.addTargetDevice(device)
-
+      if (!useMobileInstall()) {
+        deployApk(environment, targetId, device, console, indicator)
+      }
       showLogcat(device, applicationId)
 
       createRunContentDescriptor(processHandler, console, environment)
     }
 
+  private fun useMobileInstall() =
+    ((configuration as? BspRunConfiguration)?.handler as? AndroidBspRunHandler)?.state?.useMobileInstall ?: false
+
   override fun debug(indicator: ProgressIndicator): RunContentDescriptor =
     runBlockingCancellable {
       val device = getDevice()
       val applicationId = getApplicationIdOrThrow()
-      val debugSession = startDebugSession(device, applicationId, environment, indicator)
+      val console = createConsole()
+      if (!useMobileInstall()) {
+        deployApk(environment, targetId, device, console, indicator)
+      }
+      val debugSession = startDebugSession(device, applicationId, environment, indicator, console)
       showLogcat(device, applicationId)
       debugSession.runContentDescriptor
     }
@@ -58,6 +87,7 @@ public class BspAndroidConfigurationExecutor(private val environment: ExecutionE
     applicationId: String,
     environment: ExecutionEnvironment,
     indicator: ProgressIndicator,
+    console: ConsoleView,
   ): XDebugSessionImpl {
     val debugger = AndroidJavaDebugger()
     val debuggerState = debugger.createState()
@@ -72,6 +102,7 @@ public class BspAndroidConfigurationExecutor(private val environment: ExecutionE
       debuggerState,
       destroyRunningProcess = { d -> d.forceStop(applicationId) },
       indicator,
+      console,
     )
   }
 
@@ -82,16 +113,12 @@ public class BspAndroidConfigurationExecutor(private val environment: ExecutionE
     return deviceFuture.get()
   }
 
-  private fun getApplicationIdOrThrow(): String = getApplicationId() ?: throw ExecutionException("Couldn't get application ID")
-
-  private fun getApplicationId(): String? {
-    val bspRunConfiguration = environment.runProfile as? BspRunConfiguration ?: return null
-    val target = bspRunConfiguration.targets.singleOrNull() ?: return null
-    val targetInfo =
-      environment.project.service<TemporaryTargetUtils>().getBuildTargetInfoForId(target)
-    val module = targetInfo?.getModule(environment.project) ?: return null
-    return getApplicationIdFromManifest(module)
-  }
+  private fun getApplicationIdOrThrow(): String =
+    try {
+      BspApplicationIdProvider(environment.project, targetId).packageName
+    } catch (e: ApkProvisionException) {
+      throw ExecutionException(e.message)
+    }
 
   private fun createConsole(): ConsoleView = TextConsoleBuilderFactory.getInstance().createBuilder(environment.project).console
 
@@ -106,4 +133,73 @@ public class BspAndroidConfigurationExecutor(private val environment: ExecutionE
 
   override fun applyCodeChanges(indicator: ProgressIndicator): RunContentDescriptor =
     throw ExecutionException("Apply code changes not supported")
+
+  private fun deployApk(
+    environment: ExecutionEnvironment,
+    targetId: BuildTargetIdentifier,
+    device: IDevice,
+    console: ConsoleView,
+    indicator: ProgressIndicator,
+  ) {
+    val project = environment.project
+    val apkPath =
+      getApkPath(project, targetId)
+        ?: throw ExecutionException(BspPluginBundle.message("console.task.apk.install.could.not.get.apk"))
+
+    val applicationId =
+      try {
+        BspApplicationIdProvider(project, targetId).packageName
+      } catch (_: ApkProvisionException) {
+        throw ExecutionException(BspPluginBundle.message("console.task.apk.install.could.not.get.application.id"))
+      }
+
+    if (!apkPath.exists()) {
+      throw ExecutionException(BspPluginBundle.message("console.task.apk.install.apk.not.found", apkPath.toString()))
+    }
+    val apkInfo =
+      ApkInfo(
+        apkPath.toFile(),
+        applicationId,
+      )
+
+    val deployResult =
+      deployAndHandleError(
+        env = environment,
+        deployerAction = {
+          listOf(deploy(project, environment, device, apkInfo, indicator))
+        },
+        automaticallyApplyResolutionAction = false,
+      ).single()
+
+    val isDebug = environment.executor.id == DefaultDebugExecutor.EXECUTOR_ID
+    val startActivityFlagsProvider = DefaultStartActivityFlagsProvider(project, isDebug, "")
+    val flags = startActivityFlagsProvider.getFlags(device)
+    val state = DefaultActivityLaunch.INSTANCE.createState()
+    val apkProvider = ApkProvider { listOf(apkInfo) }
+    state.launch(device, deployResult.app, apkProvider, isDebug, flags, console, RunStats.from(environment))
+  }
+
+  private fun getApkPath(project: Project, targetId: BuildTargetIdentifier): Path? {
+    val moduleEntity = targetId.getModuleEntity(project) ?: return null
+    val androidAddendumEntity = moduleEntity.androidAddendumEntity ?: return null
+    return androidAddendumEntity.apk?.toPath()
+  }
+
+  private fun deploy(
+    project: Project,
+    environment: ExecutionEnvironment,
+    device: IDevice,
+    apkInfo: ApkInfo,
+    indicator: ProgressIndicator,
+  ): Deployer.Result {
+    val deployer = ApplicationDeployerImpl(project, RunStats.from(environment))
+    val deployOptions =
+      DeployOptions(
+        disabledDynamicFeatures = emptyList(),
+        pmInstallFlags = "",
+        installOnAllUsers = true,
+        alwaysInstallWithPm = true,
+      )
+    return deployer.fullDeploy(device, apkInfo, deployOptions, indicator)
+  }
 }

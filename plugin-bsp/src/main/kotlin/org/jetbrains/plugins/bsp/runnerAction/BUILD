@@ -11,6 +11,7 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/coroutines",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl/workspacemodel/util",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/run",
     ],
 )

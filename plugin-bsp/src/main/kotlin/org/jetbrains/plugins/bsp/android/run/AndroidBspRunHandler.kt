@@ -26,7 +26,7 @@ val DEVICE_FUTURE_KEY: Key<ListenableFuture<IDevice>> = Key.create("DEVICE_FUTUR
 class AndroidBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHandler {
   init {
     configuration.putUserData(DeployableToDevice.KEY, true)
-    val provider = MobileInstallBeforeRunTaskProvider()
+    val provider = AndroidBeforeRunTaskProvider()
     val mobileInstallTask = provider.createTask(configuration)
     configuration.beforeRunTasks = listOf(mobileInstallTask)
   }

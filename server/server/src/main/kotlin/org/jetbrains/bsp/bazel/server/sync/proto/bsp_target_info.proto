@@ -108,11 +108,13 @@ message RustCrateInfo {
 message AndroidTargetInfo {
   FileLocation android_jar = 100;
   FileLocation manifest = 200;
+  map<string, string> manifest_overrides = 250;
   repeated FileLocation resource_directories = 300;
   string resource_java_package = 400;
   repeated FileLocation assets_directories = 450;
   FileLocation aidl_binary_jar = 500;
   FileLocation aidl_source_jar = 600;
+  FileLocation apk = 700;
 }
 
 message AndroidAarImportInfo {
