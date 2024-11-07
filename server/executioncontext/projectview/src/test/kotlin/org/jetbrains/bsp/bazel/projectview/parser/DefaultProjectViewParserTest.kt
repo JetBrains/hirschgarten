@@ -288,8 +288,6 @@ class DefaultProjectViewParserTest {
       val projectView = parser.parse(projectViewFilePath)
 
       // then
-      print(projectView)
-
       val expectedProjectView =
         ProjectView(
           targets =
