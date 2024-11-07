@@ -3,6 +3,7 @@ load("//aspects:utils/utils.bzl", "create_file_location", "create_struct", "file
 ANDROID_SDK_TOOLCHAIN_TYPE = ${toolchainType}
 
 def extract_android_info(target, ctx, dep_targets, **kwargs):
+    print("hey! target is:", target)
     if ANDROID_SDK_TOOLCHAIN_TYPE not in ctx.toolchains:
         return None, None
     android_sdk_toolchain = ctx.toolchains[ANDROID_SDK_TOOLCHAIN_TYPE]
@@ -32,6 +33,12 @@ def extract_android_info(target, ctx, dep_targets, **kwargs):
                 manifest = file_location(manifest_files[0])
         else:
             manifest = file_location(manifest_target)
+
+    manifest_overrides = {}
+    if hasattr(ctx.rule.attr, "manifest_values"):
+        for key, value in ctx.rule.attr.manifest_values.items():
+            if key != None and value != None:
+                manifest_overrides[key] = value
 
     resource_directories_set = {}
     if hasattr(ctx.rule.attr, "resource_files"):
@@ -64,21 +71,26 @@ def extract_android_info(target, ctx, dep_targets, **kwargs):
 
     aidl_binary_jar = None
     aidl_source_jar = None
+    apk = None
     if AndroidIdeInfo in target:
         android_ide_info = target[AndroidIdeInfo]
         if android_ide_info.idl_class_jar:
             aidl_binary_jar = file_location(android_ide_info.idl_class_jar)
         if android_ide_info.idl_source_jar:
             aidl_source_jar = file_location(android_ide_info.idl_source_jar)
+        if android_ide_info.signed_apk:
+            apk = file_location(android_ide_info.signed_apk)
 
     android_target_info = create_struct(
         android_jar = android_jar,
         manifest = manifest,
+        manifest_overrides = manifest_overrides,
         resource_directories = resource_directories_set.keys(),
         resource_java_package = resource_java_package,
         assets_directories = assets_directories,
         aidl_binary_jar = aidl_binary_jar,
         aidl_source_jar = aidl_source_jar,
+        apk = apk,
     )
 
     return dict(android_target_info = android_target_info), None

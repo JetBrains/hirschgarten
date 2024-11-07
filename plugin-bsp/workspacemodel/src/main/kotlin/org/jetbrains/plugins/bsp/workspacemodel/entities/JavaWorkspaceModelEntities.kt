@@ -46,8 +46,9 @@ public data class AndroidAddendum(
   val androidSdkName: String,
   val androidTargetType: AndroidTargetType,
   val manifest: Path?,
+  val manifestOverrides: Map<String, String>,
   val resourceDirectories: List<Path>,
   val resourceJavaPackage: String?,
   val assetsDirectories: List<Path>,
-  val androidMinSdkOverride: Int?,
+  val apk: Path?,
 ) : WorkspaceModelEntity()
