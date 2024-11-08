@@ -4,25 +4,25 @@ import com.intellij.execution.configurations.RunConfiguration
 import com.intellij.execution.configurations.SimpleConfigurationType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NotNullLazyValue
-import org.jetbrains.plugins.bsp.assets.assets
+import org.jetbrains.bsp.protocol.BSP_DISPLAY_NAME
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BspPluginIcons
 import javax.swing.Icon
 
-class BspRunConfigurationType : SimpleConfigurationType {
-  constructor() : this(BspPluginIcons.bsp, "BSP")
-  constructor(project: Project) : this(project.assets.toolWindowIcon, project.assets.presentableName)
+// We must access the icon directly, not through the assets extension, because the tool id may not be set yet.
+open class BspRunConfigurationType : SimpleConfigurationType {
+  constructor() : this(ID, BspPluginIcons.bsp, BSP_DISPLAY_NAME)
 
-  private constructor(icon: Icon, buildToolName: String) : super(
-    id = ID,
-    name = BspPluginBundle.message("runconfig.run.name", buildToolName),
+  constructor(id: String, icon: Icon, buildToolName: String) : super(
+    id = id,
+    name = buildToolName,
     description = BspPluginBundle.message("runconfig.run.description", buildToolName),
     icon = NotNullLazyValue.createValue { icon },
   )
 
-  override fun createTemplateConfiguration(project: Project): RunConfiguration = BspRunConfiguration(project, "")
+  override fun createTemplateConfiguration(project: Project): RunConfiguration = BspRunConfiguration(project, "", this)
 
   companion object {
-    const val ID: String = "BspRunConfiguration"
+    const val ID: String = "BspRunConfigurationType"
   }
 }

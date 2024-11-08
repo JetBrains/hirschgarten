@@ -49,6 +49,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting:higlighting",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
         "@maven//:com_google_code_gson_gson",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
