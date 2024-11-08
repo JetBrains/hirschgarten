@@ -38,7 +38,7 @@ private data class SubtaskParents(val rootTask: Any, val parentTask: Any)
 
 private val log = logger<TaskConsole>()
 
-public abstract class TaskConsole(
+abstract class TaskConsole(
   private val taskView: BuildProgressListener,
   private val basePath: String,
   private val buildToolName: String,
@@ -46,6 +46,7 @@ public abstract class TaskConsole(
 ) {
   protected val tasksInProgress: MutableList<Any> = mutableListOf()
   private val subtaskParentMap: LinkedHashMap<Any, SubtaskParents> = linkedMapOf()
+  private val subtaskMessageMap: MutableMap<Any, String> = linkedMapOf()
 
   /**
    * Displays start of a task in this console.
@@ -58,7 +59,7 @@ public abstract class TaskConsole(
    * @param redoAction action which will be executed on redo button click
    */
   @Synchronized
-  public fun startTask(
+  fun startTask(
     taskId: Any,
     title: String,
     message: String,
@@ -108,7 +109,7 @@ public abstract class TaskConsole(
 
   protected abstract fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction
 
-  public fun hasTasksInProgress(): Boolean = tasksInProgress.isNotEmpty()
+  fun hasTasksInProgress(): Boolean = tasksInProgress.isNotEmpty()
 
   /**
    * Displays finish of a task (and all its children) in this console.
@@ -141,6 +142,7 @@ public abstract class TaskConsole(
         }
       }
     }
+    finishChildrenSubtasks(taskId, result)
     tasksInProgress.remove(taskId)
     subtaskParentMap.entries.removeAll { it.value.rootTask == taskId }
     val event = FinishBuildEventImpl(taskId, null, System.currentTimeMillis(), message, result)
@@ -156,7 +158,7 @@ public abstract class TaskConsole(
    * @param message will be displayed as this subtask's title until it's finished
    */
   @Synchronized
-  public fun startSubtask(
+  fun startSubtask(
     parentTaskId: Any,
     subtaskId: Any,
     message: String,
@@ -173,6 +175,7 @@ public abstract class TaskConsole(
     subtaskId: Any,
     message: String,
   ) {
+    subtaskMessageMap[subtaskId] = message
     subtaskParentMap[subtaskId] =
       SubtaskParents(
         rootTask = rootTaskId,
@@ -187,13 +190,12 @@ public abstract class TaskConsole(
    *
    * @param subtaskId id of the subtask to be finished.
    * If there is no such subtask running, this method will not do anything
-   * @param message will be displayed as this subtask's title after it is finished
    * @param result result type of the subtask, default [SuccessResultImpl]
    */
   @Synchronized
-  public fun finishSubtask(
+  fun finishSubtask(
     subtaskId: Any,
-    message: String,
+    message: String? = null,
     result: EventResult = SuccessResultImpl(),
   ) {
     subtaskParentMap[subtaskId]?.let {
@@ -206,22 +208,25 @@ public abstract class TaskConsole(
   private fun doFinishSubtask(
     rootTask: Any,
     subtaskId: Any,
-    message: String,
+    message: String?,
     result: EventResult,
   ) {
-    subtaskParentMap.remove(subtaskId)
-    finishAllDescendants(subtaskId)
-    val event = FinishEventImpl(subtaskId, null, System.currentTimeMillis(), message, result)
+    val savedMessage = subtaskMessageMap.remove(subtaskId) ?: ""
+    val messageToDisplay = message ?: savedMessage
+
+    finishChildrenSubtasks(subtaskId, result)
+    val event = FinishEventImpl(subtaskId, null, System.currentTimeMillis(), messageToDisplay, result)
     taskView.onEvent(rootTask, event)
+
+    subtaskParentMap.remove(subtaskId)
   }
 
-  private fun finishAllDescendants(parentId: Any) {
+  private fun finishChildrenSubtasks(parentId: Any, result: EventResult) {
     subtaskParentMap
       .filterValues { it.parentTask == parentId }
       .keys
       .forEach {
-        subtaskParentMap.remove(it)
-        finishAllDescendants(it)
+        finishSubtask(it, null, result)
       }
   }
 
@@ -236,7 +241,7 @@ public abstract class TaskConsole(
    * @param severity severity of the diagnostic
    */
   @Synchronized
-  public fun addDiagnosticMessage(
+  fun addDiagnosticMessage(
     taskId: Any,
     fileURI: String,
     line: Int,
@@ -280,7 +285,7 @@ public abstract class TaskConsole(
    * Adds a message to the latest task in this console.
    */
   @Synchronized
-  public fun addMessage(message: String) {
+  fun addMessage(message: String) {
     val entry = subtaskParentMap.entries.lastOrNull()
     val taskId = tasksInProgress.lastOrNull()
     entry?.let { addMessage(it.key, message) } ?: taskId?.let { addMessage(taskId, message) }
@@ -294,7 +299,7 @@ public abstract class TaskConsole(
    * @param message message to be added. New line will be inserted at its end if it's not present there already
    */
   @Synchronized
-  public fun addMessage(taskId: Any?, message: String) {
+  fun addMessage(taskId: Any?, message: String) {
     val taskIdOrDefault = taskId ?: getDefaultTaskId() ?: return
     maybeGetRootTask(taskIdOrDefault)?.let {
       doIfTaskInProgress(it) {
@@ -385,7 +390,7 @@ public abstract class TaskConsole(
   }
 }
 
-public class SyncTaskConsole(
+class SyncTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   buildToolName: String,
@@ -403,7 +408,7 @@ public class SyncTaskConsole(
     }
 }
 
-public class BuildTaskConsole(
+class BuildTaskConsole(
   taskView: BuildProgressListener,
   basePath: String,
   buildToolName: String,
