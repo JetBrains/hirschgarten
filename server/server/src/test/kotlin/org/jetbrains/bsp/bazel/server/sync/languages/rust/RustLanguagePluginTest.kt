@@ -26,6 +26,7 @@ class RustLanguagePluginTest {
         workspaceRoot = Paths.get("/Users/user/workspace/bazel-bsp"),
         release = BazelRelease.fromReleaseString("release 6.0.0").orLatestSupported(),
         false,
+        true,
       )
 
     bazelPathsResolver = BazelPathsResolver(bazelInfo)

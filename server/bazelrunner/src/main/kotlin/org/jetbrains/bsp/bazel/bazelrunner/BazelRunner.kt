@@ -2,7 +2,9 @@ package org.jetbrains.bsp.bazel.bazelrunner
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.repositoryOverride
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -15,6 +17,7 @@ class BazelRunner(
   val workspaceContextProvider: WorkspaceContextProvider,
   private val bspClientLogger: BspClientLogger?,
   val workspaceRoot: Path?,
+  var bazelInfo: BazelInfo? = null,
 ) {
   companion object {
     private val LOGGER = LogManager.getLogger(BazelRunner::class.java)
@@ -72,6 +75,13 @@ class BazelRunner(
     val command = doBuild(commandBuilder)
     val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
     val relativeDotBspFolderPath = workspaceContext.dotBazelBspDirPath.value
+
+    // this comes with a cost of potentially invalidating analysis cache,
+    // see https://bazel.build/reference/command-line-reference#flag--enable_workspace
+    // however, if we don't have any better solution, it's still better than letting our plugin helpless
+    // TODO: better solution to handle the flag `--enable_workspace`
+    // https://youtrack.jetbrains.com/issue/BAZEL-1454/Improve-the-way-to-handle-noenableworkspace-Bazel-8
+    if (bazelInfo?.isWorkspaceEnabled == false) command.options.add(enableWorkspace(true))
 
     command.options.add(repositoryOverride(Constants.ASPECT_REPOSITORY, relativeDotBspFolderPath.pathString))
     // These options are the same as in Google's Bazel plugin for IntelliJ
