@@ -72,6 +72,9 @@
         <extensionPoint qualifiedName="org.jetbrains.bsp.startBuiltInServerExtension"
                         interface="org.jetbrains.plugins.bsp.impl.server.client.BspServerProvider"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.runConfigurationTypeProvider"
+                        interface="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationTypeProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">
@@ -91,6 +94,7 @@
         <projectSyncHook implementation="org.jetbrains.plugins.bsp.projectDetails.CollectProjectDetailsSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.plugins.bsp.impl.flow.sync.OutputPathUrisSyncHook"/>
         <projectStructureProvider implementation="org.jetbrains.plugins.bsp.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
+        <runConfigurationTypeProvider implementation="org.jetbrains.plugins.bsp.run.config.DefaultBspRunConfigurationTypeProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

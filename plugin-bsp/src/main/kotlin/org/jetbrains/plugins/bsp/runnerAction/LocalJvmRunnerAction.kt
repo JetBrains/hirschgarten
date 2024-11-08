@@ -19,7 +19,6 @@ import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.building.TaskConsole
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModule
-import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
 import kotlin.coroutines.cancellation.CancellationException
@@ -70,9 +69,6 @@ public abstract class LocalJvmRunnerAction(
     BuildBeforeLocalRunTaskProvider()
       .createTask(applicationConfiguration)
       ?.let { listOf(it) } ?: emptyList()
-
-  private fun createBspConfiguration(project: Project, targetInfo: BuildTargetInfo) =
-    BspRunConfiguration(project, targetInfo.buildTargetName).apply { updateTargets(listOf(targetInfo.id)) }
 
   private fun calculateConfigurationName(targetInfo: BuildTargetInfo): String {
     val targetDisplayName = targetInfo.buildTargetName

@@ -17,8 +17,12 @@ import org.jdom.Element
 import org.jetbrains.plugins.bsp.run.BspRunHandler
 import org.jetbrains.plugins.bsp.run.BspRunHandlerProvider
 
-class BspRunConfiguration(private val project: Project, name: String) :
-  LocatableConfigurationBase<RunProfileState>(project, BspRunConfigurationType(project), name),
+// Use BspRunConfigurationType.createTemplateConfiguration(project) to create a new BspRunConfiguration.
+class BspRunConfiguration internal constructor(
+  private val project: Project,
+  name: String,
+  configurationType: BspRunConfigurationType,
+) : LocatableConfigurationBase<RunProfileState>(project, configurationType, name),
   RunConfigurationWithSuppressedDefaultDebugAction,
   SMRunnerConsolePropertiesProvider,
   DumbAware {
