@@ -8,6 +8,10 @@ import com.intellij.model.psi.PsiSymbolReferenceService
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
+import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
+import org.jetbrains.bazel.languages.bazelrc.flags.Flag
+import org.jetbrains.bazel.languages.bazelrc.flags.OptionEffectTag
+import org.jetbrains.bazel.languages.bazelrc.flags.OptionMetadataTag
 import org.jetbrains.bazel.languages.bazelrc.highlighting.BazelrcHighlightingColors
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
@@ -24,12 +28,58 @@ class BazelrcFlagAnnotator : Annotator {
   val symbolReferenceService = PsiSymbolReferenceService.getService()
 
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
+    if (!flagTokenPattern.accepts(element)) {
+      return
+    }
+
+    val flag =
+      (element.parent as? BazelrcFlag)
+        ?.let(symbolReferenceService::getReferences)
+        ?.flatMap(PsiSymbolReference::resolveReference)
+        ?.firstOrNull()
+        ?.let { it as? BazelFlagSymbol }
+        ?.flag
+
+    if (flag == null) {
+      holder
+        .newAnnotation(HighlightSeverity.WARNING, "Unknown flag: '${element.text}'")
+        .range(element.textRange)
+        .textAttributes(BazelrcHighlightingColors.UNKNOWN_FLAG)
+        .needsUpdateOnTyping()
+        .create()
+      return
+    }
+
     when {
-      isUnknownFlag(element) ->
+      isHidden(flag) ->
         holder
-          .newAnnotation(HighlightSeverity.WARNING, "Unknown flag: '${element.text}'")
+          .newAnnotation(HighlightSeverity.INFORMATION, "Undocumented flag: '${element.text}'")
           .range(element.textRange)
           .textAttributes(BazelrcHighlightingColors.UNKNOWN_FLAG)
+          .needsUpdateOnTyping()
+          .create()
+
+      isNoOp(flag) ->
+        holder
+          .newAnnotation(HighlightSeverity.INFORMATION, "Flag: '${element.text}' doesn't do anything")
+          .range(element.textRange)
+          .textAttributes(BazelrcHighlightingColors.NOOP_FLAG)
+          .needsUpdateOnTyping()
+          .create()
+
+      isDeprecated(flag) ->
+        holder
+          .newAnnotation(HighlightSeverity.WARNING, "Flag: '${element.text}' is deprecated")
+          .range(element.textRange)
+          .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
+          .needsUpdateOnTyping()
+          .create()
+
+      isOld(flag, element.textRange.substring(element.containingFile.text)) ->
+        holder
+          .newAnnotation(HighlightSeverity.INFORMATION, "Flag: '${element.text}'")
+          .range(element.textRange)
+          .textAttributes(BazelrcHighlightingColors.DEPRECATED_FLAG)
           .needsUpdateOnTyping()
           .create()
 
@@ -37,16 +87,11 @@ class BazelrcFlagAnnotator : Annotator {
     }
   }
 
-  private fun isUnknownFlag(element: PsiElement): Boolean {
-    if (!flagTokenPattern.accepts(element)) {
-      return false
-    }
+  private fun isHidden(flag: Flag) = flag.option.metadataTags.contains(OptionMetadataTag.HIDDEN)
 
-    // check if the parent resolves any `Symbol` reference
-    return (element.parent as? BazelrcFlag)
-      ?.let(symbolReferenceService::getReferences)
-      ?.flatMap(PsiSymbolReference::resolveReference)
-      ?.firstOrNull()
-      ?.let { true } != true
-  }
+  private fun isDeprecated(flag: Flag) = flag.option.metadataTags.contains(OptionMetadataTag.DEPRECATED)
+
+  private fun isNoOp(flag: Flag) = flag.option.effectTags.contains(OptionEffectTag.NO_OP)
+
+  private fun isOld(flag: Flag, name: String) = "--${flag.option.oldName}" == name
 }

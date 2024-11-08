@@ -12,6 +12,8 @@ sealed class Flag {
 
   data class Boolean(override val name: String) : Flag()
 
+  data class TriState(override val name: String) : Flag()
+
   data class Integer(override val name: String) : Flag()
 
   data class Path(override val name: String) : Flag()
@@ -41,7 +43,7 @@ sealed class Flag {
           .toPersistentMap()
     }
 
-    internal val KnownFlags.allFlags by object : LazyExtension<PersistentMap<String, Flag>, KnownFlags>() {
+    private val KnownFlags.allFlags by object : LazyExtension<PersistentMap<String, Flag>, KnownFlags>() {
       override fun initValue(o: KnownFlags): PersistentMap<String, Flag> =
         KnownFlags.declaredFieldsMap
           .values
@@ -63,7 +65,8 @@ fun knownFlagNames(pair: Pair<Flag, Option>): List<Pair<String, Flag>> {
 
   names =
     when (flag) {
-      is Flag.Boolean -> names.flatMap { it -> listOf("--$it", "--no$it") }
+      is Flag.Boolean -> names.flatMap { listOf("--$it", "--no$it") }
+      is Flag.TriState -> names.flatMap { listOf("--$it", "--no$it") }
       else -> names.map { "--$it" }
     }
 

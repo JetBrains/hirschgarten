@@ -561,7 +561,7 @@ internal object KnownFlags {
   )
   @JvmField
   @Suppress("unused")
-  val experimentalUseWindowsSandbox = Flag.Unknown("experimentalUseWindowsSandbox")
+  val experimentalUseWindowsSandbox = Flag.TriState("experimentalUseWindowsSandbox")
 
   //   --experimental_windows_sandbox_path (a string; default: "BazelSandbox.exe")
   @Option(
@@ -2411,7 +2411,7 @@ internal object KnownFlags {
   )
   @JvmField
   @Suppress("unused")
-  val buildPythonZip = Flag.Unknown("buildPythonZip")
+  val buildPythonZip = Flag.TriState("buildPythonZip")
 
   //   --catalyst_cpus (comma-separated list of options; may be used multiple times)
   @Option(
@@ -2606,7 +2606,7 @@ internal object KnownFlags {
   )
   @JvmField
   @Suppress("unused")
-  val enableRunfiles = Flag.Unknown("enableRunfiles")
+  val enableRunfiles = Flag.TriState("enableRunfiles")
 
   //   --experimental_action_listener (a build target label; may be used multiple times)
   @Option(
@@ -6927,7 +6927,7 @@ internal object KnownFlags {
   )
   @JvmField
   @Suppress("unused")
-  val generateJsonTraceProfile = Flag.Unknown("generateJsonTraceProfile")
+  val generateJsonTraceProfile = Flag.TriState("generateJsonTraceProfile")
 
   //   --[no]heap_dump_on_oom (a boolean; default: "false")
   @Option(
@@ -8438,7 +8438,7 @@ internal object KnownFlags {
   )
   @JvmField
   @Suppress("unused")
-  val cacheTestResults = Flag.Unknown("cacheTestResults")
+  val cacheTestResults = Flag.TriState("cacheTestResults")
 
   //   --color (yes, no or auto; default: "auto")
   @Option(
