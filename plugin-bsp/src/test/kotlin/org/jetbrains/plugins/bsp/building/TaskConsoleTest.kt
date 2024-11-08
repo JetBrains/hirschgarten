@@ -360,8 +360,8 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
     taskConsole.startTask("root", "Root task", "Root started")
-    taskConsole.startSubtask("root", "child", "Child started")
-    taskConsole.startSubtask("child", "grandchild", "Grandchild started")
+    taskConsole.startSubtask("root", "child", "Child")
+    taskConsole.startSubtask("child", "grandchild", "Grandchild")
     taskConsole.addMessage("child", "Message 1")
     taskConsole.addMessage("grandchild", "Message 2")
     taskConsole.finishTask("root", "Root finished")
@@ -381,13 +381,15 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
         "root" to
           listOf(
             TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
-            TestableBuildEvent(ProgressBuildEventImpl::class, "child", "root", "Child started"),
-            TestableBuildEvent(ProgressBuildEventImpl::class, "grandchild", "child", "Grandchild started"),
+            TestableBuildEvent(ProgressBuildEventImpl::class, "child", "root", "Child"),
+            TestableBuildEvent(ProgressBuildEventImpl::class, "grandchild", "child", "Grandchild"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, "child", "Message 1\n"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 1\n"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, "grandchild", "Message 2\n"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, "child", "Message 2\n"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 2\n"),
+            TestableBuildEvent(FinishEventImpl::class, "grandchild", null, "Grandchild"),
+            TestableBuildEvent(FinishEventImpl::class, "child", null, "Child"),
             TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
             TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
             TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
@@ -483,12 +485,12 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
     val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
 
     taskConsole.startTask("root", "Root task", "Root started")
-    taskConsole.startSubtask("root", "subtask1", "Subtask 1 started")
-    taskConsole.startSubtask("subtask1", "subtask2", "Subtask 2 started")
-    taskConsole.startSubtask("subtask2", "subtask3", "Subtask 3 started")
+    taskConsole.startSubtask("root", "subtask1", "Subtask 1")
+    taskConsole.startSubtask("subtask1", "subtask2", "Subtask 2")
+    taskConsole.startSubtask("subtask2", "subtask3", "Subtask 3")
     taskConsole.addMessage("subtask2", "Message 1")
     taskConsole.addMessage("subtask3", "Message 2")
-    taskConsole.finishSubtask("subtask1", "Subtask 1 finished")
+    taskConsole.finishSubtask("subtask1", "Subtask 1")
 
     // starting a different ancestor subtask, under similar ID
     taskConsole.startSubtask("root", "subtask1", "Subtask 1 started")
@@ -506,9 +508,9 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
         "root" to
           listOf(
             TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
-            TestableBuildEvent(ProgressBuildEventImpl::class, "subtask1", "root", "Subtask 1 started"),
-            TestableBuildEvent(ProgressBuildEventImpl::class, "subtask2", "subtask1", "Subtask 2 started"),
-            TestableBuildEvent(ProgressBuildEventImpl::class, "subtask3", "subtask2", "Subtask 3 started"),
+            TestableBuildEvent(ProgressBuildEventImpl::class, "subtask1", "root", "Subtask 1"),
+            TestableBuildEvent(ProgressBuildEventImpl::class, "subtask2", "subtask1", "Subtask 2"),
+            TestableBuildEvent(ProgressBuildEventImpl::class, "subtask3", "subtask2", "Subtask 3"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask2", "Message 1\n"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask1", "Message 1\n"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 1\n"),
@@ -516,9 +518,38 @@ class TaskConsoleTest : WorkspaceModelBaseTest() {
             TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask2", "Message 2\n"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, "subtask1", "Message 2\n"),
             TestableBuildEvent(OutputBuildEventImpl::class, null, null, "Message 2\n"),
-            TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1 finished"),
+            TestableBuildEvent(FinishEventImpl::class, "subtask3", null, "Subtask 3"),
+            TestableBuildEvent(FinishEventImpl::class, "subtask2", null, "Subtask 2"),
+            TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1"),
             TestableBuildEvent(ProgressBuildEventImpl::class, "subtask1", "root", "Subtask 1 started"),
             TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1 finished"),
+            TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
+          ),
+      )
+  }
+
+  @Test
+  fun `should finish subtasks with starting message if a new message is not provided`() {
+    // given
+    val buildProcessListener = MockProgressEventListener()
+    val basePath = "/project/"
+
+    // when
+    val taskConsole = TestTaskConsole(buildProcessListener, basePath, project)
+
+    taskConsole.startTask("root", "Root task", "Root started")
+    taskConsole.startSubtask("root", "subtask1", "Subtask 1")
+    taskConsole.finishSubtask("subtask1")
+    taskConsole.finishTask("root", "Root finished")
+
+    // then
+    buildProcessListener.events shouldContainExactly
+      mapOf(
+        "root" to
+          listOf(
+            TestableBuildEvent(StartBuildEventImpl::class, "root", null, "Root started"),
+            TestableBuildEvent(ProgressBuildEventImpl::class, "subtask1", "root", "Subtask 1"),
+            TestableBuildEvent(FinishEventImpl::class, "subtask1", null, "Subtask 1"),
             TestableBuildEvent(FinishBuildEventImpl::class, "root", null, "Root finished"),
           ),
       )
