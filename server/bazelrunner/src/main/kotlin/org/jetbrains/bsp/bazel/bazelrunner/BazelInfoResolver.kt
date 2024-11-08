@@ -4,7 +4,6 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BasicBazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.bazelrunner.utils.LazyBazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
 import java.nio.file.Paths
 
@@ -15,7 +14,7 @@ private const val WORKSPACE = "workspace"
 private const val STARLARK_SEMANTICS = "starlark-semantics"
 
 class BazelInfoResolver(private val bazelRunner: BazelRunner) {
-  fun resolveBazelInfo(cancelChecker: CancelChecker): BazelInfo = LazyBazelInfo { bazelInfoFromBazel(cancelChecker) }
+  fun resolveBazelInfo(cancelChecker: CancelChecker): BazelInfo = bazelInfoFromBazel(cancelChecker)
 
   private fun bazelInfoFromBazel(cancelChecker: CancelChecker): BazelInfo {
     val command =
@@ -53,12 +52,16 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
     // Idea taken from https://github.com/bazelbuild/bazel/issues/21303#issuecomment-2007628330
     val starlarkSemantics = extract(STARLARK_SEMANTICS)
     val isBzlModEnabled =
-      if ("enable_bzlmod=true" in starlarkSemantics) {
-        true
-      } else if ("enable_bzlmod=false" in starlarkSemantics) {
-        false
-      } else {
-        bazelReleaseVersion.major >= 7
+      when {
+        "enable_bzlmod=true" in starlarkSemantics -> true
+        "enable_bzlmod=false" in starlarkSemantics -> false
+        else -> bazelReleaseVersion.major >= 7
+      }
+    val isWorkspaceEnabled =
+      when {
+        "enable_workspace=true" in starlarkSemantics -> true
+        "enable_workspace=false" in starlarkSemantics -> false
+        else -> bazelReleaseVersion.major <= 7
       }
 
     return BasicBazelInfo(
@@ -67,6 +70,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
       workspaceRoot = Paths.get(extract(WORKSPACE)),
       release = bazelReleaseVersion,
       isBzlModEnabled = isBzlModEnabled,
+      isWorkspaceEnabled = isWorkspaceEnabled,
     )
   }
 

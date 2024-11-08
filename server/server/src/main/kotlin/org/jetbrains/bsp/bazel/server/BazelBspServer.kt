@@ -214,6 +214,7 @@ class BazelBspServer(
         val bazelRunner = BazelRunner(workspaceContextProvider, bspClientLogger, workspaceRoot)
         verifyBazelVersion(bazelRunner)
         val bazelInfo = createBazelInfo(bazelRunner)
+        bazelRunner.bazelInfo = bazelInfo
         val bazelPathsResolver = BazelPathsResolver(bazelInfo)
         val compilationManager =
           BazelBspCompilationManager(bazelRunner, bazelPathsResolver, client, workspaceRoot)

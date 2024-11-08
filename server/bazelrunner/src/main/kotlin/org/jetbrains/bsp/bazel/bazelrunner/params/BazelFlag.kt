@@ -27,6 +27,8 @@ object BazelFlag {
 
   @JvmStatic fun repositoryOverride(repositoryName: String, path: String): String = arg("override_repository", "$repositoryName=$path")
 
+  @JvmStatic fun enableWorkspace(enabled: Boolean): String = arg("enable_workspace", enabled.toString())
+
   @JvmStatic fun testOutputAll(): String = arg("test_output", "all")
 
   @JvmStatic fun buildTagFilters(tags: List<String>): String = arg("build_tag_filters", tags.joinToString(","))

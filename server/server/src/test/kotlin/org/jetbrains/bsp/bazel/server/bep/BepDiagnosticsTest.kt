@@ -60,6 +60,7 @@ class BepDiagnosticsTest {
         workspaceRoot = workspaceRoot,
         release = BazelRelease(7),
         isBzlModEnabled = true,
+        isWorkspaceEnabled = false,
       )
     return BepServer(
       bspClient = client,
