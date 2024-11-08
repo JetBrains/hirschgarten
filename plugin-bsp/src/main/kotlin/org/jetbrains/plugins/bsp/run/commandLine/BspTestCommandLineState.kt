@@ -1,16 +1,11 @@
 package org.jetbrains.plugins.bsp.run.commandLine
 
 import ch.epfl.scala.bsp4j.TestParams
-import com.intellij.execution.DefaultExecutionResult
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
-import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.execution.runners.ProgramRunner
-import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
-import com.intellij.execution.testframework.sm.ServiceMessageBuilder
-import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.BazelTestParamsData
@@ -31,23 +26,7 @@ class BspTestCommandLineState(
 ) : BspCommandLineStateBase(environment, originId) {
   private val configuration = environment.runProfile as BspRunConfiguration
 
-  override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult {
-    val properties = configuration.createTestConsoleProperties(executor)
-    val handler = startProcess()
-
-    val console: BaseTestsOutputConsoleView =
-      SMTestRunnerConnectionUtil.createAndAttachConsole(
-        BspPluginBundle.message("console.tasks.test.framework.name"),
-        handler,
-        properties,
-      )
-
-    handler.notifyTextAvailable(ServiceMessageBuilder.testsStarted().toString() + "\n", ProcessOutputType.STDOUT)
-
-    val actions = createActions(console, handler, executor)
-
-    return DefaultExecutionResult(console, handler, *actions)
-  }
+  override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspTestTaskListener(handler)
 
