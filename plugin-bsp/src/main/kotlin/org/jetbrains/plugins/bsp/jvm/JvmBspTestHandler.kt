@@ -2,11 +2,14 @@ package org.jetbrains.plugins.bsp.jvm
 
 import ch.epfl.scala.bsp4j.TestParams
 import com.intellij.execution.ExecutionException
+import com.intellij.execution.ExecutionResult
 import com.intellij.execution.Executor
 import com.intellij.execution.configurations.RunProfileState
 import com.intellij.execution.executors.DefaultDebugExecutor
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.runners.ProgramRunner
 import kotlinx.coroutines.future.asDeferred
+import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.RemoteDebugData
@@ -61,6 +64,8 @@ class JvmTestWithDebugCommandLineState(
   val settings: GenericTestState,
 ) : JvmDebuggableCommandLineState(environment, originId) {
   override fun createAndAddTaskListener(handler: BspProcessHandler): BspTaskListener = BspTestTaskListener(handler)
+
+  override fun execute(executor: Executor, runner: ProgramRunner<*>): ExecutionResult = executeWithTestConsole(executor)
 
   override suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities) {
     if (!capabilities.testWithDebugProvider) {

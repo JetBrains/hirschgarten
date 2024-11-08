@@ -1,13 +1,21 @@
 package org.jetbrains.plugins.bsp.run
 
+import com.intellij.execution.DefaultExecutionResult
+import com.intellij.execution.ExecutionResult
+import com.intellij.execution.Executor
 import com.intellij.execution.configurations.CommandLineState
+import com.intellij.execution.process.ProcessOutputType
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
+import com.intellij.execution.testframework.sm.ServiceMessageBuilder
+import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.application.EDT
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.run.config.BspRunConfiguration
@@ -54,5 +62,24 @@ abstract class BspCommandLineStateBase(environment: ExecutionEnvironment, protec
     runDeferred.start()
 
     return handler
+  }
+
+  protected fun executeWithTestConsole(executor: Executor): ExecutionResult {
+    val configuration = environment.runProfile as BspRunConfiguration
+    val properties = configuration.createTestConsoleProperties(executor)
+    val handler = startProcess()
+
+    val console: BaseTestsOutputConsoleView =
+      SMTestRunnerConnectionUtil.createAndAttachConsole(
+        BspPluginBundle.message("console.tasks.test.framework.name"),
+        handler,
+        properties,
+      )
+
+    handler.notifyTextAvailable(ServiceMessageBuilder.testsStarted().toString() + "\n", ProcessOutputType.STDOUT)
+
+    val actions = createActions(console, handler, executor)
+
+    return DefaultExecutionResult(console, handler, *actions)
   }
 }
