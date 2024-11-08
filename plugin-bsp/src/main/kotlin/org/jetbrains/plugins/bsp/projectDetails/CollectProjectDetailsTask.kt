@@ -158,7 +158,7 @@ class CollectProjectDetailsTask(
       project.syncConsole.startSubtask(
         this.taskId,
         IMPORT_SUBTASK_ID,
-        BspPluginBundle.message("console.task.model.collect.in.progress"),
+        BspPluginBundle.message("console.task.model.collect"),
       )
 
       val projectDetails =
@@ -169,20 +169,20 @@ class CollectProjectDetailsTask(
           baseTargetInfos = baseTargetInfos,
         )
 
-      project.syncConsole.finishSubtask(IMPORT_SUBTASK_ID, BspPluginBundle.message("console.task.model.collect.success"))
+      project.syncConsole.finishSubtask(IMPORT_SUBTASK_ID)
 
       projectDetails
     } catch (e: Exception) {
       if (e is CancellationException) {
         project.syncConsole.finishSubtask(
           IMPORT_SUBTASK_ID,
-          BspPluginBundle.message("console.task.model.collect.cancelled"),
+          null,
           FailureResultImpl(),
         )
       } else {
         project.syncConsole.finishSubtask(
           IMPORT_SUBTASK_ID,
-          BspPluginBundle.message("console.task.model.collect.failed"),
+          null,
           FailureResultImpl(e),
         )
       }
@@ -239,7 +239,7 @@ class CollectProjectDetailsTask(
     project.syncConsole.withSubtask(
       taskId = taskId,
       subtaskId = "calculate-all-python-sdk-infos",
-      message = BspPluginBundle.message("console.task.model.calculate.python.sdks.done"),
+      message = BspPluginBundle.message("console.task.model.calculate.python.sdks"),
     ) {
       runInterruptible {
         pythonSdks =
