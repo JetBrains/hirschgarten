@@ -608,6 +608,49 @@ class TestXmlParserTest {
     client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
   }
 
+  @Test
+  fun `junit5 - incomplete test report time`(
+    @TempDir tempDir: Path,
+  ) {
+    val sampleContents =
+      """
+      <?xml version="1.0" encoding="UTF-8"?>
+      <testsuites>
+          <testsuite name="testsuite" tests="1" failures="0" errors="1" disabled="0" skipped="0" package="">
+              <properties/>
+              <testcase name="testFailure1" classname="org.jetbrains.simple.DoubleFailTest" time="0.02">
+                  <error message="first fail ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError">
+                      <![CDATA[org.opentest4j.AssertionFailedError: first fail ==> expected: <true> but was: <false>
+                      	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+                      	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+                      	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+                      	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+                      	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:210)
+                      	at org.jetbrains.simple.DoubleFailTest.testFailure1(DoubleFailTest.java:44)
+                      	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+                      	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+                      	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+                      ]]>
+                  </error>
+              </testcase>
+          </testsuite>
+      </testsuites>
+      """.trimIndent()
+
+    val client = MockBuildClient()
+    val notifier = BspClientTestNotifier(client, "sample-origin")
+    val parentId = TaskId("sample-task")
+
+    // when
+    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+
+    // then
+    client.taskFinishCalls.size shouldBe 2
+    val lastFinish = client.taskFinishCalls.first().data as? TestFinish
+    val lastFinishData = lastFinish?.data as? JUnitStyleTestCaseData
+    lastFinishData?.time shouldBe 0.02
+  }
+
   private fun writeTempFile(tempDir: Path, contents: String): String {
     val tempFile = tempDir.resolve("tempFile.xml").toFile()
     tempFile.writeText(contents)

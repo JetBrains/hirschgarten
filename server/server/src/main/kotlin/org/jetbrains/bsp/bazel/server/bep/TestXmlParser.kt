@@ -258,6 +258,8 @@ private class FallbackTestXmlParser(private var parentId: TaskId, private var bs
     val failure: TestResultDetail? = null,
     @JacksonXmlProperty(localName = "skipped")
     val skipped: TestResultDetail? = null,
+    @JacksonXmlProperty(localName = "time")
+    val time: Double? = null,
   )
 
   // A Bazel target is represented by a test suite containing one test case
@@ -307,7 +309,7 @@ private class FallbackTestXmlParser(private var parentId: TaskId, private var bs
         else -> null
       }
 
-    val testCaseData = JUnitStyleTestCaseData(null, null, outcomeMessage, null, null)
+    val testCaseData = JUnitStyleTestCaseData(testCase.time, null, outcomeMessage, null, null)
 
     // In the generated xml, suite name and test case name are the same, but in the Test Console test names have
     // to be unique
