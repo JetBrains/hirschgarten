@@ -13,8 +13,15 @@ import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStart
 import ch.epfl.scala.bsp4j.TestStatus
 import ch.epfl.scala.bsp4j.TestTask
+import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 
 class BspClientTestNotifier(private val bspClient: BuildClient, private val originId: String) {
+  private var passedTests: Int = 0
+  private var failedTests: Int = 0
+  private var ignoredTests: Int = 0
+  private var cancelledTests: Int = 0
+  private var skippedTests: Int = 0
+
   /**
    * Notifies the client about starting a single test or a test suite
    * The presence or lack of parent's taskId indicates whether it's a test case or a test suite.
@@ -59,6 +66,18 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
       testFinish.data = data
     }
 
+    // For leaf tests, update reported counters
+    if (data is JUnitStyleTestCaseData) {
+      when (status) {
+        TestStatus.PASSED -> passedTests++
+        TestStatus.FAILED -> failedTests++
+        TestStatus.IGNORED -> ignoredTests++
+        TestStatus.CANCELLED -> cancelledTests++
+        TestStatus.SKIPPED -> skippedTests++
+        null -> {}
+      }
+    }
+
     val taskFinishParams = TaskFinishParams(taskId, StatusCode.OK)
     taskFinishParams.originId = originId
     taskFinishParams.dataKind = TaskFinishDataKind.TEST_FINISH
@@ -84,10 +103,20 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
   /**
    * Notifies the client about ending the testing procedure
    *
-   * @param testReport report concerning conducted tests
+   * @param targetIdentifier identifier of the testing target being finished
    * @param taskId     TaskId of the testing target execution
    */
-  fun endTestTarget(testReport: TestReport, taskId: TaskId) {
+  fun endTestTarget(targetIdentifier: BuildTargetIdentifier?, taskId: TaskId) {
+    val testReport =
+      TestReport(
+        targetIdentifier,
+        passedTests,
+        failedTests,
+        ignoredTests,
+        cancelledTests,
+        skippedTests,
+      )
+
     val taskFinishParams = TaskFinishParams(taskId, StatusCode.OK)
     taskFinishParams.originId = originId
     taskFinishParams.dataKind = TaskFinishDataKind.TEST_REPORT

@@ -8,7 +8,6 @@ import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskId
 import ch.epfl.scala.bsp4j.TaskStartDataKind
 import ch.epfl.scala.bsp4j.TaskStartParams
-import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStatus
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.v1.BuildEvent
@@ -48,6 +47,7 @@ class BepServer(
   private val bepLogger = BepLogger(bspClientLogger)
 
   private var startedEvent: TaskId? = null
+  private var bspClientTestNotifier: BspClientTestNotifier? = null // Present for test commands
   private val bepOutputBuilder = BepOutputBuilder(bazelPathsResolver)
 
   override fun publishLifecycleEvent(request: PublishLifecycleEventRequest, responseObserver: StreamObserver<Empty>) {
@@ -86,16 +86,13 @@ class BepServer(
 
   private fun processTestResult(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasTestResult()) {
-      if (originId == null) {
+      val taskId = startedEvent
+      val bspClientTestNotifier = this.bspClientTestNotifier
+      if (originId == null || taskId == null || bspClientTestNotifier == null) {
         return
       }
 
-      val bspClientTestNotifier = BspClientTestNotifier(bspClient, originId)
       val testResult = event.testResult
-
-      val taskId = TaskId(UUID.randomUUID().toString())
-
-      bspClientTestNotifier.beginTestTarget(target, taskId)
 
       // TODO: this is the place where we could parse the test result and produce individual test events
       // TODO: there's some other interesting data
@@ -136,24 +133,6 @@ class BepServer(
         bspClientTestNotifier.startTest("Test", childId)
         bspClientTestNotifier.finishTest("Test", childId, testStatus, "Test finished")
       }
-
-      val passed = if (testStatus == TestStatus.PASSED) 1 else 0
-      val failed = if (testStatus == TestStatus.FAILED) 1 else 0
-      val ignored = if (testStatus == TestStatus.IGNORED) 1 else 0
-      val cancelled = if (testStatus == TestStatus.CANCELLED) 1 else 0
-      val skipped = if (testStatus == TestStatus.SKIPPED) 1 else 0
-
-      val testReport =
-        TestReport(
-          target,
-          passed,
-          failed,
-          ignored,
-          cancelled,
-          skipped,
-        )
-
-      bspClientTestNotifier.endTestTarget(testReport, taskId)
     }
   }
 
@@ -173,7 +152,7 @@ class BepServer(
   }
 
   private fun processBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    if (event.hasStarted() && event.started.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
+    if (event.hasStarted()) {
       consumeBuildStartedEvent(event.started)
     }
   }
@@ -197,12 +176,22 @@ class BepServer(
     val startParams = TaskStartParams(taskId)
     startParams.eventTime = buildStarted.startTimeMillis
 
-    if (target != null) {
-      startParams.dataKind = TaskStartDataKind.COMPILE_TASK
-      val task = CompileTask(target)
-      startParams.data = task
+    if (buildStarted.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
+      if (target != null) {
+        startParams.dataKind = TaskStartDataKind.COMPILE_TASK
+        val task = CompileTask(target)
+        startParams.data = task
+      }
+      bspClient.onBuildTaskStart(startParams)
+    } else if (buildStarted.command == Constants.BAZEL_TEST_COMMAND) {
+      if (originId == null) {
+        return
+      }
+
+      val bspClientTestNotifier = BspClientTestNotifier(bspClient, originId)
+      this.bspClientTestNotifier = bspClientTestNotifier
+      bspClientTestNotifier.beginTestTarget(target, taskId)
     }
-    bspClient.onBuildTaskStart(startParams)
     startedEvent = taskId
   }
 
@@ -217,6 +206,13 @@ class BepServer(
 
     if (taskId == null) {
       LOGGER.warn("No start event id was found. Origin id: {}", originId)
+      return
+    }
+
+    val bspClientTestNotifier = this.bspClientTestNotifier
+    if (bspClientTestNotifier != null) {
+      bspClientTestNotifier.endTestTarget(target, taskId)
+      this.bspClientTestNotifier = null
       return
     }
 
