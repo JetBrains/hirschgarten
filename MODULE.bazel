@@ -35,7 +35,7 @@ register_toolchains(
 
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_java", version = "8.3.0")
+bazel_dep(name = "rules_java", version = "8.3.1")
 bazel_dep(name = "rules_jvm_external", version = "6.5")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
@@ -138,7 +138,7 @@ http_jar(
     url = "https://github.com/agluszak/bazel-bep-proto/releases/download/%s/bazel-bep-protobuf.jar" % BAZEL_BEP_VERSION,
 )
 
-bazel_dep(name = "rules_proto", version = "7.0.0")
+bazel_dep(name = "rules_proto", version = "7.0.1")
 bazel_dep(name = "protobuf", version = "28.3")
 single_version_override(
     module_name = "protobuf",
@@ -147,7 +147,7 @@ single_version_override(
 
 bazel_dep(name = "rules_cc", version = "0.1.0")
 bazel_dep(name = "platforms", version = "0.0.10")
-bazel_dep(name = "rules_python", version = "0.37.2")
+bazel_dep(name = "rules_python", version = "0.38.0")
 
 # Needed for codecanvas
 python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
