@@ -41,6 +41,7 @@ import org.jetbrains.plugins.bsp.building.syncConsole
 import org.jetbrains.plugins.bsp.building.withSubtask
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.bspProjectName
 import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
@@ -118,7 +119,7 @@ class CollectProjectDetailsTask(
       calculateAllUniqueJdkInfosSubtask(projectDetails)
       uniqueJavaHomes.orEmpty().also {
         if (it.isNotEmpty()) {
-          projectDetails.defaultJdkName = project.name.projectNameToJdkName(it.first())
+          projectDetails.defaultJdkName = project.bspProjectName.projectNameToJdkName(it.first())
         } else {
           projectDetails.defaultJdkName = SdkUtils.getProjectJdkOrMostRecentJdk(project)?.name
         }
@@ -441,7 +442,7 @@ class CollectProjectDetailsTask(
       bspTracer.spanBuilder("add.bsp.fetched.jdks.ms").useWithScope {
         uniqueJavaHomes?.forEach {
           SdkUtils.addJdkIfNeeded(
-            projectName = project.name,
+            projectName = project.bspProjectName,
             javaHomeUri = it,
           )
         }
