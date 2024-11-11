@@ -38,6 +38,7 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
 import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
+import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.findModuleNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.RawUriToDirectoryPathTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.orDefault
@@ -77,6 +78,7 @@ class GoProjectSync : ProjectSyncHook {
             moduleName = moduleName,
             entitySource = moduleSourceEntity,
             virtualFileUrlManager = virtualFileUrlManager,
+            moduleNameProvider = moduleNameProvider,
           )
         val vgoModule =
           prepareVgoModule(environment, it, moduleEntity.symbolicId, virtualFileUrlManager, idToGoTargetMap, moduleSourceEntity)
@@ -100,6 +102,7 @@ class GoProjectSync : ProjectSyncHook {
     moduleName: String,
     entitySource: BspModuleEntitySource,
     virtualFileUrlManager: VirtualFileUrlManager,
+    moduleNameProvider: TargetNameReformatProvider,
   ): ModuleEntity {
     val sourceContentRootEntities = getSourceContentRootEntities(target, entitySource, virtualFileUrlManager)
     val resourceContentRootEntities = getResourceContentRootEntities(target, entitySource, virtualFileUrlManager)
@@ -109,7 +112,7 @@ class GoProjectSync : ProjectSyncHook {
         dependencies =
           target.target.dependencies.map {
             ModuleDependency(
-              module = ModuleId(it.uri),
+              module = ModuleId(moduleNameProvider(BuildTargetInfo(id = it))),
               exported = true,
               scope = DependencyScope.COMPILE,
               productionOnTest = true,
