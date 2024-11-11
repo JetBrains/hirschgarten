@@ -8,6 +8,7 @@ import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractKotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
+import org.jetbrains.plugins.bsp.config.bspProjectName
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.utils.StringUtils
@@ -23,7 +24,6 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.KotlinAddendum
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ScalaAddendum
 import java.nio.file.Path
-import kotlin.io.path.name
 import kotlin.io.path.toPath
 
 internal class ModuleDetailsToJavaModuleTransformer(
@@ -117,7 +117,7 @@ internal class ModuleDetailsToJavaModuleTransformer(
 
   private fun ModuleDetails.toJdkName(): String? = extractJvmBuildTarget(this.target).toJdkName()
 
-  private fun JvmBuildTarget?.toJdkName(): String? = this?.javaHome?.let { projectBasePath.name.projectNameToJdkName(it) }
+  private fun JvmBuildTarget?.toJdkName(): String? = this?.javaHome?.let { project.bspProjectName.projectNameToJdkName(it) }
 
   private fun toKotlinAddendum(inputEntity: ModuleDetails): KotlinAddendum? {
     val kotlinBuildTarget = extractKotlinBuildTarget(inputEntity.target)

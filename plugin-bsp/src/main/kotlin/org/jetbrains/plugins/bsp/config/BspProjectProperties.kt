@@ -77,6 +77,9 @@ var Project.rootDir: VirtualFile
     bspProjectProperties.rootDir = value
   }
 
+val Project.bspProjectName: String
+  get() = rootDir.name
+
 var Project.buildToolId: BuildToolId
   get() =
     bspProjectProperties.buildToolId
