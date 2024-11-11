@@ -136,7 +136,7 @@ abstract class TaskConsole(
   ) {
     if (result is FailureResultImpl) {
       result.failures.forEach {
-        log.error(it.message, it.error)
+        log.warn(it.message, it.error)
         it.error?.let { error ->
           addMessage(taskId, getStackTraceAsString(error))
         }

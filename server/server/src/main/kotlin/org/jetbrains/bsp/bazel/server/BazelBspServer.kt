@@ -260,7 +260,7 @@ class BazelBspServer(
       .runBazelCommand(command, serverPidFuture = null)
       .waitAndGetResult({}, true)
       .also {
-        if (it.isNotSuccess) error("Incompatible Bazel version detected.\n${it.stderrLines.joinToString("\n")}")
+        if (it.isNotSuccess) error("Querying Bazel version failed.\n${it.stderrLines.joinToString("\n")}")
       }
   }
 }
