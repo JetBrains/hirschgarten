@@ -6,15 +6,17 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.actionSystem.Toggleable
+import com.intellij.openapi.project.DumbAware
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 
-public class FilterActionGroup(private val targetFilter: TargetFilter) :
+class FilterActionGroup(private val targetFilter: TargetFilter) :
   DefaultActionGroup(
     BspPluginBundle.message("widget.filter.action.group"),
     null,
     AllIcons.General.Filter,
   ),
-  Toggleable {
+  Toggleable,
+  DumbAware {
   init {
     this.isPopup = true
     addFilterChangeAction(
@@ -47,7 +49,8 @@ private class FilterChangeAction(
   private val targetFilter: TargetFilter,
   private val filterType: TargetFilter.FILTER,
   text: String,
-) : ToggleAction(text) {
+) : ToggleAction(text),
+  DumbAware {
   override fun isSelected(e: AnActionEvent): Boolean = targetFilter.currentFilter == filterType
 
   override fun setSelected(e: AnActionEvent, state: Boolean) {
