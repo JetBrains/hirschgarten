@@ -22,8 +22,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
-import org.jetbrains.plugins.bsp.magicmetamodel.DefaultLibraryNameProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.DefaultNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
@@ -55,8 +54,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModules =
       ModuleDetailsToPythonModuleTransformer(
         mapOf(),
-        DefaultModuleNameProvider,
-        DefaultLibraryNameProvider,
+        DefaultNameProvider,
+        DefaultNameProvider,
         hasDefaultPythonInterpreter,
       ).transform(emptyModulesDetails)
 
@@ -165,8 +164,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModule =
       ModuleDetailsToPythonModuleTransformer(
         targetsMap,
-        DefaultModuleNameProvider,
-        DefaultLibraryNameProvider,
+        DefaultNameProvider,
+        DefaultNameProvider,
         hasDefaultPythonInterpreter,
       ).transform(moduleDetails)
 
@@ -380,8 +379,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModules =
       ModuleDetailsToPythonModuleTransformer(
         targetsMap,
-        DefaultModuleNameProvider,
-        DefaultLibraryNameProvider,
+        DefaultNameProvider,
+        DefaultNameProvider,
         hasDefaultPythonInterpreter,
       ).transform(modulesDetails)
 
@@ -574,8 +573,8 @@ class ModuleDetailsToPythonModuleTransformerTest {
     val pythonModules =
       ModuleDetailsToPythonModuleTransformer(
         mapOf(),
-        DefaultModuleNameProvider,
-        DefaultLibraryNameProvider,
+        DefaultNameProvider,
+        DefaultNameProvider,
         hasDefaultPythonInterpreter,
       ).transform(modulesDetails)
 

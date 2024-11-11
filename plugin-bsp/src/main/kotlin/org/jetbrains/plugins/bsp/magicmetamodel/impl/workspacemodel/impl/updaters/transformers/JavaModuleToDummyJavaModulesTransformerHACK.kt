@@ -18,13 +18,13 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 
-public data class DummySourceRootWithPackagePrefix(val sourcePath: Path, val packagePrefix: String = "")
+internal data class DummySourceRootWithPackagePrefix(val sourcePath: Path, val packagePrefix: String = "")
 
 /**
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
  */
-public class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBasePath: Path) :
+internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBasePath: Path) :
   WorkspaceModelEntityPartitionTransformer<JavaModule, JavaModule> {
   internal companion object {
     val DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE = SourceRootTypeId("java-source")
@@ -225,8 +225,8 @@ internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Pat
     .trim { it == File.separatorChar }
     .replaceDots()
     .replace(File.separator, ".")
-    .addIntelliJDummySuffix()
+    .addIntelliJDummyPrefix()
     .shortenTargetPath()
 }
 
-private fun String.addIntelliJDummySuffix() = "$this-intellij-generated"
+internal fun String.addIntelliJDummyPrefix() = "_aux.synthetic.$this"

@@ -98,7 +98,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     // then
     val expectedModule =
       GenericModuleInfo(
-        name = "$projectRootName-intellij-generated",
+        name = projectRootName.addIntelliJDummyPrefix(),
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
@@ -200,7 +200,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     // then
     val expectedModule =
       GenericModuleInfo(
-        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}-intellij-generated",
+        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}".addIntelliJDummyPrefix(),
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
@@ -282,7 +282,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     // then
     val expectedModule =
       GenericModuleInfo(
-        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${resourcesPath.name}.${messagesPath.name}-intellij-generated",
+        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${resourcesPath.name}.${messagesPath.name}".addIntelliJDummyPrefix(),
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
@@ -358,7 +358,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     // then
     val expectedModule =
       GenericModuleInfo(
-        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${resourcesPath.name}-intellij-generated",
+        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${resourcesPath.name}".addIntelliJDummyPrefix(),
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
@@ -452,7 +452,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     // then
     val expectedModule =
       GenericModuleInfo(
-        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}-intellij-generated",
+        name = "$projectRootName.${srcPath.name}.${mainPath.name}.${javaPath.name}".addIntelliJDummyPrefix(),
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = givenJavaModule.genericModuleInfo.librariesDependencies,
@@ -561,7 +561,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     // then
     val expectedModule1 =
       GenericModuleInfo(
-        name = "$projectRoot1Name-intellij-generated",
+        name = projectRoot1Name.addIntelliJDummyPrefix(),
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = listOf(),
@@ -588,7 +588,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
 
     val expectedModule2 =
       GenericModuleInfo(
-        name = "$projectRoot2Name-intellij-generated",
+        name = projectRoot2Name.addIntelliJDummyPrefix(),
         type = ModuleTypeId(StdModuleTypes.JAVA.id),
         modulesDependencies = listOf(),
         librariesDependencies = listOf(),

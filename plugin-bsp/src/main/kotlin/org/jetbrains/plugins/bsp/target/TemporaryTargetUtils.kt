@@ -117,7 +117,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
 
   fun getAllLibraries(): List<Library> = libraries
 
-  fun isLibraryModule(name: String): Boolean = name in libraryModulesLookupTable
+  fun isLibraryModule(name: String): Boolean = name.addLibraryModulePrefix() in libraryModulesLookupTable
 
   fun getAllLibraryModules(): List<JavaModule> = libraryModules
 
@@ -140,6 +140,8 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
     libraries = state.libraries.map { it.fromState() }
   }
 }
+
+fun String.addLibraryModulePrefix() = "_aux.libraries.$this"
 
 val Project.temporaryTargetUtils: TemporaryTargetUtils
   get() = service<TemporaryTargetUtils>()

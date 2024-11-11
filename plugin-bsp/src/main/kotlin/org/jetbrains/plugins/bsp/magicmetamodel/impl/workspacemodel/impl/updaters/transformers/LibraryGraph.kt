@@ -7,6 +7,7 @@ import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
+import org.jetbrains.plugins.bsp.target.addLibraryModulePrefix
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
@@ -91,7 +92,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
           classJars = it.jars,
           sourceJars = it.sourceJars,
         )
-      }.orEmpty()
+      }
 
   fun createLibraryModules(libraryNameProvider: TargetNameReformatProvider, defaultJdkName: String?): List<JavaModule> {
     if (!BspFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
@@ -99,10 +100,11 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
     return libraries
       .map { library ->
         val libraryName = libraryNameProvider(BuildTargetInfo(id = library.id))
+        val libraryModuleName = libraryName.addLibraryModulePrefix()
         JavaModule(
           genericModuleInfo =
             GenericModuleInfo(
-              name = libraryName,
+              name = libraryModuleName,
               type = ModuleTypeId(StdModuleTypes.JAVA.id),
               librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
               modulesDependencies =
@@ -110,7 +112,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
                   IntermediateModuleDependency(
                     libraryNameProvider(
                       BuildTargetInfo(id = it),
-                    ),
+                    ).addLibraryModulePrefix(),
                   )
                 },
               isLibraryModule = true,
@@ -122,6 +124,6 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
           sourceRoots = emptyList(),
           resourceRoots = emptyList(),
         )
-      }.orEmpty()
+      }
   }
 }

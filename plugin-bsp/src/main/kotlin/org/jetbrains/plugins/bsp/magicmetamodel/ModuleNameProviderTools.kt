@@ -23,10 +23,12 @@ private fun createNameReformatProvider(buildToolId: BuildToolId): (BuildTargetIn
   val bspBuildTargetClassifier = BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
   return { buildTargetInfo ->
     val sanitizedName = bspBuildTargetClassifier.calculateBuildTargetName(buildTargetInfo).replaceDots()
-    bspBuildTargetClassifier
-      .calculateBuildTargetPath(buildTargetInfo)
-      .shortenTargetPath(sanitizedName.length)
-      .joinToString(".", postfix = ".$sanitizedName") { pathElement -> pathElement.replaceDots() }
+    val prefix =
+      bspBuildTargetClassifier
+        .calculateBuildTargetPath(buildTargetInfo)
+        .shortenTargetPath(sanitizedName.length)
+        .joinToString(".") { pathElement -> pathElement.replaceDots() }
+    if (prefix.isBlank()) sanitizedName else "$prefix.$sanitizedName"
   }
 }
 
@@ -57,4 +59,4 @@ fun String.shortenTargetPath(): String =
     this
   }
 
-fun TargetNameReformatProvider?.orDefault(): TargetNameReformatProvider = this ?: DefaultModuleNameProvider
+fun TargetNameReformatProvider?.orDefault(): TargetNameReformatProvider = this ?: DefaultNameProvider

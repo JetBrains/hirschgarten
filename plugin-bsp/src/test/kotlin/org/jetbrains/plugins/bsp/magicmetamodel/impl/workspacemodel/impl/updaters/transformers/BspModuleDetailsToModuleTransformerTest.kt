@@ -12,8 +12,7 @@ import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
-import org.jetbrains.plugins.bsp.magicmetamodel.DefaultLibraryNameProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.DefaultNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
@@ -31,7 +30,11 @@ class BspModuleDetailsToModuleTransformerTest {
 
     // when
     val modules =
-      BspModuleDetailsToModuleTransformer(mapOf(), DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+      BspModuleDetailsToModuleTransformer(
+        mapOf(),
+        DefaultNameProvider,
+        DefaultNameProvider,
+      ).transform(
         emptyBspModuleDetails,
       )
 
@@ -97,7 +100,11 @@ class BspModuleDetailsToModuleTransformerTest {
 
     // when
     val module =
-      BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+      BspModuleDetailsToModuleTransformer(
+        targetsMap,
+        DefaultNameProvider,
+        DefaultNameProvider,
+      ).transform(
         bspModuleDetails,
       )
 
@@ -176,7 +183,11 @@ class BspModuleDetailsToModuleTransformerTest {
 
     // when
     val module =
-      BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+      BspModuleDetailsToModuleTransformer(
+        targetsMap,
+        DefaultNameProvider,
+        DefaultNameProvider,
+      ).transform(
         bspModuleDetails,
       )
 
@@ -261,7 +272,11 @@ class BspModuleDetailsToModuleTransformerTest {
 
     // when
     val module =
-      BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+      BspModuleDetailsToModuleTransformer(
+        targetsMap,
+        DefaultNameProvider,
+        DefaultNameProvider,
+      ).transform(
         bspModuleDetails,
       )
 
@@ -389,7 +404,11 @@ class BspModuleDetailsToModuleTransformerTest {
     val bspModuleDetails = listOf(bspModuleDetails1, bspModuleDetails2)
     // when
     val modules =
-      BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+      BspModuleDetailsToModuleTransformer(
+        targetsMap,
+        DefaultNameProvider,
+        DefaultNameProvider,
+      ).transform(
         bspModuleDetails,
       )
 
@@ -534,7 +553,11 @@ class BspModuleDetailsToModuleTransformerTest {
 
     // when
     val modules =
-      BspModuleDetailsToModuleTransformer(targetsMap, DefaultModuleNameProvider, DefaultLibraryNameProvider).transform(
+      BspModuleDetailsToModuleTransformer(
+        targetsMap,
+        DefaultNameProvider,
+        DefaultNameProvider,
+      ).transform(
         bspModuleDetails,
       )
 
