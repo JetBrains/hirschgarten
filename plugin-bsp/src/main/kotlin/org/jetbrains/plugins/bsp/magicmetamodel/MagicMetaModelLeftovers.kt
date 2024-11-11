@@ -14,11 +14,7 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 typealias TargetNameReformatProvider = (BuildTargetInfo) -> String
 
-object DefaultModuleNameProvider : TargetNameReformatProvider {
-  override fun invoke(targetInfo: BuildTargetInfo): String = targetInfo.id.uri
-}
-
-object DefaultLibraryNameProvider : TargetNameReformatProvider {
+object DefaultNameProvider : TargetNameReformatProvider {
   override fun invoke(targetInfo: BuildTargetInfo): String = targetInfo.id.uri
 }
 

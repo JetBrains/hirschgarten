@@ -5,6 +5,7 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     associates = ["//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl/workspacemodel/impl/updaters/transformers"],
     visibility = ["//plugin-bsp:__subpackages__"],
+    exports = ["//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl/workspacemodel/impl/updaters/transformers"],
     deps = [
         "//plugin-bsp/protocol/src/main/kotlin/org/jetbrains/bsp/protocol/utils",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/action",

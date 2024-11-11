@@ -21,8 +21,7 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
-import org.jetbrains.plugins.bsp.magicmetamodel.DefaultLibraryNameProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.DefaultModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.DefaultNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.toDefaultTargetsMap
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
@@ -56,8 +55,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaModules =
       ModuleDetailsToJavaModuleTransformer(
         mapOf(),
-        DefaultModuleNameProvider,
-        DefaultLibraryNameProvider,
+        DefaultNameProvider,
+        DefaultNameProvider,
         projectBasePath,
         project,
       ).transform(
@@ -179,8 +178,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaModule =
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
-        DefaultModuleNameProvider,
-        DefaultLibraryNameProvider,
+        DefaultNameProvider,
+        DefaultNameProvider,
         projectBasePath,
         project,
       ).transform(
@@ -347,8 +346,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaModule =
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
-        DefaultModuleNameProvider,
-        DefaultLibraryNameProvider,
+        DefaultNameProvider,
+        DefaultNameProvider,
         projectBasePath,
         project,
       ).transform(moduleDetails)
@@ -581,8 +580,8 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaModules =
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
-        DefaultModuleNameProvider,
-        DefaultLibraryNameProvider,
+        DefaultNameProvider,
+        DefaultNameProvider,
         projectBasePath,
         project,
       ).transform(
