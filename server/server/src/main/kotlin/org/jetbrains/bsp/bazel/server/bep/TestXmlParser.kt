@@ -260,6 +260,8 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
     val failure: TestResultDetail? = null,
     @JacksonXmlProperty(localName = "skipped")
     val skipped: TestResultDetail? = null,
+    @JacksonXmlProperty(localName = "time")
+    val time: Double? = null,
   )
 
   fun processIncompleteInfoSuite(suite: IncompleteTestSuite) {
@@ -319,7 +321,7 @@ private class FallbackTestXmlParser(private var bspClientTestNotifier: BspClient
         else -> null
       }
 
-    val testCaseData = JUnitStyleTestCaseData(null, null, outcomeMessage, null, null)
+    val testCaseData = JUnitStyleTestCaseData(testCase.time, null, outcomeMessage, null, null)
 
     // In the generated xml, suite name and test case name are the same, but in the Test Console test names have
     // to be unique
