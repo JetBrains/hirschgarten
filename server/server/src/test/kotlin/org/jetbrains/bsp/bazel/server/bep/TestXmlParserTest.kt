@@ -11,16 +11,20 @@ import ch.epfl.scala.bsp4j.TaskId
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 import ch.epfl.scala.bsp4j.TestFinish
+import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStatus
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.equals.shouldNotBeEqual
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
-import org.jetbrains.bsp.protocol.JUnitStyleTestSuiteData
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -77,7 +81,7 @@ class TestXmlParserTest {
     val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 5
@@ -176,7 +180,7 @@ class TestXmlParserTest {
     val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 14
@@ -281,7 +285,7 @@ class TestXmlParserTest {
     val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 18
@@ -391,7 +395,7 @@ class TestXmlParserTest {
     val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
 
     // then
     client.taskStartCalls.size shouldBe 17
@@ -449,7 +453,7 @@ class TestXmlParserTest {
   }
 
   @Test
-  fun `junit5 - success, failure and ignored`(
+  fun `junit5 - success, failure and ignored (ANSI colors)`(
     @TempDir tempDir: Path,
   ) {
     val dollar = "${'$'}"
@@ -508,39 +512,261 @@ class TestXmlParserTest {
 
     val client = MockBuildClient()
     val notifier = BspClientTestNotifier(client, "sample-origin")
-    val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
 
     // then
-    client.taskStartCalls.size shouldBe 2
-    client.taskFinishCalls.size shouldBe 2
+    client.taskStartCalls.size shouldBe 5
+    client.taskFinishCalls.size shouldBe 5
 
-    val expectedNames = listOf("src/test/kotlin/org/jetbrains/simple/TripleTest", "TripleTest")
+    val expectedNames =
+      listOf(
+        "TripleTest",
+        "testFailure()",
+        "testIgnored()",
+        "testSuccess()",
+      )
 
-    client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    client.taskFinishCalls.count { it.data is TestReport } shouldBe 1
+
+    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+    testFinishes.size shouldBe 4
+
+    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
     client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
 
-    client.taskFinishCalls.map {
+    testFinishes.forEach {
       val data = (it.data as TestFinish)
       when (data.displayName) {
-        "src/test/kotlin/org/jetbrains/simple/TripleTest" -> {
-          it.taskId.parents shouldBeEqual emptyList()
-          data.status shouldBe TestStatus.FAILED
-          (data.data as JUnitStyleTestSuiteData).systemOut shouldNotBe null
-        }
-
         "TripleTest" -> {
-          it.taskId.parents shouldNotBeEqual emptyList()
+          it.taskId.parents.shouldBeNull()
+        }
+        "testFailure()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldNotBeEmpty()
           data.status shouldBe TestStatus.FAILED
           val details = (data.data as JUnitStyleTestCaseData)
-          details.errorContent shouldBe null
           details.errorMessage shouldNotBe null
-          details.errorType shouldBe null
         }
+        "testIgnored()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldNotBeEmpty()
+          data.status shouldBe TestStatus.SKIPPED
+        }
+        "testSuccess()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldNotBeEmpty()
+          data.status shouldBe TestStatus.PASSED
+        }
+      }
+    }
+  }
 
-        else -> {
+  @Test
+  fun `junit5 - success, failure and ignored (no ANSI colors)`(
+    @TempDir tempDir: Path,
+  ) {
+    val dollar = "${'$'}"
+    val sampleContents =
+      """
+      <?xml version="1.0" encoding="UTF-8"?>
+      <testsuites>
+        <testsuite name="src/test/kotlin/org/jetbrains/simple/TripleTest" tests="1" failures="0" errors="1">
+          <testcase name="src/test/kotlin/org/jetbrains/simple/TripleTest" status="run" duration="0" time="0"><error message="exited with error code 1"></error></testcase>
+            <system-out>
+      Generated test.log (if the file is not UTF-8, then this may be unreadable):
+      <![CDATA[exec $dollar{PAGER:-/ usr / bin / less} "$dollar{'$dollar'}0" || exit 1
+      Executing tests from //src/test/kotlin/org/jetbrains/simple:TripleTest
+      -----------------------------------------------------------------------------
+
+      Thanks for using JUnit! Support its development at https://junit.org/sponsoring
+
+      ╷
+      └─ JUnit Jupiter ✔
+         └─ TripleTest ✔
+            ├─ testFailure() ✘ This test always fails
+            ├─ testIgnored() ↷ public final void org.jetbrains.simple.TripleTest.testIgnored() is @Disabled
+            └─ testSuccess() ✔
+
+      Failures (1):
+        JUnit Jupiter:TripleTest:testFailure()
+          MethodSource [className = 'org.jetbrains.simple.TripleTest', methodName = 'testFailure', methodParameterTypes = '']
+          => java.lang.AssertionError: This test always fails
+             org.jetbrains.simple.TripleTest.testFailure(TripleTest.kt:11)
+             java.base/java.lang.reflect.Method.invoke(Method.java:580)
+             java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+             java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+      Test run finished after 53 ms
+      [         2 containers found      ]
+      [         0 containers skipped    ]
+      [         2 containers started    ]
+      [         0 containers aborted    ]
+      [         2 containers successful ]
+      [         0 containers failed     ]
+      [         3 tests found           ]
+      [         1 tests skipped         ]
+      [         2 tests started         ]
+      [         0 tests aborted         ]
+      [         1 tests successful      ]
+      [         1 tests failed          ]
+
+
+      WARNING: Delegated to the 'execute' command.
+               This behaviour has been deprecated and will be removed in a future release.
+               Please use the 'execute' command directly.]]>
+            </system-out>
+          </testsuite>
+      </testsuites>
+      """.trimIndent()
+
+    val client = MockBuildClient()
+    val notifier = BspClientTestNotifier(client, "sample-origin")
+
+    // when
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+
+    // then
+    client.taskStartCalls.size shouldBe 5
+    client.taskFinishCalls.size shouldBe 5
+
+    val expectedNames =
+      listOf(
+        "TripleTest",
+        "testFailure()",
+        "testIgnored()",
+        "testSuccess()",
+      )
+
+    client.taskFinishCalls.count { it.data is TestReport } shouldBe 1
+
+    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+    testFinishes.size shouldBe 4
+
+    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
+
+    testFinishes.forEach {
+      val data = (it.data as TestFinish)
+      when (data.displayName) {
+        "TripleTest" -> {
+          it.taskId.parents.shouldBeNull()
+        }
+        "testFailure()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldNotBeEmpty()
+          data.status shouldBe TestStatus.FAILED
+          val details = (data.data as JUnitStyleTestCaseData)
+          details.errorMessage shouldNotBe null
+        }
+        "testIgnored()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldNotBeEmpty()
+          data.status shouldBe TestStatus.SKIPPED
+        }
+        "testSuccess()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldNotBeEmpty()
+          data.status shouldBe TestStatus.PASSED
+        }
+      }
+    }
+  }
+
+  @Test
+  fun `junit5 - malformed`(
+    @TempDir tempDir: Path,
+  ) {
+    val dollar = "${'$'}"
+    val sampleContents =
+      """
+      <?xml version="1.0" encoding="UTF-8"?>
+      <testsuites>
+        <testsuite name="src/test/kotlin/org/jetbrains/simple/TripleTest" tests="1" failures="0" errors="1">
+          <testcase name="src/test/kotlin/org/jetbrains/simple/TripleTest" status="run" duration="0" time="0"><error message="exited with error code 1"></error></testcase>
+            <system-out>
+      Generated test.log (if the file is not UTF-8, then this may be unreadable):
+      <![CDATA[exec $dollar{PAGER:-/ usr / bin / less} "$dollar{'$dollar'}0" || exit 1
+      Executing tests from //src/test/kotlin/org/jetbrains/simple:TripleTest
+      -----------------------------------------------------------------------------
+
+      Thanks for using JUnit! Support its development at https://junit.org/sponsoring
+
+      ╷
+      └─ JUnit Jupiter ✔
+         └!─ TripleTest ✔
+            ─ testFailure() ✘ This test always fails
+            ├─ testIgnored() ↷ public final void org.jetbrains.simple.TripleTest.testIgnored() is @Disabled
+            └─ testSuccess() ✔
+
+      Failures (1):
+        JUnit Jupiter:TripleTest:testFailure()
+          MethodSource [className = 'org.jetbrains.simple.TripleTest', methodName = 'testFailure', methodParameterTypes = '']
+          => java.lang.AssertionError: This test always fails
+             org.jetbrains.simple.TripleTest.testFailure(TripleTest.kt:11)
+             java.base/java.lang.reflect.Method.invoke(Method.java:580)
+             java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+             java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+      Test run finished after 53 ms
+      [         2 containers found      ]
+      [         0 containers skipped    ]
+      [         2 containers started    ]
+      [         0 containers aborted    ]
+      [         2 containers successful ]
+      [         0 containers failed     ]
+      [         3 tests found           ]
+      [         1 tests skipped         ]
+      [         2 tests started         ]
+      [         0 tests aborted         ]
+      [         1 tests successful      ]
+      [         1 tests failed          ]
+
+
+      WARNING: Delegated to the 'execute' command.
+               This behaviour has been deprecated and will be removed in a future release.
+               Please use the 'execute' command directly.]]>
+            </system-out>
+          </testsuite>
+      </testsuites>
+      """.trimIndent()
+
+    val client = MockBuildClient()
+    val notifier = BspClientTestNotifier(client, "sample-origin")
+
+    // when
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+
+    // then
+    client.taskStartCalls.size shouldBe 3 // two malformed rows should simply be ignored
+    client.taskFinishCalls.size shouldBe 3 // two malformed rows should simply be ignored
+
+    val expectedNames = // two malformed rows should simply be ignored
+      listOf(
+        "testIgnored()",
+        "testSuccess()",
+      )
+
+    client.taskFinishCalls.count { it.data is TestReport } shouldBe 1
+
+    val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
+    testFinishes.size shouldBe 2 // two malformed rows should simply be ignored
+
+    testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
+    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
+
+    testFinishes.forEach {
+      val data = (it.data as TestFinish)
+      when (data.displayName) {
+        "testIgnored()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldBeEmpty() // parent suite should have been ignored, as it was defined in a malformed row
+          data.status shouldBe TestStatus.SKIPPED
+        }
+        "testSuccess()" -> {
+          it.taskId.parents.shouldNotBeNull()
+          it.taskId.parents.shouldBeEmpty() // parent suite should have been ignored, as it was defined in a malformed row
           data.status shouldBe TestStatus.PASSED
         }
       }

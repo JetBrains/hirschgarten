@@ -125,7 +125,7 @@ class BepServer(
       val testXmlUri = testResult.testActionOutputList.find { it.name == "test.xml" }?.uri
       if (testXmlUri != null) {
         // Test cases identified and sent to the client by TestXmlParser.
-        TestXmlParser(taskId, bspClientTestNotifier).parseAndReport(testXmlUri)
+        TestXmlParser(bspClientTestNotifier).parseAndReport(testXmlUri)
       } else {
         // Send a generic notification if individual tests cannot be processed.
         val childId = TaskId(UUID.randomUUID().toString())
