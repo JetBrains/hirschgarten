@@ -229,4 +229,11 @@ internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Pat
     .shortenTargetPath()
 }
 
-internal fun String.addIntelliJDummyPrefix() = "_aux.synthetic.$this"
+private const val IJ_DUMMY_MODULE_PREFIX = "_aux.synthetic"
+
+internal fun String.addIntelliJDummyPrefix(): String =
+  if (isBlank()) {
+    IJ_DUMMY_MODULE_PREFIX
+  } else {
+    "$IJ_DUMMY_MODULE_PREFIX.$this"
+  }
