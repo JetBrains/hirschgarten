@@ -14,6 +14,7 @@ public class Constants {
   public static final List<String> SUPPORTED_LANGUAGES =
       ImmutableList.of(SCALA, JAVA, KOTLIN /*, CPP */);
   public static final String BAZEL_BUILD_COMMAND = "build";
+  public static final String BAZEL_TEST_COMMAND = "test";
   public static final String BUILD_FILE_NAME = "BUILD";
   public static final String WORKSPACE_FILE_NAME = "WORKSPACE";
   public static final String ASPECT_REPOSITORY = "bazelbsp_aspect";
