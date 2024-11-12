@@ -3,7 +3,7 @@ index aad6e01..4d0e878 100644
 --- a/format/private/formatter_binary.bzl
 +++ b/format/private/formatter_binary.bzl
 @@ -45,7 +45,7 @@ CHECK_FLAGS = {
-     "ruff": "format --check --force-exclude",
+     "ruff": "format --check --force-exclude --diff",
      "shfmt": "--diff --apply-ignore",
      "java-format": "--set-exit-if-changed --dry-run",
 -    "ktfmt": "--set-exit-if-changed --dry-run",
