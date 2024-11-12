@@ -271,10 +271,11 @@ private class FallbackTestXmlParser(private var parentId: TaskId, private var bs
         else -> TestStatus.PASSED
       }
     val testSuiteData = JUnitStyleTestSuiteData(null, suite.systemOut, null)
-    val testCase = suite.testcase.firstOrNull()
 
     bspClientTestNotifier.startTest(suite.name, suiteTaskId)
-    testCase?.let { processIncompleteInfoCase(it, suiteTaskId.id, suiteStatus) }
+    suite.testcase.forEach { testCase ->
+      processIncompleteInfoCase(testCase, suiteTaskId.id, suiteStatus)
+    }
     bspClientTestNotifier.finishTest(
       suite.name,
       suiteTaskId,
