@@ -173,10 +173,6 @@ class BazelProjectMapper(
       measure("Merge Kotlin Android modules") {
         kotlinAndroidModulesMerger.mergeKotlinAndroidModules(modulesFromBazel)
       }
-    val sourceToTarget =
-      measure("Build reverse sources") {
-        buildReverseSourceMapping(mergedModulesFromBazel)
-      }
     val librariesToImport =
       measure("Merge all libraries") {
         librariesFromDepsAndTargets +
@@ -224,7 +220,6 @@ class BazelProjectMapper(
     return Project(
       workspaceRoot,
       allModules.toList(),
-      sourceToTarget,
       librariesToImport,
       goLibrariesToImport,
       invalidTargets,
@@ -984,14 +979,6 @@ class BazelProjectMapper(
 
   private fun resolveResources(target: TargetInfo, languagePlugin: LanguagePlugin<*>): Set<URI> =
     bazelPathsResolver.resolveUris(target.resourcesList).toSet() + languagePlugin.resolveAdditionalResources(target)
-
-  private fun buildReverseSourceMapping(modules: List<Module>): Map<URI, Label> =
-    modules.asSequence().flatMap(::buildReverseSourceMappingForModule).toMap()
-
-  private fun buildReverseSourceMappingForModule(module: Module): List<Pair<URI, Label>> =
-    with(module) {
-      (sourceSet.sources.map { it.source } + resources).map { Pair(it, label) }
-    }
 
   private fun environmentItem(target: TargetInfo): Map<String, String> {
     val inheritedEnvs = collectInheritedEnvs(target)

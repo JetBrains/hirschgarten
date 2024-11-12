@@ -7,7 +7,6 @@ import java.net.URI
 data class Project(
   val workspaceRoot: URI,
   val modules: List<Module>,
-  val sourceToTarget: Map<URI, Label>,
   val libraries: Map<Label, Library>,
   val goLibraries: Map<Label, GoLibrary>,
   val invalidTargets: List<Label>,
@@ -30,7 +29,6 @@ data class Project(
       error("Cannot add projects with different bazel versions: $bazelRelease and ${project.bazelRelease}")
     }
     val newModules = modules.toSet() + project.modules.toSet()
-    val newSourceToTarget = sourceToTarget + project.sourceToTarget
     val newLibraries = libraries + project.libraries
     val newGoLibraries = goLibraries + project.goLibraries
     val newInvalidTargets = invalidTargets.toSet() + project.invalidTargets.toSet()
@@ -38,7 +36,6 @@ data class Project(
 
     return copy(
       modules = newModules.toList(),
-      sourceToTarget = newSourceToTarget,
       libraries = newLibraries,
       goLibraries = newGoLibraries,
       invalidTargets = newInvalidTargets.toList(),

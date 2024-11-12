@@ -129,7 +129,7 @@ class BspProjectMapperTest {
     }
 
     val libraries = allLibraries.associate({ it.label to it })
-    val project = Project(currentUri, allModules, emptyMap(), libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val project = Project(currentUri, allModules, libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
 
     val deps =
       BspProjectMapper.buildDependencyModulesStatic(
