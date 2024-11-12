@@ -65,9 +65,9 @@ SDK_242_PLUGIN_REPOSITORY_VERSION = "242.23726.16"
 
 SDK_242_INTELLIJ_REPOSITORY_VERSION = "242.23726.16-EAP-SNAPSHOT"
 
-SDK_243_PLUGIN_REPOSITORY_VERSION = "243.20847.40"
+SDK_243_PLUGIN_REPOSITORY_VERSION = "243.21565.129"
 
-SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.20847.40-EAP-SNAPSHOT"
+SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.21565.129-EAP-SNAPSHOT"
 
 # The plugin api for intellij_ce_2024_2. This is required to build IJwB and run integration tests.
 IC_242_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_242_INTELLIJ_REPOSITORY_VERSION, SDK_242_INTELLIJ_REPOSITORY_VERSION)
@@ -83,7 +83,7 @@ http_archive(
 
 IC_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
-IC_243_CHECKSUM = "sha256-Toi4o6FN7Rbt2fJehgVNGiMAvudZCKtuOsWSTw3pmBo="
+IC_243_CHECKSUM = "sha256-xzVBbyVKD9vaUH4ZxEVU8ULo1p9GffnyvqLmWnWSTwU="
 
 http_archive(
     name = "intellij_ce_2024_3",
@@ -94,7 +94,7 @@ http_archive(
 
 IC_243_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
-IC_243_SOURCES_CHECKSUM = "sha256-KsLsPVjv1dhV4rIIzj3zx02Ij0jqLKzvdTr9fTkoSzQ="
+IC_243_SOURCES_CHECKSUM = "sha256-gBgSdSdJ+NZJOvQOlHb0GmISYE31ozPV/Dw++CQ/IJk="
 
 http_jar(
     name = "intellij_ce_2024_3_sources",
@@ -123,7 +123,7 @@ http_archive(
 
 DEVKIT_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
-DEVKIT_243_SHA = "9cac6c7185c4adb47864d78aa8a3329ed062fb341b04494177ff0e4f051067fe"
+DEVKIT_243_SHA = "21c5a740ebe96ad11ce44c6f09a78ad5d591cdd396f528f9725d525746c4521e"
 
 http_archive(
     name = "devkit_2024_3",
@@ -158,7 +158,7 @@ http_archive(
 
 PYTHON_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
-PYTHON_PLUGIN_243_CHECKSUM = "sha256-EYfbhUiK6ZJ2ZS/yioTdm/ZvRxpOpSOX6fhMJBZEiWM="
+PYTHON_PLUGIN_243_CHECKSUM = "sha256-frZGcyOA2fjPfslHamjUm8xNGV2jR0G63bvQhoarGxA="
 
 http_archive(
     name = "python_2024_3",
@@ -189,7 +189,7 @@ GO_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/o
 http_archive(
     name = "go_2024_3",
     build_file_content = _GO_BUILD_FILE,
-    integrity = "sha256-ESVpeMgvVeOhh0BauMKX5zSQWit7Id8qHvSLmPM+uts=",
+    integrity = "sha256-Aasi9wQJFMLFhE0Je5Vaq/o9nyWZQjer+BXGxnnSP70=",
     url = GO_PLUGIN_243_URL,
 )
 
@@ -214,7 +214,7 @@ http_archive(
 
 ANDROID_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
-ANDROID_PLUGIN_243_CHECKSUM = "sha256-rM/4nnN3TmX+f4J1JQQrHGDdwc3ETmzMjygaazghqho="
+ANDROID_PLUGIN_243_CHECKSUM = "sha256-GDer3d9vqR2vYGBGLeZQnVXUz0/VXUxtuomCPUYdV0Q="
 
 http_archive(
     name = "android_2024_3",
@@ -235,7 +235,7 @@ http_jar(
 
 PERFORMANCE_PLUGIN_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
-PERFORMANCE_PLUGIN_243_SHA = "60c6b3e94bc2cfb26d99a51d18504231b5f477e13763ea7173a849313210c87e"
+PERFORMANCE_PLUGIN_243_SHA = "eb7a94c117133e1508f7b8107d9de4547a471da94cc08af21312ed60d9a13359"
 
 http_jar(
     name = "performance_2024_3",
@@ -255,7 +255,7 @@ http_jar(
 
 CODE_WITH_ME_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_243_CHECKSUM = "sha256-NMd4d8TgxjXBRgcMvFr6ugektsrKQqX0m+ce9nEpZ1I="
+CODE_WITH_ME_243_CHECKSUM = "sha256-aOdSneImU3Zmn5V0HLt1Y/CaG9zda0brQkZDDXk2NHY="
 
 http_jar(
     name = "code_with_me_2024_3",
