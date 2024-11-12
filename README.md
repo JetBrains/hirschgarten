@@ -8,7 +8,6 @@ The Hirschgarten project aims to bring a new approach for Bazel support to Intel
 This repository consolidates multiple standalone components into a monorepo structure.
 
 ## Key components
-
 1. **[Bazel BSP (Build Server Protocol)](server)**: An implementation of the Build Server Protocol for Bazel, supporting languages such as Java, Kotlin, Scala, Python, Thrift, and Rust.
 
 2. **[BSP plugin](plugin-bsp)**: A plugin for IntelliJ IDEA that allows importing projects using the Build Server Protocol.
