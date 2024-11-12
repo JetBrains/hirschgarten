@@ -140,7 +140,7 @@ class DependencyMapperTest {
       )
     val libraries = mapOf(lib1.label to lib1, lib2.label to lib2, lib3.label to lib3, lib4.label to lib4)
     val currentUri = Paths.get(".").toUri()
-    val project = Project(currentUri, emptyList(), emptyMap(), libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val project = Project(currentUri, emptyList(), libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
     val module =
       Module(
         Label.parse(""),
@@ -192,7 +192,7 @@ class DependencyMapperTest {
       )
     val libraries = allLibraries.associate({ it.label to it })
     val currentUri = Paths.get(".").toUri()
-    val project = Project(currentUri, emptyList(), emptyMap(), libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val project = Project(currentUri, emptyList(), libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
     val module =
       Module(
         Label.parse(""),

@@ -21,7 +21,6 @@ class ProjectTest {
         Project(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = emptyList(),
-          sourceToTarget = emptyMap(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
           invalidTargets = emptyList(),
@@ -33,7 +32,6 @@ class ProjectTest {
         Project(
           workspaceRoot = URI.create("file:///path/to/another/workspace"),
           modules = emptyList(),
-          sourceToTarget = emptyMap(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
           invalidTargets = emptyList(),
@@ -56,7 +54,6 @@ class ProjectTest {
         Project(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = emptyList(),
-          sourceToTarget = emptyMap(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
           invalidTargets = emptyList(),
@@ -68,7 +65,6 @@ class ProjectTest {
         Project(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = emptyList(),
-          sourceToTarget = emptyMap(),
           libraries = emptyMap(),
           goLibraries = emptyMap(),
           invalidTargets = emptyList(),
@@ -91,12 +87,6 @@ class ProjectTest {
         Project(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = listOf("//project1:module1".toMockModule(), "//project1:module2".toMockModule(), "//module".toMockModule()),
-          sourceToTarget =
-            mapOf(
-              URI.create("file:///project1/module1/file1.kt") to "//project1:module1".toLabel(),
-              URI.create("file:///project1/module1/file2.kt") to "//project1:module1".toLabel(),
-              URI.create("file:///project1/module2/file1.kt") to "//project1:module2".toLabel(),
-            ),
           libraries =
             mapOf(
               "@library1//lib".toLabel() to "@library1//lib".toMockLibrary(),
@@ -121,12 +111,6 @@ class ProjectTest {
               "//project2:module2".toMockModule(),
               "//project2:module3".toMockModule(),
               "//module".toMockModule(),
-            ),
-          sourceToTarget =
-            mapOf(
-              URI.create("file:///project2/module1/file1.kt") to "//project2:module1".toLabel(),
-              URI.create("file:///project2/module2/file1.kt") to "//project2:module2".toLabel(),
-              URI.create("file:///project3/module3/file1.kt") to "//project2:module3".toLabel(),
             ),
           libraries =
             mapOf(
@@ -156,15 +140,6 @@ class ProjectTest {
               "//project2:module3".toMockModule(),
               "//module".toMockModule(),
             ),
-          sourceToTarget =
-            mapOf(
-              URI.create("file:///project2/module1/file1.kt") to "//project2:module1".toLabel(),
-              URI.create("file:///project2/module2/file1.kt") to "//project2:module2".toLabel(),
-              URI.create("file:///project3/module3/file1.kt") to "//project2:module3".toLabel(),
-              URI.create("file:///project1/module1/file1.kt") to "//project1:module1".toLabel(),
-              URI.create("file:///project1/module1/file2.kt") to "//project1:module1".toLabel(),
-              URI.create("file:///project1/module2/file1.kt") to "//project1:module2".toLabel(),
-            ),
           libraries =
             mapOf(
               "@library1//lib".toLabel() to "@library1//lib".toMockLibrary(),
@@ -192,7 +167,6 @@ class ProjectTest {
 
       newProject.workspaceRoot shouldBe expectedNewProject.workspaceRoot
       newProject.modules shouldContainExactlyInAnyOrder expectedNewProject.modules
-      newProject.sourceToTarget shouldBe expectedNewProject.sourceToTarget
       newProject.libraries shouldBe expectedNewProject.libraries
       newProject.goLibraries shouldBe expectedNewProject.goLibraries
       newProject.invalidTargets shouldContainExactlyInAnyOrder expectedNewProject.invalidTargets
