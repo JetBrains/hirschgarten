@@ -1,0 +1,7 @@
+version: "1.0"
+builds:
+    - teamcity:
+          # Name of the TeamCity connection configured on the "Administration / Featured Integrations" page
+          connection: "bazel_teamcity_cloud"
+          # ID of the TeamCity build configuration
+          configuration: "Bazel_Hirschgarten_SpaceResults"
