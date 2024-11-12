@@ -8,7 +8,6 @@ This document outlines the process for contributing to this project.
 By participating in this project, you are expected to uphold our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## How to Contribute
-
 1. **Follow Coding Standards**:  
    - write new files in Kotlin
    - if you add new Kotlin library use `kt_jvm_library` from `@rules_kotlin//kotlin:jvm.bzl`
