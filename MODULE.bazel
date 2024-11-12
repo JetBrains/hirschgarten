@@ -178,19 +178,19 @@ single_version_override(
     patches = [
         "tools/format/use-ktlint.patch",
     ],
-    version = "1.0.1",
+    version = "1.0.3",
 )
 
 http_jar(
     name = "ktlint",
-    integrity = "sha256-qfkjvlj70yZwoX8Lcpsd+ASviC+ldAIWV0HLJuVEDKE=",
-    url = "https://github.com/pinterest/ktlint/releases/download/1.3.1/ktlint",
+    integrity = "sha256-LruKLIsQYRmvgU6GOKZCRcrx3klAB7SLYRfMDoieqD4=",
+    url = "https://github.com/pinterest/ktlint/releases/download/1.4.1/ktlint",
 )
 
 http_jar(
     name = "google_java_format",
-    integrity = "sha256-fGN1rCS0glvmu+YZAOi1ixo+iUShNnqDYyEPntLQhXA=",
-    url = "https://github.com/google/google-java-format/releases/download/v1.23.0/google-java-format-1.23.0-all-deps.jar",
+    integrity = "sha256-gS+AX1gRJGDt8BvyAqjmHQ/R81wNT6vVQiBkB3bsV6E=",
+    url = "https://github.com/google/google-java-format/releases/download/v1.24.0/google-java-format-1.24.0-all-deps.jar",
 )
 
 bazel_dep(
