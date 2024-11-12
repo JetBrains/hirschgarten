@@ -1070,7 +1070,8 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
-    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
+//    rules_java~~toolchains~remotejdk11_macos_aarch64
+    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk11_\$OS$architecturePart/"
     val jvmBuildTarget =
       JvmBuildTarget().also {
         it.javaHome = javaHome

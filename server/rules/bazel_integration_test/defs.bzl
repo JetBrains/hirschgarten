@@ -3,8 +3,8 @@ load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "bazel_in
 
 def bazel_integration_test_all_versions(name, test_runner, workspace_path, env = {}, additional_env_inherit = []):
     # test projects are too old for bazel 7
-    # bazel_versions = bazel_binaries.versions.all
-    bazel_versions = ["5.3.2", "6.4.0"]
+    bazel_versions = bazel_binaries.versions.all
+#     bazel_versions = ["5.3.2", "6.4.0"]
 
     bazel_integration_tests(
         name = name,

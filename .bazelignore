@@ -1,4 +1,5 @@
 server/e2e/test-resources/sample-repo/bazel-sample-repo
+server/e2e/test-resources/bazel7/sample-repo/bazel-sample-repo
 server/e2e/test-resources/remote-jdk-project/bazel-remote-jdk-project
 server/e2e/test-resources/local-jdk-project/bazel-local-jdk-project
 server/e2e/test-resources/python-project/bazel-python-project
