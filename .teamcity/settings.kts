@@ -12,7 +12,7 @@ object ProjectBranchFilters {
   val spaceBranchFilter =
     """
     +:<default>
-    +:refs/heads/*
+    +:*
     -:bazel-steward*
     """.trimIndent()
 }
