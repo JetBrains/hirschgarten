@@ -197,9 +197,11 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
   override fun buildTargetScalacOptions(params: ScalacOptionsParams): CompletableFuture<ScalacOptionsResult> =
     runner.handleRequest("buildTarget/scalacOptions", projectSyncService::buildTargetScalacOptions, params)
 
+  @Deprecated("Deprecated in BSP. Use buildTarget/jvmTestEnvironment instead")
   override fun buildTargetScalaTestClasses(params: ScalaTestClassesParams): CompletableFuture<ScalaTestClassesResult> =
     runner.handleRequest("buildTarget/scalaTestClasses", projectSyncService::buildTargetScalaTestClasses, params)
 
+  @Deprecated("Deprecated in BSP. Use buildTarget/jvmRunEnvironment instead")
   override fun buildTargetScalaMainClasses(params: ScalaMainClassesParams): CompletableFuture<ScalaMainClassesResult> =
     runner.handleRequest("buildTarget/scalaMainClasses", projectSyncService::buildTargetScalaMainClasses, params)
 

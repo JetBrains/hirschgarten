@@ -157,9 +157,11 @@ class BuildServerMock(
   override fun buildTargetScalacOptions(scalacOptionsParams: ScalacOptionsParams): CompletableFuture<ScalacOptionsResult> =
     wrapInFuture(scalacOptionsResult)
 
+  @Deprecated("Deprecated in BSP. Use buildTarget/jvmTestEnvironment instead")
   override fun buildTargetScalaTestClasses(scalaTestClassesParams: ScalaTestClassesParams): CompletableFuture<ScalaTestClassesResult> =
     wrapInFuture(scalaTestClassesResult)
 
+  @Deprecated("Deprecated in BSP. Use buildTarget/jvmRunEnvironment instead")
   override fun buildTargetScalaMainClasses(scalaMainClassesParams: ScalaMainClassesParams): CompletableFuture<ScalaMainClassesResult> =
     wrapInFuture(scalaMainClassesResult)
 
