@@ -26,7 +26,6 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
    * Notifies the client about starting a single test or a test suite
    * The presence or lack of parent's taskId indicates whether it's a test case or a test suite.
    *
-   * @param isSuite     `true` if a test suite has been started, `false` if it was a single test instead
    * @param displayName display name of the started test / test suite
    * @param taskId      TaskId of the started test - when parentsId is not empty / test suite - otherwise
    */
@@ -106,7 +105,11 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
    * @param targetIdentifier identifier of the testing target being finished
    * @param taskId     TaskId of the testing target execution
    */
-  fun endTestTarget(targetIdentifier: BuildTargetIdentifier?, taskId: TaskId) {
+  fun endTestTarget(
+    targetIdentifier: BuildTargetIdentifier?,
+    taskId: TaskId,
+    time: Long? = null,
+  ) {
     val testReport =
       TestReport(
         targetIdentifier,
@@ -116,6 +119,7 @@ class BspClientTestNotifier(private val bspClient: BuildClient, private val orig
         cancelledTests,
         skippedTests,
       )
+    time?.let { testReport.time = it }
 
     val taskFinishParams = TaskFinishParams(taskId, StatusCode.OK)
     taskFinishParams.originId = originId
