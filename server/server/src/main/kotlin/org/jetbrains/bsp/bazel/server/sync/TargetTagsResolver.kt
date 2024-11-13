@@ -3,47 +3,32 @@ package org.jetbrains.bsp.bazel.server.sync
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.server.model.Tag
 
+private val bazelTagToTagMapping =
+  mapOf(
+    "no-ide" to Tag.NO_IDE,
+    "manual" to Tag.MANUAL,
+  )
+
 class TargetTagsResolver {
   fun resolveTags(targetInfo: BspTargetInfo.TargetInfo): Set<Tag> {
-    if (targetInfo.kind == "resources_union" ||
-      targetInfo.kind == "java_import" ||
-      targetInfo.kind == "aar_import"
-    ) {
-      return setOf(Tag.LIBRARY)
-    }
-    val tagsFromSuffix =
-      ruleSuffixToTargetType
-        .filterKeys {
-          targetInfo.kind.endsWith("_$it") || targetInfo.kind == it
-        }.values
-        .firstOrNull()
-        .orEmpty()
+    val typeTags =
+      when {
+        targetInfo.isTest() -> setOf(Tag.TEST)
+        targetInfo.isIntellijPlugin() -> setOf(Tag.INTELLIJ_PLUGIN, Tag.APPLICATION)
+        targetInfo.isApplication() -> setOf(Tag.APPLICATION)
+        else -> setOf(Tag.LIBRARY)
+      }
 
-    // Tests *are* executable, but there's hardly a reason why one would like to `bazel run` a test
-    val application = Tag.APPLICATION.takeIf { targetInfo.executable && !tagsFromSuffix.contains(Tag.TEST) }
-
-    return setOfNotNull(
-      application,
-    ) + mapBazelTags(targetInfo.tagsList) + tagsFromSuffix
+    return typeTags + mapBazelTags(targetInfo.tagsList)
   }
 
-  private fun mapBazelTags(tags: List<String>): Set<Tag> = tags.mapNotNull { bazelTagMap[it] }.toSet()
+  // https://bazel.build/extending/rules#executable_rules_and_test_rules:
+  // "Test rules must have names that end in _test."
+  private fun BspTargetInfo.TargetInfo.isTest(): Boolean = isApplication() && kind.endsWith("_test")
 
-  companion object {
-    private val bazelTagMap =
-      mapOf(
-        "no-ide" to Tag.NO_IDE,
-        "manual" to Tag.MANUAL,
-      )
+  private fun BspTargetInfo.TargetInfo.isIntellijPlugin(): Boolean = kind == "intellij_plugin_debug_target"
 
-    private val ruleSuffixToTargetType =
-      mapOf(
-        "library" to setOf(Tag.LIBRARY),
-        "binary" to setOf(Tag.APPLICATION),
-        "test" to setOf(Tag.TEST),
-        "proc_macro" to setOf(Tag.LIBRARY),
-        "intellij_plugin_debug_target" to setOf(Tag.INTELLIJ_PLUGIN, Tag.APPLICATION),
-        "plugin" to setOf(Tag.LIBRARY),
-      )
-  }
+  private fun BspTargetInfo.TargetInfo.isApplication(): Boolean = executable
+
+  private fun mapBazelTags(tags: List<String>): Set<Tag> = tags.mapNotNull { bazelTagToTagMapping[it] }.toSet()
 }
