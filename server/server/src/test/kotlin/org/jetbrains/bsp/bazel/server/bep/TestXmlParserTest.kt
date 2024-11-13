@@ -7,7 +7,6 @@ import ch.epfl.scala.bsp4j.PrintParams
 import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import ch.epfl.scala.bsp4j.ShowMessageParams
 import ch.epfl.scala.bsp4j.TaskFinishParams
-import ch.epfl.scala.bsp4j.TaskId
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 import ch.epfl.scala.bsp4j.TestFinish
@@ -78,7 +77,6 @@ class TestXmlParserTest {
 
     val client = MockBuildClient()
     val notifier = BspClientTestNotifier(client, "sample-origin")
-    val parentId = TaskId("sample-task")
 
     // when
     TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
@@ -177,7 +175,6 @@ class TestXmlParserTest {
 
     val client = MockBuildClient()
     val notifier = BspClientTestNotifier(client, "sample-origin")
-    val parentId = TaskId("sample-task")
 
     // when
     TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
@@ -282,7 +279,6 @@ class TestXmlParserTest {
 
     val client = MockBuildClient()
     val notifier = BspClientTestNotifier(client, "sample-origin")
-    val parentId = TaskId("sample-task")
 
     // when
     TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
@@ -392,7 +388,6 @@ class TestXmlParserTest {
 
     val client = MockBuildClient()
     val notifier = BspClientTestNotifier(client, "sample-origin")
-    val parentId = TaskId("sample-task")
 
     // when
     TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, samplePassingContents))
@@ -819,10 +814,9 @@ class TestXmlParserTest {
 
     val client = MockBuildClient()
     val notifier = BspClientTestNotifier(client, "sample-origin")
-    val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
 
     // then
     client.taskStartCalls.size shouldBe 3
@@ -865,10 +859,9 @@ class TestXmlParserTest {
 
     val client = MockBuildClient()
     val notifier = BspClientTestNotifier(client, "sample-origin")
-    val parentId = TaskId("sample-task")
 
     // when
-    TestXmlParser(parentId, notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
+    TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
 
     // then
     client.taskFinishCalls.size shouldBe 2
