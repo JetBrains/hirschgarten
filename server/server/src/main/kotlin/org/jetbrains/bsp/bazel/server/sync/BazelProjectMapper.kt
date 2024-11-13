@@ -535,7 +535,7 @@ class BazelProjectMapper(
     outputJarsFromTransitiveDepsCache: ConcurrentHashMap<Label, Set<Path>>,
     allJdepsJars: Set<Path>,
   ): Set<Path> =
-    outputJarsFromTransitiveDepsCache.getOrPut(targetOrLibrary) {
+    outputJarsFromTransitiveDepsCache.computeIfAbsent(targetOrLibrary) {
       val jarsFromTargets =
         targetsToImport[targetOrLibrary]?.let { getTargetOutputJarsSet(it) + getTargetInterfaceJarsSet(it) }.orEmpty()
       val jarsFromLibraries =
