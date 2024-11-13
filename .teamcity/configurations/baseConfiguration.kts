@@ -116,7 +116,9 @@ object SpaceVcs : GitVcsRoot({
   name = "hirschgarten-space"
   url = "https://git.jetbrains.team/bazel/hirschgarten.git"
   branch = "main"
-  branchSpec = "+:refs/heads/*"
+  branchSpec = """+:refs/heads/*
++:refs/merge/*
+""".trimMargin()
   authMethod =
     password {
       userName = "x-oauth-basic"
