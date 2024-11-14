@@ -48,6 +48,7 @@ class BazelProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
+  private val mavenCoordinatesResolver: MavenCoordinatesResolver,
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
@@ -94,7 +95,7 @@ class BazelProjectMapper(
       }
     val outputJarsLibraries =
       measure("Create output jars libraries") {
-        calculateOutputJarsLibraries(targetsToImport, workspaceContext)
+        calculateOutputJarsLibraries(targetsToImport)
       }
     val annotationProcessorLibraries =
       measure("Create AP libraries") {
@@ -114,7 +115,7 @@ class BazelProjectMapper(
       }
     val androidLibrariesMapper =
       measure("Create android libraries") {
-        calculateAndroidLibrariesMapper(targetsToImport, workspaceContext)
+        calculateAndroidLibrariesMapper(targetsToImport)
       }
     val goLibrariesMapper =
       measure("Create go libraries") {
@@ -237,19 +238,14 @@ class BazelProjectMapper(
         maps.flatMap { it[key].orEmpty() }
       }
 
-  private fun calculateOutputJarsLibraries(
-    targetsToImport: Sequence<TargetInfo>,
-    workspaceContext: WorkspaceContext,
-  ): Map<Label, List<Library>> {
-    if (!workspaceContext.experimentalUseLibOverModSection.value) return emptyMap()
-    return targetsToImport
+  private fun calculateOutputJarsLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
+    targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target, false)?.let { library ->
+        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true)?.let { library ->
           Label.parse(target.id) to listOf(library)
         }
       }.toMap()
-  }
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
     targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
@@ -392,17 +388,14 @@ class BazelProjectMapper(
         it.compilerJars
       }.toSet()
 
-  private fun calculateAndroidLibrariesMapper(
-    targetsToImport: Sequence<TargetInfo>,
-    workspaceContext: WorkspaceContext,
-  ): Map<Label, List<Library>> =
+  private fun calculateAndroidLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
       .mapNotNull { target ->
-        val aidlLibrary = createAidlLibrary(target, workspaceContext) ?: return@mapNotNull null
+        val aidlLibrary = createAidlLibrary(target) ?: return@mapNotNull null
         Label.parse(target.id) to listOf(aidlLibrary)
       }.toMap()
 
-  private fun createAidlLibrary(target: TargetInfo, workspaceContext: WorkspaceContext): Library? {
+  private fun createAidlLibrary(target: TargetInfo): Library? {
     if (!target.hasAndroidTargetInfo()) return null
     val androidTargetInfo = target.androidTargetInfo
     if (!androidTargetInfo.hasAidlBinaryJar()) return null
@@ -410,8 +403,7 @@ class BazelProjectMapper(
     val libraryLabel = Label.parse(target.id + "_aidl")
     if (target.sourcesList.isEmpty()) {
       // Bazel doesn't create the AIDL jar if there's no sources, since it'd be the same as the output jar
-      if (workspaceContext.experimentalUseLibOverModSection.value) return null
-      return createLibrary(libraryLabel, target)
+      return null
     }
 
     val outputs = listOf(target.androidTargetInfo.aidlBinaryJar).resolveUris()
@@ -637,12 +629,12 @@ class BazelProjectMapper(
   private fun createLibrary(
     label: Label,
     targetInfo: TargetInfo,
-    withDependencies: Boolean = true,
+    onlyOutputJars: Boolean = false,
   ): Library? {
     val outputs = getTargetOutputJarUris(targetInfo) + getAndroidAarUris(targetInfo) + getIntellijPluginJars(targetInfo)
     val sources = getSourceJarUris(targetInfo)
     val interfaceJars = getTargetInterfaceJarsSet(targetInfo).map { it.toUri() }.toSet()
-    val dependencies: List<BspTargetInfo.Dependency> = if (withDependencies) targetInfo.dependenciesList else emptyList()
+    val dependencies: List<BspTargetInfo.Dependency> = if (!onlyOutputJars) targetInfo.dependenciesList else emptyList()
     if (!shouldCreateLibrary(
         dependencies = dependencies,
         outputs = outputs,
@@ -653,12 +645,22 @@ class BazelProjectMapper(
       return null
     }
 
+    val mavenCoordinates =
+      if (!onlyOutputJars) {
+        outputs.firstOrNull()?.let { outputJar ->
+          mavenCoordinatesResolver.resolveMavenCoordinates(label, outputJar)
+        }
+      } else {
+        null
+      }
+
     return Library(
       label = label,
       outputs = outputs,
       sources = sources,
       dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
       interfaceJars = interfaceJars,
+      mavenCoordinates = mavenCoordinates,
     )
   }
 

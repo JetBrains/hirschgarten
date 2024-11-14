@@ -5,6 +5,7 @@ import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.bsp.protocol.MavenCoordinates
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import java.nio.file.Path
 
@@ -54,6 +55,7 @@ data class Library(
   val iJars: List<String> = listOf(),
   val sourceJars: List<String> = listOf(),
   val classJars: List<String> = listOf(),
+  val mavenCoordinates: MavenCoordinates? = null,
 ) : WorkspaceModelEntity(),
   ResourceRootEntity {
   companion object {

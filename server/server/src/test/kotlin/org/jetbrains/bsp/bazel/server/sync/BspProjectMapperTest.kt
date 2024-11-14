@@ -24,6 +24,8 @@ class BspProjectMapperTest {
   private val cacheLocation =
     "file:///home/user/.cache/bazel/_bazel_user/ae7b7b315151086e31e3b97f9ddba009/execroot/monorepo/bazel-out/k8-fastbuild-ST-4a519fd6d3e4"
 
+  private val mavenCoordinatesResolver = MavenCoordinatesResolver()
+
   @Test
   @Timeout(value = 1, unit = TimeUnit.MINUTES)
   fun `should compute buildDependencyModules quickly`() {
@@ -53,6 +55,8 @@ class BspProjectMapperTest {
           setOf(jarUri),
           setOf(jarSourcesUri),
           emptyList(),
+          emptySet(),
+          mavenCoordinatesResolver.resolveMavenCoordinates(label, jarUri),
         ),
       )
 

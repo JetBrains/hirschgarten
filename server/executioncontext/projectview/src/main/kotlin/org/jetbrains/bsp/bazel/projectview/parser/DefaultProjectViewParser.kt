@@ -6,7 +6,6 @@ import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.parser.sections.AndroidMinSdkSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.EnableNativeAndroidRulesParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ExperimentalAddTransitiveCompileTimeJarsParser
-import org.jetbrains.bsp.bazel.projectview.parser.sections.ExperimentalUseLibOverModSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewAllowManualTargetsSyncSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewBazelBinarySectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewBuildFlagsSectionParser
@@ -47,7 +46,6 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         importDepth = ProjectViewImportDepthSectionParser.parse(rawSections),
         enabledRules = ProjectViewEnabledRulesSectionParser.parse(rawSections),
         ideJavaHomeOverride = ProjectViewIdeJavaHomeOverrideSectionParser.parse(rawSections),
-        useLibOverModSection = ExperimentalUseLibOverModSectionParser.parse(rawSections),
         addTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsParser.parse(rawSections),
         enableNativeAndroidRules = EnableNativeAndroidRulesParser.parse(rawSections),
         androidMinSdkSection = AndroidMinSdkSectionParser.parse(rawSections),

@@ -1,14 +1,23 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters
 
+import com.intellij.configurationStore.serialize
+import com.intellij.externalSystem.ImportedLibraryProperties
+import com.intellij.externalSystem.ImportedLibraryType
+import com.intellij.java.library.MavenCoordinates
+import com.intellij.openapi.util.JDOMUtil
 import com.intellij.platform.workspace.jps.entities.LibraryEntity
 import com.intellij.platform.workspace.jps.entities.LibraryId
+import com.intellij.platform.workspace.jps.entities.LibraryPropertiesEntity
 import com.intellij.platform.workspace.jps.entities.LibraryRoot
 import com.intellij.platform.workspace.jps.entities.LibraryRootTypeId
 import com.intellij.platform.workspace.jps.entities.LibraryTableId
+import com.intellij.platform.workspace.jps.entities.LibraryTypeId
+import com.intellij.platform.workspace.jps.entities.libraryProperties
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.bsp.sdkcompat.workspacemodel.LegacyBridgeJpsEntitySourceFactory
+import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 import org.jetbrains.plugins.bsp.extensionPoints.bspProjectModelExternalSource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
@@ -40,6 +49,9 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
     tableId: LibraryTableId,
     entitySource: EntitySource,
   ): LibraryEntity {
+    val foundLibrary = builder.resolve(LibraryId(entityToAdd.displayName, tableId))
+    if (foundLibrary != null) return foundLibrary
+
     val libraryEntity =
       LibraryEntity(
         name = entityToAdd.displayName,
@@ -48,10 +60,14 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
         entitySource = entitySource,
       ) {
         this.excludedRoots = arrayListOf()
+        toLibraryPropertiesXml(entityToAdd)?.let { propertiesXml ->
+          this.typeId = LibraryTypeId(ImportedLibraryType.IMPORTED_LIBRARY_KIND.kindId)
+          this.libraryProperties =
+            LibraryPropertiesEntity(entitySource) {
+              propertiesXmlTag = propertiesXml
+            }
+        }
       }
-
-    val foundLibrary = builder.resolve(LibraryId(entityToAdd.displayName, tableId))
-    if (foundLibrary != null) return foundLibrary
 
     return builder.addEntity(libraryEntity)
   }
@@ -71,6 +87,22 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
         type = LibraryRootTypeId.COMPILED,
       )
     }
+
+  private fun toLibraryPropertiesXml(entityToAdd: Library): String? {
+    val mavenCoordinates = entityToAdd.mavenCoordinates ?: return null
+    val libPropertiesElement =
+      serialize(
+        ImportedLibraryProperties(
+          MavenCoordinates(
+            mavenCoordinates.groupId,
+            mavenCoordinates.artifactId,
+            mavenCoordinates.version,
+          ),
+        ).state,
+      ) ?: return null
+    libPropertiesElement.name = JpsLibraryTableSerializer.PROPERTIES_TAG
+    return JDOMUtil.writeElement(libPropertiesElement)
+  }
 }
 
 internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: WorkspaceModelEntityUpdaterConfig): EntitySource =
