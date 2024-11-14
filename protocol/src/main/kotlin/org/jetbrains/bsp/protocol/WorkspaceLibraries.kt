@@ -9,6 +9,13 @@ public data class LibraryItem(
   val ijars: List<String>,
   val jars: List<String>,
   val sourceJars: List<String>,
+  val mavenCoordinates: MavenCoordinates?,
+)
+
+data class MavenCoordinates(
+  val groupId: String,
+  val artifactId: String,
+  val version: String,
 )
 
 public data class GoLibraryItem(

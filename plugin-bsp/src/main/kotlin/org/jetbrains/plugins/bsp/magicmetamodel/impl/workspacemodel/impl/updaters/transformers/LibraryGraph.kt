@@ -91,6 +91,7 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
           iJars = it.ijars,
           classJars = it.jars,
           sourceJars = it.sourceJars,
+          mavenCoordinates = it.mavenCoordinates,
         )
       }
 

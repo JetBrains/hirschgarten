@@ -28,6 +28,7 @@ import org.jetbrains.bsp.bazel.server.sync.AdditionalAndroidBuildTargetsProvider
 import org.jetbrains.bsp.bazel.server.sync.BazelProjectMapper
 import org.jetbrains.bsp.bazel.server.sync.BspProjectMapper
 import org.jetbrains.bsp.bazel.server.sync.ExecuteService
+import org.jetbrains.bsp.bazel.server.sync.MavenCoordinatesResolver
 import org.jetbrains.bsp.bazel.server.sync.ProjectProvider
 import org.jetbrains.bsp.bazel.server.sync.ProjectResolver
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
@@ -177,12 +178,14 @@ class BazelBspServer(
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
     val bazelBspFallbackAspectsManager = BazelBspFallbackAspectsManager(bazelRunner, workspaceContextProvider)
     val targetTagsResolver = TargetTagsResolver()
+    val mavenCoordinatesResolver = MavenCoordinatesResolver()
     val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger(featureFlags)
     val bazelProjectMapper =
       BazelProjectMapper(
         languagePluginsService,
         bazelPathsResolver,
         targetTagsResolver,
+        mavenCoordinatesResolver,
         kotlinAndroidModulesMerger,
         bspClientLogger,
         featureFlags,
