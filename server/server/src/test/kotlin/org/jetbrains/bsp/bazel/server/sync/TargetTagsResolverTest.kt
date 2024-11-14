@@ -113,4 +113,19 @@ class TargetTagsResolverTest {
 
     tags shouldBe setOf(Tag.LIBRARY)
   }
+
+  @Test
+  fun `should mark android_binary as executable`() {
+    val targetInfo =
+      TargetInfo
+        .newBuilder()
+        .apply {
+          kind = "android_binary"
+          executable = false
+        }.build()
+
+    val tags = TargetTagsResolver().resolveTags(targetInfo)
+
+    tags shouldBe setOf(Tag.APPLICATION)
+  }
 }
