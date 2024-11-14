@@ -143,6 +143,8 @@ data class ModuleCapabilities(
     CAN_TEST,
     CAN_COMPILE,
   }
+
+  fun isExecutable(): Boolean = canRun || canTest
 }
 
 fun BuildTargetCapabilities.toModuleCapabilities() =
