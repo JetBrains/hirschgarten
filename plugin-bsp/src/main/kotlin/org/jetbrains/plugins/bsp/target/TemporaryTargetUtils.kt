@@ -10,6 +10,11 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
@@ -19,11 +24,13 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
 import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
 
-public data class TemporaryTargetUtilsState(
+data class TemporaryTargetUtilsState(
   var idToTargetInfo: Map<String, BuildTargetInfoState> = emptyMap(),
   var moduleIdToBuildTargetId: Map<String, String> = emptyMap(),
   var fileToId: Map<String, List<String>> = emptyMap(),
+  var fileToExecutableTargetIds: Map<String, List<String>> = emptyMap(),
   var libraries: List<LibraryState> = emptyList(),
 )
 
@@ -42,6 +49,10 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
   // e.g., file:/test and file:///test should be similar in the URI world
   var fileToTargetId: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
     private set
+
+  var fileToExecutableTargetIds: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
+    private set
+
   private var libraries: List<Library> = emptyList()
   private var libraryModules: List<JavaModule> = emptyList()
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
@@ -53,6 +64,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
     targetIdToModuleEntity: Map<BuildTargetIdentifier, Module>,
     targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
     libraries: List<Library>,
+    libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
   ) {
     this.targetIdToTargetInfo = targetIdToTargetInfo
@@ -65,6 +77,8 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
         .flatMap { it.toPairsUrlToId() }
         .groupBy { it.first }
         .mapValues { it.value.map { pair -> pair.second } }
+    fileToExecutableTargetIds = calculateFileToExecutableTargetIds(libraryItems)
+
     this.libraries = libraries
     this.libraryModules = libraryModules
     this.libraryModulesLookupTable = createLibraryModulesLookupTable()
@@ -76,6 +90,46 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
     }
 
   private fun String.processUriString() = this.trimEnd('/')
+
+  private fun calculateFileToExecutableTargetIds(libraryItems: List<LibraryItem>?): Map<URI, List<BuildTargetIdentifier>> =
+    runBlocking(Dispatchers.Default) {
+      val targetDependentsGraph = TargetDependentsGraph(targetIdToTargetInfo, libraryItems)
+      val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>>()
+      fileToTargetId
+        .map { (uri, targetIds) ->
+          async {
+            val dependents =
+              targetIds
+                .flatMap { targetId ->
+                  calculateTransitivelyExecutableTargetIds(
+                    targetToTransitiveRevertedDependenciesCache,
+                    targetDependentsGraph,
+                    targetId,
+                  )
+                }.distinct()
+            uri to dependents
+          }
+        }.awaitAll()
+        .toMap()
+    }
+
+  private fun calculateTransitivelyExecutableTargetIds(
+    resultCache: ConcurrentHashMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>>,
+    targetDependentsGraph: TargetDependentsGraph,
+    targetId: BuildTargetIdentifier,
+  ): Set<BuildTargetIdentifier> =
+    resultCache.getOrPut(targetId) {
+      val targetInfo = targetIdToTargetInfo[targetId]
+      if (targetInfo?.capabilities?.isExecutable() == true) {
+        return@getOrPut setOf(targetId)
+      }
+
+      val directDependentIds = targetDependentsGraph.directDependentIds(targetId)
+      directDependentIds
+        .flatMap { dependency ->
+          calculateTransitivelyExecutableTargetIds(resultCache, targetDependentsGraph, dependency)
+        }.toSet()
+    }
 
   private fun createLibraryModulesLookupTable() = libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
@@ -92,6 +146,15 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
   fun getTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> =
     fileToTargetId[file.url.processUriString().safeCastToURI()]
       ?: getTargetsFromAncestorsForFile(file, project)
+
+  fun getExecutableTargetsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> {
+    val executableDirectTargets =
+      getTargetsForFile(file, project).filter { targetId -> targetIdToTargetInfo[targetId]?.capabilities?.isExecutable() == true }
+    if (executableDirectTargets.isEmpty()) {
+      return fileToExecutableTargetIds.getOrDefault(file.url.processUriString().safeCastToURI(), emptySet()).toList()
+    }
+    return executableDirectTargets
+  }
 
   private fun getTargetsFromAncestorsForFile(file: VirtualFile, project: Project): List<BuildTargetIdentifier> {
     return if (BspFeatureFlags.isRetrieveTargetsForFileFromAncestorsEnabled) {
@@ -126,6 +189,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
       idToTargetInfo = targetIdToTargetInfo.mapKeys { it.key.uri }.mapValues { it.value.toState() },
       moduleIdToBuildTargetId = moduleIdToBuildTargetId.mapValues { it.value.uri },
       fileToId = fileToTargetId.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.uri } },
+      fileToExecutableTargetIds = fileToExecutableTargetIds.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.uri } },
       libraries = libraries.map { it.toState() },
     )
 
@@ -137,6 +201,8 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
     moduleIdToBuildTargetId = state.moduleIdToBuildTargetId.mapValues { BuildTargetIdentifier(it.value) }
     fileToTargetId =
       state.fileToId.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { BuildTargetIdentifier(it) } }
+    fileToExecutableTargetIds =
+      state.fileToExecutableTargetIds.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { BuildTargetIdentifier(it) } }
     libraries = state.libraries.map { it.fromState() }
   }
 }

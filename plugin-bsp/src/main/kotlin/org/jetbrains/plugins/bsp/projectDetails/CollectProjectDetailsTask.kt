@@ -163,7 +163,6 @@ class CollectProjectDetailsTask(
 
       val projectDetails =
         calculateProjectDetailsWithCapabilities(
-          project = project,
           server = server,
           buildServerCapabilities = capabilities,
           baseTargetInfos = baseTargetInfos,
@@ -365,6 +364,7 @@ class CollectProjectDetailsTask(
                 targetIdToModuleEntityMap,
                 targetIdToModuleDetails,
                 libraries,
+                projectDetails.libraries,
                 libraryModules,
               )
             }
@@ -555,8 +555,7 @@ class CollectProjectDetailsTask(
 }
 
 @Suppress("LongMethod", "CyclomaticComplexMethod", "CognitiveComplexMethod")
-public suspend fun calculateProjectDetailsWithCapabilities(
-  project: Project,
+suspend fun calculateProjectDetailsWithCapabilities(
   server: JoinedBuildServer,
   buildServerCapabilities: BazelBuildServerCapabilities,
   baseTargetInfos: BaseTargetInfos,
