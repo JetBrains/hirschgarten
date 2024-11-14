@@ -7,6 +7,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
@@ -244,7 +245,7 @@ class BazelProjectMapper(
     return targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target)?.let { library ->
+        createLibrary(Label.parse(target.id + "_output_jars"), target, false)?.let { library ->
           Label.parse(target.id) to listOf(library)
         }
       }.toMap()
@@ -633,11 +634,24 @@ class BazelProjectMapper(
         }
       }.toMap()
 
-  private fun createLibrary(label: Label, targetInfo: TargetInfo): Library? {
+  private fun createLibrary(
+    label: Label,
+    targetInfo: TargetInfo,
+    withDependencies: Boolean = true,
+  ): Library? {
     val outputs = getTargetOutputJarUris(targetInfo) + getAndroidAarUris(targetInfo) + getIntellijPluginJars(targetInfo)
     val sources = getSourceJarUris(targetInfo)
     val interfaceJars = getTargetInterfaceJarsSet(targetInfo).map { it.toUri() }.toSet()
-    if (isEmptyJarList(outputs) && isEmptyJarList(interfaceJars) && sources.isEmpty()) return null
+    val dependencies: List<BspTargetInfo.Dependency> = if (withDependencies) targetInfo.dependenciesList else emptyList()
+    if (!shouldCreateLibrary(
+        dependencies = dependencies,
+        outputs = outputs,
+        sources = sources,
+        interfaceJars = interfaceJars,
+      )
+    ) {
+      return null
+    }
 
     return Library(
       label = label,
@@ -648,7 +662,14 @@ class BazelProjectMapper(
     )
   }
 
-  private fun isEmptyJarList(jars: Collection<URI>): Boolean = jars.isEmpty() || jars.singleOrNull()?.toPath()?.name == "empty.jar"
+  private fun shouldCreateLibrary(
+    dependencies: List<BspTargetInfo.Dependency>,
+    outputs: Collection<URI>,
+    interfaceJars: Collection<URI>,
+    sources: Collection<URI>,
+  ): Boolean = dependencies.isNotEmpty() || !outputs.isEmptyJarList() || !interfaceJars.isEmptyJarList() || !sources.isEmptyJarList()
+
+  private fun Collection<URI>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.toPath()?.name == "empty.jar"
 
   private fun createGoLibraries(targets: Map<Label, TargetInfo>): Map<Label, GoLibrary> =
     targets
