@@ -28,12 +28,11 @@ import kotlin.io.path.toPath
 
 internal class ModuleDetailsToJavaModuleTransformer(
   targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
-  moduleNameProvider: TargetNameReformatProvider,
-  libraryNameProvider: TargetNameReformatProvider,
+  nameProvider: TargetNameReformatProvider,
   private val projectBasePath: Path,
   private val project: Project,
   private val isAndroidSupportEnabled: Boolean = false,
-) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, moduleNameProvider, libraryNameProvider) {
+) : ModuleDetailsToModuleTransformer<JavaModule>(targetsMap, nameProvider) {
   override val type = ModuleTypeId("JAVA_MODULE")
 
   private val resourcesItemToJavaResourceRootTransformer = ResourcesItemToJavaResourceRootTransformer()

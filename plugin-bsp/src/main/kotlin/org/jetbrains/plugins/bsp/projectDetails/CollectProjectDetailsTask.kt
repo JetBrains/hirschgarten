@@ -54,8 +54,7 @@ import org.jetbrains.plugins.bsp.impl.server.client.IMPORT_SUBTASK_ID
 import org.jetbrains.plugins.bsp.impl.server.tasks.BspServerTask
 import org.jetbrains.plugins.bsp.impl.server.tasks.SdkUtils
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
-import org.jetbrains.plugins.bsp.magicmetamodel.findLibraryNameProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.findModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.TargetIdToModuleEntitiesMap
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.WorkspaceModelUpdaterImpl
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.LibraryGraph
@@ -310,18 +309,17 @@ class CollectProjectDetailsTask(
     ) {
       runInterruptible {
         val projectBasePath = project.rootDir.toNioPath()
-        val moduleNameProvider = project.findModuleNameProvider().orDefault()
-        val libraryNameProvider = project.findLibraryNameProvider().orDefault()
+        val nameProvider = project.findNameProvider().orDefault()
         val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())
 
         val libraries =
           bspTracer.spanBuilder("create.libraries.ms").use {
-            libraryGraph.createLibraries(libraryNameProvider)
+            libraryGraph.createLibraries(nameProvider)
           }
 
         val libraryModules =
           bspTracer.spanBuilder("create.library.modules.ms").use {
-            libraryGraph.createLibraryModules(libraryNameProvider, projectDetails.defaultJdkName)
+            libraryGraph.createLibraryModules(nameProvider, projectDetails.defaultJdkName)
           }
 
         val targetIdToModuleDetails =
@@ -355,8 +353,7 @@ class CollectProjectDetailsTask(
                 targetIdToTargetInfo = targetIdToTargetInfo,
                 projectBasePath = projectBasePath,
                 project = project,
-                moduleNameProvider = moduleNameProvider,
-                libraryNameProvider = libraryNameProvider,
+                nameProvider = nameProvider,
                 hasDefaultPythonInterpreter = BspFeatureFlags.isPythonSupportEnabled,
                 isPythonSupportEnabled = BspFeatureFlags.isPythonSupportEnabled,
                 isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),

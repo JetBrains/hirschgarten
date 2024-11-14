@@ -9,15 +9,10 @@ import org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.utils.StringUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
-fun Project.findModuleNameProvider(): TargetNameReformatProvider? =
+fun Project.findNameProvider(): TargetNameReformatProvider? =
   this.buildToolIdOrDefault.takeIf { it.id != "bsp" }?.let { createModuleNameProvider(it) }
 
-fun Project.findLibraryNameProvider(): TargetNameReformatProvider? =
-  this.buildToolIdOrDefault.takeIf { it.id != "bsp" }?.let { createLibraryNameProvider(it) }
-
 private fun createModuleNameProvider(buildToolId: BuildToolId): TargetNameReformatProvider = createNameReformatProvider(buildToolId)
-
-private fun createLibraryNameProvider(buildToolId: BuildToolId): TargetNameReformatProvider = createNameReformatProvider(buildToolId)
 
 private fun createNameReformatProvider(buildToolId: BuildToolId): (BuildTargetInfo) -> String {
   val bspBuildTargetClassifier = BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
