@@ -7,6 +7,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
@@ -47,6 +48,7 @@ class BazelProjectMapper(
   private val languagePluginsService: LanguagePluginsService,
   private val bazelPathsResolver: BazelPathsResolver,
   private val targetTagsResolver: TargetTagsResolver,
+  private val mavenCoordinatesResolver: MavenCoordinatesResolver,
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
@@ -93,7 +95,7 @@ class BazelProjectMapper(
       }
     val outputJarsLibraries =
       measure("Create output jars libraries") {
-        calculateOutputJarsLibraries(targetsToImport, workspaceContext)
+        calculateOutputJarsLibraries(targetsToImport)
       }
     val annotationProcessorLibraries =
       measure("Create AP libraries") {
@@ -113,7 +115,7 @@ class BazelProjectMapper(
       }
     val androidLibrariesMapper =
       measure("Create android libraries") {
-        calculateAndroidLibrariesMapper(targetsToImport, workspaceContext)
+        calculateAndroidLibrariesMapper(targetsToImport)
       }
     val goLibrariesMapper =
       measure("Create go libraries") {
@@ -236,19 +238,14 @@ class BazelProjectMapper(
         maps.flatMap { it[key].orEmpty() }
       }
 
-  private fun calculateOutputJarsLibraries(
-    targetsToImport: Sequence<TargetInfo>,
-    workspaceContext: WorkspaceContext,
-  ): Map<Label, List<Library>> {
-    if (!workspaceContext.experimentalUseLibOverModSection.value) return emptyMap()
-    return targetsToImport
+  private fun calculateOutputJarsLibraries(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
+    targetsToImport
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
-        createLibrary(Label.parse(target.id + "_output_jars"), target)?.let { library ->
+        createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true)?.let { library ->
           Label.parse(target.id) to listOf(library)
         }
       }.toMap()
-  }
 
   private fun shouldCreateOutputJarsLibrary(targetInfo: TargetInfo) =
     targetInfo.generatedSourcesList.any { it.relativePath.endsWith(".srcjar") } ||
@@ -391,17 +388,14 @@ class BazelProjectMapper(
         it.compilerJars
       }.toSet()
 
-  private fun calculateAndroidLibrariesMapper(
-    targetsToImport: Sequence<TargetInfo>,
-    workspaceContext: WorkspaceContext,
-  ): Map<Label, List<Library>> =
+  private fun calculateAndroidLibrariesMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> =
     targetsToImport
       .mapNotNull { target ->
-        val aidlLibrary = createAidlLibrary(target, workspaceContext) ?: return@mapNotNull null
+        val aidlLibrary = createAidlLibrary(target) ?: return@mapNotNull null
         Label.parse(target.id) to listOf(aidlLibrary)
       }.toMap()
 
-  private fun createAidlLibrary(target: TargetInfo, workspaceContext: WorkspaceContext): Library? {
+  private fun createAidlLibrary(target: TargetInfo): Library? {
     if (!target.hasAndroidTargetInfo()) return null
     val androidTargetInfo = target.androidTargetInfo
     if (!androidTargetInfo.hasAidlBinaryJar()) return null
@@ -409,8 +403,7 @@ class BazelProjectMapper(
     val libraryLabel = Label.parse(target.id + "_aidl")
     if (target.sourcesList.isEmpty()) {
       // Bazel doesn't create the AIDL jar if there's no sources, since it'd be the same as the output jar
-      if (workspaceContext.experimentalUseLibOverModSection.value) return null
-      return createLibrary(libraryLabel, target)
+      return null
     }
 
     val outputs = listOf(target.androidTargetInfo.aidlBinaryJar).resolveUris()
@@ -633,11 +626,33 @@ class BazelProjectMapper(
         }
       }.toMap()
 
-  private fun createLibrary(label: Label, targetInfo: TargetInfo): Library? {
+  private fun createLibrary(
+    label: Label,
+    targetInfo: TargetInfo,
+    onlyOutputJars: Boolean = false,
+  ): Library? {
     val outputs = getTargetOutputJarUris(targetInfo) + getAndroidAarUris(targetInfo) + getIntellijPluginJars(targetInfo)
     val sources = getSourceJarUris(targetInfo)
     val interfaceJars = getTargetInterfaceJarsSet(targetInfo).map { it.toUri() }.toSet()
-    if (isEmptyJarList(outputs) && isEmptyJarList(interfaceJars) && sources.isEmpty()) return null
+    val dependencies: List<BspTargetInfo.Dependency> = if (!onlyOutputJars) targetInfo.dependenciesList else emptyList()
+    if (!shouldCreateLibrary(
+        dependencies = dependencies,
+        outputs = outputs,
+        sources = sources,
+        interfaceJars = interfaceJars,
+      )
+    ) {
+      return null
+    }
+
+    val mavenCoordinates =
+      if (!onlyOutputJars) {
+        outputs.firstOrNull()?.let { outputJar ->
+          mavenCoordinatesResolver.resolveMavenCoordinates(label, outputJar)
+        }
+      } else {
+        null
+      }
 
     return Library(
       label = label,
@@ -645,10 +660,18 @@ class BazelProjectMapper(
       sources = sources,
       dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
       interfaceJars = interfaceJars,
+      mavenCoordinates = mavenCoordinates,
     )
   }
 
-  private fun isEmptyJarList(jars: Collection<URI>): Boolean = jars.isEmpty() || jars.singleOrNull()?.toPath()?.name == "empty.jar"
+  private fun shouldCreateLibrary(
+    dependencies: List<BspTargetInfo.Dependency>,
+    outputs: Collection<URI>,
+    interfaceJars: Collection<URI>,
+    sources: Collection<URI>,
+  ): Boolean = dependencies.isNotEmpty() || !outputs.isEmptyJarList() || !interfaceJars.isEmptyJarList() || !sources.isEmptyJarList()
+
+  private fun Collection<URI>.isEmptyJarList(): Boolean = isEmpty() || singleOrNull()?.toPath()?.name == "empty.jar"
 
   private fun createGoLibraries(targets: Map<Label, TargetInfo>): Map<Label, GoLibrary> =
     targets

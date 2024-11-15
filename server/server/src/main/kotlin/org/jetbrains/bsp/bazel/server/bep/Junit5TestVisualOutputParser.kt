@@ -2,7 +2,6 @@ package org.jetbrains.bsp.bazel.server.bep
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.TaskId
-import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStatus
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
@@ -100,9 +99,8 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
   }
 
   private fun endTesting(testTarget: StartedBuildTarget, millis: Long) {
-    val report = TestReport(BuildTargetIdentifier(testTarget.uri), 0, 0, 0, 0, 0)
-    report.time = millis
-    bspClientTestNotifier.endTestTarget(report, testTarget.taskId)
+    val buildTargetId = BuildTargetIdentifier(testTarget.uri)
+    bspClientTestNotifier.endTestTarget(buildTargetId, testTarget.taskId, millis)
   }
 
   private fun startSuite(suite: TestOutputLine) {

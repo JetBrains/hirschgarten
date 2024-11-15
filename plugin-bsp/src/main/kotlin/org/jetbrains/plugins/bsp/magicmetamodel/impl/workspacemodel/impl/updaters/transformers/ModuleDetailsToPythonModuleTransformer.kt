@@ -13,10 +13,9 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonSdkInfo
 
 internal class ModuleDetailsToPythonModuleTransformer(
   targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
-  moduleNameProvider: TargetNameReformatProvider,
-  libraryNameProvider: TargetNameReformatProvider,
+  nameProvider: TargetNameReformatProvider,
   private val hasDefaultPythonInterpreter: Boolean,
-) : ModuleDetailsToModuleTransformer<PythonModule>(targetsMap, moduleNameProvider, libraryNameProvider) {
+) : ModuleDetailsToModuleTransformer<PythonModule>(targetsMap, nameProvider) {
   override val type = ModuleTypeId("PYTHON_MODULE")
 
   private val sourcesItemToPythonSourceRootTransformer = SourcesItemToPythonSourceRootTransformer()

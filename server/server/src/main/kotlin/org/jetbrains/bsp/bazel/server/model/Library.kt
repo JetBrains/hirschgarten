@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.server.model
 
+import org.jetbrains.bsp.protocol.MavenCoordinates
 import java.net.URI
 
 data class Library(
@@ -8,7 +9,7 @@ data class Library(
   val sources: Set<URI>,
   val dependencies: List<Label>,
   val interfaceJars: Set<URI> = emptySet(),
-  val keepNonExistentJars: Boolean = false,
+  val mavenCoordinates: MavenCoordinates? = null,
 )
 
 data class GoLibrary(

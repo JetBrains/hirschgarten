@@ -151,6 +151,7 @@ class BspProjectMapper(
           ijars = it.interfaceJars.map { uri -> uri.toString() },
           jars = it.outputs.map { uri -> uri.toString() },
           sourceJars = it.sources.map { uri -> uri.toString() },
+          mavenCoordinates = it.mavenCoordinates,
         )
       }
     return WorkspaceLibrariesResult(libraries)

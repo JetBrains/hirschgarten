@@ -39,7 +39,7 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
 import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.findModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.RawUriToDirectoryPathTransformer
 import org.jetbrains.plugins.bsp.magicmetamodel.orDefault
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
@@ -64,7 +64,7 @@ class GoProjectSync : ProjectSyncHook {
     val goTargets = environment.baseTargetInfos.calculateGoTargets()
     val idToGoTargetMap = goTargets.associateBy({ it.target.id }, { it })
     val virtualFileUrlManager = WorkspaceModel.getInstance(environment.project).getVirtualFileUrlManager()
-    val moduleNameProvider = environment.project.findModuleNameProvider().orDefault()
+    val moduleNameProvider = environment.project.findNameProvider().orDefault()
 
     val moduleEntities =
       goTargets.map {

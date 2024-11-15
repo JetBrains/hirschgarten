@@ -35,7 +35,6 @@ object ProjectViewCLiOptionsProvider {
       allowManualTargetsSync = toAllowManualTargetsSyncSection(projectViewCliOptions),
       enabledRules = toEnabledRulesSection(projectViewCliOptions),
       ideJavaHomeOverride = toIdeJavaHomeOverrideSection(projectViewCliOptions),
-      useLibOverModSection = null, // Experimental flag, no need to be configurable via CLI
     )
 
   private fun toBazelBinarySection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewBazelBinarySection? =

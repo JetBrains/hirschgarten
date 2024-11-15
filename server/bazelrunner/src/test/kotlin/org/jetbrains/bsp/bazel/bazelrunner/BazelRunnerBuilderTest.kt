@@ -12,7 +12,6 @@ import org.jetbrains.bsp.bazel.workspacecontext.DotBazelBspDirPathSpec
 import org.jetbrains.bsp.bazel.workspacecontext.EnableNativeAndroidRules
 import org.jetbrains.bsp.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
-import org.jetbrains.bsp.bazel.workspacecontext.ExperimentalUseLibOverModSpec
 import org.jetbrains.bsp.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
@@ -34,7 +33,6 @@ val mockContext =
     importDepth = ImportDepthSpec(2),
     enabledRules = EnabledRulesSpec(listOf("rule1", "rule2")),
     ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpec(Path("java_home")),
-    experimentalUseLibOverModSection = ExperimentalUseLibOverModSpec(true),
     experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(true),
     enableNativeAndroidRules = EnableNativeAndroidRules(false),
     androidMinSdkSpec = AndroidMinSdkSpec(null),

@@ -56,7 +56,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
       ModuleDetailsToJavaModuleTransformer(
         mapOf(),
         DefaultNameProvider,
-        DefaultNameProvider,
         projectBasePath,
         project,
       ).transform(
@@ -178,7 +177,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaModule =
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
-        DefaultNameProvider,
         DefaultNameProvider,
         projectBasePath,
         project,
@@ -346,7 +344,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaModule =
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
-        DefaultNameProvider,
         DefaultNameProvider,
         projectBasePath,
         project,
@@ -580,7 +577,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
     val javaModules =
       ModuleDetailsToJavaModuleTransformer(
         targetsMap,
-        DefaultNameProvider,
         DefaultNameProvider,
         projectBasePath,
         project,

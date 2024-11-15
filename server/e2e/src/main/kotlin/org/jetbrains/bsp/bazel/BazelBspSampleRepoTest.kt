@@ -980,7 +980,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
           },
           BuildTarget(
             BuildTargetIdentifier("@//target_with_resources:resources"),
-            emptyList(),
+            listOf("library"),
             emptyList(),
             emptyList(),
             BuildTargetCapabilities().also {

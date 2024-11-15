@@ -70,7 +70,6 @@ data class WorkspaceContext(
    * Obtained from `ProjectView` simply by mapping `ide_java_home_override` section.
    */
   val ideJavaHomeOverrideSpec: IdeJavaHomeOverrideSpec,
-  val experimentalUseLibOverModSection: ExperimentalUseLibOverModSpec,
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
   val enableNativeAndroidRules: EnableNativeAndroidRules,
   val androidMinSdkSpec: AndroidMinSdkSpec,
@@ -95,7 +94,6 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       importDepth = ImportDepthSpecExtractor.fromProjectView(projectView),
       enabledRules = EnabledRulesSpecExtractor.fromProjectView(projectView),
       ideJavaHomeOverrideSpec = IdeJavaHomeOverrideSpecExtractor.fromProjectView(projectView),
-      experimentalUseLibOverModSection = ExperimentalUseLibOverModSpecExtractor.fromProjectView(projectView),
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
       enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
       androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),

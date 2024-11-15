@@ -16,6 +16,8 @@ import java.nio.file.Paths
 class DependencyMapperTest {
   private val cacheLocation = "file:///home/user/.cache/bazel/_bazel_user/ae7b7b315151086e31e3b97f9ddba009/execroot/monorepo/bazel-out/k8-fastbuild-ST-4a519fd6d3e4"
 
+  private val mavenCoordinatesResolver = MavenCoordinatesResolver()
+
   @Test
   fun `should translate dependency`() {
     val jarUri =
@@ -27,7 +29,7 @@ class DependencyMapperTest {
         "$cacheLocation/bin/external/maven/org/scala-lang/scala-library/2.13.11/scala-library-2.13.11-sources.jar",
       )
     val lib1 =
-      Library(
+      createLibraryWithMavenCoordinates(
         Label.parse("@maven//:org_scala_lang_scala_library"),
         setOf(jarUri),
         setOf(jarSourcesUri),
@@ -62,7 +64,7 @@ class DependencyMapperTest {
         "$cacheLocation/bin/external/rules_jvm_external~~maven~name/v1/https/repo1.maven.org/maven2/com/google/auto/service/auto-service-annotations/1.1.1/header_auto-service-annotations-1.1.1-sources.jar",
       )
     val lib1 =
-      Library(
+      createLibraryWithMavenCoordinates(
         Label.parse("@@rules_jvm_external~override~maven~maven//:com_google_auto_service_auto_service_annotations"),
         setOf(jarUri),
         setOf(jarSourcesUri),
@@ -111,7 +113,7 @@ class DependencyMapperTest {
         "$cacheLocation/bin/external/maven/org/scala-lang/scala-library/2.13.11/scala-library-2.13.11-sources.jar",
       )
     val lib1 =
-      Library(
+      createLibraryWithMavenCoordinates(
         Label.parse("@maven//:org_scala_lang_scala_library"),
         setOf(jarUri),
         setOf(jarSourcesUri),
@@ -212,4 +214,20 @@ class DependencyMapperTest {
 
     foundLibraries shouldBe allLibraries.toSet()
   }
+
+  private fun createLibraryWithMavenCoordinates(
+    label: Label,
+    outputs: Set<URI>,
+    sources: Set<URI>,
+    dependencies: List<Label>,
+    interfaceJars: Set<URI> = emptySet(),
+  ): Library =
+    Library(
+      label = label,
+      outputs = outputs,
+      sources = sources,
+      dependencies = dependencies,
+      interfaceJars = interfaceJars,
+      mavenCoordinates = mavenCoordinatesResolver.resolveMavenCoordinates(label, outputs.first()),
+    )
 }

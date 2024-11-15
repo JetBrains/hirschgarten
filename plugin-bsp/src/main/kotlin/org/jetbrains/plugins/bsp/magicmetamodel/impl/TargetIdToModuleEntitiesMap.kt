@@ -25,8 +25,7 @@ object TargetIdToModuleEntitiesMap {
     targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
     projectBasePath: Path,
     project: Project,
-    moduleNameProvider: TargetNameReformatProvider,
-    libraryNameProvider: TargetNameReformatProvider,
+    nameProvider: TargetNameReformatProvider,
     hasDefaultPythonInterpreter: Boolean,
     isPythonSupportEnabled: Boolean,
     isAndroidSupportEnabled: Boolean,
@@ -34,8 +33,7 @@ object TargetIdToModuleEntitiesMap {
     val moduleDetailsToJavaModuleTransformer =
       ModuleDetailsToJavaModuleTransformer(
         targetIdToTargetInfo,
-        moduleNameProvider,
-        libraryNameProvider,
+        nameProvider,
         projectBasePath,
         project,
         isAndroidSupportEnabled,
@@ -44,8 +42,7 @@ object TargetIdToModuleEntitiesMap {
       if (isPythonSupportEnabled) {
         ModuleDetailsToPythonModuleTransformer(
           targetIdToTargetInfo,
-          moduleNameProvider,
-          libraryNameProvider,
+          nameProvider,
           hasDefaultPythonInterpreter,
         )
       } else {

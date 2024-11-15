@@ -33,7 +33,6 @@ class BspModuleDetailsToModuleTransformerTest {
       BspModuleDetailsToModuleTransformer(
         mapOf(),
         DefaultNameProvider,
-        DefaultNameProvider,
       ).transform(
         emptyBspModuleDetails,
       )
@@ -102,7 +101,6 @@ class BspModuleDetailsToModuleTransformerTest {
     val module =
       BspModuleDetailsToModuleTransformer(
         targetsMap,
-        DefaultNameProvider,
         DefaultNameProvider,
       ).transform(
         bspModuleDetails,
@@ -185,7 +183,6 @@ class BspModuleDetailsToModuleTransformerTest {
     val module =
       BspModuleDetailsToModuleTransformer(
         targetsMap,
-        DefaultNameProvider,
         DefaultNameProvider,
       ).transform(
         bspModuleDetails,
@@ -274,7 +271,6 @@ class BspModuleDetailsToModuleTransformerTest {
     val module =
       BspModuleDetailsToModuleTransformer(
         targetsMap,
-        DefaultNameProvider,
         DefaultNameProvider,
       ).transform(
         bspModuleDetails,
@@ -406,7 +402,6 @@ class BspModuleDetailsToModuleTransformerTest {
     val modules =
       BspModuleDetailsToModuleTransformer(
         targetsMap,
-        DefaultNameProvider,
         DefaultNameProvider,
       ).transform(
         bspModuleDetails,
@@ -556,7 +551,6 @@ class BspModuleDetailsToModuleTransformerTest {
       BspModuleDetailsToModuleTransformer(
         targetsMap,
         DefaultNameProvider,
-        DefaultNameProvider,
       ).transform(
         bspModuleDetails,
       )
@@ -640,13 +634,11 @@ class BspModuleDetailsToModuleTransformerTest {
     val targetsMap = listOf("//target1").toDefaultTargetsMap()
 
     // when
-    val moduleNameProvider: TargetNameReformatProvider = { "${it.id.uri}${it.id.uri}" }
-    val libraryNameProvider: TargetNameReformatProvider = { "${it.id.uri}${it.id.uri}" }
+    val nameProvider: TargetNameReformatProvider = { "${it.id.uri}${it.id.uri}" }
     val transformer =
       BspModuleDetailsToModuleTransformer(
         targetsMap,
-        moduleNameProvider = moduleNameProvider,
-        libraryNameProvider = libraryNameProvider,
+        nameProvider = nameProvider,
       )
     val module = transformer.transform(bspModuleDetails)
 

@@ -17,7 +17,7 @@ import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.PartialProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncScope
-import org.jetbrains.plugins.bsp.magicmetamodel.findModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.orDefault
 import org.jetbrains.plugins.bsp.performance.bspTracer
 import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresDiff
@@ -73,7 +73,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
     }
 
   private fun EntitySource.isBspRelevantForPartialSync(project: Project, syncScope: PartialProjectSync): Boolean {
-    val moduleNameProvider = project.findModuleNameProvider().orDefault()
+    val moduleNameProvider = project.findNameProvider().orDefault()
     val targetsToSyncNames = syncScope.targetsToSync.map { moduleNameProvider(BuildTargetInfo(id = it)) }
 
     if (this is BspModuleEntitySource) {

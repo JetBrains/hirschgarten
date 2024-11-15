@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager
 import org.jetbrains.bsp.bazel.projectview.model.sections.AndroidMinSdkSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.EnableNativeAndroidRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalAddTransitiveCompileTimeJarsSection
-import org.jetbrains.bsp.bazel.projectview.model.sections.ExperimentalUseLibOverModSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsSection
@@ -42,8 +41,6 @@ data class ProjectView(
   val enabledRules: ProjectViewEnabledRulesSection?,
   /** local java home path to override to use with IDE, e.g. IntelliJ IDEA */
   val ideJavaHomeOverride: ProjectViewIdeJavaHomeOverrideSection?,
-  /** use a new predicate that is more likely to interpret targets as libraries than as modules */
-  val useLibOverModSection: ExperimentalUseLibOverModSection? = null,
   /** add transitive compile time jars to compensate for possible missing classpaths */
   val addTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJarsSection? = null,
   /** enable native (non-starlarkified) Android rules */
@@ -62,7 +59,6 @@ data class ProjectView(
     private val importDepth: ProjectViewImportDepthSection? = null,
     private val enabledRules: ProjectViewEnabledRulesSection? = null,
     private val ideJavaHomeOverride: ProjectViewIdeJavaHomeOverrideSection? = null,
-    private val useLibOverModSection: ExperimentalUseLibOverModSection? = null,
     private val addTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJarsSection? = null,
     private val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
     private val androidMinSdkSection: AndroidMinSdkSection? = null,
@@ -83,7 +79,6 @@ data class ProjectView(
       val importDepth = combineImportDepthSection(importedProjectViews)
       val enabledRules = combineEnabledRulesSection(importedProjectViews)
       val ideJavaHomeOverride = combineIdeJavaHomeOverrideSection(importedProjectViews)
-      val useLibOverModSection = combineUseLibOverModSection(importedProjectViews)
       val addTransitiveCompileTimeJars = combineAddTransitiveCompileTimeJarsSection(importedProjectViews)
       val enableNativeAndroidRules = combineEnableNativeAndroidRulesSection(importedProjectViews)
       val androidMinSdkSection = combineAndroidMinSdkSection(importedProjectViews)
@@ -113,7 +108,6 @@ data class ProjectView(
         importDepth,
         enabledRules,
         ideJavaHomeOverride,
-        useLibOverModSection,
         addTransitiveCompileTimeJars,
         enableNativeAndroidRules,
         androidMinSdkSection,
@@ -128,18 +122,11 @@ data class ProjectView(
         importDepth,
         enabledRules,
         ideJavaHomeOverride,
-        useLibOverModSection,
         addTransitiveCompileTimeJars,
         enableNativeAndroidRules,
         androidMinSdkSection,
       )
     }
-
-    private fun combineUseLibOverModSection(importedProjectViews: List<ProjectView>): ExperimentalUseLibOverModSection? =
-      useLibOverModSection ?: getLastImportedSingletonValue(
-        importedProjectViews,
-        ProjectView::useLibOverModSection,
-      )
 
     private fun combineAddTransitiveCompileTimeJarsSection(
       importedProjectViews: List<ProjectView>,

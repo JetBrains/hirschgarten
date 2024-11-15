@@ -61,7 +61,7 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
       else -> file.children?.any { it.isEligibleFile() } == true
     }
 
-  private fun VirtualFile.isEligibleFile() = isBazelBspConnectionFile() || isWorkspaceFile() || isBuildFile()
+  private fun VirtualFile.isEligibleFile() = isBazelBspConnectionFile() || isWorkspaceFile() || isBuildFile() || isProjectViewFile()
 
   private fun VirtualFile.isBazelBspConnectionFile() = toBuildToolId() == bazelBspBuildToolId
 

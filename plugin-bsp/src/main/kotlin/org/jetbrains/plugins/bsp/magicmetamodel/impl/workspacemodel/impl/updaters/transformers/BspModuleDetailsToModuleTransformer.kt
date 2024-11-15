@@ -32,28 +32,27 @@ internal data class BspModuleDetails(
 
 internal class BspModuleDetailsToModuleTransformer(
   private val targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
-  private val moduleNameProvider: TargetNameReformatProvider,
-  private val libraryNameProvider: TargetNameReformatProvider,
+  private val nameProvider: TargetNameReformatProvider,
 ) : WorkspaceModelEntityTransformer<BspModuleDetails, GenericModuleInfo> {
   override fun transform(inputEntity: BspModuleDetails): GenericModuleInfo =
     GenericModuleInfo(
-      name = moduleNameProvider(inputEntity.target.toBuildTargetInfo()),
+      name = nameProvider(inputEntity.target.toBuildTargetInfo()),
       type = inputEntity.type,
       modulesDependencies =
         inputEntity.moduleDependencies
           .mapNotNull { targetsMap[it] }
-          .map { IntermediateModuleDependency(moduleName = moduleNameProvider(it)) },
+          .map { IntermediateModuleDependency(moduleName = nameProvider(it)) },
       librariesDependencies = calculateLibrariesDependencies(inputEntity),
       capabilities = inputEntity.target.capabilities.toModuleCapabilities(),
       languageIds = inputEntity.target.languageIds,
       associates =
         inputEntity.associates.mapNotNull {
-          targetsMap[it]?.toModuleDependency(moduleNameProvider)
+          targetsMap[it]?.toModuleDependency(nameProvider)
         },
     )
 
   private fun calculateLibrariesDependencies(inputEntity: BspModuleDetails): List<IntermediateLibraryDependency> =
-    inputEntity.libraryDependencies?.map { it.toLibraryDependency(libraryNameProvider, true) }
+    inputEntity.libraryDependencies?.map { it.toLibraryDependency(nameProvider, true) }
       ?: if (inputEntity.target.languageIds.includesJavaOrScala()) {
         DependencySourcesItemToLibraryDependencyTransformer
           .transform(
@@ -101,10 +100,10 @@ internal fun BuildTargetInfo.toModuleDependency(moduleNameProvider: TargetNameRe
   )
 
 internal fun BuildTargetIdentifier.toLibraryDependency(
-  libraryNameProvider: TargetNameReformatProvider,
+  nameProvider: TargetNameReformatProvider,
   isProjectLevelLibrary: Boolean,
 ): IntermediateLibraryDependency =
   IntermediateLibraryDependency(
-    libraryName = libraryNameProvider(BuildTargetInfo(id = this)),
+    libraryName = nameProvider(BuildTargetInfo(id = this)),
     isProjectLevelLibrary = isProjectLevelLibrary,
   )

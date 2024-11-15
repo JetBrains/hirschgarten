@@ -83,23 +83,24 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
     }
   }
 
-  fun createLibraries(libraryNameProvider: TargetNameReformatProvider): List<Library> =
+  fun createLibraries(nameProvider: TargetNameReformatProvider): List<Library> =
     libraries
       .map {
         Library(
-          displayName = libraryNameProvider(BuildTargetInfo(id = it.id)),
+          displayName = nameProvider(BuildTargetInfo(id = it.id)),
           iJars = it.ijars,
           classJars = it.jars,
           sourceJars = it.sourceJars,
+          mavenCoordinates = it.mavenCoordinates,
         )
       }
 
-  fun createLibraryModules(libraryNameProvider: TargetNameReformatProvider, defaultJdkName: String?): List<JavaModule> {
+  fun createLibraryModules(nameProvider: TargetNameReformatProvider, defaultJdkName: String?): List<JavaModule> {
     if (!BspFeatureFlags.isWrapLibrariesInsideModulesEnabled) return emptyList()
 
     return libraries
       .map { library ->
-        val libraryName = libraryNameProvider(BuildTargetInfo(id = library.id))
+        val libraryName = nameProvider(BuildTargetInfo(id = library.id))
         val libraryModuleName = libraryName.addLibraryModulePrefix()
         JavaModule(
           genericModuleInfo =
@@ -108,12 +109,10 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
               type = ModuleTypeId(StdModuleTypes.JAVA.id),
               librariesDependencies = listOf(IntermediateLibraryDependency(libraryName, true)),
               modulesDependencies =
-                library.dependencies.map {
-                  IntermediateModuleDependency(
-                    libraryNameProvider(
-                      BuildTargetInfo(id = it),
-                    ).addLibraryModulePrefix(),
-                  )
+                library.dependencies.map { targetId ->
+                  val rawId = nameProvider(BuildTargetInfo(id = targetId))
+                  val id = if (targetId.isLibraryId()) rawId.addLibraryModulePrefix() else rawId
+                  IntermediateModuleDependency(id)
                 },
               isLibraryModule = true,
               languageIds = listOf("java"),
@@ -126,4 +125,6 @@ class LibraryGraph(private val libraries: List<LibraryItem>) {
         )
       }
   }
+
+  private fun BuildTargetIdentifier.isLibraryId() = this in graph.keys
 }

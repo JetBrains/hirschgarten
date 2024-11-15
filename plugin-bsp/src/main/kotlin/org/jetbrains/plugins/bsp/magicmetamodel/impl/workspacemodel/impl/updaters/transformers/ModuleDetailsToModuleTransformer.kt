@@ -13,13 +13,12 @@ import kotlin.io.path.toPath
 
 internal abstract class ModuleDetailsToModuleTransformer<out T : WorkspaceModelEntity>(
   targetsMap: Map<BuildTargetIdentifier, BuildTargetInfo>,
-  moduleNameProvider: TargetNameReformatProvider,
-  libraryNameProvider: TargetNameReformatProvider,
+  nameProvider: TargetNameReformatProvider,
 ) : WorkspaceModelEntityTransformer<ModuleDetails, T> {
   protected abstract val type: ModuleTypeId
 
   val bspModuleDetailsToModuleTransformer =
-    BspModuleDetailsToModuleTransformer(targetsMap, moduleNameProvider, libraryNameProvider)
+    BspModuleDetailsToModuleTransformer(targetsMap, nameProvider)
 
   abstract override fun transform(inputEntity: ModuleDetails): T
 

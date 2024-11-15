@@ -40,7 +40,7 @@ import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.projectAware.BspSyncStatusService
 import org.jetbrains.plugins.bsp.impl.server.connection.connection
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
-import org.jetbrains.plugins.bsp.magicmetamodel.findModuleNameProvider
+import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
 import org.jetbrains.plugins.bsp.target.TemporaryTargetUtils
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.utils.isSourceFile
@@ -85,7 +85,7 @@ private fun Project.doWeCareAboutIt(): Boolean = this.isBspProject && this.isTru
 private fun VFileEvent.process(project: Project) {
   val workspaceModel = WorkspaceModel.getInstance(project)
   val storage = workspaceModel.currentSnapshot
-  val moduleNameProvider = project.findModuleNameProvider() ?: return
+  val moduleNameProvider = project.findNameProvider() ?: return
   val file = this.getAffectedFile() ?: return
   val targetUtils = project.temporaryTargetUtils
   runInBackgroundWithProgress(project, file.name) {
