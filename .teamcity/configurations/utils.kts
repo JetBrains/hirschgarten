@@ -19,5 +19,5 @@ object CommonParams {
   val DockerQodanaImage: String = "registry.jetbrains.team/p/bazel/docker-private/hirschgarten-qodana:latest"
 
 
-  val CrossBuildPlatforms: List<String> = listOf("242", "243")
+  val CrossBuildPlatforms: List<String> = listOf("243")
 }
