@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.writeIntentReadAction
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.SimpleToolWindowPanel
@@ -120,7 +121,9 @@ private class BspToolWindowSettingsAction(private val settingsDisplayName: Strin
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val showSettingsUtil = ShowSettingsUtil.getInstance()
     withContext(Dispatchers.EDT) {
-      showSettingsUtil.showSettingsDialog(project, settingsDisplayName)
+      writeIntentReadAction {
+        showSettingsUtil.showSettingsDialog(project, settingsDisplayName)
+      }
     }
   }
 }
