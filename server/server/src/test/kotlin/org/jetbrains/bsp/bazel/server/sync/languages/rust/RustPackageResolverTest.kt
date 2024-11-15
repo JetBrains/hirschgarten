@@ -3,7 +3,7 @@ package org.jetbrains.bsp.bazel.server.sync.languages.rust
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BasicBazelInfo
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
 import org.jetbrains.bsp.bazel.server.model.Module
@@ -22,7 +22,7 @@ class RustPackageResolverTest {
   fun beforeEach() {
     // given
     val bazelInfo =
-      BasicBazelInfo(
+      BazelInfo(
         execRoot = execRoot,
         outputBase = Paths.get(outputBase),
         workspaceRoot = Paths.get("/Users/user/workspace/bazel-bsp"),

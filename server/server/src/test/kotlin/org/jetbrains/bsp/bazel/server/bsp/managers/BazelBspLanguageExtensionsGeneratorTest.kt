@@ -95,7 +95,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
     val dotBazelBspPath = MockEnvironmentCreator(tempRoot).testCreateDotBazelBsp()
 
     dotBazelBspAspectsPath = dotBazelBspPath.resolve("aspects")
-    internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath, tempRoot), bazelRelease)
+    internalAspectsResolverMock = InternalAspectsResolver(BspInfoMock(dotBazelBspPath, tempRoot), bazelRelease, false)
   }
 
   @Test

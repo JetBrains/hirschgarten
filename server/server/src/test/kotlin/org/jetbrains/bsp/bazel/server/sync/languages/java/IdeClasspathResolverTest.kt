@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.java
 
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BasicBazelInfo
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
 import org.jetbrains.bsp.bazel.server.model.Label
@@ -20,7 +20,7 @@ class IdeClasspathResolverTest {
   fun beforeEach() {
     // given
     val bazelInfo =
-      BasicBazelInfo(
+      BazelInfo(
         execRoot = execRoot,
         outputBase = Paths.get(outputBase),
         workspaceRoot = Paths.get("/Users/user/workspace/bazel-bsp"),

@@ -50,5 +50,5 @@ class InternalAspectsResolverTest {
   }
 
   private fun createAspectsResolver(bspProjectRoot: String, bazelRelease: BazelRelease = BazelRelease(5)): InternalAspectsResolver =
-    InternalAspectsResolver(BspInfo(Paths.get(bspProjectRoot)), bazelRelease)
+    InternalAspectsResolver(BspInfo(Paths.get(bspProjectRoot)), bazelRelease, false)
 }

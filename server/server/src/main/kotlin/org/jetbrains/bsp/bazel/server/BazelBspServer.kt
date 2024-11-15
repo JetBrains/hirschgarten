@@ -165,7 +165,12 @@ class BazelBspServer(
     bspClientLogger: BspClientLogger,
     featureFlags: FeatureFlags,
   ): ProjectProvider {
-    val aspectsResolver = InternalAspectsResolver(bspInfo, bazelInfo.release)
+    val aspectsResolver =
+      InternalAspectsResolver(
+        bspInfo = bspInfo,
+        bazelRelease = bazelInfo.release,
+        shouldUseInjectRepository = bazelInfo.shouldUseInjectRepository(),
+      )
 
     val bazelBspAspectsManager =
       BazelBspAspectsManager(
