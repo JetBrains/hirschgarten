@@ -78,10 +78,10 @@ internal object BazelBinarySpecExtractor : ExecutionContextEntityExtractor<Bazel
     val arch = System.getProperty("os.arch").lowercase()
     val suffix =
       when {
-        os.startsWith("windows") && arch == "amd64" -> "windows-amd64.exe"
-        os.startsWith("linux") && arch == "amd64" -> "linux-amd64"
-        os.startsWith("linux") && arch == "arm64" -> "linux-arm64"
-        os.startsWith("mac") -> "darwin"
+        SystemInfo.isWindows && arch == "amd64" -> "windows-amd64.exe"
+        SystemInfo.isLinux && arch == "amd64" -> "linux-amd64"
+        SystemInfo.isLinux && arch == "arm64" -> "linux-arm64"
+        SystemInfo.isMac -> "darwin"
         else -> null
       }
     if (suffix == null) {
