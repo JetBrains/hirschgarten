@@ -53,12 +53,20 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
     }
 
   private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
-    val targets = project.temporaryTargetUtils.getTargetsForFile(file, project)
+    val targets = file.getTargetsUsingFile()
     return if (targets.isEmpty()) {
       inactiveWidgetState(icon)
     } else {
       activeWidgetState(targets.firstOrNull(), icon)
     }
+  }
+
+  private fun VirtualFile.getTargetsUsingFile(): List<BuildTargetIdentifier> {
+    val targetUtils = project.temporaryTargetUtils
+    val directTargets = targetUtils.getTargetsForFile(this, project)
+    val executableTargets = targetUtils.getExecutableTargetsForFile(this, project)
+    // we want to show the executable targets first
+    return (executableTargets + directTargets).distinct()
   }
 
   private fun inactiveWidgetState(icon: Icon): WidgetState {
@@ -87,7 +95,7 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
   }
 
   private fun calculatePopupGroup(file: VirtualFile): ActionGroup {
-    val targetIds = project.temporaryTargetUtils.getTargetsForFile(file, project)
+    val targetIds = file.getTargetsUsingFile()
     val targets = targetIds.mapNotNull { project.temporaryTargetUtils.getBuildTargetInfoForId(it) }
     val groups = targets.map { it.calculatePopupGroup() }
 

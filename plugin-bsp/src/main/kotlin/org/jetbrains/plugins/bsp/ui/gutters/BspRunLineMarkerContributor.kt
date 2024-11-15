@@ -45,7 +45,7 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
     singleTestFilter: String?,
   ): Info? =
     targetInfos
-      .flatMap { it.calculateEligibleActions(project, singleTestFilter) }
+      .flatMap { it.calculateEligibleActions(project, singleTestFilter, targetInfos.size > 1) }
       .takeIf { it.isNotEmpty() }
       ?.let {
         BspLineMakerInfo(
@@ -54,10 +54,14 @@ abstract class BspRunLineMarkerContributor : RunLineMarkerContributor() {
         )
       }
 
-  private fun BuildTargetInfo?.calculateEligibleActions(project: Project, singleTestFilter: String?): List<AnAction> =
+  private fun BuildTargetInfo?.calculateEligibleActions(
+    project: Project,
+    singleTestFilter: String?,
+    verboseText: Boolean,
+  ): List<AnAction> =
     if (this == null) {
       emptyList()
     } else {
-      DefaultActionGroup().fillWithEligibleActions(project, this, false, singleTestFilter).childActionsOrStubs.toList()
+      DefaultActionGroup().fillWithEligibleActions(project, this, verboseText, singleTestFilter).childActionsOrStubs.toList()
     }
 }
