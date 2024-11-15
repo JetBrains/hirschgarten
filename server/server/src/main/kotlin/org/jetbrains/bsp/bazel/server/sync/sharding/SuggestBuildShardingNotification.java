@@ -55,8 +55,10 @@ public class SuggestBuildShardingNotification {
 
   private static void suggestIncreasingServerMemory(Project project, BlazeContext context) {
     final var title = "The Bazel server ran out of memory during sync";
-    final var description = "You can work around this by allocating more memory to the Bazel server, "
-        + "for example by adding this line to your .bazelrc file:\nstartup --host_jvm_args=-Xmx15g --host_jvm_args=-Xms15g";
+    final var description =
+        "You can work around this by allocating more memory to the Bazel server, for example by"
+            + " adding this line to your .bazelrc file:\n"
+            + "startup --host_jvm_args=-Xmx15g --host_jvm_args=-Xms15g";
 
     IssueOutput.error(title).withDescription(description).submit(context);
     showNotification(project, String.format("%s. %s", title, description), p -> {});
@@ -64,30 +66,35 @@ public class SuggestBuildShardingNotification {
 
   private static void suggestSharding(Project project, BlazeContext context) {
     final var title = "The Bazel server ran out of memory during sync";
-    final var description = "This can occur for large projects. You can work around this by sharding the Bazel build "
-        + "during sync or alternatively allocate more memory to Bazel.";
+    final var description =
+        "This can occur for large projects. You can work around this by sharding the Bazel build "
+            + "during sync or alternatively allocate more memory to Bazel.";
 
-    final var fix = new BuildIssueQuickFix() {
-      @NotNull
-      @Override
-      public String getId() {
-        return "bazel.sync.enable.sharding";
-      }
+    final var fix =
+        new BuildIssueQuickFix() {
+          @NotNull
+          @Override
+          public String getId() {
+            return "bazel.sync.enable.sharding";
+          }
 
-      @NotNull
-      @Override
-      public CompletableFuture<?> runQuickFix(@NotNull Project project, @NotNull DataContext dataContext) {
-        enableShardingAndResync(project);
-        return CompletableFuture.completedFuture(null);
-      }
-    };
+          @NotNull
+          @Override
+          public CompletableFuture<?> runQuickFix(
+              @NotNull Project project, @NotNull DataContext dataContext) {
+            enableShardingAndResync(project);
+            return CompletableFuture.completedFuture(null);
+          }
+        };
 
     IssueOutput.error(title)
         .withDescription(description)
         .withFix("Enable sharding and retry sync", fix)
         .submit(context);
 
-    final var message = String.format("%s. %s  Click <a href='fix'>here</a> to set up sync sharding.", title, description);
+    final var message =
+        String.format(
+            "%s. %s  Click <a href='fix'>here</a> to set up sync sharding.", title, description);
     showNotification(project, message, SuggestBuildShardingNotification::enableShardingAndResync);
   }
 

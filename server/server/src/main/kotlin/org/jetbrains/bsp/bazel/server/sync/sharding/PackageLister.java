@@ -65,8 +65,7 @@ class PackageLister {
       }
       prefetchPaths.add(workspacePath);
     }
-    return WorkspacePathUtil.calculateMinimalWorkspacePaths(prefetchPaths)
-        .stream()
+    return WorkspacePathUtil.calculateMinimalWorkspacePaths(prefetchPaths).stream()
         .map(pathResolver::resolveToFile)
         .collect(Collectors.toSet());
   }
@@ -113,9 +112,7 @@ class PackageLister {
     if (!result.success()) {
       return null;
     }
-    return result
-        .result()
-        .stream()
+    return result.result().stream()
         .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (x, y) -> x));
   }
 

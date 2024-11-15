@@ -71,6 +71,7 @@ public interface BuildBatchingService {
                 ShardingApproach.ERROR,
                 suggestedShardSize));
   }
+
   /**
    * Given a list of individual, un-excluded blaze targets (no wildcard target patterns), create
    * ShardedTargetList according to inputs.

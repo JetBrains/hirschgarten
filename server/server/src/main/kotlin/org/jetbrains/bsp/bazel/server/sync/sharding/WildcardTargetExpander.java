@@ -192,12 +192,13 @@ public class WildcardTargetExpander {
   private static boolean excludeManualTargets(
       Project project, ProjectViewSet projectView, BlazeContext context) {
     return !BlazeFlags.blazeFlags(
-            project,
-            projectView,
-            BlazeCommandName.BUILD,
-            context,
-            BlazeInvocationContext.SYNC_CONTEXT)
-        .contains("--build_manual_tests") && !SyncProjectTargetsHelper.shouldSyncManualTargets(projectView);
+                project,
+                projectView,
+                BlazeCommandName.BUILD,
+                context,
+                BlazeInvocationContext.SYNC_CONTEXT)
+            .contains("--build_manual_tests")
+        && !SyncProjectTargetsHelper.shouldSyncManualTargets(projectView);
   }
 
   /** Runs a blaze query to expand the input target patterns to individual blaze targets. */

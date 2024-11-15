@@ -44,7 +44,6 @@ import com.google.idea.blaze.base.sync.sharding.WildcardTargetExpander.ExpandedT
 import com.google.idea.blaze.base.sync.workspace.WorkspacePathResolver;
 import com.google.idea.common.experiments.IntExperiment;
 import com.intellij.openapi.project.Project;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -89,9 +88,10 @@ public class BlazeBuildTargetSharder {
   }
 
   private static boolean shardingRequested(ProjectViewSet projectViewSet) {
-    // We need to perform expansion of query targets if we are to allow for manual targets to be synced.
-    return projectViewSet.getScalarValue(ShardBlazeBuildsSection.KEY).orElse(false) ||
-            projectViewSet.getScalarValue(SyncManualTargetsSection.KEY).orElse(false);
+    // We need to perform expansion of query targets if we are to allow for manual targets to be
+    // synced.
+    return projectViewSet.getScalarValue(ShardBlazeBuildsSection.KEY).orElse(false)
+        || projectViewSet.getScalarValue(SyncManualTargetsSection.KEY).orElse(false);
   }
 
   /** Number of individual targets per blaze build shard. */

@@ -20,7 +20,6 @@ import com.google.idea.blaze.base.async.process.ExternalTask;
 import com.google.idea.common.experiments.BoolExperiment;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.SystemInfo;
-
 import java.io.ByteArrayOutputStream;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
@@ -55,12 +54,10 @@ final class ArgMaxShardSizeLimit implements TargetShardSizeLimit {
 
   /**
    * Synchronously runs 'getconf ARG_MAX', returning null if unsuccessful.
-   * <p>
-   * Returns 32767 on windows which is the maximum length of lpCommandLine argument for the
-   * <a href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa">
-   *   CreateProcessA
-   * </a>
-   * function in the windows api.
+   *
+   * <p>Returns 32767 on windows which is the maximum length of lpCommandLine argument for the <a
+   * href="https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessa">
+   * CreateProcessA </a> function in the windows api.
    */
   @Nullable
   private static Integer queryArgMax() {
