@@ -2,7 +2,7 @@ package org.jetbrains.bsp.bazel.server.sync.languages
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BasicBazelInfo
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
 import org.jetbrains.bsp.bazel.server.model.Language
@@ -42,7 +42,7 @@ class LanguagePluginServiceTest {
     projectViewFile = workspaceRoot.resolve("projectview.bazelproject")
     dotBazelBspDirPath = workspaceRoot.resolve(".bazelbsp")
     val bazelInfo =
-      BasicBazelInfo(
+      BazelInfo(
         execRoot = "",
         outputBase = Paths.get(""),
         workspaceRoot = Paths.get(""),

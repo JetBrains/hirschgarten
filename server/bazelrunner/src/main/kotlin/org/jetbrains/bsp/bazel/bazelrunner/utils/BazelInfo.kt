@@ -4,13 +4,15 @@ import java.nio.file.Path
 import kotlin.io.path.isReadable
 import kotlin.io.path.readText
 
-interface BazelInfo {
-  val execRoot: String
-  val outputBase: Path
-  val workspaceRoot: Path
-  val release: BazelRelease
-  val isBzlModEnabled: Boolean
-  val isWorkspaceEnabled: Boolean
+data class BazelInfo(
+  val execRoot: String,
+  val outputBase: Path,
+  val workspaceRoot: Path,
+  val release: BazelRelease,
+  val isBzlModEnabled: Boolean,
+  val isWorkspaceEnabled: Boolean,
+) {
+  fun shouldUseInjectRepository(): Boolean = release.major >= 8
 }
 
 data class BazelRelease(val major: Int) {
@@ -38,12 +40,3 @@ data class BazelRelease(val major: Int) {
 }
 
 fun BazelRelease?.orLatestSupported() = this ?: BazelRelease.LATEST_SUPPORTED_MAJOR
-
-data class BasicBazelInfo(
-  override val execRoot: String,
-  override val outputBase: Path,
-  override val workspaceRoot: Path,
-  override val release: BazelRelease,
-  override val isBzlModEnabled: Boolean,
-  override val isWorkspaceEnabled: Boolean,
-) : BazelInfo

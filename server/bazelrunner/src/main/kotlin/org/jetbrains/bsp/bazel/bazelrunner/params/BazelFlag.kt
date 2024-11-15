@@ -25,9 +25,18 @@ object BazelFlag {
 
   @JvmStatic fun curses(enabled: Boolean): String = arg("curses", if (enabled) "yes" else "no")
 
-  @JvmStatic fun repositoryOverride(repositoryName: String, path: String): String = arg("override_repository", "$repositoryName=$path")
+  @JvmStatic fun overrideRepository(
+    repositoryName: String,
+    path: String,
+    shouldUseInjectRepository: Boolean = false,
+  ): String =
+    if (shouldUseInjectRepository) {
+      arg("inject_repository", "$repositoryName=$path")
+    } else {
+      arg("override_repository", "$repositoryName=$path")
+    }
 
-  @JvmStatic fun enableWorkspace(enabled: Boolean): String = arg("enable_workspace", enabled.toString())
+  @JvmStatic fun enableWorkspace(enabled: Boolean = true): String = arg("enable_workspace", enabled.toString())
 
   @JvmStatic fun testOutputAll(): String = arg("test_output", "all")
 

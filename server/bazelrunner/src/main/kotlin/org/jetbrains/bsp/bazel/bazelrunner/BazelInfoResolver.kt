@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
-import org.jetbrains.bsp.bazel.bazelrunner.utils.BasicBazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
@@ -30,7 +29,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
     return parseBazelInfo(processResult)
   }
 
-  private fun parseBazelInfo(bazelProcessResult: BazelProcessResult): BasicBazelInfo {
+  private fun parseBazelInfo(bazelProcessResult: BazelProcessResult): BazelInfo {
     val outputMap =
       bazelProcessResult
         .stdoutLines
@@ -64,7 +63,7 @@ class BazelInfoResolver(private val bazelRunner: BazelRunner) {
         else -> bazelReleaseVersion.major <= 7
       }
 
-    return BasicBazelInfo(
+    return BazelInfo(
       execRoot = extract(EXECUTION_ROOT),
       outputBase = Paths.get(extract(OUTPUT_BASE)),
       workspaceRoot = Paths.get(extract(WORKSPACE)),
