@@ -191,6 +191,8 @@
         <toolWindowAllowlist id="BSP"/>
         <toolWindowExtractor implementation="org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.BspToolWindowViewModelExtractor"/>
 
+        <consoleFilterProvider implementation="org.jetbrains.plugins.bsp.console.BspConsoleFilterProvider"/>
+
         <iconMapper mappingFile="BSPIconMappings.json"/>
 
         <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
