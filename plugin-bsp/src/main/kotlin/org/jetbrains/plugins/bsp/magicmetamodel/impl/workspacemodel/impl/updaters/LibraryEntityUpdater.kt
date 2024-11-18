@@ -60,13 +60,11 @@ internal class LibraryEntityUpdater(private val workspaceModelEntityUpdaterConfi
         entitySource = entitySource,
       ) {
         this.excludedRoots = arrayListOf()
-        toLibraryPropertiesXml(entityToAdd)?.let { propertiesXml ->
-          this.typeId = LibraryTypeId(ImportedLibraryType.IMPORTED_LIBRARY_KIND.kindId)
-          this.libraryProperties =
-            LibraryPropertiesEntity(entitySource) {
-              propertiesXmlTag = propertiesXml
-            }
-        }
+        this.typeId = LibraryTypeId(ImportedLibraryType.IMPORTED_LIBRARY_KIND.kindId)
+        this.libraryProperties =
+          LibraryPropertiesEntity(entitySource) {
+            propertiesXmlTag = toLibraryPropertiesXml(entityToAdd)
+          }
       }
 
     return builder.addEntity(libraryEntity)
