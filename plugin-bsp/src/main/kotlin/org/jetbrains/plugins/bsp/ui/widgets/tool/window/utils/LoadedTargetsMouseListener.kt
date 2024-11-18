@@ -25,7 +25,7 @@ import java.awt.event.MouseEvent
 
 class LoadedTargetsMouseListener(private val container: BuildTargetContainer, private val project: Project) : PopupHandler() {
   override fun mouseClicked(mouseEvent: MouseEvent) {
-    if (mouseEvent.isDoubleClick()) {
+    if (mouseEvent.isDoubleClick() && container.isPointSelectable(mouseEvent.point)) {
       onDoubleClick()
     } else {
       super.mouseClicked(mouseEvent)

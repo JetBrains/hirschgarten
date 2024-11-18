@@ -20,6 +20,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.BspShortcuts
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.utils.SimpleAction
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import java.awt.Component
+import java.awt.Point
 import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JTree
@@ -231,6 +232,8 @@ class BuildTargetTree(
     treeComponent.selectionRows = intArrayOf(0)
     treeComponent.requestFocus()
   }
+
+  override fun isPointSelectable(point: Point): Boolean = treeComponent.getPathForLocation(point.x, point.y) != null
 
   override fun createNewWithTargets(newTargets: Collection<BuildTargetInfo>): BuildTargetTree =
     createNewWithTargetsAndHighlighter(newTargets, labelHighlighter)

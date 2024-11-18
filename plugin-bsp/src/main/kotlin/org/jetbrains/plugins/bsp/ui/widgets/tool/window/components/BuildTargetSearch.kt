@@ -17,6 +17,7 @@ import org.jetbrains.plugins.bsp.ui.widgets.tool.window.actions.CopyTargetIdActi
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.LazySearchDisplay
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.search.SearchBarPanel
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
+import java.awt.Point
 import java.util.concurrent.Callable
 import javax.swing.Icon
 import javax.swing.JComponent
@@ -133,6 +134,8 @@ class BuildTargetSearch(
   }
 
   override fun getSelectedBuildTarget(): BuildTargetInfo? = chooseTargetSearchPanel().getSelectedBuildTarget()
+
+  override fun isPointSelectable(point: Point): Boolean = chooseTargetSearchPanel().isPointSelectable(point)
 
   override fun selectTopTargetAndFocus() {
     chooseTargetSearchPanel().selectTopTargetAndFocus()
