@@ -12,6 +12,7 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/android/sdkcompat",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/assets",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/console",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/extensionPoints",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/intellij",
