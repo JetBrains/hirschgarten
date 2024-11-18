@@ -1,8 +1,6 @@
 package org.jetbrains.bazel.ui.notifications
 
 import com.intellij.codeInsight.AttachSourcesProvider
-import com.intellij.notification.Notification
-import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.LibraryOrderEntry
@@ -10,36 +8,31 @@ import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
 import com.intellij.openapi.roots.ui.configuration.LibrarySourceRootDetectorUtil
 import com.intellij.openapi.util.ActionCallback
-import com.intellij.platform.backend.workspace.WorkspaceModel
-import com.intellij.platform.backend.workspace.virtualFile
-import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
-import java.net.URI
-import kotlin.io.path.toPath
-import org.jetbrains.plugins.bsp.workspacemodel.entities.Library as MMMLibrary
+import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
+/**
+ * See https://github.com/bazelbuild/bazel/issues/10692
+ */
 internal class BazelAttachSourcesProvider : AttachSourcesProvider {
-  private class BazelAttachSourcesAction(private val project: Project) : AttachSourcesProvider.AttachSourcesAction {
+  private class BazelAttachSourcesAction : AttachSourcesProvider.AttachSourcesAction {
     override fun getName(): String = BazelPluginBundle.message("sources.attach.action.text")
 
     override fun getBusyText(): String = BazelPluginBundle.message("sources.pending.text")
 
     override fun perform(orderEntries: List<LibraryOrderEntry>): ActionCallback {
-      val mmmLibraries = getAllMMMLibraries(project)
-      val fileManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
       val libraries = orderEntries.mapNotNull { it.library }.distinct()
       val modelsToCommit =
         libraries.mapNotNull { library ->
-          val bazelLibrarySources = library.pickSourcesFromBazel(mmmLibraries)
-          val availableSources = filterOutUnavailableSources(bazelLibrarySources)
+          val availableSources = library.getFiles(OrderRootType.SOURCES)
           if (availableSources.isEmpty()) {
-            showError(project, library.name.orEmpty())
+            showError(library.name.orEmpty())
             null
           } else {
-            library.obtainModelWithAddedSources(availableSources, fileManager)
+            library.obtainModelWithAddedSources(availableSources)
           }
         }
       if (modelsToCommit.isNotEmpty()) {
@@ -52,35 +45,21 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
       return ActionCallback.DONE
     }
 
-    private fun filterOutUnavailableSources(sources: List<String>) = sources.filter { URI(it).toPath().toFile().exists() }
-
-    private fun showError(project: Project, target: String) {
-      Notification(
-        RESOLVING_BAZEL_SOURCES_GROUP_ID,
+    private fun showError(target: String) {
+      BspBalloonNotifier.error(
         BazelPluginBundle.message("sources.files.not.resolved"),
         BazelPluginBundle.message("error.message.failed.to.resolve.sources.0", target),
-        NotificationType.ERROR,
-      ).notify(project)
+      )
     }
 
-    private fun Library.obtainModelWithAddedSources(sources: List<String>, fileManager: VirtualFileUrlManager): Library.ModifiableModel? =
-      if (sources.isEmpty()) {
-        null
-      } else {
-        modifiableModel.apply {
-          sources.forEach {
-            addSource(it, fileManager)
-          }
-        }
-      }
-
-    private fun Library.ModifiableModel.addSource(sourceUri: String, fileManager: VirtualFileUrlManager) {
-      val path = MMMLibrary.formatJarString(sourceUri)
-      val candidate = fileManager.getOrCreateFromUrl(path).virtualFile
-      val sourceRoots = LibrarySourceRootDetectorUtil.scanAndSelectDetectedJavaSourceRoots(null, arrayOf(candidate))
+    private fun Library.obtainModelWithAddedSources(availableSources: Array<VirtualFile>): Library.ModifiableModel? {
+      val sourceRoots = LibrarySourceRootDetectorUtil.scanAndSelectDetectedJavaSourceRoots(null, availableSources)
+      if (sourceRoots.isEmpty()) return null
+      val modifiableModel = this.modifiableModel
       sourceRoots.forEach { source ->
-        addRoot(source.url, OrderRootType.SOURCES)
+        modifiableModel.addRoot(source.url, OrderRootType.SOURCES)
       }
+      return modifiableModel
     }
   }
 
@@ -90,25 +69,14 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
   ): List<AttachSourcesProvider.AttachSourcesAction> {
     val project = orderEntries.firstNotNullOf { it.ownerModule.project }
     return if (project.isBazelProject && project.containsBazelSourcesForEntries(orderEntries)) {
-      listOf(BazelAttachSourcesAction(project))
+      listOf(BazelAttachSourcesAction())
     } else {
       emptyList()
     }
   }
 
-  private fun Project.containsBazelSourcesForEntries(orderEntries: List<LibraryOrderEntry>): Boolean {
-    val mmmLibraries = getAllMMMLibraries(this)
-    return orderEntries.any { it.library?.pickSourcesFromBazel(mmmLibraries)?.isNotEmpty() ?: false }
-  }
-
-  private companion object {
-    const val RESOLVING_BAZEL_SOURCES_GROUP_ID = "Resolving Bazel Sources"
-  }
+  private fun Project.containsBazelSourcesForEntries(orderEntries: List<LibraryOrderEntry>): Boolean =
+    orderEntries.any {
+      it.library?.getFiles(OrderRootType.SOURCES)?.isNotEmpty() == true
+    }
 }
-
-private fun getAllMMMLibraries(project: Project): List<MMMLibrary> = project.temporaryTargetUtils.getAllLibraries()
-
-private fun Library.pickSourcesFromBazel(mmmLibraries: List<MMMLibrary>) =
-  mmmLibraries
-    .filter { it.displayName == name }
-    .flatMap { it.sourceJars }

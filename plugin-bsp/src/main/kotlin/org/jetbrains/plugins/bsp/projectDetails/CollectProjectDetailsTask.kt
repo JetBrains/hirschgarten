@@ -363,7 +363,6 @@ class CollectProjectDetailsTask(
                 targetIdToTargetInfo,
                 targetIdToModuleEntityMap,
                 targetIdToModuleDetails,
-                libraries,
                 projectDetails.libraries,
                 libraryModules,
               )
@@ -387,8 +386,8 @@ class CollectProjectDetailsTask(
 
           val modulesToLoad = targetIdToModuleEntitiesMap.values.toList()
 
-          workspaceModelUpdater.loadModules(modulesToLoad + project.temporaryTargetUtils.getAllLibraryModules())
-          workspaceModelUpdater.loadLibraries(project.temporaryTargetUtils.getAllLibraries())
+          workspaceModelUpdater.loadModules(modulesToLoad + libraryModules)
+          workspaceModelUpdater.loadLibraries(libraries)
           calculateAllJavacOptions(modulesToLoad)
         }
       }
