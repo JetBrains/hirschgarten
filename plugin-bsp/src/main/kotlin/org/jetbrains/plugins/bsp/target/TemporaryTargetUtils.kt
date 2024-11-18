@@ -25,6 +25,8 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 
+private const val MAX_EXECUTABLE_TARGET_IDS = 10
+
 data class TemporaryTargetUtilsState(
   var idToTargetInfo: Map<String, BuildTargetInfoState> = emptyMap(),
   var moduleIdToBuildTargetId: Map<String, String> = emptyMap(),
@@ -48,8 +50,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
   var fileToTargetId: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
     private set
 
-  var fileToExecutableTargetIds: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
-    private set
+  private var fileToExecutableTargetIds: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
 
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
@@ -103,6 +104,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
             uri to dependents
           }
         }.awaitAll()
+        .filter { it.second.isNotEmpty() } // Avoid excessive memory consumption
         .toMap()
     }
 
@@ -118,10 +120,15 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
       }
 
       val directDependentIds = targetDependentsGraph.directDependentIds(targetId)
-      directDependentIds
-        .flatMap { dependency ->
-          calculateTransitivelyExecutableTargetIds(resultCache, targetDependentsGraph, dependency)
-        }.toSet()
+      val result = mutableSetOf<BuildTargetIdentifier>()
+      for (dependency in directDependentIds) {
+        result += calculateTransitivelyExecutableTargetIds(resultCache, targetDependentsGraph, dependency)
+        if (result.size >= MAX_EXECUTABLE_TARGET_IDS) break
+      }
+      while (result.size > MAX_EXECUTABLE_TARGET_IDS) {
+        result.remove(result.first())
+      }
+      result
     }
 
   private fun createLibraryModulesLookupTable(libraryModules: List<JavaModule>) =
