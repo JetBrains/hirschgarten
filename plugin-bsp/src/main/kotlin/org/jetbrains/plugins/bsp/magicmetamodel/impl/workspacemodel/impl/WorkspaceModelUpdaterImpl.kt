@@ -42,7 +42,7 @@ class WorkspaceModelUpdaterImpl(
     if (isPythonSupportEnabled) PythonModuleUpdater(workspaceModelEntityUpdaterConfig) else null
 
   private val javaModuleToDummyJavaModulesTransformerHACK =
-    JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath)
+    JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project)
 
   init {
     // store generated IML files outside the project directory
