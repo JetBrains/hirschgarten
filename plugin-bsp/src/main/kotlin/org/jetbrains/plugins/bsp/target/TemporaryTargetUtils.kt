@@ -21,7 +21,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetail
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
-import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
 import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
@@ -31,7 +30,6 @@ data class TemporaryTargetUtilsState(
   var moduleIdToBuildTargetId: Map<String, String> = emptyMap(),
   var fileToId: Map<String, List<String>> = emptyMap(),
   var fileToExecutableTargetIds: Map<String, List<String>> = emptyMap(),
-  var libraries: List<LibraryState> = emptyList(),
 )
 
 // This whole service is very temporary, it will be removed in the following PR
@@ -53,8 +51,6 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
   var fileToExecutableTargetIds: Map<URI, List<BuildTargetIdentifier>> = hashMapOf()
     private set
 
-  private var libraries: List<Library> = emptyList()
-  private var libraryModules: List<JavaModule> = emptyList()
   private var libraryModulesLookupTable: HashSet<String> = hashSetOf()
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
@@ -63,7 +59,6 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
     targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
     targetIdToModuleEntity: Map<BuildTargetIdentifier, Module>,
     targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
-    libraries: List<Library>,
     libraryItems: List<LibraryItem>?,
     libraryModules: List<JavaModule>,
   ) {
@@ -79,9 +74,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
         .mapValues { it.value.map { pair -> pair.second } }
     fileToExecutableTargetIds = calculateFileToExecutableTargetIds(libraryItems)
 
-    this.libraries = libraries
-    this.libraryModules = libraryModules
-    this.libraryModulesLookupTable = createLibraryModulesLookupTable()
+    this.libraryModulesLookupTable = createLibraryModulesLookupTable(libraryModules)
   }
 
   private fun ModuleDetails.toPairsUrlToId(): List<Pair<URI, BuildTargetIdentifier>> =
@@ -131,7 +124,8 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
         }.toSet()
     }
 
-  private fun createLibraryModulesLookupTable() = libraryModules.map { it.genericModuleInfo.name }.toHashSet()
+  private fun createLibraryModulesLookupTable(libraryModules: List<JavaModule>) =
+    libraryModules.map { it.genericModuleInfo.name }.toHashSet()
 
   fun fireSyncListeners(targetListChanged: Boolean) {
     listeners.forEach { it(targetListChanged) }
@@ -178,11 +172,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
   fun getBuildTargetInfoForModule(module: com.intellij.openapi.module.Module) =
     getTargetIdForModuleId(module.name)?.let { getBuildTargetInfoForId(it) }
 
-  fun getAllLibraries(): List<Library> = libraries
-
   fun isLibraryModule(name: String): Boolean = name.addLibraryModulePrefix() in libraryModulesLookupTable
-
-  fun getAllLibraryModules(): List<JavaModule> = libraryModules
 
   override fun getState(): TemporaryTargetUtilsState =
     TemporaryTargetUtilsState(
@@ -190,7 +180,6 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
       moduleIdToBuildTargetId = moduleIdToBuildTargetId.mapValues { it.value.uri },
       fileToId = fileToTargetId.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.uri } },
       fileToExecutableTargetIds = fileToExecutableTargetIds.mapKeys { o -> o.key.toString() }.mapValues { o -> o.value.map { it.uri } },
-      libraries = libraries.map { it.toState() },
     )
 
   override fun loadState(state: TemporaryTargetUtilsState) {
@@ -203,7 +192,6 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
       state.fileToId.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { BuildTargetIdentifier(it) } }
     fileToExecutableTargetIds =
       state.fileToExecutableTargetIds.mapKeys { o -> o.key.safeCastToURI() }.mapValues { o -> o.value.map { BuildTargetIdentifier(it) } }
-    libraries = state.libraries.map { it.fromState() }
   }
 }
 

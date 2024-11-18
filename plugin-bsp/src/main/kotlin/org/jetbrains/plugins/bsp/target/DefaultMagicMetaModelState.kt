@@ -2,7 +2,6 @@ package org.jetbrains.plugins.bsp.target
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ModuleCapabilities
 
 interface ConvertableFromState<out T> {
@@ -39,26 +38,6 @@ fun BuildTargetInfo.toState(): BuildTargetInfoState =
     tags = tags,
     languageIds = languageIds,
     baseDirectory = baseDirectory,
-  )
-
-data class LibraryState(
-  var displayName: String = "",
-  var sourceJars: List<String> = emptyList(),
-  var classJars: List<String> = emptyList(),
-) : ConvertableFromState<Library> {
-  override fun fromState(): Library =
-    Library(
-      displayName = displayName,
-      sourceJars = sourceJars,
-      classJars = classJars,
-    )
-}
-
-fun Library.toState(): LibraryState =
-  LibraryState(
-    displayName = displayName,
-    sourceJars = sourceJars,
-    classJars = classJars,
   )
 
 data class ModuleCapabilitiesState(
