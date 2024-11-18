@@ -1,8 +1,10 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.openapi.module.StdModuleTypes
+import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
+import org.jetbrains.plugins.bsp.config.bspProjectName
 import org.jetbrains.plugins.bsp.magicmetamodel.replaceDots
 import org.jetbrains.plugins.bsp.magicmetamodel.shortenTargetPath
 import org.jetbrains.plugins.bsp.utils.allAncestorsSequence
@@ -24,7 +26,7 @@ internal data class DummySourceRootWithPackagePrefix(val sourcePath: Path, val p
  * This is a HACK for letting single source Java files to be resolved normally
  * Should remove soon and replace with a more robust solution
  */
-internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBasePath: Path) :
+internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBasePath: Path, private val project: Project) :
   WorkspaceModelEntityPartitionTransformer<JavaModule, JavaModule> {
   internal companion object {
     val DUMMY_JAVA_SOURCE_MODULE_ROOT_TYPE = SourceRootTypeId("java-source")
@@ -34,7 +36,7 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
   override fun transform(inputEntity: JavaModule): List<JavaModule> {
     val dummyJavaModuleSourceRoots = calculateDummyJavaSourceRoots(inputEntity.sourceRoots)
     val dummyJavaModuleNames = calculateDummyJavaModuleNames(dummyJavaModuleSourceRoots, projectBasePath)
-    val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, dummyJavaModuleSourceRoots, projectBasePath)
+    val dummyJavaResourcePath = calculateDummyResourceRootPath(inputEntity, dummyJavaModuleSourceRoots, projectBasePath, project)
     return if (dummyJavaModuleNames.isEmpty() && dummyJavaResourcePath != null) {
       val dummyModuleName = calculateDummyJavaModuleName(dummyJavaResourcePath, projectBasePath)
       calculateDummyJavaSourceModuleWithOnlyResources(
@@ -136,11 +138,13 @@ internal class JavaModuleToDummyJavaModulesTransformerHACK(private val projectBa
   }
 }
 
-internal fun calculateDummyResourceRootPath(
+private fun calculateDummyResourceRootPath(
   entity: JavaModule,
   dummySources: List<DummySourceRootWithPackagePrefix>,
   projectBasePath: Path,
+  project: Project,
 ): Path? {
+  if (!project.bspProjectName.startsWith("hirschgarten")) return null
   if (entity.androidAddendum != null) return null // Resource roots are handled already for Android
   val resourceRoots = entity.resourceRoots
   if (entity.resourceRoots.isEmpty()) return null

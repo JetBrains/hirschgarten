@@ -1,12 +1,14 @@
 package org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers
 
 import com.intellij.openapi.module.StdModuleTypes
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forAny
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.GenericModuleInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
@@ -15,6 +17,7 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaSourceRoot
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ResourceRoot
+import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -22,16 +25,14 @@ import kotlin.io.path.createTempDirectory
 import kotlin.io.path.createTempFile
 import kotlin.io.path.name
 
-class JavaModuleToDummyJavaModulesTransformerHACKTest {
-  val projectBasePath = Path("")
-
+class JavaModuleToDummyJavaModulesTransformerHACKTest : WorkspaceModelBaseTest() {
   @Test
   fun `should return no dummy java modules for no module details`() {
     // given
     val emptyModulesDetails = listOf<JavaModule>()
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(emptyModulesDetails)
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(emptyModulesDetails)
 
     // then
     javaModules shouldBe emptyList()
@@ -93,7 +94,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       )
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(givenJavaModule)
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
 
     // then
     val expectedModule =
@@ -137,8 +138,9 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
   @Test
   fun `should return dummy module with sources and with resources in common path`() {
     // given
-    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "hirschgarten")
     val projectRootName = projectRoot.name
+    VirtualFileManager.getInstance().findFileByNioPath(projectRoot)?.also { project.rootDir = it }
     val javaVersion = "11"
 
     val givenModule =
@@ -195,7 +197,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       )
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(givenJavaModule)
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
 
     // then
     val expectedModule =
@@ -240,7 +242,8 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
   @Test
   fun `should return dummy module with no sources and with single resources in common path`() {
     // given
-    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "module1")
+    val projectRoot = createTempDirectoryAndDeleteItOnExit(projectBasePath, "hirschgarten")
+    VirtualFileManager.getInstance().findFileByNioPath(projectRoot)?.also { project.rootDir = it }
     val projectRootName = projectRoot.name
     val javaVersion = "11"
 
@@ -277,7 +280,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       )
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(givenJavaModule)
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
 
     // then
     val expectedModule =
@@ -353,7 +356,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       )
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(givenJavaModule)
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
 
     // then
     val expectedModule =
@@ -447,7 +450,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
       )
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(givenJavaModule)
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(givenJavaModule)
 
     // then
     val expectedModule =
@@ -556,7 +559,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     val modulesList = listOf(givenJavaModule1, givenJavaModule2)
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(modulesList)
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(modulesList)
 
     // then
     val expectedModule1 =
@@ -685,7 +688,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     val modulesList = listOf(givenJavaModule1, givenJavaModule2)
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(modulesList)
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(modulesList)
 
     // then
     javaModules shouldBe emptyList()
@@ -731,7 +734,7 @@ class JavaModuleToDummyJavaModulesTransformerHACKTest {
     val modulesList = listOf(givenJavaModule)
 
     // when
-    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath).transform(modulesList)
+    val javaModules = JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project).transform(modulesList)
 
     // then
     javaModules shouldBe emptyList()
