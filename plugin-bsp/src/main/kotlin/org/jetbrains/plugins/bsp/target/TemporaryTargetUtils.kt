@@ -120,15 +120,13 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
       }
 
       val directDependentIds = targetDependentsGraph.directDependentIds(targetId)
-      val result = mutableSetOf<BuildTargetIdentifier>()
-      for (dependency in directDependentIds) {
-        result += calculateTransitivelyExecutableTargetIds(resultCache, targetDependentsGraph, dependency)
-        if (result.size >= MAX_EXECUTABLE_TARGET_IDS) break
-      }
-      while (result.size > MAX_EXECUTABLE_TARGET_IDS) {
-        result.remove(result.first())
-      }
-      result
+      return directDependentIds
+        .asSequence()
+        .flatMap { dependency ->
+          calculateTransitivelyExecutableTargetIds(resultCache, targetDependentsGraph, dependency)
+        }.distinct()
+        .take(MAX_EXECUTABLE_TARGET_IDS)
+        .toSet()
     }
 
   private fun createLibraryModulesLookupTable(libraryModules: List<JavaModule>) =
