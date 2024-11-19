@@ -44,7 +44,7 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
   private fun hasUnresolvedImport(project: Project, file: VirtualFile): Boolean {
     // TODO Scala
     if (!file.isKotlinFileType() && !file.isJavaFileType()) return false
-    if (ProjectFileIndex.getInstance(project).isExcluded(file)) return false
+    if (!ProjectFileIndex.getInstance(project).isInSourceContent(file)) return false
     val psiFile = PsiManager.getInstance(project).findFile(file) ?: return false
     return when (psiFile) {
       is KtFile -> hasUnresolvedImport(psiFile)
