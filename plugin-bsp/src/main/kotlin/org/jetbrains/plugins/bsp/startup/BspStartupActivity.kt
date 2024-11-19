@@ -5,13 +5,14 @@ import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
-import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
+import org.jetbrains.plugins.bsp.config.isBspProjectLoaded
 import org.jetbrains.plugins.bsp.config.openedTimesSinceLastStartupResync
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.config.workspaceModelLoadedFromCache
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
@@ -39,7 +40,7 @@ class BspStartupActivity : BspProjectActivity() {
 
     resyncProjectIfNeeded()
 
-    openedTimesSinceLastStartupResync += 1
+    updateProjectProperties()
 
     BspStartupActivityTracker.stopConfigurationPhase(this)
   }
@@ -55,7 +56,7 @@ class BspStartupActivity : BspProjectActivity() {
   private suspend fun Project.executeForNewProject() {
     log.debug("Executing BSP startup activities only for new project")
     try {
-      if (!(workspaceModel as WorkspaceModelImpl).loadedFromCache) {
+      if (!isBspProjectLoaded) {
         runOnFirstOpening()
       }
     } catch (e: Exception) {
@@ -102,6 +103,10 @@ class BspStartupActivity : BspProjectActivity() {
     }
   }
 
-  private fun Project.isProjectInIncompleteState() =
-    temporaryTargetUtils.allTargetIds().isEmpty() || !(workspaceModel as WorkspaceModelImpl).loadedFromCache
+  private fun Project.isProjectInIncompleteState() = temporaryTargetUtils.allTargetIds().isEmpty() || !workspaceModelLoadedFromCache
+
+  private fun Project.updateProjectProperties() {
+    isBspProjectInitialized = true
+    openedTimesSinceLastStartupResync += 1
+  }
 }
