@@ -16,7 +16,7 @@ public class BspAndroidProgramRunner : AndroidConfigurationProgramRunner() {
   override fun canRun(executorId: String, profile: RunProfile): Boolean {
     if (profile !is BspRunConfiguration) return false
     if (profile.handler !is AndroidBspRunHandler) return false
-    return super.canRun(executorId, profile)
+    return executorId in listOf(DefaultRunExecutor.EXECUTOR_ID, DefaultDebugExecutor.EXECUTOR_ID)
   }
 
   override val supportedConfigurationTypeIds: List<String>
