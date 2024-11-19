@@ -11,13 +11,12 @@ import com.intellij.ide.projectView.impl.nodes.PsiFileNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.platform.backend.workspace.workspaceModel
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import org.jetbrains.plugins.bsp.config.isBspProject
+import org.jetbrains.plugins.bsp.config.isBspProjectLoaded
 import org.jetbrains.plugins.bsp.config.openedTimesSinceLastStartupResync
 import org.jetbrains.plugins.bsp.config.rootDir
 
@@ -86,13 +85,12 @@ class BspDirectoryNode(
     }
 
   /**
-   * the custom nodes should only be created on broken project state,
+   * the custom nodes should only be created on broken project state;
    * this function provides a heuristic to guess that the project state is not broken, i.e.,
    * - when just successfully finish the startup resync, OR
-   * - when the workspace cache is not loadable.
+   * - when the BSP project is successfully loaded
    */
-  private fun Project.shouldNotCalculateCustomNodes() =
-    openedTimesSinceLastStartupResync == 1 || (workspaceModel as WorkspaceModelImpl).loadedFromCache
+  private fun Project.shouldNotCalculateCustomNodes() = openedTimesSinceLastStartupResync == 1 || isBspProjectLoaded
 
   override fun getChildrenImpl(): Collection<AbstractTreeNode<*>?>? =
     if (lazyChildren.isNotEmpty()) {

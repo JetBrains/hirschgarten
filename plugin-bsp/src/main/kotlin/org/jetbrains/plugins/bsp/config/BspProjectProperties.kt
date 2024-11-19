@@ -9,6 +9,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.platform.backend.workspace.workspaceModel
+import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 
 data class BspProjectPropertiesState(
   var isBspProject: Boolean = false,
@@ -25,6 +27,7 @@ data class BspProjectPropertiesState(
   storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
 )
 class BspProjectProperties : PersistentStateComponent<BspProjectPropertiesState> {
+  var isInitialized: Boolean = false
   var isBspProject: Boolean = false
   var rootDir: VirtualFile? = null
   var buildToolId: BuildToolId? = null
@@ -38,19 +41,21 @@ class BspProjectProperties : PersistentStateComponent<BspProjectPropertiesState>
 
   override fun getState(): BspProjectPropertiesState? =
     BspProjectPropertiesState(
+      isInitialized = isInitialized,
       isBspProject = isBspProject,
       rootDirUrl = rootDir?.url,
       buildToolId = buildToolId?.id,
       defaultJdkName = defaultJdkName,
-      openedTimesSinceLastStartupResync = this@BspProjectProperties.openedTimesSinceLastStartupResync,
+      openedTimesSinceLastStartupResync = openedTimesSinceLastStartupResync,
     )
 
   override fun loadState(state: BspProjectPropertiesState) {
+    isInitialized = state.isInitialized
     isBspProject = state.isBspProject
     rootDir = state.rootDirUrl?.let { VirtualFileManager.getInstance().findFileByUrl(it) }
     buildToolId = state.buildToolId?.let { BuildToolId(it) }
     defaultJdkName = state.defaultJdkName
-    this@BspProjectProperties.openedTimesSinceLastStartupResync = state.openedTimesSinceLastStartupResync
+    openedTimesSinceLastStartupResync = state.openedTimesSinceLastStartupResync
   }
 }
 
@@ -62,6 +67,18 @@ var Project.isBspProject: Boolean
   set(value) {
     bspProjectProperties.isBspProject = value
   }
+
+var Project.isBspProjectInitialized: Boolean
+  get() = bspProjectProperties.isInitialized
+  set(value) {
+    bspProjectProperties.isInitialized = value
+  }
+
+val Project.isBspProjectLoaded: Boolean
+  get() = isBspProjectInitialized && workspaceModelLoadedFromCache
+
+val Project.workspaceModelLoadedFromCache: Boolean
+  get() = (workspaceModel as WorkspaceModelImpl).loadedFromCache
 
 var Project.openedTimesSinceLastStartupResync: Int
   get() = bspProjectProperties.openedTimesSinceLastStartupResync
