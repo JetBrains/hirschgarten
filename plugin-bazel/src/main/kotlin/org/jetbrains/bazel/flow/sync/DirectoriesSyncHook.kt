@@ -1,6 +1,11 @@
 package org.jetbrains.bazel.flow.sync
 
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.vcs.ProjectLevelVcsManager
+import com.intellij.openapi.vcs.VcsDirectoryMapping
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
 import kotlinx.coroutines.coroutineScope
@@ -25,6 +30,10 @@ class DirectoriesSyncHook : ProjectSyncHook {
 
       environment.diff.workspaceModelDiff.mutableEntityStorage
         .addEntity(entity)
+
+      environment.diff.workspaceModelDiff.addPostApplyAction {
+        removeExcludedVcsMappings(environment.project)
+      }
     }
   }
 
@@ -37,5 +46,23 @@ class DirectoriesSyncHook : ProjectSyncHook {
       excludedRoots = excludedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) },
       entitySource = BspProjectEntitySource,
     )
+  }
+
+  /**
+   * https://youtrack.jetbrains.com/issue/BAZEL-948
+   */
+  private suspend fun removeExcludedVcsMappings(project: Project) {
+    val manager = ProjectLevelVcsManager.getInstance(project)
+    val directoryMappings = manager.directoryMappings
+    val directoryMappingsWithoutExcludes = manager.directoryMappings.filter { mapping -> !isExcludedPath(project, mapping) }
+    if (directoryMappingsWithoutExcludes.size == directoryMappings.size) return
+    manager.directoryMappings = directoryMappingsWithoutExcludes
+  }
+
+  private suspend fun isExcludedPath(project: Project, mapping: VcsDirectoryMapping): Boolean {
+    if (mapping.isDefaultMapping) return false
+    val file = LocalFileSystem.getInstance().findFileByPath(mapping.directory) ?: return false
+    val projectFileIndex = ProjectFileIndex.getInstance(project)
+    return readAction { projectFileIndex.isExcluded(file) }
   }
 }
