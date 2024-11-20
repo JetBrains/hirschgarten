@@ -204,6 +204,13 @@ bazel_dep(
     dev_dependency = True,
 )
 
+# Remove once rules_buf > 0.3.0 is released
+git_override(
+    module_name = "rules_buf",
+    commit = "51aff3952335277178361b4f822d20c5091bc84f",
+    remote = "https://github.com/bufbuild/rules_buf.git",
+)
+
 buf = use_extension("@rules_buf//buf:extensions.bzl", "buf")
 use_repo(buf, "rules_buf_toolchains")
 
