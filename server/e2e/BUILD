@@ -108,6 +108,7 @@ bazel_integration_test_all_versions(
 
 bazel_integration_test_all_versions(
     name = "partial_sync_test",
+    bazel_7_workspace_path = "test-resources/bazel7/sample-repo",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspPartialSyncTest",
     workspace_path = "test-resources/sample-repo",
 )
