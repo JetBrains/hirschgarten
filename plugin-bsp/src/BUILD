@@ -9,7 +9,6 @@ kt_jvm_library(
     exports = [
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/android",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/android/run",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/android/sdkcompat",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/assets",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/console",

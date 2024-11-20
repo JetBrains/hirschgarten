@@ -14,6 +14,7 @@ import com.intellij.openapi.components.BaseState
 import com.intellij.openapi.externalSystem.service.execution.configuration.addEnvironmentFragment
 import com.intellij.openapi.externalSystem.service.execution.configuration.fragments.SettingsEditorFragmentContainer
 import com.intellij.openapi.externalSystem.service.ui.util.LabeledSettingsFragmentInfo
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.ui.LabeledComponent
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.RawCommandLineEditor
@@ -22,7 +23,6 @@ import com.intellij.ui.components.fields.ExtendableTextField
 import com.intellij.util.ThrowableRunnable
 import com.intellij.util.xmlb.annotations.Tag
 import com.intellij.util.xmlb.annotations.XMap
-import org.jetbrains.bsp.sdkcompat.ui.addBrowseFolderListenerCompat
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
@@ -84,12 +84,15 @@ fun <T : HasWorkingDirectory> workingDirectoryFragment(
     MacrosDialog.Filters.DIRECTORY_PATH,
   ) { false }
   val workingDirectoryField = TextFieldWithBrowseButton(textField)
-  workingDirectoryField.addBrowseFolderListenerCompat(
-    ExecutionBundle.message(
-      "select.working.directory.message",
-    ),
-    null,
+  workingDirectoryField.addBrowseFolderListener(
     configuration.project,
+    FileChooserDescriptorFactory
+      .createSingleFileDescriptor()
+      .withTitle(
+        ExecutionBundle.message(
+          "select.working.directory.message",
+        ),
+      ),
   )
   val field =
     LabeledComponent.create(
