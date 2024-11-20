@@ -3,11 +3,19 @@ load("@rules_java//java:defs.bzl", "java_binary")
 
 package(default_visibility = ["//visibility:public"])
 
+alias(
+    name = "buf",
+    actual = select({
+        "@platforms//os:windows": "@rules_buf_toolchains//:buf.exe",
+        "//conditions:default": "@rules_buf_toolchains//:buf",
+    }),
+)
+
 format_multirun(
     name = "format",
     java = ":java-format",
     kotlin = ":ktfmt",
-    protocol_buffer = "@rules_buf_toolchains//:buf",
+    protocol_buffer = ":buf",
     shell = "@aspect_rules_lint//format:shfmt",
     starlark = "@buildifier_prebuilt//:buildifier",
     yaml = "@aspect_rules_lint//format:yamlfmt",
