@@ -101,6 +101,7 @@ bazel_integration_test_current_version(
 
 bazel_integration_test_all_versions(
     name = "allow_manual_targets_sync_test",
+    bazel_7_workspace_path = "test-resources/allow-manual-targets-sync-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspAllowManualTargetsSyncTest",
     workspace_path = "test-resources/allow-manual-targets-sync-project",
 )
