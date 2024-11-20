@@ -1,8 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.TaskId
-import ch.epfl.scala.bsp4j.TaskStartParams
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo

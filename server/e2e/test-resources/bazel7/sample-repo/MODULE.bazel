@@ -1,11 +1,10 @@
 module(name = "sample_repo")
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
-
 bazel_dep(name = "rules_java", version = "8.3.1")
 bazel_dep(name = "rules_jvm_external", version = "6.5")
-maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
         "com.google.guava:guava:31.0.1-jre",
@@ -14,7 +13,6 @@ maven.install(
         "https://cache-redirector.jetbrains.com/maven-central",
     ],
 )
-
 use_repo(maven, "maven")
 
 bazel_dep(name = "protobuf", version = "28.3")

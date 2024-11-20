@@ -32,7 +32,12 @@ data class BaseTargetInfo(
 )
 
 class A(private val a: Project) : BspTaskListener {
-  override fun onTaskStart(taskId: TaskId, parentId: TaskId?, message: String, data: Any?) {
+  override fun onTaskStart(
+    taskId: TaskId,
+    parentId: TaskId?,
+    message: String,
+    data: Any?,
+  ) {
     val s = BspConsoleService.getInstance(a).bspSyncConsole
     println("XDDDD")
     s.startSubtask(BASE_PROJECT_SYNC_SUBTASK_ID, taskId, message)
@@ -53,7 +58,6 @@ class BaseProjectSync(private val project: Project) {
       message = BspPluginBundle.message("console.task.base.sync"),
     ) {
       coroutineScope {
-
         BspTaskEventsService.getInstance(project).saveListener("111", A(project))
 
         val buildTargets = queryWorkspaceBuildTargets(server, syncScope, buildProject)

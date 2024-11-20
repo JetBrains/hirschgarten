@@ -47,13 +47,10 @@ import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
-private const val scalaRulesPathBazel5And6 = "io_bazel_rules_scala"
-private const val scalaRulesPathBazel7 = "rules_scala~~scala_deps~io_bazel_rules_scala"
-
 object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient(jvmClasspathReceiver = true)
 
-  private val scalaRulesPath = if (majorBazelVersion == 7) scalaRulesPathBazel7 else scalaRulesPathBazel5And6
+  private val scalaRulesPath = if (majorBazelVersion == 7) "rules_scala~~scala_deps~io_bazel_rules_scala" else "io_bazel_rules_scala"
   private val scalaRulesPathVersionSuffix = if (majorBazelVersion == 7) "_2_13_14" else ""
 
   private val remote_java_tools = if (majorBazelVersion == 7) "rules_java~~toolchains~remote_java_tools" else "remote_java_tools"
@@ -65,15 +62,20 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
       "k8"
     }
 
-  private val guavaClasspath = if (majorBazelVersion == 7) listOf(
-    "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/processed_jsr305-3.0.2.jar",
-    "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/processed_error_prone_annotations-2.7.1.jar",
-    "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/processed_failureaccess-1.0.1.jar",
-    "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/processed_guava-31.0.1-jre.jar",
-    "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/processed_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
-    "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/processed_j2objc-annotations-1.3.jar",
-    "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/processed_checker-qual-3.12.0.jar"
-  ) else listOf("file://\$BAZEL_OUTPUT_BASE_PATH/external/guava/guava-28.0-jre.jar")
+  private val guavaClasspath =
+    if (majorBazelVersion == 7) {
+      listOf(
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/code/findbugs/jsr305/3.0.2/processed_jsr305-3.0.2.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/errorprone/error_prone_annotations/2.7.1/processed_error_prone_annotations-2.7.1.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/failureaccess/1.0.1/processed_failureaccess-1.0.1.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/guava/31.0.1-jre/processed_guava-31.0.1-jre.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/processed_listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/com/google/j2objc/j2objc-annotations/1.3/processed_j2objc-annotations-1.3.jar",
+        "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/external/rules_jvm_external~~maven~maven/v1/https/cache-redirector.jetbrains.com/maven-central/org/checkerframework/checker-qual/3.12.0/processed_checker-qual-3.12.0.jar",
+      )
+    } else {
+      listOf("file://\$BAZEL_OUTPUT_BASE_PATH/external/guava/guava-28.0-jre.jar")
+    }
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-95
   @JvmStatic
@@ -965,8 +967,13 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
               "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
             ),
             emptyList(),
-            if (majorBazelVersion == 7) "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/target_with_javac_exports/libjava_library.jar"
-            else "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/__main__/bazel-out/$bazelArch-fastbuild/bin/target_with_javac_exports/libjava_library.jar",
+            if (majorBazelVersion ==
+              7
+            ) {
+              "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/_main/bazel-out/$bazelArch-fastbuild/bin/target_with_javac_exports/libjava_library.jar"
+            } else {
+              "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/__main__/bazel-out/$bazelArch-fastbuild/bin/target_with_javac_exports/libjava_library.jar"
+            },
           ),
         ),
       )

@@ -8,6 +8,7 @@ load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "bazel_in
 
 bazel_integration_test_all_versions(
     name = "sample_repo_test",
+    bazel_7_workspace_path = "test-resources/bazel7/sample-repo",
     env = {
         "foo1": "invalid_val1",
         "foo2": "invalid_val2",
@@ -16,7 +17,6 @@ bazel_integration_test_all_versions(
     },
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspSampleRepoTest",
     workspace_path = "test-resources/sample-repo",
-    bazel_7_workspace_path = "test-resources/bazel7/sample-repo",
 )
 
 bazel_integration_test_all_versions(
