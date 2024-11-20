@@ -30,7 +30,7 @@ class BspProjectSystemBuildManager(private val project: Project) : ProjectSystem
 
         override fun syncFinished(canceled: Boolean) {
           val status = if (canceled) BuildStatus.CANCELLED else BuildStatus.SUCCESS
-          BuildResult(BuildMode.COMPILE_OR_ASSEMBLE, status)
+          buildListener.buildCompleted(BuildResult(BuildMode.COMPILE_OR_ASSEMBLE, status))
         }
       },
     )
