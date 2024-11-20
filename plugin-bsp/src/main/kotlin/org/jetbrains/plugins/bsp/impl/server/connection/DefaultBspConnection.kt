@@ -12,6 +12,7 @@ import com.intellij.execution.process.OSProcessUtil
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.registry.Registry
+import com.intellij.platform.diagnostic.telemetry.OtlpConfiguration
 import com.intellij.project.stateStore
 import com.intellij.util.concurrency.AppExecutorUtil
 import com.intellij.util.io.awaitExit
@@ -32,7 +33,6 @@ import org.jetbrains.bsp.protocol.InitializeBuildData
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.bsp.protocol.utils.EnhancedSourceItemTypeAdapter
-import org.jetbrains.bsp.sdkcompat.telemetry.Endpoint
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.building.TaskConsole
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
@@ -419,7 +419,7 @@ class DefaultBspConnection(
 
   private fun getOpenTelemetryEndPoint(): String? =
     try {
-      Endpoint.getTraceEndpoint()
+      OtlpConfiguration.getTraceEndpoint()
     } catch (_: NoSuchMethodError) {
       null
     }

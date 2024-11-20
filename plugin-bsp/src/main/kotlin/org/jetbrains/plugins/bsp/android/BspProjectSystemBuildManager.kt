@@ -6,15 +6,12 @@ import com.android.tools.idea.projectsystem.ProjectSystemBuildManager.BuildResul
 import com.android.tools.idea.projectsystem.ProjectSystemBuildManager.BuildStatus
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.bsp.sdkcompat.android.ProjectSystemBuildManagerCompat
-import org.jetbrains.bsp.sdkcompat.android.buildResult
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
 
-public class BspProjectSystemBuildManager(private val project: Project) : ProjectSystemBuildManagerCompat() {
+class BspProjectSystemBuildManager(private val project: Project) : ProjectSystemBuildManager {
   @Deprecated("Do not add new uses of this method as it's error prone")
   override val isBuilding: Boolean
     get() = false
@@ -33,7 +30,7 @@ public class BspProjectSystemBuildManager(private val project: Project) : Projec
 
         override fun syncFinished(canceled: Boolean) {
           val status = if (canceled) BuildStatus.CANCELLED else BuildStatus.SUCCESS
-          buildListener.buildCompleted(buildResult(BuildMode.COMPILE_OR_ASSEMBLE, status))
+          BuildResult(BuildMode.COMPILE_OR_ASSEMBLE, status)
         }
       },
     )
@@ -44,6 +41,4 @@ public class BspProjectSystemBuildManager(private val project: Project) : Projec
       ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = true)
     }
   }
-
-  override fun compileFilesAndDependenciesCompat(files: Collection<VirtualFile>): Unit = compileProject()
 }

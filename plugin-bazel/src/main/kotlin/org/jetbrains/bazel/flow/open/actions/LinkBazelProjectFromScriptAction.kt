@@ -35,7 +35,7 @@ internal class LinkBazelProjectFromScriptAction :
   }
 
   private fun VirtualFile.isFileSupported() =
-    BazelBspOpenProjectProvider().isProjectFileCompat(this) ||
+    BazelBspOpenProjectProvider().isProjectFile(this) ||
       extension == BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
 
   override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT

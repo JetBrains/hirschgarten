@@ -6,6 +6,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.StoragePathMacros
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.observable.util.whenItemSelected
 import com.intellij.openapi.observable.util.whenTextChanged
 import com.intellij.openapi.options.Configurable
@@ -25,7 +26,6 @@ import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
 import org.jetbrains.bazel.bsp.connection.stateService
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.bsp.sdkcompat.ui.addBrowseFolderListenerCompat
 import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
@@ -144,10 +144,13 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
       .also { textField ->
         val title = "Select Path"
         val description = "Select the path for your project view file."
-        textField.addBrowseFolderListenerCompat(
-          title,
-          description,
+        textField.addBrowseFolderListener(
           project,
+          FileChooserDescriptorFactory
+            .createSingleFileDescriptor()
+            .withTitle(
+              title,
+            ).withDescription(description),
         )
         textField.whenTextChanged {
           val newPath = Path(textField.text)

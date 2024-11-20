@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.formatting.configuration
 
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.IdeActions
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.keymap.KeymapUtil
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
@@ -19,7 +20,6 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.text.nullize
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.bazel.languages.starlark.formatting.BuildifierUtil
-import org.jetbrains.bsp.sdkcompat.ui.addBrowseFolderListenerCompat
 import java.io.File
 import javax.swing.JCheckBox
 
@@ -37,10 +37,13 @@ class BuildifierConfigurable(val project: Project) : BoundConfigurable(BazelPlug
     TextFieldWithBrowseButton().apply {
       val title = BazelPluginBundle.message("buildifier.select.path.to.executable")
       val description = null
-      addBrowseFolderListenerCompat(
-        title,
-        description,
+      addBrowseFolderListener(
         project,
+        FileChooserDescriptorFactory
+          .createSingleFileDescriptor()
+          .withTitle(
+            title,
+          ).withDescription(description),
       )
     }
 

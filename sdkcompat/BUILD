@@ -8,7 +8,6 @@ java_library(
     name = "sdkcompat",
     visibility = ["//visibility:public"],
     exports = select_for_plugin_api({
-        "intellij-2024.2": ["//sdkcompat/v242"],
         "intellij-2024.3": ["//sdkcompat/v243"],
     }),
 )

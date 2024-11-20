@@ -1826,7 +1826,7 @@
     },
     "@@rules_go~//go/private:extensions.bzl%non_module_dependencies": {
       "general": {
-        "bzlTransitiveDigest": "LpMbDkyt7rhmEiONQqmk6Cs2shiCJlAYqkzXqkMiwRs=",
+        "bzlTransitiveDigest": "zsYBcIaK006VoKaiUa1rWougclPS3i3Y0Wb/IqMCgJM=",
         "usagesDigest": "aPqK3wfpByMq+fjkJoZip4H4QMQNPaEn47EGQrWkWvE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -2359,7 +2359,7 @@
     },
     "@@rules_python~//python/private/pypi:pip.bzl%pip_internal": {
       "general": {
-        "bzlTransitiveDigest": "0BgBQ4Zl49S0BewOBUonInfYRyTttwlP2XkN4/ticng=",
+        "bzlTransitiveDigest": "ir0FlXtJyP+k2SNTlXPibTM6WsO7HE+uQKPA0UsuBFI=",
         "usagesDigest": "TpQZ+vwK8BO51MJREI4dcchb2El9aY2gx8ZHcaPAiK8=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements_linux.txt": "8175b4c8df50ae2f22d1706961884beeb54e7da27bd2447018314a175981997d",
@@ -4947,11 +4947,11 @@
     },
     "@@rules_rust~//crate_universe:extension.bzl%crate": {
       "general": {
-        "bzlTransitiveDigest": "RN4ECbLYilyKBOiQATpwj89cBbtO7U2yKm0wtVKJeS8=",
+        "bzlTransitiveDigest": "SO0B7JAmAffrBUldgsXgExUJcYFTMOjL5pwF4osChYg=",
         "usagesDigest": "ITnTHCXpegr4OpOSk9frd4ztXOI7pQqyOoaZlcV0y9E=",
         "recordedFileInputs": {
-          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/rustc": "18e9f552a4e3f789844195499f3c814a3676de94829ecb7ad98812c285e221fc",
-          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/cargo": "53e1eb55e8eebd384021b5ca8464635fd25550ef1f2fd80fb2ae7824f655975c"
+          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/rustc": "edc2f0f23646c9877e3fb095a1e01d0e725b11daffa55c4851643f720666fc74",
+          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/cargo": "d0b4decf3683cbd306aafc2d4c4061168b30483d5db64dbe0c4f82fad425e783"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},
