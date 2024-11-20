@@ -8,7 +8,7 @@ import org.jetbrains.bsp.protocol.FeatureFlags
 class BazelToolchainManager(private val bazelRunner: BazelRunner, private val featureFlags: FeatureFlags) {
   fun getToolchain(ruleLanguage: RuleLanguage, cancelChecker: CancelChecker): String? =
     when (ruleLanguage.language) {
-      Language.Scala -> """"@${ruleLanguage.ruleName}//scala:toolchain_type""""
+      Language.Scala -> """"@io_bazel_rules_scala//scala:toolchain_type""""
       Language.Java -> """"@bazel_tools//tools/jdk:runtime_toolchain_type""""
       Language.Kotlin -> """"@${ruleLanguage.ruleName}//kotlin/internal:kt_toolchain_type""""
       Language.Rust -> """"@${ruleLanguage.ruleName}//rust:toolchain_type""""

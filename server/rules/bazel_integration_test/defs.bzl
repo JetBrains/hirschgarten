@@ -1,20 +1,33 @@
 load("@bazel_binaries//:defs.bzl", "bazel_binaries")
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "bazel_integration_test", "bazel_integration_tests", "integration_test_utils")
 
-def bazel_integration_test_all_versions(name, test_runner, workspace_path, env = {}, additional_env_inherit = []):
+def bazel_integration_test_all_versions(name, test_runner, workspace_path, env = {}, additional_env_inherit = [], bazel_7_workspace_path = None):
     # test projects are too old for bazel 7
-    bazel_versions = bazel_binaries.versions.all
-#     bazel_versions = ["5.3.2", "6.4.0"]
+    bazel_versions = ["5.3.2", "6.4.0"]
 
     bazel_integration_tests(
         name = name,
         timeout = "eternal",
-        bazel_versions = bazel_versions,
+        bazel_versions = ["5.3.2", "6.4.0"],
         test_runner = test_runner,
         workspace_path = workspace_path,
         env = env,
         additional_env_inherit = additional_env_inherit,
     )
+
+    if bazel_7_workspace_path != None:
+        bazel_versions = bazel_binaries.versions.all
+        bazel_7_version = bazel_binaries.versions.current
+
+        bazel_integration_test(
+            name = integration_test_utils.bazel_integration_test_name(name, bazel_7_version),
+            timeout = "eternal",
+            bazel_version = bazel_7_version,
+            test_runner = test_runner,
+            workspace_path = bazel_7_workspace_path,
+            env = env,
+            additional_env_inherit = additional_env_inherit,
+        )
 
     native.test_suite(
         name = name,

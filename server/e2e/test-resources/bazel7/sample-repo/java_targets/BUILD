@@ -17,7 +17,7 @@ java_binary(
     javacopts = [
         "-Werror",
         "-Xlint:all",
-        "-target 8",
+        "-target 17",
     ],
     main_class = "java_targets.JavaBinaryWithFlag",
     visibility = ["//visibility:public"],

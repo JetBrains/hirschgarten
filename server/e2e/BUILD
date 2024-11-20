@@ -15,7 +15,8 @@ bazel_integration_test_all_versions(
         "foo4": "val4",
     },
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspSampleRepoTest",
-    workspace_path = "test-resources/bazel7/sample-repo",
+    workspace_path = "test-resources/sample-repo",
+    bazel_7_workspace_path = "test-resources/bazel7/sample-repo",
 )
 
 bazel_integration_test_all_versions(
