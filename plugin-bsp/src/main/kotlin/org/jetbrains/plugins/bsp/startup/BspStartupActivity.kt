@@ -21,8 +21,14 @@ import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.fileTargets.updateBspFileTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
+import java.util.Collections
+import java.util.WeakHashMap
 
 private val log = logger<BspStartupActivity>()
+
+// Use WeakHashMap to avoid leaking the Project instance
+private val executedForProject: MutableSet<Project> =
+  Collections.synchronizedSet(Collections.newSetFromMap(WeakHashMap<Project, Boolean>()))
 
 /**
  * Runs actions after the project has started up and the index is up-to-date.
@@ -32,6 +38,10 @@ private val log = logger<BspStartupActivity>()
  */
 class BspStartupActivity : BspProjectActivity() {
   override suspend fun Project.executeForBspProject() {
+    if (startupActivityExecutedAlready()) {
+      log.info("BSP startup activity executed already for project: $this")
+      return
+    }
     log.info("Executing BSP startup activity for project: $this")
     BspStartupActivityTracker.startConfigurationPhase(this)
     executeEveryTime()
@@ -44,6 +54,12 @@ class BspStartupActivity : BspProjectActivity() {
 
     BspStartupActivityTracker.stopConfigurationPhase(this)
   }
+
+  /**
+   * Make sure calling [OpenBazelProjectViaBspPluginAction.performOpenBazelProjectViaBspPlugin]
+   * won't cause [BspStartupActivity] to execute twice.
+   */
+  private fun Project.startupActivityExecutedAlready(): Boolean = !executedForProject.add(this)
 
   private suspend fun Project.executeEveryTime() {
     log.debug("Executing BSP startup activities for every opening")

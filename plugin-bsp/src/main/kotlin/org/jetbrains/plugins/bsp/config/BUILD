@@ -6,6 +6,7 @@ kt_jvm_library(
     visibility = ["//plugin-bsp:__subpackages__"],
     deps = [
         "//plugin-bsp/src:intellij-bsp-resources",
+        "//plugin-bsp/workspacemodel/src:workspacemodel",
         "//protocol",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],
