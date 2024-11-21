@@ -120,7 +120,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
       }
 
       val directDependentIds = targetDependentsGraph.directDependentIds(targetId)
-      return directDependentIds
+      return@getOrPut directDependentIds
         .asSequence()
         .flatMap { dependency ->
           calculateTransitivelyExecutableTargetIds(resultCache, targetDependentsGraph, dependency)
