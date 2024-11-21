@@ -7,19 +7,27 @@ import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.jetbrains.bsp.bazel.server.bep.BepServer
 import org.jetbrains.bsp.bazel.server.bsp.utils.DelimitedMessageReader
+import java.io.File
 import java.io.FileInputStream
 import java.nio.file.Files
-import java.nio.file.attribute.PosixFilePermission
-import java.nio.file.attribute.PosixFilePermissions
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 
 class BepReader(private val bepServer: BepServer) {
-  val eventFile = Files.createTempFile("bazel-bep-output", null, filePermissions).toFile().also { it.deleteOnExit() }
+  val eventFile =
+    Files.createTempFile("bazel-bep-output", null).toFile().also {
+      it.setFilePermissions()
+      it.deleteOnExit()
+    }
   val serverPid = CompletableFuture<Long>()
 
   private val bazelBuildFinished: AtomicBoolean = AtomicBoolean(false)
   private val logger: Logger = LogManager.getLogger(BepReader::class.java)
+
+  private fun File.setFilePermissions() {
+    setReadable(true, true)
+    setWritable(true, true)
+  }
 
   suspend fun start() =
     withContext(Dispatchers.Default) {
@@ -48,12 +56,5 @@ class BepReader(private val bepServer: BepServer) {
 
   fun finishBuild() {
     bazelBuildFinished.set(true)
-  }
-
-  companion object {
-    private val filePermissions =
-      PosixFilePermissions.asFileAttribute(
-        setOf(PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_READ),
-      )
   }
 }

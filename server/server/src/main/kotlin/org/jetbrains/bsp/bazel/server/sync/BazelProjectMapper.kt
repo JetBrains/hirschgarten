@@ -461,7 +461,7 @@ class BazelProjectMapper(
         .map { path -> bazelPathsResolver.resolveUri(path) }
         .filter { uri -> uri !in interfacesAndBinariesFromTarget }
         .map { uri ->
-          val label = syntheticLabel(uri.toString())
+          val label = syntheticLabel(uri)
           libraryNameToLibraryValueMap.computeIfAbsent(label) { _ ->
             Library(
               label = label,
@@ -531,7 +531,7 @@ class BazelProjectMapper(
       val jarsFromTargets =
         targetsToImport[targetOrLibrary]?.let { getTargetOutputJarsSet(it) + getTargetInterfaceJarsSet(it) }.orEmpty()
       val jarsFromLibraries =
-        librariesToImport[targetOrLibrary]?.let { it.outputs + it.interfaceJars }.orEmpty().map { Paths.get(it.path) }
+        librariesToImport[targetOrLibrary]?.let { it.outputs + it.interfaceJars }.orEmpty().map { Paths.get(it) }
       val outputJars =
         listOfNotNull(jarsFromTargets, jarsFromLibraries)
           .asSequence()
@@ -589,11 +589,11 @@ class BazelProjectMapper(
 
   private val replacementRegex = "[^0-9a-zA-Z]".toRegex()
 
-  private fun syntheticLabel(lib: String): Label {
+  private fun syntheticLabel(lib: URI): Label {
     val shaOfPath =
       Hashing
         .sha256()
-        .hashString(lib, StandardCharsets.UTF_8)
+        .hashString(lib.toString(), StandardCharsets.UTF_8)
         .toString()
         .take(7) // just in case of a conflict in filename
     return Label.parse(
@@ -711,7 +711,7 @@ class BazelProjectMapper(
               it !in interfacesAndBinariesFromTarget &&
                 it in explicitCompileTimeInterfacesFromTarget
             }.map { uri ->
-              val label = syntheticLabel(uri.toString())
+              val label = syntheticLabel(uri)
               res.computeIfAbsent(label) {
                 Library(
                   label = label,
