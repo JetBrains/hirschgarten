@@ -138,7 +138,7 @@ import_depth: 1
 
 ##### default:
 
-The default value is 0, meaning that only root targets are imported
+The default value is -1, meaning that all transitive dependencies will be imported.
 
 ---
 
