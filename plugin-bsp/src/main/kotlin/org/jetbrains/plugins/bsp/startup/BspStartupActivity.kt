@@ -56,7 +56,7 @@ class BspStartupActivity : BspProjectActivity() {
   }
 
   /**
-   * Make sure calling [OpenBazelProjectViaBspPluginAction.performOpenBazelProjectViaBspPlugin]
+   * Make sure calling [BazelBspOpenProjectProvider.performOpenBazelProjectViaBspPlugin]
    * won't cause [BspStartupActivity] to execute twice.
    */
   private fun Project.startupActivityExecutedAlready(): Boolean = !executedForProject.add(this)
