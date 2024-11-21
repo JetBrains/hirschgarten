@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.platform.workspace.jps.entities.ModuleTypeId
 import com.intellij.platform.workspace.jps.entities.SourceRootTypeId
 import org.jetbrains.plugins.bsp.config.bspProjectName
-import org.jetbrains.plugins.bsp.magicmetamodel.replaceDots
+import org.jetbrains.plugins.bsp.magicmetamodel.sanitizeName
 import org.jetbrains.plugins.bsp.magicmetamodel.shortenTargetPath
 import org.jetbrains.plugins.bsp.utils.allAncestorsSequence
 import org.jetbrains.plugins.bsp.workspacemodel.entities.ContentRoot
@@ -227,7 +227,7 @@ internal fun calculateDummyJavaModuleName(sourceRoot: Path, projectBasePath: Pat
   return absoluteSourceRoot
     .substringAfter(absoluteProjectBasePath)
     .trim { it == File.separatorChar }
-    .replaceDots()
+    .sanitizeName()
     .replace(File.separator, ".")
     .addIntelliJDummyPrefix()
     .shortenTargetPath()
