@@ -11,14 +11,33 @@ alias(
     }),
 )
 
+# shfmt and yamlfmt are not supported in rules_lint for now
+# see https://github.com/aspect-build/rules_lint/issues/429
+
+alias(
+    name = "shfmt",
+    actual = select({
+        "@platforms//os:windows": None,
+        "//conditions:default": "@aspect_rules_lint//format:shfmt",
+    }),
+)
+
+alias(
+    name = "yamlfmt",
+    actual = select({
+        "@platforms//os:windows": None,
+        "//conditions:default": "@aspect_rules_lint//format:yamlfmt",
+    }),
+)
+
 format_multirun(
     name = "format",
     java = ":java-format",
     kotlin = ":ktfmt",
     protocol_buffer = ":buf",
-    shell = "@aspect_rules_lint//format:shfmt",
+    shell = ":shfmt",
     starlark = "@buildifier_prebuilt//:buildifier",
-    yaml = "@aspect_rules_lint//format:yamlfmt",
+    yaml = ":yamlfmt",
 )
 
 java_binary(
