@@ -18,11 +18,10 @@ internal class BazelBspOpenProjectProvider : AbstractOpenProjectProvider() {
   override val systemId: ProjectSystemId = BazelPluginConstants.SYSTEM_ID
 
   // intentionally overriding the visibility to `public` from `protected` in [AbstractOpenProjectProvider]
-  // DO NOT REMOVE THIS MODIFIER
+  @Suppress("RedundantVisibilityModifier")
   public override fun isProjectFile(file: VirtualFile): Boolean = file.isFile && file.name in BazelPluginConstants.WORKSPACE_FILE_NAMES
 
-  // intentionally overriding the visibility to `public` from `protected` in [AbstractOpenProjectProvider]
-  // DO NOT REMOVE THIS MODIFIER
+  @Suppress("RedundantVisibilityModifier")
   public override suspend fun linkProject(projectFile: VirtualFile, project: Project) {
     log.debug("Link BazelBsp project $projectFile to existing project ${project.name}")
     performOpenBazelProjectViaBspPlugin(project, projectFile)
