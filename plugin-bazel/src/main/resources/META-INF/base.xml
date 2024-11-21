@@ -29,6 +29,8 @@
         <bspProjectAwareExtension
                 implementation="org.jetbrains.bazel.flow.open.BazelBspProjectAwareExtension"/>
 
+        <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
+
         <projectSyncHook implementation="org.jetbrains.bazel.flow.open.InvalidTargetsProjectSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook"/>
 

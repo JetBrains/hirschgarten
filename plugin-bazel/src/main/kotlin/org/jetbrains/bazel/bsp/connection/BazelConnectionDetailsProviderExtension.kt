@@ -15,9 +15,9 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.bazel.assets.BazelPluginTemplates
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.coroutines.CoroutineService
+import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.install.BspConnectionDetailsCreator
@@ -33,7 +33,6 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.isExecutable
-import kotlin.io.path.writeText
 
 class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectPath.toNioPath()) {
   override fun create() {
@@ -45,8 +44,6 @@ internal const val DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 private const val BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH = ".bsp/bazelbsp.json"
 
 private const val BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX = 0
-
-private const val PROJECT_VIEW_FILE_SYSTEM_PROPERTY = "bazel.project.view.file.path"
 
 internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProviderExtension {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
@@ -66,18 +63,9 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
   }
 
   private fun initializeProjectViewFile(project: Project) {
-    val projectViewFilePath = calculateProjectViewFilePath(project)
-    setDefaultProjectViewFilePathContentIfNotExists(projectViewFilePath)
+    val projectViewFilePath = ProjectViewFileUtils.calculateProjectViewFilePath(project)
+    ProjectViewFileUtils.setProjectViewFileContentIfNotExists(projectViewFilePath, project)
     project.bazelProjectSettings = project.bazelProjectSettings.withNewProjectViewPath(projectViewFilePath)
-  }
-
-  private fun calculateProjectViewFilePath(project: Project): Path =
-    project.bazelProjectSettings.projectViewPath?.toAbsolutePath() ?: project.calculateDefaultProjectViewFile()
-
-  private fun setDefaultProjectViewFilePathContentIfNotExists(projectViewFilePath: Path) {
-    if (!projectViewFilePath.exists()) {
-      projectViewFilePath.writeText(BazelPluginTemplates.defaultBazelProjectViewContent)
-    }
   }
 
   override fun provideNewConnectionDetails(project: Project, currentConnectionDetails: BspConnectionDetails?): BspConnectionDetails? {
@@ -128,7 +116,7 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
     version == Constants.VERSION &&
       argv[BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX] == javaBin.toAbsolutePath().toString() &&
       getOptions() == customJvmOptions &&
-      getProjectViewFilePath() == calculateProjectViewFilePath(project) &&
+      getProjectViewFilePath() == ProjectViewFileUtils.calculateProjectViewFilePath(project) &&
       project.dotBazelBspExists()
 
   private fun Project.dotBazelBspExists() = rootDir.toNioPath().resolve(Constants.DOT_BAZELBSP_DIR_NAME).exists()
@@ -149,7 +137,7 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
         javaPath = InstallationContextJavaPathEntity(javaBin),
         debuggerAddress = null,
         bazelWorkspaceRootDir = project.rootDir.toNioPath(),
-        projectViewFilePath = calculateProjectViewFilePath(project),
+        projectViewFilePath = ProjectViewFileUtils.calculateProjectViewFilePath(project),
       )
     val dotBazelBspCreator = DotBazelBspCreator(project.rootDir)
 
@@ -169,10 +157,6 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
   private fun BspConnectionDetails.addCustomJvmOptions(customJvmOptions: List<String>) {
     argv.addAll(BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX + 1, customJvmOptions)
   }
-
-  private fun Project.calculateDefaultProjectViewFile(): Path =
-    System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)?.let { Path(it) }
-      ?: rootDir.toNioPath().toAbsolutePath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
 
   private fun BspConnectionDetails.getProjectViewFilePath(): Path? =
     argv
