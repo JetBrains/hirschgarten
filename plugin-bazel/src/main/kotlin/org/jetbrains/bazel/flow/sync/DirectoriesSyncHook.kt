@@ -8,8 +8,10 @@ import com.intellij.openapi.vcs.VcsDirectoryMapping
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.platform.backend.workspace.WorkspaceModel
 import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
+import org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.rootDir
@@ -19,6 +21,7 @@ import org.jetbrains.plugins.bsp.impl.flow.sync.query
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
+import java.nio.file.Path
 
 class DirectoriesSyncHook : ProjectSyncHook {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
@@ -26,7 +29,8 @@ class DirectoriesSyncHook : ProjectSyncHook {
   override suspend fun onSync(environment: ProjectSyncHookEnvironment) {
     coroutineScope {
       val directories = query("workspace/directories") { environment.server.workspaceDirectories() }
-      val entity = directories.toEntity(environment.project)
+      val additionalExcludes = BazelSymlinkExcludeService.getInstance(environment.project).getBazelSymlinksToExclude()
+      val entity = createEntity(environment.project, directories, additionalExcludes)
 
       environment.diff.workspaceModelDiff.mutableEntityStorage
         .addEntity(entity)
@@ -37,13 +41,22 @@ class DirectoriesSyncHook : ProjectSyncHook {
     }
   }
 
-  private fun WorkspaceDirectoriesResult.toEntity(project: Project): BspProjectDirectoriesEntity.Builder {
+  private fun createEntity(
+    project: Project,
+    directories: WorkspaceDirectoriesResult,
+    additionalExcludes: List<Path>,
+  ): BspProjectDirectoriesEntity.Builder {
     val virtualFileUrlManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
+
+    val includedRoots = directories.includedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) }
+    val excludedRoots =
+      directories.excludedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) } +
+        additionalExcludes.map { it.toVirtualFileUrl(virtualFileUrlManager) }
 
     return BspProjectDirectoriesEntity(
       projectRoot = project.rootDir.toVirtualFileUrl(virtualFileUrlManager),
-      includedRoots = includedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) },
-      excludedRoots = excludedDirectories.map { it.uri }.map { virtualFileUrlManager.getOrCreateFromUrl(it) },
+      includedRoots = includedRoots,
+      excludedRoots = excludedRoots,
       entitySource = BspProjectEntitySource,
     )
   }
