@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
-import org.jetbrains.bazel.bsp.connection.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.settings.bazelProjectSettings
@@ -70,7 +69,7 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
   private fun buildFileBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     fun(project) {
       val bazelPackageDir = originalVFile.parent ?: return
-      val outputProjectViewFilePath = bazelPackageDir.toNioPath().resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
+      val outputProjectViewFilePath = ProjectViewFileUtils.calculateProjectViewFileInCurrentDirectory(bazelPackageDir.toNioPath())
       ProjectViewFileUtils.setProjectViewFileContentIfNotExists(outputProjectViewFilePath, project)
       project.bazelProjectSettings =
         project.bazelProjectSettings.withNewProjectViewPath(outputProjectViewFilePath.toAbsolutePath())

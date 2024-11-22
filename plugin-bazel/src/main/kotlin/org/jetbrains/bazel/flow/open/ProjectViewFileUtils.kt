@@ -1,13 +1,15 @@
 package org.jetbrains.bazel.flow.open
 
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.bsp.connection.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.settings.bazelProjectSettings
+import org.jetbrains.bsp.bazel.install.DEFAULT_PROJECT_VIEW_FILE_NAME
+import org.jetbrains.bsp.bazel.install.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.plugins.bsp.config.rootDir
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.Path
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.relativeTo
 import kotlin.io.path.writeText
@@ -31,10 +33,17 @@ internal object ProjectViewFileUtils {
 
   private fun calculateDefaultProjectViewFile(project: Project): Path =
     System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)?.let { Path(it) }
-      ?: project.rootDir
-        .toNioPath()
-        .toAbsolutePath()
-        .resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
+      ?: calculateProjectViewFileInCurrentDirectory(project.rootDir.toNioPath().toAbsolutePath())
+
+  /**
+   * The purpose of this method is to support the project view file with legacy name [LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME] if it exists
+   */
+  fun calculateProjectViewFileInCurrentDirectory(directory: Path): Path {
+    if (!directory.isDirectory()) error("Directory is expected but $directory was found")
+    val legacyProjectViewFile = directory.resolve(LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME)
+    if (legacyProjectViewFile.isRegularFile()) return legacyProjectViewFile
+    return directory.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
+  }
 
   fun setProjectViewFileContentIfNotExists(projectViewFilePath: Path, project: Project) {
     val projectRoot = project.rootDir.toNioPath()

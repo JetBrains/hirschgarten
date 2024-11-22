@@ -44,6 +44,7 @@ kt_jvm_library(
     deps = [
         ":intellij-bsp",
         "//protocol",
+        "//server/install/src/main/kotlin/org/jetbrains/bsp/bazel/install",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
