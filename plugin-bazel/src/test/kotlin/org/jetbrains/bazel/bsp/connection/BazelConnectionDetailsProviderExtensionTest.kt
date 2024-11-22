@@ -94,14 +94,14 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
 
       // then
       onFirstOpeningResult shouldBe true
-      projectRoot.findFile(".bazelproject") shouldNotBe null
+      projectRoot.findFile(".bazelbsp/.bazelproject") shouldNotBe null
     }
 
     @Test
     fun `should keep the existing legacy project view file if exists`() {
       // given
       runWriteAction {
-        val projectViewFile = projectRoot.createFile("projectview.bazelproject")
+        val projectViewFile = projectRoot.createFile(".bazelbsp/projectview.bazelproject")
         projectViewFile.writeText("example content")
       }
 
@@ -113,8 +113,8 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
 
       // then
       onFirstOpeningResult shouldBe true
-      projectRoot.findFile(".bazelproject") shouldBe null
-      projectRoot.findFile("projectview.bazelproject")?.readText() shouldBe "example content"
+      projectRoot.findFile(".bazelbsp/.bazelproject") shouldBe null
+      projectRoot.findFile(".bazelbsp/projectview.bazelproject")?.readText() shouldBe "example content"
     }
   }
 
@@ -122,7 +122,7 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
   fun `should keep the existing project view file if exists`() {
     // given
     runWriteAction {
-      val projectViewFile = projectRoot.createFile(".bazelproject")
+      val projectViewFile = projectRoot.createFile(".bazelbsp/.bazelproject")
       projectViewFile.writeText("example content")
     }
 
@@ -134,8 +134,27 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
 
     // then
     onFirstOpeningResult shouldBe true
-    projectRoot.findFile("projectview.bazelproject") shouldBe null
-    projectRoot.findFile(".bazelproject")?.readText() shouldBe "example content"
+    projectRoot.findFile(".bazelbsp/projectview.bazelproject") shouldBe null
+    projectRoot.findFile(".bazelbsp/.bazelproject")?.readText() shouldBe "example content"
+  }
+
+  fun `should not generate the new project view file if managed file exists`() {
+    // given
+    runWriteAction {
+      val projectViewFile = projectRoot.createFile("tools/intellij/.managed.bazelproject")
+      projectViewFile.writeText("example content")
+    }
+
+    // when
+    val onFirstOpeningResult =
+      runBlocking {
+        extension.onFirstOpening(project, projectRoot)
+      }
+
+    // then
+    onFirstOpeningResult shouldBe true
+    projectRoot.findFile(".bazelbsp/projectview.bazelproject") shouldBe null
+    projectRoot.findFile(".bazelbsp/.bazelproject") shouldBe null
   }
 
   @Nested
