@@ -14,7 +14,7 @@ interface BspToolWindowConfigFileProviderExtension : WithBuildToolId {
 
   fun getConfigFile(project: Project): Path?
 
-  fun getConfigFileIcon(): Icon = AllIcons.FileTypes.Any_type
+  fun getConfigFileIcon(): Icon = AllIcons.FileTypes.Config
 
   companion object {
     internal val ep =
