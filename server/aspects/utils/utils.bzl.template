@@ -85,7 +85,12 @@ def get_aspect_ids(ctx, target):
         return None
     return [aspect_id for aspect_id in aspect_ids if "bsp_target_info_aspect" not in aspect_id]
 
+EXTERNAL_REPOSITORIES_NAMES_TREATED_AS_INTERNAL = [${externalRepositoriesTreatedAsInternal}]
+
 def is_external(target):
+    for repo in EXTERNAL_REPOSITORIES_NAMES_TREATED_AS_INTERNAL:
+        if target.label.repo_name == repo:
+            return False
     return not str(target.label).startswith("@@//") and not str(target.label).startswith("@//") and not str(target.label).startswith("//")
 
 def convert_struct_to_dict(s):

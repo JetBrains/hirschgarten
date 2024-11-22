@@ -72,7 +72,7 @@ class PythonLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   override fun dependencySources(targetInfo: TargetInfo, dependencyGraph: DependencyGraph): Set<URI> =
     if (targetInfo.hasPythonTargetInfo()) {
       dependencyGraph
-        .transitiveDependenciesWithoutRootTargets(Label.parse(targetInfo.id))
+        .transitiveDependenciesWithoutRootTargets(targetInfo.label())
         .flatMap(::getExternalSources)
         .map(::calculateExternalSourcePath)
         .toSet()

@@ -262,4 +262,6 @@ abstract class BazelCommand(val bazelBinary: String) {
   class ModPath(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "path"))
 
   class ModShowRepo(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "show_repo"))
+
+  class ModDumpRepoMapping(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "dump_repo_mapping"))
 }

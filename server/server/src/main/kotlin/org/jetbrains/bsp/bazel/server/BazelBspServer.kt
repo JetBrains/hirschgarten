@@ -3,9 +3,13 @@ package org.jetbrains.bsp.bazel.server
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import okio.Path.Companion.toPath
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.jetbrains.bsp.bazel.bazelrunner.BazelInfoResolver
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bsp.bazel.bazelrunner.ModuleOutputParser
+import org.jetbrains.bsp.bazel.bazelrunner.ModuleResolver
+import org.jetbrains.bsp.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
@@ -23,6 +27,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspFallbackAspectsManage
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bsp.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.AdditionalAndroidBuildTargetsProvider
 import org.jetbrains.bsp.bazel.server.sync.BazelProjectMapper
@@ -48,10 +53,12 @@ import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.thrift.ThriftLanguagePlugin
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InitializeBuildData
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 class BazelBspServer(
   private val bspInfo: BspInfo,
@@ -172,12 +179,15 @@ class BazelBspServer(
         shouldUseInjectRepository = bazelInfo.shouldUseInjectRepository(),
       )
 
+    val repoMapping = calculateRepoMapping(workspaceContextProvider, bazelRunner)
+
     val bazelBspAspectsManager =
       BazelBspAspectsManager(
         bazelBspCompilationManager = compilationManager,
         aspectsResolver = aspectsResolver,
         workspaceContextProvider = workspaceContextProvider,
         featureFlags = featureFlags,
+        repoMapping = repoMapping,
       )
     val bazelToolchainManager = BazelToolchainManager(bazelRunner, featureFlags)
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
@@ -194,6 +204,7 @@ class BazelBspServer(
         kotlinAndroidModulesMerger,
         bspClientLogger,
         featureFlags,
+        workspaceContextProvider = workspaceContextProvider,
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 

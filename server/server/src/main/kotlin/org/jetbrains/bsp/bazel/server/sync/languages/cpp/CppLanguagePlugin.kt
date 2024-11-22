@@ -46,7 +46,7 @@ class CppLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : La
       .getCppTargetInfoOrNull()
       ?.run {
         dependencyGraph
-          .transitiveDependenciesWithoutRootTargets(Label.parse(targetInfo.id))
+          .transitiveDependenciesWithoutRootTargets(targetInfo.label())
           .flatMap(TargetInfo::getSourcesList)
           .map(bazelPathsResolver::resolveUri)
           .toSet()

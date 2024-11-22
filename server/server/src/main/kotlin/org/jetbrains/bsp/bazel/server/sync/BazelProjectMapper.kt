@@ -13,6 +13,7 @@ import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.tracer
 import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.GoLibrary
 import org.jetbrains.bsp.bazel.server.model.Label
@@ -31,6 +32,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -52,6 +54,7 @@ class BazelProjectMapper(
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
+  private val repoMapping: RepoMapping,
 ) {
   private suspend fun <T> measure(description: String, body: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { body() }
 
@@ -89,7 +92,7 @@ class BazelProjectMapper(
       }
     val targetsAsLibraries =
       measure("Targets as libraries") {
-        val libraries = targets - targetsToImport.map { Label.parse(it.id) }.toSet()
+        val libraries = targets - targetsToImport.map { it.label() }.toSet()
         val usedLibraries = dependencyGraph.filterUsedLibraries(libraries, targetsToImport)
         usedLibraries
       }
@@ -152,7 +155,7 @@ class BazelProjectMapper(
     val extraLibrariesFromJdeps =
       measure("Libraries from jdeps") {
         jdepsLibraries(
-          targetsToImport.associateBy { Label.parse(it.id) },
+          targetsToImport.associateBy { it.label() },
           librariesFromDeps,
           librariesFromDepsAndTargets,
           interfacesAndBinariesFromTargetsToImport,
@@ -195,7 +198,7 @@ class BazelProjectMapper(
       }
     val invalidTargets =
       measure("Save invalid target labels") {
-        removeDotBazelBspTarget(allTargetNames) - targetsToImport.map { Label.parse(it.id) }.toSet()
+        removeDotBazelBspTarget(allTargetNames) - targetsToImport.map { it.label() }.toSet()
       }
     val rustExternalTargetsToImport =
       measureIf(
@@ -243,7 +246,7 @@ class BazelProjectMapper(
       .filter { shouldCreateOutputJarsLibrary(it) }
       .mapNotNull { target ->
         createLibrary(Label.parse(target.id + "_output_jars"), target, onlyOutputJars = true)?.let { library ->
-          Label.parse(target.id) to listOf(library)
+          target.label() to listOf(library)
         }
       }.toMap()
 
@@ -277,7 +280,7 @@ class BazelProjectMapper(
 
   private fun calculateKotlinStdlibsMapper(targetsToImport: Sequence<TargetInfo>): Map<Label, List<Library>> {
     val projectLevelKotlinStdlibsLibrary = calculateProjectLevelKotlinStdlibsLibrary(targetsToImport)
-    val kotlinTargetsIds = targetsToImport.filter { it.hasKotlinTargetInfo() }.map { Label.parse(it.id) }
+    val kotlinTargetsIds = targetsToImport.filter { it.hasKotlinTargetInfo() }.map { it.label() }
 
     return projectLevelKotlinStdlibsLibrary
       ?.let { stdlibsLibrary -> kotlinTargetsIds.associateWith { listOf(stdlibsLibrary) } }
@@ -298,7 +301,7 @@ class BazelProjectMapper(
 
     return if (kotlinStdlibsJars.isNotEmpty()) {
       Library(
-        label = Label.parse("rules_kotlin_kotlin-stdlibs"),
+        label = Label.synthetic("rules_kotlin_kotlin-stdlibs"),
         outputs = kotlinStdlibsJars,
         sources = inferredSourceJars,
         dependencies = emptyList(),
@@ -325,7 +328,7 @@ class BazelProjectMapper(
             .map { bazelPathsResolver.resolve(it) }
             .distinct()
         Pair(
-          Label.parse(it.id),
+          it.label(),
           pluginClasspaths.map { classpath ->
             Library(
               label = Label.parse(classpath.name),
@@ -361,7 +364,7 @@ class BazelProjectMapper(
   private fun calculateProjectLevelScalaSdkLibraries(): Map<URI, Library> =
     getProjectLevelScalaSdkLibrariesJars().associateWith {
       Library(
-        label = Label.parse(Paths.get(it).name),
+        label = Label.synthetic(Paths.get(it).name),
         outputs = setOf(it),
         sources = emptySet(),
         dependencies = emptyList(),
@@ -374,7 +377,7 @@ class BazelProjectMapper(
       .toSet()
       .associateWith {
         Library(
-          label = Label.parse(Paths.get(it).name),
+          label = Label.synthetic(Paths.get(it).name),
           outputs = setOf(it),
           sources = emptySet(),
           dependencies = emptyList(),
@@ -392,7 +395,7 @@ class BazelProjectMapper(
     targetsToImport
       .mapNotNull { target ->
         val aidlLibrary = createAidlLibrary(target) ?: return@mapNotNull null
-        Label.parse(target.id) to listOf(aidlLibrary)
+        target.label() to listOf(aidlLibrary)
       }.toMap()
 
   private fun createAidlLibrary(target: TargetInfo): Library? {
@@ -426,7 +429,7 @@ class BazelProjectMapper(
     targetsToImport
       .mapNotNull { target ->
         if (!target.hasGoTargetInfo()) return@mapNotNull null
-        val label = Label.parse(target.id)
+        val label = target.label()
         val libraries =
           target.goTargetInfo.generatedLibrariesList.map {
             GoLibrary(
@@ -486,7 +489,7 @@ class BazelProjectMapper(
           .filter { targetSupportsJdeps(it) }
           .map { target ->
             async {
-              Label.parse(target.id) to dependencyJarsFromJdepsFiles(target)
+              target.label() to dependencyJarsFromJdepsFiles(target)
             }
           }.awaitAll()
       }.filter { it.second.isNotEmpty() }.toMap()
@@ -540,7 +543,7 @@ class BazelProjectMapper(
           .toMutableSet()
 
       val dependencies =
-        targetsToImport[targetOrLibrary]?.dependenciesList.orEmpty().map { Label.parse(it.id) } +
+        targetsToImport[targetOrLibrary]?.dependenciesList.orEmpty().map { it.label() } +
           libraryDependencies[targetOrLibrary].orEmpty().map { it.label } +
           librariesToImport[targetOrLibrary]?.dependencies.orEmpty()
 
@@ -596,7 +599,7 @@ class BazelProjectMapper(
         .hashString(lib.toString(), StandardCharsets.UTF_8)
         .toString()
         .take(7) // just in case of a conflict in filename
-    return Label.parse(
+    return Label.synthetic(
       Paths
         .get(lib)
         .fileName
@@ -658,7 +661,7 @@ class BazelProjectMapper(
       label = label,
       outputs = outputs,
       sources = sources,
-      dependencies = targetInfo.dependenciesList.map { Label.parse(it.id) },
+      dependencies = targetInfo.dependenciesList.map { it.label() },
       interfaceJars = interfaceJars,
       mavenCoordinates = mavenCoordinates,
     )
@@ -701,10 +704,10 @@ class BazelProjectMapper(
       val res = HashMap<Label, Library>()
       targetsToImport.associate { targetInfo ->
         val interfacesAndBinariesFromTarget =
-          interfacesAndClassesFromTargetsToImport.getOrDefault(Label.parse(targetInfo.id), emptySet())
+          interfacesAndClassesFromTargetsToImport.getOrDefault(targetInfo.label(), emptySet())
         val explicitCompileTimeInterfacesFromTarget =
-          explicitCompileTimeInterfaces.getOrDefault(Label.parse(targetInfo.id), emptySet())
-        Label.parse(targetInfo.id) to
+          explicitCompileTimeInterfaces.getOrDefault(targetInfo.label(), emptySet())
+        targetInfo.label() to
           targetInfo.jvmTargetInfo.transitiveCompileTimeJarsList
             .map { bazelPathsResolver.resolve(it).toUri() }
             .filter {
@@ -728,10 +731,10 @@ class BazelProjectMapper(
 
   private fun calculateExplicitCompileTimeInterfaces(targets: Sequence<TargetInfo>, targetsMap: Map<Label, TargetInfo>) =
     targets.associate { target ->
-      Label.parse(target.id) to
+      target.label() to
         target.dependenciesList
           .asSequence()
-          .mapNotNull { targetsMap[Label.parse(it.id)] }
+          .mapNotNull { targetsMap[it.label()] }
           .flatMap { getTargetInterfaceJarsList(it) }
           .map { it.toUri() }
           .toSet()
@@ -787,7 +790,7 @@ class BazelProjectMapper(
       .flatMap { it.interfaceJarsList }
       .map { bazelPathsResolver.resolve(it) }
 
-  private fun getGoRootUri(targetInfo: TargetInfo): URI = Label.parse(targetInfo.id).toDirectoryUri()
+  private fun getGoRootUri(targetInfo: TargetInfo): URI = targetInfo.label().toDirectoryUri()
 
   private fun selectRustExternalTargetsToImport(rootTargets: Set<Label>, graph: DependencyGraph): Sequence<TargetInfo> =
     graph
@@ -810,7 +813,7 @@ class BazelProjectMapper(
   private fun collectInterfacesAndClasses(targets: Sequence<TargetInfo>) =
     targets
       .associate { target ->
-        Label.parse(target.id) to
+        target.label() to
           (getTargetInterfaceJarsList(target) + getTargetOutputJarsList(target))
             .map { it.toUri() }
             .toSet()
@@ -836,9 +839,14 @@ class BazelProjectMapper(
         it.relativePath.endsWith(".go")
     }
 
+  private val externalRepositoriesTreatedAsInternal =
+    workspaceContextProvider
+      .currentWorkspaceContext()
+      .externalRepositoriesTreatedAsInternal
+
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =
-    target.label().isMainWorkspace &&
+    (target.label().isMainWorkspace || target.label().repoName in externalRepositoriesTreatedAsInternal) &&
       (
         shouldImportTargetKind(target.kind) ||
           target.hasJvmTargetInfo() &&
@@ -891,7 +899,7 @@ class BazelProjectMapper(
             createModule(
               it,
               dependencyGraph,
-              generatedLibraries[Label.parse(it.id)].orEmpty(),
+              generatedLibraries[it.label()].orEmpty(),
             )
           }
         }.awaitAll()
@@ -903,7 +911,7 @@ class BazelProjectMapper(
     dependencyGraph: DependencyGraph,
     extraLibraries: Collection<Library>,
   ): Module {
-    val label = Label.parse(target.id)
+    val label = target.label()
     // extra libraries can override some library versions, so they should be put before
     val directDependencies = extraLibraries.map { it.label } + resolveDirectDependencies(target)
     val languages = inferLanguages(target)
@@ -931,7 +939,7 @@ class BazelProjectMapper(
     )
   }
 
-  private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { Label.parse(it.id) }
+  private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
 
   private fun inferLanguages(target: TargetInfo): Set<Language> {
     val languagesForTarget = Language.all().filter { isTargetKindOfLanguage(target.kind, it) }.toHashSet()
@@ -953,7 +961,7 @@ class BazelProjectMapper(
   private fun Label.toDirectoryUri(): URI {
     val isMainWorkspace = this.isMainWorkspace
     val path =
-      if (isMainWorkspace) targetPath else toExternalPath()
+      if (isMainWorkspace) targetPath else toBazelPath()
     return bazelPathsResolver.pathToDirectoryUri(path, isMainWorkspace)
   }
 

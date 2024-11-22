@@ -15,7 +15,7 @@ class ThriftLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) :
   override fun dependencySources(targetInfo: BspTargetInfo.TargetInfo, dependencyGraph: DependencyGraph): Set<URI> {
     val transitiveSourceDeps =
       dependencyGraph
-        .transitiveDependenciesWithoutRootTargets(Label.parse(targetInfo.id))
+        .transitiveDependenciesWithoutRootTargets(targetInfo.label())
         .filter(::isThriftLibrary)
         .flatMap(BspTargetInfo.TargetInfo::getSourcesList)
         .map(bazelPathsResolver::resolveUri)
