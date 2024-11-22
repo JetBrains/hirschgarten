@@ -22,19 +22,6 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
       else -> findProjectFolderFromEligibleFile(virtualFile)
     } ?: error("Cannot find the suitable Bazel project folder to open for the given file $virtualFile.")
 
-  private tailrec fun findProjectFolderFromEligibleFile(vFile: VirtualFile?): VirtualFile? =
-    when {
-      vFile == null -> null
-      vFile.containsWorkspaceFile() -> vFile
-      else -> findProjectFolderFromEligibleFile(vFile.parent)
-    }
-
-  private fun VirtualFile.containsWorkspaceFile() = isDirectory && children?.any { it.isWorkspaceFile() } == true
-
-  private fun VirtualFile.isWorkspaceFile() = isFile && name in BazelPluginConstants.WORKSPACE_FILE_NAMES
-
-  private fun VirtualFile.isBuildFile() = isFile && name in BazelPluginConstants.BUILD_FILE_NAMES
-
   override val icon: Icon = BazelPluginIcons.bazel
 
   override val name: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
@@ -89,3 +76,16 @@ internal class BazelBspProjectOpenProcessorExtension : BspProjectOpenProcessorEx
 
   override val shouldBspProjectOpenProcessorBeAvailable: Boolean = false
 }
+
+tailrec fun findProjectFolderFromEligibleFile(vFile: VirtualFile?): VirtualFile? =
+  when {
+    vFile == null -> null
+    vFile.containsWorkspaceFile() -> vFile
+    else -> findProjectFolderFromEligibleFile(vFile.parent)
+  }
+
+private fun VirtualFile.containsWorkspaceFile() = isDirectory && children?.any { it.isWorkspaceFile() } == true
+
+private fun VirtualFile.isWorkspaceFile() = isFile && name in BazelPluginConstants.WORKSPACE_FILE_NAMES
+
+private fun VirtualFile.isBuildFile() = isFile && name in BazelPluginConstants.BUILD_FILE_NAMES
