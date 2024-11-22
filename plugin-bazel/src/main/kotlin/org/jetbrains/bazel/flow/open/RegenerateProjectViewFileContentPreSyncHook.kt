@@ -11,10 +11,7 @@ class RegenerateProjectViewFileContentPreSyncHook : ProjectPreSyncHook {
   override suspend fun onPreSync(environment: ProjectPreSyncHook.ProjectPreSyncHookEnvironment) {
     val project = environment.project
     if (project.bazelProjectSettings.projectViewPath == null) {
-      project.bazelProjectSettings.withNewProjectViewPath(ProjectViewFileUtils.calculateProjectViewFilePath(project))
-    }
-    project.bazelProjectSettings.projectViewPath?.let { projectViewFilePath ->
-      ProjectViewFileUtils.setProjectViewFileContentIfNotExists(projectViewFilePath, project)
+      project.bazelProjectSettings.withNewProjectViewPath(ProjectViewFileUtils.calculateProjectViewFilePath(project, true, null))
     }
   }
 }

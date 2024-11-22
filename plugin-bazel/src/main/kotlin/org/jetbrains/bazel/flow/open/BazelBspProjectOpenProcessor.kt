@@ -56,8 +56,7 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
   private fun buildFileBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     fun(project) {
       val bazelPackageDir = originalVFile.parent ?: return
-      val outputProjectViewFilePath = ProjectViewFileUtils.calculateProjectViewFileInCurrentDirectory(bazelPackageDir.toNioPath())
-      ProjectViewFileUtils.setProjectViewFileContentIfNotExists(outputProjectViewFilePath, project)
+      val outputProjectViewFilePath = ProjectViewFileUtils.calculateProjectViewFilePath(project, true, bazelPackageDir.toNioPath())
       project.bazelProjectSettings =
         project.bazelProjectSettings.withNewProjectViewPath(outputProjectViewFilePath.toAbsolutePath())
     }
