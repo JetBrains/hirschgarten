@@ -40,7 +40,6 @@ class DotBazelBspCreator(projectPath: VirtualFile) : EnvironmentCreator(projectP
   }
 }
 
-internal const val DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 private const val BAZEL_BSP_CONNECTION_FILE_RELATIVE_PATH = ".bsp/bazelbsp.json"
 
 private const val BAZEL_BSP_CONNECTION_FILE_ARGV_JAVA_INDEX = 0

@@ -94,11 +94,11 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
 
       // then
       onFirstOpeningResult shouldBe true
-      projectRoot.findFile("projectview.bazelproject") shouldNotBe null
+      projectRoot.findFile(".bazelproject") shouldNotBe null
     }
 
     @Test
-    fun `should keep the existing project view file if exists`() {
+    fun `should keep the existing legacy project view file if exists`() {
       // given
       runWriteAction {
         val projectViewFile = projectRoot.createFile("projectview.bazelproject")
@@ -113,8 +113,29 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
 
       // then
       onFirstOpeningResult shouldBe true
+      projectRoot.findFile(".bazelproject") shouldBe null
       projectRoot.findFile("projectview.bazelproject")?.readText() shouldBe "example content"
     }
+  }
+
+  @Test
+  fun `should keep the existing project view file if exists`() {
+    // given
+    runWriteAction {
+      val projectViewFile = projectRoot.createFile(".bazelproject")
+      projectViewFile.writeText("example content")
+    }
+
+    // when
+    val onFirstOpeningResult =
+      runBlocking {
+        extension.onFirstOpening(project, projectRoot)
+      }
+
+    // then
+    onFirstOpeningResult shouldBe true
+    projectRoot.findFile("projectview.bazelproject") shouldBe null
+    projectRoot.findFile(".bazelproject")?.readText() shouldBe "example content"
   }
 
   @Nested
