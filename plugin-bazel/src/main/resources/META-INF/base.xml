@@ -32,7 +32,7 @@
         <projectPreSyncHook implementation="org.jetbrains.bazel.flow.open.RegenerateProjectViewFileContentPreSyncHook"/>
 
         <projectSyncHook implementation="org.jetbrains.bazel.flow.open.InvalidTargetsProjectSyncHook"/>
-        <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook"/>
+        <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
 
         <defaultProjectSyncHooksDisabler implementation="org.jetbrains.bazel.flow.sync.BazelDefaultProjectSyncHooksDisabler"/>
 
@@ -60,6 +60,9 @@
         <externalSystemUnlinkedProjectAware
                 id="Bazel"
                 implementation="org.jetbrains.bazel.flow.open.BazelBspUnlinkedProjectAware"/>
+        <directoryProjectConfigurator
+                implementation="org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeDirectoryProjectConfigurator"
+                order="after PlatformProjectConfigurator"/>
         <externalIconProvider
                 key="bazelbsp"
                 implementationClass="org.jetbrains.bazel.flow.open.BazelExternalSystemIconProvider"/>
@@ -210,6 +213,9 @@
 
         <registryKey defaultValue="25" description="Maximum number of attempts to connect with the Starlark debugger socket" key="bazel.starlark.debug.socket.attempts"/>
         <registryKey defaultValue="400" description="Interval (in milliseconds) between attempts to connect with the Starlark debugger socket" key="bazel.starlark.debug.socket.interval"/>
+        <registryKey defaultValue="2"
+                     description="How many levels to go down when scanning the project for Bazel symlinks to exclude"
+                     key="bazel.symlink.scan.max.depth"/>
         <configurationType implementation="org.jetbrains.bazel.run.BazelRunConfigurationType"/>
     </extensions>
 
