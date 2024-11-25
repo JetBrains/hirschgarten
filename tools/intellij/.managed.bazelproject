@@ -10,7 +10,7 @@ targets:
   //plugin-bazel:plugin-bazel-with-server-debug
 
 build_flags:
-  --define=ij_product=intellij-2024.2
+  --define=ij_product=intellij-latest
 
 additional_languages:
   kotlin
