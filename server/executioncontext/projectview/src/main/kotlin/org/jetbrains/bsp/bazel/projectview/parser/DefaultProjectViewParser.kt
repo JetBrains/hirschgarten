@@ -36,7 +36,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
 
     return ProjectView
       .Builder(
-        imports = findImportedProjectViews(rawSections),
+        imports = findImportedProjectViews(rawSections) + findTryImportedProjectViews(rawSections),
         targets = ProjectViewTargetsSectionParser.parse(rawSections),
         bazelBinary = ProjectViewBazelBinarySectionParser.parse(rawSections),
         buildFlags = ProjectViewBuildFlagsSectionParser.parse(rawSections),
@@ -63,6 +63,17 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
       .map(this::parse)
       .toList()
 
+  private fun findTryImportedProjectViews(rawSections: ProjectViewRawSections): List<ProjectView> =
+    rawSections
+      .getAllWithName(TRY_IMPORT_STATEMENT)
+      .asSequence()
+      .map { it.sectionBody }
+      .map(String::trim)
+      .map(::toProjectViewPath)
+      .onEach { log.debug("Parsing try_imported file {}.", it) }
+      .mapNotNull(this::tryParse)
+      .toList()
+
   private fun toProjectViewPath(projectViewPathStr: String): Path {
     val currentPath = Path(projectViewPathStr)
     return when {
@@ -74,5 +85,6 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
 
   companion object {
     private const val IMPORT_STATEMENT = "import"
+    private const val TRY_IMPORT_STATEMENT = "try_import"
   }
 }
