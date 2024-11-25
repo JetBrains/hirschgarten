@@ -1,18 +1,22 @@
 package org.jetbrains.bazel.flow.open
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.config.BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
 import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.bsp.bazel.commons.Constants.DOT_BAZELBSP_DIR_NAME
 import org.jetbrains.bsp.bazel.install.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bsp.bazel.install.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.plugins.bsp.config.rootDir
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.name
 import kotlin.io.path.relativeTo
 import kotlin.io.path.writeText
 
@@ -20,11 +24,14 @@ private const val PROJECT_VIEW_FILE_SYSTEM_PROPERTY = "bazel.project.view.file.p
 
 private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
   """
+  # This project view file may be overwritten by the Bazel plugin.
+  # To use it as default, place it in the Bazel module or workspace root directory.
+  # For more options, see https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md
+  try_import tools/intellij/.managed.bazelproject
+  
   derive_targets_from_directories: true
   directories: %s
   import_depth: 0
-  
-  # For more options, see https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md
   """.trimIndent()
 
 private val OPEN_OPTIONS = arrayOf(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
@@ -32,58 +39,72 @@ private val OPEN_OPTIONS = arrayOf(StandardOpenOption.WRITE, StandardOpenOption.
 internal object ProjectViewFileUtils {
   fun calculateProjectViewFilePath(
     project: Project,
-    generateContentIfNotExists: Boolean,
+    generateContent: Boolean,
+    overwrite: Boolean,
     bazelPackageDir: Path?,
   ): Path {
-    val projectViewFilePath = project.bazelProjectSettings.projectViewPath?.toAbsolutePath() ?: calculateDefaultProjectViewFile(project)
-    if (generateContentIfNotExists) {
-      setProjectViewFileContentIfNotExists(projectViewFilePath, project, bazelPackageDir)
+    val projectViewFilePath =
+      project.bazelProjectSettings.projectViewPath?.toAbsolutePath() ?: calculateDefaultProjectViewFile(project, overwrite)
+    if (generateContent) {
+      setProjectViewFileContent(projectViewFilePath, project, bazelPackageDir, overwrite)
     }
     return projectViewFilePath
   }
 
-  private fun calculateDefaultProjectViewFile(project: Project): Path =
-    System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)?.let { Path(it) }
-      ?: calculateManagedProjectViewFile(project)
-      ?: calculateProjectViewFileInCurrentDirectory(project.rootDir.toNioPath().resolve(DOT_BAZELBSP_DIR_NAME))
+  private fun calculateDefaultProjectViewFile(project: Project, overwrite: Boolean): Path {
+    val projectViewFileInSystemProperty = System.getProperty(PROJECT_VIEW_FILE_SYSTEM_PROPERTY)
+    if (projectViewFileInSystemProperty != null) return Path(projectViewFileInSystemProperty)
+    val dotBazelBspProjectViewFile = calculateProjectViewFileInCurrentDirectory(project.rootDir.toNioPath().resolve(DOT_BAZELBSP_DIR_NAME))
+    return calculateLegacyManagedProjectViewFile(project).takeIf { !overwrite }
+      ?: dotBazelBspProjectViewFile
+  }
 
-  private fun calculateManagedProjectViewFile(project: Project): Path? =
-    project.rootDir
-      .toNioPath()
-      .resolve("tools")
-      .resolve("intellij")
-      .resolve(".managed.bazelproject")
-      .takeIf { it.isRegularFile() }
+  private fun calculateLegacyManagedProjectViewFile(project: Project): Path? {
+    val projectViewFilesFromRoot =
+      Files
+        .list(project.rootDir.toNioPath())
+        .filter {
+          it.isRegularFile() &&
+            it.extension == PROJECT_VIEW_FILE_EXTENSION
+        }.toList()
+    val dotProjectViewFile = projectViewFilesFromRoot.firstOrNull { it.name == DEFAULT_PROJECT_VIEW_FILE_NAME }
+    val legacyProjectViewFile = projectViewFilesFromRoot.firstOrNull { it.name == LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME }
+    return dotProjectViewFile ?: legacyProjectViewFile ?: projectViewFilesFromRoot.firstOrNull()
+  }
 
   /**
    * Supports the project view file with legacy name [LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME] if it exists
    */
   private fun calculateProjectViewFileInCurrentDirectory(directory: Path): Path {
-    if (!directory.isDirectory()) {
-      // if this turns out to be a file
-      directory.deleteIfExists()
-      directory.createDirectories()
-    }
     val legacyProjectViewFile = directory.resolve(LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME)
     if (legacyProjectViewFile.isRegularFile()) return legacyProjectViewFile
     return directory.resolve(DEFAULT_PROJECT_VIEW_FILE_NAME)
   }
 
-  private fun setProjectViewFileContentIfNotExists(
+  private fun setProjectViewFileContent(
     projectViewFilePath: Path,
     project: Project,
     bazelPackageDir: Path?,
+    overwrite: Boolean,
   ) {
     val projectRoot = project.rootDir.toNioPath()
     val realizedBazelPackageDir = bazelPackageDir ?: projectRoot
     val relativePath = calculateRelativePathForInferredDirectory(projectRoot, realizedBazelPackageDir)
     val content = INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE.format(relativePath)
-    setProjectViewFileContentIfNotExists(projectViewFilePath, content)
+    setProjectViewFileContent(projectViewFilePath, content, overwrite)
   }
 
-  private fun setProjectViewFileContentIfNotExists(projectViewFilePath: Path, content: String) {
-    if (projectViewFilePath.isRegularFile()) return
-    // just in case there is a directory with the same name existing
+  private fun setProjectViewFileContent(
+    projectViewFilePath: Path,
+    content: String,
+    overwrite: Boolean,
+  ) {
+    val projectViewFilePathDirectory = projectViewFilePath.parent
+    if (!projectViewFilePathDirectory.isDirectory()) {
+      projectViewFilePathDirectory.deleteIfExists()
+      projectViewFilePathDirectory.createDirectories()
+    }
+    if (!overwrite && projectViewFilePath.isRegularFile()) return
     projectViewFilePath.deleteIfExists()
     projectViewFilePath.writeText(content, options = OPEN_OPTIONS)
   }

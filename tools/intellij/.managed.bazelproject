@@ -1,6 +1,3 @@
-directories:
-  .
-
 derive_targets_from_directories: true
 
 workspace_type: intellij_plugin
