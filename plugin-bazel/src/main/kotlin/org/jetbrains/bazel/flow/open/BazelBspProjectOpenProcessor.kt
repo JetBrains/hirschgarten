@@ -44,11 +44,15 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
       originalVFile.isBazelBspConnectionFile() -> BspProjectOpenProcessor().calculateBeforeOpenCallback(originalVFile)
       originalVFile.isProjectViewFile() -> projectViewFileBeforeOpenCallback(originalVFile)
       originalVFile.isBuildFile() -> buildFileBeforeOpenCallback(originalVFile)
+      originalVFile.isWorkspaceFile() -> { project -> }
+      originalVFile.isWorkspaceRoot() -> { project -> }
       else -> {
         val buildFile = calculateBuildFileFromDirectory(originalVFile)
         buildFile?.let { buildFileBeforeOpenCallback(it) } ?: {}
       }
     }
+
+  private fun VirtualFile.isWorkspaceRoot(): Boolean = isDirectory && children?.any { it.isWorkspaceFile() } == true
 
   private fun calculateBuildFileFromDirectory(originalVFile: VirtualFile): VirtualFile? =
     originalVFile.children?.firstOrNull { it.isBuildFile() }
@@ -56,7 +60,13 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
   private fun buildFileBeforeOpenCallback(originalVFile: VirtualFile): (Project) -> Unit =
     fun(project) {
       val bazelPackageDir = originalVFile.parent ?: return
-      val outputProjectViewFilePath = ProjectViewFileUtils.calculateProjectViewFilePath(project, true, bazelPackageDir.toNioPath())
+      val outputProjectViewFilePath =
+        ProjectViewFileUtils.calculateProjectViewFilePath(
+          project = project,
+          generateContent = true,
+          overwrite = true,
+          bazelPackageDir = bazelPackageDir.toNioPath(),
+        )
       project.bazelProjectSettings =
         project.bazelProjectSettings.withNewProjectViewPath(outputProjectViewFilePath.toAbsolutePath())
     }
