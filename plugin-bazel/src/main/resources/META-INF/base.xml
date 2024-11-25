@@ -131,6 +131,8 @@
         <completion.contributor
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"/>
+        <editorTabTitleProvider
+                implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
         <fileType
                 name="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType"
