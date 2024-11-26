@@ -4,10 +4,10 @@ import com.intellij.util.Processor
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLoadLookupElement
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkLookupElement
 import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkNamedLookupElement
-import org.jetbrains.bazel.languages.starlark.completion.lookups.StarlarkQuote
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStringLoadValue
+import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 
 class StarlarkCompletionProcessor(
   val results: MutableMap<String, StarlarkLookupElement>,

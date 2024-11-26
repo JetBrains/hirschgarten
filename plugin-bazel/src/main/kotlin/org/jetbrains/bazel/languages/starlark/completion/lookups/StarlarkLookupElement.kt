@@ -3,6 +3,7 @@ package org.jetbrains.bazel.languages.starlark.completion.lookups
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementPresentation
+import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 import javax.swing.Icon
 
 abstract class StarlarkLookupElement(val name: String, private val wrapping: StarlarkQuote = StarlarkQuote.UNQUOTED) : LookupElement() {
