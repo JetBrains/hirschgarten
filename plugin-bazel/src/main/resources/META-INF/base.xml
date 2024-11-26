@@ -34,7 +34,8 @@
         <projectSyncHook implementation="org.jetbrains.bazel.flow.open.InvalidTargetsProjectSyncHook"/>
         <projectSyncHook implementation="org.jetbrains.bazel.flow.sync.DirectoriesSyncHook" order="last"/>
 
-        <defaultProjectSyncHooksDisabler implementation="org.jetbrains.bazel.flow.sync.BazelDefaultProjectSyncHooksDisabler"/>
+        <defaultProjectSyncHooksDisabler
+                implementation="org.jetbrains.bazel.flow.sync.BazelDefaultProjectSyncHooksDisabler"/>
 
         <invalidTargetsProviderExtension
                 implementation="org.jetbrains.bazel.flow.open.BazelInvalidTargetsProviderExtension"/>
@@ -97,8 +98,10 @@
         <lang.findUsagesProvider
                 language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.findusages.StarlarkFindUsagesProvider"/>
-        <lang.foldingBuilder language="Starlark" implementationClass="org.jetbrains.bazel.languages.starlark.folding.StarlarkFoldingBuilder"/>
-        <lineIndentProvider implementation="org.jetbrains.bazel.languages.starlark.indentation.StarlarkLineIndentProvider"/>
+        <lang.foldingBuilder language="Starlark"
+                             implementationClass="org.jetbrains.bazel.languages.starlark.folding.StarlarkFoldingBuilder"/>
+        <lineIndentProvider
+                implementation="org.jetbrains.bazel.languages.starlark.indentation.StarlarkLineIndentProvider"/>
         <colorSettingsPage
                 implementation="org.jetbrains.bazel.languages.starlark.highlighting.StarlarkColorSettingsPage"/>
         <additionalTextAttributes
@@ -133,6 +136,8 @@
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkArgumentCompletionContributor"/>
         <editorTabTitleProvider
                 implementation="org.jetbrains.bazel.ui.tabs.BazelEditorTabTitleProvider"/>
+        <extendWordSelectionHandler
+                implementation="org.jetbrains.bazel.languages.starlark.actions.StarlarkStringLiteralSelectioner"/>
         <fileType
                 name="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType"
@@ -143,9 +148,11 @@
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
 
-        <formattingService implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
+        <formattingService
+                implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
 
-        <runLineMarkerContributor implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor" language="Starlark" />
+        <runLineMarkerContributor implementationClass="org.jetbrains.bazel.ui.gutters.StarlarkRunLineMarkerContributor"
+                                  language="Starlark"/>
 
         <fileType
                 name="Bazelrc"
@@ -210,8 +217,12 @@
         <xdebugger.breakpointType implementation="org.jetbrains.bazel.debug.platform.StarlarkBreakpointType"/>
         <programRunner implementation="org.jetbrains.bazel.debug.configuration.StarlarkDebugRunner"/>
 
-        <registryKey defaultValue="25" description="Maximum number of attempts to connect with the Starlark debugger socket" key="bazel.starlark.debug.socket.attempts"/>
-        <registryKey defaultValue="400" description="Interval (in milliseconds) between attempts to connect with the Starlark debugger socket" key="bazel.starlark.debug.socket.interval"/>
+        <registryKey defaultValue="25"
+                     description="Maximum number of attempts to connect with the Starlark debugger socket"
+                     key="bazel.starlark.debug.socket.attempts"/>
+        <registryKey defaultValue="400"
+                     description="Interval (in milliseconds) between attempts to connect with the Starlark debugger socket"
+                     key="bazel.starlark.debug.socket.interval"/>
         <registryKey defaultValue="2"
                      description="How many levels to go down when scanning the project for Bazel symlinks to exclude"
                      key="bazel.symlink.scan.max.depth"/>
@@ -230,7 +241,8 @@
             <add-to-group group-id="Copy.Paste.Special" anchor="after" relative-to-action="CopyReference"/>
         </action>
 
-        <action id="Bazel.ImportExternalProject" class="org.jetbrains.bazel.flow.open.actions.LinkBazelProjectFromScriptAction">
+        <action id="Bazel.ImportExternalProject"
+                class="org.jetbrains.bazel.flow.open.actions.LinkBazelProjectFromScriptAction">
             <add-to-group group-id="ProjectViewPopupMenuSettingsGroup" anchor="last"/>
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
