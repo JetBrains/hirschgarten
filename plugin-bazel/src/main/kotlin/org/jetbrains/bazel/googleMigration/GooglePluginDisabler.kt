@@ -6,12 +6,10 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
 class GooglePluginDisabler : ProjectActivity {
   override suspend fun execute(project: Project) {
-    if (!project.isBazelProject) return
     val googlePluginId = PluginId.getId("com.google.idea.bazel.ijwb")
     if (PluginManagerCore.isPluginInstalled(googlePluginId) && !PluginManagerCore.isDisabled(googlePluginId)) {
       BspBalloonNotifier.warn(
