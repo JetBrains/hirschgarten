@@ -4,7 +4,6 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 kt_jvm_library(
     name = "v243",
     srcs = select_for_plugin_api({
-        "intellij-2024.2": ["Dummy.kt"],
         "intellij-2024.3": glob([
             "org/jetbrains/bsp/sdkcompat/**",
         ]),
