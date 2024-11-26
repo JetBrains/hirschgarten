@@ -3,6 +3,7 @@ package org.jetbrains.plugins.bsp.ui.notifications
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
+import com.intellij.openapi.actionSystem.AnAction
 import javax.swing.Icon
 
 /**
@@ -42,12 +43,14 @@ public object BspBalloonNotifier {
    * @param title title of the notification
    * @param content main content of the notification
    * @param subtitle subtitle of the notification (none by default)
+   * @param action an optional action for the notification
    */
   public fun warn(
     title: String,
     content: String,
     subtitle: String = "",
-  ): Unit = notify(title, content, subtitle, NotificationType.WARNING, null)
+    action: AnAction? = null,
+  ): Unit = notify(title, content, subtitle, NotificationType.WARNING, null, action)
 
   /**
    * Display an error as a balloon notification
@@ -68,12 +71,14 @@ public object BspBalloonNotifier {
     subtitle: String,
     notificationType: NotificationType,
     customIcon: Icon?,
+    action: AnAction? = null,
   ) {
     val notification =
       Notification(BALLOON_ID, "<html>$content</html>", notificationType)
         .setTitle(title)
         .setSubtitle(subtitle)
         .let { if (customIcon != null) it.setIcon(customIcon) else it }
+        .let { if (action != null) it.addAction(action) else it }
     Notifications.Bus.notify(notification)
   }
 }
