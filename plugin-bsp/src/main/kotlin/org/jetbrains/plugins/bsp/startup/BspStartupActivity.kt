@@ -6,15 +6,13 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import org.jetbrains.plugins.bsp.building.BspConsoleService
-import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
 import org.jetbrains.plugins.bsp.config.isBspProjectLoaded
 import org.jetbrains.plugins.bsp.config.openedTimesSinceLastStartupResync
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.config.workspaceModelLoadedFromCache
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
-import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.impl.flow.sync.QuickySync
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.impl.server.connection.connectionDetailsProvider
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
@@ -111,10 +109,11 @@ class BspStartupActivity : BspProjectActivity() {
   private suspend fun Project.resyncProjectIfNeeded() {
     if (isProjectInIncompleteState()) {
       log.info("Running BSP sync task")
-      ProjectSyncTask(this).sync(
-        syncScope = FullProjectSync,
-        buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
-      )
+      QuickySync(this).sync()
+//      ProjectSyncTask(this).sync(
+//        syncScope = FullProjectSync,
+//        buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
+//      )
       openedTimesSinceLastStartupResync = 0
     }
   }

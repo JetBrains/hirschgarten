@@ -56,6 +56,7 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestWithDebugParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsGraphParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
@@ -198,6 +199,10 @@ class BuildServerMock(
 
   override fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): CompletableFuture<WorkspaceBuildTargetsResult> =
     wrapInFuture(workspaceBuildTargetsPartial)
+
+  override fun workspaceBuildTargetsGraph(params: WorkspaceBuildTargetsGraphParams): CompletableFuture<WorkspaceBuildTargetsResult> {
+    TODO("Not yet implemented")
+  }
 
   override fun buildTargetPythonOptions(pythonOptionsParams: PythonOptionsParams?): CompletableFuture<PythonOptionsResult> =
     wrapInFuture(pythonOptionsResult)

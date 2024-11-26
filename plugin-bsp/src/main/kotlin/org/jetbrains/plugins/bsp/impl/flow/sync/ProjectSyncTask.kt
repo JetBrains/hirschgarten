@@ -40,6 +40,8 @@ private val log = logger<ProjectSyncTask>()
 
 sealed interface ProjectSyncScope
 
+data object FullQuickySync : ProjectSyncScope
+
 data object FullProjectSync : ProjectSyncScope
 
 data class PartialProjectSync(val targetsToSync: List<BuildTargetIdentifier>) : ProjectSyncScope

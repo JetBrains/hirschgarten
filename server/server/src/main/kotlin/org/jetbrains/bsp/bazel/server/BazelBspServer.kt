@@ -24,6 +24,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGen
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.server.quicky.QuickyResolver
 import org.jetbrains.bsp.bazel.server.sync.AdditionalAndroidBuildTargetsProvider
 import org.jetbrains.bsp.bazel.server.sync.BazelProjectMapper
 import org.jetbrains.bsp.bazel.server.sync.BspProjectMapper
@@ -34,6 +35,7 @@ import org.jetbrains.bsp.bazel.server.sync.ProjectResolver
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bsp.bazel.server.sync.TargetTagsResolver
+import org.jetbrains.bsp.bazel.server.sync.firstStep.mappings.TargetToBspMapper
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
@@ -103,7 +105,9 @@ class BazelBspServer(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
       )
-    val projectSyncService = ProjectSyncService(bspProjectMapper, projectProvider, initializeBuildParams.capabilities)
+    val targetToBspMapper = TargetToBspMapper(workspaceContextProvider, workspaceRoot)
+    val projectSyncService =
+      ProjectSyncService(bspProjectMapper, targetToBspMapper, projectProvider, initializeBuildParams.capabilities, workspaceRoot)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(
@@ -212,7 +216,8 @@ class BazelBspServer(
         bspClientLogger = bspClientLogger,
         featureFlags = featureFlags,
       )
-    return ProjectProvider(projectResolver)
+    val qq = QuickyResolver(workspaceRoot, bazelRunner, workspaceContextProvider)
+    return ProjectProvider(projectResolver, qq)
   }
 
   fun buildServer(bspIntegrationData: BspIntegrationData): Launcher<JoinedBuildClient> {

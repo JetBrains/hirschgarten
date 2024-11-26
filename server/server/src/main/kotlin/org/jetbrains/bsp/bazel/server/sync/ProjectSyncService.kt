@@ -38,19 +38,25 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.model.Language
+import org.jetbrains.bsp.bazel.server.sync.firstStep.mappings.TargetToBspMapper
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsGraphParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
+import java.nio.file.Path
+import kotlin.io.path.Path
 
 /** A facade for all project sync related methods  */
 class ProjectSyncService(
   private val bspMapper: BspProjectMapper,
+  private val targetToBspMapper: TargetToBspMapper,
   private val projectProvider: ProjectProvider,
   private val clientCapabilities: BuildClientCapabilities,
+  private val workspaceRoot: Path,
 ) {
   fun initialize(): InitializeBuildResult = bspMapper.initializeServer(Language.all())
 
@@ -73,6 +79,11 @@ class ProjectSyncService(
         targetsToSync = targetsToSync,
       )
     return bspMapper.workspaceTargets(project)
+  }
+
+  fun workspaceBuildGraph(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsGraphParams): WorkspaceBuildTargetsResult {
+    val project = projectProvider.quicky(cancelChecker, params.originId)
+    return targetToBspMapper.toWorkspaceBuildTargetsResult(project)
   }
 
   fun workspaceBuildLibraries(cancelChecker: CancelChecker): WorkspaceLibrariesResult {
@@ -102,12 +113,20 @@ class ProjectSyncService(
 
   fun buildTargetSources(cancelChecker: CancelChecker, sourcesParams: SourcesParams): SourcesResult {
     val project = projectProvider.get(cancelChecker)
-    return bspMapper.sources(project, sourcesParams)
+    return if (project.modules.isNotEmpty()) {
+      bspMapper.sources(project, sourcesParams)
+    } else {
+      targetToBspMapper.toSourcesResult(project, sourcesParams)
+    }
   }
 
   fun buildTargetResources(cancelChecker: CancelChecker, resourcesParams: ResourcesParams): ResourcesResult {
     val project = projectProvider.get(cancelChecker)
-    return bspMapper.resources(project, resourcesParams)
+    return if (project.modules.isNotEmpty()) {
+      bspMapper.resources(project, resourcesParams)
+    } else {
+      targetToBspMapper.toResourcesResult(project, resourcesParams)
+    }
   }
 
   fun buildTargetInverseSources(cancelChecker: CancelChecker, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {
