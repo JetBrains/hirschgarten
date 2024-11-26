@@ -39,6 +39,7 @@ import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.toPath
 import kotlin.io.path.writeText
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalPathApi::class)
 class BazelTest {
@@ -94,7 +95,8 @@ class BazelTest {
         .waitForSmartMode()
         .recordMemory("bsp.used.after.indexing.mb")
         .exitApp()
-    val startResult = context.runIDE(commands = commands)
+    val timeout = (System.getProperty("bsp.benchmark.timeout.seconds")?.toIntOrNull() ?: 600).seconds
+    val startResult = context.runIDE(commands = commands, runTimeout = timeout)
 
     val spans = getMetricsFromSpanAndChildren(startResult, SpanFilter.nameEquals("bsp.sync.project.ms"))
 
