@@ -15,7 +15,7 @@ class GooglePluginDisabler : ProjectActivity {
     val googlePluginId = PluginId.getId("com.google.idea.bazel.ijwb")
     if (PluginManagerCore.isPluginInstalled(googlePluginId) && !PluginManagerCore.isDisabled(googlePluginId)) {
       BspBalloonNotifier.warn(
-        title = "Warning: Conflicting Bazel Plugin Detected",
+        title = "Conflicting Bazel Plugin Detected",
         content = "The Google Bazel plugin is currently enabled, which may cause conflicts with the JetBrains Bazel plugin.",
         action =
           NotificationAction.createSimpleExpiring(
