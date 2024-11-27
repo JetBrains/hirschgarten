@@ -24,6 +24,19 @@ abstract class BazelBspTestBaseScenario {
   val majorBazelVersion: Int = calculateMajorBazelVersion()
   val targetPrefix = "@"
 
+  private val architecturePart
+    get() = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
+  val javaHomeArchitecture get() = "\$OS$architecturePart"
+
+  private val bazelArch get() =
+    if (System.getProperty("os.name").lowercase().startsWith("mac")) {
+      "darwin_arm64"
+    } else {
+      "k8"
+    }
+  private val mainBinName = if (majorBazelVersion >= 7) "_main" else "__main__"
+  val bazelBinDirectory get() = "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/$mainBinName/bazel-out/$bazelArch-fastbuild/bin"
+
   open fun additionalServerInstallArguments(): Array<String> = emptyArray()
 
   init {
