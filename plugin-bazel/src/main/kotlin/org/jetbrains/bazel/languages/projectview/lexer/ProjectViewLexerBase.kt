@@ -11,6 +11,8 @@ class ProjectViewLexerBase(input: CharSequence) {
     tokenize()
   }
 
+  fun getTokens(): List<Token> = tokens
+
   private fun tokenize() {
     var c: Char
 
@@ -72,7 +74,7 @@ class ProjectViewLexerBase(input: CharSequence) {
       pos >= buffer.length ||
         buffer[pos] == ' ' ||
         buffer[pos] == '\t' ||
-        buffer[pos] != '\r' -> {
+        buffer[pos] == '\r' -> {
         if (pos < buffer.length) {
           pos++
         }
