@@ -118,7 +118,7 @@ class ProjectResolver(
       cancelChecker = cancelChecker,
       targetSpecs = targetsToSync,
       aspect = ASPECT_NAME,
-      outputGroups = outputGroups.map { if (build) "+$it" else it },
+      outputGroups = outputGroups,
       shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
       isRustEnabled = featureFlags.isRustSupportEnabled,
     )
