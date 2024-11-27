@@ -7,13 +7,13 @@ import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 class ProjectViewTokenType private constructor(debugName: String) : IElementType(debugName, ProjectViewLanguage) {
   companion object {
     val COMMENT = ProjectViewTokenType("comment")
-    val WHITESPACE = ProjectViewTokenType("whitespace");
-    val NEWLINE = ProjectViewTokenType("newline");
-    val COLON = ProjectViewTokenType(":");
-    val INDENT = ProjectViewTokenType("indent");
-    val IDENTIFIER = ProjectViewTokenType("identifier");
-    val LIST_KEYWORD = ProjectViewTokenType("list_keyword");
-    val SCALAR_KEYWORD = ProjectViewTokenType("scalar_keyword");
+    val WHITESPACE = ProjectViewTokenType("whitespace")
+    val NEWLINE = ProjectViewTokenType("newline")
+    val COLON = ProjectViewTokenType(":")
+    val INDENT = ProjectViewTokenType("indent")
+    val IDENTIFIER = ProjectViewTokenType("identifier")
+    val LIST_KEYWORD = ProjectViewTokenType("list_keyword")
+    val SCALAR_KEYWORD = ProjectViewTokenType("scalar_keyword")
 
     val IDENTIFIERS = TokenSet.create(IDENTIFIER, LIST_KEYWORD, SCALAR_KEYWORD)
   }
