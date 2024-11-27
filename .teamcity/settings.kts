@@ -63,6 +63,7 @@ object GitHub : Project({
         buildType(ServerE2eTests.PythonProjectGitHub)
         buildType(ServerE2eTests.JavaDiagnosticsGitHub)
         buildType(ServerE2eTests.ManualTargetsGitHub)
+        buildType(ServerE2eTests.BuildSyncGitHub)
         buildType(ServerBenchmark.GitHub)
         buildType(StaticAnalysis.GitHub)
       }
@@ -110,6 +111,7 @@ object GitHub : Project({
       ServerE2eTests.PythonProjectGitHub,
       ServerE2eTests.JavaDiagnosticsGitHub,
       ServerE2eTests.ManualTargetsGitHub,
+      ServerE2eTests.BuildSyncGitHub,
       ServerBenchmark.GitHub,
       StaticAnalysis.GitHub,
       ResultsAggregator.GitHub,
@@ -143,6 +145,7 @@ object Space : Project({
         buildType(ServerE2eTests.PythonProjectSpace)
         buildType(ServerE2eTests.JavaDiagnosticsSpace)
         buildType(ServerE2eTests.ManualTargetsSpace)
+        buildType(ServerE2eTests.BuildSyncSpace)
         buildType(ServerBenchmark.Space)
         buildType(StaticAnalysis.Space)
       }
@@ -190,6 +193,7 @@ object Space : Project({
       ServerE2eTests.PythonProjectSpace,
       ServerE2eTests.JavaDiagnosticsSpace,
       ServerE2eTests.ManualTargetsSpace,
+      ServerE2eTests.BuildSyncSpace,
       ServerBenchmark.Space,
       StaticAnalysis.Space,
       ResultsAggregator.Space,

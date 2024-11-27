@@ -110,6 +110,12 @@ bazel_integration_test_all_versions(
     workspace_path = "test-resources/sample-repo",
 )
 
+bazel_integration_test_current_version(
+    name = "build_and_sync_test",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspBuildAndSyncTest",
+    workspace_path = "test-resources/build-and-sync-test",
+)
+
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,

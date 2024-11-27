@@ -144,8 +144,6 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
     # I don't know why, but it seems that the "java_outputs" variable can have a different type, depending on language
     jdeps = get_jdeps(target)
 
-    resolve_files = []
-
     jars, resolve_files_jars = map_with_resolve_files(to_jvm_outputs, java_outputs)
 
     generated_jars, resolve_files_generated_jars = get_generated_jars(provider)
@@ -159,20 +157,20 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
     else:
         transitive_compile_time_jars = []
 
+    resolve_files = []
+    resolve_files_transitive = []
     if is_external(target):
         resolve_files += resolve_files_jars
         resolve_files += resolve_files_generated_jars
-        runtime_jars = extract_runtime_jars(target, provider).to_list()
-        compile_jars = extract_compile_jars(provider).to_list()
-        source_jars = getattr(provider, "transitive_source_jars", depset()).to_list()
-        resolve_files += runtime_jars
-        resolve_files += compile_jars
-        resolve_files += source_jars
-        update_sync_output_groups(output_groups, "external-deps-resolve", depset(resolve_files))
+        resolve_files_transitive.append(extract_runtime_jars(target, provider))
+        resolve_files_transitive.append(extract_compile_jars(provider))
+        resolve_files_transitive.append(getattr(provider, "transitive_source_jars", depset()))
+        update_sync_output_groups(output_groups, "external-deps-resolve", depset(resolve_files, transitive=resolve_files_transitive))
     else:
         # During build and sync, we use this output group to make sure all the generated jars are built by Bazel.
         resolve_files += resolve_files_jars
         resolve_files += resolve_files_generated_jars
+        resolve_files += jdeps
         update_sync_output_groups(output_groups, "generated-jars-resolve", depset(resolve_files))
 
     info = create_struct(
