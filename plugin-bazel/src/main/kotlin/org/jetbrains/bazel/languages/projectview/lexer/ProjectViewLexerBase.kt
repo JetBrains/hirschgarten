@@ -8,7 +8,7 @@ class ProjectViewLexerBase(input: CharSequence) {
   private var lineHasPrecedingNonWhitespaceChar = false
 
   init {
-      tokenize()
+    tokenize()
   }
 
   private fun tokenize() {
@@ -56,7 +56,7 @@ class ProjectViewLexerBase(input: CharSequence) {
   }
 
   private fun addCommentLine(start: Int) {
-    while (pos < buffer.length && buffer[pos] != '\n' ) {
+    while (pos < buffer.length && buffer[pos] != '\n') {
       pos++
     }
     tokens.add(Token(ProjectViewTokenType.COMMENT, start, pos))
@@ -70,7 +70,9 @@ class ProjectViewLexerBase(input: CharSequence) {
     val oldPos = pos - 1
     when {
       pos >= buffer.length ||
-      buffer[pos] == ' ' || buffer[pos] == '\t' || buffer[pos] != '\r' -> {
+        buffer[pos] == ' ' ||
+        buffer[pos] == '\t' ||
+        buffer[pos] != '\r' -> {
         if (pos < buffer.length) {
           pos++
         }
