@@ -1,11 +1,17 @@
 package org.jetbrains.bazel.languages.projectview.lexer
 
+/**
+ * A base class responsible for tokenizing a given [input] project view into a list of tokens.
+ *
+ * @constructor Creates a lexer which returns a list of tokens for the given [input].
+ * @param input The input to tokenize.
+ */
 class ProjectViewLexerBase(input: CharSequence) {
   private val tokens = mutableListOf<Token>()
   private var buffer = input.toString()
   private var pos = 0
   private var identifierStart: Int? = null
-  private var lineHasPrecedingNonWhitespaceChar = false
+  private var isPosAfterNonWhitespaceCharInLine = false
 
   init {
     tokenize()
@@ -24,9 +30,9 @@ class ProjectViewLexerBase(input: CharSequence) {
         c == '\n' -> {
           addPrecedingIdentifier(pos - 1)
           tokens.add(Token(ProjectViewTokenType.NEWLINE, pos - 1, pos))
-          lineHasPrecedingNonWhitespaceChar = false
+          isPosAfterNonWhitespaceCharInLine = false
         }
-        c.isWhitespace() -> {
+        isHorizontalWhitespace(c) -> {
           addPrecedingIdentifier(pos - 1)
           handleWhiteSpace()
         }
@@ -34,12 +40,12 @@ class ProjectViewLexerBase(input: CharSequence) {
           addPrecedingIdentifier(pos - 1)
           tokens.add(Token(ProjectViewTokenType.COLON, pos - 1, pos))
         }
-        c == '#' && !lineHasPrecedingNonWhitespaceChar -> {
+        c == '#' && !isPosAfterNonWhitespaceCharInLine -> {
           addPrecedingIdentifier(pos - 1)
           addCommentLine(pos - 1)
         }
         else -> {
-          lineHasPrecedingNonWhitespaceChar = true
+          isPosAfterNonWhitespaceCharInLine = true
           if (identifierStart == null) {
             identifierStart = pos - 1
           }
@@ -64,23 +70,17 @@ class ProjectViewLexerBase(input: CharSequence) {
     tokens.add(Token(ProjectViewTokenType.COMMENT, start, pos))
   }
 
-  /**
-   * If the whitespace is followed by an end-of-line comment or a newline, it's combined with those
-   * tokens.
-   */
   private fun handleWhiteSpace() {
+    // Every whitespace followed by a single-line comment or a newline is fused with the following token.
     val oldPos = pos - 1
     when {
-      pos >= buffer.length ||
-        buffer[pos] == ' ' ||
-        buffer[pos] == '\t' ||
-        buffer[pos] == '\r' -> {
+      pos >= buffer.length || isHorizontalWhitespace(buffer[pos]) -> {
         if (pos < buffer.length) {
           pos++
         }
         tokens.add(Token(ProjectViewTokenType.WHITESPACE, oldPos, pos))
       }
-      lineHasPrecedingNonWhitespaceChar || buffer[pos] == '#' || buffer[pos] == '\n' -> {
+      isPosAfterNonWhitespaceCharInLine || buffer[pos] == '#' || buffer[pos] == '\n' -> {
         tokens.add(Token(ProjectViewTokenType.WHITESPACE, oldPos, pos))
       }
       else -> {
@@ -99,9 +99,18 @@ class ProjectViewLexerBase(input: CharSequence) {
     }
   }
 
+  private fun isHorizontalWhitespace(c: Char): Boolean = c == ' ' || c == '\t' || c == '\r'
+
+  /**
+   * Represents a token in the project view file.
+   *
+   * @property type The type of the token.
+   * @property start Position of the first character in the buffer passed to the [ProjectViewLexerBase] constructor.
+   * @property end Sum of [start] and the length of the token.
+   */
   data class Token(
     val type: ProjectViewTokenType,
-    val left: Int,
-    val right: Int,
+    val start: Int,
+    val end: Int,
   )
 }

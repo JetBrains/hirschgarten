@@ -3,8 +3,12 @@ package org.jetbrains.bazel.languages.projectview.lexer
 import com.intellij.lexer.LexerBase
 import com.intellij.psi.tree.IElementType
 
-class ProjectViewLexer: LexerBase() {
-
+/**
+ * A lexer that extends [LexerBase] using [ProjectViewLexerBase] to tokenize text.
+ *
+ * @constructor Create an empty project view lexer
+ */
+class ProjectViewLexer : LexerBase() {
   private var endOffset = 0
   private var offsetStart = 0
   private var buffer = ""
@@ -12,42 +16,37 @@ class ProjectViewLexer: LexerBase() {
     emptyList<ProjectViewLexerBase.Token>().iterator()
   private var currentToken: ProjectViewLexerBase.Token? = null
 
-  override fun start(buffer: CharSequence, startOffset: Int, endOffset: Int, initialState: Int) {
+  override fun start(
+    buffer: CharSequence,
+    startOffset: Int,
+    endOffset: Int,
+    initialState: Int,
+  ) {
     this.buffer = buffer.toString()
     this.offsetStart = startOffset
     this.endOffset = endOffset
 
-    var lexer: ProjectViewLexerBase =
-      ProjectViewLexerBase(buffer.subSequence(startOffset, endOffset))
+    var lexer = ProjectViewLexerBase(buffer.subSequence(startOffset, endOffset))
     tokens = lexer.getTokens().iterator()
     currentToken = if (tokens.hasNext()) tokens.next() else null
   }
 
+  /** ProjectViewLexer doesn't use states, so we return 0 as described in the Lexer docs. */
   override fun getState(): Int = 0
 
   override fun getTokenType(): IElementType? = currentToken?.type
 
-  override fun getTokenStart(): Int {
-    if (currentToken == null) {
-      return 0
-    }
-    return currentToken!!.left + offsetStart
-  }
+  override fun getTokenStart(): Int = currentToken?.start?.plus(offsetStart) ?: 0
 
-  override fun getTokenEnd(): Int {
-    if (currentToken == null) {
-      return 0
-    }
-    return currentToken!!.right + offsetStart
-  }
+  override fun getTokenEnd(): Int = currentToken?.end?.plus(offsetStart) ?: 0
 
   override fun advance() {
-    if (currentToken != null && tokens.hasNext()) {
-      currentToken = tokens.next()
-    }
-    else {
-      currentToken = null
-    }
+    currentToken =
+      if (currentToken != null && tokens.hasNext()) {
+        tokens.next()
+      } else {
+        null
+      }
   }
 
   override fun getBufferSequence(): CharSequence = buffer
