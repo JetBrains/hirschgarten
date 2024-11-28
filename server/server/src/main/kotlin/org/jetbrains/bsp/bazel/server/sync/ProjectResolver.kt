@@ -6,7 +6,7 @@ import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.tracer
-import org.jetbrains.bsp.bazel.server.benchmark.use
+import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManagerResult
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspFallbackAspectsManager
@@ -35,14 +35,14 @@ class ProjectResolver(
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
 ) {
-  private fun <T> measured(description: String, f: () -> T): T = tracer.spanBuilder(description).use { f() }
+  private suspend fun <T> measured(description: String, f: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { f() }
 
-  fun resolve(
+  suspend fun resolve(
     cancelChecker: CancelChecker,
     build: Boolean,
     requestedTargetsToSync: List<BuildTargetIdentifier>?,
   ): Project =
-    tracer.spanBuilder("Resolve project").use {
+    tracer.spanBuilder("Resolve project").useWithScope {
       val workspaceContext =
         measured(
           "Reading project view and creating workspace context",
@@ -98,12 +98,12 @@ class ProjectResolver(
           emptyList()
         }
       val rootTargets = buildAspectResult.bepOutput.rootTargets()
-      return measured(
+      return@useWithScope measured(
         "Mapping to internal model",
       ) { bazelProjectMapper.createProject(targets, rootTargets.toSet(), allTargetNames, workspaceContext, bazelInfo) }
     }
 
-  private fun buildProjectWithAspect(
+  private suspend fun buildProjectWithAspect(
     cancelChecker: CancelChecker,
     workspaceContext: WorkspaceContext,
     build: Boolean,

@@ -13,7 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.rootDir
@@ -56,7 +56,7 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
 
   private var listeners: List<(Boolean) -> Unit> = emptyList()
 
-  fun saveTargets(
+  suspend fun saveTargets(
     targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
     targetIdToModuleEntity: Map<BuildTargetIdentifier, Module>,
     targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
@@ -85,8 +85,8 @@ class TemporaryTargetUtils : PersistentStateComponent<TemporaryTargetUtilsState>
 
   private fun String.processUriString() = this.trimEnd('/')
 
-  private fun calculateFileToExecutableTargetIds(libraryItems: List<LibraryItem>?): Map<URI, List<BuildTargetIdentifier>> =
-    runBlocking(Dispatchers.Default) {
+  private suspend fun calculateFileToExecutableTargetIds(libraryItems: List<LibraryItem>?): Map<URI, List<BuildTargetIdentifier>> =
+    withContext(Dispatchers.Default) {
       val targetDependentsGraph = TargetDependentsGraph(targetIdToTargetInfo, libraryItems)
       val targetToTransitiveRevertedDependenciesCache = ConcurrentHashMap<BuildTargetIdentifier, Set<BuildTargetIdentifier>>()
       fileToTargetId
