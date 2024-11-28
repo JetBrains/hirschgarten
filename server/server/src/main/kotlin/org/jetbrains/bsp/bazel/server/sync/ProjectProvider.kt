@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.server.sync
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.benchmark.openTelemetry
 import org.jetbrains.bsp.bazel.server.model.Project
@@ -25,8 +26,10 @@ class ProjectProvider(private val projectResolver: ProjectResolver) {
     build: Boolean,
     targetsToSync: List<BuildTargetIdentifier>?,
   ): Project =
-    projectResolver.resolve(cancelChecker, build = build, targetsToSync).also {
-      openTelemetry.sdkTracerProvider.forceFlush()
-      projectResolver.releaseMemory()
+    runBlocking {
+      projectResolver.resolve(cancelChecker, build = build, targetsToSync).also {
+        openTelemetry.sdkTracerProvider.forceFlush()
+        projectResolver.releaseMemory()
+      }
     }
 }
