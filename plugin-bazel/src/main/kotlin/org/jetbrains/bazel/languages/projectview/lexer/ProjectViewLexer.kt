@@ -12,9 +12,8 @@ class ProjectViewLexer : LexerBase() {
   private var endOffset = 0
   private var offsetStart = 0
   private var buffer = ""
-  private var tokens: Iterator<ProjectViewLexerBase.Token> =
-    emptyList<ProjectViewLexerBase.Token>().iterator()
-  private var currentToken: ProjectViewLexerBase.Token? = null
+  private var tokens: Iterator<Token> = emptyList<Token>().iterator()
+  private var currentToken: Token? = null
 
   override fun start(
     buffer: CharSequence,
