@@ -107,6 +107,9 @@ class BazelTest {
         PerformanceMetrics.Metric.newCounter(it.id.name, it.value)
       }
 
+    check(spans.size > 1) { "No spans received" }
+    check(meters.size > 1) { "No performance metrics received" }
+
     startResult.publishPerformanceMetrics(metrics = spans + meters)
   }
 
