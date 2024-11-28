@@ -6,7 +6,7 @@ import com.intellij.psi.tree.IElementType
 /**
  * A lexer that extends [LexerBase] using [ProjectViewLexerBase] to tokenize text.
  *
- * @constructor Create an empty project view lexer
+ * @constructor Create an empty project view lexer.
  */
 class ProjectViewLexer : LexerBase() {
   private var endOffset = 0
