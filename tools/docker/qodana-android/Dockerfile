@@ -7,5 +7,9 @@ RUN apt-get update
 RUN apt-get -y install gcc mono-mcs zip
 RUN apt-get -y install --reinstall build-essential python3
 
+# Install Android API level 35
+RUN ${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin/sdkmanager "platforms;android-35"
+ARG ANDROID_API_LEVEL="35"
+
 ADD https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-$TARGETARCH /usr/bin/bazel
 RUN chmod 777 /usr/bin/bazel
