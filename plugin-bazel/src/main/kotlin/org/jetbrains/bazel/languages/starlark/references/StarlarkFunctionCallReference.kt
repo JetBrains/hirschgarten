@@ -19,9 +19,10 @@ class StarlarkFunctionCallReference(element: StarlarkCallExpression, rangeInElem
   override fun getVariants(): Array<StarlarkLookupElement> = emptyArray()
 
   override fun handleElementRename(name: String): PsiElement {
-    val oldNode = myElement.getNameNode() ?: return myElement
+    val namePsi = myElement.getNamePsi() ?: return myElement
+    val oldNode = namePsi.getNameNode() ?: return myElement
     val newNode = RenameUtils.createNewName(myElement.project, name)
-    myElement.node.replaceChild(oldNode, newNode)
+    namePsi.node.replaceChild(oldNode, newNode)
     return myElement
   }
 }
