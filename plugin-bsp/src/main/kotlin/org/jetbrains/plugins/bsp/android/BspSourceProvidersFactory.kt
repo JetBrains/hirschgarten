@@ -16,6 +16,8 @@ class BspSourceProvidersFactory : SourceProvidersFactory {
   override fun createSourceProvidersFor(facet: AndroidFacet): SourceProviders {
     val sourceProvider = createSourceProviderForModule(facet) ?: return createSourceProvidersForLegacyModule(facet)
 
+    throw NoSuchMethodError("This should fail Qodana Android run")
+
     return SourceProvidersImpl(
       mainIdeaSourceProvider = sourceProvider,
       currentSourceProviders = listOf(sourceProvider),
