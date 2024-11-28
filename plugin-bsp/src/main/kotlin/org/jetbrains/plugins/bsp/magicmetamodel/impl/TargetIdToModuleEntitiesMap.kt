@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.TestOnly
 import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
@@ -19,7 +19,7 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.isJvmOrAndroidTarget
 import java.nio.file.Path
 
 object TargetIdToModuleEntitiesMap {
-  operator fun invoke(
+  suspend operator fun invoke(
     projectDetails: ProjectDetails,
     targetIdToModuleDetails: Map<BuildTargetIdentifier, ModuleDetails>,
     targetIdToTargetInfo: Map<BuildTargetIdentifier, BuildTargetInfo>,
@@ -49,7 +49,7 @@ object TargetIdToModuleEntitiesMap {
         null
       }
 
-    return runBlocking(Dispatchers.Default) {
+    return withContext(Dispatchers.Default) {
       projectDetails.targetIds
         .map {
           async {
