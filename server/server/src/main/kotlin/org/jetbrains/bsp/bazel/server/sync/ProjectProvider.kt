@@ -4,9 +4,9 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.benchmark.openTelemetry
 import org.jetbrains.bsp.bazel.server.model.Project
-import org.jetbrains.bsp.bazel.server.quicky.QuickyResolver
+import org.jetbrains.bsp.bazel.server.sync.firstStep.FirstStepProjectResolver
 
-class ProjectProvider(private val projectResolver: ProjectResolver, private val quickyResolver: QuickyResolver) {
+class ProjectProvider(private val projectResolver: ProjectResolver, private val firstStepProjectResolver: FirstStepProjectResolver) {
   private var project: Project? = null
 
   @Synchronized
@@ -21,7 +21,7 @@ class ProjectProvider(private val projectResolver: ProjectResolver, private val 
   fun get(cancelChecker: CancelChecker): Project = project ?: loadFromBazel(cancelChecker, false, null).also { project = it }
 
   fun quicky(cancelChecker: CancelChecker, originId: String): Project =
-    quickyResolver.resolve(originId, cancelChecker).also { project = it }
+    firstStepProjectResolver.resolve(originId, cancelChecker).also { project = it }
 
   @Synchronized
   private fun loadFromBazel(

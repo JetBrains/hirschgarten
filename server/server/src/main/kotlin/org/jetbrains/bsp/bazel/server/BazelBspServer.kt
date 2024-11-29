@@ -24,7 +24,6 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGen
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bsp.bazel.server.quicky.QuickyResolver
 import org.jetbrains.bsp.bazel.server.sync.AdditionalAndroidBuildTargetsProvider
 import org.jetbrains.bsp.bazel.server.sync.BazelProjectMapper
 import org.jetbrains.bsp.bazel.server.sync.BspProjectMapper
@@ -35,6 +34,7 @@ import org.jetbrains.bsp.bazel.server.sync.ProjectResolver
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bsp.bazel.server.sync.TargetTagsResolver
+import org.jetbrains.bsp.bazel.server.sync.firstStep.FirstStepProjectResolver
 import org.jetbrains.bsp.bazel.server.sync.firstStep.mappings.TargetToBspMapper
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
@@ -216,8 +216,8 @@ class BazelBspServer(
         bspClientLogger = bspClientLogger,
         featureFlags = featureFlags,
       )
-    val qq = QuickyResolver(workspaceRoot, bazelRunner, workspaceContextProvider)
-    return ProjectProvider(projectResolver, qq)
+    val firstStepProjectResolver = FirstStepProjectResolver(workspaceRoot, bazelRunner, workspaceContextProvider)
+    return ProjectProvider(projectResolver, firstStepProjectResolver)
   }
 
   fun buildServer(bspIntegrationData: BspIntegrationData): Launcher<JoinedBuildClient> {
