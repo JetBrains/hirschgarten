@@ -13,6 +13,7 @@ import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewTokenSets
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewLexer
+import org.jetbrains.bazel.languages.projectview.psi.ProjectViewFile
 
 class ProjectViewParserDefinition(): ParserDefinition {
   private val file = IFileElementType(ProjectViewLanguage)
@@ -27,10 +28,7 @@ class ProjectViewParserDefinition(): ParserDefinition {
 
   override fun getStringLiteralElements(): TokenSet = ProjectViewTokenSets.STRINGS
 
-  override fun createElement(node: ASTNode?): PsiElement = ProjectViewElementTypes.createElement(node)
+  override fun createElement(node: ASTNode?): PsiElement = createElement(node)
 
-  override fun createFile(viewProvider: FileViewProvider): PsiFile {
-    TODO("Not yet implemented")
-  }
-
+  override fun createFile(viewProvider: FileViewProvider): PsiFile = ProjectViewFile(viewProvider)
 }

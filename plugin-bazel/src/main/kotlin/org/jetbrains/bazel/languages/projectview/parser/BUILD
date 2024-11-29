@@ -1,6 +1,5 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
-# nasz parser
 kt_jvm_library(
     name = "parser",
     srcs = glob(["*.kt"]),
