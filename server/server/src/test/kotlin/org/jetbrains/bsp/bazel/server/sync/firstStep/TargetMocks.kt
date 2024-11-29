@@ -11,6 +11,7 @@ fun createMockTarget(
   exports: List<String> = emptyList(),
   runtimeDeps: List<String> = emptyList(),
   srcs: List<String> = emptyList(),
+  resources: List<String> = emptyList(),
   tags: List<String> = emptyList(),
 ): Target {
   val rule =
@@ -22,6 +23,7 @@ fun createMockTarget(
       .addAttribute(("exports" to exports).toListAttribute())
       .addAttribute(("runtime_deps" to runtimeDeps).toListAttribute())
       .addAttribute(("srcs" to srcs).toListAttribute())
+      .addAttribute(("resources" to resources).toListAttribute())
       .addAttribute(("tags" to tags).toListAttribute())
       .build()
 

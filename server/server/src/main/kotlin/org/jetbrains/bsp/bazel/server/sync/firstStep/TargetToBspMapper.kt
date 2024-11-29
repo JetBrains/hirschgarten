@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.BuildTargetTag
+import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.ResourcesResult
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -45,7 +46,7 @@ class TargetToBspMapper(private val workspaceContextProvider: WorkspaceContextPr
 
   private fun Target.toBspBuildTarget(): BuildTarget =
     BuildTarget(
-      BuildTargetIdentifier(rule.name),
+      BuildTargetIdentifier(name),
       inferTags(),
       inferLanguages().map { it.id }.toList(),
       interestingDeps.map { BuildTargetIdentifier(it) },
@@ -91,33 +92,36 @@ class TargetToBspMapper(private val workspaceContextProvider: WorkspaceContextPr
   }
 
   private fun Target.toBspSourcesItem(): SourcesItem {
-    val sourceFiles = calculateAllExistingSourceFiles(workspaceRoot)
+    val sourceFiles = srcs.map { it.bazelFileFormatToPath() }.filter { it.exists() }
     val sourceFilesAndData = sourceFiles.map { it to JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(it) }
 
     val items = sourceFilesAndData.map { EnhancedSourceItem(it.first.toUri().toString(), SourceItemKind.FILE, false, it.second.data) }
 
-    return SourcesItem(BuildTargetIdentifier(rule.name), items).apply {
+    return SourcesItem(BuildTargetIdentifier(name), items).apply {
       roots = sourceFilesAndData.map { it.second.sourceRoot }.map { it.toUri().toString() }.distinct()
     }
   }
 
-  private fun Target.calculateAllExistingSourceFiles(workspaceRoot: Path): List<Path> =
-    srcs.map { it.bazelFileFormatToPath(workspaceRoot) }.filter { it.exists() }
+  fun toResourcesResult(project: Project, resourcesParams: ResourcesParams): ResourcesResult {
+    val items = project
+      .lightweightModulesForTargets(resourcesParams.targets)
+      .map { it.toBspResourcesItem() }
 
-  fun String.bazelFileFormatToPath(workspaceRoot: Path): Path {
+    return ResourcesResult(items)
+  }
+
+  private fun Target.toBspResourcesItem(): ResourcesItem =
+    ResourcesItem(
+      BuildTargetIdentifier(name),
+      resources.map { it.bazelFileFormatToPath() }.filter { it.exists() }.map { it.toUri().toString() },
+    )
+
+  private fun String.bazelFileFormatToPath(): Path {
     val withoutColons = replace(':', '/')
     val withoutTargetPrefix = withoutColons.trimStart('/')
     val relativePath = Path(withoutTargetPrefix)
 
     return workspaceRoot.resolve(relativePath)
-  }
-
-  fun toResourcesResult(project: Project, resourcesParams: ResourcesParams): ResourcesResult {
-//    project
-//      .lightweightModulesForTargets(resourcesParams.targets)
-//      .map { it.toBspSourcesItem(workspaceRoot) }
-
-    return ResourcesResult(emptyList())
   }
 
   private fun Project.lightweightModulesForTargets(targets: List<BuildTargetIdentifier>): List<Target> =

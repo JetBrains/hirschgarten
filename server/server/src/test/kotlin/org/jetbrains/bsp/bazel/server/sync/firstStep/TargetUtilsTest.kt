@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 
 class TargetUtilsTest {
   @Test
-  fun `should obtain target name, kind, tags and deps`() {
+  fun `should obtain target attributes using getters`() {
     // given
     val target =
       createMockTarget(
@@ -14,9 +14,11 @@ class TargetUtilsTest {
         kind = "java_library",
         tags = listOf("tag1", "tag2"),
         srcs = listOf("//target/name:src1.java", "//target/name:src2.java"),
+        resources = listOf("//target/name:resource1.java", "//target/name:resource2.java"),
         deps = listOf("//target/name1", "//target/name2"),
         runtimeDeps = listOf("//target/name3", "//target/name4"),
         exports = listOf("//target/name5", "//target/name6"),
+
       )
 
     // when & then

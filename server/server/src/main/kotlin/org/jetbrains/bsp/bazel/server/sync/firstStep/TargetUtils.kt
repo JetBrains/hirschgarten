@@ -16,6 +16,10 @@ private const val SRCS_NAME = "srcs"
 val Target.srcs: List<String>
   get() = getListAttribute(SRCS_NAME)
 
+private const val RESOURCES_NAME = "resources"
+val Target.resources: List<String>
+  get() = getListAttribute(RESOURCES_NAME)
+
 private val compileDeps = listOf("deps", "jars", "exports", "associates", "proc_macro_deps")
 private val runtimeDeps = listOf("runtime_deps")
 val Target.interestingDeps: List<String>

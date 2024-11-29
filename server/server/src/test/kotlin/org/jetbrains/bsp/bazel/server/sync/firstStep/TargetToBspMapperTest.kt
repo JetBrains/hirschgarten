@@ -3,6 +3,8 @@ package org.jetbrains.bsp.bazel.server.sync.firstStep
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.ResourcesItem
+import ch.epfl.scala.bsp4j.ResourcesParams
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
 import ch.epfl.scala.bsp4j.SourcesParams
@@ -28,6 +30,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import org.jetbrains.bsp.protocol.EnhancedSourceItemData
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -36,6 +39,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.createFile
 import kotlin.io.path.createParentDirectories
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 
 private class MockWorkspaceContextProvider(private val allowManualTargetsSync: Boolean) : WorkspaceContextProvider {
@@ -69,6 +73,14 @@ private fun createMockProject(lightweightModules: List<Build.Target>): Project =
   )
 
 class TargetToBspMapperTest {
+  private lateinit var workspaceRoot: Path
+
+  @BeforeEach
+  fun beforeEach() {
+    // given
+    workspaceRoot = createTempDirectory("workspaceRoot").also { it.toFile().deleteOnExit() }
+  }
+
   @Nested
   @DisplayName(".toWorkspaceBuildTargetsResult(project)")
   inner class ToWorkspaceBuildTargetsResult {
@@ -125,7 +137,7 @@ class TargetToBspMapperTest {
       val project = createMockProject(targets)
 
       val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = TargetToBspMapper(workspaceContextProvider, Path("/workspace/root"))
+      val mapper = TargetToBspMapper(workspaceContextProvider, workspaceRoot)
 
       // when
       val result = mapper.toWorkspaceBuildTargetsResult(project)
@@ -220,7 +232,7 @@ class TargetToBspMapperTest {
       val project = createMockProject(targets)
 
       val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = true)
-      val mapper = TargetToBspMapper(workspaceContextProvider, Path("/workspace/root"))
+      val mapper = TargetToBspMapper(workspaceContextProvider, workspaceRoot)
 
       // when
       val result = mapper.toWorkspaceBuildTargetsResult(project)
@@ -240,11 +252,6 @@ class TargetToBspMapperTest {
     @Test
     fun `should map project to source items and filter out not requested targets`() {
       // given
-      val workspaceRoot =
-        kotlin.io.path
-          .createTempDirectory("workspaceRoot")
-          .also { it.toFile().deleteOnExit() }
-
       val target1Root1 = workspaceRoot.resolve("target1")
       val target1Root2 = workspaceRoot.resolve("target1/a")
       val target1Src1 = workspaceRoot.createMockSourceFile("target1/src1.java", "com.example")
@@ -277,13 +284,8 @@ class TargetToBspMapperTest {
         )
       val project = createMockProject(targets)
 
-      val workspaceContextProvider =
-        MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper =
-        TargetToBspMapper(
-          workspaceContextProvider,
-          workspaceRoot,
-        )
+      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
+      val mapper = TargetToBspMapper(workspaceContextProvider, workspaceRoot)
 
       // when
       val params =
@@ -327,6 +329,68 @@ class TargetToBspMapperTest {
           EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
           EnhancedSourceItemData(jvmPackagePrefix = "com.example"),
         )
+    }
+  }
+
+  @Nested
+  @DisplayName(".toResourcesResult(project, params)")
+  inner class ToResourcesResult {
+    @Test
+    fun `should map project to resource items and filter out not requested targets`() {
+      // given
+      val target1Resource1 = workspaceRoot.resolve("target1/resource1.txt").createParentDirectories().createFile()
+      val target1Resource2 = workspaceRoot.resolve("target1/a/resource2.txt").createParentDirectories().createFile()
+
+      val target2Resource1 = workspaceRoot.resolve("target2/resource1.txt").createParentDirectories().createFile()
+      val target2Resource2 = workspaceRoot.resolve("target2/resource2.txt").createParentDirectories().createFile()
+
+      workspaceRoot.resolve("target3/resource1.txt").createParentDirectories().createFile()
+      workspaceRoot.resolve("target3/resource2.txt").createParentDirectories().createFile()
+
+      val targets =
+        listOf(
+          createMockTarget(
+            name = "//target1",
+            kind = "java_library",
+            resources = listOf("//target1:resource1.txt", "//target1:a/resource2.txt"),
+          ),
+          createMockTarget(
+            name = "//target2",
+            kind = "java_library",
+            resources = listOf("//target2:resource1.txt", "//target2:resource2.txt"),
+          ),
+          createMockTarget(
+            name = "//target3",
+            kind = "java_library",
+            resources = listOf("//target3:resource1.txt", "//target3:resource2.txt"),
+          ),
+        )
+      val project = createMockProject(targets)
+
+      val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
+      val mapper = TargetToBspMapper(workspaceContextProvider, workspaceRoot)
+
+      // when
+      val params = ResourcesParams(listOf(BuildTargetIdentifier("//target1"), BuildTargetIdentifier("//target2")))
+      val result = mapper.toResourcesResult(project, params)
+
+      // then
+      result.items shouldContainExactlyInAnyOrder listOf(
+        ResourcesItem(
+          BuildTargetIdentifier("//target1"),
+          listOf(
+            target1Resource1.toUri().toString(),
+            target1Resource2.toUri().toString(),
+          ),
+        ),
+        ResourcesItem(
+          BuildTargetIdentifier("//target2"),
+          listOf(
+            target2Resource1.toUri().toString(),
+            target2Resource2.toUri().toString(),
+          ),
+        )
+      )
     }
   }
 }
