@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.sync.firstStep.mappings
+package org.jetbrains.bsp.bazel.server.sync.firstStep
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Attribute
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Rule
@@ -8,6 +8,8 @@ fun createMockTarget(
   name: String,
   kind: String,
   deps: List<String> = emptyList(),
+  exports: List<String> = emptyList(),
+  runtimeDeps: List<String> = emptyList(),
   srcs: List<String> = emptyList(),
   tags: List<String> = emptyList(),
 ): Target {
@@ -17,6 +19,8 @@ fun createMockTarget(
       .setName(name)
       .setRuleClass(kind)
       .addAttribute(("deps" to deps).toListAttribute())
+      .addAttribute(("exports" to exports).toListAttribute())
+      .addAttribute(("runtime_deps" to runtimeDeps).toListAttribute())
       .addAttribute(("srcs" to srcs).toListAttribute())
       .addAttribute(("tags" to tags).toListAttribute())
       .build()

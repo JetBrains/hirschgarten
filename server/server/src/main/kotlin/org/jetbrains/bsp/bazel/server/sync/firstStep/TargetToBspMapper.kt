@@ -1,0 +1,127 @@
+package org.jetbrains.bsp.bazel.server.sync.firstStep
+
+import ch.epfl.scala.bsp4j.BuildTarget
+import ch.epfl.scala.bsp4j.BuildTargetCapabilities
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import ch.epfl.scala.bsp4j.BuildTargetTag
+import ch.epfl.scala.bsp4j.ResourcesParams
+import ch.epfl.scala.bsp4j.ResourcesResult
+import ch.epfl.scala.bsp4j.SourceItemKind
+import ch.epfl.scala.bsp4j.SourcesItem
+import ch.epfl.scala.bsp4j.SourcesParams
+import ch.epfl.scala.bsp4j.SourcesResult
+import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
+import org.jetbrains.bsp.bazel.server.model.BspMappings
+import org.jetbrains.bsp.bazel.server.model.Language
+import org.jetbrains.bsp.bazel.server.model.Project
+import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
+import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import java.nio.file.Path
+import kotlin.collections.filter
+import kotlin.collections.filterNot
+import kotlin.collections.map
+import kotlin.collections.mapNotNull
+import kotlin.collections.orEmpty
+import kotlin.io.path.Path
+import kotlin.io.path.exists
+
+class TargetToBspMapper(private val workspaceContextProvider: WorkspaceContextProvider, private val workspaceRoot: Path) {
+  fun toWorkspaceBuildTargetsResult(project: Project): WorkspaceBuildTargetsResult {
+    val shouldSyncManualTargets = workspaceContextProvider.currentWorkspaceContext().allowManualTargetsSync.value
+
+    val targets =
+      project.lightweightModules
+        ?.values
+        .orEmpty()
+        .filter { it.isSupported() }
+        .filter { shouldSyncManualTargets || !it.isManual }
+        .filterNot { it.isNoIde }
+        .map { it.toBspBuildTarget() }
+
+    return WorkspaceBuildTargetsResult(targets)
+  }
+
+  private fun Target.toBspBuildTarget(): BuildTarget =
+    BuildTarget(
+      BuildTargetIdentifier(rule.name),
+      inferTags(),
+      inferLanguages().map { it.id }.toList(),
+      interestingDeps.map { BuildTargetIdentifier(it) },
+      inferCapabilities(),
+    )
+
+  private fun Target.inferTags(): List<String> {
+    val typeTag = inferTypeTagFromTargetKind()
+    val manualTag = if (isManual) BuildTargetTag.MANUAL else null
+
+    return listOfNotNull(typeTag, manualTag)
+  }
+
+  private fun Target.inferTypeTagFromTargetKind(): String =
+    when {
+      isBinary -> BuildTargetTag.APPLICATION
+      isTest -> BuildTargetTag.TEST
+      else -> BuildTargetTag.LIBRARY
+    }
+
+  private fun Target.inferLanguages(): Set<Language> {
+    val languagesForTarget = Language.allOfKind(kind)
+    val languagesForSources = srcs.flatMap { Language.allOfSource(it) }.toHashSet()
+    return languagesForTarget + languagesForSources
+  }
+
+  private fun Target.inferCapabilities(): BuildTargetCapabilities =
+    BuildTargetCapabilities().apply {
+      canCompile = !isManual
+      canRun = isBinary
+      canTest = isTest
+    }
+
+  fun Target.isSupported(): Boolean = Language.allOfKind(kind).isNotEmpty()
+
+  fun toSourcesResult(project: Project, sourcesParams: SourcesParams): SourcesResult {
+    val items =
+      project
+        .lightweightModulesForTargets(sourcesParams.targets)
+        .map { it.toBspSourcesItem() }
+
+    return SourcesResult(items)
+  }
+
+  private fun Target.toBspSourcesItem(): SourcesItem {
+    val sourceFiles = calculateAllExistingSourceFiles(workspaceRoot)
+    val sourceFilesAndData = sourceFiles.map { it to JVMLanguagePluginParser.calculateJVMSourceRootAndAdditionalData(it) }
+
+    val items = sourceFilesAndData.map { EnhancedSourceItem(it.first.toUri().toString(), SourceItemKind.FILE, false, it.second.data) }
+
+    return SourcesItem(BuildTargetIdentifier(rule.name), items).apply {
+      roots = sourceFilesAndData.map { it.second.sourceRoot }.map { it.toUri().toString() }.distinct()
+    }
+  }
+
+  private fun Target.calculateAllExistingSourceFiles(workspaceRoot: Path): List<Path> =
+    srcs.map { it.bazelFileFormatToPath(workspaceRoot) }.filter { it.exists() }
+
+  fun String.bazelFileFormatToPath(workspaceRoot: Path): Path {
+    val withoutColons = replace(':', '/')
+    val withoutTargetPrefix = withoutColons.trimStart('/')
+    val relativePath = Path(withoutTargetPrefix)
+
+    return workspaceRoot.resolve(relativePath)
+  }
+
+  fun toResourcesResult(project: Project, resourcesParams: ResourcesParams): ResourcesResult {
+//    project
+//      .lightweightModulesForTargets(resourcesParams.targets)
+//      .map { it.toBspSourcesItem(workspaceRoot) }
+
+    return ResourcesResult(emptyList())
+  }
+
+  private fun Project.lightweightModulesForTargets(targets: List<BuildTargetIdentifier>): List<Target> =
+    BspMappings
+      .toLabels(targets)
+      .mapNotNull { lightweightModules?.get(it) }
+}
