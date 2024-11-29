@@ -103,9 +103,10 @@ class TargetToBspMapper(private val workspaceContextProvider: WorkspaceContextPr
   }
 
   fun toResourcesResult(project: Project, resourcesParams: ResourcesParams): ResourcesResult {
-    val items = project
-      .lightweightModulesForTargets(resourcesParams.targets)
-      .map { it.toBspResourcesItem() }
+    val items =
+      project
+        .lightweightModulesForTargets(resourcesParams.targets)
+        .map { it.toBspResourcesItem() }
 
     return ResourcesResult(items)
   }

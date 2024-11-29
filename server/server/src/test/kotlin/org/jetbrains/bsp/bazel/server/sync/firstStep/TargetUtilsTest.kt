@@ -18,7 +18,6 @@ class TargetUtilsTest {
         deps = listOf("//target/name1", "//target/name2"),
         runtimeDeps = listOf("//target/name3", "//target/name4"),
         exports = listOf("//target/name5", "//target/name6"),
-
       )
 
     // when & then

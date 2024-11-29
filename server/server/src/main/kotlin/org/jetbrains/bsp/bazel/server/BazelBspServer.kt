@@ -35,7 +35,7 @@ import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bsp.bazel.server.sync.TargetTagsResolver
 import org.jetbrains.bsp.bazel.server.sync.firstStep.FirstStepProjectResolver
-import org.jetbrains.bsp.bazel.server.sync.firstStep.mappings.TargetToBspMapper
+import org.jetbrains.bsp.bazel.server.sync.firstStep.TargetToBspMapper
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger

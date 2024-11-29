@@ -13,37 +13,9 @@ kt_jvm_library(
 )
 
 kt_junit5_test(
-    name = "TargetToBspBuildTargetMapperTest",
-    size = "small",
-    src = "TargetToBspBuildTargetMapperTest.kt",
-    deps = [
-        ":mocks",
-        "//protocol",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/firstStep",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:build_java_proto",
-        "@maven//:ch_epfl_scala_bsp4j",
-        "@maven//:com_google_protobuf_protobuf_java",
-    ],
-)
-
-kt_junit5_test(
     name = "TargetToBspMapperTest",
     size = "small",
     src = "TargetToBspMapperTest.kt",
-    deps = [
-        ":mocks",
-        "//protocol",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/firstStep",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:build_java_proto",
-        "@maven//:ch_epfl_scala_bsp4j",
-        "@maven//:com_google_protobuf_protobuf_java",
-    ],
-)
-
-kt_junit5_test(
-    name = "TargetToBspSourcesItemMapperTest",
-    size = "small",
-    src = "TargetToBspSourcesItemMapperTest.kt",
     deps = [
         ":mocks",
         "//protocol",

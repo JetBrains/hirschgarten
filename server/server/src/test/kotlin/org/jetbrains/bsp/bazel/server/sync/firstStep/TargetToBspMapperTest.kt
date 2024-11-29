@@ -375,22 +375,23 @@ class TargetToBspMapperTest {
       val result = mapper.toResourcesResult(project, params)
 
       // then
-      result.items shouldContainExactlyInAnyOrder listOf(
-        ResourcesItem(
-          BuildTargetIdentifier("//target1"),
-          listOf(
-            target1Resource1.toUri().toString(),
-            target1Resource2.toUri().toString(),
+      result.items shouldContainExactlyInAnyOrder
+        listOf(
+          ResourcesItem(
+            BuildTargetIdentifier("//target1"),
+            listOf(
+              target1Resource1.toUri().toString(),
+              target1Resource2.toUri().toString(),
+            ),
           ),
-        ),
-        ResourcesItem(
-          BuildTargetIdentifier("//target2"),
-          listOf(
-            target2Resource1.toUri().toString(),
-            target2Resource2.toUri().toString(),
+          ResourcesItem(
+            BuildTargetIdentifier("//target2"),
+            listOf(
+              target2Resource1.toUri().toString(),
+              target2Resource2.toUri().toString(),
+            ),
           ),
         )
-      )
     }
   }
 }
