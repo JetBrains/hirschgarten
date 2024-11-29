@@ -16,6 +16,7 @@ object ProjectViewSyntaxHighlighter : SyntaxHighlighterBase() {
     mapOf(
       ProjectViewTokenType.COLON to ProjectViewHighlightingColors.COLON,
       ProjectViewTokenType.COMMENT to ProjectViewHighlightingColors.LINE_COMMENT,
+      ProjectViewTokenType.COLON to ProjectViewHighlightingColors.COLON,
       ProjectViewTokenType.IDENTIFIER to ProjectViewHighlightingColors.IDENTIFIER,
       ProjectViewTokenType.LIST_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
       ProjectViewTokenType.SCALAR_KEYWORD to ProjectViewHighlightingColors.KEYWORD,
