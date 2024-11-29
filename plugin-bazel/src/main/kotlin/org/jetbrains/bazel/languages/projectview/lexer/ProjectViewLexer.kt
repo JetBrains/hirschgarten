@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.projectview.lexer
 
 import com.intellij.lexer.LexerBase
 import com.intellij.psi.tree.IElementType
+import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewLexerBase.Token
 
 /**
  * A lexer that extends [LexerBase] using [ProjectViewLexerBase] to tokenize text.

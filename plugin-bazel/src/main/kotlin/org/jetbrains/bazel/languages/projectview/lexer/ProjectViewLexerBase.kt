@@ -73,45 +73,45 @@ class ProjectViewLexerBase(input: CharSequence) {
   private fun handleWhiteSpace() {
     // Every whitespace followed by a single-line comment or a newline is fused with the following token.
     val oldPos = pos - 1
-    when {
-      pos >= buffer.length || isHorizontalWhitespace(buffer[pos]) -> {
-        if (pos < buffer.length) {
-          pos++
-        }
-        tokens.add(Token(ProjectViewTokenType.WHITESPACE, oldPos, pos))
+    while (pos < buffer.length) {
+      if (isHorizontalWhitespace(buffer[pos])) {
+        pos++
+        continue
       }
-      isPosAfterNonWhitespaceCharInLine || buffer[pos] == '#' || buffer[pos] == '\n' -> {
+
+      if (isPosAfterNonWhitespaceCharInLine || buffer[pos] == '#' || buffer[pos] == '\n') {
         tokens.add(Token(ProjectViewTokenType.WHITESPACE, oldPos, pos))
-      }
-      else -> {
+      } else {
         tokens.add(Token(ProjectViewTokenType.INDENT, oldPos, pos))
       }
+
+      return
     }
+
+    tokens.add(Token(ProjectViewTokenType.WHITESPACE, oldPos, pos))
   }
 
   private fun getIdentifierToken(start: Int, end: Int): ProjectViewTokenType {
     val identifier = buffer.substring(start, end)
-    // TODO: Import ProjectViewKeywords
-    return ProjectViewTokenType.IDENTIFIER
-//    return when (identifier) {
-//      in ProjectViewKeywords.LIST_KEYWORD_MAP.keys -> ProjectViewTokenType.LIST_KEYWORD
-//      in ProjectViewKeywords.SCALAR_KEYWORD_MAP.keys -> ProjectViewTokenType.SCALAR_KEYWORD
-//      else -> ProjectViewTokenType.IDENTIFIER
-//    }
+    return when (identifier) {
+      in ProjectViewTokenType.SCALAR_KEYWORDS_SET -> ProjectViewTokenType.SCALAR_KEYWORD
+      in ProjectViewTokenType.LIST_KEYWORDS_SET -> ProjectViewTokenType.LIST_KEYWORD
+      else -> ProjectViewTokenType.IDENTIFIER
+    }
   }
 
   private fun isHorizontalWhitespace(c: Char): Boolean = c == ' ' || c == '\t' || c == '\r'
-}
 
-/**
- * Represents a token in the project view file.
- *
- * @property type The type of the token.
- * @property start Position of the first character in the buffer passed to the [ProjectViewLexerBase] constructor.
- * @property end Sum of [start] and the length of the token.
- */
-data class Token(
-  val type: ProjectViewTokenType,
-  val start: Int,
-  val end: Int,
-)
+  /**
+   * Represents a token in the project view file.
+   *
+   * @property type The type of the token.
+   * @property start Position of the first character in the buffer passed to the [ProjectViewLexerBase] constructor.
+   * @property end Sum of [start] and the length of the token.
+   */
+  data class Token(
+    val type: ProjectViewTokenType,
+    val start: Int,
+    val end: Int,
+  )
+}
