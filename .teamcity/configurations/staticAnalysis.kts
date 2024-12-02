@@ -22,6 +22,8 @@ open class Analyze(
         dependencies = {
           snapshot(ProjectBuild.Space) {}
           artifacts(ProjectBuild.Space) {
+            // TO-DO: remove build rule
+            buildRule = lastSuccessful()
             artifactRules = Utils.CommonParams.QodanaArtifactRules
           }
         },
