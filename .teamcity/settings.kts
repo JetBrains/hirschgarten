@@ -126,11 +126,11 @@ object Space : Project({
 // setup pipeline chain for bazel-bsp
   val allSteps =
     sequential {
-      buildType(ProjectFormat.Space)
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
+        buildType(ProjectFormat.Space)
         buildType(ProjectBuild.Space)
         buildType(ProjectUnitTests.Space)
         buildType(PluginBenchmark.Space)
