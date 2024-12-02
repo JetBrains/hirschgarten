@@ -187,7 +187,7 @@ open class JetpackCompose(
   params = {
     password("qodana.cloud.token.jetpack-compose", "credentialsJSON:0579ad7c-87ad-4bc0-af74-8bdc1cc0c6a5", label = "qodana.cloud.token.jetpack-compose", description = "Qodana token for Jetpack Compose statistics", display = ParameterDisplay.HIDDEN)
   },
-  repo = "JetpackCompose",
+  repo = "jetpack_compose",
   linterImage = Utils.CommonParams.DockerQodanaAndroidImage,
 )
 
