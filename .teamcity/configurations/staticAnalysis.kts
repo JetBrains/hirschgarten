@@ -16,17 +16,7 @@ open class Analyze(vcsRoot: GitVcsRoot) :
           equals("container.engine.osType", "linux")
         },
         steps = {
-            bazel {
-                name = "build plugins"
-                id = "build_plugins"
-                command = "build"
-                targets = "//..."
-                arguments = Utils.CommonParams.BazelCiSpecificArgs
-                logging = BazelStep.Verbosity.Diagnostic
-                Utils.DockerParams.get().forEach { (key, value) ->
-                  param(key, value)
-                }
-            }
+          Utils.CommonParams.CrossBuildPlatforms.forEach { platform ->
             script {
                 name = "add plugins to qodana"
                 id = "add_plugins_to_qodana"
@@ -65,6 +55,7 @@ open class Analyze(vcsRoot: GitVcsRoot) :
                 cloudToken = "%qodana.cloud.token%"
                 collectAnonymousStatistics = true
             }
+          }
         },
         vcsRoot = vcsRoot,
         params = {
