@@ -44,11 +44,11 @@ object GitHub : Project({
 // setup pipeline chain for bazel-bsp
   val allSteps =
     sequential {
-      buildType(ProjectFormat.GitHub)
       parallel(options = {
         onDependencyFailure = FailureAction.CANCEL
         onDependencyCancel = FailureAction.CANCEL
       }) {
+        buildType(ProjectFormat.GitHub)
         buildType(ProjectBuild.GitHub)
         buildType(ProjectUnitTests.GitHub)
         buildType(PluginBenchmark.GitHub)
