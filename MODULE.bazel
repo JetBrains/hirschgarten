@@ -51,7 +51,7 @@ maven.install(
         "com.jetbrains.intellij.tools:ide-metrics-collector-starter:242.23726.103",
         "com.jetbrains.intellij.tools:ide-metrics-collector:242.23726.103",
         "com.jetbrains.intellij.tools:ide-starter-junit5:242.23726.103",
-        "com.jetbrains.intellij.tools:ide-starter-squashed:242.23726.103",
+        "com.jetbrains.intellij.tools:ide-starter-squashed:242.24807.4",
         "commons-cli:commons-cli:jar:1.9.0",
         "commons-io:commons-io:jar:2.18.0",
         "io.grpc:grpc-protobuf:1.68.1",
