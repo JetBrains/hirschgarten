@@ -1,6 +1,5 @@
 <idea-plugin>
   <extensions defaultExtensionNs="org.jetbrains.bsp">
-    <pythonSdkGetterExtension
-      implementation="org.jetbrains.plugins.bsp.python.PythonSdkGetter" />
+    <projectSyncHook implementation="org.jetbrains.plugins.bsp.impl.flow.sync.languages.python.PythonProjectSync"/>
   </extensions>
 </idea-plugin>
