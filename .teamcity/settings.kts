@@ -159,8 +159,8 @@ object Space : Project({
         buildType(ProjectUnitTests.Space)
         buildType(PluginBenchmark.Space)
         buildType(ServerBenchmark.Space)
-        e2eTests()
-        staticAnalysis()
+        e2eTests().forEach { buildType(it) }
+        staticAnalysis().forEach { buildType(it) }
       }
 
       buildType(ResultsAggregator.Space, options = {
@@ -172,11 +172,16 @@ object Space : Project({
   // initialize all build steps for bazel-bsp
   allSteps.forEach { buildType(it) }
 
-//  staticAnalysis().forEach { buildConfig ->
-//    buildConfig.dependencies {
-//
-//    }
-//  }
+  staticAnalysis().forEach { buildConfig ->
+    buildConfig.dependencies {
+      artifacts(ProjectBuild.Space) {
+        artifactRules = """
+            +:intellij-bazel-*.zip!**=>%system.teamcity.build.checkoutDir%/download/intellij-bazel
+            +:intellij-bsp-*.zip!**=>%system.teamcity.build.checkoutDir%/download/intellij-bsp
+        """.trimIndent()
+      }
+    }
+  }
 
   // setup trigger for bazel-bsp pipeline
 //  ProjectFormat.Space.triggers {

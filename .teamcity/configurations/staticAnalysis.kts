@@ -66,7 +66,8 @@ open class Analyze(vcsRoot: GitVcsRoot) :
             dockerRegistryId = "PROJECT_EXT_3"
             }
         },
-        failureConditions = { executionTimeoutMin = 30 }
+        failureConditions = { executionTimeoutMin = 30 },
+        dependencies = {}
     )
 
 object GitHub : Analyze(
