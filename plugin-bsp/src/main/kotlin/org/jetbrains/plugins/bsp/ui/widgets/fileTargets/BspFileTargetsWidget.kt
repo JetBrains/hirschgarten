@@ -53,20 +53,12 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
     }
 
   private fun activeWidgetStateIfIncludedInAnyTargetOrInactiveState(file: VirtualFile, icon: Icon): WidgetState {
-    val targets = file.getTargetsUsingFile()
+    val targets = project.temporaryTargetUtils.getTargetsForFile(file, project)
     return if (targets.isEmpty()) {
       inactiveWidgetState(icon)
     } else {
       activeWidgetState(targets.firstOrNull(), icon)
     }
-  }
-
-  private fun VirtualFile.getTargetsUsingFile(): List<BuildTargetIdentifier> {
-    val targetUtils = project.temporaryTargetUtils
-    val directTargets = targetUtils.getTargetsForFile(this, project)
-    val executableTargets = targetUtils.getExecutableTargetsForFile(this, project)
-    // we want to show the executable targets first
-    return (executableTargets + directTargets).distinct()
   }
 
   private fun inactiveWidgetState(icon: Icon): WidgetState {
@@ -95,12 +87,22 @@ class BspFileTargetsWidget(project: Project) : EditorBasedStatusBarPopup(project
   }
 
   private fun calculatePopupGroup(file: VirtualFile): ActionGroup {
-    val targetIds = file.getTargetsUsingFile()
-    val targets = targetIds.mapNotNull { project.temporaryTargetUtils.getBuildTargetInfoForId(it) }
-    val groups = targets.map { it.calculatePopupGroup() }
+    val targetUtils = project.temporaryTargetUtils
+    val targetIds = targetUtils.getTargetsForFile(file, project)
+    val executableTargetIds = targetUtils.getExecutableTargetsForFile(file, project) - targetIds.toSet()
 
-    return DefaultActionGroup(groups)
+    val targets = targetIds.getTargetInfos()
+    val executableTargets = executableTargetIds.getTargetInfos()
+
+    return DefaultActionGroup().also {
+      it.addAll(targets.map { it.calculatePopupGroup() })
+      if (targets.isNotEmpty() && executableTargets.isNotEmpty()) it.addSeparator()
+      it.addAll(executableTargets.map { it.calculatePopupGroup() })
+    }
   }
+
+  private fun List<BuildTargetIdentifier>.getTargetInfos(): List<BuildTargetInfo> =
+    this.mapNotNull { project.temporaryTargetUtils.getBuildTargetInfoForId(it) }
 
   private fun BuildTargetInfo.calculatePopupGroup(): ActionGroup =
     DefaultActionGroup(id.uri, true).also {

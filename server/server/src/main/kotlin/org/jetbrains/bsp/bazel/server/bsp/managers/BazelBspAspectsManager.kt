@@ -88,7 +88,7 @@ class BazelBspAspectsManager(
 
   private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"
 
-  fun fetchFilesFromOutputGroups(
+  suspend fun fetchFilesFromOutputGroups(
     cancelChecker: CancelChecker,
     targetSpecs: TargetsSpec,
     aspect: String,

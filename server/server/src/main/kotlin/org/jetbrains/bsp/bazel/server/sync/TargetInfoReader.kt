@@ -4,7 +4,7 @@ import com.google.protobuf.TextFormat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import okio.IOException
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
@@ -13,8 +13,8 @@ import java.nio.file.Path
 import kotlin.io.path.reader
 
 class TargetInfoReader(private val bspClientLogger: BspClientLogger) {
-  fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetInfo> =
-    runBlocking(Dispatchers.Default) {
+  suspend fun readTargetMapFromAspectOutputs(files: Set<Path>): Map<Label, TargetInfo> =
+    withContext(Dispatchers.Default) {
       files.map { file -> async { readFromFile(file) } }.awaitAll()
     }.asSequence()
       .filterNotNull()

@@ -10,20 +10,18 @@ import org.jetbrains.plugins.bsp.utils.StringUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 fun Project.findNameProvider(): TargetNameReformatProvider? =
-  this.buildToolIdOrDefault.takeIf { it.id != "bsp" }?.let { createModuleNameProvider(it) }
-
-private fun createModuleNameProvider(buildToolId: BuildToolId): TargetNameReformatProvider = createNameReformatProvider(buildToolId)
+  this.buildToolIdOrDefault.takeIf { it.id != "bsp" }?.let { createNameReformatProvider(it) }
 
 private fun createNameReformatProvider(buildToolId: BuildToolId): (BuildTargetInfo) -> String {
   val bspBuildTargetClassifier = BuildTargetClassifierExtension.ep.withBuildToolIdOrDefault(buildToolId)
   return { buildTargetInfo ->
-    val sanitizedName = bspBuildTargetClassifier.calculateBuildTargetName(buildTargetInfo).replaceDots()
+    val targetName = bspBuildTargetClassifier.calculateBuildTargetName(buildTargetInfo).sanitizeName()
     val prefix =
       bspBuildTargetClassifier
         .calculateBuildTargetPath(buildTargetInfo)
-        .shortenTargetPath(sanitizedName.length)
-        .joinToString(".") { pathElement -> pathElement.replaceDots() }
-    if (prefix.isBlank()) sanitizedName else "$prefix.$sanitizedName"
+        .shortenTargetPath(targetName.length)
+        .joinToString(".") { pathElement -> pathElement.sanitizeName() }
+    if (prefix.isBlank()) targetName else "$prefix.$targetName"
   }
 }
 
@@ -45,7 +43,14 @@ private fun List<String>.shortenTargetPath(targetNameLength: Int = 0): List<Stri
     this
   }
 
-fun String.replaceDots(): String = this.replace('.', '-')
+fun String.sanitizeName(): String = replaceDots().filterColon()
+
+private fun String.replaceDots(): String = this.replace('.', '-')
+
+/**
+ * for Windows compatibility, e.g. C:
+ */
+private fun String.filterColon(): String = this.replace(":", "")
 
 fun String.shortenTargetPath(): String =
   if (BspFeatureFlags.isShortenModuleLibraryNamesEnabled) {

@@ -306,7 +306,7 @@ class CollectProjectDetailsTask(
       "calculate-project-structure",
       BspPluginBundle.message("console.task.model.calculate.structure"),
     ) {
-      runInterruptible {
+      coroutineScope {
         val projectBasePath = project.rootDir.toNioPath()
         val nameProvider = project.findNameProvider().orDefault()
         val libraryGraph = LibraryGraph(projectDetails.libraries.orEmpty())

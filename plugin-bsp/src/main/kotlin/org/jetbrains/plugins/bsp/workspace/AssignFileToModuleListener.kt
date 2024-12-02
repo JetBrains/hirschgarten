@@ -32,6 +32,7 @@ import com.intellij.platform.workspace.jps.entities.modifyModuleEntity
 import com.intellij.platform.workspace.storage.ImmutableEntityStorage
 import com.intellij.platform.workspace.storage.url.VirtualFileUrl
 import com.intellij.workspaceModel.ide.legacyBridge.impl.java.JAVA_SOURCE_ROOT_ENTITY_TYPE_ID
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import org.jetbrains.kotlin.config.KOTLIN_SOURCE_ROOT_TYPE_ID
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
@@ -46,13 +47,28 @@ import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.utils.isSourceFile
 
 class AssignFileToModuleListener : BulkFileListener {
+  private val pendingEvents = mutableMapOf<Project, MutableList<VFileEvent>>()
+
   override fun after(events: MutableList<out VFileEvent>) {
     // if the list has multiple events, it means an external operation (like Git) and resync is probably required anyway
     events.singleOrNull()?.let {
       val file = it.getAffectedFile()
       if (file?.isSourceFile() == true) {
-        file.getRelatedProjects().forEach { project -> it.process(project) }
+        file.getRelatedProjects().forEach { project -> project.processWithDelay(it) }
       }
+    }
+  }
+
+  private fun Project.processWithDelay(event: VFileEvent) {
+    synchronized(pendingEvents) {
+      pendingEvents[this]?.let {
+        it.add(event)
+        return
+      } ?: pendingEvents.put(this, mutableListOf(event))
+    }
+    BspCoroutineService.getInstance(this).start {
+      delay(PROCESSING_DELAY)
+      synchronized(pendingEvents) { pendingEvents.remove(this)?.singleOrNull() }?.process(this)
     }
   }
 }
@@ -256,4 +272,5 @@ private suspend fun updateContentRoots(
   }
 }
 
+private const val PROCESSING_DELAY = 250L // no noticeable by the user, but if there are many events simultaneously, we will get them all
 private val logger = Logger.getInstance(AssignFileToModuleListener::class.java)

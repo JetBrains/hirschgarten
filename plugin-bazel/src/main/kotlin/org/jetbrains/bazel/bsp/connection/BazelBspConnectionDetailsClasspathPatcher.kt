@@ -6,6 +6,10 @@ import com.intellij.openapi.extensions.PluginId
 import org.jetbrains.bazel.settings.BAZEL_PLUGIN_ID
 import org.jetbrains.bazel.settings.BSP_PLUGIN_ID
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
 import kotlin.io.path.name
 
 internal const val BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX = 2
@@ -44,11 +48,23 @@ private fun calculatePluginClasspath(pluginIdString: String): String? {
   val pluginDescriptor = PluginManager.getInstance().findEnabledPlugin(pluginId) ?: return null
   val pluginPath = pluginDescriptor.pluginPath
 
-  if (pluginPath.name.endsWith(".jar")) return pluginPath.toString()
+  if (pluginPath.isJarFile()) return pluginPath.toString()
 
   val pluginJarsDir = pluginPath.resolve("lib")
-  return pluginJarsDir.resolve("*").toString()
+
+  if (!pluginJarsDir.isDirectory()) return null
+
+  val jarsList =
+    Files
+      .list(pluginJarsDir)
+      .filter { it.isJarFile() }
+      .map { it.toAbsolutePath().toString() }
+      .toList()
+
+  return jarsList.joinToString(separator = File.pathSeparator)
 }
+
+private fun Path.isJarFile() = isRegularFile() && name.endsWith(".jar")
 
 private fun BspConnectionDetails.getUtil8Jar(): String =
   argv[BAZEL_BSP_CONNECTION_FILE_ARGV_CLASSPATH_INDEX]

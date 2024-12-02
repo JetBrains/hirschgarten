@@ -8,16 +8,12 @@ load("@rules_java//java:defs.bzl", "java_import")
 
 # The current indirect ij_product mapping (eg. "intellij-latest")
 INDIRECT_IJ_PRODUCTS = {
-    "intellij-latest": "intellij-2024.2",
+    "intellij-latest": "intellij-2024.3",
 }
 
 (CHANNEL_STABLE, CHANNEL_BETA, CHANNEL_CANARY, CHANNEL_FREEFORM) = ("stable", "beta", "canary", "freeform")
 
 DIRECT_IJ_PRODUCTS = {
-    "intellij-2024.2": struct(
-        ide = "intellij",
-        directory = "intellij_ce_2024_2",
-    ),
     "intellij-2024.3": struct(
         ide = "intellij",
         directory = "intellij_ce_2024_3",

@@ -9,6 +9,7 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.fileLogger
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.UnindexedFilesScannerExecutor
 import com.intellij.platform.diagnostic.telemetry.helpers.use
 import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.ide.progress.withBackgroundProgress
@@ -21,8 +22,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.action.saveAllFiles
+import org.jetbrains.plugins.bsp.assets.assets
 import org.jetbrains.plugins.bsp.building.syncConsole
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
@@ -98,14 +101,29 @@ class ProjectSyncTask(private val project: Project) {
   }
 
   private suspend fun doSync(syncScope: ProjectSyncScope, buildProject: Boolean) {
-    withBackgroundProgress(project, "Syncing project...", true) {
-      reportSequentialProgress {
-        executePreSyncHooks(it)
-        executeSyncHooks(it, syncScope, buildProject)
-        executePostSyncHooks(it)
+    val syncActivityName = BspPluginBundle.message("console.task.sync.activity.name", project.assets.presentableName)
+    withSuspendScanningAndIndexing(syncActivityName) {
+      withBackgroundProgress(project, "Syncing project...", true) {
+        reportSequentialProgress {
+          executePreSyncHooks(it)
+          executeSyncHooks(it, syncScope, buildProject)
+          executePostSyncHooks(it)
+        }
       }
     }
   }
+
+  private suspend fun withSuspendScanningAndIndexing(activityName: String, activity: suspend () -> Unit) =
+    coroutineScope {
+      // Use Dispatchers.IO to wait for the blocking call
+      withContext(Dispatchers.IO) {
+        UnindexedFilesScannerExecutor.getInstance(project).suspendScanningAndIndexingThenRun(activityName) {
+          runBlocking(coroutineContext) {
+            activity()
+          }
+        }
+      }
+    }
 
   private suspend fun executePreSyncHooks(progressReporter: SequentialProgressReporter) {
     val environment =

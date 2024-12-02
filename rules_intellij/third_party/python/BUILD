@@ -12,7 +12,6 @@ java_library(
     name = "python_internal",
     visibility = ["//visibility:private"],
     exports = select_for_plugin_api({
-        "intellij-2024.2": ["@python_2024_2//:python"],
         "intellij-2024.3": ["@python_2024_3//:python"],
     }),
 )
@@ -20,7 +19,6 @@ java_library(
 filegroup(
     name = "python_helpers",
     srcs = select_for_plugin_api({
-        "intellij-2024.2": ["@python_2024_2//:python_helpers"],
         "intellij-2024.3": ["@python_2024_3//:python_helpers"],
     }),
     visibility = ["//visibility:private"],

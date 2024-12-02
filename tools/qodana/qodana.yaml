@@ -3,6 +3,7 @@ profile:
   name: qodana.recommended
 include:
   - name: QodanaSanity
+  - name: HighlightVisitorInternal
 exclude:
   - name: All
     paths:
