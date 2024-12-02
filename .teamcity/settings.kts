@@ -18,17 +18,17 @@ object ProjectBranchFilters {
 }
 
 object ProjectTriggerRules {
-  val triggerRules =
-    """
-    -:**.md
-    -:**.txt
-    -:**.yml
-    -:**.yaml
-    -:LICENSE
-    -:LICENCE
-    -:CODEOWNERS
-    -:/.teamcity/**
-    """.trimIndent()
+  val triggerRules = ""
+//    """
+//    -:**.md
+//    -:**.txt
+//    -:**.yml
+//    -:**.yaml
+//    -:LICENSE
+//    -:LICENCE
+//    -:CODEOWNERS
+//    -:/.teamcity/**
+//    """.trimIndent()
 }
 
 project {
