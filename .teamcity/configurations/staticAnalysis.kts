@@ -14,6 +14,7 @@ open class Analyze(vcsRoot: GitVcsRoot) :
           equals("container.engine.osType", "linux")
         },
         dependencies = {
+          snapshot(ProjectBuild.Space) {}
           artifacts(ProjectBuild.Space) {
             artifactRules = Utils.CommonParams.QodanaArtifactRules
           }
