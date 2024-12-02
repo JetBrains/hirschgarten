@@ -66,7 +66,7 @@ open class Analyze(
                 name = "run qodana"
                 id = "run_qodana"
                 reportAsTests = false
-                workingDir = if (repo != null ){ "%system.agent.persistent.cache%/$repo" } else {""}
+              workingDir = if (repo != null ){ "%system.agent.persistent.cache%/${repo}Qodana" } else {""}
                 linter = customLinter {
                     image = linterImage
                 }
