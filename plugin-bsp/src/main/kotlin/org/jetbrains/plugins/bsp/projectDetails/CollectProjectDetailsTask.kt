@@ -2,7 +2,6 @@ package org.jetbrains.plugins.bsp.projectDetails
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.DependencySourcesResult
 import ch.epfl.scala.bsp4j.JavacOptionsParams
@@ -21,7 +20,6 @@ import com.intellij.platform.diagnostic.telemetry.helpers.useWithScope
 import com.intellij.platform.util.progress.SequentialProgressReporter
 import com.intellij.platform.workspace.storage.MutableEntityStorage
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runInterruptible
 import org.jetbrains.bsp.protocol.BazelBuildServer
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.JoinedBuildServer
@@ -29,7 +27,6 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import org.jetbrains.bsp.protocol.utils.extractAndroidBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractJvmBuildTarget
-import org.jetbrains.bsp.protocol.utils.extractPythonBuildTarget
 import org.jetbrains.bsp.protocol.utils.extractScalaBuildTarget
 import org.jetbrains.kotlin.analysis.api.platform.analysisMessageBus
 import org.jetbrains.kotlin.analysis.api.platform.modification.KotlinModificationTopics
@@ -64,10 +61,6 @@ import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.scalaVersionToScalaSdkName
 import org.jetbrains.plugins.bsp.magicmetamodel.orDefault
 import org.jetbrains.plugins.bsp.performance.bspTracer
-import org.jetbrains.plugins.bsp.python.PythonSdk
-import org.jetbrains.plugins.bsp.python.PythonSdkGetterExtension
-import org.jetbrains.plugins.bsp.python.pythonSdkGetterExtension
-import org.jetbrains.plugins.bsp.python.pythonSdkGetterExtensionExists
 import org.jetbrains.plugins.bsp.scala.sdk.ScalaSdk
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtension
 import org.jetbrains.plugins.bsp.scala.sdk.scalaSdkExtensionExists
@@ -84,7 +77,6 @@ import java.net.URI
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
-import kotlin.io.path.Path
 import kotlin.io.path.toPath
 
 class CollectProjectDetailsTask(
@@ -95,8 +87,6 @@ class CollectProjectDetailsTask(
   private var uniqueJavaHomes: Set<String>? = null
 
   private lateinit var javacOptions: Map<String, String>
-
-  private var pythonSdks: Set<PythonSdk>? = null
 
   private var scalaSdks: Set<ScalaSdk>? = null
 
@@ -124,12 +114,6 @@ class CollectProjectDetailsTask(
         }
       }
       project.defaultJdkName = projectDetails.defaultJdkName
-    }
-
-    if (BspFeatureFlags.isPythonSupportEnabled && pythonSdkGetterExtensionExists()) {
-      progressReporter.indeterminateStep(text = BspPluginBundle.message("progress.bar.calculate.python.sdk.infos")) {
-        calculateAllPythonSdkInfosSubtask(projectDetails)
-      }
     }
 
     if (scalaSdkExtensionExists()) {
@@ -233,47 +217,6 @@ class CollectProjectDetailsTask(
           sdkJars = it.jars,
         )
       }
-
-  private suspend fun calculateAllPythonSdkInfosSubtask(projectDetails: ProjectDetails) =
-    project.syncConsole.withSubtask(
-      taskId = taskId,
-      subtaskId = "calculate-all-python-sdk-infos",
-      message = BspPluginBundle.message("console.task.model.calculate.python.sdks"),
-    ) {
-      runInterruptible {
-        pythonSdks =
-          bspTracer.spanBuilder("calculate.all.python.sdk.infos.ms").use {
-            calculateAllPythonSdkInfos(projectDetails)
-          }
-      }
-    }
-
-  private fun createPythonSdk(target: BuildTarget, dependenciesSources: List<DependencySourcesItem>): PythonSdk? =
-    extractPythonBuildTarget(target)?.let {
-      if (it.interpreter != null && it.version != null) {
-        PythonSdk(
-          name = "${target.id.uri}-${it.version}",
-          interpreterUri = it.interpreter,
-          dependencies = dependenciesSources,
-        )
-      } else {
-        pythonSdkGetterExtension()
-          ?.getSystemSdk()
-          ?.let { sdk ->
-            PythonSdk(
-              name = "${target.id.uri}-detected-PY3",
-              interpreterUri = Path(sdk.homePath!!).toUri().toString(),
-              dependencies = dependenciesSources,
-            )
-          }
-      }
-    }
-
-  private fun calculateAllPythonSdkInfos(projectDetails: ProjectDetails): Set<PythonSdk> =
-    projectDetails.targets
-      .mapNotNull {
-        createPythonSdk(it, projectDetails.dependenciesSources.filter { a -> a.target.uri == it.id.uri })
-      }.toSet()
 
   private suspend fun calculateAllAndroidSdkInfosSubtask(projectDetails: ProjectDetails) =
     project.syncConsole.withSubtask(
@@ -416,10 +359,6 @@ class CollectProjectDetailsTask(
     addBspFetchedJavacOptions()
     addBspFetchedScalaSdks()
 
-    if (BspFeatureFlags.isPythonSupportEnabled) {
-      addBspFetchedPythonSdks()
-    }
-
     if (BspFeatureFlags.isAndroidSupportEnabled) {
       addBspFetchedAndroidSdks()
     }
@@ -460,32 +399,6 @@ class CollectProjectDetailsTask(
         }
       }
     }
-  }
-
-  private suspend fun addBspFetchedPythonSdks() {
-    pythonSdkGetterExtension()?.let { extension ->
-      project.syncConsole.withSubtask(
-        taskId,
-        "add-bsp-fetched-python-sdks",
-        BspPluginBundle.message("console.task.model.add.python.fetched.sdks"),
-      ) {
-        bspTracer.spanBuilder("add.bsp.fetched.python.sdks.ms").useWithScope {
-          pythonSdks?.forEach { addPythonSdkIfNeeded(it, extension) }
-        }
-      }
-    }
-  }
-
-  private suspend fun addPythonSdkIfNeeded(pythonSdk: PythonSdk, pythonSdkGetterExtension: PythonSdkGetterExtension) {
-    val sdk =
-      runInterruptible {
-        pythonSdkGetterExtension.getPythonSdk(
-          pythonSdk,
-          WorkspaceModel.getInstance(project).getVirtualFileUrlManager(),
-        )
-      }
-
-    SdkUtils.addSdkIfNeeded(sdk)
   }
 
   private suspend fun addBspFetchedAndroidSdks() {
