@@ -32,7 +32,7 @@ object ProjectTriggerRules {
 }
 
 project {
-  subProject(GitHub)
+//  subProject(GitHub)
   subProject(Space)
 }
 
