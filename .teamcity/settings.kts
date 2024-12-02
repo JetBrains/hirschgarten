@@ -65,7 +65,7 @@ object GitHub : Project({
         buildType(ServerE2eTests.ManualTargetsGitHub)
         buildType(ServerE2eTests.BuildSyncGitHub)
         buildType(ServerBenchmark.GitHub)
-        buildType(StaticAnalysis.GitHub)
+        buildType(StaticAnalysis.HirschgartenGitHub)
       }
 
       buildType(ResultsAggregator.GitHub, options = {
@@ -113,7 +113,7 @@ object GitHub : Project({
       ServerE2eTests.ManualTargetsGitHub,
       ServerE2eTests.BuildSyncGitHub,
       ServerBenchmark.GitHub,
-      StaticAnalysis.GitHub,
+      StaticAnalysis.HirschgartenGitHub,
       ResultsAggregator.GitHub,
     )
 })
@@ -147,7 +147,7 @@ object Space : Project({
         buildType(ServerE2eTests.ManualTargetsSpace)
         buildType(ServerE2eTests.BuildSyncSpace)
         buildType(ServerBenchmark.Space)
-        buildType(StaticAnalysis.Space)
+        buildType(StaticAnalysis.HirschgartenSpace)
       }
 
       buildType(ResultsAggregator.Space, options = {
@@ -195,7 +195,7 @@ object Space : Project({
       ServerE2eTests.ManualTargetsSpace,
       ServerE2eTests.BuildSyncSpace,
       ServerBenchmark.Space,
-      StaticAnalysis.Space,
+      StaticAnalysis.HirschgartenSpace,
       ResultsAggregator.Space,
     )
 })

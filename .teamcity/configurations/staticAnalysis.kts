@@ -1,13 +1,19 @@
 package configurations
 
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
+import jetbrains.buildServer.configs.kotlin.v2019_2.ParametrizedWithType
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.qodana
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
-open class Analyze(vcsRoot: GitVcsRoot) :
-    BaseConfiguration.BaseBuildType(
+open class Analyze(
+  vcsRoot: GitVcsRoot,
+  cloudToken: String,
+  params: ParametrizedWithType.() -> Unit = {},
+  repo: String? = null,
+  linterImage: String = Utils.CommonParams.DockerQodanaImage,
+  ) : BaseConfiguration.BaseBuildType(
         name = "[analysis] Qodana",
         requirements = {
           endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
@@ -35,33 +41,57 @@ open class Analyze(vcsRoot: GitVcsRoot) :
                     unzip %system.teamcity.build.checkoutDir%/tc-artifacts/intellij-bsp-$platform.zip -d %system.agent.persistent.cache%/plugins
                 """.trimIndent()
             }
+            if (repo != null) {
+              script {
+                name = "clone $repo"
+                id = "clone_$repo"
+                scriptContent = """
+                  #!/bin/bash
+                  set -euxo
+
+                  git clone --depth 1 https://github.com/JetBrainsBazelBot/$repo %system.agent.persistent.cache%/${repo}Qodana
+
+                  cd %system.agent.persistent.cache%/${repo}Qodana
+                  # Set commit hash
+                  echo "##teamcity[setParameter name='env.GIT_COMMIT' value='${'$'}(git rev-parse HEAD)']"
+                  echo %env.GIT_COMMIT%
+
+                  # Set repo URL
+                  echo "##teamcity[setParameter name='env.GIT_REPO_URL' value='${'$'}(git config --get remote.origin.url)']"
+                  echo %env.GIT_REPO_URL%
+                """.trimIndent()
+              }
+            }
             qodana {
                 name = "run qodana"
                 id = "run_qodana"
                 reportAsTests = false
                 linter = customLinter {
-                    image = Utils.CommonParams.DockerQodanaImage
+                    image = if (repo != null) {Utils.CommonParams.DockerQodanaAndroidImage} else {linterImage}
                 }
                 additionalDockerArguments = """
                     -v %system.agent.persistent.cache%/plugins/intellij-bazel:/opt/idea/custom-plugins/intellij-bazel
                     -v %system.agent.persistent.cache%/plugins/intellij-bsp:/opt/idea/custom-plugins/intellij-bsp
+                    ${if (repo != null) {"-v %system.agent.persistent.cache%/${repo}Qodana/qodana.yaml:%system.agent.persistent.cache%/${repo}Qodana"} else {""}}
                 """.trimIndent()
                 additionalQodanaArguments = """
-                    --property=bsp.build.project.on.sync=true
-                    --property=idea.is.internal=true
-                    --report-dir /data/results/report
-                    --save-report
-                    --baseline tools/qodana/qodana.sarif.json
-                    --config tools/qodana/qodana.yaml
-                """.trimIndent()
-                cloudToken = "%qodana.cloud.token%"
-                collectAnonymousStatistics = true
+                      --property=bsp.build.project.on.sync=true
+                      --property=idea.is.internal=true
+                      --report-dir /data/results/report
+                      --save-report
+                      --baseline ${if (repo != null) {"qodana.sarif.json"} else {"tools/qodana/qodana.sarif.json"}}
+                      --config ${if (repo != null) {"qodana.yaml"} else {"tools/qodana/qodana.yaml"}}
+                  """.trimIndent()
+                  this.cloudToken = cloudToken
+                  collectAnonymousStatistics = true
             }
           }
         },
         vcsRoot = vcsRoot,
         params = {
-            password("qodana.cloud.token", "credentialsJSON:d57ead0e-b567-440d-817e-f92e084a1cc0", label = "qodana.cloud.token", description = "Qodana token for Hirschgarten statistics", display = ParameterDisplay.HIDDEN)
+          param("env.GIT_REPO_URL", "")
+          param("env.GIT_COMMIT", "")
+          params(this)
         },
         dockerSupport = {
             loginToRegistry = on {
@@ -71,10 +101,93 @@ open class Analyze(vcsRoot: GitVcsRoot) :
         failureConditions = { executionTimeoutMin = 30 },
     )
 
-object GitHub : Analyze(
+open class Hirschgarten (
+  vcsRoot: GitVcsRoot
+): Analyze(
+  vcsRoot = vcsRoot,
+  cloudToken = "%qodana.cloud.token.hirschgarten%",
+  params = {
+    password("qodana.cloud.token.hirschgarten", "credentialsJSON:d57ead0e-b567-440d-817e-f92e084a1cc0", label = "qodana.cloud.token.hirschgarten", description = "Qodana token for Hirschgarten statistics", display = ParameterDisplay.HIDDEN)
+  }
+)
+
+object HirschgartenGitHub : Hirschgarten(
     vcsRoot = BaseConfiguration.GitHubVcs,
 )
 
-object Space : Analyze(
+object HirschgartenSpace : Hirschgarten(
     vcsRoot = BaseConfiguration.SpaceVcs,
+)
+
+open class Bazel(
+  vcsRoot: GitVcsRoot
+): Analyze(
+  vcsRoot = vcsRoot,
+  cloudToken = "%qodana.cloud.token.bazel%",
+  params = {
+    password("qodana.cloud.token.bazel", "credentialsJSON:34041ec3-8e8c-4934-b3e2-0143ff2aee5e", label = "qodana.cloud.token.bazel", description = "Qodana token for Bazel statistics", display = ParameterDisplay.HIDDEN)
+  }
+)
+
+object BazelGitHub : Bazel(
+    vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object BazelSpace : Bazel(
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)
+
+open class AndroidBazelRules(
+  vcsRoot: GitVcsRoot
+): Analyze(
+  vcsRoot = vcsRoot,
+  cloudToken = "%qodana.cloud.token.android-bazel-rules%",
+  params = {
+    password("qodana.cloud.token.android-bazel-rules", "credentialsJSON:92c2f175-fa8f-4215-a527-f76da7f98b25", label = "qodana.cloud.token.android-bazel-rules", description = "Qodana token for Android Bazel Rules statistics", display = ParameterDisplay.HIDDEN)
+  }
+)
+
+object AndroidBazelRulesGitHub : AndroidBazelRules (
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object AndroidBazelRulesSpace : AndroidBazelRules (
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)
+
+open class AndroidTestdpc(
+  vcsRoot: GitVcsRoot
+): Analyze(
+  vcsRoot = vcsRoot,
+  cloudToken = "%qodana.cloud.token.android-testdpc%",
+  params = {
+    password("qodana.cloud.token.android-testdpc", "credentialsJSON:9d593e23-4a3c-40a1-834b-cb6883135cfd", label = "qodana.cloud.token.android-testdpc", description = "Qodana token for Android TestDPC statistics", display = ParameterDisplay.HIDDEN)
+  },
+  repo = "android-testdpc"
+)
+
+object AndroidTestdpcGitHub : AndroidTestdpc (
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object AndroidTestdpcSpace : AndroidTestdpc (
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)
+
+open class JetpackCompose(
+  vcsRoot: GitVcsRoot
+): Analyze(
+  vcsRoot = vcsRoot,
+  cloudToken = "%qodana.cloud.token.jetpack-compose%",
+  params = {
+    password("qodana.cloud.token.jetpack-compose", "credentialsJSON:0579ad7c-87ad-4bc0-af74-8bdc1cc0c6a5", label = "qodana.cloud.token.jetpack-compose", description = "Qodana token for Jetpack Compose statistics", display = ParameterDisplay.HIDDEN)
+  },
+)
+
+object JetpackComposeGitHub : JetpackCompose (
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object JetpackComposeSpace : JetpackCompose (
+  vcsRoot = BaseConfiguration.SpaceVcs,
 )
