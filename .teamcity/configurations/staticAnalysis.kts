@@ -1,9 +1,7 @@
 package configurations
 
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.BazelStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
-import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.qodana
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
@@ -15,6 +13,11 @@ open class Analyze(vcsRoot: GitVcsRoot) :
           endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
           equals("container.engine.osType", "linux")
         },
+        dependencies = {
+          artifacts(ProjectBuild.Space) {
+            artifactRules = Utils.CommonParams.QodanaArtifactRules
+          }
+        },
         steps = {
           Utils.CommonParams.CrossBuildPlatforms.forEach { platform ->
             script {
@@ -24,13 +27,11 @@ open class Analyze(vcsRoot: GitVcsRoot) :
                     #!/bin/bash
                     set -euxo
                     
-                    rm -R bazel-bin
-                    cp -R %system.agent.persistent.cache%/bazel/_bazel_hirschuser/*/execroot/_main/bazel-out/k8-fastbuild/bin ./bazel-bin
-                    
+                    rm -rf %system.agent.persistent.cache%/plugins 
                     mkdir %system.agent.persistent.cache%/plugins
                     
-                    unzip bazel-bin/plugin-bazel/intellij-bazel.zip -d %system.agent.persistent.cache%/plugins
-                    unzip bazel-bin/plugin-bsp/intellij-bsp.zip -d %system.agent.persistent.cache%/plugins
+                    unzip %system.teamcity.build.checkoutDir%/tc-artifacts/intellij-bazel-$platform.zip -d %system.agent.persistent.cache%/plugins
+                    unzip %system.teamcity.build.checkoutDir%/tc-artifacts/intellij-bsp-$platform.zip -d %system.agent.persistent.cache%/plugins
                 """.trimIndent()
             }
             qodana {
@@ -67,7 +68,6 @@ open class Analyze(vcsRoot: GitVcsRoot) :
             }
         },
         failureConditions = { executionTimeoutMin = 30 },
-        dependencies = {}
     )
 
 object GitHub : Analyze(

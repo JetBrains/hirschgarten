@@ -18,6 +18,7 @@ object CommonParams {
   val DockerE2eImage: String = "registry.jetbrains.team/p/bazel/docker/hirschgarten-e2e:latest"
   val DockerQodanaImage: String = "registry.jetbrains.team/p/bazel/docker-private/hirschgarten-qodana:latest"
 
+  val QodanaArtifactRules: String = "+:intellij-*.zip=>%system.teamcity.build.checkoutDir%/tc-artifacts"
 
   val CrossBuildPlatforms: List<String> = listOf("243")
 }

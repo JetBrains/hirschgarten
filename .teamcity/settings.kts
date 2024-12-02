@@ -123,30 +123,6 @@ object Space : Project({
   id(name.toExtId())
   vcsRoot(BaseConfiguration.SpaceVcs)
 
-  // setup e2e grouping
-  val e2eTests = {
-    listOf(
-      ServerE2eTests.SampleRepoSpace,
-      ServerE2eTests.LocalJdkSpace,
-      ServerE2eTests.RemoteJdkSpace,
-      ServerE2eTests.AndroidProjectSpace,
-      ServerE2eTests.AndroidKotlinProjectSpace,
-      ServerE2eTests.ScalaProjectSpace,
-      ServerE2eTests.KotlinProjectSpace,
-      ServerE2eTests.PythonProjectSpace,
-      ServerE2eTests.JavaDiagnosticsSpace,
-      ServerE2eTests.ManualTargetsSpace,
-      ServerE2eTests.BuildSyncSpace,
-      //buildType(ServerE2eTests.ServerDownloadsBazeliskSpace)
-    )
-  }
-
-  val staticAnalysis = {
-    listOf(
-      StaticAnalysis.Space
-    )
-  }
-
 // setup pipeline chain for bazel-bsp
   val allSteps =
     sequential {
@@ -158,9 +134,20 @@ object Space : Project({
         buildType(ProjectBuild.Space)
         buildType(ProjectUnitTests.Space)
         buildType(PluginBenchmark.Space)
+        buildType(ServerE2eTests.SampleRepoSpace)
+        buildType(ServerE2eTests.LocalJdkSpace)
+        buildType(ServerE2eTests.RemoteJdkSpace)
+//            buildType(ServerE2eTests.ServerDownloadsBazeliskSpace)
+        buildType(ServerE2eTests.AndroidProjectSpace)
+        buildType(ServerE2eTests.AndroidKotlinProjectSpace)
+        buildType(ServerE2eTests.ScalaProjectSpace)
+        buildType(ServerE2eTests.KotlinProjectSpace)
+        buildType(ServerE2eTests.PythonProjectSpace)
+        buildType(ServerE2eTests.JavaDiagnosticsSpace)
+        buildType(ServerE2eTests.ManualTargetsSpace)
+        buildType(ServerE2eTests.BuildSyncSpace)
         buildType(ServerBenchmark.Space)
-        e2eTests().forEach { buildType(it) }
-        staticAnalysis().forEach { buildType(it) }
+        buildType(StaticAnalysis.Space)
       }
 
       buildType(ResultsAggregator.Space, options = {
@@ -171,17 +158,6 @@ object Space : Project({
 
   // initialize all build steps for bazel-bsp
   allSteps.forEach { buildType(it) }
-
-  staticAnalysis().forEach { buildConfig ->
-    buildConfig.dependencies {
-      artifacts(ProjectBuild.Space) {
-        artifactRules = """
-            +:intellij-bazel-*.zip!**=>%system.teamcity.build.checkoutDir%/download/intellij-bazel
-            +:intellij-bsp-*.zip!**=>%system.teamcity.build.checkoutDir%/download/intellij-bsp
-        """.trimIndent()
-      }
-    }
-  }
 
   // setup trigger for bazel-bsp pipeline
 //  ProjectFormat.Space.triggers {
