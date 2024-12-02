@@ -42,9 +42,9 @@ maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
         "ch.epfl.scala:bsp4j:2.2.0-M2",
-        "com.fasterxml.jackson.core:jackson-databind:2.18.1",
-        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.1",
-        "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.1",
+        "com.fasterxml.jackson.core:jackson-databind:2.18.2",
+        "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.2",
+        "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2",
         "com.google.code.gson:gson:2.10.1",
         "com.google.guava:guava:31.0.1-jre",
         "com.google.protobuf:protobuf-java:4.29.0",
