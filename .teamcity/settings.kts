@@ -9,12 +9,12 @@ version = "2024.03"
 
 object ProjectBranchFilters {
   val githubBranchFilter = "+:pull/*"
-  val spaceBranchFilter =
-    """
-    +:<default>
-    +:*
-    -:bazel-steward*
-    """.trimIndent()
+  val spaceBranchFilter = ""
+//    """
+//    +:<default>
+//    +:*
+//    -:bazel-steward*
+//    """.trimIndent()
 }
 
 object ProjectTriggerRules {
