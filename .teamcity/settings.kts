@@ -9,26 +9,26 @@ version = "2024.03"
 
 object ProjectBranchFilters {
   val githubBranchFilter = "+:pull/*"
-  val spaceBranchFilter = ""
-//    """
-//    +:<default>
-//    +:*
-//    -:bazel-steward*
-//    """.trimIndent()
+  val spaceBranchFilter =
+    """
+    +:<default>
+    +:*
+    -:bazel-steward*
+    """.trimIndent()
 }
 
 object ProjectTriggerRules {
-  val triggerRules = ""
-//    """
-//    -:**.md
-//    -:**.txt
-//    -:**.yml
-//    -:**.yaml
-//    -:LICENSE
-//    -:LICENCE
-//    -:CODEOWNERS
-//    -:/.teamcity/**
-//    """.trimIndent()
+  val triggerRules =
+    """
+    -:**.md
+    -:**.txt
+    -:**.yml
+    -:**.yaml
+    -:LICENSE
+    -:LICENCE
+    -:CODEOWNERS
+    -:/.teamcity/**
+    """.trimIndent()
 }
 
 project {
@@ -160,20 +160,20 @@ object Space : Project({
   allSteps.forEach { buildType(it) }
 
   // setup trigger for bazel-bsp pipeline
-  ProjectFormat.Space.triggers {
-    vcs {
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-      triggerRules = ProjectTriggerRules.triggerRules
-    }
-  }
+//  ProjectFormat.Space.triggers {
+//    vcs {
+//      branchFilter = ProjectBranchFilters.spaceBranchFilter
+//      triggerRules = ProjectTriggerRules.triggerRules
+//    }
+//  }
 
-  ResultsAggregator.Space.triggers {
-    finishBuildTrigger {
-      buildType = "${ProjectFormat.Space.id}"
-      successfulOnly = true
-      branchFilter = ProjectBranchFilters.spaceBranchFilter
-    }
-  }
+//  ResultsAggregator.Space.triggers {
+//    finishBuildTrigger {
+//      buildType = "${ProjectFormat.Space.id}"
+//      successfulOnly = true
+//      branchFilter = ProjectBranchFilters.spaceBranchFilter
+//    }
+//  }
 
   // setup display order for bazel-bsp pipeline
   buildTypesOrderIds =
