@@ -20,7 +20,7 @@ open class Analyze(
           equals("container.engine.osType", "linux")
         },
         dependencies = {
-          snapshot(ProjectBuild.Space) {}
+//          snapshot(ProjectBuild.Space) {}
           artifacts(ProjectBuild.Space) {
             // TO-DO: remove build rule
             buildRule = lastSuccessful()
