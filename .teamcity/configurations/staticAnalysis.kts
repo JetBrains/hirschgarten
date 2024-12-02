@@ -14,7 +14,7 @@ open class Analyze(
   repo: String? = null,
   linterImage: String = Utils.CommonParams.DockerQodanaImage,
   ) : BaseConfiguration.BaseBuildType(
-        name = "[analysis] Qodana",
+        name = "[analysis] Qodana $repo",
         requirements = {
           endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
           equals("container.engine.osType", "linux")
@@ -67,7 +67,7 @@ open class Analyze(
                 id = "run_qodana"
                 reportAsTests = false
                 linter = customLinter {
-                    image = if (repo != null) {Utils.CommonParams.DockerQodanaAndroidImage} else {linterImage}
+                    image = linterImage
                 }
                 additionalDockerArguments = """
                     -v %system.agent.persistent.cache%/plugins/intellij-bazel:/opt/idea/custom-plugins/intellij-bazel
@@ -126,7 +126,8 @@ open class Bazel(
   cloudToken = "%qodana.cloud.token.bazel%",
   params = {
     password("qodana.cloud.token.bazel", "credentialsJSON:34041ec3-8e8c-4934-b3e2-0143ff2aee5e", label = "qodana.cloud.token.bazel", description = "Qodana token for Bazel statistics", display = ParameterDisplay.HIDDEN)
-  }
+  },
+  repo = "bazel",
 )
 
 object BazelGitHub : Bazel(
@@ -144,7 +145,9 @@ open class AndroidBazelRules(
   cloudToken = "%qodana.cloud.token.android-bazel-rules%",
   params = {
     password("qodana.cloud.token.android-bazel-rules", "credentialsJSON:92c2f175-fa8f-4215-a527-f76da7f98b25", label = "qodana.cloud.token.android-bazel-rules", description = "Qodana token for Android Bazel Rules statistics", display = ParameterDisplay.HIDDEN)
-  }
+  },
+  repo = "android-forked-bazel-rules-project",
+  linterImage = Utils.CommonParams.DockerQodanaAndroidImage,
 )
 
 object AndroidBazelRulesGitHub : AndroidBazelRules (
@@ -163,7 +166,8 @@ open class AndroidTestdpc(
   params = {
     password("qodana.cloud.token.android-testdpc", "credentialsJSON:9d593e23-4a3c-40a1-834b-cb6883135cfd", label = "qodana.cloud.token.android-testdpc", description = "Qodana token for Android TestDPC statistics", display = ParameterDisplay.HIDDEN)
   },
-  repo = "android-testdpc"
+  repo = "android-testdpc",
+  linterImage = Utils.CommonParams.DockerQodanaAndroidImage,
 )
 
 object AndroidTestdpcGitHub : AndroidTestdpc (
@@ -182,6 +186,8 @@ open class JetpackCompose(
   params = {
     password("qodana.cloud.token.jetpack-compose", "credentialsJSON:0579ad7c-87ad-4bc0-af74-8bdc1cc0c6a5", label = "qodana.cloud.token.jetpack-compose", description = "Qodana token for Jetpack Compose statistics", display = ParameterDisplay.HIDDEN)
   },
+  repo = "JetpackCompose",
+  linterImage = Utils.CommonParams.DockerQodanaAndroidImage,
 )
 
 object JetpackComposeGitHub : JetpackCompose (
