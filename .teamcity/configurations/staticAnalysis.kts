@@ -73,6 +73,7 @@ open class Analyze(
                     -v %system.agent.persistent.cache%/plugins/intellij-bazel:/opt/idea/custom-plugins/intellij-bazel
                     -v %system.agent.persistent.cache%/plugins/intellij-bsp:/opt/idea/custom-plugins/intellij-bsp
                     ${if (repo != null) {"-v %system.agent.persistent.cache%/${repo}Qodana/qodana.yaml:%system.agent.persistent.cache%/${repo}Qodana"} else {""}}
+                    ${if (repo != null) {"-e QODANA_REMOTE_URL=\"%env.GIT_REPO_URL%\"\n-e QODANA_REVISION=\"%env.GIT_COMMIT%\""} else {""}}
                 """.trimIndent()
                 additionalQodanaArguments = """
                       --property=bsp.build.project.on.sync=true
