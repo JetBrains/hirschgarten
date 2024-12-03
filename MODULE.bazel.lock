@@ -1472,7 +1472,7 @@
     },
     "@@rules_bazel_integration_test~//:extensions.bzl%bazel_binaries": {
       "general": {
-        "bzlTransitiveDigest": "ruMfvWwZzwPPkk+exdpYAe94RD+4erzc4ePrZ08MuKc=",
+        "bzlTransitiveDigest": "AbxPRYKjvVlRo+B89EHqsi8N7gdOjCmT7VEr6YYQxqg=",
         "usagesDigest": "piOBpbwJMubJn0cOGo7QebOyH7679xGB1J1CAzpHT34=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},

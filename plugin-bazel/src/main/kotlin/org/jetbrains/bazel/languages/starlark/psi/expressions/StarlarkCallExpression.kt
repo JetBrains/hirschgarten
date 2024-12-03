@@ -20,7 +20,9 @@ class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
 
   override fun getName(): String? = getNameNode()?.text
 
-  fun getNameNode(): ASTNode? = node.findChildByType(StarlarkElementTypes.REFERENCE_EXPRESSION)
+  fun getNameNode(): ASTNode? = getNamePsi()?.node
+
+  fun getNamePsi(): StarlarkReferenceExpression? = findChildByType(StarlarkElementTypes.REFERENCE_EXPRESSION)
 
   fun getTargetName(): String? = getArgumentList()?.getNameArgumentValue()
 
