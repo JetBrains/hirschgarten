@@ -82,8 +82,10 @@ open class Analyze(
                 additionalQodanaArguments = """
                       --property=bsp.build.project.on.sync=true
                       --property=idea.is.internal=true
+                      --property=idea.kotlin.plugin.use.k2=true
                       --report-dir /data/results/report
                       --save-report
+                      ${if (repo != null) {"--property=bsp.android.support=true"} else {""}}
                       --baseline ${if (repo != null) {"qodana.sarif.json"} else {"tools/qodana/qodana.sarif.json"}}
                       --config ${if (repo != null) {"%system.agent.persistent.cache%/$repo/qodana.yaml"} else {"tools/qodana/qodana.yaml"}}
                   """.trimIndent()
