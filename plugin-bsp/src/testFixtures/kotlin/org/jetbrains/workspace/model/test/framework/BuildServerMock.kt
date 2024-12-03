@@ -98,6 +98,7 @@ class BuildServerMock(
   private val jvmBinaryJarsResult: JvmBinaryJarsResult? = null,
   private val workspaceBuildTargetsResultAndBuild: WorkspaceBuildTargetsResult? = null,
   private val workspaceBuildTargetsPartial: WorkspaceBuildTargetsResult? = null,
+  private val workspaceBuildTargetsGraph: WorkspaceBuildTargetsResult? = null,
   private val pythonOptionsResult: PythonOptionsResult? = null,
   private val rustWorkspaceResult: RustWorkspaceResult? = null,
 ) : JoinedBuildServer {
@@ -200,9 +201,8 @@ class BuildServerMock(
   override fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): CompletableFuture<WorkspaceBuildTargetsResult> =
     wrapInFuture(workspaceBuildTargetsPartial)
 
-  override fun workspaceBuildTargetsGraph(params: WorkspaceBuildTargetsGraphParams): CompletableFuture<WorkspaceBuildTargetsResult> {
-    TODO("Not yet implemented")
-  }
+  override fun workspaceBuildTargetsGraph(params: WorkspaceBuildTargetsGraphParams): CompletableFuture<WorkspaceBuildTargetsResult> =
+    wrapInFuture(workspaceBuildTargetsGraph)
 
   override fun buildTargetPythonOptions(pythonOptionsParams: PythonOptionsParams?): CompletableFuture<PythonOptionsResult> =
     wrapInFuture(pythonOptionsResult)

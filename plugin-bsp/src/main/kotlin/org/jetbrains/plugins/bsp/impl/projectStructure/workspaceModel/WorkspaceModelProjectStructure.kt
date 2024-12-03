@@ -14,8 +14,8 @@ import com.intellij.platform.workspace.storage.MutableEntityStorage
 import org.jetbrains.plugins.bsp.building.syncConsole
 import org.jetbrains.plugins.bsp.building.withSubtask
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.impl.flow.sync.FirstStepSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullQuickySync
 import org.jetbrains.plugins.bsp.impl.flow.sync.PartialProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncScope
 import org.jetbrains.plugins.bsp.magicmetamodel.findNameProvider
@@ -70,7 +70,7 @@ class WorkspaceModelProjectStructureDiff(val mutableEntityStorage: MutableEntity
   private fun EntitySource.isBspRelevant(project: Project, syncScope: ProjectSyncScope): Boolean =
     when (syncScope) {
       is FullProjectSync -> isBspRelevantForFullSync()
-      is FullQuickySync -> isBspRelevantForFullSync()
+      is FirstStepSync -> isBspRelevantForFullSync()
       is PartialProjectSync -> isBspRelevantForPartialSync(project, syncScope)
     }
 

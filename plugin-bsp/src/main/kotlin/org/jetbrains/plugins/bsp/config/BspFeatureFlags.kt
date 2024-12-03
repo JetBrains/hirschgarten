@@ -10,6 +10,7 @@ private const val BUILD_PROJECT_ON_SYNC = "bsp.build.project.on.sync"
 private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.names"
 private const val RETRIEVE_TARGETS_FOR_FILE_FROM_ANCESTORS = "bsp.retrieve.targets.for.file.from.ancestors"
 private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.modules"
+private const val USE_PHASED_SYNC = "bsp.use.phased.sync"
 
 object BspFeatureFlags {
   val isPythonSupportEnabled: Boolean
@@ -35,6 +36,9 @@ object BspFeatureFlags {
 
   val isKotlinPluginK2Mode: Boolean
     get() = System.getProperty("idea.kotlin.plugin.use.k2", "false").toBoolean()
+
+  val isPhasedSync: Boolean
+    get() = Registry.`is`(USE_PHASED_SYNC)
 
   fun toBspProtocolFeatureFlags(): FeatureFlags =
     FeatureFlags(

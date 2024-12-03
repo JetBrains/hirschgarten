@@ -42,7 +42,7 @@ class BaseProjectSync(private val project: Project) {
       message = BspPluginBundle.message("console.task.base.sync"),
     ) {
       coroutineScope {
-        val buildTargets = queryWorkspaceBuildTargets(server, syncScope, buildProject)
+        val buildTargets = queryWorkspaceBuildTargets(server, syncScope, buildProject, taskId)
         val allTargetIds = buildTargets.calculateAllTargetIds()
 
         val sourcesResult = asyncQuery("buildTarget/sources") { server.buildTargetSources(SourcesParams(allTargetIds)) }
@@ -62,6 +62,7 @@ class BaseProjectSync(private val project: Project) {
     server: JoinedBuildServer,
     syncScope: ProjectSyncScope,
     buildProject: Boolean,
+    taskId: String,
   ): List<BuildTarget> =
     coroutineScope {
       val result =
@@ -71,8 +72,8 @@ class BaseProjectSync(private val project: Project) {
           query("workspace/buildTargetsPartial") {
             server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
           }
-        } else if (syncScope is FullQuickySync) {
-          query("workspace/buildTargets") { server.workspaceBuildTargetsGraph(WorkspaceBuildTargetsGraphParams("XD")) }
+        } else if (syncScope is FirstStepSync) {
+          query("workspace/buildTargets") { server.workspaceBuildTargetsGraph(WorkspaceBuildTargetsGraphParams(taskId)) }
         } else if (buildProject) {
           query("workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }
         } else {
