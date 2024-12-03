@@ -80,7 +80,7 @@ def evaluate_qodana_results(log_content: str, expected_unchanged: Optional[int],
     print(f"Unchanged Problems: {unchanged_count}")
     print(f"New Problems: {new_count}")
 
-    # skip validation if --unchanged wasn't provided
+    # skip validation if --unchanged wa`sn't provided
     if expected_unchanged is not None:
         print(f"Checking against expected: {expected_unchanged} ±{allowed_diff}")
         if abs(unchanged_count - expected_unchanged) > allowed_diff:
