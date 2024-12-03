@@ -216,7 +216,7 @@ class BazelBspServer(
         bspClientLogger = bspClientLogger,
         featureFlags = featureFlags,
       )
-    val firstStepProjectResolver = FirstStepProjectResolver(workspaceRoot, bazelRunner, workspaceContextProvider)
+    val firstStepProjectResolver = FirstStepProjectResolver(workspaceRoot, bazelRunner, workspaceContextProvider, bazelInfo)
     return ProjectProvider(projectResolver, firstStepProjectResolver)
   }
 

@@ -1,10 +1,11 @@
 package org.jetbrains.bsp.bazel.server.sync.firstStep
 
-import com.google.devtools.build.lib.query2.proto.proto2api.Build
+import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Project
@@ -15,6 +16,7 @@ class FirstStepProjectResolver(
   private val workspaceRoot: Path,
   private val bazelRunner: BazelRunner,
   private val workspaceContextProvider: WorkspaceContextProvider,
+  private val bazelInfo: BazelInfo,
 ) {
   fun resolve(originId: String, cancelChecker: CancelChecker): Project =
     runBlocking {
@@ -29,37 +31,24 @@ class FirstStepProjectResolver(
           }
         }
 
-      val a = bazelRunner.runBazelCommand(command, serverPidFuture = null, logProcessOutput = false, originId = originId)
-      val c = a.process.inputStream
+      val bazelProcess = bazelRunner.runBazelCommand(command, serverPidFuture = null, logProcessOutput = false, originId = originId)
+      val inputStream = bazelProcess.process.inputStream
 
-//      val reader = DelimitedMessageReader(c, Target.parser())
+      val targets = generateSequence { Target.parseDelimitedFrom(inputStream) }
 
-      val result = mutableListOf<Build.Target>()
-      var aa: Build.Target? = null
-      do {
-        aa = Build.Target.parseDelimitedFrom(c)
-        System.err.println(aa)
-        if (aa != null) {
-          result.add(aa)
-        }
-      } while (aa != null)
+      val project = Project(
+        workspaceRoot = workspaceRoot.toUri(),
+        modules = emptyList(),
+        libraries = emptyMap(),
+        goLibraries = emptyMap(),
+        invalidTargets = emptyList(),
+        nonModuleTargets = emptyList(),
+        bazelRelease = bazelInfo.release,
+        lightweightModules = targets.associateBy { Label.parse(it.rule.name) },
+      )
 
-      val b = a.waitAndGetResult(cancelChecker, true)
+      bazelProcess.waitAndGetResult(cancelChecker, true)
 
-      val p1 =
-        Project(
-          workspaceRoot = workspaceRoot.toUri(),
-          modules = emptyList(),
-          libraries = emptyMap(),
-          goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
-          nonModuleTargets = emptyList(),
-          bazelRelease = BazelRelease(1),
-          lightweightModules = result.associateBy { Label.parse(it.rule.name) },
-        )
-
-      p1
-//    val project = projectProvider.refreshAndGet(cancelChecker, build = build)
-//    return bspMapper.workspaceTargets(project)
+      project
     }
 }
