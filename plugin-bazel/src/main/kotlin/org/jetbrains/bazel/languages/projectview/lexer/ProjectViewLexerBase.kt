@@ -106,7 +106,7 @@ class ProjectViewLexerBase(input: CharSequence) {
    * Represents a token in the project view file.
    *
    * @property type The type of the token.
-   * @property start Position of the first character in the buffer passed to the [ProjectViewLexerBase] constructor.
+   * @property start Position of the first character of the token in the buffer passed to the [ProjectViewLexerBase] constructor.
    * @property end Sum of [start] and the length of the token.
    */
   data class Token(
