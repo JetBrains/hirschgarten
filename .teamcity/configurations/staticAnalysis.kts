@@ -51,9 +51,9 @@ open class Analyze(
                   #!/bin/bash
                   set -euxo
 
-                  git clone --depth 1 https://github.com/JetBrainsBazelBot/$repo %system.agent.persistent.cache%/${repo}Qodana
+                  git clone --depth 1 https://github.com/JetBrainsBazelBot/$repo %system.agent.persistent.cache%/$repo
 
-                  cd %system.agent.persistent.cache%/${repo}Qodana
+                  cd %system.agent.persistent.cache%/$repo
                   # Set commit hash
                   echo "##teamcity[setParameter name='env.GIT_COMMIT' value='${'$'}(git rev-parse HEAD)']"
                   echo %env.GIT_COMMIT%
@@ -68,15 +68,16 @@ open class Analyze(
                 name = "run qodana"
                 id = "run_qodana"
                 reportAsTests = false
-              workingDir = if (repo != null ){ "%system.agent.persistent.cache%/${repo}Qodana" } else {""}
+              workingDir = if (repo != null ){ "%system.agent.persistent.cache%/$repo" } else {""}
                 linter = customLinter {
                     image = linterImage
                 }
                 additionalDockerArguments = """
                     -v %system.agent.persistent.cache%/plugins/intellij-bazel:/opt/idea/custom-plugins/intellij-bazel
                     -v %system.agent.persistent.cache%/plugins/intellij-bsp:/opt/idea/custom-plugins/intellij-bsp
-                    ${if (repo != null) {"-v %system.agent.persistent.cache%/${repo}Qodana/qodana.yaml:%system.agent.persistent.cache%/${repo}Qodana"} else {""}}
-                    ${if (repo != null) {"-e QODANA_REMOTE_URL=\"%env.GIT_REPO_URL%\"\n-e QODANA_REVISION=\"%env.GIT_COMMIT%\""} else {""}}
+                    ${if (repo != null) {"-v %system.agent.persistent.cache%/$repo/qodana.yaml:%system.agent.persistent.cache%/$repo/qodana.yaml"} else {""}}
+                    ${if (repo != null) {"-e QODANA_REMOTE_URL=\"%env.GIT_REPO_URL%\""} else {""}}
+                    ${if (repo != null) {"-e QODANA_REVISION=\"%env.GIT_COMMIT%\""} else {""}}
                 """.trimIndent()
                 additionalQodanaArguments = """
                       --property=bsp.build.project.on.sync=true
