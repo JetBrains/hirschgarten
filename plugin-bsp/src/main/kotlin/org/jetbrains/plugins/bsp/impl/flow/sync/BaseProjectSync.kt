@@ -12,7 +12,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bsp.protocol.JoinedBuildServer
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsGraphParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstStepParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.plugins.bsp.building.syncConsole
 import org.jetbrains.plugins.bsp.building.withSubtask
@@ -73,7 +73,7 @@ class BaseProjectSync(private val project: Project) {
             server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
           }
         } else if (syncScope is FirstStepSync) {
-          query("workspace/buildTargets") { server.workspaceBuildTargetsGraph(WorkspaceBuildTargetsGraphParams(taskId)) }
+          query("workspace/buildTargets") { server.workspaceBuildTargetsFirstStep(WorkspaceBuildTargetsFirstStepParams(taskId)) }
         } else if (buildProject) {
           query("workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }
         } else {

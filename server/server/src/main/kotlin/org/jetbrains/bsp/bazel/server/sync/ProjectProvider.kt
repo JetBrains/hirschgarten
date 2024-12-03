@@ -20,7 +20,8 @@ class ProjectProvider(private val projectResolver: ProjectResolver, private val 
   @Synchronized
   fun get(cancelChecker: CancelChecker): Project = project ?: loadFromBazel(cancelChecker, false, null).also { project = it }
 
-  fun quicky(cancelChecker: CancelChecker, originId: String): Project =
+  @Synchronized
+  fun bazelQueryRefreshAndGet(cancelChecker: CancelChecker, originId: String): Project =
     firstStepProjectResolver.resolve(originId, cancelChecker).also { project = it }
 
   @Synchronized

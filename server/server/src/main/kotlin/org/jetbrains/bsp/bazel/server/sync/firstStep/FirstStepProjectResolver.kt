@@ -25,6 +25,7 @@ class FirstStepProjectResolver(
           query {
             options.add("--output=streamed_proto")
             options.add(BazelFlag.keepGoing())
+
             targets.addAll(workspaceContext.targets.values)
             excludedTargets.addAll(workspaceContext.targets.excludedValues)
           }
@@ -35,16 +36,17 @@ class FirstStepProjectResolver(
 
       val targets = generateSequence { Target.parseDelimitedFrom(inputStream) }
 
-      val project = Project(
-        workspaceRoot = workspaceRoot.toUri(),
-        modules = emptyList(),
-        libraries = emptyMap(),
-        goLibraries = emptyMap(),
-        invalidTargets = emptyList(),
-        nonModuleTargets = emptyList(),
-        bazelRelease = bazelInfo.release,
-        lightweightModules = targets.associateBy { Label.parse(it.rule.name) },
-      )
+      val project =
+        Project(
+          workspaceRoot = workspaceRoot.toUri(),
+          modules = emptyList(),
+          libraries = emptyMap(),
+          goLibraries = emptyMap(),
+          invalidTargets = emptyList(),
+          nonModuleTargets = emptyList(),
+          bazelRelease = bazelInfo.release,
+          lightweightModules = targets.associateBy { Label.parse(it.rule.name) },
+        )
 
       bazelProcess.waitAndGetResult(cancelChecker, true)
 

@@ -42,13 +42,12 @@ import org.jetbrains.bsp.bazel.server.sync.firstStep.TargetToBspMapper
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsGraphParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstStepParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
 import java.nio.file.Path
-import kotlin.io.path.Path
 
 /** A facade for all project sync related methods  */
 class ProjectSyncService(
@@ -81,8 +80,8 @@ class ProjectSyncService(
     return bspMapper.workspaceTargets(project)
   }
 
-  fun workspaceBuildGraph(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsGraphParams): WorkspaceBuildTargetsResult {
-    val project = projectProvider.quicky(cancelChecker, params.originId)
+  fun workspaceBuildFirstStep(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsFirstStepParams): WorkspaceBuildTargetsResult {
+    val project = projectProvider.bazelQueryRefreshAndGet(cancelChecker, params.originId)
     return targetToBspMapper.toWorkspaceBuildTargetsResult(project)
   }
 
