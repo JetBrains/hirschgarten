@@ -164,7 +164,7 @@ sealed interface Label {
     fun synthetic(targetName: String): Label = Synthetic(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
 
     fun parse(value: String): Label {
-      val normalized = value.trimStart('@')
+      val normalized = value.removePrefix("@").removePrefix("@")
       val repoName = normalized.substringBefore("//", "")
       val pathAndName = normalized.substringAfter("//")
       val packagePath = pathAndName.substringBefore(":")
