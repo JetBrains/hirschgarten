@@ -39,7 +39,7 @@ class TeamCityLogRetriever:
         log_content = self.get_build_log(build_id)
         os.makedirs(output_dir, exist_ok=True)
 
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = datetime.now().timestamp()
         filename = f"build_{build_id}_{timestamp}.log"
         filepath = os.path.join(output_dir, filename)
 
