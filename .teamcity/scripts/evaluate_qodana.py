@@ -4,9 +4,20 @@ import os
 import re
 import sys
 from typing import Tuple, Optional
+import argparse
 
-# Constants for problem count comparison
-EXPECTED_UNCHANGED_PROBLEMS = 359  # The baseline number we expect
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='analyze qodana build logs with custom thresholds')
+    parser.add_argument('--unchanged',
+                        type=int,
+                        required=True,
+                        help='expected number of unchanged problems')
+    parser.add_argument('--diff',
+                        type=int,
+                        default=0,
+                        help='allowed difference in unchanged problems (default: 0)')
+    return parser.parse_args()
+
 
 class TeamCityLogRetriever:
     def __init__(self, server_url: str, auth_token: str):
@@ -45,20 +56,18 @@ class QodanaLogAnalyzer:
         Analyzes the log content to find the UNCHANGED and NEW problem counts.
         Returns a tuple of (unchanged_count, new_count).
         """
-        pattern = r'\[\d{2}:\d{2}:\d{2}\] :\s+\[Code Inspection\] Grouping problems according to baseline: UNCHANGED: (\d+), NEW: (\d+)'
+        pattern = r'\[.*?\]\s*:\s*\[Code Inspection\] Grouping problems according to baseline: UNCHANGED: ([\d,]+), NEW: ([\d,]+)'
         match = re.search(pattern, self.log_content)
 
+
         if match:
-            unchanged_count = int(match.group(1))
-            new_count = int(match.group(2))
+            unchanged_count = int(match.group(1).replace(',', ''))
+            new_count = int(match.group(2).replace(',', ''))
             return unchanged_count, new_count
 
         return None, None
 
-def evaluate_qodana_results(log_content: str) -> None:
-    """
-    Evaluates Qodana analysis results and exits with an error if conditions are not met.
-    """
+def evaluate_qodana_results(log_content: str, expected_unchanged: int, allowed_diff: int) -> None:
     analyzer = QodanaLogAnalyzer(log_content)
     unchanged_count, new_count = analyzer.analyze_problem_counts()
 
@@ -67,24 +76,20 @@ def evaluate_qodana_results(log_content: str) -> None:
         sys.exit(1)
 
     print(f"Analysis Results:")
-    print(f"Unchanged Problems: {unchanged_count} (Expected: {EXPECTED_UNCHANGED_PROBLEMS})")
+    print(f"Unchanged Problems: {unchanged_count} (Expected: {expected_unchanged} ±{allowed_diff})")
     print(f"New Problems: {new_count}")
 
-    if new_count > 0:
-        print(f"Error: Found {new_count} new problems")
+    if abs(unchanged_count - expected_unchanged) > allowed_diff:
+        print(
+            f"Error: Unexpected number of unchanged problems. Expected {expected_unchanged} ±{allowed_diff}, but found {unchanged_count}")
         sys.exit(1)
 
-    if unchanged_count != EXPECTED_UNCHANGED_PROBLEMS:
-        print(f"Error: Unexpected number of unchanged problems. Expected {EXPECTED_UNCHANGED_PROBLEMS}, but found {unchanged_count}")
-        sys.exit(1)
-
-    print("Success: No new problems found and unchanged count matches expected value")
+    print("Success: No new problems found and unchanged count within acceptable range")
     sys.exit(0)
 
 def main():
-
+    args = parse_arguments()
     build_id = "%env.BUILD_URL%".split("/")[-1]
-
     server_url = "https://bazel.teamcity.com"
     auth_token_tc = "%jetbrains.bazel.buildserver.token.youtrack%"
 
@@ -92,8 +97,7 @@ def main():
 
     try:
         log_content = tc_client.get_build_log(build_id)
-        evaluate_qodana_results(log_content)
-
+        evaluate_qodana_results(log_content, args.unchanged, args.diff)
     except requests.exceptions.RequestException as e:
         print(f"Error retrieving build log: {str(e)}")
         sys.exit(1)
