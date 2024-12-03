@@ -187,7 +187,7 @@ class RustPackageResolver(val bazelPathsResolver: BazelPathsResolver) {
       rustTargets.flatMap { (_, rustData) ->
         rustData.crateFeatures
       }
-    return allFeaturesAsStrings.associate { Pair(it, setOf()) }
+    return allFeaturesAsStrings.associateWith { setOf() }
   }
 
   private fun resolvePackageEnv(
