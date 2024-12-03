@@ -10,7 +10,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='analyze qodana build logs with custom thresholds')
     parser.add_argument('--unchanged',
                         type=int,
-                        required=True,
+                        required=False,
+                        default=None,
                         help='expected number of unchanged problems')
     parser.add_argument('--diff',
                         type=int,
@@ -67,7 +68,7 @@ class QodanaLogAnalyzer:
 
         return None, None
 
-def evaluate_qodana_results(log_content: str, expected_unchanged: int, allowed_diff: int) -> None:
+def evaluate_qodana_results(log_content: str, expected_unchanged: Optional[int], allowed_diff: int) -> None:
     analyzer = QodanaLogAnalyzer(log_content)
     unchanged_count, new_count = analyzer.analyze_problem_counts()
 
@@ -76,15 +77,19 @@ def evaluate_qodana_results(log_content: str, expected_unchanged: int, allowed_d
         sys.exit(1)
 
     print(f"Analysis Results:")
-    print(f"Unchanged Problems: {unchanged_count} (Expected: {expected_unchanged} ±{allowed_diff})")
+    print(f"Unchanged Problems: {unchanged_count}")
     print(f"New Problems: {new_count}")
 
-    if abs(unchanged_count - expected_unchanged) > allowed_diff:
-        print(
-            f"Error: Unexpected number of unchanged problems. Expected {expected_unchanged} ±{allowed_diff}, but found {unchanged_count}")
-        sys.exit(1)
+    # skip validation if --unchanged wasn't provided
+    if expected_unchanged is not None:
+        print(f"Checking against expected: {expected_unchanged} ±{allowed_diff}")
+        if abs(unchanged_count - expected_unchanged) > allowed_diff:
+            print(
+                f"Error: Unexpected number of unchanged problems. Expected {expected_unchanged} ±{allowed_diff}, but found {unchanged_count}")
+            sys.exit(1)
 
-    print("Success: No new problems found and unchanged count within acceptable range")
+    print("Success: No new problems found" +
+          (" and unchanged count within acceptable range" if expected_unchanged is not None else ""))
     sys.exit(0)
 
 def main():
