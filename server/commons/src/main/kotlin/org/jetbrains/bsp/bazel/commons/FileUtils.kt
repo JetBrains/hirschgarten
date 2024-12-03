@@ -20,7 +20,7 @@ object FileUtils {
     val file = File(path, subfolder)
     try {
       file.mkdirs()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
       return null
     }
     if (!file.exists() || !file.isDirectory) {
