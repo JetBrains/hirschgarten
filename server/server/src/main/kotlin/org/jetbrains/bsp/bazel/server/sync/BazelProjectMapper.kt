@@ -13,6 +13,7 @@ import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.tracer
 import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.GoLibrary
 import org.jetbrains.bsp.bazel.server.model.Label
@@ -31,6 +32,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -52,6 +54,7 @@ class BazelProjectMapper(
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
+  private val repoMapping: RepoMapping,
 ) {
   private suspend fun <T> measure(description: String, body: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { body() }
 
@@ -836,9 +839,14 @@ class BazelProjectMapper(
         it.relativePath.endsWith(".go")
     }
 
+  private val externalRepositoriesTreatedAsInternal =
+    workspaceContextProvider
+      .currentWorkspaceContext()
+      .externalRepositoriesTreatedAsInternal
+
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =
-    target.label().isMainWorkspace &&
+    (target.label().isMainWorkspace || target.label().repoName in externalRepositoriesTreatedAsInternal) &&
       (
         shouldImportTargetKind(target.kind) ||
           target.hasJvmTargetInfo() &&
