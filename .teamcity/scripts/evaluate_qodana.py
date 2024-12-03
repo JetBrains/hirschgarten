@@ -96,7 +96,7 @@ def main():
     args = parse_arguments()
     build_id = "%env.BUILD_URL%".split("/")[-1]
     server_url = "https://bazel.teamcity.com"
-    auth_token_tc = "%jetbrains.bazel.buildserver.token.youtrack%"
+    auth_token_tc = "%jetbrains.bazel.teamcity.token%"
 
     tc_client = TeamCityLogRetriever(server_url, auth_token_tc)
 

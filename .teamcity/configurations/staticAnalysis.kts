@@ -119,6 +119,7 @@ diff: String = "0",
       param("env.GIT_REPO_URL", "")
       param("env.GIT_COMMIT", "")
       params(this)
+      if (repo != null) {password("jetbrains.bazel.teamcity.token", "credentialsJSON:f47ac10b-58cc-4372-a567-0e02b2c3d479", label = "jetbrains.bazel.teamcity.token", description = "Bazel TCC token", display = ParameterDisplay.HIDDEN) }
     },
     dockerSupport = {
         loginToRegistry = on {
