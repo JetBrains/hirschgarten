@@ -85,7 +85,7 @@ open class Analyze(
                       --report-dir /data/results/report
                       --save-report
                       --baseline ${if (repo != null) {"qodana.sarif.json"} else {"tools/qodana/qodana.sarif.json"}}
-                      --config ${if (repo != null) {"%system.agent.persistent.cache%/$repo/qodana.yamlj"} else {"tools/qodana/qodana.yaml"}}
+                      --config ${if (repo != null) {"%system.agent.persistent.cache%/$repo/qodana.yaml"} else {"tools/qodana/qodana.yaml"}}
                   """.trimIndent()
                   this.cloudToken = cloudToken
                   collectAnonymousStatistics = true
