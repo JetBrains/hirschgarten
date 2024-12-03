@@ -28,7 +28,7 @@ private val log = logger<BspStartupActivity>()
 
 // Use WeakHashMap to avoid leaking the Project instance
 private val executedForProject: MutableSet<Project> =
-  Collections.synchronizedSet(Collections.newSetFromMap(WeakHashMap<Project, Boolean>()))
+  Collections.synchronizedSet(Collections.newSetFromMap(WeakHashMap()))
 
 /**
  * Runs actions after the project has started up and the index is up-to-date.
