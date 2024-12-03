@@ -59,7 +59,7 @@ class ProjectViewTokenType private constructor(debugName: String) : IElementType
       )
 
     /** Possible values of scalar keywords. */
-     val SCALAR_KEYWORDS_SET =
+    val SCALAR_KEYWORDS_SET =
       setOf(
         "allow_manual_targets_sync",
         "bazel_binary",
