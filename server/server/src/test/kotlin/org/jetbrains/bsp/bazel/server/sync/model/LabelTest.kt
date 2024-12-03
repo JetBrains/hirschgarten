@@ -28,7 +28,7 @@ class LabelTest {
     // then
     normalized shouldBe "@//path/to/target:targetName"
     label.targetName shouldBe "targetName"
-    label.targetPath shouldBe "path/to/target"
+    label.packagePath shouldBe "path/to/target"
     label.repoName shouldBe ""
     label.isMainWorkspace shouldBe true
   }
@@ -39,7 +39,7 @@ class LabelTest {
     val label = Label.parse("@//path/to/target:targetName")
 
     // when
-    val targetPath = label.targetPath
+    val targetPath = label.packagePath
 
     // then
     targetPath shouldBe "path/to/target"

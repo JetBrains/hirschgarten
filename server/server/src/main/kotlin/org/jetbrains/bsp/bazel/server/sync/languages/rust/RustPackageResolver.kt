@@ -27,11 +27,7 @@ class RustPackageResolver(val bazelPathsResolver: BazelPathsResolver) {
 
   fun resolvePackage(rustTarget: Module): BazelPackageTargetInfo = resolvePackage(rustTarget.label)
 
-  fun resolvePackage(label: Label): BazelPackageTargetInfo {
-    val labelVal = label.value
-    val (packageName, targetName) = labelVal.split(":", limit = 2)
-    return BazelPackageTargetInfo(packageName, targetName)
-  }
+  fun resolvePackage(label: Label): BazelPackageTargetInfo = BazelPackageTargetInfo(label.packagePath, label.targetName)
 
   private fun resolveSinglePackage(packageData: Map.Entry<String, List<Module>>): RustPackage {
     val (rustPackageId, rustTargets) = packageData

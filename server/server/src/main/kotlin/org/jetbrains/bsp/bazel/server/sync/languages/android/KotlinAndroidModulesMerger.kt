@@ -24,7 +24,7 @@ class KotlinAndroidModulesMerger(private val featureFlags: FeatureFlags) {
     if (featureFlags.isAndroidSupportEnabled) doMergeKotlinAndroidModules(modules) else modules
 
   private fun doMergeKotlinAndroidModules(modules: List<Module>): List<Module> {
-    val moduleById = modules.associateBy { it.label.value }
+    val moduleById = modules.associateBy { it.label.toString() }
 
     val mergedKotlinAndroidModules =
       modules.mapNotNull { parentModule ->
@@ -37,7 +37,7 @@ class KotlinAndroidModulesMerger(private val featureFlags: FeatureFlags) {
       mergedKotlinAndroidModules
         .asSequence()
         .flatMap { it.oldModulesToRemove }
-        .map { it.label.value }
+        .map { it.label.toString() }
         .toSet()
     val withoutOldModules = (moduleById - oldModulesToRemove).values
     return withoutOldModules + newModules
@@ -46,7 +46,7 @@ class KotlinAndroidModulesMerger(private val featureFlags: FeatureFlags) {
   private fun tryMergeKotlinAndroidModule(parentModule: Module, moduleById: Map<String, Module>): MergedKotlinAndroidModule? {
     if (parentModule.sourceSet.sources.isNotEmpty()) return null
 
-    val parentModuleId = parentModule.label.value
+    val parentModuleId = parentModule.label.toString()
     val kotlinModule = moduleById[parentModuleId + "_kt"] ?: return null
     val androidModule = moduleById[parentModuleId + "_base"] ?: return null
 
@@ -74,7 +74,7 @@ class KotlinAndroidModulesMerger(private val featureFlags: FeatureFlags) {
       mergedDependencies
         .filterNot { it == androidModule.label }
         .filterNot { it == kotlinModule.label }
-        .filterNot { it.value.endsWith("//third_party:android_sdk") } // This is added by Kotlin rules
+        .filterNot { it.toString().endsWith("//third_party:android_sdk") } // This is added by Kotlin rules
         .distinct()
         .toList()
 

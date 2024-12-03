@@ -24,7 +24,7 @@ class RustDependencyResolver(private val rustPackageResolver: RustPackageResolve
   }
 
   private fun groupBspTargetsByPackage(rustBspTargets: List<Module>, rustPackages: List<RustPackage>): Map<RustPackage, List<Module>> {
-    val rustBspTargetsMappedToLabel = rustBspTargets.associateBy { it.label.value }
+    val rustBspTargetsMappedToLabel = rustBspTargets.associateBy { it.label.toString() }
     return rustPackages.associateWith {
       it.resolvedTargets.mapNotNull { pkgTarget ->
         rustBspTargetsMappedToLabel["${it.id}:${pkgTarget.name}"]
@@ -64,7 +64,7 @@ class RustDependencyResolver(private val rustPackageResolver: RustPackageResolve
       rustPackage.id,
       directDependencies.map {
         RustRawDependency(
-          it.value,
+          it.toString(),
           false,
           true,
           setOf<String>(),

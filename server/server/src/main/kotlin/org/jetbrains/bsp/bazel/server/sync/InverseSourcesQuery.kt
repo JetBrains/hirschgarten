@@ -22,7 +22,7 @@ object InverseSourcesQuery {
           emptyList(),
         )
     val listOfLabels = targetLabels(fileLabel, bazelRunner, bazelInfo, cancelChecker)
-    return InverseSourcesResult(listOfLabels.map { BuildTargetIdentifier(it.value) })
+    return InverseSourcesResult(listOfLabels.map { BuildTargetIdentifier(it.toString()) })
   }
 
   /**
