@@ -24,10 +24,9 @@ diff: String = "0",
       equals("container.engine.osType", "linux")
     },
     dependencies = {
-//          snapshot(ProjectBuild.Space) {}
-      artifacts(ProjectBuild.Space) {
-        // TO-DO: remove build rule
-        artifactRules = Utils.CommonParams.QodanaArtifactRules
+        snapshot(ProjectBuild.Space) {}
+        artifacts(ProjectBuild.Space) {
+            artifactRules = Utils.CommonParams.QodanaArtifactRules
       }
     },
     steps = {
