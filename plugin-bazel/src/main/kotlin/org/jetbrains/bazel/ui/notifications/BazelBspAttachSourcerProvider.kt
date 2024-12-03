@@ -2,7 +2,6 @@ package org.jetbrains.bazel.ui.notifications
 
 import com.intellij.codeInsight.AttachSourcesProvider
 import com.intellij.openapi.application.WriteAction
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.LibraryOrderEntry
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.Library
@@ -68,14 +67,14 @@ internal class BazelAttachSourcesProvider : AttachSourcesProvider {
     psiFile: PsiFile,
   ): List<AttachSourcesProvider.AttachSourcesAction> {
     val project = orderEntries.firstNotNullOf { it.ownerModule.project }
-    return if (project.isBazelProject && project.containsBazelSourcesForEntries(orderEntries)) {
+    return if (project.isBazelProject && containsBazelSourcesForEntries(orderEntries)) {
       listOf(BazelAttachSourcesAction())
     } else {
       emptyList()
     }
   }
 
-  private fun Project.containsBazelSourcesForEntries(orderEntries: List<LibraryOrderEntry>): Boolean =
+  private fun containsBazelSourcesForEntries(orderEntries: List<LibraryOrderEntry>): Boolean =
     orderEntries.any {
       it.library?.getFiles(OrderRootType.SOURCES)?.isNotEmpty() == true
     }

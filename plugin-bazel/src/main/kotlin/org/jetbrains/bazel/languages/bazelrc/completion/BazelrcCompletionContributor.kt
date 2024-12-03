@@ -102,7 +102,7 @@ private class BazelConfigCompletionProvider : CompletionProvider<CompletionParam
     context: ProcessingContext,
     result: CompletionResultSet,
   ) {
-    PsiTreeUtil.getParentOfType<BazelrcLine>(parameters.position, BazelrcLine::class.java)?.run {
+    PsiTreeUtil.getParentOfType(parameters.position, BazelrcLine::class.java)?.run {
       val processor = BazelrcConfigDeclarationsProcessor(this)
       processor.processFile(this.containingFile?.originalFile as? BazelrcFile)
       result.addAllElements(processor.results.keys.map { functionLookupElement(it) })

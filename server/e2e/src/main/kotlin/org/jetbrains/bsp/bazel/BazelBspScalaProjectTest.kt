@@ -188,7 +188,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
       )
     expectedDiagnostic.severity = DiagnosticSeverity.WARNING
 
-    val tmpDir = System.getenv().get("BIT_WORKSPACE_DIR")
+    val tmpDir = System.getenv()["BIT_WORKSPACE_DIR"]
     val expectedDocumentId = TextDocumentIdentifier("file://$tmpDir/scala_targets/Example.scala")
     val expectedDiagnosticsParam =
       PublishDiagnosticsParams(
