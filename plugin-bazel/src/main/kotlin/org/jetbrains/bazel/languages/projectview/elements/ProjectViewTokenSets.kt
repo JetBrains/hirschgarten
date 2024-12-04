@@ -14,6 +14,4 @@ object ProjectViewTokenSets {
   val IDENTIFIER = TokenSet.create(ProjectViewTokenType.IDENTIFIER)
 
   val COMMENT = TokenSet.create(ProjectViewTokenType.COMMENT)
-
-  val STRINGS = TokenSet.create(ProjectViewTokenType.IDENTIFIER)
 }

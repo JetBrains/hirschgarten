@@ -24,22 +24,40 @@ class ProjectViewParser: PsiParser {
   }
 
   fun parseSection(builder: PsiBuilder) {
-    if (builder.tokenType == ProjectViewTokenType::LIST_KEYWORD) {
+    if (builder.tokenType == ProjectViewTokenType.LIST_KEYWORD) {
       val list = builder.mark()
       parseList(builder)
       list.done(ProjectViewElementTypes.LIST)
-    } else if (builder.tokenType == ProjectViewTokenType::SCALAR_KEYWORD) {
+    } else if (builder.tokenType == ProjectViewTokenType.SCALAR_KEYWORD) {
       val scalar = builder.mark()
       parseScalar(builder)
       scalar.done(ProjectViewElementTypes.SCALAR)
     } else {
+      val tokenText = builder.tokenText;
       builder.advanceLexer()
-      builder.error("Unexpected token") //TODO(localization)
+      builder.error("Unexpected token: $tokenText") //TODO(localization)
     }
   }
 
   fun parseList(builder: PsiBuilder) {
-    //TODO("Unimplemented")
+    parseListKeyword(builder);
+    parseListEntries(builder);
+  }
+
+  fun parseListKeyword(builder: PsiBuilder) {
+    LOG.assertTrue(builder.tokenType == ProjectViewTokenType.LIST_KEYWORD)
+    val listKeyword = builder.mark();
+    builder.advanceLexer()
+    listKeyword.done(ProjectViewElementTypes.LIST_KEY)
+  }
+
+  fun parseListEntries(builder: PsiBuilder) {
+    val listValue = builder.mark();
+    while (!builder.eof() && builder.tokenType != ProjectViewTokenType.LIST_KEYWORD &&
+      builder.tokenType != ProjectViewTokenType.SCALAR_KEYWORD) {
+      builder.advanceLexer();
+    }
+    listValue.done(ProjectViewElementTypes.LIST_VALUE);
   }
 
   fun parseScalar(builder: PsiBuilder) {
@@ -51,7 +69,7 @@ class ProjectViewParser: PsiParser {
   }
 
   fun parseScalarKey(builder: PsiBuilder): Boolean {
-    LOG.assertTrue(builder.tokenType == ProjectViewTokenType::IDENTIFIER)
+    LOG.assertTrue(builder.tokenType == ProjectViewTokenType.IDENTIFIER)
     val key = builder.mark()
     val isImport = builder.tokenText == IMPORT_KEYWORD
     builder.advanceLexer()
@@ -60,14 +78,14 @@ class ProjectViewParser: PsiParser {
   }
 
   fun parseScalarValue(builder: PsiBuilder) {
-    LOG.assertTrue(builder.tokenType == ProjectViewTokenType::IDENTIFIER)
+    LOG.assertTrue(builder.tokenType == ProjectViewTokenType.IDENTIFIER)
     val value = builder.mark()
     builder.advanceLexer()
     value.done(ProjectViewElementTypes.SCALAR_VALUE)
   }
 
   fun parseColon(builder: PsiBuilder) {
-    LOG.assertTrue(builder.tokenType == ProjectViewTokenType::COLON)
+    LOG.assertTrue(builder.tokenType == ProjectViewTokenType.COLON)
     builder.advanceLexer()
   }
 }

@@ -11,6 +11,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
+import org.jetbrains.bazel.languages.projectview.elements.ProjectViewElementTypes
 import org.jetbrains.bazel.languages.projectview.elements.ProjectViewTokenSets
 import org.jetbrains.bazel.languages.projectview.lexer.ProjectViewLexer
 import org.jetbrains.bazel.languages.projectview.psi.ProjectViewFile
@@ -26,9 +27,11 @@ class ProjectViewParserDefinition(): ParserDefinition {
 
   override fun getCommentTokens(): TokenSet = ProjectViewTokenSets.COMMENT
 
-  override fun getStringLiteralElements(): TokenSet = ProjectViewTokenSets.STRINGS
+  override fun getWhitespaceTokens(): TokenSet = ProjectViewTokenSets.WHITESPACE
 
-  override fun createElement(node: ASTNode?): PsiElement = createElement(node)
+  override fun getStringLiteralElements(): TokenSet = TokenSet.EMPTY
+
+  override fun createElement(node: ASTNode): PsiElement = ProjectViewElementTypes.createElement(node)
 
   override fun createFile(viewProvider: FileViewProvider): PsiFile = ProjectViewFile(viewProvider)
 }

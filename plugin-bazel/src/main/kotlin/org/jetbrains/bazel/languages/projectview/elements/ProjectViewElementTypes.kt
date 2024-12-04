@@ -11,6 +11,9 @@ object ProjectViewElementTypes {
   val SCALAR_KEY = ProjectViewElementType("SCALAR_KEY")
   val SCALAR_VALUE = ProjectViewElementType("SCALAR VALUE")
 
+  val LIST_KEY = ProjectViewElementType("LIST_KEY")
+  val LIST_VALUE = ProjectViewElementType("LIST_VALUE")
+
   fun createElement(node: ASTNode): PsiElement =
     when (val type = node.elementType) {
       LIST -> ProjectViewList(node)
@@ -18,6 +21,9 @@ object ProjectViewElementTypes {
 
       SCALAR_KEY -> ProjectViewScalarKey(node)
       SCALAR_VALUE -> ProjectViewScalarValue(node)
+
+      LIST_KEY -> ProjectViewListKey(node)
+      LIST_VALUE -> ProjectViewListValue(node)
 
       else -> error("Unknown element type: $type")
     }
