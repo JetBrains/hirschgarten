@@ -87,7 +87,6 @@ diff: String = "0",
                   --property=idea.kotlin.plugin.use.k2=true
                   --report-dir /data/results/report
                   --save-report
-                  ${if (repo != null) {"--property=bsp.android.support=true"} else {""}}
                   --baseline ${if (repo != null) {"qodana.sarif.json"} else {"tools/qodana/qodana.sarif.json"}}
                   --config ${if (repo != null) {"%system.agent.persistent.cache%/$repo/qodana.yaml"} else {"tools/qodana/qodana.yaml"}}
               """.trimIndent()
