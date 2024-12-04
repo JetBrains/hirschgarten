@@ -46,6 +46,6 @@ interface BazelBuildServer {
   @JsonRequest("workspace/buildTargetsPartial")
   fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): CompletableFuture<WorkspaceBuildTargetsResult>
 
-  @JsonRequest("workspace/buildTargetsFirstStep")
-  fun workspaceBuildTargetsFirstStep(params: WorkspaceBuildTargetsFirstStepParams): CompletableFuture<WorkspaceBuildTargetsResult>
+  @JsonRequest("workspace/buildTargetsFirstPhase")
+  fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): CompletableFuture<WorkspaceBuildTargetsResult>
 }

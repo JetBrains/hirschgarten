@@ -2,16 +2,13 @@ package org.jetbrains.bsp.bazel
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetDataKind
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstStepParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import java.net.URI
 import kotlin.also
 import kotlin.io.path.exists
@@ -42,10 +39,10 @@ object BazelBspFirstPhaseSyncTest : BazelBspTestBaseScenario() {
       "Compare workspace/buildTargetsFirstPhase",
     ) {
       testClient.test(timeout = 5.minutes) { session, _ ->
-        val result = session.server.workspaceBuildTargetsFirstStep(WorkspaceBuildTargetsFirstStepParams("test origin id")).await()
+        val result = session.server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams("test origin id")).await()
         testClient.assertJsonEquals<WorkspaceBuildTargetsResult>(
           expectedWorkspaceBuildTargetsResult(),
-          result
+          result,
         )
 
         assertFalse(javaLibraryJar.exists())

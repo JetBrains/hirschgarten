@@ -42,7 +42,7 @@ import org.jetbrains.bsp.bazel.server.sync.firstStep.TargetToBspMapper
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
-import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstStepParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
@@ -80,7 +80,7 @@ class ProjectSyncService(
     return bspMapper.workspaceTargets(project)
   }
 
-  fun workspaceBuildFirstStep(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsFirstStepParams): WorkspaceBuildTargetsResult {
+  fun workspaceBuildFirstStep(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
     val project = projectProvider.bazelQueryRefreshAndGet(cancelChecker, params.originId)
     println("XDD")
     System.err.println("XDD1")

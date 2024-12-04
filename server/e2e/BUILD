@@ -130,7 +130,9 @@ test_suite(
         ":allow_manual_targets_sync_test",
         ":android_kotlin_project_test",
         ":android_project_test",
+        ":build_and_sync_test",
         ":enabled_rules_test",
+        ":first_phase_sync_test",
         ":go_project_test",
         ":java_diagnostics_test",
         ":local_jdk_test",
@@ -140,8 +142,6 @@ test_suite(
         ":rust_project_test",
         ":sample_repo_test",
         ":server_downloads_bazelisk_test",
-        ":first_phase_sync_test",
-        ":build_and_sync_test"
     ],
 )
 
