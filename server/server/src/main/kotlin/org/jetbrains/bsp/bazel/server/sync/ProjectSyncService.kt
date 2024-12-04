@@ -82,6 +82,8 @@ class ProjectSyncService(
 
   fun workspaceBuildFirstStep(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsFirstStepParams): WorkspaceBuildTargetsResult {
     val project = projectProvider.bazelQueryRefreshAndGet(cancelChecker, params.originId)
+    println("XDD")
+    System.err.println("XDD1")
     return targetToBspMapper.toWorkspaceBuildTargetsResult(project)
   }
 

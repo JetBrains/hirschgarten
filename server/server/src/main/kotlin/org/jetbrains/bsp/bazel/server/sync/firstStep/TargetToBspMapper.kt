@@ -78,6 +78,7 @@ class TargetToBspMapper(private val workspaceContextProvider: WorkspaceContextPr
       canCompile = !isManual
       canRun = isBinary
       canTest = isTest
+      canDebug = false
     }
 
   fun Target.isSupported(): Boolean = Language.allOfKind(kind).isNotEmpty()

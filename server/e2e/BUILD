@@ -116,6 +116,12 @@ bazel_integration_test_current_version(
     workspace_path = "test-resources/build-and-sync-test",
 )
 
+bazel_integration_test_current_version(
+    name = "first_phase_sync_test",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspFirstPhaseSyncTest",
+    workspace_path = "test-resources/first-phase-sync-project",
+)
+
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
@@ -134,6 +140,8 @@ test_suite(
         ":rust_project_test",
         ":sample_repo_test",
         ":server_downloads_bazelisk_test",
+        ":first_phase_sync_test",
+        ":build_and_sync_test"
     ],
 )
 
