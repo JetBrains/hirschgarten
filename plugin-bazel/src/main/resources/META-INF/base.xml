@@ -233,6 +233,10 @@
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
+        <action class="org.jetbrains.bazel.settings.RunAllTestAction">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
 
         <action class="org.jetbrains.bazel.ui.widgets.CopyTargetIdAction"
                 icon="/icons/bazel.svg">

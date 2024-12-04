@@ -46,7 +46,6 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
       finishTopmostSuite()
     }
     val time = testingEndedMatcher.group("time").toLongOrNull() ?: 0
-    endTesting(startedBuildTarget!!, time)
   }
 
   private fun processPreviousOutputLine(previousOutputLine: TestOutputLine?, currentOutputLine: TestOutputLine) {

@@ -118,7 +118,13 @@ class BepServer(
       val coverageReportUri = testResult.testActionOutputList.find { it.name == "test.lcov" }?.uri
       if (coverageReportUri != null) {
         bspClient.onBuildPublishOutput(
-          PublishOutputParams(originId, taskId, target, TestCoverageReport.DATA_KIND, TestCoverageReport(coverageReportUri)),
+          PublishOutputParams(
+            originId,
+            taskId,
+            BuildTargetIdentifier(Label.parse(event.id.testResult.label).value),
+            TestCoverageReport.DATA_KIND,
+            TestCoverageReport(coverageReportUri),
+          ),
         )
       }
 
@@ -153,7 +159,7 @@ class BepServer(
 
   private fun processBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasStarted()) {
-      consumeBuildStartedEvent(event.started)
+      consumeBuildStartedEvent(event)
     }
   }
 
@@ -170,20 +176,21 @@ class BepServer(
     }
   }
 
-  private fun consumeBuildStartedEvent(buildStarted: BuildEventStreamProtos.BuildStarted) {
+  private fun consumeBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
     bepOutputBuilder.clear()
-    val taskId = TaskId(buildStarted.uuid)
+    val taskId = TaskId(event.started.uuid)
     val startParams = TaskStartParams(taskId)
-    startParams.eventTime = buildStarted.startTimeMillis
+    val target = BuildTargetIdentifier(Label.parse(event.id.testResult.label).value)
+    startParams.eventTime = event.started.startTimeMillis
 
-    if (buildStarted.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
+    if (event.started.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
       if (target != null) {
         startParams.dataKind = TaskStartDataKind.COMPILE_TASK
         val task = CompileTask(target)
         startParams.data = task
       }
       bspClient.onBuildTaskStart(startParams)
-    } else if (buildStarted.command == Constants.BAZEL_TEST_COMMAND) {
+    } else if (event.started.command == Constants.BAZEL_TEST_COMMAND) {
       if (originId == null) {
         return
       }
@@ -197,12 +204,13 @@ class BepServer(
 
   private fun processFinishedEvent(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasFinished()) {
-      consumeFinishedEvent(event.finished)
+      consumeFinishedEvent(event)
     }
   }
 
-  private fun consumeFinishedEvent(buildFinished: BuildEventStreamProtos.BuildFinished) {
+  private fun consumeFinishedEvent(event: BuildEventStreamProtos.BuildEvent) {
     val taskId = startedEvent
+    val target = BuildTargetIdentifier(Label.parse(event.id.testResult.label).value)
 
     if (taskId == null) {
       LOGGER.warn("No start event id was found. Origin id: {}", originId)
@@ -216,9 +224,9 @@ class BepServer(
       return
     }
 
-    val statusCode = BazelStatus.fromExitCode(buildFinished.exitCode.code).toBspStatusCode()
+    val statusCode = BazelStatus.fromExitCode(event.finished.exitCode.code).toBspStatusCode()
     val finishParams = TaskFinishParams(taskId, statusCode)
-    finishParams.eventTime = buildFinished.finishTimeMillis
+    finishParams.eventTime = event.finished.finishTimeMillis
 
     if (target != null) {
       finishParams.dataKind = TaskFinishDataKind.COMPILE_REPORT
@@ -282,13 +290,8 @@ class BepServer(
   }
 
   private fun consumeCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    val eventLabel = event.id.targetCompleted.label
-    /* The events never contain @, which will be different than the actual target id. Here we work around that fact,
-     * but since we also set up the BEP server to gather info about build targets within certain path (//... etc.), we can't
-     * just use target.uri.
-     * */
-    val labelText = if (target != null && ("@$eventLabel" == target.uri || "@@$eventLabel" == target.uri)) target.uri else eventLabel
-    val label = Label.parse(labelText)
+    val label = Label.parse(event.id.testResult.label)
+    val target = BuildTargetIdentifier(label.value)
     val targetComplete = event.completed
     val outputGroups = targetComplete.outputGroupList
     LOGGER.trace("Consuming target completed event {}", targetComplete)
