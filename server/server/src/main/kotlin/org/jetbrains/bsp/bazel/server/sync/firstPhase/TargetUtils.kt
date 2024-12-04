@@ -39,8 +39,10 @@ private const val BAZEL_NO_IDE_TAG = "no-ide"
 val Target.isNoIde: Boolean
   get() = BAZEL_NO_IDE_TAG in tags
 
+// TODO: https://youtrack.jetbrains.com/issue/BAZEL-1556
 val Target.isBinary: Boolean
   get() = kind.endsWith("_binary") || kind == "intellij_plugin_debug_target"
 
+// TODO: https://youtrack.jetbrains.com/issue/BAZEL-1556
 val Target.isTest: Boolean
   get() = kind.endsWith("_test")
