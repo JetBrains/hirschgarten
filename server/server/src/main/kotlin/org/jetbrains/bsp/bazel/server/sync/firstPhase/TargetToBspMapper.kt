@@ -83,6 +83,7 @@ class TargetToBspMapper(private val workspaceContextProvider: WorkspaceContextPr
 
   fun Target.isSupported(): Boolean = Language.allOfKind(kind).isNotEmpty()
 
+  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1549/
   fun toSourcesResult(project: Project, sourcesParams: SourcesParams): SourcesResult {
     val items =
       project
@@ -103,6 +104,7 @@ class TargetToBspMapper(private val workspaceContextProvider: WorkspaceContextPr
     }
   }
 
+  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1549/
   fun toResourcesResult(project: Project, resourcesParams: ResourcesParams): ResourcesResult {
     val items =
       project

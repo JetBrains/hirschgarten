@@ -11,6 +11,7 @@ private const val SHORTEN_MODULE_LIBRARY_NAMES = "bsp.shorten.module.library.nam
 private const val RETRIEVE_TARGETS_FOR_FILE_FROM_ANCESTORS = "bsp.retrieve.targets.for.file.from.ancestors"
 private const val WRAP_LIBRARIES_INSIDE_MODULES = "bsp.wrap.libraries.inside.modules"
 private const val USE_PHASED_SYNC = "bsp.use.phased.sync"
+private const val EXECUTE_SECOND_PHASE_ON_SYNC = "bsp.execute.second.phase.on.sync"
 
 object BspFeatureFlags {
   val isPythonSupportEnabled: Boolean
@@ -39,6 +40,9 @@ object BspFeatureFlags {
 
   val isPhasedSync: Boolean
     get() = Registry.`is`(USE_PHASED_SYNC)
+
+  val executeSecondPhaseOnSync: Boolean
+    get() = Registry.`is`(EXECUTE_SECOND_PHASE_ON_SYNC)
 
   fun toBspProtocolFeatureFlags(): FeatureFlags =
     FeatureFlags(

@@ -8,6 +8,7 @@ import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
 import org.jetbrains.plugins.bsp.config.isBspProjectLoaded
 import org.jetbrains.plugins.bsp.config.openedTimesSinceLastStartupResync
@@ -111,7 +112,8 @@ class BspStartupActivity : BspProjectActivity() {
 
   private suspend fun Project.resyncProjectIfNeeded() {
     if (isProjectInIncompleteState()) {
-      if (BspFeatureFlags.isPhasedSync) {
+      // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1555
+      if (BspFeatureFlags.isPhasedSync && buildToolId.id == "bazelbsp") {
         log.info("Running BSP phased sync task")
         PhasedSync(this).sync()
       } else {
