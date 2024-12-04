@@ -18,7 +18,6 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Library
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
-import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonModule
 import java.nio.file.Path
 
 class WorkspaceModelUpdaterImpl(
@@ -56,8 +55,6 @@ class WorkspaceModelUpdaterImpl(
         javaModuleUpdater.addEntities(dummyJavaModules.filterNot { it.isAlreadyAdded() })
         javaModuleUpdater.addEntity(module)
       }
-
-      is PythonModule -> pythonModuleUpdater?.addEntity(module)
     }
   }
 

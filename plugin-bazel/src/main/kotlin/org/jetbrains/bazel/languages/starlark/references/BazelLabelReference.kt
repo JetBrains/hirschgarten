@@ -21,7 +21,7 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), soft) {
   override fun resolve(): PsiElement? {
     if (!element.project.isBspProject || isInNameArgument()) return null
-    val label = BazelLabel.ofString(element.getStringContents() ?: "")
+    val label = BazelLabel.ofString(element.getStringContents())
     val buildFilePsi = resolveBuildFile(label) ?: return null
     return resolveRuleTarget(buildFilePsi, label) ?: resolveFileTarget(element.project, buildFilePsi, label)
   }

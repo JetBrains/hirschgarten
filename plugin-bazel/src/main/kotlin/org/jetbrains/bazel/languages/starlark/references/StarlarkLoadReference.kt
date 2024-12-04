@@ -13,7 +13,7 @@ class StarlarkLoadReference(element: StarlarkStringLiteralExpression, val loaded
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), false) {
   override fun resolve(): PsiElement? {
     val loadedFile = loadedFileReference.resolve() as? StarlarkFile ?: return null
-    val name = element.getStringContents() ?: return null
+    val name = element.getStringContents()
     val processor = StarlarkResolveNameProcessor(mutableListOf(), name)
     loadedFile.searchInTopLevel(processor, null)
     return processor.result.firstOrNull()

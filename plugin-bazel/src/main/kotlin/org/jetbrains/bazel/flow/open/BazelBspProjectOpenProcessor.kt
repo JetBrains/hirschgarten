@@ -24,7 +24,9 @@ internal class BazelBspProjectOpenProcessor : BaseBspProjectOpenProcessor(bazelB
 
   override val icon: Icon = BazelPluginIcons.bazel
 
-  override val name: String = BazelPluginConstants.BAZEL_DISPLAY_NAME
+  // during EAP phase, show "Bazel (EAP)" during import only to disambiguate from OG Bazel plugin,
+  // in case both are installed. See also: https://github.com/bazelbuild/intellij/pull/7092
+  override val name: String = BazelPluginConstants.BAZEL_DISPLAY_NAME + " (EAP)"
 
   override val isStrongProjectInfoHolder: Boolean
     get() = ApplicationManager.getApplication().isHeadlessEnvironment

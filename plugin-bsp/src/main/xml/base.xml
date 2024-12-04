@@ -6,9 +6,6 @@
         <extensionPoint qualifiedName="org.jetbrains.bsp.buildTargetClassifierExtension"
                         interface="org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension"
                         dynamic="true"/>
-        <extensionPoint qualifiedName="org.jetbrains.bsp.pythonSdkGetterExtension"
-                        interface="org.jetbrains.plugins.bsp.python.PythonSdkGetterExtension"
-                        dynamic="true"/>
         <extensionPoint qualifiedName="org.jetbrains.bsp.scalaSdkExtension"
                         interface="org.jetbrains.plugins.bsp.scala.sdk.ScalaSdkExtension"
                         dynamic="true"/>

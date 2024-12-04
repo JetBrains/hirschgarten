@@ -1,6 +1,7 @@
 package org.jetbrains.bazel.languages.starlark.completion.lookups
 
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkNamedElement
+import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 import javax.swing.Icon
 
 open class StarlarkNamedLookupElement(val element: StarlarkNamedElement, wrapping: StarlarkQuote = StarlarkQuote.UNQUOTED) :

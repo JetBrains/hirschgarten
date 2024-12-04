@@ -5,7 +5,6 @@ import ch.epfl.scala.bsp4j.BuildClient
 import ch.epfl.scala.bsp4j.BuildServerCapabilities
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.SourceItem
-import com.google.gson.Gson
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.build.events.impl.SkippedResultImpl
 import com.intellij.execution.process.OSProcessUtil
@@ -148,8 +147,6 @@ class DefaultBspConnection(
   private val disconnectActions: MutableList<() -> Unit> = mutableListOf()
   private val timeoutHandler = TimeoutHandler { Registry.intValue("bsp.request.timeout.seconds").seconds }
   private val mutex = Mutex()
-
-  private val gson = Gson()
 
   override suspend fun connect() {
     mutex.withLock {

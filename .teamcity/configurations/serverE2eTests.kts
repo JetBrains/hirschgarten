@@ -222,3 +222,17 @@ object ManualTargetsGitHub : ManualTargets(
 object ManualTargetsSpace : ManualTargets(
   vcsRoot = BaseConfiguration.SpaceVcs,
 )
+
+open class BuildSync(vcsRoot: GitVcsRoot) :
+  E2ETest(
+    vcsRoot = vcsRoot,
+    targets = "//server/e2e:build_and_sync_test",
+  )
+
+object BuildSyncGitHub : BuildSync(
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object BuildSyncSpace : BuildSync(
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)

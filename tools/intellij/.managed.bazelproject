@@ -3,8 +3,11 @@ derive_targets_from_directories: true
 workspace_type: intellij_plugin
 
 targets:
-  //plugin-bazel:plugin-bazel-debug
-  //plugin-bazel:plugin-bazel-with-server-debug
+  //plugin-bsp/...
+  //plugin-bazel/...
+  //server/...
+  //protocol/...
+  //tools/format
 
 build_flags:
   --define=ij_product=intellij-latest
@@ -13,3 +16,4 @@ additional_languages:
   kotlin
   python
 
+allow_manual_targets_sync: true

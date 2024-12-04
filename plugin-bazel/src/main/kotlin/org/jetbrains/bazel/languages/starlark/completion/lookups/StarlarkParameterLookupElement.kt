@@ -2,6 +2,7 @@ package org.jetbrains.bazel.languages.starlark.completion.lookups
 
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkParameter
+import org.jetbrains.bazel.languages.starlark.utils.StarlarkQuote
 
 class StarlarkParameterLookupElement(element: StarlarkParameter) : StarlarkNamedLookupElement(element, StarlarkQuote.UNQUOTED) {
   override fun getLookupString(): String = "$name = "

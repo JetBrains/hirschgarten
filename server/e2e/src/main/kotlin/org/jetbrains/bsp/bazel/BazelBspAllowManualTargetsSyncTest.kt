@@ -136,8 +136,7 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
-    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
+    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
     val jvmBuildTarget =
       JvmBuildTarget().also {
         it.javaHome = javaHome

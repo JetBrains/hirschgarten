@@ -13,7 +13,7 @@ class BazelrcImport(node: ASTNode) : BazelrcBaseElement(node) {
 
   override fun getReferences(): Array<out PsiReference?> = BazelrcImportFileReferenceSet(this).allReferences
 
-  fun getImportPath(): PsiElement? = findChildByType<PsiElement>(BazelrcTokenTypes.VALUE)
+  fun getImportPath(): PsiElement? = findChildByType(BazelrcTokenTypes.VALUE)
 
   fun isOptional(): Boolean = findChildByType<PsiElement>(BazelrcTokenTypes.IMPORT)?.text?.startsWith("try-") == true
 }

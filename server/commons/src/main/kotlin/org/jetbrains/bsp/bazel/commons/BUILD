@@ -2,10 +2,7 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 kt_jvm_library(
     name = "commons",
-    srcs = glob([
-        "*.java",
-        "*.kt",
-    ]),
+    srcs = glob(["*.kt"]),
     visibility = ["//server/commons:__subpackages__"],
     deps = [
         "@maven//:ch_epfl_scala_bsp4j",

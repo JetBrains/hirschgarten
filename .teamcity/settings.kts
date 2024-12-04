@@ -63,8 +63,13 @@ object GitHub : Project({
         buildType(ServerE2eTests.PythonProjectGitHub)
         buildType(ServerE2eTests.JavaDiagnosticsGitHub)
         buildType(ServerE2eTests.ManualTargetsGitHub)
+        buildType(ServerE2eTests.BuildSyncGitHub)
         buildType(ServerBenchmark.GitHub)
-        buildType(StaticAnalysis.GitHub)
+        buildType(StaticAnalysis.HirschgartenGitHub)
+        buildType(StaticAnalysis.AndroidBazelRulesGitHub)
+        buildType(StaticAnalysis.AndroidTestdpcGitHub)
+        buildType(StaticAnalysis.BazelGitHub)
+        buildType(StaticAnalysis.JetpackComposeGitHub)
       }
 
       buildType(ResultsAggregator.GitHub, options = {
@@ -110,8 +115,13 @@ object GitHub : Project({
       ServerE2eTests.PythonProjectGitHub,
       ServerE2eTests.JavaDiagnosticsGitHub,
       ServerE2eTests.ManualTargetsGitHub,
+      ServerE2eTests.BuildSyncGitHub,
       ServerBenchmark.GitHub,
-      StaticAnalysis.GitHub,
+      StaticAnalysis.HirschgartenGitHub,
+      StaticAnalysis.AndroidBazelRulesGitHub,
+      StaticAnalysis.AndroidTestdpcGitHub,
+      StaticAnalysis.BazelGitHub,
+      StaticAnalysis.JetpackComposeGitHub,
       ResultsAggregator.GitHub,
     )
 })
@@ -143,8 +153,13 @@ object Space : Project({
         buildType(ServerE2eTests.PythonProjectSpace)
         buildType(ServerE2eTests.JavaDiagnosticsSpace)
         buildType(ServerE2eTests.ManualTargetsSpace)
+        buildType(ServerE2eTests.BuildSyncSpace)
         buildType(ServerBenchmark.Space)
-        buildType(StaticAnalysis.Space)
+        buildType(StaticAnalysis.HirschgartenSpace)
+        buildType(StaticAnalysis.AndroidBazelRulesSpace)
+        buildType(StaticAnalysis.AndroidTestdpcSpace)
+        buildType(StaticAnalysis.BazelSpace)
+        buildType(StaticAnalysis.JetpackComposeSpace)
       }
 
       buildType(ResultsAggregator.Space, options = {
@@ -190,8 +205,13 @@ object Space : Project({
       ServerE2eTests.PythonProjectSpace,
       ServerE2eTests.JavaDiagnosticsSpace,
       ServerE2eTests.ManualTargetsSpace,
+      ServerE2eTests.BuildSyncSpace,
       ServerBenchmark.Space,
-      StaticAnalysis.Space,
+      StaticAnalysis.HirschgartenSpace,
+      StaticAnalysis.AndroidBazelRulesSpace,
+      StaticAnalysis.AndroidTestdpcSpace,
+      StaticAnalysis.BazelSpace,
+      StaticAnalysis.JetpackComposeSpace,
       ResultsAggregator.Space,
     )
 })

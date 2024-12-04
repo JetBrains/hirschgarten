@@ -23,8 +23,6 @@ import org.jetbrains.bazel.languages.starlark.formatting.BuildifierUtil
 import java.io.File
 import javax.swing.JCheckBox
 
-const val CONFIGURABLE_ID = "com.jetbrains.bazel.buildifier.configuration.BuildifierConfigurable"
-
 class BuildifierConfigurable(val project: Project) : BoundConfigurable(BazelPluginBundle.message("buildifier.configurable.name")) {
   private var detectedBuildifierExecutable: File? = null
   private var storedState = BuildifierConfiguration.getBuildifierConfiguration(project)

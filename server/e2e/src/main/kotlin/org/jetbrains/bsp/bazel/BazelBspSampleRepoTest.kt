@@ -931,12 +931,6 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     if (majorBazelVersion == 5) return BazelBspTestScenarioStep(stepName) {}
     val targetWithJavacExportsIdentifier = BuildTargetIdentifier("$targetPrefix//target_with_javac_exports:java_library")
     val params = JavacOptionsParams(listOf(targetWithJavacExportsIdentifier))
-    val bazelArch =
-      if (System.getProperty("os.name").lowercase().startsWith("mac")) {
-        "darwin_arm64"
-      } else {
-        "k8"
-      }
 
     val expectedResult =
       JavacOptionsResult(
@@ -950,7 +944,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
               "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
             ),
             emptyList(),
-            "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/__main__/bazel-out/$bazelArch-fastbuild/bin/target_with_javac_exports/libjava_library.jar",
+            "$bazelBinDirectory/target_with_javac_exports/libjava_library.jar",
           ),
         ),
       )
@@ -1069,8 +1063,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
-    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
+    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
     val jvmBuildTarget =
       JvmBuildTarget().also {
         it.javaHome = javaHome

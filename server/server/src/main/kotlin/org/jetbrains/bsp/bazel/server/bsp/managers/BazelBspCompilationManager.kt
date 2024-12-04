@@ -2,7 +2,7 @@ package org.jetbrains.bsp.bazel.server.bsp.managers
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.coroutineScope
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.server.bep.BepServer
@@ -20,7 +20,7 @@ class BazelBspCompilationManager(
   val client: JoinedBuildClient,
   val workspaceRoot: Path,
 ) {
-  fun buildTargetsWithBep(
+  suspend fun buildTargetsWithBep(
     cancelChecker: CancelChecker,
     targetSpecs: TargetsSpec,
     extraFlags: List<String> = emptyList(),
@@ -32,7 +32,7 @@ class BazelBspCompilationManager(
     val bepServer = BepServer(client, diagnosticsService, originId, target, bazelPathsResolver)
     val bepReader = BepReader(bepServer)
     return try {
-      runBlocking {
+      coroutineScope {
         val readerFuture =
           async(Dispatchers.Default) {
             bepReader.start()

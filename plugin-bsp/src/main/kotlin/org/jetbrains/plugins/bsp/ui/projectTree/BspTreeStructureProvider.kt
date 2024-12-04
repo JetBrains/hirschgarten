@@ -92,10 +92,5 @@ class BspDirectoryNode(
    */
   private fun Project.shouldNotCalculateCustomNodes() = openedTimesSinceLastStartupResync == 1 || isBspProjectLoaded
 
-  override fun getChildrenImpl(): Collection<AbstractTreeNode<*>?>? =
-    if (lazyChildren.isNotEmpty()) {
-      lazyChildren
-    } else {
-      super.getChildrenImpl()
-    }
+  override fun getChildrenImpl(): Collection<AbstractTreeNode<*>?>? = lazyChildren.ifEmpty { super.getChildrenImpl() }
 }

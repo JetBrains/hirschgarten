@@ -5,6 +5,7 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.outputs.AsyncOutputProcessor
 import org.jetbrains.bsp.bazel.bazelrunner.outputs.OutputProcessor
 import org.jetbrains.bsp.bazel.bazelrunner.outputs.SyncOutputProcessor
+import org.jetbrains.bsp.bazel.commons.BazelStatus
 import org.jetbrains.bsp.bazel.commons.Format
 import org.jetbrains.bsp.bazel.commons.Stopwatch
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
@@ -36,7 +37,7 @@ class BazelProcess internal constructor(
     val exitCode = outputProcessor.waitForExit(cancelChecker, serverPidFuture, logger)
     val duration = stopwatch.stop()
     logCompletion(exitCode, duration)
-    return BazelProcessResult(outputProcessor.stdoutCollector, outputProcessor.stderrCollector, exitCode)
+    return BazelProcessResult(outputProcessor.stdoutCollector, outputProcessor.stderrCollector, BazelStatus.fromExitCode(exitCode))
   }
 
   private fun logCompletion(exitCode: Int, duration: Duration) {

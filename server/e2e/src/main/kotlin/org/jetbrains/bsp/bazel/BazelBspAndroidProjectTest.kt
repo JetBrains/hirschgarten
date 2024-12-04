@@ -17,9 +17,8 @@ object BazelBspAndroidProjectTest : BazelBspAndroidProjectTestBase() {
     get() = listOf("rules_android")
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
     val javaHome =
-      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk17_\$OS$architecturePart/"
+      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk17_$javaHomeArchitecture/"
     val jvmBuildTargetData =
       JvmBuildTarget().also {
         it.javaHome = javaHome

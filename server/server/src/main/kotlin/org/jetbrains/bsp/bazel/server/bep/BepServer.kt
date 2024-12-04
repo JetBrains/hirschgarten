@@ -19,8 +19,8 @@ import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.jetbrains.bsp.bazel.commons.BazelStatus
 import org.jetbrains.bsp.bazel.commons.Constants
-import org.jetbrains.bsp.bazel.commons.ExitCodeMapper
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
@@ -216,13 +216,13 @@ class BepServer(
       return
     }
 
-    val exitCode = ExitCodeMapper.mapExitCode(buildFinished.exitCode.code)
-    val finishParams = TaskFinishParams(taskId, exitCode)
+    val statusCode = BazelStatus.fromExitCode(buildFinished.exitCode.code).toBspStatusCode()
+    val finishParams = TaskFinishParams(taskId, statusCode)
     finishParams.eventTime = buildFinished.finishTimeMillis
 
     if (target != null) {
       finishParams.dataKind = TaskFinishDataKind.COMPILE_REPORT
-      val isSuccess = exitCode.value == 1
+      val isSuccess = statusCode.value == 1
       val errors = if (isSuccess) 0 else 1
       val report = CompileReport(target, errors, 0)
       finishParams.data = report
