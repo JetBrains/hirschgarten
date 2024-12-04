@@ -147,7 +147,7 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
   override fun workspaceBuildTargetsFirstPhase(
     params: WorkspaceBuildTargetsFirstPhaseParams,
   ): CompletableFuture<WorkspaceBuildTargetsResult> =
-    runner.handleRequest("workspace/buildTargetsFirstPhase", projectSyncService::workspaceBuildFirstStep, params)
+    runner.handleRequest("workspace/buildTargetsFirstPhase", projectSyncService::workspaceBuildFirstPhase, params)
 
   override fun workspaceReload(): CompletableFuture<Any> = runner.handleRequest("workspace/reload", projectSyncService::workspaceReload)
 

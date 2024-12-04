@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.sync.firstStep
+package org.jetbrains.bsp.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Attribute
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Rule

@@ -38,7 +38,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.model.Language
-import org.jetbrains.bsp.bazel.server.sync.firstStep.TargetToBspMapper
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.TargetToBspMapper
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
@@ -80,10 +80,8 @@ class ProjectSyncService(
     return bspMapper.workspaceTargets(project)
   }
 
-  fun workspaceBuildFirstStep(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
+  fun workspaceBuildFirstPhase(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
     val project = projectProvider.bazelQueryRefreshAndGet(cancelChecker, params.originId)
-    println("XDD")
-    System.err.println("XDD1")
     return targetToBspMapper.toWorkspaceBuildTargetsResult(project)
   }
 

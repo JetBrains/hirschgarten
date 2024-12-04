@@ -10,7 +10,7 @@ class PhasedSync(private val project: Project) {
   suspend fun sync() {
     var incompleteState: IncompleteDependenciesAccessToken? = null
     try {
-      ProjectSyncTask(project).sync(FirstStepSync, false)
+      ProjectSyncTask(project).sync(FirstPhaseSync, false)
       incompleteState =
         writeAction {
           project.service<IncompleteDependenciesService>().enterIncompleteState(this)

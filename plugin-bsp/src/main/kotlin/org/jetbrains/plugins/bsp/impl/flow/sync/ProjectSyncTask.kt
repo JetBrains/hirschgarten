@@ -43,7 +43,7 @@ private val log = logger<ProjectSyncTask>()
 
 sealed interface ProjectSyncScope
 
-data object FirstStepSync : ProjectSyncScope
+data object FirstPhaseSync : ProjectSyncScope
 
 data object FullProjectSync : ProjectSyncScope
 

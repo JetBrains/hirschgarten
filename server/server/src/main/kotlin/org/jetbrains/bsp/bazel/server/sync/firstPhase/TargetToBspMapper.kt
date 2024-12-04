@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.sync.firstStep
+package org.jetbrains.bsp.bazel.server.sync.firstPhase
 
 import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities

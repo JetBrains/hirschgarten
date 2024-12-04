@@ -43,7 +43,7 @@ import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
-import org.jetbrains.plugins.bsp.impl.flow.sync.FirstStepSync
+import org.jetbrains.plugins.bsp.impl.flow.sync.FirstPhaseSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncScope
 import org.jetbrains.plugins.bsp.impl.flow.sync.asyncQueryIf
@@ -283,7 +283,7 @@ class CollectProjectDetailsTask(
               }
 
             val targetIdToTargetInfo =
-              if (syncScope is FullProjectSync || syncScope is FirstStepSync) {
+              if (syncScope is FullProjectSync || syncScope is FirstPhaseSync) {
                 syncedTargetIdToTargetInfo
               } else {
                 project.temporaryTargetUtils.targetIdToTargetInfo +
@@ -302,7 +302,7 @@ class CollectProjectDetailsTask(
                 isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
               )
 
-            if (syncScope is FullProjectSync || syncScope is FirstStepSync) {
+            if (syncScope is FullProjectSync || syncScope is FirstPhaseSync) {
               project.temporaryTargetUtils.saveTargets(
                 targetIdToTargetInfo,
                 targetIdToModuleEntityMap,

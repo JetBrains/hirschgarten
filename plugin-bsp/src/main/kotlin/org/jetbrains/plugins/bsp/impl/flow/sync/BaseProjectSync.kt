@@ -72,7 +72,7 @@ class BaseProjectSync(private val project: Project) {
           query("workspace/buildTargetsPartial") {
             server.workspaceBuildTargetsPartial(WorkspaceBuildTargetsPartialParams(syncScope.targetsToSync))
           }
-        } else if (syncScope is FirstStepSync) {
+        } else if (syncScope is FirstPhaseSync) {
           query("workspace/buildTargets") { server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId)) }
         } else if (buildProject) {
           query("workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }

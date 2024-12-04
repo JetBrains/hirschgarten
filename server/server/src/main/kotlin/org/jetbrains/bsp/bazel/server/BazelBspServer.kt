@@ -34,8 +34,8 @@ import org.jetbrains.bsp.bazel.server.sync.ProjectResolver
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bsp.bazel.server.sync.TargetTagsResolver
-import org.jetbrains.bsp.bazel.server.sync.firstStep.FirstStepProjectResolver
-import org.jetbrains.bsp.bazel.server.sync.firstStep.TargetToBspMapper
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.TargetToBspMapper
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
@@ -216,8 +216,8 @@ class BazelBspServer(
         bspClientLogger = bspClientLogger,
         featureFlags = featureFlags,
       )
-    val firstStepProjectResolver = FirstStepProjectResolver(workspaceRoot, bazelRunner, workspaceContextProvider, bazelInfo)
-    return ProjectProvider(projectResolver, firstStepProjectResolver)
+    val firstPhaseProjectResolver = FirstPhaseProjectResolver(workspaceRoot, bazelRunner, workspaceContextProvider, bazelInfo)
+    return ProjectProvider(projectResolver, firstPhaseProjectResolver)
   }
 
   fun buildServer(bspIntegrationData: BspIntegrationData): Launcher<JoinedBuildClient> {

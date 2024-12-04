@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.sync.firstStep
+package org.jetbrains.bsp.bazel.server.sync.firstPhase
 
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import kotlinx.coroutines.runBlocking
@@ -11,7 +11,7 @@ import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import java.nio.file.Path
 
-class FirstStepProjectResolver(
+class FirstPhaseProjectResolver(
   private val workspaceRoot: Path,
   private val bazelRunner: BazelRunner,
   private val workspaceContextProvider: WorkspaceContextProvider,

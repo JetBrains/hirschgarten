@@ -2,7 +2,7 @@ package org.jetbrains.plugins.bsp.projectDetails
 
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.bspBuildToolId
-import org.jetbrains.plugins.bsp.impl.flow.sync.FirstStepSync
+import org.jetbrains.plugins.bsp.impl.flow.sync.FirstPhaseSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
@@ -20,7 +20,7 @@ class CollectProjectDetailsSyncHook : ProjectSyncHook {
       baseTargetInfos = environment.baseTargetInfos,
       syncScope = environment.syncScope,
     )
-    val targetListChanged = environment.syncScope is FullProjectSync || environment.syncScope is FirstStepSync
+    val targetListChanged = environment.syncScope is FullProjectSync || environment.syncScope is FirstPhaseSync
     environment.diff.workspaceModelDiff.addPostApplyAction { task.postprocessingSubtask(targetListChanged) }
   }
 }
