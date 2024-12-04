@@ -5,6 +5,7 @@ import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.model.psi.PsiSymbolReference
 import com.intellij.model.psi.PsiSymbolReferenceService
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiElement
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
@@ -15,6 +16,7 @@ import org.jetbrains.bazel.languages.bazelrc.flags.OptionMetadataTag
 import org.jetbrains.bazel.languages.bazelrc.highlighting.BazelrcHighlightingColors
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
+import org.jetbrains.kotlin.analysis.utils.printer.parentOfType
 
 val flagTokenPattern =
   psiElement(BazelrcTokenTypes.FLAG)
@@ -67,7 +69,7 @@ class BazelrcFlagAnnotator : Annotator {
           .needsUpdateOnTyping()
           .create()
 
-      isDeprecated(flag) ->
+      isDeprecated(flag, element) ->
         holder
           .newAnnotation(HighlightSeverity.WARNING, "Flag: '${element.text}' is deprecated")
           .range(element.textRange)
@@ -89,9 +91,18 @@ class BazelrcFlagAnnotator : Annotator {
 
   private fun isHidden(flag: Flag) = flag.option.metadataTags.contains(OptionMetadataTag.HIDDEN)
 
-  private fun isDeprecated(flag: Flag) = flag.option.metadataTags.contains(OptionMetadataTag.DEPRECATED)
+  private fun isDeprecated(flag: Flag, element: PsiElement) =
+    when (flag.name) {
+      "watchfs" -> element.parentOfType<BazelrcLine>(false)?.command == "startup"
+
+      else -> flag.option.metadataTags.contains(OptionMetadataTag.DEPRECATED)
+    }
 
   private fun isNoOp(flag: Flag) = flag.option.effectTags.contains(OptionEffectTag.NO_OP)
 
   private fun isOld(flag: Flag, name: String) = "--${flag.option.oldName}" == name
+
+  private companion object {
+    private val log = logger<BazelrcFlagAnnotator>()
+  }
 }
