@@ -154,6 +154,7 @@ class TargetToBspMapperTest {
               canCompile = true
               canRun = false
               canTest = false
+              canDebug = false
             },
           ),
           BuildTarget(
@@ -165,6 +166,7 @@ class TargetToBspMapperTest {
               canCompile = true
               canRun = true
               canTest = false
+              canDebug = false
             },
           ),
           BuildTarget(
@@ -176,6 +178,7 @@ class TargetToBspMapperTest {
               canCompile = true
               canRun = false
               canTest = true
+              canDebug = false
             },
           ),
           BuildTarget(
@@ -187,6 +190,7 @@ class TargetToBspMapperTest {
               canCompile = true
               canRun = false
               canTest = false
+              canDebug = false
             },
           ),
           BuildTarget(
@@ -198,6 +202,7 @@ class TargetToBspMapperTest {
               canCompile = true
               canRun = true
               canTest = false
+              canDebug = false
             },
           ),
           BuildTarget(
@@ -209,6 +214,7 @@ class TargetToBspMapperTest {
               canCompile = true
               canRun = false
               canTest = true
+              canDebug = false
             },
           ),
         )
