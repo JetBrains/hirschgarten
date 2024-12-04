@@ -81,6 +81,7 @@ class TargetToBspMapper(private val workspaceContextProvider: WorkspaceContextPr
       canDebug = false
     }
 
+  // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1557
   fun Target.isSupported(): Boolean = Language.allOfKind(kind).isNotEmpty()
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1549/
