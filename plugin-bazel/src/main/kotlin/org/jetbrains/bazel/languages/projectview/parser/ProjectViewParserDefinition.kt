@@ -20,7 +20,7 @@ class ProjectViewParserDefinition(): ParserDefinition {
 
   override fun createLexer(project: Project?): Lexer = ProjectViewLexer()
 
-  override fun createParser(project: Project?): PsiParser = ProjectViewPsiParser()
+  override fun createParser(project: Project?): PsiParser = ProjectViewParser()
 
   override fun getFileNodeType(): IFileElementType = file
 
