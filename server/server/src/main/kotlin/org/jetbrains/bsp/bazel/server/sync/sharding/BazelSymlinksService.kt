@@ -8,6 +8,8 @@ import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.name
 
+// taken from org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
+// TODO: merge them into 1
 object BazelSymlinksService {
   private var symlinksToExclude: List<Path>? = null
 
