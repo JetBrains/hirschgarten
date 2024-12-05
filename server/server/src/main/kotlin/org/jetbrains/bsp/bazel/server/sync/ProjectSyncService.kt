@@ -38,7 +38,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.model.Language
-import org.jetbrains.bsp.bazel.server.sync.firstPhase.TargetToBspMapper
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
@@ -52,7 +52,7 @@ import java.nio.file.Path
 /** A facade for all project sync related methods  */
 class ProjectSyncService(
   private val bspMapper: BspProjectMapper,
-  private val targetToBspMapper: TargetToBspMapper,
+  private val firstPhaseTargetToBspMapper: FirstPhaseTargetToBspMapper,
   private val projectProvider: ProjectProvider,
   private val clientCapabilities: BuildClientCapabilities,
   private val workspaceRoot: Path,
@@ -82,7 +82,7 @@ class ProjectSyncService(
 
   fun workspaceBuildFirstPhase(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
     val project = projectProvider.bazelQueryRefreshAndGet(cancelChecker, params.originId)
-    return targetToBspMapper.toWorkspaceBuildTargetsResult(project)
+    return firstPhaseTargetToBspMapper.toWorkspaceBuildTargetsResult(project)
   }
 
   fun workspaceBuildLibraries(cancelChecker: CancelChecker): WorkspaceLibrariesResult {
@@ -115,7 +115,7 @@ class ProjectSyncService(
     return if (project.modules.isNotEmpty()) {
       bspMapper.sources(project, sourcesParams)
     } else {
-      targetToBspMapper.toSourcesResult(project, sourcesParams)
+      firstPhaseTargetToBspMapper.toSourcesResult(project, sourcesParams)
     }
   }
 
@@ -124,7 +124,7 @@ class ProjectSyncService(
     return if (project.modules.isNotEmpty()) {
       bspMapper.resources(project, resourcesParams)
     } else {
-      targetToBspMapper.toResourcesResult(project, resourcesParams)
+      firstPhaseTargetToBspMapper.toResourcesResult(project, resourcesParams)
     }
   }
 

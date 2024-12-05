@@ -72,7 +72,7 @@ private fun createMockProject(lightweightModules: List<Build.Target>): Project =
     lightweightModules = lightweightModules.associateBy { Label.parse(it.rule.name) },
   )
 
-class TargetToBspMapperTest {
+class FirstPhaseTargetToBspMapperTest {
   private lateinit var workspaceRoot: Path
 
   @BeforeEach
@@ -137,7 +137,7 @@ class TargetToBspMapperTest {
       val project = createMockProject(targets)
 
       val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = TargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
 
       // when
       val result = mapper.toWorkspaceBuildTargetsResult(project)
@@ -238,7 +238,7 @@ class TargetToBspMapperTest {
       val project = createMockProject(targets)
 
       val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = true)
-      val mapper = TargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
 
       // when
       val result = mapper.toWorkspaceBuildTargetsResult(project)
@@ -291,7 +291,7 @@ class TargetToBspMapperTest {
       val project = createMockProject(targets)
 
       val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = TargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
 
       // when
       val params =
@@ -374,7 +374,7 @@ class TargetToBspMapperTest {
       val project = createMockProject(targets)
 
       val workspaceContextProvider = MockWorkspaceContextProvider(allowManualTargetsSync = false)
-      val mapper = TargetToBspMapper(workspaceContextProvider, workspaceRoot)
+      val mapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
 
       // when
       val params = ResourcesParams(listOf(BuildTargetIdentifier("//target1"), BuildTargetIdentifier("//target2")))

@@ -28,7 +28,7 @@ import kotlin.collections.orEmpty
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
-class TargetToBspMapper(private val workspaceContextProvider: WorkspaceContextProvider, private val workspaceRoot: Path) {
+class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: WorkspaceContextProvider, private val workspaceRoot: Path) {
   fun toWorkspaceBuildTargetsResult(project: Project): WorkspaceBuildTargetsResult {
     val shouldSyncManualTargets = workspaceContextProvider.currentWorkspaceContext().allowManualTargetsSync.value
 

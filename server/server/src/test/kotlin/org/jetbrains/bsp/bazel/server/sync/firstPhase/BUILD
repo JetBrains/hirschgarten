@@ -13,9 +13,9 @@ kt_jvm_library(
 )
 
 kt_junit5_test(
-    name = "TargetToBspMapperTest",
+    name = "FirstPhaseTargetToBspMapperTest",
     size = "small",
-    src = "TargetToBspMapperTest.kt",
+    src = "FirstPhaseTargetToBspMapperTest.kt",
     deps = [
         ":mocks",
         "//protocol",
@@ -27,9 +27,9 @@ kt_junit5_test(
 )
 
 kt_junit5_test(
-    name = "TargetUtilsTest",
+    name = "FirstPhaseTargetUtilsTest",
     size = "small",
-    src = "TargetUtilsTest.kt",
+    src = "FirstPhaseTargetUtilsTest.kt",
     deps = [
         ":mocks",
         "//protocol",

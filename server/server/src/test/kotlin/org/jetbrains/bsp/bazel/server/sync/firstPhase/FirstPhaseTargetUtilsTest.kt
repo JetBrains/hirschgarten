@@ -4,7 +4,7 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-class TargetUtilsTest {
+class FirstPhaseTargetUtilsTest {
   @Test
   fun `should obtain target attributes using getters`() {
     // given

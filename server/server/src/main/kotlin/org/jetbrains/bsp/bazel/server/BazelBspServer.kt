@@ -35,7 +35,7 @@ import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bsp.bazel.server.sync.TargetTagsResolver
 import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
-import org.jetbrains.bsp.bazel.server.sync.firstPhase.TargetToBspMapper
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
@@ -105,9 +105,9 @@ class BazelBspServer(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
       )
-    val targetToBspMapper = TargetToBspMapper(workspaceContextProvider, workspaceRoot)
+    val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
     val projectSyncService =
-      ProjectSyncService(bspProjectMapper, targetToBspMapper, projectProvider, initializeBuildParams.capabilities, workspaceRoot)
+      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, initializeBuildParams.capabilities, workspaceRoot)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(
