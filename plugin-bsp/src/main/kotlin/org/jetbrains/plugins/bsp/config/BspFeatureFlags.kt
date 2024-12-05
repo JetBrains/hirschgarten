@@ -42,7 +42,7 @@ object BspFeatureFlags {
     get() = Registry.`is`(USE_PHASED_SYNC)
 
   val executeSecondPhaseOnSync: Boolean
-    get() = Registry.`is`(EXECUTE_SECOND_PHASE_ON_SYNC)
+    get() = isPhasedSync && Registry.`is`(EXECUTE_SECOND_PHASE_ON_SYNC)
 
   fun toBspProtocolFeatureFlags(): FeatureFlags =
     FeatureFlags(
