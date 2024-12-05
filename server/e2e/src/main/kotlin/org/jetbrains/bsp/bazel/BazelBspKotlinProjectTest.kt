@@ -40,8 +40,8 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val jvmBuildTargetData =
       JvmBuildTarget().also {
-        it.javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/local_jdk/"
-        it.javaVersion = "17"
+        it.javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+        it.javaVersion = "11"
       }
 
     val kotlinBuildTargetData =
