@@ -164,7 +164,7 @@ open class Bazel(
   },
   repo = "bazel",
   unchanged = "7917",
-  diff = "20"
+  diff = "100"
 )
 
 object BazelGitHub : Bazel(
