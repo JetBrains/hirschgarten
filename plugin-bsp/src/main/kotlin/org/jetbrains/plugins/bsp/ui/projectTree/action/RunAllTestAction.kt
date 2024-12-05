@@ -3,14 +3,18 @@ package org.jetbrains.plugins.bsp.ui.projectTree.action
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.application.readAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.platform.backend.workspace.WorkspaceModel
+import com.intellij.platform.backend.workspace.toVirtualFileUrl
+import com.intellij.platform.backend.workspace.virtualFile
 import org.jetbrains.plugins.bsp.action.SuspendableAction
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.runnerAction.TestTargetAction
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.walk
 
 internal class RunAllTestAction :
   SuspendableAction(
@@ -22,42 +26,54 @@ internal class RunAllTestAction :
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val action =
       TestTargetAction(
-        getAllTestTargetInfos(project, e),
+        readAction { getAllTestTargetInfos(project, e) },
         project = project,
       )
     action.actionPerformed(e)
   }
 
   override fun update(project: Project, e: AnActionEvent) {
-    e.presentation.isEnabledAndVisible = shouldShowAction(project, e)
+    e.presentation.isEnabledAndVisible = runReadAction { shouldShowAction(project, e) }
   }
 
-  @OptIn(ExperimentalPathApi::class)
   private fun getAllTestTargetInfos(project: Project, e: AnActionEvent): List<BuildTargetInfo> {
-    // get current path via vfs
     val currentPath = e.getData(PlatformDataKeys.VIRTUAL_FILE) ?: return listOf()
     val targetUtilService = project.temporaryTargetUtils
+    val pfIndex = ProjectFileIndex.getInstance(project)
+    val vfsManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
     return currentPath
-      .toNioPath()
-      .walk()
-      .mapNotNull { targetUtilService.fileToTargetId[it.toUri()] }
-      .flatten()
+      .toVirtualFileUrl(vfsManager)
+      .subTreeFileUrls
+      .asSequence()
+      .mapNotNull { it.virtualFile }
+      .filter { pfIndex.isInTestSourceContent(it) }
+      .flatMap { targetUtilService.getExecutableTargetsForFile(it, project) }
       .distinct()
       .mapNotNull { targetUtilService.getBuildTargetInfoForId(it) }
       .filter { it.capabilities.canTest }
       .toList()
   }
 
-  @OptIn(ExperimentalPathApi::class)
   private fun shouldShowAction(project: Project, e: AnActionEvent): Boolean {
     val currentPath = e.getData(PlatformDataKeys.VIRTUAL_FILE) ?: return false
+    val pfIndex = ProjectFileIndex.getInstance(project)
     val targetUtilService = project.temporaryTargetUtils
-    for (path in currentPath.toNioPath().walk()) {
+    val vfsManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
+    val subFiles =
+      currentPath
+        .toVirtualFileUrl(vfsManager)
+        .subTreeFileUrls
+        .asSequence()
+        .mapNotNull { it.virtualFile }
+        .filter { pfIndex.isInTestSourceContent(it) }
+
+    for (file in subFiles) {
       val targets =
-        targetUtilService.fileToTargetId[path.toUri()]
-          ?.mapNotNull { targetUtilService.getBuildTargetInfoForId(it) }
-          ?.filter { it.capabilities.canTest }
-      if (!targets.isNullOrEmpty()) {
+        targetUtilService
+          .getExecutableTargetsForFile(file, project)
+          .mapNotNull { targetUtilService.getBuildTargetInfoForId(it) }
+          .filter { it.capabilities.canTest }
+      if (targets.isNotEmpty()) {
         return true
       }
     }
