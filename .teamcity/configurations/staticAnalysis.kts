@@ -163,8 +163,6 @@ open class Bazel(
     password("qodana.cloud.token.bazel", "credentialsJSON:34041ec3-8e8c-4934-b3e2-0143ff2aee5e", label = "qodana.cloud.token.bazel", description = "Qodana token for Bazel statistics", display = ParameterDisplay.HIDDEN)
   },
   repo = "bazel",
-  unchanged = "7917",
-  diff = "100"
 )
 
 object BazelGitHub : Bazel(
