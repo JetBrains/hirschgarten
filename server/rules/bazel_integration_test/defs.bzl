@@ -1,7 +1,7 @@
 load("@bazel_binaries//:defs.bzl", "bazel_binaries")
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "bazel_integration_test", "bazel_integration_tests", "integration_test_utils")
 
-def bazel_integration_test_all_versions(name, test_runner, workspace_path, env = {}, additional_env_inherit = [], bazel_7_workspace_path = None):
+def bazel_integration_test_all_versions(name, test_runner, project_path, env = {}, additional_env_inherit = [], bzlmod_project_path = None):
     # test projects are too old for bazel 7
     bazel_versions = ["5.3.2", "6.4.0"]
 
@@ -10,12 +10,12 @@ def bazel_integration_test_all_versions(name, test_runner, workspace_path, env =
         timeout = "eternal",
         bazel_versions = ["5.3.2", "6.4.0"],
         test_runner = test_runner,
-        workspace_path = workspace_path,
+        workspace_path = project_path,
         env = env,
         additional_env_inherit = additional_env_inherit,
     )
 
-    if bazel_7_workspace_path != None:
+    if bzlmod_project_path != None:
         bazel_versions = bazel_binaries.versions.all
         bazel_7_version = bazel_binaries.versions.current
 
@@ -24,7 +24,7 @@ def bazel_integration_test_all_versions(name, test_runner, workspace_path, env =
             timeout = "eternal",
             bazel_version = bazel_7_version,
             test_runner = test_runner,
-            workspace_path = bazel_7_workspace_path,
+            workspace_path = bzlmod_project_path,
             env = env,
             additional_env_inherit = additional_env_inherit,
         )
@@ -51,13 +51,13 @@ def _calculate_new_version_name(old_name):
         name_of_target_only_with_major, _, _ = old_name.rsplit("_", 2)
         return name_of_target_only_with_major + "_x"
 
-def bazel_integration_test_current_version(name, test_runner, workspace_path, env = {}, additional_env_inherit = []):
+def bazel_integration_test_current_version(name, test_runner, project_path, env = {}, additional_env_inherit = []):
     bazel_integration_test(
         name = name,
         timeout = "eternal",
         bazel_version = bazel_binaries.versions.current,
         test_runner = test_runner,
-        workspace_path = workspace_path,
+        workspace_path = project_path,
         env = env,
         additional_env_inherit = additional_env_inherit,
     )
