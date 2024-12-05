@@ -82,7 +82,7 @@ data class WorkspaceContext(
 val WorkspaceContext.externalRepositoriesTreatedAsInternal: List<String>
   get() =
     targets.values.mapNotNull {
-      it.uri.substringBefore("//").takeIf { it.isNotEmpty() }
+      it.repoName.takeIf { it.isNotEmpty() }
     }
 
 class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
