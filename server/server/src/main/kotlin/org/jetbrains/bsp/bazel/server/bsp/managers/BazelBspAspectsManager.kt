@@ -17,7 +17,10 @@ import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Paths
 
-data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val isFailure: Boolean)
+data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val isFailure: Boolean) {
+  fun merge(anotherResult: BazelBspAspectsManagerResult): BazelBspAspectsManagerResult =
+    BazelBspAspectsManagerResult(bepOutput.merge(anotherResult.bepOutput), isFailure || anotherResult.isFailure)
+}
 
 data class RuleLanguage(val ruleName: String?, val language: Language)
 
@@ -90,13 +93,14 @@ class BazelBspAspectsManager(
 
   suspend fun fetchFilesFromOutputGroups(
     cancelChecker: CancelChecker,
-    targetSpecs: TargetsSpec,
+    targetsSpec: TargetsSpec,
     aspect: String,
     outputGroups: List<String>,
     shouldSyncManualFlags: Boolean,
     isRustEnabled: Boolean,
+    shouldLogInvocation: Boolean,
   ): BazelBspAspectsManagerResult {
-    if (targetSpecs.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), isFailure = false)
+    if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), isFailure = false)
     val defaultFlags =
       listOf(
         aspect(aspectsResolver.resolveLabel(aspect)),
@@ -113,7 +117,7 @@ class BazelBspAspectsManager(
     return bazelBspCompilationManager
       .buildTargetsWithBep(
         cancelChecker = cancelChecker,
-        targetSpecs = targetSpecs,
+        targetsSpec = targetsSpec,
         extraFlags = flagsToUse,
         originId = null,
         // Setting `CARGO_BAZEL_REPIN=1` updates `cargo_lockfile`
@@ -125,6 +129,7 @@ class BazelBspAspectsManager(
         // see: https://bazelbuild.github.io/rules_rust/crate_universe.html#crates_repository.
         // In our server used only with `bazel build` command.
         environment = if (isRustEnabled) listOf(Pair("CARGO_BAZEL_REPIN", "1")) else emptyList(),
+        shouldLogInvocation = shouldLogInvocation,
       ).let {
         BazelBspAspectsManagerResult(it.bepOutput, it.processResult.isNotSuccess)
       }

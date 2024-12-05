@@ -16,6 +16,8 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepth
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewListSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
 
 /**
  * Representation of the project view file.
@@ -47,6 +49,10 @@ data class ProjectView(
   val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
   /** Override the minimum Android SDK version globally for the whole project */
   val androidMinSdkSection: AndroidMinSdkSection? = null,
+  /** enable sharded sync */
+  val shardSync: ShardSyncSection? = null,
+  /** number of targets per build shard */
+  val targetShardSize: TargetShardSizeSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
@@ -62,6 +68,8 @@ data class ProjectView(
     private val addTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJarsSection? = null,
     private val enableNativeAndroidRules: EnableNativeAndroidRulesSection? = null,
     private val androidMinSdkSection: AndroidMinSdkSection? = null,
+    private val shardSync: ShardSyncSection? = null,
+    private val targetShardSize: TargetShardSizeSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -82,6 +90,8 @@ data class ProjectView(
       val addTransitiveCompileTimeJars = combineAddTransitiveCompileTimeJarsSection(importedProjectViews)
       val enableNativeAndroidRules = combineEnableNativeAndroidRulesSection(importedProjectViews)
       val androidMinSdkSection = combineAndroidMinSdkSection(importedProjectViews)
+      val shardSyncSection = combineShardSyncSection(importedProjectViews)
+      val targetShardSizeSection = combineTargetShardSizeSection(importedProjectViews)
 
       log.debug(
         "Building project view with combined" +
@@ -98,7 +108,9 @@ data class ProjectView(
           " addTransitiveCompileTimeJars: {}," +
           " enableNativeAndroidRules: {}," +
           " androidMinSdkSection: {}," +
-          "", // preserve Git blame
+          " shardSync: {}" +
+          " targetShardSize: {}",
+        "", // preserve Git blame
         targets,
         bazelBinary,
         buildFlags,
@@ -111,6 +123,8 @@ data class ProjectView(
         addTransitiveCompileTimeJars,
         enableNativeAndroidRules,
         androidMinSdkSection,
+        shardSyncSection,
+        targetShardSizeSection,
       )
       return ProjectView(
         targets,
@@ -125,6 +139,8 @@ data class ProjectView(
         addTransitiveCompileTimeJars,
         enableNativeAndroidRules,
         androidMinSdkSection,
+        shardSyncSection,
+        targetShardSizeSection,
       )
     }
 
@@ -146,6 +162,18 @@ data class ProjectView(
       androidMinSdkSection ?: getLastImportedSingletonValue(
         importedProjectViews,
         ProjectView::androidMinSdkSection,
+      )
+
+    private fun combineShardSyncSection(importedProjectViews: List<ProjectView>): ShardSyncSection? =
+      shardSync ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::shardSync,
+      )
+
+    private fun combineTargetShardSizeSection(importedProjectViews: List<ProjectView>): TargetShardSizeSection? =
+      targetShardSize ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::targetShardSize,
       )
 
     private fun combineTargetsSection(importedProjectViews: List<ProjectView>): ProjectViewTargetsSection? {

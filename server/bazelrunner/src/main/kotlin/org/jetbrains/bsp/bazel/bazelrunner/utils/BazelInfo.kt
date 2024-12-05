@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.bazelrunner.utils
 
+import org.jetbrains.bsp.bazel.commons.Constants.DOT_BAZELBSP_DIR_NAME
 import java.nio.file.Path
 import kotlin.io.path.isReadable
 import kotlin.io.path.readText
@@ -13,6 +14,8 @@ data class BazelInfo(
   val isWorkspaceEnabled: Boolean,
 ) {
   fun shouldUseInjectRepository(): Boolean = release.major >= 8
+
+  fun dotBazelBsp(): Path = workspaceRoot.resolve(DOT_BAZELBSP_DIR_NAME)
 }
 
 data class BazelRelease(val major: Int) {

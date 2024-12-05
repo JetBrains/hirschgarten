@@ -2,6 +2,7 @@ package org.jetbrains.bsp.bazel.server.paths
 
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
+import java.io.File
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -9,6 +10,8 @@ import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.exists
 import kotlin.io.path.toPath
+
+private val BAZEL_COMPONENT_SEPARATOR = "/"
 
 class BazelPathsResolver(private val bazelInfo: BazelInfo) {
   private val uris = ConcurrentHashMap<Path, URI>()
@@ -91,4 +94,13 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
     uris.clear()
     paths.clear()
   }
+
+  /**
+   * converts a path object to a relative path string with Bazel separator
+   */
+  fun getWorkspaceRelativePath(path: Path): String =
+    bazelInfo.workspaceRoot
+      .relativize(path)
+      .toString()
+      .replace(File.separator, BAZEL_COMPONENT_SEPARATOR)
 }

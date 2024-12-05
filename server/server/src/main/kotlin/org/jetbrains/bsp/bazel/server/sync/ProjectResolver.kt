@@ -15,6 +15,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -81,6 +82,7 @@ class ProjectResolver(
         measured(
           "Building project with aspect",
         ) { buildProjectWithAspect(cancelChecker, workspaceContext, build, targetsToSync) }
+
       val aspectOutputs =
         measured(
           "Reading aspect output paths",
@@ -114,14 +116,58 @@ class ProjectResolver(
       outputGroups.add(GENERATED_JARS_OUTPUT_GROUP)
     }
 
-    return bazelBspAspectsManager.fetchFilesFromOutputGroups(
-      cancelChecker = cancelChecker,
-      targetSpecs = targetsToSync,
-      aspect = ASPECT_NAME,
-      outputGroups = outputGroups,
-      shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-      isRustEnabled = featureFlags.isRustSupportEnabled,
-    )
+    val res =
+      if (workspaceContext.shardSync.value) {
+        val shardedResult =
+          BazelBuildTargetSharder.expandAndShardTargets(
+            bazelPathsResolver,
+            bazelInfo,
+            targetsToSync,
+            workspaceContext,
+            bazelRunner,
+            cancelChecker,
+          )
+        val shardedTargetsSpecs = shardedResult.targets.toTargetsSpecs()
+        val shardedSize = shardedTargetsSpecs.size
+        // TODO: should retry on OOM?
+        // From OG: Bazel server running out of memory on a build shard is generally caused by %s garbage
+        // collection bugs.
+        // We can attempt to workaround by resuming with a clean Bazel server.
+        shardedTargetsSpecs
+          .mapIndexed { idx, shardedTargetsSpec ->
+            val shardName = "shard ${idx + 1} of $shardedSize"
+            bspClientLogger.message("\nBuilding $shardName ...")
+            bazelBspAspectsManager
+              .fetchFilesFromOutputGroups(
+                cancelChecker = cancelChecker,
+                targetsSpec = shardedTargetsSpec,
+                aspect = ASPECT_NAME,
+                outputGroups = outputGroups,
+                shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
+                isRustEnabled = featureFlags.isRustSupportEnabled,
+                shouldLogInvocation = false,
+              ).also {
+                if (it.isFailure) {
+                  bspClientLogger.message("Failed to build $shardName")
+                } else {
+                  bspClientLogger.message("Finished building $shardName")
+                }
+                bspClientLogger.message("---")
+              }
+          }.reduce { acc, result -> acc.merge(result) }
+      } else {
+        bazelBspAspectsManager.fetchFilesFromOutputGroups(
+          cancelChecker = cancelChecker,
+          targetsSpec = targetsToSync,
+          aspect = ASPECT_NAME,
+          outputGroups = outputGroups,
+          shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
+          isRustEnabled = featureFlags.isRustSupportEnabled,
+          shouldLogInvocation = false,
+        )
+      }
+
+    return res
   }
 
   fun releaseMemory() {

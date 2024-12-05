@@ -10,6 +10,7 @@ import ch.epfl.scala.bsp4j.TaskStartDataKind
 import ch.epfl.scala.bsp4j.TaskStartParams
 import ch.epfl.scala.bsp4j.TestStatus
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.v1.BuildEvent
 import com.google.devtools.build.v1.PublishBuildEventGrpc
 import com.google.devtools.build.v1.PublishBuildToolEventStreamRequest
@@ -144,12 +145,37 @@ class BepServer(
 
   private fun fetchNamedSet(event: BuildEventStreamProtos.BuildEvent) {
     if (event.id.hasNamedSet()) {
+      val internedNamedSetOfFiles = event.namedSetOfFiles.intern()
       bepOutputBuilder.storeNamedSet(
         event.id.namedSet.id,
-        event.namedSetOfFiles,
+        internedNamedSetOfFiles,
       )
     }
   }
+
+  /**
+   *  Returns a copy of a [NamedSetOfFiles] with interned string references.
+   *  String references in [NamedSetOfFiles] are interned to conserve memory.
+   *
+   *  BEP protos often contain many duplicate strings both within a single stream and across
+   *  shards running in parallel, so string interner is used to share references.
+   */
+
+  private fun NamedSetOfFiles.intern(): NamedSetOfFiles =
+    toBuilder()
+      .clearFiles()
+      .addAllFiles(
+        filesList.map { file ->
+          file
+            .toBuilder()
+            .setUri(file.uri.intern())
+            .setName(file.name.intern())
+            .clearPathPrefix()
+            .addAllPathPrefix(
+              file.pathPrefixList.map { it.intern() },
+            ).build()
+        },
+      ).build()
 
   private fun processBuildStartedEvent(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasStarted()) {

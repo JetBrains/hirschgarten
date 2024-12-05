@@ -73,6 +73,8 @@ data class WorkspaceContext(
   val experimentalAddTransitiveCompileTimeJars: ExperimentalAddTransitiveCompileTimeJars,
   val enableNativeAndroidRules: EnableNativeAndroidRules,
   val androidMinSdkSpec: AndroidMinSdkSpec,
+  val shardSync: ShardSyncSpec,
+  val targetShardSize: TargetShardSizeSpec,
 ) : ExecutionContext()
 
 class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
@@ -97,6 +99,8 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJarsExtractor.fromProjectView(projectView),
       enableNativeAndroidRules = EnableNativeAndroidRulesExtractor.fromProjectView(projectView),
       androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
+      shardSync = ShardSyncSpecExtractor.fromProjectView(projectView),
+      targetShardSize = TargetShardSizeSpecExtractor.fromProjectView(projectView),
     )
   }
 }

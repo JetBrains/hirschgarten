@@ -121,6 +121,7 @@ class BazelRunner(
     originId: String? = null,
     logProcessOutput: Boolean = true,
     serverPidFuture: CompletableFuture<Long>?,
+    shouldLogInvocation: Boolean = true,
   ): BazelProcess {
     val processArgs = command.makeCommandLine()
     val processBuilder = ProcessBuilder(processArgs)
@@ -130,9 +131,9 @@ class BazelRunner(
     if (command is BazelCommand.Run) {
       command.workingDirectory?.let { processBuilder.directory(it.toFile()) }
       processBuilder.environment() += command.environment
-      logInvocation(processArgs, command.environment, command.workingDirectory, originId)
+      logInvocation(processArgs, command.environment, command.workingDirectory, originId, shouldLogInvocation = shouldLogInvocation)
     } else {
-      logInvocation(processArgs, null, null, originId)
+      logInvocation(processArgs, null, null, originId, shouldLogInvocation = shouldLogInvocation)
     }
 
     val process = processBuilder.start()
@@ -152,7 +153,9 @@ class BazelRunner(
     processEnv: Map<String, String>?,
     directory: Path?,
     originId: String?,
+    shouldLogInvocation: Boolean,
   ) {
+    if (!shouldLogInvocation) return
     val envString = processEnv?.let { envToString(it) }
     val directoryString = directory?.let { "cd $it &&" }
     val processArgsString = processArgs.joinToString("' '", "'", "'")
