@@ -11,7 +11,8 @@ class MavenCoordinatesResolver {
      * @maven//:org_scala_lang_scala_library
      **/
     val orgStart =
-      libraryLabel.value
+      libraryLabel
+        .toString()
         .split("//:")
         .lastOrNull()
         ?.split('_')

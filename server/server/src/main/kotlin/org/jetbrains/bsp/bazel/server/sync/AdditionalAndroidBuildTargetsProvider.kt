@@ -16,6 +16,6 @@ class AdditionalAndroidBuildTargetsProvider(private val projectProvider: Project
     val project = projectProvider.get(cancelChecker)
     val modules = BspMappings.getModules(project, targets)
     return modules
-      .mapNotNull { (it.languageData as? AndroidModule)?.correspondingKotlinTarget?.let { BuildTargetIdentifier(it.value) } }
+      .mapNotNull { (it.languageData as? AndroidModule)?.correspondingKotlinTarget?.let { BuildTargetIdentifier(it.toString()) } }
   }
 }
