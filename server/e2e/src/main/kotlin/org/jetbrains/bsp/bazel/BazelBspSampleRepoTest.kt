@@ -1166,9 +1166,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("application"),
         listOf("scala"),
         listOf(
-          BuildTargetIdentifier(Label.synthetic("scala-compiler-$scalaRulesVersion.jar")).toString(),
-          BuildTargetIdentifier("scala-library-$scalaRulesVersion.jar"),
-          BuildTargetIdentifier("scala-reflect-$scalaRulesVersion.jar"),
+          BuildTargetIdentifier(Label.synthetic("scala-compiler-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-library-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-reflect-$scalaRulesVersion.jar").toString()),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true
@@ -1224,9 +1224,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("application"),
         listOf("scala"),
         listOf(
-          BuildTargetIdentifier("scala-compiler-$scalaRulesVersion.jar"),
-          BuildTargetIdentifier("scala-library-$scalaRulesVersion.jar"),
-          BuildTargetIdentifier("scala-reflect-$scalaRulesVersion.jar"),
+          BuildTargetIdentifier(Label.synthetic("scala-compiler-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-library-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-reflect-$scalaRulesVersion.jar").toString()),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true
@@ -1246,9 +1246,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("scala"),
         listOf(
-          BuildTargetIdentifier("scala-compiler-$scalaRulesVersion.jar"),
-          BuildTargetIdentifier("scala-library-$scalaRulesVersion.jar"),
-          BuildTargetIdentifier("scala-reflect-$scalaRulesVersion.jar"),
+          BuildTargetIdentifier(Label.synthetic("scala-compiler-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-library-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-reflect-$scalaRulesVersion.jar").toString()),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true
@@ -1268,9 +1268,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("application"),
         listOf("scala"),
         listOf(
-          BuildTargetIdentifier("scala-compiler-$scalaRulesVersion.jar"),
-          BuildTargetIdentifier("scala-library-$scalaRulesVersion.jar"),
-          BuildTargetIdentifier("scala-reflect-$scalaRulesVersion.jar"),
+          BuildTargetIdentifier(Label.synthetic("scala-compiler-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-library-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-reflect-$scalaRulesVersion.jar").toString()),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true
@@ -1314,23 +1314,23 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
         listOf("test"),
         listOf("scala"),
         listOf(
-          BuildTargetIdentifier("scala-compiler-$scalaRulesVersion.jar"),
-          BuildTargetIdentifier("scala-library-$scalaRulesVersion.jar"),
-          BuildTargetIdentifier("scala-reflect-$scalaRulesVersion.jar"),
-          BuildTargetIdentifier("librunner.jar"),
-          BuildTargetIdentifier("scalactic_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-compatible-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-core_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-featurespec_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-flatspec_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-freespec_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-funspec_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-funsuite_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-matchers-core_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-mustmatchers_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-shouldmatchers_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest_2.13-3.2.9.jar"),
-          BuildTargetIdentifier("test_reporter.jar"),
+          BuildTargetIdentifier(Label.synthetic("scala-compiler-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-library-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-reflect-$scalaRulesVersion.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("librunner.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalactic_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-compatible-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-core_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-featurespec_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-flatspec_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-freespec_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-funspec_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-funsuite_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-matchers-core_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-mustmatchers_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-shouldmatchers_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest_2.13-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("test_reporter.jar").toString()),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true
