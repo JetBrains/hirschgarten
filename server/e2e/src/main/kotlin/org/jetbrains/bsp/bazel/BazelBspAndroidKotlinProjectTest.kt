@@ -6,6 +6,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.bazel.android.BazelBspAndroidProjectTestBase
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.protocol.AndroidBuildTarget
 import org.jetbrains.bsp.protocol.AndroidTargetType
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
@@ -107,7 +108,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
         listOf("android", "java", "kotlin"),
         listOf(
           BuildTargetIdentifier("@@rules_jvm_external~~maven~maven//:androidx_appcompat_appcompat"),
-          BuildTargetIdentifier("rules_kotlin_kotlin-stdlibs"),
+          BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
         ),
         BuildTargetCapabilities().apply {
           canCompile = true
@@ -133,7 +134,7 @@ object BazelBspAndroidKotlinProjectTest : BazelBspAndroidProjectTestBase() {
           BuildTargetIdentifier("@@rules_jvm_external~~maven~maven//:junit_junit"),
           BuildTargetIdentifier("@@rules_jvm_external~~maven~maven//:org_robolectric_robolectric"),
           BuildTargetIdentifier("@@rules_robolectric~//bazel:android-all"),
-          BuildTargetIdentifier("rules_kotlin_kotlin-stdlibs"),
+          BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
         ),
         BuildTargetCapabilities().apply {
           canCompile = true
