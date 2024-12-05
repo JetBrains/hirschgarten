@@ -280,8 +280,10 @@ class DiagnosticsServiceTest {
       """.trimIndent()
 
     // when
+    val label = Label.parse("//server/src/test/java/org/jetbrains/bsp/bazel/server/diagnostics:diagnostics")
+
     val diagnostics =
-      extractDiagnostics(output, Label.parse("//server/src/test/java/org/jetbrains/bsp/bazel/server/diagnostics:diagnostics"))
+      extractDiagnostics(output, label)
 
     // then
     val expected =
@@ -290,7 +292,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(
             "file:///user/workspace/server/src/test/java/org/jetbrains/bsp/bazel/server/diagnostics/DiagnosticsServiceTest.kt",
           ),
-          BuildTargetIdentifier("@//server/src/test/java/org/jetbrains/bsp/bazel/server/diagnostics:diagnostics"),
+          BuildTargetIdentifier(label.toString()),
           errorDiagnostic(
             Position(12, 18),
             """type mismatch: inferred type is String but Int was expected
@@ -336,14 +338,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
+    val label = Label.parse("//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, label)
 
     // then
     val expected =
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/project/src/main/scala/com/example/project/File1.scala"),
-          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          BuildTargetIdentifier(label.toString()),
           errorDiagnostic(
             Position(11, 18),
             """type mismatch;
@@ -363,7 +366,7 @@ class DiagnosticsServiceTest {
         ),
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/project/src/main/scala/com/example/project/File2.scala"),
-          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          BuildTargetIdentifier(label.toString()),
           warningDiagnostic(
             Position(26, 24),
             """private val versionsWriter in object File2 is never used
@@ -407,14 +410,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
+    val label = Label.parse("//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, label)
 
     // then
     val expected =
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/Hello.scala"),
-          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          BuildTargetIdentifier(label.toString()),
           errorDiagnostic(
             Position(19, 20),
             """|Type Mismatch Error
@@ -460,14 +464,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
+    val label = Label.parse("//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, label)
 
     // then
     val expected =
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/Hello.scala"),
-          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          BuildTargetIdentifier(label.toString()),
           errorDiagnostic(
             Position(18, 20),
             """|Type Mismatch Error
@@ -513,14 +518,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
+    val label = Label.parse("//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, label)
 
     // then
     val expected =
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/drd/messaging/src/main/scala/bots/Bot.scala"),
-          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          BuildTargetIdentifier(label.toString()),
           errorDiagnostic(
             Position(143, 26),
             """|Not Found Error
@@ -557,14 +563,15 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
+    val label = Label.parse("//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, label)
 
     // then
     val expected =
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/path/to/file.scala"),
-          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          BuildTargetIdentifier(label.toString()),
           errorDiagnostic(
             Position(27, 10),
             "Error\nend of statement expected but 'type' found",
@@ -601,8 +608,9 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
+    val label = Label.parse("//intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool")
     val diagnostics =
-      extractDiagnostics(output, Label.parse("//intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool"))
+      extractDiagnostics(output, label)
 
     // then
     val expected =
@@ -611,7 +619,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(
             "file:///user/workspace/intellij/release-tool/src/main/scala/com/intellij/releasetool/PluginResolver.scala",
           ),
-          BuildTargetIdentifier("@//intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool"),
+          BuildTargetIdentifier(label.toString()),
           warningDiagnostic(
             Position(14, 5),
             """match may not be exhaustive.
@@ -625,7 +633,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(
             "file:///user/workspace/intellij/release-tool/src/main/scala/com/intellij/releasetool/Json.scala",
           ),
-          BuildTargetIdentifier("@//intellij/release-tool/src/main/scala/com/intellij/releasetool:releasetool"),
+          BuildTargetIdentifier(label.toString()),
           warningDiagnostic(
             Position(29, 37),
             """trait ScalaObjectMapper in package scala is deprecated (since 2.12.1): ScalaObjectMapper is deprecated because Manifests are not supported in Scala3, you might want to use ClassTagExtensions as a replacement
@@ -660,7 +668,8 @@ class DiagnosticsServiceTest {
       """.trimMargin()
 
     // when
-    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
+    val label = Label.parse("//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, label)
 
     // then
     val expected =
@@ -669,7 +678,7 @@ class DiagnosticsServiceTest {
           TextDocumentIdentifier(
             "file:///user/workspace/server/src/main/java/org/jetbrains/bsp/bazel/server/sync/ProjectResolver.java",
           ),
-          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          BuildTargetIdentifier(label.toString()),
           errorDiagnostic(
             Position(20, 8),
             """symbol not found org.jetbrains.bsp.bazel.server.bsp.config.ProjectViewProvider
@@ -716,14 +725,15 @@ class DiagnosticsServiceTest {
       """.trimIndent()
 
     // when
-    val diagnostics = extractDiagnostics(output, Label.parse("//project/src/main/scala/com/example/project:project"))
+    val label = Label.parse("//project/src/main/scala/com/example/project:project")
+    val diagnostics = extractDiagnostics(output, label)
 
     // then
     val expected =
       listOf(
         publishDiagnosticsParams(
           TextDocumentIdentifier("file:///user/workspace/server/src/main/java/org/jetbrains/bsp/bazel/server/bep/BepServer.java"),
-          BuildTargetIdentifier("@//project/src/main/scala/com/example/project:project"),
+          BuildTargetIdentifier(label.toString()),
           errorDiagnostic(
             Position(55, 34),
             """

@@ -23,6 +23,7 @@ import kotlinx.coroutines.future.await
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.bazel.server.model.Label
 import java.util.UUID
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -87,9 +88,9 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("scala"),
         listOf(
-          BuildTargetIdentifier("scala-compiler-2.12.14.jar"),
-          BuildTargetIdentifier("scala-library-2.12.14.jar"),
-          BuildTargetIdentifier("scala-reflect-2.12.14.jar"),
+          BuildTargetIdentifier(Label.synthetic("scala-compiler-2.12.14.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-library-2.12.14.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-reflect-2.12.14.jar").toString()),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true

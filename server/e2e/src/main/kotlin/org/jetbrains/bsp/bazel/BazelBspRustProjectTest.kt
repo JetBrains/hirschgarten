@@ -109,7 +109,7 @@ object BazelBspRustProjectTest : BazelBspTestBaseScenario() {
       }
     val expectedResolvedTargets =
       expectedTargetIdentifiers.filter {
-        it.uri != "@//example:example"
+        it.uri != "@//example"
       }
     val expectedRustWorkspaceResult =
       RustWorkspaceResult(
