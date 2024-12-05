@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import org.jetbrains.bsp.bazel.bazelrunner.outputs.OutputCollector
+import org.jetbrains.bsp.bazel.commons.BazelStatus
 import org.junit.jupiter.api.Test
 
 class ModuleResolverTest {
@@ -16,8 +17,10 @@ class ModuleResolverTest {
 
   @Test
   fun `should throw on failed show repo invocation`() {
-    val stderr = "ERROR: In repo argument lll: Module lll does not exist in the dependency graph. (Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help."
-    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), 1)
+    val stderr =
+      "ERROR: In repo argument lll: Module lll does not exist in the dependency graph." +
+        "(Note that unused modules cannot be used here). Type 'bazel help mod' for syntax and help."
+    val result = BazelProcessResult(makeOutputCollector(""), makeOutputCollector(stderr), BazelStatus.BUILD_ERROR)
 
     val moduleOutputParser = ModuleOutputParser()
 
@@ -42,7 +45,7 @@ class ModuleResolverTest {
       #   <builtin> in <toplevel>
       """.trimIndent()
 
-    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
 
     val parsed = moduleOutputParser.parseShowRepoResult(result)
     parsed shouldBe ShowRepoResult.LocalRepository("community~", "community")
@@ -70,7 +73,7 @@ class ModuleResolverTest {
       #   /home/andrzej.gluszak/.cache/bazel/_bazel_andrzej.gluszak/39b3974c0c7bcab09c689dfd2d36f22b/external/bazel_tools/tools/build_defs/repo/http.bzl:387:31 in <toplevel>
       """.trimIndent()
 
-    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), 0)
+    val result = BazelProcessResult(makeOutputCollector(stdout), makeOutputCollector(""), BazelStatus.SUCCESS)
 
     val parsed = moduleOutputParser.parseShowRepoResult(result)
 

@@ -199,7 +199,7 @@ class BazelBspServer(
         kotlinAndroidModulesMerger,
         bspClientLogger,
         featureFlags,
-        workspaceContextProvider = workspaceContextProvider,
+        repoMapping = repoMapping,
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 
