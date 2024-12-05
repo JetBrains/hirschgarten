@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.projectview.parser
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
@@ -14,6 +13,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectories
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -197,11 +197,11 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1.1"),
+                Label.parse("//excluded_target1.1"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path1/to/bazel")),
@@ -246,14 +246,14 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
-                BuildTargetIdentifier("//included_target4.1"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
+                Label.parse("//included_target4.1"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1.1"),
-                BuildTargetIdentifier("//excluded_target4.1"),
-                BuildTargetIdentifier("//excluded_target4.2"),
+                Label.parse("//excluded_target1.1"),
+                Label.parse("//excluded_target4.1"),
+                Label.parse("//excluded_target4.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path1/to/bazel")),
@@ -303,14 +303,14 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
-                BuildTargetIdentifier("//included_target7.1"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
+                Label.parse("//included_target7.1"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1.1"),
-                BuildTargetIdentifier("//excluded_target7.1"),
-                BuildTargetIdentifier("//excluded_target7.2"),
+                Label.parse("//excluded_target1.1"),
+                Label.parse("//excluded_target7.1"),
+                Label.parse("//excluded_target7.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path7/to/bazel")),
@@ -357,10 +357,10 @@ class DefaultProjectViewParserTest {
         ProjectView(
           targets =
             ProjectViewTargetsSection(
-              listOf(BuildTargetIdentifier("//included_target8.1")),
+              listOf(Label.parse("//included_target8.1")),
               listOf(
-                BuildTargetIdentifier("//excluded_target8.1"),
-                BuildTargetIdentifier("//excluded_target8.2"),
+                Label.parse("//excluded_target8.1"),
+                Label.parse("//excluded_target8.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path8/to/bazel")),
@@ -406,16 +406,16 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
-                BuildTargetIdentifier("//included_target2.1"),
-                BuildTargetIdentifier("//included_target3.1"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
+                Label.parse("//included_target2.1"),
+                Label.parse("//included_target3.1"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target1.1"),
-                BuildTargetIdentifier("//excluded_target2.1"),
-                BuildTargetIdentifier("//excluded_target5.1"),
-                BuildTargetIdentifier("//excluded_target5.2"),
+                Label.parse("//excluded_target1.1"),
+                Label.parse("//excluded_target2.1"),
+                Label.parse("//excluded_target5.1"),
+                Label.parse("//excluded_target5.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path3/to/bazel")),
@@ -469,17 +469,17 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target2.1"),
-                BuildTargetIdentifier("//included_target3.1"),
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
-                BuildTargetIdentifier("//included_target4.1"),
+                Label.parse("//included_target2.1"),
+                Label.parse("//included_target3.1"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
+                Label.parse("//included_target4.1"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target2.1"),
-                BuildTargetIdentifier("//excluded_target1.1"),
-                BuildTargetIdentifier("//excluded_target4.1"),
-                BuildTargetIdentifier("//excluded_target4.2"),
+                Label.parse("//excluded_target2.1"),
+                Label.parse("//excluded_target1.1"),
+                Label.parse("//excluded_target4.1"),
+                Label.parse("//excluded_target4.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path1/to/bazel")),
@@ -537,17 +537,17 @@ class DefaultProjectViewParserTest {
           targets =
             ProjectViewTargetsSection(
               listOf(
-                BuildTargetIdentifier("//included_target2.1"),
-                BuildTargetIdentifier("//included_target3.1"),
-                BuildTargetIdentifier("//included_target1.1"),
-                BuildTargetIdentifier("//included_target1.2"),
-                BuildTargetIdentifier("//included_target4.1"),
+                Label.parse("//included_target2.1"),
+                Label.parse("//included_target3.1"),
+                Label.parse("//included_target1.1"),
+                Label.parse("//included_target1.2"),
+                Label.parse("//included_target4.1"),
               ),
               listOf(
-                BuildTargetIdentifier("//excluded_target2.1"),
-                BuildTargetIdentifier("//excluded_target1.1"),
-                BuildTargetIdentifier("//excluded_target4.1"),
-                BuildTargetIdentifier("//excluded_target4.2"),
+                Label.parse("//excluded_target2.1"),
+                Label.parse("//excluded_target1.1"),
+                Label.parse("//excluded_target4.1"),
+                Label.parse("//excluded_target4.2"),
               ),
             ),
           bazelBinary = ProjectViewBazelBinarySection(Path("path1/to/bazel")),

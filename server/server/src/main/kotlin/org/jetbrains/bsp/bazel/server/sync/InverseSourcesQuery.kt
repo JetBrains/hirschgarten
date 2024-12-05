@@ -68,7 +68,7 @@ object InverseSourcesQuery {
     val command =
       bazelRunner.buildBazelCommand {
         query {
-          targets.add(BuildTargetIdentifier(relativePath.toString()))
+          targets.add(Label.parse(relativePath.toString()))
         }
       }
     val fileLabelResult =

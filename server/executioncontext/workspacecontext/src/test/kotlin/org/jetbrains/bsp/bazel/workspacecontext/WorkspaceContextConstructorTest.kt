@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.workspacecontext
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
@@ -10,6 +9,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectories
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -31,11 +31,11 @@ class WorkspaceContextConstructorTest {
             targets =
               ProjectViewTargetsSection(
                 listOf(
-                  BuildTargetIdentifier("//included_target1"),
-                  BuildTargetIdentifier("//included_target2"),
-                  BuildTargetIdentifier("//included_target3"),
+                  Label.parse("//included_target1"),
+                  Label.parse("//included_target2"),
+                  Label.parse("//included_target3"),
                 ),
-                listOf(BuildTargetIdentifier("//excluded_target1")),
+                listOf(Label.parse("//excluded_target1")),
               ),
             directories =
               ProjectViewDirectoriesSection(
@@ -70,11 +70,11 @@ class WorkspaceContextConstructorTest {
       val expectedTargets =
         TargetsSpec(
           listOf(
-            BuildTargetIdentifier("//included_target1"),
-            BuildTargetIdentifier("//included_target2"),
-            BuildTargetIdentifier("//included_target3"),
+            Label.parse("//included_target1"),
+            Label.parse("//included_target2"),
+            Label.parse("//included_target3"),
           ),
-          listOf(BuildTargetIdentifier("//excluded_target1")),
+          listOf(Label.parse("//excluded_target1")),
         )
       workspaceContext.targets shouldBe expectedTargets
 

@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.server.model
 
+import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -99,9 +100,20 @@ sealed interface Label {
         else -> Apparent(repoName, targetPath, targetName)
       }
     }
+
+    fun parseOrNull(value: String?): Label? =
+      try {
+        value?.let { parse(it) }
+      } catch (_: Exception) {
+        null
+      }
   }
 }
 
 fun BspTargetInfo.TargetInfo.label(): Label = Label.parse(this.id)
 
 fun BspTargetInfo.Dependency.label(): Label = Label.parse(this.id)
+
+fun Label.toBspIdentifier(): BuildTargetIdentifier = BuildTargetIdentifier(toString())
+
+fun BuildTargetIdentifier.label(): Label = Label.parse(uri)

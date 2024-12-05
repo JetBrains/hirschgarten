@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.install
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bsp.bazel.install.cli.CliOptions
 import org.jetbrains.bsp.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bsp.bazel.projectview.generator.DefaultProjectViewGenerator
@@ -14,6 +13,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRule
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bsp.bazel.server.model.Label
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -50,8 +50,8 @@ object ProjectViewCLiOptionsProvider {
     }
 
   private fun toTargetsSectionNotNull(projectViewCliOptions: ProjectViewCliOptions): ProjectViewTargetsSection {
-    val includedTargets = projectViewCliOptions.targets.orEmpty().map { BuildTargetIdentifier(it) }
-    val excludedTargets = projectViewCliOptions.excludedTargets.orEmpty().map { BuildTargetIdentifier(it) }
+    val includedTargets = projectViewCliOptions.targets.orEmpty().map { Label.parse(it) }
+    val excludedTargets = projectViewCliOptions.excludedTargets.orEmpty().map { Label.parse(it) }
 
     return ProjectViewTargetsSection(includedTargets, excludedTargets)
   }
