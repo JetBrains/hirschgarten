@@ -5,14 +5,14 @@ import com.google.devtools.build.lib.view.proto.Deps
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.tracer
-import org.jetbrains.bsp.bazel.server.benchmark.use
+import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.GoLibrary
 import org.jetbrains.bsp.bazel.server.model.Label
@@ -53,13 +53,13 @@ class BazelProjectMapper(
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
 ) {
-  private fun <T> measure(description: String, body: () -> T): T = tracer.spanBuilder(description).use { body() }
+  private suspend fun <T> measure(description: String, body: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { body() }
 
-  private fun <T> measureIf(
+  private suspend fun <T> measureIf(
     description: String,
     predicate: () -> Boolean,
     ifFalse: T,
-    body: () -> T,
+    body: suspend () -> T,
   ): T =
     if (predicate()) {
       measure(description, body)
@@ -67,7 +67,7 @@ class BazelProjectMapper(
       ifFalse
     }
 
-  fun createProject(
+  suspend fun createProject(
     targets: Map<Label, TargetInfo>,
     rootTargets: Set<Label>,
     allTargetNames: List<Label>,
@@ -446,7 +446,7 @@ class BazelProjectMapper(
    * The old Bazel Plugin performs similar step here
    * https://github.com/bazelbuild/intellij/blob/b68ec8b33aa54ead6d84dd94daf4822089b3b013/java/src/com/google/idea/blaze/java/sync/importer/BlazeJavaWorkspaceImporter.java#L256
    */
-  private fun jdepsLibraries(
+  private suspend fun jdepsLibraries(
     targetsToImport: Map<Label, TargetInfo>,
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
@@ -461,7 +461,7 @@ class BazelProjectMapper(
         .map { path -> bazelPathsResolver.resolveUri(path) }
         .filter { uri -> uri !in interfacesAndBinariesFromTarget }
         .map { uri ->
-          val label = syntheticLabel(uri.toString())
+          val label = syntheticLabel(uri)
           libraryNameToLibraryValueMap.computeIfAbsent(label) { _ ->
             Library(
               label = label,
@@ -475,13 +475,13 @@ class BazelProjectMapper(
     }
   }
 
-  private fun getAllJdepsDependencies(
+  private suspend fun getAllJdepsDependencies(
     targetsToImport: Map<Label, TargetInfo>,
     libraryDependencies: Map<Label, List<Library>>,
     librariesToImport: Map<Label, Library>,
   ): Map<Label, Set<Path>> {
     val jdepsJars =
-      runBlocking(Dispatchers.IO) {
+      withContext(Dispatchers.IO) {
         targetsToImport.values
           .filter { targetSupportsJdeps(it) }
           .map { target ->
@@ -497,7 +497,7 @@ class BazelProjectMapper(
         .flatten()
         .toSet()
 
-    return runBlocking(Dispatchers.Default) {
+    return withContext(Dispatchers.Default) {
       val outputJarsFromTransitiveDepsCache = ConcurrentHashMap<Label, Set<Path>>()
       jdepsJars
         .map { (targetLabel, jarsFromJdeps) ->
@@ -531,7 +531,7 @@ class BazelProjectMapper(
       val jarsFromTargets =
         targetsToImport[targetOrLibrary]?.let { getTargetOutputJarsSet(it) + getTargetInterfaceJarsSet(it) }.orEmpty()
       val jarsFromLibraries =
-        librariesToImport[targetOrLibrary]?.let { it.outputs + it.interfaceJars }.orEmpty().map { Paths.get(it.path) }
+        librariesToImport[targetOrLibrary]?.let { it.outputs + it.interfaceJars }.orEmpty().map { Paths.get(it) }
       val outputJars =
         listOfNotNull(jarsFromTargets, jarsFromLibraries)
           .asSequence()
@@ -589,11 +589,11 @@ class BazelProjectMapper(
 
   private val replacementRegex = "[^0-9a-zA-Z]".toRegex()
 
-  private fun syntheticLabel(lib: String): Label {
+  private fun syntheticLabel(lib: URI): Label {
     val shaOfPath =
       Hashing
         .sha256()
-        .hashString(lib, StandardCharsets.UTF_8)
+        .hashString(lib.toString(), StandardCharsets.UTF_8)
         .toString()
         .take(7) // just in case of a conflict in filename
     return Label.parse(
@@ -711,7 +711,7 @@ class BazelProjectMapper(
               it !in interfacesAndBinariesFromTarget &&
                 it in explicitCompileTimeInterfacesFromTarget
             }.map { uri ->
-              val label = syntheticLabel(uri.toString())
+              val label = syntheticLabel(uri)
               res.computeIfAbsent(label) {
                 Library(
                   label = label,
@@ -878,12 +878,12 @@ class BazelProjectMapper(
 
   private fun isRustTarget(target: TargetInfo): Boolean = target.hasRustCrateInfo()
 
-  private fun createModules(
+  private suspend fun createModules(
     targetsToImport: Sequence<TargetInfo>,
     dependencyGraph: DependencyGraph,
     generatedLibraries: Map<Label, Collection<Library>>,
   ): List<Module> =
-    runBlocking(Dispatchers.Default) {
+    withContext(Dispatchers.Default) {
       targetsToImport
         .toList()
         .map {
@@ -1017,7 +1017,7 @@ class BazelProjectMapper(
       it.isMainWorkspace && !it.value.startsWith("@//.bazelbsp")
     }
 
-  private fun createRustExternalModules(
+  private suspend fun createRustExternalModules(
     targetsToImport: Sequence<TargetInfo>,
     dependencyGraph: DependencyGraph,
     generatedLibraries: Map<Label, Collection<Library>>,

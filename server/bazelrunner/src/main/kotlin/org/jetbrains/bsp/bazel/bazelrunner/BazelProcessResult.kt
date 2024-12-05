@@ -2,16 +2,16 @@ package org.jetbrains.bsp.bazel.bazelrunner
 
 import ch.epfl.scala.bsp4j.StatusCode
 import org.jetbrains.bsp.bazel.bazelrunner.outputs.OutputCollector
-import org.jetbrains.bsp.bazel.commons.ExitCodeMapper
+import org.jetbrains.bsp.bazel.commons.BazelStatus
 
 class BazelProcessResult(
   private val stdoutCollector: OutputCollector,
   private val stderrCollector: OutputCollector,
-  private val exitCode: Int,
+  private val bazelStatus: BazelStatus,
 ) {
-  val isSuccess: Boolean get() = statusCode == StatusCode.OK
+  val isSuccess: Boolean get() = bspStatusCode == StatusCode.OK
   val isNotSuccess: Boolean get() = !isSuccess
-  val statusCode: StatusCode get() = ExitCodeMapper.mapExitCode(exitCode)
+  val bspStatusCode: StatusCode get() = bazelStatus.toBspStatusCode()
   val stdoutLines: List<String> get() = stdoutCollector.lines()
   val stdout: String get() = stdoutCollector.output()
   val stderrLines: List<String> get() = stderrCollector.lines()

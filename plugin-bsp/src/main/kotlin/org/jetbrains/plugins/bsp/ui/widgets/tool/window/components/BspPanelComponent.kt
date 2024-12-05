@@ -1,7 +1,6 @@
 package org.jetbrains.plugins.bsp.ui.widgets.tool.window.components
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import com.intellij.openapi.diagnostic.logger
 import com.intellij.ui.PopupHandler
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
@@ -135,8 +134,4 @@ class BspPanelComponent private constructor(
       targetTree.createNewWithTargets(targets),
       targetSearch.createNewWithTargets(targets),
     )
-
-  private companion object {
-    private val log = logger<BspPanelComponent>()
-  }
 }

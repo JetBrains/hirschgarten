@@ -40,6 +40,20 @@ import path/to/another/projectview.bazelproject
 
 ---
 
+#### try_import
+
+Try importing another project view.
+
+Similar to `import` but no errors will be thrown if the declared project view file does not exist.
+
+##### example:
+
+```
+try_import path/to/another/projectview.bazelproject
+```
+
+---
+
 #### targets
 
 A list of bazel target expressions, they support `/...` notation.
@@ -138,7 +152,7 @@ import_depth: 1
 
 ##### default:
 
-The default value is 0, meaning that only root targets are imported
+The default value is -1, meaning that all transitive dependencies will be imported.
 
 ---
 

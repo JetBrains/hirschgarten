@@ -15,8 +15,8 @@ import com.intellij.platform.workspace.jps.entities.LibraryTypeId
 import com.intellij.platform.workspace.jps.entities.libraryProperties
 import com.intellij.platform.workspace.storage.EntitySource
 import com.intellij.platform.workspace.storage.MutableEntityStorage
+import com.intellij.workspaceModel.ide.legacyBridge.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
-import org.jetbrains.bsp.sdkcompat.workspacemodel.LegacyBridgeJpsEntitySourceFactory
 import org.jetbrains.jps.model.serialization.library.JpsLibraryTableSerializer
 import org.jetbrains.plugins.bsp.extensionPoints.bspProjectModelExternalSource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
@@ -107,8 +107,9 @@ internal fun calculateLibraryEntitySource(workspaceModelEntityUpdaterConfig: Wor
   when {
     !JpsFeatureFlags.isJpsCompilationEnabled -> BspProjectEntitySource
     else ->
-      LegacyBridgeJpsEntitySourceFactory.createEntitySourceForProjectLibrary(
-        project = workspaceModelEntityUpdaterConfig.project,
-        externalSource = workspaceModelEntityUpdaterConfig.project.bspProjectModelExternalSource,
-      )
+      LegacyBridgeJpsEntitySourceFactory
+        .getInstance(workspaceModelEntityUpdaterConfig.project)
+        .createEntitySourceForProjectLibrary(
+          workspaceModelEntityUpdaterConfig.project.bspProjectModelExternalSource,
+        )
   }

@@ -89,7 +89,7 @@ class ExecuteService(
   fun compile(cancelChecker: CancelChecker, params: CompileParams): CompileResult =
     if (params.targets.isNotEmpty()) {
       val result = build(cancelChecker, params.targets, params.originId, params.arguments ?: emptyList())
-      CompileResult(result.statusCode).apply { originId = params.originId }
+      CompileResult(result.bspStatusCode).apply { originId = params.originId }
     } else {
       CompileResult(StatusCode.ERROR).apply { originId = params.originId }
     }
@@ -100,7 +100,7 @@ class ExecuteService(
         val debugFlags =
           listOf(BazelFlag.noBuild(), BazelFlag.starlarkDebug(), BazelFlag.starlarkDebugPort(params.port))
         val result = build(cancelChecker, params.targets, params.originId, debugFlags)
-        result.statusCode
+        result.bspStatusCode
       } else {
         StatusCode.ERROR
       }
@@ -130,7 +130,7 @@ class ExecuteService(
     val targets = listOf(params.target)
     val result = build(cancelChecker, targets, params.originId)
     if (result.isNotSuccess) {
-      return RunResult(result.statusCode).apply { originId = originId }
+      return RunResult(result.bspStatusCode).apply { originId = originId }
     }
     val command =
       bazelRunner.buildBazelCommand {
@@ -149,7 +149,7 @@ class ExecuteService(
           originId = params.originId,
           serverPidFuture = null,
         ).waitAndGetResult(cancelChecker)
-    return RunResult(bazelProcessResult.statusCode).apply { originId = originId }
+    return RunResult(bazelProcessResult.bspStatusCode).apply { originId = originId }
   }
 
   fun test(cancelChecker: CancelChecker, params: TestParams): TestResult = testImpl(cancelChecker, params)
@@ -216,7 +216,7 @@ class ExecuteService(
           ).waitAndGetResult(cancelChecker, true)
       }
 
-    return TestResult(result.statusCode).apply {
+    return TestResult(result.bspStatusCode).apply {
       originId = originId
       data = result // TODO: why do we return the entire result? and no `dataKind`?
     }
@@ -246,7 +246,7 @@ class ExecuteService(
 
     val bazelProcessResult =
       bazelRunner.runBazelCommand(command, originId = params.originId, serverPidFuture = null).waitAndGetResult(cancelChecker)
-    return MobileInstallResult(bazelProcessResult.statusCode, params.originId)
+    return MobileInstallResult(bazelProcessResult.bspStatusCode, params.originId)
   }
 
   @Suppress("UNUSED_PARAMETER") // params is used by BspRequestsRunner.handleRequest

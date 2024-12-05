@@ -19,5 +19,6 @@ intellij_integration_test_suite(
         "@maven//:io_kotest_kotest_assertions_shared_jvm",
         "@maven//:io_kotest_kotest_common_jvm",
         "@rules_intellij//third_party/go:go_for_tests",
+        "@rules_intellij//third_party/python:python_for_tests",
     ],
 )

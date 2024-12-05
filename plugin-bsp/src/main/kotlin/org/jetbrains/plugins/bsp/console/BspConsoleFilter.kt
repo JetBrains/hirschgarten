@@ -65,7 +65,7 @@ class BspConsoleFilter(private val project: Project) : Filter {
     return OpenFileHyperlinkInfo(project, virtualFile, lineNumber, columnNumber)
   }
 
-  private fun MatchResult.calculateStartOffset(
+  private fun calculateStartOffset(
     entireLength: Int,
     lineLength: Int,
     pathGroup: MatchGroup,

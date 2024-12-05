@@ -2,6 +2,7 @@ package org.jetbrains.plugins.bsp.android
 
 import com.android.tools.idea.model.ClassJarProvider
 import com.android.tools.idea.projectsystem.AndroidModuleSystem
+import com.android.tools.idea.projectsystem.AndroidProjectSystem
 import com.android.tools.idea.projectsystem.LightResourceClassService
 import com.android.tools.idea.projectsystem.ProjectSystemBuildManager
 import com.android.tools.idea.projectsystem.ProjectSystemSyncManager
@@ -16,10 +17,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElementFinder
 import org.jetbrains.android.facet.AndroidFacet
-import org.jetbrains.bsp.sdkcompat.android.AndroidProjectSystemAdapter
 import java.nio.file.Path
 
-public class BspAndroidProjectSystem(override val project: Project) : AndroidProjectSystemAdapter() {
+public class BspAndroidProjectSystem(override val project: Project) : AndroidProjectSystem {
   private val psiElementFinders =
     listOf(AndroidInnerClassFinder.INSTANCE, AndroidResourceClassPsiElementFinder(getLightResourceClassService()))
 
@@ -29,7 +29,7 @@ public class BspAndroidProjectSystem(override val project: Project) : AndroidPro
 
   override fun allowsFileCreation(): Boolean = true
 
-  override fun getAndroidFacetsWithPackageNameCompat(project: Project, packageName: String): Collection<AndroidFacet> =
+  override fun getAndroidFacetsWithPackageName(packageName: String): Collection<AndroidFacet> =
     ProjectFacetManager
       .getInstance(project)
       .getFacets(AndroidFacet.ID)

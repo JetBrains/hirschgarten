@@ -33,6 +33,17 @@ interface ProjectViewParser {
   fun parse(projectViewFilePath: Path): ProjectView = parse(Files.readString(projectViewFilePath))
 
   /**
+   * similar to [parse] but does not throw any exceptions.
+   * this is used alongside with `try_import` statement
+   */
+  fun tryParse(projectViewFilePath: Path): ProjectView? =
+    try {
+      parse(projectViewFilePath)
+    } catch (_: Exception) {
+      null
+    }
+
+  /**
    * Parses `projectViewFileContent`.
    *
    * @param projectViewFileContent string with project view

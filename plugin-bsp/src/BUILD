@@ -9,7 +9,6 @@ kt_jvm_library(
     exports = [
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/android",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/android/run",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/android/sdkcompat",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/assets",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/config",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/console",
@@ -21,7 +20,6 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/performance",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/performanceImpl",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/projectDetails",
-        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/python",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/run",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/runnerAction",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/scala",

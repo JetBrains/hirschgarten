@@ -20,6 +20,15 @@ RUN apt-get update --quiet --quiet --yes && \
     g++ \
     python3 \
     python3-pip \
+    python3-venv \
+    python3-dev \
+    python3-wheel \
+    python3-setuptools \
+    python3-distutils \
+    python3-tk \
+    python-is-python3 \
+    ipython3 \
+    libpq-dev \
     libx11-6 \
     libxext6 \
     libxrender1 \
@@ -52,3 +61,14 @@ RUN curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/release
 # Install Coursier
 RUN curl -fL "https://github.com/coursier/coursier/releases/download/v2.1.10/cs-x86_64-pc-linux.gz" | gzip -d > "/usr/local/bin/cs" \
     && chmod +x /usr/local/bin/cs
+
+# Upgrade pip to latest version
+RUN python3 -m pip install --no-cache-dir --upgrade pip
+
+# Install essential Python development tools
+RUN python3 -m pip install --no-cache-dir \
+    black \
+    flake8 \
+    mypy \
+    pylint \
+    poetry

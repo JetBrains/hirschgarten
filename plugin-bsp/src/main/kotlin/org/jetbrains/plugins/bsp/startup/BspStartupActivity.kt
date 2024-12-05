@@ -5,13 +5,14 @@ import com.intellij.openapi.application.AppUIExecutor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.impl.CloseProjectWindowHelper
-import com.intellij.platform.backend.workspace.workspaceModel
-import com.intellij.workspaceModel.ide.impl.WorkspaceModelImpl
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.config.isBspProjectInitialized
+import org.jetbrains.plugins.bsp.config.isBspProjectLoaded
 import org.jetbrains.plugins.bsp.config.openedTimesSinceLastStartupResync
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.config.workspaceModelLoadedFromCache
 import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
@@ -20,8 +21,14 @@ import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.ui.widgets.fileTargets.updateBspFileTargetsWidget
 import org.jetbrains.plugins.bsp.ui.widgets.tool.window.all.targets.registerBspToolWindow
 import org.jetbrains.plugins.bsp.utils.RunConfigurationProducersDisabler
+import java.util.Collections
+import java.util.WeakHashMap
 
 private val log = logger<BspStartupActivity>()
+
+// Use WeakHashMap to avoid leaking the Project instance
+private val executedForProject: MutableSet<Project> =
+  Collections.synchronizedSet(Collections.newSetFromMap(WeakHashMap()))
 
 /**
  * Runs actions after the project has started up and the index is up-to-date.
@@ -31,6 +38,10 @@ private val log = logger<BspStartupActivity>()
  */
 class BspStartupActivity : BspProjectActivity() {
   override suspend fun Project.executeForBspProject() {
+    if (startupActivityExecutedAlready()) {
+      log.info("BSP startup activity executed already for project: $this")
+      return
+    }
     log.info("Executing BSP startup activity for project: $this")
     BspStartupActivityTracker.startConfigurationPhase(this)
     executeEveryTime()
@@ -39,10 +50,16 @@ class BspStartupActivity : BspProjectActivity() {
 
     resyncProjectIfNeeded()
 
-    openedTimesSinceLastStartupResync += 1
+    updateProjectProperties()
 
     BspStartupActivityTracker.stopConfigurationPhase(this)
   }
+
+  /**
+   * Make sure calling [BazelBspOpenProjectProvider.performOpenBazelProjectViaBspPlugin]
+   * won't cause [BspStartupActivity] to execute twice.
+   */
+  private fun Project.startupActivityExecutedAlready(): Boolean = !executedForProject.add(this)
 
   private suspend fun Project.executeEveryTime() {
     log.debug("Executing BSP startup activities for every opening")
@@ -55,7 +72,7 @@ class BspStartupActivity : BspProjectActivity() {
   private suspend fun Project.executeForNewProject() {
     log.debug("Executing BSP startup activities only for new project")
     try {
-      if (!(workspaceModel as WorkspaceModelImpl).loadedFromCache) {
+      if (!isBspProjectLoaded) {
         runOnFirstOpening()
       }
     } catch (e: Exception) {
@@ -102,6 +119,10 @@ class BspStartupActivity : BspProjectActivity() {
     }
   }
 
-  private fun Project.isProjectInIncompleteState() =
-    temporaryTargetUtils.allTargetIds().isEmpty() || !(workspaceModel as WorkspaceModelImpl).loadedFromCache
+  private fun Project.isProjectInIncompleteState() = temporaryTargetUtils.allTargetIds().isEmpty() || !workspaceModelLoadedFromCache
+
+  private fun Project.updateProjectProperties() {
+    isBspProjectInitialized = true
+    openedTimesSinceLastStartupResync += 1
+  }
 }

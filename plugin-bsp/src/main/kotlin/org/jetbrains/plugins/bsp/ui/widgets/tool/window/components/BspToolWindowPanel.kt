@@ -131,7 +131,7 @@ private class BspToolWindowSettingsAction(private val settingsDisplayName: Strin
 private class BspToolWindowConfigFileOpenAction(private val configFileProvider: BspToolWindowConfigFileProviderExtension) :
   SuspendableAction(
     { BspPluginBundle.message("widget.config.file.popup.message", configFileProvider.getConfigFileGenericName()) },
-    AllIcons.Actions.MenuOpen,
+    configFileProvider.getConfigFileIcon(),
   ) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     val configFile = configFileProvider.getConfigFile(project)

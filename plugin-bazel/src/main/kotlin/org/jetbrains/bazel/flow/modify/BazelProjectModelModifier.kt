@@ -20,7 +20,7 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
     exported: Boolean,
   ): Promise<Void>? {
     from.jumpToBuildFile()
-    return resolvedPromise<Void>()
+    return resolvedPromise()
   }
 
   override fun addLibraryDependency(
@@ -30,7 +30,7 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
     exported: Boolean,
   ): Promise<Void>? {
     from.jumpToBuildFile()
-    return resolvedPromise<Void>()
+    return resolvedPromise()
   }
 
   override fun addExternalLibraryDependency(
@@ -39,12 +39,12 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
     scope: DependencyScope,
   ): Promise<Void>? {
     modules.firstOrNull()?.jumpToBuildFile()
-    return resolvedPromise<Void>()
+    return resolvedPromise()
   }
 
   override fun changeLanguageLevel(module: Module, level: LanguageLevel): Promise<Void>? {
     module.jumpToBuildFile()
-    return resolvedPromise<Void>()
+    return resolvedPromise()
   }
 
   private fun Module.jumpToBuildFile() {

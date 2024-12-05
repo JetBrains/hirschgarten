@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.projectview.parser
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
+import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -54,6 +55,15 @@ class DefaultProjectViewParserTest {
 
       // then
       exception.message shouldBe "/projectview/does/not/exist.bazelproject"
+    }
+
+    @Test
+    fun `should not throw exception for not existing try-imported file`() {
+      // given
+      val projectViewFilePath = Path("/projectview/file11TryImportsNotExisting.bazelproject")
+
+      // when and then
+      shouldNotThrowAny { parser.parse(projectViewFilePath) }
     }
 
     @Test
@@ -448,6 +458,74 @@ class DefaultProjectViewParserTest {
     fun `should parse file with nested imported files`() {
       // given
       val projectViewFilePath = Path("/projectview/file6ImportsFile2File3File4.bazelproject")
+
+      // when
+      val projectView = parser.parse(projectViewFilePath)
+
+      // then
+
+      val expectedProjectView =
+        ProjectView(
+          targets =
+            ProjectViewTargetsSection(
+              listOf(
+                BuildTargetIdentifier("//included_target2.1"),
+                BuildTargetIdentifier("//included_target3.1"),
+                BuildTargetIdentifier("//included_target1.1"),
+                BuildTargetIdentifier("//included_target1.2"),
+                BuildTargetIdentifier("//included_target4.1"),
+              ),
+              listOf(
+                BuildTargetIdentifier("//excluded_target2.1"),
+                BuildTargetIdentifier("//excluded_target1.1"),
+                BuildTargetIdentifier("//excluded_target4.1"),
+                BuildTargetIdentifier("//excluded_target4.2"),
+              ),
+            ),
+          bazelBinary = ProjectViewBazelBinarySection(Path("path1/to/bazel")),
+          buildFlags =
+            ProjectViewBuildFlagsSection(
+              listOf(
+                "--build_flag2.1=value2.1",
+                "--build_flag2.2=value2.2",
+                "--build_flag3.1=value3.1",
+                "--build_flag1.1=value1.1",
+                "--build_flag1.2=value1.2",
+                "--build_flag4.1=value4.1",
+                "--build_flag4.2=value4.2",
+                "--build_flag4.3=value4.3",
+              ),
+            ),
+          allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
+          directories =
+            ProjectViewDirectoriesSection(
+              listOf(
+                Path("included_dir2.1"),
+                Path("included_dir3.1"),
+                Path("included_dir1.1"),
+                Path("included_dir1.2"),
+                Path("included_dir4.1"),
+                Path("included_dir4.2"),
+              ),
+              listOf(
+                Path("excluded_dir2.1"),
+                Path("excluded_dir3.1"),
+                Path("excluded_dir1.1"),
+                Path("excluded_dir4.1"),
+              ),
+            ),
+          deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSection(true),
+          importDepth = ProjectViewImportDepthSection(1),
+          enabledRules = null,
+          ideJavaHomeOverride = null,
+        )
+      projectView shouldBe expectedProjectView
+    }
+
+    @Test
+    fun `should parse file with nested try-imported files`() {
+      // given
+      val projectViewFilePath = Path("/projectview/file12TryImportsFile2File3File4.bazelproject")
 
       // when
       val projectView = parser.parse(projectViewFilePath)

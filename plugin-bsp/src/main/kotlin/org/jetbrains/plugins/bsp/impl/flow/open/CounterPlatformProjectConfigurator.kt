@@ -16,13 +16,15 @@ import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
  * Clean up any modules showing up due to the platform hack
  * https://youtrack.jetbrains.com/issue/IDEA-321160/Platform-solution-for-the-initial-state-of-the-project-model-on-the-first-open
  */
-internal class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator {
+class CounterPlatformProjectConfigurator : DirectoryProjectConfigurator {
   override fun configureProject(
     project: Project,
     baseDir: VirtualFile,
     moduleRef: Ref<Module>,
     isProjectCreatedWithWizard: Boolean,
-  ) {
+  ) = configureProject(project)
+
+  fun configureProject(project: Project) {
     if (!project.isBspProject) return
 
     val workspaceModel = WorkspaceModel.getInstance(project) as WorkspaceModelInternal

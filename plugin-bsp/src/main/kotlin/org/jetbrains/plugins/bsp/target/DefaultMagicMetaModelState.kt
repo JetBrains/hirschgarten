@@ -11,7 +11,6 @@ interface ConvertableFromState<out T> {
 data class BuildTargetInfoState(
   var id: String = "",
   var displayName: String? = null,
-  var dependencies: List<String> = emptyList(),
   var capabilities: ModuleCapabilitiesState = ModuleCapabilitiesState(),
   var tags: List<String> = emptyList(),
   var languageIds: List<String> = emptyList(),
@@ -21,7 +20,6 @@ data class BuildTargetInfoState(
     BuildTargetInfo(
       id = BuildTargetIdentifier(id),
       displayName = displayName,
-      dependencies = dependencies.map { BuildTargetIdentifier(it) },
       capabilities = capabilities.fromState(),
       tags = tags,
       languageIds = languageIds,
@@ -33,7 +31,6 @@ fun BuildTargetInfo.toState(): BuildTargetInfoState =
   BuildTargetInfoState(
     id = id.uri,
     displayName = displayName,
-    dependencies = dependencies.map { it.uri },
     capabilities = capabilities.toState(),
     tags = tags,
     languageIds = languageIds,

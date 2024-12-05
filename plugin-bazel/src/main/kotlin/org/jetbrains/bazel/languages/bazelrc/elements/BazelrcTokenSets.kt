@@ -13,9 +13,8 @@ object BazelrcTokenSets {
   val WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE)
 
   val COMMENTS = TokenSet.create(COMMENT)
-  val COMMANDS = TokenSet.create(COMMAND)
 
   val QUOTES = TokenSet.create(DOUBLE_QUOTE, SINGLE_QUOTE)
 
-  val BIBI = TokenSet.create(BazelrcTokenTypes.COMMAND, BazelrcTokenTypes.COMMENT, FLAG, VALUE)
+  val BIBI = TokenSet.create(COMMAND, COMMENT, FLAG, VALUE)
 }

@@ -25,12 +25,14 @@ Bazel.
    cs launch org.jetbrains.bsp:bazel-bsp:<version> -M org.jetbrains.bsp.bazel.install.Install -- --targets //...
    ```
    
-   Please check [release](https://github.com/JetBrains/bazel-bsp/releases) to find the newest available version
+   We currently publish only Nightly releases to Maven.
+   Please check [Maven Central](https://repo1.maven.org/maven2/org/jetbrains/bsp/bazel-bsp/)
+   to find the newest available version.
 3. Add bsp generated folders to your `.gitignore`: `.bsp` and `.bazelbsp`
 
-### More difficult way (from sources)
+### The more difficult way (from sources)
 
-Might be useful during development
+Might be useful during development.
 
 #### Using the install script
 
