@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 class BazelToolchainManager(private val bazelRunner: BazelRunner, private val featureFlags: FeatureFlags) {
@@ -31,7 +31,7 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner, private val fe
         val command =
           buildBazelCommand {
             query {
-              targets.add(BuildTargetIdentifier(androidToolchain))
+              targets.add(Label.parse(androidToolchain))
             }
           }
         runBazelCommand(command, serverPidFuture = null)
