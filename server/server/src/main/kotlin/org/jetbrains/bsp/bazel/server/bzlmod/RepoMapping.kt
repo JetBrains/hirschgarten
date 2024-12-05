@@ -9,15 +9,14 @@ import org.jetbrains.bsp.bazel.workspacecontext.externalRepositoriesTreatedAsInt
 import java.nio.file.Path
 import kotlin.io.path.Path
 
-data class RepoMapping(val moduleCanonicalNameToLocalPath: Map<Label, Path>, val moduleApparentNameToCanonicalName: Map<String, String>) {
-}
+data class RepoMapping(val moduleCanonicalNameToLocalPath: Map<String, Path>, val moduleApparentNameToCanonicalName: Map<String, String>)
 
 fun calculateRepoMapping(workspaceContextProvider: WorkspaceContextProvider, bazelRunner: BazelRunner): RepoMapping {
   val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
   val moduleResolver = ModuleResolver(bazelRunner, ModuleOutputParser())
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
   // empty string is the name of the root module
-  val moduleApparentNameToCanonicalName = moduleResolver.getRepoMapping("") {  }
+  val moduleApparentNameToCanonicalName = moduleResolver.getRepoMapping("") { }
   for (externalRepo in workspaceContext.externalRepositoriesTreatedAsInternal) {
     try {
       val showRepoResult = moduleResolver.resolveModule(externalRepo) {}
