@@ -8,6 +8,7 @@ import com.intellij.model.psi.PsiSymbolReferenceService
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
 import org.jetbrains.bazel.languages.bazelrc.flags.BazelFlagSymbol
 import org.jetbrains.bazel.languages.bazelrc.flags.Flag
@@ -16,7 +17,6 @@ import org.jetbrains.bazel.languages.bazelrc.flags.OptionMetadataTag
 import org.jetbrains.bazel.languages.bazelrc.highlighting.BazelrcHighlightingColors
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
-import org.jetbrains.kotlin.analysis.utils.printer.parentOfType
 
 val flagTokenPattern =
   psiElement(BazelrcTokenTypes.FLAG)
@@ -93,7 +93,7 @@ class BazelrcFlagAnnotator : Annotator {
 
   private fun isDeprecated(flag: Flag, element: PsiElement) =
     when (flag.name) {
-      "watchfs" -> element.parentOfType<BazelrcLine>(false)?.command == "startup"
+      "watchfs" -> PsiTreeUtil.getParentOfType(element, false, BazelrcLine::class.java)?.command == "startup"
 
       else -> flag.option.metadataTags.contains(OptionMetadataTag.DEPRECATED)
     }
