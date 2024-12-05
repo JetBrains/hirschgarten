@@ -4,11 +4,8 @@ import ch.epfl.scala.bsp4j.RustCrateType
 import ch.epfl.scala.bsp4j.RustPackage
 import ch.epfl.scala.bsp4j.RustTarget
 import ch.epfl.scala.bsp4j.RustTargetKind
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
-
-data class BazelPackageTargetInfo(val packageName: String, val targetName: String)
 
 class RustPackageResolver(val bazelPathsResolver: BazelPathsResolver) {
   private data class RustTargetModule(val module: Module, val rustModule: RustModule)
@@ -22,16 +19,8 @@ class RustPackageResolver(val bazelPathsResolver: BazelPathsResolver) {
 
   fun rustPackages(rustBspTargets: List<Module>): List<RustPackage> =
     rustBspTargets
-      .groupBy { resolvePackage(it).packageName }
+      .groupBy { it.label.packagePath }
       .mapNotNull(::resolveSinglePackage)
-
-  fun resolvePackage(rustTarget: Module): BazelPackageTargetInfo = resolvePackage(rustTarget.label)
-
-  fun resolvePackage(label: Label): BazelPackageTargetInfo {
-    val labelVal = label.value
-    val (packageName, targetName) = labelVal.split(":", limit = 2)
-    return BazelPackageTargetInfo(packageName, targetName)
-  }
 
   private fun resolveSinglePackage(packageData: Map.Entry<String, List<Module>>): RustPackage {
     val (rustPackageId, rustTargets) = packageData
@@ -152,7 +141,7 @@ class RustPackageResolver(val bazelPathsResolver: BazelPathsResolver) {
     val (genericData, rustData) = module
     val buildTarget =
       RustTarget(
-        resolvePackage(genericData).targetName,
+        genericData.label.targetName,
         rustData.crateRoot,
         parseTargetKind(rustData.kind),
         rustData.edition,

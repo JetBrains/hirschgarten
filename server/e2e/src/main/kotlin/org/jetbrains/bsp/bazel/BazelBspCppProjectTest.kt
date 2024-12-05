@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bsp.bazel.server.model.Label
 import kotlin.time.Duration.Companion.seconds
 
 object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
@@ -42,7 +43,7 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
 
     val exampleExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//example:example"),
+        BuildTargetIdentifier("$targetPrefix//example"),
         ImmutableList.of("application"),
         ImmutableList.of(Constants.CPP),
         ImmutableList.of(BuildTargetIdentifier("@com_google_googletest//:gtest_main")),
@@ -53,14 +54,14 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
           it.canDebug = false
         },
       )
-    exampleExampleBuildTarget.displayName = "$targetPrefix//example:example"
+    exampleExampleBuildTarget.displayName = "$targetPrefix//example"
     exampleExampleBuildTarget.baseDirectory = "file://\$WORKSPACE/example/"
     exampleExampleBuildTarget.data = exampleExampleCppBuildTarget
     exampleExampleBuildTarget.dataKind = BuildTargetDataKind.CPP
 
     val bspWorkspaceRootExampleBuildTarget =
       BuildTarget(
-        BuildTargetIdentifier("bsp-workspace-root"),
+        BuildTargetIdentifier(Label.synthetic("bsp-workspace-root").toString()),
         ImmutableList.of(),
         ImmutableList.of(),
         ImmutableList.of(),
@@ -78,11 +79,11 @@ object BazelBspCppProjectTest : BazelBspTestBaseScenario() {
   }
 
   private fun cppOptions(): BazelBspTestScenarioStep {
-    val cppOptionsParams = CppOptionsParams(ImmutableList.of(BuildTargetIdentifier("$targetPrefix//example:example")))
+    val cppOptionsParams = CppOptionsParams(ImmutableList.of(BuildTargetIdentifier("$targetPrefix//example")))
 
     val exampleExampleCppOptionsItem =
       CppOptionsItem(
-        BuildTargetIdentifier("$targetPrefix//example:example"),
+        BuildTargetIdentifier("$targetPrefix//example"),
         ImmutableList.of("-Iexternal/gtest/include"),
         ImmutableList.of("BOOST_FALLTHROUGH"),
         ImmutableList.of("-pthread"),

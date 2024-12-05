@@ -8,6 +8,7 @@ import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.bazel.install.Install
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.protocol.KotlinBuildTarget
 import kotlin.time.Duration.Companion.seconds
 
@@ -81,7 +82,7 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         BuildTargetIdentifier("$targetPrefix//kotlinc_test:Foo"),
         listOf("application"),
         listOf("java", "kotlin"),
-        listOf(BuildTargetIdentifier("rules_kotlin_kotlin-stdlibs")),
+        listOf(BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
         BuildTargetCapabilities().also {
           it.canCompile = true
           it.canTest = false
@@ -99,7 +100,7 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         BuildTargetIdentifier("$targetPrefix//plugin_allopen_test:open_for_testing"),
         listOf("library"),
         listOf("java", "kotlin"),
-        listOf(BuildTargetIdentifier("rules_kotlin_kotlin-stdlibs")),
+        listOf(BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString())),
         BuildTargetCapabilities().also {
           it.canCompile = true
           it.canTest = false
@@ -154,9 +155,9 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("java", "kotlin"),
         listOf(
-          BuildTargetIdentifier("rules_kotlin_kotlin-stdlibs"),
+          BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
           BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
-          BuildTargetIdentifier("allopen-compiler-plugin.jar"),
+          BuildTargetIdentifier(Label.synthetic("allopen-compiler-plugin.jar").toString()),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true
@@ -176,9 +177,9 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("java", "kotlin"),
         listOf(
-          BuildTargetIdentifier("rules_kotlin_kotlin-stdlibs"),
+          BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
           BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing_export"),
-          BuildTargetIdentifier("allopen-compiler-plugin.jar"),
+          BuildTargetIdentifier(Label.synthetic("allopen-compiler-plugin.jar").toString()),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true
@@ -198,7 +199,7 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("java", "kotlin"),
         listOf(
-          BuildTargetIdentifier("rules_kotlin_kotlin-stdlibs"),
+          BuildTargetIdentifier(Label.synthetic("rules_kotlin_kotlin-stdlibs").toString()),
           BuildTargetIdentifier("@//plugin_allopen_test:open_for_testing"),
         ),
         BuildTargetCapabilities().also {
