@@ -65,7 +65,7 @@ class RustPackageResolverTest {
     packages.size shouldBe 1
 
     val pkg = packages[0]
-    pkg.id shouldBe module.label.value.split(":")[0]
+    pkg.id shouldBe module.label.targetName
     pkg.version shouldBe rustModule.version
     pkg.edition shouldBe rustModule.edition
     pkg.features.keys shouldContainExactlyInAnyOrder features
@@ -76,7 +76,7 @@ class RustPackageResolverTest {
     pkg.resolvedTargets.size shouldBe 1
 
     val target = pkg.resolvedTargets[0]
-    target.name shouldBe module.label.value.split(":")[1]
+    target.name shouldBe module.label.targetName
     target.crateRootUrl shouldBe rustModule.crateRoot
     target.kind.toString().lowercase() shouldBe rustModule.kind
     target.edition shouldBe rustModule.edition

@@ -14,6 +14,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
+import org.jetbrains.bsp.bazel.server.model.Label
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
@@ -163,9 +164,9 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
         listOf("library"),
         listOf("scala"),
         listOf(
-          BuildTargetIdentifier("scala-compiler-2.12.14.jar"),
-          BuildTargetIdentifier("scala-library-2.12.14.jar"),
-          BuildTargetIdentifier("scala-reflect-2.12.14.jar"),
+          BuildTargetIdentifier(Label.synthetic("scala-compiler-2.12.14.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-library-2.12.14.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-reflect-2.12.14.jar").toString()),
         ),
         BuildTargetCapabilities().apply {
           canCompile = true
@@ -205,9 +206,9 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
         listOf("application"),
         listOf("scala"),
         listOf(
-          BuildTargetIdentifier("scala-compiler-2.12.14.jar"),
-          BuildTargetIdentifier("scala-library-2.12.14.jar"),
-          BuildTargetIdentifier("scala-reflect-2.12.14.jar"),
+          BuildTargetIdentifier(Label.synthetic("scala-compiler-2.12.14.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-library-2.12.14.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-reflect-2.12.14.jar").toString()),
         ),
         BuildTargetCapabilities().apply {
           canCompile = true
@@ -247,23 +248,23 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
         listOf("test"),
         listOf("scala"),
         listOf(
-          BuildTargetIdentifier("scala-compiler-2.12.14.jar"),
-          BuildTargetIdentifier("scala-library-2.12.14.jar"),
-          BuildTargetIdentifier("scala-reflect-2.12.14.jar"),
-          BuildTargetIdentifier("librunner.jar"),
-          BuildTargetIdentifier("scalactic_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-compatible-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-core_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-featurespec_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-flatspec_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-freespec_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-funspec_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-funsuite_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-matchers-core_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-mustmatchers_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-shouldmatchers_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("test_reporter.jar"),
+          BuildTargetIdentifier(Label.synthetic("scala-compiler-2.12.14.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-library-2.12.14.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scala-reflect-2.12.14.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("librunner.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalactic_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-compatible-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-core_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-featurespec_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-flatspec_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-freespec_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-funspec_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-funsuite_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-matchers-core_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-mustmatchers_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest-shouldmatchers_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("scalatest_2.12-3.2.9.jar").toString()),
+          BuildTargetIdentifier(Label.synthetic("test_reporter.jar").toString()),
         ),
         BuildTargetCapabilities().apply {
           canCompile = true
