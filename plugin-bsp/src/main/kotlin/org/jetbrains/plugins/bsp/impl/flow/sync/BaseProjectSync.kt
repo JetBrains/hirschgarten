@@ -74,7 +74,7 @@ class BaseProjectSync(private val project: Project) {
           }
         } else if (syncScope is FirstPhaseSync) {
           // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1555
-          query("workspace/buildTargets") { server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId)) }
+          query("workspace/buildTargetsFirstPhase") { server.workspaceBuildTargetsFirstPhase(WorkspaceBuildTargetsFirstPhaseParams(taskId)) }
         } else if (buildProject) {
           query("workspace/buildAndGetBuildTargets") { server.workspaceBuildAndGetBuildTargets() }
         } else {
