@@ -1,11 +1,11 @@
-package org.jetbrains.bazel.settings
+package org.jetbrains.plugins.bsp.ui.projectTree.action
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.project.Project
-import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.plugins.bsp.action.SuspendableAction
+import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.runnerAction.TestTargetAction
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
@@ -15,7 +15,7 @@ import kotlin.io.path.walk
 internal class RunAllTestAction :
   SuspendableAction(
     {
-      BazelPluginBundle.message("action.run.all.test")
+      BspPluginBundle.message("action.run.all.test")
     },
     AllIcons.Actions.Execute,
   ) {

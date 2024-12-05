@@ -290,8 +290,14 @@ class BepServer(
   }
 
   private fun consumeCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    val label = Label.parse(event.id.testResult.label)
-    val target = BuildTargetIdentifier(label.value)
+    val eventLabel = event.id.targetCompleted.label
+    val target = BuildTargetIdentifier(Label.parse(event.id.testResult.label).value)
+    /* The events never contain @, which will be different than the actual target id. Here we work around that fact,
+     * but since we also set up the BEP server to gather info about build targets within certain path (//... etc.), we can't
+     * just use target.uri.
+     * */
+    val labelText = if ("@$eventLabel" == target.uri || "@@$eventLabel" == target.uri) target.uri else eventLabel
+    val label = Label.parse(labelText)
     val targetComplete = event.completed
     val outputGroups = targetComplete.outputGroupList
     LOGGER.trace("Consuming target completed event {}", targetComplete)
