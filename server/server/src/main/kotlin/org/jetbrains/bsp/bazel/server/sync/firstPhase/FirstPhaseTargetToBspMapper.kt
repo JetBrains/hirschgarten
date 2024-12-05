@@ -36,10 +36,12 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
       project.lightweightModules
         ?.values
         .orEmpty()
+        .asSequence()
         .filter { it.isSupported() }
         .filter { shouldSyncManualTargets || !it.isManual }
         .filterNot { it.isNoIde }
         .map { it.toBspBuildTarget() }
+        .toList()
 
     return WorkspaceBuildTargetsResult(targets)
   }
