@@ -102,8 +102,8 @@ object WildcardTargetExpander {
   ): ExpandedTargetsResult {
     val targetsSpec =
       TargetsSpec(
-        values = includedPatterns.map { BuildTargetIdentifier(it.value) },
-        excludedValues = excludedTargets.map { BuildTargetIdentifier(it.value) },
+        values = includedPatterns.map { BuildTargetIdentifier(it.toString()) },
+        excludedValues = excludedTargets.map { BuildTargetIdentifier(it.toString()) },
       )
     val command =
       bazelRunner.buildBazelCommand {

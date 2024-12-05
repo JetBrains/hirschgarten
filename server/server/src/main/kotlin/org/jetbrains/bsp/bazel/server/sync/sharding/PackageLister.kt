@@ -44,7 +44,7 @@ internal object PackageLister {
       if (!pattern.isRecursive) {
         continue
       }
-      val dir = pathResolver.relativePathToWorkspaceAbsolute(pattern.targetPath)
+      val dir = pathResolver.relativePathToWorkspaceAbsolute(pattern.packagePath)
       if (!dir.isDirectory()) {
         continue
       }

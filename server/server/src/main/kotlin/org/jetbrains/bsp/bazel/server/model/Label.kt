@@ -51,8 +51,11 @@ sealed interface Label {
    * Targets in the main workspace are special-cased because they can be referred to
    * using both syntaxes and there's no need to use a repository mapping to resolve the label.
    */
-  private data class Main(override val packagePath: String, override val targetName: String,
-                          override val hasAllPackagesRecursiveSuffix: Boolean) : Label {
+  private data class Main(
+    override val packagePath: String,
+    override val targetName: String,
+    override val hasAllPackagesRecursiveSuffix: Boolean,
+  ) : Label {
     override val repoName: String = ""
 
     override fun toBazelPath(): Path = Path(packagePath)
@@ -110,11 +113,13 @@ sealed interface Label {
       val normalized = value.trimStart('@')
       val repoName = normalized.substringBefore("//", "")
       val pathAndName = normalized.substringAfter("//")
-      val targetPath = if (pathAndName.endsWith(ALL_PACKAGES_RECURSIVE_SUFFIX)) {
-        hasAllPackagesRecursiveSuffix = true
-        pathAndName.substringBefore(ALL_PACKAGES_RECURSIVE_SUFFIX)
-      }
-        else pathAndName.substringBefore(":")
+      val targetPath =
+        if (pathAndName.endsWith(ALL_PACKAGES_RECURSIVE_SUFFIX)) {
+          hasAllPackagesRecursiveSuffix = true
+          pathAndName.substringBefore(ALL_PACKAGES_RECURSIVE_SUFFIX)
+        } else {
+          pathAndName.substringBefore(":")
+        }
       val targetName = pathAndName.substringAfter(":", targetPath.substringAfterLast("/"))
       return when {
         repoName.isEmpty() -> Main(targetPath, targetName, hasAllPackagesRecursiveSuffix)

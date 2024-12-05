@@ -23,7 +23,7 @@ import org.jetbrains.bsp.bazel.server.model.Label
  */
 class LexicographicTargetBatcher : BuildBatchingService {
   override fun calculateTargetBatches(targets: Set<Label>, suggestedShardSize: Int): List<List<Label>> {
-    val sorted = targets.sortedBy { label -> label.value }
+    val sorted = targets.sortedBy { label -> label.toString() }
     return sorted.chunked(suggestedShardSize)
   }
 

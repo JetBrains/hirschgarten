@@ -22,6 +22,7 @@ import org.jetbrains.bsp.bazel.commons.BazelStatus
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
+import org.jetbrains.bsp.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import kotlin.math.min
@@ -69,7 +70,8 @@ object BazelBuildTargetSharder {
   }
 
   /** Number of individual targets per blaze build shard.  */
-  private fun getTargetShardSize(context: WorkspaceContext): Int = min(context.targetShardSize.value, MAX_TARGET_SHARD_SIZE)
+  private fun getTargetShardSize(context: WorkspaceContext): Int =
+    min(context.targetShardSize.value ?: DEFAULT_TARGET_SHARD_SIZE, MAX_TARGET_SHARD_SIZE)
 
   /**
    *  Expand wildcard target patterns into individual blaze targets.

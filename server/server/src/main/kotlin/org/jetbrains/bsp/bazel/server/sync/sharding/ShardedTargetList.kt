@@ -27,7 +27,7 @@ class ShardedTargetList(private val shardedTargets: List<List<Label>>) {
   fun toTargetsSpecs(): List<TargetsSpec> =
     shardedTargets.map { targets ->
       TargetsSpec(
-        values = targets.map { BuildTargetIdentifier(it.value) },
+        values = targets.map { BuildTargetIdentifier(it.toString()) },
         excludedValues = listOf(),
       )
     }
