@@ -32,9 +32,6 @@ internal object PackageLister {
   /**
    * Expands all-in-package-recursive wildcard targets into all-in-single-package targets by
    * traversing the file system, looking for child blaze packages.
-   *
-   *
-   * Returns null if directory traversal failed or was cancelled.
    */
   fun expandPackageTargets(
     pathResolver: BazelPathsResolver,

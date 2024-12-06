@@ -34,9 +34,6 @@ object WildcardTargetExpander {
    *
    *
    * Exclude target patterns (beginning with '-') are not expanded.
-   *
-   *
-   * Returns null if operation failed or was cancelled.
    */
   fun expandToNonRecursiveWildcardTargets(
     pathResolver: BazelPathsResolver,

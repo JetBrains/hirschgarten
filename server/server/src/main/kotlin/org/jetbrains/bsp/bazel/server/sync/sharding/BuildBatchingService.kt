@@ -32,9 +32,6 @@ interface BuildBatchingService {
    * Individual implementations may use different criteria for this batching, with the general
    * goal of avoiding OOMEs.
    *
-   *
-   * Returns null if batching failed.
-   *
    * @param suggestedShardSize a suggestion only; may be entirely ignored by the implementation
    */
   fun calculateTargetBatches(targets: Set<Label>, suggestedShardSize: Int): List<List<Label>>
@@ -42,10 +39,6 @@ interface BuildBatchingService {
   /**
    * Given a list of individual, un-excluded blaze targets (no wildcard target patterns), create
    * ShardedTargetList according to inputs.
-   *
-   *
-   * This is a util function mainly designed for batchTargets. We would switch the method to
-   * private when Java 11 language features are available.
    */
   fun getShardedTargetList(targets: Set<Label>, suggestedShardSize: Int): ShardedTargetList {
     val targetBatches = calculateTargetBatches(targets, suggestedShardSize)
