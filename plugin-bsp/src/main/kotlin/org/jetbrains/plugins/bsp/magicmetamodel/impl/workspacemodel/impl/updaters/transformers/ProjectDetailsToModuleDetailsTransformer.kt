@@ -13,7 +13,6 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
   private val dependenciesSourcesIndex = projectDetails.dependenciesSources.groupBy { it.target }
   private val javacOptionsIndex = projectDetails.javacOptions.associateBy { it.target }
   private val scalacOptionsIndex = projectDetails.scalacOptions.associateBy { it.target }
-  private val pythonOptionsIndex = projectDetails.pythonOptions.associateBy { it.target }
   private val jvmBinaryJarsIndex = projectDetails.jvmBinaryJars.groupBy { it.target }
 
   fun moduleDetailsForTargetId(targetId: BuildTargetIdentifier): ModuleDetails {
@@ -26,7 +25,6 @@ class ProjectDetailsToModuleDetailsTransformer(private val projectDetails: Proje
       dependenciesSources = dependenciesSourcesIndex[targetId].orEmpty(),
       javacOptions = javacOptionsIndex[targetId],
       scalacOptions = scalacOptionsIndex[targetId],
-      pythonOptions = pythonOptionsIndex[targetId],
       outputPathUris = emptyList(),
       libraryDependencies = allDependencies.libraryDependencies.takeIf { projectDetails.libraries != null }?.toList(),
       moduleDependencies = allDependencies.moduleDependencies.toList(),
