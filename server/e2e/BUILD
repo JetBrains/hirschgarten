@@ -38,7 +38,6 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspCppProjectTest",
 )
 
-# TODO
 bazel_integration_test_all_versions(
     name = "python_project_test",
     bzlmod_project_path = "test-resources/python-project",
@@ -54,7 +53,6 @@ bazel_integration_test(
     workspace_path = "test-resources/kotlin-project",
 )
 
-# todo
 bazel_integration_test_all_versions(
     name = "enabled_rules_test",
     project_path = "test-resources/enabled-rules-project",
