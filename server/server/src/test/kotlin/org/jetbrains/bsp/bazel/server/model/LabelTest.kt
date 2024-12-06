@@ -168,25 +168,20 @@ class LabelTest {
   }
 
   @Test
-  fun `should recognize label with all packages recursive suffix`() {
+  fun `should capture label with all packages recursive suffix`() {
     val labelString = "@//path/to/target/..."
     val label = Label.parse(labelString)
     label.hasAllPackagesRecursiveSuffix shouldBe true
-  }
-
-  @Test
-  fun `recover label with all rules in suffix`() {
-    val labelString = "@//path/to/target:all"
-    val label = Label.parse(labelString)
     label.toString() shouldBe labelString
   }
 
   @Test
-  fun `should recognize label with all rules in suffix`() {
+  fun `should capture label with all rules in suffix`() {
     val labelString = "@//path/to/target:all"
     val label = Label.parse(labelString)
     label.isRulesOnly shouldBe true
     label.isWildcard shouldBe true
+    label.toString() shouldBe labelString
   }
 
   @Test
