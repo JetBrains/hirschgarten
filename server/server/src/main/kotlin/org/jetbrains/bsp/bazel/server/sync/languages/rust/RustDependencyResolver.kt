@@ -50,7 +50,7 @@ class RustDependencyResolver(private val rustPackageResolver: RustPackageResolve
 
   private fun createDependency(bazelPackageTargetInfo: Label): RustDependency {
     val dep = RustDependency(bazelPackageTargetInfo.packagePath.toString())
-    dep.name = bazelPackageTargetInfo.target
+    dep.name = bazelPackageTargetInfo.targetName
     dep.depKinds = listOf(RustDepKindInfo(RustDepKind.NORMAL))
     return dep
   }
