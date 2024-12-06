@@ -14,6 +14,7 @@ object ProjectBranchFilters {
     +:<default>
     +:*
     -:bazel-steward*
+    -:BAZEL-MR-*
     """.trimIndent()
 }
 
