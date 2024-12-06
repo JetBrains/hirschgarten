@@ -60,8 +60,7 @@ object WildcardTargetExpander {
         PACKAGE_SHARD_SIZE,
       )
     var output: ExpandedTargetsResult? = null
-    for (i in shards.indices) {
-      val shard = shards[i]
+    for (shard in shards) {
       val result: ExpandedTargetsResult =
         queryIndividualTargets(
           shard,
