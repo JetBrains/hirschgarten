@@ -132,8 +132,8 @@ class ProjectResolver(
         val shardedTargetsSpecs = shardedResult.targets.toTargetsSpecs()
         val shardedSize = shardedTargetsSpecs.size
         // TODO: should retry on OOM?
-        // From OG: Bazel server running out of memory on a build shard is generally caused by %s garbage
-        // collection bugs.
+        // From OG: Bazel server running out of memory on a build shard is generally caused by
+        // Bazel garbage collection bugs.
         // We can attempt to workaround by resuming with a clean Bazel server.
         shardedTargetsSpecs
           .mapIndexed { idx, shardedTargetsSpec ->
