@@ -23,6 +23,7 @@ bazel_integration_test_all_versions(
     name = "local_jdk_test",
     additional_env_inherit = ["JAVA_HOME"],
     project_path = "test-resources/local-jdk-project",
+    bzlmod_project_path = "test-resources/local-jdk-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspLocalJdkTest",
 )
 
