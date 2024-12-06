@@ -89,18 +89,13 @@ class BazelBspAspectsManager(
 
     // https://bazel.build/rules/lib/builtins/Label#repo_name
     // The canonical name of the repository containing the target referred to by this label, without any leading at-signs (@).
-    val externalRepositoriesNamesTreatedAsInternal = repoMapping.moduleCanonicalNameToLocalPath.keys.map { it.dropWhile { it == '@' } }
+    val repoMapping = repoMapping.moduleCanonicalNameToLocalPath.map { (key, value) -> "\"${key.dropWhile { it == '@' }}\": \"$value\"" }.joinToString(",\n", "{\n", "\n}")
 
     templateWriter.writeToFile(
       "utils/utils.bzl" + Constants.TEMPLATE_EXTENSION,
       aspectsPath.resolve("utils").resolve("utils.bzl"),
       mapOf(
-        "externalRepositoriesTreatedAsInternal" to
-          externalRepositoriesNamesTreatedAsInternal.joinToString(
-            "\", \"",
-            "\"",
-            "\"",
-          ),
+        "repoMapping" to repoMapping,
       ),
     )
   }

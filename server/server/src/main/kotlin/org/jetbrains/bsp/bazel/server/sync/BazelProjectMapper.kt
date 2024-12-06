@@ -839,10 +839,8 @@ class BazelProjectMapper(
         it.relativePath.endsWith(".go")
     }
 
-  private val externalRepositoriesTreatedAsInternal = listOf<String>()
-//    workspaceContextProvider
-//      .currentWorkspaceContext()
-//      .externalRepositoriesTreatedAsInternal
+  private val externalRepositoriesTreatedAsInternal =
+    repoMapping.moduleCanonicalNameToLocalPath.keys
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =

@@ -13,6 +13,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspFallbackAspectsManage
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
@@ -41,7 +42,7 @@ class ProjectResolver(
   suspend fun resolve(
     cancelChecker: CancelChecker,
     build: Boolean,
-    requestedTargetsToSync: List<BuildTargetIdentifier>?,
+    requestedTargetsToSync: List<Label>?,
   ): Project =
     tracer.spanBuilder("Resolve project").useWithScope {
       val workspaceContext =
@@ -78,9 +79,7 @@ class ProjectResolver(
 
       val targetsToSync =
         requestedTargetsToSync
-          ?.map {
-            it.label()
-          }?. let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
+          ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
 
       val buildAspectResult =
         measured(
@@ -102,7 +101,7 @@ class ProjectResolver(
         } else {
           emptyList()
         }
-      val rootTargets = buildAspectResult.bepOutput.rootTargets()
+      val rootTargets = targetsToSync.values // TODO: they should be resolved and canonicalized by now I guess
       return@useWithScope measured(
         "Mapping to internal model",
       ) { bazelProjectMapper.createProject(targets, rootTargets.toSet(), allTargetNames, workspaceContext, bazelInfo) }

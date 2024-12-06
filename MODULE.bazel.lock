@@ -1667,7 +1667,7 @@
     },
     "@@rules_go~//go:extensions.bzl%go_sdk": {
       "os:linux,arch:amd64": {
-        "bzlTransitiveDigest": "FHhH0WQQgocFQHqLVF6nQi9mvB+WOwjXRn51ywYr62E=",
+        "bzlTransitiveDigest": "fhsngXgY7nhxWPzOXQwTVmcTAv5kgEkXzEXjgrDJves=",
         "usagesDigest": "ou6iSUcUrWTQlaX5sESCdXNLwXwRYBV7qwLifS09hZo=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -5366,7 +5366,7 @@
     },
     "@@rules_rust~//rust:extensions.bzl%rust": {
       "general": {
-        "bzlTransitiveDigest": "s+xnOvart3O7H0o9MAVkR7Mnl+tCwEjQeBwhdz0oGOM=",
+        "bzlTransitiveDigest": "pqkDD+cfcchwz4Z2DVFO/6jRgPvNYOCgIOP2q+0rpdY=",
         "usagesDigest": "Slhvc0mGOP/16GsbVgk/MEjVoR2Tp4iQpo8vyWkgLqk=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
