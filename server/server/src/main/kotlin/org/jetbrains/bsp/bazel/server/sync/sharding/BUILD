@@ -8,6 +8,7 @@ kt_jvm_library(
         "//server/executioncontext/workspacecontext",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/paths",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/utils",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

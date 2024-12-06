@@ -81,7 +81,7 @@ class ProjectResolver(
       val buildAspectResult =
         measured(
           "Building project with aspect",
-        ) { buildProjectWithAspect(cancelChecker, workspaceContext, build, targetsToSync) }
+        ) { buildProjectWithAspect(cancelChecker, workspaceContext, build, targetsToSync, featureFlags) }
 
       val aspectOutputs =
         measured(
@@ -110,6 +110,7 @@ class ProjectResolver(
     workspaceContext: WorkspaceContext,
     build: Boolean,
     targetsToSync: TargetsSpec,
+    featureFlags: FeatureFlags,
   ): BazelBspAspectsManagerResult {
     val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, ARTIFACTS_OUTPUT_GROUP, RUST_ANALYZER_OUTPUT_GROUP)
     if (build) {
@@ -122,6 +123,7 @@ class ProjectResolver(
           BazelBuildTargetSharder.expandAndShardTargets(
             bazelPathsResolver,
             bazelInfo,
+            featureFlags,
             targetsToSync,
             workspaceContext,
             bazelRunner,

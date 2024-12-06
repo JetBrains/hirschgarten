@@ -34,7 +34,7 @@ import org.jetbrains.bsp.protocol.utils.BazelBuildServerCapabilitiesTypeAdapter
 import org.jetbrains.bsp.protocol.utils.EnhancedSourceItemTypeAdapter
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.building.TaskConsole
-import org.jetbrains.plugins.bsp.config.BspFeatureFlags
+import org.jetbrains.plugins.bsp.config.BspFeatureFlagsProvider
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
@@ -407,7 +407,7 @@ class DefaultBspConnection(
       InitializeBuildData(
         clientClassesRootDir = "$projectBaseDir/out",
         openTelemetryEndpoint = getOpenTelemetryEndPoint(),
-        featureFlags = BspFeatureFlags.toBspProtocolFeatureFlags(),
+        featureFlags = BspFeatureFlagsProvider.accumulateFeatureFlags(),
       )
     params.data = initializeBuildData
 

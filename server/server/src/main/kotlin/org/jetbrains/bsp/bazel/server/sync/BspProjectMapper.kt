@@ -74,10 +74,12 @@ import org.jetbrains.bsp.bazel.server.sync.languages.java.IdeClasspathResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.jvm.javaModule
 import org.jetbrains.bsp.bazel.server.sync.languages.scala.ScalaModule
+import org.jetbrains.bsp.bazel.server.sync.utils.BazelSymlinksCalculator
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -102,6 +104,7 @@ class BspProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
   private val bazelRunner: BazelRunner,
   private val bspInfo: BspInfo,
+  private val featureFlags: FeatureFlags,
 ) {
   fun initializeServer(supportedLanguages: Set<Language>): InitializeBuildResult {
     val languageNames = supportedLanguages.map { it.id }
@@ -196,6 +199,12 @@ class BspProjectMapper(
     val workspaceRootPath = workspaceRoot.toPath()
     val workspaceSymlinkNames = setOf("bazel-${workspaceRootPath.name}")
 
+    val calculatedSymlinksByTraversal =
+      BazelSymlinksCalculator.getBazelSymlinksToExclude(
+        workspaceRootPath,
+        featureFlags.bazelSymlinksScanMaxDepth,
+      )
+
     val symlinks = (stableSymlinkNames + workspaceSymlinkNames).map { workspaceRootPath.resolve(it) }
     val realPaths =
       symlinks.mapNotNull {
@@ -205,7 +214,7 @@ class BspProjectMapper(
           null
         }
       }
-    return symlinks + realPaths
+    return (symlinks + realPaths + calculatedSymlinksByTraversal).distinct()
   }
 
   private fun computeAdditionalDirectoriesToExclude(): List<Path> = listOf(bspInfo.bazelBspDir())

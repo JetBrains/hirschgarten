@@ -24,6 +24,7 @@ import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bsp.protocol.FeatureFlags
 
 /** Expands wildcard target patterns into individual Bazel targets.  */
 object WildcardTargetExpander {
@@ -40,6 +41,7 @@ object WildcardTargetExpander {
   fun expandToNonRecursiveWildcardTargets(
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
+    featureFlags: FeatureFlags,
     wildcardIncludes: List<Label>,
   ): Map<Label, List<Label>> {
 //    val excludePredicate: (String) -> Boolean = { relativePath ->
@@ -51,6 +53,7 @@ object WildcardTargetExpander {
     return PackageLister.expandPackageTargets(
       pathResolver,
       bazelInfo,
+      featureFlags,
       wildcardIncludes,
     )
   }

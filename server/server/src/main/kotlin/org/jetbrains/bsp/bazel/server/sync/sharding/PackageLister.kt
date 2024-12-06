@@ -18,6 +18,8 @@ package org.jetbrains.bsp.bazel.server.sync.sharding
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.server.sync.utils.BazelSymlinksCalculator
+import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.isRegularFile
@@ -37,6 +39,7 @@ internal object PackageLister {
   fun expandPackageTargets(
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
+    featureFlags: FeatureFlags,
     wildcardPatterns: List<Label>,
   ): Map<Label, List<Label>> {
     val res = mutableMapOf<Label, List<Label>>()
@@ -52,6 +55,7 @@ internal object PackageLister {
       traversePackageRecursively(
         pathResolver,
         bazelInfo,
+        featureFlags,
         dir,
         expandedTargets,
       )
@@ -63,10 +67,11 @@ internal object PackageLister {
   private fun traversePackageRecursively(
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
+    featureFlags: FeatureFlags,
     dir: Path,
     output: MutableList<Label>,
   ) {
-    if (!dir.isEligibleForTraversal(bazelInfo)) return
+    if (!dir.isEligibleForTraversal(bazelInfo, featureFlags)) return
     val path = pathResolver.getWorkspaceRelativePath(dir)
     if (dir.containsBuildFile()) {
       output.add(Label.allFromPackageNonRecursive(path))
@@ -77,6 +82,7 @@ internal object PackageLister {
         traversePackageRecursively(
           pathResolver,
           bazelInfo,
+          featureFlags,
           child.toPath(),
           output,
         )
@@ -84,9 +90,9 @@ internal object PackageLister {
     }
   }
 
-  fun Path.isEligibleForTraversal(bazelInfo: BazelInfo): Boolean {
+  fun Path.isEligibleForTraversal(bazelInfo: BazelInfo, featureFlags: FeatureFlags): Boolean {
     if (this == bazelInfo.dotBazelBsp()) return false
-    val bazelSymlinks = BazelSymlinksService.getBazelSymlinksToExclude(bazelInfo.workspaceRoot)
+    val bazelSymlinks = BazelSymlinksCalculator.getBazelSymlinksToExclude(bazelInfo.workspaceRoot, featureFlags.bazelSymlinksScanMaxDepth)
     if (bazelSymlinks.any { it == this }) return false
     return true
   }

@@ -25,6 +25,7 @@ import org.jetbrains.bsp.bazel.server.sync.sharding.WildcardTargetExpander.Expan
 import org.jetbrains.bsp.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.protocol.FeatureFlags
 import kotlin.math.min
 
 /**
@@ -43,6 +44,7 @@ object BazelBuildTargetSharder {
   fun expandAndShardTargets(
     pathResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
+    featureFlags: FeatureFlags,
     targets: TargetsSpec,
     context: WorkspaceContext,
     bazelRunner: BazelRunner,
@@ -54,6 +56,7 @@ object BazelBuildTargetSharder {
       expandWildcardTargets(
         pathResolver,
         bazelInfo,
+        featureFlags,
         includes,
         excludes,
         bazelRunner,
@@ -79,6 +82,7 @@ object BazelBuildTargetSharder {
   private fun expandWildcardTargets(
     pathsResolver: BazelPathsResolver,
     bazelInfo: BazelInfo,
+    featureFlags: FeatureFlags,
     includes: List<Label>,
     excludes: List<Label>,
     bazelRunner: BazelRunner,
@@ -92,6 +96,7 @@ object BazelBuildTargetSharder {
       WildcardTargetExpander.expandToNonRecursiveWildcardTargets(
         pathsResolver,
         bazelInfo,
+        featureFlags,
         wildcardIncludes,
       )
     if (expandedTargets.isEmpty()) {

@@ -1,22 +1,19 @@
-package org.jetbrains.bsp.bazel.server.sync.sharding
+package org.jetbrains.bsp.bazel.server.sync.utils
 
 import java.nio.file.FileVisitResult
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.name
 
-// taken from org.jetbrains.bazel.flow.open.exclude.BazelSymlinkExcludeService
-// TODO: merge them into 1
-object BazelSymlinksService {
+object BazelSymlinksCalculator {
   private var symlinksToExclude: List<Path>? = null
 
   @Synchronized
-  fun getBazelSymlinksToExclude(bazelWorkspace: Path): List<Path> {
+  fun getBazelSymlinksToExclude(bazelWorkspace: Path, bazelSymlinksScanMaxDepth: Int): List<Path> {
     this.symlinksToExclude?.let { return it }
-    val symlinksToExclude = mutableListOf<Path>()
+    val symlinksToExclude = kotlin.collections.mutableListOf<Path>()
 
     val bazelSymlinkEndings = listOf("bin", "out", "testlogs", bazelWorkspace.name)
 
@@ -32,7 +29,12 @@ object BazelSymlinksService {
           return FileVisitResult.SKIP_SUBTREE
         }
       }
-    Files.walkFileTree(bazelWorkspace, emptySet(), 1, visitor)
+    java.nio.file.Files.walkFileTree(
+      bazelWorkspace,
+      emptySet(),
+      bazelSymlinksScanMaxDepth,
+      visitor,
+    )
 
     if (symlinksToExclude.isNotEmpty()) {
       this.symlinksToExclude = symlinksToExclude
