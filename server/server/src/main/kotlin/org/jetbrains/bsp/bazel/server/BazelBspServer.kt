@@ -102,7 +102,6 @@ class BazelBspServer(
         bazelPathsResolver = bazelPathsResolver,
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
-        featureFlags = featureFlags,
       )
     val projectSyncService = ProjectSyncService(bspProjectMapper, projectProvider, initializeBuildParams.capabilities)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
