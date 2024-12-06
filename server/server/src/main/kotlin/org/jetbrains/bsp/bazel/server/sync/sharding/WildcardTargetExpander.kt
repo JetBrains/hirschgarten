@@ -31,9 +31,6 @@ object WildcardTargetExpander {
   /**
    * Expand recursive wildcard Bazel target patterns into single-package wildcard patterns, via a
    * file system traversal.
-   *
-   *
-   * Exclude target patterns (beginning with '-') are not expanded.
    */
   fun expandToNonRecursiveWildcardTargets(
     pathResolver: BazelPathsResolver,
@@ -41,11 +38,6 @@ object WildcardTargetExpander {
     featureFlags: FeatureFlags,
     wildcardIncludes: List<Label>,
   ): Map<Label, List<Label>> {
-//    val excludePredicate: (String) -> Boolean = { relativePath ->
-//      wildcardExcludes.any { label -> label.containsPackage(relativePath) }
-//    }
-
-//    PackageLister.getWildcardTargetDirectories(pathResolver, wildcardIncludes, excludePredicate)
 
     return PackageLister.expandPackageTargets(
       pathResolver,
