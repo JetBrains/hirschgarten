@@ -45,11 +45,12 @@ data class Package(override val path: List<String>) : PackageType {
 }
 
 data class WildcardPackage(override val path: List<String>) : PackageType {
-  override fun toString(): String = if (path.isEmpty()) {
-    "..."
-  } else {
-    path.joinToString("/", postfix = "/...")
-  }
+  override fun toString(): String =
+    if (path.isEmpty()) {
+      "..."
+    } else {
+      path.joinToString("/", postfix = "/...")
+    }
 }
 
 /**
@@ -74,19 +75,21 @@ sealed interface Label {
   fun toBazelPath(): Path
 
   val targetPathAndName
-    get() = when (packagePath) {
+    get() =
+      when (packagePath) {
         is Package -> {
           val packageName = (packagePath as Package).name()
           when {
             target is SingleTarget && packageName == target.toString() -> packagePath.toString()
-            else -> "${packagePath}:$target"
+            else -> "$packagePath:$target"
           }
         }
-        is WildcardPackage -> if (target is AllRuleTargets) {
-          packagePath.toString()
-        } else {
-          "${packagePath}:$target"
-        }
+        is WildcardPackage ->
+          if (target is AllRuleTargets) {
+            packagePath.toString()
+          } else {
+            "$packagePath:$target"
+          }
       }
 
   /**
@@ -96,11 +99,12 @@ sealed interface Label {
   private data class Main(override val packagePath: PackageType, override val target: TargetType) : Label {
     override val repoName: String = ""
 
-    override fun toBazelPath(): Path = if (packagePath is Package) {
-      Path(packagePath.toString())
-    } else {
-      error("Cannot convert wildcard package to path")
-    }
+    override fun toBazelPath(): Path =
+      if (packagePath is Package) {
+        Path(packagePath.toString())
+      } else {
+        error("Cannot convert wildcard package to path")
+      }
 
     override fun toString(): String = "@//$targetPathAndName"
   }
@@ -125,11 +129,12 @@ sealed interface Label {
     override val packagePath: PackageType,
     override val target: TargetType,
   ) : Label {
-    override fun toBazelPath(): Path = if (packagePath is Package) {
-      Path("external", repoName, *packagePath.path.toTypedArray())
-    } else {
-      error("Cannot convert wildcard package to path")
-    }
+    override fun toBazelPath(): Path =
+      if (packagePath is Package) {
+        Path("external", repoName, *packagePath.path.toTypedArray())
+      } else {
+        error("Cannot convert wildcard package to path")
+      }
 
     override fun toString(): String = "@@$repoName//$targetPathAndName"
   }
@@ -143,11 +148,12 @@ sealed interface Label {
     override val target: TargetType,
   ) : Label {
     /** This works only without bzlmod... (with bzlmod you need a canonical form to resolve this path */
-    override fun toBazelPath(): Path = if (packagePath is Package) {
-      Path("external", repoName, *packagePath.path.toTypedArray())
-    } else {
-      error("Cannot convert wildcard package to path")
-    }
+    override fun toBazelPath(): Path =
+      if (packagePath is Package) {
+        Path("external", repoName, *packagePath.path.toTypedArray())
+      } else {
+        error("Cannot convert wildcard package to path")
+      }
 
     override fun toString(): String = "@$repoName//$targetPathAndName"
   }
@@ -161,19 +167,21 @@ sealed interface Label {
       val pathAndName = normalized.substringAfter("//")
       val packagePath = pathAndName.substringBefore(":")
       val packageSegments = packagePath.split("/")
-      val packageType = if (packageSegments.lastOrNull() == "..." ) {
-        WildcardPackage(packageSegments.dropLast(1))
-      } else {
-        Package(packageSegments)
-      }
+      val packageType =
+        if (packageSegments.lastOrNull() == "...") {
+          WildcardPackage(packageSegments.dropLast(1))
+        } else {
+          Package(packageSegments)
+        }
       val targetName = pathAndName.substringAfter(":", packagePath.substringAfterLast("/"))
 
-      val target = when (targetName) {
-        WILDCARD -> AllRuleTargetsAndFiles
-        ALL_TARGETS -> AllRuleTargetsAndFiles
-        ALL -> AllRuleTargets
-        else -> SingleTarget(targetName)
-      }
+      val target =
+        when (targetName) {
+          WILDCARD -> AllRuleTargetsAndFiles
+          ALL_TARGETS -> AllRuleTargetsAndFiles
+          ALL -> AllRuleTargets
+          else -> SingleTarget(targetName)
+        }
 
       return when {
         repoName.isEmpty() -> Main(packageType, target)
