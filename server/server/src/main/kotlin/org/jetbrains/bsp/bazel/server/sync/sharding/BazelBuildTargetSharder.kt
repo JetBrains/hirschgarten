@@ -77,7 +77,7 @@ object BazelBuildTargetSharder {
     min(context.targetShardSize.value ?: DEFAULT_TARGET_SHARD_SIZE, MAX_TARGET_SHARD_SIZE)
 
   /**
-   *  Expand wildcard target patterns into individual blaze targets.
+   *  Expand wildcard target patterns into individual bazel targets.
    */
   private fun expandWildcardTargets(
     pathsResolver: BazelPathsResolver,
