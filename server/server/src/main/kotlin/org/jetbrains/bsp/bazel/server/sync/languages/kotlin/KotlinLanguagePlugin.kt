@@ -30,7 +30,7 @@ class KotlinLanguagePlugin(private val javaLanguagePlugin: JavaLanguagePlugin, p
           languageVersion = languageVersion,
           apiVersion = apiVersion,
           kotlincOptions = kotlincOptions,
-          associates = associates.map { BuildTargetIdentifier(it.value) }.distinct(),
+          associates = associates.map { BuildTargetIdentifier(it.toString()) }.distinct(),
         )
       }
     kotlinModule.javaModule?.let { javaLanguagePlugin.toJvmBuildTarget(it) }?.let {

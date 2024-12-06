@@ -140,14 +140,14 @@ class BspProjectMapper(
   }
 
   fun workspaceInvalidTargets(project: Project): WorkspaceInvalidTargetsResult =
-    WorkspaceInvalidTargetsResult(project.invalidTargets.map { BuildTargetIdentifier(it.value) })
+    WorkspaceInvalidTargetsResult(project.invalidTargets.map { BuildTargetIdentifier(it.toString()) })
 
   fun workspaceLibraries(project: Project): WorkspaceLibrariesResult {
     val libraries =
       project.libraries.values.map {
         LibraryItem(
-          id = BuildTargetIdentifier(it.label.value),
-          dependencies = it.dependencies.map { dep -> BuildTargetIdentifier(dep.value) },
+          id = BuildTargetIdentifier(it.label.toString()),
+          dependencies = it.dependencies.map { dep -> BuildTargetIdentifier(dep.toString()) },
           ijars = it.interfaceJars.map { uri -> uri.toString() },
           jars = it.outputs.map { uri -> uri.toString() },
           sourceJars = it.sources.map { uri -> uri.toString() },
@@ -161,7 +161,7 @@ class BspProjectMapper(
     val libraries =
       project.goLibraries.values.map {
         GoLibraryItem(
-          id = BuildTargetIdentifier(it.label.value),
+          id = BuildTargetIdentifier(it.label.toString()),
           goImportPath = it.goImportPath,
           goRoot = it.goRoot,
         )
@@ -588,16 +588,16 @@ class BspProjectMapper(
       val targetSet = params.targets.toSet()
       val cache = mutableMapOf<String, List<DependencyModule>>()
       val dependencyModulesItems =
-        project.modules.filter { targetSet.contains(BuildTargetIdentifier(it.label.value)) }.map { module ->
-          val buildTargetId = BuildTargetIdentifier(module.label.value)
+        project.modules.filter { targetSet.contains(BuildTargetIdentifier(it.label.toString())) }.map { module ->
+          val buildTargetId = BuildTargetIdentifier(module.label.toString())
           val moduleDependencies = DependencyMapper.allModuleDependencies(project, module)
           // moduleDependencies are sorted here to have a deterministic output (used in tests) and not strictly necessary.
           val moduleItems =
-            moduleDependencies.sortedBy { it.label.value }.flatMap { libraryDep ->
-              cache.getOrPut(libraryDep.label.value) {
+            moduleDependencies.sortedBy { it.label.toString() }.flatMap { libraryDep ->
+              cache.getOrPut(libraryDep.label.toString()) {
                 if (libraryDep.outputs.isNotEmpty()) {
                   val mavenDependencyModule = DependencyMapper.extractMavenDependencyInfo(libraryDep)
-                  val dependencyModule = DependencyModule(libraryDep.label.value, mavenDependencyModule?.version ?: "")
+                  val dependencyModule = DependencyModule(libraryDep.label.toString(), mavenDependencyModule?.version ?: "")
                   if (mavenDependencyModule != null) {
                     dependencyModule.data = mavenDependencyModule
                     dependencyModule.dataKind = DependencyModuleDataKind.MAVEN

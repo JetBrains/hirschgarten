@@ -9,14 +9,14 @@ import org.jetbrains.bsp.bazel.server.model.Tag
 import java.net.URI
 
 fun createModule(
-  label: String,
+  label: Label,
   directDependencies: List<Label>,
   baseDirectory: URI,
   sources: Set<SourceWithData>,
   rustModule: RustModule,
 ): Module =
   Module(
-    label = Label.parse(label),
+    label = label,
     isSynthetic = false,
     directDependencies = directDependencies,
     languages = setOf(Language.RUST),
@@ -62,7 +62,7 @@ fun createTarget(moduleName: String, directDependencies: List<String>): Module {
   val crateRoot = "$pathPrefix/dir$moduleName/src/lib.rs"
 
   return createModule(
-    label = "@//pkg$moduleName:$moduleName",
+    label = Label.parse("@//pkg$moduleName:$moduleName"),
     directDependencies = directDependencies.map { Label.parse(it) },
     rustModule =
       createRustModule(
@@ -86,7 +86,7 @@ fun getModuleWithoutDependencies(features: List<String> = emptyList()): Pair<Rus
     )
   val module =
     createModule(
-      label = "@//sample_target:sample_target",
+      label = Label.parse("@//sample_target:sample_target"),
       directDependencies = emptyList(),
       sources =
         setOf(
@@ -111,7 +111,7 @@ fun getModulesWithDependency(): List<Module> {
     )
   val moduleA =
     createModule(
-      label = "@//dirA:targetA",
+      label = Label.parse("@//dirA:targetA"),
       directDependencies = emptyList(),
       sources = setOf(URI.create("file:///path/to/dirA/src/lib.rs").toSourceWithEmptyData()),
       baseDirectory = URI.create("file:///path/to/dirA/"),
@@ -126,7 +126,7 @@ fun getModulesWithDependency(): List<Module> {
     )
   val moduleB =
     createModule(
-      label = "@//dirB:targetB",
+      label = Label.parse("@//dirB:targetB"),
       directDependencies = listOf(moduleA.label),
       sources = setOf(URI.create("file:///path/to/dirB/src/lib.rs").toSourceWithEmptyData()),
       baseDirectory = URI.create("file:///path/to/dirB/"),
