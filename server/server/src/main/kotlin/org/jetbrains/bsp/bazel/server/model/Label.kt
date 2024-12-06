@@ -67,6 +67,17 @@ sealed interface Label {
     override fun toString(): String = "@//$targetPathAndName".recoverAllPackagesRecursiveSuffix()
   }
 
+  private data object AllRulesAndFiles : Label {
+    override val repoName: String = ""
+    override val packagePath: String = ""
+    override val targetName: String = ""
+    override val hasAllPackagesRecursiveSuffix: Boolean = true
+
+    override fun toBazelPath(): Path = Path("")
+
+    override fun toString(): String = "@//..."
+  }
+
   /**
    * Synthethic label is a label of a target which is not present in the Bazel target graph.
    */
@@ -115,6 +126,8 @@ sealed interface Label {
     fun parse(value: String): Label {
       var hasAllPackagesRecursiveSuffix = false
       val normalized = value.trimStart('@')
+      // special case //...
+      if (normalized == "//...") return AllRulesAndFiles
       val repoName = normalized.substringBefore("//", "")
       val pathAndName = normalized.substringAfter("//")
       val targetPath =

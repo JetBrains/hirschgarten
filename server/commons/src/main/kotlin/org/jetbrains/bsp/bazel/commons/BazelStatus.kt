@@ -9,6 +9,9 @@ private const val BAD_COMMAND_LINE_ARGUMENTS_EXIT_CODE = 2
 private const val CANCEL_EXIT_CODE = 8
 private const val OOM_EXIT_CODE = 33
 
+// specific code for bazel sync
+private const val PARTIALLY_SUCCESS_WITH_KEEP_GOING = 3
+
 enum class BazelStatus {
   SUCCESS,
   BAD_COMMAND_LINE_ARGUMENTS,
@@ -28,7 +31,7 @@ enum class BazelStatus {
   companion object {
     fun fromExitCode(exitCode: Int): BazelStatus =
       when (exitCode) {
-        SUCCESS_EXIT_CODE -> SUCCESS
+        SUCCESS_EXIT_CODE, PARTIALLY_SUCCESS_WITH_KEEP_GOING -> SUCCESS
         BAD_COMMAND_LINE_ARGUMENTS_EXIT_CODE -> BAD_COMMAND_LINE_ARGUMENTS
         BUILD_ERROR_EXIT_CODE -> BUILD_ERROR
         CANCEL_EXIT_CODE -> CANCEL

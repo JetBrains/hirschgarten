@@ -118,6 +118,19 @@ class ProjectResolver(
       outputGroups.add(GENERATED_JARS_OUTPUT_GROUP)
     }
 
+    val nonShardBuild =
+      suspend {
+        bazelBspAspectsManager.fetchFilesFromOutputGroups(
+          cancelChecker = cancelChecker,
+          targetsSpec = targetsToSync,
+          aspect = ASPECT_NAME,
+          outputGroups = outputGroups,
+          shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
+          isRustEnabled = featureFlags.isRustSupportEnabled,
+          shouldLogInvocation = false,
+        )
+      }
+
     val res =
       if (workspaceContext.shardSync.value) {
         val shardedResult =
@@ -132,42 +145,40 @@ class ProjectResolver(
           )
         val shardedTargetsSpecs = shardedResult.targets.toTargetsSpecs()
         val shardedSize = shardedTargetsSpecs.size
-        // TODO: should retry on OOM?
-        // From OG: Bazel server running out of memory on a build shard is generally caused by
-        // Bazel garbage collection bugs.
-        // We can attempt to workaround by resuming with a clean Bazel server.
-        shardedTargetsSpecs
-          .mapIndexed { idx, shardedTargetsSpec ->
-            val shardName = "shard ${idx + 1} of $shardedSize"
-            bspClientLogger.message("\nBuilding $shardName ...")
-            bazelBspAspectsManager
-              .fetchFilesFromOutputGroups(
-                cancelChecker = cancelChecker,
-                targetsSpec = shardedTargetsSpec,
-                aspect = ASPECT_NAME,
-                outputGroups = outputGroups,
-                shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-                isRustEnabled = featureFlags.isRustSupportEnabled,
-                shouldLogInvocation = false,
-              ).also {
-                if (it.isFailure) {
-                  bspClientLogger.message("Failed to build $shardName")
-                } else {
-                  bspClientLogger.message("Finished building $shardName")
+
+        if (shardedSize <= 1) {
+          // fall back to non-sharded build when sharding does not have effects
+          nonShardBuild()
+        } else {
+          // TODO: should retry on OOM?
+          // From OG: Bazel server running out of memory on a build shard is generally caused by
+          // Bazel garbage collection bugs.
+          // We can attempt to workaround by resuming with a clean Bazel server.
+          shardedTargetsSpecs
+            .mapIndexed { idx, shardedTargetsSpec ->
+              val shardName = "shard ${idx + 1} of $shardedSize"
+              bspClientLogger.message("\nBuilding $shardName ...")
+              bazelBspAspectsManager
+                .fetchFilesFromOutputGroups(
+                  cancelChecker = cancelChecker,
+                  targetsSpec = shardedTargetsSpec,
+                  aspect = ASPECT_NAME,
+                  outputGroups = outputGroups,
+                  shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
+                  isRustEnabled = featureFlags.isRustSupportEnabled,
+                  shouldLogInvocation = false,
+                ).also {
+                  if (it.isFailure) {
+                    bspClientLogger.message("Failed to build $shardName")
+                  } else {
+                    bspClientLogger.message("Finished building $shardName")
+                  }
+                  bspClientLogger.message("---")
                 }
-                bspClientLogger.message("---")
-              }
-          }.reduce { acc, result -> acc.merge(result) }
+            }.reduce { acc, result -> acc.merge(result) }
+        }
       } else {
-        bazelBspAspectsManager.fetchFilesFromOutputGroups(
-          cancelChecker = cancelChecker,
-          targetsSpec = targetsToSync,
-          aspect = ASPECT_NAME,
-          outputGroups = outputGroups,
-          shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-          isRustEnabled = featureFlags.isRustSupportEnabled,
-          shouldLogInvocation = false,
-        )
+        nonShardBuild()
       }
 
     return res

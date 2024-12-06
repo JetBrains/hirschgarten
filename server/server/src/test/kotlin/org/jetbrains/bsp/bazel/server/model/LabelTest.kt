@@ -188,4 +188,12 @@ class LabelTest {
     label.isRulesOnly shouldBe true
     label.isWildcard shouldBe true
   }
+
+  @Test
+  fun `should capture the edge-case target slash slash dot dot dot`() {
+    val labelString = "@//..."
+    val label = Label.parse(labelString)
+    label.toString() shouldBe labelString
+    label.hasAllPackagesRecursiveSuffix shouldBe true
+  }
 }
