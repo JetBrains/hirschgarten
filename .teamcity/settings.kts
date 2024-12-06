@@ -14,7 +14,8 @@ object ProjectBranchFilters {
     +:<default>
     +:*
     -:bazel-steward*
-    -:BAZEL-MR-*
+    -:(refs/merge/*)
+    -:refs/merge/*
     """.trimIndent()
 }
 
