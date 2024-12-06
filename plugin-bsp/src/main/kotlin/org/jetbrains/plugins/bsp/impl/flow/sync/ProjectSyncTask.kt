@@ -85,6 +85,7 @@ class ProjectSyncTask(private val project: Project) {
                 BspSyncStatusService.getInstance(project).cancel()
                 coroutineContext.cancel()
               },
+              redoAction = { sync(syncScope, buildProject) },
             )
 
             preSync()
