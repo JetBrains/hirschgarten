@@ -13,6 +13,7 @@ private const val SYNTHETIC_TAG = "[synthetic]"
 /**
  * Represents a Bazel label.
  * See https://bazel.build/concepts/labels
+ * See also https://bazel.build/run/build#specifying-build-targets for some wildcard targets
  */
 sealed interface Label {
   val repoName: String
@@ -31,6 +32,9 @@ sealed interface Label {
 
   val isWildcard: Boolean
     get() = isRecursive || isRulesOnly
+
+  fun String.recoverAllPackagesRecursiveSuffix(): String =
+    if (hasAllPackagesRecursiveSuffix) "$this$ALL_PACKAGES_RECURSIVE_SUFFIX" else this
 
   /**
    * Returns a path to the corresponding folder in the `bazel-(project)` directory.
@@ -60,7 +64,7 @@ sealed interface Label {
 
     override fun toBazelPath(): Path = Path(packagePath)
 
-    override fun toString(): String = "@//$targetPathAndName"
+    override fun toString(): String = "@//$targetPathAndName".recoverAllPackagesRecursiveSuffix()
   }
 
   /**
@@ -87,7 +91,7 @@ sealed interface Label {
   ) : Label {
     override fun toBazelPath(): Path = Path("external", repoName, packagePath)
 
-    override fun toString(): String = "@@$repoName//$targetPathAndName"
+    override fun toString(): String = "@@$repoName//$targetPathAndName".recoverAllPackagesRecursiveSuffix()
   }
 
   /**
@@ -102,7 +106,7 @@ sealed interface Label {
     /** This works only without bzlmod... (with bzlmod you need a canonical form to resolve this path */
     override fun toBazelPath(): Path = Path("external", repoName, packagePath)
 
-    override fun toString(): String = "@$repoName//$targetPathAndName"
+    override fun toString(): String = "@$repoName//$targetPathAndName".recoverAllPackagesRecursiveSuffix()
   }
 
   companion object {

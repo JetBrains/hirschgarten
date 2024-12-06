@@ -159,4 +159,33 @@ class LabelTest {
     label2.repoName shouldBe ""
     label2.isMainWorkspace shouldBe true
   }
+
+  @Test
+  fun `recover all packages recursive suffix for the label`() {
+    val labelString = "@//path/to/target/..."
+    val label = Label.parse(labelString)
+    label.toString() shouldBe labelString
+  }
+
+  @Test
+  fun `should recognize label with all packages recursive suffix`() {
+    val labelString = "@//path/to/target/..."
+    val label = Label.parse(labelString)
+    label.hasAllPackagesRecursiveSuffix shouldBe true
+  }
+
+  @Test
+  fun `recover label with all rules in suffix`() {
+    val labelString = "@//path/to/target:all"
+    val label = Label.parse(labelString)
+    label.toString() shouldBe labelString
+  }
+
+  @Test
+  fun `should recognize label with all rules in suffix`() {
+    val labelString = "@//path/to/target:all"
+    val label = Label.parse(labelString)
+    label.isRulesOnly shouldBe true
+    label.isWildcard shouldBe true
+  }
 }
