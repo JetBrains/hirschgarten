@@ -34,7 +34,7 @@ import kotlin.math.min
 private const val MAX_TARGET_SHARD_SIZE = 10000
 
 /**
- * number of packages per blaze query shard
+ * number of packages per bazel query shard
  */
 const val PACKAGE_SHARD_SIZE = 500
 
@@ -77,7 +77,7 @@ object BazelBuildTargetSharder {
     min(context.targetShardSize.value ?: DEFAULT_TARGET_SHARD_SIZE, MAX_TARGET_SHARD_SIZE)
 
   /**
-   *  Expand wildcard target patterns into individual blaze targets.
+   *  Expand wildcard target patterns into individual bazel targets.
    */
   private fun expandWildcardTargets(
     pathsResolver: BazelPathsResolver,

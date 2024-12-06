@@ -31,7 +31,7 @@ import kotlin.io.path.isRegularFile
 internal object PackageLister {
   /**
    * Expands all-in-package-recursive wildcard targets into all-in-single-package targets by
-   * traversing the file system, looking for child blaze packages.
+   * traversing the file system, looking for child bazel packages.
    */
   fun expandPackageTargets(
     pathResolver: BazelPathsResolver,

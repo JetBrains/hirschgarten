@@ -37,7 +37,7 @@ interface BuildBatchingService {
   fun calculateTargetBatches(targets: Set<Label>, suggestedShardSize: Int): List<List<Label>>
 
   /**
-   * Given a list of individual, un-excluded blaze targets (no wildcard target patterns), create
+   * Given a list of individual, un-excluded bazel targets (no wildcard target patterns), create
    * ShardedTargetList according to inputs.
    */
   fun getShardedTargetList(targets: Set<Label>, suggestedShardSize: Int): ShardedTargetList {
