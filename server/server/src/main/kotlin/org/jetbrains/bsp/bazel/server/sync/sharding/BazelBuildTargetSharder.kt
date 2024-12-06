@@ -34,7 +34,7 @@ import kotlin.math.min
 private const val MAX_TARGET_SHARD_SIZE = 10000
 
 /**
- * number of packages per blaze query shard
+ * number of packages per bazel query shard
  */
 const val PACKAGE_SHARD_SIZE = 500
 
