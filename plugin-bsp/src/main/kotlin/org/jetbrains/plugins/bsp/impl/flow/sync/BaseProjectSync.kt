@@ -13,13 +13,9 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.coroutineScope
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
-import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.building.syncConsole
 import org.jetbrains.plugins.bsp.building.withSubtask
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
-import org.jetbrains.plugins.bsp.taskEvents.BspTaskEventsService
-import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
-import org.jetbrains.plugins.bsp.taskEvents.TaskId
 
 const val BASE_PROJECT_SYNC_SUBTASK_ID = "base-project-sync-subtask-id"
 
@@ -30,19 +26,6 @@ data class BaseTargetInfo(
   val sources: List<SourcesItem>,
   val resources: List<ResourcesItem>,
 )
-
-class A(private val a: Project) : BspTaskListener {
-  override fun onTaskStart(
-    taskId: TaskId,
-    parentId: TaskId?,
-    message: String,
-    data: Any?,
-  ) {
-    val s = BspConsoleService.getInstance(a).bspSyncConsole
-    println("XDDDD")
-    s.startSubtask(BASE_PROJECT_SYNC_SUBTASK_ID, taskId, message)
-  }
-}
 
 class BaseProjectSync(private val project: Project) {
   suspend fun execute(
@@ -58,8 +41,6 @@ class BaseProjectSync(private val project: Project) {
       message = BspPluginBundle.message("console.task.base.sync"),
     ) {
       coroutineScope {
-        BspTaskEventsService.getInstance(project).saveListener("111", A(project))
-
         val buildTargets = queryWorkspaceBuildTargets(server, syncScope, buildProject)
         val allTargetIds = buildTargets.calculateAllTargetIds()
 
