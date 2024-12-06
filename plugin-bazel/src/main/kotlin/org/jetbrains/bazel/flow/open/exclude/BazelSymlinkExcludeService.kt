@@ -16,7 +16,7 @@ class BazelSymlinkExcludeService(private val project: Project) : DumbAware {
   @Synchronized
   fun getBazelSymlinksToExclude(bazelWorkspace: Path = project.rootDir.toNioPath()): List<Path> {
     this.symlinksToExclude?.let { return it }
-    val symlinksToExclude = BazelSymlinksCalculator.getBazelSymlinksToExclude(bazelWorkspace, BazelFeatureFlags.symlinkScanMaxDepth)
+    val symlinksToExclude = BazelSymlinksCalculator.calculateBazelSymlinksToExclude(bazelWorkspace, BazelFeatureFlags.symlinkScanMaxDepth)
 
     if (symlinksToExclude.isNotEmpty()) {
       this.symlinksToExclude = symlinksToExclude

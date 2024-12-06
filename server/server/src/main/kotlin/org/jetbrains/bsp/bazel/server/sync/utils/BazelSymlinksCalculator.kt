@@ -19,7 +19,7 @@ object BazelSymlinksCalculator {
    * Therefore, it is not guaranteed to work correctly if there are changes to these two params in the middle of the project sync.
    */
   @Synchronized
-  fun getBazelSymlinksToExclude(workspaceRoot: Path, bazelSymlinksScanMaxDepth: Int): List<Path> {
+  fun calculateBazelSymlinksToExclude(workspaceRoot: Path, bazelSymlinksScanMaxDepth: Int): List<Path> {
     if (this.symlinksToExclude.isNotEmpty()) return this.symlinksToExclude
     val symlinksToExclude = kotlin.collections.mutableListOf<Path>()
 

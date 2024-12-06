@@ -89,7 +89,11 @@ internal object PackageLister {
 
   fun Path.isEligibleForTraversal(bazelInfo: BazelInfo, featureFlags: FeatureFlags): Boolean {
     if (this == bazelInfo.dotBazelBsp()) return false
-    val bazelSymlinks = BazelSymlinksCalculator.getBazelSymlinksToExclude(bazelInfo.workspaceRoot, featureFlags.bazelSymlinksScanMaxDepth)
+    val bazelSymlinks =
+      BazelSymlinksCalculator.calculateBazelSymlinksToExclude(
+        bazelInfo.workspaceRoot,
+        featureFlags.bazelSymlinksScanMaxDepth,
+      )
     if (bazelSymlinks.any { it == this }) return false
     return true
   }
