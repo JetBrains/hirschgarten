@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.benchmark.openTelemetry
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Project
 
 class ProjectProvider(private val projectResolver: ProjectResolver) {
@@ -14,7 +15,7 @@ class ProjectProvider(private val projectResolver: ProjectResolver) {
     loadFromBazel(cancelChecker, build = build, null).also { project = it }
 
   @Synchronized
-  fun updateAndGet(cancelChecker: CancelChecker, targetsToSync: List<BuildTargetIdentifier>): Project =
+  fun updateAndGet(cancelChecker: CancelChecker, targetsToSync: List<Label>): Project =
     loadFromBazel(cancelChecker, build = false, targetsToSync).also { project = project?.plus(it) }
 
   @Synchronized
@@ -24,7 +25,7 @@ class ProjectProvider(private val projectResolver: ProjectResolver) {
   private fun loadFromBazel(
     cancelChecker: CancelChecker,
     build: Boolean,
-    targetsToSync: List<BuildTargetIdentifier>?,
+    targetsToSync: List<Label>?,
   ): Project =
     runBlocking {
       projectResolver.resolve(cancelChecker, build = build, targetsToSync).also {
