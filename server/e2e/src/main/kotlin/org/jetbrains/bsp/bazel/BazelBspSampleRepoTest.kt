@@ -1285,7 +1285,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     targetWithoutArgsBinary.data = scalaBuildTarget
 
     val guavaDepBazel5And6 = "@guava//:guava"
-    val guavaDepBazel7 = "@rules_jvm_external~~maven~maven//:com_google_guava_guava"
+    val guavaDepBazel7 = "@@rules_jvm_external~~maven~maven//:com_google_guava_guava"
     val guavaDep = if (majorBazelVersion == 7) guavaDepBazel7 else guavaDepBazel5And6
     val targetWithDependencyJavaBinary =
       BuildTarget(
