@@ -12,8 +12,11 @@ exclude:
       - plugin-bazel/src/main/gen/org/jetbrains/bazel/languages/starlark/lexer/_StarlarkLexer.java
       - plugin-bazel/src/test/testData/bazelrc
       - plugin-bazel/src/test/testData/starlark
+      # generated workspace entities are full of various things, boring for qodana
+      - plugin-bsp/workspacemodel/src/main/gen
       # aspects should be boring for qodana
       - server/aspects
+      # server/example contains small examples of edge cases, boring for qodana
       - server/example/kotlincplugin/UserIsOpenTest.kt
       # .teamcity currently doesn't comply with k2, so we remove it
       - .teamcity
