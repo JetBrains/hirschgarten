@@ -100,7 +100,7 @@ object BazelBuildTargetSharder {
         wildcardIncludes,
       )
     if (expandedTargets.isEmpty()) {
-      return ExpandedTargetsResult(emptyList(), BazelStatus.FATAL_ERROR)
+      return ExpandedTargetsResult(emptyList(), BazelStatus.SUCCESS)
     }
 
     // replace original recursive targets with expanded list, retaining relative ordering
