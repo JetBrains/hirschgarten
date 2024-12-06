@@ -109,7 +109,7 @@ object WildcardTargetExpander {
         .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
     return ExpandedTargetsResult(
       singleTargets = queryResult.stdoutLines.map { Label.parse(it) },
-      BazelStatus.fromExitCode(queryResult.bspStatusCode.value),
+      queryResult.bazelStatus,
     )
   }
 
