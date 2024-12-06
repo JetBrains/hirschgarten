@@ -21,8 +21,8 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
 import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
 import java.util.function.Function
 import javax.swing.JComponent
@@ -83,7 +83,7 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
 
       createActionLabel(BspPluginBundle.message("build.and.resync.action.text")) {
         BspCoroutineService.getInstance(project).start {
-          ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = true)
+          ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = true)
         }
       }
       val virtualFile = fileEditor.file

@@ -18,7 +18,7 @@ class PhasedSync(private val project: Project) {
         }
 
       if (BspFeatureFlags.executeSecondPhaseOnSync) {
-        ProjectSyncTask(project).sync(FullProjectSync, true)
+        ProjectSyncTask(project).sync(SecondPhaseSync, true)
       }
     } finally {
       if (incompleteState != null && BspFeatureFlags.executeSecondPhaseOnSync) {

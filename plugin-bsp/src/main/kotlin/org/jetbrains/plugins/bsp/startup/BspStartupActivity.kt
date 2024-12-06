@@ -14,9 +14,9 @@ import org.jetbrains.plugins.bsp.config.isBspProjectLoaded
 import org.jetbrains.plugins.bsp.config.openedTimesSinceLastStartupResync
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.config.workspaceModelLoadedFromCache
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.PhasedSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspace
 import org.jetbrains.plugins.bsp.impl.server.connection.connectionDetailsProvider
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
@@ -119,7 +119,7 @@ class BspStartupActivity : BspProjectActivity() {
       } else {
         log.info("Running BSP sync task")
         ProjectSyncTask(this).sync(
-          syncScope = FullProjectSync,
+          syncScope = SecondPhaseSync,
           buildProject = BspFeatureFlags.isBuildProjectOnSyncEnabled,
         )
       }

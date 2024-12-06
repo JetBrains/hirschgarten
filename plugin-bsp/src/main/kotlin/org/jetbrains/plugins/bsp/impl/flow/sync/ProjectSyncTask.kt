@@ -41,12 +41,32 @@ const val PROJECT_SYNC_TASK_ID = "project-sync"
 
 private val log = logger<ProjectSyncTask>()
 
+/**
+ * Scope of the sync. Multiple versions of sync are supported, including
+ * - full project syncs (all targets are re-synced)
+ * - partial syncs (only a subset of targets is re-synced).
+ */
 sealed interface ProjectSyncScope
 
-data object FirstPhaseSync : ProjectSyncScope
+/**
+ * Represents all the syncs which are re-syncing the whole project, and all the targets should be refreshed.
+ */
+sealed interface FullProjectSync : ProjectSyncScope
 
-data object FullProjectSync : ProjectSyncScope
+/**
+ * Represents the first phase of the phased sync - the quick sync after which the project is in the incomplete mode
+ */
+data object FirstPhaseSync : FullProjectSync
 
+/**
+ * Represents the second phase of the phased sync - the "heavy" sync after which the project is in its final form
+ */
+data object SecondPhaseSync : FullProjectSync
+
+/**
+ * Represents a partial project sync, which operates only on a limited subset of targets,
+ * and only things related to these targets should be refreshed
+ */
 data class PartialProjectSync(val targetsToSync: List<BuildTargetIdentifier>) : ProjectSyncScope
 
 class ProjectSyncTask(private val project: Project) {
