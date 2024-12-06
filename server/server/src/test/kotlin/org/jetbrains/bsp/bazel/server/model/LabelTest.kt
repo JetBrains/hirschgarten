@@ -201,6 +201,6 @@ class LabelTest {
   @Test
   fun `package wildcards are parsed correctly`() {
     val label = Label.parse("@//path/to/...")
-    label.packagePath shouldBe WildcardPackage(listOf("path", "to"))
+    label.packagePath shouldBe AllPackagesBeneath(listOf("path", "to"))
   }
 }

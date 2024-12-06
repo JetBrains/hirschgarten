@@ -1009,7 +1009,7 @@ class BazelProjectMapper(
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {
-      it.isMainWorkspace && !it.packagePath.startsWith(".bazelbsp")
+      it.isMainWorkspace && !it.packagePath.toString().startsWith(".bazelbsp")
     }
 
   private suspend fun createRustExternalModules(
