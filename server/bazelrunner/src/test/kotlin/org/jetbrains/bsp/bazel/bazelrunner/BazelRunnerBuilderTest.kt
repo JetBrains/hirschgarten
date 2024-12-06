@@ -301,7 +301,7 @@ class BazelRunnerBuilderTest {
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
-        "'in1'",
+        "\"in1\"",
       )
   }
 

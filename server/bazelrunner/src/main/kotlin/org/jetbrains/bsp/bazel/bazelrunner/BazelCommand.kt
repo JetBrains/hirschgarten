@@ -222,8 +222,8 @@ abstract class BazelCommand(val bazelBinary: String) {
 
     fun queryString(): String {
       if (targets.isEmpty()) return ""
-      val includesString = targets.joinToString(separator = " + ") { "'${it.uri}'" }
-      val excludesString = excludedTargets.joinToString(separator = " - ") { "'${it.uri}'" }
+      val includesString = targets.joinToString(separator = " + ") { "\"${it.uri}\"" }
+      val excludesString = excludedTargets.joinToString(separator = " - ") { "\"${it.uri}\"" }
       return if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
     }
   }
