@@ -10,7 +10,7 @@ interface BspFeatureFlagsProvider {
     internal val ep = ExtensionPointName.create<BspFeatureFlagsProvider>("org.jetbrains.bsp.bspFeatureFlagsProvider")
 
     /**
-     * retrieve and merge all the [FeatureFlags] objects from the fetchers
+     * retrieve and merge all the [FeatureFlags] objects from the providers
      */
     fun accumulateFeatureFlags(): FeatureFlags =
       if (ep.extensionList.isEmpty()) {
