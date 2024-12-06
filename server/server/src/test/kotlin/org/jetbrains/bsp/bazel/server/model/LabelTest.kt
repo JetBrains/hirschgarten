@@ -190,7 +190,7 @@ class LabelTest {
   }
 
   @Test
-  fun `should capture the edge-case target slash slash dot dot dot`() {
+  fun `should capture the special target 2 slashes 3 dots`() {
     val labelString = "@//..."
     val label = Label.parse(labelString)
     label.toString() shouldBe labelString
