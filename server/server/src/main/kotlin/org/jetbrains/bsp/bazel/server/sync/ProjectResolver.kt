@@ -16,6 +16,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.sharding.BazelBuildTargetSharder
+import org.jetbrains.bsp.bazel.server.sync.utils.BazelSymlinksCalculator
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -174,6 +175,7 @@ class ProjectResolver(
 
   fun releaseMemory() {
     bazelPathsResolver.clear()
+    BazelSymlinksCalculator.clear()
     System.gc()
   }
 
