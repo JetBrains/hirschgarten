@@ -14,12 +14,16 @@ import kotlin.io.path.name
 object BazelSymlinksCalculator {
   private val symlinksToExclude: MutableList<Path> = mutableListOf()
 
+  /**
+   * This logic assumes that [workspaceRoot] and [bazelSymlinksScanMaxDepth] are unchanged during a project sync.
+   * Therefore, it is not guaranteed to work correctly if there are changes to these two params in the middle of the project sync.
+   */
   @Synchronized
-  fun getBazelSymlinksToExclude(bazelWorkspace: Path, bazelSymlinksScanMaxDepth: Int): List<Path> {
+  fun getBazelSymlinksToExclude(workspaceRoot: Path, bazelSymlinksScanMaxDepth: Int): List<Path> {
     if (this.symlinksToExclude.isNotEmpty()) return this.symlinksToExclude
     val symlinksToExclude = kotlin.collections.mutableListOf<Path>()
 
-    val bazelSymlinkEndings = listOf("bin", "out", "testlogs", bazelWorkspace.name)
+    val bazelSymlinkEndings = listOf("bin", "out", "testlogs", workspaceRoot.name)
 
     val visitor =
       object : SimpleFileVisitor<Path>() {
@@ -35,7 +39,7 @@ object BazelSymlinksCalculator {
       }
 
     Files.walkFileTree(
-      bazelWorkspace,
+      workspaceRoot,
       emptySet(),
       bazelSymlinksScanMaxDepth,
       visitor,
