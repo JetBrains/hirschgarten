@@ -16,6 +16,7 @@ import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewIdeJavaHom
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewImportDepthSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewTargetsSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ShardSyncParser
+import org.jetbrains.bsp.bazel.projectview.parser.sections.ShardingApproachParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.TargetShardSizeParser
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewSectionSplitter
@@ -53,6 +54,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         androidMinSdkSection = AndroidMinSdkSectionParser.parse(rawSections),
         shardSync = ShardSyncParser.parse(rawSections),
         targetShardSize = TargetShardSizeParser.parse(rawSections),
+        shardingApproach = ShardingApproachParser.parse(rawSections),
       ).build()
   }
 

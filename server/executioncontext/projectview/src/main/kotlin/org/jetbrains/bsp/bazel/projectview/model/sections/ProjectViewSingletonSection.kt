@@ -67,3 +67,9 @@ data class TargetShardSizeSection(override val value: Int) : ProjectViewSingleto
     const val SECTION_NAME = "target_shard_size"
   }
 }
+
+data class ShardingApproachSection(override val value: String) : ProjectViewSingletonSection<String>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "shard_approach"
+  }
+}

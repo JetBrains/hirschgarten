@@ -20,7 +20,7 @@ import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 
 /** Partitioned list of Bazel targets.  */
-class ShardedTargetList(private val shardedTargets: List<List<Label>>) {
+class ShardedTargetList(private val shardedTargets: List<List<Label>>, private val excludedTargets: List<Label> = listOf()) {
   val isEmpty: Boolean
     get() = shardedTargets.flatten().isEmpty()
 
@@ -28,7 +28,7 @@ class ShardedTargetList(private val shardedTargets: List<List<Label>>) {
     shardedTargets.map { targets ->
       TargetsSpec(
         values = targets.map { BuildTargetIdentifier(it.toString()) },
-        excludedValues = listOf(),
+        excludedValues = excludedTargets.map { BuildTargetIdentifier(it.toString()) },
       )
     }
 }

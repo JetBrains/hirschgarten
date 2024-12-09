@@ -23,6 +23,7 @@ import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bsp.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
+import org.jetbrains.bsp.bazel.workspacecontext.ShardingApproach
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
@@ -52,25 +53,48 @@ object BazelBuildTargetSharder {
   ): ShardedTargetsResult {
     val includes = targets.values.map { Label.parse(it.uri) }
     val excludes = targets.excludedValues.map { Label.parse(it.uri) }
-    val expandedTargets =
-      expandWildcardTargets(
-        pathResolver,
-        bazelInfo,
-        featureFlags,
-        includes,
-        excludes,
-        bazelRunner,
-        cancelChecker,
-      )
-    if (expandedTargets.buildResult == BazelStatus.FATAL_ERROR) {
-      return ShardedTargetsResult(ShardedTargetList(emptyList()), expandedTargets.buildResult)
-    }
+    val shardingApproach = getShardingApproach(context)
+    return when (shardingApproach) {
+      ShardingApproach.SHARD_WITHOUT_EXPANDING ->
+        ShardedTargetsResult(
+          shardTargetsToBatches(includes, excludes, getTargetShardSize(context)),
+          BazelStatus.SUCCESS
+        )
 
-    return ShardedTargetsResult(
-      shardSingleTargets(expandedTargets.singleTargets, getTargetShardSize(context)),
-      BazelStatus.combine(expandedTargets.buildResult, BazelStatus.SUCCESS),
-    )
+      ShardingApproach.QUERY_AND_SHARD -> {
+        val singleTargets =
+          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, cancelChecker)
+        ShardedTargetsResult(
+          shardTargetsToBatches(singleTargets.singleTargets, emptyList(), getTargetShardSize(context)),
+          BazelStatus.combine(singleTargets.buildResult, BazelStatus.SUCCESS),
+        )
+      }
+
+      ShardingApproach.EXPAND_AND_SHARD -> {
+        val expandedTargets =
+          expandWildcardTargets(
+            pathResolver,
+            bazelInfo,
+            featureFlags,
+            includes,
+            excludes,
+            bazelRunner,
+            cancelChecker,
+          )
+        if (expandedTargets.buildResult == BazelStatus.FATAL_ERROR) {
+          ShardedTargetsResult(ShardedTargetList(emptyList()), expandedTargets.buildResult)
+        } else {
+          ShardedTargetsResult(
+            shardTargetsToBatches(expandedTargets.singleTargets, emptyList(), getTargetShardSize(context)),
+            BazelStatus.combine(expandedTargets.buildResult, BazelStatus.SUCCESS),
+          )
+        }
+      }
+    }
   }
+
+  private fun getShardingApproach(context: WorkspaceContext): ShardingApproach =
+    context.shardingApproachSpec.value ?: ShardingApproach.QUERY_AND_SHARD
 
   /** Number of individual targets per blaze build shard.  */
   private fun getTargetShardSize(context: WorkspaceContext): Int =
@@ -136,8 +160,11 @@ object BazelBuildTargetSharder {
    * Shards a list of individual blaze targets (with no wildcard expressions other than for excluded
    * target patterns).
    */
-  private fun shardSingleTargets(targets: List<Label>, shardSize: Int): ShardedTargetList =
-    LexicographicTargetBatcher().getShardedTargetList(targets.toSet(), shardSize)
+  private fun shardTargetsToBatches(
+    targets: List<Label>,
+    excludes: List<Label>,
+    shardSize: Int,
+  ): ShardedTargetList = LexicographicTargetBatcher().getShardedTargetList(targets.toSet(), excludes.toSet(), shardSize)
 
   /**
    * Partition targets list. Because order is important with respect to excluded targets, original

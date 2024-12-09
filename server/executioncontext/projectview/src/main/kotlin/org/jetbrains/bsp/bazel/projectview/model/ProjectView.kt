@@ -17,6 +17,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewListSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
 
 /**
@@ -53,6 +54,8 @@ data class ProjectView(
   val shardSync: ShardSyncSection? = null,
   /** number of targets per build shard */
   val targetShardSize: TargetShardSizeSection? = null,
+  /** sharding approach */
+  val shardingApproach: ShardingApproachSection? = null,
 ) {
   data class Builder(
     private val imports: List<ProjectView> = emptyList(),
@@ -70,6 +73,7 @@ data class ProjectView(
     private val androidMinSdkSection: AndroidMinSdkSection? = null,
     private val shardSync: ShardSyncSection? = null,
     private val targetShardSize: TargetShardSizeSection? = null,
+    private val shardingApproach: ShardingApproachSection? = null,
   ) {
     fun build(): ProjectView {
       log.debug("Building project view for: {}", this)
@@ -92,6 +96,7 @@ data class ProjectView(
       val androidMinSdkSection = combineAndroidMinSdkSection(importedProjectViews)
       val shardSyncSection = combineShardSyncSection(importedProjectViews)
       val targetShardSizeSection = combineTargetShardSizeSection(importedProjectViews)
+      val shardingApproachSection = combineShardingApproachSection(importedProjectViews)
 
       log.debug(
         "Building project view with combined" +
@@ -108,8 +113,9 @@ data class ProjectView(
           " addTransitiveCompileTimeJars: {}," +
           " enableNativeAndroidRules: {}," +
           " androidMinSdkSection: {}," +
-          " shardSync: {}" +
-          " targetShardSize: {}",
+          " shardSync: {}," +
+          " targetShardSize: {}," +
+          " shardingApproach: {},",
         "", // preserve Git blame
         targets,
         bazelBinary,
@@ -125,6 +131,7 @@ data class ProjectView(
         androidMinSdkSection,
         shardSyncSection,
         targetShardSizeSection,
+        shardingApproachSection,
       )
       return ProjectView(
         targets,
@@ -141,6 +148,7 @@ data class ProjectView(
         androidMinSdkSection,
         shardSyncSection,
         targetShardSizeSection,
+        shardingApproachSection,
       )
     }
 
@@ -174,6 +182,12 @@ data class ProjectView(
       targetShardSize ?: getLastImportedSingletonValue(
         importedProjectViews,
         ProjectView::targetShardSize,
+      )
+
+    private fun combineShardingApproachSection(importedProjectViews: List<ProjectView>): ShardingApproachSection? =
+      shardingApproach ?: getLastImportedSingletonValue(
+        importedProjectViews,
+        ProjectView::shardingApproach,
       )
 
     private fun combineTargetsSection(importedProjectViews: List<ProjectView>): ProjectViewTargetsSection? {

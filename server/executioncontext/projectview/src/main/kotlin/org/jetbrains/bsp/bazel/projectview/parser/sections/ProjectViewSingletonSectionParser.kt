@@ -11,6 +11,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHome
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSingletonSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
 import java.nio.file.Path
@@ -131,4 +132,12 @@ object TargetShardSizeParser : ProjectViewSingletonSectionParser<Int, TargetShar
   override fun mapRawValue(rawValue: String): Int = rawValue.toInt()
 
   override fun createInstance(value: Int): TargetShardSizeSection = TargetShardSizeSection(value)
+}
+
+object ShardingApproachParser : ProjectViewSingletonSectionParser<String, ShardingApproachSection>(
+  ShardingApproachSection.SECTION_NAME,
+) {
+  override fun mapRawValue(rawValue: String): String = rawValue
+
+  override fun createInstance(value: String): ShardingApproachSection = ShardingApproachSection(value)
 }

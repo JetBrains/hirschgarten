@@ -83,7 +83,7 @@ object WildcardTargetExpander {
   }
 
   /** Runs a Bazel query to expand the input target patterns to individual Bazel targets.  */
-  private fun queryIndividualTargets(
+  fun queryIndividualTargets(
     includedPatterns: List<Label>,
     excludedTargets: List<Label>,
     bazelRunner: BazelRunner,

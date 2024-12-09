@@ -22,8 +22,12 @@ import org.jetbrains.bsp.bazel.server.model.Label
  * package, so it is better than random batching.
  */
 class LexicographicTargetBatcher : BuildBatchingService {
-  override fun calculateTargetBatches(targets: Set<Label>, suggestedShardSize: Int): List<List<Label>> {
+  override fun calculateTargetBatches(
+    targets: Set<Label>,
+    excludes: Set<Label>,
+    suggestedShardSize: Int,
+  ): List<List<Label>> {
     val sorted = targets.sortedBy { label -> label.toString() }
-    return sorted.chunked(suggestedShardSize)
+    return sorted.chunked(suggestedShardSize).map { it + excludes }
   }
 }

@@ -34,14 +34,22 @@ interface BuildBatchingService {
    *
    * @param suggestedShardSize a suggestion only; may be entirely ignored by the implementation
    */
-  fun calculateTargetBatches(targets: Set<Label>, suggestedShardSize: Int): List<List<Label>>
+  fun calculateTargetBatches(
+    targets: Set<Label>,
+    excludes: Set<Label>,
+    suggestedShardSize: Int,
+  ): List<List<Label>>
 
   /**
    * Given a list of individual, un-excluded bazel targets (no wildcard target patterns), create
    * ShardedTargetList according to inputs.
    */
-  fun getShardedTargetList(targets: Set<Label>, suggestedShardSize: Int): ShardedTargetList {
-    val targetBatches = calculateTargetBatches(targets, suggestedShardSize)
+  fun getShardedTargetList(
+    targets: Set<Label>,
+    excludes: Set<Label>,
+    suggestedShardSize: Int,
+  ): ShardedTargetList {
+    val targetBatches = calculateTargetBatches(targets, excludes, suggestedShardSize)
     return ShardedTargetList(targetBatches)
   }
 }

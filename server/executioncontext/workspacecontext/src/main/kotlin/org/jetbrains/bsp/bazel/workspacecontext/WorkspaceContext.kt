@@ -75,6 +75,7 @@ data class WorkspaceContext(
   val androidMinSdkSpec: AndroidMinSdkSpec,
   val shardSync: ShardSyncSpec,
   val targetShardSize: TargetShardSizeSpec,
+  val shardingApproachSpec: ShardingApproachSpec,
 ) : ExecutionContext()
 
 class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
@@ -101,6 +102,7 @@ class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDi
       androidMinSdkSpec = AndroidMinSdkSpecExtractor.fromProjectView(projectView),
       shardSync = ShardSyncSpecExtractor.fromProjectView(projectView),
       targetShardSize = TargetShardSizeSpecExtractor.fromProjectView(projectView),
+      shardingApproachSpec = ShardingApproachSpecExtractor.fromProjectView(projectView),
     )
   }
 }

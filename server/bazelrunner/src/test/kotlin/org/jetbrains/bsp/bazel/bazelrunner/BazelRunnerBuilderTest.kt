@@ -15,6 +15,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.ExperimentalAddTransitiveCompile
 import org.jetbrains.bsp.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ShardSyncSpec
+import org.jetbrains.bsp.bazel.workspacecontext.ShardingApproachSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
@@ -40,6 +41,7 @@ val mockContext =
     androidMinSdkSpec = AndroidMinSdkSpec(null),
     shardSync = ShardSyncSpec(false),
     targetShardSize = TargetShardSizeSpec(null),
+    shardingApproachSpec = ShardingApproachSpec(null),
   )
 
 val contextProvider =
