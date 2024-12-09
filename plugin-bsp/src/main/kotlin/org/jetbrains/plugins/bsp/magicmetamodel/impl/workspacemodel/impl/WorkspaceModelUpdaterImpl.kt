@@ -10,7 +10,6 @@ import com.intellij.platform.workspace.storage.url.VirtualFileUrlManager
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.WorkspaceModelUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.JavaModuleUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.LibraryEntityUpdater
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.PythonModuleUpdater
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.WorkspaceModelEntityUpdaterConfig
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.JavaModuleToDummyJavaModulesTransformerHACK
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectDirectoriesEntity
@@ -25,7 +24,6 @@ class WorkspaceModelUpdaterImpl(
   val virtualFileUrlManager: VirtualFileUrlManager,
   projectBasePath: Path,
   project: Project,
-  isPythonSupportEnabled: Boolean,
   isAndroidSupportEnabled: Boolean,
 ) : WorkspaceModelUpdater {
   private val workspaceModelEntityUpdaterConfig =
@@ -37,8 +35,6 @@ class WorkspaceModelUpdaterImpl(
     )
   private val javaModuleUpdater =
     JavaModuleUpdater(workspaceModelEntityUpdaterConfig, projectBasePath, isAndroidSupportEnabled)
-  private val pythonModuleUpdater: PythonModuleUpdater? =
-    if (isPythonSupportEnabled) PythonModuleUpdater(workspaceModelEntityUpdaterConfig) else null
 
   private val javaModuleToDummyJavaModulesTransformerHACK =
     JavaModuleToDummyJavaModulesTransformerHACK(projectBasePath, project)

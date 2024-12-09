@@ -2,8 +2,6 @@ package org.jetbrains.plugins.bsp.workspacemodel.entities
 
 public typealias LanguageIds = List<String>
 
-public fun LanguageIds.includesPython(): Boolean = contains("python")
-
 public fun LanguageIds.includesKotlin(): Boolean = contains("kotlin")
 
 public fun LanguageIds.includesJava(): Boolean = contains("java")
