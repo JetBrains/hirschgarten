@@ -94,11 +94,8 @@ class BazelConsoleFilterTest : WorkspaceModelBaseTest() {
   private fun createBazelFileInProject(relativePath: String): Path {
     projectBasePath
       .resolve(relativePath)
-      .createDirectories()
-      .also { LocalFileSystem.getInstance().refreshAndFindFileByNioFile(it) }
-    return projectBasePath
-      .resolve(relativePath)
       .resolve("BUILD")
+      .createDirectories()
       .createFile()
       .also { LocalFileSystem.getInstance().refreshAndFindFileByNioFile(it) }
   }
