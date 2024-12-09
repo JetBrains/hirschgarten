@@ -94,7 +94,6 @@ internal class ModuleDetailsToJavaModuleTransformer(
         dependencySources = inputEntity.dependenciesSources,
         type = type,
         javacOptions = inputEntity.javacOptions,
-        pythonOptions = null,
         associates = toAssociates(inputEntity),
         libraryDependencies = inputEntity.libraryDependencies,
         moduleDependencies = inputEntity.moduleDependencies,

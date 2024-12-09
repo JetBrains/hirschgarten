@@ -5,7 +5,6 @@ import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
@@ -38,7 +37,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         resources = emptyList(),
         dependenciesSources = emptyList(),
         javacOptions = emptyList(),
-        pythonOptions = emptyList(),
         libraries = null,
         scalacOptions = emptyList(),
         nonModuleTargets = emptyList(),
@@ -57,7 +55,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         dependenciesSources = emptyList(),
         javacOptions = null,
         scalacOptions = null,
-        pythonOptions = null,
         outputPathUris = emptyList(),
         libraryDependencies = null,
         moduleDependencies = emptyList(),
@@ -103,12 +100,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         "class/dir",
       )
 
-    val pythonOptions =
-      PythonOptionsItem(
-        targetId,
-        listOf("opt1", "opt2", "opt3"),
-      )
-
     val projectDetails =
       ProjectDetails(
         targetIds = listOf(targetId),
@@ -117,7 +108,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         resources = listOf(targetResources),
         dependenciesSources = listOf(targetDependencySources),
         javacOptions = listOf(javacOptions),
-        pythonOptions = listOf(pythonOptions),
         libraries = emptyList(),
         scalacOptions = emptyList(),
         nonModuleTargets = emptyList(),
@@ -136,7 +126,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         dependenciesSources = listOf(targetDependencySources),
         javacOptions = javacOptions,
         scalacOptions = null,
-        pythonOptions = pythonOptions,
         outputPathUris = emptyList(),
         libraryDependencies = emptyList(),
         moduleDependencies = emptyList(),
@@ -254,11 +243,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
           SourceItem("file:///root/dir2/example/package/file.py", SourceItemKind.FILE, false),
         ),
       )
-    val target4PythonOptionsItem =
-      PythonOptionsItem(
-        target4Id,
-        listOf("opt1", "opt2"),
-      )
 
     val projectDetails =
       ProjectDetails(
@@ -268,7 +252,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         resources = listOf(target1Resources, target2Resources),
         dependenciesSources = listOf(target2DependencySources, target1DependencySources),
         javacOptions = listOf(target3JavacOptionsItem, target1JavacOptionsItem),
-        pythonOptions = listOf(target4PythonOptionsItem),
         libraries = emptyList(),
         scalacOptions = emptyList(),
         nonModuleTargets = emptyList(),
@@ -290,7 +273,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         dependenciesSources = listOf(target1DependencySources),
         javacOptions = target1JavacOptionsItem,
         scalacOptions = null,
-        pythonOptions = null,
         outputPathUris = emptyList(),
         libraryDependencies = emptyList(),
         moduleDependencies = listOf(target2Id),
@@ -305,7 +287,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         dependenciesSources = listOf(target2DependencySources),
         javacOptions = null,
         scalacOptions = null,
-        pythonOptions = null,
         outputPathUris = emptyList(),
         libraryDependencies = emptyList(),
         moduleDependencies = emptyList(),
@@ -320,7 +301,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         dependenciesSources = emptyList(),
         javacOptions = target3JavacOptionsItem,
         scalacOptions = null,
-        pythonOptions = null,
         outputPathUris = emptyList(),
         libraryDependencies = emptyList(),
         moduleDependencies = listOf(target2Id),
@@ -335,7 +315,6 @@ class ProjectDetailsToModuleDetailsTransformerTest {
         dependenciesSources = emptyList(),
         javacOptions = null,
         scalacOptions = null,
-        pythonOptions = target4PythonOptionsItem,
         outputPathUris = emptyList(),
         libraryDependencies = emptyList(),
         moduleDependencies = listOf(target1Id),

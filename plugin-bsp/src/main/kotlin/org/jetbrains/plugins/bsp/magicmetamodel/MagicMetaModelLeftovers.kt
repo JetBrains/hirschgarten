@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesItem
 import ch.epfl.scala.bsp4j.JavacOptionsItem
-import ch.epfl.scala.bsp4j.PythonOptionsItem
 import ch.epfl.scala.bsp4j.ResourcesItem
 import ch.epfl.scala.bsp4j.ScalacOptionsItem
 import ch.epfl.scala.bsp4j.SourcesItem
@@ -26,7 +25,6 @@ data class ProjectDetails(
   val dependenciesSources: List<DependencySourcesItem>,
   val javacOptions: List<JavacOptionsItem>,
   val scalacOptions: List<ScalacOptionsItem>,
-  val pythonOptions: List<PythonOptionsItem>,
   val libraries: List<LibraryItem>?,
   val nonModuleTargets: List<BuildTarget>,
   var defaultJdkName: String? = null,

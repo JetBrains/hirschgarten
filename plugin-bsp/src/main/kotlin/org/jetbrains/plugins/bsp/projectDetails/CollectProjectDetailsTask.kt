@@ -5,7 +5,6 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DependencySourcesParams
 import ch.epfl.scala.bsp4j.DependencySourcesResult
 import ch.epfl.scala.bsp4j.JavacOptionsParams
-import ch.epfl.scala.bsp4j.PythonOptionsParams
 import ch.epfl.scala.bsp4j.ScalacOptionsParams
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.compiler.impl.javaCompiler.javac.JavacConfiguration
@@ -70,7 +69,6 @@ import org.jetbrains.plugins.bsp.utils.isSourceFile
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
 import org.jetbrains.plugins.bsp.workspacemodel.entities.includesJava
-import org.jetbrains.plugins.bsp.workspacemodel.entities.includesPython
 import org.jetbrains.plugins.bsp.workspacemodel.entities.includesScala
 import org.jetbrains.plugins.bsp.workspacemodel.entities.toBuildTargetInfo
 import java.net.URI
@@ -296,8 +294,6 @@ class CollectProjectDetailsTask(
                 projectBasePath = projectBasePath,
                 project = project,
                 nameProvider = nameProvider,
-                hasDefaultPythonInterpreter = BspFeatureFlags.isPythonSupportEnabled,
-                isPythonSupportEnabled = BspFeatureFlags.isPythonSupportEnabled,
                 isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
               )
 
@@ -323,7 +319,6 @@ class CollectProjectDetailsTask(
               virtualFileUrlManager = virtualFileUrlManager,
               projectBasePath = projectBasePath,
               project = project,
-              isPythonSupportEnabled = BspFeatureFlags.isPythonSupportEnabled,
               isAndroidSupportEnabled = BspFeatureFlags.isAndroidSupportEnabled && androidSdkGetterExtensionExists(),
             )
 
@@ -476,7 +471,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
     try {
       val javaTargetIds = baseTargetInfos.infos.calculateJavaTargetIds()
       val scalaTargetIds = baseTargetInfos.infos.calculateScalaTargetIds()
-      val pythonTargetsIds = baseTargetInfos.infos.calculatePythonTargetsIds()
       val libraries: WorkspaceLibrariesResult? =
         queryIf(buildServerCapabilities.workspaceLibrariesProvider, "workspace/libraries") {
           (server as BazelBuildServer).workspaceLibraries()
@@ -487,8 +481,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
           val dependencySourcesTargetIds =
             if (libraries == null) {
               baseTargetInfos.allTargetIds
-            } else if (BspFeatureFlags.isPythonSupportEnabled) {
-              pythonTargetsIds
             } else {
               emptyList()
             }
@@ -539,11 +531,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
           null
         }
 
-      val pythonOptionsResult =
-        asyncQueryIf(pythonTargetsIds.isNotEmpty() && BspFeatureFlags.isPythonSupportEnabled, "buildTarget/pythonOptions") {
-          server.buildTargetPythonOptions(PythonOptionsParams(pythonTargetsIds))
-        }
-
       ProjectDetails(
         targetIds = baseTargetInfos.allTargetIds,
         targets = baseTargetInfos.infos.map { it.target }.toSet(),
@@ -552,7 +539,6 @@ suspend fun calculateProjectDetailsWithCapabilities(
         dependenciesSources = dependencySourcesResult.await()?.items ?: emptyList(),
         javacOptions = javacOptionsResult?.await()?.items ?: emptyList(),
         scalacOptions = scalacOptionsResult?.await()?.items ?: emptyList(),
-        pythonOptions = pythonOptionsResult.await()?.items ?: emptyList(),
         libraries = libraries?.libraries,
         nonModuleTargets = nonModuleTargets?.nonModuleTargets ?: emptyList(),
         jvmBinaryJars = jvmBinaryJarsResult?.items ?: emptyList(),
@@ -574,6 +560,3 @@ private fun List<BaseTargetInfo>.calculateJavaTargetIds(): List<BuildTargetIdent
 
 private fun List<BaseTargetInfo>.calculateScalaTargetIds(): List<BuildTargetIdentifier> =
   filter { it.target.languageIds.includesScala() }.map { it.target.id }
-
-private fun List<BaseTargetInfo>.calculatePythonTargetsIds(): List<BuildTargetIdentifier> =
-  filter { it.target.languageIds.includesPython() }.map { it.target.id }

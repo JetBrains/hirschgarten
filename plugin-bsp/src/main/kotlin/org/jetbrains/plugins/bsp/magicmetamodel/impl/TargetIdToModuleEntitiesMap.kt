@@ -11,10 +11,8 @@ import org.jetbrains.plugins.bsp.magicmetamodel.ProjectDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.TargetNameReformatProvider
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.ModuleDetails
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToJavaModuleTransformer
-import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.transformers.ModuleDetailsToPythonModuleTransformer
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import org.jetbrains.plugins.bsp.workspacemodel.entities.Module
-import org.jetbrains.plugins.bsp.workspacemodel.entities.includesPython
 import org.jetbrains.plugins.bsp.workspacemodel.entities.isJvmOrAndroidTarget
 import java.nio.file.Path
 
@@ -26,8 +24,6 @@ object TargetIdToModuleEntitiesMap {
     projectBasePath: Path,
     project: Project,
     nameProvider: TargetNameReformatProvider,
-    hasDefaultPythonInterpreter: Boolean,
-    isPythonSupportEnabled: Boolean,
     isAndroidSupportEnabled: Boolean,
   ): Map<BuildTargetIdentifier, Module> {
     val moduleDetailsToJavaModuleTransformer =
@@ -38,16 +34,6 @@ object TargetIdToModuleEntitiesMap {
         project,
         isAndroidSupportEnabled,
       )
-    val moduleDetailsToPythonModuleTransformer: ModuleDetailsToPythonModuleTransformer? =
-      if (isPythonSupportEnabled) {
-        ModuleDetailsToPythonModuleTransformer(
-          targetIdToTargetInfo,
-          nameProvider,
-          hasDefaultPythonInterpreter,
-        )
-      } else {
-        null
-      }
 
     return withContext(Dispatchers.Default) {
       projectDetails.targetIds
@@ -55,9 +41,7 @@ object TargetIdToModuleEntitiesMap {
           async {
             val moduleDetails = targetIdToModuleDetails.getValue(it)
             val module =
-              if (moduleDetails.target.languageIds.includesPython()) {
-                moduleDetailsToPythonModuleTransformer?.transform(moduleDetails) ?: return@async null
-              } else if (moduleDetails.target.languageIds.isJvmOrAndroidTarget()) {
+              if (moduleDetails.target.languageIds.isJvmOrAndroidTarget()) {
                 moduleDetailsToJavaModuleTransformer.transform(moduleDetails)
               } else {
                 return@async null
@@ -73,7 +57,7 @@ object TargetIdToModuleEntitiesMap {
 }
 
 @TestOnly
-public fun Collection<String>.toDefaultTargetsMap(): Map<BuildTargetIdentifier, BuildTargetInfo> =
+fun Collection<String>.toDefaultTargetsMap(): Map<BuildTargetIdentifier, BuildTargetInfo> =
   associateBy(
     keySelector = { BuildTargetIdentifier(it) },
     valueTransform = { BuildTargetInfo(id = BuildTargetIdentifier(it)) },
