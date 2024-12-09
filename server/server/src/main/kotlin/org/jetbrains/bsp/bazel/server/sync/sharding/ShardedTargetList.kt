@@ -19,7 +19,7 @@ import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 
-/** Partitioned list of blaze targets.  */
+/** Partitioned list of Bazel targets.  */
 class ShardedTargetList(private val shardedTargets: List<List<Label>>) {
   val isEmpty: Boolean
     get() = shardedTargets.flatten().isEmpty()
@@ -31,9 +31,4 @@ class ShardedTargetList(private val shardedTargets: List<List<Label>>) {
         excludedValues = listOf(),
       )
     }
-
-  companion object {
-    /** Number of concurrent syncs which can be run in parallel remotely.  */
-    val remoteConcurrentSyncs = 10
-  }
 }

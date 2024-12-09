@@ -144,12 +144,8 @@ object BazelBuildTargetSharder {
    * relative ordering is retained, and each shard has all subsequent excluded targets appended to
    * it.
    */
-  fun shardTargetsRetainingOrdering(targets: List<Label>, shardSize: Int): List<List<Label>> {
-    if (targets.size <= shardSize) {
-      return listOf(targets)
-    }
-    return targets.chunked(shardSize)
-  }
+  fun shardTargetsRetainingOrdering(targets: List<Label>, shardSize: Int): List<List<Label>> =
+    targets.chunked(shardSize)
 
   /** Result of expanding then sharding wildcard target patterns  */
   data class ShardedTargetsResult(val targets: ShardedTargetList, val buildResult: BazelStatus)
