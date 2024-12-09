@@ -58,7 +58,7 @@ object BazelBuildTargetSharder {
       ShardingApproach.SHARD_WITHOUT_EXPANDING ->
         ShardedTargetsResult(
           shardTargetsToBatches(includes, excludes, getTargetShardSize(context)),
-          BazelStatus.SUCCESS
+          BazelStatus.SUCCESS,
         )
 
       ShardingApproach.QUERY_AND_SHARD -> {
@@ -66,7 +66,7 @@ object BazelBuildTargetSharder {
           WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, cancelChecker)
         ShardedTargetsResult(
           shardTargetsToBatches(singleTargets.singleTargets, emptyList(), getTargetShardSize(context)),
-          BazelStatus.combine(singleTargets.buildResult, BazelStatus.SUCCESS),
+          singleTargets.buildResult,
         )
       }
 
@@ -86,7 +86,7 @@ object BazelBuildTargetSharder {
         } else {
           ShardedTargetsResult(
             shardTargetsToBatches(expandedTargets.singleTargets, emptyList(), getTargetShardSize(context)),
-            BazelStatus.combine(expandedTargets.buildResult, BazelStatus.SUCCESS),
+            expandedTargets.buildResult,
           )
         }
       }

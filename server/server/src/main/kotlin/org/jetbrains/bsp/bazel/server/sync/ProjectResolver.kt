@@ -150,10 +150,6 @@ class ProjectResolver(
           // fall back to non-sharded build when sharding does not have effects
           nonShardBuild()
         } else {
-          // TODO: should retry on OOM?
-          // From OG: Bazel server running out of memory on a build shard is generally caused by
-          // Bazel garbage collection bugs.
-          // We can attempt to workaround by resuming with a clean Bazel server.
           shardedTargetsSpecs
             .mapIndexed { idx, shardedTargetsSpec ->
               val shardName = "shard ${idx + 1} of $shardedSize"

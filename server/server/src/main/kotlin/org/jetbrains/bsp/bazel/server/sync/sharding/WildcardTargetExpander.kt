@@ -114,7 +114,7 @@ object WildcardTargetExpander {
   class ExpandedTargetsResult(val singleTargets: List<Label>, val buildResult: BazelStatus) {
     companion object {
       fun merge(first: ExpandedTargetsResult, second: ExpandedTargetsResult): ExpandedTargetsResult {
-        val buildResult: BazelStatus = BazelStatus.combine(first.buildResult, second.buildResult)
+        val buildResult: BazelStatus = first.buildResult.merge(second.buildResult)
         val targets = (first.singleTargets + second.singleTargets).distinct()
         return ExpandedTargetsResult(
           targets,

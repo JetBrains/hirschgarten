@@ -28,6 +28,14 @@ enum class BazelStatus {
       else -> StatusCode.ERROR
     }
 
+  fun merge(anotherBazelStatus: BazelStatus): BazelStatus {
+    if (this == OOM_ERROR || anotherBazelStatus == OOM_ERROR) {
+      // OOM errors treated specially, so preserve them.
+      return OOM_ERROR
+    }
+    return if (this.ordinal >= anotherBazelStatus.ordinal) this else anotherBazelStatus
+  }
+
   companion object {
     fun fromExitCode(exitCode: Int): BazelStatus =
       when (exitCode) {
@@ -38,13 +46,5 @@ enum class BazelStatus {
         OOM_EXIT_CODE -> OOM_ERROR
         else -> FATAL_ERROR
       }
-
-    fun combine(first: BazelStatus, second: BazelStatus): BazelStatus {
-      if (first == OOM_ERROR || second == OOM_ERROR) {
-        // OOM errors treated specially, so preserve them.
-        return OOM_ERROR
-      }
-      return if (first.ordinal >= second.ordinal) first else second
-    }
   }
 }
