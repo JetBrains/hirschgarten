@@ -52,12 +52,14 @@ class ProjectViewParser: PsiParser {
   }
 
   fun parseListEntries(builder: PsiBuilder) {
-    val listValue = builder.mark();
     while (!builder.eof() && builder.tokenType != ProjectViewTokenType.LIST_KEYWORD &&
       builder.tokenType != ProjectViewTokenType.SCALAR_KEYWORD) {
-      builder.advanceLexer();
+      if (builder.tokenType == ProjectViewTokenType.IDENTIFIER) {
+        val listEntry = builder.mark()
+        builder.advanceLexer()
+        listEntry.done(ProjectViewElementTypes.LIST_VALUE)
+      } else builder.advanceLexer()
     }
-    listValue.done(ProjectViewElementTypes.LIST_VALUE);
   }
 
   fun parseScalar(builder: PsiBuilder) {
