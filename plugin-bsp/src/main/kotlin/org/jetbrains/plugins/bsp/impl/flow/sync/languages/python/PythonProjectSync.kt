@@ -52,10 +52,10 @@ import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelD
 import org.jetbrains.plugins.bsp.utils.safeCastToURI
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspModuleEntitySource
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
-import org.jetbrains.plugins.bsp.workspacemodel.entities.PythonSdkInfo.Companion.PYTHON_SDK_ID
 import kotlin.io.path.Path
 import kotlin.io.path.toPath
 
+private const val PYTHON_SDK_ID = "PythonSDK"
 private const val PYTHON_SOURCE_ROOT_TYPE = "python-source"
 private const val PYTHON_RESOURCE_ROOT_TYPE = "python-resource"
 private val PYTHON_MODULE_TYPE = ModuleTypeId("PYTHON_MODULE")
