@@ -115,8 +115,8 @@ data class ProjectView(
           " androidMinSdkSection: {}," +
           " shardSync: {}," +
           " targetShardSize: {}," +
-          " shardingApproach: {},",
-        "", // preserve Git blame
+          " shardingApproach: {}," +
+          "", // preserve Git blame
         targets,
         bazelBinary,
         buildFlags,
