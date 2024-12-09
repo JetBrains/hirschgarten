@@ -6,11 +6,7 @@ import org.jetbrains.bazel.languages.projectview.psi.ProjectViewElementVisitor
 
 class ProjectViewScalarKey(node: ASTNode): ProjectViewBaseElement(node)  {
   override fun acceptVisitor(visitor: ProjectViewElementVisitor) {
-    //TODO("Not yet implemented")}
-  }
-  override fun getName(): String? {
-    //TODO("Not yet implemented")}
-    return null;
+    visitor.visitScalarKey(this)
   }
 }
 

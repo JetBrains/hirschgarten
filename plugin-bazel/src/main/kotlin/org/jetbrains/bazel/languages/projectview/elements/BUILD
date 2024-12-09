@@ -7,6 +7,5 @@ kt_jvm_library(
     deps = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/psi",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/psi/sections",
     ],
 )

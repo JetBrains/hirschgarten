@@ -16,4 +16,8 @@ abstract class ProjectViewBaseElement(node: ASTNode):
   }
 
   protected abstract fun acceptVisitor(visitor: ProjectViewElementVisitor)
+
+  override fun getName(): String? {
+    return node.text
+  }
 }
