@@ -124,7 +124,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
     aspect_ids = get_aspect_ids(ctx, target)
 
     default_info = target[DefaultInfo]
-    executable = default_info and default_info.files_to_run.executable != None
+    executable = default_info and default_info.files_to_run.executable != None and ctx.rule.executable != None and ctx.rule.executable != struct()
 
     env = getattr(rule_attrs, "env", {})
     if type(env) == "Target":
