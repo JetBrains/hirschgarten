@@ -8,7 +8,7 @@ load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "bazel_in
 
 bazel_integration_test_all_versions(
     name = "sample_repo_test",
-    bzlmod_project_path = "test-projects/bazel7/sample-repo",
+    bzlmod_project_path = "test-projects/bzlmod/sample-repo",
     env = {
         "foo1": "invalid_val1",
         "foo2": "invalid_val2",
@@ -111,7 +111,7 @@ bazel_integration_test_all_versions(
 
 bazel_integration_test_all_versions(
     name = "partial_sync_test",
-    bzlmod_project_path = "test-projects/bazel7/sample-repo",
+    bzlmod_project_path = "test-projects/bzlmod/sample-repo",
     project_path = "test-projects/sample-repo",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspPartialSyncTest",
 )
