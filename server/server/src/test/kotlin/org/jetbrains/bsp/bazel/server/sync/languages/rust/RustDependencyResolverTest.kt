@@ -87,7 +87,7 @@ class RustDependencyResolverTest {
     val dependency = dependencies.entries.first()
     dependency.key shouldBe modules[1].label.packagePath.toString()
     dependency.value[0].pkg shouldBe modules[0].label.packagePath.toString()
-    dependency.value[0].name shouldBe modules[0].label.target
+    dependency.value[0].name shouldBe modules[0].label.targetName
 
     rawDependencies.size shouldBe 1
 
@@ -133,7 +133,7 @@ class RustDependencyResolverTest {
 
     val rawDependenciesNames =
       rawDependencies
-        .mapValues { (_, deps) -> deps.map { Label.parse(it.name).target } }
+        .mapValues { (_, deps) -> deps.map { Label.parse(it.name).targetName } }
     val trueRawDependenciesNames =
       trueDependenciesNames
         .mapValues { (_, names) -> names }
