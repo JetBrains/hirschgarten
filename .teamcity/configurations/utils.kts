@@ -23,5 +23,5 @@ object CommonParams {
 
   val CrossBuildPlatforms: List<String> = listOf("243")
 
-  val bazelVersion = "7.4.1"
+  val BazelVersion = "7.4.1"
 }
