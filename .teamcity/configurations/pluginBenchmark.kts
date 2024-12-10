@@ -6,18 +6,23 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-// Base class with common parameters
-open class BaseBenchmark(
-  vcsRoot: GitVcsRoot,
-  name: String,
-  requirements: (Requirements.() -> Unit)? = null,
-  dockerParams: Map<String, String>,
-  ) : BaseConfiguration.BaseBuildType(
-    name = "[benchmark] $name",
+open class Benchmark(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit)? = null) :
+  BaseConfiguration.BaseBuildType(
+    name = "[benchmark] Plugin BSP 10 targets",
     vcsRoot = vcsRoot,
     requirements = requirements,
     artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
     steps = {
+      script {
+        id = "add_bazelversion"
+        scriptContent =
+          """
+          #!/bin/bash
+          set -euxo
+          
+          echo "${Utils.CommonParams.BazelVersion}" > /home/hirschuser/project_10/.bazelversion
+          """.trimIndent()
+      }
       bazel {
         val url = "--jvmopt=\"-Dbsp.benchmark.teamcity.url=https://bazel.teamcity.com\""
         val projectNameArg = "--jvmopt=\"-Dbsp.benchmark.project.name=benchmark_10_targets\""
@@ -31,14 +36,14 @@ open class BaseBenchmark(
 
         val sysArgs = "$url $projectNameArg $reportErrors $projectPath $cachePath $memArg $sandboxArg $actionEnvArg"
 
-        this.name = "run benchmark"
+        name = "run benchmark"
         id = "run_benchmark"
         command = "test"
         targets = "//plugin-bsp/performance-testing"
         arguments = "$sysArgs ${Utils.CommonParams.BazelCiSpecificArgs}"
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
-        dockerParams.forEach { (key, value) ->
+        Utils.DockerParams.get().forEach { (key, value) ->
           param(key, value)
         }
       }
@@ -55,49 +60,14 @@ open class BaseBenchmark(
     },
   )
 
-// Specific benchmark types
-open class BenchmarkWithBazelVersion(vcsRoot: GitVcsRoot) : BaseBenchmark(
-  name = "Plugin BSP 10 targets with current Bazel",
-  vcsRoot = vcsRoot,
-  dockerParams = Utils.DockerParams.get().toMutableMap().apply {
-    set("plugin.docker.run.parameters", get("plugin.docker.run.parameters") + "\n-e USE_BAZEL_VERSION=${Utils.CommonParams.bazelVersion}")
-  }
-)
-
-open class BenchmarkDefault(vcsRoot: GitVcsRoot) : BaseBenchmark(
-  name = "Plugin BSP 10 targets newest available Bazel",
-  vcsRoot = vcsRoot,
-  dockerParams = Utils.DockerParams.get()
-)
-
-// GitHub variants
-object BenchmarkWithVersionGitHub : BenchmarkWithBazelVersion(
+object GitHub : Benchmark(
   vcsRoot = BaseConfiguration.GitHubVcs,
-) {
-  init {
-    requirements {
-      endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
-      equals("container.engine.osType", "linux")
-    }
-  }
-}
-
-object BenchmarkDefaultGitHub : BenchmarkDefault(
-  vcsRoot = BaseConfiguration.GitHubVcs,
-) {
-  init {
-    requirements {
-      endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
-      equals("container.engine.osType", "linux")
-    }
-  }
-}
-
-// Space variants
-object SpaceBenchmarkWithVersion : BenchmarkWithBazelVersion(
-  vcsRoot = BaseConfiguration.SpaceVcs,
+  requirements = {
+    endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
+    equals("container.engine.osType", "linux")
+  },
 )
 
-object SpaceBenchmarkDefault : BenchmarkDefault(
+object Space : Benchmark(
   vcsRoot = BaseConfiguration.SpaceVcs,
 )
