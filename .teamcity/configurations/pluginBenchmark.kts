@@ -27,6 +27,9 @@ open class BaseBenchmark(
           
           echo "${Utils.CommonParams.BazelVersion}" > /home/hirschuser/project_10/.bazelversion
           """.trimIndent()
+        dockerParams.forEach { (key, value) ->
+          param(key, value)
+        }
       }
       bazel {
         val url = "--jvmopt=\"-Dbsp.benchmark.teamcity.url=https://bazel.teamcity.com\""
@@ -70,7 +73,7 @@ open class BenchmarkWithBazelVersion(vcsRoot: GitVcsRoot) : BaseBenchmark(
   name = "Plugin BSP 10 targets with current Bazel",
   vcsRoot = vcsRoot,
   dockerParams = Utils.DockerParams.get().toMutableMap().apply {
-    set("plugin.docker.run.parameters", get("plugin.docker.run.parameters") + "\n-e USE_BAZEL_VERSION=${Utils.CommonParams.BazelVersion}")
+    set("plugin.docker.run.parameters", get("plugin.docker.run.parameters") + "\n-v %teamcity.build.checkoutDir%/.bazelversion:/home/hirschuser/project_10/.bazelversion")
   }
 )
 
