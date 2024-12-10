@@ -31,9 +31,11 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
+    val javaHomePrefix = if (majorBazelVersion == 7) "rules_java~~toolchains~" else ""
+
     val exampleExampleJvmBuildTarget =
       JvmBuildTarget().also {
-        it.javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/local_jdk/"
+        it.javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/${javaHomePrefix}local_jdk/"
         it.javaVersion = "17"
       }
 
