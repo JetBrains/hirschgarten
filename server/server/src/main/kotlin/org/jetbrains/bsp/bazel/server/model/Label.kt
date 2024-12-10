@@ -182,6 +182,7 @@ sealed interface Label {
           WILDCARD -> AllRuleTargetsAndFiles
           ALL_TARGETS -> AllRuleTargetsAndFiles
           ALL -> AllRuleTargets
+          ALL_PACKAGES_BENEATH -> AllRuleTargets // Special case for //...:...
           else -> SingleTarget(targetName)
         }
 
