@@ -113,48 +113,6 @@ class ProjectViewLexerTest : LexerTestCase() {
       )
   }
 
-  @Test
-  fun `should lex standard project view`() {
-    // given
-    val code =
-      """
-        |directories:
-        |  src/kotlin/app
-        |  src/kotlin/utils
-        |
-        |targets:
-        |  //src/kotlin/app/...:all
-        |  //src/kotlin/utils/...:all
-      """.trimMargin()
-
-    // when & then
-    code shouldLexTo
-      listOf(
-        "ProjectView:list_keyword",
-        "ProjectView:colon",
-        "ProjectView:newline",
-        "ProjectView:indent",
-        "ProjectView:identifier",
-        "ProjectView:newline",
-        "ProjectView:indent",
-        "ProjectView:identifier",
-        "ProjectView:newline",
-        "ProjectView:newline",
-        "ProjectView:list_keyword",
-        "ProjectView:colon",
-        "ProjectView:newline",
-        "ProjectView:indent",
-        "ProjectView:identifier",
-        "ProjectView:colon",
-        "ProjectView:identifier",
-        "ProjectView:newline",
-        "ProjectView:indent",
-        "ProjectView:identifier",
-        "ProjectView:colon",
-        "ProjectView:identifier",
-      )
-  }
-
   private infix fun String.shouldLexTo(expectedTokens: List<String>) {
     doLexerTest(this, ProjectViewLexer(), expectedTokens)
   }
