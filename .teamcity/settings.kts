@@ -5,7 +5,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.Project
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.finishBuildTrigger
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 
-version = "2024.03"
+version = "2024.12"
 
 object ProjectBranchFilters {
   val githubBranchFilter = "+:pull/*"
