@@ -2,7 +2,12 @@ package org.jetbrains.bazel.languages.projectview.elements
 
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
-import org.jetbrains.bazel.languages.projectview.psi.sections.*
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewList
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewListKey
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewListValue
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewScalar
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewScalarKey
+import org.jetbrains.bazel.languages.projectview.psi.sections.ProjectViewScalarValue
 
 object ProjectViewElementTypes {
   val LIST = ProjectViewElementType("LIST")

@@ -6,9 +6,8 @@ import com.intellij.psi.FileViewProvider
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewFileType
 import org.jetbrains.bazel.languages.projectview.base.ProjectViewLanguage
 
-open class ProjectViewFile(viewProvider: FileViewProvider):
+open class ProjectViewFile(viewProvider: FileViewProvider) :
   PsiFileBase(viewProvider, ProjectViewLanguage),
   ProjectViewElement {
-
   override fun getFileType(): FileType = ProjectViewFileType
 }

@@ -4,7 +4,7 @@ import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElementVisitor
 
-abstract class ProjectViewBaseElement(node: ASTNode):
+abstract class ProjectViewBaseElement(node: ASTNode) :
   ASTWrapperPsiElement(node),
   ProjectViewElement {
   override fun accept(visitor: PsiElementVisitor) {
@@ -17,7 +17,5 @@ abstract class ProjectViewBaseElement(node: ASTNode):
 
   protected abstract fun acceptVisitor(visitor: ProjectViewElementVisitor)
 
-  override fun getName(): String? {
-    return node.text
-  }
+  override fun getName(): String? = node.text
 }
