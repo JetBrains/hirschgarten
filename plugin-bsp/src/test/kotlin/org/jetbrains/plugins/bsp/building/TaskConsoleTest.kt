@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import io.kotest.matchers.maps.shouldContainExactly
+import org.jetbrains.plugins.bsp.action.SuspendableAction
 import org.jetbrains.workspace.model.test.framework.WorkspaceModelBaseTest
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
@@ -93,9 +94,9 @@ class TestTaskConsole(
   basePath: String,
   project: Project,
 ) : TaskConsole(taskView, basePath, "build tool", project) {
-  override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
-    object : AnAction({ "test" }) {
-      override fun actionPerformed(e: AnActionEvent) {}
+  override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
+    object : SuspendableAction({ "test" }) {
+      override suspend fun actionPerformed(project: Project, e: AnActionEvent) {}
 
       override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
     }
