@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.server.model
 
+import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import java.net.URI
 
@@ -12,6 +13,7 @@ data class Project(
   val invalidTargets: List<Label>,
   val nonModuleTargets: List<NonModuleTarget>, // targets that should be displayed in the project view but are neither modules nor libraries
   val bazelRelease: BazelRelease,
+  val lightweightModules: Map<Label, Target>? = null,
 ) {
   private val moduleMap: Map<Label, Module> = modules.associateBy(Module::label)
 
