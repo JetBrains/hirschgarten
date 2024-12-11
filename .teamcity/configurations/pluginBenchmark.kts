@@ -69,42 +69,45 @@ open class BaseBenchmark(
   )
 
 // Specific benchmark types
-open class BenchmarkWithBazelVersion(vcsRoot: GitVcsRoot) : BaseBenchmark(
+open class BenchmarkWithBazelVersion(
+  vcsRoot: GitVcsRoot,
+  requirements: (Requirements.() -> Unit)? = null,
+) : BaseBenchmark(
   name = "Plugin BSP 10 targets with current Bazel",
   vcsRoot = vcsRoot,
+  requirements = requirements,
   dockerParams = Utils.DockerParams.get().toMutableMap().apply {
     set("plugin.docker.run.parameters", get("plugin.docker.run.parameters") + "\n-v %teamcity.build.checkoutDir%/.bazelversion:/home/hirschuser/project_10/.bazelversion")
   }
 )
 
-open class BenchmarkDefault(vcsRoot: GitVcsRoot) : BaseBenchmark(
+open class BenchmarkDefault(
+  vcsRoot: GitVcsRoot,
+  requirements: (Requirements.() -> Unit)? = null,
+  ) : BaseBenchmark(
   name = "Plugin BSP 10 targets newest available Bazel",
   vcsRoot = vcsRoot,
+  requirements = requirements,
   dockerParams = Utils.DockerParams.get()
 )
 
 // GitHub variants
 object BenchmarkWithVersionGitHub : BenchmarkWithBazelVersion(
   vcsRoot = BaseConfiguration.GitHubVcs,
-) {
-  init {
-    requirements {
-      endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
-      equals("container.engine.osType", "linux")
-    }
+  requirements = {
+    endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
+    equals("container.engine.osType", "linux")
   }
-}
+)
 
 object BenchmarkDefaultGitHub : BenchmarkDefault(
   vcsRoot = BaseConfiguration.GitHubVcs,
-) {
-  init {
-    requirements {
-      endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
-      equals("container.engine.osType", "linux")
-    }
+  requirements = {
+    endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
+    equals("container.engine.osType", "linux")
   }
-}
+)
+
 
 // Space variants
 object SpaceBenchmarkWithVersion : BenchmarkWithBazelVersion(
