@@ -14,7 +14,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 
 class RustLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : LanguagePlugin<RustModule>() {
   private val rustPackageResolver = RustPackageResolver(bazelPathsResolver)
-  private val rustDependencyResolver = RustDependencyResolver(rustPackageResolver)
+  private val rustDependencyResolver = RustDependencyResolver()
 
   private fun TargetInfo.getRustCrateInfoOrNull(): RustCrateInfo? = this.takeIf(TargetInfo::hasRustCrateInfo)?.rustCrateInfo
 

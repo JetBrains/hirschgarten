@@ -10,7 +10,7 @@ import org.jetbrains.bsp.bazel.server.model.Module
 
 data class RustDependencies(val dependencies: Map<String, List<RustDependency>>, val rawDependencies: Map<String, List<RustRawDependency>>)
 
-class RustDependencyResolver(private val rustPackageResolver: RustPackageResolver) {
+class RustDependencyResolver {
   // We need to resolve all dependencies and provide a list of new bazel targets
   // to be transformed into packages.
   fun rustDependencies(rustPackages: List<RustPackage>, rustBspTargets: List<Module>): RustDependencies {
