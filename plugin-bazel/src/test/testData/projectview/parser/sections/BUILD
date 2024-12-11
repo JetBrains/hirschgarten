@@ -1,5 +1,5 @@
 filegroup(
-    name = "basicRules",
+    name = "sections",
     srcs = glob([
         "*.bazelproject",
         "*.txt",

@@ -1,0 +1,7 @@
+FILE
+  ProjectViewScalar(SCALAR)
+    ProjectViewScalarKey(SCALAR_KEY)
+      PsiElement(ProjectView:scalar_keyword)('import')
+    PsiWhiteSpace(' ')
+    ProjectViewScalarValue(SCALAR_VALUE)
+      PsiElement(ProjectView:identifier)('java/com/google/android/myproject/myproject.bazelproject')

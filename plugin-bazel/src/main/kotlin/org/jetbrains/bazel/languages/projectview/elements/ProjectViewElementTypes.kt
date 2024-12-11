@@ -14,7 +14,7 @@ object ProjectViewElementTypes {
   val SCALAR = ProjectViewElementType("SCALAR")
 
   val SCALAR_KEY = ProjectViewElementType("SCALAR_KEY")
-  val SCALAR_VALUE = ProjectViewElementType("SCALAR VALUE")
+  val SCALAR_VALUE = ProjectViewElementType("SCALAR_VALUE")
 
   val LIST_KEY = ProjectViewElementType("LIST_KEY")
   val LIST_VALUE = ProjectViewElementType("LIST_VALUE")
