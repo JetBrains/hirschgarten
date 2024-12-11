@@ -23,11 +23,11 @@ abstract class BspRunnerAction(
 
   override suspend fun getRunnerSettings(project: Project, buildTargetInfos: List<BuildTargetInfo>): RunnerAndConfigurationSettings? {
     val factory = getConfigurationType(project).configurationFactories.first()
-    val name = calculateConfigurationName(project, buildTargetInfo)
+    val name = calculateConfigurationName(project, buildTargetInfos)
     val settings =
       RunManager.getInstance(project).createConfiguration(name, factory)
     (settings.configuration as BspRunConfiguration)
-      .updateTargets(buildTargetInfo.map { it.id })
+      .updateTargets(buildTargetInfos.map { it.id })
 
     settings.customizeRunConfiguration()
     return settings

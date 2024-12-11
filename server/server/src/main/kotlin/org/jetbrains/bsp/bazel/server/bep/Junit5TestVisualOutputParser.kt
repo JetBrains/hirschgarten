@@ -97,11 +97,6 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
     bspClientTestNotifier.beginTestTarget(BuildTargetIdentifier(startedBuildTarget.uri), startedBuildTarget.taskId)
   }
 
-  private fun endTesting(testTarget: StartedBuildTarget, millis: Long) {
-    val buildTargetId = BuildTargetIdentifier(testTarget.uri)
-    bspClientTestNotifier.endTestTarget(buildTargetId, testTarget.taskId, millis)
-  }
-
   private fun startSuite(suite: TestOutputLine) {
     bspClientTestNotifier.startTest(suite.name, suite.taskId)
     startedSuites.addLast(suite)

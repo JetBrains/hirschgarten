@@ -206,7 +206,7 @@
     </extensions>
 
     <actions>
-        <action class="org.jetbrains.plugins.bsp.ui.projectTree.action.RunAllTestAction">
+        <action class="org.jetbrains.plugins.bsp.ui.projectTree.action.RunAllTestsAction">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>

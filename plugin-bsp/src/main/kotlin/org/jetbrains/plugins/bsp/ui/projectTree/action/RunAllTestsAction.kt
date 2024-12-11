@@ -17,7 +17,7 @@ import org.jetbrains.plugins.bsp.runnerAction.TestTargetAction
 import org.jetbrains.plugins.bsp.target.temporaryTargetUtils
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
-internal class RunAllTestAction :
+internal class RunAllTestsAction :
   SuspendableAction(
     {
       BspPluginBundle.message("action.run.all.test")
@@ -37,33 +37,23 @@ internal class RunAllTestAction :
     e.presentation.isEnabledAndVisible = runReadAction { shouldShowAction(project, e) }
   }
 
-  private fun getAllTestTargetInfos(project: Project, e: AnActionEvent): List<BuildTargetInfo> {
-    val currentPath = e.getData(PlatformDataKeys.VIRTUAL_FILE) ?: return listOf()
-    val targetUtilService = project.temporaryTargetUtils
-    return currentPath
-      .toSubFilesInTestSourceContent(project)
-      .flatMap { targetUtilService.getExecutableTargetsForFile(it, project) }
-      .distinct()
-      .mapNotNull { targetUtilService.getBuildTargetInfoForId(it) }
-      .filter { it.capabilities.canTest }
-      .toList()
-  }
+  private fun getAllTestTargetInfos(project: Project, e: AnActionEvent): List<BuildTargetInfo> =
+    e
+      .getCurrentPath()
+      ?.toSubFilesInTestSourceContent(project)
+      ?.filter { it.capabilities.canTest }
+      ?.toList() ?: listOf()
 
   private fun shouldShowAction(project: Project, e: AnActionEvent): Boolean {
-    val currentPath = e.getData(PlatformDataKeys.VIRTUAL_FILE) ?: return false
-    val targetUtilService = project.temporaryTargetUtils
-    return currentPath.toSubFilesInTestSourceContent(project).any {
-      targetUtilService
-        .getExecutableTargetsForFile(it, project)
-        .mapNotNull { targetUtilService.getBuildTargetInfoForId(it) }
-        .filter { it.capabilities.canTest }
-        .isNotEmpty()
-    }
+    return e.getCurrentPath()?.toSubFilesInTestSourceContent(project)?.any { it.capabilities.canTest } ?: return false
   }
 
-  private fun VirtualFile.toSubFilesInTestSourceContent(project: Project): Sequence<VirtualFile> {
+  private fun AnActionEvent.getCurrentPath(): VirtualFile? = getData(PlatformDataKeys.VIRTUAL_FILE)
+
+  private fun VirtualFile.toSubFilesInTestSourceContent(project: Project): Sequence<BuildTargetInfo> {
     val pfIndex = ProjectFileIndex.getInstance(project)
     val vfsManager = WorkspaceModel.getInstance(project).getVirtualFileUrlManager()
+    val targetUtilService = project.temporaryTargetUtils
 
     return this
       .toVirtualFileUrl(vfsManager)
@@ -71,5 +61,8 @@ internal class RunAllTestAction :
       .asSequence()
       .mapNotNull { it.virtualFile }
       .filter { pfIndex.isInTestSourceContent(it) }
+      .flatMap { targetUtilService.getExecutableTargetsForFile(it, project) }
+      .distinct()
+      .mapNotNull { targetUtilService.getBuildTargetInfoForId(it) }
   }
 }
