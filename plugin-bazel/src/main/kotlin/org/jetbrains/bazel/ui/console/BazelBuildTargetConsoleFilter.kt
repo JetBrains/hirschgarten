@@ -5,17 +5,21 @@ import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.findDirectory
+import com.intellij.openapi.vfs.findFile
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.plugins.bsp.config.rootDir
-import kotlin.io.path.Path
 
 class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
+  private val highlightGroupName = "highlightGroup"
+  private val externalRepoGroupName = "externalRepoGroup"
+  private val pathGroupName = "pathGroup"
+
   private val bazelTargetRegex =
     """(^|\W)
-        (?<highlightGroup>
-        ((@|@@)(?<externalRepoGroup>[a-zA-Z0-9!%\-^_"&'()*+,;<=>?\[\]{|}~/.\#]*))? #@ or @@ with potential external repo names
-        //(?<pathGroup>[a-zA-Z0-9!%\-@^_"&'()*+,;<=>?\[\]{|}~/.\#]*):      #path
+        (?<$highlightGroupName>
+        ((@|@@)(?<$externalRepoGroupName>[a-zA-Z0-9!%\-^_"&'()*+,;<=>?\[\]{|}~/.\#]*))? #@ or @@ with potential external repo names
+        //(?<$pathGroupName>[a-zA-Z0-9!%\-@^_"&'()*+,;<=>?\[\]{|}~/.\#]*):      #path
         ([a-zA-Z0-9!%\-@^_"&'()*+,;<=>?\[\]{|}~/.\#]+)         #target
         )
     """.trimMargin()
@@ -27,9 +31,9 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   }
 
   private fun MatchResult.toFilterResultOrNull(line: String, entireLength: Int): Filter.Result? {
-    val highlightGroup = groups["highlightGroup"] ?: return null
-    val pathGroup = groups["pathGroup"] ?: return null
-    val externalRepoGroup = groups["externalRepoGroup"]
+    val highlightGroup = groups[highlightGroupName] ?: return null
+    val pathGroup = groups[pathGroupName] ?: return null
+    val externalRepoGroup = groups[externalRepoGroupName]
     if (externalRepoGroup != null && externalRepoGroup.value.isNotEmpty()) {
       // skip targets in external repo
       return null
@@ -44,14 +48,9 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
     return Filter.Result(highlightStartOffset, highlightEndOffset, hyperLinkInfo)
   }
 
-  private fun String.toBazelFileInProject(): VirtualFile? {
-    if (trim() == "/") return null
-    return toVirtualFile(toAbsolutePath() + "/BUILD.bazel") ?: return toVirtualFile(toAbsolutePath() + "/BUILD")
-  }
-
-  private fun String.toAbsolutePath(): String = if (startsWith("/")) this else "${project.rootDir.path}/$this"
-
-  private fun toVirtualFile(path: String): VirtualFile? = VirtualFileManager.getInstance().findFileByNioPath(Path(path))
+  private fun String.toBazelFileInProject(): VirtualFile? =
+    project.rootDir.findDirectory(this)?.findFile("BUILD.bazel")
+      ?: project.rootDir.findDirectory(this)?.findFile("BUILD")
 }
 
 class BazelBuildTargetConsoleFilterProvider : ConsoleFilterProvider {
