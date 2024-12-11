@@ -12,8 +12,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
 
 public interface BspProjectAwareExtension {
   public fun getProjectId(projectPath: VirtualFile): ExternalSystemProjectId
@@ -34,7 +34,7 @@ public abstract class BspProjectAware(private val workspace: BspWorkspace) : Ext
   override fun reloadProject(context: ExternalSystemProjectReloadContext) {
     if (context.isExplicitReload) {
       BspCoroutineService.getInstance(workspace.project).start {
-        ProjectSyncTask(workspace.project).sync(syncScope = FullProjectSync, buildProject = false)
+        ProjectSyncTask(workspace.project).sync(syncScope = SecondPhaseSync, buildProject = false)
       }
     }
   }

@@ -1,0 +1,47 @@
+module(name = "sample_repo")
+
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_java", version = "8.3.1")
+bazel_dep(name = "rules_jvm_external", version = "6.5")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    artifacts = [
+        "com.google.guava:guava:31.0.1-jre",
+    ],
+    repositories = [
+        "https://cache-redirector.jetbrains.com/maven-central",
+    ],
+)
+use_repo(maven, "maven")
+
+bazel_dep(name = "protobuf", version = "28.3")
+single_version_override(
+    module_name = "protobuf",
+    version = "28.3",
+)
+
+bazel_dep(name = "rules_scala", repo_name = "io_bazel_rules_scala")
+git_override(
+    module_name = "rules_scala",
+    commit = "0909f422b3db87c3a86385b51fa32c5ac866f16e",
+    remote = "https://github.com/mbland/rules_scala.git",
+)
+
+scala_config = use_extension(
+    "@io_bazel_rules_scala//scala/extensions:config.bzl",
+    "scala_config",
+)
+scala_config.settings(
+    scala_version = "2.13.14",
+)
+use_repo(scala_config, "io_bazel_rules_scala_config")
+
+scala_dev_deps = use_extension(
+    "@io_bazel_rules_scala//scala/extensions:deps.bzl",
+    "scala_deps",
+    dev_dependency = True,
+)
+scala_dev_deps.toolchains(
+    scalatest = True,
+)

@@ -5,58 +5,111 @@ import org.junit.Test
 
 class ProjectViewLexerTest : LexerTestCase() {
   @Test
-  fun `should lex boolean literal`() {
+  fun `should lex import`() {
     // given
-    val code = "derive_targets_from_directories: false"
+    val code = "import java/com/google/work/.blazeproject"
 
     // when & then
     code shouldLexTo
       listOf(
-        "ProjectView:derive_targets_from_directories",
-        "ProjectView::",
-        "ProjectView:SPACE",
-        "ProjectView:BOOL",
+        "ProjectView:scalar_keyword",
+        "ProjectView:whitespace",
+        "ProjectView:identifier",
       )
   }
 
   @Test
-  fun `should lex int literal`() {
+  fun `should lex scala keyword`() {
     // given
-    val code = "import_depth: 0"
+    val code = "workspace_type: intellij_plugin"
 
     // when & then
     code shouldLexTo
       listOf(
-        "ProjectView:import_depth",
-        "ProjectView::",
-        "ProjectView:SPACE",
-        "ProjectView:INT",
+        "ProjectView:scalar_keyword",
+        "ProjectView:colon",
+        "ProjectView:whitespace",
+        "ProjectView:identifier",
       )
   }
 
   @Test
-  fun `should lex multiline property`() {
+  fun `should lex comments`() {
     // given
     val code =
       """
-        |enabled_rules:
-        |  rules_kotlin
-        |  rules_java
+        |# comment here
+        |import_target_output:
+        |  //java/com/google/work:target
       """.trimMargin()
 
     // when & then
     code shouldLexTo
       listOf(
-        "ProjectView:enabled_rules",
-        "ProjectView::",
-        "ProjectView:LINE_BREAK",
-        "ProjectView:SPACE",
-        "ProjectView:SPACE",
-        "ProjectView:IDENTIFIER",
-        "ProjectView:LINE_BREAK",
-        "ProjectView:SPACE",
-        "ProjectView:SPACE",
-        "ProjectView:IDENTIFIER",
+        "ProjectView:comment",
+        "ProjectView:newline",
+        "ProjectView:list_keyword",
+        "ProjectView:colon",
+        "ProjectView:newline",
+        "ProjectView:indent",
+        "ProjectView:identifier",
+        "ProjectView:colon",
+        "ProjectView:identifier",
+      )
+  }
+
+  @Test
+  fun `should fuse whitespace`() {
+    // given
+    val code = "    # this comment is preceded and followed by whitespace           "
+
+    // when & then
+    code shouldLexTo
+      listOf(
+        "ProjectView:whitespace",
+        "ProjectView:comment",
+      )
+  }
+
+  @Test
+  fun `should lex minimal project view`() {
+    // given
+    val code =
+      """
+        |directories:
+        |  src/kotlin/app
+        |  src/kotlin/utils
+        |
+        |targets:
+        |  //src/kotlin/app/...:all
+        |  //src/kotlin/utils/...:all
+      """.trimMargin()
+
+    // when & then
+    code shouldLexTo
+      listOf(
+        "ProjectView:list_keyword",
+        "ProjectView:colon",
+        "ProjectView:newline",
+        "ProjectView:indent",
+        "ProjectView:identifier",
+        "ProjectView:newline",
+        "ProjectView:indent",
+        "ProjectView:identifier",
+        "ProjectView:newline",
+        "ProjectView:newline",
+        "ProjectView:list_keyword",
+        "ProjectView:colon",
+        "ProjectView:newline",
+        "ProjectView:indent",
+        "ProjectView:identifier",
+        "ProjectView:colon",
+        "ProjectView:identifier",
+        "ProjectView:newline",
+        "ProjectView:indent",
+        "ProjectView:identifier",
+        "ProjectView:colon",
+        "ProjectView:identifier",
       )
   }
 

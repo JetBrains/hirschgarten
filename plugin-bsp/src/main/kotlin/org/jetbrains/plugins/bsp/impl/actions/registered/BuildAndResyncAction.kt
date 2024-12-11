@@ -7,13 +7,13 @@ import org.jetbrains.plugins.bsp.building.action.isBuildInProgress
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.config.buildToolIdOrNull
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
 import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
 
 class BuildAndResyncAction : SuspendableAction({ BspPluginBundle.message("build.and.resync.action.text") }) {
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
-    ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = true)
+    ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = true)
   }
 
   override fun update(project: Project, e: AnActionEvent) {

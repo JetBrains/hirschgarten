@@ -201,7 +201,21 @@ class LabelTest {
   @Test
   fun `package wildcards are parsed correctly`() {
     val label = Label.parse("@//path/to/...")
-    label.packagePath shouldBe WildcardPackage(listOf("path", "to"))
+    label.packagePath shouldBe AllPackagesBeneath(listOf("path", "to"))
+    label.toString() shouldBe "@//path/to/..."
   }
 
+  @Test
+  fun `package wildcard without target is the same as all rule targets`() {
+    val label1 = Label.parse("@//path/to/...")
+    val label2 = Label.parse("@//path/to/...:all")
+    label1 shouldBe label2
+  }
+
+  @Test
+  fun `package wildcard with all-targets is the same as asterisk`() {
+    val label1 = Label.parse("@//path/to/...:*")
+    val label2 = Label.parse("path/to/...:all-targets")
+    label1 shouldBe label2
+  }
 }

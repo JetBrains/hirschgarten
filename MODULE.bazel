@@ -35,7 +35,7 @@ register_toolchains(
 
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_java", version = "8.6.1")
+bazel_dep(name = "rules_java", version = "8.6.2")
 bazel_dep(name = "rules_jvm_external", version = "6.6")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
@@ -61,11 +61,11 @@ maven.install(
         "io.kotest:kotest-assertions-shared-jvm:5.9.1",
         "io.kotest:kotest-common-jvm:5.9.1",
         "io.opentelemetry.semconv:opentelemetry-semconv:1.25.0-alpha",
-        "io.opentelemetry:opentelemetry-api:1.44.1",
-        "io.opentelemetry:opentelemetry-exporter-otlp:1.44.1",
-        "io.opentelemetry:opentelemetry-extension-kotlin:1.44.1",
-        "io.opentelemetry:opentelemetry-sdk-trace:1.44.1",
-        "io.opentelemetry:opentelemetry-sdk:1.44.1",
+        "io.opentelemetry:opentelemetry-api:1.45.0",
+        "io.opentelemetry:opentelemetry-exporter-otlp:1.45.0",
+        "io.opentelemetry:opentelemetry-extension-kotlin:1.45.0",
+        "io.opentelemetry:opentelemetry-sdk-trace:1.45.0",
+        "io.opentelemetry:opentelemetry-sdk:1.45.0",
         "net.java.dev.jna:jna:5.15.0",
         "org.apache.httpcomponents:httpclient:4.5.14",
         "org.apache.logging.log4j:log4j-api:2.24.2",
@@ -147,7 +147,7 @@ single_version_override(
 
 bazel_dep(name = "rules_cc", version = "0.1.0")
 bazel_dep(name = "platforms", version = "0.0.10")
-bazel_dep(name = "rules_python", version = "0.40.0")
+bazel_dep(name = "rules_python", version = "1.0.0")
 
 # Needed for codecanvas
 python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
@@ -221,16 +221,14 @@ bazel_binaries = use_extension(
 
 # test project are too old for bazel 7
 # bazel_binaries.download(version_file = "//:.bazelversion")
-bazel_binaries.download(version = "7.1.2")
+bazel_binaries.download(version = "7.4.0")
 bazel_binaries.download(version = "6.4.0")
 bazel_binaries.download(version = "5.3.2")
 use_repo(
     bazel_binaries,
     "bazel_binaries",
     "bazel_binaries_bazelisk",
-    # test project are too old for bazel 7
-    #     "build_bazel_bazel_.bazelversion",
     "build_bazel_bazel_5_3_2",
     "build_bazel_bazel_6_4_0",
-    "build_bazel_bazel_7_1_2",
+    "build_bazel_bazel_7_4_0",
 )

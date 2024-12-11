@@ -35,7 +35,7 @@ class BazelrcConfigDeclarationsProcessor(private val inputElement: BazelrcLine) 
 
   private fun processLine(line: BazelrcLine) {
     (line.containingFile as? BazelrcFile)?.apply {
-      line.configName()?.let { results[it] = this }
+      line.config?.let { results[it] = this }
     }
   }
 

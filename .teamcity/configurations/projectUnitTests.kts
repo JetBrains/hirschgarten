@@ -13,9 +13,9 @@ open class UnitTests(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit
     requirements = requirements,
     steps = {
       bazel {
-        name = "bazel test //... -//plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/..."
+        name = "bazel test //... (without single-job targets)"
         command = "test"
-        targets = "//... -//plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/..."
+        targets = "//... -//plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/... -//server/server/src/test/kotlin/org/jetbrains/bsp/bazel/server/sync/..."
         arguments = Utils.CommonParams.BazelCiSpecificArgs
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
@@ -24,9 +24,9 @@ open class UnitTests(vcsRoot: GitVcsRoot, requirements: (Requirements.() -> Unit
         }
       }
       bazel {
-        name = "bazel test //plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/..."
+        name = "bazel test single-job targets"
         command = "test"
-        targets = "//plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/..."
+        targets = "//plugin-bsp/src/test/kotlin/org/jetbrains/plugins/bsp/... //server/server/src/test/kotlin/org/jetbrains/bsp/bazel/server/sync/..."
         arguments = Utils.CommonParams.BazelCiSpecificArgs + " --jobs 1"
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic

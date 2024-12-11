@@ -28,8 +28,8 @@ import org.jetbrains.bazel.bsp.connection.stateService
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
 import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -189,7 +189,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
     project.bazelProjectSettings = currentProjectSettings
     if (isProjectViewPathChanged) {
       BspCoroutineService.getInstance(project).start {
-        ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = false)
+        ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = false)
       }
     }
   }

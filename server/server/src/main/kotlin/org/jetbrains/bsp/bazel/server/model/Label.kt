@@ -9,6 +9,8 @@ private const val SYNTHETIC_TAG = "[synthetic]"
 private const val WILDCARD = "*"
 private const val ALL_TARGETS = "all-targets"
 private const val ALL = "all"
+private const val PATH_SEGMENT_SEPARATOR = "/"
+private const val ALL_PACKAGES_BENEATH = "..."
 
 /**
  * See https://bazel.build/run/build#specifying-build-targets
@@ -34,23 +36,24 @@ data object AllRuleTargets : TargetType {
 }
 
 sealed interface PackageType {
-  val path: List<String>
+  val pathSegments: List<String>
 }
 
-data class Package(override val path: List<String>) : PackageType {
-  override fun toString(): String = path.joinToString("/")
+data class Package(override val pathSegments: List<String>) : PackageType {
+  override fun toString(): String = pathSegments.joinToString(PATH_SEGMENT_SEPARATOR)
 
-  fun parent(): Package = Package(path.dropLast(1))
+  fun parent(): Package = Package(pathSegments.dropLast(1))
 
-  fun name(): String = path.lastOrNull() ?: ""
+  fun name(): String = pathSegments.lastOrNull() ?: ""
 }
 
-data class WildcardPackage(override val path: List<String>) : PackageType {
-  override fun toString(): String = if (path.isEmpty()) {
-    "..."
-  } else {
-    path.joinToString("/", postfix = "/...")
-  }
+data class AllPackagesBeneath(override val pathSegments: List<String>) : PackageType {
+  override fun toString(): String =
+    if (pathSegments.isEmpty()) {
+      ALL_PACKAGES_BENEATH
+    } else {
+      pathSegments.joinToString(PATH_SEGMENT_SEPARATOR, postfix = PATH_SEGMENT_SEPARATOR + ALL_PACKAGES_BENEATH)
+    }
 }
 
 /**
@@ -75,19 +78,21 @@ sealed interface Label {
   fun toBazelPath(): Path
 
   val targetPathAndName
-    get() = when (packagePath) {
+    get() =
+      when (packagePath) {
         is Package -> {
           val packageName = (packagePath as Package).name()
           when {
             target is SingleTarget && packageName == target.toString() -> packagePath.toString()
-            else -> "${packagePath}:$target"
+            else -> "$packagePath:$target"
           }
         }
-        is WildcardPackage -> if (target is AllRuleTargets) {
-          packagePath.toString()
-        } else {
-          "${packagePath}:$target"
-        }
+        is AllPackagesBeneath ->
+          if (target is AllRuleTargets) {
+            packagePath.toString()
+          } else {
+            "$packagePath:$target"
+          }
       }
 
   /**
@@ -126,11 +131,12 @@ sealed interface Label {
     override val packagePath: PackageType,
     override val target: TargetType,
   ) : Label {
-    override fun toBazelPath(): Path = if (packagePath is Package) {
-      Path("external", repoName, *packagePath.path.toTypedArray())
-    } else {
-      error("Cannot convert wildcard package to path")
-    }
+    override fun toBazelPath(): Path =
+      if (packagePath is Package) {
+        Path("external", repoName, *packagePath.pathSegments.toTypedArray())
+      } else {
+        error("Cannot convert wildcard package to path")
+      }
 
     override fun toString(): String = "@@$repoName//$targetPathAndName"
   }
@@ -144,11 +150,12 @@ sealed interface Label {
     override val target: TargetType,
   ) : Label {
     /** This works only without bzlmod... (with bzlmod you need a canonical form to resolve this path */
-    override fun toBazelPath(): Path = if (packagePath is Package) {
-      Path("external", repoName, *packagePath.path.toTypedArray())
-    } else {
-      error("Cannot convert wildcard package to path")
-    }
+    override fun toBazelPath(): Path =
+      if (packagePath is Package) {
+        Path("external", repoName, *packagePath.pathSegments.toTypedArray())
+      } else {
+        error("Cannot convert wildcard package to path")
+      }
 
     override fun toString(): String = "@$repoName//$targetPathAndName"
   }
@@ -161,20 +168,23 @@ sealed interface Label {
       val repoName = normalized.substringBefore("//", "")
       val pathAndName = normalized.substringAfter("//")
       val packagePath = pathAndName.substringBefore(":")
-      val packageSegments = packagePath.split("/")
-      val packageType = if (packageSegments.lastOrNull() == "..." ) {
-        WildcardPackage(packageSegments.dropLast(1))
-      } else {
-        Package(packageSegments)
-      }
-      val targetName = pathAndName.substringAfter(":", packagePath.substringAfterLast("/"))
+      val packageSegments = packagePath.split(PATH_SEGMENT_SEPARATOR)
+      val packageType =
+        if (packageSegments.lastOrNull() == ALL_PACKAGES_BENEATH) {
+          AllPackagesBeneath(packageSegments.dropLast(1))
+        } else {
+          Package(packageSegments)
+        }
+      val targetName = pathAndName.substringAfter(":", packagePath.substringAfterLast(PATH_SEGMENT_SEPARATOR))
 
-      val target = when (targetName) {
-        WILDCARD -> AllRuleTargetsAndFiles
-        ALL_TARGETS -> AllRuleTargetsAndFiles
-        ALL -> AllRuleTargets
-        else -> SingleTarget(targetName)
-      }
+      val target =
+        when (targetName) {
+          WILDCARD -> AllRuleTargetsAndFiles
+          ALL_TARGETS -> AllRuleTargetsAndFiles
+          ALL -> AllRuleTargets
+          ALL_PACKAGES_BENEATH -> AllRuleTargets // Special case for //...:...
+          else -> SingleTarget(targetName)
+        }
 
       return when {
         repoName.isEmpty() -> Main(packageType, target)

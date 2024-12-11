@@ -47,7 +47,7 @@ class StarlarkIndentingLexer : FlexAdapter(_StarlarkLexer(null)) {
   }
 
   override fun advance() {
-    if (tokenQueue.size > 0) {
+    if (tokenQueue.isNotEmpty()) {
       tokenQueue.removeAt(0)
       if (processSpecialTokensPending) {
         processSpecialTokensPending = false
