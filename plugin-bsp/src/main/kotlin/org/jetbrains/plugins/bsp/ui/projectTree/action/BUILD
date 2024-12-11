@@ -4,7 +4,7 @@ kt_jvm_library(
     name = "action",
     srcs = glob([
         "*.kt",
-        "**/*.kt",
+
     ]),
     visibility = ["//plugin-bsp:__subpackages__"],
     deps = [
