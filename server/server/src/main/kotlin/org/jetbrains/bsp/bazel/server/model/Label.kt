@@ -69,6 +69,9 @@ sealed interface Label {
   val isMainWorkspace: Boolean
     get() = this is Main || this is Synthetic
 
+  val isSynthetic: Boolean
+    get() = this is Synthetic
+
   /**
    * Returns a path to the corresponding folder in the `bazel-(project)` directory.
    * Warning: this works on label with apparent repo names only if bzlmod is not used.
@@ -164,6 +167,7 @@ sealed interface Label {
     fun synthetic(targetName: String): Label = Synthetic(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
 
     fun parse(value: String): Label {
+      if (value.endsWith(SYNTHETIC_TAG)) return synthetic(value)
       val normalized = value.trimStart('@')
       val repoName = normalized.substringBefore("//", "")
       val pathAndName = normalized.substringAfter("//")
