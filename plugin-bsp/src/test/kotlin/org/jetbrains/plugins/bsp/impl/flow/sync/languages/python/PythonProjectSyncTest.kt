@@ -25,8 +25,8 @@ import org.jetbrains.plugins.bsp.config.bspBuildToolId
 import org.jetbrains.plugins.bsp.config.buildToolId
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfo
 import org.jetbrains.plugins.bsp.impl.flow.sync.BaseTargetInfos
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
+import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
 import org.jetbrains.plugins.bsp.projectStructure.AllProjectStructuresProvider
 import org.jetbrains.plugins.bsp.projectStructure.workspaceModel.workspaceModelDiff
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BspProjectEntitySource
@@ -78,7 +78,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         val environment =
           ProjectSyncHook.ProjectSyncHookEnvironment(
             project = project,
-            syncScope = FullProjectSync,
+            syncScope = SecondPhaseSync,
             server = server,
             capabilities = capabilities,
             diff = diff,
@@ -114,7 +114,7 @@ class PythonProjectSyncTest : MockProjectBaseTest() {
         val environment =
           ProjectSyncHook.ProjectSyncHookEnvironment(
             project = project,
-            syncScope = FullProjectSync,
+            syncScope = SecondPhaseSync,
             server = server,
             capabilities = capabilities,
             diff = diff,
