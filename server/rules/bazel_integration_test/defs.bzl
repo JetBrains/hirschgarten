@@ -17,12 +17,11 @@ def bazel_integration_test_all_versions(name, test_runner, project_path, env = {
 
     if bzlmod_project_path != None:
         bazel_versions = bazel_binaries.versions.all
-        bazel_7_version = bazel_binaries.versions.current
 
-        bazel_integration_test(
-            name = integration_test_utils.bazel_integration_test_name(name, bazel_7_version),
+        bazel_integration_tests(
+            name = name,
             timeout = "eternal",
-            bazel_version = bazel_7_version,
+            bazel_versions = ["7.4.0", "8.0.0"],
             test_runner = test_runner,
             workspace_path = bzlmod_project_path,
             env = env,
