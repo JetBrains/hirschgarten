@@ -85,15 +85,15 @@ class RustDependencyResolverTest {
     dependencies.size shouldBe 1
 
     val dependency = dependencies.entries.first()
-    dependency.key shouldBe modules[1].label.packagePath
-    dependency.value[0].pkg shouldBe modules[0].label.packagePath
+    dependency.key shouldBe modules[1].label.packagePath.toString()
+    dependency.value[0].pkg shouldBe modules[0].label.packagePath.toString()
     dependency.value[0].name shouldBe modules[0].label.targetName
 
     rawDependencies.size shouldBe 1
 
     val rawDependency = rawDependencies.entries.first()
     rawDependency.value[0].name shouldBe modules[0].label.toString()
-    rawDependency.key shouldBe modules[1].label.packagePath
+    rawDependency.key shouldBe modules[1].label.packagePath.toString()
   }
 
   @Test
