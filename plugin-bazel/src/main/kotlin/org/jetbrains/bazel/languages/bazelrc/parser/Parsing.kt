@@ -8,8 +8,6 @@ import com.intellij.psi.tree.TokenSet
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcElementTypes
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenSets
 import org.jetbrains.bazel.languages.bazelrc.elements.BazelrcTokenTypes
-import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
-import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 
 open class Parsing(private val root: IElementType, val builder: PsiBuilder) : PsiBuilder by builder {
   companion object {
@@ -38,7 +36,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
     expectToken(BazelrcTokenTypes.IMPORT, "<import> or <try-import> expected")
 
-    matchToken(BazelrcTokenTypes.VALUE).ifFalse {
+    if (!matchToken(BazelrcTokenTypes.VALUE)) {
       error("Import path expected")
     }
 
@@ -50,7 +48,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
   }
 
   private fun parseLine() {
-    atAnyToken(commandPrefixes).ifFalse {
+    if (!atAnyToken(commandPrefixes)) {
       advanceError("New command line expected")
     }
 
@@ -73,7 +71,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
     expectToken(BazelrcTokenTypes.COMMAND, "Command expected")
 
-    matchToken(BazelrcTokenTypes.COLON).ifTrue {
+    if (matchToken(BazelrcTokenTypes.COLON)) {
       matchToken(BazelrcTokenTypes.CONFIG)
     }
 
