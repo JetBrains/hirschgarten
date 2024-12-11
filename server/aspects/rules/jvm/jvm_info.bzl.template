@@ -1,4 +1,4 @@
-load("//aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups")
+load("//aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups", "filter_not_none")
 ${loadKtJvmProvider}
 
 def map_with_resolve_files(f, xs):
@@ -60,8 +60,8 @@ def get_generated_jars(provider):
         return map_with_resolve_files(to_generated_jvm_outputs, provider.java_outputs)
 
     if hasattr(provider, "annotation_processing") and provider.annotation_processing and provider.annotation_processing.enabled:
-        class_jars = [provider.annotation_processing.class_jar]
-        source_jars = [provider.annotation_processing.source_jar]
+        class_jars = filter_not_none([provider.annotation_processing.class_jar])
+        source_jars = filter_not_none([provider.annotation_processing.source_jar])
 
         # Additional info from `rules_kotlin`'s `KtJvmInfo`
         if hasattr(provider, "additional_generated_source_jars"):
