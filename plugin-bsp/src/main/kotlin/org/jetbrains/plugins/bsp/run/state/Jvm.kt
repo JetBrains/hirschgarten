@@ -20,7 +20,7 @@ fun <T : HasJavaVmOptions> vmOptions(): SettingsEditorFragment<T, RawCommandLine
   CommonParameterFragments.setMonospaced(vmOptions.textField)
   val message = ExecutionBundle.message("run.configuration.java.vm.parameters.empty.text")
   vmOptions.editorField.accessibleContext.accessibleName = message
-  vmOptions.editorField.emptyText.setText(message)
+  vmOptions.editorField.emptyText.text = message
   MacrosDialog.addMacroSupport(vmOptions.editorField, MacrosDialog.Filters.ALL) { false }
   TextComponentEmptyText.setupPlaceholderVisibility(vmOptions.editorField)
   val vmParameters: SettingsEditorFragment<T, RawCommandLineEditor> =
