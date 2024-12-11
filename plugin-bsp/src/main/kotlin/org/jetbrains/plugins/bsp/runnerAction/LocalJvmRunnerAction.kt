@@ -31,7 +31,7 @@ public abstract class LocalJvmRunnerAction(
 ) : BaseRunnerAction(listOf(targetInfo), text, icon, isDebugMode) {
   public abstract suspend fun getEnvironment(project: Project): JvmEnvironmentItem?
 
-  override suspend fun getRunnerSettings(project: Project, buildTargetInfo: List<BuildTargetInfo>): RunnerAndConfigurationSettings? {
+  override suspend fun getRunnerSettings(project: Project, buildTargetInfos: List<BuildTargetInfo>): RunnerAndConfigurationSettings? {
     val module = targetInfo.getModule(project) ?: return null
 
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
