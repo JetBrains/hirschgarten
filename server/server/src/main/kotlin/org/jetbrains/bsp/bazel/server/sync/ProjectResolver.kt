@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.server.sync
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
@@ -9,10 +8,12 @@ import org.jetbrains.bsp.bazel.server.benchmark.tracer
 import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManagerResult
-import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspFallbackAspectsManager
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.label
@@ -27,7 +28,7 @@ class ProjectResolver(
   private val bazelBspAspectsManager: BazelBspAspectsManager,
   private val bazelToolchainManager: BazelToolchainManager,
   private val bazelBspLanguageExtensionsGenerator: BazelBspLanguageExtensionsGenerator,
-  private val bazelBspFallbackAspectsManager: BazelBspFallbackAspectsManager,
+  private val bazelLabelExpander: BazelLabelExpander,
   private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelProjectMapper: BazelProjectMapper,
   private val targetInfoReader: TargetInfoReader,
@@ -36,6 +37,7 @@ class ProjectResolver(
   private val bazelPathsResolver: BazelPathsResolver,
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
+  private val repoMapping: RepoMapping,
 ) {
   private suspend fun <T> measured(description: String, f: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { f() }
 
@@ -92,19 +94,30 @@ class ProjectResolver(
       val targets =
         measured(
           "Parsing aspect outputs",
-        ) { targetInfoReader.readTargetMapFromAspectOutputs(aspectOutputs) }
-      val allTargetNames =
-        if (buildAspectResult.isFailure) {
-          measured(
-            "Fetching all possible target names",
-          ) { bazelBspFallbackAspectsManager.getAllPossibleTargets(cancelChecker) }
-        } else {
-          emptyList()
+        ) {
+          targetInfoReader.readTargetMapFromAspectOutputs(aspectOutputs).map { (k, v) ->
+            // TODO: make sure we canonicalize everything
+            //  also, this can be done in a more efficient way
+            val label = k.canonicalize(repoMapping)
+            label to v.toBuilder().apply {
+              id = label.toString()
+              val canonicalizedDependencies = dependenciesBuilderList.map {
+                it.apply {
+                  id = Label.parse(it.id).canonicalize(repoMapping).toString()
+                }.build()
+              }
+              clearDependencies()
+              addAllDependencies(canonicalizedDependencies)
+            }.build()
+          }.toMap()
         }
-      val rootTargets = targetsToSync.values // TODO: they should be resolved and canonicalized by now I guess
+      // resolve root targets (expand wildcards)
+      val rootTargets = measured("Calculating root targets") {
+        bazelLabelExpander.getAllPossibleTargets(cancelChecker).map { it.canonicalize(repoMapping) }.toSet()
+      }
       return@useWithScope measured(
         "Mapping to internal model",
-      ) { bazelProjectMapper.createProject(targets, rootTargets.toSet(), allTargetNames, workspaceContext, bazelInfo) }
+      ) { bazelProjectMapper.createProject(targets, rootTargets, workspaceContext, bazelInfo) }
     }
 
   private suspend fun buildProjectWithAspect(

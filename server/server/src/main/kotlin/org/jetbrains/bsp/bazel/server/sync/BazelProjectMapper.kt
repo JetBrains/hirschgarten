@@ -73,7 +73,6 @@ class BazelProjectMapper(
   suspend fun createProject(
     targets: Map<Label, TargetInfo>,
     rootTargets: Set<Label>,
-    allTargetNames: List<Label>,
     workspaceContext: WorkspaceContext,
     bazelInfo: BazelInfo,
   ): Project {
@@ -198,7 +197,7 @@ class BazelProjectMapper(
       }
     val invalidTargets =
       measure("Save invalid target labels") {
-        removeDotBazelBspTarget(allTargetNames) - targetsToImport.map { it.label() }.toSet()
+        removeDotBazelBspTarget(rootTargets) - targetsToImport.map { it.label() }.toSet()
       }
     val rustExternalTargetsToImport =
       measureIf(
@@ -220,7 +219,7 @@ class BazelProjectMapper(
 
     val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
     val nonModuleTargets =
-      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace })
+      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace }) // TODO: remove isMainWorkspace
 
     return Project(
       workspaceRoot,

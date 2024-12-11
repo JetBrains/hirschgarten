@@ -4,12 +4,22 @@ import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bsp.bazel.bazelrunner.ShowRepoResult
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import java.nio.file.Path
 import kotlin.io.path.Path
 
 data class RepoMapping(val moduleCanonicalNameToLocalPath: Map<String, Path>, val moduleApparentNameToCanonicalName: Map<String, String>)
+
+fun Label.canonicalize(repoMapping: RepoMapping): Label {
+  if (!this.isApparent) {
+    return this
+  }
+  val apparentRepoName = this.repoName
+  val canonicalRepoName = repoMapping.moduleApparentNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
+  return Label.parse("@@$canonicalRepoName//$targetPathAndName")
+}
 
 fun calculateRepoMapping(workspaceContextProvider: WorkspaceContextProvider, bazelRunner: BazelRunner): RepoMapping {
   val workspaceContext = workspaceContextProvider.currentWorkspaceContext()

@@ -5,7 +5,7 @@ import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 
-class BazelBspFallbackAspectsManager(
+class BazelLabelExpander(
   private val bazelRunner: BazelRunner,
   private val workspaceContextProvider: WorkspaceContextProvider,
 ) {
@@ -18,10 +18,18 @@ class BazelBspFallbackAspectsManager(
           options.addAll(listOf("--output=label", "--keep_going"))
         }
       }
-    return bazelRunner
+    val result = bazelRunner
       .runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
       .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
-      .stdoutLines
-      .map { Label.parse(it) }
+
+      // afaik bazel won't tell us if there was a FATAL error (i.e. the query had a wrong syntax and wasn't executed at all)
+      // or if some targets failed but some succeeded
+      if (result.stdoutLines.isEmpty() && result.isNotSuccess) {
+        error(result.stderr)
+      } else {
+        // log the stderr here
+        return result.stdoutLines
+          .map { Label.parse(it) }
+      }
   }
 }
