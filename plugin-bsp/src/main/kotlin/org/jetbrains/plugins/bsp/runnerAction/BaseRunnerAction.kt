@@ -30,7 +30,7 @@ public abstract class BaseRunnerAction(
   ) {
   protected abstract suspend fun getRunnerSettings(
     project: Project,
-    buildTargetInfo: List<BuildTargetInfo>,
+    buildTargetInfos: List<BuildTargetInfo>,
   ): RunnerAndConfigurationSettings?
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
