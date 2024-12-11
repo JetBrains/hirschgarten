@@ -19,7 +19,7 @@ class RustPackageResolver(val bazelPathsResolver: BazelPathsResolver) {
 
   fun rustPackages(rustBspTargets: List<Module>): List<RustPackage> =
     rustBspTargets
-      .groupBy { it.label.packagePath }
+      .groupBy { it.label.packagePath.toString() }
       .mapNotNull(::resolveSinglePackage)
 
   private fun resolveSinglePackage(packageData: Map.Entry<String, List<Module>>): RustPackage {
