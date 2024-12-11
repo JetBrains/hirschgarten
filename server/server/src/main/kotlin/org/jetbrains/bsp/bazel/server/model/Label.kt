@@ -102,11 +102,12 @@ sealed interface Label {
   private data class Main(override val packagePath: PackageType, override val target: TargetType) : Label {
     override val repoName: String = ""
 
-    override fun toBazelPath(): Path = if (packagePath is Package) {
-      Path(packagePath.toString())
-    } else {
-      error("Cannot convert wildcard package to path")
-    }
+    override fun toBazelPath(): Path =
+      if (packagePath is Package) {
+        Path(packagePath.toString())
+      } else {
+        error("Cannot convert wildcard package to path")
+      }
 
     override fun toString(): String = "@//$targetPathAndName"
   }
