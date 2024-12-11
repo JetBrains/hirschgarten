@@ -145,6 +145,9 @@
         <lang.syntaxHighlighterFactory
                 language="ProjectView"
                 implementationClass="org.jetbrains.bazel.languages.projectview.highlighting.ProjectViewSyntaxHighlighterFactory"/>
+        <lang.parserDefinition
+                language="ProjectView"
+                implementationClass="org.jetbrains.bazel.languages.projectview.parser.ProjectViewParserDefinition"/>
 
         <formattingService
                 implementation="org.jetbrains.bazel.languages.starlark.formatting.StarlarkFormattingService"/>
