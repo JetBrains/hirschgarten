@@ -25,6 +25,7 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/firstPhase",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/languages",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/sharding",
         "@bazel_bep//jar",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_protobuf_protobuf_java",

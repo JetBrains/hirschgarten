@@ -7,7 +7,7 @@ import org.jetbrains.bsp.bazel.commons.BazelStatus
 class BazelProcessResult(
   private val stdoutCollector: OutputCollector,
   private val stderrCollector: OutputCollector,
-  private val bazelStatus: BazelStatus,
+  val bazelStatus: BazelStatus,
 ) {
   val isSuccess: Boolean get() = bspStatusCode == StatusCode.OK
   val isNotSuccess: Boolean get() = !isSuccess

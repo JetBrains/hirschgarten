@@ -833,7 +833,11 @@ class BazelProjectMapper(
       !it.isExternal &&
         it.relativePath.endsWith(".sh") ||
         it.relativePath.endsWith(".rs") ||
-        it.relativePath.endsWith(".go")
+        it.relativePath.endsWith(".go") ||
+        it.relativePath.endsWith(".cc") ||
+        it.relativePath.endsWith(".cpp") ||
+        it.relativePath.endsWith(".h") ||
+        it.relativePath.endsWith(".hpp")
     }
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
@@ -874,6 +878,13 @@ class BazelProjectMapper(
       "go_library",
       "go_binary",
       "go_test",
+      "cc_library",
+      "cc_binary",
+      "cc_import",
+      "cc_library",
+      "cc_shared_library",
+      "cc_static_library",
+      "cc_test",
     )
 
   private fun isRustTarget(target: TargetInfo): Boolean = target.hasRustCrateInfo()

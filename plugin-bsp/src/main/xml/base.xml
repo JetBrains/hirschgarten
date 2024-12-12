@@ -72,6 +72,9 @@
         <extensionPoint qualifiedName="org.jetbrains.bsp.runConfigurationTypeProvider"
                         interface="org.jetbrains.plugins.bsp.run.config.BspRunConfigurationTypeProvider"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.bspFeatureFlagsProvider"
+                        interface="org.jetbrains.plugins.bsp.config.BspFeatureFlagsProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">
@@ -88,10 +91,11 @@
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.jvm.JvmBspTestHandler$JvmBspTestHandlerProvider" id="JvmTestHandlerProvider"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspRunHandlerProvider" order="last"/>
         <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.run.handler.GenericBspTestHandlerProvider" order="last"/>
-        <projectSyncHook implementation="org.jetbrains.plugins.bsp.projectDetails.CollectProjectDetailsSyncHook"/>
+<!--        <projectSyncHook implementation="org.jetbrains.plugins.bsp.projectDetails.CollectProjectDetailsSyncHook"/>-->
         <projectSyncHook implementation="org.jetbrains.plugins.bsp.impl.flow.sync.OutputPathUrisSyncHook"/>
         <projectStructureProvider implementation="org.jetbrains.plugins.bsp.projectStructure.workspaceModel.WorkspaceModelProjectStructureProvider"/>
         <runConfigurationTypeProvider implementation="org.jetbrains.plugins.bsp.run.config.DefaultBspRunConfigurationTypeProvider"/>
+        <bspFeatureFlagsProvider implementation="org.jetbrains.plugins.bsp.config.DefaultBspFeatureFlagsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -193,7 +197,7 @@
         <iconMapper mappingFile="BSPIconMappings.json"/>
 
         <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
-        <editorNotificationProvider implementation="org.jetbrains.plugins.bsp.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
+<!--        <editorNotificationProvider implementation="org.jetbrains.plugins.bsp.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>-->
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">

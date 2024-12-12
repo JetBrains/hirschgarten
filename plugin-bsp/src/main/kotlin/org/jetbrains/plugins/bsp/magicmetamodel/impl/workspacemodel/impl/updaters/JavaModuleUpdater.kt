@@ -13,7 +13,6 @@ import com.intellij.platform.workspace.storage.impl.url.toVirtualFileUrl
 import com.intellij.pom.java.LanguageLevel
 import org.jetbrains.android.sdk.AndroidSdkType
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsPaths
-import org.jetbrains.plugins.bsp.workspacemodel.entities.IntermediateLibraryDependency
 import org.jetbrains.plugins.bsp.workspacemodel.entities.JavaModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.includesAndroid
 import org.jetbrains.plugins.bsp.workspacemodel.entities.includesJava
@@ -98,13 +97,7 @@ internal class JavaModuleWithSourcesUpdater(
     entityToAdd.jvmJdkName?.also {
       returnDependencies.add(SdkDependency(SdkId(it, "JavaSDK")))
     }
-    entityToAdd.scalaAddendum?.also { addendum ->
-      returnDependencies.add(
-        toLibraryDependency(
-          IntermediateLibraryDependency(addendum.scalaSdkName, true),
-          workspaceModelEntityUpdaterConfig.project,
-        ),
-      )
+    entityToAdd.scalaAddendum?.also {
     }
     return returnDependencies
   }

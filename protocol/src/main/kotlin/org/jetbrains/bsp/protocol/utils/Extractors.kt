@@ -25,6 +25,15 @@ private inline fun <reified Data> extractData(target: BuildTarget, kind: String)
     null
   }
 
+
+public inline fun <reified Data> extractData(data: Any, kind: String): Data? =
+      Gson().fromJson(
+        data as JsonObject,
+        Data::class.java,
+      )
+
+
+
 public fun extractPythonBuildTarget(target: BuildTarget): PythonBuildTarget? = extractData(target, BuildTargetDataKind.PYTHON)
 
 public fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? = extractData(target, BuildTargetDataKind.SCALA)
@@ -32,6 +41,7 @@ public fun extractScalaBuildTarget(target: BuildTarget): ScalaBuildTarget? = ext
 public fun extractAndroidBuildTarget(target: BuildTarget): AndroidBuildTarget? = extractData(target, "android")
 
 public fun extractGoBuildTarget(target: BuildTarget): GoBuildTarget? = extractData(target, "go")
+
 
 public fun extractKotlinBuildTarget(target: BuildTarget): KotlinBuildTarget? =
   extractData(target, "kotlin")

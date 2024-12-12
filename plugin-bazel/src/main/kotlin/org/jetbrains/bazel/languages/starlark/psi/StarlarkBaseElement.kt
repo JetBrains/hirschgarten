@@ -7,7 +7,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.SearchScope
 import org.jetbrains.bazel.languages.bazel.BazelPackage
 import org.jetbrains.bazel.languages.starlark.StarlarkFileType
-import org.jetbrains.kotlin.idea.base.util.restrictByFileType
+//import org.jetbrains.kotlin.idea.base.util.restrictByFileType
 
 abstract class StarlarkBaseElement(node: ASTNode) :
   ASTWrapperPsiElement(node),
@@ -24,5 +24,5 @@ abstract class StarlarkBaseElement(node: ASTNode) :
 
   fun getBazelPackage(): BazelPackage? = BazelPackage.ofFile(containingFile as StarlarkFile)
 
-  override fun getUseScope(): SearchScope = GlobalSearchScope.projectScope(project).restrictByFileType(StarlarkFileType)
+  override fun getUseScope(): SearchScope = GlobalSearchScope.projectScope(project)
 }

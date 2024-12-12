@@ -53,17 +53,18 @@ def _bsp_target_info_aspect_impl(target, ctx):
     direct_dep_targets = collect_targets_from_attrs(rule_attrs, COMPILE_DEPS)
     private_direct_dep_targets = collect_targets_from_attrs(rule_attrs, PRIVATE_COMPILE_DEPS)
     direct_deps = make_deps(direct_dep_targets, COMPILE)
-
+    private_direct_dep=make_deps(private_direct_dep_targets,COMPILE)
     exported_deps_from_deps = []
     if ${isPropagateExportsFromDepsEnabled}:
-        for dep in direct_dep_targets:
+        for dep in direct_dep_targets+private_direct_dep_targets:
             exported_deps_from_deps = exported_deps_from_deps + dep.bsp_info.export_deps
 
-    compile_deps = direct_deps + exported_deps_from_deps
+    compile_deps = direct_deps + exported_deps_from_deps + private_direct_dep
+
+
 
     runtime_dep_targets = collect_targets_from_attrs(rule_attrs, RUNTIME_DEPS)
     runtime_deps = make_deps(runtime_dep_targets, RUNTIME)
-
     all_deps = depset(compile_deps + runtime_deps).to_list()
 
     # Propagate my own exports
@@ -78,7 +79,7 @@ def _bsp_target_info_aspect_impl(target, ctx):
 
     forwarded_deps = _get_forwarded_deps(target, ctx) + direct_exports
 
-    dep_targets = direct_dep_targets + private_direct_dep_targets + runtime_dep_targets + direct_exports
+    dep_targets = direct_dep_targets+private_direct_dep_targets + runtime_dep_targets + direct_exports
     output_groups = dict()
     for dep in dep_targets:
         for k, v in dep.bsp_info.output_groups.items():
@@ -129,7 +130,6 @@ def _bsp_target_info_aspect_impl(target, ctx):
     env = getattr(rule_attrs, "env", {})
     if type(env) == "Target":
         env = str(env.label)
-
     info = dict(
         id = str(target.label),
         kind = ctx.rule.kind,
@@ -155,7 +155,6 @@ def _bsp_target_info_aspect_impl(target, ctx):
         info.update(extension_info)
         if extension_exported_properties != None:
             exported_properties.update(extension_exported_properties)
-
     file_name = target.label.name
     file_name = file_name + "-" + str(abs(hash(file_name)))
     if aspect_ids:
@@ -175,4 +174,5 @@ bsp_target_info_aspect = aspect(
     required_aspect_providers = [[JavaInfo]],
     attr_aspects = ALL_DEPS,
     toolchains = TOOLCHAINS,
+    fragments = ["cpp"]
 )

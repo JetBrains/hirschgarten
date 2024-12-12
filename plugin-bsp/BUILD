@@ -26,6 +26,11 @@ optional_plugin_dep(
 )
 
 optional_plugin_dep(
+    name = "bsp_with_cpp",
+    module = ["com.intellij.clion"],
+    plugin_xml = "//plugin-bsp/src:main/xml/bsp-withCpp.xml",
+)
+optional_plugin_dep(
     name = "bsp_with_android",
     module = ["org.jetbrains.android"],
     plugin_xml = "//plugin-bsp/src:main/xml/bsp-withAndroid.xml",
@@ -64,11 +69,13 @@ intellij_plugin_library(
         ":bsp_performance_testing",
         ":bsp_devkit",
         ":bsp_code_with_me",
+        ":bsp_with_cpp"
     ],
     plugin_deps = [
         "com.intellij.modules.platform",
-        "com.intellij.java",
-        "org.jetbrains.kotlin",
+        "com.intellij.modules.cidr.lang"
+        #         "com.intellij.java",
+        #         "org.jetbrains.kotlin",
     ],
     plugin_xmls = ["//plugin-bsp/src:main/xml/base.xml"],
     visibility = ["//visibility:public"],

@@ -6,6 +6,7 @@ kt_jvm_library(
     visibility = [
         "//server/executioncontext/workspacecontext:__pkg__",
         "//server/executioncontext/workspacecontext/src/test/kotlin/org/jetbrains/bsp/bazel/workspacecontext:__pkg__",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/sharding:__pkg__",
     ],
     exports = [
         "//server/executioncontext/api",

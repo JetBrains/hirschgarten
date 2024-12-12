@@ -18,15 +18,15 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.ui.tree.TreeUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jetbrains.kotlin.tooling.core.Interner
-import org.jetbrains.kotlin.tooling.core.WeakInterner
+// import org.jetbrains.kotlin.tooling.core.Interner
+// import org.jetbrains.kotlin.tooling.core.WeakInterner
 import org.jetbrains.plugins.bsp.buildTask.BspProjectModuleBuildTasksTracker
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 
 @Service(Service.Level.PROJECT)
 public class BspWorkspace(public val project: Project) : Disposable {
   private var initialized = false
-  public val interner: Interner = WeakInterner()
+  // public val interner: Interner = WeakInterner()
 
   @Synchronized
   public fun initialize() {

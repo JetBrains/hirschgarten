@@ -22,12 +22,13 @@ class BazelBspCompilationManager(
 ) {
   suspend fun buildTargetsWithBep(
     cancelChecker: CancelChecker,
-    targetSpecs: TargetsSpec,
+    targetsSpec: TargetsSpec,
     extraFlags: List<String> = emptyList(),
     originId: String? = null,
     environment: List<Pair<String, String>> = emptyList(),
+    shouldLogInvocation: Boolean,
   ): BepBuildResult {
-    val target = targetSpecs.values.firstOrNull()
+    val target = targetsSpec.values.firstOrNull()
     val diagnosticsService = DiagnosticsService(workspaceRoot)
     val bepServer = BepServer(client, diagnosticsService, originId, target, bazelPathsResolver)
     val bepReader = BepReader(bepServer)
@@ -41,14 +42,15 @@ class BazelBspCompilationManager(
           bazelRunner.buildBazelCommand {
             build {
               options.addAll(extraFlags)
-              addTargetsFromSpec(targetSpecs)
+              addTargetsFromSpec(targetsSpec)
               this.environment.putAll(environment)
               useBes(bepReader.eventFile.toPath().toAbsolutePath())
             }
           }
+        println(command)
         val result =
           bazelRunner
-            .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid)
+            .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid, shouldLogInvocation = shouldLogInvocation)
             .waitAndGetResult(cancelChecker, true)
         bepReader.finishBuild()
         readerFuture.await()
