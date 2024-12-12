@@ -29,7 +29,7 @@ abstract class ProjectViewSingletonSectionParser<V, T : ProjectViewSingletonSect
     rawSections
       .getLastSectionWithName(sectionName)
       ?.let { parse(it) }
-      .also { log.debug("Parsed '$sectionName' section. Result:\n$it") }
+      .also { log.debug("Parsed '{}' section. Result:\n{}", sectionName, it) }
 
   override fun parse(sectionBody: String): T? =
     sectionBody

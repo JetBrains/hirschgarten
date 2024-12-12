@@ -50,7 +50,13 @@ class ProjectResolver(
         )
 
       val bazelExternalRulesQuery =
-        BazelExternalRulesQueryImpl(bazelRunner, bazelInfo.isBzlModEnabled, workspaceContext.enabledRules, bspClientLogger)
+        BazelExternalRulesQueryImpl(
+          bazelRunner,
+          bazelInfo.isBzlModEnabled,
+          bazelInfo.isWorkspaceEnabled,
+          workspaceContext.enabledRules,
+          bspClientLogger,
+        )
 
       val externalRuleNames =
         measured(

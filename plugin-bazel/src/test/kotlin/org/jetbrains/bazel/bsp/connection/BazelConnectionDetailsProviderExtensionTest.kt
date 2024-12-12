@@ -4,12 +4,16 @@ import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.google.gson.Gson
 import com.google.idea.testing.BazelTestApplication
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
+import com.intellij.openapi.vfs.findOrCreateDirectory
+import com.intellij.openapi.vfs.findOrCreateFile
 import com.intellij.openapi.vfs.readText
 import com.intellij.openapi.vfs.writeText
 import com.intellij.testFramework.IdeaTestUtil
@@ -25,12 +29,14 @@ import org.jetbrains.bazel.settings.bazelProjectSettings
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.server.connection.ConnectionDetailsProviderExtension
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 
 @BazelTestApplication
@@ -232,17 +238,36 @@ class BazelConnectionDetailsProviderExtensionTest : MockProjectBaseTest() {
   @DisplayName("BazelConnectionDetailsProviderExtension tests when connection file is undefined")
   inner class UndefinedConnectionFileTest {
     val selectedJdkName = "New Jdk"
-    val selectedJdkPath = "file:///test/home/path"
 
     @BeforeEach
     fun beforeEach() {
       // given
       runBlocking {
-        IdeaTestUtil.createMockJdk(selectedJdkName, selectedJdkPath)
+        writeAction {
+          val jdkMockHomePath = projectRoot.findOrCreateDirectory("jdk")
+          jdkMockHomePath
+            .findOrCreateFile("bin/java")
+            .toNioPath()
+            .toFile()
+            .setExecutable(true)
+
+          val mockJdk = IdeaTestUtil.createMockJdk(selectedJdkName, jdkMockHomePath.toNioPath().toString())
+          ProjectJdkTable.getInstance().addJdk(mockJdk)
+        }
       }
 
       runBlocking {
         extension.onFirstOpening(project, projectRoot)
+      }
+    }
+
+    @AfterEach
+    fun afterEach() {
+      val jdkTable = ProjectJdkTable.getInstance()
+      runBlocking {
+        writeAction {
+          jdkTable.findJdk(selectedJdkName)?.also { jdkTable.removeJdk(it) }
+        }
       }
     }
 

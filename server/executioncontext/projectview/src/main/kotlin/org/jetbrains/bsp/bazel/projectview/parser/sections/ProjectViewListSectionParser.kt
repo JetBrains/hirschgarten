@@ -20,7 +20,7 @@ abstract class ProjectViewListSectionParser<V, T : ProjectViewListSection<V>> pr
   ProjectViewSectionParser<T>() {
     override fun parse(rawSections: ProjectViewRawSections): T? =
       try {
-        parseAllSectionsAndMerge(rawSections)?.also { log.debug("Parsed '$sectionName' section. Result:\n$it") }
+        parseAllSectionsAndMerge(rawSections)?.also { log.debug("Parsed '{}' section. Result:\n{}", sectionName, it) }
       } catch (e: Exception) {
         log.error("Failed to parse '$sectionName' section.", e)
         null

@@ -31,7 +31,7 @@ class LabelTest {
     val normalized = label.toString()
     normalized shouldBe "@//path/to/target:targetName"
     label.targetName shouldBe "targetName"
-    label.packagePath shouldBe "path/to/target"
+    label.packagePath.toString() shouldBe "path/to/target"
     label.repoName shouldBe ""
     label.isMainWorkspace shouldBe true
   }
@@ -39,7 +39,7 @@ class LabelTest {
   @Test
   fun `should return target path for label with bazel 6 target`() {
     val label = Label.parse("@//path/to/target:targetName")
-    val targetPath = label.packagePath
+    val targetPath = label.packagePath.toString()
     targetPath shouldBe "path/to/target"
   }
 
@@ -98,7 +98,7 @@ class LabelTest {
     val normalized = label.toString()
     normalized shouldBe "@//path/to/target:targetName"
     label.targetName shouldBe "targetName"
-    label.packagePath shouldBe "path/to/target"
+    label.packagePath.toString() shouldBe "path/to/target"
     label.repoName shouldBe ""
     label.isMainWorkspace shouldBe true
   }
@@ -148,15 +148,80 @@ class LabelTest {
     val label = Label.parse(":target")
     label.toString() shouldBe "@//:target"
     label.targetName shouldBe "target"
-    label.packagePath shouldBe ""
+    label.packagePath.toString() shouldBe ""
     label.repoName shouldBe ""
     label.isMainWorkspace shouldBe true
 
     val label2 = Label.parse("target")
     label2.toString() shouldBe "@//target"
     label2.targetName shouldBe "target"
-    label2.packagePath shouldBe "target"
+    label2.packagePath.toString() shouldBe "target"
     label2.repoName shouldBe ""
     label2.isMainWorkspace shouldBe true
+  }
+
+  @Test
+  fun `all targets and wildcard are the same`() {
+    val label1 = Label.parse(":all-targets")
+    val label2 = Label.parse(":*")
+    label1 shouldBe label2
+  }
+
+  @Test
+  fun `all targets is normalized to wildcard`() {
+    val label = Label.parse(":all-targets")
+    label.toString() shouldBe "@//:*"
+  }
+
+  @Test
+  fun `package wildcards are normalized`() {
+    val label = Label.parse("//...:all")
+    label.toString() shouldBe "@//..."
+  }
+
+  @Test
+  fun `package parent function works`() {
+    val label = Label.parse("@//path/to/target:target")
+    val parent = (label.packagePath as Package).parent()
+    parent.toString() shouldBe "path/to"
+  }
+
+  @Test
+  fun `all rules targets are parsed correctly`() {
+    val label = Label.parse("@//path/to/target:all")
+    label.target shouldBe AllRuleTargets
+  }
+
+  @Test
+  fun `all rule targets and files are parsed correctly`() {
+    val label = Label.parse("@//path/to/target:*")
+    label.target shouldBe AllRuleTargetsAndFiles
+  }
+
+  @Test
+  fun `package wildcards are parsed correctly`() {
+    val label = Label.parse("@//path/to/...")
+    label.packagePath shouldBe AllPackagesBeneath(listOf("path", "to"))
+    label.toString() shouldBe "@//path/to/..."
+  }
+
+  @Test
+  fun `package wildcard without target is the same as all rule targets`() {
+    val label1 = Label.parse("@//path/to/...")
+    val label2 = Label.parse("@//path/to/...:all")
+    label1 shouldBe label2
+  }
+
+  @Test
+  fun `package wildcard with all-targets is the same as asterisk`() {
+    val label1 = Label.parse("@//path/to/...:*")
+    val label2 = Label.parse("path/to/...:all-targets")
+    label1 shouldBe label2
+  }
+
+  @Test
+  fun `synthetic label should be parsed correctly`() {
+    val label = Label.parse("scala-compiler-2.12.14.jar[synthetic]")
+    label.isSynthetic shouldBe true
   }
 }

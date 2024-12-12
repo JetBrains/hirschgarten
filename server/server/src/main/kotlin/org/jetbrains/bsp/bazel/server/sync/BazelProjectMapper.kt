@@ -934,21 +934,10 @@ class BazelProjectMapper(
   private fun resolveDirectDependencies(target: TargetInfo): List<Label> = target.dependenciesList.map { it.label() }
 
   private fun inferLanguages(target: TargetInfo): Set<Language> {
-    val languagesForTarget = Language.all().filter { isTargetKindOfLanguage(target.kind, it) }.toHashSet()
-    val languagesForSources =
-      target.sourcesList
-        .flatMap { source: FileLocation ->
-          Language.all().filter { isLanguageFile(source, it) }
-        }.toHashSet()
+    val languagesForTarget = Language.allOfKind(target.kind)
+    val languagesForSources = target.sourcesList.flatMap { Language.allOfSource(it.relativePath) }.toHashSet()
     return languagesForTarget + languagesForSources
   }
-
-  private fun isLanguageFile(file: FileLocation, language: Language): Boolean =
-    language.extensions.any {
-      file.relativePath.endsWith(it)
-    }
-
-  private fun isTargetKindOfLanguage(kind: String, language: Language): Boolean = language.targetKinds.contains(kind)
 
   private fun Label.toDirectoryUri(): URI = bazelPathsResolver.pathToDirectoryUri(this.toBazelPath().toString(), isMainWorkspace)
 
@@ -1009,7 +998,7 @@ class BazelProjectMapper(
 
   private fun removeDotBazelBspTarget(targets: Collection<Label>): Collection<Label> =
     targets.filter {
-      it.isMainWorkspace && !it.packagePath.startsWith(".bazelbsp")
+      it.isMainWorkspace && !it.packagePath.toString().startsWith(".bazelbsp")
     }
 
   private suspend fun createRustExternalModules(

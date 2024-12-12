@@ -59,6 +59,7 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestWithDebugParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
@@ -142,6 +143,11 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
         targetsToSync = params.targets,
       )
     }
+
+  override fun workspaceBuildTargetsFirstPhase(
+    params: WorkspaceBuildTargetsFirstPhaseParams,
+  ): CompletableFuture<WorkspaceBuildTargetsResult> =
+    runner.handleRequest("workspace/buildTargetsFirstPhase", projectSyncService::workspaceBuildFirstPhase, params)
 
   override fun workspaceReload(): CompletableFuture<Any> = runner.handleRequest("workspace/reload", projectSyncService::workspaceReload)
 

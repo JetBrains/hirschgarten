@@ -56,6 +56,7 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestWithDebugParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
@@ -97,17 +98,20 @@ class BuildServerMock(
   private val jvmBinaryJarsResult: JvmBinaryJarsResult? = null,
   private val workspaceBuildTargetsResultAndBuild: WorkspaceBuildTargetsResult? = null,
   private val workspaceBuildTargetsPartial: WorkspaceBuildTargetsResult? = null,
+  private val workspaceBuildTargetsFirstPhase: WorkspaceBuildTargetsResult? = null,
   private val pythonOptionsResult: PythonOptionsResult? = null,
   private val rustWorkspaceResult: RustWorkspaceResult? = null,
 ) : JoinedBuildServer {
   override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<InitializeBuildResult> =
     wrapInFuture(initializeBuildResult)
 
-  override fun onBuildInitialized() { /* it's a mock, nothing to do */ }
+  override fun onBuildInitialized() { // it's a mock, nothing to do
+  }
 
   override fun buildShutdown(): CompletableFuture<Any> = wrapInFuture(null)
 
-  override fun onBuildExit() { /* it's a mock, nothing to do */ }
+  override fun onBuildExit() { // it's a mock, nothing to do
+  }
 
   override fun workspaceBuildTargets(): CompletableFuture<WorkspaceBuildTargetsResult> = wrapInFuture(workspaceBuildTargetsResult)
 
@@ -141,7 +145,8 @@ class BuildServerMock(
   override fun buildTargetCleanCache(cleanCacheParams: CleanCacheParams): CompletableFuture<CleanCacheResult> =
     wrapInFuture(cleanCacheResult)
 
-  override fun onRunReadStdin(p0: ReadParams?) { /* it's a mock, nothing to do */ }
+  override fun onRunReadStdin(p0: ReadParams?) { // it's a mock, nothing to do
+  }
 
   override fun buildTargetJvmTestEnvironment(
     jvmTestEnvironmentParams: JvmTestEnvironmentParams,
@@ -198,6 +203,10 @@ class BuildServerMock(
 
   override fun workspaceBuildTargetsPartial(params: WorkspaceBuildTargetsPartialParams): CompletableFuture<WorkspaceBuildTargetsResult> =
     wrapInFuture(workspaceBuildTargetsPartial)
+
+  override fun workspaceBuildTargetsFirstPhase(
+    params: WorkspaceBuildTargetsFirstPhaseParams,
+  ): CompletableFuture<WorkspaceBuildTargetsResult> = wrapInFuture(workspaceBuildTargetsFirstPhase)
 
   override fun buildTargetPythonOptions(pythonOptionsParams: PythonOptionsParams?): CompletableFuture<PythonOptionsResult> =
     wrapInFuture(pythonOptionsResult)

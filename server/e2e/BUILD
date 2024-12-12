@@ -122,6 +122,12 @@ bazel_integration_test_current_version(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspBuildAndSyncTest",
 )
 
+bazel_integration_test_current_version(
+    name = "first_phase_sync_test",
+    project_path = "test-resources/first-phase-sync-project",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspFirstPhaseSyncTest",
+)
+
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
@@ -130,7 +136,9 @@ test_suite(
         ":allow_manual_targets_sync_test",
         ":android_kotlin_project_test",
         ":android_project_test",
+        ":build_and_sync_test",
         ":enabled_rules_test",
+        ":first_phase_sync_test",
         ":go_project_test",
         ":java_diagnostics_test",
         ":local_jdk_test",

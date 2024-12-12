@@ -6,12 +6,13 @@ import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.bazel.languages.starlark.bazel.BazelFileUtils
-import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 
 class BazelEditorTabTitleProvider : EditorTabTitleProvider {
   override fun getEditorTabTitle(project: Project, file: VirtualFile): String? =
-    requiresDecoration(project, file.name).ifTrue {
+    if (requiresDecoration(project, file.name)) {
       BazelFileUtils.getContainingDirectoryPresentablePath(project, file)
+    } else {
+      null
     }
 
   private fun requiresDecoration(project: Project, fileName: String): Boolean =

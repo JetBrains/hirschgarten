@@ -1,0 +1,3 @@
+fun method() {
+  println("Hi!")
+}

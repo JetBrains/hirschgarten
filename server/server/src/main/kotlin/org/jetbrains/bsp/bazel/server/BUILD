@@ -23,6 +23,7 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/utils",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/diagnostics",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/firstPhase",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_apache_logging_log4j_log4j_core",

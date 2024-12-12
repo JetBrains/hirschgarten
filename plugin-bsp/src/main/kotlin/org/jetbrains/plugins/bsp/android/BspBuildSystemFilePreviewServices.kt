@@ -20,8 +20,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
 import java.util.concurrent.atomic.AtomicReference
 
 class BspBuildSystemFilePreviewServices : BuildSystemFilePreviewServices<BspAndroidProjectSystem, BspBuildTargetReference> {
@@ -44,7 +44,7 @@ class BspBuildSystemFilePreviewServices : BuildSystemFilePreviewServices<BspAndr
       override fun buildArtifacts(buildTargets: Collection<BspBuildTargetReference>) {
         val project = buildTargets.firstOrNull()?.project ?: return
         BspCoroutineService.getInstance(project).start {
-          ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = true)
+          ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = true)
         }
       }
     }
