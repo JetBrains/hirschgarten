@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.seconds
 object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient()
 
-  private val externalRepoPrefix = if (majorBazelVersion == 7) "@@" else "@"
+  private val externalRepoPrefix = if (isBzlmod) "@@" else "@"
 
   @JvmStatic
   fun main(args: Array<String>) = executeScenario()
