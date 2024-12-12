@@ -53,11 +53,23 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
 
   private val bzlmodRepoNameSeparator = if (majorBazelVersion == 7) "~" else "+"
 
-  private val scalaRulesPath = if (isBzlmod) "rules_scala${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}scala_deps${bzlmodRepoNameSeparator}io_bazel_rules_scala" else "io_bazel_rules_scala"
+  private val scalaRulesPath =
+    if (isBzlmod) {
+      "rules_scala${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "scala_deps${bzlmodRepoNameSeparator}io_bazel_rules_scala"
+    } else {
+      "io_bazel_rules_scala"
+    }
   private val scalaRulesPathVersionSuffix = if (isBzlmod) "_2_13_14" else ""
   private val scalaRulesVersion = if (isBzlmod) "2.13.14" else "2.13.6"
 
-  private val remote_java_tools = if (isBzlmod) "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remote_java_tools" else "remote_java_tools"
+  private val remote_java_tools =
+    if (isBzlmod) {
+      "rules_java${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "toolchains${bzlmodRepoNameSeparator}remote_java_tools"
+    } else {
+      "remote_java_tools"
+    }
 
   private val bazelArch =
     if (System.getProperty("os.name").lowercase().startsWith("mac")) {
@@ -1096,7 +1108,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
     val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
-    val javaHomeBazel7 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/"
+    val javaHomeBazel7 =
+      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/"
     val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
     val jvmBuildTarget =
       JvmBuildTarget().also {
@@ -1149,7 +1163,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     val scalaBuildTarget =
       ScalaBuildTarget(
         "org.scala-lang",
-        "$scalaRulesVersion",
+        scalaRulesVersion,
         "2.13",
         ScalaPlatform.JVM,
         listOf(
@@ -1285,7 +1299,9 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     targetWithoutArgsBinary.data = scalaBuildTarget
 
     val guavaDepBazel5And6 = "@guava//:guava"
-    val guavaDepBazel7 = "@@rules_jvm_external${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}maven${bzlmodRepoNameSeparator}maven//:com_google_guava_guava"
+    val guavaDepBazel7 =
+      "@@rules_jvm_external${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "maven${bzlmodRepoNameSeparator}maven//:com_google_guava_guava"
     val guavaDep = if (isBzlmod) guavaDepBazel7 else guavaDepBazel5And6
     val targetWithDependencyJavaBinary =
       BuildTarget(

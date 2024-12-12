@@ -4,7 +4,7 @@ def format(target):
         if "JavaInfo" in providers(target):
             provider = providers(target)["JavaInfo"]  #bazel6
         else:
-            provider = providers(target)["@@rules_java+//java/private:java_info.bzl%JavaInfo"] # bazel 8
+            provider = providers(target)["@@rules_java+//java/private:java_info.bzl%JavaInfo"]  # bazel 8
 
     compilation_info = getattr(provider, "compilation_info", None)
 
