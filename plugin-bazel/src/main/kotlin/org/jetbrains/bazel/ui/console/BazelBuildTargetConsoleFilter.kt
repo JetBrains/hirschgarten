@@ -14,7 +14,8 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
   private val highlightGroupName = "highlightGroup"
   private val externalRepoGroupName = "externalRepoGroup"
   private val pathGroupName = "pathGroup"
-
+  
+  // The set of characters allowed in labels is taken from https://bazel.build/concepts/labels#target-names 
   private val bazelTargetRegex =
     """(^|\W)
         (?<$highlightGroupName>
