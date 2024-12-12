@@ -1,0 +1,2 @@
+exclude_library:
+  third_party/maven/libraries/guava*.jar

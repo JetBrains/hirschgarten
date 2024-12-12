@@ -1,0 +1,8 @@
+FILE
+  ProjectViewScalar(SCALAR)
+    ProjectViewScalarKey(SCALAR_KEY)
+      PsiElement(ProjectView:scalar_keyword)('shard_sync')
+    PsiElement(ProjectView:colon)(':')
+    PsiWhiteSpace(' ')
+    ProjectViewScalarValue(SCALAR_VALUE)
+      PsiElement(ProjectView:identifier)('true')

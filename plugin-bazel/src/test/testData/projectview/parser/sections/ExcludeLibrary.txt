@@ -1,0 +1,9 @@
+FILE
+  ProjectViewList(LIST)
+    ProjectViewListKey(LIST_KEY)
+      PsiElement(ProjectView:list_keyword)('exclude_library')
+    PsiElement(ProjectView:colon)(':')
+    PsiWhiteSpace('\n')
+    PsiWhiteSpace('  ')
+    ProjectViewListValue(LIST_VALUE)
+      PsiElement(ProjectView:identifier)('third_party/maven/libraries/guava*.jar')

@@ -22,4 +22,28 @@ class ProjectViewParsingAllSectionsTest : ProjectViewParsingTestCase("sections")
   fun testAdditionalLanguages() {
     doTest(true);
   }
+
+  fun testJavaLanguageLevel() {
+    doTest(true);
+  }
+
+  fun testJavaLanguageLevelPreview() {
+    doTest(true);
+  }
+
+  fun testTestSources() {
+    doTest(true);
+  }
+
+  fun testShardSync() {
+    doTest(true);
+  }
+
+  fun testTargetShardSize() {
+    doTest(true);
+  }
+
+  fun testExcludeLibrary() {
+    doTest(true);
+  }
 }
