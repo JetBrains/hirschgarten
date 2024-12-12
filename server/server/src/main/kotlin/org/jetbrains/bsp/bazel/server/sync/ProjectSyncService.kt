@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync
 
 import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.CppOptionsParams
 import ch.epfl.scala.bsp4j.CppOptionsResult
 import ch.epfl.scala.bsp4j.DependencyModulesParams

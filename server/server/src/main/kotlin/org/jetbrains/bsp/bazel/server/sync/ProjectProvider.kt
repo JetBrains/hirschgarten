@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.server.sync
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.benchmark.openTelemetry

@@ -216,7 +216,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.add("query")
       commandLine.addAll(options)
 
-      val queryTargets = targets.joinToString(" + ") + excludedTargets.joinToString(" ") { "- $it"}
+      val queryTargets = targets.joinToString(" + ") + excludedTargets.joinToString(" ") { "- $it" }
 
       commandLine.add(queryTargets)
 

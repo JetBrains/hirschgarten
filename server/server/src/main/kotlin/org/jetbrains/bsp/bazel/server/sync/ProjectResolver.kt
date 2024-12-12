@@ -8,9 +8,9 @@ import org.jetbrains.bsp.bazel.server.benchmark.tracer
 import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManagerResult
-import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.canonicalize
@@ -95,27 +95,35 @@ class ProjectResolver(
         measured(
           "Parsing aspect outputs",
         ) {
-          targetInfoReader.readTargetMapFromAspectOutputs(aspectOutputs).map { (k, v) ->
-            // TODO: make sure we canonicalize everything
-            //  also, this can be done in a more efficient way
-            //  maybe we can do it in the aspect with some flag or something
-            val label = k.canonicalize(repoMapping)
-            label to v.toBuilder().apply {
-              id = label.toString()
-              val canonicalizedDependencies = dependenciesBuilderList.map {
-                it.apply {
-                  id = Label.parse(it.id).canonicalize(repoMapping).toString()
-                }.build()
-              }
-              clearDependencies()
-              addAllDependencies(canonicalizedDependencies)
-            }.build()
-          }.toMap()
+          targetInfoReader
+            .readTargetMapFromAspectOutputs(aspectOutputs)
+            .map { (k, v) ->
+              // TODO: make sure we canonicalize everything
+              //  also, this can be done in a more efficient way
+              //  maybe we can do it in the aspect with some flag or something
+              val label = k.canonicalize(repoMapping)
+              label to
+                v
+                  .toBuilder()
+                  .apply {
+                    id = label.toString()
+                    val canonicalizedDependencies =
+                      dependenciesBuilderList.map {
+                        it
+                          .apply {
+                            id = Label.parse(it.id).canonicalize(repoMapping).toString()
+                          }.build()
+                      }
+                    clearDependencies()
+                    addAllDependencies(canonicalizedDependencies)
+                  }.build()
+            }.toMap()
         }
       // resolve root targets (expand wildcards)
-      val rootTargets = measured("Calculating root targets") {
-        bazelLabelExpander.getAllPossibleTargets(cancelChecker).map { it.canonicalize(repoMapping) }.toSet()
-      }
+      val rootTargets =
+        measured("Calculating root targets") {
+          bazelLabelExpander.getAllPossibleTargets(cancelChecker).map { it.canonicalize(repoMapping) }.toSet()
+        }
       return@useWithScope measured(
         "Mapping to internal model",
       ) { bazelProjectMapper.createProject(targets, rootTargets, workspaceContext, bazelInfo) }
