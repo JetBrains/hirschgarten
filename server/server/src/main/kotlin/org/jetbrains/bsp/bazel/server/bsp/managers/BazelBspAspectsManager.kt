@@ -8,6 +8,7 @@ import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.color
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.keepGoing
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.outputGroups
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.bep.BepOutput
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
@@ -26,6 +27,7 @@ class BazelBspAspectsManager(
   private val aspectsResolver: InternalAspectsResolver,
   private val workspaceContextProvider: WorkspaceContextProvider,
   private val featureFlags: FeatureFlags,
+  private val bazelRelease: BazelRelease,
 ) {
   private val aspectsPath = Paths.get(aspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
   private val templateWriter = TemplateWriter(aspectsPath)
@@ -34,7 +36,7 @@ class BazelBspAspectsManager(
     Language
       .values()
       .mapNotNull { language ->
-        if (language.ruleNames.isEmpty()) return@mapNotNull RuleLanguage(null, language) // bundled in Bazel
+        if (language.isBundled && bazelRelease.major < 8) return@mapNotNull RuleLanguage(null, language) // bundled in Bazel version < 8
         val ruleName = language.ruleNames.firstOrNull { externalRuleNames.contains(it) }
         ruleName?.let { RuleLanguage(it, language) }
       }.removeDisabledLanguages()
