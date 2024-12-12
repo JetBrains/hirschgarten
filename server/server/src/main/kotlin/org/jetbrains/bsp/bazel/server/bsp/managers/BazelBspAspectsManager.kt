@@ -9,7 +9,9 @@ import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.curses
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.keepGoing
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bsp.bazel.commons.BazelStatus
 import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.bep.BepOutput
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
@@ -18,7 +20,18 @@ import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Paths
 
-data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val isFailure: Boolean)
+/**
+ * If a retry with a clean Bazel server does not help, then more retries should have the same result
+ */
+private const val MAX_RETRIES_ON_OOM = 1
+
+data class BazelBspAspectsManagerResult(val bepOutput: BepOutput, val status: BazelStatus) {
+  val isFailure: Boolean
+    get() = status != BazelStatus.SUCCESS
+
+  fun merge(anotherResult: BazelBspAspectsManagerResult): BazelBspAspectsManagerResult =
+    BazelBspAspectsManagerResult(bepOutput.merge(anotherResult.bepOutput), status.merge(anotherResult.status))
+}
 
 data class RuleLanguage(val ruleName: String?, val language: Language)
 
@@ -92,13 +105,15 @@ class BazelBspAspectsManager(
 
   suspend fun fetchFilesFromOutputGroups(
     cancelChecker: CancelChecker,
-    targetSpecs: TargetsSpec,
+    targetsSpec: TargetsSpec,
     aspect: String,
     outputGroups: List<String>,
     shouldSyncManualFlags: Boolean,
     isRustEnabled: Boolean,
+    shouldLogInvocation: Boolean,
+    bspClientLogger: BspClientLogger,
   ): BazelBspAspectsManagerResult {
-    if (targetSpecs.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), isFailure = false)
+    if (targetsSpec.values.isEmpty()) return BazelBspAspectsManagerResult(BepOutput(), BazelStatus.SUCCESS)
     val defaultFlags =
       listOf(
         aspect(aspectsResolver.resolveLabel(aspect)),
@@ -112,23 +127,38 @@ class BazelBspAspectsManager(
 
     val flagsToUse = defaultFlags + allowManualTargetsSyncFlags
 
-    return bazelBspCompilationManager
-      .buildTargetsWithBep(
-        cancelChecker = cancelChecker,
-        targetSpecs = targetSpecs,
-        extraFlags = flagsToUse,
-        originId = null,
-        // Setting `CARGO_BAZEL_REPIN=1` updates `cargo_lockfile`
-        // (`Cargo.lock` file) based on dependencies specified in `manifest`
-        // (`Cargo.toml` file) and syncs `lockfile` (`Cargo.bazel.lock` file) with `cargo_lockfile`.
-        // Ensures that both Bazel and Cargo are using the same versions of dependencies.
-        // Mentioned `cargo_lockfile`, `lockfile` and `manifest` are defined in
-        // `crates_repository` from `rules_rust`,
-        // see: https://bazelbuild.github.io/rules_rust/crate_universe.html#crates_repository.
-        // In our server used only with `bazel build` command.
-        environment = if (isRustEnabled) listOf(Pair("CARGO_BAZEL_REPIN", "1")) else emptyList(),
-      ).let {
-        BazelBspAspectsManagerResult(it.bepOutput, it.processResult.isNotSuccess)
+    var retries = 0
+
+    var result: BazelBspAspectsManagerResult? = null
+
+    // From OG: Bazel server running out of memory on a build shard is generally caused by Bazel garbage collection bugs.
+    // Attempt to work around by resuming with a clean Bazel server.
+    while (retries <= MAX_RETRIES_ON_OOM && result == null) {
+      if (retries > 0) {
+        bspClientLogger.message("Retrying building targets on OOM ($retries/$MAX_RETRIES_ON_OOM) ...")
       }
+      result =
+        bazelBspCompilationManager
+          .buildTargetsWithBep(
+            cancelChecker = cancelChecker,
+            targetsSpec = targetsSpec,
+            extraFlags = flagsToUse,
+            originId = null,
+            // Setting `CARGO_BAZEL_REPIN=1` updates `cargo_lockfile`
+            // (`Cargo.lock` file) based on dependencies specified in `manifest`
+            // (`Cargo.toml` file) and syncs `lockfile` (`Cargo.bazel.lock` file) with `cargo_lockfile`.
+            // Ensures that both Bazel and Cargo are using the same versions of dependencies.
+            // Mentioned `cargo_lockfile`, `lockfile` and `manifest` are defined in
+            // `crates_repository` from `rules_rust`,
+            // see: https://bazelbuild.github.io/rules_rust/crate_universe.html#crates_repository.
+            // In our server used only with `bazel build` command.
+            environment = if (isRustEnabled) listOf(Pair("CARGO_BAZEL_REPIN", "1")) else emptyList(),
+            shouldLogInvocation = shouldLogInvocation,
+          ).takeIf { it.processResult.bazelStatus != BazelStatus.OOM_ERROR }
+          ?.let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
+      retries++
+    }
+
+    return result ?: error("Maximum retries reached. Could not complete build without OOM.")
   }
 }

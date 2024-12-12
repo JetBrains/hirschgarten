@@ -72,6 +72,12 @@ sealed interface Label {
   val isSynthetic: Boolean
     get() = this is Synthetic
 
+  val isWildcard: Boolean
+    get() = target is AllRuleTargetsAndFiles || target is AllRuleTargets || packagePath is AllPackagesBeneath
+
+  val isRecursive: Boolean
+    get() = packagePath is AllPackagesBeneath
+
   /**
    * Returns a path to the corresponding folder in the `bazel-(project)` directory.
    * Warning: this works on label with apparent repo names only if bzlmod is not used.

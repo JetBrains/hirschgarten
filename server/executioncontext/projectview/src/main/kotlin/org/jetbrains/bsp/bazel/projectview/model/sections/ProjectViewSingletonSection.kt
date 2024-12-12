@@ -55,3 +55,21 @@ data class AndroidMinSdkSection(override val value: Int) : ProjectViewSingletonS
     const val SECTION_NAME = "android_min_sdk"
   }
 }
+
+data class ShardSyncSection(override val value: Boolean) : ProjectViewSingletonSection<Boolean>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "shard_sync"
+  }
+}
+
+data class TargetShardSizeSection(override val value: Int) : ProjectViewSingletonSection<Int>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "target_shard_size"
+  }
+}
+
+data class ShardingApproachSection(override val value: String) : ProjectViewSingletonSection<String>(SECTION_NAME) {
+  companion object {
+    const val SECTION_NAME = "shard_approach"
+  }
+}

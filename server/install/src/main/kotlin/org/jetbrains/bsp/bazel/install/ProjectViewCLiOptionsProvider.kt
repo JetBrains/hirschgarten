@@ -14,6 +14,9 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRule
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -35,6 +38,9 @@ object ProjectViewCLiOptionsProvider {
       allowManualTargetsSync = toAllowManualTargetsSyncSection(projectViewCliOptions),
       enabledRules = toEnabledRulesSection(projectViewCliOptions),
       ideJavaHomeOverride = toIdeJavaHomeOverrideSection(projectViewCliOptions),
+      shardSync = toShardSyncSection(projectViewCliOptions),
+      targetShardSize = toTargetShardSizeSection(projectViewCliOptions),
+      shardingApproach = toShardingStrategy(projectViewCliOptions),
     )
 
   private fun toBazelBinarySection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewBazelBinarySection? =
@@ -89,4 +95,13 @@ object ProjectViewCLiOptionsProvider {
 
   private fun toDeriveTargetFlagSection(projectViewCliOptions: ProjectViewCliOptions?): ProjectViewDeriveTargetsFromDirectoriesSection? =
     projectViewCliOptions?.deriveTargetsFromDirectories?.let(::ProjectViewDeriveTargetsFromDirectoriesSection)
+
+  private fun toShardSyncSection(projectViewCliOptions: ProjectViewCliOptions?): ShardSyncSection? =
+    projectViewCliOptions?.shardSync?.let(::ShardSyncSection)
+
+  private fun toTargetShardSizeSection(projectViewCliOptions: ProjectViewCliOptions?): TargetShardSizeSection? =
+    projectViewCliOptions?.targetShardSize?.let(::TargetShardSizeSection)
+
+  private fun toShardingStrategy(projectViewCliOptions: ProjectViewCliOptions?): ShardingApproachSection? =
+    projectViewCliOptions?.shardApproach?.let(::ShardingApproachSection)
 }
