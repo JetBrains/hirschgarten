@@ -97,7 +97,7 @@ abstract class BazelBspTestBaseScenario {
         if (message == null || "could not download" !in message) {
           throw e
         }
-        log.warn("Failed to download Bazel. Retrying in $delayMs ms.")
+        println("WARN: Failed to download Bazel. Retrying in $delayMs ms.")
         Thread.sleep(delayMs)
         delayMs *= 2
       }
