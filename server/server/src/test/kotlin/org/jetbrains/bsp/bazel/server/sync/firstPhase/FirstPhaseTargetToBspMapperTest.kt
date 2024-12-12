@@ -25,6 +25,9 @@ import org.jetbrains.bsp.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
 import org.jetbrains.bsp.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bsp.bazel.workspacecontext.ShardSyncSpec
+import org.jetbrains.bsp.bazel.workspacecontext.ShardingApproachSpec
+import org.jetbrains.bsp.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -57,6 +60,9 @@ private class MockWorkspaceContextProvider(private val allowManualTargetsSync: B
       experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(false),
       enableNativeAndroidRules = EnableNativeAndroidRules(false),
       androidMinSdkSpec = AndroidMinSdkSpec(null),
+      shardSync = ShardSyncSpec(false),
+      targetShardSize = TargetShardSizeSpec(null),
+      shardingApproachSpec = ShardingApproachSpec(null),
     )
 }
 

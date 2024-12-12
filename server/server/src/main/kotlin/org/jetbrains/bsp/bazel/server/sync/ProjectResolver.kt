@@ -15,6 +15,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -86,7 +87,8 @@ class ProjectResolver(
       val buildAspectResult =
         measured(
           "Building project with aspect",
-        ) { buildProjectWithAspect(cancelChecker, workspaceContext, build, targetsToSync) }
+        ) { buildProjectWithAspect(cancelChecker, workspaceContext, build, targetsToSync, featureFlags) }
+
       val aspectOutputs =
         measured(
           "Reading aspect output paths",
@@ -114,20 +116,76 @@ class ProjectResolver(
     workspaceContext: WorkspaceContext,
     build: Boolean,
     targetsToSync: TargetsSpec,
+    featureFlags: FeatureFlags,
   ): BazelBspAspectsManagerResult {
     val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, ARTIFACTS_OUTPUT_GROUP, RUST_ANALYZER_OUTPUT_GROUP)
     if (build) {
       outputGroups.add(GENERATED_JARS_OUTPUT_GROUP)
     }
 
-    return bazelBspAspectsManager.fetchFilesFromOutputGroups(
-      cancelChecker = cancelChecker,
-      targetSpecs = targetsToSync,
-      aspect = ASPECT_NAME,
-      outputGroups = outputGroups,
-      shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
-      isRustEnabled = featureFlags.isRustSupportEnabled,
-    )
+    val nonShardBuild =
+      suspend {
+        bazelBspAspectsManager.fetchFilesFromOutputGroups(
+          cancelChecker = cancelChecker,
+          targetsSpec = targetsToSync,
+          aspect = ASPECT_NAME,
+          outputGroups = outputGroups,
+          shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
+          isRustEnabled = featureFlags.isRustSupportEnabled,
+          shouldLogInvocation = false,
+          bspClientLogger = bspClientLogger,
+        )
+      }
+
+    val res =
+      if (workspaceContext.shardSync.value) {
+        val shardedResult =
+          BazelBuildTargetSharder.expandAndShardTargets(
+            bazelPathsResolver,
+            bazelInfo,
+            featureFlags,
+            targetsToSync,
+            workspaceContext,
+            bazelRunner,
+            cancelChecker,
+            bspClientLogger,
+          )
+        val shardedTargetsSpecs = shardedResult.targets.toTargetsSpecs()
+        val shardedSize = shardedTargetsSpecs.size
+
+        if (shardedSize <= 1) {
+          // fall back to non-sharded build when sharding does not have effects
+          nonShardBuild()
+        } else {
+          shardedTargetsSpecs
+            .mapIndexed { idx, shardedTargetsSpec ->
+              val shardName = "shard ${idx + 1} of $shardedSize"
+              bspClientLogger.message("\nBuilding $shardName ...")
+              bazelBspAspectsManager
+                .fetchFilesFromOutputGroups(
+                  cancelChecker = cancelChecker,
+                  targetsSpec = shardedTargetsSpec,
+                  aspect = ASPECT_NAME,
+                  outputGroups = outputGroups,
+                  shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
+                  isRustEnabled = featureFlags.isRustSupportEnabled,
+                  shouldLogInvocation = false,
+                  bspClientLogger = bspClientLogger,
+                ).also {
+                  if (it.isFailure) {
+                    bspClientLogger.message("Failed to build $shardName")
+                  } else {
+                    bspClientLogger.message("Finished building $shardName")
+                  }
+                  bspClientLogger.message("---")
+                }
+            }.reduce { acc, result -> acc.merge(result) }
+        }
+      } else {
+        nonShardBuild()
+      }
+
+    return res
   }
 
   fun releaseMemory() {
