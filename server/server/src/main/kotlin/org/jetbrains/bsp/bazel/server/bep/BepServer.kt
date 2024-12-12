@@ -289,7 +289,8 @@ class BepServer(
 
   private fun consumeCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
     val eventLabel = Label.parseOrNull(event.id.targetCompleted.label)
-    val label = eventLabel ?: run {
+    val label =
+      eventLabel ?: run {
         LOGGER.warn("No target label found in event {}", event)
         return
       }
