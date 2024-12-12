@@ -24,6 +24,8 @@ abstract class BazelBspTestBaseScenario {
   val majorBazelVersion: Int = calculateMajorBazelVersion()
   val targetPrefix = "@"
 
+  val isBzlmod = majorBazelVersion >= 7
+
   private val architecturePart
     get() = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
   val javaHomeArchitecture get() = "\$OS$architecturePart"
