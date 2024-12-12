@@ -182,6 +182,7 @@ class BazelBspServer(
         aspectsResolver = aspectsResolver,
         workspaceContextProvider = workspaceContextProvider,
         featureFlags = featureFlags,
+        bazelRelease = bazelInfo.release,
       )
     val bazelToolchainManager = BazelToolchainManager(bazelRunner, featureFlags)
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
