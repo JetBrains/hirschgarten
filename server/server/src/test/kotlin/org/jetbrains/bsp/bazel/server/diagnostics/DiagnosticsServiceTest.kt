@@ -16,6 +16,37 @@ class DiagnosticsServiceTest {
   private val workspacePath = Paths.get("/user/workspace")
 
   @Test
+  fun `should extract diagnostic for error in BUILD dot bazel file`() {
+    val output =
+      """
+      Loading:
+      Loading: 0 packages loaded
+      ERROR: /Users/develar/projects/idea-push/community/build/jvm-rules/src/worker/BUILD.bazel:10:15: in kt_jvm_library rule //src/worker:worker: target '//:protobuf-java' is not visible from target '//src/worker:worker'.
+      ERROR: /Users/develar/projects/idea-push/community/build/jvm-rules/src/worker/BUILD.bazel:10:15: in kt_jvm_library rule //src/worker:worker: target '//:protobuf-java-util' is not visible from target '//src/worker:worker'.
+      """.trimIndent()
+
+    val diagnostics = extractDiagnostics(output, Label.parse("//src/worker:worker"))
+
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          TextDocumentIdentifier("file:///Users/develar/projects/idea-push/community/build/jvm-rules/src/worker/BUILD.bazel"),
+          BuildTargetIdentifier(Label.parse("@//src/worker").toString()),
+          errorDiagnostic(
+            Position(10, 15),
+            "in kt_jvm_library rule //src/worker:worker: target '//:protobuf-java' is not visible from target '//src/worker:worker'.",
+          ),
+          errorDiagnostic(
+            Position(10, 15),
+            "in kt_jvm_library rule //src/worker:worker: target '//:protobuf-java-util' is not visible from target '//src/worker:worker'.",
+          ),
+        ),
+      )
+
+    diagnostics shouldContainExactlyInAnyOrder expected
+  }
+
+  @Test
   fun `should extract diagnostics for error in BUILD file`() {
     val output =
       """

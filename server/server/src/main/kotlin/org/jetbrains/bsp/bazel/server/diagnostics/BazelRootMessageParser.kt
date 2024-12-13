@@ -4,7 +4,7 @@ import ch.epfl.scala.bsp4j.DiagnosticSeverity
 import org.jetbrains.bsp.bazel.server.model.Label
 
 object BazelRootMessageParser : Parser {
-  private const val TARGET_LABEL = """(//[\w/.-]*:[\w/.-]+)"""
+  private const val TARGET_LABEL = """(@{1,2}[\w~+.-]*//[\w/.-]*:[\w/.-]+)"""
 
   override fun tryParse(output: Output): List<Diagnostic> = findErrorInBUILD(output) ?: findWarningsInInfoMessage(output) ?: emptyList()
 
@@ -13,19 +13,19 @@ object BazelRootMessageParser : Parser {
   // This approach was used to find optional target label inside the message
   private val ErrorInBUILD =
     """
-      ^               # start of line
-      ERROR:\         # error indicator
-      ([^:]+/BUILD)   # path to BUILD file (1)
-      :(\d+)          # line number (2)
-      (?::(\d+))?     # optional column number (3)
-      :\              # ": " separator
-      (               # beginning of the error message (4)
-      (?:.*           # part of actual error message wrapped with label into optional group
-      $TARGET_LABEL    # target label (5)
-      )?              # make target label optional
-      .*              # part of actual error message
-      )               # end of the error message (4)
-      $               # end of line
+      ^                           # start of line
+      ERROR:\                     # error indicator
+      ([^:]+/BUILD(?:\.bazel)?)   # path to BUILD file (1)
+      :(\d+)                      # line number (2)
+      (?::(\d+))?                 # optional column number (3)
+      :\                          # ": " separator
+      (                           # beginning of the error message (4)
+      (?:.*                       # part of actual error message wrapped with label into optional group
+      $TARGET_LABEL               # target label (5)
+      )?                          # make target label optional
+      .*                          # part of actual error message
+      )                           # end of the error message (4)
+      $                           # end of line
       """.toRegex(RegexOption.COMMENTS)
 
   private fun findErrorInBUILD(output: Output): List<Diagnostic>? {
