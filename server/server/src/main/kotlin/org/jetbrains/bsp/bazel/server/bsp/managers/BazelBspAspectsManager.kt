@@ -47,7 +47,7 @@ class BazelBspAspectsManager(
 
   fun calculateRuleLanguages(externalRuleNames: List<String>): List<RuleLanguage> =
     Language
-      .values()
+      .entries
       .mapNotNull { language ->
         if (language.isBundled && bazelRelease.major < 8) return@mapNotNull RuleLanguage(null, language) // bundled in Bazel version < 8
         val ruleName = language.ruleNames.firstOrNull { externalRuleNames.contains(it) }
@@ -75,21 +75,28 @@ class BazelBspAspectsManager(
     ruleLanguages: List<RuleLanguage>,
     workspaceContext: WorkspaceContext,
     toolchains: Map<RuleLanguage, String?>,
+    bazelRelease: BazelRelease,
   ) {
-    ruleLanguages.filter { it.language.isTemplate }.forEach {
-      val outputFile = aspectsPath.resolve(it.language.toAspectRelativePath())
-      val templateFilePath = it.language.toAspectTemplateRelativePath()
-      val kotlinEnabled = Language.Kotlin in ruleLanguages.map { it.language }
+    val languageRuleMap = ruleLanguages.associateBy { it.language }
+    val activeLanguages = ruleLanguages.map { it.language }.toSet()
+    val kotlinEnabled = Language.Kotlin in activeLanguages
+    val javaEnabled = Language.Java in activeLanguages
+    val pythonEnabled = Language.Python in activeLanguages
+    val bazel8OrAbove = bazelRelease.major >= 8
+    Language.entries.filter { it.isTemplate }.forEach {
+      val ruleLanguage = languageRuleMap[it]
+      val outputFile = aspectsPath.resolve(it.toAspectRelativePath())
+      val templateFilePath = it.toAspectTemplateRelativePath()
       val variableMap =
         mapOf(
-          "ruleName" to it.ruleName,
+          "ruleName" to ruleLanguage?.ruleName,
           "addTransitiveCompileTimeJars" to
             workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
-          "loadKtJvmProvider" to
-            if (kotlinEnabled) """load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider")""" else "",
-          "getKtJvmProvider" to
-            if (kotlinEnabled) "get_kt_jvm_provider(target)" else "None",
-          "toolchainType" to toolchains[it].orEmpty(),
+          "kotlinEnabled" to kotlinEnabled.toString(),
+          "javaEnabled" to javaEnabled.toString(),
+          "pythonEnabled" to pythonEnabled.toString(),
+          "bazel8OrAbove" to bazel8OrAbove.toString(),
+          "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl] },
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }
