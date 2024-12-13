@@ -75,7 +75,7 @@ class ProjectResolver(
         ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, cancelChecker) } }
 
       measured("Realizing language aspect files from templates") {
-        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext, toolchains)
+        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext, toolchains, bazelInfo.release)
       }
 
       measured("Generating language extensions file") {
