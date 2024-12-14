@@ -13,6 +13,8 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
   companion object {
     private val commandPrefixes = TokenSet.create(BazelrcTokenTypes.COMMAND, *BazelrcTokenSets.QUOTES.types)
     private val flagPrefixes = TokenSet.create(BazelrcTokenTypes.FLAG, BazelrcTokenTypes.EQ, BazelrcTokenTypes.VALUE)
+    private val valueTokens = TokenSet.create(BazelrcTokenTypes.VALUE, BazelrcTokenTypes.SINGLE_QUOTE, BazelrcTokenTypes.DOUBLE_QUOTE)
+    private val backTokens = TokenSet.create(TokenType.WHITE_SPACE, BazelrcTokenTypes.COMMENT)
   }
 
   fun parseFile(): ASTNode {
@@ -87,15 +89,19 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
     matchToken(BazelrcTokenTypes.FLAG)
     matchToken(BazelrcTokenTypes.EQ)
     matchToken(BazelrcTokenTypes.VALUE)
+    while (atAnyToken(valueTokens) && !pastNewLine()) {
+      advanceLexer()
+    }
 
     flag.done(BazelrcElementTypes.FLAG)
   }
 
   private fun pastNewLine(): Boolean {
-    var tokenPos = 0
-    var backToken = rawLookup(tokenPos)
+    var tokenPos = -1
     var endOffset = currentOffset
-    while (backToken != null && (TokenType.WHITE_SPACE == backToken || BazelrcTokenTypes.COMMENT == backToken)) {
+
+    var backToken = rawLookup(tokenPos)
+    while (backTokens.contains(backToken)) {
       val startOffset = rawTokenTypeStart(tokenPos)
       if (originalText.substring(startOffset, endOffset).contains('\n')) {
         return true

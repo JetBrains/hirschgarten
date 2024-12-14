@@ -1,6 +1,8 @@
 package org.jetbrains.bazel.languages.bazelrc.fixtures
 
 import com.google.idea.testing.runfiles.Runfiles
+import com.intellij.platform.testFramework.core.FileComparisonFailedError
+import com.intellij.rt.execution.junit.FileComparisonFailure
 import com.intellij.testFramework.ParsingTestCase
 import org.jetbrains.bazel.languages.bazelrc.parser.BazelrcParserDefinition
 import kotlin.io.path.pathString
@@ -13,7 +15,11 @@ abstract class BazelrcParsingTestCase(baseDir: String, val dumpTree: Boolean = f
     if (dumpTree) {
       dumpParseTree()
     } else {
-      super.doTest(p0, p1)
+      try {
+        super.doTest(p0, p1)
+      } catch (e: FileComparisonFailedError) {
+        assertSameLines(e.expectedStringPresentation, e.actualStringPresentation)
+      }
     }
   }
 
