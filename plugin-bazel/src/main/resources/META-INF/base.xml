@@ -128,6 +128,9 @@
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelGlobalFunctionCompletionContributor"/>
         <completion.contributor
                 language="Starlark"
+                implementationClass="org.jetbrains.bazel.languages.starlark.completion.BazelNativeRulesCompletionContributor"/>
+        <completion.contributor
+                language="Starlark"
                 implementationClass="org.jetbrains.bazel.languages.starlark.completion.StarlarkParamsCompletionContributor"/>
         <completion.contributor
                 language="Starlark"
