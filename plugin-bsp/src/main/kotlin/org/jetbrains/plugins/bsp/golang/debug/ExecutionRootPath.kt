@@ -25,38 +25,37 @@ import java.io.File
  * execution root.
  */
 class ExecutionRootPath(path: String) {
-    val absoluteOrRelativeFile: File
+  val absoluteOrRelativeFile: File
 
-    init {
-        this.absoluteOrRelativeFile = File(path)
+  init {
+    this.absoluteOrRelativeFile = File(path)
+  }
+
+  val isAbsolute: Boolean
+    get() = absoluteOrRelativeFile.isAbsolute()
+
+  fun getFileRootedAt(absoluteRoot: File): File =
+    if (absoluteOrRelativeFile.isAbsolute()) {
+      this.absoluteOrRelativeFile
+    } else {
+      File(
+        absoluteRoot,
+        absoluteOrRelativeFile.getPath(),
+      )
     }
 
-    val isAbsolute: Boolean
-        get() = absoluteOrRelativeFile.isAbsolute()
-
-    fun getFileRootedAt(absoluteRoot: File): File {
-        return if (absoluteOrRelativeFile.isAbsolute()) this.absoluteOrRelativeFile else File(
-            absoluteRoot,
-            absoluteOrRelativeFile.getPath()
-        )
+  override fun equals(o: Any?): Boolean {
+    if (this === o) {
+      return true
     }
-
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
-            return true
-        }
-        if (o == null || javaClass != o.javaClass) {
-            return false
-        }
-        val that = o as ExecutionRootPath
-        return Objects.equal(this.absoluteOrRelativeFile, that.absoluteOrRelativeFile)
+    if (o == null || javaClass != o.javaClass) {
+      return false
     }
+    val that = o as ExecutionRootPath
+    return Objects.equal(this.absoluteOrRelativeFile, that.absoluteOrRelativeFile)
+  }
 
-    override fun hashCode(): Int {
-        return Objects.hashCode(this.absoluteOrRelativeFile)
-    }
+  override fun hashCode(): Int = Objects.hashCode(this.absoluteOrRelativeFile)
 
-    override fun toString(): String {
-        return "ExecutionRootPath{" + "path='" + this.absoluteOrRelativeFile + '\'' + '}'
-    }
+  override fun toString(): String = "ExecutionRootPath{" + "path='" + this.absoluteOrRelativeFile + '\'' + '}'
 }

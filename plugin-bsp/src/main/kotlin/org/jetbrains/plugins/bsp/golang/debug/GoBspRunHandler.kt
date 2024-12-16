@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.golang.debug
 
-
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.RunParams
 import com.goide.execution.application.GoApplicationConfiguration
@@ -53,11 +52,9 @@ class GoBspRunHandler(private val configuration: BspRunConfiguration) : BspRunHa
       }
     }
 
-  private fun getTargetId(environment: ExecutionEnvironment): BuildTargetIdentifier {
-    return (environment.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()
+  private fun getTargetId(environment: ExecutionEnvironment): BuildTargetIdentifier =
+    (environment.runProfile as? BspRunConfiguration)?.targets?.singleOrNull()
       ?: throw ExecutionException("Couldn't get BSP target from run configuration")
-  }
-
 
   class GoBspRunHandlerProvider : BspRunHandlerProvider {
     override val id: String = "GoBspRunHandlerProvider"

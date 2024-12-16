@@ -39,10 +39,7 @@ class BspGoDebugRunner : GenericProgramRunner<BspDebugRunnerSetting>() {
     return attachVM(state as GoDebuggableCommandLineState, environment)
   }
 
-  private fun attachVM(
-    state: GoDebuggableCommandLineState,
-    executionEnvironment: ExecutionEnvironment,
-  ): RunContentDescriptor {
+  private fun attachVM(state: GoDebuggableCommandLineState, executionEnvironment: ExecutionEnvironment): RunContentDescriptor {
     val ex = AtomicReference<ExecutionException>()
     val result = AtomicReference<RunContentDescriptor>()
     val project = executionEnvironment.project
@@ -75,10 +72,8 @@ class BspDebugRunnerSetting : RunnerSettings {
   }
 }
 
-private class BspDebugProcessStarter(
-  private val executionResult: ExecutionResult,
-  val state: GoDebuggableCommandLineState
-) : XDebugProcessStarter() {
+private class BspDebugProcessStarter(private val executionResult: ExecutionResult, val state: GoDebuggableCommandLineState) :
+  XDebugProcessStarter() {
   override fun start(session: XDebugSession): XDebugProcess {
     val sessionImpl = session as XDebugSessionImpl
     sessionImpl.addExtraActions(*executionResult.actions)
@@ -86,7 +81,8 @@ private class BspDebugProcessStarter(
       sessionImpl.addRestartActions(*it.restartActions)
     }
     val connection = DlvRemoteVmConnection(DlvDisconnectOption.KILL)
-    val process = DlvDebugProcess(session, connection, executionResult, /* remote= */ true)
+    val remote = true
+    val process = DlvDebugProcess(session, connection, executionResult, remote)
     connection.open(state.getDebugServerAddress())
     return process
   }

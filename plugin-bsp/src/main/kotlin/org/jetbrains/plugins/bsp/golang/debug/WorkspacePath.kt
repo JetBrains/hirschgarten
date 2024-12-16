@@ -28,90 +28,81 @@ import com.intellij.openapi.util.SystemInfo
  * names.
  */
 class WorkspacePath(relativePath: String) {
-    private val relativePath: String
+  private val relativePath: String
+
+  /**
+   * @param relativePath relative path that must use the Bazel specific separator char to separate
+   * path components
+   * @throws IllegalArgumentException if the path is invalid
+   */
+  init {
+    val normalizedRelativePath: String = normalizePathSeparator(relativePath)
+    val error: String? = validate(normalizedRelativePath)
+    require(error == null) { String.format("Invalid workspace path '%s': %s", relativePath, error) }
+    this.relativePath = normalizedRelativePath
+  }
+
+  val parent: WorkspacePath?
+    /**
+     * Returns the workspace path of this path's parent directory. Returns null if this is the
+     * workspace root.
+     */
+    get() {
+      if (this.isWorkspaceRoot) {
+        return null
+      }
+      val lastSeparatorIndex = relativePath.lastIndexOf('/')
+      val parentPath =
+        if (lastSeparatorIndex == -1) "" else relativePath.substring(0, lastSeparatorIndex)
+      return WorkspacePath(parentPath)
+    }
+
+  val isWorkspaceRoot: Boolean
+    get() = relativePath.isEmpty() || relativePath == "."
+
+  override fun toString(): String = relativePath
+
+  fun relativePath(): String = relativePath
+
+  override fun equals(o: Any?): Boolean {
+    if (this === o) {
+      return true
+    }
+    if (o == null || this.javaClass != o.javaClass) {
+      return false
+    }
+
+    val that = o as WorkspacePath
+    return relativePath == that.relativePath
+  }
+
+  override fun hashCode(): Int = relativePath.hashCode()
+
+  companion object {
+    private const val BAZEL_COMPONENT_SEPARATOR = '/'
+
+    private fun normalizePathSeparator(relativePath: String): String =
+      if (SystemInfo.isWindows) relativePath.replace('\\', BAZEL_COMPONENT_SEPARATOR) else relativePath
 
     /**
-     * @param relativePath relative path that must use the Bazel specific separator char to separate
-     * path components
-     * @throws IllegalArgumentException if the path is invalid
+     * Validates a workspace path. Returns null on success or an error message otherwise.
      */
-    init {
-        val normalizedRelativePath: String = normalizePathSeparator(relativePath)
-        val error: String? = validate(normalizedRelativePath)
-        require(error == null) { String.format("Invalid workspace path '%s': %s", relativePath, error) }
-        this.relativePath = normalizedRelativePath
+    fun validate(relativePath: String): String? {
+      if (relativePath.startsWith("/")) {
+        return "Workspace path must be relative; cannot start with '/': " + relativePath
+      }
+      if (relativePath.startsWith("../")) {
+        return "Workspace path must be inside the workspace; cannot start with '../': " + relativePath
+      }
+      if (relativePath.endsWith("/")) {
+        return "Workspace path may not end with '/': " + relativePath
+      }
+
+      if (relativePath.indexOf(':') >= 0) {
+        return "Workspace path may not contain ':': " + relativePath
+      }
+
+      return null
     }
-
-    val parent: WorkspacePath?
-        /**
-         * Returns the workspace path of this path's parent directory. Returns null if this is the
-         * workspace root.
-         */
-        get() {
-            if (this.isWorkspaceRoot) {
-                return null
-            }
-            val lastSeparatorIndex = relativePath.lastIndexOf('/')
-            val parentPath =
-                if (lastSeparatorIndex == -1) "" else relativePath.substring(0, lastSeparatorIndex)
-            return WorkspacePath(parentPath)
-        }
-
-    val isWorkspaceRoot: Boolean
-        get() = relativePath.isEmpty() || relativePath == "."
-
-    override fun toString(): String {
-        return relativePath
-    }
-
-    fun relativePath(): String {
-        return relativePath
-    }
-
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
-            return true
-        }
-        if (o == null || this.javaClass != o.javaClass) {
-            return false
-        }
-
-        val that = o as WorkspacePath
-        return relativePath == that.relativePath
-    }
-
-    override fun hashCode(): Int {
-        return relativePath.hashCode()
-    }
-
-
-    companion object {
-        private const val BAZEL_COMPONENT_SEPARATOR = '/'
-
-        private fun normalizePathSeparator(relativePath: String): String {
-            return if (SystemInfo.isWindows) relativePath.replace('\\', BAZEL_COMPONENT_SEPARATOR) else relativePath
-        }
-
-
-        /**
-         * Validates a workspace path. Returns null on success or an error message otherwise.
-         */
-        fun validate(relativePath: String): String? {
-            if (relativePath.startsWith("/")) {
-                return "Workspace path must be relative; cannot start with '/': " + relativePath
-            }
-            if (relativePath.startsWith("../")) {
-                return "Workspace path must be inside the workspace; cannot start with '../': " + relativePath
-            }
-            if (relativePath.endsWith("/")) {
-                return "Workspace path may not end with '/': " + relativePath
-            }
-
-            if (relativePath.indexOf(':') >= 0) {
-                return "Workspace path may not contain ':': " + relativePath
-            }
-
-            return null
-        }
-    }
+  }
 }

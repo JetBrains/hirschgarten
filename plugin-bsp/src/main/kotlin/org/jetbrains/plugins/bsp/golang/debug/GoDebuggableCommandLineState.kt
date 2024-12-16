@@ -1,6 +1,5 @@
 package org.jetbrains.plugins.bsp.golang.debug
 
-
 import com.goide.execution.application.GoApplicationConfiguration
 import com.goide.execution.application.GoApplicationRunningState
 import com.goide.execution.extension.GoRunConfigurationExtensionsManager
@@ -24,14 +23,16 @@ import org.jetbrains.plugins.bsp.taskEvents.BspTaskEventsService
 import org.jetbrains.plugins.bsp.taskEvents.BspTaskListener
 import org.jetbrains.plugins.bsp.taskEvents.OriginId
 
-
 abstract class GoDebuggableCommandLineState(
-  val environment: ExecutionEnvironment, module: Module, configuration: GoApplicationConfiguration, protected val originId: OriginId
+  val environment: ExecutionEnvironment,
+  module: Module,
+  configuration: GoApplicationConfiguration,
+  protected val originId: OriginId,
 ) : GoApplicationRunningState(
-  environment, module,
-  configuration,
-) {
-
+    environment,
+    module,
+    configuration,
+  ) {
   /** Run the actual BSP command or throw an exception if the server does not support running the configuration */
   protected abstract suspend fun startBsp(server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities)
 
@@ -52,21 +53,23 @@ abstract class GoDebuggableCommandLineState(
     lateinit var handler: BspProcessHandler
     // We have to start runDeferred later, because we need to register the listener first
     // Otherwise, we might miss some events
-    val runDeferred = bspCoroutineService.startAsync(lazy = true) {
-      project.connection.runWithServer { server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities ->
-        withContext(Dispatchers.EDT) {
-          RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
+    val runDeferred =
+      bspCoroutineService.startAsync(lazy = true) {
+        project.connection.runWithServer { server: JoinedBuildServer, capabilities: BazelBuildServerCapabilities ->
+          withContext(Dispatchers.EDT) {
+            RunContentManager.getInstance(project).toFrontRunContent(environment.executor, handler)
+          }
+          startBsp(server, capabilities)
         }
-        startBsp(server, capabilities)
       }
-    }
 
     handler = BspProcessHandler(runDeferred)
 
     handler.addProcessListener(runtimeErrorsListener)
 
     ProcessTerminatedListener.attach(
-      handler, myConfiguration.project,
+      handler,
+      myConfiguration.project,
       "\n" + GoBundle.message("go.execution.process.finished.with.exit.code", getProcessName(), "\$EXIT_CODE$") + "\n",
     )
 
@@ -85,5 +88,4 @@ abstract class GoDebuggableCommandLineState(
 
     return handler
   }
-
 }

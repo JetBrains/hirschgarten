@@ -24,16 +24,16 @@ import java.io.File
  * (typically none).
  */
 interface WorkspacePathResolver {
-    /**
-     * Resolves a workspace relative path to an absolute file.
-     */
-    fun resolveToFile(workspaceRelativePath: String): File {
-        val packageRoot = findPackageRoot(workspaceRelativePath)
-        return File(packageRoot, workspaceRelativePath)
-    }
+  /**
+   * Resolves a workspace relative path to an absolute file.
+   */
+  fun resolveToFile(workspaceRelativePath: String): File {
+    val packageRoot = findPackageRoot(workspaceRelativePath)
+    return File(packageRoot, workspaceRelativePath)
+  }
 
-    /**
-     * Finds the package root directory that a workspace relative path is in.
-     */
-    fun findPackageRoot(relativePath: String?): File?
+  /**
+   * Finds the package root directory that a workspace relative path is in.
+   */
+  fun findPackageRoot(relativePath: String?): File?
 }

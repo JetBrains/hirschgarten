@@ -9,15 +9,15 @@ sealed interface JvmDebugType {
   data class UNKNOWN(val name: String) : JvmDebugType // debug type unknown
 
   data class JDWP(val port: Int) : JvmDebugType // used for Java and Kotlin
-  
-  data class GO_DLV(val port: Int) : JvmDebugType // used for Go Delve Debugger
+
+  data class GoDlv(val port: Int) : JvmDebugType // used for Go Delve Debugger
 
   companion object {
     fun fromDebugData(params: RemoteDebugData?): JvmDebugType? =
       when (params?.debugType?.lowercase()) {
         null -> null
         "jdwp" -> JDWP(params.port)
-        "go_dlv" -> GO_DLV(params.port)
+        "go_dlv" -> GoDlv(params.port)
         else -> UNKNOWN(params.debugType)
       }
   }
@@ -40,16 +40,18 @@ object JvmDebugHelper {
 
   fun generateRunOptions(debugType: JvmDebugType?): List<String> =
     when (debugType) {
-      is JvmDebugType.GO_DLV -> listOf(
-       BazelFlag.runUnder("dlv --listen=127.0.0.1:${debugType.port} --headless=true --api-version=2 --check-go-version=false --only-same-user=false exec"),
-        "--compilation_mode=dbg",
-        "--dynamic_mode=off",
-      )
+      is JvmDebugType.GoDlv ->
+        listOf(
+          BazelFlag.runUnder(
+            "dlv --listen=127.0.0.1:${debugType.port} --headless=true --api-version=2 --check-go-version=false --only-same-user=false exec",
+          ),
+          "--compilation_mode=dbg",
+          "--dynamic_mode=off",
+        )
       else -> emptyList()
     }
 
-  fun buildBeforeRun(debugType: JvmDebugType?): Boolean =
-    debugType !is JvmDebugType.GO_DLV
+  fun buildBeforeRun(debugType: JvmDebugType?): Boolean = debugType !is JvmDebugType.GoDlv
 
   fun verifyDebugRequest(debugType: JvmDebugType?, moduleToRun: Module) =
     when (debugType) {
@@ -60,7 +62,7 @@ object JvmDebugHelper {
           throw RuntimeException("JDWP debugging is only available for Java and Kotlin targets")
         } else {
         }
-      is JvmDebugType.GO_DLV -> {}
+      is JvmDebugType.GoDlv -> {}
       is JvmDebugType.UNKNOWN -> throw RuntimeException("Unknown debug type: ${debugType.name}")
     }
 }

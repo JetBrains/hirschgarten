@@ -30,33 +30,33 @@ import java.io.File
  * target is built.
  */
 class ExecutionRootPathResolver(
-    private val buildArtifactDirectories: ImmutableList<String>,
-    val executionRoot: File,
-    private val outputBase: File,
-    private val workspacePathResolver: WorkspacePathResolver
+  private val buildArtifactDirectories: ImmutableList<String>,
+  val executionRoot: File,
+  private val outputBase: File,
+  private val workspacePathResolver: WorkspacePathResolver,
 ) {
-    fun resolveExecutionRootPath(path: ExecutionRootPath): File {
-        if (path.isAbsolute) {
-            return path.absoluteOrRelativeFile
-        }
-        val firstPathComponent: String = getFirstPathComponent(path.absoluteOrRelativeFile.getPath())
-        if (buildArtifactDirectories.contains(firstPathComponent)) {
-            // Build artifacts accumulate under the execution root, independent of symlink settings
-            return path.getFileRootedAt(executionRoot)
-        }
-        if (firstPathComponent == "external") { // In external workspace
-            // External workspaces accumulate under the output base.
-            // The symlinks to them under the execution root are unstable, and only linked per build.
-            return path.getFileRootedAt(outputBase)
-        }
-        // Else, in main workspace
-        return workspacePathResolver.resolveToFile(path.absoluteOrRelativeFile.getPath())
+  fun resolveExecutionRootPath(path: ExecutionRootPath): File {
+    if (path.isAbsolute) {
+      return path.absoluteOrRelativeFile
     }
+    val firstPathComponent: String = getFirstPathComponent(path.absoluteOrRelativeFile.getPath())
+    if (buildArtifactDirectories.contains(firstPathComponent)) {
+      // Build artifacts accumulate under the execution root, independent of symlink settings
+      return path.getFileRootedAt(executionRoot)
+    }
+    if (firstPathComponent == "external") { // In external workspace
+      // External workspaces accumulate under the output base.
+      // The symlinks to them under the execution root are unstable, and only linked per build.
+      return path.getFileRootedAt(outputBase)
+    }
+    // Else, in main workspace
+    return workspacePathResolver.resolveToFile(path.absoluteOrRelativeFile.getPath())
+  }
 
-    companion object {
-        private fun getFirstPathComponent(path: String): String {
-            val index = path.indexOf(File.separatorChar)
-            return if (index == -1) path else path.substring(0, index)
-        }
+  companion object {
+    private fun getFirstPathComponent(path: String): String {
+      val index = path.indexOf(File.separatorChar)
+      return if (index == -1) path else path.substring(0, index)
     }
+  }
 }

@@ -583,6 +583,7 @@ class BspProjectMapper(
 
     return toRustWorkspaceResult(requestedModules, allRustModules)
   }
+
   fun goDebuggerData(): GoDebuggerDataResult {
     val toGoDebuggerData = languagePluginsService.goLanguagePlugin::toGoDebuggerData
     return toGoDebuggerData()

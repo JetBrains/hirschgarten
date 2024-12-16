@@ -22,42 +22,29 @@ import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
 import java.nio.file.Path
 
-
 /**
  * Represents a workspace root
  */
 class WorkspaceRoot(private val directory: File) {
-    fun directory(): File {
-        return directory
-    }
+  fun directory(): File = directory
 
-    fun path(): Path {
-        return directory.toPath()
-    }
+  fun path(): Path = directory.toPath()
 
-    fun workspacePathFor(file: VirtualFile): WorkspacePath {
-        return workspacePathFor(file.getPath())
-    }
+  fun workspacePathFor(file: VirtualFile): WorkspacePath = workspacePathFor(file.getPath())
 
-    private fun workspacePathFor(path: String): WorkspacePath {
-        require(isInWorkspace(path)) { String.format("File '%s' is not under workspace %s", path, directory) }
-        if (directory.getPath().length == path.length) {
-            return WorkspacePath("")
-        }
-        return WorkspacePath(path.substring(directory.getPath().length + 1))
+  private fun workspacePathFor(path: String): WorkspacePath {
+    require(isInWorkspace(path)) { String.format("File '%s' is not under workspace %s", path, directory) }
+    if (directory.getPath().length == path.length) {
+      return WorkspacePath("")
     }
+    return WorkspacePath(path.substring(directory.getPath().length + 1))
+  }
 
-    fun isInWorkspace(file: VirtualFile): Boolean {
-        return isInWorkspace(file.getPath())
-    }
+  fun isInWorkspace(file: VirtualFile): Boolean = isInWorkspace(file.getPath())
 
-    private fun isInWorkspace(path: String): Boolean {
-        return FileUtil.isAncestor(directory.getPath(), path, false)
-    }
+  private fun isInWorkspace(path: String): Boolean = FileUtil.isAncestor(directory.getPath(), path, false)
 
-    override fun toString(): String {
-        return directory.toString()
-    }
+  override fun toString(): String = directory.toString()
 
   override fun equals(o: Any?): Boolean {
     if (this === o) {
@@ -71,7 +58,5 @@ class WorkspaceRoot(private val directory: File) {
     return FileUtil.filesEqual(directory, that.directory)
   }
 
-  override fun hashCode(): Int {
-    return FileUtil.fileHashCode(directory)
-  }
+  override fun hashCode(): Int = FileUtil.fileHashCode(directory)
 }
