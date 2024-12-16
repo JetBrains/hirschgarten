@@ -1,13 +1,7 @@
 def format(target):
-    provider = providers(target).get("@@_builtins//:common/java/java_info.bzl%JavaInfo")
-    if provider == None:
-        if "JavaInfo" in providers(target):
-            provider = providers(target)["JavaInfo"]  #bazel6
-        else:
-            provider = providers(target)["@@rules_java+//java/private:java_info.bzl%JavaInfo"]  # bazel 8
+    provider = _find_provider(target, "JavaInfo")
 
     compilation_info = getattr(provider, "compilation_info", None)
-
     runtime_classpath = []  #bazel5 default to [] because depset() not available
     if compilation_info:
         runtime_classpath = compilation_info.runtime_classpath.to_list()
@@ -25,3 +19,10 @@ def format(target):
         "runtime_classpath": [f.path for f in runtime_classpath],
         "compile_classpath": [f.path for f in compile_classpath],
     }
+
+def _find_provider(target, provider_name_to_find):
+    for provider_name, provider in providers(target).items():
+        if provider_name_to_find in provider_name:
+            return provider
+
+    return None
