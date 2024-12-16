@@ -3,6 +3,7 @@ rules_intellij
 rules_sonatype
 server/e2e/test-projects/bzlmod/allow-manual-targets-sync-project/bazel-allow-manual-targets-sync-project
 server/e2e/test-projects/bzlmod/bazel-build-and-sync-test
+server/e2e/test-projects/bzlmod/remote-jdk-project/bazel-remote-jdk-project
 server/e2e/test-projects/bzlmod/sample-repo/bazel-sample-repo
 server/e2e/test-projects/workspace/allow-manual-targets-sync-project/bazel-allow-manual-targets-sync-project
 server/e2e/test-projects/workspace/android-kotlin-project/bazel-android-kotlin-project

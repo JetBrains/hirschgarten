@@ -29,7 +29,7 @@ bazel_integration_test_all_versions(
 
 bazel_integration_test_all_versions(
     name = "remote_jdk_test",
-    bzlmod_project_path = "test-projects/workspace/remote-jdk-project",
+    bzlmod_project_path = "test-projects/bzlmod/remote-jdk-project",
     project_path = "test-projects/workspace/remote-jdk-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspRemoteJdkTest",
 )
