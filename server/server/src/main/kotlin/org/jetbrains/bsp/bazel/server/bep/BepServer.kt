@@ -216,7 +216,7 @@ class BepServer(
         startParams.data = task
       }
       bspClient.onBuildTaskStart(startParams)
-    } else if (event.started.command == Constants.BAZEL_TEST_COMMAND) {
+    } else if (event.started.command == Constants.BAZEL_TEST_COMMAND || event.started.command == Constants.BAZEL_COVERAGE_COMMAND) {
       if (originId == null) {
         return
       }

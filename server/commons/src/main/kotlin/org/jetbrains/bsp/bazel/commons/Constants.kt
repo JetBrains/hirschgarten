@@ -11,6 +11,7 @@ object Constants {
   val SUPPORTED_LANGUAGES: List<String> = listOf(SCALA, JAVA, KOTLIN)
   const val BAZEL_BUILD_COMMAND: String = "build"
   const val BAZEL_TEST_COMMAND: String = "test"
+  const val BAZEL_COVERAGE_COMMAND: String = "coverage"
   const val BUILD_FILE_NAME: String = "BUILD"
   const val WORKSPACE_FILE_NAME: String = "WORKSPACE"
   const val ASPECT_REPOSITORY: String = "bazelbsp_aspect"
