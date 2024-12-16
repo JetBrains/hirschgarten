@@ -3,6 +3,7 @@ package org.jetbrains.bazel.ui.console
 import com.intellij.execution.filters.ConsoleFilterProvider
 import com.intellij.execution.filters.Filter
 import com.intellij.execution.filters.OpenFileHyperlinkInfo
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findDirectory
@@ -48,13 +49,18 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
       return null
     }
     val virtualFile = pathGroup.value.toBazelFileInProject() ?: return null
-    val psiElement =
-      virtualFile
-        .toPsiFile(project)
-        ?.descendantsOfType<StarlarkNamedArgumentExpression>()
-        ?.filter { it.isNameArgument() }
-        ?.firstOrNull { it.getArgumentStringValue()?.let { it1 -> BazelLabel.ofString(it1).targetName } == target.value }
-    val hyperLinkInfo = OpenFileHyperlinkInfo(project, virtualFile, psiElement?.getLineNumber() ?: 0, 0)
+    val hyperLinkInfo =
+      runReadAction {
+        val psiElement =
+          virtualFile
+            .toPsiFile(project)
+            ?.descendantsOfType<StarlarkNamedArgumentExpression>()
+            ?.filter { it.isNameArgument() }
+            ?.firstOrNull {
+              it.getArgumentStringValue()?.let { it1 -> BazelLabel.ofString(it1).targetName } == target.value
+            }
+        OpenFileHyperlinkInfo(project, virtualFile, psiElement?.getLineNumber() ?: 0, 0)
+      }
 
     val highlightStartOffset = entireLength - line.length + highlightGroup.range.first
     val highlightEndOffset = entireLength - line.length + highlightGroup.range.last + 1
