@@ -42,6 +42,8 @@
 
         <runConfigurationTypeProvider implementation="org.jetbrains.bazel.run.BazelRunConfigurationTypeProvider"/>
         <bspFeatureFlagsProvider implementation="org.jetbrains.bazel.config.BazelBspFeatureFlagsProvider"/>
+        <bspAdditionalProjectTaskRunnerProvider
+                implementation="org.jetbrains.bazel.hotswap.BazelHotswapProjectTaskRunnerProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -225,6 +227,9 @@
         <registryKey defaultValue="2"
                      description="How many levels to go down when scanning the project for Bazel symlinks to exclude"
                      key="bazel.symlink.scan.max.depth"/>
+        <registryKey defaultValue="false"
+                     description="Enable hotswap for debugging JVM functions"
+                     key="bazel.hotswap.enabled"/>
         <configurationType implementation="org.jetbrains.bazel.run.BazelRunConfigurationType"/>
     </extensions>
 
