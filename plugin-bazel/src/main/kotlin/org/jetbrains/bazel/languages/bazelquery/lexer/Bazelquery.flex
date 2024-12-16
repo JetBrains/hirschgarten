@@ -43,13 +43,13 @@ RIGHT_PAREN=[)]
 // contain + characters.
 UNQUOTED_WORD=([A-Za-z0-9/@._:$~\[\]][A-Za-z0-9*/@.\-_:$~\[\]]* | @@[A-Za-z0-9*/@.\-_:$~\[\]+]*)
 
-QUOTED_WORD=[^{NL}]+
+QUOTED_WORD=[^{NL}{SQ}{DQ}]+
 
 
-ESQ=\\{SQ}
-EDQ=\\{DQ}
-//SQ_WORD={SQ}{QUOTED_WORD}{SQ}
-//DQ_WORD={DQ}{QUOTED_WORD}{DQ}
+//ESQ=\\{SQ}
+//EDQ=\\{DQ}
+SQ_WORD={SQ}{QUOTED_WORD}{SQ}
+DQ_WORD={DQ}{QUOTED_WORD}{DQ}
 
 //INTEGER=[0-9]+
 
@@ -90,13 +90,19 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
 <EXPR_DQ> {
     ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
     {DQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
-    {SQ}                              { yybegin(WORD_SQ); return BazelqueryTokenTypes.SINGLE_QUOTE; }
+    //{SQ}                              { yybegin(WORD_SQ); yypushback(1); return BazelqueryTokenTypes.SINGLE_QUOTE; }
+    // {SQ} ([{QUOTED_WORD}{ESQ}{EDQ}])+ {SQ}       { return BazelqueryTokenTypes.SQ_WORD; }
+    {SQ_WORD}                         { return BazelqueryTokenTypes.SQ_WORD; }
+   //  [^]                              {}
 }
 
 <EXPR_SQ> {
     ({SOFT_NL} | [{SPACE}{NL}])+      { return TokenType.WHITE_SPACE; }
     {SQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.SINGLE_QUOTE; }
-    {DQ}                              { yybegin(WORD_DQ); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
+    //{DQ}                              { yybegin(WORD_DQ); yypushback(1); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
+    // {DQ} ({QUOTED_WORD} | {ESQ} | {EDQ})+ {DQ}        { return BazelqueryTokenTypes.DQ_WORD; }
+    {DQ_WORD}                         { return BazelqueryTokenTypes.DQ_WORD; }
+ //   [^]                                {}
 }
 
 <EXPR> {
@@ -119,19 +125,22 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
 
     ","                               { return BazelqueryTokenTypes.COMMA; }
 
-    {UNQUOTED_WORD}                   { return BazelqueryTokenTypes.WORD; }
+    {UNQUOTED_WORD}                   { return BazelqueryTokenTypes.UNQUOTED_WORD; }
    // [^]
 }
 
+/*
 <WORD_SQ> {
- //   ([{QUOTED_WORD}{ESQ}{EDQ}])+        { return BazelqueryTokenTypes.WORD; }
-    {SQ}                              { yybegin(EXPR_DQ); return BazelqueryTokenTypes.SINGLE_QUOTE; }
+    {SQ} ([{QUOTED_WORD}{ESQ}{EDQ}])+ {SQ}       { yybegin(EXPR_DQ); return BazelqueryTokenTypes.SQ_WORD; }
+   // {SQ}                              { yybegin(EXPR_DQ); return BazelqueryTokenTypes.SINGLE_QUOTE; }
 }
 
 <WORD_DQ> {
- //   ({QUOTED_WORD} | {ESQ} | {EDQ})+        { return BazelqueryTokenTypes.WORD; }
-    {DQ}                              { yybegin(EXPR_SQ); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
+    {DQ} ({QUOTED_WORD} | {ESQ} | {EDQ})+ {DQ}        { yybegin(EXPR_SQ); return BazelqueryTokenTypes.DQ_WORD; }
+  //  {DQ}                              { yybegin(EXPR_SQ); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
 }
+*/
+
 /*
 <FLAG> {
     {UNQUOTED_WORD}                   { yybegin(VALUE); return BazelqueryTokenTypes.FLAG; }

@@ -22,7 +22,13 @@ object BazelqueryTokenTypes {
     val COMMAND = BazelqueryTokenType("COMMAND")
 
     @JvmField
-    val WORD = BazelqueryTokenType("WORD")
+    val UNQUOTED_WORD = BazelqueryTokenType("UNQUOTED_WORD")
+
+    @JvmField
+    val SQ_WORD = BazelqueryTokenType("SQ_WORD")
+
+    @JvmField
+      val DQ_WORD = BazelqueryTokenType("DQ_WORD")
 
 
     @JvmField

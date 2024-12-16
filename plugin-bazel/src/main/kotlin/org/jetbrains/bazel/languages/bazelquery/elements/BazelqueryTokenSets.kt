@@ -14,6 +14,12 @@ object BazelqueryTokenSets {
 
   val QUOTES = TokenSet.create(DOUBLE_QUOTE, SINGLE_QUOTE)
 
+  val WORDS = TokenSet.create(
+    BazelqueryTokenTypes.UNQUOTED_WORD,
+    BazelqueryTokenTypes.SQ_WORD,
+    BazelqueryTokenTypes.DQ_WORD
+  )
+
   val OPERATIONS = TokenSet.create(
     BazelqueryTokenTypes.UNION,
     BazelqueryTokenTypes.EXCEPT,
@@ -21,6 +27,7 @@ object BazelqueryTokenSets {
     BazelqueryTokenTypes.LET,
     BazelqueryTokenTypes.SET,
     BazelqueryTokenTypes.IN,
+    BazelqueryTokenTypes.EQUALS,
 
   )
 }
