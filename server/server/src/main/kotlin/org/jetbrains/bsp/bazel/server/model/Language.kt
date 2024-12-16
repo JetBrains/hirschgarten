@@ -35,8 +35,12 @@ enum class Language(
   val allNames: Set<String> = dependentNames + id
 
   companion object {
-    private val ALL = values().toSet()
+    private val ALL = Language.entries.toSet()
 
     fun all() = ALL
+
+    fun allOfKind(targetKind: String): Set<Language> = all().filter { it.targetKinds.contains(targetKind) }.toHashSet()
+
+    fun allOfSource(path: String): Set<Language> = all().filter { lang -> lang.extensions.any { path.endsWith(it) } }.toHashSet()
   }
 }

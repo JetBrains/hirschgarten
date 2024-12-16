@@ -25,47 +25,54 @@ class BazelEnabledRulesQueryImpl(private val enabledRulesSpec: EnabledRulesSpec)
 class BazelExternalRulesQueryImpl(
   private val bazelRunner: BazelRunner,
   private val isBzlModEnabled: Boolean,
+  private val isWorkspaceEnabled: Boolean,
   private val enabledRules: EnabledRulesSpec,
   private val bspClientLogger: BspClientLogger,
 ) : BazelExternalRulesQuery {
   override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> =
     when {
       enabledRules.isNotEmpty() -> BazelEnabledRulesQueryImpl(enabledRules).fetchExternalRuleNames(cancelChecker)
-      isBzlModEnabled ->
-        BazelBzlModExternalRulesQueryImpl(bazelRunner, bspClientLogger).fetchExternalRuleNames(cancelChecker) +
+      else ->
+        BazelBzlModExternalRulesQueryImpl(bazelRunner, isBzlModEnabled, bspClientLogger).fetchExternalRuleNames(cancelChecker) +
           BazelWorkspaceExternalRulesQueryImpl(
             bazelRunner,
+            isWorkspaceEnabled,
             bspClientLogger,
           ).fetchExternalRuleNames(cancelChecker)
-
-      else -> BazelWorkspaceExternalRulesQueryImpl(bazelRunner, bspClientLogger).fetchExternalRuleNames(cancelChecker)
     }
 }
 
-class BazelWorkspaceExternalRulesQueryImpl(private val bazelRunner: BazelRunner, private val bspClientLogger: BspClientLogger) :
-  BazelExternalRulesQuery {
+class BazelWorkspaceExternalRulesQueryImpl(
+  private val bazelRunner: BazelRunner,
+  private val isWorkspaceEnabled: Boolean,
+  private val bspClientLogger: BspClientLogger,
+) : BazelExternalRulesQuery {
   override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> =
-    bazelRunner.run {
-      val command =
-        buildBazelCommand {
-          query {
-            targets.add(BuildTargetIdentifier("//external:*"))
-            options.addAll(listOf("--output=xml", "--order_output=no"))
+    if (!isWorkspaceEnabled) {
+      emptyList()
+    } else {
+      bazelRunner.run {
+        val command =
+          buildBazelCommand {
+            query {
+              targets.add(BuildTargetIdentifier("//external:*"))
+              options.addAll(listOf("--output=xml", "--order_output=no"))
+            }
           }
-        }
 
-      runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
-        .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
-        .let { result ->
-          if (result.isNotSuccess) {
-            val queryFailedMessage = getQueryFailedMessage(result)
-            bspClientLogger.warn(queryFailedMessage)
-            log.warn(queryFailedMessage)
-            null
-          } else {
-            result.stdout.readXML(log)?.calculateEligibleRules()
-          }
-        }.orEmpty()
+        runBazelCommand(command, logProcessOutput = false, serverPidFuture = null)
+          .waitAndGetResult(cancelChecker, ensureAllOutputRead = true)
+          .let { result ->
+            if (result.isNotSuccess) {
+              val queryFailedMessage = getQueryFailedMessage(result)
+              bspClientLogger.warn(queryFailedMessage)
+              log.warn(queryFailedMessage)
+              null
+            } else {
+              result.stdout.readXML(log)?.calculateEligibleRules()
+            }
+          }.orEmpty()
+      }
     }
 
   private fun Document.calculateEligibleRules(): List<String> {
@@ -92,11 +99,15 @@ class BazelWorkspaceExternalRulesQueryImpl(private val bazelRunner: BazelRunner,
   }
 }
 
-class BazelBzlModExternalRulesQueryImpl(private val bazelRunner: BazelRunner, private val bspClientLogger: BspClientLogger) :
-  BazelExternalRulesQuery {
+class BazelBzlModExternalRulesQueryImpl(
+  private val bazelRunner: BazelRunner,
+  private val isBzlModEnabled: Boolean,
+  private val bspClientLogger: BspClientLogger,
+) : BazelExternalRulesQuery {
   private val gson = Gson()
 
   override fun fetchExternalRuleNames(cancelChecker: CancelChecker): List<String> {
+    if (!isBzlModEnabled) return emptyList()
     val command =
       bazelRunner.buildBazelCommand {
         graph { options.add("--output=json") }

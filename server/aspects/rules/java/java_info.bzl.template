@@ -1,4 +1,31 @@
 load("//aspects:utils/utils.bzl", "create_struct", "to_file_location")
+#if( $javaEnabled == "true" && $bazel8OrAbove == "true" )
+load("@${ruleName}//java/common:java_info.bzl", "JavaInfo")
+#end
+
+def java_info_in_target(target):
+  #if( $javaEnabled == "true" )
+  return JavaInfo in target
+  #else
+  return False
+  #end
+
+def get_java_info(target):
+  #if( $javaEnabled == "true" )
+  if JavaInfo in target:
+      return target[JavaInfo]
+  else:
+      return None
+  #else
+  return None
+  #end
+
+def java_info_reference():
+  #if( $javaEnabled == "true" )
+  return [JavaInfo]
+  #else
+  return []
+  #end
 
 def extract_java_toolchain(target, ctx, dep_targets, **kwargs):
     toolchain = None
