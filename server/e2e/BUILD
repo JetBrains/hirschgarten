@@ -122,9 +122,9 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspBuildAndSyncTest",
 )
 
-bazel_integration_test_current_version(
+bazel_integration_test_all_versions(
     name = "first_phase_sync_test",
-    project_path = "test-projects/workspace/first-phase-sync-project",
+    bzlmod_project_path = "test-projects/bzlmod/first-phase-sync-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspFirstPhaseSyncTest",
 )
 
