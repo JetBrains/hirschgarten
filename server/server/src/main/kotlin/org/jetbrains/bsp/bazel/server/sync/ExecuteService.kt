@@ -24,6 +24,7 @@ import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.HasEnvironment
 import org.jetbrains.bsp.bazel.bazelrunner.HasMultipleTargets
 import org.jetbrains.bsp.bazel.bazelrunner.HasProgramArguments
+import org.jetbrains.bsp.bazel.bazelrunner.HasAdditionalBazelOptions
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.bep.BepServer
@@ -191,8 +192,8 @@ class ExecuteService(
         else -> bazelRunner.buildBazelCommand { test() }
       }
 
-    bazelTestParamsData?.additionalBazelParams?.let { additionalBazelParams ->
-      command.options.add(additionalBazelParams)
+    bazelTestParamsData?.additionalBazelParams?.let { additionalParams ->
+       (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
     }
 
     bazelTestParamsData?.testFilter?.let { testFilter ->
