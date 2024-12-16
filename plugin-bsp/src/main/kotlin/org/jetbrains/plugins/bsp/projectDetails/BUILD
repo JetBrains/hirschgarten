@@ -12,6 +12,7 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/extensionPoints",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/impl",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/magicmetamodel/impl/workspacemodel/impl",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/golang",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/scala",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/ui/notifications",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/utils",

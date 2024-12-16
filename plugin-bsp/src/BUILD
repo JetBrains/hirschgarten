@@ -20,6 +20,7 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/performance",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/performanceImpl",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/projectDetails",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/golang",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/run",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/runnerAction",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/scala",

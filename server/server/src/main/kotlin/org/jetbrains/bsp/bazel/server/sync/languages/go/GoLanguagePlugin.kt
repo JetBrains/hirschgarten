@@ -6,6 +6,7 @@ import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.SourceRootAndData
 import org.jetbrains.bsp.bazel.server.sync.languages.jvm.SourceRootGuesser
+import org.jetbrains.bsp.protocol.GoDebuggerDataResult
 import org.jetbrains.bsp.protocol.GoBuildTarget
 import java.net.URI
 import java.nio.file.Path
@@ -43,6 +44,14 @@ class GoLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : Lan
       generatedSources = goTargetInfo.generatedSourcesList.mapNotNull { bazelPathsResolver.resolveUri(it) },
       generatedLibraries = goTargetInfo.generatedLibrariesList.mapNotNull { bazelPathsResolver.resolveUri(it) },
     )
+  }
+
+  fun toGoDebuggerData(): GoDebuggerDataResult {
+    return GoDebuggerDataResult(
+      bazelPathsResolver.execRoot(),
+      bazelPathsResolver.workspaceRoot().toString(),
+      bazelPathsResolver.outputBase().toString()
+      )
   }
 
   private fun calculateSdkURI(sdk: BspTargetInfo.FileLocation?): URI? =

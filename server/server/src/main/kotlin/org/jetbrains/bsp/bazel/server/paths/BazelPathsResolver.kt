@@ -103,4 +103,12 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       .relativize(path)
       .toString()
       .replace(File.separator, BAZEL_COMPONENT_SEPARATOR)
+
+  fun execRoot(): String {
+    return bazelInfo.execRoot
+  }
+
+  fun outputBase(): Path {
+    return bazelInfo.outputBase
+  }
 }

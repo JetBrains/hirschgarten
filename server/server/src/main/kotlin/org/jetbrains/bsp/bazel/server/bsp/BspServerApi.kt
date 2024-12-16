@@ -50,6 +50,7 @@ import org.jetbrains.bsp.bazel.server.sync.ExecuteService
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
 import org.jetbrains.bsp.protocol.AnalysisDebugResult
+import org.jetbrains.bsp.protocol.GoDebuggerDataResult
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.JoinedBuildServer
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -249,4 +250,7 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
 
   override fun rustWorkspace(params: RustWorkspaceParams): CompletableFuture<RustWorkspaceResult> =
     runner.handleRequest("buildTarget/rustWorkspace", projectSyncService::rustWorkspace, params)
+
+  override fun goDebuggerData(): CompletableFuture<GoDebuggerDataResult> =
+    runner.handleRequest("buildTarget/goDebuggerData", projectSyncService::goDebuggerData)
 }

@@ -78,6 +78,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.BazelBuildServerCapabilities
 import org.jetbrains.bsp.protocol.DirectoryItem
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
+import org.jetbrains.bsp.protocol.GoDebuggerDataResult
 import org.jetbrains.bsp.protocol.GoLibraryItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsItem
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
@@ -118,6 +119,7 @@ class BspProjectMapper(
         jvmRunEnvironmentProvider = true,
         jvmTestEnvironmentProvider = true,
         workspaceLibrariesProvider = true,
+        goDebuggerDataProvider = true,
         workspaceDirectoriesProvider = true,
         workspaceNonModuleTargetsProvider = true,
         workspaceInvalidTargetsProvider = true,
@@ -580,6 +582,10 @@ class BspProjectMapper(
     val toRustWorkspaceResult = languagePluginsService.rustLanguagePlugin::toRustWorkspaceResult
 
     return toRustWorkspaceResult(requestedModules, allRustModules)
+  }
+  fun goDebuggerData(): GoDebuggerDataResult {
+    val toGoDebuggerData = languagePluginsService.goLanguagePlugin::toGoDebuggerData
+    return toGoDebuggerData()
   }
 
   companion object {

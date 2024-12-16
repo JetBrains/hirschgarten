@@ -10,6 +10,7 @@ import ch.epfl.scala.bsp4j.ScalaBuildServer
 
 interface JoinedBuildServer :
   BuildServer,
+  GoBuildServer,
   JvmBuildServer,
   ScalaBuildServer,
   JavaBuildServer,

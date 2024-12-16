@@ -34,7 +34,9 @@ import org.jetbrains.bsp.bazel.server.model.BspMappings
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
+import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.buildBeforeRun
 import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.generateRunArguments
+import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.generateRunOptions
 import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.verifyDebugRequest
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -117,25 +119,32 @@ class ExecuteService(
     val singleModule = modules.singleOrResponseError(params.runParams.target)
     val requestedDebugType = JvmDebugType.fromDebugData(params.debug)
     val debugArguments = generateRunArguments(requestedDebugType)
+    val debugOptions = generateRunOptions(requestedDebugType)
+    val buildBeforeRun = buildBeforeRun(requestedDebugType)
     verifyDebugRequest(requestedDebugType, singleModule)
 
-    return runImpl(cancelChecker, params.runParams, debugArguments)
+    return runImpl(cancelChecker, params.runParams, debugArguments, debugOptions, buildBeforeRun)
   }
 
   private fun runImpl(
     cancelChecker: CancelChecker,
     params: RunParams,
     additionalProgramArguments: List<String>? = null,
+    additionalOptions: List<String>? = null,
+    buildBeforeRun: Boolean = true,
   ): RunResult {
-    val targets = listOf(params.target)
-    val result = build(cancelChecker, targets, params.originId)
-    if (result.isNotSuccess) {
-      return RunResult(result.bspStatusCode).apply { originId = originId }
+    if (buildBeforeRun) {
+      val targets = listOf(params.target)
+      val result = build(cancelChecker, targets, params.originId)
+      if (result.isNotSuccess) {
+        return RunResult(result.bspStatusCode).apply { originId = originId }
+      }
     }
     val command =
       bazelRunner.buildBazelCommand {
         run(params.target) {
           options.add(BazelFlag.color(true))
+          additionalOptions?.let { options.addAll(it) }
           additionalProgramArguments?.let { programArguments.addAll(it) }
           params.environmentVariables?.let { environment.putAll(it) }
           params.workingDirectory?.let { workingDirectory = Path(it) }

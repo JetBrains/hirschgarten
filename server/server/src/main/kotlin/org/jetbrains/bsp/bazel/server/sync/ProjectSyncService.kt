@@ -38,6 +38,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.server.model.Language
+import org.jetbrains.bsp.protocol.GoDebuggerDataResult
 import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
@@ -206,5 +207,9 @@ class ProjectSyncService(
   fun rustWorkspace(cancelChecker: CancelChecker, params: RustWorkspaceParams): RustWorkspaceResult {
     val project = projectProvider.get(cancelChecker)
     return bspMapper.rustWorkspace(project, params)
+  }
+
+  fun goDebuggerData(cancelChecker: CancelChecker): GoDebuggerDataResult {
+    return bspMapper.goDebuggerData()
   }
 }
