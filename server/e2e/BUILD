@@ -42,7 +42,7 @@ bazel_integration_test_all_versions(
 
 bazel_integration_test_all_versions(
     name = "python_project_test",
-    bzlmod_project_path = "test-projects/workspace/python-project",
+    bzlmod_project_path = "test-projects/bzlmod/python-project",
     project_path = "test-projects/workspace/python-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspPythonProjectTest",
 )
