@@ -116,9 +116,9 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspPartialSyncTest",
 )
 
-bazel_integration_test_current_version(
+bazel_integration_test_all_versions(
     name = "build_and_sync_test",
-    project_path = "test-projects/workspace/build-and-sync-test",
+    bzlmod_project_path = "test-projects/bzlmod/build-and-sync-test",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspBuildAndSyncTest",
 )
 

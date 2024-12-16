@@ -1,0 +1,3 @@
+module(name = "build_and_sync")
+
+bazel_dep(name = "rules_java", version = "8.6.2")

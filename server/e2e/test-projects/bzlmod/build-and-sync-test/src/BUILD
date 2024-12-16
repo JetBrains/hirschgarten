@@ -1,3 +1,5 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
 genrule(
     name = "genrule",
     outs = ["should_not_be_built.txt"],
