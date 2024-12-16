@@ -9,27 +9,27 @@ import org.jetbrains.plugins.bsp.run.state.HasTestFilter
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 
 class TestTargetAction(
-  targetInfo: BuildTargetInfo,
+  targetInfos: List<BuildTargetInfo>,
   text: (() -> String)? = null,
   isDebugAction: Boolean = false,
   verboseText: Boolean = false,
   private val singleTestFilter: String? = null,
   project: Project,
 ) : BspRunnerAction(
-    targetInfo = targetInfo,
+    targetInfos = targetInfos,
     text = {
       if (text != null) {
         text()
       } else if (isDebugAction) {
         BspPluginBundle.message(
           "target.debug.test.action.text",
-          if (verboseText) targetInfo.buildTargetName else "",
+          if (verboseText) targetInfos.joinToString(";") { it.buildTargetName } else "",
           project.assets.presentableName,
         )
       } else {
         BspPluginBundle.message(
           "target.test.action.text",
-          if (verboseText) targetInfo.buildTargetName else "",
+          if (verboseText) targetInfos.joinToString(";") { it.buildTargetName } else "",
           project.assets.presentableName,
         )
       }
