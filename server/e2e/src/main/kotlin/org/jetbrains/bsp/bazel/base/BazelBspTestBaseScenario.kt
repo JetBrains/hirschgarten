@@ -25,6 +25,7 @@ abstract class BazelBspTestBaseScenario {
   val targetPrefix = "@"
 
   val isBzlmod = majorBazelVersion >= 7
+  val bzlmodRepoNameSeparator = if (majorBazelVersion == 7) "~" else "+"
 
   private val architecturePart
     get() = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""

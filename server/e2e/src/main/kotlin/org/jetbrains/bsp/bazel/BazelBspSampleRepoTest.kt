@@ -51,8 +51,6 @@ import kotlin.time.Duration.Companion.seconds
 object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient(jvmClasspathReceiver = true)
 
-  private val bzlmodRepoNameSeparator = if (majorBazelVersion == 7) "~" else "+"
-
   private val scalaRulesPath =
     if (isBzlmod) {
       "rules_scala${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +

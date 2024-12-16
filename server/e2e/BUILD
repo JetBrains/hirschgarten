@@ -104,7 +104,7 @@ bazel_integration_test_current_version(
 
 bazel_integration_test_all_versions(
     name = "allow_manual_targets_sync_test",
-    bzlmod_project_path = "test-projects/workspace/allow-manual-targets-sync-project",
+    bzlmod_project_path = "test-projects/bzlmod/allow-manual-targets-sync-project",
     project_path = "test-projects/workspace/allow-manual-targets-sync-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspAllowManualTargetsSyncTest",
 )
@@ -124,7 +124,7 @@ bazel_integration_test_current_version(
 
 bazel_integration_test_current_version(
     name = "first_phase_sync_test",
-    project_path = "test-resources/first-phase-sync-project",
+    project_path = "test-projects/workspace/first-phase-sync-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspFirstPhaseSyncTest",
 )
 
