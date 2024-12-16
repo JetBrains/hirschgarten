@@ -186,7 +186,6 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     val expectedResourcesResult = ResourcesResult(expectedResourcesItems)
     val resourcesParams = ResourcesParams(expectedTargetIdentifiers)
 
-    listOf("XD").firstNotNullOfOrNull { }
     return BazelBspTestScenarioStep(
       "resources results",
     ) {
