@@ -22,4 +22,6 @@ object CommonParams {
   val QodanaArtifactRules: String = "+:intellij-*.zip=>%system.teamcity.build.checkoutDir%/tc-artifacts"
 
   val CrossBuildPlatforms: List<String> = listOf("243")
+
+  val BazelVersion = "7.4.1"
 }

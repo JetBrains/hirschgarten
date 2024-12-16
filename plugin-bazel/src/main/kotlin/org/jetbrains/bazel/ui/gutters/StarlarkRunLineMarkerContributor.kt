@@ -14,7 +14,6 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
-import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.flow.sync.actions.ResyncTargetAction
@@ -26,7 +25,11 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 internal class StarlarkRunLineMarkerContributor : RunLineMarkerContributor() {
   override fun getInfo(element: PsiElement): Info? {
     val grandParent = element.parent?.parent ?: return null
-    return element.shouldAddMarker(grandParent).ifTrue { grandParent.calculateMarkerInfo() }
+    return if (element.shouldAddMarker(grandParent)) {
+      grandParent.calculateMarkerInfo()
+    } else {
+      null
+    }
   }
 
   private fun PsiElement.shouldAddMarker(grandParent: PsiElement): Boolean =

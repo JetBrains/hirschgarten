@@ -17,6 +17,9 @@ data class ProjectViewCliOptions internal constructor(
   val produceTraceLog: Boolean?,
   val enabledRules: List<String>?,
   val ideJavaHomeOverride: Path?,
+  val shardSync: Boolean?,
+  val targetShardSize: Int?,
+  val shardApproach: String?,
 )
 
 data class CliOptions internal constructor(

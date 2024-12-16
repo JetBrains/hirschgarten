@@ -8,7 +8,6 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkFunctionDeclaration
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkForStatement
 import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkStatementList
-import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 
 object SearchUtils {
   tailrec fun searchInFile(
@@ -20,7 +19,7 @@ object SearchUtils {
       is PsiFileSystemItem -> Unit
       else -> {
         val parent = currentElement.parent
-        val stopAt = fromFunction.ifFalse { currentElement }
+        val stopAt = if (!fromFunction) currentElement else null
         val keepSearching = searchInParent(parent, stopAt, processor)
         val inFunction = parent is StarlarkFunctionDeclaration
         if (keepSearching) searchInFile(parent, processor, inFunction || fromFunction) else Unit

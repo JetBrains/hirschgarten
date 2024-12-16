@@ -31,10 +31,14 @@ object BazelBspRemoteJdkTest : BazelBspTestBaseScenario() {
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
+    val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+    val javaHomeBazel7 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk11_$javaHomeArchitecture/"
+    val javaHome = if (majorBazelVersion == 7) javaHomeBazel7 else javaHomeBazel5And6
+
     val exampleExampleJvmBuildTarget =
       JvmBuildTarget().also {
         it.javaVersion = "11"
-        it.javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_linux/"
+        it.javaHome = javaHome
       }
 
     val exampleExampleBuildTarget =
