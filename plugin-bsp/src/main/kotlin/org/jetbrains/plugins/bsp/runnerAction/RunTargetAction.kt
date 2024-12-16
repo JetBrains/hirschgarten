@@ -12,7 +12,7 @@ class RunTargetAction(
   verboseText: Boolean = false,
   project: Project,
 ) : BspRunnerAction(
-    targetInfo = targetInfo,
+    targetInfos = listOf(targetInfo),
     text = {
       if (text != null) {
         text()

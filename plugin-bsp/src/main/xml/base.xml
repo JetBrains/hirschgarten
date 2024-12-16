@@ -216,6 +216,10 @@
     </extensions>
 
     <actions>
+        <action class="org.jetbrains.plugins.bsp.ui.projectTree.action.RunAllTestsAction">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
         <action id="Bsp.DisconnectAction" class="org.jetbrains.plugins.bsp.impl.actions.registered.DisconnectAction"
                 icon="/icons/disconnect.svg"/>
         <action id="Bsp.ResyncAction" class="org.jetbrains.plugins.bsp.impl.actions.registered.ResyncAction"
