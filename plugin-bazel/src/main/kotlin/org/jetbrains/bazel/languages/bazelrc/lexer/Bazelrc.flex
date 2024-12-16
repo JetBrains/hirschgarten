@@ -134,7 +134,7 @@ COMMAND={SOFT_NL} | [^{COLON}{SQ}{DQ}{SPACE}{NL}]
     {DQ}                                        { yybegin(VALUE_DQ); return BazelrcTokenTypes.DOUBLE_QUOTE; }
     {SQ}                                        { yybegin(VALUE_SQ); return BazelrcTokenTypes.SINGLE_QUOTE; }
 
-    ({SOFT_NL} | [^{DQ}{SQ}{SPACE}{NL}])+        { return BazelrcTokenTypes.VALUE; }
+    ({SOFT_NL} | [^{DQ}{SQ}{SPACE}{NL}])+       { return BazelrcTokenTypes.VALUE; }
     ({SOFT_NL} | {SPACE})+                      { yybegin(FLAGS); return TokenType.WHITE_SPACE; }
 
     {COMMENT}+                                  { yybegin(YYINITIAL); return BazelrcTokenTypes.COMMENT; }
