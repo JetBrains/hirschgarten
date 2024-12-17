@@ -1,12 +1,12 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.apache.logging.log4j.LogManager
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.enableWorkspace
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.overrideRepository
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.bazel.workspacecontext.extraFlags
 import java.nio.file.Path
@@ -34,7 +34,7 @@ class BazelRunner(
 
     fun version(builder: BazelCommand.Version.() -> Unit = {}) = BazelCommand.Version(bazelBinary).apply { builder() }
 
-    fun run(target: BuildTargetIdentifier, builder: BazelCommand.Run.() -> Unit = {}) =
+    fun run(target: Label, builder: BazelCommand.Run.() -> Unit = {}) =
       BazelCommand.Run(bazelBinary, target).apply { builder() }.also { inheritWorkspaceOptions = true }
 
     fun graph(builder: BazelCommand.ModGraph.() -> Unit = {}) = BazelCommand.ModGraph(bazelBinary).apply { builder() }
@@ -54,7 +54,7 @@ class BazelRunner(
         .apply { builder() }
         .also { inheritWorkspaceOptions = true }
 
-    fun mobileInstall(target: BuildTargetIdentifier, builder: BazelCommand.MobileInstall.() -> Unit = {}) =
+    fun mobileInstall(target: Label, builder: BazelCommand.MobileInstall.() -> Unit = {}) =
       BazelCommand
         .MobileInstall(bazelBinary, target)
         .apply {

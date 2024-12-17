@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.workspacecontext
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -41,7 +41,7 @@ class DefaultWorkspaceContextProviderTest {
     val workspaceContext = provider.currentWorkspaceContext()
 
     // then
-    workspaceContext.targets shouldBe TargetsSpec(listOf(BuildTargetIdentifier("//a/b/c")), emptyList())
+    workspaceContext.targets shouldBe TargetsSpec(listOf(Label.parse("//a/b/c")), emptyList())
   }
 
   @Test

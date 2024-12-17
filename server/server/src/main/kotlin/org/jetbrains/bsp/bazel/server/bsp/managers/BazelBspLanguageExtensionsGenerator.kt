@@ -4,6 +4,7 @@ import org.apache.velocity.app.VelocityEngine
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bsp.bazel.server.model.Label
 import java.nio.file.Paths
 import java.util.Properties
 
@@ -59,12 +60,12 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return props
   }
 
-  fun generateLanguageExtensions(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>) {
+  fun generateLanguageExtensions(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, Label?>) {
     val fileContent = prepareFileContent(ruleLanguages, toolchains)
     createNewExtensionsFile(fileContent)
   }
 
-  private fun prepareFileContent(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>) =
+  private fun prepareFileContent(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, Label?>) =
     listOf(
       "# This is a generated file, do not edit it",
       createLoadStatementsString(ruleLanguages.map { it.language }),
@@ -85,10 +86,10 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return functionNames.joinToString(prefix = "EXTENSIONS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
   }
 
-  private fun createToolchainListString(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>): String =
+  private fun createToolchainListString(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, Label?>): String =
     ruleLanguages
       .mapNotNull { toolchains[it] }
-      .joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
+      .joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t\"$it\"" }
 
   private fun createNewExtensionsFile(fileContent: String) {
     val file = aspectsPath.resolve(Constants.EXTENSIONS_BZL)

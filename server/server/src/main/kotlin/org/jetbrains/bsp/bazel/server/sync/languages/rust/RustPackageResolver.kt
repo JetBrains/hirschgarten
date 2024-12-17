@@ -141,7 +141,7 @@ class RustPackageResolver(val bazelPathsResolver: BazelPathsResolver) {
     val (genericData, rustData) = module
     val buildTarget =
       RustTarget(
-        genericData.label.targetName,
+        genericData.label.target.toString(),
         rustData.crateRoot,
         parseTargetKind(rustData.kind),
         rustData.edition,
