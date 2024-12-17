@@ -32,6 +32,7 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.util.ui.MessageCategory
 import com.intellij.xdebugger.impl.XDebugSessionImpl
+import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.plugins.bsp.runnerAction.BspJvmApplicationConfiguration
 import java.io.File
 import java.io.IOException
@@ -72,14 +73,14 @@ object BazelHotSwapManager {
   private fun doReloadClasses(session: HotSwappableDebugSession, progress: HotSwapProgress) {
     try {
       progress.setDebuggerSession(session.session)
-      progress.setText("Building .class file manifest")
+      progress.setText(BazelHotSwapBundle.message("hotswap.text.manifest.build.in.progress"))
       val manifestDiff: ClassFileManifest.Diff? =
         ClassFileManifestBuilder.buildManifest(session.env, progress)
       if (manifestDiff == null) {
         progress.addMessage(
           session.session,
           MessageCategory.ERROR,
-          "Modified classes could not be determined.",
+          BazelHotSwapBundle.message("hotswap.message.manifest.build.error"),
         )
         return
       }
@@ -88,7 +89,7 @@ object BazelHotSwapManager {
         localFiles.mapValues { entry -> HotSwapFile(entry.value) }
 
       if (!files.isEmpty()) {
-        progress.setText("Reloading ${files.size} \".class\" file(s)")
+        progress.setText(BazelHotSwapBundle.message("hotswap.text.reload.in.progress", files.size))
       }
       try {
         HotSwapManager.reloadModifiedClasses(
@@ -98,7 +99,7 @@ object BazelHotSwapManager {
         progress.addMessage(
           session.session,
           MessageCategory.INFORMATION,
-          "Reloaded ${files.size} \".class\" file(s)",
+          BazelHotSwapBundle.message("hotswap.message.reload.success", files.size),
         )
       } finally {
         localFiles.values.forEach(Consumer { obj: File? -> obj?.delete() })
@@ -123,9 +124,7 @@ object BazelHotSwapManager {
     val suffix: String = UUID.randomUUID().toString().substring(0, 8)
     val localDir = File(tempDir, "class_files_" + suffix)
     if (!localDir.mkdir()) {
-      throw ExecutionException(
-        String.format("Cannot create temp output directory '%s'", localDir.getPath()),
-      )
+      throw ExecutionException("Cannot create temp output directory '${localDir.path}'")
     }
     localDir.deleteOnExit()
 
@@ -154,9 +153,7 @@ object BazelHotSwapManager {
       for (path in classes) {
         val entry = jarFile.getJarEntry(path)
         if (entry == null) {
-          throw ExecutionException(
-            String.format("Couldn't find class file %s inside jar %s.", path, jar),
-          )
+          throw ExecutionException("Couldn't find class file $path inside jar $jar.")
         }
         val f = File(destination, path.replace('/', '-'))
         f.deleteOnExit()
@@ -213,7 +210,7 @@ object BazelHotSwapManager {
       )
     } else {
       logger.warn(e)
-      progress.addMessage(session, MessageCategory.ERROR, "Error reloading classes")
+      progress.addMessage(session, MessageCategory.ERROR, BazelHotSwapBundle.message("hotswap.message.reload.error"))
     }
   }
 

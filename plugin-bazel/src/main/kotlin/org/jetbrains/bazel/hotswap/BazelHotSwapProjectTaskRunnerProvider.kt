@@ -6,7 +6,7 @@ import com.intellij.task.ProjectTaskContext
 import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.plugins.bsp.buildTask.BspAdditionalProjectTaskRunnerProvider
 
-class BazelHotswapProjectTaskRunnerProvider : BspAdditionalProjectTaskRunnerProvider {
+class BazelHotSwapProjectTaskRunnerProvider : BspAdditionalProjectTaskRunnerProvider {
   override fun preRun(
     project: Project,
     projectTaskContext: ProjectTaskContext,
@@ -14,7 +14,6 @@ class BazelHotswapProjectTaskRunnerProvider : BspAdditionalProjectTaskRunnerProv
   ) {
     val hotSwappableDebugSession = BazelHotSwapManager.createHotSwappableDebugSession(project)
     hotSwappableDebugSession?.env?.let { ClassFileManifestBuilder.initStateIfNotExists(it) }
-    print("")
   }
 
   override fun postRun(

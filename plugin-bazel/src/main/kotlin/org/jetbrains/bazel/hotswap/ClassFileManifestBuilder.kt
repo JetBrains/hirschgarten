@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.cancellation.CancellationException
 
 /** Used to associate data with an [ExecutionEnvironment].  */
-val MANIFEST_KEY: Key<AtomicReference<ClassFileManifest>> =
+private val MANIFEST_KEY: Key<AtomicReference<ClassFileManifest>> =
   Key.create<AtomicReference<ClassFileManifest>>("bazel.debug.class.manifest")
 
 /** Builds a .class file manifest to support hotswapping.  */
@@ -43,7 +43,7 @@ object ClassFileManifestBuilder {
     if (!HotSwapUtils.canHotSwap(env)) {
       return
     }
-    if (env.getCopyableUserData(MANIFEST_KEY) == null) {
+    if (env.getManifestRef() == null) {
       env.putCopyableUserData(
         MANIFEST_KEY,
         AtomicReference<ClassFileManifest>(),
@@ -95,11 +95,13 @@ object ClassFileManifestBuilder {
         .map { File(it.safeCastToURI()) }
     val oldManifest = env.getManifest()
     val newManifest = ClassFileManifest.build(jars, oldManifest)
-    env.getCopyableUserData(MANIFEST_KEY).set(newManifest)
+    env.getManifestRef()?.set(newManifest)
     return ClassFileManifest.modifiedClasses(oldManifest, newManifest)
   }
 
+  private fun ExecutionEnvironment.getManifest(): ClassFileManifest? = getManifestRef()?.get()
+
+  private fun ExecutionEnvironment.getManifestRef(): AtomicReference<ClassFileManifest>? = getCopyableUserData(MANIFEST_KEY)
+
   private fun getConfiguration(env: ExecutionEnvironment): ApplicationConfiguration? = env.runProfile as? ApplicationConfiguration
 }
-
-fun ExecutionEnvironment.getManifest(): ClassFileManifest? = getCopyableUserData(MANIFEST_KEY).get()

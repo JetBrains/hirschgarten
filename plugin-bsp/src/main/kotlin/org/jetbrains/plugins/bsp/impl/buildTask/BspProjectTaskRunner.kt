@@ -7,11 +7,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.toPromise
-import com.intellij.task.ModuleBuildTask
-import com.intellij.task.ProjectTask
-import com.intellij.task.ProjectTaskContext
-import com.intellij.task.ProjectTaskRunner
-import com.intellij.task.TaskRunnerResults
+import com.intellij.task.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.concurrency.AsyncPromise
@@ -86,6 +82,9 @@ class BspProjectTaskRunner : ProjectTaskRunner() {
     }
 }
 
+/**
+ * This extension is useful when there is a need to inject before and after actions with respect to the project task runner
+ */
 interface BspAdditionalProjectTaskRunnerProvider {
   fun preRun(
     project: Project,
