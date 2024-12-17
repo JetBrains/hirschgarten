@@ -16,6 +16,7 @@ import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Project
+import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
@@ -86,7 +87,10 @@ class ProjectResolver(
       }
 
       val targetsToSync =
-        requestedTargetsToSync?. let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
+        requestedTargetsToSync
+          ?.map {
+            it.label()
+          }?. let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
 
       val buildAspectResult =
         measured(
