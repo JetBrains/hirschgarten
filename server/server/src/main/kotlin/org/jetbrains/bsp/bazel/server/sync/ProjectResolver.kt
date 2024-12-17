@@ -88,9 +88,7 @@ class ProjectResolver(
 
       val targetsToSync =
         requestedTargetsToSync
-          ?.map {
-            it.label()
-          }?. let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
+          ?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
 
       val buildAspectResult =
         measured(

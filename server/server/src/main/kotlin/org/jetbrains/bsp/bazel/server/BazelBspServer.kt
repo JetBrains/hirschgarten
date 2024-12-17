@@ -177,7 +177,13 @@ class BazelBspServer(
         shouldUseInjectRepository = bazelInfo.shouldUseInjectRepository(),
       )
 
-    val repoMapping = calculateRepoMapping(workspaceContextProvider, bazelRunner)
+    val repoMapping =
+      calculateRepoMapping(
+        workspaceContextProvider = workspaceContextProvider,
+        bazelRunner = bazelRunner,
+        isBzlmod = bazelInfo.isBzlModEnabled,
+        bspClientLogger = bspClientLogger,
+      )
 
     val bazelBspAspectsManager =
       BazelBspAspectsManager(

@@ -4,6 +4,7 @@ import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bsp.bazel.bazelrunner.ShowRepoResult
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
@@ -21,7 +22,15 @@ fun Label.canonicalize(repoMapping: RepoMapping): Label {
   return Label.parse("@@$canonicalRepoName//$targetPathAndName")
 }
 
-fun calculateRepoMapping(workspaceContextProvider: WorkspaceContextProvider, bazelRunner: BazelRunner): RepoMapping {
+fun calculateRepoMapping(
+  workspaceContextProvider: WorkspaceContextProvider,
+  bazelRunner: BazelRunner,
+  isBzlmod: Boolean,
+  bspClientLogger: BspClientLogger,
+): RepoMapping {
+  if (!isBzlmod) {
+    return RepoMapping(emptyMap(), emptyMap())
+  }
   val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
   val moduleResolver = ModuleResolver(bazelRunner, ModuleOutputParser())
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
@@ -30,15 +39,14 @@ fun calculateRepoMapping(workspaceContextProvider: WorkspaceContextProvider, baz
   for (externalRepo in workspaceContext.externalRepositoriesTreatedAsInternal) {
     try {
       val showRepoResult = moduleResolver.resolveModule(externalRepo) {}
-      // TODO the name in the result is the canonical name, not the name we passed in
       when (showRepoResult) {
         is ShowRepoResult.LocalRepository -> moduleCanonicalNameToLocalPath[showRepoResult.name] = Path(showRepoResult.path)
         else -> {
-          // TODO log
+          bspClientLogger.warn("Tried to import external module $externalRepo, but it was not `local_path_override`: $showRepoResult")
         }
       }
     } catch (e: Exception) {
-      // ignore and continue because what else to do
+      bspClientLogger.error(e.toString())
     }
   }
 

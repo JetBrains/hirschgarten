@@ -102,6 +102,8 @@ class ModuleResolver(private val bazelRunner: BazelRunner, private val moduleOut
 
     // Output is json, we need to parse it
     val output = processResult.stdout
-    return gson.fromJson(output, Map::class.java) as Map<String, String>
+    @Suppress("UNCHECKED_CAST")
+    return gson.fromJson(output, Map::class.java) as? Map<String, String>
+      ?: error("Failed to parse repo mapping from bazel. Bazel output:\n$output")
   }
 }
