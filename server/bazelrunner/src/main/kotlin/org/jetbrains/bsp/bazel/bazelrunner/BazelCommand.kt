@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import java.nio.file.Path
 
@@ -34,10 +34,10 @@ interface HasWorkingDirectory {
 
 interface HasMultipleTargets {
   // Will be added as `bazel <command> -- target1 target2 ...`
-  val targets: MutableList<BuildTargetIdentifier>
+  val targets: MutableList<Label>
 
   // Will be added as `bazel <command> -- <targets> -target1 -target2 ...`
-  val excludedTargets: MutableList<BuildTargetIdentifier>
+  val excludedTargets: MutableList<Label>
 
   fun addTargetsFromSpec(targetsSpec: TargetsSpec) {
     targets.addAll(targetsSpec.values)
@@ -46,14 +46,14 @@ interface HasMultipleTargets {
 
   fun targetCommandLine(): List<String> {
     val commandLine = mutableListOf("--")
-    commandLine.addAll(targets.map { it.uri })
-    commandLine.addAll(excludedTargets.map { "-${it.uri}" })
+    commandLine.addAll(targets.map { it.toString() })
+    commandLine.addAll(excludedTargets.map { "-$it" })
     return commandLine
   }
 }
 
 interface HasSingleTarget {
-  val target: BuildTargetIdentifier
+  val target: Label
 }
 
 // See https://bazel.build/reference/command-line-reference#commands
@@ -77,7 +77,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     )
   }
 
-  class Run(bazelBinary: String, override val target: BuildTargetIdentifier) :
+  class Run(bazelBinary: String, override val target: Label) :
     BazelCommand(bazelBinary),
     HasProgramArguments,
     HasEnvironment,
@@ -98,7 +98,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.add("run")
       commandLine.addAll(options)
       commandLine.addAll(additionalBazelOptions)
-      commandLine.add(target.uri)
+      commandLine.add(target.toString())
 
       if (programArguments.isNotEmpty()) {
         commandLine.add("--")
@@ -113,8 +113,8 @@ abstract class BazelCommand(val bazelBinary: String) {
     BazelCommand(bazelBinary),
     HasEnvironment,
     HasMultipleTargets {
-    override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
-    override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
 
@@ -138,8 +138,8 @@ abstract class BazelCommand(val bazelBinary: String) {
     HasMultipleTargets,
     HasProgramArguments,
     HasAdditionalBazelOptions {
-    override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
-    override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
     override val programArguments: MutableList<String> = mutableListOf()
@@ -166,8 +166,8 @@ abstract class BazelCommand(val bazelBinary: String) {
     HasEnvironment,
     HasMultipleTargets,
     HasProgramArguments {
-    override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
-    override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
     override val environment: MutableMap<String, String> = mutableMapOf()
     override val inheritedEnvironment: MutableList<String> = mutableListOf()
     override val programArguments: MutableList<String> = mutableListOf()
@@ -188,7 +188,7 @@ abstract class BazelCommand(val bazelBinary: String) {
   }
 
   // TODO: perhaps it's possible to install multiple targets at once?
-  class MobileInstall(bazelBinary: String, override val target: BuildTargetIdentifier) :
+  class MobileInstall(bazelBinary: String, override val target: Label) :
     BazelCommand(bazelBinary),
     HasSingleTarget {
     override fun makeCommandLine(): List<String> {
@@ -197,7 +197,7 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("mobile-install")
       commandLine.addAll(options)
-      commandLine.add(target.uri)
+      commandLine.add(target.toString())
 
       return commandLine
     }
@@ -206,8 +206,8 @@ abstract class BazelCommand(val bazelBinary: String) {
   class Query(bazelBinary: String) :
     BazelCommand(bazelBinary),
     HasMultipleTargets {
-    override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
-    override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
 
     override fun makeCommandLine(): List<String> {
       val commandLine = mutableListOf(bazelBinary)
@@ -215,24 +215,17 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("query")
       commandLine.addAll(options)
-      commandLine.add(queryString())
+      commandLine.addAll(targetCommandLine())
 
       return commandLine
-    }
-
-    fun queryString(): String {
-      if (targets.isEmpty()) return ""
-      val includesString = targets.joinToString(separator = " + ") { "\"${it.uri.trim('"')}\"" }
-      val excludesString = excludedTargets.joinToString(separator = " - ") { "\"${it.uri.trim('"')}\"" }
-      return if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
     }
   }
 
   class CQuery(bazelBinary: String) :
     BazelCommand(bazelBinary),
     HasMultipleTargets {
-    override val targets: MutableList<BuildTargetIdentifier> = mutableListOf()
-    override val excludedTargets: MutableList<BuildTargetIdentifier> = mutableListOf()
+    override val targets: MutableList<Label> = mutableListOf()
+    override val excludedTargets: MutableList<Label> = mutableListOf()
 
     override fun makeCommandLine(): List<String> {
       val commandLine = mutableListOf(bazelBinary)

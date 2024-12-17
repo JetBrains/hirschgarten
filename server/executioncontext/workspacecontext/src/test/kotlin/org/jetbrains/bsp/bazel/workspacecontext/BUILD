@@ -70,4 +70,7 @@ kt_junit5_test(
     associates = [
         "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
+    deps = [
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+    ],
 )

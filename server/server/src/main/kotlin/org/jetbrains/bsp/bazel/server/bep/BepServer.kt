@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.CompileReport
 import ch.epfl.scala.bsp4j.CompileTask
 import ch.epfl.scala.bsp4j.TaskFinishDataKind
@@ -26,6 +25,7 @@ import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bsp.bazel.server.model.toBspIdentifier
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.PublishOutputParams
@@ -41,7 +41,7 @@ class BepServer(
   private val bspClient: JoinedBuildClient,
   private val diagnosticsService: DiagnosticsService,
   private val originId: String?,
-  private val target: BuildTargetIdentifier?,
+  private val target: Label?,
   bazelPathsResolver: BazelPathsResolver,
 ) : PublishBuildEventGrpc.PublishBuildEventImplBase() {
   private val bspClientLogger = BspClientLogger(bspClient)
@@ -122,7 +122,7 @@ class BepServer(
           PublishOutputParams(
             originId,
             taskId,
-            BuildTargetIdentifier(Label.parse(event.id.testResult.label).toString()),
+            Label.parse(event.id.testResult.label).toBspIdentifier(),
             TestCoverageReport.DATA_KIND,
             TestCoverageReport(coverageReportUri),
           ),
@@ -206,13 +206,15 @@ class BepServer(
     bepOutputBuilder.clear()
     val taskId = TaskId(event.started.uuid)
     val startParams = TaskStartParams(taskId)
-    val target = BuildTargetIdentifier(Label.parse(event.id.testResult.label).toString())
+    val target =
+      event.id.testResult.label
+        ?.let { Label.parse(it) }
     startParams.eventTime = event.started.startTimeMillis
 
     if (event.started.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
       if (target != null) {
         startParams.dataKind = TaskStartDataKind.COMPILE_TASK
-        val task = CompileTask(target)
+        val task = CompileTask(target.toBspIdentifier())
         startParams.data = task
       }
       bspClient.onBuildTaskStart(startParams)
@@ -236,7 +238,9 @@ class BepServer(
 
   private fun consumeFinishedEvent(event: BuildEventStreamProtos.BuildEvent) {
     val taskId = startedEvent
-    val target = BuildTargetIdentifier(Label.parse(event.id.testResult.label).toString())
+    val target =
+      event.id.testResult.label
+        ?.let { Label.parse(it) }
 
     if (taskId == null) {
       LOGGER.warn("No start event id was found. Origin id: {}", originId)
@@ -258,7 +262,7 @@ class BepServer(
       finishParams.dataKind = TaskFinishDataKind.COMPILE_REPORT
       val isSuccess = statusCode.value == 1
       val errors = if (isSuccess) 0 else 1
-      val report = CompileReport(target, errors, 0)
+      val report = CompileReport(target.toBspIdentifier(), errors, 0)
       finishParams.data = report
     }
     bspClient.onBuildTaskFinish(finishParams)
@@ -316,13 +320,12 @@ class BepServer(
   }
 
   private fun consumeCompletedEvent(event: BuildEventStreamProtos.BuildEvent) {
-    val eventLabel = event.id.targetCompleted.label
-    /* The events never contain @, which will be different than the actual target id. Here we work around that fact,
-     * but since we also set up the BEP server to gather info about build targets within certain path (//... etc.), we can't
-     * just use target.uri.
-     * */
-    val labelText = if (target != null && ("@$eventLabel" == target.uri || "@@$eventLabel" == target.uri)) target.uri else eventLabel
-    val label = Label.parse(labelText)
+    val eventLabel = Label.parseOrNull(event.id.targetCompleted.label)
+    val label =
+      eventLabel ?: run {
+        LOGGER.warn("No target label found in event {}", event)
+        return
+      }
     val targetComplete = event.completed
     val outputGroups = targetComplete.outputGroupList
     LOGGER.trace("Consuming target completed event {}", targetComplete)

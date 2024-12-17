@@ -68,6 +68,8 @@ import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.Tag
+import org.jetbrains.bsp.bazel.server.model.label
+import org.jetbrains.bsp.bazel.server.model.toBspIdentifier
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.java.IdeClasspathResolver
@@ -216,20 +218,19 @@ class BspProjectMapper(
     )
 
   private fun NonModuleTarget.toBuildTarget(): BuildTarget {
-    val label = BspMappings.toBspId(this.label)
     val languages = languages.flatMap(Language::allNames).distinct()
     val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
     val baseDirectory = BspMappings.toBspUri(baseDirectory)
     val buildTarget =
       BuildTarget(
-        label,
+        label.toBspIdentifier(),
         tags,
         languages,
         emptyList(),
         capabilities,
       )
-    buildTarget.displayName = label.uri
+    buildTarget.displayName = label.toString()
     buildTarget.baseDirectory = baseDirectory
     return buildTarget
   }
@@ -237,7 +238,7 @@ class BspProjectMapper(
   private fun Module.toBuildTarget(): BuildTarget {
     val label = BspMappings.toBspId(this)
     val dependencies =
-      directDependencies.map(BspMappings::toBspId)
+      directDependencies.map { it.toBspIdentifier() }
     val languages = languages.flatMap(Language::allNames).distinct()
     val capabilities = inferCapabilities(tags)
     val tags = tags.mapNotNull(BspMappings::toBspTag)
@@ -304,7 +305,7 @@ class BspProjectMapper(
       return sourcesItem
     }
 
-    fun emptySourcesItem(label: Label): SourcesItem = SourcesItem(BspMappings.toBspId(label), emptyList())
+    fun emptySourcesItem(label: Label): SourcesItem = SourcesItem(label.toBspIdentifier(), emptyList())
 
     val labels = BspMappings.toLabels(sourcesParams.targets)
     val sourcesItems =
@@ -320,7 +321,7 @@ class BspProjectMapper(
       return ResourcesItem(BspMappings.toBspId(module), resources)
     }
 
-    fun emptyResourcesItem(label: Label): ResourcesItem = ResourcesItem(BspMappings.toBspId(label), emptyList())
+    fun emptyResourcesItem(label: Label): ResourcesItem = ResourcesItem(label.toBspIdentifier(), emptyList())
 
     val labels = BspMappings.toLabels(resourcesParams.targets)
     val resourcesItems =
@@ -351,7 +352,7 @@ class BspProjectMapper(
           ?.sourceDependencies
           ?.map(BspMappings::toBspUri)
           .orEmpty()
-      return DependencySourcesItem(BspMappings.toBspId(label), sources)
+      return DependencySourcesItem(label.toBspIdentifier(), sources)
     }
 
     val labels = BspMappings.toLabels(dependencySourcesParams.targets)
@@ -367,7 +368,7 @@ class BspProjectMapper(
           ?.let { module ->
             module.outputs.map { OutputPathItem(BspMappings.toBspUri(it), OutputPathItemKind.DIRECTORY) }
           }.orEmpty()
-      return OutputPathsItem(BspMappings.toBspId(label), items)
+      return OutputPathsItem(label.toBspIdentifier(), items)
     }
 
     val labels = BspMappings.toLabels(params.targets)
@@ -426,9 +427,9 @@ class BspProjectMapper(
       }
 
     return targets.mapNotNull {
-      val label = Label.parse(it.uri)
+      val label = it.label()
       val module = project.findModule(label)
-      val cqueryResult = ClasspathQuery.classPathQuery(it, cancelChecker, bspInfo, bazelRunner).runtime_classpath
+      val cqueryResult = ClasspathQuery.classPathQuery(label, cancelChecker, bspInfo, bazelRunner).runtime_classpath
       val resolvedClasspath = resolveClasspath(cqueryResult)
       module?.let { extractJvmEnvironmentItem(module, resolvedClasspath) }
     }
@@ -512,8 +513,7 @@ class BspProjectMapper(
       }
 
   private fun readIdeClasspath(targetLabel: Label, cancelChecker: CancelChecker): List<URI> {
-    val targetIdentifier = BspMappings.toBspId(targetLabel)
-    val classPathFromQuery = ClasspathQuery.classPathQuery(targetIdentifier, cancelChecker, bspInfo, bazelRunner)
+    val classPathFromQuery = ClasspathQuery.classPathQuery(targetLabel, cancelChecker, bspInfo, bazelRunner)
     val ideClasspath =
       IdeClasspathResolver.resolveIdeClasspath(
         label = targetLabel,

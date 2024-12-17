@@ -1,9 +1,9 @@
 package org.jetbrains.bsp.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.TaskId
 import ch.epfl.scala.bsp4j.TestStatus
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import java.util.UUID
 import java.util.regex.Matcher
@@ -94,7 +94,7 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
   }
 
   private fun beginTesting(startedBuildTarget: StartedBuildTarget) {
-    bspClientTestNotifier.beginTestTarget(BuildTargetIdentifier(startedBuildTarget.uri), startedBuildTarget.taskId)
+    bspClientTestNotifier.beginTestTarget(Label.parse(startedBuildTarget.uri), startedBuildTarget.taskId)
   }
 
   private fun startSuite(suite: TestOutputLine) {

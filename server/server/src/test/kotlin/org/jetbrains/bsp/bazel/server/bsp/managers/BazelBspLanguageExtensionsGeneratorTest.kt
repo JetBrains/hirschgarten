@@ -6,6 +6,7 @@ import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.install.EnvironmentCreator
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -70,10 +71,10 @@ class BazelBspLanguageExtensionsGeneratorTest {
     )
   private val defaultToolchains =
     mapOf(
-      RuleLanguage(null, Language.Java) to """"@bazel_tools//tools/jdk:runtime_toolchain_type"""",
-      RuleLanguage("io_bazel_rules_kotlin", Language.Kotlin) to """"@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type"""",
-      RuleLanguage("io_bazel_rules_scala", Language.Scala) to """"@io_bazel_rules_scala//scala:toolchain_type"""",
-      RuleLanguage("io_bazel_rules_go", Language.Go) to """"@io_bazel_rules_go//go:toolchain"""",
+      RuleLanguage(null, Language.Java) to Label.parse("@bazel_tools//tools/jdk:runtime_toolchain_type"),
+      RuleLanguage("io_bazel_rules_kotlin", Language.Kotlin) to Label.parse("@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type"),
+      RuleLanguage("io_bazel_rules_scala", Language.Scala) to Label.parse("@io_bazel_rules_scala//scala:toolchain_type"),
+      RuleLanguage("io_bazel_rules_go", Language.Go) to Label.parse("@io_bazel_rules_go//go:toolchain"),
     )
   private lateinit var dotBazelBspAspectsPath: Path
   private lateinit var internalAspectsResolverMock: InternalAspectsResolver

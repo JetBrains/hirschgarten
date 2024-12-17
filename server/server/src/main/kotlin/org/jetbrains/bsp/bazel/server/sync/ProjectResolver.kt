@@ -14,6 +14,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGen
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.model.Project
+import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
@@ -82,7 +83,11 @@ class ProjectResolver(
         bazelBspLanguageExtensionsGenerator.generateLanguageExtensions(ruleLanguages, toolchains)
       }
 
-      val targetsToSync = requestedTargetsToSync?.let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
+      val targetsToSync =
+        requestedTargetsToSync
+          ?.map {
+            it.label()
+          }?. let { TargetsSpec(it, emptyList()) } ?: workspaceContext.targets
 
       val buildAspectResult =
         measured(
