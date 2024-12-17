@@ -16,6 +16,32 @@ class DiagnosticsServiceTest {
   private val workspacePath = Paths.get("/user/workspace")
 
   @Test
+  fun `should extract diagnostic for syntax error in a build file`() {
+    val output =
+      """
+        ERROR: /home/andrzej.gluszak/code/jetbrains/nested-modules/BUILD.bazel:5:5: syntax error at 'srcs': expected ,
+        ERROR: package contains errors: 
+        ERROR: package contains errors: : syntax error at 'srcs': expected ,
+      """.trimIndent()
+
+    val diagnostics = extractDiagnostics(output, Label.parse("//:nested-modules"))
+
+    val expected =
+      listOf(
+        publishDiagnosticsParams(
+          TextDocumentIdentifier("file:///home/andrzej.gluszak/code/jetbrains/nested-modules/BUILD.bazel"),
+          BuildTargetIdentifier("@//:nested-modules"),
+          errorDiagnostic(
+            Position(5, 5),
+            "syntax error at 'srcs': expected ,",
+          ),
+        ),
+      )
+
+    diagnostics shouldContainExactlyInAnyOrder expected
+  }
+
+  @Test
   fun `should extract diagnostic for error in BUILD dot bazel file`() {
     val output =
       """
