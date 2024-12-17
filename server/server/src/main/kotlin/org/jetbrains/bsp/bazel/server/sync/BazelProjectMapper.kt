@@ -13,7 +13,9 @@ import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.tracer
 import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
+import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.GoLibrary
 import org.jetbrains.bsp.bazel.server.model.Label
@@ -839,7 +841,10 @@ class BazelProjectMapper(
     }
 
   private val externalRepositoriesTreatedAsInternal =
-    repoMapping.moduleCanonicalNameToLocalPath.keys
+    when (repoMapping) {
+      is BzlmodRepoMapping -> repoMapping.moduleCanonicalNameToLocalPath.keys
+      is RepoMappingDisabled -> emptySet()
+    }
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =

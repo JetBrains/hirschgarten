@@ -14,7 +14,9 @@ import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.bep.BepOutput
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
@@ -112,17 +114,22 @@ class BazelBspAspectsManager(
 
     // https://bazel.build/rules/lib/builtins/Label#repo_name
     // The canonical name of the repository containing the target referred to by this label, without any leading at-signs (@).
-    val repoMapping =
-      repoMapping.moduleCanonicalNameToLocalPath
-        .map { (key, value) ->
-          "\"${key.dropWhile { it == '@' }}\": \"$value\""
-        }.joinToString(",\n", "{\n", "\n}")
+    val starlarkRepoMapping =
+      when (repoMapping) {
+        is BzlmodRepoMapping -> {
+          repoMapping.moduleCanonicalNameToLocalPath
+            .map { (key, value) ->
+              "\"${key.dropWhile { it == '@' }}\": \"$value\""
+            }.joinToString(",\n", "{\n", "\n}")
+        }
+        is RepoMappingDisabled -> "{}"
+      }
 
     templateWriter.writeToFile(
       "utils/utils.bzl" + Constants.TEMPLATE_EXTENSION,
       aspectsPath.resolve("utils").resolve("utils.bzl"),
       mapOf(
-        "repoMapping" to repoMapping,
+        "repoMapping" to starlarkRepoMapping,
       ),
     )
   }
