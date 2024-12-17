@@ -215,16 +215,9 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("query")
       commandLine.addAll(options)
-      commandLine.add(queryString())
+      commandLine.addAll(targetCommandLine())
 
       return commandLine
-    }
-
-    fun queryString(): String {
-      if (targets.isEmpty()) return ""
-      val includesString = targets.joinToString(separator = " + ") { "\"${it.toString().trim('"')}\"" }
-      val excludesString = excludedTargets.joinToString(separator = " - ") { "\"${it.toString().trim('"')}\"" }
-      return if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
     }
   }
 

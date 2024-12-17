@@ -25,7 +25,7 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner, private val fe
   fun getAndroidToolchain(ruleLanguage: RuleLanguage, cancelChecker: CancelChecker): String? {
     if (!featureFlags.isAndroidSupportEnabled) return null
     if (ruleLanguage.ruleName == null) return NATIVE_ANDROID_TOOLCHAIN
-    val androidToolchain = """"@${ruleLanguage.ruleName}//toolchains/android_sdk:toolchain_type""""
+    val androidToolchain = "@${ruleLanguage.ruleName}//toolchains/android_sdk:toolchain_type"
     val androidToolchainExists =
       bazelRunner.run {
         val command =
