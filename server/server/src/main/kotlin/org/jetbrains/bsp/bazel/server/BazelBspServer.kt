@@ -35,6 +35,8 @@ import org.jetbrains.bsp.bazel.server.sync.ProjectResolver
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bsp.bazel.server.sync.TargetTagsResolver
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
@@ -104,7 +106,9 @@ class BazelBspServer(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
       )
-    val projectSyncService = ProjectSyncService(bspProjectMapper, projectProvider, initializeBuildParams.capabilities)
+    val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+    val projectSyncService =
+      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, initializeBuildParams.capabilities, workspaceRoot)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(
@@ -182,6 +186,7 @@ class BazelBspServer(
         workspaceContextProvider = workspaceContextProvider,
         featureFlags = featureFlags,
         repoMapping = repoMapping,
+        bazelRelease = bazelInfo.release,
       )
     val bazelToolchainManager = BazelToolchainManager(bazelRunner, featureFlags)
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
@@ -218,7 +223,8 @@ class BazelBspServer(
         featureFlags = featureFlags,
         repoMapping = repoMapping,
       )
-    return ProjectProvider(projectResolver)
+    val firstPhaseProjectResolver = FirstPhaseProjectResolver(workspaceRoot, bazelRunner, workspaceContextProvider, bazelInfo)
+    return ProjectProvider(projectResolver, firstPhaseProjectResolver)
   }
 
   fun buildServer(bspIntegrationData: BspIntegrationData): Launcher<JoinedBuildClient> {

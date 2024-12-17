@@ -218,4 +218,10 @@ class LabelTest {
     val label2 = Label.parse("path/to/...:all-targets")
     label1 shouldBe label2
   }
+
+  @Test
+  fun `synthetic label should be parsed correctly`() {
+    val label = Label.parse("scala-compiler-2.12.14.jar[synthetic]")
+    label.isSynthetic shouldBe true
+  }
 }

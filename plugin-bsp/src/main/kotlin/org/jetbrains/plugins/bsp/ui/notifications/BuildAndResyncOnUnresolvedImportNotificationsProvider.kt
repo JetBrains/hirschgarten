@@ -1,6 +1,8 @@
 package org.jetbrains.plugins.bsp.ui.notifications
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.project.IncompleteDependenciesService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
@@ -19,8 +21,8 @@ import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
 import org.jetbrains.plugins.bsp.impl.projectAware.isSyncInProgress
 import java.util.function.Function
 import javax.swing.JComponent
@@ -33,6 +35,7 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
     if (file in disableNotificationForFile) return null
     if (project.isSyncInProgress()) return null
     if (BspFeatureFlags.isBuildProjectOnSyncEnabled) return null
+    if (!project.service<IncompleteDependenciesService>().getState().isComplete) return null
 
     if (!hasUnresolvedImport(project, file)) return null
 
@@ -80,7 +83,7 @@ class BuildAndResyncOnUnresolvedImportNotificationsProvider : EditorNotification
 
       createActionLabel(BspPluginBundle.message("build.and.resync.action.text")) {
         BspCoroutineService.getInstance(project).start {
-          ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = true)
+          ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = true)
         }
       }
       val virtualFile = fileEditor.file

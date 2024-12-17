@@ -20,6 +20,8 @@
     "https://bcr.bazel.build/modules/aspect_rules_js/1.40.0/source.json": "b6fd491369e9ef888fdef64b839023a2360caaea8eb370d2cfbfdd2a96721311",
     "https://bcr.bazel.build/modules/aspect_rules_lint/1.0.6/MODULE.bazel": "860280c04892b177f35adc4589a96e6a34d60264bd1b0bf8e0d599dd79a49953",
     "https://bcr.bazel.build/modules/aspect_rules_lint/1.0.6/source.json": "6e2e7f337d02a6817c1e54bed26beb49b3702ece7c274ff74d358b541d30f087",
+    "https://bcr.bazel.build/modules/aspect_rules_lint/1.0.7/MODULE.bazel": "9e238fdd21dd3fe0ed802b93e2cdd0a491f98ad897c3fa556bdb8f3dc392810e",
+    "https://bcr.bazel.build/modules/aspect_rules_lint/1.0.7/source.json": "bf9c92d4ece08f9109fa3b83592c821cf16b786210a955decab4f2f6f9154150",
     "https://bcr.bazel.build/modules/bazel_features/0.1.0/MODULE.bazel": "47011d645b0f949f42ee67f2e8775188a9cf4a0a1528aa2fa4952f2fd00906fd",
     "https://bcr.bazel.build/modules/bazel_features/1.1.0/MODULE.bazel": "cfd42ff3b815a5f39554d97182657f8c4b9719568eb7fded2b9135f084bf760b",
     "https://bcr.bazel.build/modules/bazel_features/1.1.1/MODULE.bazel": "27b8c79ef57efe08efccbd9dd6ef70d61b4798320b8d3c134fd571f78963dbcd",
@@ -82,6 +84,8 @@
     "https://bcr.bazel.build/modules/rules_android/0.1.1/source.json": "e6986b41626ee10bdc864937ffb6d6bf275bb5b9c65120e6137d56e6331f089e",
     "https://bcr.bazel.build/modules/rules_bazel_integration_test/0.27.0/MODULE.bazel": "66b85a47d4aa51686c3e43befc7442b5be84415b12296954929ba199d46823be",
     "https://bcr.bazel.build/modules/rules_bazel_integration_test/0.27.0/source.json": "28bd34e4cbbe78a826aa513cf555d9cb52f0fe589b64d20ca812b8e3fbca572f",
+    "https://bcr.bazel.build/modules/rules_bazel_integration_test/0.29.0/MODULE.bazel": "a171d26b5999b6d4d99fab02cb4cdb3b691faaf91671e6ffa079f25c3b404fb3",
+    "https://bcr.bazel.build/modules/rules_bazel_integration_test/0.29.0/source.json": "822444ec417c770c80cdd912d4032554eeabe3e6be123b44091ae5f481f5e826",
     "https://bcr.bazel.build/modules/rules_buf/0.1.1/MODULE.bazel": "6189aec18a4f7caff599ad41b851ab7645d4f1e114aa6431acf9b0666eb92162",
     "https://bcr.bazel.build/modules/rules_buf/0.3.0/MODULE.bazel": "1e333238b2e3faa828de0e27a0804a7228c63d42057fffc546bee7f956f3e284",
     "https://bcr.bazel.build/modules/rules_buf/0.3.0/source.json": "ce5b3bc65ce7065af437e1b1bfa3860e23c14a5a0e178ce8d25b8b4b6c1d19e8",
@@ -1477,7 +1481,7 @@
     "@@rules_bazel_integration_test~//:extensions.bzl%bazel_binaries": {
       "general": {
         "bzlTransitiveDigest": "AbxPRYKjvVlRo+B89EHqsi8N7gdOjCmT7VEr6YYQxqg=",
-        "usagesDigest": "piOBpbwJMubJn0cOGo7QebOyH7679xGB1J1CAzpHT34=",
+        "usagesDigest": "DPyYkzuc7Icoy7rVUBuusfanJWYgGR+y+speUk9qb/I=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -1489,11 +1493,11 @@
               "version": "1.18.0"
             }
           },
-          "build_bazel_bazel_7_1_2": {
+          "build_bazel_bazel_7_4_0": {
             "bzlFile": "@@rules_bazel_integration_test~//bazel_integration_test/private:bazel_binaries.bzl",
             "ruleClassName": "bazel_binary",
             "attributes": {
-              "version": "7.1.2",
+              "version": "7.4.0",
               "bazelisk": "@bazel_binaries_bazelisk//:bazelisk"
             }
           },
@@ -1518,11 +1522,11 @@
             "ruleClassName": "_bazel_binaries_helper",
             "attributes": {
               "version_to_repo": {
-                "7.1.2": "build_bazel_bazel_7_1_2",
+                "7.4.0": "build_bazel_bazel_7_4_0",
                 "6.4.0": "build_bazel_bazel_6_4_0",
                 "5.3.2": "build_bazel_bazel_5_3_2"
               },
-              "current_version": "7.1.2"
+              "current_version": "7.4.0"
             }
           }
         },
@@ -1530,7 +1534,7 @@
           "explicitRootModuleDirectDeps": [],
           "explicitRootModuleDirectDevDeps": [
             "bazel_binaries_bazelisk",
-            "build_bazel_bazel_7_1_2",
+            "build_bazel_bazel_7_4_0",
             "build_bazel_bazel_6_4_0",
             "build_bazel_bazel_5_3_2",
             "bazel_binaries"
@@ -1750,7 +1754,7 @@
         ]
       },
       "os:osx,arch:aarch64": {
-        "bzlTransitiveDigest": "FHhH0WQQgocFQHqLVF6nQi9mvB+WOwjXRn51ywYr62E=",
+        "bzlTransitiveDigest": "hovB5ETKyFoGdhEllHVG1YR825DjCU8XbMN4v15KVkk=",
         "usagesDigest": "ou6iSUcUrWTQlaX5sESCdXNLwXwRYBV7qwLifS09hZo=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -2175,7 +2179,7 @@
     "@@rules_multitool~//multitool:extension.bzl%multitool": {
       "general": {
         "bzlTransitiveDigest": "AtvPzG/SAawYMKVVHcMoJq4EXkVPTIhS3AeNwENXp9E=",
-        "usagesDigest": "T0VLcoi0sBJdXqd6Zt7ZRokL5B5EzJhUP9+VUUZ1qRk=",
+        "usagesDigest": "JFtucDoLnegHyw6tOJwoftx5t+HME6dBMJk24RZFM7E=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},

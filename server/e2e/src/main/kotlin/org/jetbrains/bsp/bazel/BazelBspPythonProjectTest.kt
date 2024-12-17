@@ -23,6 +23,8 @@ import kotlin.time.Duration.Companion.seconds
 object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
   private val testClient = createTestkitClient()
 
+  private val externalRepoPrefix = if (majorBazelVersion == 7) "@@" else "@"
+
   @JvmStatic
   fun main(args: Array<String>) = executeScenario()
 
@@ -35,10 +37,14 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
+    val architecturePart = if (System.getProperty("os.arch") == "aarch64") "aarch64" else "x86_64"
+    val osPart = if (System.getProperty("os.name").lowercase().contains("mac")) "apple-darwin" else "unknown-linux-gnu"
+    val interpreterPath = "file://\$BAZEL_OUTPUT_BASE_PATH/external/python3_9_$architecturePart-$osPart/bin/python3"
+
     val examplePythonBuildTarget =
       PythonBuildTarget().also {
         it.version = "PY3"
-        it.interpreter = "file://\$BAZEL_OUTPUT_BASE_PATH/external/python3_9_x86_64-unknown-linux-gnu/bin/python3"
+        it.interpreter = interpreterPath
       }
 
     val exampleExampleBuildTarget =
@@ -48,7 +54,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         listOf("python"),
         listOf(
           BuildTargetIdentifier("$targetPrefix//lib:example_library"),
-          BuildTargetIdentifier("@requests//:srcs"),
+          BuildTargetIdentifier("${externalRepoPrefix}requests//:srcs"),
         ),
         BuildTargetCapabilities().also {
           it.canCompile = true
@@ -67,7 +73,7 @@ object BazelBspPythonProjectTest : BazelBspTestBaseScenario() {
         BuildTargetIdentifier("$targetPrefix//lib:example_library"),
         listOf("library"),
         listOf("python"),
-        listOf(BuildTargetIdentifier("@pip_deps_numpy//:pkg")),
+        listOf(BuildTargetIdentifier("${externalRepoPrefix}pip_deps_numpy//:pkg")),
         BuildTargetCapabilities().also {
           it.canCompile = true
           it.canTest = false

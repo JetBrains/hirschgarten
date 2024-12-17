@@ -121,10 +121,10 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           it,
           emptyList(),
           listOf(
-            "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/__main__/bazel-out/k8-fastbuild/bin/external/io_bazel_rules_scala_scala_library/io_bazel_rules_scala_scala_library.stamp/scala-library-2.12.14-stamped.jar",
-            "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/__main__/bazel-out/k8-fastbuild/bin/external/io_bazel_rules_scala_scala_reflect/io_bazel_rules_scala_scala_reflect.stamp/scala-reflect-2.12.14-stamped.jar",
+            "$bazelBinDirectory/external/io_bazel_rules_scala_scala_library/io_bazel_rules_scala_scala_library.stamp/scala-library-2.12.14-stamped.jar",
+            "$bazelBinDirectory/external/io_bazel_rules_scala_scala_reflect/io_bazel_rules_scala_scala_reflect.stamp/scala-reflect-2.12.14-stamped.jar",
           ),
-          "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/__main__/bazel-out/k8-fastbuild/bin/scala_targets/library.jar",
+          "$bazelBinDirectory/scala_targets/library.jar",
         )
       }
     val expectedScalaOptionsResult = ScalacOptionsResult(expectedScalaOptionsItems)
@@ -142,7 +142,7 @@ object BazelBspScalaProjectTest : BazelBspTestBaseScenario() {
           it,
           emptyList(),
           emptyList(),
-          "file://\$BAZEL_OUTPUT_BASE_PATH/execroot/__main__/bazel-out/k8-fastbuild/bin/scala_targets/library.jar",
+          "$bazelBinDirectory/scala_targets/library.jar",
         )
       }
     val expectedScalaOptionsResult = ScalacOptionsResult(expectedScalaOptionsItems)

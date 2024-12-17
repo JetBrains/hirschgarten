@@ -33,15 +33,15 @@ class BazelBuildTargetClassifierTest {
   fun labelNotMatchingBazelPattern() {
     val targetInfo = "foo".toBuildTargetInfo()
     classifier.calculateBuildTargetName(targetInfo) shouldBe "foo"
-    classifier.calculateBuildTargetPath(targetInfo) shouldBe listOf()
+    classifier.calculateBuildTargetPath(targetInfo) shouldBe listOf("foo")
   }
 
   @Test
   fun labelNotMatchingBazelPatternWithSlash() {
     // this test documents behavior, it is unclear what should be the result for this kind of label
     val targetInfo = "foo/bar".toBuildTargetInfo()
-    classifier.calculateBuildTargetName(targetInfo) shouldBe "foo/bar"
-    classifier.calculateBuildTargetPath(targetInfo) shouldBe listOf()
+    classifier.calculateBuildTargetName(targetInfo) shouldBe "bar"
+    classifier.calculateBuildTargetPath(targetInfo) shouldBe listOf("foo", "bar")
   }
 }
 

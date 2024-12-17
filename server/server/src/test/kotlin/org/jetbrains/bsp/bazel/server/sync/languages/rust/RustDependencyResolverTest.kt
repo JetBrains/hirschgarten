@@ -34,7 +34,7 @@ class RustDependencyResolverTest {
       )
 
     rustPackageResolver = RustPackageResolver(BazelPathsResolver(bazelInfo))
-    resolver = RustDependencyResolver(rustPackageResolver)
+    resolver = RustDependencyResolver()
   }
 
   @Test

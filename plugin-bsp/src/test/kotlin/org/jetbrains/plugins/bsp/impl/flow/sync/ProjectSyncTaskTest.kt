@@ -70,7 +70,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
 
     // when
     runBlocking {
-      ProjectSyncTask(project).sync(syncScope = FullProjectSync, false)
+      ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, false)
     }
 
     // then
@@ -131,7 +131,7 @@ class ProjectSyncTaskTest : MockProjectBaseTest() {
 
     // when
     runBlocking {
-      ProjectSyncTask(project).sync(syncScope = FullProjectSync, false)
+      ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, false)
     }
 
     // then

@@ -50,7 +50,7 @@ class BepReader(private val bepServer: BepServer) {
 
   private fun setServerPid(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasStarted() && !serverPid.isDone) {
-      serverPid.complete(event.getStarted().getServerPid())
+      serverPid.complete(event.started.serverPid)
     }
   }
 

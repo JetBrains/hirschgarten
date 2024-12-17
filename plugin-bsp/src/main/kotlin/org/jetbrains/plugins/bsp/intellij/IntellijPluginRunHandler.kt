@@ -46,7 +46,7 @@ class IntellijPluginRunHandler(private val configuration: BspRunConfiguration) :
   // Mostly copied from org.jetbrains.idea.devkit.run.PluginRunConfiguration
   override fun getRunProfileState(executor: Executor, environment: ExecutionEnvironment): RunProfileState {
     val ideaJdk =
-      state.intellijSdkName.let { findIdeaJdk(it) } ?: throw ExecutionException(
+      findIdeaJdk(state.intellijSdkName) ?: throw ExecutionException(
         BspPluginBundle.message(
           "console.task.exception.no.intellij.platform.plugin.sdk",
         ),

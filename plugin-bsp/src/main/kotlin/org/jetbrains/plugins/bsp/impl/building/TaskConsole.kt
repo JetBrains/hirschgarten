@@ -64,7 +64,7 @@ abstract class TaskConsole(
     title: String,
     message: String,
     cancelAction: () -> Unit = {},
-    redoAction: (() -> Unit)? = null,
+    redoAction: (suspend () -> Unit)? = null,
   ): Unit =
     doUnlessTaskInProgress(taskId) {
       tasksInProgress.add(taskId)
@@ -82,7 +82,7 @@ abstract class TaskConsole(
     title: String,
     message: String,
     cancelAction: () -> Unit,
-    redoAction: (() -> Unit)?,
+    redoAction: (suspend () -> Unit)?,
   ) {
     val taskDescriptor = DefaultBuildDescriptor(taskId, title, basePath, System.currentTimeMillis())
     taskDescriptor.isActivateToolWindowWhenAdded = true
@@ -102,12 +102,12 @@ abstract class TaskConsole(
     taskDescriptor.withAction(cancelAction)
   }
 
-  private fun addRedoActionToTheDescriptor(taskDescriptor: DefaultBuildDescriptor, redoAction: (() -> Unit)? = null) {
+  private fun addRedoActionToTheDescriptor(taskDescriptor: DefaultBuildDescriptor, redoAction: (suspend () -> Unit)? = null) {
     val action = calculateRedoAction(redoAction)
     taskDescriptor.withAction(action)
   }
 
-  protected abstract fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction
+  protected abstract fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction
 
   fun hasTasksInProgress(): Boolean = tasksInProgress.isNotEmpty()
 
@@ -396,7 +396,7 @@ class SyncTaskConsole(
   buildToolName: String,
   project: Project,
 ) : TaskConsole(taskView, basePath, buildToolName, project) {
-  override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
+  override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
     object : SuspendableAction({ BspPluginBundle.message("resync.action.text") }, BspPluginIcons.reload) {
       override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
         redoAction?.invoke() ?: ResyncAction().actionPerformed(e)
@@ -414,13 +414,13 @@ class BuildTaskConsole(
   buildToolName: String,
   project: Project,
 ) : TaskConsole(taskView, basePath, buildToolName, project) {
-  override fun calculateRedoAction(redoAction: (() -> Unit)?): AnAction =
-    object : AnAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
-      override fun actionPerformed(e: AnActionEvent) {
+  override fun calculateRedoAction(redoAction: (suspend () -> Unit)?): AnAction =
+    object : SuspendableAction({ BspPluginBundle.message("rebuild.action.text") }, AllIcons.Actions.Compile) {
+      override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
         redoAction?.invoke()
       }
 
-      override fun update(e: AnActionEvent) {
+      override fun update(project: Project, e: AnActionEvent) {
         e.presentation.isEnabled = redoAction != null && tasksInProgress.isEmpty()
       }
 

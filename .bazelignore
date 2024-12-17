@@ -1,7 +1,9 @@
 server/e2e/test-resources/sample-repo/bazel-sample-repo
+server/e2e/test-resources/bazel7/sample-repo/bazel-sample-repo
 server/e2e/test-resources/remote-jdk-project/bazel-remote-jdk-project
 server/e2e/test-resources/local-jdk-project/bazel-local-jdk-project
 server/e2e/test-resources/python-project/bazel-python-project
+server/e2e/test-resources/allow-manual-targets-sync-project/bazel-allow-manual-targets-sync-project
 server/e2e/test-resources/cpp-project/bazel-cpp-project
 server/e2e/test-resources/rust-project/bazel-rust-project
 server/e2e/test-resources/rust-project/bazel-rust-project

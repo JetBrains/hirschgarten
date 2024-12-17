@@ -70,6 +70,15 @@ sealed interface Label {
   val isMainWorkspace: Boolean
     get() = this is Main || this is Synthetic
 
+  val isSynthetic: Boolean
+    get() = this is Synthetic
+
+  val isWildcard: Boolean
+    get() = target is AllRuleTargetsAndFiles || target is AllRuleTargets || packagePath is AllPackagesBeneath
+
+  val isRecursive: Boolean
+    get() = packagePath is AllPackagesBeneath
+
   val isApparent: Boolean
     get() = this is Apparent
 
@@ -168,6 +177,7 @@ sealed interface Label {
     fun synthetic(targetName: String): Label = Synthetic(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
 
     fun parse(value: String): Label {
+      if (value.endsWith(SYNTHETIC_TAG)) return synthetic(value)
       val normalized = value.removePrefix("@").removePrefix("@")
       val repoName = normalized.substringBefore("//", "")
       val pathAndName = normalized.substringAfter("//")
