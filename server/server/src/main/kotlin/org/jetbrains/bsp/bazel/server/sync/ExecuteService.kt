@@ -208,7 +208,7 @@ class ExecuteService(
 
     // TODO: handle multiple targets
     val result =
-      withBepServer(params.originId, params.targets.single().label()) { bepReader ->
+      withBepServer(params.originId, params.targets.first().label()) { bepReader ->
         command.useBes(bepReader.eventFile.toPath().toAbsolutePath())
         bazelRunner
           .runBazelCommand(

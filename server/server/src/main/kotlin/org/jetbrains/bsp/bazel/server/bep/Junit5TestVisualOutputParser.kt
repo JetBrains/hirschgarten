@@ -46,7 +46,6 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
       finishTopmostSuite()
     }
     val time = testingEndedMatcher.group("time").toLongOrNull() ?: 0
-    endTesting(startedBuildTarget!!, time)
   }
 
   private fun processPreviousOutputLine(previousOutputLine: TestOutputLine?, currentOutputLine: TestOutputLine) {
@@ -96,11 +95,6 @@ class Junit5TestVisualOutputParser(private val bspClientTestNotifier: BspClientT
 
   private fun beginTesting(startedBuildTarget: StartedBuildTarget) {
     bspClientTestNotifier.beginTestTarget(Label.parse(startedBuildTarget.uri), startedBuildTarget.taskId)
-  }
-
-  private fun endTesting(testTarget: StartedBuildTarget, millis: Long) {
-    val label = Label.parse(testTarget.uri)
-    bspClientTestNotifier.endTestTarget(label, testTarget.taskId, millis)
   }
 
   private fun startSuite(suite: TestOutputLine) {

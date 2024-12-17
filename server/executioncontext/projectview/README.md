@@ -182,13 +182,37 @@ _We are working on it, you can expect support for this section in future release
 
 #### shard_sync
 
-_We are working on it, you can expect support for this section in future releases._
+enable shard sync, split and build targets in batches to avoid Bazel OOM.
+
+##### default
+
+default to `false`, i.e., sync/build all targets indicated in the project view at once.
 
 ---
 
 #### target_shard_size
 
-_We are working on it, you can expect support for this section in future releases._
+Used alongside with `shard_sync`. It decides the number of targets to be built in each shard.
+
+##### default
+
+default to `1000`
+
+---
+
+#### shard_approach
+
+Used alongside with `shard_sync`. It decides the sharding strategy used to shard the list of original targets.
+
+There are three options to use:
+
+- `EXPAND_AND_SHARD` : expand wildcard targets to package targets, query single targets, and then shard to batches
+- `QUERY_AND_SHARD` : query single targets from the given list of targets without expanding, and then shard to batches
+- `SHARD_ONLY` : split unexpanded wildcard targets into batches
+
+##### default
+
+default to `QUERY_AND_SHARD`
 
 ---
 
