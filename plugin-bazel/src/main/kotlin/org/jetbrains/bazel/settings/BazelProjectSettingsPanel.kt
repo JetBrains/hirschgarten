@@ -21,6 +21,7 @@ import com.intellij.openapi.roots.ui.configuration.JdkComboBox
 import com.intellij.openapi.roots.ui.configuration.projectRoot.ProjectSdksModel
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.RawCommandLineEditor
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
@@ -44,6 +45,7 @@ internal data class BazelProjectSettings(
   val projectViewPath: Path? = null,
   val selectedServerJdkName: String? = null,
   val customJvmOptions: List<String> = emptyList(),
+  val hotSwapEnabled: Boolean = true,
 ) {
   fun withNewProjectViewPath(newProjectViewFilePath: Path): BazelProjectSettings = copy(projectViewPath = newProjectViewFilePath)
 
@@ -53,12 +55,15 @@ internal data class BazelProjectSettings(
     }
 
   fun withNewCustomJvmOptions(newCustomJvmOptions: List<String>): BazelProjectSettings = copy(customJvmOptions = newCustomJvmOptions)
+
+  fun withNewHotSwapEnabled(newHotSwapEnabled: Boolean): BazelProjectSettings = copy(hotSwapEnabled = newHotSwapEnabled)
 }
 
 internal data class BazelProjectSettingsState(
   var projectViewPathUri: String? = null,
   var selectedServerJdkName: String? = null,
   var customJvmOptions: List<String> = emptyList(),
+  var hotSwapEnabled: Boolean = true,
 ) {
   fun isEmptyState(): Boolean = this == BazelProjectSettingsState()
 }
@@ -79,6 +84,7 @@ internal class BazelProjectSettingsService :
       projectViewPathUri = settings.projectViewPath?.toUri()?.toString(),
       selectedServerJdkName = settings.selectedServerJdkName,
       customJvmOptions = settings.customJvmOptions,
+      hotSwapEnabled = settings.hotSwapEnabled,
     )
 
   override fun loadState(settingsState: BazelProjectSettingsState) {
@@ -93,6 +99,7 @@ internal class BazelProjectSettingsService :
             },
           selectedServerJdkName = settingsState.selectedServerJdkName,
           customJvmOptions = settingsState.customJvmOptions,
+          hotSwapEnabled = settingsState.hotSwapEnabled,
         )
     }
   }
@@ -111,6 +118,8 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
 
   private val serverCustomJvmOptions: RawCommandLineEditor
 
+  private val hotswapEnabledCheckBox: JBCheckBox
+
   private var currentProjectSettings = project.bazelProjectSettings
 
   init {
@@ -119,6 +128,7 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
     serverCustomJvmOptions = initServerCustomJvmOptions()
 
     projectViewPathField = initProjectViewFileField()
+    hotswapEnabledCheckBox = initHotSwapEnabledCheckBox()
   }
 
   private fun initServerJdkComboBox(): JdkComboBox =
@@ -170,6 +180,14 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
     }
   }
 
+  private fun initHotSwapEnabledCheckBox(): JBCheckBox =
+    JBCheckBox(BazelPluginBundle.message("project.settings.plugin.hotswap.enabled.checkbox.text")).apply {
+      isSelected = currentProjectSettings.hotSwapEnabled
+      addItemListener {
+        currentProjectSettings = currentProjectSettings.withNewHotSwapEnabled(isSelected)
+      }
+    }
+
   override fun createComponent(): JComponent =
     panel {
       group(BazelPluginBundle.message("project.settings.server.title"), false) {
@@ -179,6 +197,9 @@ internal class BazelProjectSettingsConfigurable(private val project: Project) : 
           contextHelp(BazelPluginBundle.message("project.settings.server.jdk.context.help.description")).align(AlignX.RIGHT)
         }
         row(BazelPluginBundle.message("project.settings.server.jvm.options.label")) { cell(serverCustomJvmOptions).align(Align.FILL) }
+      }
+      group(BazelPluginBundle.message("project.settings.plugin.title"), false) {
+        row { cell(hotswapEnabledCheckBox).align(Align.FILL) }
       }
     }
 

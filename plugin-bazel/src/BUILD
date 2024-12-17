@@ -30,6 +30,7 @@ kt_jvm_library(
         "//plugin-bazel/src:intellij-bazel-unpackaged",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extension",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
     ],
 )
 
@@ -46,7 +47,6 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting:higlighting",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",

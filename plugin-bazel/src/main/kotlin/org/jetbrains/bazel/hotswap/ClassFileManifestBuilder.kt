@@ -20,9 +20,9 @@ import com.intellij.debugger.impl.HotSwapProgress
 import com.intellij.execution.RunCanceledByUserException
 import com.intellij.execution.application.ApplicationConfiguration
 import com.intellij.execution.runners.ExecutionEnvironment
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.bazel.config.isBazelProject
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.impl.flow.sync.query
 import org.jetbrains.plugins.bsp.impl.server.connection.connection
@@ -39,8 +39,8 @@ private val MANIFEST_KEY: Key<AtomicReference<ClassFileManifest>> =
 
 /** Builds a .class file manifest to support hotswapping.  */
 object ClassFileManifestBuilder {
-  fun initStateIfNotExists(env: ExecutionEnvironment) {
-    if (!HotSwapUtils.canHotSwap(env)) {
+  fun initStateIfNotExists(env: ExecutionEnvironment, project: Project) {
+    if (!HotSwapUtils.canHotSwap(env, project)) {
       return
     }
     if (env.getManifestRef() == null) {
@@ -60,12 +60,11 @@ object ClassFileManifestBuilder {
    * calculated manifest is available.
    */
   fun buildManifest(env: ExecutionEnvironment, progress: HotSwapProgress?): ClassFileManifest.Diff? {
-    if (!HotSwapUtils.canHotSwap(env)) {
-      return null
-    }
     val configuration = getConfiguration(env) ?: return null
     val project = configuration.project
-    if (!project.isBazelProject) return null
+    if (!HotSwapUtils.canHotSwap(env, project)) {
+      return null
+    }
     val jvmRunEnvDeferred =
       BspCoroutineService.getInstance(project).startAsync {
         project.connection.runWithServer { server, capabilities ->

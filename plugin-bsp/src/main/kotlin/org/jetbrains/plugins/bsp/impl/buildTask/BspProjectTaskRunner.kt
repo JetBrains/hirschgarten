@@ -7,7 +7,11 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.rd.util.toPromise
-import com.intellij.task.*
+import com.intellij.task.ModuleBuildTask
+import com.intellij.task.ProjectTask
+import com.intellij.task.ProjectTaskContext
+import com.intellij.task.ProjectTaskRunner
+import com.intellij.task.TaskRunnerResults
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.jetbrains.bsp.protocol.jpsCompilation.utils.JpsFeatureFlags
 import org.jetbrains.concurrency.AsyncPromise

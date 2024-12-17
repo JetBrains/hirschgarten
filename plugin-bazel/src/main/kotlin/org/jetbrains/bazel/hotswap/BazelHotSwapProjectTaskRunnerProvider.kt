@@ -13,7 +13,7 @@ class BazelHotSwapProjectTaskRunnerProvider : BspAdditionalProjectTaskRunnerProv
     vararg tasks: ProjectTask,
   ) {
     val hotSwappableDebugSession = BazelHotSwapManager.createHotSwappableDebugSession(project)
-    hotSwappableDebugSession?.env?.let { ClassFileManifestBuilder.initStateIfNotExists(it) }
+    hotSwappableDebugSession?.env?.let { ClassFileManifestBuilder.initStateIfNotExists(it, project) }
   }
 
   override fun postRun(

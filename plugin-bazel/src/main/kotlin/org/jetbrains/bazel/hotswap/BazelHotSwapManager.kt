@@ -184,7 +184,7 @@ object BazelHotSwapManager {
       return null
     }
     val env = (process.session as? XDebugSessionImpl)?.executionEnvironment ?: return null
-    if (!HotSwapUtils.canHotSwap(env)) return null
+    if (!HotSwapUtils.canHotSwap(env, project)) return null
     val runProfile = env.runProfile as? BspJvmApplicationConfiguration ?: return null
     // build manifest if not exists
     return HotSwappableDebugSession(
