@@ -1,0 +1,11 @@
+FILE
+  BazelrcLine(LINE)
+    PsiElement(Bazelrc:COMMAND)('build')
+    PsiWhiteSpace(' ')
+    BazelrcFlag(FLAG)
+      PsiElement(Bazelrc:FLAG)('--define')
+      PsiElement(Bazelrc:=)('=')
+      PsiElement(Bazelrc:VALUE)('ij_product=')
+      PsiElement(Bazelrc:")('"')
+      PsiElement(Bazelrc:VALUE)('intellij-2024.3')
+      PsiElement(Bazelrc:")('"')

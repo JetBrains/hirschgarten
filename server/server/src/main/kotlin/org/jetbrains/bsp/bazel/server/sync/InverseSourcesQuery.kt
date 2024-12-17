@@ -65,10 +65,13 @@ object InverseSourcesQuery {
     bazelRunner: BazelRunner,
     cancelChecker: CancelChecker,
   ): String? {
+    val packagePath = relativePath.parent
+    val file = relativePath.fileName.toString()
+
     val command =
       bazelRunner.buildBazelCommand {
         query {
-          targets.add(BuildTargetIdentifier(relativePath.toString()))
+          targets.add(Label.parse("$packagePath:$file"))
         }
       }
     val fileLabelResult =
@@ -80,7 +83,9 @@ object InverseSourcesQuery {
     } else if (fileLabelResult.stderrLines.firstOrNull()?.startsWith("ERROR: no such target '") == true) {
       null
     } else {
-      throw RuntimeException("Could not find file. Bazel query failed:\n ${fileLabelResult.stderrLines.joinToString { "\n" }}\n")
+      throw RuntimeException(
+        "Could not find file. Bazel query failed:\n command:\n${command.makeCommandLine()}\nstderr:\n${fileLabelResult.stderr}\nstdout:\n${fileLabelResult.stdout}",
+      )
     }
   }
 }

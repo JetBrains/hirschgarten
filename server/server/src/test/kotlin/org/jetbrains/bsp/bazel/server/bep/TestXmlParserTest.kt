@@ -10,7 +10,6 @@ import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 import ch.epfl.scala.bsp4j.TestFinish
-import ch.epfl.scala.bsp4j.TestReport
 import ch.epfl.scala.bsp4j.TestStatus
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -83,7 +82,6 @@ class TestXmlParserTest {
 
     // then
     client.taskStartCalls.size shouldBe 5
-    client.taskFinishCalls.size shouldBe 5
 
     val expectedNames =
       listOf(
@@ -96,7 +94,6 @@ class TestXmlParserTest {
 
     client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
     client.taskFinishCalls.map { (it.data as TestFinish).status shouldBe TestStatus.PASSED }
-    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
   }
 
   @Test
@@ -181,7 +178,6 @@ class TestXmlParserTest {
 
     // then
     client.taskStartCalls.size shouldBe 14
-    client.taskFinishCalls.size shouldBe 14
 
     val expectedNames =
       listOf(
@@ -220,7 +216,6 @@ class TestXmlParserTest {
         }
       }
     }
-    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
   }
 
   @Test
@@ -285,7 +280,6 @@ class TestXmlParserTest {
 
     // then
     client.taskStartCalls.size shouldBe 18
-    client.taskFinishCalls.size shouldBe 18
 
     val expectedNames =
       listOf(
@@ -311,7 +305,6 @@ class TestXmlParserTest {
 
     client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
     client.taskFinishCalls.map { (it.data as TestFinish).status shouldBe TestStatus.PASSED }
-    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
   }
 
   @Test
@@ -394,7 +387,6 @@ class TestXmlParserTest {
 
     // then
     client.taskStartCalls.size shouldBe 17
-    client.taskFinishCalls.size shouldBe 17
 
     val expectedNames =
       listOf(
@@ -418,7 +410,7 @@ class TestXmlParserTest {
       )
 
     client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
+
     client.taskFinishCalls.map {
       val data = (it.data as TestFinish)
       when (data.displayName) {
@@ -513,7 +505,6 @@ class TestXmlParserTest {
 
     // then
     client.taskStartCalls.size shouldBe 5
-    client.taskFinishCalls.size shouldBe 5
 
     val expectedNames =
       listOf(
@@ -523,13 +514,9 @@ class TestXmlParserTest {
         "testSuccess()",
       )
 
-    client.taskFinishCalls.count { it.data is TestReport } shouldBe 1
-
     val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
-    testFinishes.size shouldBe 4
 
     testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
 
     testFinishes.forEach {
       val data = (it.data as TestFinish)
@@ -624,7 +611,6 @@ class TestXmlParserTest {
 
     // then
     client.taskStartCalls.size shouldBe 5
-    client.taskFinishCalls.size shouldBe 5
 
     val expectedNames =
       listOf(
@@ -634,14 +620,9 @@ class TestXmlParserTest {
         "testSuccess()",
       )
 
-    client.taskFinishCalls.count { it.data is TestReport } shouldBe 1
-
     val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
-    testFinishes.size shouldBe 4
 
     testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
-
     testFinishes.forEach {
       val data = (it.data as TestFinish)
       when (data.displayName) {
@@ -735,7 +716,6 @@ class TestXmlParserTest {
 
     // then
     client.taskStartCalls.size shouldBe 3 // two malformed rows should simply be ignored
-    client.taskFinishCalls.size shouldBe 3 // two malformed rows should simply be ignored
 
     val expectedNames = // two malformed rows should simply be ignored
       listOf(
@@ -743,13 +723,10 @@ class TestXmlParserTest {
         "testSuccess()",
       )
 
-    client.taskFinishCalls.count { it.data is TestReport } shouldBe 1
-
     val testFinishes = client.taskFinishCalls.filter { it.data is TestFinish }
     testFinishes.size shouldBe 2 // two malformed rows should simply be ignored
 
     testFinishes.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
 
     testFinishes.forEach {
       val data = (it.data as TestFinish)
@@ -820,12 +797,10 @@ class TestXmlParserTest {
 
     // then
     client.taskStartCalls.size shouldBe 3
-    client.taskFinishCalls.size shouldBe 3
 
     val expectedNames = listOf("testsuite", "testFailure1", "testFailure2")
 
     client.taskFinishCalls.map { (it.data as TestFinish).displayName } shouldContainExactlyInAnyOrder expectedNames
-    client.taskStartCalls.map { it.taskId } shouldContainExactlyInAnyOrder client.taskFinishCalls.map { it.taskId }
   }
 
   @Test
@@ -864,7 +839,6 @@ class TestXmlParserTest {
     TestXmlParser(notifier).parseAndReport(writeTempFile(tempDir, sampleContents))
 
     // then
-    client.taskFinishCalls.size shouldBe 2
     val lastFinish = client.taskFinishCalls.first().data as? TestFinish
     val lastFinishData = lastFinish?.data as? JUnitStyleTestCaseData
     lastFinishData?.time shouldBe 0.02

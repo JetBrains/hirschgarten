@@ -23,6 +23,7 @@ diff: String = "0",
         endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-XLarge")
         equals("container.engine.osType", "linux")
     },
+    artifactRules = "+:.teamcity/qodana/*.zip",
     dependencies = {
         // select build dependency based on vcs used
         if (vcsRoot == BaseConfiguration.SpaceVcs){

@@ -41,6 +41,7 @@
                 implementation="org.jetbrains.bazel.flow.open.BazelInvalidTargetsProviderExtension"/>
 
         <runConfigurationTypeProvider implementation="org.jetbrains.bazel.run.BazelRunConfigurationTypeProvider"/>
+        <bspFeatureFlagsProvider implementation="org.jetbrains.bazel.config.BazelBspFeatureFlagsProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

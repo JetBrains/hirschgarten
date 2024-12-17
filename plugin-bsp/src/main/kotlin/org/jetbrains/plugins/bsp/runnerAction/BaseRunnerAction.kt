@@ -20,7 +20,7 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
 
 public abstract class BaseRunnerAction(
-  private val buildTargetInfo: BuildTargetInfo,
+  private val buildTargetInfos: List<BuildTargetInfo>,
   text: () -> String,
   icon: Icon? = null,
   private val isDebugAction: Boolean = false,
@@ -28,7 +28,10 @@ public abstract class BaseRunnerAction(
     text = text,
     icon = icon ?: if (isDebugAction) AllIcons.Actions.StartDebugger else AllIcons.Actions.Execute,
   ) {
-  protected abstract suspend fun getRunnerSettings(project: Project, buildTargetInfo: BuildTargetInfo): RunnerAndConfigurationSettings?
+  protected abstract suspend fun getRunnerSettings(
+    project: Project,
+    buildTargetInfos: List<BuildTargetInfo>,
+  ): RunnerAndConfigurationSettings?
 
   override suspend fun actionPerformed(project: Project, e: AnActionEvent) {
     doPerformAction(project)
@@ -36,7 +39,7 @@ public abstract class BaseRunnerAction(
 
   suspend fun doPerformAction(project: Project) {
     try {
-      val settings = getRunnerSettings(project, buildTargetInfo) ?: return
+      val settings = getRunnerSettings(project, buildTargetInfos) ?: return
       RunManagerEx.getInstanceEx(project).setTemporaryConfiguration(settings)
       val executor = getExecutor()
       val runner = ProgramRunner.getRunner(executor.id, settings.configuration)

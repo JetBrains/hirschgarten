@@ -31,8 +31,10 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspCompilationManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BepReader
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
 import org.jetbrains.bsp.bazel.server.model.BspMappings
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.Tag
+import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.generateRunArguments
 import org.jetbrains.bsp.bazel.server.sync.JvmDebugHelper.verifyDebugRequest
@@ -65,7 +67,7 @@ class ExecuteService(
 
   private fun <T> withBepServer(
     originId: String?,
-    target: BuildTargetIdentifier?,
+    target: Label?,
     body: (BepReader) -> T,
   ): T {
     val diagnosticsService = DiagnosticsService(compilationManager.workspaceRoot)
@@ -134,7 +136,7 @@ class ExecuteService(
     }
     val command =
       bazelRunner.buildBazelCommand {
-        run(params.target) {
+        run(params.target.label()) {
           options.add(BazelFlag.color(true))
           additionalProgramArguments?.let { programArguments.addAll(it) }
           params.environmentVariables?.let { environment.putAll(it) }
@@ -172,7 +174,7 @@ class ExecuteService(
     params: TestParams,
     additionalProgramArguments: List<String>? = emptyList(),
   ): TestResult {
-    val targetsSpec = TargetsSpec(params.targets, emptyList())
+    val targetsSpec = TargetsSpec(params.targets.map { it.label() }, emptyList())
 
     var bazelTestParamsData: BazelTestParamsData? = null
     try {
@@ -206,7 +208,7 @@ class ExecuteService(
 
     // TODO: handle multiple targets
     val result =
-      withBepServer(params.originId, params.targets.single()) { bepReader ->
+      withBepServer(params.originId, params.targets.first().label()) { bepReader ->
         command.useBes(bepReader.eventFile.toPath().toAbsolutePath())
         bazelRunner
           .runBazelCommand(
@@ -233,7 +235,7 @@ class ExecuteService(
 
     val command =
       bazelRunner.buildBazelCommand {
-        mobileInstall(params.target) {
+        mobileInstall(params.target.label()) {
           options.add(BazelFlag.device(params.targetDeviceSerialNumber))
           options.add(BazelFlag.start(startType))
           params.adbPath?.let { adbPath ->
@@ -272,12 +274,12 @@ class ExecuteService(
     val allTargets = bspIds + getAdditionalBuildTargets(cancelChecker, bspIds)
     // TODO: what if there's more than one target?
     //  (it was like this in now-deleted BazelBspCompilationManager.buildTargetsWithBep)
-    return withBepServer(originId, bspIds.firstOrNull()) { bepReader ->
+    return withBepServer(originId, bspIds.firstOrNull()?.label()) { bepReader ->
       val command =
         bazelRunner.buildBazelCommand {
           build {
             options.addAll(additionalArguments)
-            targets.addAll(allTargets)
+            targets.addAll(allTargets.map { it.label() })
             useBes(bepReader.eventFile.toPath().toAbsolutePath())
           }
         }

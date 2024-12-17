@@ -43,13 +43,17 @@ object BspFeatureFlags {
 
   val executeSecondPhaseOnSync: Boolean
     get() = isPhasedSync && Registry.`is`(EXECUTE_SECOND_PHASE_ON_SYNC)
+}
 
-  fun toBspProtocolFeatureFlags(): FeatureFlags =
-    FeatureFlags(
-      isPythonSupportEnabled = isPythonSupportEnabled,
-      isAndroidSupportEnabled = isAndroidSupportEnabled,
-      isGoSupportEnabled = isGoSupportEnabled,
-      isRustSupportEnabled = false, // No corresponding registry key for now
-      isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
-    )
+class DefaultBspFeatureFlagsProvider : BspFeatureFlagsProvider {
+  override fun getFeatureFlags(): FeatureFlags =
+    with(BspFeatureFlags) {
+      FeatureFlags(
+        isPythonSupportEnabled = isPythonSupportEnabled,
+        isAndroidSupportEnabled = isAndroidSupportEnabled,
+        isGoSupportEnabled = isGoSupportEnabled,
+        isRustSupportEnabled = false, // No corresponding registry key for now
+        isPropagateExportsFromDepsEnabled = !isWrapLibrariesInsideModulesEnabled,
+      )
+    }
 }

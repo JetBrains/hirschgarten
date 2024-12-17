@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.server.bep
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.DidChangeBuildTarget
 import ch.epfl.scala.bsp4j.LogMessageParams
 import ch.epfl.scala.bsp4j.PrintParams
@@ -14,6 +13,7 @@ import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.PublishOutputParams
@@ -66,7 +66,7 @@ class BepDiagnosticsTest {
       bspClient = client,
       diagnosticsService = DiagnosticsService(workspaceRoot),
       originId = "originId",
-      target = BuildTargetIdentifier("//target"),
+      target = Label.parse("//target"),
       bazelPathsResolver = BazelPathsResolver(bazelInfo),
     )
   }
