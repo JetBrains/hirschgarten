@@ -13,10 +13,10 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRule
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewIdeJavaHomeOverrideSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
+import org.jetbrains.bsp.bazel.server.model.Label
 import java.nio.file.Path
 import kotlin.io.path.Path
 

@@ -18,8 +18,6 @@
     "https://bcr.bazel.build/modules/aspect_rules_js/1.39.0/MODULE.bazel": "aece421d479e3c31dc3e5f6d49a12acc2700457c03c556650ec7a0ff23fc0d95",
     "https://bcr.bazel.build/modules/aspect_rules_js/1.40.0/MODULE.bazel": "01a1014e95e6816b68ecee2584ae929c7d6a1b72e4333ab1ff2d2c6c30babdf1",
     "https://bcr.bazel.build/modules/aspect_rules_js/1.40.0/source.json": "b6fd491369e9ef888fdef64b839023a2360caaea8eb370d2cfbfdd2a96721311",
-    "https://bcr.bazel.build/modules/aspect_rules_lint/1.0.6/MODULE.bazel": "860280c04892b177f35adc4589a96e6a34d60264bd1b0bf8e0d599dd79a49953",
-    "https://bcr.bazel.build/modules/aspect_rules_lint/1.0.6/source.json": "6e2e7f337d02a6817c1e54bed26beb49b3702ece7c274ff74d358b541d30f087",
     "https://bcr.bazel.build/modules/aspect_rules_lint/1.0.7/MODULE.bazel": "9e238fdd21dd3fe0ed802b93e2cdd0a491f98ad897c3fa556bdb8f3dc392810e",
     "https://bcr.bazel.build/modules/aspect_rules_lint/1.0.7/source.json": "bf9c92d4ece08f9109fa3b83592c821cf16b786210a955decab4f2f6f9154150",
     "https://bcr.bazel.build/modules/bazel_features/0.1.0/MODULE.bazel": "47011d645b0f949f42ee67f2e8775188a9cf4a0a1528aa2fa4952f2fd00906fd",
@@ -82,8 +80,6 @@
     "https://bcr.bazel.build/modules/re2/2023-09-01/source.json": "e044ce89c2883cd957a2969a43e79f7752f9656f6b20050b62f90ede21ec6eb4",
     "https://bcr.bazel.build/modules/rules_android/0.1.1/MODULE.bazel": "48809ab0091b07ad0182defb787c4c5328bd3a278938415c00a7b69b50c4d3a8",
     "https://bcr.bazel.build/modules/rules_android/0.1.1/source.json": "e6986b41626ee10bdc864937ffb6d6bf275bb5b9c65120e6137d56e6331f089e",
-    "https://bcr.bazel.build/modules/rules_bazel_integration_test/0.27.0/MODULE.bazel": "66b85a47d4aa51686c3e43befc7442b5be84415b12296954929ba199d46823be",
-    "https://bcr.bazel.build/modules/rules_bazel_integration_test/0.27.0/source.json": "28bd34e4cbbe78a826aa513cf555d9cb52f0fe589b64d20ca812b8e3fbca572f",
     "https://bcr.bazel.build/modules/rules_bazel_integration_test/0.29.0/MODULE.bazel": "a171d26b5999b6d4d99fab02cb4cdb3b691faaf91671e6ffa079f25c3b404fb3",
     "https://bcr.bazel.build/modules/rules_bazel_integration_test/0.29.0/source.json": "822444ec417c770c80cdd912d4032554eeabe3e6be123b44091ae5f481f5e826",
     "https://bcr.bazel.build/modules/rules_buf/0.1.1/MODULE.bazel": "6189aec18a4f7caff599ad41b851ab7645d4f1e114aa6431acf9b0666eb92162",
@@ -5209,8 +5205,8 @@
         "bzlTransitiveDigest": "cjBEarYNAcYs9VXl/CKa6yg3JZ2VtywnHwBxeRpASDU=",
         "usagesDigest": "ITnTHCXpegr4OpOSk9frd4ztXOI7pQqyOoaZlcV0y9E=",
         "recordedFileInputs": {
-          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/rustc": "18e9f552a4e3f789844195499f3c814a3676de94829ecb7ad98812c285e221fc",
-          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/cargo": "53e1eb55e8eebd384021b5ca8464635fd25550ef1f2fd80fb2ae7824f655975c"
+          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/rustc": "edc2f0f23646c9877e3fb095a1e01d0e725b11daffa55c4851643f720666fc74",
+          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/cargo": "d0b4decf3683cbd306aafc2d4c4061168b30483d5db64dbe0c4f82fad425e783"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},

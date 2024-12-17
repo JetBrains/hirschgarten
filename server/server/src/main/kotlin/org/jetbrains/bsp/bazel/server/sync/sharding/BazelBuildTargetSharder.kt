@@ -53,8 +53,8 @@ object BazelBuildTargetSharder {
     cancelChecker: CancelChecker,
     bspClientLogger: BspClientLogger,
   ): ShardedTargetsResult {
-    val includes = targets.values.map { Label.parse(it.uri) }
-    val excludes = targets.excludedValues.map { Label.parse(it.uri) }
+    val includes = targets.values
+    val excludes = targets.excludedValues
     val shardingApproach = getShardingApproach(context)
     return when (shardingApproach) {
       ShardingApproach.SHARD_ONLY ->

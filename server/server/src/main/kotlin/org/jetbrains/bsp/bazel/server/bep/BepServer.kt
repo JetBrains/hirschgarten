@@ -122,7 +122,7 @@ class BepServer(
           PublishOutputParams(
             originId,
             taskId,
-            BuildTargetIdentifier(Label.parse(event.id.testResult.label).toString()),
+            Label.parse(event.id.testResult.label).toBspIdentifier(),
             TestCoverageReport.DATA_KIND,
             TestCoverageReport(coverageReportUri),
           ),
@@ -206,7 +206,9 @@ class BepServer(
     bepOutputBuilder.clear()
     val taskId = TaskId(event.started.uuid)
     val startParams = TaskStartParams(taskId)
-    val target = BuildTargetIdentifier(Label.parse(event.id.testResult.label).toString())
+    val target =
+      event.id.testResult.label
+        ?.let { Label.parse(it) }
     startParams.eventTime = event.started.startTimeMillis
 
     if (event.started.command == Constants.BAZEL_BUILD_COMMAND) { // todo: why only build?
@@ -236,7 +238,9 @@ class BepServer(
 
   private fun consumeFinishedEvent(event: BuildEventStreamProtos.BuildEvent) {
     val taskId = startedEvent
-    val target = BuildTargetIdentifier(Label.parse(event.id.testResult.label).toString())
+    val target =
+      event.id.testResult.label
+        ?.let { Label.parse(it) }
 
     if (taskId == null) {
       LOGGER.warn("No start event id was found. Origin id: {}", originId)
