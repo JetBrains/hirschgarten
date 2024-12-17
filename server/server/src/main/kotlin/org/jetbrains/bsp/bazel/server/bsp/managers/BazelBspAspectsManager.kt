@@ -14,6 +14,7 @@ import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.bep.BepOutput
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
@@ -74,7 +75,7 @@ class BazelBspAspectsManager(
   fun generateAspectsFromTemplates(
     ruleLanguages: List<RuleLanguage>,
     workspaceContext: WorkspaceContext,
-    toolchains: Map<RuleLanguage, String?>,
+    toolchains: Map<RuleLanguage, Label?>,
     bazelRelease: BazelRelease,
   ) {
     val languageRuleMap = ruleLanguages.associateBy { it.language }
@@ -96,7 +97,7 @@ class BazelBspAspectsManager(
           "javaEnabled" to javaEnabled.toString(),
           "pythonEnabled" to pythonEnabled.toString(),
           "bazel8OrAbove" to bazel8OrAbove.toString(),
-          "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl] },
+          "toolchainType" to ruleLanguage?.let { rl -> toolchains[rl]?.toString()?.let { "\"" + it + "\"" } },
         )
       templateWriter.writeToFile(templateFilePath, outputFile, variableMap)
     }
