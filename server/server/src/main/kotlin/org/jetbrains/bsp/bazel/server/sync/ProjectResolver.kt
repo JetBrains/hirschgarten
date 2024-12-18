@@ -107,6 +107,7 @@ class ProjectResolver(
             .readTargetMapFromAspectOutputs(aspectOutputs)
             .map { (k, v) ->
               // TODO: make sure we canonicalize everything
+              //  (https://youtrack.jetbrains.com/issue/BAZEL-1595/Merge-WildcardTargetExpander-and-BazelLabelExpander)
               //  also, this can be done in a more efficient way
               //  maybe we can do it in the aspect with some flag or something
               val label = k.canonicalize(repoMapping)

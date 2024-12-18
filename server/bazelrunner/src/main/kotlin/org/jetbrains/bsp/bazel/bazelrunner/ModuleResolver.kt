@@ -25,29 +25,28 @@ sealed interface ShowRepoResult {
 }
 
 class ModuleOutputParser {
+  private fun extractAttribute(lines: List<String>, attributeName: String): String {
+    return lines
+      .first { it.contains("$attributeName = ") }
+      .substringAfter("$attributeName = \"")
+      .substringBefore("\",")
+      .trim()
+  }
+
+  // TODO: keep track of https://github.com/bazelbuild/bazel/issues/21617
   fun parseShowRepoResult(bazelProcessResult: BazelProcessResult): ShowRepoResult {
     if (bazelProcessResult.isNotSuccess) {
       // If the exit code is not 0, bazel prints the error message to stderr
-      throw IllegalStateException("Failed to resolve module from bazel info. Bazel Info output:\n'${bazelProcessResult.stderr}'")
+      error("Failed to resolve module from bazel info. Bazel Info output:\n'${bazelProcessResult.stderr}'")
     }
 
     try {
       // No matter how the repository is defined, it will always have a name
-      val name =
-        bazelProcessResult.stdoutLines
-          .first { it.contains("name = ") }
-          .substringAfter("name = \"")
-          .substringBefore("\",")
-          .trim()
+      val name = extractAttribute(bazelProcessResult.stdoutLines, "name")
 
       val isLocalRepository = bazelProcessResult.stdoutLines.any { it.contains("local_repository(") }
       if (isLocalRepository) {
-        val path =
-          bazelProcessResult.stdoutLines
-            .first { it.contains("path = ") }
-            .substringAfter("path = \"")
-            .substringBefore("\",")
-            .trim()
+        val path = extractAttribute(bazelProcessResult.stdoutLines, "path")
         return ShowRepoResult.LocalRepository(name, path)
       } else {
         return ShowRepoResult.Unknown(name, bazelProcessResult.stdout)
@@ -86,7 +85,7 @@ class ModuleResolver(private val bazelRunner: BazelRunner, private val moduleOut
    */
   fun getRepoMapping(canonicalRepoName: String, cancelChecker: CancelChecker): Map<String, String> {
     if (canonicalRepoName.startsWith('@')) {
-      throw IllegalArgumentException("Canonical repo name cannot contain '@' characters: $canonicalRepoName")
+      error("Canonical repo name cannot contain '@' characters: $canonicalRepoName")
     }
 
     val command =

@@ -1,0 +1,18 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+
+java_binary(
+    name = "bin_outer",
+    srcs = ["BinOuter.java"],
+    main_class = "outer.BinOuter",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@inner//:lib_inner",
+        ":lib_outer",
+    ],
+)
+
+java_library(
+    name = "lib_outer",
+    srcs = ["LibOuter.java"],
+    visibility = ["//visibility:public"],
+)

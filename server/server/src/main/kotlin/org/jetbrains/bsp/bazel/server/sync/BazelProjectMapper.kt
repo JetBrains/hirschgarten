@@ -221,7 +221,7 @@ class BazelProjectMapper(
 
     val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
     val nonModuleTargets =
-      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace }) // TODO: remove isMainWorkspace
+      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && isTargetTreatedAsInternal(it)  })
 
     return Project(
       workspaceRoot,
@@ -846,9 +846,12 @@ class BazelProjectMapper(
       is RepoMappingDisabled -> emptySet()
     }
 
+  private fun isTargetTreatedAsInternal(target: Label): Boolean =
+    target.isMainWorkspace || target.repoName in externalRepositoriesTreatedAsInternal
+
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =
-    (target.label().isMainWorkspace || target.label().repoName in externalRepositoriesTreatedAsInternal) &&
+    isTargetTreatedAsInternal(target.label()) &&
       (
         shouldImportTargetKind(target.kind) ||
           target.hasJvmTargetInfo() &&
