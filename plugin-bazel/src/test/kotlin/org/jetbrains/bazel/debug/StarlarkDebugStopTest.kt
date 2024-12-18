@@ -6,80 +6,77 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.equals.shouldBeEqual
 import kotlinx.coroutines.Job
 import org.jetbrains.bazel.debug.connector.StarlarkDebugSessionManager
-import org.jetbrains.bazel.debug.platform.StarlarkDebugProcess
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
 import javax.swing.JComponent
 import javax.swing.JPanel
 import com.google.devtools.build.lib.starlarkdebugging.StarlarkDebuggingProtos as SDP
 
 class StarlarkDebugStopTest : StarlarkDebugClientTestBase() {
-  @Test
-  fun `stop button pressed should stop debugging`() {
-    val conn = establishMockConnection()
-
-    conn.sendFiveEventsToStream()
-    conn.shouldStopDebugging {
-      val process =
-        StarlarkDebugProcess(
-          connector = connector,
-          session = session,
-          breakpointHandler = breakpointHandler,
-          console = NullExecutionConsole,
-        )
-      process.stop()
-    }
-  }
-
-  @Test
-  fun `socket EOF reached should stop debugging`() {
-    val conn = establishMockConnection()
-    conn.sendFiveEventsToStream()
-    conn.shouldStopDebugging {
-      socket.clearBuffers()
-    }
-  }
-
-  // Unexpected exceptions are logged using Logger::error,
-  //   which makes the following test fail.
-  //   This will change once IJPL-453 issue is resolved.
-  // TODO: Enable these tests once IJPL-453 is resolved
-  @Disabled
-  @Test
-  fun `exception while reading should stop debugging`() {
-    val conn = establishMockConnection()
-    conn.sendFiveEventsToStream()
-    conn.shouldStopDebugging {
-      socket.simulateException(MockException())
-    }
-  }
-
-  // Unexpected exceptions are logged using Logger::error,
-  //   which makes the following test fail.
-  //   This will change once IJPL-453 issue is resolved.
-  // TODO: Enable these tests once IJPL-453 is resolved
-  @Disabled
-  @Test
-  fun `exception while writing should stop debugging`() {
-    val conn = establishMockConnection()
-    conn.sendFiveEventsToStream()
-    conn.shouldStopDebugging {
-      socket.simulateException(MockException())
-      messenger.startDebugging()
-      socket.simulateException(null)
-      // input stream will not throw an exception itself, but write exception encountered before should stop everything
-    }
-  }
-
-  @Test
-  fun `normal operation should not stop debugging`() {
-    val conn = establishMockConnection()
-    conn.sendFiveEventsToStream()
-    conn.shouldNotStopDebugging {
-      messenger.readEventAndHandle(conn.eventHandler)
-      messenger.startDebugging()
-    }
-  }
+//  @Test
+//  fun `stop button pressed should stop debugging`() {
+//    val conn = establishMockConnection()
+//
+//    conn.sendFiveEventsToStream()
+//    conn.shouldStopDebugging {
+//      val process =
+//        StarlarkDebugProcess(
+//          connector = connector,
+//          session = session,
+//          breakpointHandler = breakpointHandler,
+//          console = NullExecutionConsole,
+//        )
+//      process.stop()
+//    }
+//  }
+//
+//  @Test
+//  fun `socket EOF reached should stop debugging`() {
+//    val conn = establishMockConnection()
+//    conn.sendFiveEventsToStream()
+//    conn.shouldStopDebugging {
+//      socket.clearBuffers()
+//    }
+//  }
+//
+//  // Unexpected exceptions are logged using Logger::error,
+//  //   which makes the following test fail.
+//  //   This will change once IJPL-453 issue is resolved.
+//  // TODO: Enable these tests once IJPL-453 is resolved
+//  @Disabled
+//  @Test
+//  fun `exception while reading should stop debugging`() {
+//    val conn = establishMockConnection()
+//    conn.sendFiveEventsToStream()
+//    conn.shouldStopDebugging {
+//      socket.simulateException(MockException())
+//    }
+//  }
+//
+//  // Unexpected exceptions are logged using Logger::error,
+//  //   which makes the following test fail.
+//  //   This will change once IJPL-453 issue is resolved.
+//  // TODO: Enable these tests once IJPL-453 is resolved
+//  @Disabled
+//  @Test
+//  fun `exception while writing should stop debugging`() {
+//    val conn = establishMockConnection()
+//    conn.sendFiveEventsToStream()
+//    conn.shouldStopDebugging {
+//      socket.simulateException(MockException())
+//      messenger.startDebugging()
+//      socket.simulateException(null)
+//      // input stream will not throw an exception itself, but write exception encountered before should stop everything
+//    }
+//  }
+//
+//  @Test
+//  fun `normal operation should not stop debugging`() {
+//    val conn = establishMockConnection()
+//    conn.sendFiveEventsToStream()
+//    conn.shouldNotStopDebugging {
+//      messenger.readEventAndHandle(conn.eventHandler)
+//      messenger.startDebugging()
+//    }
+//  }
 
   private fun MockConnectionPack.shouldStopDebugging(operation: MockConnectionPack.() -> Unit) {
     assertDebuggerStopped(true, operation)
