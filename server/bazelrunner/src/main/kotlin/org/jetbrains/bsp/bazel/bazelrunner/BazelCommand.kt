@@ -215,7 +215,10 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("query")
       commandLine.addAll(options)
-      commandLine.addAll(targetCommandLine())
+
+      val queryTargets = targets.joinToString(" + ") + excludedTargets.joinToString(" ") { "- $it" }
+
+      commandLine.add(queryTargets)
 
       return commandLine
     }
@@ -262,4 +265,6 @@ abstract class BazelCommand(val bazelBinary: String) {
   class ModPath(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "path"))
 
   class ModShowRepo(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "show_repo"))
+
+  class ModDumpRepoMapping(bazelBinary: String) : SimpleCommand(bazelBinary, listOf("mod", "dump_repo_mapping"))
 }

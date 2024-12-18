@@ -18,3 +18,12 @@ kt_junit5_test(
         "//server/bazelrunner",
     ],
 )
+
+kt_junit5_test(
+    name = "ModuleResolverTest",
+    size = "small",
+    src = "ModuleResolverTest.kt",
+    deps = [
+        "//server/bazelrunner",
+    ],
+)

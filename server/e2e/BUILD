@@ -128,6 +128,12 @@ bazel_integration_test_current_version(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspFirstPhaseSyncTest",
 )
 
+bazel_integration_test_current_version(
+    name = "nested_modules_test",
+    project_path = "test-resources/nested-modules",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:NestedModulesTest",
+)
+
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
@@ -142,6 +148,7 @@ test_suite(
         ":go_project_test",
         ":java_diagnostics_test",
         ":local_jdk_test",
+        ":nested_modules_test",
         ":partial_sync_test",
         ":python_project_test",
         ":remote_jdk_test",
