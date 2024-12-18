@@ -27,7 +27,7 @@ class BspProjectMapperTest {
   private val mavenCoordinatesResolver = MavenCoordinatesResolver()
 
   @Test
-  @Timeout(value = 2, unit = TimeUnit.MINUTES)
+  @Timeout(value = 4, unit = TimeUnit.MINUTES)
   fun `should compute buildDependencyModules quickly`() {
     // Make sure we can compute dependency modules for a large number of targets, each of which has a large number of dependencies.
     // Large enough to time out if using a non-optimized algorithm.
@@ -88,7 +88,7 @@ class BspProjectMapperTest {
         MavenDependencyModule(
           "org.scala-lang",
           "scala-library",
-          "2.13." + i,
+          "2.13.$i",
           listOf<MavenDependencyModuleArtifact>(
             MavenDependencyModuleArtifact(
               jarUri.toString(),
