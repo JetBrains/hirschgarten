@@ -9,7 +9,8 @@ class BazelBspTestScenarioStep(private val testName: String, private val testkit
       println("Step \"$testName\" successful!")
       true
     } catch (e: Exception) {
-      println("Step \"$testName\" failed! $e")
+      println("Step \"$testName\" failed!")
+      e.printStackTrace()
       false
     }
   }
