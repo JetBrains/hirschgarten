@@ -43,6 +43,11 @@ class BazelRunner(
 
     fun showRepo(builder: BazelCommand.ModShowRepo.() -> Unit = {}) = BazelCommand.ModShowRepo(bazelBinary).apply { builder() }
 
+    fun dumpRepoMapping(
+      builder: BazelCommand.ModDumpRepoMapping.() -> Unit = {
+      },
+    ) = BazelCommand.ModDumpRepoMapping(bazelBinary).apply { builder() }
+
     fun query(builder: BazelCommand.Query.() -> Unit = {}) = BazelCommand.Query(bazelBinary).apply { builder() }
 
     fun cquery(builder: BazelCommand.CQuery.() -> Unit = {}) =
