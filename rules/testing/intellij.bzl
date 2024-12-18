@@ -76,3 +76,21 @@ def kt_intellij_junit4_test(deps = [], runtime_deps = [], jvm_flags = [], **kwar
         jvm_flags = JVM_FLAGS + ADD_OPENS_FLAGS + jvm_flags,
         **kwargs
     )
+
+JUNIT5_DEPS = [
+    "@maven//:org_junit_jupiter_junit_jupiter",
+    "@maven//:org_junit_platform_junit_platform_console",
+]
+
+def kt_intellij_junit5_test(deps = [], runtime_deps = [], jvm_flags = [], **kwargs):
+    """Test macro which adds all the necessary things to run the test with IntelliJ IDEA fixtures.
+    All the test fixtures defined for IntelliJ IDEA support only Junit4, so if you want to use one of them
+    (e.g. UsefulTestCase) please use this macro.
+    """
+    kt_test(
+        main_class = "org.junit.platform.console.ConsoleLauncher",
+        deps = JUNIT5_DEPS + INTELLIJ_DEPS + deps,
+        runtime_deps = INTELLIJ_RUNTIME_DEPS + runtime_deps,
+        jvm_flags = JVM_FLAGS + ADD_OPENS_FLAGS + jvm_flags,
+        **kwargs
+    )
