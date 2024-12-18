@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.hotswap
 
-import com.google.common.collect.ImmutableMap
 import com.intellij.debugger.DebuggerManagerEx
 import com.intellij.debugger.JavaDebuggerBundle
 import com.intellij.debugger.impl.DebuggerSession
@@ -139,7 +138,7 @@ object BazelHotSwapManager {
         ),
       )
     }
-    return ImmutableMap.copyOf<String?, File?>(map)
+    return map
   }
 
   private fun copyClassFilesLocally(

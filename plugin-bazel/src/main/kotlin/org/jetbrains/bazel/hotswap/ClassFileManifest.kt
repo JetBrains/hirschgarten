@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bazel.hotswap
 
-import com.google.common.collect.ImmutableList
 import com.intellij.execution.RunCanceledByUserException
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.util.containers.MultiMap
@@ -23,7 +22,6 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.ExecutionException
 import java.util.jar.JarFile
-import kotlin.collections.Map.Entry
 
 /** A manifest of .class file hashes for jars needed at runtime. Used for HotSwapping.  */
 class ClassFileManifest private constructor(
@@ -62,14 +60,12 @@ class ClassFileManifest private constructor(
       }
 
       /** Returns the list of classes changed in the new manifest.  */
-      fun diff(oldManifest: JarManifest?, newManifest: JarManifest): ImmutableList<String> =
+      fun diff(oldManifest: JarManifest?, newManifest: JarManifest): List<String> =
         newManifest
           .nameToHash
           .entries
-
-          .filter { e: Entry<String, Long> -> e.value != oldManifest?.nameToHash[e.key] }
-          .map<String?> { obj: Entry<String, Long> -> obj.key }
-
+          .filter { it.value != oldManifest?.nameToHash[it.key] }
+          .map { it.key }
     }
   }
 
@@ -113,7 +109,6 @@ class ClassFileManifest private constructor(
           }
         }
         buildJarManifests(diff.updatedFiles)
-
           .forEach { m ->
             jarManifests.put(
               m.jar,
