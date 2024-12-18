@@ -74,7 +74,7 @@ object BazelHotSwapManager {
       progress.setDebuggerSession(session.session)
       progress.setText(BazelHotSwapBundle.message("hotswap.text.manifest.build.in.progress"))
       val manifestDiff: ClassFileManifest.Diff? =
-        ClassFileManifestBuilder.buildManifest(session.env, progress)
+        ClassFileManifestBuilder.buildManifest(session, progress)
       if (manifestDiff == null) {
         progress.addMessage(
           session.session,
