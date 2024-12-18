@@ -57,6 +57,17 @@ def to_file_location(exec_path, root_exec_path_fragment, is_source, is_external)
 
     root_exec_path_fragment = exec_path[:-(len("/" + relative_path))] if relative_path != "" else exec_path
 
+    external_repo_name = None
+    if root_exec_path_fragment.startswith("external/") or root_exec_path_fragment.startswith("../"):
+        external_repo_name = root_exec_path_fragment.split("/")[1]
+
+    for repo in REPO_MAPPING.keys():
+        if external_repo_name == repo:
+            is_external = False
+            root_exec_path_fragment = None
+            relative_path = REPO_MAPPING[external_repo_name] + "/" + relative_path
+            break
+
     return create_file_location(relative_path, is_source, is_external, root_exec_path_fragment)
 
 def create_file_location(relative_path, is_source, is_external, root_execution_path_fragment):
@@ -85,7 +96,12 @@ def get_aspect_ids(ctx, target):
         return None
     return [aspect_id for aspect_id in aspect_ids if "bsp_target_info_aspect" not in aspect_id]
 
+REPO_MAPPING = ${repoMapping}
+
 def is_external(target):
+    for repo in REPO_MAPPING.keys():
+        if target.label.repo_name == repo:
+            return False
     return not str(target.label).startswith("@@//") and not str(target.label).startswith("@//") and not str(target.label).startswith("//")
 
 def convert_struct_to_dict(s):

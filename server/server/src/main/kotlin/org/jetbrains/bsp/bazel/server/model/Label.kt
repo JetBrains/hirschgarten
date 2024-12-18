@@ -79,6 +79,9 @@ sealed interface Label {
   val isRecursive: Boolean
     get() = packagePath is AllPackagesBeneath
 
+  val isApparent: Boolean
+    get() = this is Apparent
+
   /**
    * Returns a path to the corresponding folder in the `bazel-(project)` directory.
    * Warning: this works on label with apparent repo names only if bzlmod is not used.

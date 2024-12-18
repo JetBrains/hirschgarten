@@ -78,6 +78,16 @@ data class WorkspaceContext(
   val shardingApproachSpec: ShardingApproachSpec,
 ) : ExecutionContext()
 
+/**
+ * List of names of repositories that should be treated as internal because there are some targets that we want to be imported that
+ * belong to them.
+ */
+val WorkspaceContext.externalRepositoriesTreatedAsInternal: List<String>
+  get() =
+    targets.values.mapNotNull {
+      it.repoName.takeIf { it.isNotEmpty() }
+    }
+
 class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
   ExecutionContextConstructor<WorkspaceContext> {
   private val directoriesSpecExtractor = DirectoriesSpecExtractor(workspaceRoot)

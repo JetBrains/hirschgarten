@@ -46,6 +46,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.sync.ExecuteService
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
@@ -140,7 +141,7 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
     runner.handleRequest("workspace/buildTargetsPartial") {
       projectSyncService.workspaceBuildTargetsPartial(
         cancelChecker = it,
-        targetsToSync = params.targets,
+        targetsToSync = params.targets.map { it.label() },
       )
     }
 
