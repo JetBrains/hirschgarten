@@ -22,7 +22,7 @@ def format(target):
 
 def _find_provider(target, provider_name_to_find):
     for provider_name, provider in providers(target).items():
-        if provider_name_to_find in provider_name:
+        if provider_name.endswith(provider_name_to_find):
             return provider
 
     return None
