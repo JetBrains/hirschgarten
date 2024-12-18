@@ -42,7 +42,7 @@ import java.util.UUID
 import java.util.function.Consumer
 import java.util.jar.JarFile
 
-/** Manages hotswapping for blaze java_binary run configurations.  */
+/** Manages hotswapping for bazel java_binary run configurations.  */
 object BazelHotSwapManager {
   private val logger = Logger.getInstance(BazelHotSwapManager::class.java)
 
