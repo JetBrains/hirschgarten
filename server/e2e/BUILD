@@ -96,9 +96,9 @@ bazel_integration_test_current_version(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspGoProjectTest",
 )
 
-bazel_integration_test_current_version(
+bazel_integration_test_all_versions(
     name = "java_diagnostics_test",
-    project_path = "test-projects/workspace/java-diagnostics-project",
+    bzlmod_project_path = "test-projects/bzlmod/java-diagnostics-project",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:JavaDiagnosticsTest",
 )
 
