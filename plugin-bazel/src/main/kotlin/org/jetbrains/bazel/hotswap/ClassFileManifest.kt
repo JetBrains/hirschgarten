@@ -113,7 +113,7 @@ class ClassFileManifest private constructor(
           }
         }
         buildJarManifests(diff.updatedFiles)
-          .stream()
+
           .forEach { m ->
             jarManifests.put(
               m.jar,
