@@ -148,13 +148,13 @@ test_suite(
         ":go_project_test",
         ":java_diagnostics_test",
         ":local_jdk_test",
+        ":nested_modules_test",
         ":partial_sync_test",
         ":python_project_test",
         ":remote_jdk_test",
         ":rust_project_test",
         ":sample_repo_test",
         ":server_downloads_bazelisk_test",
-        ":nested_modules_test",
     ],
 )
 

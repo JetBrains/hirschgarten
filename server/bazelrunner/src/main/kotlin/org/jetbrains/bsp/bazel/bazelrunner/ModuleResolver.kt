@@ -25,13 +25,12 @@ sealed interface ShowRepoResult {
 }
 
 class ModuleOutputParser {
-  private fun extractAttribute(lines: List<String>, attributeName: String): String {
-    return lines
+  private fun extractAttribute(lines: List<String>, attributeName: String): String =
+    lines
       .first { it.contains("$attributeName = ") }
       .substringAfter("$attributeName = \"")
       .substringBefore("\",")
       .trim()
-  }
 
   // TODO: keep track of https://github.com/bazelbuild/bazel/issues/21617
   fun parseShowRepoResult(bazelProcessResult: BazelProcessResult): ShowRepoResult {

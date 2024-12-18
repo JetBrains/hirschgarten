@@ -243,6 +243,9 @@ kt_jvm_binary(
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
         "@maven//:ch_epfl_scala_bsp4j",
+        "@maven//:io_kotest_kotest_assertions_api_jvm",
+        "@maven//:io_kotest_kotest_assertions_core_jvm",
+        "@maven//:io_kotest_kotest_assertions_shared_jvm",
+        "@maven//:io_kotest_kotest_common_jvm",
     ],
 )
-

@@ -6,8 +6,8 @@ java_binary(
     main_class = "outer.BinOuter",
     visibility = ["//visibility:public"],
     deps = [
-        "@inner//:lib_inner",
         ":lib_outer",
+        "@inner//:lib_inner",
     ],
 )
 

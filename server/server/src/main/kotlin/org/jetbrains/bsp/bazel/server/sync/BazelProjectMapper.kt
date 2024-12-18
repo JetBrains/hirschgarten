@@ -221,7 +221,7 @@ class BazelProjectMapper(
 
     val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
     val nonModuleTargets =
-      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && isTargetTreatedAsInternal(it)  })
+      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && isTargetTreatedAsInternal(it) })
 
     return Project(
       workspaceRoot,

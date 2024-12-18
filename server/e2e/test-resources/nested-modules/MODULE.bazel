@@ -3,13 +3,10 @@ module(
 )
 
 bazel_dep(name = "rules_java", version = "8.6.2")
-
-
 bazel_dep(
-    name = "inner"
+    name = "inner",
 )
-
 local_path_override(
     module_name = "inner",
-    path = "inner"
+    path = "inner",
 )
