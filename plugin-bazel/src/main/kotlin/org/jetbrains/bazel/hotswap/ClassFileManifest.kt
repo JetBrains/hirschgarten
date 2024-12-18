@@ -69,7 +69,7 @@ class ClassFileManifest private constructor(
 
           .filter { e: Entry<String, Long> -> e.value != oldManifest?.nameToHash[e.key] }
           .map<String?> { obj: Entry<String, Long> -> obj.key }
-          .collect(ImmutableList.toImmutableList<String?>())
+
     }
   }
 
