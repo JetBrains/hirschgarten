@@ -103,6 +103,8 @@ def get_aspect_ids(ctx, target):
         return None
     return [aspect_id for aspect_id in aspect_ids if "bsp_target_info_aspect" not in aspect_id]
 
+REPO_MAPPING = ${repoMapping}
+
 def is_external(target):
     for repo in REPO_MAPPING.keys():
         if target.label.repo_name == repo:
