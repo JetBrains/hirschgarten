@@ -1477,7 +1477,7 @@
     "@@rules_bazel_integration_test~//:extensions.bzl%bazel_binaries": {
       "general": {
         "bzlTransitiveDigest": "AbxPRYKjvVlRo+B89EHqsi8N7gdOjCmT7VEr6YYQxqg=",
-        "usagesDigest": "DPyYkzuc7Icoy7rVUBuusfanJWYgGR+y+speUk9qb/I=",
+        "usagesDigest": "lUL8SFCJndKHpkqcSDYBNtC1MD0iyo4VJrOVin8y7hs=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -1487,6 +1487,14 @@
             "ruleClassName": "bazelisk_binary",
             "attributes": {
               "version": "1.18.0"
+            }
+          },
+          "build_bazel_bazel_8_0_0": {
+            "bzlFile": "@@rules_bazel_integration_test~//bazel_integration_test/private:bazel_binaries.bzl",
+            "ruleClassName": "bazel_binary",
+            "attributes": {
+              "version": "8.0.0",
+              "bazelisk": "@bazel_binaries_bazelisk//:bazelisk"
             }
           },
           "build_bazel_bazel_7_4_0": {
@@ -1518,11 +1526,12 @@
             "ruleClassName": "_bazel_binaries_helper",
             "attributes": {
               "version_to_repo": {
+                "8.0.0": "build_bazel_bazel_8_0_0",
                 "7.4.0": "build_bazel_bazel_7_4_0",
                 "6.4.0": "build_bazel_bazel_6_4_0",
                 "5.3.2": "build_bazel_bazel_5_3_2"
               },
-              "current_version": "7.4.0"
+              "current_version": "8.0.0"
             }
           }
         },
@@ -1530,6 +1539,7 @@
           "explicitRootModuleDirectDeps": [],
           "explicitRootModuleDirectDevDeps": [
             "bazel_binaries_bazelisk",
+            "build_bazel_bazel_8_0_0",
             "build_bazel_bazel_7_4_0",
             "build_bazel_bazel_6_4_0",
             "build_bazel_bazel_5_3_2",
@@ -5205,8 +5215,8 @@
         "bzlTransitiveDigest": "cjBEarYNAcYs9VXl/CKa6yg3JZ2VtywnHwBxeRpASDU=",
         "usagesDigest": "ITnTHCXpegr4OpOSk9frd4ztXOI7pQqyOoaZlcV0y9E=",
         "recordedFileInputs": {
-          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/rustc": "edc2f0f23646c9877e3fb095a1e01d0e725b11daffa55c4851643f720666fc74",
-          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/cargo": "d0b4decf3683cbd306aafc2d4c4061168b30483d5db64dbe0c4f82fad425e783"
+          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/rustc": "18e9f552a4e3f789844195499f3c814a3676de94829ecb7ad98812c285e221fc",
+          "@@rules_rust~~rust_host_tools~rust_host_tools//bin/cargo": "53e1eb55e8eebd384021b5ca8464635fd25550ef1f2fd80fb2ae7824f655975c"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},

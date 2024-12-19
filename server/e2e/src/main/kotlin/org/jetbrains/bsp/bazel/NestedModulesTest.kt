@@ -53,8 +53,8 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
         targetsResult.targets.size shouldBe 4
         targetsResult.targets.map { Label.parse(it.id.uri) } shouldContainExactlyInAnyOrder
           listOf(
-            Label.parse("@@inner~//:lib_inner"),
-            Label.parse("@@inner~//:bin_inner"),
+            Label.parse("@@inner$bzlmodRepoNameSeparator//:lib_inner"),
+            Label.parse("@@inner$bzlmodRepoNameSeparator//:bin_inner"),
             Label.parse("@//:lib_outer"),
             Label.parse("@//:bin_outer"),
           )

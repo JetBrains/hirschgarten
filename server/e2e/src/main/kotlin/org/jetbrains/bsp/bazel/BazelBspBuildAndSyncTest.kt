@@ -57,7 +57,9 @@ object BazelBspBuildAndSyncTest : BazelBspTestBaseScenario() {
     }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk17_$javaHomeArchitecture/"
+    val javaHome =
+      "file://\$BAZEL_OUTPUT_BASE_PATH/external/" +
+        "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk17_$javaHomeArchitecture/"
     val exampleExampleJvmBuildTarget =
       JvmBuildTarget().also {
         it.javaHome = javaHome

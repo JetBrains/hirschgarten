@@ -6,6 +6,5 @@ py_binary(
     python_version = "PY3",
     deps = [
         "//lib:example_library",
-        "@requests//:srcs",
     ],
 )
