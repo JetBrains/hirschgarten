@@ -37,9 +37,8 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
-import java.util.UUID
-import java.util.function.Consumer
 import java.util.jar.JarFile
+import kotlin.io.path.createTempDirectory
 
 /** Manages hotswapping for bazel java_binary run configurations.  */
 object BazelHotSwapManager {
@@ -58,7 +57,7 @@ object BazelHotSwapManager {
         ProgressManager
           .getInstance()
           .runProcess(
-            Runnable {
+            {
               doReloadClasses(
                 session,
                 progress,
@@ -89,25 +88,28 @@ object BazelHotSwapManager {
 
       if (!files.isEmpty()) {
         progress.setText(BazelHotSwapBundle.message("hotswap.text.reload.in.progress", files.size))
-      }
-      try {
-        HotSwapManager.reloadModifiedClasses(
-          mapOf<DebuggerSession, Map<String, HotSwapFile>>(session.session to files),
-          progress,
-        )
+        try {
+          HotSwapManager.reloadModifiedClasses(
+            mapOf(session.session to files),
+            progress,
+          )
+          progress.addMessage(
+            session.session,
+            MessageCategory.INFORMATION,
+            BazelHotSwapBundle.message("hotswap.message.reload.success", files.size),
+          )
+        } finally {
+          localFiles.values.forEach { obj -> obj.delete() }
+        }
+      } else {
         progress.addMessage(
           session.session,
           MessageCategory.INFORMATION,
-          BazelHotSwapBundle.message("hotswap.message.reload.success", files.size),
+          BazelHotSwapBundle.message("hotswap.message.reload.no.changes"),
         )
-      } finally {
-        localFiles.values.forEach(Consumer { obj: File? -> obj?.delete() })
       }
     } catch (e: Throwable) {
       processException(e, session.session, progress)
-      if (e.message != null) {
-        progress.addMessage(session.session, MessageCategory.ERROR, e.message)
-      }
     } finally {
       progress.finished()
     }
@@ -119,20 +121,14 @@ object BazelHotSwapManager {
    *
    */
   private fun copyClassFilesLocally(manifestDiff: ClassFileManifest.Diff): Map<String, File> {
-    val tempDir = File(System.getProperty("java.io.tmpdir"))
-    val suffix: String = UUID.randomUUID().toString().substring(0, 8)
-    val localDir = File(tempDir, "class_files_" + suffix)
-    if (!localDir.mkdir()) {
-      throw ExecutionException("Cannot create temp output directory '${localDir.path}'")
-    }
-    localDir.deleteOnExit()
+    val tempDir = createTempDirectory("class_files_").toFile().also { it.deleteOnExit() }
 
     val map = HashMap<String, File>()
     for (jar in manifestDiff.perJarModifiedClasses.keySet()) {
-      val classes: MutableCollection<String> = manifestDiff.perJarModifiedClasses.get(jar)
+      val classes = manifestDiff.perJarModifiedClasses.get(jar)
       map.putAll(
         copyClassFilesLocally(
-          localDir,
+          tempDir,
           jar,
           classes,
         ),

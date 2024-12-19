@@ -117,6 +117,7 @@ object ClassFileManifestBuilder {
         .flatMap { it.classpath }
         .distinct()
         .map { File(it.safeCastToURI()) }
+        .filter { it.isFile && it.extension == "jar" }
     val oldManifest = env.getManifest()
     val newManifest = ClassFileManifest.build(jars, oldManifest)
     env.getManifestRef()?.set(newManifest)

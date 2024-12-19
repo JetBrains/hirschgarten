@@ -23,7 +23,10 @@ import java.io.IOException
 import java.util.concurrent.ExecutionException
 import java.util.jar.JarFile
 
-/** A manifest of .class file hashes for jars needed at runtime. Used for HotSwapping.  */
+/**
+ * A manifest of .class file hashes for jars needed at runtime. Used for HotSwapping.
+ * The implementation assumes the source for .class file can be found exclusively from jar files.
+ * */
 class ClassFileManifest private constructor(
   // jar file timestamps
   private val jarFileState: Map<File, Long>,

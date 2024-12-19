@@ -1,5 +1,6 @@
 package org.jetbrains.bazel.hotswap
 
+import com.android.annotations.TestOnly
 import org.jetbrains.bazel.hotswap.FilesDiff.Companion.diffFiles
 import java.io.File
 
@@ -8,10 +9,14 @@ import java.io.File
  *
  * The type of file in the two sets can be different (F vs S), with a one-way F to S mapping
  * provided in [diffFiles].
+ * @param newFileState maps a jar file to its last modified time
+ * @param updatedFiles provides a list of updated jar files, which will be used for constructing the class manifest
+ * @param removedFiles keeps track of the list of removed jar files, this is used for writing unit test to check for correctness.
  */
 data class FilesDiff(
   val newFileState: Map<File, Long>,
   val updatedFiles: List<File>,
+  @TestOnly
   val removedFiles: Set<File>,
 ) {
   companion object {
