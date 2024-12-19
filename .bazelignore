@@ -6,6 +6,8 @@ server/e2e/test-projects/bzlmod/bazel-build-and-sync-test
 server/e2e/test-projects/bzlmod/first-phase-sync-project/bazel-first-phase-sync-project
 server/e2e/test-projects/bzlmod/java-diagnostics-project/bazel-java-diagnostics-project
 server/e2e/test-projects/bzlmod/local-jdk-project/bazel-local-jdk-project
+server/e2e/test-projects/bzlmod/nested-modules/bazel-nested-modules
+server/e2e/test-projects/bzlmod/nested-modules/inner/bazel-inner
 server/e2e/test-projects/bzlmod/python-project/bazel-python-project
 server/e2e/test-projects/bzlmod/remote-jdk-project/bazel-remote-jdk-project
 server/e2e/test-projects/bzlmod/sample-repo/bazel-sample-repo

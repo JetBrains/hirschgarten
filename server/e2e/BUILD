@@ -128,9 +128,9 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspFirstPhaseSyncTest",
 )
 
-bazel_integration_test_current_version(
+bazel_integration_test_all_versions(
     name = "nested_modules_test",
-    project_path = "test-resources/nested-modules",
+    bzlmod_project_path = "test-projects/bzlmod/nested-modules",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:NestedModulesTest",
 )
 
