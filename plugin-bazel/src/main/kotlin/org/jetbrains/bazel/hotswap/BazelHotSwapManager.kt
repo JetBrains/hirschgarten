@@ -59,9 +59,10 @@ object BazelHotSwapManager {
         /**
          * [HotSwapProgressImpl] requires EDT for initializing
          */
-        val progress = runBlocking {
-          withContext(Dispatchers.EDT) { HotSwapProgressImpl(project) }
-        }
+        val progress =
+          runBlocking {
+            withContext(Dispatchers.EDT) { HotSwapProgressImpl(project) }
+          }
         progress.setSessionForActions(session.session)
         ProgressManager
           .getInstance()
