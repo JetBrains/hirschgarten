@@ -47,12 +47,11 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspPythonProjectTest",
 )
 
-bazel_integration_test(
+bazel_integration_test_all_versions(
     name = "kotlin_project_test",
-    timeout = "eternal",
-    bazel_version = "6.4.0",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspKotlinProjectTest",
-    workspace_path = "test-projects/workspace/kotlin-project",
+    project_path = "test-projects/workspace/kotlin-project",
+    exclude_bazel_5 = True,
 )
 
 bazel_integration_test_all_versions(

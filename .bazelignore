@@ -5,6 +5,7 @@ server/e2e/test-projects/bzlmod/allow-manual-targets-sync-project/bazel-allow-ma
 server/e2e/test-projects/bzlmod/bazel-build-and-sync-test
 server/e2e/test-projects/bzlmod/first-phase-sync-project/bazel-first-phase-sync-project
 server/e2e/test-projects/bzlmod/java-diagnostics-project/bazel-java-diagnostics-project
+server/e2e/test-projects/bzlmod/kotlin-project/bazel-kotlin-project
 server/e2e/test-projects/bzlmod/local-jdk-project/bazel-local-jdk-project
 server/e2e/test-projects/bzlmod/nested-modules/bazel-nested-modules
 server/e2e/test-projects/bzlmod/nested-modules/inner/bazel-inner

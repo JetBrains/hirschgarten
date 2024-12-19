@@ -1,11 +1,13 @@
 load("@bazel_binaries//:defs.bzl", "bazel_binaries")
 load("@rules_bazel_integration_test//bazel_integration_test:defs.bzl", "bazel_integration_test", "bazel_integration_tests", "integration_test_utils")
 
-def bazel_integration_test_all_versions(name, test_runner, project_path = None, bzlmod_project_path = None, env = {}, additional_env_inherit = []):
+def bazel_integration_test_all_versions(name, test_runner, project_path = None, bzlmod_project_path = None, env = {}, additional_env_inherit = [], exclude_bazel_5 = False):
     bazel_versions = []
 
     if project_path != None:
-        workspace_bazel_versions = ["5.3.2", "6.4.0"]
+        workspace_bazel_versions = ["6.4.0"]
+        if not exclude_bazel_5:
+            workspace_bazel_versions += ["5.3.2"]
         bazel_versions = workspace_bazel_versions
 
         bazel_integration_tests(
@@ -20,7 +22,7 @@ def bazel_integration_test_all_versions(name, test_runner, project_path = None, 
 
     if bzlmod_project_path != None:
         bzlmod_bazel_versions = ["7.4.0", "8.0.0"]
-        bazel_versions = bazel_versions + bzlmod_bazel_versions
+        bazel_versions += bzlmod_bazel_versions
 
         bazel_integration_tests(
             name = name,
