@@ -56,13 +56,11 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertNull(result.data)
         assertNull(result.dataKind)
         println(session.client.publishDiagnosticsNotifications)
-        assertEquals(2, session.client.publishDiagnosticsNotifications.size)
+        assertEquals(1, session.client.publishDiagnosticsNotifications.size)
         val deprecatedWarning =
           session.client.publishDiagnosticsNotifications.find {
             it.textDocument.uri == expectedDeprecatedWarningFileUri
           }!!
-        val javacWarning =
-          session.client.publishDiagnosticsNotifications.find { it.textDocument.uri == expectedUnknownFileUri }!!
 
         assertEquals(1, deprecatedWarning.diagnostics.size)
         assertEquals(expectedDeprecatedWarningMessage, deprecatedWarning.diagnostics[0].message)
@@ -97,41 +95,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertNull(deprecatedWarning.diagnostics[0].relatedInformation)
         assertNull(deprecatedWarning.diagnostics[0].dataKind)
         assertNull(deprecatedWarning.diagnostics[0].data)
-
-        assertEquals(expectedUnknownFileUri, javacWarning.textDocument.uri)
-        assertEquals(1, javacWarning.diagnostics.size)
-        assertEquals(expectedJavacWarningMessage, javacWarning.diagnostics[0].message)
-        assertEquals(
-          -1,
-          javacWarning.diagnostics[0]
-            .range.start.line,
-        )
-        assertEquals(
-          -1,
-          javacWarning.diagnostics[0]
-            .range.start.character,
-        )
-        assertEquals(
-          -1,
-          javacWarning.diagnostics[0]
-            .range.end.line,
-        )
-        assertEquals(
-          -1,
-          javacWarning.diagnostics[0]
-            .range.end.character,
-        )
-        assertEquals(true, javacWarning.reset)
-        assertEquals(params.originId, javacWarning.originId)
-        assertEquals("@//:library", javacWarning.buildTarget.uri)
-        assertNull(javacWarning.diagnostics[0].severity)
-        assertNull(javacWarning.diagnostics[0].code)
-        assertNull(javacWarning.diagnostics[0].codeDescription)
-        assertNull(javacWarning.diagnostics[0].source)
-        assertNull(javacWarning.diagnostics[0].tags)
-        assertNull(javacWarning.diagnostics[0].relatedInformation)
-        assertNull(javacWarning.diagnostics[0].dataKind)
-        assertNull(javacWarning.diagnostics[0].data)
       }
     }
 
@@ -165,7 +128,7 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertEquals(params.originId, result.originId)
         assertNull(result.data)
         assertNull(result.dataKind)
-        assertEquals(3, session.client.publishDiagnosticsNotifications.size)
+        assertEquals(2, session.client.publishDiagnosticsNotifications.size)
         val noSuchMethodError =
           session.client.publishDiagnosticsNotifications.find {
             it.textDocument.uri == expectedNoSuchMethodErrorFileUri
@@ -174,8 +137,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
           session.client.publishDiagnosticsNotifications.find {
             it.textDocument.uri == expectedWarningAndErrorFileUri
           }!!
-        val javacWarning =
-          session.client.publishDiagnosticsNotifications.find { it.textDocument.uri == expectedUnknownFileUri }!!
 
         assertEquals(true, noSuchMethodError.reset)
         assertEquals(params.originId, noSuchMethodError.originId)
@@ -252,40 +213,6 @@ object JavaDiagnosticsTest : BazelBspTestBaseScenario() {
         assertNull(warningDiagnostic.relatedInformation)
         assertNull(warningDiagnostic.dataKind)
         assertNull(warningDiagnostic.data)
-
-        assertEquals(true, javacWarning.reset)
-        assertEquals(params.originId, javacWarning.originId)
-        assertEquals(1, javacWarning.diagnostics.size)
-        assertEquals(expectedUnknownFileUri, javacWarning.textDocument.uri)
-        assertEquals(expectedJavacWarningMessage, javacWarning.diagnostics[0].message)
-        assertEquals(
-          -1,
-          javacWarning.diagnostics[0]
-            .range.start.line,
-        )
-        assertEquals(
-          -1,
-          javacWarning.diagnostics[0]
-            .range.start.character,
-        )
-        assertEquals(
-          -1,
-          javacWarning.diagnostics[0]
-            .range.end.line,
-        )
-        assertEquals(
-          -1,
-          javacWarning.diagnostics[0]
-            .range.end.character,
-        )
-        assertNull(javacWarning.diagnostics[0].severity)
-        assertNull(javacWarning.diagnostics[0].code)
-        assertNull(javacWarning.diagnostics[0].codeDescription)
-        assertNull(javacWarning.diagnostics[0].source)
-        assertNull(javacWarning.diagnostics[0].tags)
-        assertNull(javacWarning.diagnostics[0].relatedInformation)
-        assertNull(javacWarning.diagnostics[0].dataKind)
-        assertNull(javacWarning.diagnostics[0].data)
       }
     }
 }
