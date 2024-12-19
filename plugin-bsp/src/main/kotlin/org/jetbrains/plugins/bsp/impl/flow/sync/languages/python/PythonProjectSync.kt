@@ -209,13 +209,13 @@ class PythonProjectSync : ProjectSyncHook {
     targets: List<BaseTargetInfo>,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): Map<BuildTargetIdentifier, Sdk> {
-    var detectedSdk: PyDetectedSdk? = null
+    val detectedSdk = getSystemSdk()
     return targets.associateNotNull { targetInfo ->
       val sdk =
         calculateAndAddSdkIfPossible(
           target = targetInfo.target,
           dependenciesSources = targetIdToDependenciesSourcesMap[targetInfo.target.id.uri] ?: emptyList(),
-          defaultSdk = { detectedSdk ?: getSystemSdk()?.also { detectedSdk = it } },
+          defaultSdk = detectedSdk,
           virtualFileUrlManager = virtualFileUrlManager,
         ) ?: return@associateNotNull null
 
@@ -241,7 +241,7 @@ class PythonProjectSync : ProjectSyncHook {
   private suspend fun calculateAndAddSdkIfPossible(
     target: BuildTarget,
     dependenciesSources: List<DependencySourcesItem>,
-    defaultSdk: () -> PyDetectedSdk?,
+    defaultSdk: PyDetectedSdk?,
     virtualFileUrlManager: VirtualFileUrlManager,
   ): Sdk? =
     extractPythonBuildTarget(target)?.let {
@@ -253,11 +253,11 @@ class PythonProjectSync : ProjectSyncHook {
           virtualFileUrlManager = virtualFileUrlManager,
         )
       } else {
-        defaultSdk()
+        defaultSdk
           ?.homePath
           ?.let { homePath ->
             calculateAndAddSdk(
-              sdkName = "${target.id.uri}-detected-PY3",
+              sdkName = "${target.id.uri}-detected",
               sdkInterpreterUri = Path(homePath).toUri().toString(),
               sdkDependencies = dependenciesSources,
               virtualFileUrlManager = virtualFileUrlManager,
@@ -315,5 +315,8 @@ class PythonProjectSync : ProjectSyncHook {
 
   private fun getSystemSdk(): PyDetectedSdk? =
     detectSystemWideSdks(null, emptyList())
-      .firstOrNull { it.homePath != null && it.guessedLanguageLevel?.isPy3K == true }
+      .filter { it.homePath != null }
+      .let { sdks ->
+        sdks.firstOrNull { it.guessedLanguageLevel?.isPy3K == true } ?: sdks.firstOrNull()
+      }
 }
