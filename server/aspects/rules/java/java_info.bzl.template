@@ -1,17 +1,17 @@
 load("//aspects:utils/utils.bzl", "create_struct", "to_file_location")
-#if( ($javaEnabled == "true" || $kotlinEnabled == "true") && $bazel8OrAbove == "true" )
+#if( $javaEnabled == "true" && $bazel8OrAbove == "true" )
 load("@${ruleName}//java/common:java_info.bzl", "JavaInfo")
 #end
 
 def java_info_in_target(target):
-  #if( $javaEnabled == "true" || $kotlinEnabled == "true")
+  #if( $javaEnabled == "true" )
   return JavaInfo in target
   #else
   return False
   #end
 
 def get_java_info(target):
-  #if( $javaEnabled == "true" || $kotlinEnabled == "true")
+  #if( $javaEnabled == "true" )
   if JavaInfo in target:
       return target[JavaInfo]
   else:

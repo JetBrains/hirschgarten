@@ -23,6 +23,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Paths
+import kotlin.collections.get
 
 /**
  * If a retry with a clean Bazel server does not help, then more retries should have the same result
@@ -91,12 +92,11 @@ class BazelBspAspectsManager(
     Language.entries.filter { it.isTemplate }.forEach {
       val ruleLanguage = languageRuleMap[it]
 
-      val cannonicalRuleName = (repoMapping as? BzlmodRepoMapping)?.moduleApparentNameToCanonicalName?.get(ruleLanguage?.ruleName)?.let { "@$it" } ?: ruleLanguage?.ruleName
       val outputFile = aspectsPath.resolve(it.toAspectRelativePath())
       val templateFilePath = it.toAspectTemplateRelativePath()
       val variableMap =
         mapOf(
-          "ruleName" to cannonicalRuleName,
+          "ruleName" to ruleLanguage?.calculateCanonicalName(),
           "addTransitiveCompileTimeJars" to
             workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
           "kotlinEnabled" to kotlinEnabled.toString(),
@@ -135,6 +135,12 @@ class BazelBspAspectsManager(
       ),
     )
   }
+
+  private fun RuleLanguage.calculateCanonicalName(): String? =
+    when (repoMapping) {
+      is BzlmodRepoMapping -> ruleName?.let { repoMapping.moduleApparentNameToCanonicalName[it] }?.let { "@$it" } ?: ruleName
+      else -> ruleName
+    }
 
   private fun Boolean.toStarlarkString(): String = if (this) "True" else "False"
 
