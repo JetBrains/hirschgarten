@@ -25,12 +25,16 @@ import com.intellij.debugger.ui.HotSwapProgressImpl
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.runners.ExecutionEnvironment
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.util.ui.MessageCategory
 import com.intellij.xdebugger.impl.XDebugSessionImpl
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.config.BazelHotSwapBundle
 import org.jetbrains.plugins.bsp.runnerAction.BspJvmApplicationConfiguration
 import java.io.File
@@ -49,10 +53,15 @@ object BazelHotSwapManager {
     if (session == null) {
       return
     }
-    val progress = HotSwapProgressImpl(project)
     ApplicationManager
       .getApplication()
       .executeOnPooledThread {
+        /**
+         * [HotSwapProgressImpl] requires EDT for initializing
+         */
+        val progress = runBlocking {
+          withContext(Dispatchers.EDT) { HotSwapProgressImpl(project) }
+        }
         progress.setSessionForActions(session.session)
         ProgressManager
           .getInstance()
