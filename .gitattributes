@@ -9,3 +9,5 @@ plugin-bazel/src/test/testData/**/*.bzl rules-lint-ignored
 **/gen/** rules-lint-ignored
 # exclude all TC config files in .teamcity
 .teamcity/** rules-lint-ignored
+# exclude sample projects for e2e tests
+server/e2e/test-projects/** rules-lint-ignored

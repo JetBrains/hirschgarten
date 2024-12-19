@@ -45,8 +45,9 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
     val workspaceJavaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
-    val bzlmodJavaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java${bzlmodRepoNameSeparator}" +
-      "${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/"
+    val bzlmodJavaHome =
+      "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java$bzlmodRepoNameSeparator" +
+        "${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_$javaHomeArchitecture/"
     val javaHome = if (isBzlmod) bzlmodJavaHome else workspaceJavaHome
     val jvmBuildTargetData =
       JvmBuildTarget().also {

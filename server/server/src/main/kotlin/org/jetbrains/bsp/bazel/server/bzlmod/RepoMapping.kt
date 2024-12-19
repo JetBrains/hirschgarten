@@ -54,7 +54,8 @@ fun calculateRepoMapping(
   val moduleApparentNameToCanonicalNameForRulesRequiringTransitiveDeps =
     knownRulesWhichRequireTransitiveDeps.keys
       .mapNotNull { moduleApparentNameToCanonicalName[it] }
-      .map { moduleResolver.getRepoMapping(it) {} }.reduce { acc, map -> acc + map }
+      .map { moduleResolver.getRepoMapping(it) {} }
+      .reduce { acc, map -> acc + map }
 
   for (externalRepo in workspaceContext.externalRepositoriesTreatedAsInternal) {
     try {

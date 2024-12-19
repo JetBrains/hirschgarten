@@ -130,11 +130,12 @@ class BazelBzlModExternalRulesQueryImpl(
     return try {
       val graph = gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
       val directDeps = graph.getAllDirectRuleDependencies()
-      val indirectDeps = knownRulesWhichRequireTransitiveDeps
-        .filterKeys { it in directDeps }
-        .filter { it.value.any { transitiveDep -> graph.isIncludedTransitively(it.key, transitiveDep)} }
-        .values
-        .flatten()
+      val indirectDeps =
+        knownRulesWhichRequireTransitiveDeps
+          .filterKeys { it in directDeps }
+          .filter { it.value.any { transitiveDep -> graph.isIncludedTransitively(it.key, transitiveDep) } }
+          .values
+          .flatten()
 
       return directDeps + indirectDeps
     } catch (e: Throwable) {
