@@ -31,7 +31,12 @@ object BazelBspLocalJdkTest : BazelBspTestBaseScenario() {
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val javaHomePrefix = if (majorBazelVersion == 7) "rules_java~~toolchains~" else ""
+    val javaHomePrefix =
+      if (isBzlmod) {
+        "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains$bzlmodRepoNameSeparator"
+      } else {
+        ""
+      }
 
     val exampleExampleJvmBuildTarget =
       JvmBuildTarget().also {
