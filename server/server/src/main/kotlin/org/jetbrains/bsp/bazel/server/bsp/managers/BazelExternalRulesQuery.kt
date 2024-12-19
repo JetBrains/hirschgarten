@@ -7,7 +7,7 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
-import org.jetbrains.bsp.bazel.server.bzlmod.knownRulesWhichRequireTransitiveDeps
+import org.jetbrains.bsp.bazel.server.bzlmod.rootRulesToNeededTransitiveRules
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.EnabledRulesSpec
 import org.w3c.dom.Document
@@ -131,7 +131,7 @@ class BazelBzlModExternalRulesQueryImpl(
       val graph = gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
       val directDeps = graph.getAllDirectRuleDependencies()
       val indirectDeps =
-        knownRulesWhichRequireTransitiveDeps
+        rootRulesToNeededTransitiveRules
           .filterKeys { it in directDeps }
           .filter { it.value.any { transitiveDep -> graph.isIncludedTransitively(it.key, transitiveDep) } }
           .values
