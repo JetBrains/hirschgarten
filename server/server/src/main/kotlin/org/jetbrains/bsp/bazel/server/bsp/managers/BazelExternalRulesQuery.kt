@@ -7,6 +7,7 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.bazel.server.bzlmod.knownRulesWhichRequireTransitiveDeps
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.EnabledRulesSpec
 import org.w3c.dom.Document
@@ -127,7 +128,15 @@ class BazelBzlModExternalRulesQueryImpl(
           }
         } as? JsonObject
     return try {
-      gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java).getAllDirectRuleDependencies()
+      val graph = gson.fromJson(bzlmodGraphJson, BzlmodGraph::class.java)
+      val directDeps = graph.getAllDirectRuleDependencies()
+      val indirectDeps = knownRulesWhichRequireTransitiveDeps
+        .filterKeys { it in directDeps }
+        .filter { it.value.any { transitiveDep -> graph.isIncludedTransitively(it.key, transitiveDep)} }
+        .values
+        .flatten()
+
+      return directDeps + indirectDeps
     } catch (e: Throwable) {
       log.warn("The returned bzlmod json is not parsable:\n$bzlmodGraphJson", e)
       emptyList()
@@ -141,7 +150,7 @@ class BazelBzlModExternalRulesQueryImpl(
 
 private fun getQueryFailedMessage(result: BazelProcessResult): String = "Bazel query failed with output:\n${result.stderr}"
 
-data class BzlmodDependency(val key: String) {
+data class BzlmodDependency(val key: String, val dependencies: List<BzlmodDependency>) {
   /**
    * Extract dependency name from bzlmod dependency, where the raw format is `<DEP_NAME>@<DEP_VERSION>`.
    *
@@ -153,4 +162,7 @@ data class BzlmodDependency(val key: String) {
 
 data class BzlmodGraph(val dependencies: List<BzlmodDependency>) {
   fun getAllDirectRuleDependencies() = dependencies.map { it.toDependencyName() }
+
+  fun isIncludedTransitively(rootRuleName: String, transitiveRuleName: String): Boolean =
+    dependencies.find { it.toDependencyName() == rootRuleName }?.dependencies?.any { it.toDependencyName() == transitiveRuleName } == true
 }

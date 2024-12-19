@@ -3,6 +3,7 @@ package org.jetbrains.bsp.bazel.server.bsp.managers
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -23,7 +24,7 @@ class BzlModGraphTest {
   }
 
   @Test
-  fun `should return only direct dependencies from a valid BzlMod json`() {
+  fun `should return dependencies from a valid BzlMod json`() {
     // given
     val s =
       """
@@ -65,5 +66,7 @@ class BzlModGraphTest {
 
     // then
     parsedBzlModGraph.getAllDirectRuleDependencies() shouldContainExactlyInAnyOrder listOf("rules_java", "rules_jvm_external")
+    parsedBzlModGraph.isIncludedTransitively("rules_java", "rules_cc") shouldBe true
+    parsedBzlModGraph.isIncludedTransitively("rules_java", "rules_xd") shouldBe false
   }
 }

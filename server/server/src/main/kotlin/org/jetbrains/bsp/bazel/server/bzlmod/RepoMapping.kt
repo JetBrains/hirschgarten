@@ -35,6 +35,8 @@ fun Label.canonicalize(repoMapping: RepoMapping): Label {
   }
 }
 
+val knownRulesWhichRequireTransitiveDeps = mapOf("rules_kotlin" to listOf("rules_java"))
+
 fun calculateRepoMapping(
   workspaceContextProvider: WorkspaceContextProvider,
   bazelRunner: BazelRunner,
@@ -49,6 +51,11 @@ fun calculateRepoMapping(
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
   // empty string is the name of the root module
   val moduleApparentNameToCanonicalName = moduleResolver.getRepoMapping("") { }
+  val moduleApparentNameToCanonicalNameForRulesRequiringTransitiveDeps =
+    knownRulesWhichRequireTransitiveDeps.keys
+      .mapNotNull { moduleApparentNameToCanonicalName[it] }
+      .map { moduleResolver.getRepoMapping(it) {} }.reduce { acc, map -> acc + map }
+
   for (externalRepo in workspaceContext.externalRepositoriesTreatedAsInternal) {
     try {
       val showRepoResult = moduleResolver.resolveModule(externalRepo) {}
@@ -63,5 +70,8 @@ fun calculateRepoMapping(
     }
   }
 
-  return BzlmodRepoMapping(moduleCanonicalNameToLocalPath, moduleApparentNameToCanonicalName)
+  return BzlmodRepoMapping(
+    moduleCanonicalNameToLocalPath,
+    moduleApparentNameToCanonicalNameForRulesRequiringTransitiveDeps + moduleApparentNameToCanonicalName,
+  )
 }

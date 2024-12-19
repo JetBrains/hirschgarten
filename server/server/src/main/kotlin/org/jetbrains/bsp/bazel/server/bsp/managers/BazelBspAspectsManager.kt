@@ -90,11 +90,13 @@ class BazelBspAspectsManager(
     val bazel8OrAbove = bazelRelease.major >= 8
     Language.entries.filter { it.isTemplate }.forEach {
       val ruleLanguage = languageRuleMap[it]
+
+      val cannonicalRuleName = (repoMapping as? BzlmodRepoMapping)?.moduleApparentNameToCanonicalName?.get(ruleLanguage?.ruleName)?.let { "@$it" } ?: ruleLanguage?.ruleName
       val outputFile = aspectsPath.resolve(it.toAspectRelativePath())
       val templateFilePath = it.toAspectTemplateRelativePath()
       val variableMap =
         mapOf(
-          "ruleName" to ruleLanguage?.ruleName,
+          "ruleName" to cannonicalRuleName,
           "addTransitiveCompileTimeJars" to
             workspaceContext.experimentalAddTransitiveCompileTimeJars.value.toStarlarkString(),
           "kotlinEnabled" to kotlinEnabled.toString(),
