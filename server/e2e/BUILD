@@ -51,7 +51,7 @@ bazel_integration_test_all_versions(
     name = "kotlin_project_test",
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BazelBspKotlinProjectTest",
     project_path = "test-projects/workspace/kotlin-project",
-    exclude_bazel_5 = True,
+    exclude_bazel_5 = True, # bazel 5 will be deprecated soon, project fails to build with bazel 5 so let's just skip it
 )
 
 bazel_integration_test_all_versions(
