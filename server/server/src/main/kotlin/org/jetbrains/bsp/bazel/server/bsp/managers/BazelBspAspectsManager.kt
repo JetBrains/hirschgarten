@@ -23,7 +23,6 @@ import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.nio.file.Paths
-import kotlin.collections.get
 
 /**
  * If a retry with a clean Bazel server does not help, then more retries should have the same result
