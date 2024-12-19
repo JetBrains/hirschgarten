@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bsp.bazel.server.sync.sharding
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 
@@ -27,8 +26,8 @@ class ShardedTargetList(private val shardedTargets: List<List<Label>>, private v
   fun toTargetsSpecs(): List<TargetsSpec> =
     shardedTargets.map { targets ->
       TargetsSpec(
-        values = targets.map { BuildTargetIdentifier(it.toString()) },
-        excludedValues = excludedTargets.map { BuildTargetIdentifier(it.toString()) },
+        values = targets,
+        excludedValues = excludedTargets,
       )
     }
 }

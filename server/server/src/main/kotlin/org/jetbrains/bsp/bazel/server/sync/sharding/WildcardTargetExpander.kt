@@ -15,7 +15,6 @@
  */
 package org.jetbrains.bsp.bazel.server.sync.sharding
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
@@ -94,8 +93,8 @@ object WildcardTargetExpander {
   ): ExpandedTargetsResult {
     val targetsSpec =
       TargetsSpec(
-        values = includedPatterns.map { BuildTargetIdentifier(it.toString()) },
-        excludedValues = excludedTargets.map { BuildTargetIdentifier(it.toString()) },
+        values = includedPatterns,
+        excludedValues = excludedTargets,
       )
     val command =
       bazelRunner.buildBazelCommand {

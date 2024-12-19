@@ -4,7 +4,6 @@ import ch.epfl.scala.bsp4j.BuildClientCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
-import org.apache.logging.log4j.LogManager
 import org.jetbrains.bsp.bazel.install.Install
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InitializeBuildData
@@ -23,6 +22,9 @@ abstract class BazelBspTestBaseScenario {
 
   val majorBazelVersion: Int = calculateMajorBazelVersion()
   val targetPrefix = "@"
+
+  val isBzlmod = majorBazelVersion >= 7
+  val bzlmodRepoNameSeparator = if (majorBazelVersion == 7) "~" else "+"
 
   private val architecturePart
     get() = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
@@ -98,7 +100,7 @@ abstract class BazelBspTestBaseScenario {
         if (message == null || "could not download" !in message) {
           throw e
         }
-        log.warn("Failed to download Bazel. Retrying in $delayMs ms.")
+        println("WARN: Failed to download Bazel. Retrying in $delayMs ms.")
         Thread.sleep(delayMs)
         delayMs *= 2
       }
@@ -107,26 +109,26 @@ abstract class BazelBspTestBaseScenario {
   }
 
   fun executeScenario() {
-    log.info("Running scenario...")
+    println("Running scenario...")
     val scenarioStepsExecutionResult: Boolean?
     try {
       scenarioStepsExecutionResult = executeScenarioSteps()
-      log.info("Running scenario done.")
+      println("Running scenario done.")
     } finally {
       val logFile = Path(workspaceDir).resolve("all.log").toFile()
       if (logFile.exists()) {
-        // Because we are in a sandbox there's no easy way to get the log file content after the test run - so we print it here.
-        log.info("Log file content:\n${logFile.readText()}")
+        // Because we are in a sandbox there's no easy way to get the log file content after the test run - so we println it here.
+        println("Log file content:\n${logFile.readText()}")
       } else {
-        log.warn("Log file not found.")
+        println("WARN: Log file not found.")
       }
     }
 
     if (scenarioStepsExecutionResult == true) {
-      log.info("Test passed")
+      println("Test passed")
       exitProcess(SUCCESS_EXIT_CODE)
     } else {
-      log.fatal("Test failed")
+      println("Test failed!")
       exitProcess(FAIL_EXIT_CODE)
     }
   }
@@ -138,7 +140,7 @@ abstract class BazelBspTestBaseScenario {
       Path.of(workspaceDir),
       initializeBuildParams,
       { s: String -> bazelJsonTransformer.transformJson(s) },
-    ).also { log.info("Created TestClient done.") }
+    ).also { println("Created TestClient done.") }
   }
 
   protected fun createBazelClient(): BazelTestClient {
@@ -150,7 +152,7 @@ abstract class BazelBspTestBaseScenario {
       { s: String -> bazelJsonTransformer.transformJson(s) },
       MockClient(),
       JoinedBuildServer::class.java,
-    ).also { log.info("Created TestClient done.") }
+    ).also { println("Created TestClient done.") }
   }
 
   private data class BazelTestClientParams(
@@ -159,8 +161,8 @@ abstract class BazelBspTestBaseScenario {
   )
 
   private fun createTestClientParams(jvmClasspathReceiver: Boolean = false): BazelTestClientParams {
-    log.info("Testing repo workspace path: $workspaceDir")
-    log.info("Creating TestClient...")
+    println("Testing repo workspace path: $workspaceDir")
+    println("Creating TestClient...")
 
     val capabilities = BuildClientCapabilities(listOf("java", "scala", "kotlin", "cpp"))
     capabilities.jvmCompileClasspathReceiver = jvmClasspathReceiver
@@ -203,9 +205,6 @@ abstract class BazelBspTestBaseScenario {
   protected abstract fun scenarioSteps(): List<BazelBspTestScenarioStep>
 
   companion object {
-    @JvmStatic
-    private val log = LogManager.getLogger(BazelBspTestBaseScenario::class.java)
-
     private const val SUCCESS_EXIT_CODE = 0
     private const val FAIL_EXIT_CODE = 1
   }

@@ -1,0 +1,3 @@
+module(name = "local_jdk")
+
+bazel_dep(name = "rules_java", version = "8.6.2")

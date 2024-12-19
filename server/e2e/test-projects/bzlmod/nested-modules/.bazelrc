@@ -1,0 +1,2 @@
+common --nolegacy_external_runfiles --experimental_sibling_repository_layout
+build --java_runtime_version=remotejdk_11

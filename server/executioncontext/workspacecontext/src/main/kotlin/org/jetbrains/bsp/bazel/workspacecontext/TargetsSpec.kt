@@ -1,17 +1,17 @@
 package org.jetbrains.bsp.bazel.workspacecontext
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextExcludableListEntity
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
+import org.jetbrains.bsp.bazel.server.model.Label
 import java.nio.file.Path
 import kotlin.io.path.pathString
 
-data class TargetsSpec(override val values: List<BuildTargetIdentifier>, override val excludedValues: List<BuildTargetIdentifier>) :
-  ExecutionContextExcludableListEntity<BuildTargetIdentifier>()
+data class TargetsSpec(override val values: List<Label>, override val excludedValues: List<Label>) :
+  ExecutionContextExcludableListEntity<Label>()
 
 private val defaultTargetsSpec =
   TargetsSpec(
@@ -88,10 +88,10 @@ internal object TargetsSpecExtractor : ExecutionContextEntityExtractor<TargetsSp
     )
   }
 
-  private fun mapDirectoryToTarget(buildDirectoryIdentifier: Path): BuildTargetIdentifier =
+  private fun mapDirectoryToTarget(buildDirectoryIdentifier: Path): Label =
     if (buildDirectoryIdentifier.pathString == ".") {
-      BuildTargetIdentifier("//...")
+      Label.parse("//...")
     } else {
-      BuildTargetIdentifier("//" + buildDirectoryIdentifier.pathString + "/...")
+      Label.parse("//" + buildDirectoryIdentifier.pathString + "/...")
     }
 }

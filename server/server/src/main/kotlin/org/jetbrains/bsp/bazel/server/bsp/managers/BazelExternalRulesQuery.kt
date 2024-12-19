@@ -1,6 +1,5 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.apache.logging.log4j.LogManager
@@ -8,6 +7,7 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.EnabledRulesSpec
 import org.w3c.dom.Document
 import org.w3c.dom.NodeList
@@ -55,7 +55,7 @@ class BazelWorkspaceExternalRulesQueryImpl(
         val command =
           buildBazelCommand {
             query {
-              targets.add(BuildTargetIdentifier("//external:*"))
+              targets.add(Label.parse("//external:*"))
               options.addAll(listOf("--output=xml", "--order_output=no"))
             }
           }

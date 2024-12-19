@@ -48,7 +48,7 @@ import kotlin.io.path.writeText
 private class MockWorkspaceContextProvider(private val allowManualTargetsSync: Boolean) : WorkspaceContextProvider {
   override fun currentWorkspaceContext(): WorkspaceContext =
     WorkspaceContext(
-      targets = TargetsSpec(listOf(BuildTargetIdentifier("//...")), emptyList()),
+      targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
       directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
       buildFlags = BuildFlagsSpec(emptyList()),
       bazelBinary = BazelBinarySpec(Path("bazel")),

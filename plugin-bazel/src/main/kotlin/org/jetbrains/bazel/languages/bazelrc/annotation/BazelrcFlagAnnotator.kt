@@ -17,6 +17,7 @@ import org.jetbrains.bazel.languages.bazelrc.flags.OptionMetadataTag
 import org.jetbrains.bazel.languages.bazelrc.highlighting.BazelrcHighlightingColors
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcFlag
 import org.jetbrains.bazel.languages.bazelrc.psi.BazelrcLine
+import kotlin.text.Regex
 
 val flagTokenPattern =
   psiElement(BazelrcTokenTypes.FLAG)
@@ -30,7 +31,7 @@ class BazelrcFlagAnnotator : Annotator {
   val symbolReferenceService = PsiSymbolReferenceService.getService()
 
   override fun annotate(element: PsiElement, holder: AnnotationHolder) {
-    if (!flagTokenPattern.accepts(element)) {
+    if (!flagTokenPattern.accepts(element) || isLabel(element)) {
       return
     }
 
@@ -89,6 +90,8 @@ class BazelrcFlagAnnotator : Annotator {
     }
   }
 
+  private fun isLabel(e: PsiElement) = labelFlagRe.matches(e.text)
+
   private fun isHidden(flag: Flag) = flag.option.metadataTags.contains(OptionMetadataTag.HIDDEN)
 
   private fun isDeprecated(flag: Flag, element: PsiElement) =
@@ -104,5 +107,6 @@ class BazelrcFlagAnnotator : Annotator {
 
   private companion object {
     private val log = logger<BazelrcFlagAnnotator>()
+    private val labelFlagRe = Regex("^--(?:no)?[@/].*$")
   }
 }

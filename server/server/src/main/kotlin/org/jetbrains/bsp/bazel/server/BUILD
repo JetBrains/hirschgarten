@@ -21,6 +21,7 @@ kt_jvm_library(
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/info",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/managers",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/utils",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bzlmod",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/diagnostics",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/firstPhase",

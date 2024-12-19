@@ -70,7 +70,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
         val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
         val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
         val javaHomeBazel7 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk11_\$OS$architecturePart/"
-        val javaHome = if (majorBazelVersion == 7) javaHomeBazel7 else javaHomeBazel5And6
+        val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
         val jvmBuildTarget =
           JvmBuildTarget().also {
             it.javaHome = javaHome
@@ -126,7 +126,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
     val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
     val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
     val javaHomeBazel7 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk11_\$OS$architecturePart/"
-    val javaHome = if (majorBazelVersion == 7) javaHomeBazel7 else javaHomeBazel5And6
+    val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
     val jvmBuildTarget =
       JvmBuildTarget().also {
         it.javaHome = javaHome

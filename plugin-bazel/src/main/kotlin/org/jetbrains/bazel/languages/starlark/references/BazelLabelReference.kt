@@ -15,7 +15,7 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.Starlark
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
 
-private val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
+public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
 
 class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolean) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), soft) {
