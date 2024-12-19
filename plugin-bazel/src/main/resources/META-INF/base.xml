@@ -45,6 +45,8 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <consoleFilterProvider implementation="org.jetbrains.bazel.ui.console.BazelBuildTargetConsoleFilterProvider"/>
+
         <attachSourcesProvider implementation="org.jetbrains.bazel.ui.notifications.BazelAttachSourcesProvider"/>
         <projectOpenProcessor
                 implementation="org.jetbrains.bazel.flow.open.BazelBspProjectOpenProcessor"/>
