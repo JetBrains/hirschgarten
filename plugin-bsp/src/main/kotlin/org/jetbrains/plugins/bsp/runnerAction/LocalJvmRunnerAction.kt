@@ -2,12 +2,14 @@ package org.jetbrains.plugins.bsp.runnerAction
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmEnvironmentItem
+import ch.epfl.scala.bsp4j.StatusCode
 import com.intellij.build.events.impl.FailureResultImpl
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.ShortenCommandLine
 import com.intellij.execution.application.ApplicationConfiguration
 import com.intellij.execution.impl.RunManagerImpl
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
@@ -18,6 +20,7 @@ import org.jetbrains.plugins.bsp.buildTask.BspProjectModuleBuildTasksTracker
 import org.jetbrains.plugins.bsp.building.BspConsoleService
 import org.jetbrains.plugins.bsp.building.TaskConsole
 import org.jetbrains.plugins.bsp.config.BspPluginBundle
+import org.jetbrains.plugins.bsp.impl.server.tasks.runBuildTargetTask
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.getModule
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo
 import javax.swing.Icon
@@ -35,8 +38,14 @@ abstract class LocalJvmRunnerAction(
     val module = targetInfo.getModule(project) ?: return null
 
     val bspSyncConsole = BspConsoleService.getInstance(project).bspSyncConsole
+    if (!preBuild(project)) return null
     val environment = queryJvmEnvironment(project, bspSyncConsole) ?: return null
     return calculateConfigurationSettings(environment, module, project, targetInfo)
+  }
+
+  private suspend fun preBuild(project: Project): Boolean {
+    val buildResult = runBuildTargetTask(listOf(targetInfo.id), project, log)
+    return buildResult?.statusCode == StatusCode.OK
   }
 
   private fun calculateConfigurationSettings(
@@ -58,17 +67,11 @@ abstract class LocalJvmRunnerAction(
         putUserData(jvmEnvironment, environment)
         putUserData(targetsToPreBuild, listOf(targetInfo.id))
         putUserData(includeJpsClassPaths, BspProjectModuleBuildTasksTracker.getInstance(project).lastBuiltByJps)
-        beforeRunTasks = createBeforeRunBuildTask(this)
         shortenCommandLine = ShortenCommandLine.MANIFEST
       }
     val runManager = RunManagerImpl.getInstanceImpl(project)
     return RunnerAndConfigurationSettingsImpl(runManager, configuration)
   }
-
-  private fun createBeforeRunBuildTask(applicationConfiguration: ApplicationConfiguration) =
-    BuildBeforeLocalRunTaskProvider()
-      .createTask(applicationConfiguration)
-      ?.let { listOf(it) } ?: emptyList()
 
   private fun calculateConfigurationName(targetInfo: BuildTargetInfo): String {
     val targetDisplayName = targetInfo.buildTargetName
@@ -121,6 +124,8 @@ abstract class LocalJvmRunnerAction(
     val includeJpsClassPaths: Key<Boolean> = Key<Boolean>("includeJpsClassPaths")
   }
 }
+
+private val log = logger<LocalJvmRunnerAction>()
 
 private const val RETRIEVE_JVM_ENVIRONMENT_ID = "bsp-retrieve-jvm-environment"
 

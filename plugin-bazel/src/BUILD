@@ -2,7 +2,10 @@ load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_sui
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
-exports_files(["main/resources/META-INF/base.xml"])
+exports_files([
+    "main/resources/META-INF/base.xml",
+    "test/resources/META-INF/bazel-ide-starter-test.xml",
+])
 
 proto_library(
     name = "starlark_annotations_proto",
@@ -31,6 +34,7 @@ kt_jvm_library(
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extension",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter",
     ],
 )
 
