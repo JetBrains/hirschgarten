@@ -123,8 +123,9 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     openForTestingBuildTarget.data = kotlinBuildTargetData
     openForTestingBuildTarget.dataKind = "kotlin"
 
-    val bzlmodPluginRepo = "rules_kotlin${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}" +
-      "rules_kotlin_extensions${bzlmodRepoNameSeparator}com_github_jetbrains_kotlin_git"
+    val bzlmodPluginRepo =
+      "rules_kotlin${bzlmodRepoNameSeparator}$bzlmodRepoNameSeparator" +
+        "rules_kotlin_extensions${bzlmodRepoNameSeparator}com_github_jetbrains_kotlin_git"
     val workspacePluginRepo = "com_github_jetbrains_kotlin"
     val pluginRepo = if (isBzlmod) bzlmodPluginRepo else workspacePluginRepo
 
