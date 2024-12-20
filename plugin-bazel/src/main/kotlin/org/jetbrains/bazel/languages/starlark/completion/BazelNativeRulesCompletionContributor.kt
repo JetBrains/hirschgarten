@@ -12,6 +12,7 @@ import com.intellij.patterns.PatternCondition
 import com.intellij.patterns.PlatformPatterns.psiComment
 import com.intellij.patterns.PlatformPatterns.psiElement
 import com.intellij.patterns.PlatformPatterns.psiFile
+import com.intellij.psi.PsiElement
 import com.intellij.util.PlatformIcons
 import com.intellij.util.ProcessingContext
 import org.jetbrains.bazel.languages.starlark.StarlarkLanguage
@@ -20,6 +21,7 @@ import org.jetbrains.bazel.languages.starlark.bazel.BazelNativeRules
 import org.jetbrains.bazel.languages.starlark.elements.StarlarkTokenTypes
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkReferenceExpression
+import org.jetbrains.bazel.languages.starlark.psi.statements.StarlarkExpressionStatement
 
 class BazelNativeRulesCompletionContributor: CompletionContributor() {
   init {
@@ -34,6 +36,7 @@ class BazelNativeRulesCompletionContributor: CompletionContributor() {
     psiElement()
       .withLanguage(StarlarkLanguage)
       .withParent(StarlarkReferenceExpression::class.java)
+      .withSuperParent(3, StarlarkFile::class.java)
       .andNot(psiComment())
       .andNot(psiElement().afterLeaf(psiElement(StarlarkTokenTypes.DOT)))
       .inFile(psiFile(StarlarkFile::class.java).with(bazelFileTypeCondition()))
