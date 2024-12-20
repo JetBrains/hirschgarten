@@ -60,10 +60,10 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageVersion = "1.9",
         apiVersion = "1.9",
         kotlincOptions =
-          listOf(
+          listOfNotNull(
             "-Xsam-conversions=class",
             "-Xlambdas=class",
-            "-Xno-source-debug-extension",
+            if (isBzlmod) null else "-Xno-source-debug-extension",
             "-jvm-target=1.8",
           ),
         associates = listOf(),
@@ -75,12 +75,12 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageVersion = "1.9",
         apiVersion = "1.9",
         kotlincOptions =
-          listOf(
+          listOfNotNull(
             "-Xno-call-assertions",
             "-Xno-param-assertions",
             "-Xsam-conversions=class",
             "-Xlambdas=class",
-            "-Xno-source-debug-extension",
+            if (isBzlmod) null else "-Xno-source-debug-extension",
             "-jvm-target=1.8",
           ),
         associates = listOf(),
@@ -123,16 +123,21 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
     openForTestingBuildTarget.data = kotlinBuildTargetData
     openForTestingBuildTarget.dataKind = "kotlin"
 
+    val bzlmodPluginRepo = "rules_kotlin${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}" +
+      "rules_kotlin_extensions${bzlmodRepoNameSeparator}com_github_jetbrains_kotlin_git"
+    val workspacePluginRepo = "com_github_jetbrains_kotlin"
+    val pluginRepo = if (isBzlmod) bzlmodPluginRepo else workspacePluginRepo
+
     val userBuildTargetData =
       KotlinBuildTarget(
         languageVersion = "1.9",
         apiVersion = "1.9",
         kotlincOptions =
-          listOf(
+          listOfNotNull(
             "-P",
             "-Xlambdas=class",
-            "-Xno-source-debug-extension",
-            "-Xplugin=\$BAZEL_OUTPUT_BASE_PATH/external/com_github_jetbrains_kotlin/lib/allopen-compiler-plugin.jar",
+            if (isBzlmod) null else "-Xno-source-debug-extension",
+            "-Xplugin=\$BAZEL_OUTPUT_BASE_PATH/external/$pluginRepo/lib/allopen-compiler-plugin.jar",
             "-Xsam-conversions=class",
             "-jvm-target=1.8",
             "plugin:org.jetbrains.kotlin.allopen:annotation=plugin.allopen.OpenForTesting",
@@ -146,11 +151,11 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         languageVersion = "1.9",
         apiVersion = "1.9",
         kotlincOptions =
-          listOf(
+          listOfNotNull(
             "-P",
             "-Xlambdas=class",
-            "-Xno-source-debug-extension",
-            "-Xplugin=\$BAZEL_OUTPUT_BASE_PATH/external/com_github_jetbrains_kotlin/lib/allopen-compiler-plugin.jar",
+            if (isBzlmod) null else "-Xno-source-debug-extension",
+            "-Xplugin=\$BAZEL_OUTPUT_BASE_PATH/external/$pluginRepo/lib/allopen-compiler-plugin.jar",
             "-Xsam-conversions=class",
             "-jvm-target=1.8",
             "plugin:org.jetbrains.kotlin.allopen:annotation=plugin.allopen.OpenForTesting",
