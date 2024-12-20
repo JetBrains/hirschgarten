@@ -42,6 +42,8 @@
 
         <runConfigurationTypeProvider implementation="org.jetbrains.bazel.run.BazelRunConfigurationTypeProvider"/>
         <bspFeatureFlagsProvider implementation="org.jetbrains.bazel.config.BazelBspFeatureFlagsProvider"/>
+        <bspAdditionalProjectTaskRunnerProvider
+                implementation="org.jetbrains.bazel.hotswap.BazelHotSwapProjectTaskRunnerProvider"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

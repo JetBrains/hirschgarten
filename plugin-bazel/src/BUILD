@@ -30,6 +30,7 @@ kt_jvm_library(
         "//plugin-bazel/src:intellij-bazel-unpackaged",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extension",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
     ],
 )
 
