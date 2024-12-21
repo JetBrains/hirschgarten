@@ -12,10 +12,10 @@ import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
 import com.intellij.ide.starter.runner.Starter
 import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
+import com.intellij.tools.ide.metrics.collector.OpenTelemetrySpanCollector
 import com.intellij.tools.ide.metrics.collector.metrics.MetricsSelectionStrategy
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
 import com.intellij.tools.ide.metrics.collector.starter.collector.StarterTelemetryJsonMeterCollector
-import com.intellij.tools.ide.metrics.collector.starter.collector.getMetricsFromSpanAndChildren
 import com.intellij.tools.ide.metrics.collector.telemetry.SpanFilter
 import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import com.intellij.tools.ide.performanceTesting.commands.exitApp
@@ -66,12 +66,7 @@ class BazelTest {
     val projectInfo = getProjectInfoFromSystemProperties()
     val projectName = System.getProperty("bsp.benchmark.project.name") ?: "hirschgarten"
     val testCase =
-      TestCase(IdeProductProvider.IC, projectInfo).let { testCase ->
-        // TODO replace with .useEAP(buildNumber: String) when it becomes public
-        val useEAP = testCase.javaClass.getDeclaredMethod("useEAP", String::class.java)
-        useEAP.isAccessible = true
-        useEAP.invoke(testCase, System.getProperty("bsp.benchmark.platform.version")) as TestCase<*>
-      }
+      TestCase(IdeProductProvider.IC, projectInfo).withBuildNumber(System.getProperty("bsp.benchmark.platform.version"))
     val context =
       Starter
         .newContext(projectName, testCase)
@@ -98,7 +93,7 @@ class BazelTest {
     val timeout = (System.getProperty("bsp.benchmark.timeout.seconds")?.toIntOrNull() ?: 600).seconds
     val startResult = context.runIDE(commands = commands, runTimeout = timeout)
 
-    val spans = getMetricsFromSpanAndChildren(startResult, SpanFilter.nameEquals("bsp.sync.project.ms"))
+    val spans = OpenTelemetrySpanCollector(SpanFilter.nameEquals("bsp.sync.project.ms")).collect(startResult.runContext.logsDir)
 
     val meters =
       StarterTelemetryJsonMeterCollector(MetricsSelectionStrategy.LATEST) {
@@ -240,12 +235,6 @@ class BazelTest {
     }
     return this
   }
-
-  // TODO: import this function from IDE starter after update
-  private fun IDETestContext.withKotlinPluginK2() =
-    applyVMOptionsPatch {
-      addSystemProperty("idea.kotlin.plugin.use.k2", true)
-    }
 }
 
 private fun <T : CommandChain> T.waitForBazelSync(): T {
