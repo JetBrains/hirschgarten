@@ -100,7 +100,7 @@ maven.artifact(
     artifact = "kotlinx-coroutines-core-jvm",
     group = "org.jetbrains.kotlinx",
     neverlink = True,
-    version = "1.9.0",
+    version = "1.10.1",
 )
 maven.artifact(
     name = "server_maven",
