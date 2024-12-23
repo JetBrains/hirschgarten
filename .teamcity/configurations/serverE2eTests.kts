@@ -236,3 +236,45 @@ object BuildSyncGitHub : BuildSync(
 object BuildSyncSpace : BuildSync(
   vcsRoot = BaseConfiguration.SpaceVcs,
 )
+
+open class FirstPhaseSync(vcsRoot: GitVcsRoot) :
+  E2ETest(
+    vcsRoot = vcsRoot,
+    targets = "//server/e2e:first_phase_sync_test",
+  )
+
+object FirstPhaseSyncGitHub : FirstPhaseSync(
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object FirstPhaseSyncSpace : FirstPhaseSync(
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)
+
+open class PartialSync(vcsRoot: GitVcsRoot) :
+  E2ETest(
+    vcsRoot = vcsRoot,
+    targets = "//server/e2e:partial_sync_test",
+  )
+
+object PartialSyncGitHub : PartialSync(
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object PartialSyncSpace : PartialSync(
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)
+
+open class NestedModules(vcsRoot: GitVcsRoot) :
+  E2ETest(
+    vcsRoot = vcsRoot,
+    targets = "//server/e2e:nested_modules_test",
+  )
+
+object NestedModulesGitHub : NestedModules(
+  vcsRoot = BaseConfiguration.GitHubVcs,
+)
+
+object NestedModulesSpace : NestedModules(
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)

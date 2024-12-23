@@ -4,6 +4,7 @@ import org.apache.velocity.app.VelocityEngine
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bsp.bazel.server.model.Label
 import java.nio.file.Paths
 import java.util.Properties
 
@@ -12,21 +13,23 @@ enum class Language(
   val ruleNames: List<String>,
   val functions: List<String>,
   val isTemplate: Boolean,
+  val isBundled: Boolean,
 ) {
-  Java("//aspects:rules/java/java_info.bzl", listOf(), listOf("extract_java_toolchain", "extract_java_runtime"), false),
-  Jvm("//aspects:rules/jvm/jvm_info.bzl", listOf(), listOf("extract_jvm_info"), true),
-  Python("//aspects:rules/python/python_info.bzl", listOf(), listOf("extract_python_info"), false),
-  Scala("//aspects:rules/scala/scala_info.bzl", listOf("io_bazel_rules_scala"), listOf("extract_scala_info"), false),
-  Cpp("//aspects:rules/cpp/cpp_info.bzl", listOf("rules_cc"), listOf("extract_cpp_info"), false),
-  Kotlin("//aspects:rules/kt/kt_info.bzl", listOf("io_bazel_rules_kotlin", "rules_kotlin"), listOf("extract_kotlin_info"), true),
-  Rust("//aspects:rules/rust/rust_info.bzl", listOf("rules_rust"), listOf("extract_rust_crate_info"), false),
+  Java("//aspects:rules/java/java_info.bzl", listOf("rules_java"), listOf("extract_java_toolchain", "extract_java_runtime"), true, true),
+  Python("//aspects:rules/python/python_info.bzl", listOf("rules_python"), listOf("extract_python_info"), true, true),
+  Scala("//aspects:rules/scala/scala_info.bzl", listOf("io_bazel_rules_scala", "rules_scala"), listOf("extract_scala_info"), false, false),
+  Cpp("//aspects:rules/cpp/cpp_info.bzl", listOf("rules_cc"), listOf("extract_cpp_info"), false, false),
+  Kotlin("//aspects:rules/kt/kt_info.bzl", listOf("io_bazel_rules_kotlin", "rules_kotlin"), listOf("extract_kotlin_info"), true, false),
+  Jvm("//aspects:rules/jvm/jvm_info.bzl", Java.ruleNames + Scala.ruleNames + Kotlin.ruleNames, listOf("extract_jvm_info"), true, true),
+  Rust("//aspects:rules/rust/rust_info.bzl", listOf("rules_rust"), listOf("extract_rust_crate_info"), false, false),
   Android(
     "//aspects:rules/android/android_info.bzl",
     listOf("rules_android", "build_bazel_rules_android"),
     listOf("extract_android_info", "extract_android_aar_import_info"),
     true,
+    false,
   ),
-  Go("//aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true),
+  Go("//aspects:rules/go/go_info.bzl", listOf("rules_go", "io_bazel_rules_go"), listOf("extract_go_info"), true, false),
   ;
 
   fun toLoadStatement(): String =
@@ -57,12 +60,12 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return props
   }
 
-  fun generateLanguageExtensions(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>) {
+  fun generateLanguageExtensions(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, Label?>) {
     val fileContent = prepareFileContent(ruleLanguages, toolchains)
     createNewExtensionsFile(fileContent)
   }
 
-  private fun prepareFileContent(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>) =
+  private fun prepareFileContent(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, Label?>) =
     listOf(
       "# This is a generated file, do not edit it",
       createLoadStatementsString(ruleLanguages.map { it.language }),
@@ -83,10 +86,10 @@ class BazelBspLanguageExtensionsGenerator(internalAspectsResolver: InternalAspec
     return functionNames.joinToString(prefix = "EXTENSIONS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
   }
 
-  private fun createToolchainListString(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, String?>): String =
+  private fun createToolchainListString(ruleLanguages: List<RuleLanguage>, toolchains: Map<RuleLanguage, Label?>): String =
     ruleLanguages
       .mapNotNull { toolchains[it] }
-      .joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t$it" }
+      .joinToString(prefix = "TOOLCHAINS = [\n", postfix = "\n]", separator = ",\n ") { "\t\"$it\"" }
 
   private fun createNewExtensionsFile(fileContent: String) {
     val file = aspectsPath.resolve(Constants.EXTENSIONS_BZL)

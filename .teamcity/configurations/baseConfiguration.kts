@@ -1,5 +1,6 @@
 package configurations
 
+import jetbrains.buildServer.configs.kotlin.v2019_2.Dependencies
 import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildSteps
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
@@ -19,12 +20,15 @@ open class BaseBuildType(
   requirements: (Requirements.() -> Unit)? = null,
   params: ParametrizedWithType.() -> Unit = {},
   dockerSupport: DockerSupportFeature.() -> Unit = {},
+  dependencies: Dependencies.() -> Unit = {},
 ) : BuildType({
 
     this.name = name
     this.artifactRules = artifactRules
     this.failureConditions(failureConditions)
     this.params(params)
+
+    this.dependencies(dependencies)
 
     failureConditions {
       executionTimeoutMin = 60
@@ -116,7 +120,10 @@ object SpaceVcs : GitVcsRoot({
   name = "hirschgarten-space"
   url = "https://git.jetbrains.team/bazel/hirschgarten.git"
   branch = "main"
-  branchSpec = "+:refs/heads/*"
+  branchSpec = """
+    +:refs/heads/*
+    +:(refs/merge/*)
+""".trimIndent()
   authMethod =
     password {
       userName = "x-oauth-basic"

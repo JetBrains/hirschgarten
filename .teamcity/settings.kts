@@ -5,7 +5,7 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.Project
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.finishBuildTrigger
 import jetbrains.buildServer.configs.kotlin.v2019_2.triggers.vcs
 
-version = "2024.03"
+version = "2024.12"
 
 object ProjectBranchFilters {
   val githubBranchFilter = "+:pull/*"
@@ -14,6 +14,7 @@ object ProjectBranchFilters {
     +:<default>
     +:*
     -:bazel-steward*
+    -:refs/merge/*
     """.trimIndent()
 }
 
@@ -51,7 +52,9 @@ object GitHub : Project({
       }) {
         buildType(ProjectBuild.GitHub)
         buildType(ProjectUnitTests.GitHub)
-        buildType(PluginBenchmark.GitHub)
+        buildType(PluginBenchmark.BenchmarkDefaultGitHub)
+        buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
+        buildType(IdeStarterTests.HotswapTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -64,8 +67,15 @@ object GitHub : Project({
         buildType(ServerE2eTests.JavaDiagnosticsGitHub)
         buildType(ServerE2eTests.ManualTargetsGitHub)
         buildType(ServerE2eTests.BuildSyncGitHub)
+        buildType(ServerE2eTests.FirstPhaseSyncGitHub)
+        buildType(ServerE2eTests.PartialSyncGitHub)
+        buildType(ServerE2eTests.NestedModulesGitHub)
         buildType(ServerBenchmark.GitHub)
-        buildType(StaticAnalysis.GitHub)
+        buildType(StaticAnalysis.HirschgartenGitHub)
+        buildType(StaticAnalysis.AndroidBazelRulesGitHub)
+        buildType(StaticAnalysis.AndroidTestdpcGitHub)
+        buildType(StaticAnalysis.BazelGitHub)
+        buildType(StaticAnalysis.JetpackComposeGitHub)
       }
 
       buildType(ResultsAggregator.GitHub, options = {
@@ -99,7 +109,9 @@ object GitHub : Project({
       ProjectFormat.GitHub,
       ProjectBuild.GitHub,
       ProjectUnitTests.GitHub,
-      PluginBenchmark.GitHub,
+      PluginBenchmark.BenchmarkDefaultGitHub,
+      PluginBenchmark.BenchmarkWithVersionGitHub,
+      IdeStarterTests.HotswapTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -112,8 +124,15 @@ object GitHub : Project({
       ServerE2eTests.JavaDiagnosticsGitHub,
       ServerE2eTests.ManualTargetsGitHub,
       ServerE2eTests.BuildSyncGitHub,
+      ServerE2eTests.FirstPhaseSyncGitHub,
+      ServerE2eTests.PartialSyncGitHub,
+      ServerE2eTests.NestedModulesGitHub,
       ServerBenchmark.GitHub,
-      StaticAnalysis.GitHub,
+      StaticAnalysis.HirschgartenGitHub,
+      StaticAnalysis.AndroidBazelRulesGitHub,
+      StaticAnalysis.AndroidTestdpcGitHub,
+      StaticAnalysis.BazelGitHub,
+      StaticAnalysis.JetpackComposeGitHub,
       ResultsAggregator.GitHub,
     )
 })
@@ -133,7 +152,9 @@ object Space : Project({
       }) {
         buildType(ProjectBuild.Space)
         buildType(ProjectUnitTests.Space)
-        buildType(PluginBenchmark.Space)
+        buildType(PluginBenchmark.SpaceBenchmarkDefault)
+        buildType(PluginBenchmark.SpaceBenchmarkWithVersion)
+        buildType(IdeStarterTests.HotswapTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -146,8 +167,15 @@ object Space : Project({
         buildType(ServerE2eTests.JavaDiagnosticsSpace)
         buildType(ServerE2eTests.ManualTargetsSpace)
         buildType(ServerE2eTests.BuildSyncSpace)
+        buildType(ServerE2eTests.FirstPhaseSyncSpace)
+        buildType(ServerE2eTests.PartialSyncSpace)
+        buildType(ServerE2eTests.NestedModulesSpace)
         buildType(ServerBenchmark.Space)
-        buildType(StaticAnalysis.Space)
+        buildType(StaticAnalysis.HirschgartenSpace)
+        buildType(StaticAnalysis.AndroidBazelRulesSpace)
+        buildType(StaticAnalysis.AndroidTestdpcSpace)
+        buildType(StaticAnalysis.BazelSpace)
+        buildType(StaticAnalysis.JetpackComposeSpace)
       }
 
       buildType(ResultsAggregator.Space, options = {
@@ -181,7 +209,9 @@ object Space : Project({
       ProjectFormat.Space,
       ProjectBuild.Space,
       ProjectUnitTests.Space,
-      PluginBenchmark.Space,
+      PluginBenchmark.SpaceBenchmarkDefault,
+      PluginBenchmark.SpaceBenchmarkWithVersion,
+      IdeStarterTests.HotswapTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,
@@ -194,8 +224,15 @@ object Space : Project({
       ServerE2eTests.JavaDiagnosticsSpace,
       ServerE2eTests.ManualTargetsSpace,
       ServerE2eTests.BuildSyncSpace,
+      ServerE2eTests.FirstPhaseSyncSpace,
+      ServerE2eTests.PartialSyncSpace,
+      ServerE2eTests.NestedModulesSpace,
       ServerBenchmark.Space,
-      StaticAnalysis.Space,
+      StaticAnalysis.HirschgartenSpace,
+      StaticAnalysis.AndroidBazelRulesSpace,
+      StaticAnalysis.AndroidTestdpcSpace,
+      StaticAnalysis.BazelSpace,
+      StaticAnalysis.JetpackComposeSpace,
       ResultsAggregator.Space,
     )
 })

@@ -46,6 +46,7 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.TestParams
 import ch.epfl.scala.bsp4j.TestResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.sync.ExecuteService
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.protocol.AnalysisDebugParams
@@ -59,6 +60,7 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestWithDebugParams
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
@@ -139,9 +141,14 @@ class BspServerApi(private val bazelServicesBuilder: (JoinedBuildClient, Initial
     runner.handleRequest("workspace/buildTargetsPartial") {
       projectSyncService.workspaceBuildTargetsPartial(
         cancelChecker = it,
-        targetsToSync = params.targets,
+        targetsToSync = params.targets.map { it.label() },
       )
     }
+
+  override fun workspaceBuildTargetsFirstPhase(
+    params: WorkspaceBuildTargetsFirstPhaseParams,
+  ): CompletableFuture<WorkspaceBuildTargetsResult> =
+    runner.handleRequest("workspace/buildTargetsFirstPhase", projectSyncService::workspaceBuildFirstPhase, params)
 
   override fun workspaceReload(): CompletableFuture<Any> = runner.handleRequest("workspace/reload", projectSyncService::workspaceReload)
 

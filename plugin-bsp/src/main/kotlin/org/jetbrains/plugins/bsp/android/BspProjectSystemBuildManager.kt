@@ -7,8 +7,8 @@ import com.android.tools.idea.projectsystem.ProjectSystemBuildManager.BuildStatu
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
-import org.jetbrains.plugins.bsp.impl.flow.sync.FullProjectSync
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncTask
+import org.jetbrains.plugins.bsp.impl.flow.sync.SecondPhaseSync
 import org.jetbrains.plugins.bsp.impl.projectAware.BspWorkspaceListener
 
 class BspProjectSystemBuildManager(private val project: Project) : ProjectSystemBuildManager {
@@ -38,7 +38,7 @@ class BspProjectSystemBuildManager(private val project: Project) : ProjectSystem
 
   override fun compileProject() {
     BspCoroutineService.getInstance(project).start {
-      ProjectSyncTask(project).sync(syncScope = FullProjectSync, buildProject = true)
+      ProjectSyncTask(project).sync(syncScope = SecondPhaseSync, buildProject = true)
     }
   }
 }

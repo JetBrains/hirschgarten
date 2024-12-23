@@ -1,7 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync
 
 import ch.epfl.scala.bsp4j.BuildClientCapabilities
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.CppOptionsParams
 import ch.epfl.scala.bsp4j.CppOptionsResult
 import ch.epfl.scala.bsp4j.DependencyModulesParams
@@ -37,20 +36,26 @@ import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
+import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
+import java.nio.file.Path
 
 /** A facade for all project sync related methods  */
 class ProjectSyncService(
   private val bspMapper: BspProjectMapper,
+  private val firstPhaseTargetToBspMapper: FirstPhaseTargetToBspMapper,
   private val projectProvider: ProjectProvider,
   private val clientCapabilities: BuildClientCapabilities,
+  private val workspaceRoot: Path,
 ) {
   fun initialize(): InitializeBuildResult = bspMapper.initializeServer(Language.all())
 
@@ -66,13 +71,18 @@ class ProjectSyncService(
     return bspMapper.workspaceTargets(project)
   }
 
-  fun workspaceBuildTargetsPartial(cancelChecker: CancelChecker, targetsToSync: List<BuildTargetIdentifier>): WorkspaceBuildTargetsResult {
+  fun workspaceBuildTargetsPartial(cancelChecker: CancelChecker, targetsToSync: List<Label>): WorkspaceBuildTargetsResult {
     val project =
       projectProvider.updateAndGet(
         cancelChecker = cancelChecker,
         targetsToSync = targetsToSync,
       )
     return bspMapper.workspaceTargets(project)
+  }
+
+  fun workspaceBuildFirstPhase(cancelChecker: CancelChecker, params: WorkspaceBuildTargetsFirstPhaseParams): WorkspaceBuildTargetsResult {
+    val project = projectProvider.bazelQueryRefreshAndGet(cancelChecker, params.originId)
+    return firstPhaseTargetToBspMapper.toWorkspaceBuildTargetsResult(project)
   }
 
   fun workspaceBuildLibraries(cancelChecker: CancelChecker): WorkspaceLibrariesResult {
@@ -102,12 +112,20 @@ class ProjectSyncService(
 
   fun buildTargetSources(cancelChecker: CancelChecker, sourcesParams: SourcesParams): SourcesResult {
     val project = projectProvider.get(cancelChecker)
-    return bspMapper.sources(project, sourcesParams)
+    return if (project.modules.isNotEmpty()) {
+      bspMapper.sources(project, sourcesParams)
+    } else {
+      firstPhaseTargetToBspMapper.toSourcesResult(project, sourcesParams)
+    }
   }
 
   fun buildTargetResources(cancelChecker: CancelChecker, resourcesParams: ResourcesParams): ResourcesResult {
     val project = projectProvider.get(cancelChecker)
-    return bspMapper.resources(project, resourcesParams)
+    return if (project.modules.isNotEmpty()) {
+      bspMapper.resources(project, resourcesParams)
+    } else {
+      firstPhaseTargetToBspMapper.toResourcesResult(project, resourcesParams)
+    }
   }
 
   fun buildTargetInverseSources(cancelChecker: CancelChecker, inverseSourcesParams: InverseSourcesParams): InverseSourcesResult {

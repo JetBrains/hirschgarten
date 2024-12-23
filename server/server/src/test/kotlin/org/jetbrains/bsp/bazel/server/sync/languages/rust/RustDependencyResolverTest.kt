@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.bazelrunner.utils.orLatestSupported
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.junit.jupiter.api.BeforeEach
@@ -33,7 +34,7 @@ class RustDependencyResolverTest {
       )
 
     rustPackageResolver = RustPackageResolver(BazelPathsResolver(bazelInfo))
-    resolver = RustDependencyResolver(rustPackageResolver)
+    resolver = RustDependencyResolver()
   }
 
   @Test
@@ -84,15 +85,15 @@ class RustDependencyResolverTest {
     dependencies.size shouldBe 1
 
     val dependency = dependencies.entries.first()
-    dependency.key shouldBe modules[1].label.value.split(":")[0]
-    dependency.value[0].pkg shouldBe modules[0].label.value.split(":")[0]
-    dependency.value[0].name shouldBe modules[0].label.value.split(":")[1]
+    dependency.key shouldBe modules[1].label.packagePath.toString()
+    dependency.value[0].pkg shouldBe modules[0].label.packagePath.toString()
+    dependency.value[0].name shouldBe modules[0].label.targetName
 
     rawDependencies.size shouldBe 1
 
     val rawDependency = rawDependencies.entries.first()
-    rawDependency.value[0].name shouldBe modules[0].label.value
-    rawDependency.key shouldBe modules[1].label.value.split(":")[0]
+    rawDependency.value[0].name shouldBe modules[0].label.toString()
+    rawDependency.key shouldBe modules[1].label.packagePath.toString()
   }
 
   @Test
@@ -112,7 +113,7 @@ class RustDependencyResolverTest {
 
     // then
     dependencies.keys.toSet() shouldContainExactlyInAnyOrder
-      listOf("A", "B", "C", "D", "E").map { "@//pkg$it" }
+      listOf("A", "B", "C", "D", "E").map { "pkg$it" }
 
     val dependenciesNames =
       dependencies
@@ -124,18 +125,18 @@ class RustDependencyResolverTest {
         "C" to listOf("F"),
         "D" to listOf("F", "G"),
         "E" to listOf("G", "H"),
-      ).mapKeys { (name, _) -> "@//pkg$name" }
+      ).mapKeys { (name, _) -> "pkg$name" }
     dependenciesNames shouldContainExactly trueDependenciesNames
 
     rawDependencies.keys.toSet() shouldContainExactlyInAnyOrder
-      listOf("A", "B", "C", "D", "E").map { "@//pkg$it" }
+      listOf("A", "B", "C", "D", "E").map { "pkg$it" }
 
     val rawDependenciesNames =
       rawDependencies
-        .mapValues { (_, deps) -> deps.map { it.name } }
+        .mapValues { (_, deps) -> deps.map { Label.parse(it.name).targetName } }
     val trueRawDependenciesNames =
       trueDependenciesNames
-        .mapValues { (_, names) -> names.map { "@//pkg$it:$it" } }
+        .mapValues { (_, names) -> names }
     rawDependenciesNames shouldContainExactly trueRawDependenciesNames
   }
 }

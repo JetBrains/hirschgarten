@@ -9,3 +9,12 @@ kt_junit5_test(
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
+
+kt_junit5_test(
+    name = "LabelTest",
+    size = "small",
+    src = "LabelTest.kt",
+    deps = [
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+    ],
+)

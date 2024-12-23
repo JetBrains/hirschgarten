@@ -6,9 +6,7 @@ import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import java.net.URI
 
 object BspMappings {
-  fun toBspId(label: Label): BuildTargetIdentifier = BuildTargetIdentifier(label.value)
-
-  fun toBspId(module: Module): BuildTargetIdentifier = BuildTargetIdentifier(module.label.value)
+  fun toBspId(module: Module): BuildTargetIdentifier = BuildTargetIdentifier(module.label.toString())
 
   fun toBspTag(tag: Tag): String? =
     when (tag) {

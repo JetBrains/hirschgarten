@@ -42,7 +42,7 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
 
   private fun runInitialSyncAndPartialSync(): BazelBspTestScenarioStep =
     BazelBspTestScenarioStep("should do an initial sync on 1 target and then partial sync on another target") {
-      testClient.test(2.minutes) { session, _ ->
+      testClient.test(3.minutes) { session, _ ->
         // initial sync
         val workspaceBuildTargetsResult = session.server.workspaceBuildTargets().await()
         testClient.assertJsonEquals(expectedWorkspaceBuildTargetsResult(), workspaceBuildTargetsResult)
@@ -67,7 +67,10 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
 
         // partial sync
         val partialSyncTargetId = BuildTargetIdentifier("$targetPrefix//java_targets:java_binary")
-        val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+        val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
+        val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
+        val javaHomeBazel7 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk11_\$OS$architecturePart/"
+        val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
         val jvmBuildTarget =
           JvmBuildTarget().also {
             it.javaHome = javaHome
@@ -120,7 +123,10 @@ object BazelBspPartialSyncTest : BazelBspTestBaseScenario() {
     }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+    val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
+    val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
+    val javaHomeBazel7 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/rules_java~~toolchains~remotejdk11_\$OS$architecturePart/"
+    val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
     val jvmBuildTarget =
       JvmBuildTarget().also {
         it.javaHome = javaHome

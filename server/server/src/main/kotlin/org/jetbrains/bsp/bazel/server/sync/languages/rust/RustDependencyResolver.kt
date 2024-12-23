@@ -10,7 +10,7 @@ import org.jetbrains.bsp.bazel.server.model.Module
 
 data class RustDependencies(val dependencies: Map<String, List<RustDependency>>, val rawDependencies: Map<String, List<RustRawDependency>>)
 
-class RustDependencyResolver(private val rustPackageResolver: RustPackageResolver) {
+class RustDependencyResolver {
   // We need to resolve all dependencies and provide a list of new bazel targets
   // to be transformed into packages.
   fun rustDependencies(rustPackages: List<RustPackage>, rustBspTargets: List<Module>): RustDependencies {
@@ -24,17 +24,17 @@ class RustDependencyResolver(private val rustPackageResolver: RustPackageResolve
   }
 
   private fun groupBspTargetsByPackage(rustBspTargets: List<Module>, rustPackages: List<RustPackage>): Map<RustPackage, List<Module>> {
-    val rustBspTargetsMappedToLabel = rustBspTargets.associateBy { it.label.value }
+    val rustBspTargetsMappedToLabel = rustBspTargets.associateBy { it.label }
     return rustPackages.associateWith {
       it.resolvedTargets.mapNotNull { pkgTarget ->
-        rustBspTargetsMappedToLabel["${it.id}:${pkgTarget.name}"]
+        rustBspTargetsMappedToLabel[Label.parse("${it.id}:${pkgTarget.name}")]
       }
     }
   }
 
   private fun groupBspRawTargetsByPackage(rustBspTargets: List<Module>, rustPackages: List<RustPackage>): Map<RustPackage, List<Module>> =
     rustPackages.associateWith { pkg ->
-      rustBspTargets.filter { rustPackageResolver.resolvePackage(it).packageName == pkg.id }
+      rustBspTargets.filter { it.label.packagePath.toString() == pkg.id }
     }
 
   private fun resolveDependencies(associatedBspTargets: Map<RustPackage, List<Module>>): Map<String, List<RustDependency>> =
@@ -43,14 +43,13 @@ class RustDependencyResolver(private val rustPackageResolver: RustPackageResolve
   private fun resolveBspDependencies(rustPackage: RustPackage, directDependencies: List<Label>): Pair<String, List<RustDependency>> {
     val dependencies =
       directDependencies
-        .map { rustPackageResolver.resolvePackage(it) }
         .map(::createDependency)
         .filter { rustPackage.id != it.pkg }
     return Pair(rustPackage.id, dependencies)
   }
 
-  private fun createDependency(bazelPackageTargetInfo: BazelPackageTargetInfo): RustDependency {
-    val dep = RustDependency(bazelPackageTargetInfo.packageName)
+  private fun createDependency(bazelPackageTargetInfo: Label): RustDependency {
+    val dep = RustDependency(bazelPackageTargetInfo.packagePath.toString())
     dep.name = bazelPackageTargetInfo.targetName
     dep.depKinds = listOf(RustDepKindInfo(RustDepKind.NORMAL))
     return dep
@@ -64,7 +63,7 @@ class RustDependencyResolver(private val rustPackageResolver: RustPackageResolve
       rustPackage.id,
       directDependencies.map {
         RustRawDependency(
-          it.value,
+          it.toString(),
           false,
           true,
           setOf<String>(),

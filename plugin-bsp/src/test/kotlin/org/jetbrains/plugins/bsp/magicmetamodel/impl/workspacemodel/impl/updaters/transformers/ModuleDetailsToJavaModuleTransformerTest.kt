@@ -160,7 +160,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         dependenciesSources = listOf(dependencySourcesItem),
         javacOptions = javacOptionsItem,
         scalacOptions = null,
-        pythonOptions = null,
         outputPathUris = outputPathUris,
         libraryDependencies = null,
         moduleDependencies =
@@ -323,7 +322,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         dependenciesSources = listOf(),
         javacOptions = null,
         scalacOptions = null,
-        pythonOptions = null,
         outputPathUris = listOf(),
         libraryDependencies =
           listOf(
@@ -485,7 +483,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         dependenciesSources = listOf(dependencySourcesItem1),
         javacOptions = target1JavacOptionsItem,
         scalacOptions = null,
-        pythonOptions = null,
         outputPathUris = target1OutputPathUris,
         libraryDependencies = null,
         moduleDependencies =
@@ -559,7 +556,6 @@ class ModuleDetailsToJavaModuleTransformerTest : WorkspaceModelBaseTest() {
         dependenciesSources = listOf(dependencySourcesItem2),
         javacOptions = target2JavacOptionsItem,
         scalacOptions = null,
-        pythonOptions = null,
         outputPathUris = target2OutputPathUris,
         libraryDependencies = null,
         moduleDependencies =

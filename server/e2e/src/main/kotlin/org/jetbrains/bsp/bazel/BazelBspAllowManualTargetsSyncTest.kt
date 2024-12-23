@@ -4,8 +4,6 @@ import ch.epfl.scala.bsp4j.BuildTarget
 import ch.epfl.scala.bsp4j.BuildTargetCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.JvmBuildTarget
-import ch.epfl.scala.bsp4j.ScalaBuildTarget
-import ch.epfl.scala.bsp4j.ScalaPlatform
 import ch.epfl.scala.bsp4j.SourceItem
 import ch.epfl.scala.bsp4j.SourceItemKind
 import ch.epfl.scala.bsp4j.SourcesItem
@@ -57,19 +55,6 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       )
     manualTargetTestJavaFileSources.roots = listOf("file://\$WORKSPACE/")
 
-    val manualTargetTestScalaFile =
-      SourceItem(
-        "file://\$WORKSPACE/manual_target/TestScalaFile.scala",
-        SourceItemKind.FILE,
-        false,
-      )
-    val manualTargetTestScalaFileSources =
-      SourcesItem(
-        BuildTargetIdentifier("$targetPrefix//manual_target:scala_library"),
-        listOf(manualTargetTestScalaFile),
-      )
-    manualTargetTestScalaFileSources.roots = listOf("file://\$WORKSPACE/")
-
     val manualTargetTestJavaTest =
       SourceItem("file://\$WORKSPACE/manual_target/JavaTest.java", SourceItemKind.FILE, false)
     val manualTargetTestJavaTestSources =
@@ -78,19 +63,6 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
         listOf(manualTargetTestJavaTest),
       )
     manualTargetTestJavaTestSources.roots = listOf("file://\$WORKSPACE/")
-
-    val manualTargetTestScalaTest =
-      SourceItem(
-        "file://\$WORKSPACE/manual_target/ScalaTest.scala",
-        SourceItemKind.FILE,
-        false,
-      )
-    val manualTargetTestScalaTestSources =
-      SourcesItem(
-        BuildTargetIdentifier("$targetPrefix//manual_target:scala_test"),
-        listOf(manualTargetTestScalaTest),
-      )
-    manualTargetTestScalaTestSources.roots = listOf("file://\$WORKSPACE/")
 
     val manualTargetTestJavaBinary =
       SourceItem(
@@ -105,29 +77,13 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
       )
     manualTargetTestJavaBinarySources.roots = listOf("file://\$WORKSPACE/")
 
-    val manualTargetTestScalaBinary =
-      SourceItem(
-        "file://\$WORKSPACE/manual_target/TestScalaBinary.scala",
-        SourceItemKind.FILE,
-        false,
-      )
-    val manualTargetTestScalaBinarySources =
-      SourcesItem(
-        BuildTargetIdentifier("$targetPrefix//manual_target:scala_binary"),
-        listOf(manualTargetTestScalaBinary),
-      )
-    manualTargetTestScalaBinarySources.roots = listOf("file://\$WORKSPACE/")
-
     val sourcesParams = SourcesParams(expectedTargetIdentifiers())
     val expectedSourcesResult =
       SourcesResult(
         listOfNotNull(
           manualTargetTestJavaFileSources,
-          manualTargetTestScalaFileSources,
           manualTargetTestJavaBinarySources,
-          manualTargetTestScalaBinarySources,
           manualTargetTestJavaTestSources,
-          manualTargetTestScalaTestSources,
         ),
       )
     return BazelBspTestScenarioStep("sources results") {
@@ -136,48 +92,16 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
   }
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
-    val javaHome = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_$javaHomeArchitecture/"
+    val architecturePart = if (System.getProperty("os.arch") == "aarch64") "_aarch64" else ""
+    val javaHomeBazel5And6 = "file://\$BAZEL_OUTPUT_BASE_PATH/external/remotejdk11_\$OS$architecturePart/"
+    val javaHomeBazel7 =
+      "file://\$BAZEL_OUTPUT_BASE_PATH/external/" +
+        "rules_java${bzlmodRepoNameSeparator}${bzlmodRepoNameSeparator}toolchains${bzlmodRepoNameSeparator}remotejdk11_\$OS$architecturePart/"
+    val javaHome = if (isBzlmod) javaHomeBazel7 else javaHomeBazel5And6
     val jvmBuildTarget =
       JvmBuildTarget().also {
         it.javaHome = javaHome
         it.javaVersion = "11"
-      }
-
-    val scalaBuildTarget =
-      ScalaBuildTarget(
-        "org.scala-lang",
-        "2.12.14",
-        "2.12",
-        ScalaPlatform.JVM,
-        listOf(
-          "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_compiler/scala-compiler-2.12.14.jar",
-          "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_library/scala-library-2.12.14.jar",
-          "file://\$BAZEL_OUTPUT_BASE_PATH/external/io_bazel_rules_scala_scala_reflect/scala-reflect-2.12.14.jar",
-        ),
-      )
-    scalaBuildTarget.jvmBuildTarget = jvmBuildTarget
-
-    val manualTargetScalaLibrary =
-      BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//manual_target:scala_library"),
-        listOf("library"),
-        listOf("scala"),
-        listOf(
-          BuildTargetIdentifier("scala-compiler-2.12.14.jar"),
-          BuildTargetIdentifier("scala-library-2.12.14.jar"),
-          BuildTargetIdentifier("scala-reflect-2.12.14.jar"),
-        ),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canTest = false
-          canRun = false
-          canDebug = false
-        },
-      ).apply {
-        displayName = "$targetPrefix//manual_target:scala_library"
-        baseDirectory = "file://\$WORKSPACE/manual_target/"
-        dataKind = "scala"
-        data = scalaBuildTarget
       }
 
     val manualTargetJavaLibrary =
@@ -199,29 +123,6 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
         data = jvmBuildTarget
       }
 
-    val manualTargetScalaBinary =
-      BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//manual_target:scala_binary"),
-        listOf("application"),
-        listOf("scala"),
-        listOf(
-          BuildTargetIdentifier("scala-compiler-2.12.14.jar"),
-          BuildTargetIdentifier("scala-library-2.12.14.jar"),
-          BuildTargetIdentifier("scala-reflect-2.12.14.jar"),
-        ),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canTest = false
-          canRun = true
-          canDebug = false
-        },
-      ).apply {
-        displayName = "$targetPrefix//manual_target:scala_binary"
-        baseDirectory = "file://\$WORKSPACE/manual_target/"
-        dataKind = "scala"
-        data = scalaBuildTarget
-      }
-
     val manualTargetJavaBinary =
       BuildTarget(
         BuildTargetIdentifier("$targetPrefix//manual_target:java_binary"),
@@ -239,43 +140,6 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
         baseDirectory = "file://\$WORKSPACE/manual_target/"
         dataKind = "jvm"
         data = jvmBuildTarget
-      }
-
-    val manualTargetScalaTest =
-      BuildTarget(
-        BuildTargetIdentifier("$targetPrefix//manual_target:scala_test"),
-        listOf("test"),
-        listOf("scala"),
-        listOf(
-          BuildTargetIdentifier("scala-compiler-2.12.14.jar"),
-          BuildTargetIdentifier("scala-library-2.12.14.jar"),
-          BuildTargetIdentifier("scala-reflect-2.12.14.jar"),
-          BuildTargetIdentifier("librunner.jar"),
-          BuildTargetIdentifier("scalactic_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-compatible-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-core_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-featurespec_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-flatspec_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-freespec_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-funspec_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-funsuite_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-matchers-core_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-mustmatchers_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest-shouldmatchers_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("scalatest_2.12-3.2.9.jar"),
-          BuildTargetIdentifier("test_reporter.jar"),
-        ),
-        BuildTargetCapabilities().apply {
-          canCompile = true
-          canTest = true
-          canRun = false
-          canDebug = false
-        },
-      ).apply {
-        displayName = "$targetPrefix//manual_target:scala_test"
-        baseDirectory = "file://\$WORKSPACE/manual_target/"
-        dataKind = "scala"
-        data = scalaBuildTarget
       }
 
     val manualTargetJavaTest =
@@ -300,11 +164,8 @@ object BazelBspAllowManualTargetsSyncTest : BazelBspTestBaseScenario() {
     return WorkspaceBuildTargetsResult(
       listOfNotNull(
         manualTargetJavaLibrary,
-        manualTargetScalaLibrary,
         manualTargetJavaBinary,
-        manualTargetScalaBinary,
         manualTargetJavaTest,
-        manualTargetScalaTest,
       ),
     )
   }

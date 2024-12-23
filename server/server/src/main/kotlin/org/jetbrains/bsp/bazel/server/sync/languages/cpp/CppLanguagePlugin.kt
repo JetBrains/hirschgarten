@@ -8,8 +8,8 @@ import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.BspMappings
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Module
+import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import java.net.URI
@@ -46,7 +46,7 @@ class CppLanguagePlugin(private val bazelPathsResolver: BazelPathsResolver) : La
       .getCppTargetInfoOrNull()
       ?.run {
         dependencyGraph
-          .transitiveDependenciesWithoutRootTargets(Label.parse(targetInfo.id))
+          .transitiveDependenciesWithoutRootTargets(targetInfo.label())
           .flatMap(TargetInfo::getSourcesList)
           .map(bazelPathsResolver::resolveUri)
           .toSet()

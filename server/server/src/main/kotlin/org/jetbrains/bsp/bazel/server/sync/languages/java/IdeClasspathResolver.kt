@@ -47,8 +47,8 @@ class IdeClasspathResolver(
   }
 
   private fun isItJarOfTheCurrentTarget(jar: String): Boolean {
-    val targetPath = label.targetPath
-    val targetJar = "$targetPath/${label.targetName}.jar"
+    val targetPath = label.packagePath
+    val targetJar = "$targetPath/${label.target}.jar"
 
     return jar.endsWith(targetJar)
   }

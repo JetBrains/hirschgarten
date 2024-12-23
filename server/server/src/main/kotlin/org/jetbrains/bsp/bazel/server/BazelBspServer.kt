@@ -19,10 +19,11 @@ import org.jetbrains.bsp.bazel.server.bsp.TelemetryContextPropagatingLauncherBui
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspCompilationManager
-import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspFallbackAspectsManager
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGenerator
+import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
+import org.jetbrains.bsp.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.AdditionalAndroidBuildTargetsProvider
 import org.jetbrains.bsp.bazel.server.sync.BazelProjectMapper
@@ -34,6 +35,8 @@ import org.jetbrains.bsp.bazel.server.sync.ProjectResolver
 import org.jetbrains.bsp.bazel.server.sync.ProjectSyncService
 import org.jetbrains.bsp.bazel.server.sync.TargetInfoReader
 import org.jetbrains.bsp.bazel.server.sync.TargetTagsResolver
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
+import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMapper
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.AndroidLanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
@@ -103,7 +106,9 @@ class BazelBspServer(
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
       )
-    val projectSyncService = ProjectSyncService(bspProjectMapper, projectProvider, initializeBuildParams.capabilities)
+    val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
+    val projectSyncService =
+      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, initializeBuildParams.capabilities, workspaceRoot)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(
@@ -172,16 +177,26 @@ class BazelBspServer(
         shouldUseInjectRepository = bazelInfo.shouldUseInjectRepository(),
       )
 
+    val repoMapping =
+      calculateRepoMapping(
+        workspaceContextProvider = workspaceContextProvider,
+        bazelRunner = bazelRunner,
+        isBzlmod = bazelInfo.isBzlModEnabled,
+        bspClientLogger = bspClientLogger,
+      )
+
     val bazelBspAspectsManager =
       BazelBspAspectsManager(
         bazelBspCompilationManager = compilationManager,
         aspectsResolver = aspectsResolver,
         workspaceContextProvider = workspaceContextProvider,
         featureFlags = featureFlags,
+        repoMapping = repoMapping,
+        bazelRelease = bazelInfo.release,
       )
     val bazelToolchainManager = BazelToolchainManager(bazelRunner, featureFlags)
     val bazelBspLanguageExtensionsGenerator = BazelBspLanguageExtensionsGenerator(aspectsResolver)
-    val bazelBspFallbackAspectsManager = BazelBspFallbackAspectsManager(bazelRunner, workspaceContextProvider)
+    val bazelLabelExpander = BazelLabelExpander(bazelRunner, workspaceContextProvider)
     val targetTagsResolver = TargetTagsResolver()
     val mavenCoordinatesResolver = MavenCoordinatesResolver()
     val kotlinAndroidModulesMerger = KotlinAndroidModulesMerger(featureFlags)
@@ -194,6 +209,7 @@ class BazelBspServer(
         kotlinAndroidModulesMerger,
         bspClientLogger,
         featureFlags,
+        repoMapping = repoMapping,
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 
@@ -202,7 +218,7 @@ class BazelBspServer(
         bazelBspAspectsManager = bazelBspAspectsManager,
         bazelToolchainManager = bazelToolchainManager,
         bazelBspLanguageExtensionsGenerator = bazelBspLanguageExtensionsGenerator,
-        bazelBspFallbackAspectsManager = bazelBspFallbackAspectsManager,
+        bazelLabelExpander = bazelLabelExpander,
         workspaceContextProvider = workspaceContextProvider,
         bazelProjectMapper = bazelProjectMapper,
         targetInfoReader = targetInfoReader,
@@ -211,8 +227,10 @@ class BazelBspServer(
         bazelPathsResolver = bazelPathsResolver,
         bspClientLogger = bspClientLogger,
         featureFlags = featureFlags,
+        repoMapping = repoMapping,
       )
-    return ProjectProvider(projectResolver)
+    val firstPhaseProjectResolver = FirstPhaseProjectResolver(workspaceRoot, bazelRunner, workspaceContextProvider, bazelInfo)
+    return ProjectProvider(projectResolver, firstPhaseProjectResolver)
   }
 
   fun buildServer(bspIntegrationData: BspIntegrationData): Launcher<JoinedBuildClient> {
