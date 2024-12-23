@@ -1,4 +1,4 @@
- pull-requests:
+pull-requests:
   - group-id: log4j
     dependencies: "org.apache.logging.log4j:*"
   - group-id: jackson
