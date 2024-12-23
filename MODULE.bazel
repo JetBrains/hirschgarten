@@ -35,7 +35,7 @@ register_toolchains(
 
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_java", version = "8.6.2")
+bazel_dep(name = "rules_java", version = "8.6.3")
 bazel_dep(name = "rules_jvm_external", version = "6.6")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
@@ -66,17 +66,17 @@ maven.install(
         "io.opentelemetry:opentelemetry-extension-kotlin:1.45.0",
         "io.opentelemetry:opentelemetry-sdk-trace:1.45.0",
         "io.opentelemetry:opentelemetry-sdk:1.45.0",
-        "net.java.dev.jna:jna:5.15.0",
+        "net.java.dev.jna:jna:5.16.0",
         "org.apache.httpcomponents:httpclient:4.5.14",
         "org.apache.logging.log4j:log4j-api:2.24.3",
         "org.apache.logging.log4j:log4j-core:2.24.3",
         "org.apache.velocity:velocity-engine-core:2.4.1",
         "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.23.1",
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3",
-        "org.junit.jupiter:junit-jupiter:5.11.3",
-        "org.junit.platform:junit-platform-console:1.11.3",
-        "org.junit.platform:junit-platform-suite-api:1.11.3",
-        "org.junit.platform:junit-platform-suite-engine:1.11.3",
+        "org.junit.jupiter:junit-jupiter:5.11.4",
+        "org.junit.platform:junit-platform-console:1.11.4",
+        "org.junit.platform:junit-platform-suite-api:1.11.4",
+        "org.junit.platform:junit-platform-suite-engine:1.11.4",
         "org.kodein.di:kodein-di:7.23.1",
         "org.scala-lang:scala-library:2.13.15",
     ],
@@ -94,13 +94,13 @@ maven.artifact(
     artifact = "kotlinx-coroutines-core",
     group = "org.jetbrains.kotlinx",
     neverlink = True,
-    version = "1.9.0",
+    version = "1.10.1",
 )
 maven.artifact(
     artifact = "kotlinx-coroutines-core-jvm",
     group = "org.jetbrains.kotlinx",
     neverlink = True,
-    version = "1.9.0",
+    version = "1.10.1",
 )
 maven.artifact(
     name = "server_maven",
@@ -140,7 +140,7 @@ http_jar(
 )
 
 bazel_dep(name = "rules_proto", version = "7.1.0")
-bazel_dep(name = "protobuf", version = "29.1")
+bazel_dep(name = "protobuf", version = "29.2")
 single_version_override(
     module_name = "protobuf",
     version = "28.3",
@@ -179,7 +179,7 @@ single_version_override(
     patches = [
         "tools/format/use-ktlint.patch",
     ],
-    version = "1.0.7",
+    version = "1.0.8",
 )
 
 http_jar(
