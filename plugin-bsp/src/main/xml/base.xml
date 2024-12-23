@@ -75,6 +75,9 @@
         <extensionPoint qualifiedName="org.jetbrains.bsp.bspFeatureFlagsProvider"
                         interface="org.jetbrains.plugins.bsp.config.BspFeatureFlagsProvider"
                         dynamic="true"/>
+        <extensionPoint qualifiedName="org.jetbrains.bsp.bspAdditionalProjectTaskRunnerProvider"
+                        interface="org.jetbrains.plugins.bsp.buildTask.BspAdditionalProjectTaskRunnerProvider"
+                        dynamic="true"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.bsp">
@@ -131,8 +134,6 @@
 
         <postStartupActivity
                 implementation="org.jetbrains.plugins.bsp.startup.BspStartupActivity"/>
-
-        <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.runnerAction.BuildBeforeLocalRunTaskProvider" />
 
         <treeStructureProvider implementation="org.jetbrains.plugins.bsp.ui.projectTree.BspTreeStructureProvider"/>
         <projectViewNodeDecorator

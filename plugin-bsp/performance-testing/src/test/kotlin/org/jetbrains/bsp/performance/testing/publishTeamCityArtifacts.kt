@@ -13,7 +13,6 @@ import com.intellij.ide.starter.project.RemoteArchiveProjectInfo
 import com.intellij.ide.starter.runner.CurrentTestMethod
 import com.intellij.openapi.util.BuildNumber
 import com.intellij.tools.ide.metrics.collector.metrics.PerformanceMetrics
-import com.intellij.tools.ide.metrics.collector.publishing.CIServerBuildInfo
 import com.intellij.tools.ide.metrics.collector.publishing.PerformanceMetricsDto
 import org.kodein.di.direct
 import org.kodein.di.instance
@@ -46,21 +45,6 @@ fun IDEStartResult.publishPerformanceMetrics(
   projectName: String = runContext.contextName,
   metrics: Collection<PerformanceMetrics.Metric>,
 ) {
-  val buildInfo: CIServerBuildInfo =
-    CIServer.instance.asTeamCity().run {
-      val buildTypeId = this.buildTypeId ?: ""
-
-      CIServerBuildInfo(
-        buildId = this.buildId,
-        typeId = buildTypeId,
-        configName = this.configurationName ?: "",
-        buildNumber = this.buildNumber,
-        branchName = this.branchName,
-        url = "${this.serverUri}/viewLog.html?buildId=$buildId&buildTypeId=$buildTypeId",
-        isPersonal = this.isPersonalBuild,
-      )
-    }
-
   val metricsSortedByName = metrics.sortedBy { it.id.name }
 
   val appMetrics =
@@ -71,7 +55,6 @@ fun IDEStartResult.publishPerformanceMetrics(
       projectURL = context.getProjectURL(),
       projectDescription = context.getProjectDescription(),
       metrics = metricsSortedByName,
-      buildInfo = buildInfo,
       generated = CIServer.instance.asTeamCity().buildStartTime,
     )
 

@@ -5,10 +5,8 @@ pull-requests:
     dependencies: "com.fasterxml.jackson*:*"
   - group-id: grpc
     dependencies: "io.grpc:*"
-  - group-id: junit-jupiter
-    dependencies: "org.junit.jupiter:*"
-  - group-id: junit-platform
-    dependencies: "org.junit.platform:*"
+  - group-id: junit
+    dependencies: "org.junit.*"
   - group-id: kotest
     dependencies: "io.kotest:*"
   - group-id: opentelemetry
@@ -16,7 +14,7 @@ pull-requests:
   - group-id: intellij-tools
     dependencies: "com.jetbrains.intellij.tools:*"
   - group-id: kotlinx-coroutines
-    dependencies: "kotlinx-coroutines-*"
+    dependencies: "org.jetbrains.kotlinx:kotlinx-coroutines-*"
   - title: "[maintenance] updated ${dependencyId} to ${versionTo}"
 search-paths:
   - path-patterns:
