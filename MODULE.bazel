@@ -179,7 +179,7 @@ single_version_override(
     patches = [
         "tools/format/use-ktlint.patch",
     ],
-    version = "1.0.7",
+    version = "1.0.8",
 )
 
 http_jar(
