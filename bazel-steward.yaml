@@ -1,4 +1,4 @@
- pull-requests:
+pull-requests:
   - group-id: log4j
     dependencies: "org.apache.logging.log4j:*"
   - group-id: jackson
@@ -14,7 +14,7 @@
   - group-id: intellij-tools
     dependencies: "com.jetbrains.intellij.tools:*"
   - group-id: kotlinx-coroutines
-    dependencies: "kotlinx-coroutines-*"
+    dependencies: "org.jetbrains.kotlinx:kotlinx-coroutines-*"
   - title: "[maintenance] updated ${dependencyId} to ${versionTo}"
 search-paths:
   - path-patterns:
