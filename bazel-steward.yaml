@@ -1,3 +1,6 @@
+update-rules:
+  - kinds: bazel
+    enabled: false
 pull-requests:
   - group-id: log4j
     dependencies: "org.apache.logging.log4j:*"
@@ -20,3 +23,6 @@ search-paths:
   - path-patterns:
       - "exact:MODULE.bazel"
       - "exact:WORKSPACE.bzlmod"
+  - kinds: bazel
+    path-patterns:
+      - "exact:WORKSPACE.bzlmod"  # this means bazel updates will only look at this file
