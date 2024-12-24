@@ -13,5 +13,5 @@ build:norcache --remote_cache=
 # check if `--remote_download_outputs=minimal` makes sense for CI or some local builds
 build --nolegacy_important_outputs
 # on CI, set remote_cache_async to false! set to false for local runs also, to investigate https://github.com/bazelbuild/bazel/issues/19273
-build --remote_cache_async=false --remote_cache_compression=true
-build:ci --remote_cache_async=false
+build --experimental_remote_cache_async=false --remote_cache_compression=true
+build:ci --experimental_remote_cache_async=false
