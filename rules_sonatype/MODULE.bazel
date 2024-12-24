@@ -27,16 +27,11 @@ maven.install(
 )
 use_repo(maven, "rules_sonatype_deps")
 
-bazel_dep(name = "protobuf", version = "28.2")
-single_version_override(
-    module_name = "protobuf",
-    version = "28.2",
-)
-
+bazel_dep(name = "protobuf", version = "29.2")
 bazel_dep(name = "rules_scala", repo_name = "io_bazel_rules_scala")
 git_override(
     module_name = "rules_scala",
-    commit = "f0bb64693313516560e0740bc4c0717311657fb1",
+    commit = "68d7cbff7505854c7a3cb69e150c60dda19a6966",
     remote = "https://github.com/mbland/rules_scala.git",
 )
 
@@ -45,6 +40,9 @@ scala_config = use_extension(
     "scala_config",
 )
 scala_config.settings(
-    scala_version = "2.13.14",
+    scala_version = "2.13.15",
+    scala_versions = [
+        "2.13.15",
+    ],
 )
 use_repo(scala_config, "io_bazel_rules_scala_config")
