@@ -143,7 +143,7 @@ bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "protobuf", version = "29.2")
 single_version_override(
     module_name = "protobuf",
-    version = "28.3",
+    version = "29.2",
 )
 
 bazel_dep(name = "rules_cc", version = "0.1.0")
