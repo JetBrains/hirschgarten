@@ -21,6 +21,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseError
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseErrorCode
 import org.jetbrains.bsp.bazel.bazelrunner.BazelProcessResult
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bsp.bazel.bazelrunner.HasAdditionalBazelOptions
 import org.jetbrains.bsp.bazel.bazelrunner.HasEnvironment
 import org.jetbrains.bsp.bazel.bazelrunner.HasMultipleTargets
 import org.jetbrains.bsp.bazel.bazelrunner.HasProgramArguments
@@ -191,8 +192,8 @@ class ExecuteService(
         else -> bazelRunner.buildBazelCommand { test() }
       }
 
-    bazelTestParamsData?.additionalBazelParams?.let { additionalBazelParams ->
-      command.options.add(additionalBazelParams)
+    bazelTestParamsData?.additionalBazelParams?.let { additionalParams ->
+      (command as HasAdditionalBazelOptions).additionalBazelOptions.addAll(additionalParams.split(" "))
     }
 
     bazelTestParamsData?.testFilter?.let { testFilter ->

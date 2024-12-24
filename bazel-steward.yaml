@@ -25,4 +25,4 @@ search-paths:
       - "exact:WORKSPACE.bzlmod"
   - kinds: bazel
     path-patterns:
-      - "exact:WORKSPACE.bzlmod"  # this means bazel updates will only look at this file
+      - "exact:WORKSPACE.bzlmod" # this means bazel updates will only look at this file
