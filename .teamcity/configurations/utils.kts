@@ -1,7 +1,8 @@
 package configurations
 
 object DockerParams {
-  val volumes = """-v %system.agent.persistent.cache%:/home/hirschuser/.cache
+  val volumes = """
+    -v %system.agent.persistent.cache%:/home/hirschuser/.cache
     -v %system.agent.persistent.cache%/.netrc:/home/hirschuser/.netrc""".trimIndent()
 
   fun get(imageName: String = CommonParams.DockerE2eImage
