@@ -5,9 +5,11 @@ import jetbrains.buildServer.configs.kotlin.v10.toExtId
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildSteps
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.FailureConditions
+import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.v2019_2.ParametrizedWithType
 import jetbrains.buildServer.configs.kotlin.v2019_2.Requirements
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
 
@@ -26,7 +28,10 @@ open class BaseBuildType(
     this.name = name
     this.artifactRules = artifactRules
     this.failureConditions(failureConditions)
-    this.params(params)
+    this.params {
+      params()
+      password("remote.cache.netrc", "credentialsJSON:8f47c6e1-d7b2-4d3a-9b5a-12c8f3d45e92", label = "dotnetrc", description = "nenrc credentials for remote cache", display = ParameterDisplay.HIDDEN)
+    }
 
     this.dependencies(dependencies)
 
@@ -68,7 +73,7 @@ open class BaseBuildType(
               githubUrl = "https://api.github.com"
               authType =
                 personalToken {
-                  token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+                  token = Utils.CredentialsStore.GitHubPassword
                 }
             }
           param("github_oauth_user", "hb-man")
@@ -79,7 +84,7 @@ open class BaseBuildType(
             github {
               authType =
                 token {
-                  token = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+                  token = Utils.CredentialsStore.GitHubPassword
                 }
               filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
             }
@@ -98,8 +103,15 @@ open class BaseBuildType(
         }
       }
     }
-
-    this.steps(steps)
+    this.steps {
+      script {
+        this.name = "adding netrc"
+        scriptContent = """
+            echo "%remote.cache.netrc%" > %system.agent.persistent.cache%/.netrc
+        """.trimIndent()
+      }
+      steps()
+    }
   })
 
 object GitHubVcs : GitVcsRoot({
@@ -110,7 +122,7 @@ object GitHubVcs : GitVcsRoot({
   authMethod =
     password {
       userName = "hb-man"
-      password = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+      password = Utils.CredentialsStore.GitHubPassword
     }
   param("oauthProviderId", "tc-cloud-github-connection")
   param("tokenType", "permanent")
@@ -127,7 +139,7 @@ object SpaceVcs : GitVcsRoot({
   authMethod =
     password {
       userName = "x-oauth-basic"
-      password = "credentialsJSON:4efcb75d-2f9b-47fd-a63b-fc2969a334f5"
+      password = Utils.CredentialsStore.SpaceToken
     }
   param("oauthProviderId", "PROJECT_EXT_15")
   param("tokenType", "permanent")

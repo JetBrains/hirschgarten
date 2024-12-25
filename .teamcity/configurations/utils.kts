@@ -1,13 +1,16 @@
 package configurations
 
 object DockerParams {
+  val volumes = """-v %system.agent.persistent.cache%:/home/hirschuser/.cache
+    -v %system.agent.persistent.cache%/.netrc:/home/hirschuser/.netrc""".trimIndent()
+
   fun get(imageName: String = CommonParams.DockerE2eImage
   ): Map<String, String> =
     mapOf(
       "plugin.docker.imagePlatform" to "linux",
       "plugin.docker.pull.enabled" to "true",
       "plugin.docker.imageId" to imageName,
-      "plugin.docker.run.parameters" to "-v %system.agent.persistent.cache%:/home/hirschuser/.cache",
+      "plugin.docker.run.parameters" to volumes,
     )
 }
 
@@ -24,4 +27,10 @@ object CommonParams {
   val CrossBuildPlatforms: List<String> = listOf("243")
 
   val BazelVersion = "7.4.1"
+}
+
+object CredentialsStore {
+  val GitHubPassword = "credentialsJSON:5bc345d4-e38f-4428-95e1-b6e4121aadf6"
+  val SpaceToken = "credentialsJSON:4efcb75d-2f9b-47fd-a63b-fc2969a334f5"
+  val BazelTeamcityToken = "credentialsJSON:f47ac10b-58cc-4372-a567-0e02b2c3d479"
 }
