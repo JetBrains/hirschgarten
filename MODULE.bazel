@@ -23,9 +23,21 @@ local_path_override(
 bazel_dep(name = "rules_scala", repo_name = "io_bazel_rules_scala")
 git_override(
     module_name = "rules_scala",
-    commit = "0909f422b3db87c3a86385b51fa32c5ac866f16e",
+    commit = "68d7cbff7505854c7a3cb69e150c60dda19a6966",
     remote = "https://github.com/mbland/rules_scala.git",
 )
+
+scala_config = use_extension(
+    "@io_bazel_rules_scala//scala/extensions:config.bzl",
+    "scala_config",
+)
+scala_config.settings(
+    scala_version = "2.13.15",
+    scala_versions = [
+        "2.13.15",
+    ],
+)
+use_repo(scala_config, "io_bazel_rules_scala_config")
 
 bazel_dep(name = "rules_kotlin", version = "2.0.0")
 
@@ -141,11 +153,6 @@ http_jar(
 
 bazel_dep(name = "rules_proto", version = "7.1.0")
 bazel_dep(name = "protobuf", version = "29.2")
-single_version_override(
-    module_name = "protobuf",
-    version = "29.2",
-)
-
 bazel_dep(name = "rules_cc", version = "0.1.0")
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_python", version = "1.0.0")
