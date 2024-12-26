@@ -86,6 +86,7 @@ diff: String = "0",
             additionalDockerArguments = """
                 -v %system.agent.persistent.cache%/plugins/intellij-bazel:/opt/idea/custom-plugins/intellij-bazel
                 -v %system.agent.persistent.cache%/plugins/intellij-bsp:/opt/idea/custom-plugins/intellij-bsp
+                -v %system.agent.persistent.cache%/.netrc:/root/.netrc
                 ${if (repo != null) {"-v %system.agent.persistent.cache%/$repo/qodana.yaml:%system.agent.persistent.cache%/$repo/qodana.yaml"} else {""}}
                 ${if (repo != null) {"-e QODANA_REMOTE_URL=\"%env.GIT_REPO_URL%\""} else {""}}
                 ${if (repo != null) {"-e QODANA_REVISION=\"%env.GIT_COMMIT%\""} else {""}}
