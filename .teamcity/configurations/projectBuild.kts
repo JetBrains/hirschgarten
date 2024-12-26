@@ -22,7 +22,7 @@ open class Build(vcsRoot: GitVcsRoot) :
                 name = "build //... $platform"
                 command = "build"
                 targets = "//..."
-                arguments = "--define=ij_product=intellij-20$platformDot ${Utils.CommonParams.BazelCiSpecificArgs}"
+                arguments = "--define=ij_product=intellij-20$platformDot ${Utils.CommonParams.BazelCiBuildSpecificArgs}"
                 logging = BazelStep.Verbosity.Diagnostic
                 Utils.DockerParams.get().forEach { (key, value) ->
                   param(key, value)

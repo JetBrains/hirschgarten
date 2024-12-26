@@ -1,11 +1,13 @@
 common --incompatible_strict_action_env=true
 
 build --remote_timeout=600s
-build --grpc_keepalive_time=30s
+build --grpc_keepalive_time=60s
 
 build --remote_cache=grpcs://ij-build-grpc.labs.jb.gg
 
 build --nolegacy_important_outputs
+build:nocacheupload --noremote_upload_local_results
+
 build --experimental_remote_cache_async=false --remote_cache_compression=true
 
 common:bes --bes_results_url=https://ij-build.labs.jb.gg/invocation/

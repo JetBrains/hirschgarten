@@ -17,7 +17,8 @@ object DockerParams {
 
 object CommonParams {
   val BazelTestlogsArtifactRules: String = "+:%system.teamcity.build.checkoutDir%/testlogs/** => testlogs.zip"
-  val BazelCiSpecificArgs: String = "--test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+  val BazelCiSpecificArgs: String = " --config=nocacheupload --config:bes --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
+  val BazelCiBuildSpecificArgs: String = "--config:bes --test_output=errors --announce_rc --show_progress_rate_limit=30 --curses=yes --terminal_columns=140"
 
   val DockerE2eImage: String = "registry.jetbrains.team/p/bazel/docker/hirschgarten-e2e:latest"
   val DockerQodanaImage: String = "registry.jetbrains.team/p/bazel/docker-private/hirschgarten-qodana:latest"
