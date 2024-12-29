@@ -10,5 +10,7 @@ build:nocacheupload --noremote_upload_local_results
 
 build --experimental_remote_cache_async=false --remote_cache_compression=true
 
+build --remote_download_outputs=all
+
 common:bes --bes_results_url=https://ij-build.labs.jb.gg/invocation/
 common:bes --bes_backend=grpcs://ij-build-grpc.labs.jb.gg
