@@ -39,7 +39,7 @@ scala_config.settings(
 )
 use_repo(scala_config, "io_bazel_rules_scala_config")
 
-bazel_dep(name = "rules_kotlin", version = "2.0.0")
+bazel_dep(name = "rules_kotlin", version = "2.1.0")
 
 register_toolchains(
     "//:kotlin_toolchain",
