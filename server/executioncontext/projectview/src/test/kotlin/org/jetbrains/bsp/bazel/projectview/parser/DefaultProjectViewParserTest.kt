@@ -617,6 +617,71 @@ class DefaultProjectViewParserTest {
     }
   }
 
+  @Test
+  fun `should parse external targets`() {
+    val projectViewFilePath = Path("/projectview/externalTargets.bazelproject")
+    val projectView = parser.parse(projectViewFilePath)
+    val expected = ProjectView(
+      targets = ProjectViewTargetsSection(
+        listOf(
+          Label.parse("@ext//something/..."),
+          Label.parse("@ext//some/other:target"),
+          Label.parse("int"),
+        ),
+        listOf(
+          Label.parse("@ext//something/a"),
+        ),
+      ),
+      bazelBinary = null,
+      buildFlags = null,
+      allowManualTargetsSync = null,
+      directories = null,
+      deriveTargetsFromDirectories = null,
+      importDepth = null,
+      enabledRules = null,
+      ideJavaHomeOverride = null,
+    )
+
+    projectView shouldBe expected
+  }
+
+  @Test
+  fun `should parse Bazel's official projectview from github`() {
+    val projectViewFilePath = Path("/projectview/github_bazel_scripts_ij.bazelproject")
+    val projectView = parser.parse(projectViewFilePath)
+    val expectedProjectView = ProjectView(
+      targets = ProjectViewTargetsSection(
+        listOf(
+          Label.parse("//src:bazel"),
+          Label.parse("//src/java_tools/buildjar:JavaBuilder"),
+          Label.parse("//src/java_tools/buildjar:VanillaJavaBuilder"),
+          Label.parse("//src/java_tools/buildjar/javatests/..."),
+          Label.parse("//src/java_tools/junitrunner/java/com/google/testing/junit/runner:Runner"),
+          Label.parse("//src/java_tools/junitrunner/javatests/..."),
+          Label.parse("//src/test/..."),
+          Label.parse("//src/tools/remote/..."),
+          Label.parse("//src/tools/starlark/..."),
+        ),
+        listOf(
+          Label.parse("//src/test/shell/bazel/android/..."),
+          Label.parse("//src/test/shell/bazel:all_tests"),
+        )),
+      bazelBinary = null,
+      buildFlags = null,
+      allowManualTargetsSync = null,
+      directories = ProjectViewDirectoriesSection(
+        listOf(Path(".")),
+        listOf(),
+      ),
+      deriveTargetsFromDirectories = null,
+      importDepth = null,
+      enabledRules = null,
+      ideJavaHomeOverride = null,
+    )
+
+    projectView shouldBe expectedProjectView
+  }
+
   @Nested
   @DisplayName("fun parse(projectViewString): ProjectView with workspace root tests")
   internal inner class ParseProjectViewFilePathWithWorkspaceRootTest {
