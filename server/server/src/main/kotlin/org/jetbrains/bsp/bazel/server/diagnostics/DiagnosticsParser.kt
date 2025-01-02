@@ -3,13 +3,13 @@ package org.jetbrains.bsp.bazel.server.diagnostics
 import org.jetbrains.bsp.bazel.server.model.Label
 
 interface DiagnosticsParser {
-  fun parse(bazelOutput: String, target: Label): List<Diagnostic>
+  fun parse(bazelOutput: String, target: Label, fromProgress: Boolean): List<Diagnostic>
 }
 
 class DiagnosticsParserImpl : DiagnosticsParser {
-  override fun parse(bazelOutput: String, target: Label): List<Diagnostic> {
+  override fun parse(bazelOutput: String, target: Label, fromProgress: Boolean): List<Diagnostic> {
     val output = prepareOutput(bazelOutput, target)
-    val diagnostics = collectDiagnostics(output)
+    val diagnostics = collectDiagnostics(output, fromProgress)
     return deduplicate(diagnostics)
   }
 
@@ -19,10 +19,11 @@ class DiagnosticsParserImpl : DiagnosticsParser {
     return Output(relevantLines, target)
   }
 
-  private fun collectDiagnostics(output: Output): List<Diagnostic> {
+  private fun collectDiagnostics(output: Output, fromProgress: Boolean): List<Diagnostic> {
     val diagnostics = mutableListOf<Diagnostic>()
+    val parsers = if (fromProgress) FromProgressParsers else Parsers
     while (output.nonEmpty()) {
-      for (parser in Parsers) {
+      for (parser in parsers) {
         val result = parser.tryParse(output)
         if (result.isNotEmpty()) {
           diagnostics.addAll(result)
@@ -52,6 +53,11 @@ class DiagnosticsParserImpl : DiagnosticsParser {
       .map { it.first() }
 
   companion object {
+    // Include *only* these parsers which handle messages that cannot be obtained in any other way
+    private val FromProgressParsers = listOf(
+      // Handles syntax errors in build files
+      BazelRootMessageParser
+    )
     private val Parsers =
       listOf(
         BazelRootMessageParser,

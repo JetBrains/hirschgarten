@@ -191,6 +191,9 @@ class BepServer(
 
   private fun processProgressEvent(event: BuildEventStreamProtos.BuildEvent) {
     if (event.hasProgress()) {
+      if (target != null) {
+        processDiagnosticText(event.progress.stderr, target, fromProgress = true)
+      }
       // TODO https://youtrack.jetbrains.com/issue/BAZEL-622
       // bepLogger.onProgress(event.getProgress());
     }
@@ -303,13 +306,14 @@ class BepServer(
     }
   }
 
-  private fun processDiagnosticText(stdErrText: String, targetLabel: Label) {
+  private fun processDiagnosticText(stdErrText: String, targetLabel: Label, fromProgress: Boolean = false) {
     if (stdErrText.isNotEmpty()) {
       val events =
         diagnosticsService.extractDiagnostics(
           stdErrText,
           targetLabel,
           originId,
+          fromProgress
         )
       events.forEach {
         bspClient.onBuildPublishDiagnostics(

@@ -122,6 +122,13 @@ abstract class BazelBspTestBaseScenario {
       } else {
         println("WARN: Log file not found.")
       }
+
+      val serverLogFile = Path(workspaceDir).resolve(".bazelbsp").resolve("bazelbsp.log").toFile()
+      if (serverLogFile.exists()) {
+        println("Server log file content:\n${serverLogFile.readText()}")
+      } else {
+        println("WARN: Server log file not found.")
+      }
     }
 
     if (scenarioStepsExecutionResult == true) {
