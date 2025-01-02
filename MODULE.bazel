@@ -118,20 +118,21 @@ maven.artifact(
     name = "server_maven",
     artifact = "kotlinx-coroutines-core",
     group = "org.jetbrains.kotlinx",
-    version = "1.9.0",
+    version = "1.10.1",
 )
 maven.artifact(
     name = "server_maven",
     artifact = "kotlinx-coroutines-core-jvm",
     group = "org.jetbrains.kotlinx",
-    version = "1.9.0",
+    version = "1.10.1",
 )
 maven.artifact(
     name = "server_maven",
     artifact = "kotlinx-coroutines-test",
     group = "org.jetbrains.kotlinx",
-    version = "1.9.0",
+    version = "1.10.1",
 )
+
 use_repo(
     maven,
     "maven",
@@ -163,17 +164,6 @@ python.toolchain(
     ignore_root_user_error = True,
     is_default = True,
     python_version = "3.12",
-)
-
-bazel_dep(
-    name = "bsp-testkit2",
-    dev_dependency = True,
-    repo_name = "testkit",
-)
-git_override(
-    module_name = "bsp-testkit2",
-    commit = "a5cf4603d01b0835acf28fabee201ffb22f28b2a",
-    remote = "https://github.com/build-server-protocol/bsp-testkit2.git",
 )
 
 bazel_dep(
