@@ -308,6 +308,31 @@ class BazelRunnerBuilderTest {
   }
 
   @Test
+  fun `query correctly handles excluded values`() {
+    val command =
+      bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = null) {
+        query {
+          targets.add("in1".label())
+          targets.add("in2".label())
+          excludedTargets.add("ex1".label())
+          excludedTargets.add("ex2".label())
+        }
+      }
+
+    command.makeCommandLine() shouldContainExactly
+      listOf(
+        "bazel",
+        "query",
+        BazelFlag.toolTag(),
+        "--override_repository=bazelbsp_aspect=.bazelbsp",
+        "--curses=no",
+        "--color=yes",
+        "--noprogress_in_terminal_title",
+        "@//in1 + @//in2 - @//ex1 - @//ex2",
+      )
+  }
+
+  @Test
   fun `cquery does inherit projectview options`() {
     val command =
       bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = null) {

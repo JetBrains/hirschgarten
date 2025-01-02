@@ -1,0 +1,5 @@
+targets:
+    @ext//something/...
+    -@ext//something/a
+    @ext//some/other:target
+    int
