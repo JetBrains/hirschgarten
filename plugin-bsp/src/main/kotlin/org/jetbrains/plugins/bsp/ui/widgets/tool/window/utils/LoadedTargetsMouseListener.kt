@@ -79,7 +79,7 @@ class LoadedTargetsMouseListener(private val container: BuildTargetContainer, pr
   private fun onDoubleClick() {
     container.getSelectedBuildTarget()?.also {
       when {
-        it.capabilities.canTest -> TestTargetAction(project = project, targetInfo = it).prepareAndPerform(project)
+        it.capabilities.canTest -> TestTargetAction(project = project, targetInfos = listOf(it)).prepareAndPerform(project)
         it.capabilities.canRun -> RunTargetAction(project = project, targetInfo = it).prepareAndPerform(project)
         it.capabilities.canCompile -> BuildTargetAction.buildTarget(project, it.id)
       }
@@ -109,10 +109,16 @@ fun DefaultActionGroup.fillWithEligibleActions(
   }
 
   if (target.capabilities.canTest) {
-    addAction(TestTargetAction(target, verboseText = verboseText, project = project, singleTestFilter = singleTestFilter))
+    addAction(TestTargetAction(listOf(target), verboseText = verboseText, project = project, singleTestFilter = singleTestFilter))
     if (canBeDebugged) {
       addAction(
-        TestTargetAction(target, isDebugAction = true, verboseText = verboseText, project = project, singleTestFilter = singleTestFilter),
+        TestTargetAction(
+          listOf(target),
+          isDebugAction = true,
+          verboseText = verboseText,
+          project = project,
+          singleTestFilter = singleTestFilter,
+        ),
       )
     }
   }

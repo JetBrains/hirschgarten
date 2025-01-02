@@ -1,5 +1,11 @@
 load("//aspects:utils/utils.bzl", "create_struct", "file_location", "is_external", "map", "update_sync_output_groups", "filter_not_none")
-${loadKtJvmProvider}
+load("//aspects:rules/java/java_info.bzl", "java_info_in_target", "get_java_info")
+#if( $kotlinEnabled == "true" )
+load("//aspects:rules/kt/kt_info.bzl", "get_kt_jvm_provider")
+#else
+def get_kt_jvm_provider(target):
+    return None
+#end
 
 def map_with_resolve_files(f, xs):
     results = []
@@ -99,7 +105,7 @@ def extract_runtime_jars(target, provider):
     if compilation_info:
         return compilation_info.runtime_classpath
 
-    return getattr(provider, "transitive_runtime_jars", target[JavaInfo].transitive_runtime_jars)
+    return getattr(provider, "transitive_runtime_jars", get_java_info(target).transitive_runtime_jars)
 
 def extract_compile_jars(provider):
     compilation_info = getattr(provider, "compilation_info", None)
@@ -113,11 +119,11 @@ def extract_transitive_compile_time_jars(provider):
 def get_jvm_provider(target):
     if hasattr(target, "scala"):
         return target.scala
-    kt_jvm_provider = ${getKtJvmProvider}
+    kt_jvm_provider = get_kt_jvm_provider(target)
     if kt_jvm_provider != None and hasattr(kt_jvm_provider, "outputs"):
         return kt_jvm_provider
-    if JavaInfo in target:
-        return target[JavaInfo]
+    if java_info_in_target(target):
+        return get_java_info(target)
     return None
 
 def get_javac_opts(ctx):
@@ -187,6 +193,6 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
     return dict(jvm_target_info = info), None
 
 def get_jdeps(target):
-    if JavaInfo in target:
-        return [jo.jdeps for jo in target[JavaInfo].java_outputs if jo.jdeps != None]
+    if java_info_in_target(target):
+        return [jo.jdeps for jo in get_java_info(target).java_outputs if jo.jdeps != None]
     return []

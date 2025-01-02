@@ -1,3 +1,6 @@
+update-rules:
+  - kinds: bazel
+    enabled: false
 pull-requests:
   - group-id: log4j
     dependencies: "org.apache.logging.log4j:*"
@@ -5,10 +8,8 @@ pull-requests:
     dependencies: "com.fasterxml.jackson*:*"
   - group-id: grpc
     dependencies: "io.grpc:*"
-  - group-id: junit-jupiter
-    dependencies: "org.junit.jupiter:*"
-  - group-id: junit-platform
-    dependencies: "org.junit.platform:*"
+  - group-id: junit
+    dependencies: "org.junit.*"
   - group-id: kotest
     dependencies: "io.kotest:*"
   - group-id: opentelemetry
@@ -16,9 +17,12 @@ pull-requests:
   - group-id: intellij-tools
     dependencies: "com.jetbrains.intellij.tools:*"
   - group-id: kotlinx-coroutines
-    dependencies: "kotlinx-coroutines-*"
+    dependencies: "org.jetbrains.kotlinx:kotlinx-coroutines-*"
   - title: "[maintenance] updated ${dependencyId} to ${versionTo}"
 search-paths:
   - path-patterns:
       - "exact:MODULE.bazel"
       - "exact:WORKSPACE.bzlmod"
+  - kinds: bazel
+    path-patterns:
+      - "exact:WORKSPACE.bzlmod" # this means bazel updates will only look at this file

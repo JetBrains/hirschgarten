@@ -54,6 +54,7 @@ object GitHub : Project({
         buildType(ProjectUnitTests.GitHub)
         buildType(PluginBenchmark.BenchmarkDefaultGitHub)
         buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
+        buildType(IdeStarterTests.HotswapTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -66,6 +67,9 @@ object GitHub : Project({
         buildType(ServerE2eTests.JavaDiagnosticsGitHub)
         buildType(ServerE2eTests.ManualTargetsGitHub)
         buildType(ServerE2eTests.BuildSyncGitHub)
+        buildType(ServerE2eTests.FirstPhaseSyncGitHub)
+        buildType(ServerE2eTests.PartialSyncGitHub)
+        buildType(ServerE2eTests.NestedModulesGitHub)
         buildType(ServerBenchmark.GitHub)
         buildType(StaticAnalysis.HirschgartenGitHub)
         buildType(StaticAnalysis.AndroidBazelRulesGitHub)
@@ -107,6 +111,7 @@ object GitHub : Project({
       ProjectUnitTests.GitHub,
       PluginBenchmark.BenchmarkDefaultGitHub,
       PluginBenchmark.BenchmarkWithVersionGitHub,
+      IdeStarterTests.HotswapTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -119,6 +124,9 @@ object GitHub : Project({
       ServerE2eTests.JavaDiagnosticsGitHub,
       ServerE2eTests.ManualTargetsGitHub,
       ServerE2eTests.BuildSyncGitHub,
+      ServerE2eTests.FirstPhaseSyncGitHub,
+      ServerE2eTests.PartialSyncGitHub,
+      ServerE2eTests.NestedModulesGitHub,
       ServerBenchmark.GitHub,
       StaticAnalysis.HirschgartenGitHub,
       StaticAnalysis.AndroidBazelRulesGitHub,
@@ -146,6 +154,7 @@ object Space : Project({
         buildType(ProjectUnitTests.Space)
         buildType(PluginBenchmark.SpaceBenchmarkDefault)
         buildType(PluginBenchmark.SpaceBenchmarkWithVersion)
+        buildType(IdeStarterTests.HotswapTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -158,6 +167,9 @@ object Space : Project({
         buildType(ServerE2eTests.JavaDiagnosticsSpace)
         buildType(ServerE2eTests.ManualTargetsSpace)
         buildType(ServerE2eTests.BuildSyncSpace)
+        buildType(ServerE2eTests.FirstPhaseSyncSpace)
+        buildType(ServerE2eTests.PartialSyncSpace)
+        buildType(ServerE2eTests.NestedModulesSpace)
         buildType(ServerBenchmark.Space)
         buildType(StaticAnalysis.HirschgartenSpace)
         buildType(StaticAnalysis.AndroidBazelRulesSpace)
@@ -199,6 +211,7 @@ object Space : Project({
       ProjectUnitTests.Space,
       PluginBenchmark.SpaceBenchmarkDefault,
       PluginBenchmark.SpaceBenchmarkWithVersion,
+      IdeStarterTests.HotswapTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,
@@ -211,6 +224,9 @@ object Space : Project({
       ServerE2eTests.JavaDiagnosticsSpace,
       ServerE2eTests.ManualTargetsSpace,
       ServerE2eTests.BuildSyncSpace,
+      ServerE2eTests.FirstPhaseSyncSpace,
+      ServerE2eTests.PartialSyncSpace,
+      ServerE2eTests.NestedModulesSpace,
       ServerBenchmark.Space,
       StaticAnalysis.HirschgartenSpace,
       StaticAnalysis.AndroidBazelRulesSpace,

@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.matchers.collections.shouldContainExactly
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bsp.bazel.workspacecontext.BazelBinarySpec
@@ -14,17 +14,20 @@ import org.jetbrains.bsp.bazel.workspacecontext.EnabledRulesSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ExperimentalAddTransitiveCompileTimeJars
 import org.jetbrains.bsp.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ImportDepthSpec
+import org.jetbrains.bsp.bazel.workspacecontext.ShardSyncSpec
+import org.jetbrains.bsp.bazel.workspacecontext.ShardingApproachSpec
+import org.jetbrains.bsp.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
-fun String.bsp() = BuildTargetIdentifier(this)
+fun String.label() = Label.parse(this)
 
 val mockContext =
   WorkspaceContext(
-    targets = TargetsSpec(listOf("in1".bsp(), "in2".bsp()), listOf("ex1".bsp(), "ex2".bsp())),
+    targets = TargetsSpec(listOf("in1".label(), "in2".label()), listOf("ex1".label(), "ex2".label())),
     directories = DirectoriesSpec(listOf(Path("in1dir"), Path("in2dir")), listOf(Path("ex1dir"), Path("ex2dir"))),
     buildFlags = BuildFlagsSpec(listOf("flag1", "flag2")),
     bazelBinary = BazelBinarySpec(Path("bazel")),
@@ -36,6 +39,9 @@ val mockContext =
     experimentalAddTransitiveCompileTimeJars = ExperimentalAddTransitiveCompileTimeJars(true),
     enableNativeAndroidRules = EnableNativeAndroidRules(false),
     androidMinSdkSpec = AndroidMinSdkSpec(null),
+    shardSync = ShardSyncSpec(false),
+    targetShardSize = TargetShardSizeSpec(null),
+    shardingApproachSpec = ShardingApproachSpec(null),
   )
 
 val contextProvider =
@@ -87,10 +93,10 @@ class BazelRunnerBuilderTest {
         "flag1",
         "flag2",
         "--",
-        "in1",
-        "in2",
-        "-ex1",
-        "-ex2",
+        "@//in1",
+        "@//in2",
+        "-@//ex1",
+        "-@//ex2",
       )
   }
 
@@ -98,7 +104,7 @@ class BazelRunnerBuilderTest {
   fun `run without program arguments`() {
     val command =
       bazelRunner.buildBazelCommand {
-        run("in1".bsp())
+        run("in1".label())
       }
 
     command.makeCommandLine() shouldContainExactly
@@ -112,7 +118,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
-        "in1",
+        "@//in1",
       )
   }
 
@@ -120,7 +126,7 @@ class BazelRunnerBuilderTest {
   fun `run with program arguments`() {
     val command =
       bazelRunner.buildBazelCommand {
-        run("in1".bsp()) {
+        run("in1".label()) {
           programArguments.addAll(listOf("hello", "world"))
         }
       }
@@ -136,7 +142,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
-        "in1",
+        "@//in1",
         "--",
         "hello",
         "world",
@@ -147,7 +153,7 @@ class BazelRunnerBuilderTest {
   fun `run doesn't set environment using arguments`() {
     val command =
       bazelRunner.buildBazelCommand {
-        run("in1".bsp()) {
+        run("in1".label()) {
           environment["key"] = "value"
         }
       }
@@ -163,7 +169,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
-        "in1",
+        "@//in1",
       )
   }
 
@@ -172,7 +178,7 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand {
         build {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
           environment["key"] = "value"
         }
       }
@@ -190,7 +196,7 @@ class BazelRunnerBuilderTest {
         "flag2",
         "--action_env=key=value",
         "--",
-        "in1",
+        "@//in1",
       )
   }
 
@@ -199,7 +205,7 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand {
         test {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
           environment["key"] = "value"
         }
       }
@@ -217,7 +223,7 @@ class BazelRunnerBuilderTest {
         "flag2",
         "--test_env=key=value",
         "--",
-        "in1",
+        "@//in1",
       )
   }
 
@@ -226,7 +232,7 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand {
         test {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
           programArguments.addAll(listOf("hello", "world"))
         }
       }
@@ -245,7 +251,7 @@ class BazelRunnerBuilderTest {
         "--test_arg=hello",
         "--test_arg=world",
         "--",
-        "in1",
+        "@//in1",
       )
   }
 
@@ -254,7 +260,7 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand {
         coverage {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
           programArguments.addAll(listOf("hello", "world"))
           environment["key"] = "value"
         }
@@ -275,7 +281,7 @@ class BazelRunnerBuilderTest {
         "--test_arg=hello",
         "--test_arg=world",
         "--",
-        "in1",
+        "@//in1",
       )
   }
 
@@ -284,7 +290,7 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = null) {
         query {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
         }
       }
 
@@ -297,8 +303,7 @@ class BazelRunnerBuilderTest {
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
-        "--",
-        "in1",
+        "@//in1",
       )
   }
 
@@ -307,7 +312,7 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand(inheritProjectviewOptionsOverride = null) {
         cquery {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
         }
       }
 
@@ -323,7 +328,7 @@ class BazelRunnerBuilderTest {
         "flag1",
         "flag2",
         "--",
-        "in1",
+        "@//in1",
       )
   }
 
@@ -332,7 +337,7 @@ class BazelRunnerBuilderTest {
     val command =
       bazelRunner.buildBazelCommand {
         build {
-          targets.add("in1".bsp())
+          targets.add("in1".label())
           useBes(Path("/dev/null"))
         }
       }
@@ -352,7 +357,7 @@ class BazelRunnerBuilderTest {
         "flag1",
         "flag2",
         "--",
-        "in1",
+        "@//in1",
       )
   }
 }

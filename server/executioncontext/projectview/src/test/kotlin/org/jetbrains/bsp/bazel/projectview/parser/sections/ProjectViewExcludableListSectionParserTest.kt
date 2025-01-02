@@ -1,12 +1,12 @@
 package org.jetbrains.bsp.bazel.projectview.parser.sections
 
-import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewExcludableListSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSection
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
+import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest
@@ -21,9 +21,9 @@ class ProjectViewExcludableListSectionParserTest<V, T : ProjectViewExcludableLis
     private fun targetsSectionArguments(): Arguments {
       val parser = ProjectViewTargetsSectionParser
       val rawIncludedElementConstructor = { seed: String -> "//target:$seed" }
-      val elementMapper = { s: String -> BuildTargetIdentifier(s) }
+      val elementMapper = { s: String -> Label.parse(s) }
       val sectionConstructor =
-        createSectionConstructor({ values: List<BuildTargetIdentifier>, excludedValues: List<BuildTargetIdentifier> ->
+        createSectionConstructor({ values: List<Label>, excludedValues: List<Label> ->
           ProjectViewTargetsSection(
             values,
             excludedValues,

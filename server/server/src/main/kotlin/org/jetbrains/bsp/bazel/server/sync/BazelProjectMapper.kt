@@ -13,6 +13,9 @@ import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.benchmark.tracer
 import org.jetbrains.bsp.bazel.server.benchmark.useWithScope
+import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.model.GoLibrary
 import org.jetbrains.bsp.bazel.server.model.Label
@@ -31,6 +34,7 @@ import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
+import org.jetbrains.bsp.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -52,6 +56,7 @@ class BazelProjectMapper(
   private val kotlinAndroidModulesMerger: KotlinAndroidModulesMerger,
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
+  private val repoMapping: RepoMapping,
 ) {
   private suspend fun <T> measure(description: String, body: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { body() }
 
@@ -70,7 +75,6 @@ class BazelProjectMapper(
   suspend fun createProject(
     targets: Map<Label, TargetInfo>,
     rootTargets: Set<Label>,
-    allTargetNames: List<Label>,
     workspaceContext: WorkspaceContext,
     bazelInfo: BazelInfo,
   ): Project {
@@ -195,7 +199,7 @@ class BazelProjectMapper(
       }
     val invalidTargets =
       measure("Save invalid target labels") {
-        removeDotBazelBspTarget(allTargetNames) - targetsToImport.map { it.label() }.toSet()
+        removeDotBazelBspTarget(rootTargets) - targetsToImport.map { it.label() }.toSet()
       }
     val rustExternalTargetsToImport =
       measureIf(
@@ -217,7 +221,7 @@ class BazelProjectMapper(
 
     val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
     val nonModuleTargets =
-      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && it.isMainWorkspace })
+      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && isTargetTreatedAsInternal(it) })
 
     return Project(
       workspaceRoot,
@@ -836,9 +840,18 @@ class BazelProjectMapper(
         it.relativePath.endsWith(".go")
     }
 
+  private val externalRepositoriesTreatedAsInternal =
+    when (repoMapping) {
+      is BzlmodRepoMapping -> repoMapping.moduleCanonicalNameToLocalPath.keys
+      is RepoMappingDisabled -> emptySet()
+    }
+
+  private fun isTargetTreatedAsInternal(target: Label): Boolean =
+    target.isMainWorkspace || target.repoName in externalRepositoriesTreatedAsInternal
+
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =
-    target.label().isMainWorkspace &&
+    isTargetTreatedAsInternal(target.label()) &&
       (
         shouldImportTargetKind(target.kind) ||
           target.hasJvmTargetInfo() &&

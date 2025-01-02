@@ -23,9 +23,21 @@ local_path_override(
 bazel_dep(name = "rules_scala", repo_name = "io_bazel_rules_scala")
 git_override(
     module_name = "rules_scala",
-    commit = "0909f422b3db87c3a86385b51fa32c5ac866f16e",
+    commit = "68d7cbff7505854c7a3cb69e150c60dda19a6966",
     remote = "https://github.com/mbland/rules_scala.git",
 )
+
+scala_config = use_extension(
+    "@io_bazel_rules_scala//scala/extensions:config.bzl",
+    "scala_config",
+)
+scala_config.settings(
+    scala_version = "2.13.15",
+    scala_versions = [
+        "2.13.15",
+    ],
+)
+use_repo(scala_config, "io_bazel_rules_scala_config")
 
 bazel_dep(name = "rules_kotlin", version = "2.0.0")
 
@@ -35,7 +47,7 @@ register_toolchains(
 
 # Required by rules_jvm_external since version 6.3
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_java", version = "8.6.2")
+bazel_dep(name = "rules_java", version = "8.6.3")
 bazel_dep(name = "rules_jvm_external", version = "6.6")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
@@ -45,17 +57,17 @@ maven.install(
         "com.fasterxml.jackson.core:jackson-databind:2.18.2",
         "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.18.2",
         "com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2",
-        "com.google.code.gson:gson:2.10.1",
+        "com.google.code.gson:gson:2.11.0",
         "com.google.guava:guava:31.0.1-jre",
-        "com.google.protobuf:protobuf-java:4.29.1",
-        "com.jetbrains.intellij.tools:ide-metrics-collector-starter:242.24807.4",
-        "com.jetbrains.intellij.tools:ide-metrics-collector:242.24807.4",
-        "com.jetbrains.intellij.tools:ide-starter-junit5:242.24807.4",
-        "com.jetbrains.intellij.tools:ide-starter-squashed:242.24807.4",
+        "com.google.protobuf:protobuf-java:4.29.2",
+        "com.jetbrains.intellij.tools:ide-metrics-collector-starter:243.22562.218",
+        "com.jetbrains.intellij.tools:ide-metrics-collector:243.22562.218",
+        "com.jetbrains.intellij.tools:ide-starter-junit5:243.22562.218",
+        "com.jetbrains.intellij.tools:ide-starter-squashed:243.22562.218",
         "commons-cli:commons-cli:jar:1.9.0",
         "commons-io:commons-io:jar:2.18.0",
-        "io.grpc:grpc-protobuf:1.68.2",
-        "io.grpc:grpc-stub:1.68.2",
+        "io.grpc:grpc-protobuf:1.69.0",
+        "io.grpc:grpc-stub:1.69.0",
         "io.kotest:kotest-assertions-api-jvm:5.9.1",
         "io.kotest:kotest-assertions-core-jvm:5.9.1",
         "io.kotest:kotest-assertions-shared-jvm:5.9.1",
@@ -66,16 +78,17 @@ maven.install(
         "io.opentelemetry:opentelemetry-extension-kotlin:1.45.0",
         "io.opentelemetry:opentelemetry-sdk-trace:1.45.0",
         "io.opentelemetry:opentelemetry-sdk:1.45.0",
-        "net.java.dev.jna:jna:5.15.0",
+        "net.java.dev.jna:jna:5.16.0",
         "org.apache.httpcomponents:httpclient:4.5.14",
-        "org.apache.logging.log4j:log4j-api:2.24.2",
-        "org.apache.logging.log4j:log4j-core:2.24.2",
+        "org.apache.logging.log4j:log4j-api:2.24.3",
+        "org.apache.logging.log4j:log4j-core:2.24.3",
         "org.apache.velocity:velocity-engine-core:2.4.1",
+        "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.23.1",
         "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3",
-        "org.junit.jupiter:junit-jupiter:5.11.3",
-        "org.junit.platform:junit-platform-console:1.11.3",
-        "org.junit.platform:junit-platform-suite-api:1.11.3",
-        "org.junit.platform:junit-platform-suite-engine:1.11.3",
+        "org.junit.jupiter:junit-jupiter:5.11.4",
+        "org.junit.platform:junit-platform-console:1.11.4",
+        "org.junit.platform:junit-platform-suite-api:1.11.4",
+        "org.junit.platform:junit-platform-suite-engine:1.11.4",
         "org.kodein.di:kodein-di:7.23.1",
         "org.scala-lang:scala-library:2.13.15",
     ],
@@ -93,13 +106,13 @@ maven.artifact(
     artifact = "kotlinx-coroutines-core",
     group = "org.jetbrains.kotlinx",
     neverlink = True,
-    version = "1.9.0",
+    version = "1.10.1",
 )
 maven.artifact(
     artifact = "kotlinx-coroutines-core-jvm",
     group = "org.jetbrains.kotlinx",
     neverlink = True,
-    version = "1.9.0",
+    version = "1.10.1",
 )
 maven.artifact(
     name = "server_maven",
@@ -138,13 +151,8 @@ http_jar(
     url = "https://github.com/agluszak/bazel-bep-proto/releases/download/%s/bazel-bep-protobuf.jar" % BAZEL_BEP_VERSION,
 )
 
-bazel_dep(name = "rules_proto", version = "7.0.2")
-bazel_dep(name = "protobuf", version = "29.1")
-single_version_override(
-    module_name = "protobuf",
-    version = "28.3",
-)
-
+bazel_dep(name = "rules_proto", version = "7.1.0")
+bazel_dep(name = "protobuf", version = "29.2")
 bazel_dep(name = "rules_cc", version = "0.1.0")
 bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_python", version = "1.0.0")
@@ -178,7 +186,7 @@ single_version_override(
     patches = [
         "tools/format/use-ktlint.patch",
     ],
-    version = "1.0.6",
+    version = "1.0.8",
 )
 
 http_jar(
@@ -209,7 +217,7 @@ use_repo(buf, "rules_buf_toolchains")
 
 bazel_dep(
     name = "rules_bazel_integration_test",
-    version = "0.27.0",
+    version = "0.29.0",
     dev_dependency = True,
 )
 
@@ -221,6 +229,7 @@ bazel_binaries = use_extension(
 
 # test project are too old for bazel 7
 # bazel_binaries.download(version_file = "//:.bazelversion")
+bazel_binaries.download(version = "8.0.0")
 bazel_binaries.download(version = "7.4.0")
 bazel_binaries.download(version = "6.4.0")
 bazel_binaries.download(version = "5.3.2")
@@ -231,4 +240,5 @@ use_repo(
     "build_bazel_bazel_5_3_2",
     "build_bazel_bazel_6_4_0",
     "build_bazel_bazel_7_4_0",
+    "build_bazel_bazel_8_0_0",
 )

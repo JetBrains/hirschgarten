@@ -29,6 +29,11 @@ object BazelBspKotlinProjectTest : BazelBspTestBaseScenario() {
         "//...",
         "--enabled-rules",
         "rules_kotlin",
+        "--shard-sync",
+        "--target-shard-size",
+        "1",
+        "--shard-approach",
+        "EXPAND_AND_SHARD",
       ),
     )
   }
