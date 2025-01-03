@@ -6,6 +6,7 @@ import com.intellij.facet.ProjectFacetManager
 import com.intellij.openapi.application.readActionBlocking
 import com.intellij.openapi.project.Project
 import org.jetbrains.android.facet.AndroidFacet
+import org.jetbrains.plugins.bsp.config.BspFeatureFlags
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
 import org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.util.moduleEntity
 import org.jetbrains.plugins.bsp.startup.BspProjectActivity
@@ -15,6 +16,7 @@ import org.jetbrains.plugins.bsp.workspacemodel.entities.androidAddendumEntity
 class BspAndroidModelUpdater : BspProjectActivity() {
   override suspend fun Project.executeForBspProject() {
     temporaryTargetUtils.registerSyncListener {
+      if (!BspFeatureFlags.isAndroidSupportEnabled) return@registerSyncListener
       BspCoroutineService.getInstance(this).start {
         readActionBlocking {
           updateAndroidModel(this)
@@ -23,6 +25,7 @@ class BspAndroidModelUpdater : BspProjectActivity() {
         syncManager.notifySyncEnded(this)
       }
     }
+    if (!BspFeatureFlags.isAndroidSupportEnabled) return
     updateAndroidModel(this)
   }
 
