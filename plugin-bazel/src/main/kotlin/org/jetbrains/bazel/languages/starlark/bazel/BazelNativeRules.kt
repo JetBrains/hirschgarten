@@ -3,7 +3,7 @@ package org.jetbrains.bazel.languages.starlark.bazel
 object BazelNativeRules {
   val NATIVE_RULES_MAP =
     mapOf(
-      // Java rules.
+      // Java
       "java_library" to
         setOf(
           "name",
@@ -643,6 +643,70 @@ object BazelNativeRules {
           "testonly",
           "toolchains",
           "visibility",
+        ),
+      // Objective-C
+      "objc_import" to
+        setOf(
+          "name",
+          "deps",
+          "hdrs",
+          "alwayslink",
+          "archives",
+          "compatible_with",
+          "deprecation",
+          "distribs",
+          "exec_compatible_with",
+          "exec_properties",
+          "features",
+          "includes",
+          "restricted_to",
+          "sdk_dylibs",
+          "sdk_frameworks",
+          "sdk_includes",
+          "tags",
+          "target_compatible_with",
+          "testonly",
+          "textual_hdrs",
+          "toolchains",
+          "visibility",
+          "weak_sdk_frameworks",
+        ),
+      "objc_library" to
+        setOf(
+          "name",
+          "deps",
+          "srcs",
+          "data",
+          "hdrs",
+          "alwayslink",
+          "compatible_with",
+          "copts",
+          "defines",
+          "deprecation",
+          "distribs",
+          "enable_modules",
+          "exec_compatible_with",
+          "exec_properties",
+          "features",
+          "implementation_deps",
+          "includes",
+          "linkopts",
+          "module_map",
+          "module_name",
+          "non_arc_srcs",
+          "pch",
+          "restricted_to",
+          "sdk_dylibs",
+          "sdk_frameworks",
+          "sdk_includes",
+          "stamp",
+          "tags",
+          "target_compatible_with",
+          "testonly",
+          "textual_hdrs",
+          "toolchains",
+          "visibility",
+          "weak_sdk_frameworks",
         ),
     )
 
