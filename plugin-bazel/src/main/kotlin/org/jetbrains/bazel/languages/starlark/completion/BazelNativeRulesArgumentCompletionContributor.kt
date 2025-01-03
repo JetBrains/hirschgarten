@@ -80,7 +80,9 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
 
     private class ArgumentInsertHandler<T : LookupElement>(val default: String) : InsertHandler<T> {
       override fun handleInsert(context: InsertionContext, item: T) {
-        TODO("Not yet implemented")
+        val editor = context.editor
+        val document = editor.document
+        document.insertString(context.tailOffset, " = $default,")
       }
     }
 
