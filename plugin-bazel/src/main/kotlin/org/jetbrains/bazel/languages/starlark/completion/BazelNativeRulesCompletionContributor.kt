@@ -5,8 +5,6 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionType
-import com.intellij.codeInsight.completion.InsertHandler
-import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.completion.util.ParenthesesInsertHandler
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -58,7 +56,7 @@ class BazelNativeRulesCompletionContributor : CompletionContributor() {
     private fun functionLookupElement(name: String): LookupElement =
       LookupElementBuilder
         .create(name)
-        .withInsertHandler(ParenthesesInsertHandler.NO_PARAMETERS)
+        .withInsertHandler(ParenthesesInsertHandler.WITH_PARAMETERS)
         .withIcon(PlatformIcons.FUNCTION_ICON)
   }
 }
