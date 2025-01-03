@@ -66,7 +66,7 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
       val starlarkCallExpression = parameters.position.findParentOfType<StarlarkCallExpression>() ?: return
       val functionName = starlarkCallExpression.firstChild.text
       val arguments = BazelNativeRules.NATIVE_RULES_MAP[functionName] ?: return
-      arguments.forEach{result.addElement(functionLookupElement(it))}
+      arguments.forEach { result.addElement(functionLookupElement(it)) }
     }
 
     private fun functionLookupElement(name: String): LookupElement =

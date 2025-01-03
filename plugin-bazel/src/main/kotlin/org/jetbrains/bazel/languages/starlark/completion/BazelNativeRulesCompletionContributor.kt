@@ -50,7 +50,7 @@ class BazelNativeRulesCompletionContributor : CompletionContributor() {
       context: ProcessingContext,
       result: CompletionResultSet,
     ) {
-      BazelNativeRules.GetRuleNames().forEach { result.addElement(functionLookupElement(it)) }
+      BazelNativeRules.getRuleNames().forEach { result.addElement(functionLookupElement(it)) }
     }
 
     private fun functionLookupElement(name: String): LookupElement =
