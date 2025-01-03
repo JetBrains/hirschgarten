@@ -66,11 +66,13 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
       context: ProcessingContext,
       result: CompletionResultSet,
     ) {
-      BazelNativeRules.COMMON_ARGUMENTS.forEach{result.addElement(
-        LookupElementBuilder
-          .create(it)
-          .withIcon(PlatformIcons.PARAMETER_ICON)
-      )}
+      BazelNativeRules.COMMON_ARGUMENTS.forEach {
+        result.addElement(
+          LookupElementBuilder
+            .create(it)
+            .withIcon(PlatformIcons.PARAMETER_ICON),
+        )
+      }
 
       val starlarkCallExpression = parameters.position.findParentOfType<StarlarkCallExpression>() ?: return
       val functionName = starlarkCallExpression.firstChild.text
@@ -83,6 +85,11 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
         val editor = context.editor
         val document = editor.document
         document.insertString(context.tailOffset, " = $default,")
+        if (default == BazelNativeRules.BAZEL_EMPTY_LIST || default == BazelNativeRules.BAZEL_EMPTY_STRING) {
+          editor.caretModel.moveToOffset(context.tailOffset - 2)
+        } else {
+          editor.caretModel.moveToOffset(context.tailOffset - default.length - 1)
+        }
       }
     }
 
