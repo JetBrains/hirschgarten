@@ -170,7 +170,7 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     ","                               { return BazelqueryTokenTypes.COMMA; }
 
     {UNQUOTED_WORD}                   { return BazelqueryTokenTypes.UNQUOTED_WORD; }
-   // [^]
+    [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
 
 
@@ -182,7 +182,7 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     {OPTION}{EQALS}                   { yybegin(PRE_VALUE); yypushback(1); return BazelqueryTokenTypes.FLAG; }
     {OPTION}                          { yybegin(YYINITIAL); return BazelqueryTokenTypes.FLAG_NO_VAL; }
 
-    {OPTION_REQ_VALUE}[^{EQALS}{SPACE}]{UNEXPECTED_WORD}     { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNEXPECTED; }
+    {OPTION_REQ_VALUE}[^{EQALS}{SPACE}][-]*{UNEXPECTED_WORD}*     { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNEXPECTED; }
     {UNEXPECTED_WORD}                 { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNEXPECTED; }
 }
 
