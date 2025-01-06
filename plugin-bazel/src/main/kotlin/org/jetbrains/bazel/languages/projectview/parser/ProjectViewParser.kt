@@ -59,6 +59,12 @@ class ProjectViewParser : PsiParser {
       if (builder.tokenType == ProjectViewTokenType.IDENTIFIER) {
         val listEntry = builder.mark()
         builder.advanceLexer()
+        if (builder.tokenType == ProjectViewTokenType.COLON) {
+          parseColon(builder)
+          if (builder.tokenType == ProjectViewTokenType.IDENTIFIER) {
+            builder.advanceLexer()
+          }
+        }
         listEntry.done(ProjectViewElementTypes.LIST_VALUE)
       } else {
         builder.advanceLexer()
