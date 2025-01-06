@@ -18,4 +18,13 @@ open class BazelqueryElementVisitor : PsiElementVisitor() {
     fun visitQueryVal(node: BazelqueryQueryVal) {
         visitElement(node)
     }
+
+    fun visitFlag(node: BazelqueryFlag) {
+        visitElement(node)
+    }
+
+    fun visitFlagVal(node: BazelqueryFlagVal) {
+        visitElement(node)
+    }
+
 }

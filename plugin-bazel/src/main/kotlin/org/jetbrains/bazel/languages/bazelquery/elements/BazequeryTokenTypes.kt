@@ -44,9 +44,21 @@ object BazelqueryTokenTypes {
 
     @JvmField
     val FLAG = BazelqueryTokenType("FLAG")
+    @JvmField
+    val FLAG_NO_VAL = BazelqueryTokenType("FLAG_NO_VAL")
+/*
+    @JvmField
+    val VALUE = BazelqueryTokenType("VALUE")*/
 
     @JvmField
-    val VALUE = BazelqueryTokenType("VALUE")
+    val UNQUOTED_VAL = BazelqueryTokenType("UNQUOTED_VAL")
+
+    @JvmField
+    val SQ_VAL = BazelqueryTokenType("SQ_VAL")
+
+    @JvmField
+    val DQ_VAL = BazelqueryTokenType("DQ_VAL")
+
 
 
 
@@ -86,6 +98,9 @@ object BazelqueryTokenTypes {
     val WHITE_SPACE = BazelqueryTokenType("WHITE_SPACE")
 
     @JvmField
-    val NEW_LINE = BazelqueryTokenType("NEW_LINE")
+    val SPACE = BazelqueryTokenType("SPACE")
 
+
+    @JvmField
+    val UNEXPECTED = BazelqueryTokenType("UNEXPECTED")
 }

@@ -23,7 +23,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
     private val queryValEnd = TokenSet.create(
       BazelqueryTokenTypes.BAZEL,
       BazelqueryTokenTypes.QUERY,
-      BazelqueryTokenTypes.DOUBLE_HYPHEN
+      *BazelqueryTokenSets.FLAGS.types,
     )
 
     private val wordInSqQuery = TokenSet.create(
@@ -38,8 +38,8 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
     private val wordInUnqQuery = TokenSet.create(
       BazelqueryTokenTypes.UNQUOTED_WORD,
-      BazelqueryTokenTypes.SQ_WORD,
-      BazelqueryTokenTypes.DQ_WORD
+    //  BazelqueryTokenTypes.SQ_WORD,
+    //  BazelqueryTokenTypes.DQ_WORD
     )
 
   }
@@ -108,9 +108,12 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
     while (!atAnyToken(queryValPrefixes) && !eof()) {
       when {
-        atToken(BazelqueryTokenTypes.DOUBLE_HYPHEN) -> parseFlag()
-
-        else -> advanceError("Unexpected token (flag expected1)")
+        atAnyToken(BazelqueryTokenSets.FLAGS) -> parseFlag()
+        else -> {
+          while(!atAnyToken(queryValPrefixes) && !atAnyToken(BazelqueryTokenSets.FLAGS) && !eof()) {
+            advanceError("Invalid content")
+          }
+        }
       }
     }
 
@@ -118,8 +121,12 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
     while (!atToken(BazelqueryTokenTypes.BAZEL) && !eof()) {
       when {
-        atToken(BazelqueryTokenTypes.DOUBLE_HYPHEN) -> parseFlag()
-        else -> advanceError("Unexpected token (flag expected2)")
+        atAnyToken(BazelqueryTokenSets.FLAGS) -> parseFlag()
+        else -> {
+          while(!atAnyToken(BazelqueryTokenSets.FLAGS) && !atToken(BazelqueryTokenTypes.BAZEL) && !eof()) {
+            advanceError("Invalid content")
+          }
+        }
       }
     }
 
@@ -128,15 +135,15 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
 
   private fun getAvailableWordsSet(queryQuotes: IElementType): TokenSet {
-    return when {
-      queryQuotes == BazelqueryTokenTypes.WHITE_SPACE -> wordInUnqQuery
-      queryQuotes == BazelqueryTokenTypes.SINGLE_QUOTE -> wordInSqQuery
-      queryQuotes == BazelqueryTokenTypes.DOUBLE_QUOTE -> wordInDqQuery
-      else -> TokenSet.EMPTY
+    return when (queryQuotes) {
+        BazelqueryTokenTypes.WHITE_SPACE -> wordInUnqQuery
+        BazelqueryTokenTypes.SINGLE_QUOTE -> wordInSqQuery
+        BazelqueryTokenTypes.DOUBLE_QUOTE -> wordInDqQuery
+        else -> TokenSet.EMPTY
     }
   }
 
-  //TODO: Nawiasowania, odpowiednie przetwarzanie operacji (np. nie można zaczynać od +)
+  //TODO: Nawiasowania, odpowiednie przetwarzanie operacji (np. nie można zaczynać od +, set z nawiasami, ...)
   private fun parseQueryVal() {
     val queryVal = mark()
     var queryQuotes: IElementType = BazelqueryTokenTypes.WHITE_SPACE
@@ -164,6 +171,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
         atToken(BazelqueryTokenTypes.LEFT_PAREN) -> {advanceLexer()}
         atToken(BazelqueryTokenTypes.RIGHT_PAREN) -> {
+          //advanceLexer()
           // czy potrzeba licznika zagnieżdżeń? (na pierwszym poziomie tu nie ma breaka);
           // wtedy tez przy głębszym zagnieżdżeniu inaczej traktujemy zewnętrzne ciapki
           // (nizej ich nie moze byc ale jesli były na zewnątrz to moga byc spacje);
@@ -175,10 +183,12 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
       }
     }
 
-    if(queryQuotes != BazelqueryTokenTypes.WHITE_SPACE) {
+    /*if(queryQuotes != BazelqueryTokenTypes.WHITE_SPACE) {
       matchToken(queryQuotes)
       queryQuotes = BazelqueryTokenTypes.WHITE_SPACE
-    }
+    }*/
+    matchToken(queryQuotes)
+    queryQuotes = BazelqueryTokenTypes.WHITE_SPACE
 
     queryVal.done(BazelqueryElementTypes.QUERY_VAL)
   }
@@ -244,12 +254,17 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
   private fun parseFlag() {
     val flag = mark()
 
-    expectToken(BazelqueryTokenTypes.DOUBLE_HYPHEN)
-    expectToken(BazelqueryTokenTypes.FLAG)
-    expectToken(BazelqueryTokenTypes.EQUALS)
-    expectToken(BazelqueryTokenTypes.VALUE)
+    if(atToken(BazelqueryTokenTypes.FLAG)) {
+      advanceLexer()
 
-    flag.done(BazelqueryTokenTypes.FLAG)
+      if(!matchToken(BazelqueryTokenTypes.EQUALS)) advanceError("Flag value expected1")
+      else {
+        if(!matchAnyToken(BazelqueryTokenSets.FLAG_VALS)) error("Flag value expected2")
+      }
+    }
+    else advanceLexer()
+
+    flag.done(BazelqueryElementTypes.FLAG)
   }
 }
 

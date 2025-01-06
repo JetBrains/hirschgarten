@@ -21,6 +21,8 @@ object BazelquerySyntaxHighlighter : SyntaxHighlighterBase() {
       BazelqueryTokenTypes.QUERY to BazelqueryHighlightingColors.PROMPT,
       BazelqueryTokenTypes.BAZEL to BazelqueryHighlightingColors.PROMPT,
       *BazelqueryTokenSets.OPERATIONS.types.map { it to BazelqueryHighlightingColors.OPERATION }.toTypedArray(),
+      *BazelqueryTokenSets.FLAGS.types.map { it to BazelqueryHighlightingColors.FLAG }.toTypedArray(),
+      *BazelqueryTokenSets.FLAG_VALS.types.map { it to BazelqueryHighlightingColors.FLAG_VAL }.toTypedArray(),
     )
 
   override fun getHighlightingLexer(): Lexer =

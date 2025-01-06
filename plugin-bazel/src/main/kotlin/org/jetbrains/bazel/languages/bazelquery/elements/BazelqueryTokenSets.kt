@@ -20,6 +20,17 @@ object BazelqueryTokenSets {
     BazelqueryTokenTypes.DQ_WORD
   )
 
+  val FLAGS = TokenSet.create(
+    BazelqueryTokenTypes.FLAG,
+    BazelqueryTokenTypes.FLAG_NO_VAL
+  )
+
+  val FLAG_VALS = TokenSet.create(
+    BazelqueryTokenTypes.UNQUOTED_VAL,
+    BazelqueryTokenTypes.SQ_VAL,
+    BazelqueryTokenTypes.DQ_VAL
+  )
+
   val OPERATIONS = TokenSet.create(
     BazelqueryTokenTypes.UNION,
     BazelqueryTokenTypes.EXCEPT,

@@ -20,14 +20,17 @@ SPACE=[\ \t]
 
 SQ=[']
 DQ=[\"]
-DH=[\-\-]
+DHYP=[\-\-]
+HYP=[\-]
 
 PLUS=[+]
 HYPHEN=[-]
 CARET=[\^]
+EQALS=[=]
 
 LEFT_PAREN=[(]
 RIGHT_PAREN=[)]
+DOUBLE_AT=[@@]
 
 
 // Unquoted words are sequences of characters drawn from
@@ -41,16 +44,30 @@ RIGHT_PAREN=[)]
 // As a special rule meant to simplify the handling of labels referring
 // to external repositories, unquoted words that start with @@ may
 // contain + characters.
-UNQUOTED_WORD=([A-Za-z0-9/@._:$~\[\]][A-Za-z0-9*/@.\-_:$~\[\]]* | @@[A-Za-z0-9*/@.\-_:$~\[\]+]*)
-
+UNQUOTED_WORD=([A-Za-z0-9/@._:$~\[\]][A-Za-z0-9*/@.\-_:$~\[\]]* | {DOUBLE_AT}[A-Za-z0-9*/@.\-_:$~\[\]+]*)
 QUOTED_WORD=[^{NL}{SQ}{DQ}]+
 
-
-//ESQ=\\{SQ}
-//EDQ=\\{DQ}
 SQ_WORD={SQ}{QUOTED_WORD}{SQ}
 DQ_WORD={DQ}{QUOTED_WORD}{DQ}
 
+UNEXPECTED_WORD=[^-{NL}{SQ}{DQ}{SPACE}][^{NL}{SQ}{DQ}{SPACE}]*
+FLAG_WORD=[a-z_:]*
+
+OPTION={HYP}{HYP}{FLAG_WORD} | {HYP}{FLAG_WORD}
+
+OPTION_REQ_VALUE="--loading_phase_threads" |
+                 "--aspect_deps" |
+                 "--graph:conditional_edges_limit" |
+                 "--graph:node_limit" |
+                 "--order_output" |
+                 "--output" |
+                 "--output_file" |
+                 "--proto:output_rule_attrs" |
+                 "--query_file" |
+                 "--universe_scope" |
+                 "--experimental_repository_resolved_file" |
+                 "--deleted_packages" |
+                 "--package_path"
 //INTEGER=[0-9]+
 
 COMMENT=#({SOFT_NL} | [^\r\n])*     // potrzebne????
@@ -65,9 +82,7 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
 %xstate WORD_SQ
 
 
-%xstate FLAG, VALUE
-%xstate FLAG_DQ, VALUE_DQ
-%xstate FLAG_SQ, VALUE_SQ
+%xstate FLAG, VALUE, PRE_VALUE
 
 
 %%
@@ -80,11 +95,12 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     "bazel"                           { return BazelqueryTokenTypes.BAZEL; }
     "query"                           { return BazelqueryTokenTypes.QUERY; }
 
-    {DH}                              { /*yybegin(FLAG);*/ return BazelqueryTokenTypes.DOUBLE_HYPHEN; }
+    {HYP}                             { yybegin(FLAG);  yypushback(1); }
 
     {SQ}                              { yybegin(EXPR_SQ); return BazelqueryTokenTypes.SINGLE_QUOTE; }
     {DQ}                              { yybegin(EXPR_DQ); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
-    [^]                               { yybegin(EXPR); yypushback(1); }
+    [A-Za-z0-9/@._:$~\[\]]            { yybegin(EXPR); yypushback(1); }
+    [^]                               { yybegin(FLAG);  yypushback(1); }
 }
 
 <EXPR_DQ> {
@@ -106,10 +122,10 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
 }
 
 <EXPR> {
-    ({SOFT_NL} | [{SPACE}{NL}])+      { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
+    ({SOFT_NL} | [{SPACE}{NL}])      { yybegin(YYINITIAL); return BazelqueryTokenTypes.WHITE_SPACE; }
 }
 
-<EXPR_DQ, EXPR_SQ, EXPR> {
+<EXPR, EXPR_DQ, EXPR_SQ> {
     {LEFT_PAREN}                      { return BazelqueryTokenTypes.LEFT_PAREN; }
     {RIGHT_PAREN}                     { return BazelqueryTokenTypes.RIGHT_PAREN; }
 
@@ -129,24 +145,27 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
    // [^]
 }
 
-/*
-<WORD_SQ> {
-    {SQ} ([{QUOTED_WORD}{ESQ}{EDQ}])+ {SQ}       { yybegin(EXPR_DQ); return BazelqueryTokenTypes.SQ_WORD; }
-   // {SQ}                              { yybegin(EXPR_DQ); return BazelqueryTokenTypes.SINGLE_QUOTE; }
-}
-
-<WORD_DQ> {
-    {DQ} ({QUOTED_WORD} | {ESQ} | {EDQ})+ {DQ}        { yybegin(EXPR_SQ); return BazelqueryTokenTypes.DQ_WORD; }
-  //  {DQ}                              { yybegin(EXPR_SQ); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
-}
-*/
-
-/*
 <FLAG> {
-    {UNQUOTED_WORD}                   { yybegin(VALUE); return BazelqueryTokenTypes.FLAG; }
-    {SQ}                              { yybegin(FLAG_SQ); return BazelqueryTokenTypes.SINGLE_QUOTE; }
-    {DQ}                              { yybegin(FLAG_DQ); return BazelqueryTokenTypes.DOUBLE_QUOTE; }
+    {OPTION_REQ_VALUE}{SPACE} { yybegin(PRE_VALUE); yypushback(1); return BazelqueryTokenTypes.FLAG; }
+    {OPTION_REQ_VALUE}{EQALS} { yybegin(PRE_VALUE); yypushback(1); return BazelqueryTokenTypes.FLAG; }
+    {OPTION_REQ_VALUE}        { yybegin(PRE_VALUE); return BazelqueryTokenTypes.FLAG; }
+    {OPTION}{EQALS}           { yybegin(PRE_VALUE); yypushback(1); return BazelqueryTokenTypes.FLAG; }
+    {OPTION}                  { yybegin(YYINITIAL); return BazelqueryTokenTypes.FLAG_NO_VAL; }
+
+    {UNEXPECTED_WORD}         { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNEXPECTED; }
 }
-*/
+
+<PRE_VALUE> {
+    {SPACE} | {EQALS}         { yybegin(VALUE); return BazelqueryTokenTypes.EQUALS; }
+}
+
+<VALUE> {
+    ({SOFT_NL} | [{SPACE}{NL}])+     { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
+    {SQ_WORD}                 { yybegin(YYINITIAL); return BazelqueryTokenTypes.SQ_VAL; }
+    {DQ_WORD}                 { yybegin(YYINITIAL); return BazelqueryTokenTypes.DQ_VAL; }
+    {UNQUOTED_WORD}           { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNQUOTED_VAL; }
+
+    [^]                       { yybegin(YYINITIAL); yypushback(1); } // return UNEXPECTED???
+}
 
 
