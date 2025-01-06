@@ -66,29 +66,24 @@ class BazelNativeRulesArgumentCompletionContributor : CompletionContributor() {
       context: ProcessingContext,
       result: CompletionResultSet,
     ) {
-      BazelNativeRules.COMMON_ARGUMENTS.forEach {
-        result.addElement(
-          LookupElementBuilder
-            .create(it)
-            .withIcon(PlatformIcons.PARAMETER_ICON),
-        )
-      }
-
       val starlarkCallExpression = parameters.position.findParentOfType<StarlarkCallExpression>() ?: return
       val functionName = starlarkCallExpression.firstChild.text
-      val rule = BazelNativeRules.NATIVE_RULES_MAP[functionName] ?: return
-      rule.arguments.forEach { result.addElement(functionLookupElement(it)) }
+      val args = BazelNativeRules.getRuleArguments(functionName)
+      args.forEach { result.addElement(functionLookupElement(it)) }
     }
 
     private class ArgumentInsertHandler<T : LookupElement>(val default: String) : InsertHandler<T> {
       override fun handleInsert(context: InsertionContext, item: T) {
         val editor = context.editor
         val document = editor.document
-        document.insertString(context.tailOffset, " = $default,")
-        if (default == BazelNativeRules.BAZEL_EMPTY_LIST || default == BazelNativeRules.BAZEL_EMPTY_STRING) {
+        if (default == BazelNativeRules.BAZEL_EMPTY_LIST
+          || default == BazelNativeRules.BAZEL_EMPTY_STRING
+          || default == BazelNativeRules.BAZEL_STRUCT) {
+          document.insertString(context.tailOffset, " = $default,")
           editor.caretModel.moveToOffset(context.tailOffset - 2)
         } else {
-          editor.caretModel.moveToOffset(context.tailOffset - default.length - 1)
+          document.insertString(context.tailOffset, " = ,")
+          editor.caretModel.moveToOffset(context.tailOffset - 1)
         }
       }
     }

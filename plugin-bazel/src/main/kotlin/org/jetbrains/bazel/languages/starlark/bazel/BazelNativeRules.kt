@@ -13,44 +13,6 @@ class BazelNativeRule(
 )
 
 object BazelNativeRules {
-  // Apply to all native build rules. TODO converto to BazelNativeRuleArgument
-  val COMMON_ARGUMENTS =
-    setOf(
-      "compatible_with",
-      "deprecation",
-      "distribs",
-      "exec_compatible_with",
-      "exec_properties",
-      "features",
-      "restricted_to",
-      "tags",
-      "target_compatible_with",
-      "testonly",
-      "toolchains",
-      "visibility",
-    )
-
-  // Apply to all *_test rules. TODO converto to BazelNativeRuleArgument
-  val TEST_COMMON_ARGUMENTS =
-    setOf(
-      "args",
-      "env",
-      "env_inherit",
-      "size",
-      "timeout",
-      "flaky",
-      "shard_count",
-      "local",
-    )
-
-  // Apply to all *_binary rules. TODO converto to BazelNativeRuleArgument
-  val BINARY_COMMON_RULES =
-    setOf(
-      "args",
-      "env",
-      "output_licenses",
-    )
-
   private fun addNativeRule(
     name: String,
     docsLink: String,
@@ -62,6 +24,158 @@ object BazelNativeRules {
   const val BAZEL_NONE = "None"
   const val BAZEL_EMPTY_LIST = "[]"
   const val BAZEL_EMPTY_STRING = "\"\""
+  const val BAZEL_STRUCT = "{}"
+
+  fun getRuleNames(): Set<String> = NATIVE_RULES_MAP.keys
+
+  fun getRuleArguments(ruleString: String): Set<BazelNativeRuleArgument> {
+    val rule = NATIVE_RULES_MAP[ruleString]
+    if (rule == null) {
+      return setOf()
+    }
+
+    val args = rule.arguments union COMMON_ARGUMENTS
+
+    if (ruleString.endsWith("test")) {
+      return args union TEST_COMMON_ARGUMENTS
+    }
+
+    if (ruleString.endsWith("binary")) {
+      return args union BINARY_COMMON_RULES
+    }
+
+    return args
+  }
+
+  // Apply to all native build rules.
+  val COMMON_ARGUMENTS =
+    setOf(
+      BazelNativeRuleArgument(
+        "compatible_with",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "deprecation",
+        BAZEL_NONE,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "distribs",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "exec_compatible_with",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "exec_properties",
+        BAZEL_STRUCT,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "features",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "restricted_to",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "tags",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "target_compatible_with",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "testonly",
+        BAZEL_FALSE,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "toolchains",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "visibility",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+    )
+
+  // Apply to all *_test rules.
+  val TEST_COMMON_ARGUMENTS =
+    setOf(
+      BazelNativeRuleArgument(
+        "args",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "env",
+        BAZEL_STRUCT,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "env_inherit",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "size",
+        BAZEL_EMPTY_STRING,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "timeout",
+        BAZEL_EMPTY_STRING,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "flaky",
+        BAZEL_FALSE,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "shard_count",
+        "-1",
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "local",
+        BAZEL_FALSE,
+        false,
+      ),
+    )
+
+  // Apply to all *_binary rules.
+  val BINARY_COMMON_RULES =
+    setOf(
+      BazelNativeRuleArgument(
+        "args",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "env",
+        BAZEL_STRUCT,
+        false,
+      ),
+      BazelNativeRuleArgument(
+        "output_licenses",
+        BAZEL_EMPTY_LIST,
+        false,
+      ),
+    )
 
   val NATIVE_RULES_MAP =
     mapOf(
@@ -276,6 +390,4 @@ object BazelNativeRules {
       ),
       // C/C++
     )
-
-  fun getRuleNames(): Set<String> = NATIVE_RULES_MAP.keys
 }
