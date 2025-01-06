@@ -134,6 +134,12 @@ bazel_integration_test_all_versions(
     test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:NestedModulesTest",
 )
 
+bazel_integration_test_all_versions(
+    name = "broken_build_file_syntax_test",
+    bzlmod_project_path = "test-projects/bzlmod/broken-syntax-in-build-file",
+    test_runner = "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel:BrokenBuildFileSyntaxTest",
+)
+
 test_suite(
     name = "all_tests",
     tags = integration_test_utils.DEFAULT_INTEGRATION_TEST_TAGS,
@@ -155,6 +161,7 @@ test_suite(
         ":rust_project_test",
         ":sample_repo_test",
         ":server_downloads_bazelisk_test",
+        ":broken_build_file_syntax_test",
     ],
 )
 

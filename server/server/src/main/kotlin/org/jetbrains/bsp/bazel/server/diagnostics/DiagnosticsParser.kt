@@ -56,7 +56,9 @@ class DiagnosticsParserImpl : DiagnosticsParser {
     // Include *only* these parsers which handle messages that cannot be obtained in any other way
     private val FromProgressParsers = listOf(
       // Handles syntax errors in build files
-      BazelRootMessageParser
+      BazelRootMessageParser,
+      // Advances the output if nothing else can be parsed
+      AllCatchParser,
     )
     private val Parsers =
       listOf(

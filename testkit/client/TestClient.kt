@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.jetbrains.bsp.testkit.client
 
 import ch.epfl.scala.bsp4j.BuildClient
@@ -39,11 +41,15 @@ import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.gson.Gson
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.debug.DebugProbes
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import org.jetbrains.bsp.testkit.JsonComparator
 import org.junit.jupiter.api.Assertions.assertIterableEquals
 import java.nio.file.Path
@@ -103,6 +109,10 @@ open class BasicTestClient<Server : BuildServer, Client : BuildClient>(
 ) {
   val gson = Gson()
 
+  init {
+    DebugProbes.install()
+  }
+
   inline fun <reified T> applyJsonTransform(element: T): T {
     val json = gson.toJson(element)
     val transformed = transformJson(json)
@@ -121,13 +131,13 @@ open class BasicTestClient<Server : BuildServer, Client : BuildClient>(
     doTest: suspend (Session<Server, Client>, BuildServerCapabilities) -> Unit
   ) {
     runTest(timeout = timeout) {
-      withSession(workspacePath, ignoreEarlyExit, true, client, serverClass) { session ->
-        withLifetime(initializeParams, session) { capabilities ->
-          doTest(session, capabilities)
+        withSession(workspacePath, ignoreEarlyExit, true, client, serverClass) { session ->
+          withLifetime(initializeParams, session) { capabilities ->
+            doTest(session, capabilities)
+          }
         }
       }
     }
-  }
 }
 
 class TestClient(

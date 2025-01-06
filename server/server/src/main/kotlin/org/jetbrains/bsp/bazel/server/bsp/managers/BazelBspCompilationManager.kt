@@ -3,6 +3,10 @@ package org.jetbrains.bsp.bazel.server.bsp.managers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.debug.DebugProbes
+import kotlinx.coroutines.withContext
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.io.IoBuilder
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.server.bep.BepServer
@@ -20,6 +24,9 @@ class BazelBspCompilationManager(
   val client: JoinedBuildClient,
   val workspaceRoot: Path,
 ) {
+
+  val LOGGER = LogManager.getLogger(BazelBspCompilationManager::class.java)
+
   suspend fun buildTargetsWithBep(
     cancelChecker: CancelChecker,
     targetsSpec: TargetsSpec,
@@ -34,10 +41,7 @@ class BazelBspCompilationManager(
     val bepReader = BepReader(bepServer)
     return try {
       coroutineScope {
-        val readerFuture =
-          async(Dispatchers.Default) {
-            bepReader.start()
-          }
+        val readerFuture = bepReader.start(this)
         val command =
           bazelRunner.buildBazelCommand {
             build {
@@ -47,12 +51,15 @@ class BazelBspCompilationManager(
               useBes(bepReader.eventFile.toPath().toAbsolutePath())
             }
           }
-        val result =
+
+        val result = withContext(Dispatchers.IO) {
           bazelRunner
             .runBazelCommand(command, originId = originId, serverPidFuture = bepReader.serverPid, shouldLogInvocation = shouldLogInvocation)
             .waitAndGetResult(cancelChecker, true)
+        }
         bepReader.finishBuild()
         readerFuture.await()
+
         BepBuildResult(result, bepServer.bepOutput)
       }
     } finally {

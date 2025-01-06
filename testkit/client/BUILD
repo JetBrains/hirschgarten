@@ -12,6 +12,7 @@ kt_jvm_library(
         "@maven//:org_junit_jupiter_junit_jupiter_api",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_core",
         "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_test",
+        "@server_maven//:org_jetbrains_kotlinx_kotlinx_coroutines_debug",
     ],
 )
 

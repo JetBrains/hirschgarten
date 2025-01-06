@@ -1,7 +1,9 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -29,8 +31,8 @@ class BepReader(private val bepServer: BepServer) {
     setWritable(true, true)
   }
 
-  suspend fun start() =
-    withContext(Dispatchers.Default) {
+  fun start(scope: CoroutineScope) =
+    scope.async(Dispatchers.Default) {
       logger.info("Start listening to BEP events")
       val reader =
         DelimitedMessageReader(
@@ -41,6 +43,7 @@ class BepReader(private val bepServer: BepServer) {
       do {
         event = reader.nextMessage()
         if (event != null) {
+          logger.debug("BEP event: {}", event)
           bepServer.handleBuildEventStreamProtosEvent(event)
           setServerPid(event)
         }

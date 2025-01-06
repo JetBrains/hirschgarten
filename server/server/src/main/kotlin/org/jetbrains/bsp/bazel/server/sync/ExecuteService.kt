@@ -76,10 +76,7 @@ class ExecuteService(
     val bepReader = BepReader(server)
 
     return runBlocking {
-      val reader =
-        async(Dispatchers.Default) {
-          bepReader.start()
-        }
+      val reader = bepReader.start(this)
       try {
         return@runBlocking body(bepReader)
       } finally {

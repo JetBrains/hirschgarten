@@ -834,5 +834,5 @@ class DiagnosticsServiceTest {
   }
 
   private fun extractDiagnostics(output: String, buildTarget: Label): List<PublishDiagnosticsParams> =
-    DiagnosticsService(workspacePath).extractDiagnostics(output, buildTarget, "originId")
+    DiagnosticsService(workspacePath).extractDiagnostics(output, buildTarget, "originId", false)
 }

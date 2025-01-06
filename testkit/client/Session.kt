@@ -24,8 +24,11 @@ class Session<Server : BuildServer, Client : BuildClient>(
   private val workspaceFile = workspacePath.toFile()
   private val connectionDetails = readBspConnectionDetails(workspaceFile)
 
+  private val logFile = File.createTempFile("bsp-testkit", ".log")
+
   val process: Process = ProcessBuilder(connectionDetails.argv)
     .directory(workspaceFile)
+    .redirectError(logFile)
     .start()
 
   private val executor = Executors.newCachedThreadPool()
@@ -44,7 +47,7 @@ class Session<Server : BuildServer, Client : BuildClient>(
   val server: Server = launcher.remoteProxy
 
   val serverClosed: Deferred<SessionResult> = process.onExit().thenApply {
-    SessionResult(process.exitValue(), process.errorStream.bufferedReader().readText())
+    SessionResult(process.exitValue(), logFile.readText())
   }.asDeferred()
 
   override fun close() {

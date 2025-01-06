@@ -186,7 +186,7 @@ class BazelBspAspectsManager(
             // see: https://bazelbuild.github.io/rules_rust/crate_universe.html#crates_repository.
             // In our server used only with `bazel build` command.
             environment = if (isRustEnabled) listOf(Pair("CARGO_BAZEL_REPIN", "1")) else emptyList(),
-            shouldLogInvocation = shouldLogInvocation,
+            shouldLogInvocation = true,
           ).takeIf { it.processResult.bazelStatus != BazelStatus.OOM_ERROR }
           ?.let { BazelBspAspectsManagerResult(it.bepOutput, it.processResult.bazelStatus) }
       retries++

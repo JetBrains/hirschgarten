@@ -159,7 +159,7 @@ class ProjectResolver(
           outputGroups = outputGroups,
           shouldSyncManualFlags = workspaceContext.allowManualTargetsSync.value,
           isRustEnabled = featureFlags.isRustSupportEnabled,
-          shouldLogInvocation = false,
+          shouldLogInvocation = true,
           bspClientLogger = bspClientLogger,
         )
       }

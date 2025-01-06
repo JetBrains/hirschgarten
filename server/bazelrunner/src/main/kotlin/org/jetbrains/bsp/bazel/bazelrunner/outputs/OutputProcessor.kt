@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.bazelrunner.outputs
 
 import com.google.common.base.Charsets
+import org.apache.logging.log4j.LogManager
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import java.io.BufferedReader
@@ -26,7 +27,9 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
   }
 
   protected open fun shutdown() {
+    LOGGER.warn("Shutting down output processors")
     executorService.shutdown()
+    LOGGER.warn("Output processors shut down")
   }
 
   protected abstract fun isRunning(): Boolean
@@ -58,6 +61,8 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
     executorService.submit(runnable).also { runningProcessors.add(it) }
   }
 
+  val LOGGER = LogManager.getLogger(OutputProcessor::class.java)
+
   fun waitForExit(
     cancelChecker: CancelChecker,
     serverPidFuture: CompletableFuture<Long>?,
@@ -65,6 +70,7 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
   ): Int {
     var isFinished = false
     while (!isFinished) {
+      LOGGER.warn("Waiting for Bazel process to finish... {}", process.toString())
       isFinished = process.waitFor(500, TimeUnit.MILLISECONDS)
       if (cancelChecker.isCanceled) {
         process.destroy()

@@ -315,6 +315,7 @@ class BepServer(
           originId,
           fromProgress
         )
+      LOGGER.debug("Parsed diagnostics: {}", events)
       events.forEach {
         bspClient.onBuildPublishDiagnostics(
           it,

@@ -1,11 +1,15 @@
 package org.jetbrains.bsp.bazel.server
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.debug.DebugProbes
 import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.io.IoBuilder
 import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
 import org.jetbrains.bsp.bazel.server.bsp.BspIntegrationData
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
 import org.jetbrains.bsp.bazel.workspacecontext.DefaultWorkspaceContextProvider
+import java.io.PrintStream
 import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Path
@@ -23,16 +27,25 @@ data class CliArgs(
 private val log = LogManager.getLogger(ServerInitializer::class.java)
 
 object ServerInitializer {
+  @OptIn(ExperimentalCoroutinesApi::class)
   @JvmStatic
   fun main(args: Array<String>) {
+    DebugProbes.install()
     log.info("Starting server with args: ${args.toList()}")
 
     Runtime.getRuntime().addShutdownHook(
+
       Thread {
+        log.info("Dumping coroutines")
+
         ProcessHandle
           .allProcesses()
           .filter { it.parent().orElse(null)?.pid() == ProcessHandle.current().pid() }
           .forEach { it.destroy() }
+
+        val loggerPrintStream = IoBuilder.forLogger(log).buildPrintStream()
+
+        DebugProbes.dumpCoroutines(loggerPrintStream)
       },
     )
 
