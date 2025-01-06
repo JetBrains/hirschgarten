@@ -103,4 +103,21 @@ object BazelqueryTokenTypes {
 
     @JvmField
     val UNEXPECTED = BazelqueryTokenType("UNEXPECTED")
+
+
+
+    @JvmField
+    val UNFINISHED_VAL = BazelqueryTokenType("UNFINISHED_VAL")
+
+    @JvmField
+    val SQ_UNFINISHED = BazelqueryTokenType("SQ_UNFINISHED")
+
+    @JvmField
+    val DQ_UNFINISHED = BazelqueryTokenType("DQ_UNFINISHED")
+
+    @JvmField
+    val SQ_EMPTY = BazelqueryTokenType("SQ_EMPTY")
+
+    @JvmField
+    val DQ_EMPTY = BazelqueryTokenType("DQ_EMPTY")
 }

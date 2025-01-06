@@ -17,7 +17,11 @@ object BazelqueryTokenSets {
   val WORDS = TokenSet.create(
     BazelqueryTokenTypes.UNQUOTED_WORD,
     BazelqueryTokenTypes.SQ_WORD,
-    BazelqueryTokenTypes.DQ_WORD
+    BazelqueryTokenTypes.DQ_WORD,
+    BazelqueryTokenTypes.SQ_UNFINISHED,
+    BazelqueryTokenTypes.DQ_UNFINISHED,
+    BazelqueryTokenTypes.SQ_EMPTY,
+    BazelqueryTokenTypes.DQ_EMPTY
   )
 
   val FLAGS = TokenSet.create(
@@ -28,7 +32,8 @@ object BazelqueryTokenSets {
   val FLAG_VALS = TokenSet.create(
     BazelqueryTokenTypes.UNQUOTED_VAL,
     BazelqueryTokenTypes.SQ_VAL,
-    BazelqueryTokenTypes.DQ_VAL
+    BazelqueryTokenTypes.DQ_VAL,
+    BazelqueryTokenTypes.UNFINISHED_VAL
   )
 
   val OPERATIONS = TokenSet.create(
