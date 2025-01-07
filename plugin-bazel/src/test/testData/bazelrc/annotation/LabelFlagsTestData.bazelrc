@@ -1,0 +1,10 @@
+# any flag that looks like a label (aka. starting with either @ or /) is assumed correct
+
+common --@rules_jvm//:default-kotlinc-opts=@community//:k17
+
+common --@rules_jvm//package:default-kotlinc-opts=value
+
+build --//src/kotlin/main/com/ergatta/device:default_device=watererr
+
+# `no` also needs to be supported
+build --no//src/kotlin/main/com/ergatta/device:default_device=asdf

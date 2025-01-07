@@ -39,7 +39,7 @@ scala_config.settings(
 )
 use_repo(scala_config, "io_bazel_rules_scala_config")
 
-bazel_dep(name = "rules_kotlin", version = "2.0.0")
+bazel_dep(name = "rules_kotlin", version = "2.1.0")
 
 register_toolchains(
     "//:kotlin_toolchain",
@@ -85,7 +85,7 @@ maven.install(
         "org.apache.logging.log4j:log4j-iostreams:2.24.3",
         "org.apache.velocity:velocity-engine-core:2.4.1",
         "org.eclipse.lsp4j:org.eclipse.lsp4j.jsonrpc:0.23.1",
-        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3",
+        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.0",
         "org.junit.jupiter:junit-jupiter:5.11.4",
         "org.junit.platform:junit-platform-console:1.11.4",
         "org.junit.platform:junit-platform-suite-api:1.11.4",
@@ -214,7 +214,7 @@ use_repo(buf, "rules_buf_toolchains")
 
 bazel_dep(
     name = "rules_bazel_integration_test",
-    version = "0.29.0",
+    version = "0.31.0",
     dev_dependency = True,
 )
 
