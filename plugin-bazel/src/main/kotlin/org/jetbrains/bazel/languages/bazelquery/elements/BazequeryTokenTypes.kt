@@ -48,7 +48,8 @@ object BazelqueryTokenTypes {
     val FLAG_NO_VAL = BazelqueryTokenType("FLAG_NO_VAL")
 /*
     @JvmField
-    val VALUE = BazelqueryTokenType("VALUE")*/
+    val VALUE = BazelqueryTokenType("VALUE")
+*/
 
     @JvmField
     val UNQUOTED_VAL = BazelqueryTokenType("UNQUOTED_VAL")
