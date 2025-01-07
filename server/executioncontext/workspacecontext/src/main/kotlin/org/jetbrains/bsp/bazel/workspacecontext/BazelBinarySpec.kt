@@ -80,13 +80,13 @@ internal object BazelBinarySpecExtractor : ExecutionContextEntityExtractor<Bazel
       when {
         os.startsWith("windows") && arch == "amd64" -> "windows-amd64.exe"
         os.startsWith("linux") && arch == "amd64" -> "linux-amd64"
-        os.startsWith("linux") && arch == "arm64" -> "linux-arm64"
+        os.startsWith("linux") && (arch == "arm64" || arch == "aarch64") -> "linux-arm64"
         os.startsWith("mac") -> "darwin"
         else -> null
       }
     if (suffix == null) {
       log.error(
-        "Could not calculate bazelisk download link (your OS should be one of: windows-amd64, linux-amd64, linux-arm64, darwin)",
+        "Could not calculate bazelisk download link (your OS should be one of: windows-amd64, linux-amd64, linux-arm64, linux-aarch64, darwin)",
       )
       return null
     }
