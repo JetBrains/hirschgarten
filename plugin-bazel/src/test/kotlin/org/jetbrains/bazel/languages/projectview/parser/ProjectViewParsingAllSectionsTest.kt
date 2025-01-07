@@ -16,34 +16,34 @@ class ProjectViewParsingAllSectionsTest : ProjectViewParsingTestCase("sections")
   }
 
   fun testWorkspaceType() {
-    doTest(true);
+    doTest(true)
   }
 
   fun testAdditionalLanguages() {
-    doTest(true);
+    doTest(true)
   }
 
   fun testJavaLanguageLevel() {
-    doTest(true);
+    doTest(true)
   }
 
   fun testJavaLanguageLevelPreview() {
-    doTest(true);
+    doTest(true)
   }
 
   fun testTestSources() {
-    doTest(true);
+    doTest(true)
   }
 
   fun testShardSync() {
-    doTest(true);
+    doTest(true)
   }
 
   fun testTargetShardSize() {
-    doTest(true);
+    doTest(true)
   }
 
   fun testExcludeLibrary() {
-    doTest(true);
+    doTest(true)
   }
 }
