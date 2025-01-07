@@ -33,7 +33,7 @@ class HotSwapTest : IdeStarterBaseProjectTest() {
   override val projectInfo: ProjectInfoSpec
     get() =
       GitProjectInfo(
-        repositoryUrl = "https://github.com/xuansontrinh/simpleBazelProjectsForTesting.git",
+        repositoryUrl = "https://github.com/JetBrainsBazelBot/simpleBazelProjectsForTesting.git",
         commitHash = "",
         branchName = "main",
         projectHomeRelativePath = { it.resolve("simpleKotlinTest") },
