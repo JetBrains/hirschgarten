@@ -14,6 +14,7 @@ object BazelqueryElementTypes {
   val PROMPT = BazelqueryElementType("PROMPT")
   val COMMAND = BazelqueryElementType("COMMAND")
   val WORD = BazelqueryElementType("WORD")
+  val INTEGER = BazelqueryElementType("INTEGER")
   val QUERY_VAL = BazelqueryElementType("QUERY_VAL")
   val FLAG = BazelqueryElementType("FLAG")
   val FLAG_VAL = BazelqueryElementType("FLAG_VAL")
@@ -26,6 +27,7 @@ object BazelqueryElementTypes {
       QUERY_VAL -> BazelqueryQueryVal(node)
       FLAG -> BazelqueryFlag(node)
       FLAG_VAL -> BazelqueryFlag(node)
+      INTEGER -> BazelqueryWord(node)
 
       else -> error("Unknown element type: $type")
     }

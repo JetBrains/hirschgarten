@@ -21,7 +21,7 @@ object BazelqueryTokenSets {
     BazelqueryTokenTypes.SQ_UNFINISHED,
     BazelqueryTokenTypes.DQ_UNFINISHED,
     BazelqueryTokenTypes.SQ_EMPTY,
-    BazelqueryTokenTypes.DQ_EMPTY
+    BazelqueryTokenTypes.DQ_EMPTY,
   )
 
   val FLAGS = TokenSet.create(
@@ -44,6 +44,25 @@ object BazelqueryTokenSets {
     BazelqueryTokenTypes.SET,
     BazelqueryTokenTypes.IN,
     BazelqueryTokenTypes.EQUALS,
+  )
 
+  val COMMANDS = TokenSet.create(
+    BazelqueryTokenTypes.ALLPATHS,
+    BazelqueryTokenTypes.ATTR,
+    BazelqueryTokenTypes.BUILDFILES,
+    BazelqueryTokenTypes.RBUILDFILES,
+    BazelqueryTokenTypes.DEPS,
+    BazelqueryTokenTypes.FILTER,
+    BazelqueryTokenTypes.KIND,
+    BazelqueryTokenTypes.LABELS,
+    BazelqueryTokenTypes.LOADFILES,
+    BazelqueryTokenTypes.RDEPS,
+    BazelqueryTokenTypes.ALLRDEPS,
+    BazelqueryTokenTypes.SAME_PKG_DIRECT_RDEPS,
+    BazelqueryTokenTypes.SIBLINGS,
+    BazelqueryTokenTypes.SOME,
+    BazelqueryTokenTypes.SOMEPATH,
+    BazelqueryTokenTypes.TESTS,
+    BazelqueryTokenTypes.VISIBLE
   )
 }

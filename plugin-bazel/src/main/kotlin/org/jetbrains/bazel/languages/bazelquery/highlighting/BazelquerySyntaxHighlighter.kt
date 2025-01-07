@@ -17,6 +17,7 @@ object BazelquerySyntaxHighlighter : SyntaxHighlighterBase() {
   private val keys =
     mapOf(
       *BazelqueryTokenSets.WORDS.types.map { it to BazelqueryHighlightingColors.WORD }.toTypedArray(),
+      BazelqueryTokenTypes.INTEGER to BazelqueryHighlightingColors.INTEGER,
       BazelqueryTokenTypes.COMMAND to BazelqueryHighlightingColors.COMMAND,
       BazelqueryTokenTypes.QUERY to BazelqueryHighlightingColors.PROMPT,
       BazelqueryTokenTypes.BAZEL to BazelqueryHighlightingColors.PROMPT,

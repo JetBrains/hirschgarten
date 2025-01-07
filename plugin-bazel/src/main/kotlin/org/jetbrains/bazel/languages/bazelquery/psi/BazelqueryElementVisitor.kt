@@ -27,4 +27,8 @@ open class BazelqueryElementVisitor : PsiElementVisitor() {
         visitElement(node)
     }
 
+    fun visitInteger(node: BazelqueryInteger) {
+        visitElement(node)
+    }
+
 }

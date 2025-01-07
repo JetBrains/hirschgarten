@@ -14,7 +14,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
   companion object {
 
     private val queryValPrefixes = TokenSet.create(
-      BazelqueryTokenTypes.COMMAND,
+      *BazelqueryTokenSets.COMMANDS.types,
       *BazelqueryTokenSets.WORDS.types,
       BazelqueryTokenTypes.SET,
       BazelqueryTokenTypes.LET,
@@ -43,10 +43,17 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
 
     private val wordInUnqQuery = TokenSet.create(
       BazelqueryTokenTypes.UNQUOTED_WORD,
-    //  BazelqueryTokenTypes.SQ_WORD,
-    //  BazelqueryTokenTypes.DQ_WORD
     )
 
+  }
+
+  private fun getAvailableWordsSet(queryQuotes: IElementType): TokenSet {
+    return when (queryQuotes) {
+      BazelqueryTokenTypes.WHITE_SPACE -> wordInUnqQuery
+      BazelqueryTokenTypes.SINGLE_QUOTE -> wordInSqQuery
+      BazelqueryTokenTypes.DOUBLE_QUOTE -> wordInDqQuery
+      else -> TokenSet.EMPTY
+    }
   }
 
 
@@ -139,13 +146,27 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
   }
 
 
-  private fun getAvailableWordsSet(queryQuotes: IElementType): TokenSet {
-    return when (queryQuotes) {
-        BazelqueryTokenTypes.WHITE_SPACE -> wordInUnqQuery
-        BazelqueryTokenTypes.SINGLE_QUOTE -> wordInSqQuery
-        BazelqueryTokenTypes.DOUBLE_QUOTE -> wordInDqQuery
-        else -> TokenSet.EMPTY
+  // _____parsing queries____
+
+  private fun parseQueryVal() {
+    val queryVal = mark()
+    var queryQuotes: IElementType = BazelqueryTokenTypes.WHITE_SPACE
+
+    if (atToken(BazelqueryTokenTypes.SINGLE_QUOTE)){
+      queryQuotes = BazelqueryTokenTypes.SINGLE_QUOTE
+      advanceLexer()
     }
+    else if (atToken(BazelqueryTokenTypes.DOUBLE_QUOTE)) {
+      queryQuotes = BazelqueryTokenTypes.DOUBLE_QUOTE
+      advanceLexer()
+    }
+
+    parseExpr(queryQuotes)
+
+    matchToken(queryQuotes)
+    queryQuotes = BazelqueryTokenTypes.WHITE_SPACE
+
+    queryVal.done(BazelqueryElementTypes.QUERY_VAL)
   }
 
   // expr ::= word
@@ -159,7 +180,6 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
   //       | expr - expr
   //       | set(word *)
   //       | word '(' int | word | expr ... ')'
-
   private fun parseExpr(queryQuotes: IElementType) {
     when {
       atAnyToken(getAvailableWordsSet(queryQuotes)) -> parseWord()
@@ -196,19 +216,7 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
         if(!matchToken(BazelqueryTokenTypes.RIGHT_PAREN)) error("<right parenthesis> expected")
       }
 
-      atToken(BazelqueryTokenTypes.COMMAND) -> {
-        advanceLexer()
-        if (atToken(queryQuotes)) return
-        expectToken(BazelqueryTokenTypes.LEFT_PAREN)
-        if (atToken(queryQuotes)) return
-        if(!atToken(BazelqueryTokenTypes.RIGHT_PAREN)) parseExpr(queryQuotes)
-        while (!atToken(BazelqueryTokenTypes.RIGHT_PAREN) && !atToken(queryQuotes) && !eof()) {
-          expectToken(BazelqueryTokenTypes.COMMA)
-          if(atToken(queryQuotes) || atToken(BazelqueryTokenTypes.RIGHT_PAREN) || eof()) error("<expression> expected")
-          else parseExpr(queryQuotes)
-        }
-        if(!matchToken(BazelqueryTokenTypes.RIGHT_PAREN)) error("<right parenthesis> expected")
-      }
+      atAnyToken(BazelqueryTokenSets.COMMANDS) -> parseCommand(queryQuotes)
 
       atToken(queryQuotes) -> return
 
@@ -216,136 +224,162 @@ open class Parsing(private val root: IElementType, val builder: PsiBuilder) : Ps
       atToken(BazelqueryTokenTypes.EXCEPT) -> advanceError("Unexpected token in query value")
       atToken(BazelqueryTokenTypes.INTERSECT) -> advanceError("Unexpected token in query value")
 
+      atToken(BazelqueryTokenTypes.INTEGER) -> advanceError("Unexpected token in query value")
+
       atToken(BazelqueryTokenTypes.RIGHT_PAREN) -> advanceError("Unexpected token in query value")
-
     }
-
 
     when {
       atToken(BazelqueryTokenTypes.INTERSECT) -> {advanceLexer(); parseExpr(queryQuotes)}
       atToken(BazelqueryTokenTypes.EXCEPT) -> {advanceLexer(); parseExpr(queryQuotes)}
       atToken(BazelqueryTokenTypes.UNION) -> {advanceLexer(); parseExpr(queryQuotes)}
-      //atToken(queryQuotes) -> return
     }
-
-
-
-
-    /*
-    while (!atAnyToken(queryValEnd) && !atToken(queryQuotes) && !eof()) {
-      when {
-        atAnyToken(getAvailableWordsSet(queryQuotes)) -> parseWord()
-
-        atToken(BazelqueryTokenTypes.COMMAND) -> parseCommand(queryQuotes)
-
-        atToken(BazelqueryTokenTypes.SET) -> {advanceLexer()} //parseSet()
-
-        atToken(BazelqueryTokenTypes.LET) -> {advanceLexer()} //parseLet()
-
-        atAnyToken(BazelqueryTokenSets.OPERATIONS) -> {advanceLexer()}  //parseOperation()
-
-        atToken(BazelqueryTokenTypes.LEFT_PAREN) -> {advanceLexer()}
-        atToken(BazelqueryTokenTypes.RIGHT_PAREN) -> {
-          //advanceLexer()
-          // czy potrzeba licznika zagnieżdżeń? (na pierwszym poziomie tu nie ma breaka);
-          // wtedy tez przy głębszym zagnieżdżeniu inaczej traktujemy zewnętrzne ciapki
-          // (nizej ich nie moze byc ale jesli były na zewnątrz to moga byc spacje);
-          // trzeba inaczej zapisywać ciapki bo przy wspólbieżności sie posypie
-          break
-        }
-
-        else -> advanceError("Unexpected token in query value")
-      }
-    }
-
-    */
   }
 
-  //TODO: Nawiasowania, odpowiednie przetwarzanie operacji (np. nie można zaczynać od +, set z nawiasami, ...)
-  private fun parseQueryVal() {
-    val queryVal = mark()
-    var queryQuotes: IElementType = BazelqueryTokenTypes.WHITE_SPACE
 
-    if (atToken(BazelqueryTokenTypes.SINGLE_QUOTE)){
-      queryQuotes = BazelqueryTokenTypes.SINGLE_QUOTE
-      advanceLexer()
-    }
-    else if (atToken(BazelqueryTokenTypes.DOUBLE_QUOTE)) {
-      queryQuotes = BazelqueryTokenTypes.DOUBLE_QUOTE
-      advanceLexer()
-    }
+// _____parsing commands____
 
-    parseExpr(queryQuotes)
-
-    matchToken(queryQuotes)
-    queryQuotes = BazelqueryTokenTypes.WHITE_SPACE
-
-    queryVal.done(BazelqueryElementTypes.QUERY_VAL)
+  private fun parseExprArg(queryQuotes: IElementType) {
+    if (atToken(BazelqueryTokenTypes.RIGHT_PAREN) || atToken(BazelqueryTokenTypes.COMMA) || eof()) error("<expression> expected")
+    else if(atToken(BazelqueryTokenTypes.INTEGER)) advanceError("<expression> expected, got <integer>")
+    else parseExpr(queryQuotes)
   }
 
-/*
-  // TODO: rozbic tak zeby zbierło odpowiednia ilosc argumentów (z typami -> dorobić INTEGER?)
-  private fun parseCommand(queryQuotes: IElementType) {
-    val command = mark()
+  private fun parseWordArg(queryQuotes: IElementType) {
+    if (atToken(BazelqueryTokenTypes.RIGHT_PAREN) || atToken(BazelqueryTokenTypes.COMMA) || eof()) error("<word> expected")
+    else if(!atAnyToken(getAvailableWordsSet(queryQuotes))) advanceError("<word> expected")
+    else parseWord()
+  }
 
-    while (!atToken(BazelqueryTokenTypes.LEFT_PAREN) && !eof())
-      advanceLexer()
-    matchToken(BazelqueryTokenTypes.LEFT_PAREN)
+  private fun parseAsWordArg(queryQuotes: IElementType) {
+    if (atToken(BazelqueryTokenTypes.RIGHT_PAREN) || atToken(BazelqueryTokenTypes.COMMA) || eof()) error("<word> expected")
+    else if(!atAnyToken(getAvailableWordsSet(queryQuotes)) && !atToken(BazelqueryTokenTypes.INTEGER)) advanceError("<word> expected")
+    else parseWord()
+  }
 
-    if (atToken(queryQuotes)) {
-      command.done(BazelqueryElementTypes.COMMAND)
-      return
+  private fun parseOptionalIntArg(queryQuotes: IElementType) {
+    if(matchToken(BazelqueryTokenTypes.COMMA)) {
+      if (atToken(BazelqueryTokenTypes.RIGHT_PAREN) || atToken(BazelqueryTokenTypes.COMMA) || eof()) error("<expression> expected")
+      else if(!atToken(BazelqueryTokenTypes.INTEGER)) advanceError("<integer> expected")
+      else parseInteger()
     }
+  }
 
-    if (atAnyToken(getAvailableWordsSet(queryQuotes))) parseWord()
-
-    if (atToken(queryQuotes)) {
-      command.done(BazelqueryElementTypes.COMMAND)
-      return
-    }
-
-    while (!atToken(BazelqueryTokenTypes.RIGHT_PAREN) && !eof()) {
-
-      if (atToken(queryQuotes)) {
-        command.done(BazelqueryElementTypes.COMMAND)
-        return
-      }
-
+  private fun parseUnknownArgs(queryQuotes: IElementType){
+    if (atToken(BazelqueryTokenTypes.INTEGER)) parseInteger()
+    else if (!atToken(BazelqueryTokenTypes.RIGHT_PAREN)) parseExpr(queryQuotes)
+    while (!atToken(BazelqueryTokenTypes.RIGHT_PAREN) && !atToken(queryQuotes) && !eof()) {
       expectToken(BazelqueryTokenTypes.COMMA)
-
-      if (atToken(queryQuotes)) {
-        command.done(BazelqueryElementTypes.COMMAND)
-        return
-      }
-
-      when {
-        atAnyToken(getAvailableWordsSet(queryQuotes)) -> parseWord()
-       // atToken(BazelqueryTokenTypes.INTEGER) -> advanceLexer()
-       // atAnyToken(queryValPrefixes) -> parseQueryVal()
-        else -> advanceError("<word> or <integer> expected")
-      }
-
+      if (atToken(queryQuotes) || atToken(BazelqueryTokenTypes.RIGHT_PAREN) || eof()) error("<expression> expected")
+      else if (atToken(BazelqueryTokenTypes.INTEGER)) parseInteger()
+      else parseExpr(queryQuotes)
     }
-
-    if (!matchToken(BazelqueryTokenTypes.RIGHT_PAREN)) {
-      advanceError("<right parenthesis> expected")
-    }
-
-    command.done(BazelqueryElementTypes.COMMAND)
   }
-*/
 
+  private fun parseCommand(queryQuotes: IElementType) {
+    //val command = mark()
+    val command_keyword = builder.tokenType
+    advanceLexer()
+    if (atToken(queryQuotes)) return
+    expectToken(BazelqueryTokenTypes.LEFT_PAREN)
+    if (atToken(queryQuotes)) return
+
+    if (
+      command_keyword == BazelqueryTokenTypes.SAME_PKG_DIRECT_RDEPS ||
+      command_keyword == BazelqueryTokenTypes.SIBLINGS ||
+      command_keyword == BazelqueryTokenTypes.TESTS ||
+      command_keyword == BazelqueryTokenTypes.BUILDFILES ||
+      command_keyword == BazelqueryTokenTypes.LOADFILES
+    ) {
+      parseExprArg(queryQuotes)
+    }
+    else if (
+      command_keyword == BazelqueryTokenTypes.ALLPATHS ||
+      command_keyword == BazelqueryTokenTypes.SOMEPATH ||
+      command_keyword == BazelqueryTokenTypes.VISIBLE
+    ) {
+      parseExprArg(queryQuotes)
+      if(!matchToken(BazelqueryTokenTypes.COMMA)) error("<comma> expected")
+      parseExprArg(queryQuotes)
+    }
+    else if (
+      command_keyword == BazelqueryTokenTypes.LABELS ||
+      command_keyword == BazelqueryTokenTypes.KIND ||
+      command_keyword == BazelqueryTokenTypes.FILTER
+    ) {
+      parseWordArg(queryQuotes)
+      if(!matchToken(BazelqueryTokenTypes.COMMA)) error("<comma> expected")
+      parseExprArg(queryQuotes)
+    }
+    else if (
+      command_keyword == BazelqueryTokenTypes.DEPS ||
+      command_keyword == BazelqueryTokenTypes.ALLRDEPS ||
+      command_keyword == BazelqueryTokenTypes.SOME
+    ) {
+      parseExprArg(queryQuotes)
+      parseOptionalIntArg(queryQuotes)
+    }
+    else if (
+      command_keyword == BazelqueryTokenTypes.RDEPS
+    ) {
+      parseExprArg(queryQuotes)
+      if(!matchToken(BazelqueryTokenTypes.COMMA)) error("<comma> expected")
+      parseExprArg(queryQuotes)
+      parseOptionalIntArg(queryQuotes)
+    }
+    else if (
+      command_keyword == BazelqueryTokenTypes.ATTR
+    ) {
+      parseWordArg(queryQuotes)
+      if(!matchToken(BazelqueryTokenTypes.COMMA)) error("<comma> expected")
+      parseAsWordArg(queryQuotes)
+      if(!matchToken(BazelqueryTokenTypes.COMMA)) error("<comma> expected")
+      parseExprArg(queryQuotes)
+    }
+    else if (
+      command_keyword == BazelqueryTokenTypes.RBUILDFILES
+    ) {
+      parseWordArg(queryQuotes)
+      while (atToken(BazelqueryTokenTypes.COMMA) && !eof()) {
+        if (!matchToken(BazelqueryTokenTypes.COMMA)) advanceError("<comma> expected")
+        parseWordArg(queryQuotes)
+      }
+    }
+    else parseUnknownArgs(queryQuotes)
+
+    if (eof() || atToken(queryQuotes)) error("<right parenthesis> expected")
+    while(!eof() && !atToken(queryQuotes) && !atToken(BazelqueryTokenTypes.RIGHT_PAREN)) advanceError("too many arguments")
+    if(!matchToken(BazelqueryTokenTypes.RIGHT_PAREN)) error("<right parenthesis> expected")
+    //command.done(BazelqueryElementTypes.COMMAND)
+  }
+
+
+  // _____parsing words____
 
   private fun parseWord() {
     val word = mark()
 
     if(atToken(BazelqueryTokenTypes.SQ_EMPTY) || atToken(BazelqueryTokenTypes.DQ_EMPTY)) advanceError("Empty quote")
-    else if(atToken(BazelqueryTokenTypes.SQ_UNFINISHED) || atToken(BazelqueryTokenTypes.DQ_UNFINISHED)) error("Quote expected")
+    else if(matchToken(BazelqueryTokenTypes.SQ_UNFINISHED) || matchToken(BazelqueryTokenTypes.DQ_UNFINISHED)) error("Quote expected")
     else advanceLexer()
 
     word.done(BazelqueryElementTypes.WORD)
   }
 
+
+  // _____parsing integers____
+
+  private fun parseInteger() {
+    val integer = mark()
+
+    if(atToken(BazelqueryTokenTypes.INTEGER)) advanceLexer()
+    else advanceError("Integer expected")
+
+    integer.done(BazelqueryElementTypes.INTEGER)
+  }
+
+
+  // _____parsing flags____
 
   private fun parseFlag() {
     val flag = mark()

@@ -21,6 +21,62 @@ object BazelqueryTokenTypes {
     @JvmField
     val COMMAND = BazelqueryTokenType("COMMAND")
 
+
+    @JvmField
+    val ALLPATHS = BazelqueryTokenType("ALLPATHS")
+
+    @JvmField
+    val ATTR = BazelqueryTokenType("ATTR")
+
+    @JvmField
+    val BUILDFILES = BazelqueryTokenType("BUILDFILES")
+
+    @JvmField
+    val RBUILDFILES = BazelqueryTokenType("RBUILDFILES")
+
+    @JvmField
+    val DEPS = BazelqueryTokenType("DEPS")
+
+    @JvmField
+    val FILTER = BazelqueryTokenType("FILTER")
+
+    @JvmField
+    val KIND = BazelqueryTokenType("KIND")
+
+    @JvmField
+    val LABELS = BazelqueryTokenType("LABELS")
+
+    @JvmField
+    val LOADFILES = BazelqueryTokenType("LOADFILES")
+
+    @JvmField
+    val RDEPS = BazelqueryTokenType("RDEPS")
+
+    @JvmField
+    val ALLRDEPS = BazelqueryTokenType("ALLRDEPS")
+
+    @JvmField
+    val SAME_PKG_DIRECT_RDEPS = BazelqueryTokenType("SAME_PKG_DIRECT_RDEPS")
+
+    @JvmField
+    val SIBLINGS = BazelqueryTokenType("SIBLINGS")
+
+    @JvmField
+    val SOME = BazelqueryTokenType("SOME")
+
+    @JvmField
+    val SOMEPATH = BazelqueryTokenType("SOMEPATH")
+
+    @JvmField
+    val TESTS = BazelqueryTokenType("TESTS")
+
+    @JvmField
+    val VISIBLE = BazelqueryTokenType("VISIBLE")
+
+
+
+
+
     @JvmField
     val UNQUOTED_WORD = BazelqueryTokenType("UNQUOTED_WORD")
 

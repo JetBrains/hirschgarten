@@ -47,12 +47,15 @@ DOUBLE_AT=[@@]
 UNQUOTED_WORD=([A-Za-z0-9/@._:$~\[\]][A-Za-z0-9*/@.\-_:$~\[\]]* | {DOUBLE_AT}[A-Za-z0-9*/@.\-_:$~\[\]+]*)
 QUOTED_WORD=[^{NL}{SQ}{DQ}]+
 
-SQ_WORD={SQ}{QUOTED_WORD}{SQ}
+//SQ_WORD={SQ}{QUOTED_WORD}{SQ}
 DQ_WORD={DQ}{QUOTED_WORD}{DQ}
 
 UNEXPECTED_WORD=[^-{NL}{SPACE}][^{NL}{SPACE}]*
 UNEXPECTED_VAL=[^{NL}]+
 FLAG_WORD=[a-z_:]*
+
+INTEGER=[0-9]+
+FLOAT=[0-9]*\.[0-9]+
 
 OPTION={HYP}{HYP}{FLAG_WORD} | {HYP}{FLAG_WORD}
 
@@ -69,7 +72,7 @@ OPTION_REQ_VALUE="--loading_phase_threads" |
                  "--experimental_repository_resolved_file" |
                  "--deleted_packages" |
                  "--package_path"
-//INTEGER=[0-9]+
+
 
 COMMENT=#({SOFT_NL} | [^\r\n])*     // potrzebne????
 COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" | "kind" | "labels" | "loadfiles" | "rdeps" | "allrdeps" | "same_pkg_direct_rdeps" | "siblings" | "some" | "somepath" | "tests" | "visible"
@@ -165,10 +168,29 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
     "="                               { return BazelqueryTokenTypes.EQUALS; }
     "set"                             { return BazelqueryTokenTypes.SET; }
 
-    {COMMAND}                         { return BazelqueryTokenTypes.COMMAND; }
+    //{COMMAND}                         { return BazelqueryTokenTypes.COMMAND; }
+    "allpaths"                        { return BazelqueryTokenTypes.ALLPATHS; }
+    "attr"                            { return BazelqueryTokenTypes.ATTR; }
+    "buildfiles"                      { return BazelqueryTokenTypes.BUILDFILES; }
+    "rbuildfiles"                     { return BazelqueryTokenTypes.RBUILDFILES; }
+    "deps"                            { return BazelqueryTokenTypes.DEPS; }
+    "filter"                          { return BazelqueryTokenTypes.FILTER; }
+    "kind"                            { return BazelqueryTokenTypes.KIND; }
+    "labels"                          { return BazelqueryTokenTypes.LABELS; }
+    "loadfiles"                       { return BazelqueryTokenTypes.LOADFILES; }
+    "rdeps"                           { return BazelqueryTokenTypes.RDEPS; }
+    "allrdeps"                        { return BazelqueryTokenTypes.ALLRDEPS; }
+    "same_pkg_direct_rdeps"           { return BazelqueryTokenTypes.SAME_PKG_DIRECT_RDEPS; }
+    "siblings"                        { return BazelqueryTokenTypes.SIBLINGS; }
+    "some"                            { return BazelqueryTokenTypes.SOME; }
+    "somepath"                        { return BazelqueryTokenTypes.SOMEPATH; }
+    "tests"                           { return BazelqueryTokenTypes.TESTS; }
+    "visible"                         { return BazelqueryTokenTypes.VISIBLE; }
 
     ","                               { return BazelqueryTokenTypes.COMMA; }
 
+
+    {INTEGER}                         { return BazelqueryTokenTypes.INTEGER; }
     {UNQUOTED_WORD}                   { return BazelqueryTokenTypes.UNQUOTED_WORD; }
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
 }
@@ -204,7 +226,7 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
 
 <VALUE_SQ> {
     {SQ}{SQ}                          { yybegin(YYINITIAL); return BazelqueryTokenTypes.SQ_VAL; }
-    {SQ_WORD}                         { yybegin(YYINITIAL); return BazelqueryTokenTypes.SQ_VAL; }
+    {SQ}({QUOTED_WORD} | {DQ})+{SQ}   { yybegin(YYINITIAL); return BazelqueryTokenTypes.SQ_VAL; }
     {SQ}({QUOTED_WORD} | {DQ})+       { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNFINISHED_VAL; }
     {SQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNFINISHED_VAL; }
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
@@ -212,7 +234,7 @@ COMMAND="allpaths" | "attr" | "buildfiles" | "rbuildfiles" | "deps" | "filter" |
 
 <VALUE_DQ> {
     {DQ}{DQ}                          { yybegin(YYINITIAL); return BazelqueryTokenTypes.DQ_VAL; }
-    {DQ_WORD}                         { yybegin(YYINITIAL); return BazelqueryTokenTypes.DQ_VAL; }
+    {DQ}({QUOTED_WORD} | {SQ})+{DQ}   { yybegin(YYINITIAL); return BazelqueryTokenTypes.DQ_VAL; }
     {DQ}({QUOTED_WORD} | {SQ})+       { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNFINISHED_VAL; }
     {DQ}                              { yybegin(YYINITIAL); return BazelqueryTokenTypes.UNFINISHED_VAL; }
     [^]                               { yybegin(YYINITIAL); yypushback(1); }
