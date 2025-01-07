@@ -199,6 +199,7 @@ class BspAndroidConfigurationExecutor(private val environment: ExecutionEnvironm
         pmInstallFlags = "",
         installOnAllUsers = true,
         alwaysInstallWithPm = true,
+        allowAssumeVerified = true,
       )
     return deployer.fullDeploy(device, apkInfo, deployOptions, indicator)
   }
