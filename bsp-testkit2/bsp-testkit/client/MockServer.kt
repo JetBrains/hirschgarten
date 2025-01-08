@@ -8,5 +8,11 @@ import ch.epfl.scala.bsp4j.PythonBuildServer
 import ch.epfl.scala.bsp4j.RustBuildServer
 import ch.epfl.scala.bsp4j.ScalaBuildServer
 
-interface MockServer : BuildServer, ScalaBuildServer, JavaBuildServer, JvmBuildServer, CppBuildServer,
-  PythonBuildServer, RustBuildServer
+interface MockServer :
+  BuildServer,
+  ScalaBuildServer,
+  JavaBuildServer,
+  JvmBuildServer,
+  CppBuildServer,
+  PythonBuildServer,
+  RustBuildServer

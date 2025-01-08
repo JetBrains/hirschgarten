@@ -45,6 +45,7 @@ open class MockClient : BuildClient {
   fun clearDiagnostics() {
     publishDiagnostics.clear()
   }
+
   override fun onBuildShowMessage(params: ShowMessageParams) {
     showMessage.add(params)
   }

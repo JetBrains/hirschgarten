@@ -14,7 +14,11 @@ object JsonComparator {
   private val gson = GsonBuilder().create()
   private val mapType: Type = object : TypeToken<Map<String?, Any?>?>() {}.type
 
-  fun <T> assertJsonEquals(expected: T, actual: T, typeOfT: Type) {
+  fun <T> assertJsonEquals(
+    expected: T,
+    actual: T,
+    typeOfT: Type,
+  ) {
     val expectedObject = gson.toJsonTree(expected, typeOfT)
     val actualObject = gson.toJsonTree(actual, typeOfT)
 
@@ -28,10 +32,10 @@ object JsonComparator {
 
     assertTrue(difference.areEqual()) {
       "Expected: $sortedExpected\n\n" +
-          "Actual: $sortedActual\n\n" +
-          "Entries only in expected \n${difference.entriesOnlyOnLeft()}\n\n" +
-          "Entries only in actual\n${difference.entriesOnlyOnRight()}\n\n" +
-          "Entries differing\n${difference.entriesDiffering()}"
+        "Actual: $sortedActual\n\n" +
+        "Entries only in expected \n${difference.entriesOnlyOnLeft()}\n\n" +
+        "Entries only in actual\n${difference.entriesOnlyOnRight()}\n\n" +
+        "Entries differing\n${difference.entriesDiffering()}"
     }
   }
 
@@ -65,7 +69,5 @@ object JsonComparator {
 
 // FIXME: this is WILDLY inefficient
 object JsonElementComparator : Comparator<JsonElement> {
-  override fun compare(t: JsonElement, t1: JsonElement): Int {
-    return t.toString().compareTo(t1.toString())
-  }
+  override fun compare(t: JsonElement, t1: JsonElement): Int = t.toString().compareTo(t1.toString())
 }
