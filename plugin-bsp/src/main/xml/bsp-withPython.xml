@@ -1,0 +1,5 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="org.jetbrains.bsp">
+    <projectSyncHook implementation="org.jetbrains.plugins.bsp.impl.flow.sync.languages.python.PythonProjectSync"/>
+  </extensions>
+</idea-plugin>

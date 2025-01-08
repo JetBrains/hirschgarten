@@ -1,0 +1,1 @@
+plugin.xml files are processed separately from the rest of resources and are handled by intellij_rules

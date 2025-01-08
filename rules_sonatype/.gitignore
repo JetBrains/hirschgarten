@@ -1,0 +1,13 @@
+# idea.
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+# bazel
+bazel-*
+
+# bsp
+.bazelbsp/
+.bsp/

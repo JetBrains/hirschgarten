@@ -1,0 +1,38 @@
+load("//aspects:utils/utils.bzl", "create_struct", "file_location")
+load("@${ruleName}//go:def.bzl", "go_context", "GoArchive", "GoSource")
+
+def extract_go_info(target, ctx, **kwargs):
+    if GoArchive not in target:
+        return None, None
+    go_archive = target[GoArchive]
+    importpath = go_archive.data.importpath
+    sdk_home_path = _extract_sdk(ctx)
+    generated_files = _extract_generated_files(target)
+    generated_sources = [f for f in generated_files if not f.is_external and f.is_source]
+    generated_libraries = [f for f in generated_files if not f.is_external and not f.is_source]
+
+    result = create_struct(
+        importpath = importpath,
+        sdk_home_path = sdk_home_path,
+        generated_sources = generated_sources,
+        generated_libraries = generated_libraries,
+    )
+
+    return dict(go_target_info = result), None
+
+def _extract_sdk(ctx):
+    go = go_context(ctx)
+    if go == None:
+        return None
+    return file_location(go.sdk.go)
+
+def _extract_generated_files(target):
+    found_direct = [dir for dir in target[GoArchive].direct if dir.data.label == target.label]
+    if found_direct:
+        orig_srcs = found_direct[0].data.orig_srcs
+    else:
+        orig_srcs = target[GoArchive].data.orig_srcs
+    return [
+        file_location(t)
+        for t in orig_srcs
+    ]

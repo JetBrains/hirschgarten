@@ -1,0 +1,12 @@
+Bazel Sonatype
+Copyright 2021 JetBrains
+
+This product includes software developed at
+JetBrains (https://jetbrains.com).
+
+The Initial Developer of some parts of the tool, which are copied from, derived from, or
+inspired by Rules Jvm External(via https://github.com/bazelbuild/rules_jvm_external), is Google Incorporated (http://www.google.com/).
+Copyright 2017 - 2021 Google Incorporated. All Rights Reserved.
+
+The Initial Developer of some parts of the tool, which are copied from, derived from, or
+inspired by sbt-sonatype(via https://github.com/xerial/sbt-sonatype), is Taro L. Saito (https://xerial.org/leo/).
