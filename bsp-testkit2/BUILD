@@ -4,7 +4,7 @@ kt_jvm_library(
     name = "testkit-client",
     visibility = ["//visibility:public"],
     exports = [
-        "//bsp-testkit/client",
+        "//bsp-testkit2/bsp-testkit/client",
     ],
 )
 
@@ -12,6 +12,6 @@ kt_jvm_library(
     name = "bazel-testkit-client",
     visibility = ["//visibility:public"],
     exports = [
-        "//bsp-testkit/client/bazel",
+        "//bsp-testkit2/bsp-testkit/client/bazel",
     ],
 )

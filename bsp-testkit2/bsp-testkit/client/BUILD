@@ -5,7 +5,7 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//visibility:public"],
     deps = [
-        "//bsp-testkit/utils:JsonComparator",
+        "//bsp-testkit2/bsp-testkit/utils:JsonComparator",
         "@maven//:ch_epfl_scala_bsp4j",
         "@maven//:com_google_code_gson_gson",
         "@maven//:org_eclipse_lsp4j_org_eclipse_lsp4j_jsonrpc",

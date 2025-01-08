@@ -168,12 +168,10 @@ python.toolchain(
 bazel_dep(
     name = "bsp-testkit2",
     dev_dependency = True,
-    repo_name = "testkit",
 )
-git_override(
+local_path_override(
     module_name = "bsp-testkit2",
-    commit = "a5cf4603d01b0835acf28fabee201ffb22f28b2a",
-    remote = "https://github.com/build-server-protocol/bsp-testkit2.git",
+    path = "bsp-testkit2",
 )
 
 bazel_dep(
