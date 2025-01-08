@@ -1,4 +1,7 @@
-module(name = "bsp-testkit2", version = "")
+module(
+    name = "bsp-testkit2",
+    version = "",
+)
 
 bazel_dep(name = "bazel_skylib", version = "1.5.0")
 bazel_dep(name = "rules_java", version = "7.5.0")
@@ -22,7 +25,6 @@ maven.install(
         "https://repo.maven.apache.org/maven2",
     ],
 )
-
 use_repo(
     maven,
     "maven",

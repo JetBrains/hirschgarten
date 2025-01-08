@@ -11,7 +11,6 @@ import java.io.File
 import java.nio.file.Path
 import java.util.concurrent.Executors
 
-
 /**
  * A session is a "physical" connection to a BSP server. It must be closed when it is no longer
  * needed. The user is responsible for maintaining the correct BSP life-cycle.
@@ -19,23 +18,26 @@ import java.util.concurrent.Executors
 class Session<Server : BuildServer, Client : BuildClient>(
   val workspacePath: Path,
   val client: Client,
-  serverClass: Class<Server>
+  serverClass: Class<Server>,
 ) : AutoCloseable {
   private val workspaceFile = workspacePath.toFile()
   private val connectionDetails = readBspConnectionDetails(workspaceFile)
 
-  val process: Process = ProcessBuilder(connectionDetails.argv)
-    .directory(workspaceFile)
-    .start()
+  val process: Process =
+    ProcessBuilder(connectionDetails.argv)
+      .directory(workspaceFile)
+      .start()
 
   private val executor = Executors.newCachedThreadPool()
-  private val launcher = Launcher.Builder<Server>()
-    .setRemoteInterface(serverClass)
-    .setExecutorService(executor)
-    .setInput(process.inputStream)
-    .setOutput(process.outputStream)
-    .setLocalService(client)
-    .create()
+  private val launcher =
+    Launcher
+      .Builder<Server>()
+      .setRemoteInterface(serverClass)
+      .setExecutorService(executor)
+      .setInput(process.inputStream)
+      .setOutput(process.outputStream)
+      .setLocalService(client)
+      .create()
 
   init {
     launcher.startListening()
@@ -43,9 +45,12 @@ class Session<Server : BuildServer, Client : BuildClient>(
 
   val server: Server = launcher.remoteProxy
 
-  val serverClosed: Deferred<SessionResult> = process.onExit().thenApply {
-    SessionResult(process.exitValue(), process.errorStream.bufferedReader().readText())
-  }.asDeferred()
+  val serverClosed: Deferred<SessionResult> =
+    process
+      .onExit()
+      .thenApply {
+        SessionResult(process.exitValue(), process.errorStream.bufferedReader().readText())
+      }.asDeferred()
 
   override fun close() {
     executor.shutdown()
@@ -56,15 +61,15 @@ class Session<Server : BuildServer, Client : BuildClient>(
   }
 
   companion object {
-    private const val BspWorkspaceConfigDirName = ".bsp"
-    private const val BspWorkspaceConfigFileExtension = ".json"
+    private const val BSP_WORKSPACE_CONFIG_DIR_NAME = ".bsp"
+    private const val BSP_WORKSPACE_CONFIG_FILE_EXTENSION = ".json"
     private val gson = Gson()
 
     private fun readBspConnectionDetails(workspace: File): BspConnectionDetails {
-      val bspDir = File(workspace, BspWorkspaceConfigDirName)
+      val bspDir = File(workspace, BSP_WORKSPACE_CONFIG_DIR_NAME)
       require(bspDir.exists() && bspDir.isDirectory)
 
-      val configFiles = bspDir.listFiles { _, name -> name.endsWith(BspWorkspaceConfigFileExtension) }
+      val configFiles = bspDir.listFiles { _, name -> name.endsWith(BSP_WORKSPACE_CONFIG_FILE_EXTENSION) }
       require(configFiles != null)
       require(configFiles.size == 1)
 
