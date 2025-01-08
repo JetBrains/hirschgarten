@@ -1,0 +1,10 @@
+import /projectview/does/not/exist.bazelproject
+
+
+targets:
+    //included_target9.1
+    -//excluded_target9.1
+    -//excluded_target9.2
+
+bazel_binary: path9/to/bazel
+

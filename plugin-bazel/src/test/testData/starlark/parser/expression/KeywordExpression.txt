@@ -1,0 +1,12 @@
+FILE
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkNoneLiteralExpression(NONE_LITERAL_EXPRESSION)
+      PsiElement(Starlark:None)('None')
+  PsiWhiteSpace('\n')
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkTrueLiteralExpression(TRUE_LITERAL_EXPRESSION)
+      PsiElement(Starlark:True)('True')
+  PsiWhiteSpace('\n')
+  StarlarkExpressionStatement(EXPRESSION_STATEMENT)
+    StarlarkFalseLiteralExpression(FALSE_LITERAL_EXPRESSION)
+      PsiElement(Starlark:False)('False')

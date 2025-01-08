@@ -1,0 +1,186 @@
+#
+# This file is based on Bazel plugin for IntelliJ by The Bazel Authors, licensed under Apache-2.0;
+# It was modified by JetBrains s.r.o. and contributors
+#
+module(
+    name = "rules_intellij",
+    bazel_compatibility = [">=7.0.0"],
+)
+
+bazel_dep(
+    name = "platforms",
+    version = "0.0.10",
+)
+bazel_dep(
+    name = "rules_java",
+    version = "7.8.0",
+)
+bazel_dep(
+    name = "rules_python",
+    version = "0.34.0",
+)
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    configure_coverage_tool = True,
+    python_version = "3.12",
+)
+use_repo(python, "python_3_12", "python_versions")
+
+bazel_dep(
+    name = "rules_kotlin",
+    version = "2.0.0",
+)
+bazel_dep(
+    name = "bazel_skylib",
+    version = "1.7.1",
+)
+bazel_dep(name = "rules_jvm_external", version = "6.2")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
+    name = "rules_intellij_maven",
+    artifacts = [
+        "ch.epfl.scala:bsp4j:2.2.0-M2",
+        "org.junit.jupiter:junit-jupiter:5.11.0",
+        "org.junit.vintage:junit-vintage-engine:5.11.0",
+        "org.junit.platform:junit-platform-console:1.11.0",
+        "org.junit.platform:junit-platform-suite-engine:1.11.0",
+        "org.junit.platform:junit-platform-suite-api:1.11.0",
+    ],
+    fail_if_repin_required = True,
+    generate_compat_repositories = True,
+    lock_file = "//:maven_install.json",
+)
+use_repo(
+    maven,
+    "rules_intellij_maven",
+)
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+
+SDK_243_PLUGIN_REPOSITORY_VERSION = "243.22562.145"
+
+SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.23654-EAP-CANDIDATE-SNAPSHOT"
+
+IC_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+
+IC_243_CHECKSUM = "sha256-THgVTWMjOg5XgY37SqO9cECeYChlYQzrbmnpw8mVN1A="
+
+http_archive(
+    name = "intellij_ce_2024_3",
+    build_file = "@rules_intellij//intellij_platform_sdk:BUILD.idea243",
+    integrity = IC_243_CHECKSUM,
+    url = IC_243_URL,
+)
+
+IC_243_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+
+IC_243_SOURCES_CHECKSUM = "sha256-jKBH1c8v3nijOOJQbDTRlwKjsLq8tej8ubeooWs0eDQ="
+
+http_jar(
+    name = "intellij_ce_2024_3_sources",
+    integrity = IC_243_SOURCES_CHECKSUM,
+    url = IC_243_SOURCES_URL,
+)
+
+DEVKIT_BUILD_FILE = """
+java_import(
+    name = "devkit",
+    jars = ["devkit/lib/devkit.jar"],
+    visibility = ["//visibility:public"],
+)
+"""
+
+DEVKIT_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/DevKit/%s/DevKit-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
+
+DEVKIT_243_SHA = "b3403b6a3c1dadd0eaaaa12cc21c910bc0e9c7264c55a9785a7ece188cba5ec6"
+
+http_archive(
+    name = "devkit_2024_3",
+    build_file_content = DEVKIT_BUILD_FILE,
+    sha256 = DEVKIT_243_SHA,
+    url = DEVKIT_243_URL,
+)
+
+_PYTHON_CE_BUILD_FILE = """
+java_import(
+    name = "python",
+    jars = glob(["python-ce/lib/*.jar"]),
+    visibility = ["//visibility:public"],
+)
+filegroup(
+  name = "python_helpers",
+  srcs = glob(["python-ce/helpers/**/*"]),
+  visibility = ["//visibility:public"],
+)
+"""
+
+PYTHON_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
+
+PYTHON_PLUGIN_243_CHECKSUM = "sha256-SdL/RC3b7dQKsGO3Ya1kUv0MDKr0goJW1c6E2pt4fgc="
+
+http_archive(
+    name = "python_2024_3",
+    build_file_content = _PYTHON_CE_BUILD_FILE,
+    integrity = PYTHON_PLUGIN_243_CHECKSUM,
+    url = PYTHON_PLUGIN_243_URL,
+)
+
+_GO_BUILD_FILE = """
+java_import(
+    name = "go",
+    jars = glob(["go-plugin/lib/*.jar", "go-plugin/lib/modules/*.jar"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
+GO_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
+
+http_archive(
+    name = "go_2024_3",
+    build_file_content = _GO_BUILD_FILE,
+    integrity = "sha256-W4k3GWlMZcgrrk32kW2Uo5YbY5Cmqqigd6Ha95VAQak=",
+    url = GO_PLUGIN_243_URL,
+)
+
+_ANDRIOD_PLUGIN_BUILD_FILE = """
+java_import(
+    name = "android",
+    jars = glob(["android/lib/*.jar"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
+ANDROID_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
+
+ANDROID_PLUGIN_243_CHECKSUM = "sha256-dCli5SOl/+SuzhkiI6jl7m9JQ1PLn1CVJlLka3ki2kg="
+
+http_archive(
+    name = "android_2024_3",
+    build_file_content = _ANDRIOD_PLUGIN_BUILD_FILE,
+    integrity = ANDROID_PLUGIN_243_CHECKSUM,
+    url = ANDROID_PLUGIN_243_URL,
+)
+
+PERFORMANCE_PLUGIN_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+
+PERFORMANCE_PLUGIN_243_SHA = "9df6968f786a1297718bf833d5583b777047280b89e08e13b6c036030bac0604"
+
+http_jar(
+    name = "performance_2024_3",
+    sha256 = PERFORMANCE_PLUGIN_243_SHA,
+    url = PERFORMANCE_PLUGIN_243_URL,
+)
+
+CODE_WITH_ME_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+
+CODE_WITH_ME_243_CHECKSUM = "sha256-R8AcV9IjPGnx8ur2CsZdVBwHXmwvNyjnHoWjXw4Dg9I="
+
+http_jar(
+    name = "code_with_me_2024_3",
+    integrity = CODE_WITH_ME_243_CHECKSUM,
+    url = CODE_WITH_ME_243_URL,
+)

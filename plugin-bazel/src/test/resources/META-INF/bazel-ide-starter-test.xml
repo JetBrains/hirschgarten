@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.jetbrains">
+        <performancePlugin.commandProvider
+                implementation="org.jetbrains.bazel.ideStarter.hotSwap.HotSwapCommandProvider"/>
+
+    </extensions>
+</idea-plugin>

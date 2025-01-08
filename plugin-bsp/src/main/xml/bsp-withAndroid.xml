@@ -1,0 +1,22 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="org.jetbrains.bsp">
+    <androidSdkGetterExtension
+      implementation="org.jetbrains.plugins.bsp.android.AndroidSdkGetter" />
+    <androidFacetEntityUpdaterExtension
+      implementation="org.jetbrains.plugins.bsp.magicmetamodel.impl.workspacemodel.impl.updaters.AndroidFacetEntityUpdaterExtensionImpl" />
+    <bspRunHandlerProvider implementation="org.jetbrains.plugins.bsp.android.run.AndroidBspRunHandler$AndroidBspRunHandlerProvider"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.android.project">
+    <!-- order = first, because GradleProjectSystemProvider returns true if there's a build.gradle file (even if imported with BSP) -->
+    <projectsystem implementation="org.jetbrains.plugins.bsp.android.BspAndroidProjectSystemProvider" order="first"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <stepsBeforeRunProvider implementation="org.jetbrains.plugins.bsp.android.run.AndroidBeforeRunTaskProvider" />
+    <programRunner implementation="org.jetbrains.plugins.bsp.android.run.BspAndroidProgramRunner" />
+    <postStartupActivity implementation="org.jetbrains.plugins.bsp.android.BspAndroidModelUpdater"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.android.tools.idea">
+    <rendering.tokens.buildSystemFilePreviewServices implementation="org.jetbrains.plugins.bsp.android.BspBuildSystemFilePreviewServices"/>
+    <projectsystem.ApplicationProjectContextProvider implementation="org.jetbrains.plugins.bsp.android.BspApplicationProjectContextProvider"/>
+  </extensions>
+</idea-plugin>
