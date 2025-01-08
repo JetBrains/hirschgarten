@@ -67,7 +67,7 @@ SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.23654-EAP-CANDIDATE-SNAPSHOT"
 
 IC_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
-IC_243_CHECKSUM = "sha256-W57UDob5oPACIrhHk3aoGK1juTnNu4PQN4L852pdGjc="
+IC_243_CHECKSUM = "sha256-THgVTWMjOg5XgY37SqO9cECeYChlYQzrbmnpw8mVN1A="
 
 http_archive(
     name = "intellij_ce_2024_3",
@@ -78,7 +78,7 @@ http_archive(
 
 IC_243_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
-IC_243_SOURCES_CHECKSUM = "sha256-pSygD0jK7Dw7Le3s8ktVkgqQ3Jf9A0Yl69qhZO3cj8c="
+IC_243_SOURCES_CHECKSUM = "sha256-jKBH1c8v3nijOOJQbDTRlwKjsLq8tej8ubeooWs0eDQ="
 
 http_jar(
     name = "intellij_ce_2024_3_sources",
