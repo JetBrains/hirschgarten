@@ -54,12 +54,12 @@ object BrokenBuildFileSyntaxTest : BazelBspTestBaseScenario() {
       testClient.test(20.seconds) { session, _ ->
         session.client.clearDiagnostics()
         val result = session.server.buildTargetCompile(transformedParams).await()
-//        assertEquals(StatusCode.OK, result.statusCode)
-//        assertEquals(params.originId, result.originId)
-//        assertNull(result.data)
-//        assertNull(result.dataKind)
-//        println(session.client.publishDiagnosticsNotifications)
-//        assertEquals(1, session.client.publishDiagnosticsNotifications.size)
+        assertEquals(StatusCode.OK, result.statusCode)
+        assertEquals(params.originId, result.originId)
+        assertNull(result.data)
+        assertNull(result.dataKind)
+        println(session.client.publishDiagnosticsNotifications)
+        assertEquals(1, session.client.publishDiagnosticsNotifications.size)
 //        val deprecatedWarning =
 //          session.client.publishDiagnosticsNotifications.find {
 //            it.textDocument.uri == expectedDeprecatedWarningFileUri
