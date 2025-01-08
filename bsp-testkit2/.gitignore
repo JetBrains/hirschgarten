@@ -1,7 +1,0 @@
-.bazelbsp/
-.bsp/
-.idea/
-.ijwb/
-bazel-*
-.DS_Store
-projectview.bazelproject
