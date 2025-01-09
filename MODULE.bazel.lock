@@ -1709,6 +1709,85 @@
       }
     },
     "@@rules_go~//go:extensions.bzl%go_sdk": {
+      "os:linux,arch:amd64": {
+        "bzlTransitiveDigest": "oLJ8NANedaBhQcKKfE9XV5qVY/1L57ZTE+869IKrnlo=",
+        "usagesDigest": "ou6iSUcUrWTQlaX5sESCdXNLwXwRYBV7qwLifS09hZo=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "go_default_sdk": {
+            "bzlFile": "@@rules_go~//go/private:sdk.bzl",
+            "ruleClassName": "go_download_sdk_rule",
+            "attributes": {
+              "goos": "",
+              "goarch": "",
+              "sdks": {},
+              "experiments": [],
+              "patches": [],
+              "patch_strip": 0,
+              "urls": [
+                "https://dl.google.com/go/{}"
+              ],
+              "version": "1.21.1",
+              "strip_prefix": "go"
+            }
+          },
+          "go_host_compatible_sdk_label": {
+            "bzlFile": "@@rules_go~//go/private:extensions.bzl",
+            "ruleClassName": "host_compatible_toolchain",
+            "attributes": {
+              "toolchain": "@go_default_sdk//:ROOT"
+            }
+          },
+          "go_toolchains": {
+            "bzlFile": "@@rules_go~//go/private:sdk.bzl",
+            "ruleClassName": "go_multiple_toolchains",
+            "attributes": {
+              "prefixes": [
+                "_0000_go_default_sdk_"
+              ],
+              "geese": [
+                ""
+              ],
+              "goarchs": [
+                ""
+              ],
+              "sdk_repos": [
+                "go_default_sdk"
+              ],
+              "sdk_types": [
+                "remote"
+              ],
+              "sdk_versions": [
+                "1.21.1"
+              ]
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "bazel_features~",
+            "bazel_features_globals",
+            "bazel_features~~version_extension~bazel_features_globals"
+          ],
+          [
+            "bazel_features~",
+            "bazel_features_version",
+            "bazel_features~~version_extension~bazel_features_version"
+          ],
+          [
+            "rules_go~",
+            "bazel_features",
+            "bazel_features~"
+          ],
+          [
+            "rules_go~",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      },
       "os:osx,arch:aarch64": {
         "bzlTransitiveDigest": "oLJ8NANedaBhQcKKfE9XV5qVY/1L57ZTE+869IKrnlo=",
         "usagesDigest": "ou6iSUcUrWTQlaX5sESCdXNLwXwRYBV7qwLifS09hZo=",
