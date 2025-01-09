@@ -2385,7 +2385,7 @@
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
         "bzlTransitiveDigest": "WlH4eDDbIM6xLbNXP/vdObd+oj791q6TrnABVuaLDv8=",
-        "usagesDigest": "W4J5TKgCvDH8GAijGP/t3cAOUG/z73KnwmBZ9yt9BKs=",
+        "usagesDigest": "ioYdf9y69L/3y9ke+oGSYIWSPyFlg6WJgPFptWhs6sI=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements_linux.txt": "8175b4c8df50ae2f22d1706961884beeb54e7da27bd2447018314a175981997d",
           "@@rules_fuzzing~//fuzzing/requirements.txt": "ab04664be026b632a0d2a2446c4f65982b7654f5b6851d2f9d399a19b7242a5b",
