@@ -89,7 +89,7 @@ maven.install(
         "org.junit.platform:junit-platform-console:1.11.4",
         "org.junit.platform:junit-platform-suite-api:1.11.4",
         "org.junit.platform:junit-platform-suite-engine:1.11.4",
-        "org.kodein.di:kodein-di:7.24.0",
+        "org.kodein.di:kodein-di:7.24.1",
         "org.scala-lang:scala-library:2.13.15",
     ],
     fail_if_repin_required = True,
