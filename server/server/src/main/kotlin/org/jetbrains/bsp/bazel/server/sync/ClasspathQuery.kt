@@ -3,9 +3,9 @@ package org.jetbrains.bsp.bazel.server.sync
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
-import org.jetbrains.bsp.bazel.server.model.Label
 
 object ClasspathQuery {
   fun classPathQuery(

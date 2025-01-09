@@ -5,10 +5,10 @@ import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.future.await
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.bazel.install.Install
-import org.jetbrains.bsp.bazel.server.model.Label
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
 import kotlin.time.Duration.Companion.seconds

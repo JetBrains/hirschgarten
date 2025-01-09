@@ -3,10 +3,10 @@ package org.jetbrains.bsp.bazel.server.sync.firstPhase
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import java.nio.file.Path

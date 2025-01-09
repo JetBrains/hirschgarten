@@ -19,13 +19,13 @@ import com.google.protobuf.Empty
 import io.grpc.stub.StreamObserver
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.toBspIdentifier
 import org.jetbrains.bsp.bazel.commons.BazelStatus
-import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bsp.bazel.server.model.Label
-import org.jetbrains.bsp.bazel.server.model.toBspIdentifier
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.PublishOutputParams

@@ -1,6 +1,11 @@
 package org.jetbrains.bsp.bazel.server.model
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.label.AllPackagesBeneath
+import org.jetbrains.bazel.commons.label.AllRuleTargets
+import org.jetbrains.bazel.commons.label.AllRuleTargetsAndFiles
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.Package
 import org.junit.jupiter.api.Test
 
 class LabelTest {

@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.server.diagnostics
 
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
 
 class Output(private val lines: List<String>, val targetLabel: Label) {
   private var pointer = 0

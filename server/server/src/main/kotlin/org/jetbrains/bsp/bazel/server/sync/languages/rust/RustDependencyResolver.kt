@@ -5,7 +5,7 @@ import ch.epfl.scala.bsp4j.RustDepKindInfo
 import ch.epfl.scala.bsp4j.RustDependency
 import ch.epfl.scala.bsp4j.RustPackage
 import ch.epfl.scala.bsp4j.RustRawDependency
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.server.model.Module
 
 data class RustDependencies(val dependencies: Map<String, List<RustDependency>>, val rawDependencies: Map<String, List<RustRawDependency>>)

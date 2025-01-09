@@ -1,5 +1,6 @@
 package org.jetbrains.bsp.bazel.install
 
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.install.cli.CliOptions
 import org.jetbrains.bsp.bazel.install.cli.ProjectViewCliOptions
 import org.jetbrains.bsp.bazel.projectview.generator.DefaultProjectViewGenerator
@@ -16,7 +17,6 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSect
 import org.jetbrains.bsp.bazel.projectview.model.sections.ShardSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ShardingApproachSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.TargetShardSizeSection
-import org.jetbrains.bsp.bazel.server.model.Label
 import java.nio.file.Path
 import kotlin.io.path.Path
 

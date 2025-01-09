@@ -5,10 +5,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.isFile
 import org.jetbrains.bazel.assets.BazelPluginIcons
+import org.jetbrains.bazel.commons.constants.Constants.BAZELBSP_JSON_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.settings.bazelProjectSettings
-import org.jetbrains.bsp.bazel.commons.Constants.BAZELBSP_JSON_FILE_NAME
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.impl.flow.open.BaseBspProjectOpenProcessor
 import org.jetbrains.plugins.bsp.impl.flow.open.BspProjectOpenProcessor

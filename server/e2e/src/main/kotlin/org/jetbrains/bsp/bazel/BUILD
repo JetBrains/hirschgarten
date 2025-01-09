@@ -9,7 +9,7 @@ kt_jvm_binary(
     deps = [
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -49,7 +49,7 @@ kt_jvm_binary(
     deps = [
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -76,7 +76,7 @@ kt_jvm_binary(
     deps = [
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -91,7 +91,7 @@ kt_jvm_binary(
         "//protocol",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -148,7 +148,7 @@ kt_jvm_binary(
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/android",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )
@@ -189,7 +189,7 @@ kt_jvm_binary(
     deps = [
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "@maven//:ch_epfl_scala_bsp4j",
     ],
 )

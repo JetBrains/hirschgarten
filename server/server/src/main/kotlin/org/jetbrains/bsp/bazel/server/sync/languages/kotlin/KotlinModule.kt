@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.server.sync.languages.kotlin
 
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.server.model.LanguageData
 import org.jetbrains.bsp.bazel.server.sync.languages.java.JavaModule
 

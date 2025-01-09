@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 
 class BazelLabelExpander(private val bazelRunner: BazelRunner, private val workspaceContextProvider: WorkspaceContextProvider) {

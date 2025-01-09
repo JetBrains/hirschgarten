@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.projectview.model.sections
 
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
 import java.nio.file.Path
 
 sealed class ProjectViewExcludableListSection<T>(sectionName: String) : ProjectViewListSection<T>(sectionName) {

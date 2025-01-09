@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bsp.bazel.server.sync.sharding
 
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
 
 /**
  * A simple target batcher splitting based on the target strings. This will tend to split by

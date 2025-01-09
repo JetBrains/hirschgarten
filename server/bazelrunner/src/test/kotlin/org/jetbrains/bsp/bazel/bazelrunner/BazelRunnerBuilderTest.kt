@@ -1,8 +1,8 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
 import io.kotest.matchers.collections.shouldContainExactly
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bsp.bazel.workspacecontext.BazelBinarySpec
