@@ -6,7 +6,7 @@ import ch.epfl.scala.bsp4j.SourceItem
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import org.eclipse.lsp4j.jsonrpc.Launcher
 import org.eclipse.lsp4j.jsonrpc.Launcher.Builder
-import org.jetbrains.bsp.bazel.install.DEFAULT_PROJECT_VIEW_FILE_NAME
+import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bsp.bazel.server.BazelBspServer
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
 import org.jetbrains.bsp.bazel.server.bsp.BspIntegrationData

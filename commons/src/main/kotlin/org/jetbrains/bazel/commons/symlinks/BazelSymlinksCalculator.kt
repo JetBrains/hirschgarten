@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.server.sync.utils
+package org.jetbrains.bazel.commons.symlinks
 
 import java.nio.file.FileVisitResult
 import java.nio.file.Files

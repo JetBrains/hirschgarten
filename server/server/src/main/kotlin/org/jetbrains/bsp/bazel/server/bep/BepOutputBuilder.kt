@@ -3,7 +3,7 @@ package org.jetbrains.bsp.bazel.server.bep
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.NamedSetOfFiles
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos.OutputGroup
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import java.io.File
 import java.nio.file.Path

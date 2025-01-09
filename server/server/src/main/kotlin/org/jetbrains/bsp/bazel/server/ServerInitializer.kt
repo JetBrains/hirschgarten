@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.server
 
 import org.apache.logging.log4j.LogManager
-import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
 import org.jetbrains.bsp.bazel.server.bsp.BspIntegrationData
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo

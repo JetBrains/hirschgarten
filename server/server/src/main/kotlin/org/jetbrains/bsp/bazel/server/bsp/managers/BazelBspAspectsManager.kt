@@ -1,6 +1,8 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
+import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.aspect
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.buildManualTests
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.buildTagFilters
@@ -10,14 +12,12 @@ import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.keepGoing
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag.outputGroups
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
 import org.jetbrains.bsp.bazel.commons.BazelStatus
-import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.bep.BepOutput
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
 import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider

@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
@@ -13,7 +14,6 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectories
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested

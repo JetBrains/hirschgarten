@@ -11,7 +11,7 @@ kt_jvm_library(
         "//server/install:__subpackages__",
     ],
     deps = [
-        "//server/commons",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
         "//server/executioncontext/installationcontext",
         "//server/executioncontext/projectview:generator",
         "//server/executioncontext/projectview:parser",

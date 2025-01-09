@@ -5,7 +5,7 @@ import com.google.protobuf.InvalidProtocolBufferException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bazel.commons.constants.Constants
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail

@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
@@ -17,8 +18,8 @@ import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
+import org.jetbrains.bsp.bazel.server.label.label
 import org.jetbrains.bsp.bazel.server.model.GoLibrary
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
@@ -27,14 +28,12 @@ import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.SourceSet
 import org.jetbrains.bsp.bazel.server.model.SourceWithData
 import org.jetbrains.bsp.bazel.server.model.Tag
-import org.jetbrains.bsp.bazel.server.model.label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePlugin
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
 import org.jetbrains.bsp.bazel.server.sync.languages.android.KotlinAndroidModulesMerger
 import org.jetbrains.bsp.bazel.server.sync.languages.rust.RustModule
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
-import org.jetbrains.bsp.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.net.URI
 import java.nio.charset.StandardCharsets

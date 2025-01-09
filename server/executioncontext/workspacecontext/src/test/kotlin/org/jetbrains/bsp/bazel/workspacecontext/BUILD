@@ -71,6 +71,6 @@ kt_junit5_test(
         "//server/executioncontext/workspacecontext/src/main/kotlin/org/jetbrains/bsp/bazel/workspacecontext",
     ],
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
     ],
 )

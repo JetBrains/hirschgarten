@@ -25,7 +25,6 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
-import org.jetbrains.bazel.bsp.connection.stateService
 import org.jetbrains.bazel.config.BazelPluginBundle
 import org.jetbrains.plugins.bsp.config.defaultJdkName
 import org.jetbrains.plugins.bsp.coroutines.BspCoroutineService
@@ -39,9 +38,9 @@ import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
 private const val BAZEL_PROJECT_SETTINGS_ID = "bazel.project.settings"
-internal const val BAZEL_PROJECT_SETTINGS_DISPLAY_NAME = "Bazel"
+const val BAZEL_PROJECT_SETTINGS_DISPLAY_NAME = "Bazel"
 
-internal data class BazelProjectSettings(
+data class BazelProjectSettings(
   val projectViewPath: Path? = null,
   val selectedServerJdkName: String? = null,
   val customJvmOptions: List<String> = emptyList(),
@@ -259,7 +258,7 @@ internal class BazelProjectSettingsConfigurableProvider(private val project: Pro
   override fun createConfigurable(): Configurable = BazelProjectSettingsConfigurable(project)
 }
 
-internal var Project.bazelProjectSettings: BazelProjectSettings
+var Project.bazelProjectSettings: BazelProjectSettings
   get() = BazelProjectSettingsService.getInstance(this).settings.copy()
   set(value) {
     BazelProjectSettingsService.getInstance(this).settings = value.copy()

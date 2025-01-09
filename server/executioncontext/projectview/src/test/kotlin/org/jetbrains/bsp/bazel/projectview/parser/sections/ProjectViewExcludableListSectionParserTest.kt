@@ -2,11 +2,11 @@ package org.jetbrains.bsp.bazel.projectview.parser.sections
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewExcludableListSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSection
 import org.jetbrains.bsp.bazel.projectview.parser.splitter.ProjectViewRawSections
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.params.ParameterizedTest

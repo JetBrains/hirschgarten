@@ -1,10 +1,10 @@
 package org.jetbrains.bsp.bazel.server.bsp.managers
 
 import org.apache.velocity.app.VelocityEngine
-import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
-import org.jetbrains.bsp.bazel.server.model.Label
 import java.nio.file.Paths
 import java.util.Properties
 

@@ -2,12 +2,12 @@ package org.jetbrains.bsp.bazel.workspacecontext
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTargetsFromDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

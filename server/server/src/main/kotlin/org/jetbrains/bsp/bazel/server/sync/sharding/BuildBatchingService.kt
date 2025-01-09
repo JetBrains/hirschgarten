@@ -15,7 +15,7 @@
  */
 package org.jetbrains.bsp.bazel.server.sync.sharding
 
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
 
 /**
  * A service for splitting up a large set of targets into batches, built one at a time.

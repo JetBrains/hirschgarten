@@ -15,10 +15,10 @@
  */
 package org.jetbrains.bsp.bazel.server.sync.sharding
 
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
-import org.jetbrains.bsp.bazel.server.sync.utils.BazelSymlinksCalculator
 import org.jetbrains.bsp.protocol.FeatureFlags
 import java.io.File
 import java.nio.file.Path

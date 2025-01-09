@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.install
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
-import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bsp.bazel.installationcontext.InstallationContext
 
 class BspConnectionDetailsCreator(installationContext: InstallationContext, private val produceTraceLog: Boolean) {

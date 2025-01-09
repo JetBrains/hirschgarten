@@ -9,7 +9,7 @@ kt_jvm_library(
     ],
     deps = [
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/bsp/info",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
     ],
 )

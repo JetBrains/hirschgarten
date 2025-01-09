@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import java.nio.file.Path
 

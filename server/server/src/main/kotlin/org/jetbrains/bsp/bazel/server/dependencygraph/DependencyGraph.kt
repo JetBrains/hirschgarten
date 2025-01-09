@@ -1,9 +1,9 @@
 package org.jetbrains.bsp.bazel.server.dependencygraph
 
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.Dependency
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.TargetInfo
-import org.jetbrains.bsp.bazel.server.model.Label
-import org.jetbrains.bsp.bazel.server.model.label
+import org.jetbrains.bsp.bazel.server.label.label
 
 class DependencyGraph(private val rootTargets: Set<Label> = emptySet(), private val idToTargetInfo: Map<Label, TargetInfo> = emptyMap()) {
   private val idToDirectDependenciesIds: Map<Label, Set<Label>>

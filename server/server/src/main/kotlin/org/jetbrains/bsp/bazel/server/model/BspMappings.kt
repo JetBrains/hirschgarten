@@ -3,6 +3,7 @@ package org.jetbrains.bsp.bazel.server.model
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.BuildTargetTag
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
+import org.jetbrains.bazel.commons.label.Label
 import java.net.URI
 
 object BspMappings {

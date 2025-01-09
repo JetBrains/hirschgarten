@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.workspacecontext
 
 import io.kotest.matchers.shouldBe
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewAllowManualTargetsSyncSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBazelBinarySection
@@ -9,7 +10,6 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectories
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

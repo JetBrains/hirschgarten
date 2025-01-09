@@ -9,11 +9,11 @@ import ch.epfl.scala.bsp4j.TaskFinishParams
 import ch.epfl.scala.bsp4j.TaskProgressParams
 import ch.epfl.scala.bsp4j.TaskStartParams
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
+import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.bsp.bazel.server.diagnostics.DiagnosticsService
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.protocol.JoinedBuildClient
 import org.jetbrains.bsp.protocol.PublishOutputParams
