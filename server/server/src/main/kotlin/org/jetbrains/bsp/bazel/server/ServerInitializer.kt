@@ -4,7 +4,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.debug.DebugProbes
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.io.IoBuilder
-import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bsp.bazel.server.benchmark.TelemetryConfig
 import org.jetbrains.bsp.bazel.server.bsp.BspIntegrationData
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo

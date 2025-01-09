@@ -152,9 +152,14 @@ class DefaultBspConnection(
     mutex.withLock {
       try {
         ensureConnected()
-      } catch (e: Exception) {
-        disconnectWithAcquiredLock()
-        throw e
+      } catch (connectException: Exception) {
+        try {
+          disconnectWithAcquiredLock()
+        } catch (disconnectException: Exception) {
+          // connectException is probably more informative to the user, throw it instead of disconnectException
+          connectException.addSuppressed(disconnectException)
+          throw connectException
+        }
       }
     }
   }
@@ -439,11 +444,11 @@ class DefaultBspConnection(
   private fun disconnectWithAcquiredLock() {
     if (!isConnected()) return
     val exceptions = executeDisconnectActionsAndCollectExceptions(disconnectActions)
-    throwExceptionWithSuppressedIfOccurred(exceptions)
     bspProcess?.destroy().also { bspProcess = null }
     disconnectActions.clear()
     server = null
     capabilities = null
+    throwExceptionWithSuppressedIfOccurred(exceptions)
   }
 
   private fun executeDisconnectActionsAndCollectExceptions(disconnectActions: List<() -> Unit>): List<Throwable> =

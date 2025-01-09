@@ -16,7 +16,7 @@ kt_junit5_test(
     src = "RustPackageResolverTest.kt",
     deps = [
         "RustTestUtils",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync",
     ],
 )

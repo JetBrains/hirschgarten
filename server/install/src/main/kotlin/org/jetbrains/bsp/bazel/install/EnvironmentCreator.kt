@@ -2,7 +2,7 @@ package org.jetbrains.bsp.bazel.install
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.google.gson.GsonBuilder
-import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bsp.bazel.server.bsp.utils.FileUtils.writeIfDifferent
 import java.nio.file.FileSystems
 import java.nio.file.Files

@@ -24,9 +24,9 @@ import io.kotest.matchers.collections.shouldNotContainAnyOf
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.settings.BazelProjectSettings
 import org.jetbrains.bazel.settings.bazelProjectSettings
-import org.jetbrains.bsp.bazel.commons.Constants
 import org.jetbrains.plugins.bsp.config.rootDir
 import org.jetbrains.plugins.bsp.impl.server.connection.ConnectionDetailsProviderExtension
 import org.junit.jupiter.api.AfterEach
@@ -36,7 +36,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 
 @BazelTestApplication

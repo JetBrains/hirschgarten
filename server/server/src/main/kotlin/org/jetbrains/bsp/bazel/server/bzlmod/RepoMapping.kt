@@ -1,11 +1,11 @@
 package org.jetbrains.bsp.bazel.server.bzlmod
 
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bsp.bazel.bazelrunner.ShowRepoResult
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import java.nio.file.Path

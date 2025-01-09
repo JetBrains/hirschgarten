@@ -1,7 +1,6 @@
-package org.jetbrains.bsp.bazel.server.model
+package org.jetbrains.bazel.commons.label
 
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
-import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -215,10 +214,6 @@ sealed interface Label {
       }
   }
 }
-
-fun BspTargetInfo.TargetInfo.label(): Label = Label.parse(this.id)
-
-fun BspTargetInfo.Dependency.label(): Label = Label.parse(this.id)
 
 fun Label.toBspIdentifier(): BuildTargetIdentifier = BuildTargetIdentifier(toString())
 

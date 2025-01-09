@@ -7,6 +7,7 @@ kt_jvm_library(
     deps = [
         "//protocol",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bsp/bazel/bazelrunner/utils",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:build_java_proto",
         "@maven//:ch_epfl_scala_bsp4j",

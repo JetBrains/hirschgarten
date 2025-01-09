@@ -6,7 +6,7 @@ import ch.epfl.scala.bsp4j.PublishDiagnosticsParams
 import ch.epfl.scala.bsp4j.Range
 import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import org.jetbrains.bsp.bazel.server.model.Label
+import org.jetbrains.bazel.commons.label.Label
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 import ch.epfl.scala.bsp4j.Diagnostic as BspDiagnostic

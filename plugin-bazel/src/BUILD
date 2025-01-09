@@ -1,21 +1,10 @@
 load("@rules_intellij//testing:test_defs_kt.bzl", "intellij_integration_test_suite")
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-load("@rules_proto//proto:defs.bzl", "proto_library")
 
 exports_files([
     "main/resources/META-INF/base.xml",
     "test/resources/META-INF/bazel-ide-starter-test.xml",
 ])
-
-proto_library(
-    name = "starlark_annotations_proto",
-    srcs = glob(["main/proto/**/*.proto"]),
-)
-
-java_proto_library(
-    name = "starlark_annotations",
-    deps = [":starlark_annotations_proto"],
-)
 
 kt_jvm_library(
     name = "intellij-bsp",
@@ -28,39 +17,30 @@ kt_jvm_library(
 
 kt_jvm_library(
     name = "intellij-bazel",
-    visibility = ["//visibility:public"],
-    exports = [
-        "//plugin-bazel/src:intellij-bazel-unpackaged",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extension",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
-        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter",
+    # Do not depend on this target because it exports the Bazel BSP server dependency!
+    # If you want to share code with the server, use //commons.
+    # Otherwise depend on a more specific subpackage of //plugin-bazel
+    visibility = [
+        "//plugin-bazel:__pkg__",
+        "//plugin-bazel/plugin-inmem-server:__pkg__",
+        "//plugin-bazel/src:__pkg__",
+        "//plugin-bazel/src/test:__subpackages__",
     ],
-)
-
-kt_jvm_library(
-    name = "intellij-bazel-unpackaged",
-    srcs = glob([
-        "main/kotlin/**/*.kt",
-        "main/gen/**/*.java",
-    ]),
-    visibility = ["//visibility:public"],
-    deps = [
-        ":intellij-bsp",
-        ":starlark_annotations",
+    exports = [
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/bsp/connection",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/coroutines",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/base",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/highlighting:higlighting",
-        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages/projectview/lexer",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/debug",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/extension",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/flow",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/hotswap",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ideStarter",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/languages",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/run",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/settings",
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/ui",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel:bsp_export",
-        "@maven//:com_google_code_gson_gson",
-        "@rules_intellij//intellij_platform_sdk:plugin_api",
-        "@rules_intellij//third_party/android",
-        "@rules_intellij//third_party/performance",
-        "@rules_intellij//third_party/python",
     ],
 )
 

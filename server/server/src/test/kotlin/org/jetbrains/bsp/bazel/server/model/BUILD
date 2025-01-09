@@ -15,6 +15,6 @@ kt_junit5_test(
     size = "small",
     src = "LabelTest.kt",
     deps = [
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
     ],
 )

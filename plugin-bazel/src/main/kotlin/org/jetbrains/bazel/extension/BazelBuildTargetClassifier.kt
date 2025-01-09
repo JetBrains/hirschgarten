@@ -1,7 +1,7 @@
 package org.jetbrains.bazel.extension
 
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.extensionPoints.BuildTargetClassifierExtension
 import org.jetbrains.plugins.bsp.workspacemodel.entities.BuildTargetInfo

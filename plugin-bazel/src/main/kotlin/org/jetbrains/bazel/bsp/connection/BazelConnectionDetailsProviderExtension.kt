@@ -2,24 +2,19 @@ package org.jetbrains.bazel.bsp.connection
 
 import ch.epfl.scala.bsp4j.BspConnectionDetails
 import com.intellij.openapi.application.EDT
-import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
-import com.intellij.openapi.components.StoragePathMacros
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.projectRoots.Sdk
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.findFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.bazel.commons.constants.Constants
 import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.bazel.coroutines.CoroutineService
 import org.jetbrains.bazel.flow.open.ProjectViewFileUtils
 import org.jetbrains.bazel.settings.bazelProjectSettings
-import org.jetbrains.bsp.bazel.commons.Constants
+import org.jetbrains.bazel.settings.stateService
 import org.jetbrains.bsp.bazel.install.BspConnectionDetailsCreator
 import org.jetbrains.bsp.bazel.install.EnvironmentCreator
 import org.jetbrains.bsp.bazel.installationcontext.InstallationContext
@@ -179,32 +174,3 @@ internal class BazelConnectionDetailsProviderExtension : ConnectionDetailsProvid
       .getOrNull(argv.size - 2)
       ?.let { Path(it) }
 }
-
-internal data class BazelConnectionDetailsProviderExtensionState(var projectPath: String? = null, var connectionFile: String? = null)
-
-@State(
-  name = "BazelConnectionDetailsProviderExtensionService",
-  storages = [Storage(StoragePathMacros.WORKSPACE_FILE)],
-  reportStatistic = true,
-)
-@Service(Service.Level.PROJECT)
-internal class BazelConnectionDetailsProviderExtensionService : PersistentStateComponent<BazelConnectionDetailsProviderExtensionState> {
-  var projectPath: VirtualFile? = null
-  var connectionFile: VirtualFile? = null
-
-  override fun getState(): BazelConnectionDetailsProviderExtensionState? =
-    BazelConnectionDetailsProviderExtensionState(
-      projectPath = projectPath?.url,
-      connectionFile = connectionFile?.url,
-    )
-
-  override fun loadState(state: BazelConnectionDetailsProviderExtensionState) {
-    val virtualFileManager = VirtualFileManager.getInstance()
-
-    projectPath = state.projectPath?.let { virtualFileManager.findFileByUrl(it) }
-    connectionFile = state.connectionFile?.let { virtualFileManager.findFileByUrl(it) }
-  }
-}
-
-internal val Project.stateService: BazelConnectionDetailsProviderExtensionService
-  get() = getService(BazelConnectionDetailsProviderExtensionService::class.java)

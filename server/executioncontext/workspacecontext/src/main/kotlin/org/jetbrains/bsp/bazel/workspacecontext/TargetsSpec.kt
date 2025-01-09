@@ -1,12 +1,12 @@
 package org.jetbrains.bsp.bazel.workspacecontext
 
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractor
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextEntityExtractorException
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextExcludableListEntity
 import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
-import org.jetbrains.bsp.bazel.server.model.Label
 import java.nio.file.Path
 import kotlin.io.path.pathString
 

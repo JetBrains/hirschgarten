@@ -2,8 +2,8 @@ package org.jetbrains.bsp.bazel.server.bep
 
 import ch.epfl.scala.bsp4j.TaskId
 import ch.epfl.scala.bsp4j.TestStatus
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.logger.BspClientTestNotifier
-import org.jetbrains.bsp.bazel.server.model.Label
 import org.jetbrains.bsp.protocol.JUnitStyleTestCaseData
 import java.util.UUID
 import java.util.regex.Matcher

@@ -1,6 +1,6 @@
 package org.jetbrains.bsp.bazel.bazelrunner.utils
 
-import org.jetbrains.bsp.bazel.commons.Constants.DOT_BAZELBSP_DIR_NAME
+import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
 import java.nio.file.Path
 import kotlin.io.path.isReadable
 import kotlin.io.path.readText

@@ -1,7 +1,7 @@
 # https://jetbrains.team/p/bazel/packages/container/docker-private/hirschgarten-qodana
 # to build and push this image locally run `build-and-push.sh qodana private` from `tools/docker` folder
 
-FROM registry.jetbrains.team/p/bazel/qodana-private/qodana-android:2024.3-eap
+FROM registry.jetbrains.team/p/bazel/qodana-private/qodana-android:2024.3-nightly
 ARG TARGETARCH
 RUN apt-get update
 RUN apt-get -y install gcc mono-mcs zip

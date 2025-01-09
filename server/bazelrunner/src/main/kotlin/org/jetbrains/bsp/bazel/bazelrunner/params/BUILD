@@ -5,6 +5,6 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     visibility = ["//server/bazelrunner:__subpackages__"],
     deps = [
-        "//server/commons",
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/constants",
     ],
 )

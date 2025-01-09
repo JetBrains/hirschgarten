@@ -6,7 +6,7 @@ kt_jvm_library(
     visibility = ["//server/server:__subpackages__"],
     deps = [
         "//server/bazelrunner",
-        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/model",
+        "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/sync/proto:bsp_target_info_java_proto",
     ],
 )

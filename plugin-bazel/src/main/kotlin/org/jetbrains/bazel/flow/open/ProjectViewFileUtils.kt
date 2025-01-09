@@ -1,11 +1,11 @@
 package org.jetbrains.bazel.flow.open
 
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.commons.constants.Constants.DEFAULT_PROJECT_VIEW_FILE_NAME
+import org.jetbrains.bazel.commons.constants.Constants.DOT_BAZELBSP_DIR_NAME
+import org.jetbrains.bazel.commons.constants.Constants.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.bazel.config.BazelPluginConstants.PROJECT_VIEW_FILE_EXTENSION
 import org.jetbrains.bazel.settings.bazelProjectSettings
-import org.jetbrains.bsp.bazel.commons.Constants.DOT_BAZELBSP_DIR_NAME
-import org.jetbrains.bsp.bazel.install.DEFAULT_PROJECT_VIEW_FILE_NAME
-import org.jetbrains.bsp.bazel.install.LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME
 import org.jetbrains.plugins.bsp.config.rootDir
 import java.nio.file.Files
 import java.nio.file.Path
@@ -36,7 +36,7 @@ private val INFERRED_DIRECTORY_PROJECT_VIEW_TEMPLATE =
 
 private val OPEN_OPTIONS = arrayOf(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
 
-internal object ProjectViewFileUtils {
+object ProjectViewFileUtils {
   fun calculateProjectViewFilePath(
     project: Project,
     generateContent: Boolean,

@@ -10,10 +10,10 @@ import ch.epfl.scala.bsp4j.CppOptionsParams
 import ch.epfl.scala.bsp4j.CppOptionsResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.common.collect.ImmutableList
+import org.jetbrains.bazel.commons.constants.Constants
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
-import org.jetbrains.bsp.bazel.commons.Constants
-import org.jetbrains.bsp.bazel.server.model.Label
 import kotlin.time.Duration.Companion.seconds
 
 object BazelBspCppProjectTest : BazelBspTestBaseScenario() {

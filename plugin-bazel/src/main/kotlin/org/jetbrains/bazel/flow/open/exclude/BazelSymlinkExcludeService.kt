@@ -4,8 +4,8 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import org.jetbrains.bazel.commons.symlinks.BazelSymlinksCalculator
 import org.jetbrains.bazel.config.BazelFeatureFlags
-import org.jetbrains.bsp.bazel.server.sync.utils.BazelSymlinksCalculator
 import org.jetbrains.plugins.bsp.config.rootDir
 import java.nio.file.Path
 

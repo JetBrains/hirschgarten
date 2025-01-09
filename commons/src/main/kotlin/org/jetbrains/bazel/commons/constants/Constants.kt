@@ -1,4 +1,4 @@
-package org.jetbrains.bsp.bazel.commons
+package org.jetbrains.bazel.commons.constants
 
 object Constants {
   const val NAME: String = "bazelbsp"
@@ -25,4 +25,6 @@ object Constants {
   const val SERVER_CLASS_NAME: String = "org.jetbrains.bsp.bazel.server.ServerInitializer"
   const val CLASSPATH_FLAG: String = "-classpath"
   const val BAZELBSP_TRACE_JSON_FILE_NAME: String = "bazelbsp.trace.json"
+  const val DEFAULT_PROJECT_VIEW_FILE_NAME = ".bazelproject"
+  const val LEGACY_DEFAULT_PROJECT_VIEW_FILE_NAME = "projectview.bazelproject"
 }
