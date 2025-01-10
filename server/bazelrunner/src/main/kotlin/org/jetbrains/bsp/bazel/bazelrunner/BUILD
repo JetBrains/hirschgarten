@@ -6,6 +6,7 @@ kt_jvm_library(
     resources = ["//server/log4j_config"],
     visibility = ["//server/bazelrunner:__subpackages__"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bsp/bazel/bazelrunner/outputs",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bsp/bazel/bazelrunner/params",
         "//server/bazelrunner/src/main/kotlin/org/jetbrains/bsp/bazel/bazelrunner/utils",

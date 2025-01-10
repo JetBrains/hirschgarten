@@ -24,6 +24,7 @@ import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
+import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 /** Expands wildcard target patterns into individual Bazel targets.  */
@@ -52,6 +53,7 @@ object WildcardTargetExpander {
     bazelRunner: BazelRunner,
     cancelChecker: CancelChecker,
     bspClientLogger: BspClientLogger,
+    context: WorkspaceContext,
   ): ExpandedTargetsResult? {
     val shards =
       BazelBuildTargetSharder.shardTargetsRetainingOrdering(
@@ -66,6 +68,7 @@ object WildcardTargetExpander {
           excludes,
           bazelRunner,
           cancelChecker,
+          context,
         )
       output =
         if (output == null) {
@@ -90,6 +93,7 @@ object WildcardTargetExpander {
     excludedTargets: List<Label>,
     bazelRunner: BazelRunner,
     cancelChecker: CancelChecker,
+    context: WorkspaceContext,
   ): ExpandedTargetsResult {
     val targetsSpec =
       TargetsSpec(
@@ -98,7 +102,9 @@ object WildcardTargetExpander {
       )
     val command =
       bazelRunner.buildBazelCommand {
-        query {
+        // exclude 'manual' targets,
+        // which shouldn't be built when expanding wildcard target patterns if `allow_manual_targets_sync` is not specified.
+        query(allowManualTargetsSync = context.allowManualTargetsSync.value) {
           addTargetsFromSpec(targetsSpec)
           options.addAll(listOf("--output=label", "--keep_going"))
         }

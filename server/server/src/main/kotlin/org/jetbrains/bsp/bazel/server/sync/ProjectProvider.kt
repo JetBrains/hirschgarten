@@ -34,7 +34,7 @@ class ProjectProvider(private val projectResolver: ProjectResolver, private val 
     targetsToSync: List<Label>?,
   ): AspectSyncProject =
     runBlocking {
-      projectResolver.resolve(cancelChecker, build = build, targetsToSync).also {
+      projectResolver.resolve(cancelChecker, build = build, targetsToSync, project as? FirstPhaseProject).also {
         openTelemetry.sdkTracerProvider.forceFlush()
         projectResolver.releaseMemory()
       }
