@@ -34,18 +34,11 @@ object ServerInitializer {
     log.info("Starting server with args: ${args.toList()}")
 
     Runtime.getRuntime().addShutdownHook(
-
       Thread {
-        log.info("Dumping coroutines")
-
         ProcessHandle
           .allProcesses()
           .filter { it.parent().orElse(null)?.pid() == ProcessHandle.current().pid() }
           .forEach { it.destroy() }
-
-        val loggerPrintStream = IoBuilder.forLogger(log).buildPrintStream()
-
-        DebugProbes.dumpCoroutines(loggerPrintStream)
       },
     )
 

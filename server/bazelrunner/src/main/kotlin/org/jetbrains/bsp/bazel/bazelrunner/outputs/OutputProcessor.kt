@@ -27,9 +27,9 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
   }
 
   protected open fun shutdown() {
-    LOGGER.warn("Shutting down output processors")
+    LOGGER.debug("Shutting down output processors")
     executorService.shutdown()
-    LOGGER.warn("Output processors shut down")
+    LOGGER.debug("Output processors shut down")
   }
 
   protected abstract fun isRunning(): Boolean
@@ -70,7 +70,7 @@ abstract class OutputProcessor(private val process: Process, vararg loggers: Out
   ): Int {
     var isFinished = false
     while (!isFinished) {
-      LOGGER.warn("Waiting for Bazel process to finish... {}", process.toString())
+      LOGGER.debug("Waiting for Bazel process to finish... {}", process.toString())
       isFinished = process.waitFor(500, TimeUnit.MILLISECONDS)
       if (cancelChecker.isCanceled) {
         process.destroy()

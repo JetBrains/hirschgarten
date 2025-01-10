@@ -4,7 +4,7 @@ import ch.epfl.scala.bsp4j.DiagnosticSeverity
 import org.jetbrains.bazel.commons.label.Label
 
 object BazelRootMessageParser : Parser {
-  private const val TARGET_LABEL = """(@{1,2}[\w~+.-]*//[\w/.-]*:[\w/.-]+)"""
+  private const val TARGET_LABEL = """(//[\w/.-]*:[\w/.-]+)"""
 
   override fun tryParse(output: Output): List<Diagnostic> = findErrorInBUILD(output) ?: findWarningsInInfoMessage(output) ?: emptyList()
 
