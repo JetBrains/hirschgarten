@@ -42,6 +42,7 @@ import ch.epfl.scala.bsp4j.TextDocumentIdentifier
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
@@ -70,7 +71,7 @@ object BazelBspSampleRepoTest : BazelBspTestBaseScenario() {
     }
 
   private val bazelArch =
-    if (System.getProperty("os.name").lowercase().startsWith("mac")) {
+    if (OsFamily.inferFromSystem() == OsFamily.MACOS) {
       "darwin_arm64"
     } else {
       "k8"

@@ -7,6 +7,7 @@ kt_jvm_binary(
     resources = ["//server/e2e/src/main/resources:bsp-e2e-resources"],
     visibility = ["//server/e2e:__subpackages__"],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//server/commons",
         "//server/e2e/src/main/kotlin/org/jetbrains/bsp/bazel/base",
         "//server/server/src/main/kotlin/org/jetbrains/bsp/bazel/server/label",
