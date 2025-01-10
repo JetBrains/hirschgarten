@@ -19,12 +19,12 @@ import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.dependencygraph.DependencyGraph
 import org.jetbrains.bsp.bazel.server.label.label
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.GoLibrary
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
-import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.SourceSet
 import org.jetbrains.bsp.bazel.server.model.SourceWithData
 import org.jetbrains.bsp.bazel.server.model.Tag
@@ -76,7 +76,7 @@ class BazelProjectMapper(
     rootTargets: Set<Label>,
     workspaceContext: WorkspaceContext,
     bazelInfo: BazelInfo,
-  ): Project {
+  ): AspectSyncProject {
     languagePluginsService.prepareSync(targets.values.asSequence())
     val dependencyGraph =
       measure("Build dependency tree") {
@@ -222,7 +222,7 @@ class BazelProjectMapper(
     val nonModuleTargets =
       createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && isTargetTreatedAsInternal(it) })
 
-    return Project(
+    return AspectSyncProject(
       workspaceRoot,
       allModules.toList(),
       librariesToImport,

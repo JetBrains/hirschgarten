@@ -7,7 +7,7 @@ import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
-import org.jetbrains.bsp.bazel.server.model.Project
+import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import java.nio.file.Path
 
@@ -17,7 +17,7 @@ class FirstPhaseProjectResolver(
   private val workspaceContextProvider: WorkspaceContextProvider,
   private val bazelInfo: BazelInfo,
 ) {
-  fun resolve(originId: String, cancelChecker: CancelChecker): Project =
+  fun resolve(originId: String, cancelChecker: CancelChecker): FirstPhaseProject =
     runBlocking {
       val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
       val command =
@@ -37,15 +37,10 @@ class FirstPhaseProjectResolver(
       val targets = generateSequence { Target.parseDelimitedFrom(inputStream) }
 
       val project =
-        Project(
+        FirstPhaseProject(
           workspaceRoot = workspaceRoot.toUri(),
-          modules = emptyList(),
-          libraries = emptyMap(),
-          goLibraries = emptyMap(),
-          invalidTargets = emptyList(),
-          nonModuleTargets = emptyList(),
           bazelRelease = bazelInfo.release,
-          lightweightModules = targets.associateBy { Label.parse(it.rule.name) },
+          modules = targets.associateBy { Label.parse(it.rule.name) },
         )
 
       bazelProcess.waitAndGetResult(cancelChecker, true)

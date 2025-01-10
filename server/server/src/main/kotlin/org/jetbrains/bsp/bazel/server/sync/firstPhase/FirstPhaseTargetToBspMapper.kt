@@ -14,28 +14,25 @@ import ch.epfl.scala.bsp4j.SourcesResult
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import com.google.devtools.build.lib.query2.proto.proto2api.Build.Target
 import org.jetbrains.bsp.bazel.server.model.BspMappings
+import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Language
-import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.sync.languages.JVMLanguagePluginParser
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
 import org.jetbrains.bsp.protocol.EnhancedSourceItem
 import java.nio.file.Path
 import kotlin.collections.filter
-import kotlin.collections.filterNot
 import kotlin.collections.map
 import kotlin.collections.mapNotNull
-import kotlin.collections.orEmpty
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
 class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: WorkspaceContextProvider, private val workspaceRoot: Path) {
-  fun toWorkspaceBuildTargetsResult(project: Project): WorkspaceBuildTargetsResult {
+  fun toWorkspaceBuildTargetsResult(project: FirstPhaseProject): WorkspaceBuildTargetsResult {
     val shouldSyncManualTargets = workspaceContextProvider.currentWorkspaceContext().allowManualTargetsSync.value
 
     val targets =
-      project.lightweightModules
-        ?.values
-        .orEmpty()
+      project.modules
+        .values
         .asSequence()
         .filter { it.isSupported() }
         .filter { shouldSyncManualTargets || !it.isManual }
@@ -87,7 +84,7 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
   fun Target.isSupported(): Boolean = Language.allOfKind(kind).isNotEmpty()
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1549/
-  fun toSourcesResult(project: Project, sourcesParams: SourcesParams): SourcesResult {
+  fun toSourcesResult(project: FirstPhaseProject, sourcesParams: SourcesParams): SourcesResult {
     val items =
       project
         .lightweightModulesForTargets(sourcesParams.targets)
@@ -108,7 +105,7 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
   }
 
   // TODO: https://youtrack.jetbrains.com/issue/BAZEL-1549/
-  fun toResourcesResult(project: Project, resourcesParams: ResourcesParams): ResourcesResult {
+  fun toResourcesResult(project: FirstPhaseProject, resourcesParams: ResourcesParams): ResourcesResult {
     val items =
       project
         .lightweightModulesForTargets(resourcesParams.targets)
@@ -131,8 +128,8 @@ class FirstPhaseTargetToBspMapper(private val workspaceContextProvider: Workspac
     return workspaceRoot.resolve(relativePath)
   }
 
-  private fun Project.lightweightModulesForTargets(targets: List<BuildTargetIdentifier>): List<Target> =
+  private fun FirstPhaseProject.lightweightModulesForTargets(targets: List<BuildTargetIdentifier>): List<Target> =
     BspMappings
       .toLabels(targets)
-      .mapNotNull { lightweightModules?.get(it) }
+      .mapNotNull { modules[it] }
 }
