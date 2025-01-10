@@ -4,6 +4,7 @@ import ch.epfl.scala.bsp4j.BuildClientCapabilities
 import ch.epfl.scala.bsp4j.BuildTargetIdentifier
 import ch.epfl.scala.bsp4j.InitializeBuildParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
+import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bsp.bazel.install.Install
 import org.jetbrains.bsp.protocol.FeatureFlags
 import org.jetbrains.bsp.protocol.InitializeBuildData
@@ -31,7 +32,7 @@ abstract class BazelBspTestBaseScenario {
   val javaHomeArchitecture get() = "\$OS$architecturePart"
 
   private val bazelArch get() =
-    if (System.getProperty("os.name").lowercase().startsWith("mac")) {
+    if (OsFamily.inferFromSystem() == OsFamily.MACOS) {
       "darwin_arm64"
     } else {
       "k8"

@@ -12,6 +12,7 @@ kt_jvm_library(
         "//server/executioncontext/api",
     ],
     deps = [
+        "//commons/src/main/kotlin/org/jetbrains/bazel/commons/utils",
         "//server/bazelrunner:params",
         "//server/executioncontext/api",
         "//server/executioncontext/projectview:generator",

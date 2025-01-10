@@ -1,7 +1,7 @@
 package org.jetbrains.bsp.testkit.client.bazel
 
+import org.jetbrains.bazel.commons.utils.OsFamily
 import java.nio.file.Path
-import java.util.Locale
 
 class BazelJsonTransformer(
   private val workspacePath: Path,
@@ -17,12 +17,10 @@ class BazelJsonTransformer(
 
   companion object {
     private val osFamily: String =
-      System.getProperty("os.name").lowercase(Locale.getDefault()).let { osName ->
-        when {
-          osName.startsWith("windows") -> "win"
-          osName.startsWith("mac") -> "macos"
-          else -> "linux"
-        }
+      when (OsFamily.inferFromSystem()) {
+        OsFamily.WINDOWS -> "win"
+        OsFamily.MACOS -> "macos"
+        else -> "linux"
       }
   }
 }
