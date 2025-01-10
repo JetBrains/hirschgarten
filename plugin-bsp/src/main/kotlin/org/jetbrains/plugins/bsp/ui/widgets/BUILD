@@ -14,6 +14,7 @@ kt_jvm_library(
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/run",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/runnerAction",
         "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/services",
+        "//plugin-bsp/src/main/kotlin/org/jetbrains/plugins/bsp/fus",
         "//plugin-bsp/workspacemodel/src:workspacemodel",
         "@rules_intellij//intellij_platform_sdk:plugin_api",
     ],

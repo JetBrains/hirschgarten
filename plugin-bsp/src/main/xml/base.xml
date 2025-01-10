@@ -197,6 +197,10 @@
 
         <notificationGroup displayType="BALLOON" id="BSP Plugin"/>
         <editorNotificationProvider implementation="org.jetbrains.plugins.bsp.ui.notifications.BuildAndResyncOnUnresolvedImportNotificationsProvider"/>
+
+        <statistics.projectUsagesCollector implementation="org.jetbrains.plugins.bsp.fus.ProjectDataCollector"/>
+        <statistics.applicationUsagesCollector implementation="org.jetbrains.plugins.bsp.fus.ApplicationDataCollector"/>
+        <statistics.counterUsagesCollector implementationClass="org.jetbrains.plugins.bsp.fus.BSPUsagesCollector"/>
     </extensions>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
