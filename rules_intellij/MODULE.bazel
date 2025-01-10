@@ -63,26 +63,28 @@ http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_j
 
 SDK_243_PLUGIN_REPOSITORY_VERSION = "243.22562.145"
 
-SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.23654-EAP-CANDIDATE-SNAPSHOT"
+SDK_243_INTELLIJ_REPOSITORY_VERSION = "243.22562.218"
 
-IC_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+SDK_243_INTELLIJ_REPOSITORY = "releases"  # or release
 
-IC_243_CHECKSUM = "sha256-uOcihywzNLQK9BtmAoJoYJSLczjJ1ZRTREagmlaz0Pc="
+IC_243_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s.zip" % (SDK_243_INTELLIJ_REPOSITORY, SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+
+IC_243_SHA = "9887033a62c0b53f39a53cb14db71fc54f3e3b1f96ea7f2526a315e2d7371471"
 
 http_archive(
     name = "intellij_ce_2024_3",
     build_file = "@rules_intellij//intellij_platform_sdk:BUILD.idea243",
-    integrity = IC_243_CHECKSUM,
+    sha256 = IC_243_SHA,
     url = IC_243_URL,
 )
 
-IC_243_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+IC_243_SOURCES_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/idea/ideaIC/%s/ideaIC-%s-sources.jar" % (SDK_243_INTELLIJ_REPOSITORY, SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
-IC_243_SOURCES_CHECKSUM = "sha256-dEixdZ/2FDOqnDzHwBQyuiADLLrcChHG3DgHvE6CTzo="
+IC_243_SOURCES_SHA = "25f4f9116997d20b7be70fdfaa471e4c0dc9da03defc1f6fa752e11fdf9fac3b"
 
 http_jar(
     name = "intellij_ce_2024_3_sources",
-    integrity = IC_243_SOURCES_CHECKSUM,
+    sha256 = IC_243_SOURCES_SHA,
     url = IC_243_SOURCES_URL,
 )
 
@@ -120,12 +122,12 @@ filegroup(
 
 PYTHON_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/PythonCore/%s/PythonCore-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
-PYTHON_PLUGIN_243_CHECKSUM = "sha256-SdL/RC3b7dQKsGO3Ya1kUv0MDKr0goJW1c6E2pt4fgc="
+PYTHON_PLUGIN_243_SHA = "49d2ff442ddbedd40ab063b761ad6452fd0c0caaf4828256d5ce84da9b787e07"
 
 http_archive(
     name = "python_2024_3",
     build_file_content = _PYTHON_CE_BUILD_FILE,
-    integrity = PYTHON_PLUGIN_243_CHECKSUM,
+    sha256 = PYTHON_PLUGIN_243_SHA,
     url = PYTHON_PLUGIN_243_URL,
 )
 
@@ -139,10 +141,12 @@ java_import(
 
 GO_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.plugins.go/%s/org.jetbrains.plugins.go-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
+GO_PLUGIN_243_SHA = "5b893719694c65c82bae4df6916d94a3961b6390a6aaa8a077a1daf7954041a9"
+
 http_archive(
     name = "go_2024_3",
     build_file_content = _GO_BUILD_FILE,
-    integrity = "sha256-W4k3GWlMZcgrrk32kW2Uo5YbY5Cmqqigd6Ha95VAQak=",
+    sha256 = GO_PLUGIN_243_SHA,
     url = GO_PLUGIN_243_URL,
 )
 
@@ -156,18 +160,18 @@ java_import(
 
 ANDROID_PLUGIN_243_URL = "https://plugins.jetbrains.com/maven/com/jetbrains/plugins/org.jetbrains.android/%s/org.jetbrains.android-%s.zip" % (SDK_243_PLUGIN_REPOSITORY_VERSION, SDK_243_PLUGIN_REPOSITORY_VERSION)
 
-ANDROID_PLUGIN_243_CHECKSUM = "sha256-dCli5SOl/+SuzhkiI6jl7m9JQ1PLn1CVJlLka3ki2kg="
+ANDROID_PLUGIN_243_SHA = "742962e523a5ffe4aece192223a8e5ee6f494353cb9f50952652e46b7922da48"
 
 http_archive(
     name = "android_2024_3",
     build_file_content = _ANDRIOD_PLUGIN_BUILD_FILE,
-    integrity = ANDROID_PLUGIN_243_CHECKSUM,
+    sha256 = ANDROID_PLUGIN_243_SHA,
     url = ANDROID_PLUGIN_243_URL,
 )
 
-PERFORMANCE_PLUGIN_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+PERFORMANCE_PLUGIN_243_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/performanceTesting/performance-testing/%s/performance-testing-%s.jar" % (SDK_243_INTELLIJ_REPOSITORY, SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
-PERFORMANCE_PLUGIN_243_SHA = "9df6968f786a1297718bf833d5583b777047280b89e08e13b6c036030bac0604"
+PERFORMANCE_PLUGIN_243_SHA = "69bb09af9c512bf3478fa9e14d06d4306fd083c72cb680f86f71ae599b868254"
 
 http_jar(
     name = "performance_2024_3",
@@ -175,12 +179,12 @@ http_jar(
     url = PERFORMANCE_PLUGIN_243_URL,
 )
 
-CODE_WITH_ME_243_URL = "https://www.jetbrains.com/intellij-repository/snapshots/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
+CODE_WITH_ME_243_URL = "https://www.jetbrains.com/intellij-repository/%s/com/jetbrains/intellij/platform/backend-split/%s/backend-split-%s.jar" % (SDK_243_INTELLIJ_REPOSITORY, SDK_243_INTELLIJ_REPOSITORY_VERSION, SDK_243_INTELLIJ_REPOSITORY_VERSION)
 
-CODE_WITH_ME_243_CHECKSUM = "sha256-R8AcV9IjPGnx8ur2CsZdVBwHXmwvNyjnHoWjXw4Dg9I="
+CODE_WITH_ME_243_SHA = "12df6f39a5a610996afe614dc1874122bfc73859851b0bed791ee524a27a1761"
 
 http_jar(
     name = "code_with_me_2024_3",
-    integrity = CODE_WITH_ME_243_CHECKSUM,
+    sha256 = CODE_WITH_ME_243_SHA,
     url = CODE_WITH_ME_243_URL,
 )

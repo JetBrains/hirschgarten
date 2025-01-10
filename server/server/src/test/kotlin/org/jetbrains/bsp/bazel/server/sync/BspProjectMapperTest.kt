@@ -10,9 +10,9 @@ import ch.epfl.scala.bsp4j.MavenDependencyModuleArtifact
 import io.kotest.matchers.shouldBe
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.Library
 import org.jetbrains.bsp.bazel.server.model.Module
-import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.SourceSet
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -133,7 +133,7 @@ class BspProjectMapperTest {
     }
 
     val libraries = allLibraries.associate({ it.label to it })
-    val project = Project(currentUri, allModules, libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val project = AspectSyncProject(currentUri, allModules, libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
 
     val deps =
       BspProjectMapper.buildDependencyModulesStatic(

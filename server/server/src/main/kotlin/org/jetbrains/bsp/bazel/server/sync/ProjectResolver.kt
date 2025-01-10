@@ -15,7 +15,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.canonicalize
-import org.jetbrains.bsp.bazel.server.model.Project
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.sharding.BazelBuildTargetSharder
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
@@ -45,7 +45,7 @@ class ProjectResolver(
     cancelChecker: CancelChecker,
     build: Boolean,
     requestedTargetsToSync: List<Label>?,
-  ): Project =
+  ): AspectSyncProject =
     tracer.spanBuilder("Resolve project").useWithScope {
       val workspaceContext =
         measured(
