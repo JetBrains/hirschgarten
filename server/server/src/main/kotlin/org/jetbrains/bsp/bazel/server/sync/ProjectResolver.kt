@@ -2,6 +2,7 @@ package org.jetbrains.bsp.bazel.server.sync
 
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.assumeResolved
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.commons.BazelStatus
@@ -134,7 +135,7 @@ class ProjectResolver(
       // resolve root targets (expand wildcards)
       val rootTargets =
         measured("Calculating root targets") {
-          bazelLabelExpander.getAllPossibleTargets(cancelChecker).map { it.canonicalize(repoMapping) }.toSet()
+          bazelLabelExpander.getAllPossibleTargets(cancelChecker).map { it.assumeResolved().canonicalize(repoMapping) }.toSet()
         }
       return@useWithScope measured(
         "Mapping to internal model",

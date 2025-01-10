@@ -7,6 +7,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.ResolvedLabel
+import org.jetbrains.bazel.commons.label.assumeResolved
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo
 import org.jetbrains.bsp.bazel.info.BspTargetInfo.FileLocation
@@ -220,7 +222,7 @@ class BazelProjectMapper(
 
     val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
     val nonModuleTargets =
-      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && isTargetTreatedAsInternal(it) })
+      createNonModuleTargets(targets.filterKeys { nonModuleTargetIds.contains(it) && isTargetTreatedAsInternal(it.assumeResolved()) })
 
     return AspectSyncProject(
       workspaceRoot,
@@ -616,7 +618,7 @@ class BazelProjectMapper(
           label = label,
           languages = inferLanguages(targetInfo),
           tags = targetTagsResolver.resolveTags(targetInfo),
-          baseDirectory = label.toDirectoryUri(),
+          baseDirectory = label.assumeResolved().toDirectoryUri(),
         )
       }
 
@@ -790,7 +792,7 @@ class BazelProjectMapper(
       .flatMap { it.interfaceJarsList }
       .map { bazelPathsResolver.resolve(it) }
 
-  private fun getGoRootUri(targetInfo: TargetInfo): URI = targetInfo.label().toDirectoryUri()
+  private fun getGoRootUri(targetInfo: TargetInfo): URI = targetInfo.label().assumeResolved().toDirectoryUri()
 
   private fun selectRustExternalTargetsToImport(rootTargets: Set<Label>, graph: DependencyGraph): Sequence<TargetInfo> =
     graph
@@ -845,12 +847,12 @@ class BazelProjectMapper(
       is RepoMappingDisabled -> emptySet()
     }
 
-  private fun isTargetTreatedAsInternal(target: Label): Boolean =
-    target.isMainWorkspace || target.repoName in externalRepositoriesTreatedAsInternal
+  private fun isTargetTreatedAsInternal(target: ResolvedLabel): Boolean =
+    target.isMainWorkspace || target.repo.repoName in externalRepositoriesTreatedAsInternal
 
   // TODO https://youtrack.jetbrains.com/issue/BAZEL-1303
   private fun isWorkspaceTarget(target: TargetInfo): Boolean =
-    isTargetTreatedAsInternal(target.label()) &&
+    isTargetTreatedAsInternal(target.label().assumeResolved()) &&
       (
         shouldImportTargetKind(target.kind) ||
           target.hasJvmTargetInfo() &&
@@ -915,7 +917,7 @@ class BazelProjectMapper(
     dependencyGraph: DependencyGraph,
     extraLibraries: Collection<Library>,
   ): Module {
-    val label = target.label()
+    val label = target.label().assumeResolved()
     // extra libraries can override some library versions, so they should be put before
     val directDependencies = extraLibraries.map { it.label } + resolveDirectDependencies(target)
     val languages = inferLanguages(target)
@@ -951,7 +953,7 @@ class BazelProjectMapper(
     return languagesForTarget + languagesForSources
   }
 
-  private fun Label.toDirectoryUri(): URI = bazelPathsResolver.pathToDirectoryUri(this.toBazelPath().toString(), isMainWorkspace)
+  private fun ResolvedLabel.toDirectoryUri(): URI = bazelPathsResolver.pathToDirectoryUri(this.toBazelPath().toString(), isMainWorkspace)
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
     val sources =

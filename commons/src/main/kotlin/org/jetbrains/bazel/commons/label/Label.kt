@@ -16,8 +16,17 @@ private const val ALL_PACKAGES_BENEATH = "..."
  */
 sealed interface TargetType
 
-data class SingleTarget(val targetName: String) : TargetType {
+open class SingleTarget(val targetName: String) : TargetType {
   override fun toString(): String = targetName
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is SingleTarget) return false
+    if (targetName != other.targetName) return false
+    return true
+  }
+
+  override fun hashCode(): Int = targetName.hashCode()
 }
 
 /**
@@ -33,6 +42,11 @@ data object AllRuleTargetsAndFiles : TargetType {
 data object AllRuleTargets : TargetType {
   override fun toString(): String = "all"
 }
+
+/**
+ * When we parse `//src/Hello.java`, we assume that it's a package named `Hello.java`, but there's no way to know from the label itself.
+ */
+class AmbiguousSingleTarget(targetName: String) : SingleTarget(targetName)
 
 sealed interface PackageType {
   val pathSegments: List<String>
@@ -55,22 +69,108 @@ data class AllPackagesBeneath(override val pathSegments: List<String>) : Package
     }
 }
 
+sealed interface RepoType {
+  val repoName: String
+}
+
+/**
+ * Targets in the main workspace are special-cased because they can be referred to
+ * using both syntaxes and there's no need to use a repository mapping to resolve the label.
+ */
+data object Main : RepoType {
+  override val repoName: String = ""
+
+  override fun toString(): String = "@"
+}
+
+/**
+ * See https://bazel.build/external/overview#canonical-repo-name
+ */
+data class Canonical(override val repoName: String) : RepoType {
+  override fun toString(): String = "@@$repoName"
+}
+
+/**
+ * See https://bazel.build/external/overview#apparent-repo-name
+ */
+data class Apparent(override val repoName: String) : RepoType {
+  override fun toString(): String = "@$repoName"
+}
+
+data class ResolvedLabel(
+  val repo: RepoType,
+  override val packagePath: PackageType,
+  override val target: TargetType,
+) : Label {
+  val repoName get() = repo.repoName
+
+  /**
+   * Returns a path to the corresponding folder in the `bazel-(project)` directory.
+   * Warning: this works on label with apparent repo names only if bzlmod is not used.
+   * If bzlmod is used, you need to use canonical form to resolve the path.
+   */
+  fun toBazelPath(): Path =
+    if (packagePath !is Package) {
+      error("Cannot convert wildcard package to path")
+    } else {
+      when (repo) {
+        is Main -> Path(packagePath.toString())
+        is Canonical -> Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray())
+        /** This works only without bzlmod... (with bzlmod you need a canonical form to resolve this path */
+        is Apparent -> Path("external", repo.repoName, *packagePath.pathSegments.toTypedArray())
+      }
+    }
+
+  override fun toString(): String = "$repo//$targetPathAndName"
+}
+
+/**
+ * Synthethic label is a label of a target which is not present in the Bazel target graph.
+ */
+data class SyntheticLabel(override val target: TargetType) : Label {
+  override val packagePath: PackageType = Package(listOf())
+
+  override fun toString(): String = "$target$SYNTHETIC_TAG"
+}
+
+data class RelativeLabel(override val packagePath: PackageType, override val target: TargetType) : Label {
+  override fun toString(): String = joinPackagePathAndTarget(packagePath, target)
+
+  fun resolve(base: ResolvedLabel): ResolvedLabel {
+    val repo = base.repo
+    val mergedPath = base.packagePath.pathSegments + this.packagePath.pathSegments
+    val packagePath =
+      when (base.packagePath) {
+        is Package ->
+          when (this.packagePath) {
+            is Package -> Package(mergedPath)
+            is AllPackagesBeneath -> AllPackagesBeneath(mergedPath)
+          }
+        is AllPackagesBeneath -> error("Cannot resolve a relative label with respect to a wildcard package")
+      }
+    val target = this.target
+    return ResolvedLabel(repo, packagePath, target)
+  }
+}
+
 /**
  * Represents a Bazel label.
  * See https://bazel.build/concepts/labels
  */
 sealed interface Label {
-  val repoName: String
   val packagePath: PackageType
   val target: TargetType
 
   val targetName: String get() = target.toString()
 
   val isMainWorkspace: Boolean
-    get() = this is Main || this is Synthetic
+    get() = (this as? ResolvedLabel)?.repo is Main || this is SyntheticLabel
+
+  val isRelative: Boolean
+    get() = this is RelativeLabel
 
   val isSynthetic: Boolean
-    get() = this is Synthetic
+    get() = this is SyntheticLabel
 
   val isWildcard: Boolean
     get() = target is AllRuleTargetsAndFiles || target is AllRuleTargets || packagePath is AllPackagesBeneath
@@ -79,14 +179,7 @@ sealed interface Label {
     get() = packagePath is AllPackagesBeneath
 
   val isApparent: Boolean
-    get() = this is Apparent
-
-  /**
-   * Returns a path to the corresponding folder in the `bazel-(project)` directory.
-   * Warning: this works on label with apparent repo names only if bzlmod is not used.
-   * If bzlmod is used, you need to use canonical form to resolve the path.
-   */
-  fun toBazelPath(): Path
+    get() = (this as? ResolvedLabel)?.repo is Apparent
 
   val targetPathAndName
     get() =
@@ -95,85 +188,19 @@ sealed interface Label {
           val packageName = (packagePath as Package).name()
           when {
             target is SingleTarget && packageName == target.toString() -> packagePath.toString()
-            else -> "$packagePath:$target"
+            else -> joinPackagePathAndTarget(packagePath, target)
           }
         }
         is AllPackagesBeneath ->
           if (target is AllRuleTargets) {
             packagePath.toString()
           } else {
-            "$packagePath:$target"
+            joinPackagePathAndTarget(packagePath, target)
           }
       }
 
-  /**
-   * Targets in the main workspace are special-cased because they can be referred to
-   * using both syntaxes and there's no need to use a repository mapping to resolve the label.
-   */
-  private data class Main(override val packagePath: PackageType, override val target: TargetType) : Label {
-    override val repoName: String = ""
-
-    override fun toBazelPath(): Path =
-      if (packagePath is Package) {
-        Path(packagePath.toString())
-      } else {
-        error("Cannot convert wildcard package to path")
-      }
-
-    override fun toString(): String = "@//$targetPathAndName"
-  }
-
-  /**
-   * Synthethic label is a label of a target which is not present in the Bazel target graph.
-   */
-  private data class Synthetic(override val target: TargetType) : Label {
-    override val repoName: String = ""
-    override val packagePath: PackageType = Package(listOf())
-
-    override fun toBazelPath(): Path = error("Synthetic labels do not have a path")
-
-    override fun toString(): String = "$target$SYNTHETIC_TAG"
-  }
-
-  /**
-   * See https://bazel.build/external/overview#canonical-repo-name
-   */
-  private data class Canonical(
-    override val repoName: String,
-    override val packagePath: PackageType,
-    override val target: TargetType,
-  ) : Label {
-    override fun toBazelPath(): Path =
-      if (packagePath is Package) {
-        Path("external", repoName, *packagePath.pathSegments.toTypedArray())
-      } else {
-        error("Cannot convert wildcard package to path")
-      }
-
-    override fun toString(): String = "@@$repoName//$targetPathAndName"
-  }
-
-  /**
-   * See https://bazel.build/external/overview#apparent-repo-name
-   */
-  private data class Apparent(
-    override val repoName: String,
-    override val packagePath: PackageType,
-    override val target: TargetType,
-  ) : Label {
-    /** This works only without bzlmod... (with bzlmod you need a canonical form to resolve this path */
-    override fun toBazelPath(): Path =
-      if (packagePath is Package) {
-        Path("external", repoName, *packagePath.pathSegments.toTypedArray())
-      } else {
-        error("Cannot convert wildcard package to path")
-      }
-
-    override fun toString(): String = "@$repoName//$targetPathAndName"
-  }
-
   companion object {
-    fun synthetic(targetName: String): Label = Synthetic(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
+    fun synthetic(targetName: String): Label = SyntheticLabel(SingleTarget(targetName.removeSuffix(SYNTHETIC_TAG)))
 
     fun parse(value: String): Label {
       if (value.endsWith(SYNTHETIC_TAG)) return synthetic(value)
@@ -181,7 +208,7 @@ sealed interface Label {
       val repoName = normalized.substringBefore("//", "")
       val pathAndName = normalized.substringAfter("//")
       val packagePath = pathAndName.substringBefore(":")
-      val packageSegments = packagePath.split(PATH_SEGMENT_SEPARATOR)
+      val packageSegments = packagePath.split(PATH_SEGMENT_SEPARATOR).filter { it.isNotEmpty() }
       val packageType =
         if (packageSegments.lastOrNull() == ALL_PACKAGES_BENEATH) {
           AllPackagesBeneath(packageSegments.dropLast(1))
@@ -191,19 +218,27 @@ sealed interface Label {
       val targetName = pathAndName.substringAfter(":", packagePath.substringAfterLast(PATH_SEGMENT_SEPARATOR))
 
       val target =
-        when (targetName) {
-          WILDCARD -> AllRuleTargetsAndFiles
-          ALL_TARGETS -> AllRuleTargetsAndFiles
-          ALL -> AllRuleTargets
-          ALL_PACKAGES_BENEATH -> AllRuleTargets // Special case for //...:...
-          else -> SingleTarget(targetName)
+        when {
+          targetName == WILDCARD -> AllRuleTargetsAndFiles
+          targetName == ALL_TARGETS -> AllRuleTargetsAndFiles
+          targetName == ALL -> AllRuleTargets
+          targetName == ALL_PACKAGES_BENEATH -> AllRuleTargets // Special case for //...:...
+          pathAndName.contains(":") -> SingleTarget(targetName)
+          else -> AmbiguousSingleTarget(targetName)
         }
 
-      return when {
-        repoName.isEmpty() -> Main(packageType, target)
-        value.startsWith("@@") -> Canonical(repoName, packageType, target)
-        else -> Apparent(repoName, packageType, target)
+      if (!value.contains("//")) {
+        return RelativeLabel(packageType, target)
       }
+
+      val repo =
+        when {
+          repoName.isEmpty() -> Main
+          value.startsWith("@@") -> Canonical(repoName)
+          else -> Apparent(repoName)
+        }
+
+      return ResolvedLabel(repo, packageType, target)
     }
 
     fun parseOrNull(value: String?): Label? =
@@ -218,3 +253,18 @@ sealed interface Label {
 fun Label.toBspIdentifier(): BuildTargetIdentifier = BuildTargetIdentifier(toString())
 
 fun BuildTargetIdentifier.label(): Label = Label.parse(uri)
+
+fun Label.asRelative(): RelativeLabel? = this as? RelativeLabel
+
+fun Label.assumeResolved(): ResolvedLabel =
+  when (this) {
+    is ResolvedLabel -> this
+    is SyntheticLabel -> error("Cannot resolve synthetic label $this")
+    is RelativeLabel -> this.resolve(ResolvedLabel(Main, Package(listOf()), SingleTarget("")))
+  }
+
+private fun joinPackagePathAndTarget(packagePath: PackageType, target: TargetType) =
+  when (target) {
+    is AmbiguousSingleTarget -> packagePath.toString()
+    else -> "$packagePath:$target"
+  }
