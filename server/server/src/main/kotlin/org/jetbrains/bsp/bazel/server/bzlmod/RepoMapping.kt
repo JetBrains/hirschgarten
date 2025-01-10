@@ -1,6 +1,12 @@
 package org.jetbrains.bsp.bazel.server.bzlmod
 
+import org.jetbrains.bazel.commons.label.Apparent
+import org.jetbrains.bazel.commons.label.Canonical
 import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.Main
+import org.jetbrains.bazel.commons.label.RelativeLabel
+import org.jetbrains.bazel.commons.label.ResolvedLabel
+import org.jetbrains.bazel.commons.label.SyntheticLabel
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleResolver
@@ -20,20 +26,29 @@ data class BzlmodRepoMapping(
 
 data object RepoMappingDisabled : RepoMapping
 
-fun Label.canonicalize(repoMapping: RepoMapping): Label {
-  if (!this.isApparent) {
-    return this
-  }
-
+fun Label.canonicalize(repoMapping: RepoMapping): Label =
   when (repoMapping) {
-    is RepoMappingDisabled -> return this
+    is RepoMappingDisabled -> this
     is BzlmodRepoMapping -> {
-      val apparentRepoName = this.repoName
-      val canonicalRepoName = repoMapping.moduleApparentNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
-      return Label.parse("@@$canonicalRepoName//$targetPathAndName")
+      when (this) {
+        is ResolvedLabel -> {
+          when (this.repo) {
+            is Main -> this
+            is Canonical -> this
+            is Apparent -> {
+              val apparentRepoName = this.repoName
+              val canonicalRepoName =
+                repoMapping.moduleApparentNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
+              Label.parse("@@$canonicalRepoName//$targetPathAndName")
+            }
+          }
+        }
+
+        is RelativeLabel -> error("Relative label $this cannot be canonicalized")
+        is SyntheticLabel -> this
+      }
     }
   }
-}
 
 fun calculateRepoMapping(
   workspaceContextProvider: WorkspaceContextProvider,

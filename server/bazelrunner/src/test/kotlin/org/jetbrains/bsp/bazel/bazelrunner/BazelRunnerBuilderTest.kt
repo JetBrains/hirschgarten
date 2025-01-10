@@ -93,10 +93,10 @@ class BazelRunnerBuilderTest {
         "flag1",
         "flag2",
         "--",
-        "@//in1",
-        "@//in2",
-        "-@//ex1",
-        "-@//ex2",
+        "in1",
+        "in2",
+        "-ex1",
+        "-ex2",
       )
   }
 
@@ -118,7 +118,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
-        "@//in1",
+        "in1",
       )
   }
 
@@ -142,7 +142,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
-        "@//in1",
+        "in1",
         "--",
         "hello",
         "world",
@@ -169,7 +169,7 @@ class BazelRunnerBuilderTest {
         "--noprogress_in_terminal_title",
         "flag1",
         "flag2",
-        "@//in1",
+        "in1",
       )
   }
 
@@ -196,7 +196,7 @@ class BazelRunnerBuilderTest {
         "flag2",
         "--action_env=key=value",
         "--",
-        "@//in1",
+        "in1",
       )
   }
 
@@ -223,7 +223,7 @@ class BazelRunnerBuilderTest {
         "flag2",
         "--test_env=key=value",
         "--",
-        "@//in1",
+        "in1",
       )
   }
 
@@ -251,7 +251,7 @@ class BazelRunnerBuilderTest {
         "--test_arg=hello",
         "--test_arg=world",
         "--",
-        "@//in1",
+        "in1",
       )
   }
 
@@ -281,7 +281,7 @@ class BazelRunnerBuilderTest {
         "--test_arg=hello",
         "--test_arg=world",
         "--",
-        "@//in1",
+        "in1",
       )
   }
 
@@ -303,7 +303,7 @@ class BazelRunnerBuilderTest {
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
-        "@//in1",
+        "in1",
       )
   }
 
@@ -328,7 +328,7 @@ class BazelRunnerBuilderTest {
         "--curses=no",
         "--color=yes",
         "--noprogress_in_terminal_title",
-        "@//in1 + @//in2 - @//ex1 - @//ex2",
+        "in1 + in2 - ex1 - ex2",
       )
   }
 
@@ -353,7 +353,7 @@ class BazelRunnerBuilderTest {
         "flag1",
         "flag2",
         "--",
-        "@//in1",
+        "in1",
       )
   }
 
@@ -382,7 +382,7 @@ class BazelRunnerBuilderTest {
         "flag1",
         "flag2",
         "--",
-        "@//in1",
+        "in1",
       )
   }
 }

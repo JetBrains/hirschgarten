@@ -1,11 +1,7 @@
-package org.jetbrains.bsp.bazel.server.model
+package org.jetbrains.bazel.commons.label
 
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
-import org.jetbrains.bazel.commons.label.AllPackagesBeneath
-import org.jetbrains.bazel.commons.label.AllRuleTargets
-import org.jetbrains.bazel.commons.label.AllRuleTargetsAndFiles
-import org.jetbrains.bazel.commons.label.Label
-import org.jetbrains.bazel.commons.label.Package
 import org.junit.jupiter.api.Test
 
 class LabelTest {
@@ -37,7 +33,7 @@ class LabelTest {
     normalized shouldBe "@//path/to/target:targetName"
     label.targetName shouldBe "targetName"
     label.packagePath.toString() shouldBe "path/to/target"
-    label.repoName shouldBe ""
+    label.assumeResolved().repo shouldBe Main
     label.isMainWorkspace shouldBe true
   }
 
@@ -51,15 +47,17 @@ class LabelTest {
   @Test
   fun `should return repo name`() {
     val label = Label.parse("@rules_blah//path/to/target:targetName")
-    val repoName = label.repoName
+    val repoName = label.assumeResolved().repoName
     repoName shouldBe "rules_blah"
+    label.isApparent shouldBe true
   }
 
   @Test
   fun `should parse repo name in canonical form`() {
     val label = Label.parse("@@rules_blah~~something~//path/to/target:targetName")
-    val repoName = label.repoName
+    val repoName = label.assumeResolved().repoName
     repoName shouldBe "rules_blah~~something~"
+    label.isApparent shouldBe false
   }
 
   @Test
@@ -104,7 +102,7 @@ class LabelTest {
     normalized shouldBe "@//path/to/target:targetName"
     label.targetName shouldBe "targetName"
     label.packagePath.toString() shouldBe "path/to/target"
-    label.repoName shouldBe ""
+    label.assumeResolved().repo shouldBe Main
     label.isMainWorkspace shouldBe true
   }
 
@@ -149,19 +147,19 @@ class LabelTest {
   }
 
   @Test
-  fun `relative labels are parsed on a best-effort basis`() {
-    val label = Label.parse(":target")
+  fun `relative labels are resolved on a best-effort basis`() {
+    val label = Label.parse(":target").assumeResolved()
     label.toString() shouldBe "@//:target"
     label.targetName shouldBe "target"
     label.packagePath.toString() shouldBe ""
-    label.repoName shouldBe ""
+    label.assumeResolved().repo shouldBe Main
     label.isMainWorkspace shouldBe true
 
-    val label2 = Label.parse("target")
+    val label2 = Label.parse("target").assumeResolved()
     label2.toString() shouldBe "@//target"
     label2.targetName shouldBe "target"
     label2.packagePath.toString() shouldBe "target"
-    label2.repoName shouldBe ""
+    label.assumeResolved().repo shouldBe Main
     label2.isMainWorkspace shouldBe true
   }
 
@@ -174,7 +172,7 @@ class LabelTest {
 
   @Test
   fun `all targets is normalized to wildcard`() {
-    val label = Label.parse(":all-targets")
+    val label = Label.parse("//:all-targets")
     label.toString() shouldBe "@//:*"
   }
 
@@ -220,7 +218,7 @@ class LabelTest {
   @Test
   fun `package wildcard with all-targets is the same as asterisk`() {
     val label1 = Label.parse("@//path/to/...:*")
-    val label2 = Label.parse("path/to/...:all-targets")
+    val label2 = Label.parse("path/to/...:all-targets").assumeResolved()
     label1 shouldBe label2
   }
 
@@ -228,5 +226,45 @@ class LabelTest {
   fun `synthetic label should be parsed correctly`() {
     val label = Label.parse("scala-compiler-2.12.14.jar[synthetic]")
     label.isSynthetic shouldBe true
+  }
+
+  @Test
+  fun `parsing relative labels works`() {
+    val label = Label.parse(":target")
+    label.toString() shouldBe ":target"
+    label.targetName shouldBe "target"
+    label.packagePath.toString() shouldBe ""
+    label.isRelative shouldBe true
+  }
+
+  @Test
+  fun `resolving relative labels works`() {
+    val base = Label.parse("@//path/to").assumeResolved()
+    val relative = Label.parse(":target").asRelative()
+    val resolved = relative?.resolve(base)
+    resolved.toString() shouldBe "@//path/to:target"
+  }
+
+  @Test
+  fun `resolving works in the more complex case`() {
+    val base = Label.parse("@blah//path/to").assumeResolved()
+    val relative = Label.parse("path/segment:oh/god").asRelative()
+    val resolved = relative?.resolve(base)
+    resolved.toString() shouldBe "@blah//path/to/path/segment:oh/god"
+  }
+
+  @Test
+  fun `parse relative label with ambiguous package`() {
+    val label1 = Label.parse("src/Hello.java")
+    label1.toString() shouldBe "src/Hello.java"
+    label1.target should { it is AmbiguousSingleTarget }
+    label1.packagePath shouldBe Package(listOf("src", "Hello.java"))
+    label1.isRelative shouldBe true
+
+    val label2 = Label.parse("//src/Hello.java")
+    label2.toString() shouldBe "@//src/Hello.java"
+    label2.target should { it is AmbiguousSingleTarget }
+    label2.packagePath shouldBe Package(listOf("src", "Hello.java"))
+    label2.isRelative shouldBe false
   }
 }

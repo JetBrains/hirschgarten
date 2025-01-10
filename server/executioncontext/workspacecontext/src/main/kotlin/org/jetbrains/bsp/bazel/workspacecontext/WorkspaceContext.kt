@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.workspacecontext
 
 import org.apache.logging.log4j.LogManager
+import org.jetbrains.bazel.commons.label.assumeResolved
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContext
 import org.jetbrains.bsp.bazel.executioncontext.api.ExecutionContextConstructor
@@ -85,7 +86,10 @@ data class WorkspaceContext(
 val WorkspaceContext.externalRepositoriesTreatedAsInternal: List<String>
   get() =
     targets.values.mapNotNull {
-      it.repoName.takeIf { it.isNotEmpty() }
+      it
+        .assumeResolved()
+        .repo.repoName
+        .takeIf { it.isNotEmpty() }
     }
 
 class WorkspaceContextConstructor(workspaceRoot: Path, private val dotBazelBspDirPath: Path) :
