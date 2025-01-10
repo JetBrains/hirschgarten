@@ -4,6 +4,8 @@ import kotlinx.coroutines.runBlocking
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.server.benchmark.openTelemetry
+import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
+import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseProjectResolver
 
@@ -11,18 +13,18 @@ class ProjectProvider(private val projectResolver: ProjectResolver, private val 
   private var project: Project? = null
 
   @Synchronized
-  fun refreshAndGet(cancelChecker: CancelChecker, build: Boolean): Project =
+  fun refreshAndGet(cancelChecker: CancelChecker, build: Boolean): AspectSyncProject =
     loadFromBazel(cancelChecker, build = build, null).also { project = it }
 
   @Synchronized
-  fun updateAndGet(cancelChecker: CancelChecker, targetsToSync: List<Label>): Project =
-    loadFromBazel(cancelChecker, build = false, targetsToSync).also { project = project?.plus(it) }
+  fun updateAndGet(cancelChecker: CancelChecker, targetsToSync: List<Label>): AspectSyncProject =
+    loadFromBazel(cancelChecker, build = false, targetsToSync).also { project = (project as? AspectSyncProject)?.plus(it) }
 
   @Synchronized
   fun get(cancelChecker: CancelChecker): Project = project ?: loadFromBazel(cancelChecker, false, null).also { project = it }
 
   @Synchronized
-  fun bazelQueryRefreshAndGet(cancelChecker: CancelChecker, originId: String): Project =
+  fun bazelQueryRefreshAndGet(cancelChecker: CancelChecker, originId: String): FirstPhaseProject =
     firstPhaseProjectResolver.resolve(originId, cancelChecker).also { project = it }
 
   @Synchronized
@@ -30,7 +32,7 @@ class ProjectProvider(private val projectResolver: ProjectResolver, private val 
     cancelChecker: CancelChecker,
     build: Boolean,
     targetsToSync: List<Label>?,
-  ): Project =
+  ): AspectSyncProject =
     runBlocking {
       projectResolver.resolve(cancelChecker, build = build, targetsToSync).also {
         openTelemetry.sdkTracerProvider.forceFlush()

@@ -13,7 +13,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
-import org.jetbrains.bsp.bazel.server.model.Project
+import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.AndroidMinSdkSpec
 import org.jetbrains.bsp.bazel.workspacecontext.BazelBinarySpec
@@ -66,16 +66,11 @@ private class MockWorkspaceContextProvider(private val allowManualTargetsSync: B
     )
 }
 
-private fun createMockProject(lightweightModules: List<Build.Target>): Project =
-  Project(
+private fun createMockProject(lightweightModules: List<Build.Target>): FirstPhaseProject =
+  FirstPhaseProject(
     workspaceRoot = URI.create("file:///path/to/workspace"),
-    modules = emptyList(),
-    libraries = emptyMap(),
-    goLibraries = emptyMap(),
-    invalidTargets = emptyList(),
-    nonModuleTargets = emptyList(),
     bazelRelease = BazelRelease(7),
-    lightweightModules = lightweightModules.associateBy { Label.parse(it.rule.name) },
+    modules = lightweightModules.associateBy { Label.parse(it.rule.name) },
   )
 
 class FirstPhaseTargetToBspMapperTest {

@@ -19,7 +19,7 @@ class ProjectTest {
     fun `should throw an exception if workspaceRoot differs`() {
       // given
       val project1 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
@@ -30,7 +30,7 @@ class ProjectTest {
         )
 
       val project2 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/another/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
@@ -52,7 +52,7 @@ class ProjectTest {
     fun `should throw an exception if bazelRelease differs`() {
       // given
       val project1 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
@@ -63,7 +63,7 @@ class ProjectTest {
         )
 
       val project2 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = emptyList(),
           libraries = emptyMap(),
@@ -85,7 +85,7 @@ class ProjectTest {
     fun `should add two projects`() {
       // given
       val project1 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules = listOf("//project1:module1".toMockModule(), "//project1:module2".toMockModule(), "//module".toMockModule()),
           libraries =
@@ -104,7 +104,7 @@ class ProjectTest {
         )
 
       val project2 =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules =
             listOf(
@@ -130,7 +130,7 @@ class ProjectTest {
 
       // then
       val expectedNewProject =
-        Project(
+        AspectSyncProject(
           workspaceRoot = URI.create("file:///path/to/workspace"),
           modules =
             listOf(
