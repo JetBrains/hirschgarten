@@ -186,7 +186,7 @@ enable shard sync, split and build targets in batches to avoid Bazel OOM.
 
 ##### default
 
-default to `false`, i.e., sync/build all targets indicated in the project view at once.
+default to `true`.
 
 ---
 

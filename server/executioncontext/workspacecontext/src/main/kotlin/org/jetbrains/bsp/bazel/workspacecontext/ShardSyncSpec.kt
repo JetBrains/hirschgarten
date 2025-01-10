@@ -6,7 +6,7 @@ import org.jetbrains.bsp.bazel.projectview.model.ProjectView
 
 data class ShardSyncSpec(override val value: Boolean) : ExecutionContextSingletonEntity<Boolean>()
 
-private const val DEFAULT_SHARD_SYNC_VALUE = false
+private const val DEFAULT_SHARD_SYNC_VALUE = true
 
 internal object ShardSyncSpecExtractor : ExecutionContextEntityExtractor<ShardSyncSpec> {
   override fun fromProjectView(projectView: ProjectView): ShardSyncSpec =

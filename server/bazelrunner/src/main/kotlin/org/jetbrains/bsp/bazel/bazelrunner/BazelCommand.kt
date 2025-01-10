@@ -1,6 +1,7 @@
 package org.jetbrains.bsp.bazel.bazelrunner
 
 import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.utils.OsFamily
 import org.jetbrains.bsp.bazel.bazelrunner.params.BazelFlag
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import java.nio.file.Path
@@ -203,7 +204,7 @@ abstract class BazelCommand(val bazelBinary: String) {
     }
   }
 
-  class Query(bazelBinary: String) :
+  class Query(bazelBinary: String, private val allowManualTargetsSync: Boolean) :
     BazelCommand(bazelBinary),
     HasMultipleTargets {
     override val targets: MutableList<Label> = mutableListOf()
@@ -215,17 +216,29 @@ abstract class BazelCommand(val bazelBinary: String) {
       commandLine.addAll(startupOptions)
       commandLine.add("query")
       commandLine.addAll(options)
-      commandLine.add(queryString())
+      commandLine.add(queryString(allowManualTargetsSync))
 
       return commandLine
     }
 
-    fun queryString(): String {
+    fun queryString(allowManualTargetsSync: Boolean): String {
       if (targets.isEmpty()) return ""
       val includesString = targets.joinToString(separator = " + ")
       val excludesString = excludedTargets.joinToString(separator = " - ")
-      return if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
+      val targetString = if (excludesString.isEmpty()) includesString else "$includesString - $excludesString"
+      return if (allowManualTargetsSync) {
+        targetString
+      } else {
+        excludeManualTargetsQueryString(targetString)
+      }
     }
+
+    private fun excludeManualTargetsQueryString(targetString: String): String =
+      if (OsFamily.inferFromSystem() == OsFamily.WINDOWS) {
+        "attr('tags', '^((?!manual).)*$', $targetString)"
+      } else {
+        "attr(\"tags\", \"^((?!manual).)*$\", $targetString)"
+      }
   }
 
   class CQuery(bazelBinary: String) :

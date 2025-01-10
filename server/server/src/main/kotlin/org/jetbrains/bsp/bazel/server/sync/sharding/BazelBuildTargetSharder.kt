@@ -21,6 +21,7 @@ import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.commons.BazelStatus
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
+import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.sharding.WildcardTargetExpander.ExpandedTargetsResult
 import org.jetbrains.bsp.bazel.workspacecontext.DEFAULT_TARGET_SHARD_SIZE
@@ -52,7 +53,14 @@ object BazelBuildTargetSharder {
     bazelRunner: BazelRunner,
     cancelChecker: CancelChecker,
     bspClientLogger: BspClientLogger,
+    firstPhaseProject: FirstPhaseProject?,
   ): ShardedTargetsResult {
+    if (firstPhaseProject != null) {
+      return ShardedTargetsResult(
+        shardTargetsToBatches(firstPhaseProject.modules.keys.toList(), emptyList(), getTargetShardSize(context)),
+        BazelStatus.SUCCESS,
+      )
+    }
     val includes = targets.values
     val excludes = targets.excludedValues
     val shardingApproach = getShardingApproach(context)
@@ -65,7 +73,7 @@ object BazelBuildTargetSharder {
 
       ShardingApproach.QUERY_AND_SHARD -> {
         val singleTargets =
-          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, cancelChecker)
+          WildcardTargetExpander.queryIndividualTargets(includes, excludes, bazelRunner, cancelChecker, context)
         ShardedTargetsResult(
           shardTargetsToBatches(singleTargets.singleTargets, emptyList(), getTargetShardSize(context)),
           singleTargets.buildResult,
@@ -83,6 +91,7 @@ object BazelBuildTargetSharder {
             bazelRunner,
             cancelChecker,
             bspClientLogger,
+            context,
           )
         if (expandedTargets.buildResult == BazelStatus.FATAL_ERROR) {
           ShardedTargetsResult(ShardedTargetList(emptyList()), expandedTargets.buildResult)
@@ -115,6 +124,7 @@ object BazelBuildTargetSharder {
     bazelRunner: BazelRunner,
     cancelChecker: CancelChecker,
     bspClientLogger: BspClientLogger,
+    context: WorkspaceContext,
   ): ExpandedTargetsResult {
     val wildcardIncludes = includes.filter { it.isWildcard }
     if (wildcardIncludes.isEmpty()) {
@@ -147,6 +157,7 @@ object BazelBuildTargetSharder {
           bazelRunner,
           cancelChecker,
           bspClientLogger,
+          context,
         ).orEmpty()
 
     // finally add back any explicitly-specified, unexcluded single targets which may have been
