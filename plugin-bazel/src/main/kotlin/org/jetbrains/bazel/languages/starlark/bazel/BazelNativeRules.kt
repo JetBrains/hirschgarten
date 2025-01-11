@@ -177,7 +177,7 @@ object BazelNativeRules {
 
   val NATIVE_RULES_MAP =
     mapOf(
-      // Java
+      // Java.
       addNativeRule(
         "java_binary",
         "https://bazel.build/reference/be/java#java_binary",
@@ -582,6 +582,129 @@ object BazelNativeRules {
           BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
           BazelNativeRuleArgument("cc_profile", BAZEL_NONE, true),
           BazelNativeRuleArgument("ld_profile", BAZEL_NONE, true),
+        )
+      ),
+      // Objective-C
+      addNativeRule(
+        "objc_import",
+        "https://bazel.build/reference/be/objective-c#objc_import",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("hdrs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("alwayslink", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("archives", BAZEL_NONE, true),
+          BazelNativeRuleArgument("includes", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("sdk_dylibs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("sdk_frameworks", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("sdk_includes", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("textual_hdrs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("weak_sdk_frameworks", BAZEL_EMPTY_LIST, false),
+        )
+      ),
+      addNativeRule(
+        "objc_library",
+        "https://bazel.build/reference/be/objective-c#objc_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("hdrs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("alwayslink", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("conlyopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("copts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("cxxopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("defines", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("enable_modules", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("implementation_deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("includes", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("linkopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("module_map", BAZEL_NONE, false),
+          BazelNativeRuleArgument("module_name", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("non_arc_srcs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("pch", BAZEL_NONE, false),
+          BazelNativeRuleArgument("sdk_dylibs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("sdk_frameworks", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("sdk_includes", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("stamp", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("textual_hdrs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("weak_sdk_frameworks", BAZEL_EMPTY_LIST, false),
+        )
+      ),
+      // Protocol buffer.
+      addNativeRule(
+        "cc_proto_library",
+        "https://bazel.build/reference/be/protocol-buffer#cc_proto_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+        )
+      ),
+      addNativeRule(
+        "java_lite_proto_library",
+        "https://bazel.build/reference/be/protocol-buffer#java_lite_proto_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+        )
+      ),
+      addNativeRule(
+        "java_proto_library",
+        "https://bazel.build/reference/be/protocol-buffer#java_proto_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+        )
+      ),
+      addNativeRule(
+        "proto_library",
+        "https://bazel.build/reference/be/protocol-buffer#proto_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("allow_exports", BAZEL_NONE, false),
+          BazelNativeRuleArgument("exports", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("import_prefix", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("strip_import_prefix", BAZEL_EMPTY_STRING, false),
+        )
+      ),
+      addNativeRule(
+        "py_proto_library",
+        "https://bazel.build/reference/be/protocol-buffer#py_proto_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+        )
+      ),
+      addNativeRule(
+        "proto_lang_toolchain",
+        "https://bazel.build/reference/be/protocol-buffer#proto_lang_toolchain",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("allowlist_different_package", BAZEL_NONE, false),
+          BazelNativeRuleArgument("blacklisted_protos", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("command_line", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("mnemonic", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("output_files", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("plugin", BAZEL_NONE, false),
+          BazelNativeRuleArgument("plugin_format_flag", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("progress_message", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("protoc_minimal_do_not_use", BAZEL_NONE, false),
+          BazelNativeRuleArgument("runtime", BAZEL_NONE, false),
+          BazelNativeRuleArgument("toolchain_type", BAZEL_NONE, false),
+        )
+      ),
+      addNativeRule(
+        "proto_toolchain",
+        "https://bazel.build/reference/be/protocol-buffer#proto_toolchain",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("command_line", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("mnemonic", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("output_files", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("progress_message", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("proto_compiler", BAZEL_NONE, false),
         )
       ),
     )
