@@ -1,6 +1,6 @@
 package org.jetbrains.bazel.languages.starlark.bazel
 
-class BazelNativeRuleArgument(
+data class BazelNativeRuleArgument(
   val name: String,
   val default: String,
   val required: Boolean,
@@ -26,7 +26,7 @@ object BazelNativeRules {
   const val BAZEL_EMPTY_STRING = "\"\""
   const val BAZEL_STRUCT = "{}"
 
-  fun getRuleNames(): Set<String> = NATIVE_RULES_MAP.keys
+  val ruleNames = NATIVE_RULES_MAP.keys
 
   fun getRuleArguments(ruleString: String): Set<BazelNativeRuleArgument> {
     val rule = NATIVE_RULES_MAP[ruleString]
