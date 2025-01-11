@@ -707,6 +707,114 @@ object BazelNativeRules {
           BazelNativeRuleArgument("proto_compiler", BAZEL_NONE, false),
         )
       ),
+      // Python.
+      addNativeRule(
+        "py_binary",
+        "https://bazel.build/reference/be/python#py_binary",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("imports", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("legacy_create_init", "-1", false),
+          BazelNativeRuleArgument("main", BAZEL_NONE, false),
+          BazelNativeRuleArgument("precompile", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("precompile_invalidation_mode", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("precompile_optimize_level", "0", false),
+          BazelNativeRuleArgument("precompile_source_retention", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("pyc_collection", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("python_version", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("srcs_version", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("stamp", "-1", false),
+        )
+      ),
+      addNativeRule(
+        "py_library",
+        "https://bazel.build/reference/be/python#py_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("imports", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("precompile", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("precompile_invalidation_mode", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("precompile_optimize_level", "0", false),
+          BazelNativeRuleArgument("precompile_source_retention", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("srcs_version", BAZEL_EMPTY_STRING, false),
+        )
+      ),
+      addNativeRule(
+        "py_test",
+        "https://bazel.build/reference/be/python#py_test",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("imports", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("legacy_create_init", "-1", false),
+          BazelNativeRuleArgument("main", BAZEL_NONE, false),
+          BazelNativeRuleArgument("precompile", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("precompile_invalidation_mode", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("precompile_optimize_level", "0", false),
+          BazelNativeRuleArgument("precompile_source_retention", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("pyc_collection", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("python_version", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("srcs_version", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("stamp", "0", false),
+        )
+      ),
+      addNativeRule(
+        "py_runtime",
+        "https://bazel.build/reference/be/python#py_runtime",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("abi_flags", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("bootstrap_template", BAZEL_NONE, false),
+          BazelNativeRuleArgument("coverage_tool", BAZEL_NONE, false),
+          BazelNativeRuleArgument("files", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("implementation_name", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("interpreter", BAZEL_NONE, false),
+          BazelNativeRuleArgument("interpreter_path", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("interpreter_version_info", BAZEL_STRUCT, false),
+          BazelNativeRuleArgument("pyc_tag", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("python_version", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("stage2_bootstrap_template", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("stub_shebang", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("zip_main_template", BAZEL_EMPTY_STRING, false),
+        )
+      ),
+      // Shell.
+      addNativeRule(
+        "sh_binary",
+        "https://bazel.build/reference/be/shell#sh_binary",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("env_inherit", BAZEL_EMPTY_LIST, false),
+        )
+      ),
+      addNativeRule(
+        "sh_library",
+        "https://bazel.build/reference/be/shell#sh_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+        )
+      ),
+      addNativeRule(
+        "sh_test",
+        "https://bazel.build/reference/be/shell#sh_test",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+        )
+      ),
     )
 
   val ruleNames = NATIVE_RULES_MAP.keys
