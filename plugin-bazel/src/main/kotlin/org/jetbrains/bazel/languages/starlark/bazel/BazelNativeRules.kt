@@ -26,8 +26,6 @@ object BazelNativeRules {
   const val BAZEL_EMPTY_STRING = "\"\""
   const val BAZEL_STRUCT = "{}"
 
-  val ruleNames = NATIVE_RULES_MAP.keys
-
   fun getRuleArguments(ruleString: String): Set<BazelNativeRuleArgument> {
     val rule = NATIVE_RULES_MAP[ruleString]
     if (rule == null) {
@@ -389,5 +387,204 @@ object BazelNativeRules {
         ),
       ),
       // C/C++
+      addNativeRule(
+        "cc_binary",
+        "https://bazel.build/reference/be/c-cpp#cc_binary",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("additional_linker_inputs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("conlyopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("copts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("cxxopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("defines", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("dynamic_deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("includes", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("link_extra_lib", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("linkopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("linkshared", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("linkstatic", BAZEL_TRUE, false),
+          BazelNativeRuleArgument("local_defines", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("malloc", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("module_interfaces", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("nocopts", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("reexport_deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("stamp", "-1", false),
+          BazelNativeRuleArgument("win_def_file", BAZEL_NONE, false),
+        )),
+      addNativeRule(
+        "cc_import",
+        "https://bazel.build/reference/be/c-cpp#cc_import",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("hdrs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("alwayslink", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("includes", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("interface_library", BAZEL_NONE, false),
+          BazelNativeRuleArgument("linkopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("objects", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("pic_objects", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("pic_static_library", BAZEL_NONE, false),
+          BazelNativeRuleArgument("shared_library", BAZEL_NONE, false),
+          BazelNativeRuleArgument("static_library", BAZEL_NONE, false),
+          BazelNativeRuleArgument("system_provided", BAZEL_FALSE, false),
+        )
+      ),
+      addNativeRule(
+        "cc_library",
+        "https://bazel.build/reference/be/c-cpp#cc_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("srcs", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("hdrs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("additional_compiler_inputs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("additional_linker_inputs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("alwayslink", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("conlyopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("copts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("cxxopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("defines", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("hdrs_check", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("implementation_deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("include_prefix", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("includes", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("linkopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("linkstamp", BAZEL_NONE, false),
+          BazelNativeRuleArgument("linkstatic", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("local_defines", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("module_interfaces", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("strip_include_prefix", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("textual_hdrs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("win_def_file", BAZEL_NONE, false),
+        )
+      ),
+      addNativeRule(
+        "cc_shared_library",
+        "https://bazel.build/reference/be/c-cpp#cc_shared_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("additional_linker_inputs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("dynamic_deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("exports_filter", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("roots", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("shared_lib_name", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("static_deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("user_link_flags", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("win_def_file", BAZEL_NONE, false),
+        )
+      ),
+      addNativeRule(
+        "cc_static_library",
+        "https://bazel.build/reference/be/c-cpp#cc_static_library",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+        )
+      ),
+      addNativeRule(
+        "cc_test",
+        "https://bazel.build/reference/be/c-cpp#cc_test",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("src", BAZEL_EMPTY_LIST, true),
+          BazelNativeRuleArgument("data", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("additional_linker_inputs", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("conlyopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("copts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("cxxopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("defines", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("dynamic_deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("hdrs_check", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("includes", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("link_extra_lib", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("linkopts", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("linkshared", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("linkstatic", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("local_defines", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("malloc", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("module_interfaces", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("nocopts", BAZEL_EMPTY_STRING, false),
+          BazelNativeRuleArgument("reexport_deps", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("stamp", "0", false),
+          BazelNativeRuleArgument("win_def_file", BAZEL_NONE, false),
+        )
+      ),
+      addNativeRule(
+        "cc_toolchain",
+        "https://bazel.build/reference/be/c-cpp#cc_toolchain",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("all_files", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("ar_files", BAZEL_NONE, false),
+          BazelNativeRuleArgument("as_files", BAZEL_NONE, false),
+          BazelNativeRuleArgument("compiler_files", BAZEL_NONE, true),
+          BazelNativeRuleArgument("compiler_files_without_includes", BAZEL_NONE, false),
+          BazelNativeRuleArgument("coverage_files", BAZEL_NONE, false),
+          BazelNativeRuleArgument("dwp_files", BAZEL_NONE, true),
+          BazelNativeRuleArgument("dynamic_runtime_lib", BAZEL_NONE, false),
+          BazelNativeRuleArgument("libc_top", BAZEL_NONE, false),
+          BazelNativeRuleArgument("linker_files", BAZEL_NONE, true),
+          BazelNativeRuleArgument("module_map", BAZEL_NONE, false),
+          BazelNativeRuleArgument("objcopy_files", BAZEL_NONE, true),
+          BazelNativeRuleArgument("output_licenses", BAZEL_EMPTY_LIST, false),
+          BazelNativeRuleArgument("static_runtime_lib", BAZEL_NONE, false),
+          BazelNativeRuleArgument("strip_files", BAZEL_NONE, true),
+          BazelNativeRuleArgument("supports_header_parsing", BAZEL_FALSE, false),
+          BazelNativeRuleArgument("supports_param_files", BAZEL_TRUE, false),
+          BazelNativeRuleArgument("toolchain_config", BAZEL_TRUE, true),
+          BazelNativeRuleArgument("toolchain_identifier", BAZEL_EMPTY_STRING, false),
+        )
+      ),
+      addNativeRule(
+        "cc_toolchain_suite",
+        "https://bazel.build/reference/be/c-cpp#cc_toolchain_suite",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+        )
+      ),
+      addNativeRule(
+        "fdo_prefetch_hints",
+        "https://bazel.build/reference/be/c-cpp#fdo_prefetch_hints",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("profile", BAZEL_NONE, true),
+        )
+      ),
+      addNativeRule(
+        "fdo_profile",
+        "https://bazel.build/reference/be/c-cpp#fdo_profile",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("memprof_profile", BAZEL_NONE, false),
+          BazelNativeRuleArgument("profile", BAZEL_NONE, true),
+          BazelNativeRuleArgument("proto_profile", BAZEL_NONE, false),
+        )
+      ),
+      addNativeRule(
+        "memprof_profile",
+        "https://bazel.build/reference/be/c-cpp#memprof_profile",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("profile", BAZEL_NONE, true),
+        )
+      ),
+      addNativeRule(
+        "propeller_optimize",
+        "https://bazel.build/reference/be/c-cpp#propeller_optimize",
+        setOf(
+          BazelNativeRuleArgument("name", BAZEL_EMPTY_STRING, true),
+          BazelNativeRuleArgument("cc_profile", BAZEL_NONE, true),
+          BazelNativeRuleArgument("ld_profile", BAZEL_NONE, true),
+        )
+      ),
     )
+
+  val ruleNames = NATIVE_RULES_MAP.keys
 }
