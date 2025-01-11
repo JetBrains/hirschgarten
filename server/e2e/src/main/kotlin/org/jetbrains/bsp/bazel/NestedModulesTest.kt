@@ -3,18 +3,22 @@ package org.jetbrains.bsp.bazel
 import ch.epfl.scala.bsp4j.SourcesParams
 import ch.epfl.scala.bsp4j.WorkspaceBuildTargetsResult
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.paths.shouldExist
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldEndWith
 import kotlinx.coroutines.future.await
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.base.BazelBspTestBaseScenario
 import org.jetbrains.bsp.bazel.base.BazelBspTestScenarioStep
 import org.jetbrains.bsp.bazel.install.Install
+import java.net.URI
 import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
+import kotlin.io.path.toPath
 import kotlin.time.Duration.Companion.seconds
 
 object NestedModulesTest : BazelBspTestBaseScenario() {
-  private val testClient = createTestkitClient()
+  private val testClient = createBazelClient()
 
   @JvmStatic
   fun main(args: Array<String>) = executeScenario()
@@ -37,6 +41,7 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
   override fun scenarioSteps(): List<BazelBspTestScenarioStep> =
     listOf(
       compareWorkspaceTargetsResults(),
+      compareWorkspaceRepoMappingResults(),
     )
 
   override fun expectedWorkspaceBuildTargetsResult(): WorkspaceBuildTargetsResult {
@@ -53,8 +58,8 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
         targetsResult.targets.size shouldBe 4
         targetsResult.targets.map { Label.parse(it.id.uri) } shouldContainExactlyInAnyOrder
           listOf(
-            Label.parse("@@inner$bzlmodRepoNameSeparator//:lib_inner"),
-            Label.parse("@@inner$bzlmodRepoNameSeparator//:bin_inner"),
+            Label.parse("@@inner+//:lib_inner"),
+            Label.parse("@@inner+//:bin_inner"),
             Label.parse("@//:lib_outer"),
             Label.parse("@//:bin_outer"),
           )
@@ -77,6 +82,42 @@ object NestedModulesTest : BazelBspTestBaseScenario() {
             "inner/BinInner.java",
             "inner/LibInner.java",
           )
+      }
+    }
+
+  private fun compareWorkspaceRepoMappingResults(): BazelBspTestScenarioStep =
+    BazelBspTestScenarioStep(
+      "compare workspace repo mapping results",
+    ) {
+      testClient.test(60.seconds) { session, _ ->
+        val repoMapping = session.server.workspaceBazelRepoMapping().await()
+
+        repoMapping.apparentRepoNameToCanonicalName shouldBe
+          mapOf(
+            "" to "",
+            "bazelbsp_aspect" to "+_repo_rules+bazelbsp_aspect",
+            "local_config_platform" to "local_config_platform",
+            "rules_java" to "rules_java+",
+            "bazel_tools" to "bazel_tools",
+            "outer" to "",
+            "inner" to "inner+",
+          )
+
+        val canonicalMapping = repoMapping.canonicalRepoNameToPath
+        canonicalMapping.keys shouldBe repoMapping.apparentRepoNameToCanonicalName.values.toSet()
+        canonicalMapping[""] shouldBe "file://$workspaceDir/"
+        canonicalMapping
+          .getValue(
+            "+_repo_rules+bazelbsp_aspect",
+          ).shouldEndWith("/external/+_repo_rules+bazelbsp_aspect/")
+        canonicalMapping.getValue("local_config_platform").shouldEndWith("/external/local_config_platform/")
+        canonicalMapping.getValue("rules_java+").shouldEndWith("/external/rules_java+/")
+        canonicalMapping["inner+"] shouldBe "file://$workspaceDir/inner/"
+        canonicalMapping["bazel_tools"] shouldEndWith ("/external/bazel_tools/")
+
+        for (path in canonicalMapping.values) {
+          URI.create(path).toPath().shouldExist()
+        }
       }
     }
 }

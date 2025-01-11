@@ -13,6 +13,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelRelease
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.workspacecontext.AllowManualTargetsSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.AndroidMinSdkSpec
@@ -71,6 +72,7 @@ private fun createMockProject(lightweightModules: List<Build.Target>): FirstPhas
     workspaceRoot = URI.create("file:///path/to/workspace"),
     bazelRelease = BazelRelease(7),
     modules = lightweightModules.associateBy { Label.parse(it.rule.name) },
+    repoMapping = RepoMappingDisabled,
   )
 
 class FirstPhaseTargetToBspMapperTest {

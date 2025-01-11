@@ -13,8 +13,8 @@ import com.intellij.openapi.vfs.findPsiFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.descendantsOfType
+import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.config.isBazelProject
-import org.jetbrains.bazel.languages.bazel.BazelLabel
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.references.BUILD_FILE_NAMES
 import org.jetbrains.plugins.bsp.config.rootDir
@@ -71,7 +71,7 @@ class BazelBuildTargetConsoleFilter(private val project: Project) : Filter {
           ?.descendantsOfType<StarlarkNamedArgumentExpression>()
           ?.filter { it.isNameArgument() }
           ?.firstOrNull {
-            it.getArgumentStringValue()?.let { it1 -> BazelLabel.ofString(it1).targetName } == target
+            it.getArgumentStringValue()?.let { it1 -> Label.parseOrNull(it1)?.targetName } == target
           }
       OpenFileHyperlinkInfo(project, virtualFile, psiElement?.calculateLineNumber() ?: 0, 0)
     }

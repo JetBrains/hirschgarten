@@ -23,7 +23,6 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGen
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
 import org.jetbrains.bsp.bazel.server.bsp.utils.InternalAspectsResolver
-import org.jetbrains.bsp.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.AdditionalAndroidBuildTargetsProvider
 import org.jetbrains.bsp.bazel.server.sync.BazelProjectMapper
@@ -105,10 +104,12 @@ class BazelBspServer(
         bazelPathsResolver = bazelPathsResolver,
         bazelRunner = bazelRunner,
         bspInfo = bspInfo,
+        bazelInfo = bazelInfo,
+        bspClientLogger = bspClientLogger,
       )
     val firstPhaseTargetToBspMapper = FirstPhaseTargetToBspMapper(workspaceContextProvider, workspaceRoot)
     val projectSyncService =
-      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, initializeBuildParams.capabilities, workspaceRoot)
+      ProjectSyncService(bspProjectMapper, firstPhaseTargetToBspMapper, projectProvider, initializeBuildParams.capabilities)
     val additionalBuildTargetsProvider = AdditionalAndroidBuildTargetsProvider(projectProvider)
     val executeService =
       ExecuteService(
@@ -177,21 +178,12 @@ class BazelBspServer(
         shouldUseInjectRepository = bazelInfo.shouldUseInjectRepository(),
       )
 
-    val repoMapping =
-      calculateRepoMapping(
-        workspaceContextProvider = workspaceContextProvider,
-        bazelRunner = bazelRunner,
-        isBzlmod = bazelInfo.isBzlModEnabled,
-        bspClientLogger = bspClientLogger,
-      )
-
     val bazelBspAspectsManager =
       BazelBspAspectsManager(
         bazelBspCompilationManager = compilationManager,
         aspectsResolver = aspectsResolver,
         workspaceContextProvider = workspaceContextProvider,
         featureFlags = featureFlags,
-        repoMapping = repoMapping,
         bazelRelease = bazelInfo.release,
       )
     val bazelToolchainManager = BazelToolchainManager(bazelRunner, featureFlags)
@@ -209,7 +201,6 @@ class BazelBspServer(
         kotlinAndroidModulesMerger,
         bspClientLogger,
         featureFlags,
-        repoMapping = repoMapping,
       )
     val targetInfoReader = TargetInfoReader(bspClientLogger)
 
@@ -227,9 +218,15 @@ class BazelBspServer(
         bazelPathsResolver = bazelPathsResolver,
         bspClientLogger = bspClientLogger,
         featureFlags = featureFlags,
-        repoMapping = repoMapping,
       )
-    val firstPhaseProjectResolver = FirstPhaseProjectResolver(workspaceRoot, bazelRunner, workspaceContextProvider, bazelInfo)
+    val firstPhaseProjectResolver =
+      FirstPhaseProjectResolver(
+        workspaceRoot = workspaceRoot,
+        bazelRunner = bazelRunner,
+        workspaceContextProvider = workspaceContextProvider,
+        bazelInfo = bazelInfo,
+        bspClientLogger = bspClientLogger,
+      )
     return ProjectProvider(projectResolver, firstPhaseProjectResolver)
   }
 

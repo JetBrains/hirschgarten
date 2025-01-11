@@ -45,12 +45,12 @@ import org.jetbrains.bsp.bazel.server.sync.firstPhase.FirstPhaseTargetToBspMappe
 import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
 import org.jetbrains.bsp.protocol.WorkspaceLibrariesResult
-import java.nio.file.Path
 
 /** A facade for all project sync related methods  */
 class ProjectSyncService(
@@ -58,7 +58,6 @@ class ProjectSyncService(
   private val firstPhaseTargetToBspMapper: FirstPhaseTargetToBspMapper,
   private val projectProvider: ProjectProvider,
   private val clientCapabilities: BuildClientCapabilities,
-  private val workspaceRoot: Path,
 ) {
   fun initialize(): InitializeBuildResult = bspMapper.initializeServer(Language.all())
 
@@ -111,6 +110,11 @@ class ProjectSyncService(
   fun workspaceInvalidTargets(cancelChecker: CancelChecker): WorkspaceInvalidTargetsResult {
     val project = projectProvider.get(cancelChecker).toAspectSyncProjectOrThrow()
     return bspMapper.workspaceInvalidTargets(project)
+  }
+
+  fun workspaceBazelRepoMapping(cancelChecker: CancelChecker): WorkspaceBazelRepoMappingResult {
+    val project = projectProvider.get(cancelChecker)
+    return bspMapper.workspaceBazelRepoMapping(project)
   }
 
   fun buildTargetSources(cancelChecker: CancelChecker, sourcesParams: SourcesParams): SourcesResult {

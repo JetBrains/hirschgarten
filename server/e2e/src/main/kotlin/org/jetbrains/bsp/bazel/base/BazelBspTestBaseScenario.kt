@@ -50,7 +50,14 @@ abstract class BazelBspTestBaseScenario {
     val dirName = Path(bazelBinary).parent.name
     // With bzlmod enabled the directory name is something like:
     // rules_bazel_integration_test~0.18.0~bazel_binaries~build_bazel_bazel_6_3_2
-    val bazelPart = if (dirName.contains("~")) dirName.split("~")[3] else dirName
+    val bazelPart =
+      if (dirName.contains("~")) {
+        dirName.split("~")[3]
+      } else if (dirName.contains("+")) {
+        dirName.split("+")[3]
+      } else {
+        dirName
+      }
     return bazelPart.split("_")[3].toIntOrNull() ?: 100
   }
 

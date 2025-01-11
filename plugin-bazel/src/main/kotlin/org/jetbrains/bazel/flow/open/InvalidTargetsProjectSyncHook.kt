@@ -14,7 +14,7 @@ import org.jetbrains.bazel.config.BazelPluginConstants.bazelBspBuildToolId
 import org.jetbrains.plugins.bsp.config.BuildToolId
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook
 import org.jetbrains.plugins.bsp.impl.flow.sync.ProjectSyncHook.ProjectSyncHookEnvironment
-import org.jetbrains.plugins.bsp.impl.flow.sync.query
+import org.jetbrains.plugins.bsp.impl.flow.sync.queryIf
 import org.jetbrains.plugins.bsp.services.InvalidTargetsProviderExtension
 import org.jetbrains.plugins.bsp.ui.notifications.BspBalloonNotifier
 
@@ -25,10 +25,10 @@ internal class InvalidTargetsProjectSyncHook : ProjectSyncHook {
     coroutineScope {
       val bazelInvalidTargetsService = BazelInvalidTargetsService.getInstance(environment.project)
       val invalidTargetsResult =
-        query("workspace/invalidTargets") {
+        queryIf(environment.capabilities.workspaceInvalidTargetsProvider, "workspace/invalidTargets") {
           environment.server.workspaceInvalidTargets()
-        }
-      bazelInvalidTargetsService.invalidTargets = invalidTargetsResult.targets
+        }?.targets.orEmpty()
+      bazelInvalidTargetsService.invalidTargets = invalidTargetsResult
 
       if (bazelInvalidTargetsService.invalidTargets.isNotEmpty()) {
         BspBalloonNotifier.warn(

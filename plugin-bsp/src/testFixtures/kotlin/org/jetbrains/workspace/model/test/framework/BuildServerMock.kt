@@ -56,6 +56,7 @@ import org.jetbrains.bsp.protocol.MobileInstallResult
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
 import org.jetbrains.bsp.protocol.RunWithDebugParams
 import org.jetbrains.bsp.protocol.TestWithDebugParams
+import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsFirstPhaseParams
 import org.jetbrains.bsp.protocol.WorkspaceBuildTargetsPartialParams
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
@@ -101,6 +102,7 @@ class BuildServerMock(
   private val workspaceBuildTargetsFirstPhase: WorkspaceBuildTargetsResult? = null,
   private val pythonOptionsResult: PythonOptionsResult? = null,
   private val rustWorkspaceResult: RustWorkspaceResult? = null,
+  private val workspaceBazelRepoMappingResult: WorkspaceBazelRepoMappingResult? = null,
 ) : JoinedBuildServer {
   override fun buildInitialize(initializeBuildParams: InitializeBuildParams): CompletableFuture<InitializeBuildResult> =
     wrapInFuture(initializeBuildResult)
@@ -212,6 +214,9 @@ class BuildServerMock(
     wrapInFuture(pythonOptionsResult)
 
   override fun rustWorkspace(p0: RustWorkspaceParams?): CompletableFuture<RustWorkspaceResult> = wrapInFuture(rustWorkspaceResult)
+
+  override fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult> =
+    wrapInFuture(workspaceBazelRepoMappingResult)
 
   private fun <T> wrapInFuture(value: T?): CompletableFuture<T> =
     value?.let { CompletableFuture.completedFuture(it) } ?: CompletableFuture.failedFuture(Exception("mock value is null"))

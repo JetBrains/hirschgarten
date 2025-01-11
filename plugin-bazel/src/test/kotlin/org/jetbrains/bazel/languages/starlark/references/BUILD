@@ -1,4 +1,5 @@
 load("@//rules/testing:intellij.bzl", "kt_intellij_junit4_test")
+load("//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:tests.bzl", "ide_starter_test")
 
 kt_intellij_junit4_test(
     name = "StarlarkArgumentReferenceTest",
@@ -23,5 +24,16 @@ kt_intellij_junit4_test(
     deps = [
         "//plugin-bazel:intellij-bazel",
         "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/fixtures",
+    ],
+)
+
+ide_starter_test(
+    name = "ExternalRepoResolveTest",
+    size = "large",
+    src = "ExternalRepoResolveTest.kt",
+    classname = "org.jetbrains.bazel.languages.starlark.references.ExternalRepoResolveTest",
+    tags = ["manual"],
+    deps = [
+        "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/ideStarter:baseTest",
     ],
 )

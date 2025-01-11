@@ -3,27 +3,39 @@ package org.jetbrains.bazel.languages.starlark.references
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.isFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiReferenceBase
-import org.jetbrains.bazel.languages.bazel.BazelLabel
+import org.jetbrains.bazel.commons.label.AmbiguousSingleTarget
+import org.jetbrains.bazel.commons.label.Label
+import org.jetbrains.bazel.commons.label.ResolvedLabel
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkFile
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkCallExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
+import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
+import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
+import java.nio.file.Path
 
 public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
 
+// Tested in ExternalRepoResolveTest
 class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolean) :
   PsiReferenceBase<StarlarkStringLiteralExpression>(element, TextRange(0, element.textLength), soft) {
   override fun resolve(): PsiElement? {
-    if (!element.project.isBspProject || isInNameArgument()) return null
-    val label = BazelLabel.ofString(element.getStringContents())
-    val buildFilePsi = resolveBuildFile(label) ?: return null
-    return resolveRuleTarget(buildFilePsi, label) ?: resolveFileTarget(element.project, buildFilePsi, label)
+    val project = element.project
+    if (!project.isBspProject || isInNameArgument()) return null
+    val label = Label.parseOrNull(element.getStringContents()) ?: return null
+    val buildOrSource = resolveBuildFileOrSourceFile(label) ?: return null
+    return when (buildOrSource) {
+      is BuildFilePsi -> resolveRuleTarget(buildOrSource.file, label) ?: resolveFileTarget(element.project, buildOrSource.file, label)
+      is SourceFile -> PsiManager.getInstance(project).findFile(buildOrSource.file)
+    }
   }
 
   private fun isInNameArgument(): Boolean {
@@ -31,32 +43,96 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
     return parent is StarlarkNamedArgumentExpression && parent.isNameArgument()
   }
 
-  private fun resolveBuildFile(label: BazelLabel): StarlarkFile? =
-    if (label.hasPackageName) resolveExplicitPackage(label) else resolveImplicitPackage()
+  private sealed interface BuildFileOrSourceFile
 
-  private fun resolveExplicitPackage(label: BazelLabel): StarlarkFile? {
+  private class BuildFilePsi(val file: StarlarkFile) : BuildFileOrSourceFile
+
+  private class SourceFile(val file: VirtualFile) : BuildFileOrSourceFile
+
+  private fun resolveBuildFileOrSourceFile(label: Label): BuildFileOrSourceFile? =
+    when (label) {
+      is ResolvedLabel -> resolveAbsolutePackage(label)?.let { BuildFilePsi(it) }
+      else -> resolveRelativePackageOrSourceFile(label)
+    }
+
+  private fun resolveAbsolutePackage(label: ResolvedLabel): StarlarkFile? {
     val project = element.project
-    val packageDir = findReferredPackage(project, label) ?: return null
+    val containingFile = element.containingFile.originalFile.virtualFile ?: return null
+    val packageDir = findReferredAbsolutePackage(project, containingFile, label) ?: return null
     val buildFile = findBuildFile(packageDir) ?: return null
     return findBuildFilePsi(project, buildFile)
   }
 
-  private fun resolveImplicitPackage(): StarlarkFile? = element.getBazelPackage()?.buildFile
+  private fun resolveRelativePackageOrSourceFile(label: Label): BuildFileOrSourceFile? {
+    val project = element.project
+    val containingFile = element.containingFile.originalFile.virtualFile ?: return null
+    val containingPackage = findContainingPackage(containingFile) ?: return null
+    val referredPackage = containingPackage.findFileByRelativePath(label.packagePath.toString()) ?: return null
+    if (referredPackage.isFile) {
+      if (label.target is AmbiguousSingleTarget) return SourceFile(referredPackage)
+      return null
+    }
+    val buildFile = findBuildFile(referredPackage) ?: return null
+    return findBuildFilePsi(project, buildFile)?.let { BuildFilePsi(it) }
+  }
 
-  private fun resolveRuleTarget(buildFilePsi: StarlarkFile, label: BazelLabel): StarlarkCallExpression? =
+  private fun findContainingPackage(directory: VirtualFile?): VirtualFile? =
+    directory?.let {
+      if (findBuildFile(directory) != null) directory else findContainingPackage(directory.parent)
+    }
+
+  private fun resolveRuleTarget(buildFilePsi: StarlarkFile, label: Label): StarlarkCallExpression? =
     buildFilePsi.findRuleTarget(label.targetName)
 
   private fun resolveFileTarget(
     project: Project,
     buildFilePsi: StarlarkFile,
-    label: BazelLabel,
+    label: Label,
   ): PsiFile? {
-    val targetFile = buildFilePsi.parent?.virtualFile?.findFileByRelativePath(label.targetName) ?: return null
+    // buildFilePsi may be excluded, in which case we can't get the parent PsiDirectory.
+    // Therefore get virtualFile then parent and not vice-versa
+    val targetFile = buildFilePsi.virtualFile?.parent?.findFileByRelativePath(label.targetName) ?: return null
     return PsiManager.getInstance(project).findFile(targetFile)
   }
 
-  private fun findReferredPackage(project: Project, label: BazelLabel): VirtualFile? =
-    project.rootDir.findFileByRelativePath(label.packageName)
+  private fun findReferredAbsolutePackage(
+    project: Project,
+    containingFile: VirtualFile,
+    label: ResolvedLabel,
+  ): VirtualFile? {
+    val foundRepoRoot =
+      if (label.repoName.isEmpty()) {
+        findContainingBazelRepo(project, containingFile)
+      } else if (label.isApparent) {
+        project.apparentRepoNameToCanonicalName[label.repoName]?.let { canonicalRepoName ->
+          project.canonicalRepoNameToPath[canonicalRepoName]
+        }
+      } else {
+        project.canonicalRepoNameToPath[label.repoName]
+      }
+
+    val repoRoot =
+      foundRepoRoot?.let {
+        VirtualFileManager.getInstance().refreshAndFindFileByNioPath(foundRepoRoot)
+      } ?: project.rootDir
+
+    return repoRoot.findFileByRelativePath(label.packagePath.toString())
+  }
+
+  private fun findContainingBazelRepo(project: Project, file: VirtualFile): Path? {
+    val path = file.toNioPath()
+    // TODO: replace with a Trie if this search is too slow. See https://en.wikipedia.org/wiki/Trie
+    var containingRepoPath: Path? = null
+    for (repoPath in project.canonicalRepoNameToPath.values) {
+      if (path.startsWith(repoPath)) {
+        // Choose the innermost repository
+        if (containingRepoPath == null || containingRepoPath.nameCount < repoPath.nameCount) {
+          containingRepoPath = repoPath
+        }
+      }
+    }
+    return containingRepoPath
+  }
 
   private fun findBuildFile(packageDir: VirtualFile): VirtualFile? = BUILD_FILE_NAMES.mapNotNull { packageDir.findChild(it) }.firstOrNull()
 

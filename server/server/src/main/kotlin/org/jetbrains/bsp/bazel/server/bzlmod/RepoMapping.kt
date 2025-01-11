@@ -11,8 +11,9 @@ import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleOutputParser
 import org.jetbrains.bsp.bazel.bazelrunner.ModuleResolver
 import org.jetbrains.bsp.bazel.bazelrunner.ShowRepoResult
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
 import org.jetbrains.bsp.bazel.logger.BspClientLogger
-import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContextProvider
+import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
 import org.jetbrains.bsp.bazel.workspacecontext.externalRepositoriesTreatedAsInternal
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -20,8 +21,9 @@ import kotlin.io.path.Path
 sealed interface RepoMapping
 
 data class BzlmodRepoMapping(
-  val moduleCanonicalNameToLocalPath: Map<String, Path>,
-  val moduleApparentNameToCanonicalName: Map<String, String>,
+  val canonicalRepoNameToLocalPath: Map<String, Path>,
+  val apparentRepoNameToCanonicalName: Map<String, String>,
+  val canonicalRepoNameToPath: Map<String, Path>,
 ) : RepoMapping
 
 data object RepoMappingDisabled : RepoMapping
@@ -38,7 +40,7 @@ fun Label.canonicalize(repoMapping: RepoMapping): Label =
             is Apparent -> {
               val apparentRepoName = this.repoName
               val canonicalRepoName =
-                repoMapping.moduleApparentNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
+                repoMapping.apparentRepoNameToCanonicalName[apparentRepoName] ?: error("No canonical name found for $this")
               Label.parse("@@$canonicalRepoName//$targetPathAndName")
             }
           }
@@ -51,19 +53,25 @@ fun Label.canonicalize(repoMapping: RepoMapping): Label =
   }
 
 fun calculateRepoMapping(
-  workspaceContextProvider: WorkspaceContextProvider,
+  workspaceContext: WorkspaceContext,
   bazelRunner: BazelRunner,
-  isBzlmod: Boolean,
+  bazelInfo: BazelInfo,
   bspClientLogger: BspClientLogger,
 ): RepoMapping {
-  if (!isBzlmod) {
+  if (!bazelInfo.isBzlModEnabled) {
     return RepoMappingDisabled
   }
-  val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
   val moduleResolver = ModuleResolver(bazelRunner, ModuleOutputParser())
   val moduleCanonicalNameToLocalPath = mutableMapOf<String, Path>()
-  // empty string is the name of the root module
-  val moduleApparentNameToCanonicalName = moduleResolver.getRepoMapping("") { }
+  val moduleApparentNameToCanonicalName =
+    try {
+      // empty string is the name of the root module
+      moduleResolver.getRepoMapping("") { }
+    } catch (e: Exception) {
+      bspClientLogger.error(e.toString())
+      return RepoMappingDisabled
+    }
+
   for (externalRepo in workspaceContext.externalRepositoriesTreatedAsInternal) {
     try {
       val showRepoResult = moduleResolver.resolveModule(externalRepo) {}
@@ -78,5 +86,22 @@ fun calculateRepoMapping(
     }
   }
 
-  return BzlmodRepoMapping(moduleCanonicalNameToLocalPath, moduleApparentNameToCanonicalName)
+  val moduleCanonicalNameToPath = moduleCanonicalNameToLocalPath.toMutableMap()
+  for (canonicalName in moduleApparentNameToCanonicalName.values) {
+    if (canonicalName == "") {
+      moduleCanonicalNameToPath[canonicalName] = bazelInfo.workspaceRoot
+      continue
+    }
+    val localPath = moduleCanonicalNameToLocalPath[canonicalName]
+    val repoPath =
+      if (localPath != null) {
+        bazelInfo.workspaceRoot.resolve(localPath)
+      } else {
+        // See https://bazel.build/external/overview#directory-layout
+        bazelInfo.outputBase.resolve("external").resolve(canonicalName)
+      }
+    moduleCanonicalNameToPath[canonicalName] = repoPath
+  }
+
+  return BzlmodRepoMapping(moduleCanonicalNameToLocalPath, moduleApparentNameToCanonicalName, moduleCanonicalNameToPath)
 }

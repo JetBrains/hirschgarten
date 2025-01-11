@@ -7,7 +7,12 @@ import com.intellij.ide.starter.ide.IDETestContext
 import com.intellij.ide.starter.ide.IdeProductProvider
 import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
+import com.intellij.ide.starter.project.GitProjectInfo
+import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.project.ProjectInfoSpec
+import com.intellij.ide.starter.runner.Starter
+import com.intellij.openapi.ui.playback.commands.AbstractCommand.CMD_PREFIX
+import com.intellij.tools.ide.performanceTesting.commands.CommandChain
 import org.junit.jupiter.api.BeforeEach
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
@@ -25,18 +30,34 @@ import kotlin.io.path.div
 import kotlin.io.path.exists
 import kotlin.io.path.toPath
 import kotlin.io.path.writeText
-
-private const val PLATFORM_BUILD_NUMBER_PROPERTY = "bazel.ide.starter.test.platform.build.number"
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalPathApi::class)
 abstract class IdeStarterBaseProjectTest {
-  abstract val projectInfo: ProjectInfoSpec
+  protected abstract val projectInfo: ProjectInfoSpec
 
-  val projectName: String
-    get() = System.getProperty("bazel.ide.starter.test.project.name") ?: "hirschgarten"
+  protected open val projectName: String
+    get() = System.getProperty("bazel.ide.starter.test.project.name") ?: javaClass.simpleName
 
-  val testCase: TestCase<ProjectInfoSpec>
-    get() = TestCase(IdeProductProvider.IC, projectInfo).withBuildNumber(System.getProperty(PLATFORM_BUILD_NUMBER_PROPERTY))
+  private val testCase: TestCase<ProjectInfoSpec>
+    get() = TestCase(IdeProductProvider.IC, projectInfo).withBuildNumber(System.getProperty("bazel.ide.starter.test.platform.build.number"))
+
+  protected open val timeout: Duration
+    get() = (System.getProperty("bazel.ide.starter.test.timeout.seconds")?.toIntOrNull() ?: 600).seconds
+
+  protected fun createContext(): IDETestContext =
+    Starter
+      .newContext(projectName, testCase)
+      .executeRightAfterIdeOpened(true)
+      .propagateSystemProperty("idea.diagnostic.opentelemetry.otlp")
+      .propagateSystemProperty("bazel.project.view.file.path")
+      .patchPathVariable()
+      .withKotlinPluginK2()
+      .withBspPluginInstalled()
+      .withBazelPluginInstalled()
+  // uncomment for debugging
+  //  .applyVMOptionsPatch { debug(8000, suspend = true) }
 
   @BeforeEach
   fun initialize() {
@@ -56,12 +77,12 @@ abstract class IdeStarterBaseProjectTest {
       }
   }
 
-  fun IDETestContext.withBazelPluginInstalled(): IDETestContext {
+  private fun IDETestContext.withBazelPluginInstalled(): IDETestContext {
     installPlugin(this, System.getProperty("bazel.ide.starter.test.bazel.plugin.zip"))
     return this
   }
 
-  fun IDETestContext.withBspPluginInstalled(): IDETestContext {
+  private fun IDETestContext.withBspPluginInstalled(): IDETestContext {
     installPlugin(this, System.getProperty("bazel.ide.starter.test.bsp.plugin.zip"))
     return this
   }
@@ -90,8 +111,8 @@ abstract class IdeStarterBaseProjectTest {
 
   private fun createProjectViewFile(context: IDETestContext) {
     val projectView = context.resolvedProjectHome / "projectview.bazelproject"
-    val targets = System.getProperty("bsp.hotswap.target.list")
-    val buildFlags = System.getProperty("bsp.hotswap.build.flags")
+    val targets = System.getProperty("bazel.ide.starter.test.target.list")
+    val buildFlags = System.getProperty("bazel.ide.starter.test.build.flags")
     if (projectView.exists() && targets == null && buildFlags == null) return
     projectView.writeText(createTargetsSection(targets) + "\n" + createBuildFlagsSection(buildFlags))
   }
@@ -145,7 +166,7 @@ abstract class IdeStarterBaseProjectTest {
     }
   }
 
-  fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
+  private fun IDETestContext.propagateSystemProperty(key: String): IDETestContext {
     val value = System.getProperty(key) ?: return this
     applyVMOptionsPatch {
       addSystemProperty(key, value)
@@ -157,7 +178,7 @@ abstract class IdeStarterBaseProjectTest {
    * Bazel adds the current version of itself to the PATH variable that is passed to the test.
    * This causes `.bazelversion` of the test project to be ignored.
    */
-  fun IDETestContext.patchPathVariable(): IDETestContext {
+  private fun IDETestContext.patchPathVariable(): IDETestContext {
     var path = checkNotNull(System.getenv("PATH")) { "PATH is null" }
     val paths = path.split(File.pathSeparator)
     if (paths[0] == "." && "bazelisk" in paths[1]) {
@@ -169,4 +190,33 @@ abstract class IdeStarterBaseProjectTest {
     }
     return this
   }
+
+  protected fun getProjectInfoFromSystemProperties(): ProjectInfoSpec {
+    val localProjectPath = System.getProperty("bazel.ide.starter.test.project.path")
+    if (localProjectPath != null) {
+      return LocalProjectInfo(
+        projectDir = Path.of(localProjectPath),
+        isReusable = true,
+        configureProjectBeforeUse = ::configureProjectBeforeUse,
+      )
+    }
+    val projectUrl = System.getProperty("bazel.ide.starter.test.project.url") ?: "https://github.com/JetBrains/hirschgarten.git"
+    val commitHash = System.getProperty("bazel.ide.starter.test.commit.hash").orEmpty()
+    val branchName = System.getProperty("bazel.ide.starter.test.branch.name") ?: "main"
+    val projectHomeRelativePath: String? = System.getProperty("bazel.ide.starter.test.project.home.relative.path")
+
+    return GitProjectInfo(
+      repositoryUrl = projectUrl,
+      commitHash = commitHash,
+      branchName = branchName,
+      projectHomeRelativePath = { if (projectHomeRelativePath != null) it.resolve(projectHomeRelativePath) else it },
+      isReusable = true,
+      configureProjectBeforeUse = ::configureProjectBeforeUse,
+    )
+  }
+}
+
+fun <T : CommandChain> T.waitForBazelSync(): T {
+  addCommand(CMD_PREFIX + "waitForBazelSync")
+  return this
 }

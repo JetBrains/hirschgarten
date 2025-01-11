@@ -12,6 +12,7 @@ class RepoMappingTest {
       BzlmodRepoMapping(
         mapOf("rules_blah" to Path("rules_blah")),
         mapOf("rules_blah" to "rules_blah~"),
+        mapOf("rules_blah~" to Path("bazel_cache/external/rules_blah~")),
       )
     val label = Label.parse("@rules_blah//path/to/target:targetName")
     val canonicalized = label.canonicalize(repoMapping)
@@ -24,6 +25,7 @@ class RepoMappingTest {
       BzlmodRepoMapping(
         mapOf("rules_blah" to Path("rules_blah")),
         mapOf("rules_blah" to "rules_blah~"),
+        mapOf("rules_blah~" to Path("bazel_cache/external/rules_blah~")),
       )
     val label = Label.parse("@@rules_blah~//path/to/target:targetName")
     val canonicalized = label.canonicalize(repoMapping)
