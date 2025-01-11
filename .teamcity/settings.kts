@@ -55,6 +55,7 @@ object GitHub : Project({
         buildType(PluginBenchmark.BenchmarkDefaultGitHub)
         buildType(PluginBenchmark.BenchmarkWithVersionGitHub)
         buildType(IdeStarterTests.HotswapTestGitHub)
+        buildType(IdeStarterTests.ExternalRepoResolveTestGitHub)
         buildType(ServerE2eTests.SampleRepoGitHub)
         buildType(ServerE2eTests.LocalJdkGitHub)
         buildType(ServerE2eTests.RemoteJdkGitHub)
@@ -112,6 +113,7 @@ object GitHub : Project({
       PluginBenchmark.BenchmarkDefaultGitHub,
       PluginBenchmark.BenchmarkWithVersionGitHub,
       IdeStarterTests.HotswapTestGitHub,
+      IdeStarterTests.ExternalRepoResolveTestGitHub,
       ServerE2eTests.SampleRepoGitHub,
       ServerE2eTests.LocalJdkGitHub,
       ServerE2eTests.RemoteJdkGitHub,
@@ -155,6 +157,7 @@ object Space : Project({
         buildType(PluginBenchmark.SpaceBenchmarkDefault)
         buildType(PluginBenchmark.SpaceBenchmarkWithVersion)
         buildType(IdeStarterTests.HotswapTestSpace)
+        buildType(IdeStarterTests.ExternalRepoResolveTestSpace)
         buildType(ServerE2eTests.SampleRepoSpace)
         buildType(ServerE2eTests.LocalJdkSpace)
         buildType(ServerE2eTests.RemoteJdkSpace)
@@ -212,6 +215,7 @@ object Space : Project({
       PluginBenchmark.SpaceBenchmarkDefault,
       PluginBenchmark.SpaceBenchmarkWithVersion,
       IdeStarterTests.HotswapTestSpace,
+      IdeStarterTests.ExternalRepoResolveTestSpace,
       ServerE2eTests.SampleRepoSpace,
       ServerE2eTests.LocalJdkSpace,
       ServerE2eTests.RemoteJdkSpace,

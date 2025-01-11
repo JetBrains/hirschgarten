@@ -98,6 +98,11 @@ class ModuleResolver(private val bazelRunner: BazelRunner, private val moduleOut
         .runBazelCommand(command, serverPidFuture = null)
         .waitAndGetResult(cancelChecker, true)
 
+    if (processResult.isNotSuccess) {
+      // dumpRepoMapping was added in Bazel 7.1.0, so it's going to fail with 7.0.0: https://github.com/bazelbuild/bazel/issues/20972
+      error("dumpRepoMapping failed with output: ${processResult.stdout}")
+    }
+
     // Output is json, we need to parse it
     val output = processResult.stdout
     @Suppress("UNCHECKED_CAST")

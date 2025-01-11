@@ -6,11 +6,13 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.bazel
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.script
 import jetbrains.buildServer.configs.kotlin.v2019_2.vcs.GitVcsRoot
 
-open class IdeStarterTests(
+sealed class IdeStarterTests(
   vcsRoot: GitVcsRoot,
+  targets: String,
   requirements: (Requirements.() -> Unit)? = null,
+  name: String
 ) : BaseConfiguration.BaseBuildType(
-  name = "[ide-starter] Hotswap test",
+  name = "[ide-starter] $name",
   vcsRoot = vcsRoot,
   requirements = requirements,
   artifactRules = Utils.CommonParams.BazelTestlogsArtifactRules,
@@ -24,10 +26,10 @@ open class IdeStarterTests(
 
       val sysArgs = "$reportErrors $cachePath $memArg $sandboxArg $actionEnvArg"
 
-      this.name = "run hotswap test"
-      id = "run_hotswap_test"
+      this.name = "run $targets"
+      id = "run_${targets.replace(":", "_")}"
       command = "test"
-      targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap"
+      this.targets = targets
       arguments = "$sysArgs ${Utils.CommonParams.BazelCiSpecificArgs}"
       toolPath = "/usr/local/bin"
       logging = BazelStep.Verbosity.Diagnostic
@@ -36,7 +38,7 @@ open class IdeStarterTests(
       }
     }
     script {
-      name = "copy test logs"
+      this.name = "copy test logs"
       id = "copy_test_logs"
       scriptContent =
         """
@@ -49,8 +51,27 @@ open class IdeStarterTests(
   }
 )
 
-// github variant
-object HotswapTestGitHub : IdeStarterTests(
+sealed class HotswapTest(
+  vcsRoot: GitVcsRoot,
+  requirements: (Requirements.() -> Unit)? = null
+) : IdeStarterTests(
+  name = "Hotswap test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/hotswap",
+  requirements = requirements
+)
+
+sealed class ExternalRepoResolveTest(
+  vcsRoot: GitVcsRoot,
+  requirements: (Requirements.() -> Unit)? = null
+) : IdeStarterTests(
+  name = "External repo resolve test",
+  vcsRoot = vcsRoot,
+  targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/languages/starlark/references:ExternalRepoResolveTest",
+  requirements = requirements
+)
+
+object HotswapTestGitHub : HotswapTest(
   vcsRoot = BaseConfiguration.GitHubVcs,
   requirements = {
     endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
@@ -58,7 +79,18 @@ object HotswapTestGitHub : IdeStarterTests(
   }
 )
 
-// space variant
-object HotswapTestSpace : IdeStarterTests(
+object HotswapTestSpace : HotswapTest(
+  vcsRoot = BaseConfiguration.SpaceVcs,
+)
+
+object ExternalRepoResolveTestGitHub : ExternalRepoResolveTest(
+  vcsRoot = BaseConfiguration.GitHubVcs,
+  requirements = {
+    endsWith("cloud.amazon.agent-name-prefix", "Ubuntu-22.04-Large")
+    equals("container.engine.osType", "linux")
+  }
+)
+
+object ExternalRepoResolveTestSpace : ExternalRepoResolveTest(
   vcsRoot = BaseConfiguration.SpaceVcs,
 )

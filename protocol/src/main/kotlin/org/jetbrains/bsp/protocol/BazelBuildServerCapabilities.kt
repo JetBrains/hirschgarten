@@ -31,6 +31,7 @@ public class BazelBuildServerCapabilities(
   public val runWithDebugProvider: Boolean = false,
   public val testWithDebugProvider: Boolean = false,
   public val jvmBinaryJarsProvider: Boolean = false,
+  public val bazelRepoMappingProvider: Boolean = false,
 ) : BuildServerCapabilities() {
   init {
     this.compileProvider = compileProvider

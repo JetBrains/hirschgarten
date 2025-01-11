@@ -48,4 +48,7 @@ interface BazelBuildServer {
 
   @JsonRequest("workspace/buildTargetsFirstPhase")
   fun workspaceBuildTargetsFirstPhase(params: WorkspaceBuildTargetsFirstPhaseParams): CompletableFuture<WorkspaceBuildTargetsResult>
+
+  @JsonRequest("workspace/repoMapping")
+  fun workspaceBazelRepoMapping(): CompletableFuture<WorkspaceBazelRepoMappingResult>
 }

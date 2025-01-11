@@ -15,7 +15,7 @@ import org.jetbrains.bsp.bazel.server.bsp.managers.BazelBspLanguageExtensionsGen
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelExternalRulesQueryImpl
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelLabelExpander
 import org.jetbrains.bsp.bazel.server.bsp.managers.BazelToolchainManager
-import org.jetbrains.bsp.bazel.server.bzlmod.RepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.calculateRepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.canonicalize
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
@@ -41,7 +41,6 @@ class ProjectResolver(
   private val bazelPathsResolver: BazelPathsResolver,
   private val bspClientLogger: BspClientLogger,
   private val featureFlags: FeatureFlags,
-  private val repoMapping: RepoMapping,
 ) {
   private suspend fun <T> measured(description: String, f: suspend () -> T): T = tracer.spanBuilder(description).useWithScope { f() }
 
@@ -82,8 +81,13 @@ class ProjectResolver(
           "Mapping languages to toolchains",
         ) { ruleLanguages.associateWith { bazelToolchainManager.getToolchain(it, cancelChecker) } }
 
+      val repoMapping =
+        measured("Calculating external repository mapping") {
+          calculateRepoMapping(workspaceContext, bazelRunner, bazelInfo, bspClientLogger)
+        }
+
       measured("Realizing language aspect files from templates") {
-        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext, toolchains, bazelInfo.release)
+        bazelBspAspectsManager.generateAspectsFromTemplates(ruleLanguages, workspaceContext, toolchains, bazelInfo.release, repoMapping)
       }
 
       measured("Generating language extensions file") {
@@ -139,7 +143,7 @@ class ProjectResolver(
         }
       return@useWithScope measured(
         "Mapping to internal model",
-      ) { bazelProjectMapper.createProject(targets, rootTargets, workspaceContext, bazelInfo) }
+      ) { bazelProjectMapper.createProject(targets, rootTargets, workspaceContext, bazelInfo, repoMapping) }
     }
 
   private suspend fun buildProjectWithAspect(

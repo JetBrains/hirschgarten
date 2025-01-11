@@ -38,7 +38,6 @@ class BazelBspAspectsManager(
   private val aspectsResolver: InternalAspectsResolver,
   private val workspaceContextProvider: WorkspaceContextProvider,
   private val featureFlags: FeatureFlags,
-  private val repoMapping: RepoMapping,
   private val bazelRelease: BazelRelease,
 ) {
   private val aspectsPath = Paths.get(aspectsResolver.bazelBspRoot, Constants.ASPECTS_ROOT)
@@ -75,6 +74,7 @@ class BazelBspAspectsManager(
     workspaceContext: WorkspaceContext,
     toolchains: Map<RuleLanguage, Label?>,
     bazelRelease: BazelRelease,
+    repoMapping: RepoMapping,
   ) {
     val languageRuleMap = ruleLanguages.associateBy { it.language }
     val activeLanguages = ruleLanguages.map { it.language }.toSet()
@@ -111,7 +111,7 @@ class BazelBspAspectsManager(
     val starlarkRepoMapping =
       when (repoMapping) {
         is BzlmodRepoMapping -> {
-          repoMapping.moduleCanonicalNameToLocalPath
+          repoMapping.canonicalRepoNameToLocalPath
             .map { (key, value) ->
               "\"${key.dropWhile { it == '@' }}\": \"$value\""
             }.joinToString(",\n", "{\n", "\n}")

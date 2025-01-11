@@ -19,6 +19,8 @@ exclude:
       - server/example/kotlincplugin/UserIsOpenTest.kt
       # .teamcity currently doesn't comply with k2, so we remove it
       - .teamcity
+      # test projects, not needed for qodana, may produce false positives
+      - server/e2e/test-projects
   - name: CheckDependencyLicenses
   - name: UnnecessaryUnicodeEscape
   - name: UnstableApiUsage

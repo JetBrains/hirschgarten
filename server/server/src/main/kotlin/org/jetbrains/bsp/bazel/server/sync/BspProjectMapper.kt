@@ -63,12 +63,18 @@ import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bazel.commons.label.label
 import org.jetbrains.bazel.commons.label.toBspIdentifier
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bsp.bazel.bazelrunner.utils.BazelInfo
+import org.jetbrains.bsp.bazel.logger.BspClientLogger
 import org.jetbrains.bsp.bazel.server.bsp.info.BspInfo
+import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
+import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.BspMappings
+import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
+import org.jetbrains.bsp.bazel.server.model.Project
 import org.jetbrains.bsp.bazel.server.model.Tag
 import org.jetbrains.bsp.bazel.server.paths.BazelPathsResolver
 import org.jetbrains.bsp.bazel.server.sync.languages.LanguagePluginsService
@@ -86,6 +92,7 @@ import org.jetbrains.bsp.protocol.JvmBinaryJarsParams
 import org.jetbrains.bsp.protocol.JvmBinaryJarsResult
 import org.jetbrains.bsp.protocol.LibraryItem
 import org.jetbrains.bsp.protocol.NonModuleTargetsResult
+import org.jetbrains.bsp.protocol.WorkspaceBazelRepoMappingResult
 import org.jetbrains.bsp.protocol.WorkspaceDirectoriesResult
 import org.jetbrains.bsp.protocol.WorkspaceGoLibrariesResult
 import org.jetbrains.bsp.protocol.WorkspaceInvalidTargetsResult
@@ -104,6 +111,8 @@ class BspProjectMapper(
   private val bazelPathsResolver: BazelPathsResolver,
   private val bazelRunner: BazelRunner,
   private val bspInfo: BspInfo,
+  private val bazelInfo: BazelInfo,
+  private val bspClientLogger: BspClientLogger,
 ) {
   fun initializeServer(supportedLanguages: Set<Language>): InitializeBuildResult {
     val languageNames = supportedLanguages.map { it.id }
@@ -127,6 +136,7 @@ class BspProjectMapper(
         testWithDebugProvider = true,
         jvmBinaryJarsProvider = true,
         jvmCompileClasspathProvider = true,
+        bazelRepoMappingProvider = true,
       )
     return InitializeBuildResult(
       Constants.NAME,
@@ -191,6 +201,25 @@ class BspProjectMapper(
       includedDirectories = directoriesSection.values.map { it.toDirectoryItem() },
       excludedDirectories = directoriesToExclude.map { it.toDirectoryItem() },
     )
+  }
+
+  fun workspaceBazelRepoMapping(project: Project): WorkspaceBazelRepoMappingResult {
+    val repoMapping =
+      when (project) {
+        is AspectSyncProject -> project.repoMapping
+        is FirstPhaseProject -> project.repoMapping
+      }
+    return when (repoMapping) {
+      is RepoMappingDisabled -> WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap())
+      is BzlmodRepoMapping ->
+        WorkspaceBazelRepoMappingResult(
+          apparentRepoNameToCanonicalName = repoMapping.apparentRepoNameToCanonicalName,
+          canonicalRepoNameToPath =
+            repoMapping.canonicalRepoNameToPath.mapValues { (_, path) ->
+              path.toUri().toString()
+            },
+        )
+    }
   }
 
   private fun computeSymlinksToExclude(workspaceRoot: URI): List<Path> {

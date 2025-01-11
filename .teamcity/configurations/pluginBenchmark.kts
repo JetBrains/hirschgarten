@@ -32,12 +32,12 @@ open class BaseBenchmark(
         }
       }
       bazel {
-        val url = "--jvmopt=\"-Dbsp.benchmark.teamcity.url=https://bazel.teamcity.com\""
-        val projectNameArg = "--jvmopt=\"-Dbsp.benchmark.project.name=benchmark_10_targets\""
+        val url = "--jvmopt=\"-Dbazel.ide.starter.test.teamcity.url=https://bazel.teamcity.com\""
+        val projectNameArg = "--jvmopt=\"-Dbazel.ide.starter.test.project.name=benchmark_10_targets\""
         val reportErrors = "--jvmopt=\"-DDO_NOT_REPORT_ERRORS=true\""
         val projectPath =
-          "--jvmopt=\"-Dbsp.benchmark.project.path=/home/hirschuser/project_10\""
-        val cachePath = "--jvmopt=\"-Dbsp.benchmark.cache.directory=%system.teamcity.build.tempDir%\""
+          "--jvmopt=\"-Dbazel.ide.starter.test.project.path=/home/hirschuser/project_10\""
+        val cachePath = "--jvmopt=\"-Dbazel.ide.starter.test.cache.directory=%system.teamcity.build.tempDir%\""
         val memArg = "--jvmopt=\"-Xmx12g\""
         val sandboxArg = "--sandbox_writable_path=/"
         val actionEnvArg = "--action_env=PATH"
@@ -47,7 +47,7 @@ open class BaseBenchmark(
         this.name = "run benchmark"
         id = "run_benchmark"
         command = "test"
-        targets = "//plugin-bsp/performance-testing"
+        targets = "//plugin-bazel/src/test/kotlin/org/jetbrains/bazel/performance"
         arguments = "$sysArgs ${Utils.CommonParams.BazelCiSpecificArgs}"
         toolPath = "/usr/local/bin"
         logging = BazelStep.Verbosity.Diagnostic
