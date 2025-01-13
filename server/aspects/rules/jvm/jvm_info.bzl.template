@@ -171,13 +171,13 @@ def extract_jvm_info(target, ctx, output_groups, **kwargs):
         resolve_files_transitive.append(extract_runtime_jars(target, provider))
         resolve_files_transitive.append(extract_compile_jars(provider))
         resolve_files_transitive.append(getattr(provider, "transitive_source_jars", depset()))
-        update_sync_output_groups(output_groups, "external-deps-resolve", depset(resolve_files, transitive=resolve_files_transitive))
+        update_sync_output_groups(output_groups, "bsp-sync-artifact", depset(resolve_files, transitive=resolve_files_transitive))
     else:
         # During build and sync, we use this output group to make sure all the generated jars are built by Bazel.
         resolve_files += resolve_files_jars
         resolve_files += resolve_files_generated_jars
         resolve_files += jdeps
-        update_sync_output_groups(output_groups, "generated-jars-resolve", depset(resolve_files))
+        update_sync_output_groups(output_groups, "bsp-build-artifact", depset(resolve_files))
 
     info = create_struct(
         jars = jars,
