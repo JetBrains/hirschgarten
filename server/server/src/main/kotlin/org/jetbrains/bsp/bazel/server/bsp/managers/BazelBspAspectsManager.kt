@@ -59,6 +59,7 @@ class BazelBspAspectsManager(
         if (!featureFlags.isAndroidSupportEnabled) add(Language.Android)
         if (!featureFlags.isGoSupportEnabled) add(Language.Go)
         if (!featureFlags.isRustSupportEnabled) add(Language.Rust)
+        if (!featureFlags.isCppSupportEnabled) add(Language.Cpp)
       }
     return filterNot { it.language in disabledLanguages }
   }
@@ -79,6 +80,7 @@ class BazelBspAspectsManager(
     val languageRuleMap = ruleLanguages.associateBy { it.language }
     val activeLanguages = ruleLanguages.map { it.language }.toSet()
     val kotlinEnabled = Language.Kotlin in activeLanguages
+    val cppEnabled = Language.Cpp in activeLanguages
     val javaEnabled = Language.Java in activeLanguages
     val pythonEnabled = Language.Python in activeLanguages
     val bazel8OrAbove = bazelRelease.major >= 8
@@ -116,6 +118,7 @@ class BazelBspAspectsManager(
               "\"${key.dropWhile { it == '@' }}\": \"$value\""
             }.joinToString(",\n", "{\n", "\n}")
         }
+
         is RepoMappingDisabled -> "{}"
       }
 
@@ -124,6 +127,7 @@ class BazelBspAspectsManager(
       aspectsPath.resolve("utils").resolve("utils.bzl"),
       mapOf(
         "repoMapping" to starlarkRepoMapping,
+        "cppDeps" to if (cppEnabled) "\"_cc_toolchain\"," else "",
       ),
     )
   }

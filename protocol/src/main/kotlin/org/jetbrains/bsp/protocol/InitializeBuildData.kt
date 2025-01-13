@@ -13,6 +13,7 @@ data class FeatureFlags(
   val isAndroidSupportEnabled: Boolean = false,
   val isGoSupportEnabled: Boolean = false,
   val isRustSupportEnabled: Boolean = false,
+  val isCppSupportEnabled: Boolean = false,
   val isPropagateExportsFromDepsEnabled: Boolean = true,
   /** Bazel specific */
   val bazelSymlinksScanMaxDepth: Int = 2,

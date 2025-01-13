@@ -154,11 +154,10 @@ class ProjectResolver(
     featureFlags: FeatureFlags,
     firstPhaseProject: FirstPhaseProject?,
   ): BazelBspAspectsManagerResult {
-    val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, ARTIFACTS_OUTPUT_GROUP, RUST_ANALYZER_OUTPUT_GROUP)
+    val outputGroups = mutableListOf(BSP_INFO_OUTPUT_GROUP, SYNC_ARTIFACT_OUTPUT_GROUP)
     if (build) {
-      outputGroups.add(GENERATED_JARS_OUTPUT_GROUP)
+      outputGroups.add(BUILD_ARTIFACT_OUTPUT_GROUP)
     }
-
     val nonShardBuild =
       suspend {
         bazelBspAspectsManager
@@ -258,8 +257,11 @@ class ProjectResolver(
   companion object {
     private const val ASPECT_NAME = "bsp_target_info_aspect"
     private const val BSP_INFO_OUTPUT_GROUP = "bsp-target-info"
-    private const val ARTIFACTS_OUTPUT_GROUP = "external-deps-resolve"
-    private const val GENERATED_JARS_OUTPUT_GROUP = "generated-jars-resolve"
-    private const val RUST_ANALYZER_OUTPUT_GROUP = "rust_analyzer_crate_spec"
+
+    // this output group is for artifacts which are needed during no-build sync
+    private const val SYNC_ARTIFACT_OUTPUT_GROUP = "bsp-sync-artifact"
+
+    // this output group is for artifacts which are only needed during build
+    private const val BUILD_ARTIFACT_OUTPUT_GROUP = "bsp-build-artifact"
   }
 }
