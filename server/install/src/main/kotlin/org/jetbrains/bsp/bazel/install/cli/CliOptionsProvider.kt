@@ -304,9 +304,11 @@ class CliOptionsProvider(private val args: Array<String>) {
 
   private fun ideJavaHomeOverride(cmd: CommandLine): Path? = getOptionValueAndMapToAbsolutePath(cmd, IDE_JAVA_HOME_OVERRIDE_LONG_OPT)
 
-  private fun targets(cmd: CommandLine): List<String>? = cmd.getOptionValues(TARGETS_SHORT_OPT)?.toList()
+  private fun targets(cmd: CommandLine): List<String>? = cmd.getOptionValues(TARGETS_SHORT_OPT)?.toList()?.splitTargets()
 
-  private fun excludedTargets(cmd: CommandLine): List<String>? = cmd.getOptionValues(EXCLUDED_TARGETS_LONG_OPT)?.toList()
+  private fun excludedTargets(cmd: CommandLine): List<String>? = cmd.getOptionValues(EXCLUDED_TARGETS_LONG_OPT)?.toList()?.splitTargets()
+
+  private fun List<String>.splitTargets(): List<String> = this.flatMap { it.split(" ") }
 
   private fun buildFlags(cmd: CommandLine): List<String>? = cmd.getOptionValues(BUILD_FLAGS_SHORT_OPT)?.toList()
 
