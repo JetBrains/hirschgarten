@@ -61,7 +61,7 @@ class BazelBspLanguageExtensionsGeneratorTest {
             load("//aspects:rules/scala/scala_info.bzl","extract_scala_info")
             load("//aspects:rules/go/go_info.bzl","extract_go_info")
             EXTENSIONS=[extract_java_toolchain,extract_java_runtime,extract_jvm_info,extract_python_info,extract_cpp_info,extract_c_toolchain_info,extract_kotlin_info,extract_scala_info,extract_go_info]
-            TOOLCHAINS=["@bazel_tools//tools/jdk:runtime_toolchain_type","@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type","@io_bazel_rules_scala//scala:toolchain_type","@io_bazel_rules_go//go:toolchain"]
+            TOOLCHAINS=["@bazel_tools//tools/jdk:runtime_toolchain_type","@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type","@io_bazel_rules_scala//scala:toolchain_type","@rules_scala_annex//rules/scala:toolchain_type","@io_bazel_rules_go//go:toolchain"]
         """.replace(" ", "").replace("\n", "")
   private val defaultRuleLanguages =
     listOf(
@@ -71,10 +71,10 @@ class BazelBspLanguageExtensionsGeneratorTest {
     )
   private val defaultToolchains =
     mapOf(
-      RuleLanguage(null, Language.Java) to Label.parse("@bazel_tools//tools/jdk:runtime_toolchain_type"),
-      RuleLanguage("io_bazel_rules_kotlin", Language.Kotlin) to Label.parse("@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type"),
-      RuleLanguage("io_bazel_rules_scala", Language.Scala) to Label.parse("@io_bazel_rules_scala//scala:toolchain_type"),
-      RuleLanguage("io_bazel_rules_go", Language.Go) to Label.parse("@io_bazel_rules_go//go:toolchain"),
+      RuleLanguage(null, Language.Java) to listOf(Label.parse("@bazel_tools//tools/jdk:runtime_toolchain_type")),
+      RuleLanguage("io_bazel_rules_kotlin", Language.Kotlin) to listOf(Label.parse("@io_bazel_rules_kotlin//kotlin/internal:kt_toolchain_type")),
+      RuleLanguage("io_bazel_rules_scala", Language.Scala) to listOf(Label.parse("@io_bazel_rules_scala//scala:toolchain_type"), Label.parse("@rules_scala_annex//rules/scala:toolchain_type")),
+      RuleLanguage("io_bazel_rules_go", Language.Go) to listOf(Label.parse("@io_bazel_rules_go//go:toolchain")),
     )
   private lateinit var dotBazelBspAspectsPath: Path
   private lateinit var internalAspectsResolverMock: InternalAspectsResolver

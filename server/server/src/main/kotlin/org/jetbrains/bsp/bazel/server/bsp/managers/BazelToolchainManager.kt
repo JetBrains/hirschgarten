@@ -3,18 +3,19 @@ package org.jetbrains.bsp.bazel.server.bsp.managers
 import org.eclipse.lsp4j.jsonrpc.CancelChecker
 import org.jetbrains.bazel.commons.label.Label
 import org.jetbrains.bsp.bazel.bazelrunner.BazelRunner
+import org.jetbrains.bsp.bazel.server.bsp.managers.Language
 import org.jetbrains.bsp.protocol.FeatureFlags
 
 class BazelToolchainManager(private val bazelRunner: BazelRunner, private val featureFlags: FeatureFlags) {
-  fun getToolchain(ruleLanguage: RuleLanguage, cancelChecker: CancelChecker): Label? =
+  fun getToolchain(ruleLanguage: RuleLanguage, cancelChecker: CancelChecker): List<Label> =
     when (ruleLanguage.language) {
-      Language.Scala -> Label.parse("@io_bazel_rules_scala//scala:toolchain_type")
-      Language.Java -> Label.parse("@bazel_tools//tools/jdk:runtime_toolchain_type")
-      Language.Kotlin -> Label.parse("@${ruleLanguage.ruleName}//kotlin/internal:kt_toolchain_type")
-      Language.Rust -> Label.parse("@${ruleLanguage.ruleName}//rust:toolchain_type")
+      Language.Scala -> listOf(Label.parse("@io_bazel_rules_scala//scala:toolchain_type"), Label.parse("@rules_scala_annex//rules/scala:toolchain_type"))
+      Language.Java -> listOf(Label.parse("@bazel_tools//tools/jdk:runtime_toolchain_type"))
+      Language.Kotlin -> listOf(Label.parse("@${ruleLanguage.ruleName}//kotlin/internal:kt_toolchain_type"))
+      Language.Rust -> listOf(Label.parse("@${ruleLanguage.ruleName}//rust:toolchain_type"))
       Language.Android -> getAndroidToolchain(ruleLanguage, cancelChecker)
-      Language.Go -> Label.parse("@${ruleLanguage.ruleName}//go:toolchain")
-      else -> null
+      Language.Go -> listOf(Label.parse("@${ruleLanguage.ruleName}//go:toolchain"))
+      else -> emptyList()
     }
 
   /**
@@ -22,9 +23,9 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner, private val fe
    * However, starlarkified Android rules (`rules_android`, `build_bazel_rules_android`) can use either the built-in toolchain
    * or `@rules_android//toolchains/android_sdk:toolchain_type` depending on the version.
    */
-  fun getAndroidToolchain(ruleLanguage: RuleLanguage, cancelChecker: CancelChecker): Label? {
-    if (!featureFlags.isAndroidSupportEnabled) return null
-    if (ruleLanguage.ruleName == null) return NATIVE_ANDROID_TOOLCHAIN
+  fun getAndroidToolchain(ruleLanguage: RuleLanguage, cancelChecker: CancelChecker): List<Label> {
+    if (!featureFlags.isAndroidSupportEnabled) return emptyList()
+    if (ruleLanguage.ruleName == null) return listOf(NATIVE_ANDROID_TOOLCHAIN)
     val androidToolchain = Label.parse("@${ruleLanguage.ruleName}//toolchains/android_sdk:toolchain_type")
     val androidToolchainExists =
       bazelRunner.run {
@@ -38,7 +39,7 @@ class BazelToolchainManager(private val bazelRunner: BazelRunner, private val fe
           .waitAndGetResult(cancelChecker)
           .isSuccess
       }
-    return if (androidToolchainExists) androidToolchain else NATIVE_ANDROID_TOOLCHAIN
+    return listOf(if (androidToolchainExists) androidToolchain else NATIVE_ANDROID_TOOLCHAIN).filterNotNull()
   }
 
   companion object {
