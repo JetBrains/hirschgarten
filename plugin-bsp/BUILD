@@ -73,8 +73,8 @@ intellij_plugin_library(
     ],
     plugin_deps = [
         "com.intellij.modules.platform",
-        "com.intellij.java",
-        "org.jetbrains.kotlin",
+#         "com.intellij.java",
+#         "org.jetbrains.kotlin",
     ],
     plugin_xmls = ["//plugin-bsp/src:main/xml/base.xml"],
     visibility = ["//visibility:public"],

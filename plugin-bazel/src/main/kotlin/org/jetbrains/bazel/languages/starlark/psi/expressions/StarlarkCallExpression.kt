@@ -7,14 +7,14 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.functions.StarlarkArgumentList
 import org.jetbrains.bazel.languages.starlark.references.StarlarkFunctionCallReference
-import org.jetbrains.kotlin.idea.base.psi.relativeTo
+//import org.jetbrains.kotlin.idea.base.psi.relativeTo
 
 class StarlarkCallExpression(node: ASTNode) : StarlarkBaseElement(node) {
   override fun acceptVisitor(visitor: StarlarkElementVisitor) = visitor.visitCallExpression(this)
 
   override fun getReference(): PsiReference? =
     getNameNode()?.let {
-      val range = it.textRange.relativeTo(this)
+      val range = it.textRange
       StarlarkFunctionCallReference(this, range)
     }
 

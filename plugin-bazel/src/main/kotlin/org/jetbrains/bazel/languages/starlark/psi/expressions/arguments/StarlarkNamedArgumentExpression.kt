@@ -7,7 +7,6 @@ import org.jetbrains.bazel.languages.starlark.psi.StarlarkBaseElement
 import org.jetbrains.bazel.languages.starlark.psi.StarlarkElementVisitor
 import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLiteralExpression
 import org.jetbrains.bazel.languages.starlark.references.StarlarkNamedArgumentReference
-import org.jetbrains.kotlin.idea.base.psi.relativeTo
 
 class StarlarkNamedArgumentExpression(node: ASTNode) :
   StarlarkBaseElement(node),
@@ -16,8 +15,8 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
 
   override fun getReference(): PsiReference? =
     getNameNode()?.let {
-      val range = it.textRange.relativeTo(this)
-      StarlarkNamedArgumentReference(this, range)
+//      val range = it.textRange.relativeTo(this)
+      StarlarkNamedArgumentReference(this, it.textRange)
     }
 
   override fun getName(): String? = getNameNode()?.text
@@ -25,8 +24,6 @@ class StarlarkNamedArgumentExpression(node: ASTNode) :
   private fun getNameNode(): ASTNode? = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)
 
   fun isNameArgument(): Boolean = containsArgumentWithName("name")
-
-  fun isDepsArgument(): Boolean = containsArgumentWithName("deps")
 
   fun containsArgumentWithName(name: String): Boolean = node.findChildByType(StarlarkTokenTypes.IDENTIFIER)?.text == name
 

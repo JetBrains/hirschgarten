@@ -42,3 +42,9 @@ public fun extractJvmBuildTarget(target: BuildTarget): JvmBuildTarget? =
     ?: extractAndroidBuildTarget(target)?.jvmBuildTarget
     ?: extractKotlinBuildTarget(target)?.jvmBuildTarget
     ?: extractScalaBuildTarget(target)?.jvmBuildTarget
+
+public inline fun <reified Data> extractData(data: Any, kind: String): Data? =
+  Gson().fromJson(
+    data as JsonObject,
+    Data::class.java,
+  )

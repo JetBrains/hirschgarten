@@ -7,7 +7,6 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationNamesInfo
 import com.intellij.openapi.project.Project
 import org.jetbrains.bazel.config.BazelPluginBundle
-import org.jetbrains.kotlin.idea.KotlinIcons
 import org.jetbrains.kotlin.idea.configuration.ui.KotlinPluginKindSwitcherController
 import org.jetbrains.kotlin.idea.configuration.ui.USE_K2_PLUGIN_VM_OPTION_PREFIX
 import org.jetbrains.plugins.bsp.config.BspFeatureFlags.isKotlinPluginK2Mode
@@ -29,8 +28,7 @@ class SuggestEnableK2StartupActivity : BspProjectActivity() {
         BazelPluginBundle.message("widget.suggest.enable.k2.title"),
         BazelPluginBundle.message("widget.suggest.enable.k2.message"),
         NotificationType.INFORMATION,
-      ).setIcon(KotlinIcons.SMALL_LOGO)
-      .addAction(
+      ).addAction(
         NotificationAction.createExpiring(BazelPluginBundle.message("widget.suggest.enable.k2.action")) { _, _ ->
           VMOptions.setOption(USE_K2_PLUGIN_VM_OPTION_PREFIX, true.toString())
           KotlinPluginKindSwitcherController.suggestRestart(ApplicationNamesInfo.getInstance().fullProductName)
