@@ -18,8 +18,10 @@ import org.jetbrains.bazel.languages.starlark.psi.expressions.StarlarkStringLite
 import org.jetbrains.bazel.languages.starlark.psi.expressions.arguments.StarlarkNamedArgumentExpression
 import org.jetbrains.bazel.languages.starlark.repomapping.apparentRepoNameToCanonicalName
 import org.jetbrains.bazel.languages.starlark.repomapping.canonicalRepoNameToPath
+import org.jetbrains.bazel.languages.starlark.repomapping.repositoryPaths
 import org.jetbrains.plugins.bsp.config.isBspProject
 import org.jetbrains.plugins.bsp.config.rootDir
+import org.jetbrains.plugins.bsp.utils.allAncestorsSequence
 import java.nio.file.Path
 
 public val BUILD_FILE_NAMES = sequenceOf("BUILD.bazel", "BUILD")
@@ -121,17 +123,8 @@ class BazelLabelReference(element: StarlarkStringLiteralExpression, soft: Boolea
 
   private fun findContainingBazelRepo(project: Project, file: VirtualFile): Path? {
     val path = file.toNioPath()
-    // TODO: replace with a Trie if this search is too slow. See https://en.wikipedia.org/wiki/Trie
-    var containingRepoPath: Path? = null
-    for (repoPath in project.canonicalRepoNameToPath.values) {
-      if (path.startsWith(repoPath)) {
-        // Choose the innermost repository
-        if (containingRepoPath == null || containingRepoPath.nameCount < repoPath.nameCount) {
-          containingRepoPath = repoPath
-        }
-      }
-    }
-    return containingRepoPath
+    val repositoryPaths = project.repositoryPaths
+    return path.allAncestorsSequence().firstOrNull { it in repositoryPaths }
   }
 
   private fun findBuildFile(packageDir: VirtualFile): VirtualFile? = BUILD_FILE_NAMES.mapNotNull { packageDir.findChild(it) }.firstOrNull()

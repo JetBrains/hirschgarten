@@ -2,6 +2,7 @@ package org.jetbrains.bsp.bazel.server.bsp.managers
 
 import com.google.devtools.build.lib.buildeventstream.BuildEventStreamProtos
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -38,13 +39,23 @@ class BepReader(private val bepServer: BepServer) {
           BuildEventStreamProtos.BuildEvent.parser(),
         )
       var event: BuildEventStreamProtos.BuildEvent? = null
-      do {
+
+      suspend fun readEvent(): BuildEventStreamProtos.BuildEvent? {
         event = reader.nextMessage()
+        return event
+      }
+
+      // It's important not to use the short-circuited ||, so that the events are parsed
+      // every time the loop condition is checked
+      while (!bazelBuildFinished.get() or (readEvent() != null)) {
+        val event = event
         if (event != null) {
           bepServer.handleBuildEventStreamProtosEvent(event)
           setServerPid(event)
+        } else {
+          delay(50)
         }
-      } while (!bazelBuildFinished.get() || event != null)
+      }
       logger.info("BEP events listening finished")
     }
 
