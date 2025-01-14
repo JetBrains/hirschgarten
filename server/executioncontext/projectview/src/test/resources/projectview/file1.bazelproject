@@ -19,6 +19,11 @@ build_flags:
     # --legacy_build_flag=old_value
     --build_flag1.2=value1.2
 
+sync_flags:
+    --sync_flag1.1=value1.1
+    # --legacy_sync_flag=old_value
+    --sync_flag1.2=value1.2
+
 allow_manual_targets_sync: false
 
 directories:

@@ -154,8 +154,9 @@ class BazelBspAspectsManager(
         buildTagFilters(listOf("-no-ide")),
       )
     val allowManualTargetsSyncFlags = if (shouldSyncManualFlags) listOf(buildManualTests()) else emptyList()
+    val syncFlags = workspaceContextProvider.currentWorkspaceContext().syncFlags.values
 
-    val flagsToUse = defaultFlags + allowManualTargetsSyncFlags
+    val flagsToUse = defaultFlags + allowManualTargetsSyncFlags + syncFlags
 
     return bazelBspCompilationManager
       .buildTargetsWithBep(

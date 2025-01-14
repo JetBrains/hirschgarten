@@ -81,6 +81,18 @@ class CliOptionsProvider(private val args: Array<String>) {
         ).build()
     cliParserOptions.addOption(buildFlagsOption)
 
+    val syncFlagsOption =
+      Option
+        .builder(SYNC_FLAGS_SHORT_OPT)
+        .longOpt("sync-flags")
+        .hasArgs()
+        .argName("flags")
+        .desc(
+          "Add sync flags to the generated project view file, you can read more about it here:" +
+            " https://github.com/JetBrains/hirschgarten/blob/main/server/executioncontext/projectview/README.md#sync_flags",
+        ).build()
+    cliParserOptions.addOption(syncFlagsOption)
+
     val bazelBinaryOption =
       Option
         .builder(BAZEL_BINARY_SHORT_OPT)
@@ -252,6 +264,7 @@ class CliOptionsProvider(private val args: Array<String>) {
         targets = targets(cmd),
         excludedTargets = excludedTargets(cmd),
         buildFlags = buildFlags(cmd),
+        syncFlags = syncFlags(cmd),
         allowManualTargetsSync = allowManualTargetsSync(cmd),
         directories = directories(cmd),
         excludedDirectories = excludedDirectories(cmd),
@@ -273,8 +286,8 @@ class CliOptionsProvider(private val args: Array<String>) {
       cmd.hasOption(EXCLUDED_TARGETS_LONG_OPT) or
       cmd.hasOption(BAZEL_BINARY_SHORT_OPT) or
       cmd.hasOption(BUILD_FLAGS_SHORT_OPT) or
+      cmd.hasOption(SYNC_FLAGS_SHORT_OPT) or
       cmd.hasOption(BUILD_MANUAL_TARGETS_OPT) or
-      cmd.hasOption(BUILD_FLAGS_SHORT_OPT) or
       cmd.hasOption(DIRECTORIES_SHORT_OPT) or
       cmd.hasOption(EXCLUDED_DIRECTORIES_LONG_OPT) or
       cmd.hasOption(DERIVE_TARGETS_FLAG_SHORT_OPT) or
@@ -312,6 +325,8 @@ class CliOptionsProvider(private val args: Array<String>) {
 
   private fun buildFlags(cmd: CommandLine): List<String>? = cmd.getOptionValues(BUILD_FLAGS_SHORT_OPT)?.toList()
 
+  private fun syncFlags(cmd: CommandLine): List<String>? = cmd.getOptionValues(SYNC_FLAGS_SHORT_OPT)?.toList()
+
   private fun calculateCurrentAbsoluteDirectory(): Path = calculateCurrentDir().toAbsolutePath()
 
   private fun calculateCurrentDir(): Path =
@@ -340,6 +355,7 @@ class CliOptionsProvider(private val args: Array<String>) {
     private const val TARGETS_SHORT_OPT = "t"
     private const val EXCLUDED_TARGETS_LONG_OPT = "excluded-targets"
     private const val BUILD_FLAGS_SHORT_OPT = "f"
+    private const val SYNC_FLAGS_SHORT_OPT = "s"
     private const val BAZEL_BINARY_SHORT_OPT = "b"
     private const val DEBUGGER_ADDRESS_SHORT_OPT = "x"
     private const val JAVA_PATH_SHORT_OPT = "j"
