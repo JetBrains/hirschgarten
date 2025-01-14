@@ -36,6 +36,11 @@ config_setting(
     values = {"define": "ij_product=intellij-2024.3"},
 )
 
+config_setting(
+    name = "clion-2024.3",
+    values = {"define": "ij_product=clion-2024.3"},
+)
+
 # The purpose of this rule is to hide the versioning
 # complexity from users of this api.
 # There will be additional versions added in the future

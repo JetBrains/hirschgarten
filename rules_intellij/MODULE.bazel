@@ -150,6 +150,33 @@ http_archive(
     url = GO_PLUGIN_243_URL,
 )
 
+CLION_243_SHA = "9dd62fecc0530c0a1783505f2c5b5b0cba7f9be0d23583ef3837235974c57d2b"
+
+CLION_243_URL = "https://www.jetbrains.com/intellij-repository/releases/com/jetbrains/intellij/clion/clion/2024.3/clion-2024.3.zip"
+
+_CLION_BUILD_FILE = """
+java_import(
+    name = "cpp",
+    visibility = ["//visibility:public"],
+    jars = glob([
+        "plugins/c-plugin/lib/*.jar",
+        "plugins/cidr-base-plugin/lib/*.jar",
+        "plugins/nativeDebug-plugin/lib/*.jar",
+        "plugins/clion-ide/lib/clion-ide.jar",  # for CMakeNotificationProvider
+        "plugins/clion-test-google-plugin/lib/clion-test-google-plugin.jar",  # for com.jetbrains.cidr.execution.testing.google
+        "plugins/platform-images/lib/*.jar",  # for native debug plugin
+    ]),
+    tags = ["intellij-provided-by-sdk"],
+)
+"""
+
+http_archive(
+    name = "clion_2024_3",
+    build_file_content = _CLION_BUILD_FILE,
+    sha256 = CLION_243_SHA,
+    url = CLION_243_URL,
+)
+
 _ANDRIOD_PLUGIN_BUILD_FILE = """
 java_import(
     name = "android",
