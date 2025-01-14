@@ -70,7 +70,6 @@ import org.jetbrains.bsp.bazel.server.bzlmod.BzlmodRepoMapping
 import org.jetbrains.bsp.bazel.server.bzlmod.RepoMappingDisabled
 import org.jetbrains.bsp.bazel.server.model.AspectSyncProject
 import org.jetbrains.bsp.bazel.server.model.BspMappings
-import org.jetbrains.bsp.bazel.server.model.FirstPhaseProject
 import org.jetbrains.bsp.bazel.server.model.Language
 import org.jetbrains.bsp.bazel.server.model.Module
 import org.jetbrains.bsp.bazel.server.model.NonModuleTarget
@@ -189,7 +188,7 @@ class BspProjectMapper(
     return NonModuleTargetsResult(nonModuleTargets)
   }
 
-  fun workspaceDirectories(project: AspectSyncProject): WorkspaceDirectoriesResult {
+  fun workspaceDirectories(project: Project): WorkspaceDirectoriesResult {
     val workspaceContext = workspaceContextProvider.currentWorkspaceContext()
     val directoriesSection = workspaceContext.directories
 
@@ -204,11 +203,7 @@ class BspProjectMapper(
   }
 
   fun workspaceBazelRepoMapping(project: Project): WorkspaceBazelRepoMappingResult {
-    val repoMapping =
-      when (project) {
-        is AspectSyncProject -> project.repoMapping
-        is FirstPhaseProject -> project.repoMapping
-      }
+    val repoMapping = project.repoMapping
     return when (repoMapping) {
       is RepoMappingDisabled -> WorkspaceBazelRepoMappingResult(emptyMap(), emptyMap())
       is BzlmodRepoMapping ->
