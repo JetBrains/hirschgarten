@@ -53,13 +53,14 @@ class BazelProjectModelModifier : JavaProjectModelModifier() {
         ?.first { it is StarlarkListLiteralExpression } as? StarlarkListLiteralExpression
         ?: return false
     var insertSuccessful = false
+    val targetStringToInsert = toBuildTargetInfo.buildTargetName.trimStart('@')
     try {
       WriteCommandAction.runWriteCommandAction(from.project) {
-        depsList.insertString(toBuildTargetInfo.buildTargetName.trimStart('@'))
+        depsList.insertString(targetStringToInsert)
         insertSuccessful = true
       }
-    } catch (_: Exception) {
-      log.warn("Failed to write to BUILD file")
+    } catch (e: Exception) {
+      log.warn("Failed to insert target $targetStringToInsert as a dependency for target $targetRuleLabel", e)
     }
 
     val syncScope = PartialProjectSync(targetsToSync = listOf(fromBuildTargetInfo.id))
