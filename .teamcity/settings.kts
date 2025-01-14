@@ -29,6 +29,7 @@ object ProjectTriggerRules {
     -:LICENCE
     -:CODEOWNERS
     -:/.teamcity/**
+    -:/tools/**
     """.trimIndent()
 }
 
