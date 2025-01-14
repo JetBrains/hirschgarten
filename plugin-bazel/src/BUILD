@@ -27,6 +27,7 @@ kt_jvm_library(
         "//plugin-bazel/src/test:__subpackages__",
     ],
     exports = [
+        "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/action",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/assets",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/bsp/connection",
         "//plugin-bazel/src/main/kotlin/org/jetbrains/bazel/config",

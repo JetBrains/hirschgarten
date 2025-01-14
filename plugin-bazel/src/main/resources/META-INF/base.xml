@@ -255,5 +255,11 @@
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
 
+        <action id="Bazel.NewBazelPackageAction"
+                class="org.jetbrains.bazel.action"
+                text="New Bazel Package">
+            <add-to-group group-id="NewGroup" relative-to-action="NewDir" anchor="after"/>
+        </action>
+
     </actions>
 </idea-plugin>
