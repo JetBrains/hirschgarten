@@ -133,7 +133,16 @@ class BspProjectMapperTest {
     }
 
     val libraries = allLibraries.associate({ it.label to it })
-    val project = AspectSyncProject(currentUri, allModules, libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val project =
+      AspectSyncProject(
+        workspaceRoot = currentUri,
+        bazelRelease = BazelRelease(6),
+        modules = allModules,
+        libraries = libraries,
+        goLibraries = emptyMap(),
+        invalidTargets = emptyList(),
+        nonModuleTargets = emptyList(),
+      )
 
     val deps =
       BspProjectMapper.buildDependencyModulesStatic(

@@ -230,14 +230,14 @@ class BazelProjectMapper(
       )
 
     return AspectSyncProject(
-      workspaceRoot,
-      allModules.toList(),
-      librariesToImport,
-      goLibrariesToImport,
-      invalidTargets,
-      nonModuleTargets,
-      bazelInfo.release,
-      repoMapping,
+      workspaceRoot = workspaceRoot,
+      bazelRelease = bazelInfo.release,
+      modules = allModules.toList(),
+      libraries = librariesToImport,
+      goLibraries = goLibrariesToImport,
+      invalidTargets = invalidTargets,
+      nonModuleTargets = nonModuleTargets,
+      repoMapping = repoMapping,
     )
   }
 

@@ -142,7 +142,16 @@ class DependencyMapperTest {
       )
     val libraries = mapOf(lib1.label to lib1, lib2.label to lib2, lib3.label to lib3, lib4.label to lib4)
     val currentUri = Paths.get(".").toUri()
-    val project = AspectSyncProject(currentUri, emptyList(), libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val project =
+      AspectSyncProject(
+        workspaceRoot = currentUri,
+        bazelRelease = BazelRelease(6),
+        modules = emptyList(),
+        libraries = libraries,
+        goLibraries = emptyMap(),
+        invalidTargets = emptyList(),
+        nonModuleTargets = emptyList(),
+      )
     val module =
       Module(
         Label.parse(""),
@@ -194,7 +203,16 @@ class DependencyMapperTest {
       )
     val libraries = allLibraries.associate({ it.label to it })
     val currentUri = Paths.get(".").toUri()
-    val project = AspectSyncProject(currentUri, emptyList(), libraries, emptyMap(), emptyList(), emptyList(), BazelRelease(6))
+    val project =
+      AspectSyncProject(
+        workspaceRoot = currentUri,
+        bazelRelease = BazelRelease(6),
+        modules = emptyList(),
+        libraries = libraries,
+        goLibraries = emptyMap(),
+        invalidTargets = emptyList(),
+        nonModuleTargets = emptyList(),
+      )
     val module =
       Module(
         Label.parse(""),
