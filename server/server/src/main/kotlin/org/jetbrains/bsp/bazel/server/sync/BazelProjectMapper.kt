@@ -220,7 +220,8 @@ class BazelProjectMapper(
       }
     val allModules = mergedModulesFromBazel + rustExternalModules
 
-    val nonModuleTargetIds = removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys
+    val nonModuleTargetIds =
+      (removeDotBazelBspTarget(targets.keys) - allModules.map { it.label }.toSet() - librariesToImport.keys).toSet()
     val nonModuleTargets =
       createNonModuleTargets(
         targets.filterKeys {
@@ -966,12 +967,12 @@ class BazelProjectMapper(
   private fun ResolvedLabel.toDirectoryUri(): URI = bazelPathsResolver.pathToDirectoryUri(this.toBazelPath().toString(), isMainWorkspace)
 
   private fun resolveSourceSet(target: TargetInfo, languagePlugin: LanguagePlugin<*>): SourceSet {
-    val sources =
+    val (sources, nonExistentSources) =
       (target.sourcesList + languagePlugin.calculateAdditionalSources(target))
         .toSet()
         .map(bazelPathsResolver::resolve)
-        .onEach { if (it.notExists()) it.logNonExistingFile(target.id) }
-        .filter { it.exists() }
+        .partition { it.exists() }
+    nonExistentSources.forEach { it.logNonExistingFile(target.id) }
     val generatedSources =
       target.generatedSourcesList
         .toSet()

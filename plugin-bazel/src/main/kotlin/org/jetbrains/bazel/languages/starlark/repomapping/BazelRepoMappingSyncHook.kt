@@ -25,6 +25,9 @@ val Project.apparentRepoNameToCanonicalName: Map<String, String>
 val Project.canonicalRepoNameToPath: Map<String, Path>
   get() = BazelRepoMappingService.getInstance(this).canonicalRepoNameToPath
 
+val Project.repositoryPaths: Set<Path>
+  get() = BazelRepoMappingService.getInstance(this).repositoryPaths
+
 class BazelRepoMappingSyncHook : ProjectSyncHook {
   override val buildToolId: BuildToolId = bazelBspBuildToolId
 
@@ -55,6 +58,11 @@ internal data class BazelRepoMappingServiceState(
 internal class BazelRepoMappingService : PersistentStateComponent<BazelRepoMappingServiceState> {
   internal var apparentRepoNameToCanonicalName: Map<String, String> = emptyMap()
   internal var canonicalRepoNameToPath: Map<String, Path> = emptyMap()
+    set(value) {
+      field = value
+      repositoryPaths = canonicalRepoNameToPath.values.toSet()
+    }
+  internal var repositoryPaths: Set<Path> = emptySet()
 
   override fun getState(): BazelRepoMappingServiceState? =
     BazelRepoMappingServiceState(
