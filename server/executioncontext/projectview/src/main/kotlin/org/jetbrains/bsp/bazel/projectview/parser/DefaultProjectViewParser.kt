@@ -14,6 +14,7 @@ import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewDirectorie
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewEnabledRulesSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewIdeJavaHomeOverrideSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewImportDepthSectionParser
+import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewSyncFlagsSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ProjectViewTargetsSectionParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ShardSyncParser
 import org.jetbrains.bsp.bazel.projectview.parser.sections.ShardingApproachParser
@@ -43,6 +44,7 @@ open class DefaultProjectViewParser(private val workspaceRoot: Path? = null) : P
         targets = ProjectViewTargetsSectionParser.parse(rawSections),
         bazelBinary = ProjectViewBazelBinarySectionParser.parse(rawSections),
         buildFlags = ProjectViewBuildFlagsSectionParser.parse(rawSections),
+        syncFlags = ProjectViewSyncFlagsSectionParser.parse(rawSections),
         allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSectionParser.parse(rawSections),
         directories = ProjectViewDirectoriesSectionParser.parse(rawSections),
         deriveTargetsFromDirectories = ProjectViewDeriveTargetsFromDirectoriesSectionParser.parse(rawSections),

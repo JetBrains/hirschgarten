@@ -16,6 +16,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ShardingApproachSpec
+import org.jetbrains.bsp.bazel.workspacecontext.SyncFlagsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
@@ -30,6 +31,7 @@ val mockContext =
     targets = TargetsSpec(listOf("in1".label(), "in2".label()), listOf("ex1".label(), "ex2".label())),
     directories = DirectoriesSpec(listOf(Path("in1dir"), Path("in2dir")), listOf(Path("ex1dir"), Path("ex2dir"))),
     buildFlags = BuildFlagsSpec(listOf("flag1", "flag2")),
+    syncFlags = SyncFlagsSpec(listOf("flag1", "flag2")),
     bazelBinary = BazelBinarySpec(Path("bazel")),
     allowManualTargetsSync = AllowManualTargetsSyncSpec(true),
     dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),

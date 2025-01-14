@@ -9,6 +9,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewBuildFlagsS
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -57,6 +58,14 @@ class WorkspaceContextConstructorTest {
                   "--build_flag3=value3",
                 ),
               ),
+            syncFlags =
+              ProjectViewSyncFlagsSection(
+                listOf(
+                  "--sync_flag1=value1",
+                  "--sync_flag2=value2",
+                  "--sync_flag3=value3",
+                ),
+              ),
             bazelBinary = ProjectViewBazelBinarySection(Path("/path/to/bazel")),
             allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(false),
             importDepth = ProjectViewImportDepthSection(3),
@@ -91,6 +100,7 @@ class WorkspaceContextConstructorTest {
             ),
         )
       workspaceContext.directories shouldBe expectedDirectories
+
       val expectedBuildFlagsSpec =
         BuildFlagsSpec(
           listOf(
@@ -100,6 +110,16 @@ class WorkspaceContextConstructorTest {
           ),
         )
       workspaceContext.buildFlags shouldBe expectedBuildFlagsSpec
+
+      val expectedSyncFlagsSpec =
+        SyncFlagsSpec(
+          listOf(
+            "--sync_flag1=value1",
+            "--sync_flag2=value2",
+            "--sync_flag3=value3",
+          ),
+        )
+      workspaceContext.syncFlags shouldBe expectedSyncFlagsSpec
 
       val expectedBazelBinarySpec = BazelBinarySpec(Path("/path/to/bazel"))
       workspaceContext.bazelBinary shouldBe expectedBazelBinarySpec

@@ -28,6 +28,7 @@ import org.jetbrains.bsp.bazel.workspacecontext.IdeJavaHomeOverrideSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ImportDepthSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ShardSyncSpec
 import org.jetbrains.bsp.bazel.workspacecontext.ShardingApproachSpec
+import org.jetbrains.bsp.bazel.workspacecontext.SyncFlagsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetShardSizeSpec
 import org.jetbrains.bsp.bazel.workspacecontext.TargetsSpec
 import org.jetbrains.bsp.bazel.workspacecontext.WorkspaceContext
@@ -52,6 +53,7 @@ private class MockWorkspaceContextProvider(private val allowManualTargetsSync: B
       targets = TargetsSpec(listOf(Label.parse("//...")), emptyList()),
       directories = DirectoriesSpec(listOf(Path(".")), emptyList()),
       buildFlags = BuildFlagsSpec(emptyList()),
+      syncFlags = SyncFlagsSpec(emptyList()),
       bazelBinary = BazelBinarySpec(Path("bazel")),
       allowManualTargetsSync = AllowManualTargetsSyncSpec(allowManualTargetsSync),
       dotBazelBspDirPath = DotBazelBspDirPathSpec(Path(".bazelbsp")),

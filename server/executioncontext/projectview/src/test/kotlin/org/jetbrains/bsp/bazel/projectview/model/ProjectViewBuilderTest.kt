@@ -9,6 +9,7 @@ import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDeriveTarge
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewDirectoriesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewEnabledRulesSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewImportDepthSection
+import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewSyncFlagsSection
 import org.jetbrains.bsp.bazel.projectview.model.sections.ProjectViewTargetsSection
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -33,6 +34,7 @@ class ProjectViewBuilderTest {
           targets = null,
           bazelBinary = null,
           buildFlags = null,
+          syncFlags = null,
           allowManualTargetsSync = null,
           directories = null,
           deriveTargetsFromDirectories = null,
@@ -67,6 +69,7 @@ class ProjectViewBuilderTest {
               ),
             bazelBinary = ProjectViewBazelBinarySection(Paths.get("path/to/bazel")),
             buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag1=value1", "--build_flag2=value2")),
+            syncFlags = ProjectViewSyncFlagsSection(listOf("--sync_flag1=value1", "--sync_flag2=value2")),
             allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
@@ -98,6 +101,7 @@ class ProjectViewBuilderTest {
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("path/to/bazel")),
           buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag1=value1", "--build_flag2=value2")),
+          syncFlags = ProjectViewSyncFlagsSection(listOf("--sync_flag1=value1", "--sync_flag2=value2")),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
@@ -138,6 +142,10 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag1=value1", "--build_flag2=value2"),
               ),
+            syncFlags =
+              ProjectViewSyncFlagsSection(
+                listOf("--sync_flag1=value1", "--sync_flag2=value2"),
+              ),
             allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
@@ -172,6 +180,7 @@ class ProjectViewBuilderTest {
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("path/to/bazel")),
           buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag1=value1", "--build_flag2=value2")),
+          syncFlags = ProjectViewSyncFlagsSection(listOf("--sync_flag1=value1", "--sync_flag2=value2")),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
@@ -209,6 +218,10 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag1=value1", "--build_flag2=value2"),
               ),
+            syncFlags =
+              ProjectViewSyncFlagsSection(
+                listOf("--sync_flag1=value1", "--sync_flag2=value2"),
+              ),
             allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
@@ -233,6 +246,7 @@ class ProjectViewBuilderTest {
             ),
           bazelBinary = ProjectViewBazelBinarySection(Paths.get("path/to/bazel")),
           buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag1=value1", "--build_flag2=value2")),
+          syncFlags = ProjectViewSyncFlagsSection(listOf("--sync_flag1=value1", "--sync_flag2=value2")),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
           directories =
             ProjectViewDirectoriesSection(
@@ -273,6 +287,10 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag1.1=value1.1", "--build_flag1.2=value1.2"),
               ),
+            syncFlags =
+              ProjectViewSyncFlagsSection(
+                listOf("--sync_flag1.1=value1.1", "--sync_flag1.2=value1.2"),
+              ),
             allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
@@ -308,6 +326,10 @@ class ProjectViewBuilderTest {
             buildFlags =
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag2.1=value2.1", "--build_flag2.2=value2.2"),
+              ),
+            syncFlags =
+              ProjectViewSyncFlagsSection(
+                listOf("--sync_flag2.1=value2.1", "--sync_flag2.2=value2.2"),
               ),
             allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
@@ -351,6 +373,15 @@ class ProjectViewBuilderTest {
                 "--build_flag1.2=value1.2",
                 "--build_flag2.1=value2.1",
                 "--build_flag2.2=value2.2",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag2.1=value2.1",
+                "--sync_flag2.2=value2.2",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
@@ -399,6 +430,10 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag1.1=value1.1", "--build_flag1.2=value1.2"),
               ),
+            syncFlags =
+              ProjectViewSyncFlagsSection(
+                listOf("--sync_flag1.1=value1.1", "--sync_flag1.2=value1.2"),
+              ),
             allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
@@ -423,6 +458,7 @@ class ProjectViewBuilderTest {
                 listOf(Label.parse("//excluded_target2.1")),
               ),
             buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag2.1=value2.1")),
+            syncFlags = ProjectViewSyncFlagsSection(listOf("--sync_flag2.1=value2.1")),
             directories =
               ProjectViewDirectoriesSection(
                 listOf(
@@ -451,6 +487,10 @@ class ProjectViewBuilderTest {
             buildFlags =
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag3.1=value3.1"),
+              ),
+            syncFlags =
+              ProjectViewSyncFlagsSection(
+                listOf("--sync_flag3.1=value3.1"),
               ),
             directories =
               ProjectViewDirectoriesSection(
@@ -486,6 +526,10 @@ class ProjectViewBuilderTest {
             buildFlags =
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag4.1=value4.1", "--build_flag4.2=value4.2"),
+              ),
+            syncFlags =
+              ProjectViewSyncFlagsSection(
+                listOf("--sync_flag4.1=value4.1", "--sync_flag4.2=value4.2"),
               ),
             directories =
               ProjectViewDirectoriesSection(
@@ -535,6 +579,17 @@ class ProjectViewBuilderTest {
                 "--build_flag3.1=value3.1",
                 "--build_flag4.1=value4.1",
                 "--build_flag4.2=value4.2",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag2.1=value2.1",
+                "--sync_flag3.1=value3.1",
+                "--sync_flag4.1=value4.1",
+                "--sync_flag4.2=value4.2",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
@@ -589,6 +644,10 @@ class ProjectViewBuilderTest {
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag1.1=value1.1", "--build_flag1.2=value1.2"),
               ),
+            syncFlags =
+              ProjectViewSyncFlagsSection(
+                listOf("--sync_flag1.1=value1.1", "--sync_flag1.2=value1.2"),
+              ),
             allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
@@ -613,6 +672,7 @@ class ProjectViewBuilderTest {
                 listOf(Label.parse("//excluded_target2.1")),
               ),
             buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag2.1=value2.1")),
+            syncFlags = ProjectViewSyncFlagsSection(listOf("--sync_flag2.1=value2.1")),
             directories =
               ProjectViewDirectoriesSection(
                 listOf(
@@ -639,6 +699,7 @@ class ProjectViewBuilderTest {
               ),
             bazelBinary = ProjectViewBazelBinarySection(Paths.get("imported3/path/to/bazel")),
             buildFlags = ProjectViewBuildFlagsSection(listOf("--build_flag3.1=value3.1")),
+            syncFlags = ProjectViewSyncFlagsSection(listOf("--sync_flag3.1=value3.1")),
             allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
             directories =
               ProjectViewDirectoriesSection(
@@ -676,6 +737,10 @@ class ProjectViewBuilderTest {
             buildFlags =
               ProjectViewBuildFlagsSection(
                 listOf("--build_flag4.1=value4.1", "--build_flag4.2=value4.2"),
+              ),
+            syncFlags =
+              ProjectViewSyncFlagsSection(
+                listOf("--sync_flag4.1=value4.1", "--sync_flag4.2=value4.2"),
               ),
             directories =
               ProjectViewDirectoriesSection(
@@ -725,6 +790,17 @@ class ProjectViewBuilderTest {
                 "--build_flag3.1=value3.1",
                 "--build_flag4.1=value4.1",
                 "--build_flag4.2=value4.2",
+              ),
+            ),
+          syncFlags =
+            ProjectViewSyncFlagsSection(
+              listOf(
+                "--sync_flag1.1=value1.1",
+                "--sync_flag1.2=value1.2",
+                "--sync_flag2.1=value2.1",
+                "--sync_flag3.1=value3.1",
+                "--sync_flag4.1=value4.1",
+                "--sync_flag4.2=value4.2",
               ),
             ),
           allowManualTargetsSync = ProjectViewAllowManualTargetsSyncSection(true),
