@@ -13,16 +13,27 @@ import kotlin.io.path.toPath
 
 private val BAZEL_COMPONENT_SEPARATOR = "/"
 
-class BazelPathsResolver(private val bazelInfo: BazelInfo) {
+open class BazelPathsResolver(val bazelInfo: BazelInfo) {
   private val uris = ConcurrentHashMap<Path, URI>()
   private val paths = ConcurrentHashMap<FileLocation, Path>()
 
+
+  protected val buildArtifactDirectories = listOf(
+    "bazel-bin", "bazel-genfiles", "bazel-out", "bazel-testlogs", "bazel-${bazelInfo.workspaceRoot.getLastComponent()}",
+  )
+
+
   fun resolveUri(path: Path): URI = uris.computeIfAbsent(path, Path::toUri)
+  fun resolveUri(fileLocation: FileLocation): URI = resolveUri(resolve(fileLocation))
+  fun resolveUri(path: String): URI = resolveUri(resolve(path))
+
 
   fun unresolvedWorkspaceRoot(): Path = bazelInfo.workspaceRoot
 
   fun workspaceRoot(): URI = resolveUri(bazelInfo.workspaceRoot.toAbsolutePath())
 
+  fun resolve(fileLocation: FileLocation): Path = paths.computeIfAbsent(fileLocation, ::doResolve)
+  fun resolve(path: String): Path = doResolve(path)
   fun resolveUris(fileLocations: List<FileLocation>, shouldFilterExisting: Boolean = false): List<URI> =
     fileLocations
       .map(::resolveUri)
@@ -30,9 +41,8 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
 
   fun resolvePaths(fileLocations: List<FileLocation>): List<Path> = fileLocations.map(::resolve)
 
-  fun resolveUri(fileLocation: FileLocation): URI = resolveUri(resolve(fileLocation))
 
-  fun resolve(fileLocation: FileLocation): Path = paths.computeIfAbsent(fileLocation, ::doResolve)
+
 
   private fun doResolve(fileLocation: FileLocation): Path =
     when {
@@ -42,18 +52,24 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
       else -> resolveOutput(fileLocation)
     }
 
-  private fun isAbsolute(fileLocation: FileLocation): Boolean {
-    val relative = fileLocation.relativePath
-    return relative.startsWith("/") && Files.exists(Paths.get(relative))
-  }
+  private fun doResolve(path: String):Path=
+    when{
+      isAbsolute(path) -> resolveAbsolute(path)
+      isInExternalWorkspace(path) -> resolveExternal(path)
+      isArtifact(path)->resolveOutput(path)
+      else -> resolveSource(path)
+
+    }
 
   private fun resolveAbsolute(fileLocation: FileLocation): Path = Paths.get(fileLocation.relativePath)
+  private fun resolveAbsolute(path: String): Path = Paths.get(path)
 
   private fun resolveExternal(fileLocation: FileLocation): Path {
     val outputBaseRelativePath = Paths.get(fileLocation.rootExecutionPathFragment, fileLocation.relativePath)
     return resolveExternal(outputBaseRelativePath)
   }
 
+  private fun resolveExternal(path: String): Path = resolveExternal(Paths.get(path))
   private fun resolveExternal(outputBaseRelativePath: Path): Path =
     bazelInfo
       .outputBase
@@ -64,6 +80,7 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
     return resolveOutput(execRootRelativePath)
   }
 
+  private fun resolveOutput(path: String): Path = resolveOutput(Paths.get(path))
   fun resolveOutput(execRootRelativePath: Path): Path =
     when {
       execRootRelativePath.startsWith("external") -> resolveExternal(execRootRelativePath)
@@ -71,10 +88,24 @@ class BazelPathsResolver(private val bazelInfo: BazelInfo) {
     }
 
   private fun resolveSource(fileLocation: FileLocation): Path = bazelInfo.workspaceRoot.resolve(fileLocation.relativePath)
+  private fun resolveSource(path: String): Path = bazelInfo.workspaceRoot.resolve(path)
+
+  private fun isAbsolute(fileLocation: FileLocation): Boolean {
+    val relative = fileLocation.relativePath
+    return relative.startsWith("/") && Files.exists(Paths.get(relative))
+  }
+  protected fun isAbsolute(path: String): Boolean = path.startsWith("/") && Files.exists(Paths.get(path))
 
   private fun isMainWorkspaceSource(fileLocation: FileLocation): Boolean = fileLocation.isSource && !fileLocation.isExternal
 
+  protected fun isArtifact(path:String):Boolean{
+    return buildArtifactDirectories.contains(Paths.get(path).getFirstComponent())
+  }
   private fun isInExternalWorkspace(fileLocation: FileLocation): Boolean = fileLocation.rootExecutionPathFragment.startsWith("external/")
+  protected fun isInExternalWorkspace(path: String): Boolean = path.startsWith("external/")
+
+  protected fun Path.getLastComponent(): String = getName(count() - 1).toString()
+  protected fun Path.getFirstComponent(): String = getName(0).toString()
 
   fun pathToDirectoryUri(path: String, isWorkspace: Boolean = true): URI {
     val absolutePath =
